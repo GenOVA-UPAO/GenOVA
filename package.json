@@ -7,6 +7,9 @@
     "dev": "pnpm --filter frontend dev",
     "build": "pnpm --filter frontend build",
     "lint": "pnpm --filter frontend lint",
-    "format": "pnpm --filter frontend format"
+    "format": "pnpm --filter frontend format",
+    "dev:docker": "docker compose up --build",
+    "prod:docker": "docker compose -f docker-compose.prod.yml up --build"
   }
+
 }

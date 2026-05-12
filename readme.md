@@ -10,6 +10,7 @@ GENOVA/
 ├── backend/
 ├── docs/
 ├── specs/
+├── deploy/
 └── scorm-template/
 ```
 
@@ -26,6 +27,36 @@ Stack actual del frontend:
 - Tailwind CSS (vía `@tailwindcss/vite`)
 - ESLint + Prettier
 - React Router
+
+## Backend base (EN-011)
+
+Stack backend inicial:
+- FastAPI
+- Uvicorn
+- CORS habilitado para frontend local
+
+Estructura backend:
+
+```text
+backend/
+├── agents/
+│   └── router.py
+├── rag/
+│   └── router.py
+├── scorm/
+│   └── router.py
+├── main.py
+├── requirements.txt
+├── Dockerfile
+└── Dockerfile.prod
+```
+
+Endpoints de salud:
+- `GET /health`
+- `GET /api/health`
+- `GET /api/agents/health`
+- `GET /api/rag/health`
+- `GET /api/scorm/health`
 
 ## HU-004 implementada
 
@@ -58,18 +89,53 @@ Los componentes del layout están separados en módulos pequeños dentro de:
 
 Ningún componente de layout supera el umbral de líneas definido por ESLint.
 
-## Scripts de ejecución desde la raíz
+## Orquestación Docker (EN-011)
+
+### Entorno local
+Archivo: `docker-compose.yml`
+
+Servicios:
+- `frontend` (Vite, puerto `5173`)
+- `backend` (FastAPI, puerto `8000`)
+
+Comando:
+
+```bash
+pnpm dev:docker
+```
+
+### Entorno productivo inicial (opción 3)
+Archivo: `docker-compose.prod.yml`
+
+Servicios:
+- `frontend` (build estático servido por Nginx interno)
+- `backend` (FastAPI en modo prod)
+- `nginx` gateway externo con reverse proxy
+
+Reglas de enrutamiento del gateway:
+- `/api/*` -> backend
+- `/*` -> frontend
+
+Comando:
+
+```bash
+pnpm prod:docker
+```
+
+Configuración de gateway:
+- `deploy/nginx/default.conf`
+
+## Scripts desde raíz
 
 ```bash
 pnpm install
 pnpm dev
+pnpm build
+pnpm lint
+pnpm format
+pnpm dev:docker
+pnpm prod:docker
 ```
-
-Scripts disponibles en raíz:
-- `pnpm dev` → levanta frontend
-- `pnpm build` → build frontend
-- `pnpm lint` → lint frontend
-- `pnpm format` → verificación Prettier en frontend
 
 ## SCORM template
 
