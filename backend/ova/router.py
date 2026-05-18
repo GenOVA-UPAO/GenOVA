@@ -64,7 +64,7 @@ def _job_duration_seconds() -> int:
 
 def _job_ttl_seconds() -> int:
     default_ttl = max(60, _job_duration_seconds() * 10)
-    return max(60, _parse_int_env("OVA_GENERATION_JOB_TTL_SECONDS", default_ttl))
+    return max(60, _job_duration_seconds(), _parse_int_env("OVA_GENERATION_JOB_TTL_SECONDS", default_ttl))
 
 
 def _enabled_llm_ids() -> set[str]:
@@ -94,16 +94,11 @@ def _current_progress(job: dict) -> tuple[int, str, str]:
 
 def _prune_generation_jobs() -> None:
     now = time.time()
-    duration_seconds = _job_duration_seconds()
     ttl_seconds = _job_ttl_seconds()
 
     expired_job_ids = []
     for job_id, job in _generation_jobs.items():
-        completed_at = job.get("completed_at")
-        if completed_at is not None:
-            expires_at = float(completed_at) + ttl_seconds
-        else:
-            expires_at = float(job["started_at"]) + duration_seconds + ttl_seconds
+        expires_at = float(job.get("completed_at") or job["started_at"]) + ttl_seconds
 
         if now >= expires_at:
             expired_job_ids.append(job_id)
