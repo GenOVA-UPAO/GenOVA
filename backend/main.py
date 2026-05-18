@@ -2,8 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from agents.router import router as agents_router
+from database import Base, engine
+import models
 from rag.router import router as rag_router
 from scorm.router import router as scorm_router
+from sqlalchemy import text
 
 app = FastAPI(title="GENOVA Backend API", version="0.1.0")
 
@@ -27,6 +30,11 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+def startup() -> None:
+    Base.metadata.create_all(bind=engine)
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -35,6 +43,13 @@ def health() -> dict[str, str]:
 @app.get("/api/health")
 def api_health() -> dict[str, str]:
     return {"status": "ok", "scope": "api"}
+
+
+@app.get("/api/db/health")
+def db_health() -> dict[str, str]:
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+    return {"status": "ok", "scope": "db"}
 
 
 app.include_router(agents_router, prefix="/api/agents", tags=["agents"])
