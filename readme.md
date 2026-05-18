@@ -229,3 +229,13 @@ Incluye:
 - **Seeder de Desarrollo**:
   - Script automático `backend/seed.py` para poblar roles de sistema por defecto (`administrador`, `usuario`) y cuentas de prueba de desarrollo.
 
+## HU-015 implementada
+
+Se implementó la configuración del perfil personal para todos los usuarios registrados en la plataforma.
+
+Incluye:
+- **Frontend**: Vista de perfil en `/profile` ([ProfilePage.jsx]) que permite editar el Nombre Completo y Correo Electrónico. Presenta iniciales de avatar dinámicas y validaciones locales.
+- **Backend**: Endpoint de perfil `PATCH /api/users/me` en [backend/users/router.py] que procesa y valida los cambios de forma segura, con verificación de unicidad de correo.
+- **Navegación**: Enlaces de navegación unificados en [navLinks.js] y barra del administrador en [AdminLayout.jsx].
+
+
