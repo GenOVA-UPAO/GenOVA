@@ -18,6 +18,13 @@ export function AdminRolesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingRole, setEditingRole] = useState(null)
 
+  // Deletion State
+  const [deletingRole, setDeletingRole] = useState(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [reassignRoleId, setReassignRoleId] = useState('')
+  const [deleteError, setDeleteError] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+
   // Form State
   const [roleName, setRoleName] = useState('')
   const [selectedPermissions, setSelectedPermissions] = useState([])
@@ -71,6 +78,67 @@ export function AdminRolesPage() {
     setSelectedPermissions(role.permissions || [])
     setFormError('')
     setIsModalOpen(true)
+  }
+
+  const handleDeleteClick = (role) => {
+    setDeletingRole(role)
+    setReassignRoleId('')
+    setDeleteError('')
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingRole) return
+
+    const isReassign = deletingRole.user_count > 0
+    if (isReassign && !reassignRoleId) {
+      setDeleteError('Por favor selecciona un rol de destino.')
+      return
+    }
+
+    setIsDeleting(true)
+    setDeleteError('')
+
+    const token = getToken()
+    const url = isReassign
+      ? `${apiBaseUrl}/api/roles/${deletingRole.id}?reassign_to_id=${reassignRoleId}`
+      : `${apiBaseUrl}/api/roles/${deletingRole.id}`
+
+    try {
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (response.status === 204) {
+        // Successful deletion
+        if (isReassign) {
+          // Increment the user_count of target role in state by migrated users
+          setRoles((prev) =>
+            prev
+              .map((r) =>
+                r.id === reassignRoleId
+                  ? { ...r, user_count: (r.user_count || 0) + deletingRole.user_count }
+                  : r
+              )
+              .filter((r) => r.id !== deletingRole.id)
+          )
+        } else {
+          // Clean deletion without migration
+          setRoles((prev) => prev.filter((r) => r.id !== deletingRole.id))
+        }
+        setIsDeleteModalOpen(false)
+      } else {
+        const data = await response.json().catch(() => ({}))
+        setDeleteError(data.detail || 'Ocurrió un error inesperado al eliminar el rol.')
+      }
+    } catch (err) {
+      setDeleteError('No se pudo conectar con el servidor. Intenta de nuevo.')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const handleCloseModal = () => {
@@ -181,6 +249,7 @@ export function AdminRolesPage() {
                 <tr>
                   <th scope="col" className="px-6 py-4">Nombre del Rol</th>
                   <th scope="col" className="px-6 py-4">Descripción</th>
+                  <th scope="col" className="px-6 py-4">Usuarios</th>
                   <th scope="col" className="px-6 py-4">Permisos Asignados</th>
                   <th scope="col" className="px-6 py-4 text-right">Acciones</th>
                 </tr>
@@ -200,6 +269,9 @@ export function AdminRolesPage() {
                     </td>
                     <td className="px-6 py-4 text-slate-400 max-w-xs truncate">
                       {role.description || 'Sin descripción'}
+                    </td>
+                    <td className="px-6 py-4 text-slate-300 font-medium">
+                      {role.user_count ?? 0}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1.5">
@@ -228,7 +300,10 @@ export function AdminRolesPage() {
                           >
                             Editar
                           </button>
-                          <button className="text-rose-400 hover:text-rose-300 transition-colors cursor-pointer text-xs font-semibold">
+                          <button
+                            onClick={() => handleDeleteClick(role)}
+                            className="text-rose-400 hover:text-rose-300 transition-colors cursor-pointer text-xs font-semibold"
+                          >
                             Eliminar
                           </button>
                         </>
@@ -337,6 +412,96 @@ export function AdminRolesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Role Modal */}
+      {isDeleteModalOpen && deletingRole && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => !isDeleting && setIsDeleteModalOpen(false)}></div>
+
+          {/* Modal Container */}
+          <div className="relative w-full max-w-lg rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-bold text-white mb-1">
+              ¿Eliminar rol: <span className="capitalize">{deletingRole.name}</span>?
+            </h2>
+
+            {deletingRole.user_count > 0 ? (
+              <div className="mt-4 space-y-4">
+                <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 text-sm text-amber-400">
+                  <div className="flex gap-2.5">
+                    <span className="text-lg font-bold">⚠️</span>
+                    <div>
+                      <p className="font-semibold">Reasignación requerida</p>
+                      <p className="text-xs text-amber-500 mt-0.5">
+                        Este rol tiene <span className="font-bold">{deletingRole.user_count}</span> usuario(s) asignado(s) actualmente. Para poder eliminarlo, debes migrar sus usuarios a otro rol activo.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    Reasignar usuarios a:
+                  </label>
+                  <select
+                    value={reassignRoleId}
+                    onChange={(e) => {
+                      setReassignRoleId(e.target.value)
+                      if (deleteError) setDeleteError('')
+                    }}
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none transition-colors cursor-pointer"
+                    disabled={isDeleting}
+                  >
+                    <option value="">-- Selecciona un rol de destino --</option>
+                    {roles
+                      .filter((r) => r.id !== deletingRole.id)
+                      .map((r) => (
+                        <option key={r.id} value={r.id} className="capitalize">
+                          {r.name} ({r.user_count ?? 0} usuarios)
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 mt-4 mb-6">
+                Esta acción es permanente e irreversible. Se borrarán todas las configuraciones del rol y no hay usuarios asignados que se verán afectados.
+              </p>
+            )}
+
+            {/* Error messages */}
+            {deleteError && (
+              <div className="rounded-lg border border-rose-900/50 bg-rose-950/20 px-3 py-2 text-xs font-medium text-rose-400 mt-4">
+                {deleteError}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 border-t border-slate-800 pt-4 mt-6">
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-400 hover:bg-slate-800/60 hover:text-white transition-colors cursor-pointer"
+                disabled={isDeleting}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="inline-flex items-center justify-center rounded-lg bg-rose-600 px-5 py-2 text-sm font-semibold text-white shadow-md hover:bg-rose-500 hover:shadow-rose-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isDeleting || (deletingRole.user_count > 0 && !reassignRoleId)}
+              >
+                {isDeleting
+                  ? 'Eliminando...'
+                  : deletingRole.user_count > 0
+                  ? 'Reasignar y eliminar'
+                  : 'Eliminar rol'}
+              </button>
+            </div>
           </div>
         </div>
       )}
