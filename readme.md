@@ -238,4 +238,13 @@ Incluye:
 - **Backend**: Endpoint de perfil `PATCH /api/users/me` en [backend/users/router.py] que procesa y valida los cambios de forma segura, con verificación de unicidad de correo.
 - **Navegación**: Enlaces de navegación unificados en [navLinks.js] y barra del administrador en [AdminLayout.jsx].
 
+## HU-016 implementada
+
+Se implementó el cambio de contraseña en caliente desde la pantalla del perfil personal del usuario.
+
+Incluye:
+- **Frontend**: Formulario dedicado en la sección "Seguridad de la Cuenta" dentro de `/profile` ([ProfilePage.jsx]) que solicita contraseña actual, nueva contraseña y confirmación. Realiza validaciones alfanuméricas de formato locales y limpia todos los campos tras completarse con éxito.
+- **Backend**: Endpoint seguro `POST /api/users/me/change-password` en [backend/users/router.py] que comprueba la contraseña actual mediante comparaciones de hash bcrypt y guarda de forma atómica el nuevo hash en base de datos.
+
+
 
