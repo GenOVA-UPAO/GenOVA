@@ -49,9 +49,10 @@ export function RegisterPage() {
       }
 
       setServerError(data?.message || 'No se pudo completar el registro.')
-    } catch (error) {
+    } catch {
       setServerError('No se pudo conectar con el servidor. Intenta de nuevo.')
     } finally {
+
       setIsSubmitting(false)
     }
   }

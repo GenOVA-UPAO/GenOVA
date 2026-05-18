@@ -7,6 +7,7 @@ from database import Base, engine
 import models
 from rag.router import router as rag_router
 from scorm.router import router as scorm_router
+from ova.router import router as ova_router
 from sqlalchemy import text
 
 app = FastAPI(title="GENOVA Backend API", version="0.1.0")
@@ -58,3 +59,4 @@ app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(rag_router, prefix="/api/rag", tags=["rag"])
 app.include_router(scorm_router, prefix="/api/scorm", tags=["scorm"])
+app.include_router(ova_router, prefix="/api/ova", tags=["ova"])
