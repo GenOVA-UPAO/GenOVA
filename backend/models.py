@@ -1,7 +1,7 @@
 import uuid
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -19,6 +19,8 @@ class User(Base):
     )
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
+    failed_login_attempts = Column(Integer, nullable=False, default=0)
+    locked_until = Column(DateTime(timezone=True))
     full_name = Column(String(255))
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -70,6 +72,7 @@ class Role(Base):
     name = Column(String(64), unique=True, nullable=False)
     description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    permissions = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
 
     users = relationship("UserRole", back_populates="role")
 

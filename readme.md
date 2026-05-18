@@ -189,3 +189,62 @@ Incluye:
 Variables de entorno (ejemplo):
 - Backend: `backend/.env.example`.
 - Frontend (Vite + Supabase): `frontend/.env.example`.
+
+## HU-001 implementada
+
+Se implementó el registro de cuentas de usuario en la plataforma.
+
+Incluye:
+- **Frontend**: Vista de registro en `/register` ([RegisterPage.jsx]) con validaciones visuales de contraseñas seguras y campos obligatorios.
+- **Backend**: Endpoint de registro `POST /api/auth/register` en [backend/auth/router.py], que realiza hashing seguro de contraseña con `bcrypt` e ingresa al usuario a la base de datos de manera única.
+
+## HU-008 implementada
+
+Se implementó el inicio de sesión de usuarios con credenciales y gestión de perfil activo.
+
+Incluye:
+- **Frontend**: Vista de inicio de sesión en `/login` ([LoginPage.jsx]) con almacenamiento seguro del token JWT en `localStorage`.
+- **Backend**:
+  - Endpoint de autenticación `POST /api/auth/login` en [backend/auth/router.py] que valida credenciales y retorna un token JWT firmado.
+  - Endpoint de perfil `/api/auth/me` para obtener los datos de la cuenta autenticada y su rol activo.
+
+## HU-018, HU-019, HU-020, HU-021 implementadas (Gestión de Roles y Permisos)
+
+Se implementó el sistema completo de administración de roles, permisos de plataforma y asignación a cuentas individuales desde el panel de control del administrador.
+
+Incluye:
+- **HU-018 (Crear Rol)**:
+  - Formulario de creación de roles en el panel `/admin/roles` ([AdminRolesPage.jsx]).
+  - Endpoint `POST /api/roles` en [backend/roles/router.py] que valida nombres y persiste permisos.
+- **HU-019 (Editar Rol)**:
+  - Modal adaptativo que precarga datos y permisos actuales del rol para su actualización en caliente en la misma interfaz.
+  - Endpoint `PATCH /api/roles/{id}` con validación estricta de nombres duplicados e inmutabilidad de roles del sistema.
+- **HU-020 (Eliminar Rol)**:
+  - Modal interactivo de borrado simple (si tiene 0 usuarios) o de reasignación obligatoria (si tiene > 0 usuarios).
+  - Endpoint `DELETE /api/roles/{id}` que realiza una transacción atómica migrando usuarios del rol viejo al nuevo de forma segura en `user_roles` antes de eliminar el registro de rol para evitar inconsistencias.
+- **HU-021 (Asignar Rol a Usuario)**:
+  - Pantalla de administración de usuarios en `/admin/users` ([AdminUsersPage.jsx]) que muestra una tabla paginada con selectores desplegables inteligentes por cada usuario.
+  - Endpoint `PATCH /api/users/{id}/role` en [backend/users/router.py] que asocia el nuevo rol al usuario en la base de datos de manera atómica.
+  - **Seguridad Activa**: Mecanismo de auto-bloqueo en frontend y backend que impide que el administrador en sesión se despoje de su propio rol administrativo por error.
+- **Seeder de Desarrollo**:
+  - Script automático `backend/seed.py` para poblar roles de sistema por defecto (`administrador`, `usuario`) y cuentas de prueba de desarrollo.
+
+## HU-015 implementada
+
+Se implementó la configuración del perfil personal para todos los usuarios registrados en la plataforma.
+
+Incluye:
+- **Frontend**: Vista de perfil en `/profile` ([ProfilePage.jsx]) que permite editar el Nombre Completo y Correo Electrónico. Presenta iniciales de avatar dinámicas y validaciones locales.
+- **Backend**: Endpoint de perfil `PATCH /api/users/me` en [backend/users/router.py] que procesa y valida los cambios de forma segura, con verificación de unicidad de correo.
+- **Navegación**: Enlaces de navegación unificados en [navLinks.js] y barra del administrador en [AdminLayout.jsx].
+
+## HU-016 implementada
+
+Se implementó el cambio de contraseña en caliente desde la pantalla del perfil personal del usuario.
+
+Incluye:
+- **Frontend**: Formulario dedicado en la sección "Seguridad de la Cuenta" dentro de `/profile` ([ProfilePage.jsx]) que solicita contraseña actual, nueva contraseña y confirmación. Realiza validaciones alfanuméricas de formato locales y limpia todos los campos tras completarse con éxito.
+- **Backend**: Endpoint seguro `POST /api/users/me/change-password` en [backend/users/router.py] que comprueba la contraseña actual mediante comparaciones de hash bcrypt y guarda de forma atómica el nuevo hash en base de datos.
+
+
+
