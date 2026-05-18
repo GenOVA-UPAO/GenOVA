@@ -11,7 +11,9 @@ function triggerBrowserDownload(blob, filename) {
   document.body.appendChild(link)
   link.click()
   link.remove()
-  window.URL.revokeObjectURL(objectUrl)
+  window.setTimeout(() => {
+    window.URL.revokeObjectURL(objectUrl)
+  }, 0)
 }
 
 export async function exportScormPackage() {
