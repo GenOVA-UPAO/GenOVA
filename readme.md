@@ -140,3 +140,17 @@ pnpm prod:docker
 ## SCORM template
 
 Se mantiene una plantilla base en `scorm-template/` con `imsmanifest.xml`, `index.html` y `resources/styles.css` para empaquetado SCORM posterior.
+
+## EN-008 implementada
+
+Se habilitó la base de datos para gestión de usuarios con Supabase (PostgreSQL) y SQLAlchemy.
+
+Incluye:
+- Modelos ORM para tablas: `users`, `ovas`, `sessions`, `roles`, `user_roles`, `password_reset_tokens`.
+- Migración SQL inicial en `backend/migrations/001_init.sql`.
+- Conexión ORM desde `backend/database.py` (usa `DATABASE_URL` desde `.env`).
+- Endpoint de verificación DB: `GET /api/db/health`.
+
+Variables de entorno (ejemplo):
+- Backend: `backend/.env.example`.
+- Frontend (Vite + Supabase): `frontend/.env.example`.
