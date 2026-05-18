@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getToken } from '../lib/auth.js'
+import { toast } from 'sonner'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
@@ -11,18 +12,12 @@ export function ProfilePage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
-  // Password change states
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [savingPassword, setSavingPassword] = useState(false)
-  const [passwordError, setPasswordError] = useState('')
-  const [passwordSuccess, setPasswordSuccess] = useState('')
 
-  // Validation errors
   const [validationError, setValidationError] = useState({ fullName: '', email: '' })
   const [passwordValidationError, setPasswordValidationError] = useState({
     currentPassword: '',
@@ -32,7 +27,6 @@ export function ProfilePage() {
 
   const fetchProfile = async () => {
     setLoading(true)
-    setError('')
     const token = getToken()
 
     try {
@@ -49,10 +43,10 @@ export function ProfilePage() {
         setCreatedAt(data.created_at || '')
         setRole(data.role || 'usuario')
       } else {
-        setError('No se pudo cargar la información de perfil.')
+        toast.error('No se pudo cargar la información de perfil.')
       }
     } catch (err) {
-      setError('Error al conectar con el servidor.')
+      toast.error('Error al conectar con el servidor.')
     } finally {
       setLoading(false)
     }
@@ -88,8 +82,6 @@ export function ProfilePage() {
     if (!validate()) return
 
     setSaving(true)
-    setError('')
-    setSuccess('')
     const token = getToken()
 
     try {
@@ -109,14 +101,13 @@ export function ProfilePage() {
         const data = await response.json()
         setFullName(data.full_name || '')
         setEmail(data.email || '')
-        setSuccess('¡Perfil actualizado con éxito!')
-        setTimeout(() => setSuccess(''), 5000)
+        toast.success('¡Perfil actualizado con éxito!')
       } else {
         const data = await response.json().catch(() => ({}))
-        setError(data.detail || 'Error al actualizar el perfil.')
+        toast.error(data.detail || 'Error al actualizar el perfil.')
       }
     } catch (err) {
-      setError('Error de conexión con el servidor.')
+      toast.error('Error de conexión con el servidor.')
     } finally {
       setSaving(false)
     }
@@ -153,8 +144,6 @@ export function ProfilePage() {
     if (!validatePassword()) return
 
     setSavingPassword(true)
-    setPasswordError('')
-    setPasswordSuccess('')
     const token = getToken()
 
     try {
@@ -172,17 +161,16 @@ export function ProfilePage() {
       })
 
       if (response.status === 200) {
-        setPasswordSuccess('¡Contraseña actualizada con éxito!')
+        toast.success('¡Contraseña actualizada con éxito!')
         setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
-        setTimeout(() => setPasswordSuccess(''), 5000)
       } else {
         const data = await response.json().catch(() => ({}))
-        setPasswordError(data.detail || 'Error al actualizar la contraseña.')
+        toast.error(data.detail || 'Error al actualizar la contraseña.')
       }
     } catch (err) {
-      setPasswordError('Error de conexión con el servidor.')
+      toast.error('Error de conexión con el servidor.')
     } finally {
       setSavingPassword(false)
     }
@@ -208,8 +196,8 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      {/* Title */}
+    <div className="max-w-6xl mx-auto space-y-8">
+
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           Configuración de Perfil
@@ -219,8 +207,9 @@ export function ProfilePage() {
         </p>
       </div>
 
-      {/* Profile Card */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+        <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
         {loading ? (
           <div className="flex h-64 items-center justify-center">
             <div className="flex flex-col items-center gap-3">
@@ -230,7 +219,7 @@ export function ProfilePage() {
           </div>
         ) : (
           <form onSubmit={handleProfileSubmit} className="p-6 sm:p-8 space-y-6">
-            {/* Header info / Avatar */}
+
             <div className="flex flex-col sm:flex-row items-center gap-5 pb-6 border-b border-slate-100">
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 to-violet-600 text-2xl font-bold text-white shadow-lg">
                 {getInitials()}
@@ -250,23 +239,8 @@ export function ProfilePage() {
               </div>
             </div>
 
-            {success && (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 flex items-center gap-2 shadow-sm animate-fade-in">
-                <span>✅</span>
-                <span className="font-medium">{success}</span>
-              </div>
-            )}
-
-            {error && (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 flex items-center gap-2 shadow-sm animate-fade-in">
-                <span>⚠️</span>
-                <span className="font-medium">{error}</span>
-              </div>
-            )}
-
-            {/* Inputs */}
             <div className="grid grid-cols-1 gap-6">
-              {/* Full Name */}
+
               <div className="space-y-1.5">
                 <label htmlFor="fullName" className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Nombre Completo
@@ -287,7 +261,7 @@ export function ProfilePage() {
                 )}
               </div>
 
-              {/* Email */}
+
               <div className="space-y-1.5">
                 <label htmlFor="email" className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Correo Electrónico
@@ -309,7 +283,7 @@ export function ProfilePage() {
               </div>
             </div>
 
-            {/* Action buttons */}
+
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
               <button
                 type="button"
@@ -338,35 +312,21 @@ export function ProfilePage() {
         )}
       </div>
 
-      {/* Account Security Card */}
+
       {!loading && (
         <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
-          <form onSubmit={handlePasswordSubmit} className="p-6 sm:p-8 space-y-6">
+          <form onSubmit={handlePasswordSubmit} className="p-6 sm:p-6 space-y-6">
             <div>
               <h2 className="text-lg font-bold text-slate-900">
                 Seguridad de la Cuenta
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-1.5">
                 Actualiza tu contraseña periódicamente para mantener tu cuenta protegida.
               </p>
             </div>
 
-            {passwordSuccess && (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 flex items-center gap-2 shadow-sm animate-fade-in">
-                <span>✅</span>
-                <span className="font-medium">{passwordSuccess}</span>
-              </div>
-            )}
-
-            {passwordError && (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 flex items-center gap-2 shadow-sm animate-fade-in">
-                <span>⚠️</span>
-                <span className="font-medium">{passwordError}</span>
-              </div>
-            )}
-
             <div className="grid grid-cols-1 gap-6">
-              {/* Current Password */}
+
               <div className="space-y-1.5">
                 <label htmlFor="currentPassword" className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Contraseña Actual
@@ -387,7 +347,7 @@ export function ProfilePage() {
                 )}
               </div>
 
-              {/* New Password */}
+
               <div className="space-y-1.5">
                 <label htmlFor="newPassword" className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Nueva Contraseña
@@ -409,7 +369,7 @@ export function ProfilePage() {
                 )}
               </div>
 
-              {/* Confirm Password */}
+
               <div className="space-y-1.5">
                 <label htmlFor="confirmPassword" className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Confirmar Nueva Contraseña
@@ -450,6 +410,7 @@ export function ProfilePage() {
           </form>
         </div>
       )}
+      </div>
     </div>
   )
 }
