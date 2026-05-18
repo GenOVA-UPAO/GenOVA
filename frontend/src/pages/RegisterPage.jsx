@@ -52,7 +52,6 @@ export function RegisterPage() {
     } catch {
       setServerError('No se pudo conectar con el servidor. Intenta de nuevo.')
     } finally {
-
       setIsSubmitting(false)
     }
   }
