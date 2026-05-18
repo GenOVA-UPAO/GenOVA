@@ -6,6 +6,7 @@ from database import get_db
 from models import User, Role, UserRole
 from auth.dependencies import require_admin, get_current_user
 from pydantic import BaseModel, Field
+from security import hash_password, verify_password
 
 router = APIRouter()
 
@@ -204,3 +205,55 @@ def update_profile(
         "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
         "updated_at": current_user.updated_at.isoformat() if current_user.updated_at else None
     }
+
+
+class UserPasswordChange(BaseModel):
+    current_password: str = Field(..., description="Contraseña actual")
+    new_password: str = Field(..., min_length=8, description="Nueva contraseña alfanumérica")
+    confirm_password: str = Field(..., min_length=8, description="Confirmación de nueva contraseña")
+
+
+@router.post("/me/change-password")
+def change_password(
+    payload: UserPasswordChange,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    current_pass = payload.current_password
+    new_pass = payload.new_password
+    confirm_pass = payload.confirm_password
+
+    # 1. Comprobar coincidencia
+    if new_pass != confirm_pass:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La nueva contraseña y su confirmación no coinciden."
+        )
+
+    # 2. Comprobar que sea alfanumérica (letras y números)
+    if not (any(c.isalpha() for c in new_pass) and any(c.isdigit() for c in new_pass)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La nueva contraseña debe tener al menos 8 caracteres y contener letras y números."
+        )
+
+    # 3. Verificar contraseña actual
+    if not verify_password(current_pass, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña actual ingresada es incorrecta."
+        )
+
+    # 4. Hashear y guardar nueva contraseña
+    current_user.password_hash = hash_password(new_pass)
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error al guardar la nueva contraseña: {str(e)}"
+        )
+
+    return {"message": "Contraseña actualizada con éxito."}
