@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { deleteOva, downloadOvaFile, fetchOvas } from '../services/ovaHistoryService.js'
 
@@ -36,6 +36,7 @@ function StatusBadge({ status }) {
 }
 
 function OvaCard({ ova, onDelete, onDownload, isDeleting, isDownloading }) {
+  const navigate = useNavigate()
   const isGenerating = ova.status === 'generando'
   const isReady = ova.status === 'listo'
 
@@ -68,23 +69,33 @@ function OvaCard({ ova, onDelete, onDownload, isDeleting, isDownloading }) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
+      <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-3">
         <button
-          onClick={() => onDownload(ova.id)}
-          disabled={!isReady || isDownloading}
-          title={!isReady ? 'Solo disponible cuando el OVA está listo' : 'Descargar paquete SCORM'}
-          className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          onClick={() => navigate(`/mis-ovas/${ova.id}/editar`)}
+          disabled={isGenerating}
+          title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Editar OVA'}
+          className="w-full rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-all hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {isDownloading ? 'Descargando...' : 'Descargar'}
+          ✏ Editar
         </button>
-        <button
-          onClick={() => onDelete(ova)}
-          disabled={isGenerating || isDeleting}
-          title={isGenerating ? 'No se puede eliminar mientras se está generando' : 'Eliminar OVA'}
-          className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 transition-all hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {isDeleting ? 'Eliminando...' : 'Eliminar'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onDownload(ova.id)}
+            disabled={!isReady || isDownloading}
+            title={!isReady ? 'Solo disponible cuando el OVA está listo' : 'Descargar paquete SCORM'}
+            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isDownloading ? 'Descargando...' : 'Descargar'}
+          </button>
+          <button
+            onClick={() => onDelete(ova)}
+            disabled={isGenerating || isDeleting}
+            title={isGenerating ? 'No se puede eliminar mientras se está generando' : 'Eliminar OVA'}
+            className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 transition-all hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+          </button>
+        </div>
       </div>
     </div>
   )
