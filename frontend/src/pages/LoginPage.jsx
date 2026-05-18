@@ -32,6 +32,12 @@ export function LoginPage() {
           >
             Entrar
           </Link>
+          <p className="text-center text-sm text-slate-600">
+            ¿No tienes cuenta?{' '}
+            <Link to="/register" className="font-medium text-slate-900">
+              Crear cuenta
+            </Link>
+          </p>
         </form>
       </div>
     </section>
