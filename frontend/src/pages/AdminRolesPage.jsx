@@ -16,6 +16,7 @@ export function AdminRolesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingRole, setEditingRole] = useState(null)
 
   // Form State
   const [roleName, setRoleName] = useState('')
@@ -57,8 +58,17 @@ export function AdminRolesPage() {
   }
 
   const handleOpenModal = () => {
+    setEditingRole(null)
     setRoleName('')
     setSelectedPermissions([])
+    setFormError('')
+    setIsModalOpen(true)
+  }
+
+  const handleEditClick = (role) => {
+    setEditingRole(role)
+    setRoleName(role.name)
+    setSelectedPermissions(role.permissions || [])
     setFormError('')
     setIsModalOpen(true)
   }
@@ -85,9 +95,13 @@ export function AdminRolesPage() {
     setFormError('')
 
     const token = getToken()
+    const isEdit = !!editingRole
+    const url = isEdit ? `${apiBaseUrl}/api/roles/${editingRole.id}` : `${apiBaseUrl}/api/roles`
+    const method = isEdit ? 'PATCH' : 'POST'
+
     try {
-      const response = await fetch(`${apiBaseUrl}/api/roles`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
@@ -100,14 +114,19 @@ export function AdminRolesPage() {
 
       const data = await response.json()
 
-      if (response.status === 201) {
-        // Add to local list and close
-        setRoles((prev) => [...prev, data])
+      if (response.status === 200 || response.status === 201) {
+        if (isEdit) {
+          // Update in local state
+          setRoles((prev) => prev.map((r) => r.id === editingRole.id ? data : r))
+        } else {
+          // Add to local state
+          setRoles((prev) => [...prev, data])
+        }
         setIsModalOpen(false)
       } else if (response.status === 409) {
         setFormError('Ya existe un rol con ese nombre.')
       } else {
-        setFormError(data.detail || 'Ocurrió un error inesperado al crear el rol.')
+        setFormError(data.detail || `Ocurrió un error inesperado al ${isEdit ? 'actualizar' : 'crear'} el rol.`)
       }
     } catch (err) {
       setFormError('No se pudo conectar con el servidor. Intenta de nuevo.')
@@ -203,7 +222,10 @@ export function AdminRolesPage() {
                         <span className="text-xs text-slate-600 italic">Sistema</span>
                       ) : (
                         <>
-                          <button className="text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer text-xs font-semibold">
+                          <button
+                            onClick={() => handleEditClick(role)}
+                            className="text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer text-xs font-semibold"
+                          >
                             Editar
                           </button>
                           <button className="text-rose-400 hover:text-rose-300 transition-colors cursor-pointer text-xs font-semibold">
@@ -220,7 +242,7 @@ export function AdminRolesPage() {
         )}
       </div>
 
-      {/* Create Role Modal */}
+      {/* Create/Edit Role Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
@@ -228,9 +250,13 @@ export function AdminRolesPage() {
 
           {/* Modal Container */}
           <div className="relative w-full max-w-lg rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <h2 className="text-xl font-bold text-white mb-1">Crear nuevo rol</h2>
+            <h2 className="text-xl font-bold text-white mb-1">
+              {editingRole ? `Editar rol: ${editingRole.name}` : 'Crear nuevo rol'}
+            </h2>
             <p className="text-xs text-slate-400 mb-6">
-              Elige un nombre único y asigna los permisos necesarios para este perfil.
+              {editingRole
+                ? 'Ajusta el nombre y la selección de permisos para este perfil del sistema.'
+                : 'Elige un nombre único y asigna los permisos necesarios para este perfil.'}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -301,7 +327,13 @@ export function AdminRolesPage() {
                   className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-md hover:bg-indigo-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isSubmitting || !roleName.trim()}
                 >
-                  {isSubmitting ? 'Creando...' : 'Crear rol'}
+                  {isSubmitting
+                    ? editingRole
+                      ? 'Guardando...'
+                      : 'Creando...'
+                    : editingRole
+                    ? 'Guardar cambios'
+                    : 'Crear rol'}
                 </button>
               </div>
             </form>
