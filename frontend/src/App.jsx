@@ -8,6 +8,7 @@ import { RegisterPage } from './pages/RegisterPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { CrearOvaPage } from './pages/CrearOvaPage.jsx'
 import { AdminRolesPage } from './pages/AdminRolesPage.jsx'
+import { AdminUsersPage } from './pages/AdminUsersPage.jsx'
 import { NotFoundPage } from './pages/NotFoundPage.jsx'
 
 function App() {
@@ -53,7 +54,7 @@ function App() {
         }
       >
         <Route path="/admin/roles" element={<AdminRolesPage />} />
-        <Route path="/admin/users" element={<div className="p-6 text-slate-400">Próximamente (HU-021)...</div>} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFoundPage />} />

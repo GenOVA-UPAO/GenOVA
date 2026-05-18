@@ -97,10 +97,7 @@ export function AdminLayout() {
             <NavLink to="/admin/roles" className={getLinkClasses}>
               <span>Roles</span>
             </NavLink>
-            <NavLink to="/admin/users" className={getLinkClasses} onClick={(e) => {
-              // Temporary alert or direct to page if it exists
-              // We'll let it route to /admin/users which can show a mockup or not found until HU-021
-            }}>
+            <NavLink to="/admin/users" className={getLinkClasses}>
               <span>Usuarios</span>
             </NavLink>
           </nav>
