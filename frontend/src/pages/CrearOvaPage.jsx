@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { ExportScormButton } from '../components/ExportScormButton.jsx'
+import { OvaFiveEViewer } from '../components/OvaFiveEViewer.jsx'
 import { OvaGenerationForm } from '../components/OvaGenerationForm.jsx'
 
 export function CrearOvaPage() {
+  const [ovaContent, setOvaContent] = useState(null)
+
   return (
     <section className="space-y-6">
       <header className="space-y-2">
@@ -11,7 +15,9 @@ export function CrearOvaPage() {
         </p>
       </header>
 
-      <OvaGenerationForm />
+      <OvaGenerationForm onOvaContentChange={setOvaContent} />
+
+      {ovaContent ? <OvaFiveEViewer content={ovaContent} /> : null}
 
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Exportación SCORM</h2>

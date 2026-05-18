@@ -1,7 +1,8 @@
+import { useEffect } from 'react'
 import { useOvaGeneration } from '../hooks/useOvaGeneration.js'
 import { formatSize, getUploadBadge } from './ovaUploadUi.js'
 
-export function OvaGenerationForm() {
+export function OvaGenerationForm({ onOvaContentChange }) {
   const {
     activeUploadsCount,
     fieldError,
@@ -18,6 +19,7 @@ export function OvaGenerationForm() {
     llmOptions,
     maxUploadFiles,
     minPromptChars,
+    ovaContent,
     progress,
     prompt,
     promptLength,
@@ -26,6 +28,10 @@ export function OvaGenerationForm() {
     uploadError,
     uploads,
   } = useOvaGeneration()
+
+  useEffect(() => {
+    onOvaContentChange?.(ovaContent)
+  }, [ovaContent, onOvaContentChange])
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit} noValidate>

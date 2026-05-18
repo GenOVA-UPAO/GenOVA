@@ -6,6 +6,7 @@ const PROGRESS_POLL_INTERVAL_MS = Number(import.meta.env.VITE_OVA_PROGRESS_POLL_
 export function useOvaProgressPolling({
   isGenerating,
   jobId,
+  onOvaReady,
   setIsGenerating,
   setProgress,
   setStatusMessage,
@@ -34,6 +35,9 @@ export function useOvaProgressPolling({
         if (nextProgress.status === 'success') {
           setIsGenerating(false)
           setStatusMessage(data?.message || 'OVA generado correctamente.')
+          if (data?.ova_content) {
+            onOvaReady?.(data.ova_content)
+          }
           return
         }
 
@@ -59,5 +63,5 @@ export function useOvaProgressPolling({
         window.clearTimeout(timerId)
       }
     }
-  }, [isGenerating, jobId, setIsGenerating, setProgress, setStatusMessage])
+  }, [isGenerating, jobId, onOvaReady, setIsGenerating, setProgress, setStatusMessage])
 }

@@ -49,6 +49,202 @@ PROGRESS_STAGES = [
     (100, "Finalizando OVA"),
 ]
 
+OVA_MOCK_CONTENT = {
+    "phases": [
+        {
+            "id": "enganche",
+            "label": "Enganche",
+            "order": 1,
+            "sections": [
+                {"type": "heading", "content": "¿Por qué importa este tema?"},
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "Los árboles de decisión son uno de los algoritmos más intuitivos del "
+                        "aprendizaje automático. Permiten visualizar cómo una máquina toma "
+                        "decisiones basándose en características de los datos."
+                    ),
+                },
+                {
+                    "type": "list",
+                    "ordered": False,
+                    "items": [
+                        "Comprenderás la intuición detrás de los árboles de decisión",
+                        "Verás cómo se aplican en problemas reales de clasificación",
+                        "Explorarás sus ventajas y limitaciones frente a otros algoritmos",
+                    ],
+                },
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "Reflexiona: ¿cómo tomarías la decisión de aprobar o rechazar un crédito "
+                        "bancario basándote en datos del solicitante?"
+                    ),
+                },
+            ],
+        },
+        {
+            "id": "exploracion",
+            "label": "Exploración",
+            "order": 2,
+            "sections": [
+                {"type": "heading", "content": "Descubriendo el algoritmo"},
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "Antes de ver el código, explora cómo un árbol divide el espacio de datos. "
+                        "Cada nodo representa una pregunta sobre una característica; cada rama, "
+                        "una respuesta posible."
+                    ),
+                },
+                {
+                    "type": "code",
+                    "language": "python",
+                    "content": (
+                        "import pandas as pd\n"
+                        "from sklearn.datasets import load_iris\n\n"
+                        "iris = load_iris(as_frame=True)\n"
+                        "df = iris.frame\n"
+                        "print(df.head())\n"
+                        "print(df['target'].value_counts())"
+                    ),
+                },
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "Actividad: Carga el dataset Iris e identifica cuántas clases hay y qué "
+                        "características lo definen. ¿Qué columna crees que es más útil para "
+                        "separar las clases?"
+                    ),
+                },
+            ],
+        },
+        {
+            "id": "explicacion",
+            "label": "Explicación",
+            "order": 3,
+            "sections": [
+                {"type": "heading", "content": "Conceptos fundamentales"},
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "Un árbol de decisión divide recursivamente el conjunto de entrenamiento "
+                        "usando la característica que maximiza la ganancia de información o "
+                        "minimiza la impureza Gini."
+                    ),
+                },
+                {
+                    "type": "list",
+                    "ordered": True,
+                    "items": [
+                        "Impureza Gini: mide la probabilidad de clasificar incorrectamente un ejemplo al azar.",
+                        "Ganancia de información: diferencia de entropía antes y después de una división.",
+                        "Poda (Pruning): técnica para evitar sobreajuste limitando la profundidad del árbol.",
+                        "Criterio de parada: profundidad máxima, mínimo de muestras por hoja, etc.",
+                    ],
+                },
+                {
+                    "type": "code",
+                    "language": "python",
+                    "content": (
+                        "from sklearn.tree import DecisionTreeClassifier\n"
+                        "from sklearn.model_selection import train_test_split\n"
+                        "from sklearn.metrics import accuracy_score\n\n"
+                        "X, y = iris.data, iris.target\n"
+                        "X_train, X_test, y_train, y_test = train_test_split(\n"
+                        "    X, y, test_size=0.2, random_state=42\n"
+                        ")\n\n"
+                        "clf = DecisionTreeClassifier(max_depth=3, criterion='gini')\n"
+                        "clf.fit(X_train, y_train)\n"
+                        "print(f'Accuracy: {accuracy_score(y_test, clf.predict(X_test)):.2%}')"
+                    ),
+                },
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "El parámetro max_depth=3 limita la profundidad del árbol, controlando "
+                        "la complejidad del modelo y previniendo el sobreajuste."
+                    ),
+                },
+            ],
+        },
+        {
+            "id": "elaboracion",
+            "label": "Elaboración",
+            "order": 4,
+            "sections": [
+                {"type": "heading", "content": "Aplicando el conocimiento"},
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "Es momento de poner en práctica lo aprendido. Realiza los siguientes "
+                        "ejercicios para profundizar tu comprensión."
+                    ),
+                },
+                {
+                    "type": "list",
+                    "ordered": True,
+                    "items": [
+                        "Experimenta con diferentes valores de max_depth (1, 3, 5, 10) y compara el accuracy en train vs test.",
+                        "Cambia el criterio de 'gini' a 'entropy'. ¿Cambia el resultado?",
+                        "Visualiza el árbol usando sklearn.tree.plot_tree e interpreta sus decisiones.",
+                        "Prueba con el dataset breast_cancer de sklearn y reporta los resultados.",
+                    ],
+                },
+                {
+                    "type": "code",
+                    "language": "python",
+                    "content": (
+                        "import matplotlib.pyplot as plt\n"
+                        "from sklearn.tree import plot_tree\n\n"
+                        "fig, ax = plt.subplots(figsize=(12, 6))\n"
+                        "plot_tree(\n"
+                        "    clf,\n"
+                        "    feature_names=iris.feature_names,\n"
+                        "    class_names=iris.target_names,\n"
+                        "    filled=True,\n"
+                        "    ax=ax,\n"
+                        ")\n"
+                        "plt.tight_layout()\n"
+                        "plt.show()"
+                    ),
+                },
+            ],
+        },
+        {
+            "id": "evaluacion",
+            "label": "Evaluación",
+            "order": 5,
+            "sections": [
+                {"type": "heading", "content": "Verificando el aprendizaje"},
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "Responde las siguientes preguntas para consolidar tu comprensión del tema."
+                    ),
+                },
+                {
+                    "type": "list",
+                    "ordered": True,
+                    "items": [
+                        "¿Qué es la impureza Gini y cómo influye en la construcción del árbol?",
+                        "¿Por qué un árbol demasiado profundo puede perjudicar el rendimiento en datos nuevos?",
+                        "Dado un árbol con max_depth=2 entrenado sobre Iris, ¿cuántos nodos hoja puede tener como máximo?",
+                        "¿En qué situaciones preferirías un árbol de decisión sobre una regresión logística?",
+                    ],
+                },
+                {
+                    "type": "paragraph",
+                    "content": (
+                        "Entrega: Sube un notebook Jupyter (.ipynb) con el código de los ejercicios "
+                        "de elaboración y las respuestas argumentadas a las preguntas anteriores."
+                    ),
+                },
+            ],
+        },
+    ]
+}
+
 _generation_jobs: dict[str, dict] = {}
 _generation_jobs_lock = threading.Lock()
 
@@ -269,5 +465,11 @@ def get_generation_progress(job_id: str):
         "stage": stage,
         "message": "OVA generado correctamente." if current_status == "success" else "",
     }
+
+    if current_status == "success":
+        payload["ova_content"] = {
+            **OVA_MOCK_CONTENT,
+            "title": job.get("prompt", "OVA generado")[:80],
+        }
 
     return payload

@@ -23,6 +23,7 @@ export function useOvaGeneration() {
   const [fieldError, setFieldError] = useState('')
   const [jobId, setJobId] = useState('')
   const [progress, setProgress] = useState(createIdleProgress())
+  const [ovaContent, setOvaContent] = useState(null)
 
   const {
     hasLlmAvailable,
@@ -35,6 +36,7 @@ export function useOvaGeneration() {
   useOvaProgressPolling({
     isGenerating,
     jobId,
+    onOvaReady: setOvaContent,
     setIsGenerating,
     setProgress,
     setStatusMessage,
@@ -89,6 +91,7 @@ export function useOvaGeneration() {
     setStatusMessage('')
     setJobId('')
     setProgress(createIdleProgress())
+    setOvaContent(null)
 
     if (!prompt.trim()) {
       setFieldError('El prompt es obligatorio.')
@@ -144,6 +147,7 @@ export function useOvaGeneration() {
     llmOptions,
     maxUploadFiles,
     minPromptChars: MIN_PROMPT_CHARS,
+    ovaContent,
     progress,
     prompt,
     promptLength,
