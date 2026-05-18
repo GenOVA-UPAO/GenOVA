@@ -60,6 +60,11 @@ def _job_duration_seconds() -> int:
     return max(1, _parse_int_env("OVA_GENERATION_DURATION_SECONDS", 14))
 
 
+def _job_ttl_seconds() -> int:
+    default_ttl = max(60, _job_duration_seconds() * 10)
+    return max(60, _parse_int_env("OVA_GENERATION_JOB_TTL_SECONDS", default_ttl))
+
+
 def _enabled_llm_ids() -> set[str]:
     raw_ids = os.getenv("OVA_ENABLED_LLMS", "openai,gemini")
     return {item.strip().lower() for item in raw_ids.split(",") if item.strip()}
@@ -83,6 +88,26 @@ def _current_progress(job: dict) -> tuple[int, str, str]:
     stage = _resolve_stage(percentage)
     status_label = "success" if percentage >= 100 else "running"
     return percentage, stage, status_label
+
+
+def _prune_generation_jobs() -> None:
+    now = time.time()
+    duration_seconds = _job_duration_seconds()
+    ttl_seconds = _job_ttl_seconds()
+
+    expired_job_ids = []
+    for job_id, job in _generation_jobs.items():
+        completed_at = job.get("completed_at")
+        if completed_at is not None:
+            expires_at = float(completed_at) + ttl_seconds
+        else:
+            expires_at = float(job["started_at"]) + duration_seconds + ttl_seconds
+
+        if now >= expires_at:
+            expired_job_ids.append(job_id)
+
+    for job_id in expired_job_ids:
+        _generation_jobs.pop(job_id, None)
 
 
 @router.get("/health")
@@ -141,6 +166,7 @@ def start_ova_generation(payload: dict = Body(default={})):
 
     job_id = str(uuid.uuid4())
     with _generation_jobs_lock:
+        _prune_generation_jobs()
         _generation_jobs[job_id] = {
             "job_id": job_id,
             "llm_id": llm_id,
@@ -159,6 +185,7 @@ def start_ova_generation(payload: dict = Body(default={})):
 @router.get("/generate/{job_id}/progress")
 def get_generation_progress(job_id: str):
     with _generation_jobs_lock:
+        _prune_generation_jobs()
         job = _generation_jobs.get(job_id)
 
     if not job:
@@ -166,7 +193,11 @@ def get_generation_progress(job_id: str):
             status_code=status.HTTP_404_NOT_FOUND,
             content={
                 "error": "job_not_found",
-                "message": "No se encontró el proceso solicitado.",
+                "message": (
+                    "No se encontró el proceso solicitado. "
+                    "Si el servidor usa múltiples workers, recuerda que este estado "
+                    "es en memoria y local al proceso."
+                ),
             },
         )
 
