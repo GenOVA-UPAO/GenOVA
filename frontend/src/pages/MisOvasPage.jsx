@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import { deleteOva, downloadOvaFile, fetchOvas } from '../services/ovaHistoryService.js'
+import {
+  batchMoveToTrash,
+  deleteOva,
+  downloadOvaFile,
+  fetchOvas,
+} from '../services/ovaHistoryService.js'
 
 const STATUS_LABELS = {
   borrador: 'Borrador',
@@ -35,7 +40,7 @@ function StatusBadge({ status }) {
   )
 }
 
-function OvaCard({ ova, onDelete, onDownload, isDeleting, isDownloading }) {
+function OvaCard({ ova, isSelected, onToggleSelect, onMoveToTrash, onDownload, isMoving, isDownloading }) {
   const navigate = useNavigate()
   const isGenerating = ova.status === 'generando'
   const isReady = ova.status === 'listo'
@@ -50,8 +55,17 @@ function OvaCard({ ova, onDelete, onDownload, isDeleting, isDownloading }) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-3">
+    <div
+      className={`rounded-xl border bg-white p-5 shadow-sm hover:shadow-md transition-all ${isSelected ? 'border-indigo-300 ring-1 ring-indigo-200' : 'border-slate-200'}`}
+    >
+      <div className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect(ova.id)}
+          disabled={isGenerating}
+          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer disabled:opacity-40"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3 className="text-sm font-semibold text-slate-900 truncate">{ova.title}</h3>
@@ -88,12 +102,12 @@ function OvaCard({ ova, onDelete, onDownload, isDeleting, isDownloading }) {
             {isDownloading ? 'Descargando...' : 'Descargar'}
           </button>
           <button
-            onClick={() => onDelete(ova)}
-            disabled={isGenerating || isDeleting}
-            title={isGenerating ? 'No se puede eliminar mientras se está generando' : 'Eliminar OVA'}
+            onClick={() => onMoveToTrash(ova)}
+            disabled={isGenerating || isMoving}
+            title={isGenerating ? 'No se puede eliminar mientras se está generando' : 'Mover a la papelera'}
             className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 transition-all hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            {isMoving ? 'Moviendo...' : 'Mover a papelera'}
           </button>
         </div>
       </div>
@@ -101,30 +115,52 @@ function OvaCard({ ova, onDelete, onDownload, isDeleting, isDownloading }) {
   )
 }
 
-function DeleteModal({ ova, onConfirm, onCancel, isDeleting }) {
+function TrashModal({ ova, onConfirm, onCancel, isLoading }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="text-base font-bold text-slate-900">Eliminar OVA</h2>
+        <h2 className="text-base font-bold text-slate-900">Mover a la papelera</h2>
         <p className="mt-2 text-sm text-slate-600">
-          ¿Estás seguro de que deseas eliminar{' '}
+          ¿Mover a la papelera{' '}
           <span className="font-semibold text-slate-800">"{ova.title}"</span>?
         </p>
-        <p className="mt-1 text-xs text-slate-400">Esta acción no se puede deshacer.</p>
+        <p className="mt-1 text-xs text-slate-400">Podrás restaurarlo desde la sección Papelera.</p>
         <div className="mt-5 flex gap-3">
           <button
             onClick={onCancel}
-            disabled={isDeleting}
+            disabled={isLoading}
             className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            disabled={isDeleting}
+            disabled={isLoading}
             className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
           >
-            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            {isLoading ? 'Moviendo...' : 'Mover'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BulkTrashModal({ count, onConfirm, onCancel, isLoading }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <h2 className="text-base font-bold text-slate-900">Mover a la papelera</h2>
+        <p className="mt-2 text-sm text-slate-600">
+          ¿Mover <span className="font-semibold text-slate-800">{count} OVAs</span> a la papelera?
+        </p>
+        <p className="mt-1 text-xs text-slate-400">Podrás restaurarlos desde la sección Papelera.</p>
+        <div className="mt-5 flex gap-3">
+          <button onClick={onCancel} disabled={isLoading} className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50">
+            Cancelar
+          </button>
+          <button onClick={onConfirm} disabled={isLoading} className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50">
+            {isLoading ? 'Moviendo...' : `Mover ${count}`}
           </button>
         </div>
       </div>
@@ -145,9 +181,13 @@ export function MisOvasPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
 
-  const [ovaToDelete, setOvaToDelete] = useState(null)
-  const [deletingId, setDeletingId] = useState('')
+  const [ovaToTrash, setOvaToTrash] = useState(null)
+  const [showBulkModal, setShowBulkModal] = useState(false)
+  const [movingId, setMovingId] = useState('')
+  const [bulkLoading, setBulkLoading] = useState(false)
   const [downloadingId, setDownloadingId] = useState('')
+
+  const [selectedIds, setSelectedIds] = useState(new Set())
 
   const searchDebounceRef = useRef(null)
 
@@ -161,7 +201,7 @@ export function MisOvasPage() {
         setTotalPages(data.total_pages || 1)
         setCurrentPage(data.page || 1)
         setTotalItems(data.total_items || 0)
-      } catch (err) {
+      } catch {
         setError('No se pudo cargar el historial de OVAs.')
       } finally {
         setLoading(false)
@@ -172,6 +212,7 @@ export function MisOvasPage() {
 
   useEffect(() => {
     loadOvas(1, search, statusFilter)
+    setSelectedIds(new Set())
   }, [search, statusFilter])
 
   const handleSearchChange = (e) => {
@@ -192,27 +233,65 @@ export function MisOvasPage() {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       loadOvas(newPage, search, statusFilter)
+      setSelectedIds(new Set())
     }
   }
 
-  const handleDeleteRequest = (ova) => setOvaToDelete(ova)
-  const handleDeleteCancel = () => setOvaToDelete(null)
+  const handleToggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
 
-  const handleDeleteConfirm = async () => {
-    if (!ovaToDelete) return
-    setDeletingId(ovaToDelete.id)
+  const selectableIds = ovas.filter((o) => o.status !== 'generando').map((o) => o.id)
+  const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id))
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(selectableIds))
+    }
+  }
+
+  const handleMoveToTrashRequest = (ova) => setOvaToTrash(ova)
+  const handleTrashCancel = () => setOvaToTrash(null)
+
+  const handleTrashConfirm = async () => {
+    if (!ovaToTrash) return
+    setMovingId(ovaToTrash.id)
     try {
-      await deleteOva(ovaToDelete.id)
-      toast.success('OVA eliminado correctamente.')
-      setOvaToDelete(null)
+      await deleteOva(ovaToTrash.id)
+      toast.success('OVA movido a la papelera.')
+      setOvaToTrash(null)
       const newTotal = totalItems - 1
       const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
       const targetPage = currentPage > newTotalPages ? newTotalPages : currentPage
       loadOvas(targetPage, search, statusFilter)
     } catch (err) {
-      toast.error(err.message || 'Error al eliminar el OVA.')
+      toast.error(err.message || 'Error al mover el OVA a la papelera.')
     } finally {
-      setDeletingId('')
+      setMovingId('')
+    }
+  }
+
+  const handleBulkTrashConfirm = async () => {
+    setBulkLoading(true)
+    try {
+      const res = await batchMoveToTrash([...selectedIds])
+      toast.success(res.message || `${res.moved?.length} OVAs movidos a la papelera.`)
+      setSelectedIds(new Set())
+      setShowBulkModal(false)
+      const newTotal = totalItems - (res.moved?.length || 0)
+      const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
+      const targetPage = currentPage > newTotalPages ? newTotalPages : currentPage
+      loadOvas(targetPage, search, statusFilter)
+    } catch (err) {
+      toast.error(err.message || 'Error al mover los OVAs.')
+    } finally {
+      setBulkLoading(false)
     }
   }
 
@@ -231,29 +310,34 @@ export function MisOvasPage() {
 
   return (
     <div className="space-y-6">
-      {ovaToDelete && (
-        <DeleteModal
-          ova={ovaToDelete}
-          onConfirm={handleDeleteConfirm}
-          onCancel={handleDeleteCancel}
-          isDeleting={!!deletingId}
+      {ovaToTrash && (
+        <TrashModal
+          ova={ovaToTrash}
+          onConfirm={handleTrashConfirm}
+          onCancel={handleTrashCancel}
+          isLoading={!!movingId}
+        />
+      )}
+      {showBulkModal && (
+        <BulkTrashModal
+          count={selectedIds.size}
+          onConfirm={handleBulkTrashConfirm}
+          onCancel={() => setShowBulkModal(false)}
+          isLoading={bulkLoading}
         />
       )}
 
       {/* Header */}
       <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            Mis OVAs
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Mis OVAs</h1>
           <p className="text-sm text-slate-500 mt-1">
             Gestiona y descarga tus objetos virtuales de aprendizaje generados.
           </p>
         </div>
         {!loading && !error && (
           <div className="bg-slate-100 rounded-lg px-3 py-1.5 text-xs text-slate-600 font-semibold self-start md:self-auto border border-slate-200 shadow-sm">
-            Total:{' '}
-            <span className="text-indigo-600 font-bold text-sm">{totalItems}</span> OVAs
+            Total: <span className="text-indigo-600 font-bold text-sm">{totalItems}</span> OVAs
           </div>
         )}
       </div>
@@ -261,18 +345,8 @@ export function MisOvasPage() {
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
-          <svg
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-            />
+          <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
           </svg>
           <input
             type="text"
@@ -294,6 +368,44 @@ export function MisOvasPage() {
           <option value="error">Error</option>
         </select>
       </div>
+
+      {/* Select-all bar */}
+      {!loading && !error && ovas.length > 0 && (
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-600 font-medium">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={handleSelectAll}
+              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            Seleccionar todos en esta página
+          </label>
+        </div>
+      )}
+
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3">
+          <span className="text-sm font-semibold text-indigo-700">
+            {selectedIds.size} OVA{selectedIds.size > 1 ? 's' : ''} seleccionado{selectedIds.size > 1 ? 's' : ''}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => setShowBulkModal(true)}
+              className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors"
+            >
+              Mover a la papelera ({selectedIds.size})
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       {loading ? (
@@ -321,20 +433,13 @@ export function MisOvasPage() {
           {search || statusFilter ? (
             <>
               <p className="text-sm font-semibold text-slate-700">Sin resultados para tu búsqueda</p>
-              <p className="mt-1 text-xs text-slate-400">
-                Prueba con otros términos o cambia el filtro de estado.
-              </p>
+              <p className="mt-1 text-xs text-slate-400">Prueba con otros términos o cambia el filtro de estado.</p>
             </>
           ) : (
             <>
               <p className="text-sm font-semibold text-slate-700">Aún no has creado ningún OVA</p>
-              <p className="mt-1 text-xs text-slate-400">
-                Genera tu primer objeto virtual de aprendizaje con ayuda de la IA.
-              </p>
-              <Link
-                to="/crear-ova"
-                className="mt-5 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
-              >
+              <p className="mt-1 text-xs text-slate-400">Genera tu primer objeto virtual de aprendizaje con ayuda de la IA.</p>
+              <Link to="/crear-ova" className="mt-5 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
                 Crear mi primer OVA
               </Link>
             </>
@@ -346,9 +451,11 @@ export function MisOvasPage() {
             <OvaCard
               key={ova.id}
               ova={ova}
-              onDelete={handleDeleteRequest}
+              isSelected={selectedIds.has(ova.id)}
+              onToggleSelect={handleToggleSelect}
+              onMoveToTrash={handleMoveToTrashRequest}
               onDownload={(id) => handleDownload(id, ova.title)}
-              isDeleting={deletingId === ova.id}
+              isMoving={movingId === ova.id}
               isDownloading={downloadingId === ova.id}
             />
           ))}
