@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from database import get_db
 from models import User, Role, UserRole
-from auth.dependencies import require_admin
+from auth.dependencies import require_admin, get_current_user
 from pydantic import BaseModel, Field
 
 router = APIRouter()
@@ -148,4 +148,59 @@ def update_user_role(
             "name": target_role.name
         },
         "updated_at": target_user.updated_at.isoformat() if target_user.updated_at else None
+    }
+
+
+class UserProfileUpdate(BaseModel):
+    full_name: str = Field(..., min_length=3, max_length=100)
+    email: str = Field(..., description="Correo electrónico válido")
+
+
+@router.patch("/me")
+def update_profile(
+    payload: UserProfileUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    email = payload.email.strip().lower()
+    full_name = payload.full_name.strip()
+
+    # Formato básico de correo
+    if "@" not in email or "." not in email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo electrónico ingresado no tiene un formato válido."
+        )
+
+    # 1. Comprobar si el correo ya existe en otro usuario
+    existing_user = db.execute(
+        select(User).where(User.email == email, User.id != current_user.id)
+    ).scalar_one_or_none()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo electrónico ya está en uso por otro usuario."
+        )
+
+    # 2. Actualizar perfil
+    current_user.full_name = full_name
+    current_user.email = email
+
+    try:
+        db.commit()
+        db.refresh(current_user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error al guardar los datos del perfil: {str(e)}"
+        )
+
+    return {
+        "id": str(current_user.id),
+        "email": current_user.email,
+        "full_name": current_user.full_name or "",
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        "updated_at": current_user.updated_at.isoformat() if current_user.updated_at else None
     }

@@ -100,6 +100,9 @@ export function AdminLayout() {
             <NavLink to="/admin/users" className={getLinkClasses}>
               <span>Usuarios</span>
             </NavLink>
+            <NavLink to="/profile" className={getLinkClasses}>
+              <span>Mi Perfil</span>
+            </NavLink>
           </nav>
         </div>
 
