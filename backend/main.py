@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from agents.router import router as agents_router
+from auth.router import router as auth_router
 from database import Base, engine
 import models
 from rag.router import router as rag_router
@@ -53,5 +54,7 @@ def db_health() -> dict[str, str]:
 
 
 app.include_router(agents_router, prefix="/api/agents", tags=["agents"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(rag_router, prefix="/api/rag", tags=["rag"])
 app.include_router(scorm_router, prefix="/api/scorm", tags=["scorm"])
