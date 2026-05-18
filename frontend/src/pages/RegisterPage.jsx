@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { saveToken } from '../lib/auth.js'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
@@ -32,7 +33,7 @@ export function RegisterPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/auth/register`, {
+      const response = await fetch(`${apiBaseUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -41,9 +42,7 @@ export function RegisterPage() {
       const data = await response.json()
 
       if (response.status === 201) {
-        if (data?.access_token) {
-          localStorage.setItem('genova_token', data.access_token)
-        }
+        saveToken(data?.access_token)
         navigate('/dashboard')
         return
       }
