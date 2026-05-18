@@ -6,7 +6,10 @@ from auth.router import router as auth_router
 from database import Base, engine
 import models
 from rag.router import router as rag_router
+from roles.router import router as roles_router
 from scorm.router import router as scorm_router
+from users.router import router as users_router
+from seed import seed_db
 from sqlalchemy import text
 
 app = FastAPI(title="GENOVA Backend API", version="0.1.0")
@@ -34,6 +37,7 @@ app.add_middleware(
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
+    seed_db()
 
 
 @app.get("/health")
@@ -57,4 +61,8 @@ app.include_router(agents_router, prefix="/api/agents", tags=["agents"])
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(rag_router, prefix="/api/rag", tags=["rag"])
+app.include_router(roles_router, prefix="/api/roles", tags=["roles"])
+app.include_router(roles_router, prefix="/roles", tags=["roles"])
 app.include_router(scorm_router, prefix="/api/scorm", tags=["scorm"])
+app.include_router(users_router, prefix="/api/users", tags=["users"])
+app.include_router(users_router, prefix="/users", tags=["users"])

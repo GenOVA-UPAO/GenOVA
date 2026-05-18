@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -72,6 +72,7 @@ class Role(Base):
     name = Column(String(64), unique=True, nullable=False)
     description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    permissions = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
 
     users = relationship("UserRole", back_populates="role")
 
