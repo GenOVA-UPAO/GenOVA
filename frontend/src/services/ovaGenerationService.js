@@ -7,7 +7,10 @@ async function parseResponse(response) {
   const data = await response.json().catch(() => ({}))
 
   if (!response.ok) {
-    throw new Error(data?.message || 'No se pudo completar la operación.')
+    const error = new Error(data?.message || 'No se pudo completar la operación.')
+    error.code = data?.error || ''
+    error.status = response.status
+    throw error
   }
 
   return data

@@ -4,8 +4,9 @@ import threading
 import time
 import uuid
 
-from fastapi import APIRouter, Body, status
+from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -45,6 +46,11 @@ PROGRESS_STAGES = [
 
 _generation_jobs: dict[str, dict] = {}
 _generation_jobs_lock = threading.Lock()
+
+
+class GenerateOvaRequest(BaseModel):
+    prompt: str
+    llm_id: str
 
 
 def _parse_int_env(name: str, fallback: int) -> int:
@@ -122,9 +128,9 @@ def list_llm_options() -> dict[str, list[dict]]:
 
 
 @router.post("/generate")
-def start_ova_generation(payload: dict = Body(default={})):
-    prompt = (payload.get("prompt") or "").strip()
-    llm_id = (payload.get("llm_id") or "").strip().lower()
+def start_ova_generation(payload: GenerateOvaRequest):
+    prompt = payload.prompt.strip()
+    llm_id = payload.llm_id.strip().lower()
 
     if not prompt:
         return JSONResponse(

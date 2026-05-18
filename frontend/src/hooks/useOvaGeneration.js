@@ -137,6 +137,12 @@ export function useOvaGeneration() {
     event.preventDefault()
     setFieldError('')
     setStatusMessage('')
+    setJobId('')
+    setProgress({
+      percentage: 0,
+      stage: 'Pendiente',
+      status: 'idle',
+    })
 
     if (!prompt.trim()) {
       setFieldError('El prompt es obligatorio.')
@@ -159,11 +165,23 @@ export function useOvaGeneration() {
       setProgress({
         percentage: 0,
         stage: 'Validando solicitud',
-        status: result?.status || 'running',
+        status: 'running',
       })
       setIsGenerating(true)
       setStatusMessage('Generación iniciada. Monitoreando progreso...')
     } catch (error) {
+      if (error?.status === 400) {
+        const errorCode = error?.code || ''
+        if (
+          errorCode === 'prompt_required' ||
+          errorCode === 'prompt_too_short' ||
+          errorCode === 'llm_invalid'
+        ) {
+          setFieldError(error?.message || 'Valida los campos del formulario.')
+          return
+        }
+      }
+
       setStatusMessage(error?.message || 'No se pudo iniciar la generación de OVA.')
     }
   }
