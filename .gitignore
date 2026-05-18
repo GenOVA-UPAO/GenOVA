@@ -225,3 +225,21 @@ dist/
 build/
 .pnpm-store/
 node_modules/
+
+# Credenciales y estado interno
+.claude.json
+.credentials.json
+*.key
+*.pem
+
+# Archivos locales, sesiones y memoria de la IA
+.claude/settings.local.json
+.claude/sessions/
+.claude/todos/
+.claude/projects/
+.claude/plans/
+.claude/statsig/
+
+# Caché e historial
+history.jsonl
+stats-cache.json
