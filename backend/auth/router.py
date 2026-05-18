@@ -10,7 +10,13 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User
-from security import JWT_ALGORITHM, JWT_EXPIRES_MINUTES, JWT_SECRET, hash_password
+from security import (
+    JWT_ALGORITHM,
+    JWT_EXPIRES_MINUTES,
+    JWT_SECRET,
+    hash_password,
+    verify_password,
+)
 
 router = APIRouter()
 
@@ -26,6 +32,69 @@ def build_token(user_id: str, email: str) -> str:
         + timedelta(minutes=JWT_EXPIRES_MINUTES),
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def is_locked(user: User) -> bool:
+    if not user.locked_until:
+        return False
+    return user.locked_until > datetime.now(timezone.utc)  # type: ignore
+
+
+@router.post("/login")
+def login(payload: dict = Body(default={}), db: Session = Depends(get_db)):
+    email = (payload.get("email") or "").strip().lower()
+    password = payload.get("password") or ""
+
+    if not email_regex.match(email) or not password:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"error": "invalid_credentials", "message": "Credenciales inválidas."},
+        )
+
+    user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    if not user:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"error": "invalid_credentials", "message": "Credenciales inválidas."},
+        )
+
+    if is_locked(user):
+        remaining = int(
+            (user.locked_until - datetime.now(timezone.utc)).total_seconds() // 60
+        )
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={
+                "error": "account_locked",
+                "message": "Cuenta bloqueada temporalmente. Intenta más tarde.",
+                "retry_after_minutes": max(1, remaining),
+            },
+        )
+
+    if not verify_password(password, str(user.password_hash)):
+        user.failed_login_attempts += 1  # type: ignore
+        if user.failed_login_attempts >= 5:  # type: ignore
+            user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)  # type: ignore
+            user.failed_login_attempts = 0  # type: ignore
+        db.commit()
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"error": "invalid_credentials", "message": "Credenciales inválidas."},
+        )
+
+    user.failed_login_attempts = 0  # type: ignore
+    user.locked_until = None  # type: ignore
+    db.commit()
+
+    token = build_token(str(user.id), str(user.email))
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "access_token": token,
+            "token_type": "bearer",
+            "expires_in": JWT_EXPIRES_MINUTES * 60,
+        },
+    )
 
 
 @router.post("/register")
