@@ -14,8 +14,21 @@ export function ProfilePage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // Password change states
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [savingPassword, setSavingPassword] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState('')
+
   // Validation errors
   const [validationError, setValidationError] = useState({ fullName: '', email: '' })
+  const [passwordValidationError, setPasswordValidationError] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
 
   const fetchProfile = async () => {
     setLoading(true)
@@ -70,7 +83,7 @@ export function ProfilePage() {
     return isValid
   }
 
-  const handleSubmit = async (e) => {
+  const handleProfileSubmit = async (e) => {
     e.preventDefault()
     if (!validate()) return
 
@@ -88,7 +101,7 @@ export function ProfilePage() {
         },
         body: JSON.stringify({
           full_name: fullName.trim(),
-          email: email.trim().lowerCase ? email.trim().toLowerCase() : email.trim()
+          email: email.trim().toLowerCase()
         })
       })
 
@@ -97,7 +110,6 @@ export function ProfilePage() {
         setFullName(data.full_name || '')
         setEmail(data.email || '')
         setSuccess('¡Perfil actualizado con éxito!')
-        // Auto fade success message
         setTimeout(() => setSuccess(''), 5000)
       } else {
         const data = await response.json().catch(() => ({}))
@@ -110,7 +122,72 @@ export function ProfilePage() {
     }
   }
 
-  // Get user initials for avatar
+  const validatePassword = () => {
+    const errors = { currentPassword: '', newPassword: '', confirmPassword: '' }
+    let isValid = true
+
+    if (!currentPassword) {
+      errors.currentPassword = 'La contraseña actual es requerida.'
+      isValid = false
+    }
+
+    if (newPassword.length < 8) {
+      errors.newPassword = 'La nueva contraseña debe tener al menos 8 caracteres.'
+      isValid = false
+    } else if (!(/[a-zA-Z]/.test(newPassword) && /[0-9]/.test(newPassword))) {
+      errors.newPassword = 'La nueva contraseña debe contener letras y números (alfanumérica).'
+      isValid = false
+    }
+
+    if (newPassword !== confirmPassword) {
+      errors.confirmPassword = 'La confirmación no coincide con la nueva contraseña.'
+      isValid = false
+    }
+
+    setPasswordValidationError(errors)
+    return isValid
+  }
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault()
+    if (!validatePassword()) return
+
+    setSavingPassword(true)
+    setPasswordError('')
+    setPasswordSuccess('')
+    const token = getToken()
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/users/me/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+          confirm_password: confirmPassword
+        })
+      })
+
+      if (response.status === 200) {
+        setPasswordSuccess('¡Contraseña actualizada con éxito!')
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        setTimeout(() => setPasswordSuccess(''), 5000)
+      } else {
+        const data = await response.json().catch(() => ({}))
+        setPasswordError(data.detail || 'Error al actualizar la contraseña.')
+      }
+    } catch (err) {
+      setPasswordError('Error de conexión con el servidor.')
+    } finally {
+      setSavingPassword(false)
+    }
+  }
+
   const getInitials = () => {
     if (!fullName) return 'U'
     const parts = fullName.trim().split(/\s+/)
@@ -120,7 +197,6 @@ export function ProfilePage() {
     return parts[0][0].toUpperCase()
   }
 
-  // Format creation date nicely
   const formatDate = (isoString) => {
     if (!isoString) return '-'
     const date = new Date(isoString)
@@ -132,31 +208,16 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-8">
       {/* Title */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           Configuración de Perfil
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Modifica tus datos de contacto y visualiza el estado general de tu cuenta.
+          Modifica tus datos de contacto y administra la seguridad de tu cuenta.
         </p>
       </div>
-
-      {/* Global Banner notifications */}
-      {success && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 flex items-center gap-2 shadow-sm animate-fade-in">
-          <span>✅</span>
-          <span className="font-medium">{success}</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 flex items-center gap-2 shadow-sm animate-fade-in">
-          <span>⚠️</span>
-          <span className="font-medium">{error}</span>
-        </div>
-      )}
 
       {/* Profile Card */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
@@ -168,7 +229,7 @@ export function ProfilePage() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
+          <form onSubmit={handleProfileSubmit} className="p-6 sm:p-8 space-y-6">
             {/* Header info / Avatar */}
             <div className="flex flex-col sm:flex-row items-center gap-5 pb-6 border-b border-slate-100">
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 to-violet-600 text-2xl font-bold text-white shadow-lg">
@@ -188,6 +249,20 @@ export function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            {success && (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 flex items-center gap-2 shadow-sm animate-fade-in">
+                <span>✅</span>
+                <span className="font-medium">{success}</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 flex items-center gap-2 shadow-sm animate-fade-in">
+                <span>⚠️</span>
+                <span className="font-medium">{error}</span>
+              </div>
+            )}
 
             {/* Inputs */}
             <div className="grid grid-cols-1 gap-6">
@@ -262,6 +337,119 @@ export function ProfilePage() {
           </form>
         )}
       </div>
+
+      {/* Account Security Card */}
+      {!loading && (
+        <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
+          <form onSubmit={handlePasswordSubmit} className="p-6 sm:p-8 space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Seguridad de la Cuenta
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Actualiza tu contraseña periódicamente para mantener tu cuenta protegida.
+              </p>
+            </div>
+
+            {passwordSuccess && (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 flex items-center gap-2 shadow-sm animate-fade-in">
+                <span>✅</span>
+                <span className="font-medium">{passwordSuccess}</span>
+              </div>
+            )}
+
+            {passwordError && (
+              <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 flex items-center gap-2 shadow-sm animate-fade-in">
+                <span>⚠️</span>
+                <span className="font-medium">{passwordError}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-6">
+              {/* Current Password */}
+              <div className="space-y-1.5">
+                <label htmlFor="currentPassword" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Contraseña Actual
+                </label>
+                <input
+                  type="password"
+                  id="currentPassword"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${
+                    passwordValidationError.currentPassword ? 'border-rose-400' : 'border-slate-200'
+                  }`}
+                  disabled={savingPassword}
+                  placeholder="••••••••"
+                />
+                {passwordValidationError.currentPassword && (
+                  <p className="text-xs text-rose-600 font-medium">{passwordValidationError.currentPassword}</p>
+                )}
+              </div>
+
+              {/* New Password */}
+              <div className="space-y-1.5">
+                <label htmlFor="newPassword" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Nueva Contraseña
+                </label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${
+                    passwordValidationError.newPassword ? 'border-rose-400' : 'border-slate-200'
+                  }`}
+                  disabled={savingPassword}
+                  placeholder="••••••••"
+                />
+                <p className="text-xs text-slate-400">Mínimo 8 caracteres alfanuméricos (letras y números)</p>
+                {passwordValidationError.newPassword && (
+                  <p className="text-xs text-rose-600 font-medium">{passwordValidationError.newPassword}</p>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-1.5">
+                <label htmlFor="confirmPassword" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Confirmar Nueva Contraseña
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${
+                    passwordValidationError.confirmPassword ? 'border-rose-400' : 'border-slate-200'
+                  }`}
+                  disabled={savingPassword}
+                  placeholder="••••••••"
+                />
+                {passwordValidationError.confirmPassword && (
+                  <p className="text-xs text-rose-600 font-medium">{passwordValidationError.confirmPassword}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end pt-4 border-t border-slate-100">
+              <button
+                type="submit"
+                className="rounded-lg bg-slate-950 px-5 py-2 text-sm font-bold text-white shadow-md hover:bg-slate-900 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                disabled={savingPassword}
+              >
+                {savingPassword ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+                    Actualizando...
+                  </>
+                ) : (
+                  'Actualizar Contraseña'
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   )
 }
