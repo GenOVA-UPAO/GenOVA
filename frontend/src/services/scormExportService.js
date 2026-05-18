@@ -1,4 +1,7 @@
-const SCORM_EXPORT_ENDPOINT = 'http://localhost:8000/api/scorm/export'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '')
+const SCORM_EXPORT_ENDPOINT = API_BASE_URL
+  ? `${API_BASE_URL}/api/scorm/export`
+  : '/api/scorm/export'
 
 function triggerBrowserDownload(blob, filename) {
   const objectUrl = window.URL.createObjectURL(blob)
