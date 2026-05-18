@@ -1,22 +1,30 @@
 import { useOvaGeneration } from '../hooks/useOvaGeneration.js'
+import { formatSize, getUploadBadge } from './ovaUploadUi.js'
 
 export function OvaGenerationForm() {
   const {
+    activeUploadsCount,
     fieldError,
+    handleFilesSelected,
     handleLlmChange,
     handlePromptChange,
+    handleRemoveUpload,
     handleSubmit,
     hasLlmAvailable,
     isGenerating,
     isLoadingOptions,
     isSubmitDisabled,
+    isUploadingFiles,
     llmOptions,
+    maxUploadFiles,
     minPromptChars,
     progress,
     prompt,
     promptLength,
     selectedLlm,
     statusMessage,
+    uploadError,
+    uploads,
   } = useOvaGeneration()
 
   return (
@@ -24,7 +32,7 @@ export function OvaGenerationForm() {
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Nuevo OVA desde prompt</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Ingresa el tema y selecciona el modelo LLM para generar material educativo.
+          Ingresa el tema, adjunta tus archivos base y selecciona el modelo LLM.
         </p>
 
         <div className="mt-5 space-y-4">
@@ -42,6 +50,64 @@ export function OvaGenerationForm() {
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
             <span>Caracteres: {promptLength} (máximo: N/D)</span>
             <span>Mínimo: {minPromptChars}</span>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <label className="block text-sm font-medium text-slate-700" htmlFor="base-files-input">
+              Archivos base (PDF, DOCX, PPTX, audio)
+            </label>
+            <p className="mt-1 text-xs text-slate-600">
+              Máximo {maxUploadFiles} archivos, 20MB por archivo. ({activeUploadsCount}/{maxUploadFiles}{' '}
+              cargados)
+            </p>
+
+            <input
+              id="base-files-input"
+              type="file"
+              className="mt-2 block w-full text-sm text-slate-700"
+              multiple
+              onChange={(event) => {
+                void handleFilesSelected(event.target.files)
+                event.target.value = ''
+              }}
+              disabled={isGenerating || isUploadingFiles}
+              accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac"
+            />
+
+            {uploadError ? (
+              <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                {uploadError}
+              </div>
+            ) : null}
+
+            {uploads.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {uploads.map((upload) => (
+                  <div
+                    key={upload.clientId}
+                    className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs ${getUploadBadge(upload)}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{upload.filename}</p>
+                      <p className="mt-0.5 truncate">
+                        {formatSize(upload.sizeBytes)} · {upload.message}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={isGenerating || upload.status === 'uploading'}
+                      onClick={() => {
+                        void handleRemoveUpload(upload.clientId)
+                      }}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <label htmlFor="llm-model" className="block text-sm font-medium text-slate-700">
