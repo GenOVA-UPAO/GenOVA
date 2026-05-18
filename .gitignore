@@ -220,4 +220,5 @@ __marimo__/
 # Frontend
 dist/
 build/
+.pnpm-store/
 node_modules/
