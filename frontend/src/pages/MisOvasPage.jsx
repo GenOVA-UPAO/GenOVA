@@ -5,6 +5,7 @@ import {
   batchMoveToTrash,
   deleteOva,
   downloadOvaFile,
+  duplicateOva,
   fetchOvas,
 } from '../services/ovaHistoryService.js'
 
@@ -40,7 +41,7 @@ function StatusBadge({ status }) {
   )
 }
 
-function OvaCard({ ova, isSelected, onToggleSelect, onMoveToTrash, onDownload, isMoving, isDownloading }) {
+function OvaCard({ ova, isSelected, onToggleSelect, onMoveToTrash, onDownload, onDuplicate, isMoving, isDownloading, isDuplicating }) {
   const navigate = useNavigate()
   const isGenerating = ova.status === 'generando'
   const isReady = ova.status === 'listo'
@@ -84,18 +85,28 @@ function OvaCard({ ova, isSelected, onToggleSelect, onMoveToTrash, onDownload, i
       </div>
 
       <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-3">
-        <button
-          onClick={() => navigate(`/mis-ovas/${ova.id}/editar`)}
-          disabled={isGenerating}
-          title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Editar OVA'}
-          className="w-full rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-all hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          ✏ Editar
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(`/mis-ovas/${ova.id}/editar`)}
+            disabled={isGenerating || isDuplicating}
+            title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Editar OVA'}
+            className="flex-1 rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-all hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            ✏ Editar
+          </button>
+          <button
+            onClick={() => onDuplicate(ova.id)}
+            disabled={isGenerating || isDuplicating}
+            title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Duplicar OVA'}
+            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isDuplicating ? 'Duplicando...' : '⧉ Duplicar'}
+          </button>
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => onDownload(ova.id)}
-            disabled={!isReady || isDownloading}
+            disabled={!isReady || isDownloading || isDuplicating}
             title={!isReady ? 'Solo disponible cuando el OVA está listo' : 'Descargar paquete SCORM'}
             className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -103,11 +114,11 @@ function OvaCard({ ova, isSelected, onToggleSelect, onMoveToTrash, onDownload, i
           </button>
           <button
             onClick={() => onMoveToTrash(ova)}
-            disabled={isGenerating || isMoving}
+            disabled={isGenerating || isMoving || isDuplicating}
             title={isGenerating ? 'No se puede eliminar mientras se está generando' : 'Mover a la papelera'}
             className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 transition-all hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isMoving ? 'Moviendo...' : 'Mover a papelera'}
+            {isMoving ? 'Moviendo...' : 'Papelera'}
           </button>
         </div>
       </div>
@@ -169,6 +180,7 @@ function BulkTrashModal({ count, onConfirm, onCancel, isLoading }) {
 }
 
 export function MisOvasPage() {
+  const navigate = useNavigate()
   const [ovas, setOvas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -186,6 +198,7 @@ export function MisOvasPage() {
   const [movingId, setMovingId] = useState('')
   const [bulkLoading, setBulkLoading] = useState(false)
   const [downloadingId, setDownloadingId] = useState('')
+  const [duplicatingId, setDuplicatingId] = useState('')
 
   const [selectedIds, setSelectedIds] = useState(new Set())
 
@@ -292,6 +305,19 @@ export function MisOvasPage() {
       toast.error(err.message || 'Error al mover los OVAs.')
     } finally {
       setBulkLoading(false)
+    }
+  }
+
+  const handleDuplicate = async (ovaId) => {
+    setDuplicatingId(ovaId)
+    try {
+      const res = await duplicateOva(ovaId)
+      toast.success(res.message || 'OVA duplicado correctamente.')
+      navigate(res.edit_url)
+    } catch (err) {
+      toast.error(err.message || 'Error al duplicar el OVA.')
+    } finally {
+      setDuplicatingId('')
     }
   }
 
@@ -455,8 +481,10 @@ export function MisOvasPage() {
               onToggleSelect={handleToggleSelect}
               onMoveToTrash={handleMoveToTrashRequest}
               onDownload={(id) => handleDownload(id, ova.title)}
+              onDuplicate={handleDuplicate}
               isMoving={movingId === ova.id}
               isDownloading={downloadingId === ova.id}
+              isDuplicating={duplicatingId === ova.id}
             />
           ))}
         </div>

@@ -86,6 +86,14 @@ export async function batchRestore(ovaIds) {
   return parseResponse(response)
 }
 
+export async function duplicateOva(ovaId) {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/duplicar`, {
+    method: 'POST',
+    headers: buildAuthHeaders(),
+  })
+  return parseResponse(response)
+}
+
 export async function batchPermanentDelete(ovaIds) {
   const response = await fetch(`${API_BASE_URL}/api/ovas/lote/permanente`, {
     method: 'DELETE',
