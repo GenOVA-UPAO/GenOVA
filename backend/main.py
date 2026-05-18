@@ -8,6 +8,7 @@ import models
 from rag.router import router as rag_router
 from roles.router import router as roles_router
 from scorm.router import router as scorm_router
+from ova.router import router as ova_router
 from users.router import router as users_router
 from seed import seed_db
 from sqlalchemy import text
@@ -64,5 +65,6 @@ app.include_router(rag_router, prefix="/api/rag", tags=["rag"])
 app.include_router(roles_router, prefix="/api/roles", tags=["roles"])
 app.include_router(roles_router, prefix="/roles", tags=["roles"])
 app.include_router(scorm_router, prefix="/api/scorm", tags=["scorm"])
+app.include_router(ova_router, prefix="/api/ova", tags=["ova"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(users_router, prefix="/users", tags=["users"])
