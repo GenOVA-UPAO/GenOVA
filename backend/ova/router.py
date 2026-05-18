@@ -64,7 +64,9 @@ def _job_duration_seconds() -> int:
 
 def _job_ttl_seconds() -> int:
     default_ttl = max(60, _job_duration_seconds() * 10)
-    return max(60, _job_duration_seconds(), _parse_int_env("OVA_GENERATION_JOB_TTL_SECONDS", default_ttl))
+    configured_ttl = _parse_int_env("OVA_GENERATION_JOB_TTL_SECONDS", default_ttl)
+    min_ttl = max(60, _job_duration_seconds())
+    return max(min_ttl, configured_ttl)
 
 
 def _enabled_llm_ids() -> set[str]:
@@ -98,7 +100,9 @@ def _prune_generation_jobs() -> None:
 
     expired_job_ids = []
     for job_id, job in _generation_jobs.items():
-        expires_at = float(job.get("completed_at") or job["started_at"]) + ttl_seconds
+        completed_at = job.get("completed_at")
+        reference_timestamp = completed_at if completed_at is not None else job["started_at"]
+        expires_at = float(reference_timestamp) + ttl_seconds
 
         if now >= expires_at:
             expired_job_ids.append(job_id)
