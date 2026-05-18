@@ -27,6 +27,7 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     roles = relationship("UserRole", back_populates="user")
+    ovas = relationship("Ova", back_populates="owner")
 
 
 class Ova(Base):
@@ -38,10 +39,16 @@ class Ova(Base):
         default=uuid.uuid4,
         server_default=text("gen_random_uuid()"),
     )
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     title = Column(String(255), nullable=False)
     description = Column(Text)
+    status = Column(String(20), nullable=False, default="borrador", server_default="borrador")
+    file_path = Column(Text)
+    deleted_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    owner = relationship("User", back_populates="ovas")
 
 
 class Session(Base):

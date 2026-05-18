@@ -8,6 +8,7 @@ import { DashboardPage } from './pages/DashboardPage.jsx'
 import { CrearOvaPage } from './pages/CrearOvaPage.jsx'
 import { AdminRolesPage } from './pages/AdminRolesPage.jsx'
 import { AdminUsersPage } from './pages/AdminUsersPage.jsx'
+import { MisOvasPage } from './pages/MisOvasPage.jsx'
 import { ProfilePage } from './pages/ProfilePage.jsx'
 import { NotFoundPage } from './pages/NotFoundPage.jsx'
 
@@ -109,6 +110,7 @@ function App() {
         >
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/crear-ova" element={<CrearOvaPage />} />
+          <Route path="/mis-ovas" element={<MisOvasPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           
           {/* Unified Admin pages nested in AppLayout and protected by AdminRoute */}

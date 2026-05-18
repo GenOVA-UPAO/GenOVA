@@ -8,6 +8,10 @@ export const navigationLinks = [
     label: 'Crear OVA',
   },
   {
+    to: '/mis-ovas',
+    label: 'Mis OVAs',
+  },
+  {
     to: '/profile',
     label: 'Mi Perfil',
   },
