@@ -245,6 +245,28 @@ Se implementó el cambio de contraseña en caliente desde la pantalla del perfil
 Incluye:
 - **Frontend**: Formulario dedicado en la sección "Seguridad de la Cuenta" dentro de `/profile` ([ProfilePage.jsx]) que solicita contraseña actual, nueva contraseña y confirmación. Realiza validaciones alfanuméricas de formato locales y limpia todos los campos tras completarse con éxito.
 - **Backend**: Endpoint seguro `POST /api/users/me/change-password` en [backend/users/router.py] que comprueba la contraseña actual mediante comparaciones de hash bcrypt y guarda de forma atómica el nuevo hash en base de datos.
+## Mejoras de UX/UI: Sistema de Notificaciones Toast (Sonner)
 
+Se implementó un sistema unificado y moderno para el *feedback* visual de operaciones en la plataforma (éxitos, errores) reemplazando alertas antiguas e intrusivas.
 
+### Instalación
+La librería instalada en el frontend es `sonner`:
+```bash
+pnpm add sonner
+```
 
+### Configuración e Integración
+- **Global**: El componente `<Toaster />` está instanciado a nivel de raíz en `frontend/src/App.jsx`. Configurado en posición `top-right` y con diseño de colores mejorado (`richColors`).
+- **Uso en páginas**:
+  Importado desde `sonner`, se utiliza el objeto `toast` para emitir notificaciones:
+  ```javascript
+  import { toast } from 'sonner'
+  
+  // Ejemplos de uso:
+  toast.success('¡Operación realizada con éxito!')
+  toast.error('Ocurrió un error en el proceso.')
+  ```
+- **Vistas implementadas**:
+  - `ProfilePage.jsx`: Al actualizar datos y cambiar contraseñas.
+  - `AdminRolesPage.jsx`: Al crear, editar o eliminar roles del sistema.
+  - `AdminUsersPage.jsx`: Al reasignar roles entre usuarios.
