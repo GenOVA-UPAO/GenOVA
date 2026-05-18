@@ -7,9 +7,12 @@ import uuid
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from models import User
+from database import get_db
+from models import Ova, User
 from ova.uploads_service import claim_user_uploads, max_files_per_request
 
 
@@ -125,6 +128,54 @@ def _prune_generation_jobs() -> None:
         _generation_jobs.pop(job_id, None)
 
 
+def _ova_output_dir() -> str:
+    default = os.path.join(os.path.dirname(__file__), "..", "scorm_output")
+    return os.getenv("OVA_OUTPUT_DIR", default)
+
+
+def _title_from_prompt(prompt: str) -> str:
+    for sep in (". ", ".\n", "\n"):
+        idx = prompt.find(sep)
+        if 0 < idx <= 80:
+            return prompt[: idx + 1].strip()
+    return prompt[:80].rstrip()
+
+
+def _finalize_ova(ova_id: str, prompt: str, db: Session) -> None:
+    from scorm.service import build_scorm_zip_bytes
+
+    try:
+        output_dir = _ova_output_dir()
+        os.makedirs(output_dir, exist_ok=True)
+        file_path = os.path.join(output_dir, f"{ova_id}.zip")
+
+        zip_bytes = build_scorm_zip_bytes(
+            course_title=_title_from_prompt(prompt),
+            module_title="OVA Generado por GenOVA",
+        )
+        with open(file_path, "wb") as f:
+            f.write(zip_bytes)
+
+        ova = db.execute(select(Ova).where(Ova.id == ova_id)).scalar_one_or_none()
+        if ova:
+            ova.status = "listo"
+            ova.file_path = file_path
+            db.commit()
+    except Exception as exc:
+        logger.error("Failed to finalize OVA %s: %s", ova_id, exc)
+        _mark_ova_error(ova_id, db)
+
+
+def _mark_ova_error(ova_id: str, db: Session) -> None:
+    try:
+        ova = db.execute(select(Ova).where(Ova.id == ova_id)).scalar_one_or_none()
+        if ova and ova.status != "listo":
+            ova.status = "error"
+            db.commit()
+    except Exception as exc:
+        logger.error("Failed to mark OVA %s as error: %s", ova_id, exc)
+
+
 @router.get("/health")
 def ova_health() -> dict[str, str]:
     return {"module": "ova", "status": "ok"}
@@ -139,6 +190,7 @@ def list_llm_options() -> dict[str, list[dict]]:
 def start_ova_generation(
     payload: GenerateOvaRequest,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     prompt = payload.prompt.strip()
     llm_id = payload.llm_id.strip().lower()
@@ -214,12 +266,24 @@ def start_ova_generation(
             },
         )
 
+    ova = Ova(
+        user_id=current_user.id,
+        title=_title_from_prompt(prompt),
+        description=prompt,
+        status="generando",
+    )
+    db.add(ova)
+    db.commit()
+    db.refresh(ova)
+    ova_id = str(ova.id)
+
     job_id = str(uuid.uuid4())
 
     with _generation_jobs_lock:
         _prune_generation_jobs()
         _generation_jobs[job_id] = {
             "job_id": job_id,
+            "ova_id": ova_id,
             "llm_id": llm_id,
             "prompt": prompt,
             "uploads": uploads,
@@ -229,6 +293,7 @@ def start_ova_generation(
 
     return {
         "job_id": job_id,
+        "ova_id": ova_id,
         "status": "running",
         "message": "Generación de OVA iniciada.",
         "uploads_count": len(uploads),
@@ -236,7 +301,10 @@ def start_ova_generation(
 
 
 @router.get("/generate/{job_id}/progress")
-def get_generation_progress(job_id: str):
+def get_generation_progress(
+    job_id: str,
+    db: Session = Depends(get_db),
+):
     with _generation_jobs_lock:
         _prune_generation_jobs()
         job = _generation_jobs.get(job_id)
@@ -257,17 +325,24 @@ def get_generation_progress(job_id: str):
 
     percentage, stage, current_status = _current_progress(job)
 
+    is_first_completion = False
     with _generation_jobs_lock:
         job["status"] = current_status
-        if current_status == "success":
+        if current_status == "success" and "completed_at" not in job:
             job["completed_at"] = time.time()
+            is_first_completion = True
 
-    payload = {
+    ova_id = job.get("ova_id")
+    if is_first_completion and ova_id:
+        _finalize_ova(ova_id, job["prompt"], db)
+    elif current_status == "error" and ova_id:
+        _mark_ova_error(ova_id, db)
+
+    return {
         "job_id": job_id,
+        "ova_id": ova_id or "",
         "status": current_status,
         "percentage": percentage,
         "stage": stage,
         "message": "OVA generado correctamente." if current_status == "success" else "",
     }
-
-    return payload
