@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router'
 import { clearToken, getToken, isTokenExpired } from './lib/auth.js'
 import { AppLayout } from './layouts/AppLayout.jsx'
+import { AdminLayout } from './layouts/AdminLayout.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { CrearOvaPage } from './pages/CrearOvaPage.jsx'
+import { AdminRolesPage } from './pages/AdminRolesPage.jsx'
 import { NotFoundPage } from './pages/NotFoundPage.jsx'
 
 function App() {
@@ -44,6 +46,14 @@ function App() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/crear-ova" element={<CrearOvaPage />} />
+      </Route>
+      <Route
+        element={
+          isAuthenticated ? <AdminLayout /> : <Navigate to="/login" replace />
+        }
+      >
+        <Route path="/admin/roles" element={<AdminRolesPage />} />
+        <Route path="/admin/users" element={<div className="p-6 text-slate-400">Próximamente (HU-021)...</div>} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFoundPage />} />

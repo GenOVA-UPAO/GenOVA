@@ -6,16 +6,6 @@
 ## Historia de usuario
 Como administrador de la plataforma, quiero poder crear nuevos roles con permisos específicos, para definir qué acciones puede realizar cada tipo de usuario dentro del sistema.
 
-## Prerequisito manual
-> ⚠️ Antes de ejecutar esta HU en cualquier entorno, insertar manualmente los roles del sistema en la base de datos:
-> ```sql
-> INSERT INTO roles (name, description) VALUES
->   ('administrador', 'Rol del sistema con acceso total'),
->   ('usuario',       'Rol base para estudiantes y docentes')
-> ON CONFLICT (name) DO NOTHING;
-> ```
-> No existe tarea automatizada para esto. Es responsabilidad del equipo ejecutarlo antes de la primera prueba.
-
 ## Alcance
 Incluye:
 - Panel de administración en `/admin` con layout propio, accesible únicamente para usuarios con rol `administrador`.
@@ -30,8 +20,42 @@ No incluye:
 - Creación o gestión de permisos personalizados (los permisos son una lista predefinida en el sistema).
 - Acceso al panel `/admin` desde un link visible para usuarios con rol `usuario`.
 
+## Configuración de Base de Datos y Siembra (Seeding)
+
+Para garantizar la correcta ejecución de esta historia tanto en desarrollo como en producción, se ha estructurado una solución de base de datos híbrida (migración automatizada + script de siembra).
+
+### 1. Migración SQL (`backend/migrations/004_roles_permissions.sql`)
+Añade el campo `permissions` de tipo `JSONB` a la tabla `roles`:
+```sql
+ALTER TABLE roles ADD COLUMN IF NOT EXISTS permissions JSONB NOT NULL DEFAULT '[]';
+```
+
+### 2. Script de Siembra Automático (`backend/seed.py`)
+Para desarrollo, se ha diseñado un script idempotente (`seed_db()`) que pobla la base de datos automáticamente al iniciar el backend (evento `startup` en `backend/main.py`), garantizando la existencia de los roles de sistema y cuentas de prueba funcionales.
+
+#### Roles Sembrados por Defecto:
+*   **`administrador`**: Rol del sistema con acceso total.
+*   **`usuario`**: Rol base para estudiantes y docentes.
+
+#### Credenciales de Desarrollo & Pruebas Insertadas:
+| Correo de Acceso | Contraseña | Rol Asignado | Permisos por Defecto |
+| :--- | :--- | :--- | :--- |
+| **`admin@genova.ai`** | `admin1234password` | **`administrador`** | `create_ova`, `view_ova`, `export_ova`, `manage_users`, `manage_roles` |
+| **`user@genova.ai`** | `user1234password` | **`usuario`** | `create_ova`, `view_ova`, `export_ova` |
+
+### 3. Inserción Manual en Producción (Prerequisito de Despliegue)
+> ⚠️ Para entornos de producción donde el script de desarrollo está desactivado, el administrador de base de datos debe insertar manualmente los roles base antes de levantar el panel:
+```sql
+INSERT INTO roles (name, description, permissions) VALUES
+  ('administrador', 'Rol del sistema con acceso total', '["create_ova", "view_ova", "export_ova", "manage_users", "manage_roles"]'::jsonb),
+  ('usuario',       'Rol base para estudiantes y docentes', '["create_ova", "view_ova", "export_ova"]'::jsonb)
+ON CONFLICT (name) DO NOTHING;
+```
+
+---
+
 ## Permisos seleccionables (lista predefinida)
-Los permisos son strings fijos definidos en el sistema. Ejemplos base:
+Los permisos son strings fijos definidos en el sistema:
 
 | Permiso           | Descripción                                |
 |-------------------|--------------------------------------------|
@@ -43,6 +67,8 @@ Los permisos son strings fijos definidos en el sistema. Ejemplos base:
 
 > Esta lista puede extenderse sin cambios de esquema, ya que se almacena como `JSONB` en la tabla `roles`.
 
+---
+
 ## Criterios de aceptación
 1. Las pantallas de gestión de roles y usuarios están agrupadas en un panel `/admin` con su propio layout, accesible únicamente para usuarios con rol `administrador`. Los usuarios con rol `usuario` que intenten acceder son redirigidos al dashboard.
 2. Existe una pantalla `/admin/roles` que muestra la lista de todos los roles existentes, cargada al montar la vista mediante `GET /roles`.
@@ -51,6 +77,8 @@ Los permisos son strings fijos definidos en el sistema. Ejemplos base:
 5. Tras la creación exitosa, el nuevo rol aparece inmediatamente en la lista sin recargar la página.
 6. El endpoint `POST /roles` retorna `201` con los datos del rol creado o el código de error correspondiente.
 7. El endpoint `GET /roles` retorna `200` con la lista de roles o `403` si el token no pertenece a un administrador.
+
+---
 
 ## Datos de entrada/salida
 
@@ -73,11 +101,15 @@ Los permisos son strings fijos definidos en el sistema. Ejemplos base:
 - `200`: `[ { id, name, permissions, created_at }, ... ]`
 - `403`: `{ error: "forbidden", message }` — token sin rol administrador.
 
+---
+
 ## Flujos alternativos
 - **Nombre duplicado:** El backend responde `409`. El frontend muestra un error en línea bajo el campo nombre: *"Ya existe un rol con ese nombre."*
 - **Usuario no administrador accede a `/admin`:** El frontend detecta el rol en el JWT y redirige a `/dashboard` antes de renderizar el panel.
 - **Token expirado al intentar crear:** El backend responde `401`. El frontend limpia el token y redirige a `/login`.
 - **Lista de roles vacía (solo roles del sistema):** La pantalla muestra los roles `administrador` y `usuario` ya sembrados. El botón "Nuevo rol" sigue disponible.
+
+---
 
 ## Escenarios BDD (Gherkin)
 ```gherkin
@@ -129,6 +161,8 @@ Feature: Gestión de Roles — Crear Rol
     Then debo ver un mensaje de error indicando que el nombre es obligatorio
     And el formulario no debe enviarse al backend
 ```
+
+---
 
 ## Mockup ASCII — Panel `/admin/roles`
 ```

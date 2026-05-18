@@ -141,3 +141,27 @@ def register(payload: dict = Body(default={}), db: Session = Depends(get_db)):
         status_code=status.HTTP_201_CREATED,
         content={"access_token": token, "token_type": "bearer"},
     )
+
+
+from auth.dependencies import get_current_user
+from models import Role, UserRole
+
+@router.get("/me")
+def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    role_name = "usuario"
+    user_role = db.execute(
+        select(Role)
+        .join(UserRole)
+        .where(UserRole.user_id == current_user.id)
+    ).scalar_one_or_none()
+    
+    if user_role:
+        role_name = user_role.name
+
+    return {
+        "id": str(current_user.id),
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "role": role_name,
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+    }
