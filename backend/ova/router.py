@@ -1,3 +1,4 @@
+import logging
 import os
 import threading
 import time
@@ -7,6 +8,7 @@ from fastapi import APIRouter, Body, status
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 LLM_CATALOG = [
     {
@@ -189,15 +191,16 @@ def get_generation_progress(job_id: str):
         job = _generation_jobs.get(job_id)
 
     if not job:
+        logger.warning(
+            "OVA generation job not found: job_id=%s pid=%s (state is process-local in memory)",
+            job_id,
+            os.getpid(),
+        )
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={
                 "error": "job_not_found",
-                "message": (
-                    "No se encontró el proceso solicitado. "
-                    "Si el servidor usa múltiples workers, recuerda que este estado "
-                    "es en memoria y local al proceso."
-                ),
+                "message": "No se encontró el proceso solicitado. Es posible que haya expirado.",
             },
         )
 
