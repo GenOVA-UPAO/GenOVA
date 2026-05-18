@@ -137,6 +137,41 @@ pnpm dev:docker
 pnpm prod:docker
 ```
 
+## HU-004 exportación SCORM (entregable Canvas)
+
+Se implementó exportación SCORM 1.2 de prueba desde la vista `/crear-ova`.
+
+### Frontend
+- Botón visible: **Exportar SCORM**
+- Ubicación: `frontend/src/pages/CrearOvaPage.jsx`
+- Acción: llama `POST http://localhost:8000/api/scorm/export` y descarga `ova-scorm.zip`
+
+### Backend
+- Endpoint: `POST /api/scorm/export`
+- Módulo: `backend/scorm/router.py`
+- Servicio generador zip en memoria: `backend/scorm/service.py`
+
+### Estructura del zip generado
+```text
+ova-scorm.zip
+├── imsmanifest.xml
+├── index.html
+└── resources/
+    ├── content.html
+    ├── styles.css
+    ├── scorm.js
+    └── app.js
+```
+
+### Registro de progreso LMS
+`resources/scorm.js` y `resources/app.js` incluyen comunicación básica SCORM 1.2:
+- `LMSInitialize`
+- `LMSSetValue` (`cmi.core.lesson_status`, `cmi.core.score.raw`)
+- `LMSCommit`
+- `LMSFinish`
+
+Esto deja el paquete listo para validación formal en **TA-005 (SCORM Cloud)**.
+
 ## SCORM template
 
 Se mantiene una plantilla base en `scorm-template/` con `imsmanifest.xml`, `index.html` y `resources/styles.css` para empaquetado SCORM posterior.

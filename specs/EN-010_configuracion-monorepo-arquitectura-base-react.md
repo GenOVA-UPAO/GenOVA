@@ -1,7 +1,7 @@
-# HU-004: Configuración del Monorepo y Arquitectura Base React
+# EN-010: Configuración del Monorepo y Arquitectura Base React
 
 ## Ruta de guardado
-`specs/HU-004_configuracion-monorepo-arquitectura-base-react.md`
+`specs/EN-010_configuracion-monorepo-arquitectura-base-react.md`
 
 ## Historia de usuario
 Como desarrollador, necesito inicializar el monorepo con pnpm y configurar la arquitectura base del frontend en React con Tailwind, asegurando reglas estrictas de linteo para archivos cortos, para tener una base sólida y estandarizada antes de programar las interfaces de usuario.
