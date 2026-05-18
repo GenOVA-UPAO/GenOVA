@@ -44,29 +44,30 @@ export function OvaGenerationForm() {
             <span>Mínimo: {minPromptChars}</span>
           </div>
 
-          <label className="block text-sm font-medium text-slate-700">
+          <label htmlFor="llm-model" className="block text-sm font-medium text-slate-700">
             Modelo LLM
-            <select
-              value={selectedLlm}
-              onChange={(event) => handleLlmChange(event.target.value)}
-              disabled={isLoadingOptions || !hasLlmAvailable || isGenerating}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-slate-100"
-            >
-              {isLoadingOptions ? <option value="">Cargando opciones...</option> : null}
-
-              {!isLoadingOptions && !hasLlmAvailable ? (
-                <option value="">Sin modelos disponibles</option>
-              ) : null}
-
-              {!isLoadingOptions && hasLlmAvailable
-                ? llmOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))
-                : null}
-            </select>
           </label>
+          <select
+            id="llm-model"
+            value={selectedLlm}
+            onChange={(event) => handleLlmChange(event.target.value)}
+            disabled={isLoadingOptions || !hasLlmAvailable || isGenerating}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-slate-100"
+          >
+            {isLoadingOptions ? <option value="">Cargando opciones...</option> : null}
+
+            {!isLoadingOptions && !hasLlmAvailable ? (
+              <option value="">Sin modelos disponibles</option>
+            ) : null}
+
+            {!isLoadingOptions && hasLlmAvailable
+              ? llmOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))
+              : null}
+          </select>
 
           {fieldError ? (
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
