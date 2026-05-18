@@ -9,6 +9,7 @@ import { DashboardPage } from './pages/DashboardPage.jsx'
 import { CrearOvaPage } from './pages/CrearOvaPage.jsx'
 import { AdminRolesPage } from './pages/AdminRolesPage.jsx'
 import { AdminUsersPage } from './pages/AdminUsersPage.jsx'
+import { ProfilePage } from './pages/ProfilePage.jsx'
 import { NotFoundPage } from './pages/NotFoundPage.jsx'
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/crear-ova" element={<CrearOvaPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route
         element={
