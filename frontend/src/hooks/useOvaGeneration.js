@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { startOvaGeneration } from '../services/ovaGenerationService.js'
+import { useOvaLlmOptions } from './useOvaLlmOptions.js'
 import {
-  fetchLlmOptions,
-  fetchOvaProgress,
-  startOvaGeneration,
-} from '../services/ovaGenerationService.js'
+  buildStartStatusMessage,
+  createIdleProgress,
+  createRunningProgress,
+  resolveStartGenerationFieldError,
+} from './ovaGenerationHelpers.js'
+import { useOvaProgressPolling } from './useOvaProgressPolling.js'
+import { useOvaUploads } from './useOvaUploads.js'
 
 const MIN_PROMPT_CHARS = Number(import.meta.env.VITE_MIN_PROMPT_CHARS || 10)
-const PROGRESS_POLL_INTERVAL_MS = Number(import.meta.env.VITE_OVA_PROGRESS_POLL_MS || 1200)
 
 function isPromptLongEnough(promptText) {
   return promptText.trim().length >= MIN_PROMPT_CHARS
@@ -14,110 +18,56 @@ function isPromptLongEnough(promptText) {
 
 export function useOvaGeneration() {
   const [prompt, setPrompt] = useState('')
-  const [llmOptions, setLlmOptions] = useState([])
-  const [selectedLlm, setSelectedLlm] = useState('')
-  const [isLoadingOptions, setIsLoadingOptions] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
   const [fieldError, setFieldError] = useState('')
   const [jobId, setJobId] = useState('')
-  const [progress, setProgress] = useState({
-    percentage: 0,
-    stage: 'Pendiente',
-    status: 'idle',
+  const [progress, setProgress] = useState(createIdleProgress())
+
+  const {
+    hasLlmAvailable,
+    isLoadingOptions,
+    llmOptions,
+    selectedLlm,
+    setSelectedLlm,
+  } = useOvaLlmOptions(setStatusMessage)
+
+  useOvaProgressPolling({
+    isGenerating,
+    jobId,
+    setIsGenerating,
+    setProgress,
+    setStatusMessage,
   })
+
+  const {
+    activeUploadsCount,
+    handleFilesSelected,
+    handleRemoveUpload,
+    isUploadingFiles,
+    maxUploadFiles,
+    uploadError,
+    uploadIds,
+    uploads,
+  } = useOvaUploads()
 
   const promptLength = prompt.length
   const isPromptValid = isPromptLongEnough(prompt)
-  const hasLlmAvailable = llmOptions.length > 0
 
   const isSubmitDisabled = useMemo(() => {
-    if (isGenerating || isLoadingOptions) return true
+    if (isGenerating || isLoadingOptions || isUploadingFiles) return true
     if (!isPromptValid) return true
     if (!selectedLlm) return true
     if (!hasLlmAvailable) return true
     return false
-  }, [hasLlmAvailable, isGenerating, isLoadingOptions, isPromptValid, selectedLlm])
-
-  useEffect(() => {
-    async function loadLlmOptions() {
-      setIsLoadingOptions(true)
-      setStatusMessage('')
-
-      try {
-        const data = await fetchLlmOptions()
-        const options = Array.isArray(data?.items) ? data.items : []
-        setLlmOptions(options)
-
-        if (options.length > 0) {
-          setSelectedLlm((prev) => prev || options[0].id)
-          return
-        }
-
-        setSelectedLlm('')
-        setStatusMessage('No hay modelos LLM habilitados por configuración.')
-      } catch {
-        setLlmOptions([])
-        setSelectedLlm('')
-        setStatusMessage('No se pudieron cargar las opciones LLM. Verifica backend.')
-      } finally {
-        setIsLoadingOptions(false)
-      }
-    }
-
-    loadLlmOptions()
-  }, [])
-
-  useEffect(() => {
-    if (!isGenerating || !jobId) {
-      return undefined
-    }
-
-    let isCancelled = false
-    let timerId = null
-
-    async function pollProgress() {
-      try {
-        const data = await fetchOvaProgress(jobId)
-        if (isCancelled) return
-
-        const nextProgress = {
-          percentage: Number(data?.percentage || 0),
-          stage: data?.stage || 'Procesando...',
-          status: data?.status || 'running',
-        }
-
-        setProgress(nextProgress)
-
-        if (nextProgress.status === 'success') {
-          setIsGenerating(false)
-          setStatusMessage(data?.message || 'OVA generado correctamente.')
-          return
-        }
-
-        if (nextProgress.status === 'error') {
-          setIsGenerating(false)
-          setStatusMessage(data?.message || 'Ocurrió un error durante la generación.')
-          return
-        }
-
-        timerId = window.setTimeout(pollProgress, PROGRESS_POLL_INTERVAL_MS)
-      } catch {
-        if (isCancelled) return
-        setIsGenerating(false)
-        setStatusMessage('No se pudo obtener el progreso de generación.')
-      }
-    }
-
-    pollProgress()
-
-    return () => {
-      isCancelled = true
-      if (timerId) {
-        window.clearTimeout(timerId)
-      }
-    }
-  }, [isGenerating, jobId])
+  }, [
+    hasLlmAvailable,
+    isGenerating,
+    isLoadingOptions,
+    isPromptValid,
+    isUploadingFiles,
+    selectedLlm,
+  ])
 
   function handlePromptChange(value) {
     setPrompt(value)
@@ -138,11 +88,7 @@ export function useOvaGeneration() {
     setFieldError('')
     setStatusMessage('')
     setJobId('')
-    setProgress({
-      percentage: 0,
-      stage: 'Pendiente',
-      status: 'idle',
-    })
+    setProgress(createIdleProgress())
 
     if (!prompt.trim()) {
       setFieldError('El prompt es obligatorio.')
@@ -160,24 +106,20 @@ export function useOvaGeneration() {
     }
 
     try {
-      const result = await startOvaGeneration({ prompt: prompt.trim(), llmId: selectedLlm })
-      setJobId(result?.job_id || '')
-      setProgress({
-        percentage: 0,
-        stage: 'Validando solicitud',
-        status: 'running',
+      const result = await startOvaGeneration({
+        prompt: prompt.trim(),
+        llmId: selectedLlm,
+        uploadIds,
       })
+      setJobId(result?.job_id || '')
+      setProgress(createRunningProgress())
       setIsGenerating(true)
-      setStatusMessage('Generación iniciada. Monitoreando progreso...')
+      setStatusMessage(buildStartStatusMessage(uploadIds.length))
     } catch (error) {
-      if (error?.status === 400) {
-        const errorCode = error?.code || ''
-        if (
-          errorCode === 'prompt_required' ||
-          errorCode === 'prompt_too_short' ||
-          errorCode === 'llm_invalid'
-        ) {
-          setFieldError(error?.message || 'Valida los campos del formulario.')
+      if (error?.status === 400 || error?.status === 404) {
+        const fieldMessage = resolveStartGenerationFieldError(error)
+        if (fieldMessage) {
+          setFieldError(fieldMessage)
           return
         }
       }
@@ -187,20 +129,27 @@ export function useOvaGeneration() {
   }
 
   return {
+    activeUploadsCount,
     fieldError,
+    handleFilesSelected,
     handleLlmChange,
     handlePromptChange,
+    handleRemoveUpload,
     handleSubmit,
     hasLlmAvailable,
     isGenerating,
     isLoadingOptions,
     isSubmitDisabled,
+    isUploadingFiles,
     llmOptions,
+    maxUploadFiles,
     minPromptChars: MIN_PROMPT_CHARS,
     progress,
     prompt,
     promptLength,
     selectedLlm,
     statusMessage,
+    uploadError,
+    uploads,
   }
 }

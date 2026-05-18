@@ -4,9 +4,14 @@ import threading
 import time
 import uuid
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from auth.dependencies import get_current_user
+from models import User
+from ova.uploads_service import claim_user_uploads, max_files_per_request
+
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -51,6 +56,7 @@ _generation_jobs_lock = threading.Lock()
 class GenerateOvaRequest(BaseModel):
     prompt: str
     llm_id: str
+    upload_ids: list[str] = Field(default_factory=list)
 
 
 def _parse_int_env(name: str, fallback: int) -> int:
@@ -107,7 +113,9 @@ def _prune_generation_jobs() -> None:
     expired_job_ids = []
     for job_id, job in _generation_jobs.items():
         completed_at = job.get("completed_at")
-        reference_timestamp = completed_at if completed_at is not None else job["started_at"]
+        reference_timestamp = (
+            completed_at if completed_at is not None else job["started_at"]
+        )
         expires_at = float(reference_timestamp) + ttl_seconds
 
         if now >= expires_at:
@@ -128,7 +136,10 @@ def list_llm_options() -> dict[str, list[dict]]:
 
 
 @router.post("/generate")
-def start_ova_generation(payload: GenerateOvaRequest):
+def start_ova_generation(
+    payload: GenerateOvaRequest,
+    current_user: User = Depends(get_current_user),
+):
     prompt = payload.prompt.strip()
     llm_id = payload.llm_id.strip().lower()
 
@@ -171,13 +182,47 @@ def start_ova_generation(payload: GenerateOvaRequest):
             },
         )
 
+    upload_ids = [
+        (item or "").strip() for item in payload.upload_ids if (item or "").strip()
+    ]
+    upload_limit = max_files_per_request()
+    if len(upload_ids) > upload_limit:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "files_limit_exceeded",
+                "message": f"Solo se permiten hasta {upload_limit} archivos.",
+            },
+        )
+
+    uploads, upload_error = claim_user_uploads(str(current_user.id), upload_ids)
+    if upload_error == "duplicate_upload_ids":
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "duplicate_upload_ids",
+                "message": "La lista de archivos contiene IDs duplicados.",
+            },
+        )
+
+    if upload_error == "upload_not_found":
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "error": "upload_not_found",
+                "message": "Uno o más archivos temporales no fueron encontrados o expiraron.",
+            },
+        )
+
     job_id = str(uuid.uuid4())
+
     with _generation_jobs_lock:
         _prune_generation_jobs()
         _generation_jobs[job_id] = {
             "job_id": job_id,
             "llm_id": llm_id,
             "prompt": prompt,
+            "uploads": uploads,
             "started_at": time.time(),
             "status": "running",
         }
@@ -186,6 +231,7 @@ def start_ova_generation(payload: GenerateOvaRequest):
         "job_id": job_id,
         "status": "running",
         "message": "Generación de OVA iniciada.",
+        "uploads_count": len(uploads),
     }
 
 
