@@ -41,6 +41,13 @@ export function LoginPage() {
         return
       }
 
+      if (response.status === 403 && data?.retry_after_minutes) {
+        setServerError(
+          `Cuenta bloqueada. Intenta de nuevo en ${data.retry_after_minutes} minuto${data.retry_after_minutes !== 1 ? 's' : ''}.`
+        )
+        return
+      }
+
       setServerError(data?.message || 'No se pudo iniciar sesión.')
     } catch (error) {
       setServerError('No se pudo conectar con el servidor. Intenta de nuevo.')

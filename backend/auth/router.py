@@ -63,7 +63,7 @@ def login(payload: dict = Body(default={}), db: Session = Depends(get_db)):
             (user.locked_until - datetime.now(timezone.utc)).total_seconds() // 60
         )
         return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             content={
                 "error": "account_locked",
                 "message": "Cuenta bloqueada temporalmente. Intenta más tarde.",
