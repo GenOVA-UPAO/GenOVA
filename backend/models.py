@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -44,11 +44,58 @@ class Ova(Base):
     description = Column(Text)
     status = Column(String(20), nullable=False, default="borrador", server_default="borrador")
     file_path = Column(Text)
+    current_version_id = Column(UUID(as_uuid=True), nullable=True)
     deleted_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     owner = relationship("User", back_populates="ovas")
+    versions = relationship("OvaVersion", back_populates="ova", foreign_keys="OvaVersion.ova_id",
+                            order_by="OvaVersion.version_number")
+
+
+class OvaVersion(Base):
+    __tablename__ = "ova_versions"
+    __table_args__ = (
+        Index("uq_one_active_version_per_ova", "ova_id", unique=True,
+              postgresql_where=text("is_active = TRUE")),
+    )
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
+    )
+    ova_id = Column(UUID(as_uuid=True), ForeignKey("ovas.id", ondelete="CASCADE"), nullable=False, index=True)
+    version_number = Column(Integer, nullable=False)
+    prompt = Column(Text, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    ova = relationship("Ova", back_populates="versions", foreign_keys=[ova_id])
+    phases = relationship("OvaPhase", back_populates="version", order_by="OvaPhase.phase_order",
+                          cascade="all, delete-orphan")
+
+
+class OvaPhase(Base):
+    __tablename__ = "ova_phases"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
+    )
+    version_id = Column(UUID(as_uuid=True), ForeignKey("ova_versions.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    phase_type = Column(String(30), nullable=False)
+    phase_order = Column(Integer, nullable=False)
+    content = Column(Text, nullable=False)
+    regenerated = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    version = relationship("OvaVersion", back_populates="phases")
 
 
 class Session(Base):

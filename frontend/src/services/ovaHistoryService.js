@@ -37,6 +37,82 @@ export async function deleteOva(ovaId) {
   return parseResponse(response)
 }
 
+export async function fetchTrashedOvas({ page = 1, limit = 10 } = {}) {
+  const params = new URLSearchParams({ page, limit })
+  const response = await fetch(`${API_BASE_URL}/api/ovas/papelera?${params}`, {
+    headers: buildAuthHeaders(),
+  })
+  return parseResponse(response)
+}
+
+export async function fetchTrashCount() {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/papelera/count`, {
+    headers: buildAuthHeaders(),
+  })
+  return parseResponse(response)
+}
+
+export async function restoreOva(ovaId) {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/restaurar`, {
+    method: 'PATCH',
+    headers: buildAuthHeaders(),
+  })
+  return parseResponse(response)
+}
+
+export async function permanentDeleteOva(ovaId) {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/permanente`, {
+    method: 'DELETE',
+    headers: buildAuthHeaders(),
+  })
+  return parseResponse(response)
+}
+
+export async function batchMoveToTrash(ovaIds) {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/lote/papelera`, {
+    method: 'POST',
+    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ova_ids: ovaIds }),
+  })
+  return parseResponse(response)
+}
+
+export async function batchRestore(ovaIds) {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/lote/restaurar`, {
+    method: 'POST',
+    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ova_ids: ovaIds }),
+  })
+  return parseResponse(response)
+}
+
+export async function duplicateOva(ovaId) {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/duplicar`, {
+    method: 'POST',
+    headers: buildAuthHeaders(),
+  })
+  return parseResponse(response)
+}
+
+export async function updateOvaMetadata(ovaId, { title, description }) {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/metadata`, {
+    method: 'PATCH',
+    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, description }),
+  })
+  return parseResponse(response)
+}
+
+export async function batchPermanentDelete(ovaIds) {
+
+  const response = await fetch(`${API_BASE_URL}/api/ovas/lote/permanente`, {
+    method: 'DELETE',
+    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ova_ids: ovaIds }),
+  })
+  return parseResponse(response)
+}
+
 export async function downloadOvaFile(ovaId, title = 'ova') {
   const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/download`, {
     headers: buildAuthHeaders(),

@@ -84,30 +84,45 @@ def build_index_html(course_title: str) -> str:
 """
 
 
-def build_content_html() -> str:
-    return """<!doctype html>
+PHASE_LABELS = {
+    "motivacion": "Motivación",
+    "contenido": "Contenido",
+    "explicacion": "Explicación",
+    "actividad": "Actividad",
+    "evaluacion": "Evaluación",
+}
+
+DEFAULT_PHASES = [
+    {"type": "motivacion", "order": 1,
+     "content": "Explora cómo aplicar Machine Learning en problemas reales de negocio."},
+    {"type": "contenido", "order": 2,
+     "content": "Identifica variables relevantes y revisa un dataset simple de clasificación."},
+    {"type": "explicacion", "order": 3,
+     "content": "Compara conceptos de entrenamiento, validación y evaluación de modelos."},
+    {"type": "actividad", "order": 4,
+     "content": "Piensa en un caso UPAO donde puedas aplicar un modelo supervisado."},
+    {"type": "evaluacion", "order": 5,
+     "content": "Checklist: ¿entendiste objetivo, datos y criterio de éxito del modelo?"},
+]
+
+
+def build_content_html(phases: list[dict] | None = None) -> str:
+    source = phases if phases else DEFAULT_PHASES
+    sections = ""
+    for phase in source:
+        label = PHASE_LABELS.get(phase.get("type", ""), phase.get("type", "Fase"))
+        content = phase.get("content", "")
+        sections += f"\n      <section>\n        <h3>{label}</h3>\n        <p>{content}</p>\n      </section>"
+
+    return f"""<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contenido OVA de Prueba</title>
+    <title>Contenido OVA</title>
   </head>
   <body>
-    <article>
-      <h3>Engage</h3>
-      <p>Explora cómo aplicar Machine Learning en problemas reales de negocio.</p>
-
-      <h3>Explore</h3>
-      <p>Identifica variables relevantes y revisa un dataset simple de clasificación.</p>
-
-      <h3>Explain</h3>
-      <p>Compara conceptos de entrenamiento, validación y evaluación de modelos.</p>
-
-      <h3>Elaborate</h3>
-      <p>Piensa en un caso UPAO donde puedas aplicar un modelo supervisado.</p>
-
-      <h3>Evaluate</h3>
-      <p>Checklist: ¿entendiste objetivo, datos y criterio de éxito del modelo?</p>
+    <article>{sections}
     </article>
   </body>
 </html>
