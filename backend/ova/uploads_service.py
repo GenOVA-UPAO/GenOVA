@@ -6,14 +6,23 @@ from pathlib import Path
 from typing import Optional
 
 ALLOWED_MIME_TYPES = {
+    # Documents
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    # Audio — transcribed via Whisper (max 19.5 MB)
     "audio/mpeg",
     "audio/wav",
     "audio/x-wav",
     "audio/mp4",
     "audio/aac",
+    "audio/ogg",
+    "audio/webm",
+    # Images — analyzed via vision model
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
 }
 
 _temp_uploads: dict[str, dict] = {}

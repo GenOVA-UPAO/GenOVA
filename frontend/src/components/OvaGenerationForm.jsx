@@ -30,9 +30,10 @@ export function OvaGenerationForm() {
   return (
     <form className="space-y-6" onSubmit={handleSubmit} noValidate>
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Nuevo OVA desde prompt</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Generar OVA con IA</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Ingresa el tema, adjunta tus archivos base y selecciona el modelo LLM.
+          Describe el tema, adjunta archivos de contexto (documentos, audio, imágenes) y elige el
+          modelo LLM. Los archivos se procesan como RAG para enriquecer la generación.
         </p>
 
         <div className="mt-5 space-y-4">
@@ -52,27 +53,40 @@ export function OvaGenerationForm() {
             <span>Mínimo: {minPromptChars}</span>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <label className="block text-sm font-medium text-slate-700" htmlFor="base-files-input">
-              Archivos base (PDF, DOCX, PPTX, audio)
-            </label>
-            <p className="mt-1 text-xs text-slate-600">
-              Máximo {maxUploadFiles} archivos, 20MB por archivo. ({activeUploadsCount}/{maxUploadFiles}{' '}
-              cargados)
-            </p>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700" htmlFor="base-files-input">
+                Archivos de contexto (RAG)
+              </label>
+              <p className="mt-1 text-xs text-slate-500">
+                Máximo {maxUploadFiles} archivos · 20 MB c/u · ({activeUploadsCount}/{maxUploadFiles} cargados)
+              </p>
+              <div className="mt-1.5 grid grid-cols-3 gap-1 text-xs text-slate-500">
+                <span>📄 PDF / DOCX / PPTX — texto</span>
+                <span>🎵 MP3 / WAV / M4A — Whisper STT</span>
+                <span>🖼️ JPG / PNG / WEBP — visión IA</span>
+              </div>
+            </div>
 
             <input
               id="base-files-input"
               type="file"
-              className="mt-2 block w-full text-sm text-slate-700"
+              className="block w-full text-sm text-slate-700"
               multiple
               onChange={(event) => {
                 void handleFilesSelected(event.target.files)
                 event.target.value = ''
               }}
               disabled={isGenerating || isUploadingFiles}
-              accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac"
+              accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.ogg,.webm,.jpg,.jpeg,.png,.gif,.webp"
             />
+
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              <span className="font-semibold">Video:</span> Sin modelo disponible actualmente. Usa el
+              contenido generado en{' '}
+              <span className="font-medium">HeyGen, Synthesia, Sora o Runway</span> para producir
+              tu video educativo.
+            </div>
 
             {uploadError ? (
               <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">

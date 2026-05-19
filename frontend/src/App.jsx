@@ -12,6 +12,8 @@ import { MisOvasPage } from './pages/MisOvasPage.jsx'
 import { EditarOvaPage } from './pages/EditarOvaPage.jsx'
 import { PapeleraPage } from './pages/PapeleraPage.jsx'
 import { ProfilePage } from './pages/ProfilePage.jsx'
+import { EngagePage } from './pages/EngagePage.jsx'
+import { ExplorePage } from './pages/ExplorePage.jsx'
 import { NotFoundPage } from './pages/NotFoundPage.jsx'
 
 import { Toaster } from 'sonner'
@@ -116,6 +118,8 @@ function App() {
           <Route path="/mis-ovas/:ovaId/editar" element={<EditarOvaPage />} />
           <Route path="/papelera" element={<PapeleraPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/metodologia/engage" element={<EngagePage />} />
+          <Route path="/metodologia/explore" element={<ExplorePage />} />
           
           {/* Unified Admin pages nested in AppLayout and protected by AdminRoute */}
           <Route element={<AdminRoute />}>
