@@ -83,7 +83,6 @@ def create_role(
 
 from uuid import UUID
 
-
 class RoleUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=64)
     description: Optional[str] = Field(None)
