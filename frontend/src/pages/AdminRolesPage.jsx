@@ -21,6 +21,7 @@ export function AdminRolesPage() {
     setRoleDescription,
     selectedPermissions,
     formError,
+    setFormError,
     isSubmitting,
     fetchRoles,
     handlePermissionToggle,
@@ -162,6 +163,7 @@ export function AdminRolesPage() {
           isSubmitting={isSubmitting}
           onRoleNameChange={(e) => {
             setRoleName(e.target.value)
+            if (formError) setFormError('')
           }}
           onRoleDescriptionChange={(e) => setRoleDescription(e.target.value)}
           onPermissionToggle={handlePermissionToggle}

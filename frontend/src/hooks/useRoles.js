@@ -203,6 +203,7 @@ export function useRoles() {
     setRoleDescription,
     selectedPermissions,
     formError,
+    setFormError,
     isSubmitting,
     fetchRoles,
     handlePermissionToggle,
