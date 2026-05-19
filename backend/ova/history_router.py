@@ -1,6 +1,8 @@
 import math
 import os
 from datetime import datetime, timezone
+from typing import Optional
+
 
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import FileResponse, JSONResponse
@@ -50,7 +52,12 @@ class BatchIdsRequest(BaseModel):
     ova_ids: list[str] = Field(min_length=1)
 
 
-def _delete_scorm_file(file_path: str | None) -> None:
+class UpdateOvaMetadataRequest(BaseModel):
+    title: str
+    description: Optional[str] = None
+
+
+def _delete_scorm_file(file_path: Optional[str]) -> None:
     if file_path:
         try:
             os.remove(file_path)
@@ -59,6 +66,7 @@ def _delete_scorm_file(file_path: str | None) -> None:
 
 
 # ── Trash endpoints (must be before /{ova_id} routes) ─────────────────────
+
 
 @router.get("/papelera/count")
 def count_trashed_ovas(
@@ -201,6 +209,7 @@ def batch_permanent_delete(
 
 # ── Active OVA list ────────────────────────────────────────────────────────
 
+
 @router.get("")
 def list_ovas(
     page: int = Query(default=1, ge=1),
@@ -246,6 +255,75 @@ def list_ovas(
     }
 
 
+@router.patch("/{ova_id}/metadata")
+def update_ova_metadata(
+    ova_id: str,
+    payload: UpdateOvaMetadataRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    clean_title = payload.title.strip()
+    clean_description = (payload.description or "").strip() or None
+
+    if not clean_title:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": "title_required", "message": "El título es obligatorio."},
+        )
+
+    if len(clean_title) > 100:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "title_too_long",
+                "message": "El título no puede superar 100 caracteres.",
+            },
+        )
+
+    ova = db.execute(
+        select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
+    ).scalar_one_or_none()
+
+    if not ova:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={
+                "error": "not_found",
+                "message": "OVA no encontrado o ya eliminado.",
+            },
+        )
+
+    admin = _is_admin(current_user, db)
+    if not admin and str(ova.user_id) != str(current_user.id):
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={
+                "error": "forbidden",
+                "message": "No tienes permiso para editar este OVA.",
+            },
+        )
+
+    if ova.status == "generando":
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={
+                "error": "ova_generating",
+                "message": "No se puede editar el OVA mientras se está generando.",
+            },
+        )
+
+    ova.title = clean_title
+    ova.description = clean_description
+    db.commit()
+
+    return {
+        "id": str(ova.id),
+        "title": ova.title,
+        "description": ova.description,
+        "message": "Metadatos actualizados correctamente.",
+    }
+
+
 @router.delete("/{ova_id}")
 def delete_ova(
     ova_id: str,
@@ -259,14 +337,20 @@ def delete_ova(
     if not ova:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "not_found", "message": "OVA no encontrado o ya eliminado."},
+            content={
+                "error": "not_found",
+                "message": "OVA no encontrado o ya eliminado.",
+            },
         )
 
     admin = _is_admin(current_user, db)
     if not admin and str(ova.user_id) != str(current_user.id):
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "forbidden", "message": "No tienes permiso para eliminar este OVA."},
+            content={
+                "error": "forbidden",
+                "message": "No tienes permiso para eliminar este OVA.",
+            },
         )
 
     if ova.status == "generando":
@@ -304,7 +388,10 @@ def download_ova(
     if not admin and str(ova.user_id) != str(current_user.id):
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "forbidden", "message": "No tienes permiso para descargar este OVA."},
+            content={
+                "error": "forbidden",
+                "message": "No tienes permiso para descargar este OVA.",
+            },
         )
 
     if ova.status != "listo":
@@ -319,10 +406,15 @@ def download_ova(
     if not ova.file_path or not os.path.exists(ova.file_path):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "file_not_found", "message": "El archivo del OVA no está disponible."},
+            content={
+                "error": "file_not_found",
+                "message": "El archivo del OVA no está disponible.",
+            },
         )
 
-    safe_title = "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
+    safe_title = (
+        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
+    )
     return FileResponse(
         path=ova.file_path,
         filename=f"{safe_title}.zip",
@@ -333,14 +425,18 @@ def download_ova(
 def _unique_copy_title(base_title: str, user_id, db: Session) -> str:
     candidate = f"{base_title} (copia)"
     exists = db.execute(
-        select(Ova).where(Ova.user_id == user_id, Ova.title == candidate, Ova.deleted_at.is_(None))
+        select(Ova).where(
+            Ova.user_id == user_id, Ova.title == candidate, Ova.deleted_at.is_(None)
+        )
     ).scalar_one_or_none()
     if not exists:
         return candidate
     for n in range(2, 12):
         candidate = f"{base_title} (copia {n})"
         exists = db.execute(
-            select(Ova).where(Ova.user_id == user_id, Ova.title == candidate, Ova.deleted_at.is_(None))
+            select(Ova).where(
+                Ova.user_id == user_id, Ova.title == candidate, Ova.deleted_at.is_(None)
+            )
         ).scalar_one_or_none()
         if not exists:
             return candidate
@@ -366,22 +462,31 @@ def duplicate_ova(
     if original.status == "generando":
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            content={"error": "ova_generating", "message": "No se puede duplicar mientras se está generando."},
+            content={
+                "error": "ova_generating",
+                "message": "No se puede duplicar mientras se está generando.",
+            },
         )
 
     active_version = db.execute(
-        select(OvaVersion).where(OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True))
+        select(OvaVersion).where(
+            OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True)
+        )
     ).scalar_one_or_none()
 
     source_prompt = original.description or original.title or ""
     source_phases = []
     if active_version:
         source_prompt = active_version.prompt
-        source_phases = list(db.execute(
-            select(OvaPhase)
-            .where(OvaPhase.version_id == active_version.id)
-            .order_by(OvaPhase.phase_order)
-        ).scalars().all())
+        source_phases = list(
+            db.execute(
+                select(OvaPhase)
+                .where(OvaPhase.version_id == active_version.id)
+                .order_by(OvaPhase.phase_order)
+            )
+            .scalars()
+            .all()
+        )
 
     new_title = _unique_copy_title(original.title, current_user.id, db)
 
@@ -404,13 +509,15 @@ def duplicate_ova(
     db.flush()
 
     for phase in source_phases:
-        db.add(OvaPhase(
-            version_id=new_version.id,
-            phase_type=phase.phase_type,
-            phase_order=phase.phase_order,
-            content=phase.content,
-            regenerated=False,
-        ))
+        db.add(
+            OvaPhase(
+                version_id=new_version.id,
+                phase_type=phase.phase_type,
+                phase_order=phase.phase_order,
+                content=phase.content,
+                regenerated=False,
+            )
+        )
 
     new_ova.current_version_id = new_version.id
     db.commit()
@@ -441,14 +548,20 @@ def restore_ova(
     if not ova:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "not_found", "message": "OVA no encontrado en la papelera."},
+            content={
+                "error": "not_found",
+                "message": "OVA no encontrado en la papelera.",
+            },
         )
 
     admin = _is_admin(current_user, db)
     if not admin and str(ova.user_id) != str(current_user.id):
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "forbidden", "message": "No tienes permiso para restaurar este OVA."},
+            content={
+                "error": "forbidden",
+                "message": "No tienes permiso para restaurar este OVA.",
+            },
         )
 
     ova.deleted_at = None
@@ -469,14 +582,20 @@ def permanent_delete_ova(
     if not ova:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "not_found", "message": "OVA no encontrado en la papelera."},
+            content={
+                "error": "not_found",
+                "message": "OVA no encontrado en la papelera.",
+            },
         )
 
     admin = _is_admin(current_user, db)
     if not admin and str(ova.user_id) != str(current_user.id):
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "forbidden", "message": "No tienes permiso para eliminar este OVA."},
+            content={
+                "error": "forbidden",
+                "message": "No tienes permiso para eliminar este OVA.",
+            },
         )
 
     _delete_scorm_file(ova.file_path)

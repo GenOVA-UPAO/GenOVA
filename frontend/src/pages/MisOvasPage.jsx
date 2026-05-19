@@ -7,6 +7,7 @@ import {
   downloadOvaFile,
   duplicateOva,
   fetchOvas,
+  updateOvaMetadata,
 } from '../services/ovaHistoryService.js'
 
 const STATUS_LABELS = {
@@ -41,7 +42,18 @@ function StatusBadge({ status }) {
   )
 }
 
-function OvaCard({ ova, isSelected, onToggleSelect, onMoveToTrash, onDownload, onDuplicate, isMoving, isDownloading, isDuplicating }) {
+function OvaCard({
+  ova,
+  isSelected,
+  onToggleSelect,
+  onMoveToTrash,
+  onDownload,
+  onDuplicate,
+  onEditMetadata,
+  isMoving,
+  isDownloading,
+  isDuplicating,
+}) {
   const navigate = useNavigate()
   const isGenerating = ova.status === 'generando'
   const isReady = ova.status === 'listo'
@@ -94,6 +106,16 @@ function OvaCard({ ova, isSelected, onToggleSelect, onMoveToTrash, onDownload, o
           >
             ✏ Editar
           </button>
+          <button
+            onClick={() => onEditMetadata(ova)}
+            disabled={isGenerating || isDuplicating}
+            title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Editar título y descripción'}
+            className="flex-1 rounded-lg border border-indigo-100 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 transition-all hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            📝 Metadatos
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={() => onDuplicate(ova.id)}
             disabled={isGenerating || isDuplicating}
@@ -179,6 +201,70 @@ function BulkTrashModal({ count, onConfirm, onCancel, isLoading }) {
   )
 }
 
+function EditMetadataModal({ form, onChange, onSubmit, onCancel, isLoading, error }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+        <h2 className="text-base font-bold text-slate-900">Editar metadatos</h2>
+        <p className="mt-1 text-xs text-slate-500">Actualiza el título y descripción del OVA.</p>
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <label htmlFor="metadata-title" className="text-xs font-semibold text-slate-700">
+              Título *
+            </label>
+            <input
+              id="metadata-title"
+              name="title"
+              type="text"
+              value={form.title}
+              onChange={onChange}
+              maxLength={250}
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              placeholder="Ej. Regresión lineal aplicada"
+            />
+            <p className="mt-1 text-[11px] text-slate-400">{form.title.length}/100</p>
+          </div>
+
+          <div>
+            <label htmlFor="metadata-description" className="text-xs font-semibold text-slate-700">
+              Descripción
+            </label>
+            <textarea
+              id="metadata-description"
+              name="description"
+              value={form.description}
+              onChange={onChange}
+              rows={4}
+              className="mt-1 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              placeholder="Opcional"
+            />
+          </div>
+
+          {error && <p className="text-xs font-medium text-red-600">{error}</p>}
+        </div>
+
+        <div className="mt-5 flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onSubmit}
+            disabled={isLoading}
+            className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          >
+            {isLoading ? 'Guardando...' : 'Guardar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function MisOvasPage() {
   const navigate = useNavigate()
   const [ovas, setOvas] = useState([])
@@ -201,6 +287,12 @@ export function MisOvasPage() {
   const [duplicatingId, setDuplicatingId] = useState('')
 
   const [selectedIds, setSelectedIds] = useState(new Set())
+
+  const [metadataModalOpen, setMetadataModalOpen] = useState(false)
+  const [metadataTargetId, setMetadataTargetId] = useState('')
+  const [metadataForm, setMetadataForm] = useState({ title: '', description: '' })
+  const [metadataError, setMetadataError] = useState('')
+  const [metadataSaving, setMetadataSaving] = useState(false)
 
   const searchDebounceRef = useRef(null)
 
@@ -321,6 +413,72 @@ export function MisOvasPage() {
     }
   }
 
+  const openMetadataModal = (ova) => {
+    setMetadataTargetId(ova.id)
+    setMetadataForm({
+      title: ova.title || '',
+      description: ova.description || '',
+    })
+    setMetadataError('')
+    setMetadataModalOpen(true)
+  }
+
+  const closeMetadataModal = () => {
+    setMetadataModalOpen(false)
+    setMetadataTargetId('')
+    setMetadataError('')
+    setMetadataForm({ title: '', description: '' })
+  }
+
+  const handleMetadataChange = (event) => {
+    const { name, value } = event.target
+    setMetadataForm((prev) => ({ ...prev, [name]: value }))
+    if (metadataError) setMetadataError('')
+  }
+
+  const handleMetadataSave = async () => {
+    const trimmedTitle = metadataForm.title.trim()
+
+    if (!trimmedTitle) {
+      setMetadataError('El título es obligatorio.')
+      return
+    }
+
+    if (trimmedTitle.length > 100) {
+      setMetadataError('El título no puede superar 100 caracteres.')
+      return
+    }
+
+    setMetadataSaving(true)
+    setMetadataError('')
+
+    try {
+      const response = await updateOvaMetadata(metadataTargetId, {
+        title: metadataForm.title,
+        description: metadataForm.description,
+      })
+
+      setOvas((prev) =>
+        prev.map((item) =>
+          item.id === metadataTargetId
+            ? {
+                ...item,
+                title: response.title,
+                description: response.description,
+              }
+            : item,
+        ),
+      )
+
+      toast.success(response.message || 'Metadatos actualizados correctamente.')
+      closeMetadataModal()
+    } catch (err) {
+      setMetadataError(err.message || 'No se pudieron guardar los metadatos.')
+    } finally {
+      setMetadataSaving(false)
+    }
+  }
+
   const handleDownload = async (ovaId, title) => {
     setDownloadingId(ovaId)
     try {
@@ -350,6 +508,16 @@ export function MisOvasPage() {
           onConfirm={handleBulkTrashConfirm}
           onCancel={() => setShowBulkModal(false)}
           isLoading={bulkLoading}
+        />
+      )}
+      {metadataModalOpen && (
+        <EditMetadataModal
+          form={metadataForm}
+          onChange={handleMetadataChange}
+          onSubmit={handleMetadataSave}
+          onCancel={closeMetadataModal}
+          isLoading={metadataSaving}
+          error={metadataError}
         />
       )}
 
@@ -482,6 +650,7 @@ export function MisOvasPage() {
               onMoveToTrash={handleMoveToTrashRequest}
               onDownload={(id) => handleDownload(id, ova.title)}
               onDuplicate={handleDuplicate}
+              onEditMetadata={openMetadataModal}
               isMoving={movingId === ova.id}
               isDownloading={downloadingId === ova.id}
               isDuplicating={duplicatingId === ova.id}

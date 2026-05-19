@@ -94,7 +94,17 @@ export async function duplicateOva(ovaId) {
   return parseResponse(response)
 }
 
+export async function updateOvaMetadata(ovaId, { title, description }) {
+  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/metadata`, {
+    method: 'PATCH',
+    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, description }),
+  })
+  return parseResponse(response)
+}
+
 export async function batchPermanentDelete(ovaIds) {
+
   const response = await fetch(`${API_BASE_URL}/api/ovas/lote/permanente`, {
     method: 'DELETE',
     headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
