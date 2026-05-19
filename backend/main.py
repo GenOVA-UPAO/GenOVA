@@ -15,6 +15,7 @@ from users.router import router as users_router
 from uploads.router import router as uploads_router
 from seed import seed_db
 from sqlalchemy import text
+from run_migrations import run_migrations
 
 
 app = FastAPI(title="GENOVA Backend API", version="0.1.0")
@@ -41,6 +42,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup() -> None:
+    run_migrations()
     Base.metadata.create_all(bind=engine)
     seed_db()
 

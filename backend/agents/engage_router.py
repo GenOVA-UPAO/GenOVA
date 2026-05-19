@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from agents.engage_prompts import RECURSOS_META, prompt_html, prompt_simulador, prompt_texto
 from agents.llm_router import generar_texto
-from agents.utils import parse_json, strip_markdown
+from agents.utils import parse_json, strip_markdown, SCORM_JS
 from auth.dependencies import get_current_user
 from models import User
 
