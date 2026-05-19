@@ -15,6 +15,7 @@ from database import get_db
 from models import Ova, User
 from ova.uploads_service import claim_user_uploads, max_files_per_request
 
+from ova.generation.routes import router as generation_router
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
