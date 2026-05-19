@@ -243,3 +243,4 @@ node_modules/
 # Caché e historial
 history.jsonl
 stats-cache.json
+nul
