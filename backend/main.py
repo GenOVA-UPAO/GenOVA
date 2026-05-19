@@ -10,6 +10,7 @@ from roles.router import router as roles_router
 from scorm.router import router as scorm_router
 from ova.router import router as ova_router
 from ova.history_router import router as ova_history_router
+from ova.edit_router import router as ova_edit_router
 from users.router import router as users_router
 from uploads.router import router as uploads_router
 from seed import seed_db
@@ -70,6 +71,7 @@ app.include_router(roles_router, prefix="/roles", tags=["roles"])
 app.include_router(scorm_router, prefix="/api/scorm", tags=["scorm"])
 app.include_router(ova_router, prefix="/api/ova", tags=["ova"])
 app.include_router(ova_history_router, prefix="/api/ovas", tags=["ovas"])
+app.include_router(ova_edit_router, prefix="/api/ovas", tags=["ovas-edit"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])

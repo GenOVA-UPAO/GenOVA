@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from database import get_db
-from models import Ova, User
+from models import Ova, OvaPhase, OvaVersion, User
 from ova.uploads_service import claim_user_uploads, max_files_per_request
 
 from ova.generation.routes import router as generation_router
@@ -142,26 +142,63 @@ def _title_from_prompt(prompt: str) -> str:
     return prompt[:80].rstrip()
 
 
+DEFAULT_PHASE_CONTENT = [
+    {"type": "motivacion", "order": 1,
+     "content": "Explora cómo aplicar Machine Learning en problemas reales de negocio."},
+    {"type": "contenido", "order": 2,
+     "content": "Identifica variables relevantes y revisa un dataset simple de clasificación."},
+    {"type": "explicacion", "order": 3,
+     "content": "Compara conceptos de entrenamiento, validación y evaluación de modelos."},
+    {"type": "actividad", "order": 4,
+     "content": "Piensa en un caso UPAO donde puedas aplicar un modelo supervisado."},
+    {"type": "evaluacion", "order": 5,
+     "content": "Checklist: ¿entendiste objetivo, datos y criterio de éxito del modelo?"},
+]
+
+
 def _finalize_ova(ova_id: str, prompt: str, db: Session) -> None:
     from scorm.service import build_scorm_zip_bytes
 
     try:
         output_dir = _ova_output_dir()
         os.makedirs(output_dir, exist_ok=True)
-        file_path = os.path.join(output_dir, f"{ova_id}.zip")
+        file_path = os.path.join(output_dir, f"{ova_id}_v1.zip")
 
         zip_bytes = build_scorm_zip_bytes(
             course_title=_title_from_prompt(prompt),
             module_title="OVA Generado por GenOVA",
+            phases=DEFAULT_PHASE_CONTENT,
         )
         with open(file_path, "wb") as f:
             f.write(zip_bytes)
 
         ova = db.execute(select(Ova).where(Ova.id == ova_id)).scalar_one_or_none()
-        if ova:
-            ova.status = "listo"
-            ova.file_path = file_path
-            db.commit()
+        if not ova:
+            return
+
+        # Create initial version v1
+        version = OvaVersion(
+            ova_id=ova.id,
+            version_number=1,
+            prompt=prompt,
+            is_active=True,
+        )
+        db.add(version)
+        db.flush()
+
+        for phase_data in DEFAULT_PHASE_CONTENT:
+            db.add(OvaPhase(
+                version_id=version.id,
+                phase_type=phase_data["type"],
+                phase_order=phase_data["order"],
+                content=phase_data["content"],
+                regenerated=True,
+            ))
+
+        ova.status = "listo"
+        ova.file_path = file_path
+        ova.current_version_id = version.id
+        db.commit()
     except Exception as exc:
         logger.error("Failed to finalize OVA %s: %s", ova_id, exc)
         _mark_ova_error(ova_id, db)
