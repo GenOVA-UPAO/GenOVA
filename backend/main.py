@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,6 +21,7 @@ from run_migrations import run_migrations
 
 app = FastAPI(title="GENOVA Backend API", version="0.1.0")
 
+_extra = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 allowed_origins = [
     "http://localhost",
     "http://localhost:80",
@@ -29,6 +31,7 @@ allowed_origins = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:4173",
     "http://127.0.0.1:5173",
+    *_extra,
 ]
 
 app.add_middleware(
