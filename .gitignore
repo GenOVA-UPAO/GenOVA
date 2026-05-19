@@ -149,8 +149,6 @@ activemq-data/
 
 # Environments
 .env
-.env.*
-!.env.example
 .envrc
 .venv
 env/
@@ -201,8 +199,7 @@ cython_debug/
 #   that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
 #   and can be added to the global gitignore or merged into this file. However, if you prefer, 
 #   you could uncomment the following to ignore the entire vscode folder
-.vscode/
-pyrightconfig.json
+# .vscode/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
@@ -219,27 +216,3 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-
-# Frontend
-dist/
-build/
-.pnpm-store/
-node_modules/
-
-# Credenciales y estado interno
-.claude.json
-.credentials.json
-*.key
-*.pem
-
-# Archivos locales, sesiones y memoria de la IA
-.claude/settings.local.json
-.claude/sessions/
-.claude/todos/
-.claude/projects/
-.claude/plans/
-.claude/statsig/
-
-# Caché e historial
-history.jsonl
-stats-cache.json
