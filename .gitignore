@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -151,8 +151,7 @@ activemq-data/
 .env
 .env.*
 !.env.example
-.env.*
-!.env.example
+!.env.production
 .envrc
 .venv
 env/
