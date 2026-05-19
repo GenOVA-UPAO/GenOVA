@@ -15,7 +15,7 @@ class UserRoleUpdate(BaseModel):
     role_id: str = Field(..., description="UUID del rol a asignar")
 
 
-@router.get("")
+@router.get("/")
 def get_users(
     page: int = 1,
     limit: int = 10,
