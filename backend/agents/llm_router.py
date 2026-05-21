@@ -1,20 +1,34 @@
+"""LLM routing — Groq (primary) + OpenRouter (secondary / arbitrary model)."""
+import logging
 import os
 
 from groq import Groq
+from groq import RateLimitError as GroqRateLimitError
 from openai import OpenAI
+from openai import RateLimitError as OpenAIRateLimitError
+
+logger = logging.getLogger(__name__)
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+# OpenRouter uses the OpenAI-compatible endpoint.
+# HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
 openrouter_client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1",
+    default_headers={
+        "HTTP-Referer": os.getenv("APP_URL", "https://genova.ai"),
+        "X-Title": "GenOVA",
+    },
 )
 
-# (proveedor, model_id, extra_kwargs)
+# (provider, model_id, extra_kwargs)
+# Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
 _MODELOS: dict[str, tuple] = {
-    "texto":        ("groq",       "llama-3.3-70b-versatile",              {}),
-    "codigo":       ("openrouter", "qwen/qwen3-coder:free",                {}),
-    "orquestador":  ("groq",       "openai/gpt-oss-120b",                  {"reasoning_effort": "medium"}),
-    "razonamiento": ("groq",       "qwen/qwen3-32b",                       {"reasoning_effort": "default"}),
+    "texto":        ("groq",       "llama-3.3-70b-versatile",  {}),
+    "codigo":       ("openrouter", "qwen/qwen3-coder:free",    {}),
+    "orquestador":  ("groq",       "openai/gpt-oss-120b",      {"reasoning_effort": "medium"}),
+    "razonamiento": ("groq",       "qwen/qwen3-32b",           {"reasoning_effort": "default"}),
 }
 
 _VISION_MODEL  = "meta-llama/llama-4-scout-17b-16e-instruct"
@@ -33,10 +47,13 @@ VIDEO_UNAVAILABLE_MSG = (
     "Estilo visual limpio, subtítulos, tono académico accesible.\""
 )
 
+_FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
+_FALLBACK_OR_MODEL   = "meta-llama/llama-3.3-70b-instruct:free"
+
 
 def generar_texto(prompt: str, tarea: str, max_tokens: int = 3000) -> str:
+    """Route task to the configured model. Falls back to a lighter model on rate-limit."""
     proveedor, model_id, extra = _MODELOS.get(tarea, _MODELOS["texto"])
-
     try:
         if proveedor == "groq":
             response = groq_client.chat.completions.create(
@@ -54,15 +71,41 @@ def generar_texto(prompt: str, tarea: str, max_tokens: int = 3000) -> str:
             )
         return response.choices[0].message.content
 
-    except Exception as e:
-        if "429" in str(e):
+    except (GroqRateLimitError, OpenAIRateLimitError):
+        logger.warning("Rate limit on task='%s' model='%s'; falling back to %s", tarea, model_id, _FALLBACK_GROQ_MODEL)
+        response = groq_client.chat.completions.create(
+            model=_FALLBACK_GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_completion_tokens=max_tokens,
+        )
+        return response.choices[0].message.content
+
+
+def generar_texto_with_model(prompt: str, model_id: str, provider: str, max_tokens: int = 4000) -> str:
+    """Call an arbitrary model on the given provider (groq or openrouter)."""
+    try:
+        if provider == "groq":
             response = groq_client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model=model_id,
                 messages=[{"role": "user", "content": prompt}],
                 max_completion_tokens=max_tokens,
             )
-            return response.choices[0].message.content
-        raise
+        else:
+            response = openrouter_client.chat.completions.create(
+                model=model_id,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=max_tokens,
+            )
+        return response.choices[0].message.content
+
+    except (GroqRateLimitError, OpenAIRateLimitError):
+        logger.warning("Rate limit on model='%s' provider='%s'; falling back to %s", model_id, provider, _FALLBACK_OR_MODEL)
+        response = openrouter_client.chat.completions.create(
+            model=_FALLBACK_OR_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+        )
+        return response.choices[0].message.content
 
 
 def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
@@ -76,7 +119,7 @@ def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
 
 
 def transcribir_audio(file_path: str) -> str:
-    """Whisper STT for uploaded audio files (max 19.5 MB)."""
+    """Whisper STT for uploaded audio files. Groq free tier limit: 25 MB."""
     with open(file_path, "rb") as f:
         transcription = groq_client.audio.transcriptions.create(
             file=f,

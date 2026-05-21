@@ -14,6 +14,8 @@ from ova.history_router import router as ova_history_router
 from ova.edit_router import router as ova_edit_router
 from users.router import router as users_router
 from uploads.router import router as uploads_router
+from labs.router import router as labs_router
+from labs.generation_routes import router as labs_gen_router
 from seed import seed_db
 from sqlalchemy import text
 from run_migrations import run_migrations
@@ -80,3 +82,5 @@ app.include_router(ova_edit_router, prefix="/api/ovas", tags=["ovas-edit"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
+app.include_router(labs_router, prefix="/api/labs", tags=["labs"])
+app.include_router(labs_gen_router, prefix="/api/labs", tags=["labs"])

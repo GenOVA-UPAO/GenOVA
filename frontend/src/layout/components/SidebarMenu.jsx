@@ -81,6 +81,11 @@ export function SidebarMenu() {
                 Gestión de Usuarios
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/admin/labs" className={getSidebarLinkClasses}>
+                🧪 Labs
+              </NavLink>
+            </li>
           </ul>
         </div>
       )}

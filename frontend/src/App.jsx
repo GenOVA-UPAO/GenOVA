@@ -15,6 +15,7 @@ import { ProfilePage } from './pages/ProfilePage.jsx'
 import { EngagePage } from './pages/EngagePage.jsx'
 import { ExplorePage } from './pages/ExplorePage.jsx'
 import { NotFoundPage } from './pages/NotFoundPage.jsx'
+import { LabsPage } from './pages/LabsPage.jsx'
 
 import { Toaster } from 'sonner'
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -125,6 +126,7 @@ function App() {
           <Route element={<AdminRoute />}>
             <Route path="/admin/roles" element={<AdminRolesPage />} />
             <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/labs" element={<LabsPage />} />
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/login" replace />} />
