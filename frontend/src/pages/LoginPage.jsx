@@ -49,7 +49,7 @@ export function LoginPage() {
       }
 
       setServerError(data?.message || 'No se pudo iniciar sesión.')
-    } catch (error) {
+    } catch {
       setServerError('No se pudo conectar con el servidor. Intenta de nuevo.')
     } finally {
       setIsSubmitting(false)

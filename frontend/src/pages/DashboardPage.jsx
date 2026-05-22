@@ -6,14 +6,11 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => Boolean(getToken()))
 
   useEffect(() => {
     const token = getToken()
-    if (!token) {
-      setLoading(false)
-      return
-    }
+    if (!token) return
 
     const checkRole = async () => {
       try {
@@ -24,11 +21,10 @@ export function DashboardPage() {
         })
         if (response.status === 200) {
           const user = await response.json()
-          if (user.role === 'administrador') {
-            setIsAdmin(true)
-          }
+          setIsAdmin(user.role === 'administrador')
         }
-      } catch (err) {
+      } catch {
+        /* rol no disponible: el usuario queda sin permisos de admin */
       } finally {
         setLoading(false)
       }
