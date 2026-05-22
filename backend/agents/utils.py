@@ -11,6 +11,18 @@ SCORM_JS = (
     'window.addEventListener("load",_scormInit)'
 )
 
+# Shared course context injected into every generation prompt. The project
+# targets a single university Machine Learning course, so the audience and
+# level are constant — the only variable is the specific ML concept.
+CURSO_CONTEXTO = (
+    "Recurso para un curso universitario de Machine Learning. Audiencia: "
+    "estudiantes en su primer contacto con el tema, sin formación matemática "
+    "avanzada. Idioma: español. El recurso debe ser pedagógicamente sólido y "
+    "técnicamente correcto, pero con lenguaje accesible. Todo ejemplo, dato, "
+    "analogía o mecánica debe ser específico y fiel al concepto de ML "
+    "indicado — nunca genérico ni de otro subtema."
+)
+
 
 def strip_markdown(text: str) -> str:
     text = text.strip()

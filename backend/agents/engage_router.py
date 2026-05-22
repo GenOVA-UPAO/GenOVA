@@ -104,13 +104,13 @@ def generate_engage_resource(
         # Resource 10: direct code generation (no JSON step)
         if n == 10:
             p = _step1_prompt() or prompt_simulador(concept)
-            html = strip_markdown(generar_texto(p, "codigo", max_tokens=4000))
+            html = strip_markdown(generar_texto(p, "codigo", max_tokens=8000))
             return {**meta, "resource_type": n, "concepto": concept, "raw_json": None, "html_content": html}
 
         # Resource 3 (podcast): plain text → styled HTML wrapper
         if n == 3:
             p = _step1_prompt() or prompt_texto(n, concept)
-            monologue = generar_texto(p, "texto", max_tokens=500)
+            monologue = generar_texto(p, "texto", max_tokens=700)
             return {**meta, "resource_type": n, "concepto": concept,
                     "raw_json": {"monologue": monologue},
                     "html_content": _podcast_html(concept, monologue)}
@@ -118,7 +118,7 @@ def generate_engage_resource(
         # Resources 1,2,4-9: Step 1 = text/JSON, Step 2 = HTML via code agent
         tarea = _TAREA_POR_RECURSO[n]
         p = _step1_prompt() or prompt_texto(n, concept)
-        raw_text = generar_texto(p, tarea, max_tokens=2000)
+        raw_text = generar_texto(p, tarea, max_tokens=3000)
 
         try:
             json_data = parse_json(raw_text)
@@ -127,7 +127,7 @@ def generate_engage_resource(
             json_data = {"contenido": raw_text}
 
         json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
-        html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=4000))
+        html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=8000))
 
         return {**meta, "resource_type": n, "concepto": concept, "raw_json": json_data, "html_content": html}
 
