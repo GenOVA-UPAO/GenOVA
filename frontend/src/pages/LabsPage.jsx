@@ -52,11 +52,8 @@ export function LabsPage() {
             <PromptEditor
               promptText={lab.promptText}
               setPromptText={lab.setPromptText}
-              versions={lab.versions}
               loadingPrompts={lab.loadingPrompts}
               onResetBase={lab.resetToBase}
-              onLoadVersion={lab.loadVersionInEditor}
-              onSaveVersion={lab.handleSaveVersion}
             />
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -106,29 +103,6 @@ export function LabsPage() {
                       `▶ Generar${totalConfigs > 1 ? ` (${totalConfigs} modelos)` : ''}`
                     )}
                   </button>
-                  {lab.winnerId && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => lab.handleSaveVersion('')}
-                        className="rounded-lg border border-indigo-300 px-3 py-2 text-xs font-medium text-indigo-700 hover:bg-indigo-50"
-                      >
-                        💾 Guardar versión
-                      </button>
-                      <button
-                        onClick={() => {
-                          const winnerVersion = lab.versions.find((v) => v.is_active)
-                          if (winnerVersion) lab.handleActivateVersion(winnerVersion.id)
-                          else lab.handleSaveVersion('').then(() => {
-                            const latest = lab.versions[0]
-                            if (latest) lab.handleActivateVersion(latest.id)
-                          })
-                        }}
-                        className="rounded-lg bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700"
-                      >
-                        ✓ Activar en producción
-                      </button>
-                    </div>
-                  )}
                 </div>
                 {lab.jobError && (
                   <p className="rounded-lg bg-red-50 border border-red-200 p-2 text-xs text-red-600">

@@ -122,26 +122,6 @@ class UserRole(Base):
     role = relationship("Role", back_populates="users")
 
 
-class PromptVersion(Base):
-    __tablename__ = "prompt_versions"
-    __table_args__ = (
-        Index("idx_prompt_versions_active", "phase", "resource_type", unique=True,
-              postgresql_where=text("is_active = TRUE")),
-    )
-
-    id = _pk_column()
-    phase = Column(String(20), nullable=False)
-    resource_type = Column(Integer, nullable=False)
-    version_number = Column(Integer, nullable=False, default=1)
-    prompt_text = Column(Text, nullable=False)
-    model_id = Column(String(100), nullable=False)
-    provider = Column(String(50), nullable=False)
-    notes = Column(Text)
-    is_active = Column(Boolean, nullable=False, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-
-
 class LabResult(Base):
     __tablename__ = "lab_results"
 

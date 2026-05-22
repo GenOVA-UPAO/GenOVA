@@ -7,21 +7,21 @@ import {
   pollResults,
   startGeneration,
 } from '../services/labsService.js'
-import { useLabVersions } from './useLabVersions.js'
+import { useLabPrompt } from './useLabPrompt.js'
 
 const POLL_MS = 2000
 
 /**
- * Central hook for the Labs page.
- * Composes useLabVersions + generation + model state.
+ * Central hook for the Labs page (experimentation sandbox).
+ * Composes useLabPrompt + generation + model state.
  */
 export function useLabGeneration() {
   // Resource selection
   const [selectedPhase, setSelectedPhase] = useState(null)
   const [selectedType, setSelectedType] = useState(null)
 
-  // Prompt versions (delegated hook)
-  const versions = useLabVersions()
+  // Editable prompt (delegated hook)
+  const prompt = useLabPrompt()
 
   // Models
   const [models, setModels] = useState([])
@@ -56,9 +56,9 @@ export function useLabGeneration() {
       setResults([])
       setWinnerId(null)
       setImprovedPrompt(null)
-      versions.loadPrompts(phase, type)
+      prompt.loadPrompts(phase, type)
     },
-    [versions],
+    [prompt],
   )
 
   const _stopPoll = useCallback(() => {
@@ -80,9 +80,9 @@ export function useLabGeneration() {
     setImprovedPrompt(null)
 
     const configs = [
-      { model_id: modelA.id, provider: modelA.provider, prompt_text: versions.promptText },
+      { model_id: modelA.id, provider: modelA.provider, prompt_text: prompt.promptText },
     ]
-    if (modelB) configs.push({ model_id: modelB.id, provider: modelB.provider, prompt_text: versions.promptText })
+    if (modelB) configs.push({ model_id: modelB.id, provider: modelB.provider, prompt_text: prompt.promptText })
 
     try {
       const { job_id } = await startGeneration({
@@ -109,33 +109,19 @@ export function useLabGeneration() {
       setGenerating(false)
       setJobError(err.message)
     }
-  }, [selectedPhase, selectedType, concept, modelA, modelB, versions.promptText, _stopPoll])
+  }, [selectedPhase, selectedType, concept, modelA, modelB, prompt.promptText, _stopPoll])
 
   const selectWinner = useCallback(async (resultId) => {
     setWinnerId(resultId)
     try { await markSelected(resultId) } catch { /* non-critical */ }
   }, [])
 
-  const handleSaveVersion = useCallback(
-    (notes = '') =>
-      versions.handleSaveVersion(
-        selectedPhase, selectedType, versions.promptText,
-        modelA?.id, modelA?.provider, notes,
-      ),
-    [versions, selectedPhase, selectedType, modelA],
-  )
-
-  const handleActivateVersion = useCallback(
-    (versionId) => versions.handleActivateVersion(versionId, selectedPhase, selectedType),
-    [versions, selectedPhase, selectedType],
-  )
-
   const handleImprovePrompt = useCallback(async () => {
     if (!winnerId || !selectedPhase || !selectedType) return
     setImproving(true)
     try {
       const data = await improvePrompt({
-        current_prompt: versions.promptText,
+        current_prompt: prompt.promptText,
         result_id: winnerId,
         concept: concept.trim(),
         phase: selectedPhase,
@@ -147,24 +133,17 @@ export function useLabGeneration() {
     } finally {
       setImproving(false)
     }
-  }, [winnerId, selectedPhase, selectedType, versions.promptText, concept])
+  }, [winnerId, selectedPhase, selectedType, prompt.promptText, concept])
 
   const applyImprovedPrompt = useCallback(() => {
-    if (improvedPrompt?.improved_prompt) versions.setPromptText(improvedPrompt.improved_prompt)
-  }, [improvedPrompt, versions])
+    if (improvedPrompt?.improved_prompt) prompt.setPromptText(improvedPrompt.improved_prompt)
+  }, [improvedPrompt, prompt])
 
   const handleExportScorm = useCallback((resultId) => downloadScorm(resultId), [])
 
-  const loadVersionInEditor = useCallback(
-    (version) => versions.loadVersion(version, models, setModelA),
-    [versions, models],
-  )
-
   return {
     selectedPhase, selectedType, selectResource,
-    ...versions,
-    handleSaveVersion, handleActivateVersion,
-    loadVersionInEditor,
+    ...prompt,
     models, loadModels, modelA, setModelA, modelB, setModelB,
     concept, setConcept,
     generating, generate, results, jobError,

@@ -1,11 +1,4 @@
-"""Prompt helpers: base prompts, active-version lookup, AI improvement builder."""
-from typing import Optional
-
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from models import PromptVersion
-
+"""Prompt helpers: base prompts and the AI prompt-improvement meta-prompt."""
 CONCEPT_PH = "{concept}"
 
 # Resource type classification (matches engage/explore router logic)
@@ -26,16 +19,6 @@ def get_base_prompt(phase: str, resource_type: int) -> str:
     if resource_type in CODE_ONLY:
         return prompt_codigo(resource_type, CONCEPT_PH)
     return prompt_texto(resource_type, CONCEPT_PH)
-
-
-def get_active_prompt(phase: str, resource_type: int, db: Session) -> Optional[str]:
-    """Return is_active prompt_text from DB or None (caller falls back to hardcoded)."""
-    return db.execute(
-        select(PromptVersion.prompt_text)
-        .where(PromptVersion.phase == phase)
-        .where(PromptVersion.resource_type == resource_type)
-        .where(PromptVersion.is_active.is_(True))
-    ).scalar_one_or_none()
 
 
 def build_improve_prompt(

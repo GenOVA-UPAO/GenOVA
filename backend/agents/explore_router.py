@@ -3,7 +3,6 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
 from agents.explore_prompts import (
     CODE_ONLY,
@@ -15,8 +14,6 @@ from agents.explore_prompts import (
 from agents.llm_router import generar_texto
 from agents.utils import parse_json, strip_markdown
 from auth.dependencies import get_current_user
-from database import get_db
-from labs.service import get_active_prompt
 from models import User
 
 router = APIRouter()
@@ -33,10 +30,9 @@ class GenerateExploreRequest(BaseModel):
     concept: str
 
 
-def _generate_two_step(n: int, concept: str, step1_prompt: str = None) -> tuple[dict | list, str]:
+def _generate_two_step(n: int, concept: str) -> tuple[dict | list, str]:
     tarea = _TAREA_POR_RECURSO.get(n, "texto")
-    p = step1_prompt if step1_prompt else prompt_texto(n, concept)
-    raw = generar_texto(p, tarea, max_tokens=3000)
+    raw = generar_texto(prompt_texto(n, concept), tarea, max_tokens=3000)
     try:
         json_data = parse_json(raw)
     except Exception:
@@ -59,7 +55,6 @@ def list_recursos():
 def generate_explore_resource(
     payload: GenerateExploreRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     n = payload.resource_type
     concept = payload.concept.strip()
@@ -71,17 +66,12 @@ def generate_explore_resource(
 
     meta = RECURSOS_META[n]
 
-    # Production override: use active prompt version from DB if available
-    _active_prompt = get_active_prompt("explore", n, db)
-    _override = _active_prompt.replace("{concept}", concept) if _active_prompt else None
-
     try:
         if n in CODE_ONLY:
-            p = _override or prompt_codigo(n, concept)
-            html = strip_markdown(generar_texto(p, "codigo", max_tokens=8000))
+            html = strip_markdown(generar_texto(prompt_codigo(n, concept), "codigo", max_tokens=8000))
             return {**meta, "resource_type": n, "concepto": concept, "raw_json": None, "html_content": html}
 
-        json_data, html = _generate_two_step(n, concept, step1_prompt=_override)
+        json_data, html = _generate_two_step(n, concept)
         return {**meta, "resource_type": n, "concepto": concept, "raw_json": json_data, "html_content": html}
 
     except HTTPException:

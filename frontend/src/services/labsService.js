@@ -20,25 +20,6 @@ export const fetchModels = () =>
 export const fetchPrompts = (phase, resourceType) =>
   fetch(`${BASE}/api/labs/prompts/${phase}/${resourceType}`, { headers: headers() }).then(ok)
 
-export const saveVersion = (payload) =>
-  fetch(`${BASE}/api/labs/prompts`, {
-    method: 'POST',
-    headers: headers(),
-    body: JSON.stringify(payload),
-  }).then(ok)
-
-export const activateVersion = (versionId) =>
-  fetch(`${BASE}/api/labs/prompts/${versionId}/activate`, {
-    method: 'PUT',
-    headers: headers(),
-  }).then(ok)
-
-export const deactivateVersion = (versionId) =>
-  fetch(`${BASE}/api/labs/prompts/${versionId}/activate`, {
-    method: 'DELETE',
-    headers: headers(),
-  }).then(ok)
-
 export const startGeneration = (payload) =>
   fetch(`${BASE}/api/labs/generate`, {
     method: 'POST',
