@@ -21,16 +21,12 @@ import { Toaster } from 'sonner'
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function AdminRoute() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => Boolean(getToken()))
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     const token = getToken()
-    if (!token) {
-      setIsAdmin(false)
-      setLoading(false)
-      return
-    }
+    if (!token) return
 
     const checkAdmin = async () => {
       try {
@@ -41,15 +37,11 @@ export function AdminRoute() {
         })
         if (response.status === 200) {
           const user = await response.json()
-          if (user.role === 'administrador') {
-            setIsAdmin(true)
-          } else {
-            setIsAdmin(false)
-          }
+          setIsAdmin(user.role === 'administrador')
         } else {
           setIsAdmin(false)
         }
-      } catch (error) {
+      } catch {
         setIsAdmin(false)
       } finally {
         setLoading(false)
@@ -77,24 +69,22 @@ export function AdminRoute() {
   return <Outlet />
 }
 
+function ProtectedLayout() {
+  const token = getToken()
+  if (!token || isTokenExpired(token)) {
+    return <Navigate to="/login" replace />
+  }
+  return <AppLayout />
+}
+
 function App() {
   const navigate = useNavigate()
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const token = getToken()
-    if (token && isTokenExpired(token)) {
-      clearToken()
-      return false
-    }
-    return Boolean(token)
-  })
 
   useEffect(() => {
     const interval = setInterval(() => {
       const token = getToken()
-      const valid = token && !isTokenExpired(token)
-      if (!valid) {
+      if (!token || isTokenExpired(token)) {
         clearToken()
-        setIsAuthenticated(false)
         navigate('/login', { replace: true })
       }
     }, 60000)
@@ -108,11 +98,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route
-          element={
-            isAuthenticated ? <AppLayout /> : <Navigate to="/login" replace />
-          }
-        >
+        <Route element={<ProtectedLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/crear-ova" element={<CrearOvaPage />} />
           <Route path="/mis-ovas" element={<MisOvasPage />} />
