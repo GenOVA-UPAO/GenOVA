@@ -139,11 +139,11 @@ def transcribir_audio(file_path: str) -> str:
 
 
 def generar_audio_tts(text: str, voice: str = _ORPHEUS_VOICE) -> bytes:
-    """Orpheus TTS — returns WAV bytes."""
+    """Orpheus TTS — returns WAV bytes (Orpheus only supports the wav format)."""
     response = groq_client.audio.speech.create(
         model=_ORPHEUS_MODEL,
         voice=voice,
         response_format="wav",
         input=text,
     )
-    return response.content
+    return response.read()

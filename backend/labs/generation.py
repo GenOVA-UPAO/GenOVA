@@ -6,7 +6,8 @@ import uuid
 from typing import Optional
 
 from agents.llm_router import generar_texto, generar_texto_with_model
-from agents.utils import parse_json, strip_markdown, SCORM_JS
+from agents.podcast import build_podcast_html, podcast_audio_b64
+from agents.utils import parse_json, strip_markdown
 from database import SessionLocal
 from labs.catalog import quality_check_html
 from labs.prompt_utils import CONCEPT_PH, ENGAGE_CODE, ENGAGE_PODCAST, EXPLORE_CODE
@@ -17,32 +18,6 @@ from models import LabResult
 # ──────────────────────────────────────────────────────────────
 _lab_jobs: dict[str, dict] = {}
 _lab_jobs_lock = threading.Lock()
-
-
-def _podcast_html(concept: str, monologue: str) -> str:
-    return (
-        f'<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
-        f'<title>Micro-Podcast · {concept}</title><style>'
-        "*{box-sizing:border-box;margin:0;padding:0}"
-        "body{font-family:'Georgia',serif;background:#1a1a2e;color:#eee;"
-        "min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}"
-        ".card{background:#16213e;border-radius:16px;padding:40px;max-width:620px;"
-        "width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}"
-        ".tag{font-size:.8rem;color:#a78bfa;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}"
-        "h2{font-size:1.8rem;margin-bottom:28px;color:#fff}"
-        ".monologue{font-size:1.1rem;line-height:1.9;color:#d1d5db;"
-        "border-left:3px solid #7c3aed;padding-left:20px;margin:20px 0}"
-        ".btn{background:#7c3aed;color:#fff;border:none;padding:13px 30px;"
-        "border-radius:8px;font-size:1rem;cursor:pointer;margin-top:20px;transition:background .2s}"
-        ".btn:hover{background:#6d28d9}.btn.done{background:#059669}"
-        f'</style></head><body><div class="card">'
-        f'<p class="tag">🎙️ Micro-Podcast · Fase ENGAGE</p><h2>{concept}</h2>'
-        f'<div class="monologue">{monologue}</div>'
-        f'<button class="btn" id="btn" onclick="finish()">He terminado de escuchar ✓</button>'
-        f'</div><script>function finish(){{document.getElementById("btn").className="btn done";'
-        f'document.getElementById("btn").textContent="¡Completado! ✓";_scormComplete();}}'
-        f"{SCORM_JS}</script></body></html>"
-    )
 
 
 def _generate_one(
@@ -56,8 +31,8 @@ def _generate_one(
             if resource_type in ENGAGE_CODE:
                 return strip_markdown(generar_texto_with_model(effective, model_id, provider, max_tokens=4000)), None, None
             if resource_type in ENGAGE_PODCAST:
-                mono = generar_texto_with_model(effective, model_id, provider, max_tokens=600)
-                return _podcast_html(concept, mono), {"monologue": mono}, None
+                mono = generar_texto_with_model(effective, model_id, provider, max_tokens=700)
+                return build_podcast_html(concept, mono, podcast_audio_b64(mono)), {"monologue": mono}, None
             # 2-step
             raw = generar_texto_with_model(effective, model_id, provider, max_tokens=2000)
             try:
