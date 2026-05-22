@@ -29,8 +29,7 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token de autenticación inválido o expirado.",
         )
-    
-    # query user
+
     user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
     if not user:
         raise HTTPException(
@@ -44,7 +43,6 @@ def require_admin(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ) -> User:
-    # Check if this user has "administrador" role
     is_admin = db.execute(
         select(UserRole)
         .join(Role)

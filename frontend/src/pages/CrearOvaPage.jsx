@@ -187,13 +187,14 @@ export function CrearOvaPage() {
         </div>
       )}
 
-      <PhaseSelectModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onConfirm={confirmSelections}
-        initialEngage={engageSelection}
-        initialExplore={exploreSelection}
-      />
+      {isModalOpen && (
+        <PhaseSelectModal
+          onClose={closeModal}
+          onConfirm={confirmSelections}
+          initialEngage={engageSelection}
+          initialExplore={exploreSelection}
+        />
+      )}
     </div>
   )
 }

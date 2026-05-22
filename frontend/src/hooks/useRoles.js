@@ -45,15 +45,14 @@ export function useRoles() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial de roles al montar
     fetchRoles()
   }, [])
 
   const handlePermissionToggle = (permId) => {
-    if (selectedPermissions.includes(permId)) {
-      setSelectedPermissions(selectedPermissions.filter((id) => id !== permId))
-    } else {
-      setSelectedPermissions([...selectedPermissions, permId])
-    }
+    setSelectedPermissions((prev) =>
+      prev.includes(permId) ? prev.filter((id) => id !== permId) : [...prev, permId]
+    )
   }
 
   const handleOpenModal = () => {

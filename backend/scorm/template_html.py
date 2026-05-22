@@ -1,129 +1,140 @@
-def build_manifest(course_title: str, module_title: str) -> str:
-    return f"""<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<manifest
-  identifier=\"GENOVA-SCORM-EXPORT\"
-  version=\"1.0\"
-  xmlns=\"http://www.imsproject.org/xsd/imscp_rootv1p1p2\"
-  xmlns:adlcp=\"http://www.adlnet.org/xsd/adlcp_rootv1p2\"
-  xmlns:imsmd=\"http://www.imsglobal.org/xsd/imsmd_rootv1p2p1\"
-  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
-  xsi:schemaLocation=\"http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
-  http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
-  http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd\">
-
-  <metadata>
-    <schema>ADL SCORM</schema>
-    <schemaversion>1.2</schemaversion>
-  </metadata>
-
-  <organizations default=\"ORG-DEFAULT\">
-    <organization identifier=\"ORG-DEFAULT\">
-      <title>{course_title}</title>
-      <item identifier=\"ITEM-INDEX\" identifierref=\"RES-INDEX\" isvisible=\"true\">
-        <title>{module_title}</title>
-      </item>
-    </organization>
-  </organizations>
-
-  <resources>
-    <resource identifier=\"RES-INDEX\" type=\"webcontent\" adlcp:scormtype=\"sco\" href=\"index.html\">
-      <file href=\"index.html\" />
-      <file href=\"resources/content.html\" />
-      <file href=\"resources/styles.css\" />
-      <file href=\"resources/scorm.js\" />
-      <file href=\"resources/app.js\" />
-    </resource>
-  </resources>
-</manifest>
-"""
-
-
-def build_index_html(course_title: str) -> str:
-    return f"""<!doctype html>
-<html lang=\"es\">
-  <head>
-    <meta charset=\"UTF-8\" />
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
-    <title>{course_title}</title>
-    <link rel=\"stylesheet\" href=\"resources/styles.css\" />
-  </head>
-  <body>
-    <main class=\"container\">
-      <header>
-        <h1>{course_title}</h1>
-        <p>Paquete SCORM de prueba para Canvas LMS (UPAO)</p>
-      </header>
-
-      <nav class=\"nav\">
-        <a href=\"#overview\">Resumen</a>
-        <a href=\"#content\">Contenido</a>
-        <a href=\"#progress\">Progreso</a>
-      </nav>
-
-      <section id=\"overview\" class=\"card\">
-        <h2>Resumen</h2>
-        <p>Este OVA de prueba verifica estructura SCORM 1.2 y comunicación LMS.</p>
-      </section>
-
-      <section id=\"content\" class=\"card\">
-        <h2>Contenido de prueba</h2>
-        <iframe title=\"Contenido OVA\" src=\"resources/content.html\"></iframe>
-      </section>
-
-      <section id=\"progress\" class=\"card\">
-        <h2>Estado SCORM</h2>
-        <p id=\"scorm-status\">Pendiente de inicialización...</p>
-        <button id=\"complete-btn\" type=\"button\">Marcar progreso como completado</button>
-      </section>
-    </main>
-
-    <script src=\"resources/scorm.js\"></script>
-    <script src=\"resources/app.js\"></script>
-  </body>
-</html>
-"""
-
-
 PHASE_LABELS = {
     "motivacion": "Motivación",
     "contenido": "Contenido",
     "explicacion": "Explicación",
     "actividad": "Actividad",
     "evaluacion": "Evaluación",
+    "engage": "ENGAGE — Enganchar",
+    "explore": "EXPLORE — Explorar",
+    "explain": "EXPLAIN — Explicar",
+    "elaborate": "ELABORATE — Elaborar",
+    "evaluate": "EVALUATE — Evaluar",
 }
 
-DEFAULT_PHASES = [
-    {"type": "motivacion", "order": 1,
-     "content": "Explora cómo aplicar Machine Learning en problemas reales de negocio."},
-    {"type": "contenido", "order": 2,
-     "content": "Identifica variables relevantes y revisa un dataset simple de clasificación."},
-    {"type": "explicacion", "order": 3,
-     "content": "Compara conceptos de entrenamiento, validación y evaluación de modelos."},
-    {"type": "actividad", "order": 4,
-     "content": "Piensa en un caso UPAO donde puedas aplicar un modelo supervisado."},
-    {"type": "evaluacion", "order": 5,
-     "content": "Checklist: ¿entendiste objetivo, datos y criterio de éxito del modelo?"},
-]
+
+def phase_label(phase_type: str, order: int) -> str:
+    return PHASE_LABELS.get((phase_type or "").strip().lower(), f"Recurso {order}")
 
 
-def build_content_html(phases: list[dict] | None = None) -> str:
-    source = phases if phases else DEFAULT_PHASES
-    sections = ""
-    for phase in source:
-        label = PHASE_LABELS.get(phase.get("type", ""), phase.get("type", "Fase"))
-        content = phase.get("content", "")
-        sections += f"\n      <section>\n        <h3>{label}</h3>\n        <p>{content}</p>\n      </section>"
+def _is_full_document(content: str) -> bool:
+    head = (content or "").lstrip().lower()
+    return head.startswith("<!doctype") or head.startswith("<html")
 
+
+def wrap_resource_html(content: str, title: str) -> str:
+    """Return a standalone HTML document for one OVA resource.
+
+    Full HTML documents (engage/explore AI output) pass through verbatim so their
+    own styles and scripts stay isolated. Plain text is wrapped in a minimal page.
+    """
+    if _is_full_document(content):
+        return content
+
+    body = (content or "").strip() or "Recurso sin contenido."
     return f"""<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contenido OVA</title>
+    <title>{title}</title>
+    <style>
+      body {{
+        margin: 0;
+        padding: 24px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #0f172a;
+        background: #f8fafc;
+        line-height: 1.6;
+      }}
+      h2 {{ color: #1d4ed8; }}
+    </style>
   </head>
   <body>
-    <article>{sections}
-    </article>
+    <h2>{title}</h2>
+    <p>{body}</p>
+  </body>
+</html>
+"""
+
+
+def build_manifest(course_title: str, module_title: str, resource_files: list[str]) -> str:
+    file_tags = "\n".join(f'      <file href="{f}" />' for f in resource_files)
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<manifest
+  identifier="GENOVA-SCORM-EXPORT"
+  version="1.0"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+  http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
+  http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+
+  <organizations default="ORG-DEFAULT">
+    <organization identifier="ORG-DEFAULT">
+      <title>{course_title}</title>
+      <item identifier="ITEM-INDEX" identifierref="RES-INDEX" isvisible="true">
+        <title>{module_title}</title>
+      </item>
+    </organization>
+  </organizations>
+
+  <resources>
+    <resource identifier="RES-INDEX" type="webcontent" adlcp:scormtype="sco" href="index.html">
+      <file href="index.html" />
+      <file href="resources/styles.css" />
+      <file href="resources/scorm.js" />
+      <file href="resources/app.js" />
+{file_tags}
+    </resource>
+  </resources>
+</manifest>
+"""
+
+
+def build_index_html(course_title: str, resources: list[dict]) -> str:
+    """SCO shell: side nav of resources + iframe. One SCO for the whole OVA."""
+    nav_buttons = "\n".join(
+        f'        <button type="button" class="res-link" data-src="{r["file"]}">'
+        f'{r["label"]}</button>'
+        for r in resources
+    )
+    first_src = resources[0]["file"] if resources else ""
+    return f"""<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{course_title}</title>
+    <link rel="stylesheet" href="resources/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>{course_title}</h1>
+        <p>Objeto Virtual de Aprendizaje · GenOVA · SCORM 1.2</p>
+      </header>
+
+      <nav class="res-nav">
+{nav_buttons}
+      </nav>
+
+      <iframe id="res-frame" title="Recurso del OVA" src="{first_src}"></iframe>
+
+      <section class="card">
+        <p id="scorm-status">Pendiente de inicialización...</p>
+        <button id="complete-btn" type="button">Marcar OVA como completado</button>
+      </section>
+    </main>
+
+    <script src="resources/scorm.js"></script>
+    <script src="resources/app.js"></script>
   </body>
 </html>
 """

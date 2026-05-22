@@ -53,7 +53,7 @@ def _get_active_version(ova_id, db: Session) -> OvaVersion | None:
 
 def _ensure_version_exists(ova: Ova, db: Session) -> OvaVersion:
     """Creates a v1 version for OVAs that pre-date the versioning feature."""
-    from ova.router import DEFAULT_PHASE_CONTENT
+    from scorm.service import DEFAULT_PHASES
 
     version = OvaVersion(
         ova_id=ova.id,
@@ -64,7 +64,7 @@ def _ensure_version_exists(ova: Ova, db: Session) -> OvaVersion:
     db.add(version)
     db.flush()
 
-    for phase_data in DEFAULT_PHASE_CONTENT:
+    for phase_data in DEFAULT_PHASES:
         db.add(
             OvaPhase(
                 version_id=version.id,

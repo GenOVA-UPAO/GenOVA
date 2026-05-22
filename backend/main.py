@@ -1,4 +1,11 @@
 import os
+from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
+
+# Load .env before importing modules that read env vars at import time.
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -21,7 +28,15 @@ from sqlalchemy import text
 from run_migrations import run_migrations
 
 
-app = FastAPI(title="GENOVA Backend API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    run_migrations()
+    Base.metadata.create_all(bind=engine)
+    seed_db()
+    yield
+
+
+app = FastAPI(title="GENOVA Backend API", version="0.1.0", lifespan=lifespan)
 
 _extra = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 allowed_origins = [
@@ -43,13 +58,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def startup() -> None:
-    run_migrations()
-    Base.metadata.create_all(bind=engine)
-    seed_db()
 
 
 @app.get("/health")

@@ -32,6 +32,7 @@ export function SidebarMenu() {
           setIsAdmin(user.role === 'administrador')
         }
       } catch {
+        /* rol no disponible: el menú admin queda oculto */
       }
     }
 

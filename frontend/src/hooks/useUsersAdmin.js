@@ -79,9 +79,11 @@ export function useUsersAdmin() {
   }
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- carga inicial de usuarios, roles y sesión */
     fetchCurrentUser()
     fetchRoles()
     fetchUsers(1)
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   const handleRoleChange = async (userId, roleId) => {

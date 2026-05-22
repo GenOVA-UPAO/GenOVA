@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
 const PHASE_LABELS = {
@@ -22,10 +22,6 @@ export function PhaseCard({
   const [draft, setDraft] = useState(phase.content)
   const [saving, setSaving] = useState(false)
   const label = PHASE_LABELS[phase.phase_type] || phase.phase_type
-
-  useEffect(() => {
-    if (!editing) setDraft(phase.content)
-  }, [phase.content, editing])
 
   const handleSave = async () => {
     if (!draft.trim()) {
@@ -112,7 +108,10 @@ export function PhaseCard({
       {!editing && !isLoading && (
         <div className="flex gap-2 pt-2 border-t border-slate-100">
           <button
-            onClick={() => setEditing(true)}
+            onClick={() => {
+              setDraft(phase.content)
+              setEditing(true)
+            }}
             disabled={isRegenerating}
             className="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >

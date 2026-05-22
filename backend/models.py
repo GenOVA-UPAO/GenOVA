@@ -8,15 +8,20 @@ from sqlalchemy.sql import func
 from database import Base
 
 
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(
+def _pk_column() -> Column:
+    """UUID primary key shared by every table."""
+    return Column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
         server_default=text("gen_random_uuid()"),
     )
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = _pk_column()
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     failed_login_attempts = Column(Integer, nullable=False, default=0)
@@ -33,12 +38,7 @@ class User(Base):
 class Ova(Base):
     __tablename__ = "ovas"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = _pk_column()
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     title = Column(String(255), nullable=False)
     description = Column(Text)
@@ -61,12 +61,7 @@ class OvaVersion(Base):
               postgresql_where=text("is_active = TRUE")),
     )
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = _pk_column()
     ova_id = Column(UUID(as_uuid=True), ForeignKey("ovas.id", ondelete="CASCADE"), nullable=False, index=True)
     version_number = Column(Integer, nullable=False)
     prompt = Column(Text, nullable=False)
@@ -81,12 +76,7 @@ class OvaVersion(Base):
 class OvaPhase(Base):
     __tablename__ = "ova_phases"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = _pk_column()
     version_id = Column(UUID(as_uuid=True), ForeignKey("ova_versions.id", ondelete="CASCADE"),
                         nullable=False, index=True)
     phase_type = Column(String(30), nullable=False)
@@ -101,12 +91,7 @@ class OvaPhase(Base):
 class Session(Base):
     __tablename__ = "sessions"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = _pk_column()
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)
@@ -117,12 +102,7 @@ class Session(Base):
 class Role(Base):
     __tablename__ = "roles"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = _pk_column()
     name = Column(String(64), unique=True, nullable=False)
     description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -149,12 +129,7 @@ class PromptVersion(Base):
               postgresql_where=text("is_active = TRUE")),
     )
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = _pk_column()
     phase = Column(String(20), nullable=False)
     resource_type = Column(Integer, nullable=False)
     version_number = Column(Integer, nullable=False, default=1)
@@ -170,12 +145,7 @@ class PromptVersion(Base):
 class LabResult(Base):
     __tablename__ = "lab_results"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = _pk_column()
     phase = Column(String(20), nullable=False)
     resource_type = Column(Integer, nullable=False)
     concept = Column(String(500), nullable=False)
@@ -195,12 +165,7 @@ class LabResult(Base):
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
 
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = _pk_column()
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     token = Column(String(255), unique=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

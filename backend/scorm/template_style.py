@@ -45,6 +45,33 @@ body {
   margin-bottom: 16px;
 }
 
+.res-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.res-link {
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  font-weight: 700;
+}
+
+.res-link.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+#res-frame {
+  width: 100%;
+  min-height: 70vh;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
 iframe {
   width: 100%;
   min-height: 320px;

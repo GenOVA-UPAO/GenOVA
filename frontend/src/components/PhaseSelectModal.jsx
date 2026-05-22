@@ -8,24 +8,23 @@ const PHASES = [
   { key: 'explore', emoji: '🔍', label: 'EXPLORE', fetch: fetchExploreRecursos },
 ]
 
-export function PhaseSelectModal({ isOpen, onClose, onConfirm, initialEngage, initialExplore }) {
+export function PhaseSelectModal({ onClose, onConfirm, initialEngage, initialExplore }) {
   const [step, setStep] = useState(0)
   const [recursos, setRecursos] = useState({ engage: [], explore: [] })
   const [loading, setLoading] = useState(true)
-  const [picks, setPicks] = useState({ engage: null, explore: null })
+  const [picks, setPicks] = useState({
+    engage: initialEngage ?? null,
+    explore: initialExplore ?? null,
+  })
 
+  // The modal is mounted fresh on each open (parent conditional render), so state
+  // resets naturally; the effect only loads the static resource catalog.
   useEffect(() => {
-    if (!isOpen) return
-    setStep(0)
-    setPicks({ engage: initialEngage ?? null, explore: initialExplore ?? null })
-    setLoading(true)
     Promise.all([fetchEngageRecursos(), fetchExploreRecursos()])
       .then(([e, ex]) => setRecursos({ engage: e.recursos ?? [], explore: ex.recursos ?? [] }))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  if (!isOpen) return null
+  }, [])
 
   const phase = PHASES[step]
   const currentPick = picks[phase.key]

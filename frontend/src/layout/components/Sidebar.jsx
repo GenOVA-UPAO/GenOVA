@@ -1,15 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { SidebarMenu } from './SidebarMenu.jsx'
 
 export function Sidebar() {
-  const [isOpen, setIsOpen] = useState(true)
-
-  // Auto-collapse on smaller screens on mount
-  useEffect(() => {
-    if (window.innerWidth < 1024) {
-      setIsOpen(false)
-    }
-  }, [])
+  // Auto-collapse on smaller screens — derived from viewport at first render.
+  const [isOpen, setIsOpen] = useState(() => window.innerWidth >= 1024)
 
   return (
     <aside 

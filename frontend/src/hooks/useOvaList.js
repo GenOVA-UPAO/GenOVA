@@ -66,6 +66,7 @@ export function useOvaList() {
   )
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- recarga el listado al cambiar filtros
     loadOvas(1, search, statusFilter)
     setSelectedIds(new Set())
     // eslint-disable-next-line react-hooks/exhaustive-deps
