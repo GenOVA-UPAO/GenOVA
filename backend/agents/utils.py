@@ -32,11 +32,33 @@ def strip_markdown(text: str) -> str:
 
 
 def parse_json(raw: str) -> dict | list:
+    """Tolerant JSON parser for LLM output.
+
+    Strategy: strip code fences, try direct parse, then walk balanced bracket
+    spans from the first `{` or `[` and try each one. Returns the first valid
+    parse; raises ValueError if nothing parses.
+    """
     cleaned = strip_markdown(raw)
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError:
-        m = re.search(r"(\{[\s\S]*\}|\[[\s\S]*\])", cleaned)
-        if m:
-            return json.loads(m.group(1))
-        raise ValueError(f"No valid JSON in response: {cleaned[:80]}")
+        pass
+
+    for opener, closer in (("{", "}"), ("[", "]")):
+        start = cleaned.find(opener)
+        while start != -1:
+            depth = 0
+            for i in range(start, len(cleaned)):
+                c = cleaned[i]
+                if c == opener:
+                    depth += 1
+                elif c == closer:
+                    depth -= 1
+                    if depth == 0:
+                        try:
+                            return json.loads(cleaned[start : i + 1])
+                        except json.JSONDecodeError:
+                            break
+            start = cleaned.find(opener, start + 1)
+
+    raise ValueError(f"No valid JSON in response: {cleaned[:80]}")

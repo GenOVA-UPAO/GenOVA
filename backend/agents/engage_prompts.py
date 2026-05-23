@@ -7,7 +7,7 @@ from agents.utils import CURSO_CONTEXTO, SCORM_JS
 
 RECURSOS_META = {
     1: {"tipo": "Cómic Interactivo", "duracion": "1–2 min", "interactividad": "Alta", "emoji": "🎭"},
-    2: {"tipo": "Video Opening", "duracion": "40 seg", "interactividad": "Baja", "emoji": "🎬"},
+    2: {"tipo": "Storyboard de Video", "duracion": "40 seg", "interactividad": "Baja", "emoji": "🎬"},
     3: {"tipo": "Micro-Podcast", "duracion": "45 seg", "interactividad": "Baja", "emoji": "🎙️"},
     4: {"tipo": "Juego de Gamificación", "duracion": "1–2 min", "interactividad": "Alta", "emoji": "🎮"},
     5: {"tipo": "Dilema Ético", "duracion": "2–3 min", "interactividad": "Media", "emoji": "⚖️"},

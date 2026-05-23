@@ -66,6 +66,9 @@ export function LoginPage() {
             Correo
             <input
               type="email"
+              name="email"
+              autoComplete="email"
+              inputMode="email"
               placeholder="estudiante@genova.ai"
               value={email}
               onChange={(event) => {
@@ -73,7 +76,7 @@ export function LoginPage() {
                 setTouched((prev) => ({ ...prev, email: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
             {touched.email && email.length > 0 && !isEmailValid && (
               <span className="mt-1 block text-xs text-rose-600">
@@ -86,6 +89,8 @@ export function LoginPage() {
             Contraseña
             <input
               type="password"
+              name="password"
+              autoComplete="current-password"
               placeholder="••••••••"
               value={password}
               onChange={(event) => {
@@ -93,7 +98,7 @@ export function LoginPage() {
                 setTouched((prev) => ({ ...prev, password: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
           </label>
 
@@ -105,9 +110,12 @@ export function LoginPage() {
 
           <button
             type="submit"
-            className="inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             disabled={!isEmailValid || password.length === 0 || isSubmitting}
           >
+            {isSubmitting && (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+            )}
             {isSubmitting ? 'Ingresando...' : 'Entrar'}
           </button>
           <p className="text-center text-sm text-slate-600">

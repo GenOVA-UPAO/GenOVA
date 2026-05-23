@@ -79,7 +79,7 @@ def generar_texto(prompt: str, tarea: str, max_tokens: int = 3000) -> str:
         logger.warning("Rate limit task='%s' model='%s'; falling back to Groq %s", tarea, model_id, fb_model)
 
     last_err: Exception | None = None
-    for delay in (3, 10, 20):
+    for delay in (3, 8):
         try:
             time.sleep(delay)
             return _chat("groq", fb_model, prompt, max_tokens, {})

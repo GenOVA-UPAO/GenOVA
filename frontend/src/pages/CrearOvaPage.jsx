@@ -1,6 +1,7 @@
 import { useOvaCreation } from '../hooks/useOvaCreation.js'
 import { PhaseSelectModal } from '../components/PhaseSelectModal.jsx'
 import { HtmlPreview } from '../components/engage/HtmlPreview.jsx'
+import { LlmEnginesPanel } from '../components/LlmEnginesPanel.jsx'
 
 export function CrearOvaPage() {
   const {
@@ -31,7 +32,7 @@ export function CrearOvaPage() {
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
         <h2 className="text-base font-semibold text-slate-800">Tema del OVA</h2>
 
-        <div className="flex gap-3 items-start">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <textarea
             rows={4}
             value={prompt}
@@ -44,9 +45,9 @@ export function CrearOvaPage() {
             type="button"
             onClick={openModal}
             disabled={!canConfigure || isGenerating}
-            className="shrink-0 rounded-lg px-4 py-2.5 text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors leading-snug text-center"
+            className="w-full sm:w-auto sm:shrink-0 rounded-lg px-4 py-2.5 text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-center"
           >
-            Configurar<br />recursos 5E
+            Configurar recursos 5E
           </button>
         </div>
 
@@ -76,6 +77,9 @@ export function CrearOvaPage() {
             )}
           </div>
         )}
+
+        {/* Active LLM engines (read-only info) */}
+        <LlmEnginesPanel />
 
         {/* File upload — collapsible RAG section */}
         <details className="group">

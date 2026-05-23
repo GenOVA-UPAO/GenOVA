@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 _TAREA_POR_RECURSO = {
     1: "texto", 2: "texto", 3: "texto", 4: "texto", 5: "texto",
-    6: "texto", 7: "texto", 8: "texto", 9: "orquestador", 10: "codigo",
+    6: "texto", 7: "texto", 8: "texto", 9: "texto", 10: "codigo",
 }
 
 # 1x1 transparent SVG fallback shown when image generation fails.
@@ -128,6 +128,6 @@ def generate_engage_resource(
 
     except HTTPException:
         raise
-    except Exception as exc:
-        logger.error("Error generating ENGAGE resource %d: %s", n, exc)
-        raise HTTPException(status_code=500, detail=f"Error al generar el recurso: {exc}")
+    except Exception:
+        logger.exception("Error generating ENGAGE resource %d", n)
+        raise HTTPException(status_code=500, detail="Error al generar el recurso. Intenta de nuevo.")

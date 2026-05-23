@@ -76,6 +76,6 @@ def generate_explore_resource(
 
     except HTTPException:
         raise
-    except Exception as exc:
-        logger.error("Error generating EXPLORE resource %d: %s", n, exc)
-        raise HTTPException(status_code=500, detail=f"Error al generar el recurso: {exc}")
+    except Exception:
+        logger.exception("Error generating EXPLORE resource %d", n)
+        raise HTTPException(status_code=500, detail="Error al generar el recurso. Intenta de nuevo.")

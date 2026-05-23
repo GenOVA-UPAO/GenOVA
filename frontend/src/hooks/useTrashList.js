@@ -8,6 +8,12 @@ import {
   restoreOva,
 } from '../services/ovaHistoryService.js'
 
+function nextPageAfterDrop(currentPage, totalItems, dropped) {
+  const newTotal = totalItems - dropped
+  const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
+  return currentPage > newTotalPages ? newTotalPages : currentPage
+}
+
 export function useTrashList() {
   const [ovas, setOvas] = useState([])
   const [loading, setLoading] = useState(true)
@@ -20,7 +26,6 @@ export function useTrashList() {
   const [restoringId, setRestoringId] = useState('')
   const [deletingId, setDeletingId] = useState('')
   const [bulkLoading, setBulkLoading] = useState(false)
-
   const [confirmModal, setConfirmModal] = useState(null)
 
   const loadTrash = useCallback(async (page = 1) => {
@@ -55,11 +60,7 @@ export function useTrashList() {
   const allSelected = ovas.length > 0 && ovas.every((o) => selectedIds.has(o.id))
 
   const handleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(ovas.map((o) => o.id)))
-    }
+    setSelectedIds(allSelected ? new Set() : new Set(ovas.map((o) => o.id)))
   }
 
   const handlePageChange = (newPage) => {
@@ -69,28 +70,43 @@ export function useTrashList() {
     }
   }
 
+  const runSingleAction = async (action, ovaId, successMsg, errorPrefix, setIdState) => {
+    setIdState(ovaId)
+    setConfirmModal(null)
+    try {
+      await action(ovaId)
+      toast.success(successMsg)
+      loadTrash(nextPageAfterDrop(currentPage, totalItems, 1))
+    } catch (err) {
+      toast.error(err.message || errorPrefix)
+    } finally {
+      setIdState('')
+    }
+  }
+
+  const runBulkAction = async (action, successMsgFn, errorMsg, countKey) => {
+    setBulkLoading(true)
+    setConfirmModal(null)
+    try {
+      const res = await action([...selectedIds])
+      toast.success(successMsgFn(res))
+      setSelectedIds(new Set())
+      loadTrash(nextPageAfterDrop(currentPage, totalItems, res[countKey]?.length || 0))
+    } catch (err) {
+      toast.error(err.message || errorMsg)
+    } finally {
+      setBulkLoading(false)
+    }
+  }
+
   const handleRestore = (ovaId) => {
     setConfirmModal({
       title: 'Restaurar OVA',
       message: '¿Restaurar este OVA al historial activo?',
       confirmLabel: 'Restaurar',
       danger: false,
-      onConfirm: async () => {
-        setRestoringId(ovaId)
-        setConfirmModal(null)
-        try {
-          await restoreOva(ovaId)
-          toast.success('OVA restaurado correctamente.')
-          const newTotal = totalItems - 1
-          const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
-          const targetPage = currentPage > newTotalPages ? newTotalPages : currentPage
-          loadTrash(targetPage)
-        } catch (err) {
-          toast.error(err.message || 'Error al restaurar el OVA.')
-        } finally {
-          setRestoringId('')
-        }
-      },
+      onConfirm: () =>
+        runSingleAction(restoreOva, ovaId, 'OVA restaurado correctamente.', 'Error al restaurar el OVA.', setRestoringId),
     })
   }
 
@@ -100,22 +116,8 @@ export function useTrashList() {
       message: `¿Eliminar permanentemente "${ova.title}"?\n\nEsta acción eliminará el OVA y su paquete SCORM del servidor. No se puede deshacer.`,
       confirmLabel: 'Borrar',
       danger: true,
-      onConfirm: async () => {
-        setDeletingId(ova.id)
-        setConfirmModal(null)
-        try {
-          await permanentDeleteOva(ova.id)
-          toast.success('OVA eliminado permanentemente.')
-          const newTotal = totalItems - 1
-          const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
-          const targetPage = currentPage > newTotalPages ? newTotalPages : currentPage
-          loadTrash(targetPage)
-        } catch (err) {
-          toast.error(err.message || 'Error al eliminar el OVA.')
-        } finally {
-          setDeletingId('')
-        }
-      },
+      onConfirm: () =>
+        runSingleAction(permanentDeleteOva, ova.id, 'OVA eliminado permanentemente.', 'Error al eliminar el OVA.', setDeletingId),
     })
   }
 
@@ -126,23 +128,13 @@ export function useTrashList() {
       message: `¿Restaurar ${count} OVA${count > 1 ? 's' : ''} al historial activo?`,
       confirmLabel: `Restaurar ${count}`,
       danger: false,
-      onConfirm: async () => {
-        setBulkLoading(true)
-        setConfirmModal(null)
-        try {
-          const res = await batchRestore([...selectedIds])
-          toast.success(res.message || `${res.restored?.length} OVAs restaurados.`)
-          setSelectedIds(new Set())
-          const newTotal = totalItems - (res.restored?.length || 0)
-          const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
-          const targetPage = currentPage > newTotalPages ? newTotalPages : currentPage
-          loadTrash(targetPage)
-        } catch (err) {
-          toast.error(err.message || 'Error al restaurar los OVAs.')
-        } finally {
-          setBulkLoading(false)
-        }
-      },
+      onConfirm: () =>
+        runBulkAction(
+          batchRestore,
+          (res) => res.message || `${res.restored?.length} OVAs restaurados.`,
+          'Error al restaurar los OVAs.',
+          'restored'
+        ),
     })
   }
 
@@ -153,23 +145,13 @@ export function useTrashList() {
       message: `¿Eliminar permanentemente ${count} OVA${count > 1 ? 's' : ''}?\n\nEsta acción eliminará los OVAs y sus paquetes SCORM del servidor. No se puede deshacer.`,
       confirmLabel: `Borrar ${count}`,
       danger: true,
-      onConfirm: async () => {
-        setBulkLoading(true)
-        setConfirmModal(null)
-        try {
-          const res = await batchPermanentDelete([...selectedIds])
-          toast.success(res.message || `${res.deleted?.length} OVAs eliminados permanentemente.`)
-          setSelectedIds(new Set())
-          const newTotal = totalItems - (res.deleted?.length || 0)
-          const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
-          const targetPage = currentPage > newTotalPages ? newTotalPages : currentPage
-          loadTrash(targetPage)
-        } catch (err) {
-          toast.error(err.message || 'Error al eliminar los OVAs.')
-        } finally {
-          setBulkLoading(false)
-        }
-      },
+      onConfirm: () =>
+        runBulkAction(
+          batchPermanentDelete,
+          (res) => res.message || `${res.deleted?.length} OVAs eliminados permanentemente.`,
+          'Error al eliminar los OVAs.',
+          'deleted'
+        ),
     })
   }
 

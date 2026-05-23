@@ -7,15 +7,16 @@ Plataforma web para la generación asistida por IA de Objetos Virtuales de Apren
 | Capa | Tecnología |
 |------|-----------|
 | Frontend | React 19 + Vite + Tailwind CSS + React Router |
-| Backend | FastAPI + SQLAlchemy + Uvicorn |
+| Backend | FastAPI + SQLAlchemy + Uvicorn + SlowAPI |
 | Base de datos | Supabase (PostgreSQL) |
-| Auth | JWT + bcrypt |
-| Empaquetado | pnpm workspaces |
+| Auth | JWT (HS256, con `iat`/`jti`/`iss`) + bcrypt |
+| Empaquetado | pnpm workspaces · Backend con pip **o** uv |
 
 ## Requisitos previos
 
 - [Node.js 20+](https://nodejs.org) y [pnpm 10+](https://pnpm.io)
 - [Python 3.11+](https://python.org)
+- [uv](https://docs.astral.sh/uv/) *(opcional — instala backend más rápido; pip sigue funcionando)*
 - [Docker + Docker Compose](https://docs.docker.com/get-docker/) *(solo para ejecución con Docker)*
 - Proyecto activo en [Supabase](https://supabase.com) con la URL de conexión a PostgreSQL
 
@@ -29,13 +30,17 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-Edita `backend/.env` con tus credenciales reales:
+Edita `backend/.env`:
 
 ```env
 DATABASE_URL=postgresql+psycopg://postgres.[REF]:[PASSWORD]@[REGION].pooler.supabase.com:5432/postgres?sslmode=require
-JWT_SECRET=un-secreto-seguro
+JWT_SECRET=<mínimo 16 chars; genera con: python -c "import secrets; print(secrets.token_urlsafe(48))">
 OVA_ENABLED_LLMS=openai,gemini,claude
+GROQ_API_KEY=...
+OPENROUTER_API_KEY=...
 ```
+
+> ⚠️ `JWT_SECRET` es obligatorio. El backend **falla al arrancar** si la variable está vacía, contiene un valor débil (`change-me`, `secret`...) o tiene menos de 16 caracteres.
 
 ## Ejecución
 
@@ -47,9 +52,7 @@ pnpm dev:docker
 
 Levanta frontend (`http://localhost:5173`) y backend (`http://localhost:8000`) en contenedores.
 
-### Sin Docker
-
-**Backend:**
+### Sin Docker — Backend con `pip`
 
 ```bash
 cd backend
@@ -63,7 +66,20 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-**Frontend** *(otra terminal, desde la raíz):*
+### Sin Docker — Backend con `uv` (más rápido)
+
+```bash
+cd backend
+uv sync                          # instala desde pyproject.toml
+uv run uvicorn main:app --reload --port 8000
+
+# Para incluir herramientas de desarrollo (ruff, pytest):
+uv sync --extra dev
+```
+
+`requirements.txt` y `pyproject.toml` están mantenidos en sincronía manual — ambos resuelven al mismo conjunto de dependencias. Usa el que prefieras.
+
+### Frontend *(otra terminal, desde la raíz):*
 
 ```bash
 pnpm install
@@ -84,29 +100,69 @@ Usa `docker-compose.prod.yml` con Nginx como gateway en el puerto `80`. Las ruta
 |---------|--------|
 | `pnpm dev` | Frontend en modo desarrollo |
 | `pnpm build` | Build de producción del frontend |
-| `pnpm lint` | ESLint sobre el frontend |
+| `pnpm lint` | ESLint sobre el frontend (`max-lines: 200`) |
 | `pnpm format` | Prettier sobre el frontend |
 | `pnpm dev:docker` | Levanta todo con Docker (dev) |
 | `pnpm prod:docker` | Levanta todo con Docker (prod) |
+
+## Comandos backend
+
+```bash
+# Lint + format (desde backend/)
+ruff check .            # con pip: pip install ruff
+ruff format .
+ruff check --fix .
+
+# Equivalente con uv (sin activar venv)
+uv run ruff check .
+uv run ruff format .
+
+# Tests
+pytest                  # con pip
+uv run pytest           # con uv
+
+# Tests manuales contra API en vivo:
+python tests/test_agents_io.py
+python tests/test_resource_quality.py
+```
 
 ## Estructura del monorepo
 
 ```
 GenOVA/
-├── frontend/          # React + Vite
-├── backend/           # FastAPI
-│   ├── auth/          # Login, registro, JWT
-│   ├── ova/           # Generación, edición, historial, SCORM
-│   ├── roles/         # CRUD de roles y permisos
-│   ├── users/         # Perfil y administración de usuarios
-│   ├── scorm/         # Empaquetado SCORM 1.2
-│   ├── uploads/       # Manejo de archivos
-│   ├── main.py        # Punto de entrada
-│   └── seed.py        # Roles y usuarios de prueba por defecto
-├── scorm-template/    # Plantilla base SCORM
-├── deploy/            # Configuración Nginx para producción
+├── frontend/                # React + Vite (ESLint max-lines: 200)
+├── backend/                 # FastAPI
+│   ├── pyproject.toml       # uv + ruff + pytest config
+│   ├── requirements.txt     # pip (sincronizado con pyproject)
+│   ├── requirements-dev.txt # pip — extras de desarrollo
+│   ├── .python-version      # 3.11 (uv lo lee)
+│   ├── auth/                # Login, registro, JWT (Pydantic-validated)
+│   ├── ova/                 # Generación, edición, historial, SCORM
+│   ├── agents/              # 5E: ENGAGE + EXPLORE + LLM router
+│   ├── labs/                # Iteración de prompts (admin)
+│   ├── roles/               # CRUD de roles y permisos
+│   ├── users/               # Perfil y administración
+│   ├── scorm/               # Empaquetado SCORM 1.2
+│   ├── uploads/             # Subida temporal de archivos
+│   ├── rate_limit.py        # SlowAPI shared limiter
+│   ├── security.py          # bcrypt + JWT + dummy-hash timing defense
+│   ├── main.py              # Entry point (CORS, logging, lifespan)
+│   └── seed.py              # Roles + usuarios de prueba
+├── scorm-template/          # Plantilla base SCORM
+├── deploy/                  # Nginx para producción
+├── .editorconfig            # Estilo universal (LF, UTF-8, 2/4 spaces)
 └── docker-compose.yml
 ```
+
+## Endurecimiento de seguridad
+
+- **JWT_SECRET** validado en arranque (hard-fail si débil).
+- **Hash dummy** en `login` para igualar tiempos entre "usuario inexistente" y "contraseña incorrecta" → no enumeración por timing.
+- **Pydantic** `LoginRequest` / `RegisterRequest` con `EmailStr` y `Field(max_length=128)` sobre password (anti-DoS bcrypt).
+- **Rate-limit** vía SlowAPI: `/login` 10/min, `/register` 5/min por IP.
+- **JWT extendido** con `iat`, `jti`, `iss=genova` (preparado para revocación).
+- **CORS** restringido a métodos `GET/POST/PATCH/PUT/DELETE/OPTIONS` y headers `Authorization, Content-Type, Accept, X-Requested-With`.
+- **Lockout**: 5 intentos fallidos → 15 min bloqueo (existía previo, sin cambios).
 
 ## Endpoints de salud
 
