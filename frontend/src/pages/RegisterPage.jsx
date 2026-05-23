@@ -45,7 +45,7 @@ export function RegisterPage() {
       const data = await response.json()
 
       if (response.status === 201) {
-        saveToken()
+        saveToken(data?.access_token)
         navigate('/dashboard')
         return
       }

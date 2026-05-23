@@ -110,6 +110,7 @@ def login(response: Response, payload: dict = Body(default={}), db: Session = De
 
     return {
         "status": "success",
+        "access_token": token,
         "user": {
             "id": str(user.id),
             "email": user.email,
@@ -214,6 +215,7 @@ def register(response: Response, payload: dict = Body(default={}), db: Session =
         status_code=status.HTTP_201_CREATED,
         content={
             "status": "success",
+            "access_token": token,
             "user": {
                 "id": str(user.id),
                 "email": user.email,
