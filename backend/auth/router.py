@@ -103,7 +103,7 @@ def login(response: Response, payload: dict = Body(default={}), db: Session = De
         select(Role)
         .join(UserRole)
         .where(UserRole.user_id == user.id)
-    ).scalar_one_or_none()
+    ).scalars().first()
     
     if user_role:
         role_name = user_role.name
@@ -203,7 +203,7 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
         select(Role)
         .join(UserRole)
         .where(UserRole.user_id == current_user.id)
-    ).scalar_one_or_none()
+    ).scalars().first()
     
     if user_role:
         role_name = user_role.name

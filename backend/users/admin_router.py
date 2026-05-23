@@ -44,7 +44,7 @@ def get_users(
     for u in users_db:
         user_role = db.execute(
             select(Role).join(UserRole).where(UserRole.user_id == u.id)
-        ).scalar_one_or_none()
+        ).scalars().first()
 
         role_info = None
         if user_role:
