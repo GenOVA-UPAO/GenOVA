@@ -47,7 +47,7 @@ def require_admin(
         select(UserRole)
         .join(Role)
         .where(UserRole.user_id == current_user.id, Role.name == "administrador")
-    ).scalar_one_or_none()
+    ).scalars().first()
 
     if not is_admin:
         raise HTTPException(

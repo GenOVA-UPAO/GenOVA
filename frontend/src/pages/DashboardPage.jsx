@@ -51,10 +51,10 @@ export function DashboardPage() {
           <h2 className="text-lg font-bold text-slate-900">Panel de Administración de Sistema</h2>
           <p className="text-xs text-slate-500">Accesos directos para la gestión de accesos y cuentas:</p>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Link
               to="/admin/roles"
-              className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:border-indigo-500 hover:shadow-indigo-500/5 transition-all"
+              className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-md hover:border-indigo-500 hover:shadow-indigo-500/5 transition-all"
             >
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-xl text-indigo-600 group-hover:bg-indigo-100 transition-colors">
@@ -73,7 +73,7 @@ export function DashboardPage() {
 
             <Link
               to="/admin/users"
-              className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:border-indigo-500 hover:shadow-indigo-500/5 transition-all"
+              className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-md hover:border-indigo-500 hover:shadow-indigo-500/5 transition-all"
             >
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-xl text-indigo-600 group-hover:bg-indigo-100 transition-colors">
@@ -89,7 +89,27 @@ export function DashboardPage() {
                 </div>
               </div>
             </Link>
+
+            <Link
+              to="/admin/labs"
+              className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-md hover:border-indigo-500 hover:shadow-indigo-500/5 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-xl text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                  🧪
+                </span>
+                <div>
+                  <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                    Labs
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Prueba y compara modelos de IA con prompts calibrados.
+                  </p>
+                </div>
+              </div>
+            </Link>
           </div>
+
         </div>
       )}
     </section>

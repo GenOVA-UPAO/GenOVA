@@ -93,7 +93,7 @@ def delete_role(
                     select(UserRole).where(
                         UserRole.user_id == rel.user_id, UserRole.role_id == target_uuid
                     )
-                ).scalar_one_or_none()
+                ).scalars().first()
                 if has_target:
                     # User already has target role relation, just delete old relation
                     db.delete(rel)
