@@ -120,8 +120,18 @@ def login(response: Response, payload: dict = Body(default={}), db: Session = De
 
 @router.post("/register")
 def register(response: Response, payload: dict = Body(default={}), db: Session = Depends(get_db)):
+    full_name = (payload.get("full_name") or "").strip()
     email = (payload.get("email") or "").strip().lower()
     password = payload.get("password") or ""
+
+    if len(full_name) < 3 or len(full_name) > 100:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "invalid_name",
+                "message": "El nombre completo debe tener al menos 3 caracteres y máximo 100.",
+            },
+        )
 
     if not email_regex.match(email):
         return JSONResponse(
@@ -145,7 +155,20 @@ def register(response: Response, payload: dict = Body(default={}), db: Session =
             content={"error": "email_exists", "message": "El correo ya está registrado."},
         )
 
-    user = User(email=email, password_hash=hash_password(password))
+    role_base = db.execute(
+        select(Role).where(Role.name == "usuario")
+    ).scalars().first()
+
+    if not role_base:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "error": "role_not_configured",
+                "message": "Error interno del sistema: El rol de usuario base no está configurado.",
+            },
+        )
+
+    user = User(email=email, password_hash=hash_password(password), full_name=full_name)
     db.add(user)
     try:
         db.commit()
@@ -156,6 +179,24 @@ def register(response: Response, payload: dict = Body(default={}), db: Session =
             content={"error": "email_exists", "message": "El correo ya está registrado."},
         )
     db.refresh(user)
+
+    # Assign base user role physically in the database
+    user_role = UserRole(user_id=user.id, role_id=role_base.id)
+    db.add(user_role)
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        # Clean up the user as well on role assignment failure
+        db.delete(user)
+        db.commit()
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "error": "role_assignment_failed",
+                "message": f"Error al asignar rol de usuario: {str(e)}",
+            },
+        )
 
     token = build_token(str(user.id), str(user.email))
     
@@ -176,6 +217,7 @@ def register(response: Response, payload: dict = Body(default={}), db: Session =
             "user": {
                 "id": str(user.id),
                 "email": user.email,
+                "full_name": user.full_name,
                 "role": "usuario",
             }
         },

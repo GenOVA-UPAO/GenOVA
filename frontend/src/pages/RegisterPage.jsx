@@ -9,24 +9,27 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function RegisterPage() {
   const navigate = useNavigate()
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [touched, setTouched] = useState({ email: false, password: false })
+  const [touched, setTouched] = useState({ fullName: false, email: false, password: false })
   const [serverError, setServerError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const isFullNameValid = fullName.trim().length >= 3 && fullName.trim().length <= 100
   const isEmailValid = emailRegex.test(email)
   const isPasswordValid = passwordRegex.test(password)
 
+  const showFullNameError = touched.fullName && fullName.length > 0 && !isFullNameValid
   const showEmailError = touched.email && email.length > 0 && !isEmailValid
   const showPasswordError = touched.password && password.length > 0 && !isPasswordValid
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    setTouched({ email: true, password: true })
+    setTouched({ fullName: true, email: true, password: true })
     setServerError('')
 
-    if (!isEmailValid || !isPasswordValid || isSubmitting) {
+    if (!isFullNameValid || !isEmailValid || !isPasswordValid || isSubmitting) {
       return
     }
 
@@ -36,13 +39,13 @@ export function RegisterPage() {
       const response = await fetch(`${apiBaseUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ full_name: fullName.trim(), email, password }),
       })
 
       const data = await response.json()
 
       if (response.status === 201) {
-        saveToken(data?.access_token)
+        saveToken()
         navigate('/dashboard')
         return
       }
@@ -64,6 +67,26 @@ export function RegisterPage() {
         </p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
+          <label className="block text-sm font-medium text-slate-700">
+            Nombre completo
+            <input
+              type="text"
+              placeholder="Ejemplo: Solange"
+              value={fullName}
+              onChange={(event) => {
+                setFullName(event.target.value)
+                setTouched((prev) => ({ ...prev, fullName: true }))
+                if (serverError) setServerError('')
+              }}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            />
+            {showFullNameError && (
+              <span className="mt-1 block text-xs text-rose-600">
+                El nombre completo debe tener al menos 3 caracteres.
+              </span>
+            )}
+          </label>
+
           <label className="block text-sm font-medium text-slate-700">
             Correo
             <input
@@ -117,7 +140,7 @@ export function RegisterPage() {
           <button
             type="submit"
             className="inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-slate-400"
-            disabled={!isEmailValid || !isPasswordValid || isSubmitting}
+            disabled={!isFullNameValid || !isEmailValid || !isPasswordValid || isSubmitting}
           >
             {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
           </button>
