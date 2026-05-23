@@ -32,6 +32,7 @@ export function SidebarMenu() {
           setIsAdmin(user.role === 'administrador')
         }
       } catch {
+        /* rol no disponible: el menú admin queda oculto */
       }
     }
 
@@ -79,6 +80,11 @@ export function SidebarMenu() {
             <li>
               <NavLink to="/admin/users" className={getSidebarLinkClasses}>
                 Gestión de Usuarios
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/admin/labs" className={getSidebarLinkClasses}>
+                🧪 Labs
               </NavLink>
             </li>
           </ul>

@@ -1,4 +1,11 @@
 import os
+from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
+
+# Load .env before importing modules that read env vars at import time.
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,12 +21,22 @@ from ova.history_router import router as ova_history_router
 from ova.edit_router import router as ova_edit_router
 from users.router import router as users_router
 from uploads.router import router as uploads_router
+from labs.router import router as labs_router
+from labs.generation_routes import router as labs_gen_router
 from seed import seed_db
 from sqlalchemy import text
 from run_migrations import run_migrations
 
 
-app = FastAPI(title="GENOVA Backend API", version="0.1.0")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    run_migrations()
+    Base.metadata.create_all(bind=engine)
+    seed_db()
+    yield
+
+
+app = FastAPI(title="GENOVA Backend API", version="0.1.0", lifespan=lifespan)
 
 _extra = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 allowed_origins = [
@@ -41,13 +58,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def startup() -> None:
-    run_migrations()
-    Base.metadata.create_all(bind=engine)
-    seed_db()
 
 
 @app.get("/health")
@@ -80,3 +90,5 @@ app.include_router(ova_edit_router, prefix="/api/ovas", tags=["ovas-edit"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
+app.include_router(labs_router, prefix="/api/labs", tags=["labs"])
+app.include_router(labs_gen_router, prefix="/api/labs", tags=["labs"])

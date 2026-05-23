@@ -1,16 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 export function HtmlPreview({ result }) {
   const iframeRef = useRef(null)
-  const [blobUrl, setBlobUrl] = useState(null)
+
+  const blobUrl = useMemo(() => {
+    const html = result?.html_content
+    if (!html) return null
+    return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
+  }, [result?.html_content])
 
   useEffect(() => {
-    if (!result?.html_content) return
-    const blob = new Blob([result.html_content], { type: 'text/html' })
-    const url = URL.createObjectURL(blob)
-    setBlobUrl(url)
-    return () => URL.revokeObjectURL(url)
-  }, [result?.html_content])
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl)
+    }
+  }, [blobUrl])
 
   function downloadHtml() {
     const blob = new Blob([result.html_content], { type: 'text/html' })

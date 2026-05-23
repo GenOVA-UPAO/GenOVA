@@ -1,12 +1,16 @@
 import json
 import logging
+import os
+import re
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from agents.engage_prompts import RECURSOS_META, prompt_html, prompt_simulador, prompt_texto
+from agents.images import fetch_images_parallel
 from agents.llm_router import generar_texto
-from agents.utils import parse_json, strip_markdown, SCORM_JS
+from agents.podcast import build_podcast_html, podcast_audio_b64
+from agents.utils import parse_json, strip_markdown
 from auth.dependencies import get_current_user
 from models import User
 
@@ -18,46 +22,42 @@ _TAREA_POR_RECURSO = {
     6: "texto", 7: "texto", 8: "texto", 9: "orquestador", 10: "codigo",
 }
 
+# 1x1 transparent SVG fallback shown when image generation fails.
+_IMG_PLACEHOLDER = (
+    "data:image/svg+xml;utf8,"
+    "<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'>"
+    "<rect fill='%23e2e8f0' width='100%25' height='100%25'/>"
+    "<text x='50%25' y='50%25' font-family='sans-serif' font-size='22' "
+    "text-anchor='middle' fill='%23475569'>Imagen no disponible</text></svg>"
+)
 
-def _podcast_html(concept: str, monologue: str) -> str:
-    return f"""<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Micro-Podcast · {concept}</title>
-<style>
-*{{box-sizing:border-box;margin:0;padding:0}}
-body{{font-family:'Georgia',serif;background:#1a1a2e;color:#eee;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}}
-.card{{background:#16213e;border-radius:16px;padding:40px;max-width:620px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}}
-.tag{{font-size:.8rem;color:#a78bfa;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}}
-h2{{font-size:1.8rem;margin-bottom:28px;color:#fff}}
-.wave{{display:flex;align-items:center;gap:4px;height:60px;margin:24px 0}}
-.bar{{width:5px;border-radius:4px;background:#7c3aed;animation:wave 1.2s ease-in-out infinite}}
-.bar:nth-child(2){{height:20px;animation-delay:.1s}}.bar:nth-child(3){{height:38px;animation-delay:.2s}}
-.bar:nth-child(4){{height:55px;animation-delay:.3s}}.bar:nth-child(5){{height:38px;animation-delay:.4s}}
-.bar:nth-child(6){{height:20px;animation-delay:.5s}}.bar:nth-child(7){{height:12px;animation-delay:.6s}}
-@keyframes wave{{0%,100%{{transform:scaleY(.3)}}50%{{transform:scaleY(1)}}}}
-.monologue{{font-size:1.1rem;line-height:1.9;color:#d1d5db;border-left:3px solid #7c3aed;padding-left:20px;margin:20px 0}}
-.btn{{background:#7c3aed;color:#fff;border:none;padding:13px 30px;border-radius:8px;font-size:1rem;cursor:pointer;margin-top:20px;transition:background .2s}}
-.btn:hover{{background:#6d28d9}}
-.btn.done{{background:#059669}}
-.meta{{color:#9ca3af;font-size:.85rem;margin-top:14px}}
-</style></head>
-<body><div class="card">
-<p class="tag">🎙️ Micro-Podcast · Fase ENGAGE</p>
-<h2>{concept}</h2>
-<div class="wave">
-  <div class="bar" style="height:12px"></div><div class="bar"></div><div class="bar"></div>
-  <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-  <div class="bar" style="height:12px"></div>
-</div>
-<div class="monologue">{monologue}</div>
-<button class="btn" id="btn" onclick="finish()">He terminado de escuchar ✓</button>
-<p class="meta">⏱ Duración estimada: 45 segundos</p>
-</div>
-<script>
-function finish(){{document.getElementById('btn').className='btn done';document.getElementById('btn').textContent='¡Completado! ✓';_scormComplete();}}
-{SCORM_JS}
-</script></body></html>"""
+
+# Pollinations free anonymous tier throttles hard, so we only generate the
+# first N images per resource and let the rest render text-only.
+_MAX_GENERATED_IMAGES = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
+
+
+def _enrich_with_images(json_data) -> dict[str, str]:
+    """For step-1 JSON whose items contain a `prompt_imagen` field, fetch up
+    to `_MAX_GENERATED_IMAGES` images via Pollinations and add an
+    `image_placeholder` to each item that gets one. Returns the
+    {placeholder: data_uri} map for post-LLM replacement."""
+    if not isinstance(json_data, list) or not json_data:
+        return {}
+    first = json_data[0] if isinstance(json_data[0], dict) else None
+    if not first or "prompt_imagen" not in first:
+        return {}
+
+    targets = json_data[:_MAX_GENERATED_IMAGES]
+    prompts = [(item.get("prompt_imagen") or "").strip() for item in targets]
+    uris = fetch_images_parallel(prompts)
+
+    replacements: dict[str, str] = {}
+    for i, (item, uri) in enumerate(zip(targets, uris), start=1):
+        placeholder = f"__IMG_{i}__"
+        item["image_placeholder"] = placeholder
+        replacements[placeholder] = uri or _IMG_PLACEHOLDER
+    return replacements
 
 
 class GenerateEngageRequest(BaseModel):
@@ -91,19 +91,20 @@ def generate_engage_resource(
     try:
         # Resource 10: direct code generation (no JSON step)
         if n == 10:
-            html = strip_markdown(generar_texto(prompt_simulador(concept), "codigo", max_tokens=4000))
+            html = strip_markdown(generar_texto(prompt_simulador(concept), "codigo", max_tokens=8000))
             return {**meta, "resource_type": n, "concepto": concept, "raw_json": None, "html_content": html}
 
-        # Resource 3 (podcast): plain text → styled HTML wrapper
+        # Resource 3 (podcast): monologue text → Groq TTS audio → player HTML
         if n == 3:
-            monologue = generar_texto(prompt_texto(n, concept), "texto", max_tokens=500)
+            monologue = generar_texto(prompt_texto(n, concept), "texto", max_tokens=700)
+            audio_b64 = podcast_audio_b64(monologue)
             return {**meta, "resource_type": n, "concepto": concept,
                     "raw_json": {"monologue": monologue},
-                    "html_content": _podcast_html(concept, monologue)}
+                    "html_content": build_podcast_html(concept, monologue, audio_b64)}
 
         # Resources 1,2,4-9: Step 1 = text/JSON, Step 2 = HTML via code agent
         tarea = _TAREA_POR_RECURSO[n]
-        raw_text = generar_texto(prompt_texto(n, concept), tarea, max_tokens=2000)
+        raw_text = generar_texto(prompt_texto(n, concept), tarea, max_tokens=3000)
 
         try:
             json_data = parse_json(raw_text)
@@ -111,8 +112,17 @@ def generate_engage_resource(
             logger.warning("JSON parse failed for resource %d, using raw text", n)
             json_data = {"contenido": raw_text}
 
+        # If the JSON has prompt_imagen items, pre-fetch the images and inject
+        # placeholders the HTML step will reference.
+        img_replacements = _enrich_with_images(json_data)
+
         json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
-        html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=4000))
+        html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=8000))
+
+        for placeholder, uri in img_replacements.items():
+            html = html.replace(placeholder, uri)
+        # Sweep any placeholders the LLM hallucinated beyond the ones we gave it.
+        html = re.sub(r"__IMG_\d+__", _IMG_PLACEHOLDER, html)
 
         return {**meta, "resource_type": n, "concepto": concept, "raw_json": json_data, "html_content": html}
 

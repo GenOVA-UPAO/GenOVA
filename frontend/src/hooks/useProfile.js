@@ -26,7 +26,6 @@ export function useProfile() {
   })
 
   const fetchProfile = async () => {
-    setLoading(true)
     const token = getToken()
 
     try {
@@ -53,6 +52,7 @@ export function useProfile() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial del perfil al montar
     fetchProfile()
   }, [])
 

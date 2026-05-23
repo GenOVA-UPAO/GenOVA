@@ -61,6 +61,7 @@ export function useRegenEditor() {
   }, [ovaId, navigate])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial del editor del OVA
     loadEditorData()
     return () => clearInterval(pollIntervalRef.current)
   }, [loadEditorData])

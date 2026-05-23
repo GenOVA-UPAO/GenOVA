@@ -32,14 +32,14 @@ class GenerateExploreRequest(BaseModel):
 
 def _generate_two_step(n: int, concept: str) -> tuple[dict | list, str]:
     tarea = _TAREA_POR_RECURSO.get(n, "texto")
-    raw = generar_texto(prompt_texto(n, concept), tarea, max_tokens=2000)
+    raw = generar_texto(prompt_texto(n, concept), tarea, max_tokens=3000)
     try:
         json_data = parse_json(raw)
     except Exception:
         logger.warning("JSON parse failed for EXPLORE resource %d, using raw text", n)
         json_data = {"contenido": raw}
     json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
-    html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=4000))
+    html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=8000))
     return json_data, html
 
 
@@ -68,7 +68,7 @@ def generate_explore_resource(
 
     try:
         if n in CODE_ONLY:
-            html = strip_markdown(generar_texto(prompt_codigo(n, concept), "codigo", max_tokens=4000))
+            html = strip_markdown(generar_texto(prompt_codigo(n, concept), "codigo", max_tokens=8000))
             return {**meta, "resource_type": n, "concepto": concept, "raw_json": None, "html_content": html}
 
         json_data, html = _generate_two_step(n, concept)

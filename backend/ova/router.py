@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from database import get_db
 from models import Ova, OvaPhase, OvaVersion, User
-from ova.generation_router import _enabled_llm_options, _ova_output_dir, router as gen_router
+from ova.llm_helpers import _enabled_llm_options, _ova_output_dir
 from scorm.service import build_scorm_zip_bytes
 
 router = APIRouter()
@@ -89,7 +89,11 @@ def download_ova_scorm(
     db: Session = Depends(get_db),
 ):
     ova = db.execute(
-        select(Ova).where(Ova.id == ova_id, Ova.user_id == current_user.id)
+        select(Ova).where(
+            Ova.id == ova_id,
+            Ova.user_id == current_user.id,
+            Ova.deleted_at.is_(None),
+        )
     ).scalar_one_or_none()
     if not ova:
         raise HTTPException(status_code=404, detail="OVA no encontrado.")
@@ -105,6 +109,3 @@ def download_ova_scorm(
         media_type="application/zip",
         headers={"Content-Disposition": f'attachment; filename="{safe_title}-scorm.zip"'},
     )
-
-
-router.include_router(gen_router)

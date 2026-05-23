@@ -40,6 +40,7 @@ export function useTrashList() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial de la papelera
     loadTrash(1)
   }, [loadTrash])
 

@@ -272,3 +272,7 @@ history.jsonl
 stats-cache.json
 
 *.zip
+
+# Prompt Lab — outputs temporales (los winners/ sí se commitean)
+backend/tools/outputs/
+backend/tools/prompt_lab_log.jsonl

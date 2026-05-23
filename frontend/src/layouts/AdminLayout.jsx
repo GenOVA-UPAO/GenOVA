@@ -6,16 +6,12 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function AdminLayout() {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => Boolean(getToken()))
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     const token = getToken()
-    if (!token) {
-      setIsAdmin(false)
-      setLoading(false)
-      return
-    }
+    if (!token) return
 
     const checkAdmin = async () => {
       try {
@@ -26,15 +22,11 @@ export function AdminLayout() {
         })
         if (response.status === 200) {
           const user = await response.json()
-          if (user.role === 'administrador') {
-            setIsAdmin(true)
-          } else {
-            setIsAdmin(false)
-          }
+          setIsAdmin(user.role === 'administrador')
         } else {
           setIsAdmin(false)
         }
-      } catch (error) {
+      } catch {
         setIsAdmin(false)
       } finally {
         setLoading(false)
