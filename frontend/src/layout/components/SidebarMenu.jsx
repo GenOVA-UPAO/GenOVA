@@ -71,12 +71,12 @@ export function SidebarMenu() {
           <ul className="space-y-1.5">
             <li>
               <NavLink to="/admin/roles" className={getSidebarLinkClasses}>
-                Gestión de Roles
+                🛡️ Gestión de Roles
               </NavLink>
             </li>
             <li>
               <NavLink to="/admin/users" className={getSidebarLinkClasses}>
-                Gestión de Usuarios
+                👥 Gestión de Usuarios
               </NavLink>
             </li>
             <li>
