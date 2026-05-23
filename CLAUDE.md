@@ -65,7 +65,7 @@ Runs automatically on backend startup via `seed.py`. Creates `administrador` and
 
 ### SQL migrations
 
-Applied automatically on backend startup via `run_migrations()` in `main.py`'s startup hook. Migration files live in `backend/migrations/` (001 through 007). To add a migration, create the next numbered `.sql` file — it will be applied on next startup. Run manually: `python run_migrations.py` from `backend/`.
+Applied automatically on backend startup via `run_migrations()` in `main.py`'s startup hook. Migration files live in `backend/migrations/` (001 through 009). To add a migration, create the next numbered `.sql` file — it will be applied on next startup. Run manually: `python run_migrations.py` from `backend/`.
 
 ### Health endpoints
 
@@ -98,24 +98,36 @@ Some routers are mounted at two prefixes for legacy compatibility:
 **OVA lifecycle**:
 | Module | Prefix | Responsibility |
 |---|---|---|
-| `ova/generation_router.py` | `/api/ova` | Start generation job, poll progress |
-| `ova/edit_router.py` | `/api/ovas` | Trigger regen on existing OVA |
+| `ova/router.py` | `/api/ova` | `POST /save`, `GET /{id}/scorm`, `GET /llm-options` |
+| `ova/edit_router.py` | `/api/ovas` | Phase saves; includes `edit_view_router` + `regen_router` as sub-routers |
+| `ova/edit_view_router.py` | `/api/ovas` | Read OVA detail + active version for editor |
+| `ova/regen_router.py` | `/api/ovas` | Trigger regen on existing OVA |
 | `ova/regen_service.py` | — | Background thread: create new `OvaVersion`, rebuild SCORM zip |
-| `ova/history_router.py` | `/api/ovas` | Version history |
+| `ova/history_router.py` | `/api/ovas` | List OVAs, version history |
+| `ova/manage_router.py` | `/api/ovas` | Metadata update, permanent delete |
 | `ova/duplicate_router.py` | `/api/ovas` | Copy existing OVA |
 | `ova/trash_router.py` | `/api/ovas` | Soft-delete / restore |
+| `ova/trash_batch_router.py` | `/api/ovas` | Batch trash operations |
 | `scorm/service.py` | — | `build_scorm_zip_bytes()` assembles manifest, HTML, JS, CSS |
 
-**Generation job pattern**: In-memory dict `_generation_jobs` (process-local, not Redis). Single-worker only. Progress is **time-simulated** — `percentage` is calculated from `elapsed / OVA_GENERATION_DURATION_SECONDS`, not actual LLM progress. When the timer expires `_finalize_ova()` is called, which writes a static placeholder SCORM zip using `DEFAULT_PHASE_CONTENT` and persists `OvaVersion` + `OvaPhase` rows. Real AI content generation happens separately via the `/api/agents/` endpoints. Frontend polls `GET /api/ova/generate/{job_id}/progress` until `status == "success"`. SCORM zips saved to `backend/scorm_output/{ova_id}_v{N}.zip` (override with `OVA_OUTPUT_DIR` env var).
-
-**Versioning invariant**: `OvaVersion` has a partial unique index — only one `is_active = TRUE` version per OVA. Edits always create a new version and deactivate the prior one.
+**Versioning invariant**: `OvaVersion` has a partial unique index — only one `is_active = TRUE` version per OVA. Edits always create a new version and deactivate the prior one. SCORM zips saved to `backend/scorm_output/{ova_id}_v{N}.zip` (override with `OVA_OUTPUT_DIR` env var).
 
 **Agents** (`backend/agents/`) — Metodología 5E resource generation:
-- `llm_router.py`: routes tasks using `groq` Python SDK (Groq) + `openai` client pointing at OpenRouter. Task→model: `texto`→Groq llama-3.3-70b, `codigo`→OpenRouter qwen3-coder, `orquestador`→Groq gpt-oss-120b (`reasoning_effort=medium`), `razonamiento`→Groq qwen3-32b (`reasoning_effort=default`). Groq uses `max_completion_tokens`; OpenRouter uses `max_tokens`. OpenRouter client includes `HTTP-Referer`/`X-Title` headers set via `APP_URL` env var. Rate-limit fallback: Groq 429 → `llama-3.1-8b-instant`; arbitrary-model 429 → OpenRouter free Llama 3.3 70B. Extra: `generar_vision()` (llama-4-scout, image RAG), `transcribir_audio()` (Whisper STT, **25 MB** free-tier limit), `generar_audio_tts()` (Orpheus WAV).
+- `llm_router.py`: routes tasks using `groq` Python SDK (Groq) + `openai` client pointing at OpenRouter. Task→model: `texto`→Groq llama-3.3-70b, `codigo`→OpenRouter qwen3-coder, `orquestador`→Groq gpt-oss-120b (`reasoning_effort=medium`), `razonamiento`→Groq qwen3-32b (`reasoning_effort=default`). Groq caps at 3500 `max_completion_tokens` (6000 TPM free tier). OpenRouter uses `max_tokens`. Rate-limit fallback: Groq 429 → `llama-3.1-8b-instant`; arbitrary-model 429 → OpenRouter free Llama 3.3 70B. Extra: `generar_vision()` (llama-4-scout, image RAG), `transcribir_audio()` (Whisper STT, **25 MB** free-tier limit), `generar_audio_tts()` (Orpheus WAV). `generar_texto_with_model()` accepts arbitrary `model_id` + `provider` — used by Labs.
 - `engage_router.py`: POST `/api/agents/engage/generate` — 10 resource types for ENGAGE phase.
 - `explore_router.py`: POST `/api/agents/explore/generate` — 10 resource types for EXPLORE phase.
 - Most resources follow a two-step pattern: text/JSON generation → HTML generation via code agent. Response: `{resource_json, html_content}`.
 - Quality specs for HTML output (min length, no CDN, SCORM callbacks, required tags) live in `backend/tests/specs/resource_quality_spec.py`.
+
+**Labs** (`backend/labs/`) — Admin prompt-iteration tool; full spec in `docs/LABS.md`:
+- Allows admins to edit prompts, run them against 1–2 models in parallel, compare results, and activate a winning prompt version.
+- Activated prompt versions override hardcoded Python prompts in `engage_router.py` / `explore_router.py` at generation time — no deploy needed.
+- `catalog.py`: `AVAILABLE_MODELS` list + `quality_check_html()`.
+- `prompt_utils.py`: `get_base_prompt()`, `get_active_prompt()`, `build_improve_prompt()`.
+- `generation.py`: per-thread workers, `_lab_jobs` dict, `start_lab_job()`, `get_job_results()`.
+- `router.py`: prompt CRUD (`GET /api/labs/models`, `GET/POST /api/labs/prompts`, `PUT/DELETE /api/labs/prompts/{id}/activate`).
+- `generation_routes.py`: generation + AI-improve + SCORM + results endpoints (`POST /api/labs/generate`, `GET /api/labs/generate/{job_id}/results`, `POST /api/labs/improve-prompt`, `GET /api/labs/results`).
+- DB tables: `prompt_versions` (template with `{concept}` placeholder, partial unique index for `is_active` per phase+type), `lab_results` (HTML output, quality checks, timing). Added by migration 008; migration 009 drops a legacy table.
 
 **File uploads** (`backend/uploads/`):
 - Allowed: PDF, DOCX, PPTX; MP3, WAV, M4A, OGG, WebM; JPEG, PNG, GIF, WebP.
@@ -149,20 +161,25 @@ Active routes:
 
 **Layout**: `AppLayout` wraps authenticated pages with `Navbar` + collapsible `Sidebar` + `<Outlet />`. Admin pages share the same layout, gated by `AdminRoute`.
 
-**Notifications**: `sonner` `<Toaster>` mounted in `App.jsx` at `position="top-right"`.
+**Notifications**: `sonner` `<Toaster>` mounted in `App.jsx` at `position="top-right"` with `richColors` and `closeButton`.
 
 **Key hooks** (`frontend/src/hooks/`):
 
 | Hook | Responsibility |
 |---|---|
 | `useOvaCreation` | Full creation wizard flow |
-| `useOvaGeneration` | Fires generation job, manages selected LLM |
-| `useOvaProgressPolling` | Polls `/api/ova/generate/{job_id}/progress` every 1 s |
+| `ovaGenerationHelpers` | Generation job helpers, LLM selection, progress polling |
 | `useOvaList` | List, search, pagination, batch actions |
+| `useOvaMetadata` | Rename / edit OVA metadata |
+| `useOvaUploads` | File upload state for OVA creation |
 | `usePhaseGeneration` | Single-phase resource generation |
 | `useEngageGeneration` | Wrapper of `usePhaseGeneration` for ENGAGE |
 | `useRegenEditor` | Phase regen from editor |
+| `useTrashList` | Trash (papelera) list and restore |
+| `useProfile` | User profile view/edit |
 | `useRoles` / `useUsersAdmin` | Admin page data |
+| `useLabGeneration` | Labs: model selection, parallel generation, winner picking |
+| `useLabPrompt` | Labs: prompt text state, versions CRUD |
 
 **Services** (`frontend/src/services/`): All read JWT via `getToken()` and send `Authorization: Bearer <token>`.
 
@@ -170,11 +187,10 @@ Active routes:
 ovaCreationService.js   → /api/ova/*
 engageService.js        → /api/agents/engage/*
 exploreService.js       → /api/agents/explore/*
-ovaGenerationService.js → /api/ova/generate
 ovaHistoryService.js    → /api/ovas/:id/versions
 ovaEditService.js       → /api/ovas/:id/phases
-scormExportService.js   → /api/ova/:id/scorm
 uploadService.js        → /api/uploads/temp
+labsService.js          → /api/labs/*
 ```
 
 **Auth utils** (`lib/auth.js`): `getToken()`, `saveToken()`, `clearToken()`, `decodeToken()`, `isTokenExpired()`. Token stored under key `genova_token` in `localStorage`.
@@ -183,6 +199,7 @@ uploadService.js        → /api/uploads/temp
 - `lib/supabaseClient.js` — Supabase client for file storage
 - `lib/permissions.js` — `AVAILABLE_PERMISSIONS` constant (permission strings)
 - `lib/roleUtils.js` — `getRoleColorClasses(roleName)` → Tailwind classes per role
+- `lib/labQuality.js` — `checkHtmlQuality(html)` → `{cdn_ok, scorm_ok, min_length_ok, char_count}` (mirrors server-side quality checks; used for live badges in Labs UI)
 
 **Code style**: Prettier enforces `printWidth: 100`, `singleQuote: true`, `semi: false`, `trailingComma: "es5"`. ESLint enforces max 200 lines per file.
 
