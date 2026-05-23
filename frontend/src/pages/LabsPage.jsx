@@ -10,7 +10,7 @@ export function LabsPage() {
 
   useEffect(() => {
     lab.loadModels()
-  }, [])
+  }, [lab.loadModels]);
 
   const canGenerate =
     lab.selectedPhase &&
