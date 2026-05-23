@@ -1,16 +1,15 @@
-const AUTH_KEY = 'genova_is_authenticated'
-const TOKEN_KEY = 'genova_token'
+const AUTH_KEY = 'genova_token'
 
 export function saveToken(token) {
-  localStorage.setItem(AUTH_KEY, 'true')
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token)
-  }
+  localStorage.setItem(AUTH_KEY, token)
+}
+
+export function getToken() {
+  return localStorage.getItem(AUTH_KEY)
 }
 
 export async function clearToken() {
   localStorage.removeItem(AUTH_KEY)
-  localStorage.removeItem(TOKEN_KEY)
   try {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
     await fetch(`${apiBaseUrl}/api/auth/logout`, { method: 'POST' })
@@ -19,12 +18,8 @@ export async function clearToken() {
   }
 }
 
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY)
-}
-
 export function isAuthenticated() {
-  return localStorage.getItem(AUTH_KEY) === 'true' && !!getToken()
+  return !!localStorage.getItem(AUTH_KEY)
 }
 
 export function decodeToken() {
@@ -34,4 +29,3 @@ export function decodeToken() {
 export function isTokenExpired() {
   return false
 }
-

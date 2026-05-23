@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useNavigate, Outlet } from 'react-router'
-import { clearToken, isAuthenticated } from './lib/auth.js'
+import { clearToken, isAuthenticated, getToken } from './lib/auth.js'
 import { AppLayout } from './layouts/AppLayout.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
@@ -16,8 +16,8 @@ import { EngagePage } from './pages/EngagePage.jsx'
 import { ExplorePage } from './pages/ExplorePage.jsx'
 import { NotFoundPage } from './pages/NotFoundPage.jsx'
 import { LabsPage } from './pages/LabsPage.jsx'
-
 import { Toaster } from 'sonner'
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function AdminRoute() {
@@ -29,7 +29,9 @@ export function AdminRoute() {
 
     const checkAdmin = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/api/auth/me`)
+        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${getToken()}` },  // ← fix
+        })
         if (response.status === 200) {
           const user = await response.json()
           setIsAdmin(user.role === 'administrador')
@@ -81,7 +83,9 @@ function App() {
         return
       }
       try {
-        const response = await fetch(`${apiBaseUrl}/api/auth/me`)
+        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${getToken()}` },  // ← fix
+        })
         if (response.status === 401) {
           await clearToken()
           navigate('/login', { replace: true })
@@ -96,7 +100,6 @@ function App() {
     }
 
     const interval = setInterval(checkSession, 60000)
-
     return () => clearInterval(interval)
   }, [navigate])
 
@@ -115,8 +118,6 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/metodologia/engage" element={<EngagePage />} />
           <Route path="/metodologia/explore" element={<ExplorePage />} />
-          
-          {/* Unified Admin pages nested in AppLayout and protected by AdminRoute */}
           <Route element={<AdminRoute />}>
             <Route path="/admin/roles" element={<AdminRolesPage />} />
             <Route path="/admin/users" element={<AdminUsersPage />} />
