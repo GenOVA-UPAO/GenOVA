@@ -1,10 +1,13 @@
 import json
 import logging
+import os
+import re
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from agents.engage_prompts import RECURSOS_META, prompt_html, prompt_simulador, prompt_texto
+from agents.images import fetch_images_parallel
 from agents.llm_router import generar_texto
 from agents.podcast import build_podcast_html, podcast_audio_b64
 from agents.utils import parse_json, strip_markdown
@@ -18,6 +21,43 @@ _TAREA_POR_RECURSO = {
     1: "texto", 2: "texto", 3: "texto", 4: "texto", 5: "texto",
     6: "texto", 7: "texto", 8: "texto", 9: "orquestador", 10: "codigo",
 }
+
+# 1x1 transparent SVG fallback shown when image generation fails.
+_IMG_PLACEHOLDER = (
+    "data:image/svg+xml;utf8,"
+    "<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'>"
+    "<rect fill='%23e2e8f0' width='100%25' height='100%25'/>"
+    "<text x='50%25' y='50%25' font-family='sans-serif' font-size='22' "
+    "text-anchor='middle' fill='%23475569'>Imagen no disponible</text></svg>"
+)
+
+
+# Pollinations free anonymous tier throttles hard, so we only generate the
+# first N images per resource and let the rest render text-only.
+_MAX_GENERATED_IMAGES = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
+
+
+def _enrich_with_images(json_data) -> dict[str, str]:
+    """For step-1 JSON whose items contain a `prompt_imagen` field, fetch up
+    to `_MAX_GENERATED_IMAGES` images via Pollinations and add an
+    `image_placeholder` to each item that gets one. Returns the
+    {placeholder: data_uri} map for post-LLM replacement."""
+    if not isinstance(json_data, list) or not json_data:
+        return {}
+    first = json_data[0] if isinstance(json_data[0], dict) else None
+    if not first or "prompt_imagen" not in first:
+        return {}
+
+    targets = json_data[:_MAX_GENERATED_IMAGES]
+    prompts = [(item.get("prompt_imagen") or "").strip() for item in targets]
+    uris = fetch_images_parallel(prompts)
+
+    replacements: dict[str, str] = {}
+    for i, (item, uri) in enumerate(zip(targets, uris), start=1):
+        placeholder = f"__IMG_{i}__"
+        item["image_placeholder"] = placeholder
+        replacements[placeholder] = uri or _IMG_PLACEHOLDER
+    return replacements
 
 
 class GenerateEngageRequest(BaseModel):
@@ -72,8 +112,17 @@ def generate_engage_resource(
             logger.warning("JSON parse failed for resource %d, using raw text", n)
             json_data = {"contenido": raw_text}
 
+        # If the JSON has prompt_imagen items, pre-fetch the images and inject
+        # placeholders the HTML step will reference.
+        img_replacements = _enrich_with_images(json_data)
+
         json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
         html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=8000))
+
+        for placeholder, uri in img_replacements.items():
+            html = html.replace(placeholder, uri)
+        # Sweep any placeholders the LLM hallucinated beyond the ones we gave it.
+        html = re.sub(r"__IMG_\d+__", _IMG_PLACEHOLDER, html)
 
         return {**meta, "resource_type": n, "concepto": concept, "raw_json": json_data, "html_content": html}
 

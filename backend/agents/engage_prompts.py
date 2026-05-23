@@ -124,5 +124,6 @@ def prompt_html(n: int, concept: str, data_json: str) -> str:
 - Interactividad real: cada elemento del contenido debe ser funcional (navegación, botones, feedback, puntuación).
 - Accesibilidad básica: contraste alto y foco visible.
 - Mínimo ~250 líneas de HTML/CSS/JS de calidad; sin secciones vacías ni texto de relleno.
+[IMAGENES] Si un item de los datos incluye un campo "image_placeholder" (por ejemplo "__IMG_1__"), úsalo literalmente como src del tag <img> correspondiente (por ejemplo: <img src="__IMG_1__" alt="...">). Si un item NO tiene "image_placeholder", NO inventes uno y NO incluyas <img> para ese item — renderiza solo texto. El servidor reemplaza los placeholders válidos por imágenes reales al renderizar.
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar la actividad principal.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown."""
