@@ -10,7 +10,7 @@ export function LabsPage() {
 
   useEffect(() => {
     lab.loadModels()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const canGenerate =
     lab.selectedPhase &&
@@ -22,63 +22,48 @@ export function LabsPage() {
   const totalConfigs = lab.modelA && lab.modelB ? 2 : lab.modelA ? 1 : 0
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-200 bg-white px-6 py-4">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🧪</span>
-          <div>
-            <h1 className="text-lg font-bold text-slate-900">Labs — Iteración de Prompts</h1>
-            <p className="text-xs text-slate-500">
-              Prueba y mejora los prompts de generación de recursos. Solo administradores.
-            </p>
-          </div>
+      <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl flex items-center gap-2">
+            <span>🧪</span> Labs — Iteración de Prompts
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Prueba y mejora los prompts de generación de recursos, compara modelos de IA y optimiza resultados en tiempo real.
+          </p>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left: Resource selector */}
-        <aside className="w-64 flex-shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-4">
-          <PhaseResourceSelector
-            selectedPhase={lab.selectedPhase}
-            selectedType={lab.selectedType}
-            onSelect={lab.selectResource}
-          />
-        </aside>
-
-        {/* Center: Prompt editor */}
-        <div className="w-80 flex-shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-4">
-          {lab.selectedPhase ? (
-            <PromptEditor
-              promptText={lab.promptText}
-              setPromptText={lab.setPromptText}
-              loadingPrompts={lab.loadingPrompts}
-              onResetBase={lab.resetToBase}
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <p className="text-center text-sm text-slate-400">
-                Selecciona un recurso<br />para editar su prompt
-              </p>
-            </div>
-          )}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-md space-y-4">
+        <div className="border-b border-slate-100 pb-3">
+          <h2 className="text-sm font-bold text-slate-900">Selección de Recurso</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Elige la fase y el tipo de recurso didáctico para comenzar a experimentar.</p>
         </div>
+        <PhaseResourceSelector
+          selectedPhase={lab.selectedPhase}
+          selectedType={lab.selectedType}
+          onSelect={lab.selectResource}
+        />
+      </div>
 
-        {/* Right: Config + Results */}
-        <div className="flex-1 overflow-y-auto bg-slate-50 p-4">
-          {lab.selectedPhase ? (
-            <div className="space-y-4">
-              {/* Config row */}
-              <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
-                <h2 className="text-sm font-semibold text-slate-700">Configuración de prueba</h2>
+      {lab.selectedPhase ? (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="lg:col-span-1 rounded-xl border border-slate-200 bg-white p-5 shadow-md space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-bold text-slate-900">Configuración de prueba</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Define los parámetros y los modelos a contrastar.</p>
+              </div>
+              <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Concepto educativo</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Concepto educativo</label>
                   <input
                     type="text"
                     value={lab.concept}
                     onChange={(e) => lab.setConcept(e.target.value)}
                     placeholder="Ej: Redes Neuronales, Árboles de decisión..."
-                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
                   />
                 </div>
                 <ModelSelector
@@ -92,7 +77,7 @@ export function LabsPage() {
                   <button
                     onClick={lab.generate}
                     disabled={!canGenerate || lab.generating}
-                    className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-600/10 hover:bg-indigo-700 hover:shadow-indigo-700/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                   >
                     {lab.generating ? (
                       <span className="flex items-center gap-2">
@@ -110,35 +95,52 @@ export function LabsPage() {
                   </p>
                 )}
               </div>
+            </div>
 
-              {/* Results */}
-              <ResultsPanel
-                results={lab.results}
-                generating={lab.generating}
-                total={totalConfigs || 2}
-                winnerId={lab.winnerId}
-                onSelectWinner={lab.selectWinner}
-                onExportScorm={lab.handleExportScorm}
-                improving={lab.improving}
-                improvedPrompt={lab.improvedPrompt}
-                onImprovePrompt={lab.handleImprovePrompt}
-                onApplyImproved={lab.applyImprovedPrompt}
-                canImprove={Boolean(lab.winnerId)}
+            <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-md">
+              <div className="border-b border-slate-100 pb-3 mb-4">
+                <h2 className="text-sm font-bold text-slate-900">Editor del Prompt</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Modifica las instrucciones del agente para esta prueba.</p>
+              </div>
+              <PromptEditor
+                promptText={lab.promptText}
+                setPromptText={lab.setPromptText}
+                loadingPrompts={lab.loadingPrompts}
+                onResetBase={lab.resetToBase}
               />
             </div>
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center">
-                <p className="text-4xl">🧪</p>
-                <p className="mt-3 text-sm font-medium text-slate-600">Labs de prompts</p>
-                <p className="mt-1 text-xs text-slate-400 max-w-xs">
-                  Selecciona una fase y tipo de recurso para comenzar a iterar prompts y comparar modelos.
-                </p>
-              </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="border-b border-slate-200 pb-2">
+              <h2 className="text-base font-bold text-slate-900">Resultados de la Comparación</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Compara los recursos generados y exporta la versión óptima.</p>
             </div>
-          )}
+            <ResultsPanel
+              results={lab.results}
+              generating={lab.generating}
+              total={totalConfigs || 2}
+              winnerId={lab.winnerId}
+              onSelectWinner={lab.selectWinner}
+              onExportScorm={lab.handleExportScorm}
+              improving={lab.improving}
+              improvedPrompt={lab.improvedPrompt}
+              onImprovePrompt={lab.handleImprovePrompt}
+              onApplyImproved={lab.applyImprovedPrompt}
+              canImprove={Boolean(lab.winnerId)}
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-md flex flex-col items-center justify-center min-h-[300px] text-center">
+          <span className="text-5xl animate-bounce">🧪</span>
+          <h3 className="mt-4 text-base font-bold text-slate-900">Sandbox de Iteración de Prompts</h3>
+          <p className="mt-2 text-xs text-slate-500 max-w-md leading-relaxed">
+            Selecciona una fase (Engage o Explore) y un tipo de recurso didáctico de la lista superior para comenzar a experimentar con la calibración del modelo.
+          </p>
+        </div>
+      )}
     </div>
   )
+
 }
