@@ -36,6 +36,9 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+# Antigravity / Gemini local configuration
+.gemini/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
