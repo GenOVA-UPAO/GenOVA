@@ -9,8 +9,8 @@ export function Navbar() {
   const navigate = useNavigate()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const handleLogout = () => {
-    clearToken()
+  const handleLogout = async () => {
+    await clearToken()
     navigate('/login')
   }
 

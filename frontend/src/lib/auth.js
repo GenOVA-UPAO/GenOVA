@@ -1,33 +1,31 @@
-const TOKEN_KEY = 'genova_token'
+const AUTH_KEY = 'genova_is_authenticated'
 
-export function saveToken(token) {
-  if (!token) return
-  localStorage.setItem(TOKEN_KEY, token)
+export function saveToken() {
+  localStorage.setItem(AUTH_KEY, 'true')
 }
 
-export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY)
-}
-
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY)
-}
-
-export function decodeToken(token) {
-  if (!token) return null
-  const parts = token.split('.')
-  if (parts.length !== 3) return null
+export async function clearToken() {
+  localStorage.removeItem(AUTH_KEY)
   try {
-    const payload = JSON.parse(atob(parts[1]))
-    return payload
-  } catch {
-    return null
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+    await fetch(`${apiBaseUrl}/api/auth/logout`, { method: 'POST' })
+  } catch (err) {
+    console.error('Error al realizar logout en el servidor:', err)
   }
 }
 
-export function isTokenExpired(token) {
-  const payload = decodeToken(token)
-  if (!payload?.exp) return true
-  const expiresAt = payload.exp * 1000
-  return Date.now() >= expiresAt
+export function getToken() {
+  return null
+}
+
+export function isAuthenticated() {
+  return localStorage.getItem(AUTH_KEY) === 'true'
+}
+
+export function decodeToken() {
+  return null
+}
+
+export function isTokenExpired() {
+  return false
 }

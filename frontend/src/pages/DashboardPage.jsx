@@ -1,24 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { getToken } from '../lib/auth.js'
+import { isAuthenticated } from '../lib/auth.js'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(() => Boolean(getToken()))
+  const [loading, setLoading] = useState(() => isAuthenticated())
 
   useEffect(() => {
-    const token = getToken()
-    if (!token) return
+    if (!isAuthenticated()) return
 
     const checkRole = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+        const response = await fetch(`${apiBaseUrl}/api/auth/me`)
         if (response.status === 200) {
           const user = await response.json()
           setIsAdmin(user.role === 'administrador')

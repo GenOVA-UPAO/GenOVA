@@ -2,14 +2,14 @@ import re
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, status, Response
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User
+from models import User, Role, UserRole
 from security import (
     JWT_ALGORITHM,
     JWT_EXPIRES_MINUTES,
@@ -41,7 +41,7 @@ def is_locked(user: User) -> bool:
 
 
 @router.post("/login")
-def login(payload: dict = Body(default={}), db: Session = Depends(get_db)):
+def login(response: Response, payload: dict = Body(default={}), db: Session = Depends(get_db)):
     email = (payload.get("email") or "").strip().lower()
     password = payload.get("password") or ""
 
@@ -87,18 +87,39 @@ def login(payload: dict = Body(default={}), db: Session = Depends(get_db)):
     db.commit()
 
     token = build_token(str(user.id), str(user.email))
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "access_token": token,
-            "token_type": "bearer",
-            "expires_in": JWT_EXPIRES_MINUTES * 60,
-        },
+    
+    # Configure HttpOnly Cookie
+    response.set_cookie(
+        key="genova_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=JWT_EXPIRES_MINUTES * 60,
     )
+
+    role_name = "usuario"
+    user_role = db.execute(
+        select(Role)
+        .join(UserRole)
+        .where(UserRole.user_id == user.id)
+    ).scalar_one_or_none()
+    
+    if user_role:
+        role_name = user_role.name
+
+    return {
+        "status": "success",
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "role": role_name,
+        }
+    }
 
 
 @router.post("/register")
-def register(payload: dict = Body(default={}), db: Session = Depends(get_db)):
+def register(response: Response, payload: dict = Body(default={}), db: Session = Depends(get_db)):
     email = (payload.get("email") or "").strip().lower()
     password = payload.get("password") or ""
 
@@ -137,10 +158,39 @@ def register(payload: dict = Body(default={}), db: Session = Depends(get_db)):
     db.refresh(user)
 
     token = build_token(str(user.id), str(user.email))
+    
+    # Configure HttpOnly Cookie
+    response.set_cookie(
+        key="genova_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=JWT_EXPIRES_MINUTES * 60,
+    )
+
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
-        content={"access_token": token, "token_type": "bearer"},
+        content={
+            "status": "success",
+            "user": {
+                "id": str(user.id),
+                "email": user.email,
+                "role": "usuario",
+            }
+        },
     )
+
+
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key="genova_token",
+        httponly=True,
+        secure=True,
+        samesite="lax",
+    )
+    return {"message": "Sesión cerrada correctamente."}
 
 
 from auth.dependencies import get_current_user

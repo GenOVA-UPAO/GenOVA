@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useNavigate, Outlet } from 'react-router'
-import { clearToken, getToken, isTokenExpired } from './lib/auth.js'
+import { clearToken, isAuthenticated } from './lib/auth.js'
 import { AppLayout } from './layouts/AppLayout.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
@@ -21,20 +21,15 @@ import { Toaster } from 'sonner'
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function AdminRoute() {
-  const [loading, setLoading] = useState(() => Boolean(getToken()))
+  const [loading, setLoading] = useState(() => isAuthenticated())
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    const token = getToken()
-    if (!token) return
+    if (!isAuthenticated()) return
 
     const checkAdmin = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+        const response = await fetch(`${apiBaseUrl}/api/auth/me`)
         if (response.status === 200) {
           const user = await response.json()
           setIsAdmin(user.role === 'administrador')
@@ -70,8 +65,7 @@ export function AdminRoute() {
 }
 
 function ProtectedLayout() {
-  const token = getToken()
-  if (!token || isTokenExpired(token)) {
+  if (!isAuthenticated()) {
     return <Navigate to="/login" replace />
   }
   return <AppLayout />
@@ -81,13 +75,27 @@ function App() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const token = getToken()
-      if (!token || isTokenExpired(token)) {
-        clearToken()
+    const checkSession = async () => {
+      if (!isAuthenticated()) {
         navigate('/login', { replace: true })
+        return
       }
-    }, 60000)
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/auth/me`)
+        if (response.status === 401) {
+          await clearToken()
+          navigate('/login', { replace: true })
+        }
+      } catch (err) {
+        console.error('Error en heartbeat de sesión:', err)
+      }
+    }
+
+    if (isAuthenticated()) {
+      checkSession()
+    }
+
+    const interval = setInterval(checkSession, 60000)
 
     return () => clearInterval(interval)
   }, [navigate])
