@@ -1,20 +1,27 @@
+import logging
+
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
+from database import get_db
 from models import User
 from ova.uploads_service import (
     ALLOWED_MIME_TYPES,
     count_user_uploads,
     create_temp_upload,
     delete_user_upload,
+    get_upload_storage_path,
     list_user_uploads,
     max_file_size_bytes,
     max_file_size_mb,
     max_files_per_request,
 )
+from rag.pipeline import ingest_upload, is_enabled as rag_enabled
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/health")
@@ -34,6 +41,7 @@ def list_temp_uploads(
 async def upload_temp_files(
     files: list[UploadFile] = File(default=[]),
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     if not files:
         return JSONResponse(
@@ -68,8 +76,8 @@ async def upload_temp_files(
 
     max_bytes = max_file_size_bytes()
     max_mb = max_file_size_mb()
-    successful = []
-    errors = []
+    successful: list[dict] = []
+    errors: list[dict] = []
 
     for current_file in files:
         file_name = current_file.filename or "archivo"
@@ -102,6 +110,23 @@ async def upload_temp_files(
             content_type=file_type,
             content=content,
         )
+
+        # RAG ingestion (best-effort). Failures land in created_item.rag_status
+        # and never block the upload response.
+        rag_status = {"status": "disabled", "chunks": 0}
+        if rag_enabled():
+            storage_path = get_upload_storage_path(
+                created_item["upload_id"], str(current_user.id)
+            )
+            if storage_path:
+                rag_status = ingest_upload(
+                    db,
+                    user_id=str(current_user.id),
+                    upload_id=created_item["upload_id"],
+                    storage_path=storage_path,
+                    filename=created_item["filename"],
+                )
+        created_item["rag_status"] = rag_status
         successful.append(created_item)
 
     return {

@@ -43,6 +43,19 @@ async def lifespan(_: FastAPI):
     run_migrations()
     Base.metadata.create_all(bind=engine)
     seed_db()
+    # Best-effort cleanup of orphaned RAG chunks from prior runs. Failures are
+    # logged but don't block boot (e.g. when pgvector isn't installed yet).
+    try:
+        from sqlalchemy.orm import Session
+
+        from rag.store import purge_expired
+
+        with Session(engine) as session:
+            removed = purge_expired(session)
+            if removed:
+                logger.info("Purged %d expired RAG chunks on startup", removed)
+    except Exception:
+        logger.exception("RAG startup cleanup failed (continuing).")
     yield
 
 

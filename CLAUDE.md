@@ -79,7 +79,12 @@ Runs automatically on backend startup via `seed.py`. Creates `administrador` + `
 
 ### SQL migrations
 
-Applied automatically on backend startup via `run_migrations()` in `main.py`'s lifespan. Migration files live in `backend/migrations/` (001 through 009). To add a migration, create the next numbered `.sql` file — it will be applied on next startup. Run manually: `python run_migrations.py` from `backend/`.
+Applied automatically on backend startup via `run_migrations()` in `main.py`'s lifespan. Migration files live in `backend/migrations/` (001 through 012). To add a migration, create the next numbered `.sql` file — it will be applied on next startup. Run manually: `python run_migrations.py` from `backend/`.
+
+Key migrations:
+- `010_pgvector.sql` — enables the `vector` extension (required for RAG).
+- `011_rag_chunks.sql` — RAG chunk store with `vector(768)` embeddings.
+- `012_ova_storage_key.sql` — adds `ovas.storage_key` for Supabase Storage object keys.
 
 ### Health endpoints
 
@@ -129,10 +134,14 @@ Some routers are mounted at two prefixes for legacy compatibility:
 | `ova/trash_batch_router.py` | `/api/ovas` | Batch trash operations |
 | `scorm/service.py` | — | `build_scorm_zip_bytes()` assembles manifest, HTML, JS, CSS |
 
-**Versioning invariant**: `OvaVersion` has a partial unique index — only one `is_active = TRUE` version per OVA. Edits always create a new version and deactivate the prior one. SCORM zips saved to `backend/scorm_output/{ova_id}_v{N}.zip` (override with `OVA_OUTPUT_DIR` env var).
+**Versioning invariant**: `OvaVersion` has a partial unique index — only one `is_active = TRUE` version per OVA. Edits always create a new version and deactivate the prior one.
+
+**SCORM persistence**: When `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are set (production), zips upload to the `scorm-packages` private bucket under key `{user_id}/{ova_id}_v{N}.zip`; `Ova.storage_key` stores the key. `GET /api/ova/{id}/scorm` returns a **302 redirect** to a 1-hour signed URL — Render free tier cannot proxy zip bytes concurrently. If storage is unconfigured (dev), the backend falls back to local disk at `OVA_OUTPUT_DIR` (default `backend/scorm_output/`) and `Ova.file_path` is populated. Legacy OVAs with only `file_path` keep working.
+
+**Storage wrapper** lives in `backend/storage/supabase_storage.py` (`upload_zip`, `signed_url`, `delete_zip`, `is_configured`). The `supabase` Python SDK is loaded lazily so dev environments without the dep still boot.
 
 **Agents** (`backend/agents/`) — Metodología 5E resource generation:
-- `llm_router.py`: routes tasks using `groq` SDK + `openai` client → OpenRouter. Task→model: `texto`→Groq llama-3.3-70b, `codigo`→OpenRouter qwen3-coder, `orquestador`→Groq gpt-oss-120b (`reasoning_effort=medium`), `razonamiento`→Groq qwen3-32b. Groq capped at 3500 `max_completion_tokens` (6000 TPM free tier). Rate-limit fallback: 2 retries with backoff (3s, 8s) on the alternate provider. Extra: `generar_vision()` (llama-4-scout), `transcribir_audio()` (Whisper STT, **25 MB** free-tier limit), `generar_audio_tts()` (Orpheus WAV). `generar_texto_with_model()` accepts arbitrary `model_id`+`provider` (used by Labs).
+- `llm_router.py`: routes tasks using `groq` SDK + `openai` client → OpenRouter. Task→model: `texto`→Groq llama-3.3-70b, `codigo`→OpenRouter **deepseek/deepseek-v4-flash:free** (LiveCodeBench 91.6 / SWE-bench 79.0 — replaced qwen3-coder which couldn't follow nested HTML rules), `orquestador`→Groq gpt-oss-120b (`reasoning_effort=medium`), `razonamiento`→Groq qwen3-32b. Groq capped at 3500 `max_completion_tokens` (6000 TPM free tier). Rate-limit fallback: 2 retries with backoff (3s, 8s) on the alternate provider. Extra: `generar_vision()` (llama-4-scout), `transcribir_audio()` (Whisper STT, **25 MB** free-tier limit), `generar_audio_tts()` (Orpheus WAV). `generar_texto_with_model()` accepts arbitrary `model_id`+`provider` (used by Labs).
 - `engage_router.py`: POST `/api/agents/engage/generate` — 10 resource types for ENGAGE. Resource 2 is labelled "Storyboard de Video" (no real video generation). Resource 3 (podcast) HTML-escapes the monologue before embedding. Resource 9 uses the `texto` task (was `orquestador` — reverted: not worth the cost).
 - `explore_router.py`: POST `/api/agents/explore/generate` — 10 resource types for EXPLORE.
 - Most resources follow a two-step pattern: text/JSON generation → HTML generation via code agent. Response: `{resource_json, html_content}`. `utils.parse_json()` is tolerant: tries direct parse, then walks balanced-bracket spans for the first valid object/array.
@@ -144,6 +153,18 @@ Some routers are mounted at two prefixes for legacy compatibility:
 - Allows admins to edit prompts, run them against 1–2 models in parallel, compare results, and activate a winning prompt version.
 - Activated prompt versions override hardcoded Python prompts in `engage_router.py` / `explore_router.py` at generation time — no deploy needed.
 - DB tables: `prompt_versions` (template with `{concept}` placeholder, partial unique index for `is_active` per phase+type), `lab_results`. Added by migration 008; migration 009 drops a legacy table.
+
+**RAG pipeline** (`backend/rag/`) — fed by uploads, retrieved by ENGAGE/EXPLORE:
+- Ingestion runs inline in `POST /api/uploads/temp` via `pipeline.ingest_upload`. Best-effort: failures are reported in the response body's `rag_status` field but never block the upload.
+- **Multimodal binary path** (PDF, image, audio, video): file bytes are passed directly to `GeminiEmbedder.embed_file(data, mime_type)` which returns ONE 768-d vector for the whole file (no Whisper/vision/OCR step). One row is inserted into `rag_chunks` with placeholder text `[Archivo multimodal: <filename>]` and the multimodal embedding.
+- **Text path** (DOCX, PPTX, fallback): `parsers.extract_text()` → `chunker.chunk_text()` (800-char window, 150 overlap, max 100 chunks) → `embedder.embed_batch()` → `store.insert_chunks()`.
+- Parsers (`parsers.py`): PDF (`pypdf`, used only when multimodal embedder unavailable), DOCX (`python-docx`), PPTX (`python-pptx`). Audio/image parsers in this module are kept as legacy fallback (call `transcribir_audio` / `generar_vision`) but are NOT invoked when the multimodal embedder is active.
+- Embedder is pluggable via `RAG_EMBEDDER`: `gemini` (default, **`gemini-embedding-2-preview`** — Public Preview Mar 2026, natively multimodal: text + image + PDF + audio + video; Matryoshka-truncated to 768-d), `gemini-001` (stable text-only fallback), or `local` (sentence-transformers MiniLM, 384-d — only if Render RAM allows). Dimension change requires reindex.
+- Retrieval: `retriever.top_k(db, query, upload_ids, k=5)` runs cosine via pgvector ivfflat index. `build_contexto_usuario(chunks)` formats results for prompt injection.
+- Injection: `agents/utils.format_contexto_usuario()` wraps retrieved text in `[CONTEXTO_APORTADO_POR_EL_USUARIO]` tags. All `prompt_texto`/`prompt_html`/`prompt_codigo`/`prompt_simulador` functions accept an optional `contexto_usuario` param; if empty, the block is omitted (no behavior change for users without uploads).
+- Lifecycle: chunks expire 1 h after upload unless tied to an OVA via `store.tie_uploads_to_ova()` (called from `save_ova` when `payload.upload_ids` is non-empty). `purge_expired()` runs on backend startup.
+- `GET /api/rag/health` reports embedder, vector dim, and pgvector extension state.
+- Set `RAG_DISABLED=1` to skip the whole pipeline.
 
 **File uploads** (`backend/uploads/`):
 - Allowed: PDF, DOCX, PPTX; MP3, WAV, M4A, AAC, OGG, WebM; JPEG, PNG, GIF, WebP.
@@ -237,7 +258,7 @@ JWT_ALGORITHM=HS256
 JWT_EXPIRES_MINUTES=1440
 LOG_LEVEL=INFO
 OVA_GENERATION_DURATION_SECONDS=14      # simulated generation duration
-OVA_OUTPUT_DIR=                         # defaults to backend/scorm_output/
+OVA_OUTPUT_DIR=                         # local-disk fallback for SCORM zips
 OVA_MAX_GENERATED_IMAGES=2
 UPLOAD_MAX_FILES=5
 UPLOAD_MAX_FILE_SIZE_MB=20
@@ -246,11 +267,24 @@ GROQ_API_KEY=
 OPENROUTER_API_KEY=
 POLLINATIONS_TOKEN=                     # optional, higher image quota
 APP_URL=https://genova.ai               # sent as HTTP-Referer to OpenRouter
+# Supabase Storage (SCORM zip persistence). SERVICE_ROLE_KEY is server-only.
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_STORAGE_BUCKET=scorm-packages
+# RAG (pgvector + embeddings).
+RAG_EMBEDDER=gemini                     # 'gemini' (default) or 'local'
+GEMINI_API_KEY=                         # required when RAG_EMBEDDER=gemini
+RAG_CHUNK_SIZE=800
+RAG_CHUNK_OVERLAP=150
+RAG_MAX_CHUNKS_PER_FILE=100
+RAG_TOP_K=5
+RAG_MAX_CONTEXT_CHARS=6000
+RAG_DISABLED=                           # set to 1 to skip RAG pipeline
 CORS_ORIGINS=                           # comma-separated extra allowed origins
 ```
 
 LLM catalog IDs live in `backend/ova/llm_helpers.py:LLM_CATALOG` — currently
-`groq-llama-3.3-70b`, `groq-gpt-oss-120b`, `groq-qwen3-32b`, `openrouter-qwen3-coder`.
+`groq-llama-3.3-70b`, `groq-gpt-oss-120b`, `groq-qwen3-32b`, `openrouter-qwen3-coder`. The actual `codigo` task in `agents/llm_router.py` uses **`deepseek/deepseek-v4-flash:free`** (the catalog ID is cosmetic for the UI picker — update it later if you want to expose deepseek there).
 
 **Frontend** (`frontend/.env`):
 ```
@@ -264,3 +298,5 @@ VITE_MIN_PROMPT_CHARS=10
 - New auth-adjacent endpoints should use Pydantic models with explicit `Field(max_length=…)` bounds. Bcrypt cost is exponential — input length matters.
 - New endpoints that take external input should be rate-limited via `@limiter.limit("N/minute")`. Include `request: Request` in the signature or SlowAPI cannot key the limit.
 - When adding a JWT claim, update `build_token()` in `auth/router.py` and any verifier in `auth/dependencies.py` together.
+- `SUPABASE_SERVICE_ROLE_KEY` and `GEMINI_API_KEY` are server-only. Never expose to the frontend bundle (no `VITE_*` aliasing).
+- RAG chunks are scoped to `user_id` via FK; retrieval queries filter by `upload_id` which the user must own. Don't widen the retrieval predicate.

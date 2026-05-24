@@ -19,9 +19,19 @@ def run_migrations():
             print(f"Aplicando migración: {os.path.basename(sql_file)}")
             with open(sql_file, "r", encoding="utf-8") as f:
                 content = f.read()
-                
+
+            # Strip line comments (-- ...) before splitting so multi-line SQL
+            # comments don't get treated as standalone statements.
+            cleaned_lines = []
+            for line in content.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("--"):
+                    continue
+                cleaned_lines.append(line)
+            cleaned = "\n".join(cleaned_lines)
+
             # Split by semicolon, filter out empty queries
-            queries = [q.strip() for q in content.split(";") if q.strip()]
+            queries = [q.strip() for q in cleaned.split(";") if q.strip()]
             
             for query in queries:
                 try:

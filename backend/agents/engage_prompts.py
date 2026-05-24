@@ -3,7 +3,7 @@
 Each prompt fixes the resource FORMAT but adapts all content to whatever
 Machine Learning concept is passed in `concept` — no hardcoded ML subtopic.
 """
-from agents.utils import CURSO_CONTEXTO, SCORM_JS
+from agents.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
 
 RECURSOS_META = {
     1: {"tipo": "Cómic Interactivo", "duracion": "1–2 min", "interactividad": "Alta", "emoji": "🎭"},
@@ -19,7 +19,8 @@ RECURSOS_META = {
 }
 
 
-def prompt_texto(n: int, concept: str) -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+    contexto = format_contexto_usuario(contexto_usuario)
     t = {
         1: f"""[ROL] Guionista de cómics educativos.
 [CURSO] {CURSO_CONTEXTO}
@@ -84,21 +85,25 @@ def prompt_texto(n: int, concept: str) -> str:
 [RESTRICCIONES] Respuestas deducibles por lógica cotidiana. Tono de urgencia narrativa.
 [SALIDA] JSON puro con clave "acertijos": array de 3 objetos con "numero","escenario","opcion_A","opcion_B","respuesta_correcta","explicacion_conexion".""",
     }
-    return t.get(n, "")
+    base = t.get(n, "")
+    return base + contexto if base else ""
 
 
-def prompt_simulador(concept: str) -> str:
+def prompt_simulador(concept: str, contexto_usuario: str = "") -> str:
+    contexto = format_contexto_usuario(contexto_usuario)
     return f"""[ROL] Desarrollador front-end de simuladores educativos interactivos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un simulador HTML5 autocontenido para la fase ENGAGE que provoque curiosidad: el estudiante manipula algo y ve el efecto, descubriendo la intuición central de "{concept}".
 [TAREA] Diseña la mecánica interactiva más apropiada para "{concept}" (slider, lienzo clicable, arrastre, botones...). Debe incluir: al menos un control manipulable, una visualización que reacciona en tiempo real (SVG o canvas), retroalimentación visual del estado, y un texto breve que interpreta lo que ocurre. Un botón de cierre ("¿Qué descubriste?") visible tras explorar.
-[REQUISITOS] HTML5 autocontenido: CSS y JS embebidos, sin CDN ni librerías. Empieza con <!DOCTYPE html>. Responsive. Diseño moderno oscuro, animaciones suaves. Mínimo ~250 líneas de código de calidad, sin secciones vacías.
+[REQUISITOS] HTML5 autocontenido con todo CSS y JS embebido. Mínimo 280 líneas de calidad sin secciones vacías. Paleta oscura elegante (educativa oscura). El control manipulable debe responder en <50ms a la interacción.
+{DESIGN_SYSTEM}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al pulsar el botón de cierre.
-[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown."""
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""" + contexto
 
 
-def prompt_html(n: int, concept: str, data_json: str) -> str:
+def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = "") -> str:
+    contexto = format_contexto_usuario(contexto_usuario)
     estilos = {
         1: "galería deslizable tipo cómic: tarjetas grandes de colores, bocadillos CSS, navegación prev/next con indicador de progreso",
         2: "storyboard vertical con marcadores de tiempo, narración en bloque de cita, prompt de video en una caja copiable",
@@ -118,12 +123,11 @@ def prompt_html(n: int, concept: str, data_json: str) -> str:
 {data_json}
 [FORMATO] {estilo}
 [REQUISITOS]
-- HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>. Sin CDN, librerías ni recursos externos.
-- Empieza con <!DOCTYPE html>. Responsive en móvil y escritorio.
-- Diseño moderno y cuidado: paleta coherente, jerarquía tipográfica, espaciado generoso, transiciones suaves, estados hover/activo.
-- Interactividad real: cada elemento del contenido debe ser funcional (navegación, botones, feedback, puntuación).
-- Accesibilidad básica: contraste alto y foco visible.
-- Mínimo ~250 líneas de HTML/CSS/JS de calidad; sin secciones vacías ni texto de relleno.
+- HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>.
+- Mínimo 280 líneas de calidad. Cada elemento debe ser funcional (navegación, botones, feedback, puntuación).
+- Paleta apropiada al tipo: cómic (clara vibrante), noticia (clara periodística), escape-room (oscura dramática),
+  podcast (oscura íntima), timeline (clara académica), juegos (clara con acentos).
+{DESIGN_SYSTEM}
 [IMAGENES] Si un item de los datos incluye un campo "image_placeholder" (por ejemplo "__IMG_1__"), úsalo literalmente como src del tag <img> correspondiente (por ejemplo: <img src="__IMG_1__" alt="...">). Si un item NO tiene "image_placeholder", NO inventes uno y NO incluyas <img> para ese item — renderiza solo texto. El servidor reemplaza los placeholders válidos por imágenes reales al renderizar.
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar la actividad principal.
-[SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown."""
+[SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.""" + contexto

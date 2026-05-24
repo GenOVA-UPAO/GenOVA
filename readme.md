@@ -8,7 +8,9 @@ Plataforma web para la generación asistida por IA de Objetos Virtuales de Apren
 |------|-----------|
 | Frontend | React 19 + Vite + Tailwind CSS + React Router |
 | Backend | FastAPI + SQLAlchemy + Uvicorn + SlowAPI |
-| Base de datos | Supabase (PostgreSQL) |
+| Base de datos | Supabase (PostgreSQL + pgvector) |
+| Storage | Supabase Storage (SCORM zips) — fallback a disco local |
+| RAG | pgvector + Gemini `gemini-embedding-2-preview` (multimodal: texto + PDF + imagen + audio + video) |
 | Auth | JWT (HS256, con `iat`/`jti`/`iss`) + bcrypt |
 | Empaquetado | pnpm workspaces · Backend con pip **o** uv |
 
@@ -41,6 +43,36 @@ OPENROUTER_API_KEY=...
 ```
 
 > ⚠️ `JWT_SECRET` es obligatorio. El backend **falla al arrancar** si la variable está vacía, contiene un valor débil (`change-me`, `secret`...) o tiene menos de 16 caracteres.
+
+### Supabase Storage (persistencia de OVAs)
+
+Para que los `.zip` SCORM sobrevivan reinicios del backend, configura:
+
+```env
+SUPABASE_URL=https://<tu-proyecto>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+SUPABASE_STORAGE_BUCKET=scorm-packages
+```
+
+Crea el bucket `scorm-packages` **privado** en Supabase Dashboard → Storage. RLS por defecto bloquea el acceso anónimo; el backend usa la service role key (bypass RLS) y emite signed URLs de 1 hora a los clientes. Si no configuras esto, el backend cae automáticamente a disco local (`OVA_OUTPUT_DIR`) — útil en dev pero los archivos se pierden al reiniciar.
+
+### RAG (opcional)
+
+Si quieres que los archivos subidos alimenten el LLM:
+
+```env
+RAG_EMBEDDER=gemini                # default
+GEMINI_API_KEY=<google-ai-studio>  # free tier: 100 RPM, 1000 RPD por proyecto
+```
+
+> Modelo usado: **`gemini-embedding-2-preview`** (Public Preview, Mar 2026).
+> Natively multimodal — PDF/imagen/audio/video se embeben directos sin Whisper
+> ni vision por separado. Matryoshka truncado a 768-d para encajar en
+> `vector(768)`. Fallback estable: `RAG_EMBEDDER=gemini-001` (text-only GA).
+
+Primer arranque: aplica migraciones (lo hace solo) — incluye `CREATE EXTENSION vector`. Verifica con `GET /api/rag/health` → `{ pgvector_ready: true }`.
+
+Para desactivar RAG por completo: `RAG_DISABLED=1`.
 
 ## Ejecución
 

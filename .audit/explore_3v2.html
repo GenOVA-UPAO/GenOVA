@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Árboles de Decisión</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --primary: #4f46e5;
+      --primary-hover: #6c5ce7;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #dddddd;
+      --success: #34c759;
+      --danger: #ef4444;
+      --radius: 12px;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --space: 16px;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    h1 {
+      font-weight: 700;
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+    }
+    h2 {
+      font-weight: 600;
+      font-size: clamp(1.3rem, 3vw, 1.6rem);
+    }
+    .container {
+      max-width: 880px;
+      padding: 20px;
+      margin: 0 auto;
+    }
+    .card {
+      background-color: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: var(--space);
+    }
+    .drag-item {
+      background-color: var(--surface);
+      border: 2px solid var(--border);
+      padding: var(--space);
+      margin-bottom: var(--space);
+      border-radius: var(--radius);
+      cursor: move;
+    }
+    .drag-item:hover {
+      border-color: var(--primary);
+    }
+    .drop-zone {
+      background-color: var(--surface);
+      border: 2px dashed var(--border);
+      padding: var(--space);
+      margin-bottom: var(--space);
+      border-radius: var(--radius);
+    }
+    .drop-zone:hover {
+      border-color: var(--primary);
+    }
+    .correct {
+      background-color: var(--success);
+      color: #ffffff;
+    }
+    .incorrect {
+      background-color: var(--danger);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Árboles de Decisión</h1>
+    <p>Arrastre los items a las zonas correspondientes</p>
+    <div class="card">
+      <h2>Características</h2>
+      <div class="drop-zone" id="category-a"></div>
+    </div>
+    <div class="card">
+      <h2>Predicciones</h2>
+      <div class="drop-zone" id="category-b"></div>
+    </div>
+    <div class="card">
+      <h2>Items</h2>
+      <div id="items">
+        <!-- items generados dinámicamente -->
+      </div>
+    </div>
+  </div>
+  <script>
+    const datos = {
+      "category_a": "Características",
+      "category_b": "Predicciones",
+      "rondas": [
+        {
+          "ronda": 1,
+          "item": "Edad",
+          "contexto": "Se utiliza para predecir la probabilidad de compra de un producto",
+          "respuesta": "A",
+          "feedback_correcto": "correcto, edad es una característica",
+          "feedback_incorrecto": "incorrecto, edad no es una predicción"
+        },
+        {
+          "ronda": 2,
+          "item": "Precio",
+          "contexto": "Se utiliza para determinar el costo de un artículo",
+          "respuesta": "A",
+          "feedback_correcto": "correcto, precio es una característica",
+          "feedback_incorrecto": "incorrecto, precio no es una predicción"
+        },
+        {
+          "ronda": 3,
+          "item": "Probabilidad de compra",
+          "contexto": "Se utiliza para determinar la posibilidad de que un cliente compre un producto",
+          "respuesta": "B",
+          "feedback_correcto": "correcto, probabilidad de compra es una predicción",
+          "feedback_incorrecto": "incorrecto, probabilidad de compra no es una característica"
+        },
+        {
+          "ronda": 4,
+          "item": "Género",
+          "contexto": "Se utiliza para segmentar a los clientes en diferentes grupos",
+          "respuesta": "A",
+          "feedback_correcto": "correcto, género es una característica",
+          "feedback_incorrecto": "incorrecto, género no es una predicción"
+        },
+        {
+          "ronda": 5,
+          "item": "Valor de predicción",
+          "contexto": "Se refiere al resultado de un modelo de predicción",
+          "respuesta": "B",
+          "feedback_correcto": "correcto, valor de predicción es una predicción",
+          "feedback_incorrecto": "incorrecto, valor de predicción no es una característica"
+        },
+        {
+          "ronda": 6,
+          "item": "Histórico de compras",
+          "contexto": "Puede influir en la predicción de futuras compras, pero también es una característica del cliente",
+          "respuesta": "A",
+          "feedback_correcto": "correcto, histórco de compras es una característica",
+          "feedback_incorrecto": "incorrecto, histórco de compras también puede influir en la predicción"
+        }
+      ]
+    };
+
+    const itemContainer = document.getElementById("items");
+    const categoryA = document.getElementById("category-a");
+    const categoryB = document.getElementById("category-b");
+
+    let puntuacion = 0;
+
+    datos.rondas.forEach((ronda) => {
+      const item = document.createElement("div");
+      item.classList.add("drag-item");
+      item.draggable = true;
+      item.id = `item-${ronda.ronda}`;
+      item.innerHTML = `${ronda.item} - ${ronda.contexto}`;
+      item.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text", ronda.ronda);
+      });
+      itemContainer.appendChild(item);
+    });
+
+    categoryA.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
+
+    categoryA.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const itemRonda = parseInt(e.dataTransfer.getData("text"));
+      const item = datos.rondas.find((ronda) => ronda.ronda === itemRonda);
+      if (item.respuesta === "A") {
+        puntuacion++;
+        itemContainer.removeChild(document.getElementById(`item-${itemRonda}`));
+        categoryA.innerHTML += `<p class="correct">${item.item} - ${item.feedback_correcto}</p>`;
+      } else {
+        categoryA.innerHTML += `<p class="incorrect">${item.item} - ${item.feedback_incorrecto}</p>`;
+      }
+    });
+
+    categoryB.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
+
+    categoryB.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const itemRonda = parseInt(e.dataTransfer.getData("text"));
+      const item = datos.rondas.find((ronda) => ronda.ronda === itemRonda);
+      if (item.respuesta === "B") {
+        puntuacion++;
+        itemContainer.removeChild(document.getElementById(`item-${itemRonda}`));
+        categoryB.innerHTML += `<p class="correct">${item.item} - ${item.feedback_correcto}</p>`;
+      } else {
+        categoryB.innerHTML += `<p class="incorrect">${item.item} - ${item.feedback_incorrecto}</p>`;
+      }
+    });
+
+    function _scormInit() {
+      if (window.API) window.API.LMSInitialize("");
+    }
+
+    function _scormComplete(s) {
+      if (window.API) {
+        if (s != null) window.API.LMSSetValue("cmi.core.score.raw", s);
+        window.API.LMSSetValue("cmi.core.lesson_status", "completed");
+        window.API.LMSCommit("");
+        window.API.LMSFinish("");
+      }
+    }
+
+    window.addEventListener("load", _scormInit);
+
+    window.addEventListener("beforeunload", () => {
+      _scormComplete(puntuacion);
+    });
+  </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 Each prompt fixes the resource FORMAT but adapts its content, datasets and
 mechanics to whatever Machine Learning concept is passed in `concept`.
 """
-from agents.utils import CURSO_CONTEXTO, SCORM_JS
+from agents.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
 
 RECURSOS_META = {
     1: {"tipo": "Simulador Virtual Lab", "duracion": "3–4 min", "interactividad": "Alta", "emoji": "🧪"},
@@ -21,14 +21,16 @@ RECURSOS_META = {
 CODE_ONLY = {1, 6, 10}
 
 
-def prompt_codigo(n: int, concept: str) -> str:
+def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
+    contexto = format_contexto_usuario(contexto_usuario)
     t = {
         1: f"""[ROL] Desarrollador front-end de laboratorios virtuales interactivos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un laboratorio virtual HTML5 donde el estudiante EXPLORA "{concept}" manipulando sus elementos y observando los resultados.
 [TAREA] Diseña la simulación más representativa de cómo funciona "{concept}": elige datos de ejemplo, controles y visualización (SVG o canvas) apropiados al tema. Debe permitir: (1) manipular entradas o parámetros, (2) ejecutar o iterar el proceso central de "{concept}", (3) ver el resultado actualizarse, (4) un botón que explica qué está ocurriendo.
-[REQUISITOS] HTML5+JS autocontenido, sin librerías ni CDN. Empieza con <!DOCTYPE html>. Responsive. Diseño moderno. Mínimo ~280 líneas de calidad. Datos de ejemplo hardcodeados como arrays JS.
+[REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad. Datos de ejemplo hardcodeados como arrays JS.
+{DESIGN_SYSTEM}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() tras varias iteraciones o al pulsar el botón explicativo.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
 
@@ -37,7 +39,8 @@ def prompt_codigo(n: int, concept: str) -> str:
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un simulador HTML5 centrado en UN parámetro clave de "{concept}" para que el estudiante descubra su efecto.
 [TAREA] Identifica el parámetro o variable más ilustrativo de "{concept}" y construye: (1) un slider o control para ese parámetro con un rango sensato, (2) un gráfico SVG que se actualiza en tiempo real (<100 ms), (3) zonas o estados coloreados que indican el comportamiento (p. ej. correcto / límite / incorrecto), (4) un campo para la hipótesis del estudiante, (5) un botón "Revelar zona óptima".
-[REQUISITOS] HTML5+JS autocontenido, sin librerías ni CDN. Empieza con <!DOCTYPE html>. Responsive. Diseño moderno. Mínimo ~280 líneas de calidad.
+[REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad.
+{DESIGN_SYSTEM}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al revelar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
 
@@ -46,14 +49,17 @@ def prompt_codigo(n: int, concept: str) -> str:
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un laboratorio HTML5 donde el estudiante formula una hipótesis sobre "{concept}", experimenta y la contrasta.
 [TAREA] Construye: (1) una visualización de datos relevante a "{concept}" (scatter, curva u otra; datos hardcodeados como array JS), (2) controles para probar configuraciones, (3) métricas o indicadores visibles que cambian con cada prueba, (4) un campo de hipótesis, (5) un botón "Revelar" que muestra la configuración óptima y nombra el concepto técnico correcto.
-[REQUISITOS] HTML5+JS autocontenido, sin librerías ni CDN. Empieza con <!DOCTYPE html>. Responsive. Diseño moderno. Mínimo ~280 líneas de calidad.
+[REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad.
+{DESIGN_SYSTEM}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al revelar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
     }
-    return t.get(n, "")
+    base = t.get(n, "")
+    return base + contexto if base else ""
 
 
-def prompt_texto(n: int, concept: str) -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+    contexto = format_contexto_usuario(contexto_usuario)
     t = {
         2: f"""[ROL] Agente pedagógico socrático "DataGuide" — guías, nunca revelas la respuesta.
 [CURSO] {CURSO_CONTEXTO}
@@ -104,10 +110,12 @@ def prompt_texto(n: int, concept: str) -> str:
 [RESTRICCIONES] Las pistas se entienden sin conocimiento previo. Tono celebratorio en la revelación.
 [SALIDA] JSON puro con claves "tarjetas" (array de 6 objetos con id,pista_cotidiana,nodo_tecnico,feedback_correcto,feedback_incorrecto) y "revelacion".""",
     }
-    return t.get(n, "")
+    base = t.get(n, "")
+    return base + contexto if base else ""
 
 
-def prompt_html(n: int, concept: str, data_json: str) -> str:
+def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = "") -> str:
+    contexto = format_contexto_usuario(contexto_usuario)
     estilos = {
         2: "chat educativo: burbujas de DataGuide, campo de texto del estudiante, feedback revelado por turno, barra de progreso",
         3: "juego drag & drop: items arrastrables, 2 zonas destino etiquetadas, animación de arrastre, feedback inmediato, puntuación",
@@ -125,11 +133,10 @@ def prompt_html(n: int, concept: str, data_json: str) -> str:
 {data_json}
 [FORMATO] {estilo}
 [REQUISITOS]
-- HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>. Sin CDN, librerías ni recursos externos.
-- Empieza con <!DOCTYPE html>. Responsive en móvil y escritorio.
-- Diseño moderno y cuidado: paleta coherente, jerarquía tipográfica, espaciado, transiciones, estados hover/activo.
-- Interactividad real: toda actividad descrita debe ser funcional (arrastre, navegación, feedback, puntuación, revelaciones).
-- Accesibilidad básica: contraste alto y foco visible.
-- Mínimo ~300 líneas de HTML/CSS/JS de calidad; sin secciones vacías ni texto de relleno.
+- HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>.
+- Mínimo 320 líneas de calidad. Toda actividad debe ser funcional REAL (arrastre, navegación, feedback, puntuación, revelaciones).
+- Paleta según el tipo: lectura (clara periodística), chat socrático (clara académica), drag&drop (clara lúdica),
+  experimento (clara clínica), mapa mental (clara con acentos).
+{DESIGN_SYSTEM}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar la actividad principal.
-[SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown."""
+[SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.""" + contexto

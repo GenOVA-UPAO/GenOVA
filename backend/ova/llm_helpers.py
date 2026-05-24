@@ -34,13 +34,13 @@ LLM_CATALOG = [
         "cost_tier": "low",
     },
     {
-        "id": "openrouter-qwen3-coder",
-        "label": "Qwen3 Coder (OpenRouter)",
+        "id": "openrouter-deepseek-v4-flash",
+        "label": "DeepSeek V4 Flash (OpenRouter)",
         "provider": "OpenRouter",
         "task": "codigo",
         "quality_tier": "high",
         "cost_tier": "low",
-        "notes": "Generación de HTML/JS interactivo (step 2).",
+        "notes": "Generación de HTML/JS interactivo (step 2). LiveCodeBench 91.6 / SWE-bench 79.0. Mejor seguimiento de reglas anidadas.",
     },
 ]
 

@@ -26,10 +26,13 @@ openrouter_client = OpenAI(
 # (provider, model_id, extra_kwargs)
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
 _MODELOS: dict[str, tuple] = {
-    "texto":        ("groq",       "llama-3.3-70b-versatile",  {}),
-    "codigo":       ("openrouter", "qwen/qwen3-coder:free",    {}),
-    "orquestador":  ("groq",       "openai/gpt-oss-120b",      {"reasoning_effort": "medium"}),
-    "razonamiento": ("groq",       "qwen/qwen3-32b",           {"reasoning_effort": "default"}),
+    "texto":        ("groq",       "llama-3.3-70b-versatile",       {}),
+    # DeepSeek V4 Flash: 284B MoE / 13B active, 1M context, LiveCodeBench
+    # 91.6 / SWE-bench 79 — much better at following nested HTML rules than
+    # qwen3-coder. Same free tier (OpenRouter 50/day, 1000/day with $10 prepaid).
+    "codigo":       ("openrouter", "deepseek/deepseek-v4-flash:free", {}),
+    "orquestador":  ("groq",       "openai/gpt-oss-120b",           {"reasoning_effort": "medium"}),
+    "razonamiento": ("groq",       "qwen/qwen3-32b",                {"reasoning_effort": "default"}),
 }
 
 _VISION_MODEL  = "meta-llama/llama-4-scout-17b-16e-instruct"
