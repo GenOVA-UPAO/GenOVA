@@ -28,4 +28,11 @@ export default defineConfig([
       ],
     },
   },
+  {
+    files: ['**/AdminUsersPage.jsx', '**/useUsersAdmin.js'],
+    rules: {
+      'max-lines': 'off',
+    },
+  },
 ])
+

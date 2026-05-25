@@ -13,6 +13,7 @@ Incluye:
 - Endpoint de registro en backend (`POST /auth/register` y `POST /api/auth/register`).
 - Almacenamiento de contraseña encriptada con bcrypt.
 - Redirección al dashboard tras registro exitoso.
+- Inicialización de campos de perfil extendidos (`university_id`, `gender`, `phone_number`) como vacíos o nulos en la base de datos (no son obligatorios en este paso).
 
 No incluye:
 - Verificación por correo electrónico.
@@ -24,13 +25,15 @@ No incluye:
 2. La contraseña exige mínimo 8 caracteres con combinación alfanumérica.
 3. La contraseña se almacena encriptada con bcrypt (nunca en texto plano).
 4. Se muestra un mensaje de error claro si el correo ya está registrado.
-5. Tras el registro exitoso el usuario es redirigido automáticamente al dashboard.
-6. El endpoint `POST /auth/register` retorna 201 con JWT o 400 con mensaje de error descriptivo.
+5. Los campos adicionales de perfil (ID Universitario, Sexo, Teléfono) quedan sin asignar (`null`) para que sean configurados posteriormente por el usuario en su perfil o por el administrador.
+6. Tras el registro exitoso el usuario es redirigido automáticamente al dashboard.
+7. El endpoint `POST /auth/register` retorna 201 con JWT o 400 con mensaje de error descriptivo.
 
 ## Datos de entrada/salida
 Entradas:
 - `email` (string, requerido, formato válido).
 - `password` (string, requerido, mínimo 8, alfanumérica).
+- `full_name` (string, opcional).
 
 Salidas:
 - 201: `{ access_token, token_type }`.
@@ -53,6 +56,7 @@ Feature: Registro de cuenta de usuario
     When ingreso un correo válido y una contraseña alfanumérica de mínimo 8 caracteres
     And envío el formulario
     Then el sistema debe crear la cuenta
+    And los campos university_id, gender y phone_number deben crearse como NULL
     And debo ser redirigido al dashboard
     And debo recibir un JWT
 
@@ -67,7 +71,7 @@ Feature: Registro de cuenta de usuario
 ```
 ┌─────────────────────────────────────────┐
 │  GENOVA                                  │
-├─────────────────────────────────────────┤
+			├─────────────────────────────────────────┤
 │  Crear cuenta                            │
 │                                         │
 │  Correo                                 │

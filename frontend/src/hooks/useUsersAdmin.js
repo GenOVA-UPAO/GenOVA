@@ -120,6 +120,144 @@ export function useUsersAdmin() {
     }
   }
 
+  const handleEditUser = async (userId, updatedFields) => {
+    setUpdatingUserId(userId)
+    const token = getToken()
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedFields),
+      })
+
+      if (response.status === 200) {
+        toast.success('Perfil de usuario actualizado exitosamente')
+        fetchUsers(currentPage)
+        return true
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.detail || 'Error al actualizar el perfil del usuario.')
+        return false
+      }
+    } catch {
+      toast.error('Error de conexión con el servidor.')
+      return false
+    } finally {
+      setUpdatingUserId('')
+    }
+  }
+
+  const handleToggleStatus = async (userId, isActive) => {
+    setUpdatingUserId(userId)
+    const token = getToken()
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/users/${userId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ is_active: isActive }),
+      })
+
+      if (response.status === 200) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, is_active: isActive } : u))
+        )
+        toast.success(isActive ? 'Usuario activado exitosamente' : 'Usuario desactivado exitosamente')
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.detail || 'Error al actualizar el estado del usuario.')
+      }
+    } catch {
+      toast.error('Error de conexión con el servidor.')
+    } finally {
+      setUpdatingUserId('')
+    }
+  }
+
+  const handleUnlockUser = async (userId) => {
+    setUpdatingUserId(userId)
+    const token = getToken()
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/users/${userId}/unlock`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.status === 200) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, failed_login_attempts: 0, locked_until: null } : u))
+        )
+        toast.success('Usuario desbloqueado exitosamente')
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.detail || 'Error al desbloquear al usuario.')
+      }
+    } catch {
+      toast.error('Error de conexión con el servidor.')
+    } finally {
+      setUpdatingUserId('')
+    }
+  }
+
+  const handleSendResetEmail = async (userId) => {
+    setUpdatingUserId(userId)
+    const token = getToken()
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/users/${userId}/reset-password-email`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.status === 200) {
+        toast.success('Correo de restablecimiento enviado exitosamente')
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.detail || 'Error al enviar correo de restablecimiento.')
+      }
+    } catch {
+      toast.error('Error de conexión con el servidor.')
+    } finally {
+      setUpdatingUserId('')
+    }
+  }
+
+  const handleGenerateResetWhatsApp = async (userId) => {
+    setUpdatingUserId(userId)
+    const token = getToken()
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/users/${userId}/reset-password-whatsapp`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.status === 200) {
+        const data = await response.json()
+        toast.success('Código de recuperación por WhatsApp generado')
+        return data // contains phone_number, otp_code, text
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.detail || 'Error al generar código de recuperación.')
+        return null
+      }
+    } catch {
+      toast.error('Error de conexión con el servidor.')
+      return null
+    } finally {
+      setUpdatingUserId('')
+    }
+  }
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       fetchUsers(newPage)
@@ -149,9 +287,15 @@ export function useUsersAdmin() {
     totalItems,
     fetchUsers,
     handleRoleChange,
+    handleEditUser,
+    handleToggleStatus,
+    handleUnlockUser,
+    handleSendResetEmail,
+    handleGenerateResetWhatsApp,
     handlePageChange,
     formatDate,
     getRoleColorClasses,
     setUpdateError,
   }
 }
+

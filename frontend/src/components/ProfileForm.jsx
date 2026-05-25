@@ -1,4 +1,23 @@
-export function ProfileForm({ fullName, email, role, createdAt, validationError, saving, onFullNameChange, onEmailChange, onReset, onSubmit, getInitials, formatDate }) {
+export function ProfileForm({
+  fullName,
+  email,
+  universityId,
+  gender,
+  phoneNumber,
+  role,
+  createdAt,
+  validationError,
+  saving,
+  onFullNameChange,
+  onEmailChange,
+  onUniversityIdChange,
+  onGenderChange,
+  onPhoneNumberChange,
+  onReset,
+  onSubmit,
+  getInitials,
+  formatDate
+}) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
       <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-6">
@@ -56,6 +75,60 @@ export function ProfileForm({ fullName, email, role, createdAt, validationError,
             {validationError.email && (
               <p className="text-xs text-rose-600 font-medium">{validationError.email}</p>
             )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="universityId" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              Código Universitario (UPAO)
+            </label>
+            <input
+              type="number"
+              id="universityId"
+              value={universityId}
+              onChange={onUniversityIdChange}
+              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${validationError.universityId ? 'border-rose-400' : 'border-slate-200'}`}
+              disabled={saving}
+              placeholder="Ej: 257022"
+              min="1"
+            />
+            <p className="text-[10px] text-slate-400">Se autocompletará con ceros a la izquierda a 9 dígitos al guardarse.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label htmlFor="gender" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                Sexo / Género
+              </label>
+              <select
+                id="gender"
+                value={gender}
+                onChange={onGenderChange}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors cursor-pointer"
+                disabled={saving}
+              >
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+                <option value="otro">Otro / No especificado</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="phoneNumber" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                Teléfono de contacto
+              </label>
+              <input
+                type="text"
+                id="phoneNumber"
+                value={phoneNumber}
+                onChange={onPhoneNumberChange}
+                className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${validationError.phoneNumber ? 'border-rose-400' : 'border-slate-200'}`}
+                disabled={saving}
+                placeholder="Ej: +51987285992"
+              />
+              {validationError.phoneNumber && (
+                <p className="text-xs text-rose-600 font-medium">{validationError.phoneNumber}</p>
+              )}
+            </div>
           </div>
         </div>
 
