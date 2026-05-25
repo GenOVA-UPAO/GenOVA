@@ -42,17 +42,6 @@ _WHISPER_MODEL = "whisper-large-v3-turbo"
 _ORPHEUS_MODEL = "canopylabs/orpheus-v1-english"
 _ORPHEUS_VOICE = "autumn"
 
-VIDEO_UNAVAILABLE_MSG = (
-    "⚠️ No contamos con un modelo de IA para procesar video directamente. "
-    "Puedes crear tu video usando el contenido generado:\n\n"
-    "• HeyGen / Synthesia — avatares con guión generado por GenOVA\n"
-    "• Sora (OpenAI) / Runway — generación de video desde texto\n"
-    "• Loom / OBS — screencast con el material exportado\n\n"
-    "Prompt sugerido:\n"
-    "\"Crea un video educativo de 60–90 segundos sobre [CONCEPTO]. "
-    "Estilo visual limpio, subtítulos, tono académico accesible.\""
-)
-
 _FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
 _FALLBACK_OR_MODEL   = "meta-llama/llama-3.3-70b-instruct:free"
 
@@ -124,15 +113,24 @@ def generar_texto(prompt: str, tarea: str, max_tokens: int = 3000) -> str:
 
     last_err: Exception | None = None
     for i, (proveedor, model_id, extra) in enumerate(chain):
+        role = "primary" if i == 0 else f"fallback {i}/{len(chain) - 1}"
         if i > 0:
-            time.sleep(min(2 ** (i - 1), 8))
+            backoff = min(2 ** (i - 1), 8)
+            logger.info(
+                "Task '%s' switching to %s → %s/%s (backoff %ds)",
+                tarea, role, proveedor, model_id, backoff,
+            )
+            time.sleep(backoff)
         try:
             return _chat(proveedor, model_id, prompt, max_tokens, extra)
         except _RECOVERABLE_ERRORS as exc:
             last_err = exc
+            next_step = (
+                f"{chain[i + 1][0]}/{chain[i + 1][1]}" if i + 1 < len(chain) else "<chain exhausted>"
+            )
             logger.warning(
-                "Task '%s' failed on %s/%s (%s). Trying next fallback %d/%d.",
-                tarea, proveedor, model_id, type(exc).__name__, i + 1, len(chain),
+                "Task '%s' %s %s/%s failed (%s). Next: %s.",
+                tarea, role, proveedor, model_id, type(exc).__name__, next_step,
             )
     raise last_err or RuntimeError("All LLM fallbacks failed")
 

@@ -33,8 +33,28 @@ def _bucket_name() -> str:
     return os.getenv("SUPABASE_STORAGE_BUCKET", DEFAULT_BUCKET)
 
 
+def _clean_url() -> str:
+    return (os.getenv("SUPABASE_URL") or "").strip()
+
+
+def _clean_key() -> str:
+    return (os.getenv("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
+
+
 def is_configured() -> bool:
-    return bool(os.getenv("SUPABASE_URL")) and bool(os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
+    """True only when SUPABASE_URL looks like a real Supabase https URL and the
+    service-role key is non-empty. Rejects placeholder values like
+    `<tu-proyecto>.supabase.co` and bare hostnames so we don't try to build a
+    client that will raise `Invalid URL` at runtime."""
+    url = _clean_url()
+    key = _clean_key()
+    if not url or not key:
+        return False
+    if not url.startswith(("http://", "https://")):
+        return False
+    if "<" in url or ">" in url:  # unfilled placeholder
+        return False
+    return True
 
 
 def _get_client():
@@ -44,7 +64,7 @@ def _get_client():
     if _client is not None:
         return _client
     if not is_configured():
-        raise StorageError("Supabase Storage is not configured (missing env vars).")
+        raise StorageError("Supabase Storage is not configured (missing or invalid env vars).")
 
     with _client_lock:
         if _client is None:
@@ -52,9 +72,11 @@ def _get_client():
                 from supabase import create_client  # type: ignore
             except ImportError as exc:  # pragma: no cover
                 raise StorageError("supabase-py is not installed.") from exc
-            url = os.environ["SUPABASE_URL"]
-            key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-            _client = create_client(url, key)
+            try:
+                _client = create_client(_clean_url(), _clean_key())
+            except Exception as exc:
+                logger.exception("Supabase create_client failed")
+                raise StorageError(f"Supabase client init failed: {exc}") from exc
     return _client
 
 
