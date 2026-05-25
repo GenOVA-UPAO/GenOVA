@@ -1,13 +1,29 @@
+import logging
+from typing import Optional
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+
+from auth.dependencies import require_admin
 from database import get_db
 from models import Role, UserRole
-from auth.dependencies import require_admin
-from uuid import UUID
-from typing import Optional
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+
+def _commit_or_500(db: Session, op: str) -> None:
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        logger.exception("Roles DB write failed during %s", op)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo completar la operación. Intenta de nuevo.",
+        )
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -79,49 +95,34 @@ def delete_role(
                 detail="El rol de reasignación especificado no existe.",
             )
 
-        # Perform atomic migration inside a transaction block
         try:
-            # Query all UserRole relations of this role
             relations = (
                 db.execute(select(UserRole).where(UserRole.role_id == role_uuid))
                 .scalars()
                 .all()
             )
             for rel in relations:
-                # Check if user already has target role
                 has_target = db.execute(
                     select(UserRole).where(
                         UserRole.user_id == rel.user_id, UserRole.role_id == target_uuid
                     )
                 ).scalars().first()
                 if has_target:
-                    # User already has target role relation, just delete old relation
                     db.delete(rel)
                 else:
-                    # Update old relation to target role (delete and recreate to avoid primary key issues)
                     user_id_val = rel.user_id
                     db.delete(rel)
                     db.flush()
-                    new_rel = UserRole(user_id=user_id_val, role_id=target_uuid)
-                    db.add(new_rel)
-
+                    db.add(UserRole(user_id=user_id_val, role_id=target_uuid))
             db.flush()
-        except Exception as e:
+        except Exception:
             db.rollback()
+            logger.exception("Reassignment failed during delete_role")
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Error durante la reasignación de usuarios: {str(e)}",
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="No se pudo reasignar a los usuarios. Intenta de nuevo.",
             )
 
-    # 5. Delete the role
-    try:
-        db.delete(role)
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error al eliminar el rol de la base de datos: {str(e)}",
-        )
-
+    db.delete(role)
+    _commit_or_500(db, "delete_role")
     return

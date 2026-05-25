@@ -114,8 +114,9 @@ Some routers are mounted at two prefixes for legacy compatibility:
 
 **Auth** (`backend/auth/`):
 - `dependencies.py`: `get_current_user` (Bearer JWT), `require_admin` (role-name check) and `require_permission(perm)` (JSONB `permissions` contains check, falls back to admin bypass) FastAPI dependencies.
-- `router.py`: `LoginRequest` / `RegisterRequest` Pydantic models with `EmailStr` and `Field(min_length=…, max_length=128)`. Login uses a dummy bcrypt hash for nonexistent users to equalize timing (anti-enumeration). Lockout: 5 failed attempts → 15 min via `failed_login_attempts` + `locked_until`. Endpoints: `POST /login`, `POST /register`, `GET /me`, `POST /reset-password` (consumes a `PasswordResetToken` row).
-- `email.py`: SMTP sender for password-reset emails (`send_reset_email`). Configured via `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` env vars; defaults point at the project's Gmail support inbox.
+- `router.py`: orchestrator for `POST /login`, `POST /register`, `GET /me`. `LoginRequest` / `RegisterRequest` use `EmailStr` + `Field(min_length=…, max_length=128)`. Login walks a dummy bcrypt hash for nonexistent users (anti-enumeration). Lockout: 5 failed attempts → 15 min via `failed_login_attempts` + `locked_until`. Mounts the reset sub-router.
+- `reset_router.py`: `POST /reset-password` — finalizes a reset using a `PasswordResetToken` row. Rate-limited (`10/minute` per IP). Token length validated server-side (`8..512`).
+- `email.py`: SMTP sender (`send_reset_email`). Configured via `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD`. **No hardcoded fallback credentials** — when `SMTP_USER` / `SMTP_PASSWORD` are missing, raises `EmailNotConfigured` and logs the failure instead of sending.
 - `security.py`: bcrypt + JWT. **Hard-fails on import** if `JWT_SECRET` is missing, in `{"", "change-me", "secret", "test"}`, or shorter than 16 chars. JWTs include `iat`, `exp`, `iss="genova"`, `jti=uuid4()` — ready for token revocation via a blocklist table when needed.
 
 **Rate limiting** (`backend/rate_limit.py`):
@@ -181,7 +182,21 @@ The `POST /api/ova/save` request body is `{prompt, phases: [...], upload_ids}`. 
 - Stored at `backend/tmp/uploads/{user_id}/` temporarily (override via `UPLOAD_TEMP_DIR`); TTL defaults to 1 h via `UPLOAD_TEMP_TTL_SECONDS`. The in-memory `_temp_uploads` registry tracks lifetimes; expired entries are pruned on every access.
 - Lifecycle: claimed by the OVA-save flow → tied to a generated OVA → deleted on claim or on TTL expiry. Per-file RAG ingestion is triggered inline (see RAG section).
 
-**Other routers**: `rag/router.py` (health + debug `GET /chunks/by-upload/{upload_id}`), `roles/router.py` + `roles/delete_router.py` (CRUD with delete-and-reassign flow), `users/admin_router.py` (admin user management), `users/profile_router.py` (self profile read/edit + change password), `uploads/router.py`.
+**Admin user management** (`backend/users/`): the legacy 500-line `admin_router.py` was split for readability — each sub-router stays under the 200-line cap.
+
+| Module | Endpoints |
+|---|---|
+| `admin_router.py` | Orchestrator. Mounts the three sub-routers below |
+| `admin_list_router.py` | `GET /` — paginated listing |
+| `admin_profile_router.py` | `PATCH /{id}` (profile fields), `PATCH /{id}/role` (with admin-escalation guard) |
+| `admin_account_router.py` | `PATCH /{id}/status`, `POST /{id}/unlock`, `POST /{id}/reset-password-email`, `POST /{id}/reset-password-whatsapp` |
+| `admin_helpers.py` | UUID parser, hierarchy guards, `commit_or_500()` (never echoes raw DB errors to clients), gender/phone normalizers |
+
+**Password-reset triggers never return the token.** Both the email and WhatsApp endpoints issue a `secrets.token_urlsafe(32)` reset token, persist it as a `PasswordResetToken` row, and return ONLY a delivery URL (email queued via `BackgroundTasks`, WhatsApp `api.whatsapp.com/send?...` share URL). The token itself never crosses the HTTP boundary back to the admin — this closes the previous escalation vector where an admin could capture a peer's reset token from the JSON response.
+
+**Other routers**: `rag/router.py` (health + debug `GET /chunks/by-upload/{upload_id}`), `roles/router.py` + `roles/delete_router.py` (CRUD with delete-and-reassign flow), `users/profile_router.py` (self profile read/edit + change password), `uploads/router.py`.
+
+**Temp upload internals** (`backend/ova/uploads_service.py` + `uploads_state.py`): config + CRUD live in `uploads_service.py`; the thread-safe in-memory registry, lock, and `prune_expired_locked()` live in `uploads_state.py`. Splitting keeps both files <200 lines and isolates the lock surface.
 
 **Dev tool**: `backend/tools/prompt_lab.py` — manual LLM prompt testing utility, not part of the API; exempted from line limits.
 
@@ -326,9 +341,18 @@ VITE_MIN_PROMPT_CHARS=10
 ## Security notes for code changes
 
 - Never log raw passwords or tokens; never expose raw LLM error messages in HTTP 5xx responses.
+- **Never echo `str(e)` from a SQLAlchemy / driver error to the client.** Use the local `commit_or_500()` helpers (`users/admin_helpers.py`, `roles/router.py`, `roles/delete_router.py`, `users/profile_router.py`) — they log via `logger.exception` and respond with a generic message.
+- **Never return reset tokens, OTPs, or any single-use credentials in HTTP responses.** Issue the token, persist it, and return only a delivery URL (email queued via `BackgroundTasks`, WhatsApp `wa.me` share link). See `users/admin_account_router.py` for the canonical pattern.
 - New auth-adjacent endpoints should use Pydantic models with explicit `Field(max_length=…)` bounds. Bcrypt cost is exponential — input length matters.
-- New endpoints that take external input should be rate-limited via `@limiter.limit("N/minute")`. Include `request: Request` in the signature or SlowAPI cannot key the limit.
+- New endpoints that take external input should be rate-limited via `@limiter.limit("N/minute")`. Include `request: Request` in the signature or SlowAPI cannot key the limit. `POST /reset-password` is rate-limited at `10/minute` per IP.
 - When adding a JWT claim, update `build_token()` in `auth/router.py` and any verifier in `auth/dependencies.py` together.
 - `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, and `SMTP_PASSWORD` are server-only. Never expose to the frontend bundle (no `VITE_*` aliasing).
 - RAG chunks are scoped to `user_id` via FK; retrieval queries filter by `upload_id` which the user must own. Don't widen the retrieval predicate.
-- `auth/email.py` carries placeholder SMTP credentials hard-coded as fallback defaults — override via env vars in any deployed environment.
+- `auth/email.py` no longer ships hardcoded SMTP credentials. If `SMTP_USER` / `SMTP_PASSWORD` are unset, `send_reset_email()` raises `EmailNotConfigured` and the failure is logged — it never falls back to a baked-in credential.
+
+## File-size + responsive conventions
+
+- **200-line ceiling** is project-wide. Frontend has it as an ESLint hard error; backend treats it as a convention (`backend/tools/prompt_lab.py` is the only intentional exception, documented in `pyproject.toml`-adjacent rationale).
+- When splitting, prefer co-located sub-folders (`components/admin/users/`, `components/crear/`, `users/admin_*`) over a generic shared bucket — the sub-folder name is its own contract.
+- HTTP layer ↔ React hook ↔ React page is a three-tier split: services own `fetch` + auth headers, hooks own state + toasts, pages own layout. `adminUsersService.js` / `useUsersAdmin.js` / `AdminUsersPage.jsx` is the reference example.
+- **Responsive defaults**: mobile-first. Avoid fixed pixel heights — use viewport (`h-[60vh]`) + `min-h`/`max-h` clamps. Modals: bottom-sheet on mobile (`items-end p-0`, `rounded-t-2xl`), centered dialog on `sm+` (`sm:items-center sm:p-4`, `sm:rounded-xl`). Tables that can't collapse get `overflow-x-auto` with `min-w-[…]` columns so horizontal scroll degrades gracefully — see `components/admin/users/UsersTable.jsx`.

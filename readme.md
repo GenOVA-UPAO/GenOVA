@@ -215,6 +215,12 @@ GenOVA/
 └── docker-compose.yml
 ```
 
+## Convenciones de código
+
+- **Máx 200 líneas por archivo** (frontend ESLint hard error, backend convención). Única excepción: `backend/tools/prompt_lab.py` (CLI manual, fuera de la API).
+- **Capa de servicios separada de hooks y páginas**: `services/*.js` hace `fetch`, `hooks/*.js` mantiene estado, `pages/*.jsx` solo orquesta layout.
+- **Mobile-first**: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
+
 ## Funcionalidades principales
 
 - **Crear OVA**: prompt + (opcional) archivos de apoyo → elige hasta **4 recursos por fase** (ENGAGE + EXPLORE) → genera secuencialmente con barra de progreso y checklist en vivo → empaqueta todo en un único paquete SCORM con un recurso navegable por cada selección.
@@ -230,12 +236,15 @@ GenOVA/
 
 - **JWT_SECRET** validado en arranque (hard-fail si débil o `<16` chars).
 - **Hash dummy** en `login` para igualar tiempos entre "usuario inexistente" y "contraseña incorrecta" → no enumeración por timing.
-- **Pydantic** `LoginRequest` / `RegisterRequest` con `EmailStr` y `Field(max_length=128)` sobre password (anti-DoS bcrypt, que truncá a 72 bytes igual).
-- **Rate-limit** vía SlowAPI: `/login` 10/min, `/register` 5/min por IP.
+- **Pydantic** `LoginRequest` / `RegisterRequest` con `EmailStr` y `Field(max_length=128)` sobre password (anti-DoS bcrypt, que trunca a 72 bytes igual).
+- **Rate-limit** vía SlowAPI: `/login` 10/min, `/register` 5/min, `/reset-password` 10/min por IP.
 - **JWT extendido** con `iat`, `jti`, `iss=genova` (preparado para revocación vía blocklist).
 - **CORS** restringido a métodos `GET/POST/PATCH/PUT/DELETE/OPTIONS` y headers `Authorization, Content-Type, Accept, X-Requested-With`.
 - **Lockout**: 5 intentos fallidos → 15 min bloqueo.
 - **Fallback chain LLM**: errores recuperables (rate-limit, 402, 5xx) caen a un modelo Groq de respaldo en lugar de exponer el fallo al cliente.
+- **Reset tokens no se devuelven al cliente.** Los endpoints de reset (correo + WhatsApp) generan un token largo (`secrets.token_urlsafe(32)`) y solo devuelven la URL de entrega (correo encolado o `wa.me` share link). El admin que dispara la operación nunca ve el token.
+- **Sin secretos hardcodeados.** `auth/email.py` exige `SMTP_USER` / `SMTP_PASSWORD` vía env; si faltan, lanza `EmailNotConfigured` y registra el fallo (no envía).
+- **Errores de BD nunca se filtran**. Todos los routers usan helpers `commit_or_500()` que loguean `logger.exception(...)` y responden con mensaje genérico.
 
 ## Endpoints de salud
 

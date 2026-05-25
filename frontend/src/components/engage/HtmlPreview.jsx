@@ -48,8 +48,7 @@ export function HtmlPreview({ result }) {
             ref={iframeRef}
             src={blobUrl}
             title="Vista previa del recurso"
-            className="w-full"
-            style={{ height: '500px', border: 'none' }}
+            className="w-full h-[60vh] min-h-[320px] max-h-[640px] border-0"
             sandbox="allow-scripts allow-same-origin"
           />
         )}
