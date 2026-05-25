@@ -6,6 +6,9 @@ export function ProfilePage() {
   const {
     fullName,
     email,
+    universityId,
+    gender,
+    phoneNumber,
     createdAt,
     role,
     loading,
@@ -19,6 +22,9 @@ export function ProfilePage() {
     fetchProfile,
     setFullName,
     setEmail,
+    setUniversityId,
+    setGender,
+    setPhoneNumber,
     setCurrentPassword,
     setNewPassword,
     setConfirmPassword,
@@ -51,12 +57,18 @@ export function ProfilePage() {
           <ProfileForm
             fullName={fullName}
             email={email}
+            universityId={universityId}
+            gender={gender}
+            phoneNumber={phoneNumber}
             role={role}
             createdAt={createdAt}
             validationError={validationError}
             saving={saving}
             onFullNameChange={(e) => setFullName(e.target.value)}
             onEmailChange={(e) => setEmail(e.target.value)}
+            onUniversityIdChange={(e) => setUniversityId(e.target.value)}
+            onGenderChange={(e) => setGender(e.target.value)}
+            onPhoneNumberChange={(e) => setPhoneNumber(e.target.value)}
             onReset={fetchProfile}
             onSubmit={handleProfileSubmit}
             getInitials={getInitials}

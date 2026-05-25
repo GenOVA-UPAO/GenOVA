@@ -24,11 +24,14 @@ function formatDate(isoString) {
 export function useProfile() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+  const [universityId, setUniversityId] = useState('')
+  const [gender, setGender] = useState('otro')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [createdAt, setCreatedAt] = useState('')
   const [role, setRole] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [validationError, setValidationError] = useState({ fullName: '', email: '' })
+  const [validationError, setValidationError] = useState({ fullName: '', email: '', universityId: '', phoneNumber: '' })
 
   const passwordForm = useChangePassword()
 
@@ -42,6 +45,9 @@ export function useProfile() {
         const data = await response.json()
         setFullName(data.full_name || '')
         setEmail(data.email || '')
+        setUniversityId(data.university_id || '')
+        setGender(data.gender || 'otro')
+        setPhoneNumber(data.phone_number || '')
         setCreatedAt(data.created_at || '')
         setRole(data.role || 'usuario')
       } else {
@@ -60,7 +66,7 @@ export function useProfile() {
   }, [])
 
   const validate = () => {
-    const errors = { fullName: '', email: '' }
+    const errors = { fullName: '', email: '', universityId: '', phoneNumber: '' }
     let isValid = true
     if (fullName.trim().length < 3) {
       errors.fullName = 'El nombre completo debe tener al menos 3 caracteres.'
@@ -72,6 +78,13 @@ export function useProfile() {
     } else if (!/@.*\./.test(email)) {
       errors.email = 'El formato del correo electrónico es inválido.'
       isValid = false
+    }
+    if (phoneNumber) {
+      const cleaned = phoneNumber.replace('+', '').replace(' ', '').replace('-', '')
+      if (isNaN(cleaned)) {
+        errors.phoneNumber = 'El número de teléfono solo debe contener dígitos.'
+        isValid = false
+      }
     }
     setValidationError(errors)
     return isValid
@@ -90,12 +103,18 @@ export function useProfile() {
         body: JSON.stringify({
           full_name: fullName.trim(),
           email: email.trim().toLowerCase(),
+          university_id: universityId ? parseInt(universityId, 10) : null,
+          gender: gender || null,
+          phone_number: phoneNumber.trim() || null,
         }),
       })
       if (response.status === 200) {
         const data = await response.json()
         setFullName(data.full_name || '')
         setEmail(data.email || '')
+        setUniversityId(data.university_id || '')
+        setGender(data.gender || 'otro')
+        setPhoneNumber(data.phone_number || '')
         toast.success('¡Perfil actualizado con éxito!')
       } else {
         const data = await response.json().catch(() => ({}))
@@ -111,6 +130,9 @@ export function useProfile() {
   return {
     fullName,
     email,
+    universityId,
+    gender,
+    phoneNumber,
     createdAt,
     role,
     loading,
@@ -119,6 +141,9 @@ export function useProfile() {
     fetchProfile,
     setFullName,
     setEmail,
+    setUniversityId,
+    setGender,
+    setPhoneNumber,
     handleProfileSubmit,
     getInitials: () => getInitials(fullName),
     formatDate,

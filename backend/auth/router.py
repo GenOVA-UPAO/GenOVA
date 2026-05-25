@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from database import get_db
-from models import Role, User, UserRole
+from models import Role, User, UserRole, PasswordResetToken
 from rate_limit import limiter
 from security import (
     JWT_ALGORITHM,
@@ -164,6 +164,80 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
         "id": str(current_user.id),
         "email": current_user.email,
         "full_name": current_user.full_name,
+        "university_id": current_user.university_id,
+        "gender": current_user.gender or "",
+        "phone_number": current_user.phone_number or "",
         "role": role_name,
         "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
     }
+
+
+class ResetPasswordSubmit(BaseModel):
+    token: str = Field(..., description="Token de restablecimiento")
+    new_password: str = Field(..., min_length=8, description="Nueva contraseña alfanumérica")
+
+
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordSubmit, db: Session = Depends(get_db)):
+    token_str = payload.token.strip()
+    new_pass = payload.new_password
+    
+    if not (any(c.isalpha() for c in new_pass) and any(c.isdigit() for c in new_pass)):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "weak_password",
+                "message": "La nueva contraseña debe tener al menos 8 caracteres y contener letras y números."
+            }
+        )
+
+    reset_token = db.execute(
+        select(PasswordResetToken).where(PasswordResetToken.token == token_str)
+    ).scalar_one_or_none()
+
+    if not reset_token:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "invalid_token",
+                "message": "El token de restablecimiento es inválido o ya ha sido utilizado."
+            }
+        )
+
+    now = datetime.now(timezone.utc)
+    expires_at = reset_token.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if expires_at < now:
+        db.delete(reset_token)
+        db.commit()
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "expired_token",
+                "message": "El token de restablecimiento ha expirado."
+            }
+        )
+
+    user = db.execute(
+        select(User).where(User.id == reset_token.user_id)
+    ).scalar_one_or_none()
+
+    if not user:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": "user_not_found", "message": "El usuario asociado a este token no existe."}
+        )
+
+    user.password_hash = hash_password(new_pass)
+    user.failed_login_attempts = 0
+    user.locked_until = None
+    
+    db.execute(
+        PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user.id)
+    )
+    
+    db.commit()
+    return {"message": "Contraseña restablecida con éxito."}
+

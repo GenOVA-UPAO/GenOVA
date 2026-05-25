@@ -55,3 +55,33 @@ def require_admin(
             detail="Acceso denegado: se requieren privilegios de administrador.",
         )
     return current_user
+
+
+def require_permission(required_permission: str):
+    def dependency(
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
+    ) -> User:
+        has_perm = db.execute(
+            select(Role)
+            .join(UserRole)
+            .where(
+                UserRole.user_id == current_user.id,
+                Role.permissions.contains([required_permission])
+            )
+        ).scalars().first()
+
+        if not has_perm:
+            is_admin = db.execute(
+                select(UserRole)
+                .join(Role)
+                .where(UserRole.user_id == current_user.id, Role.name == "administrador")
+            ).scalars().first()
+            if not is_admin:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Acceso denegado: se requiere el permiso '{required_permission}'.",
+                )
+        return current_user
+    return dependency
+

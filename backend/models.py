@@ -28,6 +28,9 @@ class User(Base):
     locked_until = Column(DateTime(timezone=True))
     full_name = Column(String(255))
     is_active = Column(Boolean, nullable=False, default=True)
+    university_id = Column(Integer, unique=True, index=True)
+    gender = Column(String(20))
+    phone_number = Column(String(20), unique=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

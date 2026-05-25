@@ -1,38 +1,53 @@
-# Especificación Funcional y Técnica — HU-021: Gestión de Roles — Asignar Rol a Usuario
+# Especificación Funcional y Técnica — HU-021: Gestión de Usuarios y Roles
 
-Este documento define la especificación técnica y funcional completa para la historia de usuario **HU-021: Gestión de Roles — Asignar Rol a Usuario**, siguiendo los lineamientos de la metodología de desarrollo estructurado (SDD).
+Este documento define la especificación técnica y funcional completa para la historia de usuario **HU-021: Gestión de Usuarios y Roles**, siguiendo los lineamientos de la metodología de desarrollo estructurado (SDD) y las políticas de seguridad jerárquica del sistema.
 
 ---
 
 ## 1. Identificación de la Historia
 
 - **ID**: HU-021
-- **Nombre**: Gestión de Roles — Asignar Rol a Usuario
-- **Rol**: Administrador de la plataforma
-- **Descripción**: Como administrador de la plataforma, quiero poder asignar o cambiar el rol de cualquier usuario registrado, para controlar qué funcionalidades tiene disponibles cada persona dentro del sistema.
+- **Nombre**: Gestión de Usuarios y Roles
+- **Rol**: Administrador de la plataforma o usuario con el permiso `"manage_users"`
+- **Descripción**: Como administrador de la plataforma, quiero poder visualizar la lista de usuarios, editar sus perfiles extendidos (ID Universitario, Sexo y Teléfono), cambiar sus roles, activar/desactivar sus cuentas, desbloquearlas e iniciar el restablecimiento de contraseñas por correo y WhatsApp, para gestionar integralmente el acceso de las personas en el sistema.
 
 ---
 
 ## 2. Criterios de Aceptación
 
-1. **Ubicación y Seguridad de la Interfaz**:
-   - La pantalla de gestión de usuarios se encuentra en `/admin/users`.
-   - Está protegida tanto en el frontend como en el backend; usuarios normales (`usuario` u otros no-administradores) que intenten ingresar verán denegado su acceso o serán redirigidos a `/dashboard`.
-2. **Pantalla de Gestión de Usuarios**:
-   - Muestra una tabla paginada con los usuarios registrados en el sistema.
-   - La tabla incluirá campos como: Nombre Completo, Email, Fecha de Creación y Rol Actual.
-   - Contará con controles de paginación (*Anterior*, *Siguiente*, indicador de página actual y total).
-3. **Selector Desplegable de Roles**:
-   - Cada fila de usuario tiene un control `<select>` con la lista de todos los roles disponibles en el sistema (obtenidos dinámicamente de `GET /api/roles`).
-   - Al seleccionar un rol distinto en el desplegable, se realiza una petición al API y el rol del usuario se actualiza inmediatamente en el backend y frontend.
-4. **Protección contra Bloqueo de Cuenta Propia**:
-   - El administrador actual con la sesión activa **no puede cambiarse su propio rol**.
-   - En el frontend, el selector de rol para la fila del administrador actual estará **deshabilitado** (`disabled`) y mostrará un indicador de `"Tú (Sesión activa)"`.
-   - En el backend, el endpoint validará el ID del usuario objetivo. Si coincide con el ID del administrador autenticado que hace la petición, retornará un error `400 Bad Request` indicando la imposibilidad de auto-modificarse el rol.
-5. **Persistencia e Inmediatez**:
-   - El endpoint `PATCH /users/{id}/role` persiste los cambios en la base de datos de manera atómica (remueve la relación antigua en `user_roles` e inserta la nueva).
-   - Como la capa de seguridad (`require_admin` en FastAPI) consulta el rol del usuario directamente de la base de datos en cada petición, la asignación y pérdida de permisos surte efecto de forma **inmediata** para todas las llamadas API protegidas del usuario afectado.
-   - El cambio se refleja en caliente en el panel de administración.
+### 1. Ubicación y Seguridad de la Interfaz
+- La pantalla de gestión de usuarios se encuentra en `/admin/users`.
+- Está protegida tanto en el frontend como en el backend. 
+- En lugar de validar únicamente si el rol se llama `"administrador"`, el backend comprobará de forma dinámica si el rol del usuario autenticado contiene el permiso `"manage_users"`. Los usuarios normales sin este permiso serán redirigidos a `/dashboard` en el frontend y recibirán un error `403 Forbidden` en el backend.
+
+### 2. Tabla Paginada de Usuarios
+- Muestra una tabla paginada con los campos: 
+  *   **Nombre Completo:** Nombre ingresado por el usuario o administrador.
+  *   **Correo Electrónico:** Dirección de correo institucional.
+  *   **Código UPAO:** Código universitario. Si el valor matemático guardado es menor a 9 dígitos, se le agregará dinámicamente padding de ceros a la izquierda (ej: `257022` se muestra como `000257022`).
+  *   **Sexo:** Categórico (`"masculino"`, `"femenino"`, `"otro"`).
+  *   **Teléfono:** Almacenado como texto.
+  *   **Miembro desde:** Fecha de registro formateada.
+  *   **Estado:** Activo, Inactivo o Bloqueado (según `is_active` y `locked_until`).
+  *   **Rol Asignado:** Menú desplegable para cambiar el rol.
+
+### 3. Acciones de Administración (Menú desplegable en cada fila)
+Cada fila de usuario (a excepción del propio usuario logueado) contará con un menú de acciones que permitirá:
+*   **Editar Perfil:** Abre un modal con campos para Nombre Completo, Email, Código UPAO, Sexo (dropdown) y Teléfono. Queda estrictamente excluido el campo de contraseña.
+*   **Desactivar / Activar Cuenta:** Modifica el atributo `is_active`. Si está inactivo, el usuario no podrá iniciar sesión en la plataforma.
+*   **Desbloquear Cuenta:** Habilitado únicamente si el usuario está bloqueado por demasiados intentos fallidos. Resetea `failed_login_attempts` a `0` y limpia `locked_until`.
+*   **Restablecer por Correo (SMTP):** Genera un token temporal en la tabla `PasswordResetToken` y envía de manera automática un correo electrónico usando el SMTP de Gmail de la aplicación (`soporte.genova.upao@gmail.com`) con un enlace para que el usuario restablezca su clave de forma autónoma.
+*   **Restablecer por WhatsApp (wa.me):** Genera un código de verificación OTP de 6 dígitos y abre una pestaña del navegador con la dirección:
+    `https://api.whatsapp.com/send?phone={telefono_usuario}&text=Hola,%20tu%20código%20de%20recuperación%20en%20GenOVA%20es:%20{otp_code}`
+    Esto permite al administrador enviar el mensaje de manera manual y gratuita desde su propio cliente de WhatsApp. El teléfono se normaliza automáticamente en el frontend eliminando caracteres no numéricos (espacios, guiones, símbolos "+") y anteponiendo el código de país peruano ("51") si se ingresó un número de 9 dígitos.
+
+
+### 4. Protección contra Escalada de Privicios y Seguridad Jerárquica
+*   El administrador actual no puede cambiarse su propio rol ni desactivarse su cuenta.
+*   Un usuario con permiso `"manage_users"` pero que **no** posea el rol literal `"administrador"` (por ejemplo, un rol personalizado "coordinador"):
+    *   **No** puede editar la cuenta ni cambiarle el rol a un usuario que tenga el rol `"administrador"`. Su fila correspondiente tendrá el menú de acciones deshabilitado.
+    *   **No** puede cambiar el rol de ningún usuario al rol `"administrador"`. La opción `"administrador"` estará omitida o deshabilitada en el dropdown de roles para él.
+    *   Si intenta saltarse el frontend y enviar una petición manual al API para alterar a un administrador o asignar dicho rol, el backend retornará `403 Forbidden`.
 
 ---
 
@@ -42,10 +57,10 @@ Este documento define la especificación técnica y funcional completa para la h
 ```gherkin
 Dado que soy un usuario autenticado con el rol "administrador"
 Y me encuentro en la pantalla de gestión de usuarios "/admin/users"
-Cuando cambio el valor del selector de rol del usuario "user@genova.ai" de "usuario" a "administrador"
-Entonces el sistema realiza una llamada PATCH a "/api/users/{id}/role" con el ID del rol "administrador"
+Cuando cambio el valor del selector de rol del usuario "user@genova.ai" de "usuario" a "docente"
+Entonces el sistema realiza una llamada PATCH a "/api/users/{id}/role" con el ID del rol "docente"
 Y el servidor retorna un código de estado 200 con la información del usuario actualizada
-Y el estado local en el frontend se actualiza reflejando el nuevo rol "administrador" en su fila
+Y el estado local en el frontend se actualiza reflejando el nuevo rol "docente" en su fila
 ```
 
 ### Escenario 2: Intento de cambiar el rol propio por el Administrador actual
@@ -53,19 +68,29 @@ Y el estado local en el frontend se actualiza reflejando el nuevo rol "administr
 Dado que soy el administrador autenticado con ID "uuid-admin-123" y correo "admin@genova.ai"
 Y me encuentro en la pantalla de gestión de usuarios "/admin/users"
 Cuando busco mi propia fila en la lista de usuarios
-Entonces el selector de rol correspondiente a mi fila se muestra deshabilitado (disabled)
-Y no puedo alterar su valor
-Y si intento enviar manualmente una petición PATCH a "/api/users/uuid-admin-123/role" con un rol diferente
-Entonces el backend me retorna un código de estado 400 Bad Request con el mensaje "No puedes cambiar tu propio rol para prevenir la pérdida de acceso administrativo"
+Entonces el selector de rol correspondiente a mi fila se muestra deshabilitado
+Y el menú de acciones para mi usuario está inactivo o deshabilitado
+Y si intento enviar manualmente una petición PATCH a "/api/users/uuid-admin-123/role"
+Entonces el backend me retorna un código de estado 400 Bad Request
 ```
 
-### Escenario 3: Intento de acceso no autorizado por un usuario con rol "usuario"
+### Escenario 3: Prevención de escalada de privilegios por un rol "coordinador"
 ```gherkin
-Dado que soy un usuario autenticado con el rol "usuario"
-Cuando intento ingresar directamente a la ruta "/admin/users"
-Entonces el frontend me redirige automáticamente a la pantalla de "/dashboard"
-Y si intento realizar una petición GET a "/api/users"
-Entonces el backend retorna un código de estado 403 Forbidden
+Dado que estoy autenticado con un rol "coordinador" que posee el permiso "manage_users"
+Y existe un usuario "admin@genova.ai" con el rol "administrador"
+Cuando intento abrir el modal de edición o cambiar el rol de "admin@genova.ai" desde la interfaz
+Entonces las acciones están deshabilitadas
+Y si intento enviar manualmente un PATCH al endpoint para cambiar su rol
+Entonces el backend responde con 403 Forbidden indicando "No puedes modificar a un usuario administrador"
+```
+
+### Escenario 4: Restablecimiento de contraseña por correo (SMTP automático)
+```gherkin
+Dado que soy un administrador en la pantalla de gestión de usuarios
+Cuando hago clic en la opción "Restablecer por Correo" del usuario "estudiante@upao.edu.pe"
+Entonces el backend genera un token de restablecimiento único
+Y el servidor envía un correo electrónico automático a "estudiante@upao.edu.pe" desde "soporte.genova.upao@gmail.com"
+Y el frontend muestra una notificación de éxito indicando que el correo fue enviado
 ```
 
 ---
@@ -73,25 +98,43 @@ Entonces el backend retorna un código de estado 403 Forbidden
 ## 4. Diseño de Interfaz (Mockup ASCII)
 
 ```
-+------------------------------------------------------------------------------------+
-| GENOVA ADMIN  |  [Proyectos]   [Modelos]   [Roles]   [*Usuarios*]     (admin@genova.ai) |
-+------------------------------------------------------------------------------------+
-|                                                                                    |
-|  Gestión de Usuarios                                                               |
-|  Administra las cuentas registradas y asigna sus roles correspondientes.           |
-|                                                                                    |
-|  +------------------------------------------------------------------------------+  |
-|  | Nombre Completo      | Correo Electrónico | Creado el   | Rol Asignado       |  |
-|  +----------------------+--------------------+-------------+--------------------+  |
-|  | Admin Genova         | admin@genova.ai    | 18/05/2026  | [Administrador v]* |  |  * (Selector Deshabilitado - "Tú")
-|  | Juan Pérez           | juan@correo.com    | 17/05/2026  | [Usuario       v]  |  |
-|  | María López          | maria@docencia.com | 15/05/2026  | [Docente       v]  |  |  * (Rol personalizado)
-|  | Carlos Gómez         | carlos@user.com    | 10/05/2026  | [Usuario       v]  |  |
-|  +----------------------+--------------------+-------------+--------------------+  |
-|                                                                                    |
-|  Pagina 1 de 3   << Anterior   [ 1 ]   2   3   Siguiente >>                        |
-|                                                                                    |
-+------------------------------------------------------------------------------------+
++---------------------------------------------------------------------------------------------------+
+| GENOVA ADMIN  |  [Proyectos]   [Modelos]   [Roles]   [*Usuarios*]                 (admin@genova.ai) |
++---------------------------------------------------------------------------------------------------+
+|                                                                                                   |
+|  Gestión de Usuarios                                                                              |
+|  Administra las cuentas registradas y gestiona sus datos de perfil y seguridad.                   |
+|                                                                                                   |
+|  +---------------------------------------------------------------------------------------------+  |
+|  | Nombre Completo | Correo             | Código UPAO | Teléfono    | Rol          | Acciones  |  |
+|  +-----------------+--------------------+-------------+-------------+--------------+-----------+  |
+|  | Admin Genova    | admin@genova.ai    | 000000001   | +5198765432 | [Admin    v]*| [Acción]  |  |  * (Deshabilitado)
+|  | Juan Pérez      | juan@correo.com    | 000257022   | +5198728599 | [Usuario  v] | [Acción  ]v |  --> [✏️ Editar]
+|  | María López     | maria@docencia.com | 000015367   | +5195544332 | [Docente  v] | [Acción  ]  |      [🚫 Desactivar]
+|  | Carlos Gómez    | carlos@user.com    | --          | --          | [Usuario  v] | [Acción  ]  |      [✉️ Enviar Correo]
+|  +-----------------+--------------------+-------------+-------------+--------------+-----------+  |      [💬 WhatsApp Link]
+|                                                                                                   |
+|  Pagina 1 de 1   << Anterior   [ 1 ]   Siguiente >>                                               |
+|                                                                                                   |
++---------------------------------------------------------------------------------------------------+
+
+Modal: Editar Perfil de Usuario
++------------------------------------------+
+|  Editar Perfil: Juan Pérez               |
+|                                          |
+|  Nombre Completo:                        |
+|  [ Juan Pérez                        ]   |
+|  Correo Electrónico:                     |
+|  [ juan@correo.com                   ]   |
+|  Código Universitario (UPAO):            |
+|  [ 257022                            ]   |  * (Solo enteros, se autocompleta con ceros al mostrar)
+|  Sexo:                                   |
+|  ( ) Masculino  ( ) Femenino  ( ) Otro   |
+|  Teléfono de contacto:                   |
+|  [ +5198728599                       ]   |
+|                                          |
+|  [ Guardar Cambios ]  [ Cancelar ]       |
++------------------------------------------+
 ```
 
 ---
@@ -99,33 +142,25 @@ Entonces el backend retorna un código de estado 403 Forbidden
 ## 5. Contratos de Entrada/Salida de la API
 
 ### 1. `GET /api/users` (Listado Paginado de Usuarios)
-- **Método**: `GET`
 - **Cabeceras**: `Authorization: Bearer <token>`
-- **Query Params**:
-  - `page`: `int` (Opcional, por defecto `1`)
-  - `limit`: `int` (Opcional, por defecto `10`)
-- **Respuesta Exitosa (200 OK)**:
+- **Query Params**: `page` (int), `limit` (int)
+- **Respuesta (200 OK)**:
 ```json
 {
-  "total_items": 25,
-  "total_pages": 3,
+  "total_items": 3,
+  "total_pages": 1,
   "page": 1,
   "limit": 10,
   "users": [
     {
-      "id": "2b8c94bf-8876-4235-b0fa-3eaaa385e74c",
-      "email": "admin@genova.ai",
-      "full_name": "Admin Genova",
-      "role": {
-        "id": "f50b92e3-2849-41aa-850c-3ee7e914041b",
-        "name": "administrador"
-      },
-      "created_at": "2026-05-18T12:30:00Z"
-    },
-    {
       "id": "e6a2b8e3-0d90-4c61-8cb9-a3e46b19741c",
       "email": "juan@correo.com",
       "full_name": "Juan Pérez",
+      "university_id": 257022,
+      "gender": "masculino",
+      "phone_number": "+51987285992",
+      "is_active": true,
+      "locked_until": null,
       "role": {
         "id": "7bf394e3-3849-45aa-950c-3ee7e914041c",
         "name": "usuario"
@@ -136,63 +171,40 @@ Entonces el backend retorna un código de estado 403 Forbidden
 }
 ```
 
-### 2. `PATCH /api/users/{id}/role` (Modificar Rol del Usuario)
-- **Método**: `PATCH`
-- **Cabeceras**: `Authorization: Bearer <token>`
-- **URL Params**: `id` (UUID del usuario objetivo)
+### 2. `PATCH /api/users/{id}` (Actualizar Datos de Perfil)
 - **Cuerpo de Entrada (JSON)**:
 ```json
 {
-  "role_id": "7bf394e3-3849-45aa-950c-3ee7e914041c"
+  "full_name": "Juan Pérez Modificado",
+  "email": "juan.mod@correo.com",
+  "university_id": 257022,
+  "gender": "masculino",
+  "phone_number": "+51987285992"
 }
 ```
-- **Respuesta Exitosa (200 OK)**:
+- **Respuesta Exitosa (200 OK)**: Retorna los datos del usuario actualizados.
+
+### 3. `PATCH /api/users/{id}/status` (Activar o Desactivar Cuenta)
+- **Cuerpo de Entrada (JSON)**:
 ```json
 {
-  "id": "e6a2b8e3-0d90-4c61-8cb9-a3e46b19741c",
-  "email": "juan@correo.com",
-  "full_name": "Juan Pérez",
-  "role": {
-    "id": "7bf394e3-3849-45aa-950c-3ee7e914041c",
-    "name": "usuario"
-  },
-  "updated_at": "2026-05-18T14:00:00Z"
+  "is_active": false
 }
 ```
-- **Respuesta de Error - Auto-Modificación (400 Bad Request)**:
+- **Respuesta (200 OK)**: `{ "id": "...", "is_active": false }`
+
+### 4. `POST /api/users/{id}/unlock` (Desbloquear Cuenta Bloqueada)
+- **Respuesta (200 OK)**: `{ "id": "...", "message": "Cuenta desbloqueada con éxito." }`
+
+### 5. `POST /api/users/{id}/reset-password-email` (Enviar Correo SMTP)
+- **Respuesta (200 OK)**: `{ "message": "Correo de restablecimiento enviado exitosamente." }`
+
+### 6. `POST /api/users/{id}/reset-password-whatsapp` (Generar OTP para WhatsApp)
+- **Respuesta (200 OK)**:
 ```json
 {
-  "detail": "No puedes cambiar tu propio rol para prevenir la pérdida de acceso administrativo."
+  "phone_number": "+51987285992",
+  "otp_code": "482910",
+  "text": "Hola, tu código de recuperación en GenOVA es: 482910"
 }
 ```
-- **Respuesta de Error - Acceso Denegado (403 Forbidden)**:
-```json
-{
-  "detail": "Acceso denegado: se requieren privilegios de administrador."
-}
-```
-
----
-
-## 6. Estrategia de Implementación Técnica
-
-### Backend
-1. **Creación del Módulo `users`**:
-   - Crearemos la carpeta `backend/users/` y el archivo `backend/users/router.py`.
-   - Implementaremos el modelo de entrada Pydantic `UserRoleUpdate` que valida que `role_id` sea un UUID válido.
-   - Crearemos la ruta `GET /` con paginación usando consultas SQLAlchemy que cuenten registros y apliquen `limit` / `offset`.
-   - Crearemos la ruta `PATCH /{id}/role`. Verificará que el ID objetivo no sea el del usuario actual, validará la existencia del rol, ejecutará la actualización atómica en `user_roles` y retornará 200 con el objeto de usuario y su nuevo rol mapeado.
-2. **Registro de Rutas en `backend/main.py`**:
-   - Registraremos el `users_router` bajo los prefijos `/api/users` y `/users`.
-
-### Frontend
-1. **Creación de la Página `AdminUsersPage.jsx`**:
-   - Ubicada en `frontend/src/pages/AdminUsersPage.jsx`.
-   - Tendrá estados para: `users`, `roles`, `loading`, `error`, `currentPage`, `totalPages`, `isUpdatingUserId`.
-   - Realizará llamadas `GET /api/users?page=...&limit=...` y `GET /api/roles` en el montaje (`useEffect`).
-   - Mapeará los usuarios en una tabla responsiva con un selector dropdown `<select>` por cada usuario.
-   - El selector del administrador logueado estará deshabilitado.
-   - Al cambiar la selección, llamará a `PATCH /api/users/{userId}/role` y actualizará el estado en memoria para reflejar el nuevo rol y permisos.
-2. **Integración en Rutas (`frontend/src/App.jsx`)**:
-   - Registraremos la ruta `/admin/users` vinculada a `AdminUsersPage` dentro del Layout de administración seguro.
-   - Agregaremos un botón "Usuarios" en la barra lateral/navegación de `AdminLayout.jsx` para acceso directo del administrador.
