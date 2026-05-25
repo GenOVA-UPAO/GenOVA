@@ -30,7 +30,8 @@ def build_scorm_zip_bytes(
     zip_buffer = BytesIO()
     with ZipFile(zip_buffer, mode="w", compression=ZIP_DEFLATED) as zip_file:
         for idx, phase in enumerate(ordered, start=1):
-            label = phase_label(phase.get("type", ""), idx)
+            custom_title = (phase.get("title") or "").strip()
+            label = custom_title or phase_label(phase.get("type", ""), idx)
             file_rel = f"resources/recurso_{idx}.html"
             zip_file.writestr(file_rel, wrap_resource_html(phase.get("content", ""), label))
             resources.append({"order": idx, "label": label, "file": file_rel})

@@ -4,15 +4,25 @@ const INTERACTIVIDAD_COLOR = {
   Baja: 'bg-slate-100 text-slate-600',
 }
 
-export function ResourceCard({ resource, selected, onClick }) {
-  const ring = selected
-    ? 'ring-2 ring-indigo-500 border-indigo-300 bg-indigo-50'
-    : 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md'
+export function ResourceCard({ resource, selected, onClick, selectionIndex = null, disabled = false }) {
+  let ring = 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md'
+  if (selected) {
+    ring = 'ring-2 ring-indigo-500 border-indigo-300 bg-indigo-50'
+  } else if (disabled) {
+    ring = 'border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed'
+  }
+
+  function handleClick() {
+    if (disabled) return
+    onClick(resource)
+  }
 
   return (
     <button
       type="button"
-      onClick={() => onClick(resource)}
+      onClick={handleClick}
+      aria-pressed={selected}
+      disabled={disabled}
       className={`text-left w-full rounded-xl border p-4 transition-all duration-150 cursor-pointer ${ring}`}
     >
       <div className="flex items-start gap-3">
@@ -29,7 +39,9 @@ export function ResourceCard({ resource, selected, onClick }) {
           <p className="text-xs text-slate-500 mt-1">⏱ {resource.duracion}</p>
         </div>
         {selected && (
-          <span className="text-indigo-500 text-lg font-bold flex-shrink-0">✓</span>
+          <span className="flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white text-xs font-bold">
+            {selectionIndex ?? '✓'}
+          </span>
         )}
       </div>
     </button>

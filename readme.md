@@ -217,7 +217,7 @@ GenOVA/
 
 ## Funcionalidades principales
 
-- **Crear OVA**: prompt + (opcional) archivos de apoyo → genera recursos ENGAGE + EXPLORE → empaqueta SCORM.
+- **Crear OVA**: prompt + (opcional) archivos de apoyo → elige hasta **4 recursos por fase** (ENGAGE + EXPLORE) → genera secuencialmente con barra de progreso y checklist en vivo → empaqueta todo en un único paquete SCORM con un recurso navegable por cada selección.
 - **Mis OVAs**: listado con búsqueda/paginación, edición de fases, regeneración versionada, descarga SCORM, duplicar, mover a papelera.
 - **Papelera**: soft-delete con restauración individual o masiva.
 - **Perfil**: edición de datos personales (incluye `university_id`, `gender`, `phone_number`) y cambio de contraseña.

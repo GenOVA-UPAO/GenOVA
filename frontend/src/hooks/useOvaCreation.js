@@ -9,21 +9,46 @@ import {
 
 const MIN_CHARS = Number(import.meta.env.VITE_MIN_PROMPT_CHARS || 10)
 
-const STEPS = [
-  { pct: 20, label: 'Generando recurso ENGAGE…' },
-  { pct: 60, label: 'Generando recurso EXPLORE…' },
-  { pct: 85, label: 'Guardando OVA…' },
-  { pct: 100, label: '¡OVA listo!' },
-]
+const PHASE_LABEL = { engage: 'ENGAGE', explore: 'EXPLORE' }
+const GENERATORS = { engage: generateEngageResource, explore: generateExploreResource }
+
+function buildSteps(engageCount, exploreCount) {
+  const steps = []
+  for (let i = 0; i < engageCount; i += 1) {
+    steps.push({ phase: 'engage', index: i })
+  }
+  for (let i = 0; i < exploreCount; i += 1) {
+    steps.push({ phase: 'explore', index: i })
+  }
+  return steps
+}
+
+function buildPhasesPayload(engageResults, exploreResults) {
+  const engagePhases = engageResults.map((r, i) => ({
+    type: 'engage',
+    order: i + 1,
+    content: r.html_content ?? '',
+    title: `ENGAGE · ${r.tipo}`,
+  }))
+  const exploreOffset = engageResults.length
+  const explorePhases = exploreResults.map((r, i) => ({
+    type: 'explore',
+    order: exploreOffset + i + 1,
+    content: r.html_content ?? '',
+    title: `EXPLORE · ${r.tipo}`,
+  }))
+  return [...engagePhases, ...explorePhases]
+}
 
 export function useOvaCreation() {
   const [prompt, setPrompt] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [engageSelection, setEngageSelection] = useState(null)
-  const [exploreSelection, setExploreSelection] = useState(null)
-  const [status, setStatus] = useState('idle') // 'idle' | 'generating' | 'done' | 'error'
+  const [engageSelection, setEngageSelection] = useState([])
+  const [exploreSelection, setExploreSelection] = useState([])
+  const [status, setStatus] = useState('idle')
   const [progress, setProgress] = useState({ pct: 0, label: '' })
   const [result, setResult] = useState(null)
+  const [partial, setPartial] = useState({ engage: [], explore: [] })
   const [error, setError] = useState('')
   const [isExporting, setIsExporting] = useState(false)
 
@@ -32,24 +57,25 @@ export function useOvaCreation() {
     isUploadingFiles, maxUploadFiles, uploadError,
   } = useOvaUploads()
 
+  const totalResources = engageSelection.length + exploreSelection.length
   const canConfigure = prompt.trim().length >= MIN_CHARS
-  const canGenerate = (
-    canConfigure && !!engageSelection && !!exploreSelection && status !== 'generating'
-  )
+  const canGenerate =
+    canConfigure && totalResources > 0 && status !== 'generating'
 
   function confirmSelections({ engage, explore }) {
-    setEngageSelection(engage)
-    setExploreSelection(explore)
+    setEngageSelection(engage ?? [])
+    setExploreSelection(explore ?? [])
     setIsModalOpen(false)
   }
 
   function reset() {
     setPrompt('')
-    setEngageSelection(null)
-    setExploreSelection(null)
+    setEngageSelection([])
+    setExploreSelection([])
     setStatus('idle')
     setProgress({ pct: 0, label: '' })
     setResult(null)
+    setPartial({ engage: [], explore: [] })
     setError('')
   }
 
@@ -57,28 +83,34 @@ export function useOvaCreation() {
     if (!canGenerate) return
     setStatus('generating')
     setError('')
+    setPartial({ engage: [], explore: [] })
+
+    const concept = prompt.trim()
+    const steps = buildSteps(engageSelection.length, exploreSelection.length)
+    const totalSlots = steps.length + 1
+    const collected = { engage: [], explore: [] }
 
     try {
-      const concept = prompt.trim()
+      for (let i = 0; i < steps.length; i += 1) {
+        const { phase, index } = steps[i]
+        const picks = phase === 'engage' ? engageSelection : exploreSelection
+        const pick = picks[index]
+        const pct = Math.round(((i + 1) / totalSlots) * 90)
+        setProgress({
+          pct,
+          label: `Generando ${PHASE_LABEL[phase]} ${index + 1}/${picks.length} · ${pick.tipo}…`,
+        })
+        const data = await GENERATORS[phase](pick.id, concept, uploadIds)
+        collected[phase].push(data)
+        setPartial({ engage: [...collected.engage], explore: [...collected.explore] })
+      }
 
-      setProgress(STEPS[0])
-      const engageResult = await generateEngageResource(engageSelection.id, concept, uploadIds)
+      setProgress({ pct: 95, label: 'Guardando OVA…' })
+      const phasesPayload = buildPhasesPayload(collected.engage, collected.explore)
+      const { ova_id } = await saveOva(concept, phasesPayload, uploadIds)
 
-      setProgress(STEPS[1])
-      const exploreResult = await generateExploreResource(exploreSelection.id, concept, uploadIds)
-
-      setProgress(STEPS[2])
-      const { ova_id } = await saveOva(
-        concept,
-        [
-          { type: 'engage', order: 1, content: engageResult.html_content ?? '' },
-          { type: 'explore', order: 2, content: exploreResult.html_content ?? '' },
-        ],
-        uploadIds
-      )
-
-      setProgress(STEPS[3])
-      setResult({ engageResult, exploreResult, ovaId: ova_id })
+      setProgress({ pct: 100, label: '¡OVA listo!' })
+      setResult({ engageResults: collected.engage, exploreResults: collected.explore, ovaId: ova_id })
       setStatus('done')
     } catch (err) {
       setError(err.message || 'Error al generar el OVA.')
@@ -105,7 +137,8 @@ export function useOvaCreation() {
     closeModal: () => setIsModalOpen(false),
     confirmSelections,
     engageSelection, exploreSelection,
-    status, progress, result, error,
+    totalResources,
+    status, progress, result, partial, error,
     canConfigure, canGenerate,
     generate, reset, handleExportScorm, isExporting,
     uploads, activeUploadsCount, handleFilesSelected, handleRemoveUpload,

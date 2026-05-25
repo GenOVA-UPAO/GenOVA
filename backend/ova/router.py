@@ -33,6 +33,10 @@ class PhaseInput(BaseModel):
     type: str
     order: int
     content: str
+    # Optional human-readable title used for the SCORM nav entry. When several
+    # phases share the same `type` (e.g. 3 ENGAGE resources) the default
+    # `phase_label` collides, so the caller passes a per-resource label.
+    title: str | None = None
 
 
 class SaveOvaRequest(BaseModel):
@@ -88,7 +92,12 @@ def save_ova(
             content=p.content,
             regenerated=False,
         ))
-        phases_data.append({"type": p.type, "order": p.order, "content": p.content})
+        phases_data.append({
+            "type": p.type,
+            "order": p.order,
+            "content": p.content,
+            "title": p.title,
+        })
 
     zip_bytes = build_scorm_zip_bytes(
         course_title=title,

@@ -124,6 +124,9 @@ Some routers are mounted at two prefixes for legacy compatibility:
 **CORS** (in `main.py`): `allow_methods=["GET","POST","PATCH","PUT","DELETE","OPTIONS"]`, `allow_headers=["Authorization","Content-Type","Accept","X-Requested-With"]`. Origins from a hardcoded localhost list + comma-separated `CORS_ORIGINS` env var.
 
 **OVA lifecycle**:
+
+The `POST /api/ova/save` request body is `{prompt, phases: [...], upload_ids}`. Each `PhaseInput` carries `{type, order, content, title?}`. `title` is an optional per-resource label used to disambiguate the SCORM nav when several phases share the same `type` (e.g. multiple ENGAGE resources). When omitted, `scorm/service.py` falls back to `phase_label(type, order)`. Creation now supports **up to 4 resources per phase** (ENGAGE + EXPLORE) — the frontend orders them ENGAGE 1..N, EXPLORE N+1..N+M and sends one `OvaPhase` row per resource.
+
 | Module | Prefix | Responsibility |
 |---|---|---|
 | `ova/router.py` | `/api/ova` | `POST /save`, `GET /{id}/scorm`, `GET /llm-options`, `GET /health` |
@@ -211,11 +214,18 @@ Uses **react-router v7** (`react-router` package, not `react-router-dom`). `Brow
 
 **Notifications**: `sonner` `<Toaster>` mounted in `App.jsx` at `position="top-right"` with `richColors` and `closeButton`.
 
+**Crear OVA UI** (`frontend/src/pages/CrearOvaPage.jsx` + `frontend/src/components/crear/`):
+- Wizard split into composable panels — `PromptPanel`, `SelectionChips`, `UploadsPanel`, `ProgressPanel`, `ResultsPanel`. Each file <200 lines (ESLint hard cap).
+- `PhaseSelectModal` is multi-select with a per-phase cap exported as `MAX_PER_PHASE = 4`. Confirm returns `{engage: Resource[], explore: Resource[]}`. Each card shows its selection order (1..N) instead of a plain checkmark; disabled state when the cap is reached.
+- Mobile-first: modal switches between bottom-sheet (mobile) and centered dialog (sm+); generate button stretches full-width on mobile.
+- `ResultsPanel` renders one tab per generated resource (color-coded ENGAGE/EXPLORE) and embeds each as an isolated `<iframe>` blob via the shared `HtmlPreview` component.
+- `useOvaCreation` walks the picked resources sequentially (avoids Groq TPM spikes), pushes each completed result into `partial.{engage,explore}` so the `ProgressPanel` checklist updates live, then `saveOva()` posts one phase row per resource with a `title` like `ENGAGE · Cómic Interactivo`.
+
 **Key hooks** (`frontend/src/hooks/`) — every file kept under 200 lines (ESLint `max-lines`):
 
 | Hook | Responsibility |
 |---|---|
-| `useOvaCreation` | Full creation wizard flow (ENGAGE → EXPLORE → save → optional SCORM export) |
+| `useOvaCreation` | Multi-resource creation wizard (up to 4 ENGAGE + 4 EXPLORE) → sequential generation with live `partial` state → save → optional SCORM export |
 | `useLlmOptions` | Fetches `/api/ova/llm-options` for the LLM engines panel |
 | `useOvaList` | List, search, pagination, batch actions — composes `useOvaSelection` + `useOvaMetadata` |
 | `useOvaSelection` | Multi-select state for the OVA list |
