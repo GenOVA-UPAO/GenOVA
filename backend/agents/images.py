@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor  # noqa: F401 (kept for future
 logger = logging.getLogger(__name__)
 
 _BASE = "https://image.pollinations.ai/prompt/"
-_TIMEOUT_S = 60
+_TIMEOUT_S = 25
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; GenOVA/1.0; +https://genova.ai)",
     "Referer": "https://genova.ai",

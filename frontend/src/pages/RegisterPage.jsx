@@ -72,6 +72,8 @@ export function RegisterPage() {
             Nombre completo
             <input
               type="text"
+              name="name"
+              autoComplete="name"
               placeholder="Ejemplo: Solange"
               value={fullName}
               onChange={(event) => {
@@ -79,7 +81,7 @@ export function RegisterPage() {
                 setTouched((prev) => ({ ...prev, fullName: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
             {showFullNameError && (
               <span className="mt-1 block text-xs text-rose-600">
@@ -92,6 +94,9 @@ export function RegisterPage() {
             Correo
             <input
               type="email"
+              name="email"
+              autoComplete="email"
+              inputMode="email"
               placeholder="estudiante@upao.edu"
               value={email}
               onChange={(event) => {
@@ -99,7 +104,7 @@ export function RegisterPage() {
                 setTouched((prev) => ({ ...prev, email: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
             {showEmailError && (
               <span className="mt-1 block text-xs text-rose-600">
@@ -112,6 +117,8 @@ export function RegisterPage() {
             Contraseña
             <input
               type="password"
+              name="password"
+              autoComplete="new-password"
               placeholder="••••••••"
               value={password}
               onChange={(event) => {
@@ -119,7 +126,7 @@ export function RegisterPage() {
                 setTouched((prev) => ({ ...prev, password: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
             {showPasswordError ? (
               <span className="mt-1 block text-xs text-rose-600">
@@ -140,9 +147,12 @@ export function RegisterPage() {
 
           <button
             type="submit"
-            className="inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             disabled={!isFullNameValid || !isEmailValid || !isPasswordValid || isSubmitting}
           >
+            {isSubmitting && (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+            )}
             {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
           </button>
 

@@ -4,7 +4,8 @@ import os
 import re
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from agents.engage_prompts import RECURSOS_META, prompt_html, prompt_simulador, prompt_texto
 from agents.images import fetch_images_parallel
@@ -12,14 +13,16 @@ from agents.llm_router import generar_texto
 from agents.podcast import build_podcast_html, podcast_audio_b64
 from agents.utils import parse_json, strip_markdown
 from auth.dependencies import get_current_user
+from database import get_db
 from models import User
+from rag.retriever import build_contexto_usuario, top_k
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 _TAREA_POR_RECURSO = {
     1: "texto", 2: "texto", 3: "texto", 4: "texto", 5: "texto",
-    6: "texto", 7: "texto", 8: "texto", 9: "orquestador", 10: "codigo",
+    6: "texto", 7: "texto", 8: "texto", 9: "texto", 10: "codigo",
 }
 
 # 1x1 transparent SVG fallback shown when image generation fails.
@@ -63,6 +66,7 @@ def _enrich_with_images(json_data) -> dict[str, str]:
 class GenerateEngageRequest(BaseModel):
     resource_type: int
     concept: str
+    upload_ids: list[str] = Field(default_factory=list)
 
 
 @router.get("/recursos")
@@ -73,10 +77,21 @@ def list_recursos():
     }
 
 
+def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
+    if not upload_ids:
+        return ""
+    chunks = top_k(db, query, upload_ids)
+    contexto = build_contexto_usuario(chunks)
+    if contexto:
+        logger.info("RAG retrieved %d chunks for ENGAGE concept=%r", len(chunks), query[:60])
+    return contexto
+
+
 @router.post("/generate")
 def generate_engage_resource(
     payload: GenerateEngageRequest,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     n = payload.resource_type
     concept = payload.concept.strip()
@@ -87,16 +102,19 @@ def generate_engage_resource(
         raise HTTPException(status_code=400, detail="El concepto debe tener al menos 3 caracteres.")
 
     meta = RECURSOS_META[n]
+    contexto = _retrieve_contexto(db, concept, payload.upload_ids)
 
     try:
         # Resource 10: direct code generation (no JSON step)
         if n == 10:
-            html = strip_markdown(generar_texto(prompt_simulador(concept), "codigo", max_tokens=8000))
+            html = strip_markdown(
+                generar_texto(prompt_simulador(concept, contexto), "codigo", max_tokens=12000)
+            )
             return {**meta, "resource_type": n, "concepto": concept, "raw_json": None, "html_content": html}
 
         # Resource 3 (podcast): monologue text → Groq TTS audio → player HTML
         if n == 3:
-            monologue = generar_texto(prompt_texto(n, concept), "texto", max_tokens=700)
+            monologue = generar_texto(prompt_texto(n, concept, contexto), "texto", max_tokens=700)
             audio_b64 = podcast_audio_b64(monologue)
             return {**meta, "resource_type": n, "concepto": concept,
                     "raw_json": {"monologue": monologue},
@@ -104,7 +122,7 @@ def generate_engage_resource(
 
         # Resources 1,2,4-9: Step 1 = text/JSON, Step 2 = HTML via code agent
         tarea = _TAREA_POR_RECURSO[n]
-        raw_text = generar_texto(prompt_texto(n, concept), tarea, max_tokens=3000)
+        raw_text = generar_texto(prompt_texto(n, concept, contexto), tarea, max_tokens=3000)
 
         try:
             json_data = parse_json(raw_text)
@@ -117,7 +135,9 @@ def generate_engage_resource(
         img_replacements = _enrich_with_images(json_data)
 
         json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
-        html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=8000))
+        html = strip_markdown(
+            generar_texto(prompt_html(n, concept, json_str, contexto), "codigo", max_tokens=12000)
+        )
 
         for placeholder, uri in img_replacements.items():
             html = html.replace(placeholder, uri)
@@ -128,6 +148,6 @@ def generate_engage_resource(
 
     except HTTPException:
         raise
-    except Exception as exc:
-        logger.error("Error generating ENGAGE resource %d: %s", n, exc)
-        raise HTTPException(status_code=500, detail=f"Error al generar el recurso: {exc}")
+    except Exception:
+        logger.exception("Error generating ENGAGE resource %d", n)
+        raise HTTPException(status_code=500, detail="Error al generar el recurso. Intenta de nuevo.")

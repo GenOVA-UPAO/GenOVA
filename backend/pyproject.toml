@@ -1,0 +1,85 @@
+[project]
+name = "genova-backend"
+version = "0.1.0"
+description = "GenOVA backend — FastAPI service for AI-assisted Virtual Learning Objects (OVA) with SCORM 1.2 export."
+requires-python = ">=3.11"
+readme = "../readme.md"
+
+# Mirror of requirements.txt — kept in sync manually.
+# uv reads this; pip uses requirements.txt. Both must resolve to the same set.
+dependencies = [
+    "fastapi==0.122.0",
+    "uvicorn[standard]==0.38.0",
+    "sqlalchemy==2.0.43",
+    "psycopg[binary]==3.2.10",
+    "python-dotenv==1.1.1",
+    "bcrypt==4.3.0",
+    "PyJWT==2.10.1",
+    "python-multipart==0.0.20",
+    "pydantic[email]>=2.6.0",
+    "slowapi>=0.1.9",
+    "openai>=1.30.0",
+    "groq>=0.9.0",
+    "supabase>=2.7.0",
+    "google-genai>=1.0.0",
+    "pypdf>=4.0.0",
+    "python-docx>=1.1.0",
+    "python-pptx>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6.0",
+    "pytest>=8.0.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["migrations", "scorm_output", "uploads", "venv", ".venv"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "B",   # bugbear
+    "UP",  # pyupgrade
+    "S",   # bandit (security)
+    "SIM", # simplify
+]
+ignore = [
+    "E501",   # handled by formatter
+    "B008",   # FastAPI Depends() in defaults is the standard pattern
+    "S101",   # asserts allowed in tests
+    "S104",   # 0.0.0.0 bind is intentional in dev
+    "S110",   # try-except-pass acceptable in cleanup paths
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "E"]
+"tools/**" = ["S"]
+"seed.py" = ["S105", "S106"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-ra --strict-markers"

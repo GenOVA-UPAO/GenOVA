@@ -9,6 +9,7 @@ import {
   fetchOvas,
 } from '../services/ovaHistoryService.js'
 import { useOvaMetadata } from './useOvaMetadata.js'
+import { useOvaSelection } from './useOvaSelection.js'
 
 export function useOvaList() {
   const navigate = useNavigate()
@@ -31,20 +32,10 @@ export function useOvaList() {
   const [downloadingId, setDownloadingId] = useState('')
   const [duplicatingId, setDuplicatingId] = useState('')
 
-  const [selectedIds, setSelectedIds] = useState(new Set())
-
   const searchDebounceRef = useRef(null)
 
-  const {
-    metadataModalOpen,
-    metadataForm,
-    metadataError,
-    metadataSaving,
-    openMetadataModal,
-    closeMetadataModal,
-    handleMetadataChange,
-    handleMetadataSave,
-  } = useOvaMetadata(setOvas)
+  const selection = useOvaSelection(ovas)
+  const metadata = useOvaMetadata(setOvas)
 
   const loadOvas = useCallback(
     async (page = 1, searchTerm = search, statusTerm = statusFilter) => {
@@ -68,7 +59,7 @@ export function useOvaList() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- recarga el listado al cambiar filtros
     loadOvas(1, search, statusFilter)
-    setSelectedIds(new Set())
+    selection.clearSelection()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, statusFilter])
 
@@ -90,26 +81,7 @@ export function useOvaList() {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       loadOvas(newPage, search, statusFilter)
-      setSelectedIds(new Set())
-    }
-  }
-
-  const handleToggleSelect = (id) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
-  const selectableIds = ovas.filter((o) => o.status !== 'generando').map((o) => o.id)
-  const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id))
-
-  const handleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(selectableIds))
+      selection.clearSelection()
     }
   }
 
@@ -137,9 +109,9 @@ export function useOvaList() {
   const handleBulkTrashConfirm = async () => {
     setBulkLoading(true)
     try {
-      const res = await batchMoveToTrash([...selectedIds])
+      const res = await batchMoveToTrash([...selection.selectedIds])
       toast.success(res.message || `${res.moved?.length} OVAs movidos a la papelera.`)
-      setSelectedIds(new Set())
+      selection.clearSelection()
       setShowBulkModal(false)
       const newTotal = totalItems - (res.moved?.length || 0)
       const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
@@ -193,30 +165,32 @@ export function useOvaList() {
     bulkLoading,
     downloadingId,
     duplicatingId,
-    selectedIds,
-    metadataModalOpen,
-    metadataForm,
-    metadataError,
-    metadataSaving,
-    allSelected,
     isEmpty,
     loadOvas,
     handleSearchChange,
     handleStatusChange,
     handlePageChange,
-    handleToggleSelect,
-    handleSelectAll,
     handleMoveToTrashRequest,
     handleTrashCancel,
     handleTrashConfirm,
     handleBulkTrashConfirm,
     handleDuplicate,
-    openMetadataModal,
-    closeMetadataModal,
-    handleMetadataChange,
-    handleMetadataSave,
     handleDownload,
-    setSelectedIds,
     setShowBulkModal,
+    // selection
+    selectedIds: selection.selectedIds,
+    setSelectedIds: selection.setSelectedIds,
+    allSelected: selection.allSelected,
+    handleToggleSelect: selection.handleToggleSelect,
+    handleSelectAll: selection.handleSelectAll,
+    // metadata
+    metadataModalOpen: metadata.metadataModalOpen,
+    metadataForm: metadata.metadataForm,
+    metadataError: metadata.metadataError,
+    metadataSaving: metadata.metadataSaving,
+    openMetadataModal: metadata.openMetadataModal,
+    closeMetadataModal: metadata.closeMetadataModal,
+    handleMetadataChange: metadata.handleMetadataChange,
+    handleMetadataSave: metadata.handleMetadataSave,
   }
 }

@@ -2,7 +2,8 @@ import json
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from agents.explore_prompts import (
     CODE_ONLY,
@@ -14,7 +15,9 @@ from agents.explore_prompts import (
 from agents.llm_router import generar_texto
 from agents.utils import parse_json, strip_markdown
 from auth.dependencies import get_current_user
+from database import get_db
 from models import User
+from rag.retriever import build_contexto_usuario, top_k
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -28,18 +31,31 @@ _TAREA_POR_RECURSO = {
 class GenerateExploreRequest(BaseModel):
     resource_type: int
     concept: str
+    upload_ids: list[str] = Field(default_factory=list)
 
 
-def _generate_two_step(n: int, concept: str) -> tuple[dict | list, str]:
+def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
+    if not upload_ids:
+        return ""
+    chunks = top_k(db, query, upload_ids)
+    contexto = build_contexto_usuario(chunks)
+    if contexto:
+        logger.info("RAG retrieved %d chunks for EXPLORE concept=%r", len(chunks), query[:60])
+    return contexto
+
+
+def _generate_two_step(n: int, concept: str, contexto: str) -> tuple[dict | list, str]:
     tarea = _TAREA_POR_RECURSO.get(n, "texto")
-    raw = generar_texto(prompt_texto(n, concept), tarea, max_tokens=3000)
+    raw = generar_texto(prompt_texto(n, concept, contexto), tarea, max_tokens=3000)
     try:
         json_data = parse_json(raw)
     except Exception:
         logger.warning("JSON parse failed for EXPLORE resource %d, using raw text", n)
         json_data = {"contenido": raw}
     json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
-    html = strip_markdown(generar_texto(prompt_html(n, concept, json_str), "codigo", max_tokens=8000))
+    html = strip_markdown(
+        generar_texto(prompt_html(n, concept, json_str, contexto), "codigo", max_tokens=12000)
+    )
     return json_data, html
 
 
@@ -55,6 +71,7 @@ def list_recursos():
 def generate_explore_resource(
     payload: GenerateExploreRequest,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     n = payload.resource_type
     concept = payload.concept.strip()
@@ -65,17 +82,20 @@ def generate_explore_resource(
         raise HTTPException(status_code=400, detail="El concepto debe tener al menos 3 caracteres.")
 
     meta = RECURSOS_META[n]
+    contexto = _retrieve_contexto(db, concept, payload.upload_ids)
 
     try:
         if n in CODE_ONLY:
-            html = strip_markdown(generar_texto(prompt_codigo(n, concept), "codigo", max_tokens=8000))
+            html = strip_markdown(
+                generar_texto(prompt_codigo(n, concept, contexto), "codigo", max_tokens=12000)
+            )
             return {**meta, "resource_type": n, "concepto": concept, "raw_json": None, "html_content": html}
 
-        json_data, html = _generate_two_step(n, concept)
+        json_data, html = _generate_two_step(n, concept, contexto)
         return {**meta, "resource_type": n, "concepto": concept, "raw_json": json_data, "html_content": html}
 
     except HTTPException:
         raise
-    except Exception as exc:
-        logger.error("Error generating EXPLORE resource %d: %s", n, exc)
-        raise HTTPException(status_code=500, detail=f"Error al generar el recurso: {exc}")
+    except Exception:
+        logger.exception("Error generating EXPLORE resource %d", n)
+        raise HTTPException(status_code=500, detail="Error al generar el recurso. Intenta de nuevo.")

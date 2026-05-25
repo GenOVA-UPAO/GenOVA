@@ -7,11 +7,11 @@ const authHeaders = () => ({
   Authorization: `Bearer ${getToken()}`,
 })
 
-export async function generateEngageResource(resource_type, concept) {
+export async function generateEngageResource(resource_type, concept, upload_ids = []) {
   const res = await fetch(`${BASE}/api/agents/engage/generate`, {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({ resource_type, concept }),
+    body: JSON.stringify({ resource_type, concept, upload_ids }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -20,11 +20,11 @@ export async function generateEngageResource(resource_type, concept) {
   return res.json()
 }
 
-export async function generateExploreResource(resource_type, concept) {
+export async function generateExploreResource(resource_type, concept, upload_ids = []) {
   const res = await fetch(`${BASE}/api/agents/explore/generate`, {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({ resource_type, concept }),
+    body: JSON.stringify({ resource_type, concept, upload_ids }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -33,11 +33,11 @@ export async function generateExploreResource(resource_type, concept) {
   return res.json()
 }
 
-export async function saveOva(prompt, phases) {
+export async function saveOva(prompt, phases, upload_ids = []) {
   const res = await fetch(`${BASE}/api/ova/save`, {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify({ prompt, phases }),
+    body: JSON.stringify({ prompt, phases, upload_ids }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -47,6 +47,9 @@ export async function saveOva(prompt, phases) {
 }
 
 export async function downloadOvaScorm(ovaId) {
+  // Backend may return either a 302 redirect to Supabase Storage (preferred) or
+  // raw bytes (legacy disk fallback). `fetch` follows redirects transparently;
+  // either path lands us with a blob to download.
   const res = await fetch(`${BASE}/api/ova/${ovaId}/scorm`, {
     headers: { Authorization: `Bearer ${getToken()}` },
   })

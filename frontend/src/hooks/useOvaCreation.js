@@ -28,7 +28,7 @@ export function useOvaCreation() {
   const [isExporting, setIsExporting] = useState(false)
 
   const {
-    uploads, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
+    uploads, uploadIds, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
     isUploadingFiles, maxUploadFiles, uploadError,
   } = useOvaUploads()
 
@@ -62,16 +62,20 @@ export function useOvaCreation() {
       const concept = prompt.trim()
 
       setProgress(STEPS[0])
-      const engageResult = await generateEngageResource(engageSelection.id, concept)
+      const engageResult = await generateEngageResource(engageSelection.id, concept, uploadIds)
 
       setProgress(STEPS[1])
-      const exploreResult = await generateExploreResource(exploreSelection.id, concept)
+      const exploreResult = await generateExploreResource(exploreSelection.id, concept, uploadIds)
 
       setProgress(STEPS[2])
-      const { ova_id } = await saveOva(concept, [
-        { type: 'engage', order: 1, content: engageResult.html_content ?? '' },
-        { type: 'explore', order: 2, content: exploreResult.html_content ?? '' },
-      ])
+      const { ova_id } = await saveOva(
+        concept,
+        [
+          { type: 'engage', order: 1, content: engageResult.html_content ?? '' },
+          { type: 'explore', order: 2, content: exploreResult.html_content ?? '' },
+        ],
+        uploadIds
+      )
 
       setProgress(STEPS[3])
       setResult({ engageResult, exploreResult, ovaId: ova_id })

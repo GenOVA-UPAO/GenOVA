@@ -10,14 +10,14 @@ export async function fetchExploreRecursos() {
   return res.json()
 }
 
-export async function generateExploreResource(resource_type, concept) {
+export async function generateExploreResource(resource_type, concept, upload_ids = []) {
   const res = await fetch(`${BASE}/api/agents/explore/generate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getToken()}`,
     },
-    body: JSON.stringify({ resource_type, concept }),
+    body: JSON.stringify({ resource_type, concept, upload_ids }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))

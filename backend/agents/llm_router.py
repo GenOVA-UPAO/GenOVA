@@ -4,7 +4,9 @@ import os
 import time
 
 from groq import Groq
+from groq import APIStatusError as GroqAPIStatusError
 from groq import RateLimitError as GroqRateLimitError
+from openai import APIStatusError as OpenAIAPIStatusError
 from openai import OpenAI
 from openai import RateLimitError as OpenAIRateLimitError
 
@@ -26,10 +28,13 @@ openrouter_client = OpenAI(
 # (provider, model_id, extra_kwargs)
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
 _MODELOS: dict[str, tuple] = {
-    "texto":        ("groq",       "llama-3.3-70b-versatile",  {}),
-    "codigo":       ("openrouter", "qwen/qwen3-coder:free",    {}),
-    "orquestador":  ("groq",       "openai/gpt-oss-120b",      {"reasoning_effort": "medium"}),
-    "razonamiento": ("groq",       "qwen/qwen3-32b",           {"reasoning_effort": "default"}),
+    "texto":        ("groq",       "llama-3.3-70b-versatile",       {}),
+    # DeepSeek V4 Flash: 284B MoE / 13B active, 1M context, LiveCodeBench
+    # 91.6 / SWE-bench 79 — much better at following nested HTML rules than
+    # qwen3-coder. Same free tier (OpenRouter 50/day, 1000/day with $10 prepaid).
+    "codigo":       ("openrouter", "deepseek/deepseek-v4-flash:free", {}),
+    "orquestador":  ("groq",       "openai/gpt-oss-120b",           {"reasoning_effort": "medium"}),
+    "razonamiento": ("groq",       "qwen/qwen3-32b",                {"reasoning_effort": "default"}),
 }
 
 _VISION_MODEL  = "meta-llama/llama-4-scout-17b-16e-instruct"
@@ -51,6 +56,30 @@ VIDEO_UNAVAILABLE_MSG = (
 _FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
 _FALLBACK_OR_MODEL   = "meta-llama/llama-3.3-70b-instruct:free"
 
+# Per-task fallback chain. Tried in order on any APIStatusError (rate-limit,
+# 402 insufficient credit, provider-specific errors). The last entry is the
+# safety-net Groq model that almost always responds within free tier.
+_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
+    "codigo": [
+        ("openrouter", "qwen/qwen3-coder:free", {}),
+        ("openrouter", "z-ai/glm-4.5-air:free", {}),
+        ("openrouter", _FALLBACK_OR_MODEL, {}),
+        ("groq", "llama-3.3-70b-versatile", {}),
+    ],
+    "texto": [
+        ("groq", _FALLBACK_GROQ_MODEL, {}),
+        ("openrouter", _FALLBACK_OR_MODEL, {}),
+    ],
+    "orquestador": [
+        ("groq", "qwen/qwen3-32b", {}),
+        ("groq", _FALLBACK_GROQ_MODEL, {}),
+    ],
+    "razonamiento": [
+        ("groq", "openai/gpt-oss-120b", {"reasoning_effort": "low"}),
+        ("groq", _FALLBACK_GROQ_MODEL, {}),
+    ],
+}
+
 
 def _chat(provider: str, model_id: str, prompt: str, max_tokens: int, extra: dict) -> str:
     msgs = [{"role": "user", "content": prompt}]
@@ -63,30 +92,49 @@ def _chat(provider: str, model_id: str, prompt: str, max_tokens: int, extra: dic
         r = openrouter_client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **extra
         )
-    return r.choices[0].message.content
+    content = r.choices[0].message.content if r.choices else None
+    if not content or not content.strip():
+        # Some reasoning models return reasoning_content separately and leave
+        # `content` empty; treat that as a recoverable failure so the fallback
+        # chain advances to the next model.
+        raise EmptyContentError(f"Empty content from {provider}/{model_id}")
+    return content
+
+
+class EmptyContentError(RuntimeError):
+    """LLM returned empty content (e.g. reasoning model that didn't emit text)."""
+
+
+_RECOVERABLE_ERRORS = (
+    GroqRateLimitError,
+    OpenAIRateLimitError,
+    GroqAPIStatusError,
+    OpenAIAPIStatusError,
+    EmptyContentError,
+)
 
 
 def generar_texto(prompt: str, tarea: str, max_tokens: int = 3000) -> str:
-    """Route a task to its model. OpenRouter ':free' coders are frequently
-    rate-limited upstream, so on any rate-limit we cross over to a reliable Groq
-    model and retry with backoff. Groq output is capped at its 6000 TPM tier."""
-    proveedor, model_id, extra = _MODELOS.get(tarea, _MODELOS["texto"])
-    fb_model = "llama-3.3-70b-versatile" if proveedor == "openrouter" else _FALLBACK_GROQ_MODEL
-
-    try:
-        return _chat(proveedor, model_id, prompt, max_tokens, extra)
-    except (GroqRateLimitError, OpenAIRateLimitError):
-        logger.warning("Rate limit task='%s' model='%s'; falling back to Groq %s", tarea, model_id, fb_model)
+    """Route a task to its model and walk the per-task fallback chain on any
+    recoverable API error (rate-limit, 402 insufficient credit, provider 5xx,
+    Crucible/sub-host failures). The chain ends in a Groq model that almost
+    always responds within the free tier."""
+    primary = _MODELOS.get(tarea, _MODELOS["texto"])
+    chain: list[tuple[str, str, dict]] = [primary, *_FALLBACK_CHAIN.get(tarea, [])]
 
     last_err: Exception | None = None
-    for delay in (3, 10, 20):
+    for i, (proveedor, model_id, extra) in enumerate(chain):
+        if i > 0:
+            time.sleep(min(2 ** (i - 1), 8))
         try:
-            time.sleep(delay)
-            return _chat("groq", fb_model, prompt, max_tokens, {})
-        except (GroqRateLimitError, OpenAIRateLimitError) as exc:
+            return _chat(proveedor, model_id, prompt, max_tokens, extra)
+        except _RECOVERABLE_ERRORS as exc:
             last_err = exc
-            logger.warning("Groq fallback rate-limited task='%s'; retrying", tarea)
-    raise last_err
+            logger.warning(
+                "Task '%s' failed on %s/%s (%s). Trying next fallback %d/%d.",
+                tarea, proveedor, model_id, type(exc).__name__, i + 1, len(chain),
+            )
+    raise last_err or RuntimeError("All LLM fallbacks failed")
 
 
 def generar_texto_with_model(prompt: str, model_id: str, provider: str, max_tokens: int = 4000) -> str:

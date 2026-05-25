@@ -5,6 +5,7 @@ controls. Falls back to text-only with a manual completion button when the
 audio cannot be generated.
 """
 import base64
+import html
 import logging
 
 from agents.llm_router import generar_audio_tts
@@ -84,6 +85,8 @@ document.getElementById('status').textContent='✓ Completado';_scormComplete();
 
 
 def build_podcast_html(concept: str, monologue: str, audio_b64: str | None) -> str:
+    safe_concept = html.escape(concept)
+    safe_monologue = html.escape(monologue).replace("\n", "<br>")
     if audio_b64:
         media = (
             '<audio id="aud" preload="auto" src="data:audio/wav;base64,'
@@ -106,12 +109,12 @@ def build_podcast_html(concept: str, monologue: str, audio_b64: str | None) -> s
         '<!DOCTYPE html>\n<html lang="es">\n<head>'
         '<meta charset="UTF-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1.0">'
-        "<title>Micro-Podcast · " + concept + "</title>"
+        "<title>Micro-Podcast · " + safe_concept + "</title>"
         + _STYLE + '</head>\n<body><div class="card">'
         '<p class="tag">🎙️ Micro-Podcast · Fase ENGAGE</p>'
-        "<h2>" + concept + "</h2>"
+        "<h2>" + safe_concept + "</h2>"
         + _WAVE + media
-        + '<div class="monologue">' + monologue + "</div>"
+        + '<div class="monologue">' + safe_monologue + "</div>"
         '<p id="status"></p></div>\n<script>'
         + script + SCORM_JS + "</script></body></html>"
     )

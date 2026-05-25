@@ -97,20 +97,35 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         db.flush()
 
         from scorm.service import build_scorm_zip_bytes
+        from storage import StorageError, is_configured, upload_zip
 
-        output_dir = _ova_output_dir()
-        os.makedirs(output_dir, exist_ok=True)
-        file_path = os.path.join(output_dir, f"{ova_id}_v{new_version_number}.zip")
         zip_bytes = build_scorm_zip_bytes(
             course_title=ova.title,
             module_title="OVA Generado por GenOVA",
             phases=new_phases_data,
         )
-        with open(file_path, "wb") as f:
-            f.write(zip_bytes)
+
+        new_storage_key = None
+        new_file_path = None
+
+        if is_configured():
+            try:
+                new_storage_key = f"{ova.user_id}/{ova_id}_v{new_version_number}.zip"
+                upload_zip(new_storage_key, zip_bytes)
+            except StorageError:
+                logger.warning("Supabase upload failed for regen %s; using disk", ova_id)
+                new_storage_key = None
+
+        if not new_storage_key:
+            output_dir = _ova_output_dir()
+            os.makedirs(output_dir, exist_ok=True)
+            new_file_path = os.path.join(output_dir, f"{ova_id}_v{new_version_number}.zip")
+            with open(new_file_path, "wb") as f:
+                f.write(zip_bytes)
 
         ova.status = "listo"
-        ova.file_path = file_path
+        ova.storage_key = new_storage_key
+        ova.file_path = new_file_path
         ova.current_version_id = new_version.id
         db.commit()
 

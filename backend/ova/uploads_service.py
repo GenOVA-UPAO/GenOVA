@@ -126,6 +126,18 @@ def create_temp_upload(
     return _serialize_upload(payload)
 
 
+def get_upload_storage_path(upload_id: str, user_id: str) -> Optional[str]:
+    """Return the on-disk path of an upload owned by `user_id`, or None if the
+    upload was pruned/expired/not-owned. Used by the RAG pipeline so the router
+    layer doesn't have to know about internal payload shape."""
+    with _temp_uploads_lock:
+        _prune_expired_uploads_locked()
+        item = _temp_uploads.get(upload_id)
+        if not item or item["user_id"] != user_id:
+            return None
+        return item["storage_path"]
+
+
 def list_user_uploads(user_id: str) -> list[dict]:
     with _temp_uploads_lock:
         _prune_expired_uploads_locked()

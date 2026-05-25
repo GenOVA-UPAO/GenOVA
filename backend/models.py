@@ -44,6 +44,7 @@ class Ova(Base):
     description = Column(Text)
     status = Column(String(20), nullable=False, default="borrador", server_default="borrador")
     file_path = Column(Text)
+    storage_key = Column(Text)  # Supabase Storage object key (new persistence path)
     current_version_id = Column(UUID(as_uuid=True), nullable=True)
     deleted_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -140,6 +141,24 @@ class LabResult(Base):
     error_message = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+
+
+class RagChunk(Base):
+    """One embedded chunk from a user upload. The `embedding` column is a
+    pgvector column managed via raw SQL in `backend/rag/store.py`; SQLAlchemy
+    treats it as opaque text-equivalent here (we only read it via raw queries)."""
+    __tablename__ = "rag_chunks"
+
+    id = _pk_column()
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    upload_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    ova_id = Column(UUID(as_uuid=True), ForeignKey("ovas.id", ondelete="SET NULL"), nullable=True)
+    source_filename = Column(Text, nullable=False)
+    chunk_index = Column(Integer, nullable=False)
+    content = Column(Text, nullable=False)
+    # embedding column is vector(768) — handled in raw SQL; not declared here.
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
 
 
 class PasswordResetToken(Base):
