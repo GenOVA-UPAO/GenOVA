@@ -88,6 +88,8 @@ def _phase_to_dict(phase: OvaPhase) -> dict:
         "phase_order": phase.phase_order,
         "content": phase.content,
         "regenerated": phase.regenerated,
+        "resource_type_id": phase.resource_type_id,
+        "title": phase.title,
     }
 
 

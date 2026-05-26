@@ -16,11 +16,13 @@ from ova.edit_helpers import (
     _get_active_version,
     _is_ova_owner,
     _resolve_regen_stage,
-    REGEN_DURATION_SECONDS,
 )
 from ova.regen_service import _finalize_edit, _regen_jobs, _regen_jobs_lock
 
 router = APIRouter()
+
+# Estimated seconds per resource for real LLM regeneration.
+_EST_SECONDS_PER_PHASE = 60
 
 
 class RegenRequest(BaseModel):
@@ -159,8 +161,10 @@ def get_regen_progress(
     if job_status in ("success", "error"):
         percentage = 100
     else:
+        n_phases = max(len(job.get("phase_ids", [])), 1)
+        est_total = n_phases * _EST_SECONDS_PER_PHASE
         elapsed = max(0.0, time.time() - float(job["started_at"]))
-        percentage = min(99, int((elapsed / REGEN_DURATION_SECONDS) * 100))
+        percentage = min(99, int((elapsed / est_total) * 100))
 
     stage = _resolve_regen_stage(percentage if job_status == "running" else 100)
 

@@ -12,6 +12,7 @@ from agents.explore_prompts import (
     prompt_html,
     prompt_texto,
 )
+from agents.html_validator import validate_and_repair
 from agents.llm_router import generar_texto
 from agents.utils import parse_json, strip_markdown
 from auth.dependencies import get_current_user
@@ -50,8 +51,18 @@ def _generate_two_step(n: int, concept: str, contexto: str) -> tuple[dict | list
     try:
         json_data = parse_json(raw)
     except Exception:
-        logger.warning("JSON parse failed for EXPLORE resource %d, using raw text", n)
-        json_data = {"contenido": raw}
+        logger.warning("JSON parse failed for EXPLORE %d, retrying with strict prompt", n)
+        logger.debug("Raw LLM output: %s", raw[:500])
+        retry = generar_texto(
+            prompt_texto(n, concept, contexto) + "\n\nIMPORTANTE: Responde SOLO con "
+            "el JSON puro, sin texto adicional, sin markdown, sin explicaciones.",
+            tarea, max_tokens=3000,
+        )
+        try:
+            json_data = parse_json(retry)
+        except Exception:
+            logger.warning("JSON retry also failed for EXPLORE %d, using raw text", n)
+            json_data = {"contenido": retry}
     json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
     html = strip_markdown(
         generar_texto(prompt_html(n, concept, json_str, contexto), "codigo", max_tokens=12000)
@@ -89,9 +100,11 @@ def generate_explore_resource(
             html = strip_markdown(
                 generar_texto(prompt_codigo(n, concept, contexto), "codigo", max_tokens=12000)
             )
+            html, _ = validate_and_repair(html, "explore", n)
             return {**meta, "resource_type": n, "concepto": concept, "raw_json": None, "html_content": html}
 
         json_data, html = _generate_two_step(n, concept, contexto)
+        html, _ = validate_and_repair(html, "explore", n)
         return {**meta, "resource_type": n, "concepto": concept, "raw_json": json_data, "html_content": html}
 
     except HTTPException:

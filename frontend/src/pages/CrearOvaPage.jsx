@@ -9,7 +9,7 @@ export function CrearOvaPage() {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
     engageSelection, exploreSelection, totalResources,
-    status, progress, result, partial, error,
+    status, progress, result, partial, error, stepStates,
     canConfigure, canGenerate,
     generate, reset, handleExportScorm, isExporting,
     uploads, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
@@ -18,7 +18,7 @@ export function CrearOvaPage() {
   } = useOvaCreation()
 
   const isGenerating = status === 'generating'
-  const isDone = status === 'done'
+  const isDone = status === 'done' || status === 'partial'
 
   const uploadsProps = {
     uploads,
@@ -63,6 +63,7 @@ export function CrearOvaPage() {
           engageSelection={engageSelection}
           exploreSelection={exploreSelection}
           partial={partial}
+          stepStates={stepStates}
         />
       )}
 

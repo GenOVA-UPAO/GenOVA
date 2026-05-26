@@ -87,6 +87,8 @@ class OvaPhase(Base):
     phase_order = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
     regenerated = Column(Boolean, nullable=False, default=False)
+    resource_type_id = Column(Integer, nullable=True)  # 1-10 resource type per phase
+    title = Column(String(120), nullable=True)  # human-readable label for SCORM nav
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     version = relationship("OvaVersion", back_populates="phases")

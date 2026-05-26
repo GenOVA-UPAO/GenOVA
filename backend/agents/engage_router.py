@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from agents.engage_prompts import RECURSOS_META, prompt_html, prompt_simulador, prompt_texto
+from agents.html_validator import validate_and_repair
 from agents.images import fetch_images_parallel
 from agents.llm_router import generar_texto
 from agents.podcast import build_podcast_html, podcast_audio_b64
@@ -110,6 +111,7 @@ def generate_engage_resource(
             html = strip_markdown(
                 generar_texto(prompt_simulador(concept, contexto), "codigo", max_tokens=12000)
             )
+            html, _ = validate_and_repair(html, "engage", n)
             return {**meta, "resource_type": n, "concepto": concept, "raw_json": None, "html_content": html}
 
         # Resource 3 (podcast): monologue text → Groq TTS audio → player HTML
@@ -127,8 +129,19 @@ def generate_engage_resource(
         try:
             json_data = parse_json(raw_text)
         except Exception:
-            logger.warning("JSON parse failed for resource %d, using raw text", n)
-            json_data = {"contenido": raw_text}
+            logger.warning("JSON parse failed for ENGAGE %d, retrying with strict prompt", n)
+            logger.debug("Raw LLM output: %s", raw_text[:500])
+            # Retry once with a strict JSON-only suffix
+            retry_text = generar_texto(
+                prompt_texto(n, concept, contexto) + "\n\nIMPORTANTE: Responde SOLO con "
+                "el JSON puro, sin texto adicional, sin markdown, sin explicaciones.",
+                tarea, max_tokens=3000,
+            )
+            try:
+                json_data = parse_json(retry_text)
+            except Exception:
+                logger.warning("JSON retry also failed for ENGAGE %d, using raw text", n)
+                json_data = {"contenido": retry_text}
 
         # If the JSON has prompt_imagen items, pre-fetch the images and inject
         # placeholders the HTML step will reference.
@@ -143,6 +156,8 @@ def generate_engage_resource(
             html = html.replace(placeholder, uri)
         # Sweep any placeholders the LLM hallucinated beyond the ones we gave it.
         html = re.sub(r"__IMG_\d+__", _IMG_PLACEHOLDER, html)
+
+        html, _ = validate_and_repair(html, "engage", n)
 
         return {**meta, "resource_type": n, "concepto": concept, "raw_json": json_data, "html_content": html}
 

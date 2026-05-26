@@ -1,25 +1,31 @@
 """Pollinations.ai image generation.
 
 Free, no-key image API. Each request renders the prompt server-side and returns
-a JPEG. We fetch in parallel and base64-encode so the resulting HTML stays
-self-contained (SCORM packages must not depend on external URLs).
+a JPEG. We fetch with limited concurrency and base64-encode so the resulting
+HTML stays self-contained (SCORM packages must not depend on external URLs).
 """
 import base64
+import hashlib
 import logging
 import os
 import urllib.parse
 import urllib.request
-from concurrent.futures import ThreadPoolExecutor  # noqa: F401 (kept for future tier-aware use)
+from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
 _BASE = "https://image.pollinations.ai/prompt/"
-_TIMEOUT_S = 25
+_TIMEOUT_S = 15  # Lowered from 25s — placeholder is better than long waits.
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; GenOVA/1.0; +https://genova.ai)",
     "Referer": "https://genova.ai",
     "Accept": "image/*",
 }
+
+# Simple in-memory cache: prompt hash → data_uri. Avoids re-fetching the same
+# images during regeneration or retry flows.
+_cache: dict[str, str] = {}
+_MAX_CACHE = 100
 
 
 def _build_headers() -> dict[str, str]:
@@ -29,6 +35,10 @@ def _build_headers() -> dict[str, str]:
     if token:
         h["Authorization"] = f"Bearer {token}"
     return h
+
+
+def _cache_key(prompt: str, w: int, h: int) -> str:
+    return hashlib.md5(f"{prompt}:{w}:{h}".encode()).hexdigest()
 
 
 def fetch_image_data_uri(
@@ -47,6 +57,10 @@ def fetch_image_data_uri(
     if not clean:
         return None
 
+    key = _cache_key(clean, width, height)
+    if key in _cache:
+        return _cache[key]
+
     params = {"width": width, "height": height, "nologo": "true"}
     if model:
         params["model"] = model
@@ -56,7 +70,12 @@ def fetch_image_data_uri(
     try:
         with urllib.request.urlopen(req, timeout=_TIMEOUT_S) as resp:
             data = resp.read()
-        return "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
+        uri = "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
+        # Store in cache (evict oldest if full)
+        if len(_cache) >= _MAX_CACHE:
+            _cache.pop(next(iter(_cache)))
+        _cache[key] = uri
+        return uri
     except Exception as exc:
         logger.warning("Pollinations fetch failed for prompt %r: %s", clean[:60], exc)
         return None
@@ -68,15 +87,15 @@ def fetch_images_parallel(
     height: int = 512,
     model: str | None = None,
 ) -> list[str | None]:
-    """Fetch a batch of prompts. Pollinations throttles concurrent anonymous
-    requests, so we limit parallelism to 2. Returns one data URI per prompt
-    (None for the ones that failed)."""
+    """Fetch a batch of prompts with limited concurrency (2 workers).
+
+    Returns one data URI per prompt (None for the ones that failed).
+    """
     if not prompts:
         return []
 
     def _one(p: str) -> str | None:
         return fetch_image_data_uri(p, width=width, height=height, model=model)
 
-    # Pollinations anonymous tier returns 402 on concurrent requests, so we
-    # fetch serially. 5 images ≈ 20–30 s.
-    return [_one(p) for p in prompts]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        return list(pool.map(_one, prompts))

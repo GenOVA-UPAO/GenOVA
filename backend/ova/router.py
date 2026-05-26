@@ -37,6 +37,8 @@ class PhaseInput(BaseModel):
     # phases share the same `type` (e.g. 3 ENGAGE resources) the default
     # `phase_label` collides, so the caller passes a per-resource label.
     title: str | None = None
+    # Numeric resource type (1-10) within the phase, used for regeneration.
+    resource_type_id: int | None = None
 
 
 class SaveOvaRequest(BaseModel):
@@ -91,6 +93,8 @@ def save_ova(
             phase_order=p.order,
             content=p.content,
             regenerated=False,
+            resource_type_id=p.resource_type_id,
+            title=p.title,
         ))
         phases_data.append({
             "type": p.type,

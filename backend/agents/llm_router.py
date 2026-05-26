@@ -30,8 +30,7 @@ openrouter_client = OpenAI(
 _MODELOS: dict[str, tuple] = {
     "texto":        ("groq",       "llama-3.3-70b-versatile",       {}),
     # DeepSeek V4 Flash: 284B MoE / 13B active, 1M context, LiveCodeBench
-    # 91.6 / SWE-bench 79 — much better at following nested HTML rules than
-    # qwen3-coder. Same free tier (OpenRouter 50/day, 1000/day with $10 prepaid).
+    # 91.6 / SWE-bench 79. Free tier first (50 req/day, 1000 with $10 prepaid).
     "codigo":       ("openrouter", "deepseek/deepseek-v4-flash:free", {}),
     "orquestador":  ("groq",       "openai/gpt-oss-120b",           {"reasoning_effort": "medium"}),
     "razonamiento": ("groq",       "qwen/qwen3-32b",                {"reasoning_effort": "default"}),
@@ -50,8 +49,10 @@ _FALLBACK_OR_MODEL   = "meta-llama/llama-3.3-70b-instruct:free"
 # safety-net Groq model that almost always responds within free tier.
 _FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
+        # Paid DeepSeek is first fallback — very cheap ($0.20/M input,
+        # $0.80/M output) but reliable and handles long HTML well.
+        ("openrouter", "deepseek/deepseek-v4-flash", {}),
         ("openrouter", "qwen/qwen3-coder:free", {}),
-        ("openrouter", "z-ai/glm-4.5-air:free", {}),
         ("openrouter", _FALLBACK_OR_MODEL, {}),
         ("groq", "llama-3.3-70b-versatile", {}),
     ],
@@ -73,9 +74,10 @@ _FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
 def _chat(provider: str, model_id: str, prompt: str, max_tokens: int, extra: dict) -> str:
     msgs = [{"role": "user", "content": prompt}]
     if provider == "groq":
-        # Groq free tier hard-caps TPM at 6000 — keep the request well under it.
+        # Groq models support up to 8192 output tokens. Previous cap at 3500
+        # truncated HTML resources mid-script, breaking interactivity.
         r = groq_client.chat.completions.create(
-            model=model_id, messages=msgs, max_completion_tokens=min(max_tokens, 3500), **extra
+            model=model_id, messages=msgs, max_completion_tokens=min(max_tokens, 8192), **extra
         )
     else:
         r = openrouter_client.chat.completions.create(
