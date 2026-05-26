@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User, UserRole, Role
+from models import Role, User, UserRole
 from security import JWT_ALGORITHM, JWT_SECRET
 
 security_scheme = HTTPBearer()
@@ -24,11 +24,11 @@ def get_current_user(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token de autenticación inválido o sin identificador de usuario.",
             )
-    except jwt.PyJWTError:
+    except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token de autenticación inválido o expirado.",
-        )
+        ) from exc
 
     user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
     if not user:

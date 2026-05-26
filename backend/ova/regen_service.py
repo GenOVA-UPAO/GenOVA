@@ -13,7 +13,6 @@ from sqlalchemy.orm import Session
 
 from database import SessionLocal
 from models import Ova, OvaPhase, OvaVersion
-
 from ova.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,

@@ -12,9 +12,9 @@ from agents.llm_router import generar_texto
 from agents.utils import parse_json
 from auth.dependencies import require_admin
 from database import get_db
+from labs.service import build_improve_prompt, get_job_results, start_lab_job
 from models import LabResult, User
 from scorm.service import build_scorm_zip_bytes
-from labs.service import build_improve_prompt, get_job_results, start_lab_job
 
 router = APIRouter()
 

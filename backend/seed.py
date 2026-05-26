@@ -1,7 +1,8 @@
+from sqlalchemy import select
+
 from database import SessionLocal
 from models import Role, User, UserRole
 from security import hash_password
-from sqlalchemy import select
 
 
 def seed_db():

@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -23,13 +22,13 @@ def _commit_or_500(db: Session, op: str) -> None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo completar la operación. Intenta de nuevo.",
-        )
+        ) from None
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_role(
     id: str,
-    reassign_to_id: Optional[str] = None,
+    reassign_to_id: str | None = None,
     current_user=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
@@ -39,7 +38,7 @@ def delete_role(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Rol no encontrado (ID inválido).",
-        )
+        ) from None
 
     # 1. Look up role
     role = db.execute(select(Role).where(Role.id == role_uuid)).scalar_one_or_none()
@@ -77,7 +76,7 @@ def delete_role(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="El ID de reasignación es inválido.",
-            )
+            ) from None
 
         if target_uuid == role_uuid:
             raise HTTPException(
@@ -121,7 +120,7 @@ def delete_role(
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="No se pudo reasignar a los usuarios. Intenta de nuevo.",
-            )
+            ) from None
 
     db.delete(role)
     _commit_or_500(db, "delete_role")

@@ -9,7 +9,7 @@ user's password by reading the API response.
 import logging
 import secrets
 import urllib.parse
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -41,7 +41,7 @@ def _issue_reset_token(db: Session, user_id) -> str:
     db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
     db.flush()
     token = secrets.token_urlsafe(32)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
+    expires_at = datetime.now(UTC) + timedelta(hours=24)
     db.add(PasswordResetToken(user_id=user_id, token=token, expires_at=expires_at))
     return token
 

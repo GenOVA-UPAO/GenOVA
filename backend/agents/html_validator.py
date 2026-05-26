@@ -5,7 +5,6 @@ to repair common failures (truncation, missing SCORM callbacks) before
 the response reaches the client.
 """
 import logging
-import re
 
 from agents.utils import SCORM_JS
 

@@ -9,7 +9,6 @@ Uso:
     # Cambiar BASE si el backend corre en otro puerto:
     BASE=http://localhost:8000 python tests/test_agents_io.py
 """
-import json
 import os
 import sys
 import time

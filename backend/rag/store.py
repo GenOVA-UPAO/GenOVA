@@ -7,8 +7,8 @@ Python lists to the `[v1,v2,...]` syntax pgvector accepts.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Sequence
+from collections.abc import Sequence
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import bindparam, text
@@ -41,10 +41,10 @@ def insert_chunks(
     if not chunks:
         return 0
 
-    expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
+    expires_at = datetime.now(UTC) + timedelta(seconds=ttl_seconds)
 
     rows = []
-    for i, (chunk, emb) in enumerate(zip(chunks, embeddings)):
+    for i, (chunk, emb) in enumerate(zip(chunks, embeddings, strict=True)):
         rows.append(
             {
                 "user_id": str(user_id),

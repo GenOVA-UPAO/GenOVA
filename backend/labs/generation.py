@@ -3,7 +3,6 @@ import json
 import threading
 import time
 import uuid
-from typing import Optional
 
 from agents.llm_router import generar_texto, generar_texto_with_model
 from agents.podcast import build_podcast_html, podcast_audio_b64
@@ -23,7 +22,7 @@ _lab_jobs_lock = threading.Lock()
 def _generate_one(
     phase: str, resource_type: int, concept: str,
     prompt_text: str, model_id: str, provider: str,
-) -> tuple[Optional[str], Optional[dict], Optional[str]]:
+) -> tuple[str | None, dict | None, str | None]:
     """Run one resource generation. Returns (html, raw_json, error)."""
     effective = prompt_text.replace(CONCEPT_PH, concept)
     try:
@@ -61,7 +60,7 @@ def _worker(
     job_id: str, slot: int,
     phase: str, resource_type: int, concept: str,
     prompt_text: str, model_id: str, provider: str,
-    user_id: Optional[str],
+    user_id: str | None,
 ) -> None:
     db = SessionLocal()
     start = time.time()
@@ -99,7 +98,7 @@ def _worker(
 
 def start_lab_job(
     phase: str, resource_type: int, concept: str,
-    model_configs: list[dict], user_id: Optional[str],
+    model_configs: list[dict], user_id: str | None,
 ) -> str:
     """Spawn one worker thread per model_config; return job_id."""
     job_id = str(uuid.uuid4())
@@ -115,7 +114,7 @@ def start_lab_job(
     return job_id
 
 
-def get_job_results(job_id: str) -> Optional[dict]:
+def get_job_results(job_id: str) -> dict | None:
     with _lab_jobs_lock:
         job = _lab_jobs.get(job_id)
         if job is None:

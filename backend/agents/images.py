@@ -38,7 +38,7 @@ def _build_headers() -> dict[str, str]:
 
 
 def _cache_key(prompt: str, w: int, h: int) -> str:
-    return hashlib.md5(f"{prompt}:{w}:{h}".encode()).hexdigest()
+    return hashlib.sha256(f"{prompt}:{w}:{h}".encode()).hexdigest()
 
 
 def fetch_image_data_uri(
@@ -66,9 +66,9 @@ def fetch_image_data_uri(
         params["model"] = model
     qs = urllib.parse.urlencode(params)
     url = f"{_BASE}{urllib.parse.quote(clean)}?{qs}"
-    req = urllib.request.Request(url, headers=_build_headers())
+    req = urllib.request.Request(url, headers=_build_headers())  # noqa: S310
     try:
-        with urllib.request.urlopen(req, timeout=_TIMEOUT_S) as resp:
+        with urllib.request.urlopen(req, timeout=_TIMEOUT_S) as resp:  # noqa: S310
             data = resp.read()
         uri = "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
         # Store in cache (evict oldest if full)

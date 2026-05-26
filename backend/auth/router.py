@@ -1,6 +1,6 @@
 """Auth router — login, register, /me. Mounts the reset-password sub-router."""
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import jwt
@@ -42,7 +42,7 @@ class RegisterRequest(BaseModel):
 
 
 def build_token(user_id: str, email: str) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "sub": user_id,
         "email": email,
@@ -57,7 +57,7 @@ def build_token(user_id: str, email: str) -> str:
 def _is_locked(user: User) -> bool:
     if not user.locked_until:
         return False
-    return user.locked_until > datetime.now(timezone.utc)  # type: ignore[operator]
+    return user.locked_until > datetime.now(UTC)  # type: ignore[operator]
 
 
 def _invalid_credentials() -> JSONResponse:
@@ -79,7 +79,7 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
 
     if _is_locked(user):
         remaining = int(
-            (user.locked_until - datetime.now(timezone.utc)).total_seconds() // 60  # type: ignore[operator]
+            (user.locked_until - datetime.now(UTC)).total_seconds() // 60  # type: ignore[operator]
         )
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -93,7 +93,7 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
     if not verify_password(payload.password, str(user.password_hash)):
         user.failed_login_attempts += 1  # type: ignore[operator]
         if user.failed_login_attempts >= 5:  # type: ignore[operator]
-            user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)  # type: ignore[assignment]
+            user.locked_until = datetime.now(UTC) + timedelta(minutes=15)  # type: ignore[assignment]
             user.failed_login_attempts = 0  # type: ignore[assignment]
         db.commit()
         return _invalid_credentials()

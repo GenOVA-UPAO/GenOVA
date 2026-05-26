@@ -57,7 +57,7 @@ def _enrich_with_images(json_data) -> dict[str, str]:
     uris = fetch_images_parallel(prompts)
 
     replacements: dict[str, str] = {}
-    for i, (item, uri) in enumerate(zip(targets, uris), start=1):
+    for i, (item, uri) in enumerate(zip(targets, uris, strict=True), start=1):
         placeholder = f"__IMG_{i}__"
         item["image_placeholder"] = placeholder
         replacements[placeholder] = uri or _IMG_PLACEHOLDER
@@ -165,4 +165,6 @@ def generate_engage_resource(
         raise
     except Exception:
         logger.exception("Error generating ENGAGE resource %d", n)
-        raise HTTPException(status_code=500, detail="Error al generar el recurso. Intenta de nuevo.")
+        raise HTTPException(
+            status_code=500, detail="Error al generar el recurso. Intenta de nuevo."
+        ) from None

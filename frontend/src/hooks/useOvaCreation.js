@@ -134,6 +134,7 @@ export function useOvaCreation() {
         collected[phase].push(data)
         states[i] = 'done'
       } catch (err) {
+        console.error('Error generating resource:', err)
         states[i] = 'failed'
         failCount += 1
         collected[phase].push(null)

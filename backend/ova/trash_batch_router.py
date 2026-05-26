@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
@@ -33,7 +33,7 @@ def batch_move_to_trash(
             skipped.append(ova_id)
             continue
 
-        ova.deleted_at = datetime.now(timezone.utc)
+        ova.deleted_at = datetime.now(UTC)
         moved.append(ova_id)
 
     db.commit()

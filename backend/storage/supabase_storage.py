@@ -13,7 +13,6 @@ from __future__ import annotations
 import logging
 import os
 import threading
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -48,13 +47,13 @@ def is_configured() -> bool:
     client that will raise `Invalid URL` at runtime."""
     url = _clean_url()
     key = _clean_key()
-    if not url or not key:
-        return False
-    if not url.startswith(("http://", "https://")):
-        return False
-    if "<" in url or ">" in url:  # unfilled placeholder
-        return False
-    return True
+    return bool(
+        url
+        and key
+        and url.startswith(("http://", "https://"))
+        and "<" not in url
+        and ">" not in url
+    )
 
 
 def _get_client():
@@ -111,7 +110,7 @@ def signed_url(object_key: str, ttl_seconds: int = DEFAULT_SIGNED_URL_TTL) -> st
         raise StorageError(f"Signed URL generation failed: {exc}") from exc
 
     # supabase-py returns {"signedURL": "..."} (some versions {"signedUrl": "..."}).
-    url: Optional[str] = (
+    url: str | None = (
         result.get("signedURL")
         or result.get("signedUrl")
         or result.get("signed_url")

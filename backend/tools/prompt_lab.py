@@ -125,7 +125,7 @@ def slug(text: str) -> str:
 def show_dry_run(phase: str, rtype: int, concept: str) -> None:
     try:
         if phase == "engage":
-            from agents.engage_prompts import prompt_texto, prompt_html, prompt_simulador
+            from agents.engage_prompts import prompt_html, prompt_simulador, prompt_texto
             if rtype == 10:
                 print("\n── prompt_simulador ──────────────────────────────────")
                 print(prompt_simulador(concept))
@@ -135,7 +135,7 @@ def show_dry_run(phase: str, rtype: int, concept: str) -> None:
                 print("\n── prompt_html (paso 2) ──────────────────────────────")
                 print(prompt_html(rtype, concept, '{"placeholder": "...JSON del paso 1..."}'))
         else:
-            from agents.explore_prompts import prompt_texto, prompt_html, prompt_codigo, CODE_ONLY
+            from agents.explore_prompts import CODE_ONLY, prompt_codigo, prompt_html, prompt_texto
             if rtype in CODE_ONLY:
                 print("\n── prompt_codigo ─────────────────────────────────────")
                 print(prompt_codigo(rtype, concept))
@@ -211,7 +211,7 @@ def run_lab(phase: str, rtype: int, concept: str, n: int, open_browser: bool) ->
         # Tabla resumen
         print(f"\n{'─'*62}")
         print("  Resumen de iteraciones:")
-        for i, (f, chk) in enumerate(zip(html_files, checks), 1):
+        for i, (f, chk) in enumerate(zip(html_files, checks, strict=True), 1):
             path_info = f"→ {f.name}" if f else "→ FALLÓ"
             print(f"  Iter {i}: {fmt_check(chk)}  {path_info}")
         print("─"*62)

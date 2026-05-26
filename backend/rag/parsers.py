@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Callable
+from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,8 @@ def _parse_pdf(path: str) -> str:
     for page in reader.pages:
         try:
             text_parts.append(page.extract_text() or "")
-        except Exception:
+        except Exception as exc:
+            logger.debug("Failed to extract text from PDF page: %s", exc)
             continue
     return "\n".join(p for p in text_parts if p.strip())
 
@@ -87,6 +88,7 @@ def _parse_audio(path: str) -> str:
 
 def _parse_image(path: str) -> str:
     import base64
+
     from agents.llm_router import generar_vision
 
     with open(path, "rb") as f:

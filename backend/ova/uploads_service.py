@@ -2,7 +2,6 @@
 import time
 import uuid
 from pathlib import Path
-from typing import Optional
 
 from ova.uploads_state import (
     lock,
@@ -79,7 +78,7 @@ def create_temp_upload(user_id: str, filename: str, content_type: str, content: 
     return serialize_upload(payload)
 
 
-def get_upload_storage_path(upload_id: str, user_id: str) -> Optional[str]:
+def get_upload_storage_path(upload_id: str, user_id: str) -> str | None:
     """Path of an upload owned by `user_id`, or None if pruned / not owned."""
     with lock():
         prune_expired_locked()
@@ -122,7 +121,7 @@ def delete_user_upload(upload_id: str, user_id: str) -> bool:
     return True
 
 
-def claim_user_uploads(user_id: str, upload_ids: list[str]) -> tuple[list[dict], Optional[str]]:
+def claim_user_uploads(user_id: str, upload_ids: list[str]) -> tuple[list[dict], str | None]:
     normalized = [u.strip() for u in upload_ids if (u or "").strip()]
     if len(set(normalized)) != len(normalized):
         return [], "duplicate_upload_ids"

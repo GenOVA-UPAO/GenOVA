@@ -66,7 +66,7 @@ def commit_or_500(db: Session, *, op: str) -> None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo completar la operación. Intenta de nuevo.",
-        )
+        ) from None
 
 
 def normalize_gender(raw: str | None) -> str | None:

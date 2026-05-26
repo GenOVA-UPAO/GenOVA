@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm import Session

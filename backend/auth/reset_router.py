@@ -4,7 +4,7 @@ Lookup is by exact token match. Tokens are issued elsewhere
 (`users/admin_account_router.py`) using `secrets.token_urlsafe(32)`, so brute
 force is infeasible — we still rate-limit by IP to throttle scripted attempts.
 """
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
@@ -52,8 +52,8 @@ def reset_password(request: Request, payload: ResetPasswordSubmit, db: Session =
 
     expires_at = reset_token.expires_at
     if expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
-    if expires_at < datetime.now(timezone.utc):
+        expires_at = expires_at.replace(tzinfo=UTC)
+    if expires_at < datetime.now(UTC):
         db.delete(reset_token)
         db.commit()
         return _err("expired_token", "El token de restablecimiento ha expirado.")

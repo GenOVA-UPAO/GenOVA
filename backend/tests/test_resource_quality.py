@@ -33,7 +33,7 @@ except ImportError:
 
 # Importar spec desde backend/tests/specs/
 sys.path.insert(0, os.path.dirname(__file__))
-from specs.resource_quality_spec import QUALITY_BY_PHASE, FORBIDDEN_CDN, SCORM_REQUIRED
+from specs.resource_quality_spec import FORBIDDEN_CDN, QUALITY_BY_PHASE, SCORM_REQUIRED
 
 BASE    = os.getenv("BASE",    "http://localhost:8000")
 EMAIL   = os.getenv("EMAIL",   "admin@genova.ai")

@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -25,13 +24,13 @@ def _commit_or_500(db: Session, op: str) -> None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo completar la operación. Intenta de nuevo.",
-        )
+        ) from None
 
 
 class RoleCreate(BaseModel):
     name: str = Field(..., max_length=64, min_length=1)
     description: str = Field(default="")
-    permissions: List[str] = Field(default_factory=list)
+    permissions: list[str] = Field(default_factory=list)
 
 
 @router.get("")
@@ -92,9 +91,9 @@ def create_role(
 
 
 class RoleUpdate(BaseModel):
-    name: Optional[str] = Field(None, max_length=64)
-    description: Optional[str] = Field(None)
-    permissions: Optional[List[str]] = Field(None)
+    name: str | None = Field(None, max_length=64)
+    description: str | None = Field(None)
+    permissions: list[str] | None = Field(None)
 
 
 @router.patch("/{id}")
@@ -110,7 +109,7 @@ def update_role(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Rol no encontrado (ID inválido).",
-        )
+        ) from None
 
     # 1. Look up role
     role = db.execute(select(Role).where(Role.id == role_uuid)).scalar_one_or_none()

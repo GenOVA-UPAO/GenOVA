@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
@@ -120,7 +120,7 @@ def delete_ova(
             },
         )
 
-    ova.deleted_at = datetime.now(timezone.utc)
+    ova.deleted_at = datetime.now(UTC)
     db.commit()
 
     return {"message": "OVA eliminado correctamente.", "id": str(ova.id)}

@@ -1,15 +1,11 @@
-import math
+import contextlib
 import os
-from datetime import datetime, timezone
-from typing import Optional
 
-from fastapi import status
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import Ova, OvaPhase, OvaVersion, Role, User, UserRole
+from models import Ova, Role, User, UserRole
 
 VALID_STATUSES = {"borrador", "generando", "listo", "error"}
 
@@ -41,12 +37,10 @@ def _ova_to_dict(ova: Ova, include_owner: bool = False) -> dict:
     return data
 
 
-def _delete_scorm_file(file_path: Optional[str]) -> None:
+def _delete_scorm_file(file_path: str | None) -> None:
     if file_path:
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.remove(file_path)
-        except FileNotFoundError:
-            pass
 
 
 class BatchIdsRequest(BaseModel):
@@ -55,4 +49,4 @@ class BatchIdsRequest(BaseModel):
 
 class UpdateOvaMetadataRequest(BaseModel):
     title: str
-    description: Optional[str] = None
+    description: str | None = None

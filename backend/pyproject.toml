@@ -73,6 +73,8 @@ ignore = [
 "tests/**" = ["S", "E"]
 "tools/**" = ["S"]
 "seed.py" = ["S105", "S106"]
+"main.py" = ["E402"]
+"ova/history_router.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"

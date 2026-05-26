@@ -3,8 +3,8 @@ import logging
 import os
 import time
 
-from groq import Groq
 from groq import APIStatusError as GroqAPIStatusError
+from groq import Groq
 from groq import RateLimitError as GroqRateLimitError
 from openai import APIStatusError as OpenAIAPIStatusError
 from openai import OpenAI
