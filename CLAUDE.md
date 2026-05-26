@@ -66,9 +66,10 @@ pnpm prod:docker   # Prod (Nginx on port 80, /api/* → backend)
 pytest                                       # discovers tests/test_*.py
 python tests/test_agents_io.py               # manual smoke
 python tests/test_resource_quality.py        # HTML quality gate
+python tests/test_rag_uploads.py             # upload → RAG ingestion → listing → delete flow
 ```
 
-Both manual tests authenticate against the live API. Override defaults via env: `BASE`, `EMAIL`, `PASS`, `PHASE`, `TYPE`, `CONCEPT`.
+All manual tests authenticate against the live API. Override defaults via env: `BASE`, `EMAIL`, `PASS`. Agent tests also accept: `PHASE`, `TYPE`, `CONCEPT`.
 
 ### DB seed
 
@@ -113,12 +114,15 @@ Some routers are mounted at two prefixes for legacy compatibility:
 
 **Models** (`backend/models.py`): `User`, `Ova`, `OvaVersion`, `OvaPhase`, `Session`, `Role`, `UserRole`, `LabResult`, `RagChunk`, `PasswordResetToken` — all UUIDs, PostgreSQL dialect (JSONB for role permissions). Soft-delete on `Ova` via `deleted_at`; queries must filter `deleted_at IS NULL` for active records. `User` carries extended profile fields (`university_id`, `gender`, `phone_number`) on top of auth state.
 
+**`backend/security.py`** (root-level, not inside `auth/`): bcrypt + JWT helpers. **Hard-fails on import** if `JWT_SECRET` is missing, in `{"", "change-me", "changeme", "secret", "test"}`, or shorter than 16 chars. JWTs include `iat`, `exp`, `iss="genova"`, `jti=uuid4()` — ready for token revocation via a blocklist table when needed. Exports `hash_password`, `verify_password`, `verify_dummy` (equalizes timing for anti-enumeration). `PASSWORD_MAX_LENGTH = 128` enforced before bcrypt to prevent DoS via oversized inputs.
+
+**`backend/database.py`**: SQLAlchemy engine setup. Provides `engine`, `SessionLocal`, `Base`, and FastAPI's `get_db()` dependency. Non-SQLite path uses `pool_pre_ping=True`, `pool_recycle=300`, `pool_size=5`, `max_overflow=5`, plus TCP keepalives (`keepalives_idle=30`, `keepalives_interval=10`, `keepalives_count=3`) to survive Supabase/pgbouncer aggressive idle-connection kills.
+
 **Auth** (`backend/auth/`):
 - `dependencies.py`: `get_current_user` (Bearer JWT), `require_admin` (role-name check) and `require_permission(perm)` (JSONB `permissions` contains check, falls back to admin bypass) FastAPI dependencies.
 - `router.py`: orchestrator for `POST /login`, `POST /register`, `GET /me`. `LoginRequest` / `RegisterRequest` use `EmailStr` + `Field(min_length=…, max_length=128)`. Login walks a dummy bcrypt hash for nonexistent users (anti-enumeration). Lockout: 5 failed attempts → 15 min via `failed_login_attempts` + `locked_until`. Mounts the reset sub-router.
 - `reset_router.py`: `POST /reset-password` — finalizes a reset using a `PasswordResetToken` row. Rate-limited (`10/minute` per IP). Token length validated server-side (`8..512`).
 - `email.py`: SMTP sender (`send_reset_email`). Configured via `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD`. **No hardcoded fallback credentials** — when `SMTP_USER` / `SMTP_PASSWORD` are missing, raises `EmailNotConfigured` and logs the failure instead of sending.
-- `security.py`: bcrypt + JWT. **Hard-fails on import** if `JWT_SECRET` is missing, in `{"", "change-me", "secret", "test"}`, or shorter than 16 chars. JWTs include `iat`, `exp`, `iss="genova"`, `jti=uuid4()` — ready for token revocation via a blocklist table when needed.
 
 **Rate limiting** (`backend/rate_limit.py`):
 - Single `Limiter` keyed by client IP (`get_remote_address`). Endpoints decorate with `@limiter.limit("N/minute")`. Auth endpoints: `/login` 10/min, `/register` 5/min. Routers that need the limiter import `from rate_limit import limiter` and must include `request: Request` as a parameter on the limited endpoint.
@@ -144,6 +148,8 @@ The `POST /api/ova/save` request body is `{prompt, phases: [...], upload_ids}`. 
 | `scorm/service.py` | — | `build_scorm_zip_bytes()` assembles manifest, HTML, JS, CSS |
 | `scorm/router.py` | `/api/scorm` | Only `GET /health` — actual download lives in `ova/router.py` |
 
+**OVA statuses** (defined in `ova/helpers.py`): `VALID_STATUSES = {"borrador", "generando", "listo", "error"}`. The frontend wizard also sets `partial` (OVA saved with only successful resources after some phases fail) — `partial` is not in the backend's `VALID_STATUSES`; filter accordingly when adding status logic.
+
 **Versioning invariant**: `OvaVersion` has a partial unique index — only one `is_active = TRUE` version per OVA. Edits always create a new version and deactivate the prior one.
 
 **SCORM persistence**: When `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are set (production), zips upload to the `scorm-packages` private bucket under key `{user_id}/{ova_id}_v{N}.zip`; `Ova.storage_key` stores the key. `GET /api/ova/{id}/scorm` returns a **302 redirect** to a 1-hour signed URL — Render free tier cannot proxy zip bytes concurrently. If storage is unconfigured (dev), the backend falls back to local disk at `OVA_OUTPUT_DIR` (default `backend/scorm_output/`) and `Ova.file_path` is populated. Legacy OVAs with only `file_path` keep working. The legacy edit path (`PATCH /api/ovas/{id}/fases/{fase_id}`) currently writes only to local disk — Supabase upload is wired on `POST /save` and the regen flow.
@@ -162,9 +168,11 @@ The `POST /api/ova/save` request body is `{prompt, phases: [...], upload_ids}`. 
 - Quality specs for HTML output live in `backend/tests/specs/resource_quality_spec.py`.
 
 **Labs** (`backend/labs/`) — Admin prompt-iteration sandbox; full spec in `docs/LABS.md`:
-- Lets admins edit prompts, run them against 1–3 models in parallel, compare results, mark winners, export winners as SCORM, and ask the LLM to suggest an improved prompt based on the winner.
-- Labs is a **pure sandbox**: there is no DB override of production prompts. The hardcoded Python prompts in `engage_prompts.py` / `explore_prompts.py` are always the source of truth at generation time.
-- DB tables: `lab_results` (one row per model run). The legacy `prompt_versions` table was added in migration 008 and dropped in migration 009.
+- Lets admins edit prompts, run them against 1–2 models in parallel, compare results, mark winners, export winners as SCORM, and ask the LLM to suggest an improved prompt based on the winner.
+- Labs is a **pure sandbox**: there is no DB override of production prompts. The hardcoded Python prompts in `engage_prompts.py` / `explore_prompts.py` are always the source of truth at generation time. (`prompt_versions` table was added in migration 008 and dropped in migration 009 with an explicit comment confirming sandbox-only intent.)
+- DB tables: `lab_results` (one row per model run).
+- Internal layout: `catalog.py` (9 curated models: 5 Groq + 4 OpenRouter, + `quality_check_html()`), `prompt_utils.py` (`get_base_prompt`, `build_improve_prompt`), `generation.py` (in-memory `_lab_jobs` store + thread workers), `service.py` (compatibility shim re-exporting public API), `router.py` + `generation_routes.py` (HTTP layer).
+- Generation jobs are in-memory only — restarting the backend clears in-flight jobs.
 - Routers: `labs/router.py` (`GET /api/labs/models`, `GET /api/labs/prompts/{phase}/{type}`) + `labs/generation_routes.py` (`POST /generate`, `GET /generate/{job_id}/results`, `POST /improve-prompt`, `GET /results/{id}/scorm`, `GET /results`, `PATCH /results/{id}/select`).
 
 **RAG pipeline** (`backend/rag/`) — fed by uploads, retrieved by ENGAGE/EXPLORE:
@@ -233,7 +241,7 @@ Uses **react-router v7** (`react-router` package, not `react-router-dom`). `Brow
 **Notifications**: `sonner` `<Toaster>` mounted in `App.jsx` at `position="top-right"` with `richColors` and `closeButton`.
 
 **Crear OVA UI** (`frontend/src/pages/CrearOvaPage.jsx` + `frontend/src/components/crear/`):
-- Wizard split into composable panels — `PromptPanel`, `SelectionChips`, `UploadsPanel`, `ProgressPanel`, `ResultsPanel`. Each file <200 lines (ESLint hard cap).
+- Wizard split into composable panels — `PromptPanel`, `SelectionChips`, `ProgressPanel`, `ResultsPanel` (all in `components/crear/`). File uploads rendered as `FileChip` chips (also in `crear/`). Upload formatting utilities (`formatSize`, `getUploadBadge`) live in `components/ovaUploadUi.js`. Each file <200 lines (ESLint hard cap).
 - `PhaseSelectModal` is multi-select with a per-phase cap exported as `MAX_PER_PHASE = 4`. Confirm returns `{engage: Resource[], explore: Resource[]}`. Each card shows its selection order (1..N) instead of a plain checkmark; disabled state when the cap is reached.
 - Mobile-first: modal switches between bottom-sheet (mobile) and centered dialog (sm+); generate button stretches full-width on mobile.
 - `ResultsPanel` renders one tab per generated resource (color-coded ENGAGE/EXPLORE) and embeds each as an isolated `<iframe>` blob via the shared `HtmlPreview` component.
