@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * Renders HTML content with a toggle between iframe preview and raw code view.
  * Falls back to plain text when content is not HTML.
+ *
+ * The iframe stays mounted at all times (CSS hidden, not unmounted) so the
+ * blob URL is never revoked while the user is toggling views. React StrictMode
+ * double-invocation would revoke the URL on simulated unmount otherwise.
  */
 
 function looksLikeHtml(content) {
   if (!content) return false
-  const t = content.trimStart()
-  return t.startsWith('<')
+  return content.trimStart().startsWith('<')
 }
 
 function ViewToggle({ view, onSwitch, charCount }) {
@@ -47,18 +50,21 @@ function ViewToggle({ view, onSwitch, charCount }) {
 
 export function HtmlCodePreview({ htmlContent, defaultView = 'preview', height = '60vh' }) {
   const [view, setView] = useState(defaultView)
+  const blobUrlRef = useRef(null)
   const iframeRef = useRef(null)
 
-  const blobUrl = useMemo(() => {
-    if (!htmlContent) return null
-    return URL.createObjectURL(new Blob([htmlContent], { type: 'text/html' }))
-  }, [htmlContent])
-
+  // Manage blob URL imperatively so it is never revoked while the component
+  // is mounted, regardless of StrictMode double-effect invocations.
   useEffect(() => {
+    if (!htmlContent) return
+    const url = URL.createObjectURL(new Blob([htmlContent], { type: 'text/html' }))
+    blobUrlRef.current = url
+    if (iframeRef.current) iframeRef.current.src = url
     return () => {
-      if (blobUrl) URL.revokeObjectURL(blobUrl)
+      URL.revokeObjectURL(url)
+      blobUrlRef.current = null
     }
-  }, [blobUrl])
+  }, [htmlContent])
 
   if (!htmlContent) return null
 
@@ -71,29 +77,24 @@ export function HtmlCodePreview({ htmlContent, defaultView = 'preview', height =
       <ViewToggle view={view} onSwitch={setView} charCount={htmlContent.length} />
 
       <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        {view === 'preview' ? (
-          blobUrl && (
-            <iframe
-              ref={iframeRef}
-              src={blobUrl}
-              title="Vista previa del recurso"
-              className="w-full border-0 block"
-              style={{ height }}
-              sandbox="allow-scripts allow-same-origin"
-            />
-          )
-        ) : (
-          <>
-            <div className="flex items-center bg-slate-800 px-3 py-2">
-              <span className="text-[10px] font-mono font-medium uppercase tracking-wider text-slate-400">
-                HTML
-              </span>
-            </div>
-            <pre className="max-h-[420px] overflow-auto bg-slate-900 p-4 text-[11px] leading-relaxed text-slate-200">
-              <code>{htmlContent}</code>
-            </pre>
-          </>
-        )}
+        {/* iframe stays in DOM — CSS hides it. Unmounting would revoke the blob URL. */}
+        <iframe
+          ref={iframeRef}
+          title="Vista previa del recurso"
+          className={`w-full border-0 block${view === 'preview' ? '' : ' hidden'}`}
+          style={{ height }}
+          sandbox="allow-scripts allow-same-origin"
+        />
+        <div className={view === 'code' ? '' : 'hidden'}>
+          <div className="flex items-center bg-slate-800 px-3 py-2">
+            <span className="text-[10px] font-mono font-medium uppercase tracking-wider text-slate-400">
+              HTML
+            </span>
+          </div>
+          <pre className="max-h-[420px] overflow-auto bg-slate-900 p-4 text-[11px] leading-relaxed text-slate-200">
+            <code>{htmlContent}</code>
+          </pre>
+        </div>
       </div>
     </div>
   )
