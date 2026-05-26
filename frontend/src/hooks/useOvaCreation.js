@@ -40,7 +40,7 @@ function buildPhasesPayload(engageResults, exploreResults) {
   return [...engagePhases, ...explorePhases]
 }
 
-async function generateWithRetry(phase, resourceId, concept, uploadIds) {
+async function generateWithRetry(phase, resourceId, concept, uploadIds, onRetry) {
   let lastErr = null
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
     try {
@@ -48,6 +48,7 @@ async function generateWithRetry(phase, resourceId, concept, uploadIds) {
     } catch (err) {
       lastErr = err
       if (attempt < MAX_RETRIES) {
+        if (onRetry) onRetry(attempt + 1)
         const delay = RETRY_BASE_MS * 2 ** attempt
         await new Promise((r) => setTimeout(r, delay))
       }
@@ -122,7 +123,14 @@ export function useOvaCreation() {
       setProgress({ pct, label: `Generando ${PHASE_LABEL[phase]} · ${pick.tipo}…` })
 
       try {
-        const data = await generateWithRetry(phase, pick.id, concept, uploadIds)
+        const data = await generateWithRetry(phase, pick.id, concept, uploadIds, (attemptNum) => {
+          states[i] = 'retrying'
+          setStepStates([...states])
+          setProgress({
+            pct,
+            label: `Reintentando (${attemptNum}/${MAX_RETRIES}) ${PHASE_LABEL[phase]} · ${pick.tipo}…`,
+          })
+        })
         collected[phase].push(data)
         states[i] = 'done'
       } catch (err) {
