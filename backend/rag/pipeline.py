@@ -125,16 +125,23 @@ def _ingest_binary(
         logger.exception("RAG multimodal embed failed for %s", filename)
         return {"status": "failed", "reason": "embedder_error", "chunks": 0}
 
-    # We still store the chunk row so retrieval can surface this file with its
-    # filename as the only "content" anchor. The vector carries the semantic load.
-    placeholder_text = f"[Archivo multimodal: {filename} ({mime_type})]"
+    # Try to extract the actual text content/description so the generator LLM can read it.
+    # The vector carries the semantic load for similarity retrieval.
+    try:
+        chunk_content = extract_text(storage_path, filename=filename)
+        if not chunk_content.strip():
+            chunk_content = f"[Archivo multimodal: {filename} ({mime_type})]"
+    except Exception as exc:
+        logger.warning("RAG extract_text failed for multimodal file %s: %s", filename, exc)
+        chunk_content = f"[Archivo multimodal: {filename} ({mime_type})]"
+
     try:
         inserted = insert_chunks(
             db,
             user_id=user_id,
             upload_id=upload_id,
             source_filename=filename,
-            chunks=[placeholder_text],
+            chunks=[chunk_content],
             embeddings=[embedding],
         )
     except Exception:
