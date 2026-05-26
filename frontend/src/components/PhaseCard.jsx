@@ -66,7 +66,7 @@ export function PhaseCard({
         </div>
       ) : editing ? (
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <p className="text-xs text-slate-500 font-medium mb-1">Editor</p>
               <textarea

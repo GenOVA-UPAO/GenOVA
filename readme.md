@@ -91,7 +91,7 @@ SMTP_USER=tu-cuenta@gmail.com
 SMTP_PASSWORD=<app-password sin espacios>
 ```
 
-> ⚠️ El archivo trae credenciales de fallback hardcodeadas para el inbox de soporte del proyecto. **Sobrescríbelas vía `.env` en cualquier despliegue.**
+> ⚠️ Si `SMTP_USER` / `SMTP_PASSWORD` no están configuradas, el backend lanza `EmailNotConfigured` y registra el fallo — **no envía correos y no tiene credenciales hardcodeadas**.
 
 ## Ejecución
 
@@ -176,6 +176,7 @@ uv run pytest           # con uv
 # Tests manuales contra API en vivo:
 python tests/test_agents_io.py
 python tests/test_resource_quality.py
+python tests/test_rag_uploads.py
 ```
 
 Override env para los tests manuales: `BASE`, `EMAIL`, `PASS`, `PHASE`, `TYPE`, `CONCEPT`.
@@ -230,7 +231,7 @@ GenOVA/
 - **Administración (solo `administrador`)**:
   - `/admin/roles` — CRUD de roles y sus permisos (JSONB), con flujo de "eliminar y reasignar".
   - `/admin/users` — listado de usuarios y asignación de roles.
-  - `/admin/labs` — sandbox de prompts: edita, ejecuta contra 1–3 modelos en paralelo, compara, marca ganadores, exporta como SCORM, pide al LLM una versión mejorada del prompt.
+  - `/admin/labs` — sandbox de prompts: edita, ejecuta contra 1–2 modelos en paralelo, compara, marca ganadores, exporta como SCORM, pide al LLM una versión mejorada del prompt.
 
 ## Endurecimiento de seguridad
 

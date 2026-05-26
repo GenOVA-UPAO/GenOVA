@@ -51,7 +51,7 @@ export function LabsPage() {
       {/* Editor & Config Workspace */}
       {lab.selectedPhase ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             {/* Left Column: Configuración de prueba (1/3 width) */}
             <div className="lg:col-span-1 rounded-xl border border-slate-200 bg-white p-5 shadow-md space-y-4">
               <div className="border-b border-slate-100 pb-3">
