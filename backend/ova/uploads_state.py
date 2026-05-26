@@ -57,6 +57,7 @@ def serialize_upload(upload: dict) -> dict:
         "created_at": upload["created_at"],
         "expires_at": upload["expires_at"],
         "confirmed_at": upload.get("confirmed_at"),
+        "rag_status": upload.get("rag_status"),
     }
 
 

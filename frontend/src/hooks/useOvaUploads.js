@@ -20,6 +20,7 @@ function fromServerItem(serverItem) {
     sizeBytes: Number(serverItem.size_bytes || 0),
     status: 'success',
     message: 'Carga exitosa',
+    ragStatus: serverItem.rag_status,
   }
 }
 
@@ -101,6 +102,7 @@ export function useOvaUploads() {
                         sizeBytes: Number(saved.size_bytes || current.sizeBytes),
                         status: 'success',
                         message: 'Carga exitosa',
+                        ragStatus: saved.rag_status,
                       }
                     : current
                 )
