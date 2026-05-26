@@ -8,7 +8,7 @@ import base64
 import html
 import logging
 
-from agents.llm_router import generar_audio_tts
+from agents.audio_helpers import generar_audio_tts
 from agents.utils import SCORM_JS
 
 logger = logging.getLogger(__name__)

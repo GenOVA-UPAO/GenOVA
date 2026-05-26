@@ -192,7 +192,7 @@ GenOVA/
 │   ├── .python-version      # 3.11 (uv lo lee)
 │   ├── auth/                # Login, registro, JWT, reset-password + SMTP
 │   ├── ova/                 # Save, listado, edición, regeneración, papelera, duplicar
-│   ├── agents/              # 5E: ENGAGE + EXPLORE + LLM router + Pollinations + podcast
+│   ├── agents/              # 5E: ENGAGE + EXPLORE + LLM router + audio helpers + Pollinations + podcast
 │   ├── labs/                # Sandbox de iteración de prompts (admin)
 │   ├── rag/                 # Ingesta + retrieval pgvector (multimodal Gemini)
 │   ├── roles/               # CRUD de roles y permisos (JSONB)

@@ -82,7 +82,7 @@ def _parse_pptx(path: str) -> str:
 
 
 def _parse_audio(path: str) -> str:
-    from agents.llm_router import transcribir_audio
+    from agents.audio_helpers import transcribir_audio
     return transcribir_audio(path)
 
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import {
@@ -10,6 +10,7 @@ import {
 } from '../services/ovaHistoryService.js'
 import { useOvaMetadata } from './useOvaMetadata.js'
 import { useOvaSelection } from './useOvaSelection.js'
+import { useOvaFilters } from './useOvaFilters.js'
 
 export function useOvaList() {
   const navigate = useNavigate()
@@ -21,10 +22,6 @@ export function useOvaList() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
 
-  const [searchInput, setSearchInput] = useState('')
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-
   const [ovaToTrash, setOvaToTrash] = useState(null)
   const [showBulkModal, setShowBulkModal] = useState(false)
   const [movingId, setMovingId] = useState('')
@@ -32,7 +29,13 @@ export function useOvaList() {
   const [downloadingId, setDownloadingId] = useState('')
   const [duplicatingId, setDuplicatingId] = useState('')
 
-  const searchDebounceRef = useRef(null)
+  const {
+    searchInput,
+    search,
+    statusFilter,
+    handleSearchChange,
+    handleStatusChange,
+  } = useOvaFilters(() => setCurrentPage(1))
 
   const selection = useOvaSelection(ovas)
   const metadata = useOvaMetadata(setOvas)
@@ -62,21 +65,6 @@ export function useOvaList() {
     selection.clearSelection()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, statusFilter])
-
-  const handleSearchChange = (e) => {
-    const value = e.target.value
-    setSearchInput(value)
-    clearTimeout(searchDebounceRef.current)
-    searchDebounceRef.current = setTimeout(() => {
-      setSearch(value)
-      setCurrentPage(1)
-    }, 400)
-  }
-
-  const handleStatusChange = (e) => {
-    setStatusFilter(e.target.value)
-    setCurrentPage(1)
-  }
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
