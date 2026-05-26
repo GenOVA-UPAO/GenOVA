@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 DEFAULT_TOP_K = int(os.getenv("RAG_TOP_K", "5"))
 DEFAULT_MAX_CONTEXT_CHARS = int(os.getenv("RAG_MAX_CONTEXT_CHARS", "6000"))
 
+# Simple in-memory cache: (query_string, tuple_of_upload_ids) -> list[dict]
+_retrieval_cache: dict[tuple[str, tuple[str, ...]], list[dict]] = {}
+_MAX_RETRIEVAL_CACHE = 100
+
 
 def top_k(
     db: Session,
@@ -28,6 +32,12 @@ def top_k(
     callers should treat RAG as best-effort."""
     if not upload_ids or not query.strip():
         return []
+
+    cache_key = (query.strip(), tuple(sorted(upload_ids)))
+    if cache_key in _retrieval_cache:
+        logger.info("RAG retrieval cache hit for query=%r", query[:60])
+        return _retrieval_cache[cache_key]
+
     try:
         embedder = get_embedder()
         # Prefer embed_query (RETRIEVAL_QUERY task_type) if available; some
@@ -73,7 +83,12 @@ def top_k(
     except Exception:
         logger.exception("pgvector retrieval failed; returning empty.")
         return []
-    return [dict(r) for r in rows]
+
+    result = [dict(r) for r in rows]
+    if len(_retrieval_cache) >= _MAX_RETRIEVAL_CACHE:
+        _retrieval_cache.pop(next(iter(_retrieval_cache)))
+    _retrieval_cache[cache_key] = result
+    return result
 
 
 def build_contexto_usuario(

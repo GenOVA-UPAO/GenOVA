@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { HtmlPreview } from '../engage/HtmlPreview.jsx'
 
-const PHASE_LABEL = { engage: '🎯 ENGAGE', explore: '🔍 EXPLORE' }
-
 function buildTabs(engage, explore) {
-  return [
-    ...engage.map((r, i) => ({ key: `engage-${i}`, phase: 'engage', index: i, result: r })),
-    ...explore.map((r, i) => ({ key: `explore-${i}`, phase: 'explore', index: i, result: r })),
-  ]
+  const tabs = []
+  engage.forEach((r, i) => {
+    tabs.push({ key: `engage-${i}`, phase: 'engage', globalIndex: tabs.length + 1, result: r })
+  })
+  explore.forEach((r, i) => {
+    tabs.push({ key: `explore-${i}`, phase: 'explore', globalIndex: tabs.length + 1, result: r })
+  })
+  return tabs
 }
 
 function TabsBar({ tabs, active, onSelect }) {
@@ -26,7 +28,7 @@ function TabsBar({ tabs, active, onSelect }) {
             onClick={() => onSelect(t.key)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${tone}`}
           >
-            {PHASE_LABEL[t.phase]} #{t.index + 1} · {t.result.tipo}
+            Recurso {t.globalIndex} · {t.result.tipo}
           </button>
         )
       })}

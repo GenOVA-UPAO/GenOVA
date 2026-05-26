@@ -26,14 +26,13 @@ def resolve_resource_type(phase: object) -> int | None:
     if phase.resource_type_id:
         return phase.resource_type_id
 
-    # Fallback: parse from title like "ENGAGE · Cómic Interactivo"
+    # Fallback: parse from title like "ENGAGE · Cómic Interactivo" or "Cómic Interactivo"
     title = (phase.title or "").strip()
-    if " · " in title:
-        name = title.split(" · ", 1)[1].strip()
-        lookup = _ENGAGE_NAME_TO_ID if phase.phase_type == "engage" else _EXPLORE_NAME_TO_ID
-        rid = lookup.get(name)
-        if rid:
-            return rid
+    name = title.split(" · ", 1)[1].strip() if " · " in title else title
+    lookup = _ENGAGE_NAME_TO_ID if phase.phase_type == "engage" else _EXPLORE_NAME_TO_ID
+    rid = lookup.get(name)
+    if rid:
+        return rid
 
     logger.warning(
         "Cannot resolve resource_type for phase %s (type=%s, title=%r)",

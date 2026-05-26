@@ -26,7 +26,7 @@ function buildPhasesPayload(engageResults, exploreResults) {
     type: 'engage',
     order: i + 1,
     content: r.html_content ?? '',
-    title: `ENGAGE · ${r.tipo}`,
+    title: r.tipo,
     resource_type_id: r.resource_type,
   }))
   const exploreOffset = engageResults.length
@@ -34,7 +34,7 @@ function buildPhasesPayload(engageResults, exploreResults) {
     type: 'explore',
     order: exploreOffset + i + 1,
     content: r.html_content ?? '',
-    title: `EXPLORE · ${r.tipo}`,
+    title: r.tipo,
     resource_type_id: r.resource_type,
   }))
   return [...engagePhases, ...explorePhases]
@@ -110,6 +110,11 @@ export function useOvaCreation() {
     const collected = { engage: [], explore: [] }
     const states = steps.map(() => 'pending')
     setStepStates([...states])
+
+    if (uploadIds.length > 0) {
+      setProgress({ pct: 5, label: 'Entendiendo los archivos…' })
+      await new Promise((r) => setTimeout(r, 1500))
+    }
 
     let failCount = 0
     for (let i = 0; i < steps.length; i += 1) {
