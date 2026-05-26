@@ -1,8 +1,9 @@
+import logging
 import math
 import os
 
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -10,8 +11,10 @@ from auth.dependencies import get_current_user
 from database import get_db
 from models import Ova, User
 from ova.helpers import VALID_STATUSES, _is_admin, _ova_to_dict
+from storage import StorageError, is_configured, signed_url
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("")
@@ -94,6 +97,19 @@ def download_ova(
             },
         )
 
+    safe_title = (
+        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
+    )
+
+    # Prefer Supabase Storage signed URL (production path).
+    if ova.storage_key and is_configured():
+        try:
+            url = signed_url(str(ova.storage_key))
+            return RedirectResponse(url=url, status_code=302)
+        except StorageError:
+            logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
+
+    # Legacy / dev fallback: serve from local disk.
     if not ova.file_path or not os.path.exists(ova.file_path):
         return JSONResponse(
             status_code=404,
@@ -103,9 +119,6 @@ def download_ova(
             },
         )
 
-    safe_title = (
-        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
-    )
     return FileResponse(
         path=ova.file_path,
         filename=f"{safe_title}.zip",
