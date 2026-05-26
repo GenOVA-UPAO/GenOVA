@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { HtmlCodePreview } from './HtmlCodePreview.jsx'
 
 const PHASE_LABELS = {
   motivacion: 'Motivación',
@@ -78,8 +79,12 @@ export function PhaseCard({
             </div>
             <div>
               <p className="text-xs text-slate-500 font-medium mb-1">Vista previa</p>
-              <div className="h-full min-h-[120px] rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm text-slate-700 whitespace-pre-wrap overflow-auto">
-                {draft || <span className="text-slate-300 italic">Sin contenido</span>}
+              <div className="min-h-[120px]">
+                {draft ? (
+                  <HtmlCodePreview htmlContent={draft} defaultView="preview" height="300px" />
+                ) : (
+                  <span className="text-sm text-slate-300 italic">Sin contenido</span>
+                )}
               </div>
             </div>
           </div>
@@ -100,9 +105,9 @@ export function PhaseCard({
           </div>
         </div>
       ) : (
-        <p className="text-sm text-slate-600 whitespace-pre-wrap line-clamp-4 mb-3">
-          {phase.content}
-        </p>
+        <div className="mb-3">
+          <HtmlCodePreview htmlContent={phase.content} defaultView="preview" height="400px" />
+        </div>
       )}
 
       {!editing && !isLoading && (
