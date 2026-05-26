@@ -47,12 +47,13 @@ def fetch_image_data_uri(
     height: int = 512,
     model: str | None = None,
 ) -> str | None:
-    """Render `prompt` via Pollinations and return a base64 JPEG data URI.
+    """Render `prompt` using Hugging Face Inference API (if HF_TOKEN is configured)
+    with fallback to Pollinations.ai, and return a base64 JPEG data URI.
 
-    Returns None on any failure — callers must handle missing images so the
-    resource still renders without them. `model` defaults to Pollinations'
-    anonymous-tier model; named models like `flux` may require a token.
+    Returns None on any failure so the caller can render a placeholder/fallback.
     """
+    import json
+
     clean = (prompt or "").strip()
     if not clean:
         return None
@@ -61,6 +62,35 @@ def fetch_image_data_uri(
     if key in _cache:
         return _cache[key]
 
+    hf_token = os.getenv("HF_TOKEN", "").strip()
+    if hf_token:
+        # Option 1: Hugging Face Inference API (FLUX.1-schnell)
+        hf_model = os.getenv("HF_IMAGE_MODEL", "black-forest-labs/FLUX.1-schnell").strip()
+        url = f"https://api-inference.huggingface.co/models/{hf_model}"
+        headers = {
+            "Authorization": f"Bearer {hf_token}",
+            "Content-Type": "application/json",
+            "x-wait-for-model": "true"
+        }
+        payload = json.dumps({"inputs": clean}).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, headers=headers, method="POST")  # noqa: S310
+        try:
+            logger.info("Attempting Hugging Face image generation for prompt %r using model %s", clean[:60], hf_model)
+            with urllib.request.urlopen(req, timeout=30) as resp:  # noqa: S310
+                data = resp.read()
+            if data.startswith(b"{") and b"error" in data:
+                logger.warning("HF Inference API returned JSON error: %s", data.decode("utf-8", errors="ignore")[:200])
+                raise RuntimeError("HF Inference API returned error")
+
+            uri = "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
+            if len(_cache) >= _MAX_CACHE:
+                _cache.pop(next(iter(_cache)))
+            _cache[key] = uri
+            return uri
+        except Exception as exc:
+            logger.warning("Hugging Face image generation failed for %r, falling back to Pollinations: %s", clean[:60], exc)
+
+    # Option 2 / Fallback: Pollinations.ai
     params = {"width": width, "height": height, "nologo": "true"}
     if model:
         params["model"] = model
@@ -68,10 +98,10 @@ def fetch_image_data_uri(
     url = f"{_BASE}{urllib.parse.quote(clean)}?{qs}"
     req = urllib.request.Request(url, headers=_build_headers())  # noqa: S310
     try:
+        logger.info("Attempting Pollinations image generation for prompt %r", clean[:60])
         with urllib.request.urlopen(req, timeout=_TIMEOUT_S) as resp:  # noqa: S310
             data = resp.read()
         uri = "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
-        # Store in cache (evict oldest if full)
         if len(_cache) >= _MAX_CACHE:
             _cache.pop(next(iter(_cache)))
         _cache[key] = uri
