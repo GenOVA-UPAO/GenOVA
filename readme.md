@@ -11,7 +11,7 @@ Plataforma web para la generación asistida por IA de Objetos Virtuales de Apren
 | Base de datos | Supabase (PostgreSQL + pgvector) vía `psycopg` |
 | Storage | Supabase Storage (`scorm-packages`) — fallback automático a disco local |
 | RAG | pgvector + Gemini `gemini-embedding-2-preview` (multimodal: texto + PDF + imagen + audio + video) |
-| LLMs | Groq SDK (Llama 3.3 70B, GPT-OSS 120B, Qwen3 32B, Whisper, Orpheus TTS) + OpenRouter (DeepSeek V4 Flash) |
+| LLMs | Groq SDK (Llama 3.3 70B, GPT-OSS 120B, Qwen3 32B, Whisper, Orpheus TTS) + OpenRouter (DeepSeek V4 Flash: free & paid fallback) con motor de validación y auto-reparación estructural de HTML |
 | Auth | JWT (HS256 con `iat`/`jti`/`iss`) + bcrypt + bloqueo por intentos fallidos |
 | Email | SMTP (Gmail por defecto) para restablecimiento de contraseña |
 | Empaquetado | pnpm workspaces · Backend con pip **o** uv |
@@ -200,7 +200,7 @@ GenOVA/
 │   ├── scorm/               # Empaquetado SCORM 1.2 (template + service)
 │   ├── storage/             # Wrapper de Supabase Storage (signed URLs)
 │   ├── uploads/             # Subida temporal de archivos (alimenta RAG)
-│   ├── migrations/          # SQL 001–013 aplicados al arrancar
+│   ├── migrations/          # SQL 001–014 aplicados al arrancar
 │   ├── rate_limit.py        # SlowAPI shared limiter
 │   ├── security.py          # bcrypt + JWT + dummy-hash timing defense
 │   ├── main.py              # Entry point (CORS, logging, lifespan, registro de routers)
@@ -223,8 +223,8 @@ GenOVA/
 
 ## Funcionalidades principales
 
-- **Crear OVA**: prompt + (opcional) archivos de apoyo → elige hasta **4 recursos por fase** (ENGAGE + EXPLORE) → genera secuencialmente con barra de progreso y checklist en vivo → empaqueta todo en un único paquete SCORM con un recurso navegable por cada selección.
-- **Mis OVAs**: listado con búsqueda/paginación, edición de fases, regeneración versionada, descarga SCORM, duplicar, mover a papelera.
+- **Crear OVA**: prompt + (opcional) archivos de apoyo → elige hasta **4 recursos por fase** (ENGAGE + EXPLORE) → genera secuencialmente con reintentos automáticos individuales en el frontend y estados en vivo (`generando`, `reintentando`, `done`, `failed`) → validador de calidad HTML y auto-reparación estructural y de SCORM en el backend → guarda parciales (si algún recurso falla) y empaqueta todo en un único paquete SCORM con un recurso navegable por cada selección exitosa.
+- **Mis OVAs**: listado con búsqueda/paginación, edición de fases, regeneración de fases con agentes LLM reales (a través de `resource_type_id` y título), versión activa y descarga SCORM, duplicar, mover a papelera.
 - **Papelera**: soft-delete con restauración individual o masiva.
 - **Perfil**: edición de datos personales (incluye `university_id`, `gender`, `phone_number`) y cambio de contraseña.
 - **Administración (solo `administrador`)**:
