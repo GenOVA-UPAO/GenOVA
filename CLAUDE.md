@@ -138,6 +138,7 @@ The `POST /api/ova/save` request body is `{prompt, phases: [...], upload_ids}`. 
 | `ova/router.py` | `/api/ova` | `POST /save`, `GET /{id}/scorm`, `GET /llm-options`, `GET /health` |
 | `ova/edit_router.py` | `/api/ovas` | `PATCH /{ova_id}/fases/{fase_id}` phase save; includes `edit_view_router` + `regen_router` as sub-routers |
 | `ova/edit_view_router.py` | `/api/ovas` | Read OVA detail + active version for editor |
+| `ova/edit_helpers.py` | — | Shared helpers for edit + regen flows: `_ensure_version_exists`, `_get_active_version`, `_is_ova_owner`, `_phase_to_dict`, `_version_to_dict`, `PROGRESS_STAGES` |
 | `ova/regen_router.py` | `/api/ovas` | Trigger regen on existing OVA |
 | `ova/regen_service.py` | — | Background thread: create new `OvaVersion`, rebuild SCORM zip |
 | `ova/history_router.py` | `/api/ovas` | List OVAs (paginated, admin-aware), version history, `GET /{id}/download`. Includes `trash_router` + `duplicate_router` + `manage_router` |
@@ -213,23 +214,25 @@ The `POST /api/ova/save` request body is `{prompt, phases: [...], upload_ids}`. 
 
 ### Frontend — React 19 + Vite
 
-**Routing** (`frontend/src/App.jsx`): All routes declared here. `AdminRoute` component fetches `/api/auth/me` to check `role === 'administrador'`; redirects to `/dashboard` otherwise. Token expiry is polled every 60 s.
+**Routing** (`frontend/src/App.jsx`): All routes declared here. Two guard components: `ProtectedLayout` (checks token at render time, redirects to `/login` if missing/expired) and `AdminRoute` (fetches `/api/auth/me`, checks `role === 'administrador'`, redirects to `/dashboard` otherwise). Token expiry also polled every 60 s inside `App`.
 
 Active routes:
 ```
+/                            → redirect to /login
 /login                       → LoginPage          (public)
 /register                    → RegisterPage       (public)
-/dashboard                   → DashboardPage
-/crear-ova                   → CrearOvaPage
-/mis-ovas                    → MisOvasPage
-/mis-ovas/:ovaId/editar      → EditarOvaPage
-/papelera                    → PapeleraPage
-/profile                     → ProfilePage
-/metodologia/engage          → EngagePage
-/metodologia/explore         → ExplorePage
+/dashboard                   → DashboardPage      (ProtectedLayout)
+/crear-ova                   → CrearOvaPage       (ProtectedLayout)
+/mis-ovas                    → MisOvasPage        (ProtectedLayout)
+/mis-ovas/:ovaId/editar      → EditarOvaPage      (ProtectedLayout)
+/papelera                    → PapeleraPage       (ProtectedLayout)
+/profile                     → ProfilePage        (ProtectedLayout)
+/metodologia/engage          → EngagePage         (ProtectedLayout)
+/metodologia/explore         → ExplorePage        (ProtectedLayout)
 /admin/roles                 → AdminRolesPage     (AdminRoute)
 /admin/users                 → AdminUsersPage     (AdminRoute)
 /admin/labs                  → LabsPage           (AdminRoute)
+*                            → NotFoundPage
 ```
 
 Uses **react-router v7** (`react-router` package, not `react-router-dom`). `BrowserRouter` wraps `<App />` in `main.jsx`.
@@ -244,7 +247,8 @@ Uses **react-router v7** (`react-router` package, not `react-router-dom`). `Brow
 - Wizard split into composable panels — `PromptPanel`, `SelectionChips`, `ProgressPanel`, `ResultsPanel` (all in `components/crear/`). File uploads rendered as `FileChip` chips (also in `crear/`). Upload formatting utilities (`formatSize`, `getUploadBadge`) live in `components/ovaUploadUi.js`. Each file <200 lines (ESLint hard cap).
 - `PhaseSelectModal` is multi-select with a per-phase cap exported as `MAX_PER_PHASE = 4`. Confirm returns `{engage: Resource[], explore: Resource[]}`. Each card shows its selection order (1..N) instead of a plain checkmark; disabled state when the cap is reached.
 - Mobile-first: modal switches between bottom-sheet (mobile) and centered dialog (sm+); generate button stretches full-width on mobile.
-- `ResultsPanel` renders one tab per generated resource (color-coded ENGAGE/EXPLORE) and embeds each as an isolated `<iframe>` blob via the shared `HtmlPreview` component.
+- `ResultsPanel` renders one tab per generated resource (color-coded ENGAGE/EXPLORE) and embeds each as an isolated `<iframe>` blob via the shared `HtmlPreview` component (`components/engage/HtmlPreview.jsx`).
+- `HtmlCodePreview` (`components/HtmlCodePreview.jsx`) — shared component used in the editor; renders HTML with a preview/code toggle. The iframe stays CSS-hidden (never unmounted) to prevent blob URL revocation under React StrictMode. Falls back to plain text when content isn't HTML.
 - `useOvaCreation` walks the picked resources sequentially (avoids Groq TPM spikes), runs them with up to 2 retries (exponential backoff) on failure, and updates `stepStates` to render states like `generating`, `retrying` (with attempt number), `done`, or `failed` in `ProgressPanel`. If some resources fail after retries, it saves a partial OVA with the successful resources (setting status to `partial`), preventing whole-wizard failure. `saveOva()` posts one phase row per resource with a `title` like `ENGAGE · Cómic Interactivo` and the `resource_type_id`.
 
 **Key hooks** (`frontend/src/hooks/`) — every file kept under 200 lines (ESLint `max-lines`):
@@ -282,6 +286,7 @@ ovaHistoryService.js    → /api/ovas/:id/versions
 ovaEditService.js       → /api/ovas/:id/fases
 uploadService.js        → /api/uploads/temp
 labsService.js          → /api/labs/*
+adminUsersService.js    → /api/users/* (admin user management)
 ```
 
 `downloadOvaScorm()` in `ovaCreationService.js` follows the backend's 302 redirect to Supabase Storage transparently — `fetch` exposes the resulting blob either from the redirect or from the local-disk byte fallback.
@@ -289,6 +294,10 @@ labsService.js          → /api/labs/*
 **Auth utils** (`lib/auth.js`): `getToken()`, `saveToken()`, `clearToken()`, `decodeToken()`, `isTokenExpired()`. Token stored under key `genova_token` in `localStorage`. Migration to httpOnly cookie is a known follow-up (XSS hardening).
 
 > Supabase is used **only as a Postgres database** via `DATABASE_URL` from the backend. There is no `@supabase/supabase-js` (browser SDK) dependency — storage/auth/realtime are not used. The previous `lib/supabaseClient.js` shim has been removed.
+
+**Shared UI components** worth noting:
+- `components/phase/PhasePage.jsx` — generic phase page shared by `EngagePage` + `ExplorePage`; owns resource selection, concept input, and preview via `usePhaseGeneration`.
+- `components/OvaFiveEViewer.jsx` — renders all 5E phases of an OVA as tabbed sections with color-coded badges (enganche=violet, exploracion=sky, explicacion=emerald, elaboracion=amber, evaluacion=rose). Used in `EditarOvaPage`.
 
 **Other lib utilities**:
 - `lib/permissions.js` — `AVAILABLE_PERMISSIONS` constant (permission strings)
