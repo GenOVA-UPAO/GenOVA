@@ -1,7 +1,7 @@
 import os
+
 import requests
-import pytest
-from pytest_bdd import given, when, then, scenario, parsers
+from pytest_bdd import given, parsers, scenario, then, when
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_CREAR = os.path.join(_FEATURES, "roles", "HU-018_crear-rol.feature")
