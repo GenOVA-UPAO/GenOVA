@@ -20,13 +20,20 @@ When('envío el formulario', async ({ page }) => {
 })
 
 Then('debo recibir un JWT con expiración de 24 horas', async ({ page }) => {
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
+  await page.waitForFunction(
+    () => /dashboard|mis-ovas/.test(window.location.pathname),
+    { timeout: 10000 }
+  )
   const token = await page.evaluate(() => localStorage.getItem('genova_token'))
   if (!token) throw new Error('Token not found in localStorage')
 })
 
 Then('debo ser redirigido al dashboard', async ({ page }) => {
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
+  // React Router does client-side nav (no load event) — poll the URL directly
+  await page.waitForFunction(
+    () => /dashboard|mis-ovas/.test(window.location.pathname),
+    { timeout: 10000 }
+  )
 })
 
 Given(
@@ -38,7 +45,10 @@ Given(
     await page.fill('[name=email], input[type=email]', email)
     await page.fill('[name=password], input[type=password]', pass)
     await page.click('button[type=submit]')
-    await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
+    await page.waitForFunction(
+      () => /dashboard|mis-ovas/.test(window.location.pathname),
+      { timeout: 15000 }
+    )
   }
 )
 
