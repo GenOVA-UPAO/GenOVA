@@ -10,8 +10,8 @@
     "preview": "vite preview",
     "format": "prettier --check .",
     "test:unit": "cucumber-js --config ../tests/cucumber.unit.config.mjs",
-    "test:e2e": "bddgen && playwright test --config ../tests/playwright.config.js",
-    "test:e2e:ui": "bddgen && playwright test --config ../tests/playwright.config.js --ui"
+    "test:e2e": "bddgen --config ../tests/playwright.config.js && playwright test --config ../tests/playwright.config.js",
+    "test:e2e:ui": "bddgen --config ../tests/playwright.config.js && playwright test --config ../tests/playwright.config.js --ui"
   },
   "dependencies": {
     "react": "^19.2.6",

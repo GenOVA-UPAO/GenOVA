@@ -1,9 +1,10 @@
 import { defineConfig } from '@playwright/test'
 import { defineBddConfig } from 'playwright-bdd'
 
+// Paths are relative to this config file's directory (tests/)
 const testDir = defineBddConfig({
-  features: 'tests/features/**/*.feature',
-  steps: 'tests/steps/e2e/**/*.js',
+  features: 'features/**/*.feature',
+  steps: 'steps/e2e/**/*.js',
 })
 
 export default defineConfig({
@@ -14,11 +15,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
-  reporter: [['html', { outputFolder: 'tests/playwright-report' }]],
+  reporter: [['html', { outputFolder: 'playwright-report' }]],
   webServer: {
-    command: 'pnpm dev',
+    command: 'pnpm --filter frontend dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
-    cwd: 'frontend',
   },
 })
