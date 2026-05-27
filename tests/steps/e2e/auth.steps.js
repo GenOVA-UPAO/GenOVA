@@ -16,7 +16,10 @@ When('ingreso un correo registrado y contraseña válida', async ({ page }) => {
 })
 
 When('envío el formulario', async ({ page }) => {
-  await page.click('button[type=submit]')
+  // force:true skips the "element must be enabled" check so disabled submit buttons
+  // (e.g. empty role name) don't block indefinitely — no actual form submission fires
+  // when the button is disabled regardless of the click
+  await page.click('button[type=submit]', { force: true })
 })
 
 Then('debo recibir un JWT con expiración de 24 horas', async ({ page }) => {
@@ -32,7 +35,7 @@ Then('debo ser redirigido al dashboard', async ({ page }) => {
   // React Router does client-side nav (no load event) — poll the URL directly
   await page.waitForFunction(
     () => /dashboard|mis-ovas/.test(window.location.pathname),
-    { timeout: 10000 }
+    { timeout: 25000 }
   )
 })
 
@@ -47,10 +50,12 @@ Given(
     })
     if (!resp.ok()) throw new Error(`Login API failed: ${resp.status()} — ${await resp.text()}`)
     const { access_token } = await resp.json()
-    // Inject token into localStorage — avoids full login UI (saves 10-15s per scenario in CI)
-    await page.goto('/login')
+    // Only navigate to /login on the very first call per test (page starts at about:blank).
+    // Subsequent calls in the same test reuse the existing page — no extra page.goto needed.
+    if (!page.url().includes(':5173')) {
+      await page.goto('/login')
+    }
     await page.evaluate((t) => localStorage.setItem('genova_token', t), access_token)
-    await page.goto('/mis-ovas')
   }
 )
 

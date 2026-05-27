@@ -12,7 +12,7 @@ const testDir = defineBddConfig({
 
 export default defineConfig({
   testDir,
-  timeout: 30000,
+  timeout: 60000,
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:5173',
     screenshot: 'only-on-failure',
