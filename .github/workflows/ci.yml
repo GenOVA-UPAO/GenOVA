@@ -46,16 +46,19 @@ jobs:
         working-directory: backend
 
       - name: Start backend
-        run: uvicorn main:app --port 8000 &
+        run: uvicorn main:app --port 8000 > /tmp/backend.log 2>&1 &
         working-directory: backend
 
       - name: Wait for backend
         run: |
-          for i in $(seq 1 20); do
-            curl -sf http://localhost:8000/health && echo " backend ready" && break
-            echo "waiting... ($i)"
-            sleep 3
+          for i in $(seq 1 40); do
+            curl -sf http://localhost:8000/health && echo "backend ready" && exit 0
+            echo "waiting... ($i/40)"
+            sleep 5
           done
+          echo "=== Backend failed to start — startup log ==="
+          cat /tmp/backend.log
+          exit 1
 
       - name: Run BDD step defs
         run: pytest tests/step_defs/ -v --tb=short
@@ -104,16 +107,19 @@ jobs:
         working-directory: backend
 
       - name: Start backend
-        run: uvicorn main:app --port 8000 &
+        run: uvicorn main:app --port 8000 > /tmp/backend.log 2>&1 &
         working-directory: backend
 
       - name: Wait for backend
         run: |
-          for i in $(seq 1 20); do
-            curl -sf http://localhost:8000/health && echo " backend ready" && break
-            echo "waiting... ($i)"
-            sleep 3
+          for i in $(seq 1 40); do
+            curl -sf http://localhost:8000/health && echo "backend ready" && exit 0
+            echo "waiting... ($i/40)"
+            sleep 5
           done
+          echo "=== Backend failed to start — startup log ==="
+          cat /tmp/backend.log
+          exit 1
 
       - run: pnpm test:e2e
 
