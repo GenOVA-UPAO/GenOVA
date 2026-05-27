@@ -101,7 +101,7 @@ jobs:
 
       - run: pnpm install
 
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm --filter genova-tests exec playwright install --with-deps chromium
 
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
