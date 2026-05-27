@@ -41,14 +41,16 @@ Given(
   async ({ page }, role) => {
     const email = role === 'administrador' ? 'admin@genova.ai' : 'user@genova.ai'
     const pass = role === 'administrador' ? 'admin1234password' : 'user1234password'
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
+    const resp = await page.request.post(`${backendUrl}/api/auth/login`, {
+      data: { email, password: pass },
+    })
+    if (!resp.ok()) throw new Error(`Login API failed: ${resp.status()} — ${await resp.text()}`)
+    const { access_token } = await resp.json()
+    // Inject token into localStorage — avoids full login UI (saves 10-15s per scenario in CI)
     await page.goto('/login')
-    await page.fill('[name=email], input[type=email]', email)
-    await page.fill('[name=password], input[type=password]', pass)
-    await page.click('button[type=submit]')
-    await page.waitForFunction(
-      () => /dashboard|mis-ovas/.test(window.location.pathname),
-      { timeout: 15000 }
-    )
+    await page.evaluate((t) => localStorage.setItem('genova_token', t), access_token)
+    await page.goto('/mis-ovas')
   }
 )
 
