@@ -1,7 +1,7 @@
 """Admin endpoint: paginated user listing."""
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from auth.dependencies import require_permission
 from database import get_db
@@ -42,21 +42,23 @@ def get_users(
     total_items = db.execute(select(func.count(User.id))).scalar() or 0
     total_pages = (total_items + limit - 1) // limit
 
+    # joinedload eliminates N+1: roles + role loaded in one JOIN query.
     users_db = (
         db.execute(
-            select(User).order_by(User.created_at.desc()).offset(offset).limit(limit)
+            select(User)
+            .options(joinedload(User.roles).joinedload(UserRole.role))
+            .order_by(User.created_at.desc())
+            .offset(offset)
+            .limit(limit)
         )
+        .unique()
         .scalars()
         .all()
     )
 
     users_list = []
     for u in users_db:
-        user_role = (
-            db.execute(select(Role).join(UserRole).where(UserRole.user_id == u.id))
-            .scalars()
-            .first()
-        )
+        user_role = u.roles[0].role if u.roles else None
         users_list.append(_serialize_user(u, user_role))
 
     return {

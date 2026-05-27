@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -12,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
+from starlette.middleware.base import BaseHTTPMiddleware
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from agents.router import router as agents_router
@@ -36,6 +38,32 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# OE1 latency target (ms) for non-LLM endpoints.
+_LATENCY_THRESHOLD_MS = float(os.getenv("LATENCY_THRESHOLD_MS", "278"))
+# Paths excluded from slow-request warnings (LLM generation — inherently slow).
+_LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save", "/api/labs/generate")
+
+
+class ProcessTimeMiddleware(BaseHTTPMiddleware):
+    """Adds X-Process-Time-Ms header and warns on slow non-LLM requests."""
+
+    async def dispatch(self, request, call_next):
+        t0 = time.perf_counter()
+        response = await call_next(request)
+        ms = (time.perf_counter() - t0) * 1000
+        response.headers["X-Process-Time-Ms"] = f"{ms:.1f}"
+        if ms > _LATENCY_THRESHOLD_MS and not any(
+            request.url.path.startswith(p) for p in _LATENCY_EXCLUDED_PREFIXES
+        ):
+            logger.warning(
+                "SLOW %s %s → %.1fms (threshold %.0fms)",
+                request.method,
+                request.url.path,
+                ms,
+                _LATENCY_THRESHOLD_MS,
+            )
+        return response
 
 
 @asynccontextmanager
@@ -83,6 +111,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
 )
+# Added last → outermost layer; times total server processing including CORS.
+app.add_middleware(ProcessTimeMiddleware)
 
 
 @app.get("/health")

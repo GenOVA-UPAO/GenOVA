@@ -5,7 +5,7 @@ import os
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from auth.dependencies import get_current_user
 from database import get_db
@@ -43,12 +43,18 @@ def list_ovas(
     total_items = db.execute(count_query).scalar_one()
     total_pages = max(1, math.ceil(total_items / limit))
 
+    # Eager-load owner for admin view — eliminates N+1 lazy loads per row.
+    # Applied after count_query is built so the subquery stays clean.
+    if admin:
+        base_query = base_query.options(joinedload(Ova.owner))
+
     ovas = (
         db.execute(
             base_query.order_by(Ova.created_at.desc())
             .offset((page - 1) * limit)
             .limit(limit)
         )
+        .unique()
         .scalars()
         .all()
     )

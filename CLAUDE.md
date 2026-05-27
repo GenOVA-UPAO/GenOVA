@@ -88,6 +88,7 @@ Key migrations:
 - `012_ova_storage_key.sql` — adds `ovas.storage_key` for Supabase Storage object keys.
 - `013_user_extended_profile_fields.sql` — adds `users.university_id`, `gender`, `phone_number`.
 - `014_ova_phase_resource_metadata.sql` — adds `resource_type_id` and `title` columns to `ova_phases` for tracking resource metadata.
+- `015_ovas_created_at_index.sql` — adds `idx_ovas_created_at ON ovas(created_at DESC)` for `ORDER BY` performance on list endpoints.
 
 ### Health endpoints
 
