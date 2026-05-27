@@ -1,10 +1,12 @@
+import os
 import requests
 import pytest
 from pytest_bdd import given, when, then, scenario, parsers
 
-FEATURE_CREAR = "../../tests/features/roles/HU-018_crear-rol.feature"
-FEATURE_EDITAR = "../../tests/features/roles/HU-019_editar-rol.feature"
-FEATURE_ELIMINAR = "../../tests/features/roles/HU-020_eliminar-rol.feature"
+_FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
+FEATURE_CREAR = os.path.join(_FEATURES, "roles", "HU-018_crear-rol.feature")
+FEATURE_EDITAR = os.path.join(_FEATURES, "roles", "HU-019_editar-rol.feature")
+FEATURE_ELIMINAR = os.path.join(_FEATURES, "roles", "HU-020_eliminar-rol.feature")
 
 
 # ── HU-018: Crear Rol ─────────────────────────────────────────────────────────

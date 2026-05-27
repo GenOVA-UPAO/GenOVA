@@ -1,10 +1,12 @@
+import os
 import requests
 import pytest
 from pytest_bdd import given, when, then, scenario, parsers
 
-FEATURE_HISTORIAL = "../../tests/features/ova/HU-006_historial.feature"
-FEATURE_EXPORTAR = "../../tests/features/ova/HU-004_exportar-scorm.feature"
-FEATURE_DB = "../../tests/features/setup/EN-008_base-datos.feature"
+_FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
+FEATURE_HISTORIAL = os.path.join(_FEATURES, "ova", "HU-006_historial.feature")
+FEATURE_EXPORTAR = os.path.join(_FEATURES, "ova", "HU-004_exportar-scorm.feature")
+FEATURE_DB = os.path.join(_FEATURES, "setup", "EN-008_base-datos.feature")
 
 
 # ── EN-008: Base de Datos ─────────────────────────────────────────────────────

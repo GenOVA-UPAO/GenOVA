@@ -64,6 +64,7 @@ pnpm prod:docker   # Prod (Nginx on port 80, /api/* → backend)
 ```bash
 # Smoke + quality tests hit the live API. Backend must be running.
 pytest                                       # discovers tests/test_*.py
+pytest tests/step_defs/ -v -m bdd           # BDD scenarios only (pytest-bdd)
 python tests/test_agents_io.py               # manual smoke
 python tests/test_resource_quality.py        # HTML quality gate
 python tests/test_rag_uploads.py             # upload → RAG ingestion → listing → delete flow
@@ -71,6 +72,16 @@ python tests/test_latency.py                 # OE1 benchmark: 10 samples × 7 no
 ```
 
 All manual tests authenticate against the live API. Override defaults via env: `BASE`, `EMAIL`, `PASS`. Agent tests also accept: `PHASE`, `TYPE`, `CONCEPT`.
+
+### BDD tests (from repo root)
+
+```bash
+pnpm test:unit    # cucumber-js unit tests (lib/auth.js, lib/labQuality.js) — no browser, no backend
+pnpm test:e2e     # playwright-bdd E2E (requires frontend + backend running)
+pnpm test:e2e:ui  # same with Playwright UI mode
+```
+
+Feature files live in `tests/features/` (21 files across auth/, ova/, roles/, layout/, setup/). All extracted verbatim from `specs/*.md` Gherkin sections. Incompatibilities documented in `docs/tasks/TA-BDD-incompatibilidades.md`. CI runs all three suites in `.github/workflows/ci.yml` (secrets: `TEST_DATABASE_URL`, `TEST_JWT_SECRET`).
 
 ### DB seed
 
