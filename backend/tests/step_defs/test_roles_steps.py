@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import requests
 from pytest_bdd import given, parsers, scenario, then, when
@@ -86,10 +87,11 @@ def click_nuevo_rol():
 
 @when(parsers.parse('ingreso el nombre "{nombre}"'), target_fixture="response")
 def ingreso_nombre_crear_rol(base_url, admin_token, nombre):
+    unique_name = f"{nombre}_{uuid.uuid4().hex[:6]}"
     return requests.post(
         f"{base_url}/api/roles",
         headers={"Authorization": f"Bearer {admin_token}"},
-        json={"name": nombre, "permissions": ["create_ova", "view_ova"]},
+        json={"name": unique_name, "permissions": ["create_ova", "view_ova"]},
         timeout=10,
     )
 
@@ -169,7 +171,7 @@ def modal_edicion(nombre):
 
 @when(parsers.parse('cambio el nombre a "{nuevo}"'), target_fixture="nuevo_nombre")
 def cambio_nombre(nuevo):
-    return nuevo
+    return f"{nuevo}_{uuid.uuid4().hex[:6]}"
 
 
 @when(parsers.parse('selecciono el permiso "{permiso}"'))
