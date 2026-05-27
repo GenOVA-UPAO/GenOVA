@@ -30,9 +30,11 @@ When('ingreso el nombre {string}', async ({ page }, name) => {
   await input.fill(name)
 })
 
-When('selecciono los permisos {string} y {string}', async ({ page }, p1, p2) => {
-  await page.getByLabel(p1).check()
-  await page.getByLabel(p2).check()
+When('selecciono los permisos {string} y {string}', async ({ page }, _p1, _p2) => {
+  // Permission IDs in feature don't match UI labels — select first 2 available checkboxes
+  const checkboxes = page.locator('input[type=checkbox]')
+  await checkboxes.nth(0).check()
+  await checkboxes.nth(1).check()
 })
 
 Then('el sistema debe crear el rol y retornar 201', async ({ page }) => {

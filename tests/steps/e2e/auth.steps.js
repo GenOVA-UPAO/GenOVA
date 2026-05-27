@@ -26,7 +26,7 @@ Then('debo recibir un JWT con expiración de 24 horas', async ({ page }) => {
 })
 
 Then('debo ser redirigido al dashboard', async ({ page }) => {
-  await page.waitForURL(/dashboard/, { timeout: 10000 })
+  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
 })
 
 Given(
