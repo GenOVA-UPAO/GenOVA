@@ -8,7 +8,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "format": "prettier --check ."
+    "format": "prettier --check .",
+    "test:unit": "cucumber-js --config ../tests/cucumber.unit.config.mjs",
+    "test:e2e": "bddgen && playwright test --config ../tests/playwright.config.js",
+    "test:e2e:ui": "bddgen && playwright test --config ../tests/playwright.config.js --ui"
   },
   "dependencies": {
     "react": "^19.2.6",
@@ -17,6 +20,10 @@
     "sonner": "^2.0.7"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^11.0.0",
+    "@playwright/test": "^1.45.0",
+    "happy-dom": "^14.0.0",
+    "playwright-bdd": "^7.0.0",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.0",
     "@types/react": "^19.2.14",

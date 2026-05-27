@@ -67,6 +67,7 @@ pytest                                       # discovers tests/test_*.py
 python tests/test_agents_io.py               # manual smoke
 python tests/test_resource_quality.py        # HTML quality gate
 python tests/test_rag_uploads.py             # upload → RAG ingestion → listing → delete flow
+python tests/test_latency.py                 # OE1 benchmark: 10 samples × 7 non-LLM endpoints, PASA/FALLA vs 278ms
 ```
 
 All manual tests authenticate against the live API. Override defaults via env: `BASE`, `EMAIL`, `PASS`. Agent tests also accept: `PHASE`, `TYPE`, `CONCEPT`.
@@ -80,7 +81,7 @@ Runs automatically on backend startup via `seed.py`. Creates `administrador` + `
 
 ### SQL migrations
 
-Applied automatically on backend startup via `run_migrations()` in `main.py`'s lifespan. Migration files live in `backend/migrations/` (001 through 014). To add a migration, create the next numbered `.sql` file — it will be applied on next startup. Run manually: `python run_migrations.py` from `backend/`.
+Applied automatically on backend startup via `run_migrations()` in `main.py`'s lifespan. Migration files live in `backend/migrations/` (001 through 015). To add a migration, create the next numbered `.sql` file — it will be applied on next startup. Run manually: `python run_migrations.py` from `backend/`.
 
 Key migrations:
 - `010_pgvector.sql` — enables the `vector` extension (required for RAG).
@@ -109,6 +110,8 @@ GET /api/uploads/health
 
 **Entry point**: `backend/main.py`
 Startup sequence: `run_migrations()` → `Base.metadata.create_all()` → `seed_db()` → `purge_expired()` RAG chunks (best-effort). Registers all routers. Configures `logging.basicConfig()` (level via `LOG_LEVEL` env, default `INFO`) and attaches the shared `slowapi.Limiter`.
+
+**`ProcessTimeMiddleware`** (in `main.py`): adds `X-Process-Time-Ms` response header on every request (server-side processing time, not network RTT). Emits a `WARNING SLOW <METHOD> <PATH> → <ms>ms` log when a non-LLM endpoint exceeds the OE1 threshold (default 278 ms, override via `LATENCY_THRESHOLD_MS` env). LLM paths (`/api/agents/`, `/api/ova/save`, `/api/labs/generate`) are excluded. Benchmark script: `backend/tests/test_latency.py` (10 samples × 7 endpoints, exits PASA/FALLA vs threshold).
 
 Some routers are mounted at two prefixes for legacy compatibility:
 `auth` at `/api/auth` + `/auth`, `roles` at `/api/roles` + `/roles`, `users` at `/api/users` + `/users`.
@@ -318,6 +321,7 @@ JWT_SECRET=                             # REQUIRED — ≥16 chars, no weak defa
 JWT_ALGORITHM=HS256
 JWT_EXPIRES_MINUTES=1440
 LOG_LEVEL=INFO
+LATENCY_THRESHOLD_MS=278               # WARN threshold for ProcessTimeMiddleware (non-LLM endpoints)
 OVA_GENERATION_DURATION_SECONDS=14      # simulated generation duration (legacy)
 OVA_OUTPUT_DIR=                         # local-disk fallback for SCORM zips
 OVA_MAX_GENERATED_IMAGES=2
