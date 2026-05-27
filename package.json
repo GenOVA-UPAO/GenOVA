@@ -10,8 +10,9 @@
     "format": "pnpm --filter frontend format",
     "dev:docker": "docker compose up --build",
     "prod:docker": "docker compose -f docker-compose.prod.yml up --build",
-    "test:unit": "pnpm --filter frontend test:unit",
-    "test:e2e": "pnpm --filter frontend test:e2e"
+    "test:unit": "pnpm --filter genova-tests test:unit",
+    "test:e2e": "pnpm --filter genova-tests test:e2e",
+    "test:e2e:ui": "pnpm --filter genova-tests test:e2e:ui"
   }
 
 }
