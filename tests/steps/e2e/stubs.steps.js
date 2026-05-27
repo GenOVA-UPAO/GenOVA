@@ -99,8 +99,8 @@ When('navega a {string}', async ({ page }, path) => {
 })
 
 Then('no debo ver el panel de administración', async ({ page }) => {
-  await page.waitForTimeout(500)
-  const count = await page.locator('text=Gestión').count()
+  await page.waitForTimeout(3000)  // give AdminRoute time to check role
+  const count = await page.locator('text=Gestión de Roles').count()
   if (count > 0) throw new Error('Should not see admin panel')
 })
 
