@@ -1,4 +1,6 @@
-import { Given, When, Then } from 'playwright-bdd'
+import { createBdd } from 'playwright-bdd'
+
+const { Given, When, Then } = createBdd()
 
 Given('que estoy en la página de login', async ({ page }) => {
   await page.goto('/login')

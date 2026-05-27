@@ -1,4 +1,6 @@
-import { Given, When, Then } from 'playwright-bdd'
+import { createBdd } from 'playwright-bdd'
+
+const { Given, When, Then } = createBdd()
 
 Given('el usuario {string} está autenticado', async ({ page }, email) => {
   const isAdmin = email.includes('admin')

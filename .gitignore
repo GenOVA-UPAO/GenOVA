@@ -256,6 +256,10 @@ build/
 .pnpm-store/
 node_modules/
 
+# playwright-bdd generated test files
+tests/.features-gen/
+tests/playwright-report/
+
 # Credenciales y estado interno
 .claude.json
 .credentials.json

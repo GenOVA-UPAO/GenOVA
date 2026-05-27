@@ -1,4 +1,6 @@
-import { Given, When, Then } from 'playwright-bdd'
+import { createBdd } from 'playwright-bdd'
+
+const { Given, When, Then } = createBdd()
 
 Given('que navego a {string}', async ({ page }, path) => {
   await page.goto(path)
@@ -6,10 +8,6 @@ Given('que navego a {string}', async ({ page }, path) => {
 
 Then('debo ver el panel de administración con su propio layout', async ({ page }) => {
   await page.waitForSelector('text=Gestión', { timeout: 5000 })
-})
-
-Then('debo ser redirigido al dashboard', async ({ page }) => {
-  await page.waitForURL(/dashboard/, { timeout: 10000 })
 })
 
 Then('debo ver la lista de roles registrados', async ({ page }) => {

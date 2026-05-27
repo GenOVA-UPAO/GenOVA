@@ -68,14 +68,14 @@ importers:
         specifier: ^11.0.0
         version: 11.3.0
       '@playwright/test':
-        specifier: ^1.45.0
+        specifier: ^1.50.0
         version: 1.60.0
       happy-dom:
         specifier: ^14.0.0
         version: 14.12.3
       playwright-bdd:
-        specifier: ^7.0.0
-        version: 7.5.0(@cucumber/message-streams@4.0.1(@cucumber/messages@26.0.1))(@playwright/test@1.60.0)
+        specifier: ^8.0.0
+        version: 8.5.1(@playwright/test@1.60.0)
 
 packages:
 
@@ -153,9 +153,6 @@ packages:
   '@cucumber/ci-environment@10.0.1':
     resolution: {integrity: sha512-/+ooDMPtKSmvcPMDYnMZt4LuoipfFfHaYspStI4shqw8FyKcfQAmekz6G+QKWjQQrvM+7Hkljwx58MEwPCwwzg==}
 
-  '@cucumber/cucumber-expressions@17.1.0':
-    resolution: {integrity: sha512-PCv/ppsPynniKPWJr5v566daCVe+pbxQpHGrIu/Ev57cCH9Rv+X0F6lio4Id3Z64TaG7btCRLUGewIgLwmrwOA==}
-
   '@cucumber/cucumber-expressions@18.0.1':
     resolution: {integrity: sha512-NSid6bI+7UlgMywl5octojY5NXnxR9uq+JisjOrO52VbFsQM6gTWuQFE8syI10KnIBEdPzuEUSVEeZ0VFzRnZA==}
 
@@ -172,19 +169,9 @@ packages:
       '@cucumber/message-streams': '>=4.0.0'
       '@cucumber/messages': '>=17.1.1'
 
-  '@cucumber/gherkin-utils@9.0.0':
-    resolution: {integrity: sha512-clk4q39uj7pztZuZtyI54V8lRsCUz0Y/p8XRjIeHh7ExeEztpWkp4ca9q1FjUOPfQQ8E7OgqFbqoQQXZ1Bx7fw==}
-    hasBin: true
-
   '@cucumber/gherkin-utils@9.2.0':
     resolution: {integrity: sha512-3nmRbG1bUAZP3fAaUBNmqWO0z0OSkykZZotfLjyhc8KWwDSOrOmMJlBTd474lpA8EWh4JFLAX3iXgynBqBvKzw==}
     hasBin: true
-
-  '@cucumber/gherkin@28.0.0':
-    resolution: {integrity: sha512-Ee6zJQq0OmIUPdW0mSnsCsrWA2PZAELNDPICD2pLfs0Oz7RAPgj80UsD2UCtqyAhw2qAR62aqlktKUlai5zl/A==}
-
-  '@cucumber/gherkin@29.0.0':
-    resolution: {integrity: sha512-6t3V7fFsLlyhLSj4FS+fPz22pPVcFhFZ3QOP7otFYmkhZ4g1ierj5pf7fxJWvEsI555hGatg+Iql6cqK93RFUg==}
 
   '@cucumber/gherkin@30.0.4':
     resolution: {integrity: sha512-pb7lmAJqweZRADTTsgnC3F5zbTh3nwOB1M83Q9ZPbUKMb3P76PzK6cTcPTJBHWy3l7isbigIv+BkDjaca6C8/g==}
@@ -192,13 +179,16 @@ packages:
   '@cucumber/gherkin@31.0.0':
     resolution: {integrity: sha512-wlZfdPif7JpBWJdqvHk1Mkr21L5vl4EfxVUOS4JinWGf3FLRV6IKUekBv5bb5VX79fkDcfDvESzcQ8WQc07Wgw==}
 
+  '@cucumber/gherkin@32.2.0':
+    resolution: {integrity: sha512-X8xuVhSIqlUjxSRifRJ7t0TycVWyX58fygJH3wDNmHINLg9sYEkvQT0SO2G5YlRZnYc11TIFr4YPenscvdlBIw==}
+
   '@cucumber/html-formatter@21.10.1':
     resolution: {integrity: sha512-isaaNMNnBYThsvaHy7i+9kkk9V3+rhgdkt0pd6TCY6zY1CSRZQ7tG6ST9pYyRaECyfbCeF7UGH0KpNEnh6UNvQ==}
     peerDependencies:
       '@cucumber/messages': '>=18'
 
-  '@cucumber/html-formatter@21.7.0':
-    resolution: {integrity: sha512-bv211aY8mErp6CdmhN426E+7KIsVIES4fGx5ASMlUzYWiMus6NhSdI9UL3Vswx8JXJMgySeIcJJKfznREUFLNA==}
+  '@cucumber/html-formatter@21.15.1':
+    resolution: {integrity: sha512-tjxEpP161sQ7xc3VREc94v1ymwIckR3ySViy7lTvfi1jUpyqy2Hd/p4oE3YT1kQ9fFDvUflPwu5ugK5mA7BQLA==}
     peerDependencies:
       '@cucumber/messages': '>=18'
 
@@ -212,12 +202,6 @@ packages:
     peerDependencies:
       '@cucumber/messages': '>=17.1.1'
 
-  '@cucumber/messages@24.1.0':
-    resolution: {integrity: sha512-hxVHiBurORcobhVk80I9+JkaKaNXkW6YwGOEFIh/2aO+apAN+5XJgUUWjng9NwqaQrW1sCFuawLB1AuzmBaNdQ==}
-
-  '@cucumber/messages@25.0.1':
-    resolution: {integrity: sha512-RjjhmzcauX5eYfcKns5pgenefDJQcfXE3ZDrVWdUDGcoaoyFVDmj+ZzQZWRWqFrfMjP3lKHJss6LtvIP/z+h8g==}
-
   '@cucumber/messages@26.0.1':
     resolution: {integrity: sha512-DIxSg+ZGariumO+Lq6bn4kOUIUET83A4umrnWmidjGFl8XxkBieUZtsmNbLYgH/gnsmP07EfxxdTr0hOchV1Sg==}
 
@@ -229,11 +213,11 @@ packages:
     peerDependencies:
       '@cucumber/messages': '*'
 
-  '@cucumber/tag-expressions@6.1.0':
-    resolution: {integrity: sha512-+3DwRumrCJG27AtzCIL37A/X+A/gSfxOPLg8pZaruh5SLumsTmpvilwroVWBT2fPzmno/tGXypeK5a7NHU4RzA==}
-
   '@cucumber/tag-expressions@6.1.2':
     resolution: {integrity: sha512-xa3pER+ntZhGCxRXSguDTKEHTZpUUsp+RzTRNnit+vi5cqnk6abLdSLg5i3HZXU3c74nQ8afQC6IT507EN74oQ==}
+
+  '@cucumber/tag-expressions@6.2.0':
+    resolution: {integrity: sha512-KIF0eLcafHbWOuSDWFw0lMmgJOLdDRWjEL1kfXEWrqHmx2119HxVAr35WuEd9z542d3Yyg+XNqSr+81rIKqEdg==}
 
   '@emnapi/core@1.10.0':
     resolution: {integrity: sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==}
@@ -568,9 +552,6 @@ packages:
   '@types/uuid@10.0.0':
     resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
-  '@types/uuid@9.0.8':
-    resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
-
   '@vitejs/plugin-react@6.0.1':
     resolution: {integrity: sha512-l9X/E3cDb+xY3SWzlG1MOGt2usfEHGMNIaegaUGFsLkb3RCn/k8/TOXBcab+OndDI4TBtktT8/9BwwW8Vi9KUQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -681,14 +662,6 @@ packages:
   commander@10.0.1:
     resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
     engines: {node: '>=14'}
-
-  commander@12.0.0:
-    resolution: {integrity: sha512-MwVNWlYjDTtOjX5PiD7o5pK0UrFU/OYgcJfjjK4RaHZETNtjJqrZa9Y9ds88+A+f+d5lv+561eZ+yCKoS3gbAA==}
-    engines: {node: '>=18'}
-
-  commander@12.1.0:
-    resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
-    engines: {node: '>=18'}
 
   commander@13.1.0:
     resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
@@ -1133,13 +1106,13 @@ packages:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
 
-  mime-db@1.52.0:
-    resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
+  mime-db@1.54.0:
+    resolution: {integrity: sha512-aU5EJuIN2WDemCcAp2vFBfp/m4EAhWJnUNSSw0ixs7/kXbd6Pg64EmwJkNdFhB8aWt1sH2CTXrLxo/iAGV3oPQ==}
     engines: {node: '>= 0.6'}
 
-  mime-types@2.1.35:
-    resolution: {integrity: sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==}
-    engines: {node: '>= 0.6'}
+  mime-types@3.0.2:
+    resolution: {integrity: sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==}
+    engines: {node: '>=18'}
 
   mime@3.0.0:
     resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
@@ -1237,12 +1210,12 @@ packages:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
 
-  playwright-bdd@7.5.0:
-    resolution: {integrity: sha512-z6rBqVqlvkaGCR6hS5yuLmNg2dn/AaQlguc96U7Xl2OvHgeiP6wZMU8CEdnp2VYU35qnYSW1xngH0EHI9/ZF2A==}
+  playwright-bdd@8.5.1:
+    resolution: {integrity: sha512-lDNaDzW8RvbvsKuR8cZaP9LBnRbG9juCOE3tgwm3pr1O0W1ooGPz7X8xH7zdUbqGgHbdOQ+5XpUTlOJrvpY6Tw==}
     engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
-      '@playwright/test': '>=1.35'
+      '@playwright/test': '>=1.44'
 
   playwright-core@1.60.0:
     resolution: {integrity: sha512-9bW6zvX/m0lEbgTKJ6YppOKx8H3VOPBMOCFh2irXFOT4BbHgrx5hPjwJYLT40Lu+4qtD36qKc/Hn56StUW57IA==}
@@ -1307,10 +1280,6 @@ packages:
   read-pkg@9.0.1:
     resolution: {integrity: sha512-9viLL4/n1BJUCT1NXVTdS1jtm80yDEgR5T4yCelII49Mbj0v1rZdKqj7zCiYdbB0CuCgdrvHcNogAKTFPBocFA==}
     engines: {node: '>=18'}
-
-  reflect-metadata@0.2.1:
-    resolution: {integrity: sha512-i5lLI6iw9AU3Uu4szRNPPEkomnkjRTaVt9hy/bn5g/oSzekBSMeLZblcjP74AW0vBabqERLLIrz+gR8QYR54Tw==}
-    deprecated: This version has a critical bug in fallback handling. Please upgrade to reflect-metadata@0.2.2 or newer.
 
   reflect-metadata@0.2.2:
     resolution: {integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==}
@@ -1497,11 +1466,6 @@ packages:
 
   uuid@11.0.5:
     resolution: {integrity: sha512-508e6IcKLrhxKdBbcA2b4KQZlLVp2+J5UwQ6F7Drckkc5N9ZJwFa4TgWtsww9UG8fGHbm6gbV19TdM5pQ4GaIA==}
-    hasBin: true
-
-  uuid@9.0.1:
-    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   validate-npm-package-license@3.0.4:
@@ -1710,10 +1674,6 @@ snapshots:
 
   '@cucumber/ci-environment@10.0.1': {}
 
-  '@cucumber/cucumber-expressions@17.1.0':
-    dependencies:
-      regexp-match-indices: 1.0.2
-
   '@cucumber/cucumber-expressions@18.0.1':
     dependencies:
       regexp-match-indices: 1.0.2
@@ -1723,7 +1683,7 @@ snapshots:
       '@cucumber/ci-environment': 10.0.1
       '@cucumber/cucumber-expressions': 18.0.1
       '@cucumber/gherkin': 30.0.4
-      '@cucumber/gherkin-streams': 5.0.1(@cucumber/gherkin@30.0.4)(@cucumber/message-streams@4.0.1(@cucumber/messages@26.0.1))(@cucumber/messages@27.2.0)
+      '@cucumber/gherkin-streams': 5.0.1(@cucumber/gherkin@30.0.4)(@cucumber/message-streams@4.0.1(@cucumber/messages@27.2.0))(@cucumber/messages@27.2.0)
       '@cucumber/gherkin-utils': 9.2.0
       '@cucumber/html-formatter': 21.10.1(@cucumber/messages@27.2.0)
       '@cucumber/junit-xml-formatter': 0.7.1(@cucumber/messages@27.2.0)
@@ -1760,28 +1720,12 @@ snapshots:
       yaml: 2.9.0
       yup: 1.6.1
 
-  '@cucumber/gherkin-streams@5.0.1(@cucumber/gherkin@29.0.0)(@cucumber/message-streams@4.0.1(@cucumber/messages@26.0.1))(@cucumber/messages@26.0.1)':
-    dependencies:
-      '@cucumber/gherkin': 29.0.0
-      '@cucumber/message-streams': 4.0.1(@cucumber/messages@26.0.1)
-      '@cucumber/messages': 26.0.1
-      commander: 9.1.0
-      source-map-support: 0.5.21
-
-  '@cucumber/gherkin-streams@5.0.1(@cucumber/gherkin@30.0.4)(@cucumber/message-streams@4.0.1(@cucumber/messages@26.0.1))(@cucumber/messages@27.2.0)':
+  '@cucumber/gherkin-streams@5.0.1(@cucumber/gherkin@30.0.4)(@cucumber/message-streams@4.0.1(@cucumber/messages@27.2.0))(@cucumber/messages@27.2.0)':
     dependencies:
       '@cucumber/gherkin': 30.0.4
-      '@cucumber/message-streams': 4.0.1(@cucumber/messages@26.0.1)
+      '@cucumber/message-streams': 4.0.1(@cucumber/messages@27.2.0)
       '@cucumber/messages': 27.2.0
       commander: 9.1.0
-      source-map-support: 0.5.21
-
-  '@cucumber/gherkin-utils@9.0.0':
-    dependencies:
-      '@cucumber/gherkin': 28.0.0
-      '@cucumber/messages': 24.1.0
-      '@teppeis/multimaps': 3.0.0
-      commander: 12.0.0
       source-map-support: 0.5.21
 
   '@cucumber/gherkin-utils@9.2.0':
@@ -1792,14 +1736,6 @@ snapshots:
       commander: 13.1.0
       source-map-support: 0.5.21
 
-  '@cucumber/gherkin@28.0.0':
-    dependencies:
-      '@cucumber/messages': 24.1.0
-
-  '@cucumber/gherkin@29.0.0':
-    dependencies:
-      '@cucumber/messages': 25.0.1
-
   '@cucumber/gherkin@30.0.4':
     dependencies:
       '@cucumber/messages': 26.0.1
@@ -1808,13 +1744,17 @@ snapshots:
     dependencies:
       '@cucumber/messages': 26.0.1
 
+  '@cucumber/gherkin@32.2.0':
+    dependencies:
+      '@cucumber/messages': 27.2.0
+
   '@cucumber/html-formatter@21.10.1(@cucumber/messages@27.2.0)':
     dependencies:
       '@cucumber/messages': 27.2.0
 
-  '@cucumber/html-formatter@21.7.0(@cucumber/messages@26.0.1)':
+  '@cucumber/html-formatter@21.15.1(@cucumber/messages@27.2.0)':
     dependencies:
-      '@cucumber/messages': 26.0.1
+      '@cucumber/messages': 27.2.0
 
   '@cucumber/junit-xml-formatter@0.7.1(@cucumber/messages@27.2.0)':
     dependencies:
@@ -1824,27 +1764,9 @@ snapshots:
       luxon: 3.6.1
       xmlbuilder: 15.1.1
 
-  '@cucumber/message-streams@4.0.1(@cucumber/messages@26.0.1)':
-    dependencies:
-      '@cucumber/messages': 26.0.1
-
   '@cucumber/message-streams@4.0.1(@cucumber/messages@27.2.0)':
     dependencies:
       '@cucumber/messages': 27.2.0
-
-  '@cucumber/messages@24.1.0':
-    dependencies:
-      '@types/uuid': 9.0.8
-      class-transformer: 0.5.1
-      reflect-metadata: 0.2.1
-      uuid: 9.0.1
-
-  '@cucumber/messages@25.0.1':
-    dependencies:
-      '@types/uuid': 9.0.8
-      class-transformer: 0.5.1
-      reflect-metadata: 0.2.2
-      uuid: 9.0.1
 
   '@cucumber/messages@26.0.1':
     dependencies:
@@ -1866,9 +1788,9 @@ snapshots:
       '@teppeis/multimaps': 3.0.0
       lodash.sortby: 4.7.0
 
-  '@cucumber/tag-expressions@6.1.0': {}
-
   '@cucumber/tag-expressions@6.1.2': {}
+
+  '@cucumber/tag-expressions@6.2.0': {}
 
   '@emnapi/core@1.10.0':
     dependencies:
@@ -2138,8 +2060,6 @@ snapshots:
 
   '@types/uuid@10.0.0': {}
 
-  '@types/uuid@9.0.8': {}
-
   '@vitejs/plugin-react@6.0.1(vite@8.0.12(jiti@2.7.0)(yaml@2.9.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-rc.7
@@ -2234,10 +2154,6 @@ snapshots:
   color-name@1.1.4: {}
 
   commander@10.0.1: {}
-
-  commander@12.0.0: {}
-
-  commander@12.1.0: {}
 
   commander@13.1.0: {}
 
@@ -2627,11 +2543,11 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.2
 
-  mime-db@1.52.0: {}
+  mime-db@1.54.0: {}
 
-  mime-types@2.1.35:
+  mime-types@3.0.2:
     dependencies:
-      mime-db: 1.52.0
+      mime-db: 1.54.0
 
   mime@3.0.0: {}
 
@@ -2718,23 +2634,21 @@ snapshots:
 
   picomatch@4.0.4: {}
 
-  playwright-bdd@7.5.0(@cucumber/message-streams@4.0.1(@cucumber/messages@26.0.1))(@playwright/test@1.60.0):
+  playwright-bdd@8.5.1(@playwright/test@1.60.0):
     dependencies:
-      '@cucumber/cucumber-expressions': 17.1.0
-      '@cucumber/gherkin': 29.0.0
-      '@cucumber/gherkin-streams': 5.0.1(@cucumber/gherkin@29.0.0)(@cucumber/message-streams@4.0.1(@cucumber/messages@26.0.1))(@cucumber/messages@26.0.1)
-      '@cucumber/gherkin-utils': 9.0.0
-      '@cucumber/html-formatter': 21.7.0(@cucumber/messages@26.0.1)
-      '@cucumber/messages': 26.0.1
-      '@cucumber/tag-expressions': 6.1.0
+      '@cucumber/cucumber-expressions': 18.0.1
+      '@cucumber/gherkin': 32.2.0
+      '@cucumber/gherkin-utils': 9.2.0
+      '@cucumber/html-formatter': 21.15.1(@cucumber/messages@27.2.0)
+      '@cucumber/junit-xml-formatter': 0.7.1(@cucumber/messages@27.2.0)
+      '@cucumber/messages': 27.2.0
+      '@cucumber/tag-expressions': 6.2.0
       '@playwright/test': 1.60.0
       cli-table3: 0.6.5
-      commander: 12.1.0
+      commander: 13.1.0
       fast-glob: 3.3.3
-      mime-types: 2.1.35
+      mime-types: 3.0.2
       xmlbuilder: 15.1.1
-    transitivePeerDependencies:
-      - '@cucumber/message-streams'
 
   playwright-core@1.60.0: {}
 
@@ -2790,8 +2704,6 @@ snapshots:
       parse-json: 8.3.0
       type-fest: 4.41.0
       unicorn-magic: 0.1.0
-
-  reflect-metadata@0.2.1: {}
 
   reflect-metadata@0.2.2: {}
 
@@ -2964,8 +2876,6 @@ snapshots:
   uuid@10.0.0: {}
 
   uuid@11.0.5: {}
-
-  uuid@9.0.1: {}
 
   validate-npm-package-license@3.0.4:
     dependencies:
