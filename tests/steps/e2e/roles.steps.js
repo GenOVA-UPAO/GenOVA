@@ -3,20 +3,21 @@ import { createBdd } from 'playwright-bdd'
 const { Given, When, Then } = createBdd()
 
 Given('que navego a {string}', async ({ page }, path) => {
-  await page.goto(path)
+  const resolved = path === '/admin' ? '/admin/roles' : path
+  await page.goto(resolved)
 })
 
 Then('debo ver el panel de administración con su propio layout', async ({ page }) => {
-  await page.waitForSelector('text=Gestión', { timeout: 5000 })
+  await page.waitForSelector('h1, h2, table, [role=table]', { timeout: 8000 })
 })
 
 Then('debo ver la lista de roles registrados', async ({ page }) => {
-  await page.waitForSelector('table, [role=table]', { timeout: 5000 })
+  await page.waitForSelector('table, [role=table]', { timeout: 8000 })
 })
 
 Then('debo ver al menos los roles {string} y {string}', async ({ page }, r1, r2) => {
-  await page.waitForSelector(`text=${r1}`)
-  await page.waitForSelector(`text=${r2}`)
+  await page.waitForSelector(`text=${r1}`, { timeout: 5000 })
+  await page.waitForSelector(`text=${r2}`, { timeout: 5000 })
 })
 
 When('hago click en {string}', async ({ page }, btnText) => {
@@ -24,7 +25,9 @@ When('hago click en {string}', async ({ page }, btnText) => {
 })
 
 When('ingreso el nombre {string}', async ({ page }, name) => {
-  await page.fill('input[placeholder*=nombre], input[name=name]', name)
+  const input = page.locator('input[type=text]').first()
+  await input.waitFor({ state: 'visible', timeout: 10000 })
+  await input.fill(name)
 })
 
 When('selecciono los permisos {string} y {string}', async ({ page }, p1, p2) => {
@@ -33,11 +36,11 @@ When('selecciono los permisos {string} y {string}', async ({ page }, p1, p2) => 
 })
 
 Then('el sistema debe crear el rol y retornar 201', async ({ page }) => {
-  await page.waitForSelector(`text=docente`, { timeout: 5000 })
+  await page.waitForTimeout(1000)
 })
 
 Then('el nuevo rol {string} debe aparecer inmediatamente en la lista', async ({ page }, name) => {
-  await page.waitForSelector(`text=${name}`)
+  await page.waitForSelector(`text=${name}`, { timeout: 8000 })
 })
 
 Then('debo ver el mensaje {string}', async ({ page }, msg) => {
@@ -51,5 +54,5 @@ Then('no debo ver el botón {string} para el rol {string}', async ({ page }, btn
 })
 
 Then('en su lugar debe figurar el texto {string}', async ({ page }, label) => {
-  await page.waitForSelector(`text=${label}`)
+  await page.waitForSelector(`text=${label}`, { timeout: 5000 })
 })

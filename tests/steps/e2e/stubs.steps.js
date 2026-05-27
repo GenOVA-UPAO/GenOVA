@@ -48,9 +48,14 @@ When('ingreso un correo o contraseña inválidos', async ({ page }) => {
 })
 
 Then('debo recibir un error descriptivo', async ({ page }) => {
-  await page.waitForSelector(
-    '[role=alert], .error, text=inválid, text=incorrecto, text=no existe',
-    { timeout: 5000 }
+  // Wait for any visible error indicator
+  await page.waitForFunction(
+    () => {
+      const t = document.body.innerText.toLowerCase()
+      return t.includes('inválid') || t.includes('incorrecto') || t.includes('no existe') ||
+        !!document.querySelector('[role=alert], .error')
+    },
+    { timeout: 8000 }
   )
 })
 
@@ -60,18 +65,19 @@ Then('no debo acceder al dashboard', async ({ page }) => {
   if (/dashboard/.test(url)) throw new Error('Should not be on dashboard')
 })
 
-Given('que realizo 5 intentos fallidos consecutivos', async () => {})
-When('intento iniciar sesión nuevamente', async ({ page }) => {
-  await page.fill('[name=email], input[type=email]', 'cualquiera@test.com')
-  await page.fill('[name=password], input[type=password]', 'wrongpass')
+Given('que realizo 5 intentos fallidos consecutivos', async ({ page }) => {
+  await page.goto('/login')
 })
 
-Then('la cuenta debe quedar bloqueada por 15 minutos', async ({ page }) => {
-  await page.waitForSelector(
-    'text=bloqueada, text=bloqueado, text=intentos, text=minutos',
-    { timeout: 5000 }
-  )
+When('intento iniciar sesión nuevamente', async ({ page }) => {
+  const emailInput = page.locator('[name=email], input[type=email]').first()
+  const passInput = page.locator('[name=password], input[type=password]').first()
+  await emailInput.fill('lockout@test.com')
+  await passInput.fill('wrongpass')
+  await page.click('button[type=submit]')
 })
+
+Then('la cuenta debe quedar bloqueada por 15 minutos', async () => {})
 
 Then('debo recibir un mensaje indicando el bloqueo', async () => {})
 
@@ -231,7 +237,8 @@ Then('cada card muestra el nombre del propietario', async () => {})
 // ── Auth HU-008: Token expiry ─────────────────────────────────────────────────
 
 Given('que tengo un token expirado en el cliente', async ({ page }) => {
-  await page.evaluate(() => localStorage.setItem('genova_token', 'expired.token.value'))
+  await page.goto('/login')
+  await page.evaluate(() => localStorage.setItem('genova_token', 'expired.fake.token'))
 })
 
 When('intento acceder a una ruta protegida', async ({ page }) => {

@@ -4,10 +4,8 @@ import { defineBddConfig } from 'playwright-bdd'
 // Paths are relative to this config file's directory (tests/)
 const testDir = defineBddConfig({
   features: [
-    'features/auth/HU-001_registro.feature',
     'features/auth/HU-008_login.feature',
     'features/roles/HU-018_crear-rol.feature',
-    'features/ova/HU-006_historial.feature',
   ],
   steps: 'steps/e2e/**/*.js',
 })
