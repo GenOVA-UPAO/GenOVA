@@ -35,6 +35,8 @@ jobs:
       DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
       BASE: http://localhost:8000
+      GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
+      OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
     steps:
       - uses: actions/checkout@v4
 
@@ -87,6 +89,8 @@ jobs:
       DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
       BASE_URL: http://localhost:5173
+      GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
+      OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
     steps:
       - uses: actions/checkout@v4
 
