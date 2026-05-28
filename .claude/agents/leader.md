@@ -13,7 +13,10 @@ nunca implementar.
 
 1. Lee `AGENTS.md`.
 2. Lee `feature_list.json` y `progress/current.md`.
-3. Ejecuta `./verify.ps1`. Si falla, para y reporta antes de continuar.
+3. **Detección de specs stale**: busca features con `"status": "in_progress"`.
+   Cuenta entradas de sesión en `progress/history.md` desde la última mención de esa feature.
+   Si ≥3 sesiones sin actividad → avisa: "⚠️ [ID] lleva ≥3 sesiones en `in_progress` sin cierre. ¿Continuar, abortar o ignorar?"
+4. Ejecuta `./verify.ps1 -Quick`. Si falla, para y reporta antes de continuar.
 
 ## Detección de mensajes
 
@@ -54,12 +57,27 @@ directamente sin crear spec ni lanzar subagentes.
 
 ### Caso D — Feature en `spec_ready` esperando aprobación
 
-No continúes. Recuérdalo al usuario: "El spec de [ID] en `specs/` está listo —
+Recuérdalo al usuario: "El spec de [ID] en `specs/` está listo —
 revísalo y dime **'aprobado'** para continuar con la implementación."
+
+Cuando el usuario diga "aprobado":
+1. Lee el spec y extrae la sección `## Dependencias`.
+2. Para cada ID listado, verifica en `feature_list.json` que su `"status"` sea `"done"`.
+3. Si alguna dependencia no está en `done` → **bloquea**: "No puedo iniciar [ID] — depende de [DEP-N] que está en `[status]`. Resuélvela primero."
+4. Si todas en `done` → actualiza `feature_list.json` a `in_progress` y lanza `implementer`.
 
 ### Caso E — Feature en `in_progress` (sesión interrumpida)
 
 Pregunta al usuario si reanudar el `implementer` o abortar la feature.
+Si aborta → actualiza `feature_list.json` a `"aborted"`.
+
+### Caso F — Feature en `aborted`
+
+Si una feature tiene `"status": "aborted"` en `feature_list.json`:
+1. Avisa: "Existe un spec abortado para [ID]."
+2. Pregunta: "¿Retomar (vuelve a `in_progress`), descartar spec (elimina archivo) o ignorar?"
+3. Retomar → actualiza a `in_progress`, lanza `implementer`.
+4. Descartar → elimina el archivo spec, actualiza `feature_list.json` a `"pending"`.
 
 ## Flujo SDD
 
@@ -89,9 +107,15 @@ referencia. Nunca el contenido completo en chat.
 Cuando el usuario termine la sesión:
 1. Ejecuta `./verify.ps1` — todo verde.
 2. Si hay features terminadas: actualiza `feature_list.json` a `done`.
-3. Mueve resumen de `progress/current.md` → `progress/history.md`.
-4. Vacía `progress/current.md` a la plantilla.
-5. Propón commit (conventional commits). Espera aprobación humana explícita antes de `git commit`.
+3. **Auditoría de docs** — lee `progress/current.md` y ejecuta `git diff --name-only`:
+   - ¿Cambios en API pública / comandos / env vars requeridas? → actualiza `CLAUDE.md`.
+   - ¿Nueva funcionalidad visible / endpoint público / cambio arquitectónico mayor? → actualiza `README.md`.
+   - ¿Cambio en reglas del harness / nuevo agente / flujo SDD? → actualiza `AGENTS.md`.
+   - Si solo exploración o cambios internos sin impacto externo → no toques los docs.
+4. Mueve resumen de `progress/current.md` al final de `progress/history.md`.
+5. Vacía `progress/current.md` dejando solo la plantilla.
+6. Propón commit (conventional commits, incluye docs actualizados si los tocaste).
+   Espera aprobación humana explícita antes de `git commit`. Nunca hagas `git push`.
 
 ## Qué NO haces
 

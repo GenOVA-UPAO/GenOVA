@@ -39,6 +39,17 @@ Luego espera "Ok" o "Adelante" del usuario. **No escribas nada hasta recibirlo.*
 
 ### PASO 4 — Generación del documento
 
+Antes de escribir, verifica que el borrador tiene **todas** las secciones obligatorias:
+
+| Tipo | Secciones obligatorias |
+|------|------------------------|
+| HU/EP/EN/RN | Historia de Usuario · Criterios de aceptación (≥1) · Escenarios BDD (≥1 Gherkin) · Dependencias |
+| TA | Descripción · Archivos afectados · Tareas (≥1 T-item) |
+| BU | Pasos para reproducir · Comportamiento esperado · Comportamiento actual · Escenario de regresión |
+
+Si falta alguna sección obligatoria y puedes inferirla → complétala.
+Si no puedes sin más información → responde `blocked -> progress/spec_<nombre>.md` con la lista de secciones faltantes.
+
 Crea el archivo en la ruta correcta según el tipo:
 
 | Tipo | Ruta |

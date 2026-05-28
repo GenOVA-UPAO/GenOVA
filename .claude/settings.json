@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/post-edit.ps1",
+            "description": "Lint rápido tras editar. Frontend: pnpm lint. Backend: ruff check."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File ./.claude/hooks/on-stop.ps1",
+            "description": "Antes de cerrar: verify.ps1 completo. Propone commit si hay cambios."
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm lint*)",
+      "Bash(pnpm test:unit*)",
+      "Bash(pnpm test:e2e*)",
+      "Bash(python -m ruff*)",
+      "Bash(uv run ruff*)",
+      "Bash(pytest*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ]
+  }
+}
