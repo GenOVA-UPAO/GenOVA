@@ -76,8 +76,28 @@ pnpm prod:docker   # Nginx on port 80
 
 ## Migrations
 
-Auto-applied on startup via `run_migrations()`. Files in `backend/migrations/` (001–015).
-Next migration: create `backend/migrations/016_<name>.sql`.
+Auto-applied on startup via `run_migrations()`. Files in `backend/migrations/` (001–017).
+Applied filenames are tracked in `_migrations_applied` (bootstrapped by 016) so
+each file runs at most once per database. Next migration: create
+`backend/migrations/018_<name>.sql`.
+
+## Database connection (Supabase)
+
+For Render free tier, point `DATABASE_URL` to the Supabase **Transaction**
+pooler (port 6543), not the Session pooler. Pool tuning is env-driven:
+`DB_POOL_SIZE=10`, `DB_MAX_OVERFLOW=10`. `pool_pre_ping=True` and
+`pool_recycle=300` are always on to survive pgbouncer's idle eviction.
+
+## Auth
+
+JWT is issued by the backend and delivered as an httpOnly `Set-Cookie:
+genova_token=...; Secure; SameSite=Strict; HttpOnly` on `/login` and
+`/register`. The frontend never reads it directly; cookies travel automatically
+via `credentials: 'include'` in `frontend/src/lib/http.js`. Set
+`AUTH_ACCEPT_BEARER=0` in production env to reject the legacy `Authorization:
+Bearer` fallback once all clients are on cookies.
+
+`CORS_ORIGINS` (comma-separated frontend origins) is required when `ENV=production`.
 
 ## Dev seed accounts
 

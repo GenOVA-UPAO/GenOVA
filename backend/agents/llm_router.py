@@ -12,7 +12,11 @@ from openai import RateLimitError as OpenAIRateLimitError
 
 logger = logging.getLogger(__name__)
 
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# Cap per-call wait so a stuck provider doesn't hang the request thread
+# (Render free workers have no per-request timeout — they hang forever).
+_LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "30"))
+
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=_LLM_TIMEOUT_S)
 
 # OpenRouter uses the OpenAI-compatible endpoint.
 # HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
@@ -23,6 +27,7 @@ openrouter_client = OpenAI(
         "HTTP-Referer": os.getenv("APP_URL", "https://genova.ai"),
         "X-Title": "GenOVA",
     },
+    timeout=_LLM_TIMEOUT_S,
 )
 
 # (provider, model_id, extra_kwargs)
@@ -167,6 +172,7 @@ def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
         model=_VISION_MODEL,
         messages=messages,
         max_completion_tokens=max_tokens,
+        timeout=_LLM_TIMEOUT_S,
     )
     return response.choices[0].message.content
 

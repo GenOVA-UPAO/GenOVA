@@ -23,8 +23,8 @@ else:
     engine_kwargs.update(
         pool_pre_ping=True,
         pool_recycle=300,
-        pool_size=5,
-        max_overflow=5,
+        pool_size=int(os.getenv("DB_POOL_SIZE", "10")),
+        max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "10")),
     )
     # Lightweight keepalive — covers cases where pre-ping passes but the
     # connection drops mid-request.

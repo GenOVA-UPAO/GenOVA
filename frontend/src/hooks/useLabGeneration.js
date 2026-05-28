@@ -9,7 +9,9 @@ import {
 } from '../services/labsService.js'
 import { useLabPrompt } from './useLabPrompt.js'
 
-const POLL_MS = 2000
+// Cut from 2s → 5s. Generation latency dwarfs the polling interval; this
+// reduces Render free-tier request load by ~60% without changing UX.
+const POLL_MS = 5000
 
 /**
  * Central hook for the Labs page (experimentation sandbox).

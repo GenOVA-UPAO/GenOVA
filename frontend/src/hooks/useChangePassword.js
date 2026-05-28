@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { getToken } from '../lib/auth.js'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+import { apiFetch } from '../lib/http.js'
 
 export function useChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('')
@@ -46,12 +44,10 @@ export function useChangePassword() {
     if (!validatePassword()) return
 
     setSavingPassword(true)
-    const token = getToken()
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/users/me/change-password`, {
+      const response = await apiFetch('/api/users/me/change-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           current_password: currentPassword,
           new_password: newPassword,

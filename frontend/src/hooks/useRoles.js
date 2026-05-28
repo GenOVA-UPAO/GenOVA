@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { getToken } from '../lib/auth.js'
+import { apiFetch } from '../lib/http.js'
 import { useRoleDelete } from './useRoleDelete.js'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function useRoles() {
   const [roles, setRoles] = useState([])
@@ -21,11 +19,8 @@ export function useRoles() {
   const del = useRoleDelete(setRoles)
 
   const fetchRoles = async () => {
-    const token = getToken()
     try {
-      const response = await fetch(`${apiBaseUrl}/api/roles`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await apiFetch('/api/roles')
       if (response.status === 200) {
         setRoles(await response.json())
       } else {
@@ -86,15 +81,13 @@ export function useRoles() {
     setIsSubmitting(true)
     setFormError('')
 
-    const token = getToken()
     const isEdit = !!editingRole
-    const url = isEdit ? `${apiBaseUrl}/api/roles/${editingRole.id}` : `${apiBaseUrl}/api/roles`
+    const path = isEdit ? `/api/roles/${editingRole.id}` : '/api/roles'
     const method = isEdit ? 'PATCH' : 'POST'
 
     try {
-      const response = await fetch(url, {
+      const response = await apiFetch(path, {
         method,
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           name,
           description: roleDescription,

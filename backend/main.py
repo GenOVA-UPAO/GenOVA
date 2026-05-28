@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import time
@@ -8,8 +9,9 @@ from dotenv import load_dotenv
 # Load .env before importing modules that read env vars at import time.
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
@@ -66,13 +68,8 @@ class ProcessTimeMiddleware(BaseHTTPMiddleware):
         return response
 
 
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    run_migrations()
-    Base.metadata.create_all(bind=engine)
-    seed_db()
-    # Best-effort cleanup of orphaned RAG chunks from prior runs. Failures are
-    # logged but don't block boot (e.g. when pgvector isn't installed yet).
+def _background_rag_purge() -> None:
+    """Run purge in a worker thread so cold boot isn't blocked by a slow DB."""
     try:
         from sqlalchemy.orm import Session
 
@@ -84,6 +81,15 @@ async def lifespan(_: FastAPI):
                 logger.info("Purged %d expired RAG chunks on startup", removed)
     except Exception:
         logger.exception("RAG startup cleanup failed (continuing).")
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    run_migrations()
+    Base.metadata.create_all(bind=engine)
+    seed_db()
+    # Fire-and-forget cleanup; boot completes without waiting on the DB.
+    asyncio.create_task(asyncio.to_thread(_background_rag_purge))
     yield
 
 
@@ -91,18 +97,26 @@ app = FastAPI(title="GENOVA Backend API", version="0.1.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+_env = os.getenv("ENV", "dev").lower()
 _extra = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
-allowed_origins = [
-    "http://localhost",
-    "http://localhost:80",
-    "http://localhost:3000",
-    "http://localhost:4173",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:4173",
-    "http://127.0.0.1:5173",
-    *_extra,
-]
+if _env == "production":
+    if not _extra:
+        raise RuntimeError(
+            "CORS_ORIGINS must be set in production (comma-separated frontend origins)."
+        )
+    allowed_origins = _extra
+else:
+    allowed_origins = [
+        "http://localhost",
+        "http://localhost:80",
+        "http://localhost:3000",
+        "http://localhost:4173",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:4173",
+        "http://127.0.0.1:5173",
+        *_extra,
+    ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -110,25 +124,35 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
+    max_age=86400,
 )
+# Compress JSON / HTML responses larger than 1KB. Saves ~70% bandwidth on
+# Render free tier outbound and shaves transit latency for SCORM previews.
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 # Added last → outermost layer; times total server processing including CORS.
 app.add_middleware(ProcessTimeMiddleware)
 
 
+_HEALTH_CACHE = "public, max-age=10"
+
+
 @app.get("/health")
-def health() -> dict[str, str]:
+def health(response: Response) -> dict[str, str]:
+    response.headers["Cache-Control"] = _HEALTH_CACHE
     return {"status": "ok"}
 
 
 @app.get("/api/health")
-def api_health() -> dict[str, str]:
+def api_health(response: Response) -> dict[str, str]:
+    response.headers["Cache-Control"] = _HEALTH_CACHE
     return {"status": "ok", "scope": "api"}
 
 
 @app.get("/api/db/health")
-def db_health() -> dict[str, str]:
+def db_health(response: Response) -> dict[str, str]:
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
+    response.headers["Cache-Control"] = _HEALTH_CACHE
     return {"status": "ok", "scope": "db"}
 
 

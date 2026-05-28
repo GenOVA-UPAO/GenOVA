@@ -37,11 +37,18 @@ Run-Step "Frontend ESLint (pnpm lint)" {
     pnpm lint
 }
 
-# [2] Backend ruff
+# [2] Backend ruff (try python -m ruff; fall back to uv run ruff if missing).
 Run-Step "Backend ruff check" {
     Push-Location backend
-    python -m ruff check . 2>&1
+    python -m ruff check . 2>&1 | Out-Host
     $exit = $LASTEXITCODE
+    if ($exit -ne 0) {
+        $needsFallback = (& python -c "import ruff" 2>&1) -match "No module"
+        if ($needsFallback) {
+            uv run ruff check . 2>&1 | Out-Host
+            $exit = $LASTEXITCODE
+        }
+    }
     Pop-Location
     exit $exit
 }
@@ -51,15 +58,21 @@ Run-Step "Frontend unit BDD (pnpm test:unit)" {
     pnpm test:unit
 }
 
+# Helper: probe puerto con reintentos progresivos (3s -> 6s -> 9s).
+function Test-Endpoint {
+    param([string]$Url)
+    foreach ($t in 3, 6, 9) {
+        try {
+            $r = Invoke-WebRequest -Uri $Url -TimeoutSec $t -ErrorAction Stop
+            if ($r.StatusCode -lt 400) { return $true }
+        } catch {}
+    }
+    return $false
+}
+
 # [4] Backend BDD (pytest-bdd) — solo si backend esta corriendo
 if (-not $Quick) {
-    $backendUp = $false
-    try {
-        $response = Invoke-WebRequest -Uri "http://localhost:8000/health" -TimeoutSec 3 -ErrorAction Stop
-        $backendUp = ($response.StatusCode -eq 200)
-    } catch {
-        $backendUp = $false
-    }
+    $backendUp = Test-Endpoint "http://localhost:8000/health"
 
     if ($backendUp) {
         Run-Step "Backend BDD (pytest step_defs)" {
@@ -79,16 +92,8 @@ if (-not $Quick) {
 
 # [5] E2E — solo si -E2E y ambos servers activos
 if ($E2E) {
-    $frontendUp = $false
-    $backendUp = $false
-    try {
-        $r = Invoke-WebRequest -Uri "http://localhost:5173" -TimeoutSec 3 -ErrorAction Stop
-        $frontendUp = ($r.StatusCode -lt 400)
-    } catch { $frontendUp = $false }
-    try {
-        $r = Invoke-WebRequest -Uri "http://localhost:8000/health" -TimeoutSec 3 -ErrorAction Stop
-        $backendUp = ($r.StatusCode -eq 200)
-    } catch { $backendUp = $false }
+    $frontendUp = Test-Endpoint "http://localhost:5173"
+    $backendUp = Test-Endpoint "http://localhost:8000/health"
 
     if ($frontendUp -and $backendUp) {
         Run-Step "E2E Playwright (pnpm test:e2e)" {

@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { saveToken } from '../lib/auth.js'
+import { markLoggedIn } from '../lib/auth.js'
+import { apiFetch } from '../lib/http.js'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function RegisterPage() {
   const navigate = useNavigate()
@@ -36,16 +35,15 @@ export function RegisterPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(`${apiBaseUrl}/auth/register`, {
+      const response = await apiFetch('/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ full_name: fullName.trim(), email, password }),
       })
 
       const data = await response.json()
 
       if (response.status === 201) {
-        saveToken(data?.access_token)
+        markLoggedIn()
         navigate('/dashboard')
         return
       }

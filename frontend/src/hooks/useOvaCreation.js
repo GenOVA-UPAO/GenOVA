@@ -113,7 +113,6 @@ export function useOvaCreation() {
 
     if (uploadIds.length > 0) {
       setProgress({ pct: 5, label: 'Entendiendo los archivos…' })
-      await new Promise((r) => setTimeout(r, 1500))
     }
 
     let failCount = 0
@@ -138,8 +137,7 @@ export function useOvaCreation() {
         })
         collected[phase].push(data)
         states[i] = 'done'
-      } catch (err) {
-        console.error('Error generating resource:', err)
+      } catch {
         states[i] = 'failed'
         failCount += 1
         collected[phase].push(null)

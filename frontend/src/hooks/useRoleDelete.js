@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { getToken } from '../lib/auth.js'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+import { apiFetch } from '../lib/http.js'
 
 export function useRoleDelete(setRoles) {
   const [deletingRole, setDeletingRole] = useState(null)
@@ -27,14 +25,10 @@ export function useRoleDelete(setRoles) {
     }
     setIsDeleting(true)
     setDeleteError('')
-    const token = getToken()
-    const baseUrl = `${apiBaseUrl}/api/roles/${deletingRole.id}`
-    const url = isReassign ? `${baseUrl}?reassign_to_id=${reassignRoleId}` : baseUrl
+    const basePath = `/api/roles/${deletingRole.id}`
+    const path = isReassign ? `${basePath}?reassign_to_id=${reassignRoleId}` : basePath
     try {
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await apiFetch(path, { method: 'DELETE' })
       if (response.status === 204) {
         if (isReassign) {
           setRoles((prev) =>

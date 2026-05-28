@@ -2,7 +2,7 @@
 import io
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -14,6 +14,7 @@ from auth.dependencies import require_admin
 from database import get_db
 from labs.service import build_improve_prompt, get_job_results, start_lab_job
 from models import LabResult, User
+from rate_limit import limiter
 from scorm.service import build_scorm_zip_bytes
 
 router = APIRouter()
@@ -41,7 +42,9 @@ class ImprovePromptRequest(BaseModel):
 
 
 @router.post("/generate")
+@limiter.limit("5/minute")
 def start_generation(
+    request: Request,
     payload: StartGenerationRequest,
     current_user: User = Depends(require_admin),
 ):
@@ -75,7 +78,9 @@ def poll_results(job_id: str, _: User = Depends(require_admin)):
 
 
 @router.post("/improve-prompt")
+@limiter.limit("10/minute")
 def improve_prompt(
+    request: Request,
     payload: ImprovePromptRequest,
     _: User = Depends(require_admin),
     db: Session = Depends(get_db),

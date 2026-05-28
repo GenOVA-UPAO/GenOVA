@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router'
 import { NavbarBrand } from './NavbarBrand.jsx'
 import { NavbarMenuItems } from './NavbarMenuItems.jsx'
 import { SidebarMenu } from './SidebarMenu.jsx'
-import { clearToken } from '../../lib/auth.js'
+import { clearSession } from '../../lib/auth.js'
 
 export function Navbar() {
   const navigate = useNavigate()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const handleLogout = () => {
-    clearToken()
+  const handleLogout = async () => {
+    await clearSession()
     navigate('/login')
   }
 

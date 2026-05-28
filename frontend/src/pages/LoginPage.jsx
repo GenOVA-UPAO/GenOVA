@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { saveToken } from '../lib/auth.js'
+import { markLoggedIn } from '../lib/auth.js'
+import { apiFetch } from '../lib/http.js'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -27,16 +27,15 @@ export function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch(`${apiBaseUrl}/auth/login`, {
+      const response = await apiFetch('/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
 
       const data = await response.json()
 
       if (response.status === 200) {
-        saveToken(data?.access_token)
+        markLoggedIn()
         navigate('/dashboard')
         return
       }

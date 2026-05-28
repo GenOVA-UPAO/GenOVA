@@ -1,8 +1,11 @@
 """Background generation workers and job store for Labs."""
 import json
+import logging
+import os
 import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 
 from agents.llm_router import generar_texto, generar_texto_with_model
 from agents.podcast import build_podcast_html, podcast_audio_b64
@@ -11,6 +14,25 @@ from database import SessionLocal
 from labs.catalog import quality_check_html
 from labs.prompt_utils import CONCEPT_PH, ENGAGE_CODE, ENGAGE_PODCAST, EXPLORE_CODE
 from models import LabResult
+
+logger = logging.getLogger(__name__)
+
+# Bound worker concurrency so a burst of /labs/generate calls can't spawn
+# unlimited threads on Render free tier (512MB RAM cap).
+_MAX_LAB_WORKERS = int(os.getenv("LABS_MAX_WORKERS", "4"))
+_lab_pool = ThreadPoolExecutor(max_workers=_MAX_LAB_WORKERS, thread_name_prefix="lab-gen")
+
+
+def _safe_error(exc: BaseException) -> str:
+    """Generic, leak-safe error label for the client. Full detail goes to logs."""
+    name = type(exc).__name__
+    if "RateLimit" in name or "429" in name:
+        return "rate_limited"
+    if "Timeout" in name:
+        return "timeout"
+    if "Auth" in name or "401" in name or "403" in name:
+        return "auth_error"
+    return "generation_failed"
 
 # ──────────────────────────────────────────────────────────────
 #  In-memory job store
@@ -53,7 +75,8 @@ def _generate_one(
         html = strip_markdown(generar_texto(explore_html(resource_type, concept, json.dumps(json_data, ensure_ascii=False, indent=2)), "codigo", max_tokens=4000))
         return html, json_data, None
     except Exception as exc:
-        return None, None, str(exc)
+        logger.exception("Lab generation failed (phase=%s type=%s)", phase, resource_type)
+        return None, None, _safe_error(exc)
 
 
 def _worker(
@@ -81,7 +104,8 @@ def _worker(
         db.refresh(result)
         result_id = str(result.id)
     except Exception as exc:
-        error = str(exc)
+        logger.exception("Lab worker crashed (phase=%s type=%s)", phase, resource_type)
+        error = _safe_error(exc)
     finally:
         db.close()
 
@@ -105,12 +129,11 @@ def start_lab_job(
     with _lab_jobs_lock:
         _lab_jobs[job_id] = {"total": len(model_configs), "done": 0, "slots": [None] * len(model_configs)}
     for i, cfg in enumerate(model_configs):
-        threading.Thread(
-            target=_worker,
-            args=(job_id, i, phase, resource_type, concept,
-                  cfg["prompt_text"], cfg["model_id"], cfg["provider"], user_id),
-            daemon=True,
-        ).start()
+        _lab_pool.submit(
+            _worker,
+            job_id, i, phase, resource_type, concept,
+            cfg["prompt_text"], cfg["model_id"], cfg["provider"], user_id,
+        )
     return job_id
 
 
