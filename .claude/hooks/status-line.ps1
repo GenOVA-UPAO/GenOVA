@@ -1,6 +1,6 @@
-# status-line.ps1 — Genera la statusLine de Claude Code.
-# Formato: <branch> · <feature_in_progress | idle>
-# Stdout ends up rendered in the prompt status line; mantenlo corto.
+# status-line.ps1 - Status line for Claude Code prompt.
+# Format: GENOVA <branch> | <feature_in_progress | idle>
+# Keep ASCII-only so PowerShell 5.1 (default in Windows) parses without BOM.
 
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $root
@@ -20,4 +20,4 @@ if (Test-Path $featureList) {
     }
 }
 
-Write-Output "GENOVA $branch · $activeFeature"
+Write-Output "GENOVA $branch | $activeFeature"

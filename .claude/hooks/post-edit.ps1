@@ -1,6 +1,5 @@
-# post-edit.ps1 — Hook PostToolUse (Edit|Write)
-# Corre lint rapido tras editar cualquier archivo.
-# Frontend: pnpm lint | Backend: ruff check
+# post-edit.ps1 - Hook PostToolUse (Edit|Write)
+# Quick lint after edit. Frontend: pnpm lint. Backend: ruff check.
 
 param([string]$FilePath = $env:CLAUDE_TOOL_INPUT_FILE_PATH)
 
@@ -13,12 +12,13 @@ function Show-Lint($label, $output, $exitCode) {
         return
     }
     Write-Host ""
-    Write-Host "[harness] ADVERTENCIA — $label fallo:" -ForegroundColor Yellow
+    Write-Host "[harness] WARN - $label failed:" -ForegroundColor Yellow
     $lines = @($output)
     if ($lines.Count -le 20) {
         $lines | ForEach-Object { Write-Host $_ -ForegroundColor Red }
     } else {
-        Write-Host "(... $($lines.Count - 20) lineas anteriores omitidas ...)" -ForegroundColor DarkGray
+        $skipped = $lines.Count - 20
+        Write-Host "(... $skipped more lines above ...)" -ForegroundColor DarkGray
         $lines[-20..-1] | ForEach-Object { Write-Host $_ -ForegroundColor Red }
     }
     Write-Host ""
@@ -38,7 +38,6 @@ elseif ($FilePath -match "backend[/\\]") {
     $result = python -m ruff check . 2>&1
     $exit = $LASTEXITCODE
     if ($exit -ne 0) {
-        # python sin ruff: fallback a uv
         $result2 = uv run ruff check . 2>&1
         $exit2 = $LASTEXITCODE
         if ($exit2 -eq 0) { $exit = 0; $result = $result2 } else { $result = $result2 }

@@ -1,4 +1,4 @@
-# verify.ps1 — Script de verificacion completa de GenOVA
+# verify.ps1 - Script de verificacion completa de GenOVA
 # Uso: ./verify.ps1
 # Retorna exit 0 solo si todo pasa.
 
@@ -39,18 +39,21 @@ Run-Step "Frontend ESLint (pnpm lint)" {
 
 # [2] Backend ruff (try python -m ruff; fall back to uv run ruff if missing).
 Run-Step "Backend ruff check" {
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
     Push-Location backend
-    python -m ruff check . 2>&1 | Out-Host
-    $exit = $LASTEXITCODE
-    if ($exit -ne 0) {
-        $needsFallback = (& python -c "import ruff" 2>&1) -match "No module"
-        if ($needsFallback) {
-            uv run ruff check . 2>&1 | Out-Host
-            $exit = $LASTEXITCODE
-        }
+    & python -c "import ruff" 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        & python -m ruff check . 2>&1 | ForEach-Object { Write-Host $_ }
+    } else {
+        & uv run ruff check . 2>&1 | ForEach-Object { Write-Host $_ }
     }
+    $finalExit = $LASTEXITCODE
     Pop-Location
-    exit $exit
+    $ErrorActionPreference = $prev
+    # NOTE: must NOT use `exit` inside this scriptblock — in PS5 it terminates
+    # the whole verify.ps1 process. Set LASTEXITCODE so Run-Step reads it.
+    $global:LASTEXITCODE = $finalExit
 }
 
 # [3] Frontend unit tests (cucumber-js, no backend)
@@ -70,7 +73,7 @@ function Test-Endpoint {
     return $false
 }
 
-# [4] Backend BDD (pytest-bdd) — solo si backend esta corriendo
+# [4] Backend BDD (pytest-bdd) - solo si backend esta corriendo
 if (-not $Quick) {
     $backendUp = Test-Endpoint "http://localhost:8000/health"
 
@@ -78,19 +81,19 @@ if (-not $Quick) {
         Run-Step "Backend BDD (pytest step_defs)" {
             Push-Location backend
             pytest tests/step_defs/ -v --tb=short
-            $exit = $LASTEXITCODE
+            $finalExit = $LASTEXITCODE
             Pop-Location
-            exit $exit
+            $global:LASTEXITCODE = $finalExit
         }
     } else {
         Write-Host ""
         Write-Host "--- Backend BDD (pytest step_defs) ---" -ForegroundColor Cyan
         Write-Host "SKIP: backend no esta corriendo en localhost:8000" -ForegroundColor Yellow
-        $passed += "Backend BDD (SKIP — backend offline)"
+        $passed += "Backend BDD (SKIP - backend offline)"
     }
 }
 
-# [5] E2E — solo si -E2E y ambos servers activos
+# [5] E2E - solo si -E2E y ambos servers activos
 if ($E2E) {
     $frontendUp = Test-Endpoint "http://localhost:5173"
     $backendUp = Test-Endpoint "http://localhost:8000/health"
@@ -103,7 +106,7 @@ if ($E2E) {
         Write-Host ""
         Write-Host "--- E2E Playwright ---" -ForegroundColor Cyan
         Write-Host "SKIP: frontend (:5173=$frontendUp) o backend (:8000=$backendUp) no estan corriendo" -ForegroundColor Yellow
-        $passed += "E2E Playwright (SKIP — servers offline)"
+        $passed += "E2E Playwright (SKIP - servers offline)"
     }
 }
 
