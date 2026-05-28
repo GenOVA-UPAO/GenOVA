@@ -161,6 +161,33 @@ EN-008 usando el contenido del feature file como base.
 
 ---
 
+---
+
+## INC-007 — HU-018 Esc.2: "Acceso denegado" excluido del scope E2E
+
+**Spec afectado:** `HU-018_gestion-roles-crear-rol.md` — Escenario 2
+
+**Escenario:** `Acceso denegado a usuario sin rol administrador`
+
+**Problema:** El Background autentica como administrador. El escenario reemplaza
+el token con uno de usuario normal vía inyección en `localStorage` sin recargar
+la página. Al navegar a `/admin/roles`, `AdminRoute` lanza un `fetch` a
+`/api/auth/me` que se cuelga indefinidamente en CI bajo ese contexto mixto,
+consumiendo el timeout completo del test (60 s).
+
+**Raíz técnica:** Sin recarga de página entre Background (admin) y Scenario
+(usuario), el navegador mantiene estado interno de la sesión anterior que
+interfiere con la nueva llamada autenticada de `AdminRoute`.
+
+**Acción aplicada:** Excluido con `grepInvert` en `tests/playwright.config.js`.
+El caso positivo (admins acceden) queda cubierto por los demás escenarios de HU-018.
+
+**Para testear el negativo correctamente:** Usar `test.use({ storageState })` o
+un fixture de sesión limpia que garantice un contexto de navegador completamente
+nuevo para el usuario normal, sin herencia del contexto admin del Background.
+
+---
+
 ## Resumen
 
 | INC | Specs | Tipo | Ajuste |
@@ -171,3 +198,4 @@ EN-008 usando el contenido del feature file como base.
 | INC-004 | HU-021 Esc.4 | Violación de seguridad | Corrección del response esperado |
 | INC-005 | HU-010 | No testeable en E2E | Tag @lint + step ejecuta linter |
 | INC-006 | EN-008 | Sin Gherkin en spec | Escrito desde criterios de aceptación |
+| INC-007 | HU-018 Esc.2 | Contexto mixto admin→user en CI | Excluido con `grepInvert` |
