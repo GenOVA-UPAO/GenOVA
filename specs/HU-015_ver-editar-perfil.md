@@ -43,26 +43,26 @@ El usuario puede editar los siguientes campos:
 
 ## 3. Escenarios Gherkin (BDD)
 
-### Escenario 1: Actualización exitosa del perfil completo
 ```gherkin
-Dado que soy un usuario autenticado
-Y me encuentro en la pantalla de perfil "/profile"
-Cuando cambio mi nombre a "Carlos Pérez", mi correo a "carlos.perez@upao.edu.pe", mi código UPAO a "257022", mi sexo a "masculino" y mi teléfono a "+51987285992"
-Y hago clic en "Guardar Cambios"
-Entonces el sistema realiza una llamada PATCH a "/api/users/me" con los nuevos datos
-Y el servidor retorna un código de estado 200 con la información del perfil actualizada
-Y la interfaz despliega un mensaje de éxito: "¡Perfil actualizado con éxito!"
-```
+Feature: Ver y Editar Perfil de Usuario
 
-### Escenario 2: Intento de cambiar a un correo o teléfono que ya pertenece a otro usuario
-```gherkin
-Dado que soy un usuario autenticado con el ID "uuid-user-123" y correo "carlos@correo.com"
-Y existe otra cuenta en el sistema registrada bajo "maria@correo.com"
-Y me encuentro en la pantalla de perfil "/profile"
-Cuando cambio mi correo electrónico a "maria@correo.com"
-Y hago clic en "Guardar Cambios"
-Entonces el servidor me retorna un código de estado 400 Bad Request
-Y la interfaz despliega un mensaje de advertencia: "El correo electrónico ya está en uso por otro usuario."
+  Scenario: Actualización exitosa del perfil completo
+    Given que soy un usuario autenticado
+    And me encuentro en la pantalla de perfil "/profile"
+    When cambio mi nombre a "Carlos Pérez", mi correo a "carlos.perez@upao.edu.pe", mi código UPAO a "257022", mi sexo a "masculino" y mi teléfono a "+51987285992"
+    And hago clic en "Guardar Cambios"
+    Then el sistema realiza una llamada PATCH a "/api/users/me" con los nuevos datos
+    And el servidor retorna un código de estado 200 con la información del perfil actualizada
+    And la interfaz despliega un mensaje de éxito: "¡Perfil actualizado con éxito!"
+
+  Scenario: Intento de cambiar a un correo o teléfono que ya pertenece a otro usuario
+    Given que soy un usuario autenticado con el ID "uuid-user-123" y correo "carlos@correo.com"
+    And existe otra cuenta en el sistema registrada bajo "maria@correo.com"
+    And me encuentro en la pantalla de perfil "/profile"
+    When cambio mi correo electrónico a "maria@correo.com"
+    And hago clic en "Guardar Cambios"
+    Then el servidor me retorna un código de estado 400 Bad Request
+    And la interfaz despliega un mensaje de advertencia: "El correo electrónico ya está en uso por otro usuario."
 ```
 
 ---

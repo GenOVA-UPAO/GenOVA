@@ -37,9 +37,7 @@ Cada fila de usuario (a excepción del propio usuario logueado) contará con un 
 *   **Desactivar / Activar Cuenta:** Modifica el atributo `is_active`. Si está inactivo, el usuario no podrá iniciar sesión en la plataforma.
 *   **Desbloquear Cuenta:** Habilitado únicamente si el usuario está bloqueado por demasiados intentos fallidos. Resetea `failed_login_attempts` a `0` y limpia `locked_until`.
 *   **Restablecer por Correo (SMTP):** Genera un token temporal en la tabla `PasswordResetToken` y envía de manera automática un correo electrónico usando el SMTP de Gmail de la aplicación (`soporte.genova.upao@gmail.com`) con un enlace para que el usuario restablezca su clave de forma autónoma.
-*   **Restablecer por WhatsApp (wa.me):** Genera un código de verificación OTP de 6 dígitos y abre una pestaña del navegador con la dirección:
-    `https://api.whatsapp.com/send?phone={telefono_usuario}&text=Hola,%20tu%20código%20de%20recuperación%20en%20GenOVA%20es:%20{otp_code}`
-    Esto permite al administrador enviar el mensaje de manera manual y gratuita desde su propio cliente de WhatsApp. El teléfono se normaliza automáticamente en el frontend eliminando caracteres no numéricos (espacios, guiones, símbolos "+") y anteponiendo el código de país peruano ("51") si se ingresó un número de 9 dígitos.
+*   **Restablecer por WhatsApp (wa.me):** Genera un token de reset internamente (nunca expuesto al cliente) y devuelve una `wa_url` con el enlace de restablecimiento preformateado. El frontend abre esa URL en una pestaña nueva para que el administrador envíe el mensaje manualmente desde su cliente de WhatsApp. El teléfono se normaliza automáticamente en el frontend eliminando caracteres no numéricos y anteponiendo el código de país peruano ("51") si se ingresó un número de 9 dígitos.
 
 
 ### 4. Protección contra Escalada de Privicios y Seguridad Jerárquica
@@ -53,44 +51,49 @@ Cada fila de usuario (a excepción del propio usuario logueado) contará con un 
 
 ## 3. Escenarios Gherkin (BDD)
 
-### Escenario 1: Asignación exitosa de rol a un usuario por un Administrador
 ```gherkin
-Dado que soy un usuario autenticado con el rol "administrador"
-Y me encuentro en la pantalla de gestión de usuarios "/admin/users"
-Cuando cambio el valor del selector de rol del usuario "user@genova.ai" de "usuario" a "docente"
-Entonces el sistema realiza una llamada PATCH a "/api/users/{id}/role" con el ID del rol "docente"
-Y el servidor retorna un código de estado 200 con la información del usuario actualizada
-Y el estado local en el frontend se actualiza reflejando el nuevo rol "docente" en su fila
-```
+Feature: Gestión de Usuarios y Roles
 
-### Escenario 2: Intento de cambiar el rol propio por el Administrador actual
-```gherkin
-Dado que soy el administrador autenticado con ID "uuid-admin-123" y correo "admin@genova.ai"
-Y me encuentro en la pantalla de gestión de usuarios "/admin/users"
-Cuando busco mi propia fila en la lista de usuarios
-Entonces el selector de rol correspondiente a mi fila se muestra deshabilitado
-Y el menú de acciones para mi usuario está inactivo o deshabilitado
-Y si intento enviar manualmente una petición PATCH a "/api/users/uuid-admin-123/role"
-Entonces el backend me retorna un código de estado 400 Bad Request
-```
+  Scenario: Asignación exitosa de rol a un usuario por un Administrador
+    Given que soy un usuario autenticado con el rol "administrador"
+    And me encuentro en la pantalla de gestión de usuarios "/admin/users"
+    When cambio el valor del selector de rol del usuario "user@genova.ai" de "usuario" a "docente"
+    Then el sistema realiza una llamada PATCH a "/api/users/{id}/role" con el ID del rol "docente"
+    And el servidor retorna un código de estado 200 con la información del usuario actualizada
+    And el estado local en el frontend se actualiza reflejando el nuevo rol "docente" en su fila
 
-### Escenario 3: Prevención de escalada de privilegios por un rol "coordinador"
-```gherkin
-Dado que estoy autenticado con un rol "coordinador" que posee el permiso "manage_users"
-Y existe un usuario "admin@genova.ai" con el rol "administrador"
-Cuando intento abrir el modal de edición o cambiar el rol de "admin@genova.ai" desde la interfaz
-Entonces las acciones están deshabilitadas
-Y si intento enviar manualmente un PATCH al endpoint para cambiar su rol
-Entonces el backend responde con 403 Forbidden indicando "No puedes modificar a un usuario administrador"
-```
+  Scenario: Intento de cambiar el rol propio por el Administrador actual
+    Given que soy el administrador autenticado con ID "uuid-admin-123" y correo "admin@genova.ai"
+    And me encuentro en la pantalla de gestión de usuarios "/admin/users"
+    When busco mi propia fila en la lista de usuarios
+    Then el selector de rol correspondiente a mi fila se muestra deshabilitado
+    And el menú de acciones para mi usuario está inactivo o deshabilitado
+    And si intento enviar manualmente una petición PATCH a "/api/users/uuid-admin-123/role"
+    Then el backend me retorna un código de estado 400 Bad Request
 
-### Escenario 4: Restablecimiento de contraseña por correo (SMTP automático)
-```gherkin
-Dado que soy un administrador en la pantalla de gestión de usuarios
-Cuando hago clic en la opción "Restablecer por Correo" del usuario "estudiante@upao.edu.pe"
-Entonces el backend genera un token de restablecimiento único
-Y el servidor envía un correo electrónico automático a "estudiante@upao.edu.pe" desde "soporte.genova.upao@gmail.com"
-Y el frontend muestra una notificación de éxito indicando que el correo fue enviado
+  Scenario: Prevención de escalada de privilegios por un rol "coordinador"
+    Given que estoy autenticado con un rol "coordinador" que posee el permiso "manage_users"
+    And existe un usuario "admin@genova.ai" con el rol "administrador"
+    When intento abrir el modal de edición o cambiar el rol de "admin@genova.ai" desde la interfaz
+    Then las acciones están deshabilitadas
+    And si intento enviar manualmente un PATCH al endpoint para cambiar su rol
+    Then el backend responde con 403 Forbidden indicando "No puedes modificar a un usuario administrador"
+
+  Scenario: Restablecimiento de contraseña por correo (SMTP automático)
+    Given que soy un administrador en la pantalla de gestión de usuarios
+    When hago clic en la opción "Restablecer por Correo" del usuario "estudiante@upao.edu.pe"
+    Then el backend genera un token de restablecimiento único internamente
+    And el servidor envía un correo electrónico automático a "estudiante@upao.edu.pe"
+    And el frontend muestra una notificación de éxito indicando que el correo fue enviado
+    And la respuesta del servidor NO contiene el token de restablecimiento
+
+  Scenario: Restablecimiento de contraseña por WhatsApp (link manual)
+    Given que soy un administrador en la pantalla de gestión de usuarios
+    And el usuario "estudiante@upao.edu.pe" tiene teléfono registrado
+    When hago clic en la opción "Restablecer por WhatsApp"
+    Then el backend genera un token internamente y retorna una wa_url de WhatsApp
+    And el frontend abre la URL de WhatsApp para que el administrador envíe el mensaje manualmente
+    And la respuesta del servidor NO contiene el token de restablecimiento
 ```
 
 ---
@@ -199,12 +202,11 @@ Modal: Editar Perfil de Usuario
 ### 5. `POST /api/users/{id}/reset-password-email` (Enviar Correo SMTP)
 - **Respuesta (200 OK)**: `{ "message": "Correo de restablecimiento enviado exitosamente." }`
 
-### 6. `POST /api/users/{id}/reset-password-whatsapp` (Generar OTP para WhatsApp)
+### 6. `POST /api/users/{id}/reset-password-whatsapp` (Generar link WhatsApp para reset)
 - **Respuesta (200 OK)**:
 ```json
 {
-  "phone_number": "+51987285992",
-  "otp_code": "482910",
-  "text": "Hola, tu código de recuperación en GenOVA es: 482910"
+  "wa_url": "https://api.whatsapp.com/send?phone=51987285992&text=Hola%2C+tu+enlace+de+recuperaci%C3%B3n+en+GenOVA+es%3A+..."
 }
 ```
+> **Seguridad**: El token de restablecimiento se genera internamente y **nunca se devuelve al cliente**. Solo se expone la URL de WhatsApp para que el administrador la comparta manualmente. El token vive en `PasswordResetToken` y se consume en `POST /api/auth/reset-password`.

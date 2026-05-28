@@ -11,63 +11,66 @@ Generar un paquete SCORM 1.2 descargable e importable en Canvas LMS, con estruct
 
 ## Alcance
 Incluye:
-- Botón "Exportar SCORM" visible en la vista `/crear-ova`.
-- Endpoint backend para exportación de `.zip`.
-- Estructura SCORM mínima válida con:
+- Botón "Descargar SCORM" en `/mis-ovas` (card con status `listo`) y al finalizar la generación en `/crear-ova`.
+- Endpoint `GET /api/ova/{id}/scorm` que devuelve 302 redirect a URL firmada de Supabase Storage (1 hora de validez), o bytes del zip desde disco local en dev.
+- Paquete SCORM 1.2 con estructura válida:
   - `imsmanifest.xml`
   - `index.html`
   - `resources/content.html`
   - `resources/styles.css`
   - `resources/scorm.js`
   - `resources/app.js`
-- Contenido de prueba navegable (sin contenido IA).
+- Contenido navegable generado por IA (recursos ENGAGE + EXPLORE empaquetados).
 - Script SCORM 1.2 para registrar estado de lección y commit.
 
 No incluye:
-- Generación de contenido dinámico por IA.
-- Validación formal en SCORM Cloud (quedará a cargo de TA-005).
-- Persistencia de versiones de paquetes exportados en servidor.
+- Validación formal en SCORM Cloud (a cargo de TA-005).
+- Retención indefinida de versiones históricas del paquete (solo la versión activa).
 
 ## Criterios de aceptación (detallados)
-1. Se visualiza un botón "Exportar SCORM" en la vista de creación OVA.
-2. Al accionar el botón, se descarga un archivo `.zip` funcional.
+1. Botón "Descargar SCORM" visible en la card del OVA en `/mis-ovas` cuando `status = listo`, y al finalizar la generación en `/crear-ova`.
+2. Al accionar el botón, el frontend hace `GET /api/ova/{id}/scorm` y sigue el redirect 302 para iniciar la descarga del `.zip`.
 3. El zip incluye `imsmanifest.xml` y carpeta `resources/` con HTML/CSS/JS.
 4. El contenido abre y navega sin dependencias externas (modo offline dentro del LMS).
 5. El JS SCORM inicializa sesión cuando encuentra API LMS y guarda progreso básico.
 6. La estructura queda preparada para validación formal posterior en TA-005 (SCORM Cloud).
 
 ## Flujo funcional
-1. Usuario entra a `/crear-ova`.
-2. Usuario presiona botón "Exportar SCORM".
-3. Frontend llama a `POST /api/scorm/export`.
-4. Backend construye zip SCORM en memoria y devuelve `application/zip`.
-5. Navegador inicia descarga (`ova-scorm.zip`).
+1. Usuario accede a `/mis-ovas` (o al panel de resultados en `/crear-ova`).
+2. Usuario presiona botón "Descargar SCORM" en la card del OVA con `status = listo`.
+3. Frontend hace `GET /api/ova/{id}/scorm`.
+4. Backend retorna `302 redirect` a URL firmada de Supabase Storage (1 h) — o bytes del zip en dev si no hay Supabase configurado.
+5. Navegador descarga el `.zip` SCORM.
 
 ## Escenarios BDD (Gherkin)
 ```gherkin
 Feature: Exportación de OVA a SCORM
-  Como estudiante UPAO
-  Quiero exportar un OVA en SCORM
-  Para importarlo en Canvas LMS
 
-  Scenario: Botón visible en Crear OVA
-    Given la aplicación frontend en la ruta /crear-ova
-    When la vista carga correctamente
-    Then debo ver el botón "Exportar SCORM"
+  Scenario: Botón de descarga visible en Mis OVAs
+    Given el usuario autenticado tiene al menos un OVA con status "listo"
+    When navega a "/mis-ovas"
+    Then debe ver el botón "Descargar SCORM" en la card del OVA
 
-  Scenario: Descarga de zip SCORM
-    Given el backend operativo en /api/scorm/export
-    When presiono el botón "Exportar SCORM"
-    Then se debe descargar un archivo ova-scorm.zip
+  Scenario: Botón de descarga visible al finalizar generación
+    Given el usuario acaba de generar un OVA exitosamente en "/crear-ova"
+    When la generación alcanza 100% y status cambia a "listo"
+    Then debe aparecer el botón "Descargar SCORM" en el panel de resultados
+
+  Scenario: Descarga de zip SCORM mediante redirect
+    Given un OVA con status "listo" y su id conocido
+    When el usuario presiona "Descargar SCORM"
+    Then el frontend llama a "GET /api/ova/{id}/scorm"
+    And el backend responde con 302 redirect a URL firmada
+    And el navegador descarga el archivo zip SCORM
 
   Scenario: Estructura válida mínima del paquete
-    Given el archivo ova-scorm.zip descargado
+    Given el archivo zip SCORM descargado
     When inspecciono su contenido
     Then debe incluir imsmanifest.xml, index.html y carpeta resources con html/css/js
 
   Scenario: Registro básico de progreso en LMS
     Given el paquete abierto desde un LMS compatible SCORM 1.2
-    When el usuario marca completado desde la interfaz de prueba
+    When el usuario marca completado desde la interfaz
     Then el paquete debe enviar lesson_status y commit a la API LMS
 ```
 

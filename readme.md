@@ -2,6 +2,41 @@
 
 Plataforma web para la generación asistida por IA de Objetos Virtuales de Aprendizaje (OVA) con exportación SCORM 1.2. Implementa la metodología 5E (ENGAGE y EXPLORE) y empaqueta los resultados como paquetes SCORM listos para subir a un LMS.
 
+## Harness Engineering + SDD
+
+Este repositorio usa **Harness Engineering** con **Spec-Driven Development (SDD)** para garantizar que toda funcionalidad nueva pasa por una especificación aprobada antes de implementarse.
+
+### Flujo de trabajo
+
+```
+[Mensaje] → leader pregunta confirmación → spec_author (4 pasos SDD)
+         → spec_ready → ⏸ HUMANO APRUEBA → implementer → reviewer → done
+```
+
+### Archivos clave del harness
+
+| Archivo | Rol |
+|---|---|
+| `AGENTS.md` | Punto de entrada — mapa del repo para agentes |
+| `feature_list.json` | Registro de todas las features y su estado |
+| `CHECKPOINTS.md` | Criterios objetivos de calidad |
+| `verify.ps1` | Script de verificación (lint + tests) |
+| `progress/current.md` | Estado de la sesión activa |
+| `progress/history.md` | Bitácora de sesiones anteriores |
+| `specs/HU-*.md`, `EN-*.md` | Especificaciones de historias y enablers |
+| `tasks/TA-*.md` | Especificaciones de tareas técnicas |
+| `bugs/BU-*.md` | Especificaciones de defectos |
+| `.claude/agents/` | Definiciones de sub-agentes (leader, spec_author, implementer, reviewer) |
+
+### Verificación rápida
+
+```powershell
+./verify.ps1          # lint + unit + backend BDD (si backend activo)
+./verify.ps1 -Quick   # solo lint + unit (sin backend)
+```
+
+Los hooks en `.claude/settings.json` ejecutan lint automáticamente tras cada edición y `verify.ps1` al cerrar la sesión.
+
 ## Stack
 
 | Capa | Tecnología |

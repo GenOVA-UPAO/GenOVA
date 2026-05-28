@@ -65,6 +65,40 @@ users (1) ------ (N) password_reset_tokens
 ovas (independiente)
 ```
 
+## Escenarios BDD (Gherkin)
+
+```gherkin
+Feature: Habilitar Base de Datos para Gestión de Usuarios
+
+  Scenario: PostgreSQL accesible desde backend
+    Given el backend FastAPI configurado con DATABASE_URL válida de Supabase
+    When el servicio arranca
+    Then la conexión a PostgreSQL se establece sin errores
+    And GET /api/db/health responde con status "ok"
+
+  Scenario: Tablas del esquema inicial creadas
+    Given el backend arranca por primera vez con migrations habilitadas
+    When run_migrations() se ejecuta en el lifespan
+    Then existen las tablas: users, ovas, sessions, roles, user_roles, password_reset_tokens
+    And todas las tablas son accesibles vía ORM SQLAlchemy
+
+  Scenario: Variables de entorno nunca en código fuente
+    Given el repositorio clonado sin archivo .env
+    When el backend intenta arrancar sin DATABASE_URL configurada
+    Then el proceso falla con un error claro de configuración
+    And ningún valor de credencial aparece hardcodeado en el código fuente
+
+  Scenario: CRUD operacional sobre tabla users
+    Given la base de datos inicializada y seed ejecutado
+    When se realiza una operación de lectura sobre la tabla users
+    Then retorna al menos los usuarios de seed: admin@genova.ai y user@genova.ai
+
+  Scenario: Script de migración disponible en el repositorio
+    Given el repositorio clonado
+    When se busca el archivo de migración inicial
+    Then existe backend/migrations/001_init.sql con la definición del esquema inicial
+```
+
 ## Checklist de verificación
 - `backend/.env` contiene `DATABASE_URL` (Session Pooler).
 - `backend/migrations/001_init.sql` presente.

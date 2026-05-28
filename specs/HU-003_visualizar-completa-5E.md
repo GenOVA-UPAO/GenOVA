@@ -20,12 +20,11 @@ Mostrar el output principal del OVA generado como una vista previa navegable y e
   - Bloques de código con etiqueta de lenguaje (`code`)
   - Imágenes con pie de foto (`image`)
 - Indicador visual de fase activa (color diferenciado por fase).
-- Botón "Editar" por fase, presente pero deshabilitado (placeholder para Sprint 2).
+- Botón "Editar" por fase, habilitado — redirige al editor en `/mis-ovas/{id}/editar`.
 - La vista aparece automáticamente al completarse la generación del OVA (progreso 100%).
 - Se reinicia (desaparece) al iniciar una nueva generación.
 
 ### No incluye
-- Edición real del contenido de las fases (queda para Sprint 2).
 - Persistencia del contenido en base de datos (datos en memoria por sesión).
 - Exportación directa desde esta vista (corresponde a HU-004).
 - Soporte de video embebido como tipo de sección.
@@ -39,7 +38,7 @@ Mostrar el output principal del OVA generado como una vista previa navegable y e
 2. Todo el contenido de cada fase debe ser visible sin truncamiento en la interfaz.
 3. La vista previa solo se muestra cuando `ova_content` está disponible (generación exitosa).
 4. Cada pestaña activa muestra el contenido completo de su fase sin paginación interna.
-5. El botón "Editar" debe estar presente en cada fase pero deshabilitado con mensaje accesible ("Disponible en Sprint 2").
+5. El botón "Editar" debe estar habilitado en cada fase y redirigir a `/mis-ovas/{id}/editar`.
 6. Si la respuesta de generación no incluye `ova_content`, la vista previa no se muestra (no se renderiza el componente).
 7. Las secciones de tipo desconocido se ignoran silenciosamente (sin error).
 
@@ -52,14 +51,14 @@ Mostrar el output principal del OVA generado como una vista previa navegable y e
 6. El contenido renderiza correctamente texto enriquecido (encabezados, párrafos).
 7. El contenido renderiza correctamente listas ordenadas y desordenadas.
 8. El contenido renderiza correctamente bloques de código con indicador de lenguaje.
-9. Cada fase muestra un botón "Editar" deshabilitado y con atributo `title` indicando disponibilidad en Sprint 2.
+9. Cada fase muestra un botón "Editar" habilitado que redirige a `/mis-ovas/{id}/editar`.
 10. La vista aparece automáticamente al finalizar la generación del OVA.
 11. Al iniciar una nueva generación, la vista previa anterior desaparece.
 
 ## Requisitos no funcionales asociados
 - RN-UX-01: La vista previa debe renderizarse en menos de 300 ms tras recibir `ova_content`.
 - RN-ACC-01: Los botones de pestaña deben tener `role="tab"`, `aria-selected` y `aria-controls` correctamente definidos.
-- RN-ACC-02: El botón "Editar" deshabilitado debe incluir `aria-label` con el nombre de la fase y la razón de deshabilitación.
+- RN-ACC-02: El botón "Editar" debe incluir `aria-label` con el nombre de la fase.
 
 ## Escenarios BDD (Gherkin)
 
@@ -87,12 +86,11 @@ Feature: Visualizar completa 5E
     And las listas ordenadas muestran numeración y las desordenadas viñetas
     And los bloques de código muestran el lenguaje y formato monoespaciado
 
-  Scenario: Botón Editar deshabilitado por fase
+  Scenario: Botón Editar habilitado por fase
     Given la vista previa del OVA está visible
     When el estudiante visualiza cualquier fase
-    Then cada fase muestra un botón "Editar"
-    And el botón está deshabilitado con mensaje "Disponible en Sprint 2"
-    And no es posible hacer clic en él
+    Then cada fase muestra un botón "Editar" habilitado
+    And al hacer clic el sistema redirige a "/mis-ovas/{id}/editar"
 
   Scenario: Vista previa se reinicia al generar un nuevo OVA
     Given la vista previa del OVA generado está visible
@@ -116,7 +114,7 @@ Feature: Visualizar completa 5E
 +--------------------------------------------------------------+
 | [Enganche] [Exploración] [Explicación] [Elaboración] [Evaluación] |
 +--------------------------------------------------------------+
-|  Fase 1 — Enganche                              [Editar 🔒]  |
+|  Fase 1 — Enganche                              [Editar]  |
 |                                                              |
 |  ¿Por qué importa este tema?                                 |
 |                                                              |
@@ -136,7 +134,7 @@ Feature: Visualizar completa 5E
 +--------------------------------------------------------------+
 | [Enganche] [Exploración] [Explicación★] [Elaboración] [Evaluación] |
 +--------------------------------------------------------------+
-|  Fase 3 — Explicación                           [Editar 🔒]  |
+|  Fase 3 — Explicación                           [Editar]  |
 |                                                              |
 |  Conceptos fundamentales                                     |
 |                                                              |

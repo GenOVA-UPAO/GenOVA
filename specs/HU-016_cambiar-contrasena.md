@@ -39,38 +39,36 @@ Este documento define la especificación técnica y funcional completa para la h
 
 ## 3. Escenarios Gherkin (BDD)
 
-### Escenario 1: Cambio de contraseña exitoso
 ```gherkin
-Dado que soy un usuario autenticado
-Y me encuentro en la pantalla de perfil "/profile"
-Cuando ingreso mi contraseña actual "PasswordOld1"
-Y coloco mi nueva contraseña "PasswordNew2" y su confirmación "PasswordNew2"
-Y hago clic en "Actualizar Contraseña"
-Entonces el sistema realiza una llamada POST a "/api/users/me/change-password"
-Y el servidor retorna un código de estado 200 OK
-Y la interfaz despliega un mensaje verde: "¡Contraseña actualizada con éxito!"
-Y todos los campos del formulario de contraseña se vacían automáticamente
-```
+Feature: Cambiar Contraseña desde el Perfil
 
-### Escenario 2: Intento con contraseña actual incorrecta
-```gherkin
-Dado que soy un usuario autenticado
-Y me encuentro en la pantalla de perfil "/profile"
-Cuando ingreso una contraseña actual errónea como "Incorrecta123"
-Y coloco mi nueva contraseña "PasswordNew2" y su confirmación "PasswordNew2"
-Y hago clic en "Actualizar Contraseña"
-Entonces el servidor me retorna un código de estado 400 Bad Request
-Y la interfaz despliega una alerta de error: "La contraseña actual ingresada es incorrecta."
-Y los campos de texto mantienen sus valores intactos para corrección del usuario
-```
+  Scenario: Cambio de contraseña exitoso
+    Given que soy un usuario autenticado
+    And me encuentro en la pantalla de perfil "/profile"
+    When ingreso mi contraseña actual "PasswordOld1"
+    And coloco mi nueva contraseña "PasswordNew2" y su confirmación "PasswordNew2"
+    And hago clic en "Actualizar Contraseña"
+    Then el sistema realiza una llamada POST a "/api/users/me/change-password"
+    And el servidor retorna un código de estado 200 OK
+    And la interfaz despliega un mensaje verde: "¡Contraseña actualizada con éxito!"
+    And todos los campos del formulario de contraseña se vacían automáticamente
 
-### Escenario 3: Error de formato en la nueva contraseña
-```gherkin
-Dado que soy un usuario autenticado
-Y me encuentro en la pantalla de perfil "/profile"
-Cuando ingreso una contraseña nueva débil como "123" (muy corta) o "sololetras" (sin números)
-Entonces el botón "Actualizar Contraseña" se muestra deshabilitado o el frontend muestra errores de validación
-Y previene la llamada al servidor hasta cumplir las políticas de seguridad
+  Scenario: Intento con contraseña actual incorrecta
+    Given que soy un usuario autenticado
+    And me encuentro en la pantalla de perfil "/profile"
+    When ingreso una contraseña actual errónea como "Incorrecta123"
+    And coloco mi nueva contraseña "PasswordNew2" y su confirmación "PasswordNew2"
+    And hago clic en "Actualizar Contraseña"
+    Then el servidor me retorna un código de estado 400 Bad Request
+    And la interfaz despliega una alerta de error: "La contraseña actual ingresada es incorrecta."
+    And los campos de texto mantienen sus valores intactos para corrección del usuario
+
+  Scenario: Error de formato en la nueva contraseña
+    Given que soy un usuario autenticado
+    And me encuentro en la pantalla de perfil "/profile"
+    When ingreso una contraseña nueva débil como "123" o "sololetras"
+    Then el botón "Actualizar Contraseña" se muestra deshabilitado o el frontend muestra errores de validación
+    And previene la llamada al servidor hasta cumplir las políticas de seguridad
 ```
 
 ---
