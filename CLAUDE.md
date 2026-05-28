@@ -64,7 +64,7 @@ pnpm prod:docker   # Prod (Nginx on port 80, /api/* → backend)
 ```bash
 # Smoke + quality tests hit the live API. Backend must be running.
 pytest                                       # discovers tests/test_*.py
-pytest tests/step_defs/ -v -m bdd           # BDD scenarios only (pytest-bdd)
+pytest tests/step_defs/ -v --tb=short       # BDD scenarios only (pytest-bdd)
 python tests/test_agents_io.py               # manual smoke
 python tests/test_resource_quality.py        # HTML quality gate
 python tests/test_rag_uploads.py             # upload → RAG ingestion → listing → delete flow
@@ -81,7 +81,15 @@ pnpm test:e2e     # playwright-bdd E2E (requires frontend + backend running)
 pnpm test:e2e:ui  # same with Playwright UI mode
 ```
 
-Feature files live in `tests/features/` (21 files across auth/, ova/, roles/, layout/, setup/). All extracted verbatim from `specs/*.md` Gherkin sections. Incompatibilities documented in `docs/tasks/TA-BDD-incompatibilidades.md`. CI runs all three suites in `.github/workflows/ci.yml` (secrets: `TEST_DATABASE_URL`, `TEST_JWT_SECRET`).
+**BDD source pipeline**: `specs/*.md` contains the authoritative Gherkin. Feature files in `tests/features/` (21 files across auth/, ova/, roles/, layout/, setup/) are extracted from those specs. Where the spec Gherkin diverges from the real architecture, adjustments are documented in `docs/tasks/TA-BDD-incompatibilidades.md` (7 recorded incompatibilities as of INC-007).
+
+**E2E active scope**: `tests/playwright.config.js` currently wires only 2 of the 21 feature files (`HU-008_login.feature`, `HU-018_crear-rol.feature`). The remaining 19 feature files exist but are not yet added to the `features` array — they run backend-side via `pytest-bdd` step defs or are pending E2E wiring. `grepInvert` excludes the "Acceso denegado" scenario from HU-018 (see INC-007).
+
+**CI job order** (`.github/workflows/ci.yml`, triggers on push/PR to `develop`/`main`):
+1. `lint` — ESLint + ruff (parallel with backend-bdd and frontend-unit)
+2. `backend-bdd` — pytest step_defs against live backend (parallel)
+3. `frontend-unit` — cucumber-js unit tests (parallel)
+4. `e2e` — playwright-bdd; runs only after backend-bdd + frontend-unit pass
 
 ### DB seed
 
