@@ -4,13 +4,62 @@ Plataforma web para la generación asistida por IA de Objetos Virtuales de Apren
 
 ## Harness Engineering + SDD
 
-Este repositorio usa **Harness Engineering** con **Spec-Driven Development (SDD)** para garantizar que toda funcionalidad nueva pasa por una especificación aprobada antes de implementarse.
+### ¿Qué es?
 
-### Flujo de trabajo
+Este repositorio usa **Harness Engineering** combinado con **Spec-Driven Development (SDD)** para garantizar que toda funcionalidad nueva pasa por una especificación aprobada antes de implementarse. El harness no depende de ninguna herramienta específica — los agentes son archivos Markdown portables y los hooks son scripts PowerShell independientes que se pueden conectar a cualquier plataforma de agentes compatible.
+
+### Cómo empezar con el harness
+
+1. **Clonar el repo** — los archivos del harness ya están en `.claude/`
+2. **Conectar los hooks** en tu plataforma de agentes (ver tabla de hooks abajo):
+   - `SessionStart` → `.claude/hooks/session-start.ps1`
+   - `PostToolUse (Edit|Write)` → `.claude/hooks/post-edit.ps1`
+   - `Stop` → `.claude/hooks/on-stop.ps1`
+   - Status bar → `.claude/hooks/status-line.ps1`
+3. **Registrar los agentes** desde `.claude/agents/` como instrucciones de sistema en tu plataforma
+4. El agente `leader` es el punto de entrada — cualquier mensaje pasa primero por él
+5. Para crear una spec: describir la feature en lenguaje natural; `leader` coordina `spec_author`
+6. Revisar estado actual: `feature_list.json` y `progress/current.md`
+7. Verificación manual: `./verify.ps1 -Quick`
+
+### Flujo SDD completo
 
 ```
-[Mensaje] → leader pregunta confirmación → spec_author (4 pasos SDD)
-         → spec_ready → ⏸ HUMANO APRUEBA → implementer → reviewer → done
+[Mensaje] → leader → spec_author (PASO 0: detecta 1 o N specs)
+                   → 4 pasos SDD por spec
+                   → spec_ready → ⏸ HUMANO APRUEBA
+                   → implementer (verify.ps1 entre tareas)
+                   → reviewer (CHECKPOINTS.md, auto-fix tests)
+                   → done
+```
+
+Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` (o `blocked` / `aborted`)
+
+### Agentes
+
+| Agente | Rol | Cuándo se invoca |
+|---|---|---|
+| `leader` | Orquestador — detecta tipo de tarea, coordina agentes, nunca implementa código | Siempre (punto de entrada) |
+| `spec_author` | Genera specs SDD en 4 pasos; detecta múltiples specs por mensaje y las procesa secuencialmente | Cuando hay feature nueva, bug o tarea a especificar |
+| `implementer` | Implementa una feature por spec aprobada; corre `verify.ps1` entre tareas | Cuando spec está en `spec_ready` y el humano aprueba |
+| `reviewer` | Verifica implementación contra CHECKPOINTS.md; auto-repara tests (máx 2 intentos); puede actualizar su propia config | Tras cada implementación |
+| `explorer` | Mapea codebase antes de specs complejas; devuelve score de complejidad 1–5 y riesgos | Features cross-stack o de alto riesgo |
+
+### Hooks automáticos
+
+| Hook | Evento | Acción |
+|---|---|---|
+| `session-start.ps1` | SessionStart | Corre `verify.ps1 -Quick`, marca timestamp en `progress/current.md`, avisa si una feature lleva >72 h en progreso |
+| `post-edit.ps1` | PostToolUse (Edit\|Write) | Lint inmediato — `pnpm lint` (frontend) o `ruff check` (backend); muestra primeras 20 líneas de error |
+| `on-stop.ps1` | Stop | `verify.ps1` completo + escaneo de 9 patrones de secretos en archivos modificados; bloquea salida si encuentra secretos |
+| `status-line.ps1` | Status bar | Muestra `GENOVA <branch> \| <feature_id_o_idle>` en tiempo real |
+
+### Verificación rápida
+
+```powershell
+./verify.ps1          # lint + unit + backend BDD (si backend activo)
+./verify.ps1 -Quick   # solo lint + unit (sin backend)
+./verify.ps1 -E2E     # incluye Playwright E2E (requiere ambos servidores)
 ```
 
 ### Archivos clave del harness
@@ -19,23 +68,16 @@ Este repositorio usa **Harness Engineering** con **Spec-Driven Development (SDD)
 |---|---|
 | `AGENTS.md` | Punto de entrada — mapa del repo para agentes |
 | `feature_list.json` | Registro de todas las features y su estado |
-| `CHECKPOINTS.md` | Criterios objetivos de calidad |
-| `verify.ps1` | Script de verificación (lint + tests) |
+| `CHECKPOINTS.md` | Criterios objetivos de calidad (actualizable por reviewer) |
+| `verify.ps1` | Orquestador de verificación (lint + tests) |
 | `progress/current.md` | Estado de la sesión activa |
-| `progress/history.md` | Bitácora de sesiones anteriores |
+| `progress/history.md` | Bitácora append-only de sesiones anteriores |
 | `specs/HU-*.md`, `EN-*.md` | Especificaciones de historias y enablers |
 | `tasks/TA-*.md` | Especificaciones de tareas técnicas |
 | `bugs/BU-*.md` | Especificaciones de defectos |
-| `.claude/agents/` | Definiciones de sub-agentes (leader, spec_author, implementer, reviewer) |
-
-### Verificación rápida
-
-```powershell
-./verify.ps1          # lint + unit + backend BDD (si backend activo)
-./verify.ps1 -Quick   # solo lint + unit (sin backend)
-```
-
-Los hooks en `.claude/settings.json` ejecutan lint automáticamente tras cada edición y `verify.ps1` al cerrar la sesión.
+| `.claude/agents/` | Definiciones de agentes (Markdown portables) |
+| `.claude/hooks/` | Scripts PowerShell de lifecycle |
+| `.claude/settings.json` | Configuración de hooks y permisos |
 
 ## Stack
 
