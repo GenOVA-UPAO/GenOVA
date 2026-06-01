@@ -96,3 +96,25 @@ Antes de terminar:
 
 - Relee la sección relevante de `docs/` o `CLAUDE.md`.
 - Si una herramienta falla inesperadamente, **no improvises workaround**: documenta en `progress/current.md` con estado `blocked` y termina la sesión.
+
+## 8. Compatibilidad multi-herramienta
+
+Este repositorio soporta múltiples AI coding tools. `AGENTS.md` es la fuente de reglas compartida.
+
+| Tool | Lee rules | Lee agents | Config |
+|---|---|---|---|
+| Claude Code | `CLAUDE.md` + `AGENTS.md` | `.claude/agents/` | Herramienta primaria |
+| Codex CLI | `AGENTS.md` | — | Nativo |
+| Opencode | `AGENTS.md` | `.opencode/agents/` (symlink) | `.opencode/opencode.json` |
+| GitHub Copilot | `AGENTS.md` + `.github/copilot-instructions.md` | `.github/agents/sdd-leader.agent.md` | Workspace instructions |
+| Antigravity | `GEMINI.md` → `AGENTS.md` | — | `GEMINI.md` |
+
+### Symlink map
+
+| Symlink | Apunta a | Creado por |
+|---|---|---|
+| `.claude/skills/<name>/` | `.agents/skills/<name>/` | `npx skills install` |
+| `.opencode/agents/` | `.claude/agents/` | `scripts/setup-harness.ps1` |
+
+**Post-clone en Windows**: ejecuta `scripts/setup-harness.ps1` para recrear symlinks.
+Para verificar sin crear: `scripts/setup-harness.ps1 -Check`.
