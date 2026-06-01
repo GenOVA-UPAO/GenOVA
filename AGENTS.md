@@ -25,7 +25,7 @@
 | `bugs/<CODIGO>_<nombre>.md` | Specs de BU (defectos) | Antes de corregir bugs |
 | `CLAUDE.md` | Comandos de arranque, contexto de arquitectura | Contexto general al inicio |
 | `CHECKPOINTS.md` | Criterios objetivos de "estado final correcto" | Antes de declarar `done` |
-| `.claude/agents/` | Definiciones de subagentes (leader, explorer, spec_author, implementer, reviewer, skill-advisor) | Si orquestas trabajo |
+| `.claude/agents/` | Definiciones de subagentes (leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync) | Si orquestas trabajo |
 | `frontend/src/` | React 19 + Vite + Tailwind | Para implementar frontend |
 | `backend/` | FastAPI + SQLAlchemy | Para implementar backend |
 | `tests/` | BDD (cucumber-js E2E, pytest-bdd backend) | Para verificar |
@@ -113,7 +113,7 @@ Este repositorio soporta múltiples AI coding tools. `AGENTS.md` es la fuente de
 
 | Symlink | Apunta a | Creado por |
 |---|---|---|
-| `.claude/skills/<name>/` | `.agents/skills/<name>/` | `npx skills install` |
+| `.claude/skills/<name>/` | `.agents/skills/<name>/` | `npx skills add` |
 | `.opencode/agents/` | `.claude/agents/` | `scripts/setup-harness.ps1` |
 
 **Post-clone en Windows**: ejecuta `scripts/setup-harness.ps1` para recrear symlinks.

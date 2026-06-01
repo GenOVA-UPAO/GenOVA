@@ -13,7 +13,7 @@
         "shadcn", "tailwind", "fastapi", "sqlalchemy", "react",
         "pgvector", "supabase", "vite", "pydantic", "react router"
       ],
-      "benefitsAgents": ["implementer", "spec_author", "explorer"],
+      "benefitsAgents": ["implementer"],
       "source": "upstash/context7",
       "lastVerified": "2026-06-01"
     },

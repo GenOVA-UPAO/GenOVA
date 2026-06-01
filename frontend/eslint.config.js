@@ -34,5 +34,13 @@ export default defineConfig([
       'max-lines': 'off',
     },
   },
+  {
+    // Wireframes temporales (implementer FASE 0): exentos de max-lines.
+    // Se eliminan tras la implementación real; no llegan a producción.
+    files: ['**/wireframes/**/*.jsx'],
+    rules: {
+      'max-lines': 'off',
+    },
+  },
 ])
 

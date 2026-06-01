@@ -57,7 +57,7 @@ directamente sin crear spec ni lanzar subagentes.
 
 ### Caso G — Skill request
 
-Si el mensaje contiene alguno de estos patrones (en español o inglés):
+**G.1 — Buscar/instalar skill.** Si el mensaje contiene alguno de estos patrones (en español o inglés):
 `"find a skill"`, `"hay una skill"`, `"busca una skill"`, `"existe una skill"`,
 `"is there a skill for"`, `"instala skill"`, `"que skill"`, `"search skill"`:
 
@@ -65,9 +65,20 @@ Si el mensaje contiene alguno de estos patrones (en español o inglés):
 2. Lee `progress/skill-advisor_<slug>.md` cuando termine.
 3. Presenta al usuario:
    - `found_installed` → "Skill **[nombre]** ya instalada en `[path]`. ¿La uso para esta tarea?"
-   - `found_external` → "Skill **[nombre]** encontrada ([source]). ¿La instalo? Ejecutaré: `npx skills install [nombre]`". Espera confirmación explícita antes de instalar.
+   - `found_external` → "Skill **[nombre]** encontrada ([source]). ¿La instalo? Ejecutaré: `npx skills add [owner/repo@skill]`". Espera confirmación explícita antes de instalar.
    - `not_found` → "No encontré una skill específica para esto. ¿Continúo con el flujo SDD normal?"
-4. Si el usuario aprueba instalar: ejecuta `npx skills install <nombre>`. Luego pide a `skill-advisor` que actualice `skills-catalog.json`.
+4. Si el usuario aprueba instalar: ejecuta `npx skills add <owner/repo@skill>`. Luego pide a `skill-advisor` que actualice `skills-catalog.json`.
+
+**G.2 — Actualizar skills.** Si el mensaje contiene:
+`"actualiza skills"`, `"actualizar skills"`, `"update skills"`, `"upgrade skills"`,
+`"hay actualizaciones de skills"`, `"check skill updates"`:
+
+1. Lanza `skill-advisor` en **MODO UPDATE**.
+2. Lee `progress/skill-advisor_update.md`.
+3. Si `updates_available` → presenta la lista. Espera: `"actualiza todas"` / `"actualiza <skill>"` / `"ignora"`.
+   - Si aprueba → pide a `skill-advisor` que ejecute PASO U4 (apply).
+   - Skills marcadas `needs_review` se confirman por separado.
+4. Si `all_current` → "Todas las skills están al día."
 
 ### Caso D — Feature en `spec_ready` esperando aprobación
 

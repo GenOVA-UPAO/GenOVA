@@ -40,7 +40,7 @@ Rol y reglas:
 - Actúas siempre como orchestrator. Nunca implementas código directamente.
 - Toda feature nueva pasa por spec_author con aprobación humana antes de implementarse.
 - No declaras done sin tests verdes (./verify.ps1).
-- Usas subagentes según el tipo de tarea: spec_author, implementer, reviewer, explorer.
+- Usas subagentes según el tipo de tarea: spec_author, implementer, reviewer, explorer, skill-advisor, spec-sync.
 - Una sola feature activa a la vez.
 
 Clasificación de mensajes entrantes:
@@ -61,10 +61,17 @@ Contexto del proyecto:
 ```
 [Mensaje] → leader → spec_author (PASO 0: detecta 1 o N specs)
                    → 4 pasos SDD por spec
-                   → spec_ready → ⏸ HUMANO APRUEBA
-                   → implementer (verify.ps1 entre tareas)
-                   → reviewer (CHECKPOINTS.md, auto-fix tests)
+                   → spec_ready → ⏸ HUMANO APRUEBA → in_progress
+                   → implementer
+                     ├─ FASE 0 (solo si spec tiene "## Mockup ASCII"):
+                     │    consulta skill-advisor → genera wireframe shadcn/ui
+                     │    → ⏸ HUMANO APRUEBA wireframe → sync mockup al spec
+                     └─ FASE 1: ctx7 (find-docs) docs de librerías → implementa
+                        → verify.ps1 entre tareas
+                   → reviewer (CHECKPOINTS.md C1-C8, auto-fix tests)
                    → done
+                   → spec-sync (propone actualizar specs que referencian
+                                interfaces renombradas) — en cierre de sesión
 ```
 
 Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` (o `blocked` / `aborted`)
@@ -75,17 +82,19 @@ Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` 
 |---|---|---|
 | `leader` | Orquestador — detecta tipo de tarea, coordina agentes, nunca implementa código | Siempre (punto de entrada) |
 | `spec_author` | Genera specs SDD en 4 pasos; detecta múltiples specs por mensaje y las procesa secuencialmente | Cuando hay feature nueva, bug o tarea a especificar |
-| `implementer` | Implementa una feature por spec aprobada; corre `verify.ps1` entre tareas | Cuando spec está en `spec_ready` y el humano aprueba |
+| `implementer` | Implementa una feature por spec aprobada; FASE 0 wireframe (si aplica) + FASE 1 código; corre `verify.ps1` entre tareas | Cuando spec está en `spec_ready` y el humano aprueba |
 | `reviewer` | Verifica implementación contra CHECKPOINTS.md; auto-repara tests (máx 2 intentos); puede actualizar su propia config | Tras cada implementación |
 | `explorer` | Mapea codebase antes de specs complejas; devuelve score de complejidad 1–5 y riesgos | Features cross-stack o de alto riesgo |
+| `skill-advisor` | Broker de skills — busca, verifica seguridad (trustedSources + scanner) y actualiza skills instaladas. Service agent idempotente | Al pedir "busca una skill" / "actualiza skills"; el implementer lo consulta en FASE 0 |
+| `spec-sync` | Tras renombres de interfaz pública (endpoint, componente, hook), detecta specs que referencian lo viejo y propone actualizaciones | Cierre de sesión, tras una feature `done` |
 
 ### Hooks automáticos
 
 | Hook | Evento | Acción |
 |---|---|---|
 | `session-start.ps1` | SessionStart | Corre `verify.ps1 -Quick`, marca timestamp en `progress/current.md`, avisa si una feature lleva >72 h en progreso |
-| `post-edit.ps1` | PostToolUse (Edit\|Write) | Lint inmediato — `pnpm lint` (frontend) o `ruff check` (backend); muestra primeras 20 líneas de error |
-| `on-stop.ps1` | Stop | `verify.ps1` completo + escaneo de 9 patrones de secretos en archivos modificados; bloquea salida si encuentra secretos |
+| `post-edit.ps1` | PostToolUse (Edit\|Write) | Lint inmediato — `pnpm lint` (frontend) o `ruff check` (backend); muestra primeras 20 líneas de error. **Debounce 30 s**: no relinta el mismo área dos veces seguidas |
+| `on-stop.ps1` | Stop | `verify.ps1` completo + escaneo de 9 patrones de secretos (bloquea salida si encuentra) + aviso de **wireframes huérfanos** (FASE 0 sin completar) |
 | `status-line.ps1` | Status bar | Muestra `GENOVA <branch> \| <feature_id_o_idle>` en tiempo real |
 
 ### Verificación rápida
@@ -95,6 +104,54 @@ Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` 
 ./verify.ps1 -Quick   # solo lint + unit (sin backend)
 ./verify.ps1 -E2E     # incluye Playwright E2E (requiere ambos servidores)
 ```
+
+### Skills
+
+Las skills extienden las capacidades de los agentes. El store canónico vive en `.agents/skills/` y se enlaza por symlink a `.claude/skills/` (y a otros tools).
+
+| Skill | Para qué | Comando subyacente |
+|---|---|---|
+| `find-skills` | Descubrir e instalar skills del ecosistema | `npx skills find` / `add` |
+| `find-docs` | Docs actualizadas de cualquier librería (context7 de Upstash) | `npx ctx7@latest library\|docs` |
+
+- **`skills-catalog.json`** — registro propio: metadata, `triggers` (qué dispara cada skill), `benefitsAgents`, `trustedSources` y estado de seguridad.
+- **`skills-lock.json`** — versión + hash de cada skill (lo gestiona el CLI, no se edita a mano).
+- **Gestión vía leader** — pídele "busca una skill para X" o "actualiza skills"; el `skill-advisor` ejecuta el flujo con gate humano antes de instalar/actualizar.
+- **Seguridad** — sources fuera de `trustedSources` quedan en `pendingReview`; el advisor además incorpora el verdicto del scanner (Gen / Socket / Snyk) que imprime `npx skills add`.
+
+Comandos clave:
+
+```bash
+npx skills find "<query>"              # buscar
+npx skills add <owner/repo@skill>      # instalar
+npx skills check                       # ver updates disponibles
+npx skills update -p -y                # actualizar (project scope)
+```
+
+### Wireframe-first (FASE 0)
+
+Cuando un spec de frontend incluye una sección `## Mockup ASCII`, el `implementer` materializa primero el wireframe antes de implementar funcionalidad:
+
+1. Consulta al `skill-advisor` por una skill útil.
+2. Genera `frontend/src/wireframes/<ID>_<Page>Wireframe.jsx` — **solo visual** (sin hooks, sin fetch, datos hardcoded) con **shadcn/ui** + Tailwind.
+3. ⏸ El humano aprueba. Si pide cambios, el `## Mockup ASCII` del spec se actualiza para reflejar el wireframe aprobado.
+4. Recién entonces arranca FASE 1 (implementación real). Al terminar, el wireframe se elimina.
+
+Los wireframes son temporales: están en `.gitignore` y exentos del límite `max-lines` de ESLint. Se eligió **shadcn/ui** porque los componentes se copian al repo (ownership total, sin lock de versión), adopta los design tokens existentes (indigo + slate) y es compatible con Tailwind v4.
+
+### Portabilidad multi-herramienta
+
+El harness no depende de Claude Code. `AGENTS.md` es la base de reglas que leen todas las herramientas:
+
+| Herramienta | Lee reglas | Lee agents |
+|---|---|---|
+| Claude Code | `CLAUDE.md` + `AGENTS.md` | `.claude/agents/` |
+| Codex CLI | `AGENTS.md` | — |
+| Opencode | `AGENTS.md` | `.opencode/agents/` (junction) |
+| GitHub Copilot | `AGENTS.md` + `.github/copilot-instructions.md` | `.github/agents/sdd-leader.agent.md` |
+| Antigravity / Gemini CLI | `GEMINI.md` → `AGENTS.md` | — |
+
+Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para recrear los symlinks/junctions (`.opencode/agents` → `.claude/agents`, `.claude/skills/*` → `.agents/skills/*`). Usa `-Check` para verificar sin crear.
 
 ### Archivos clave del harness
 
@@ -112,6 +169,14 @@ Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` 
 | `.claude/agents/` | Definiciones de agentes (Markdown portables) |
 | `.claude/hooks/` | Scripts PowerShell de lifecycle |
 | `.claude/settings.json` | Configuración de hooks y permisos |
+| `skills-catalog.json` | Registro de skills instaladas (metadata, triggers, seguridad) |
+| `skills-lock.json` | Lock de versiones/hash de skills (lo gestiona `npx skills`) |
+| `.agents/skills/` | Store canónico de skills (`find-skills`, `find-docs`) |
+| `scripts/setup-harness.ps1` | Recrea symlinks/junctions post-clone (Windows) |
+| `GEMINI.md` | Override de reglas para Antigravity / Gemini CLI |
+| `.github/copilot-instructions.md` | Reglas de workspace para GitHub Copilot |
+| `.github/agents/sdd-leader.agent.md` | Adaptador del leader para Copilot |
+| `.opencode/` | `opencode.json` + agents (junction → `.claude/agents`) |
 
 ## Stack
 
@@ -308,6 +373,22 @@ Override env para los tests manuales: `BASE`, `EMAIL`, `PASS`, `PHASE`, `TYPE`, 
 
 ```
 GenOVA/
+├── .claude/
+│   ├── agents/              # 7 agentes: leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync
+│   ├── hooks/               # session-start, post-edit, on-stop, status-line (PowerShell)
+│   └── settings.json        # hooks + permisos
+├── .agents/skills/          # store canónico de skills (find-skills, find-docs)
+├── .opencode/               # opencode.json + agents (junction → .claude/agents)
+├── .github/                 # workflows + copilot-instructions.md + agents/sdd-leader.agent.md
+├── scripts/setup-harness.ps1   # recrea symlinks/junctions post-clone
+├── AGENTS.md                # reglas cross-tool (base de portabilidad multi-herramienta)
+├── GEMINI.md                # override Antigravity / Gemini CLI
+├── CHECKPOINTS.md           # criterios objetivos de calidad (C1-C8)
+├── skills-catalog.json      # registro de skills (metadata + triggers + seguridad)
+├── skills-lock.json         # lock de versiones/hash (gestionado por npx skills)
+├── feature_list.json        # estado de todas las features (SDD)
+├── progress/                # current.md (sesión activa) + history.md (bitácora)
+├── specs/ · tasks/ · bugs/  # especificaciones SDD (HU/EN/RN/EP · TA · BU)
 ├── frontend/                # React + Vite (ESLint max-lines: 200)
 ├── backend/                 # FastAPI
 │   ├── pyproject.toml       # uv + ruff + pytest config

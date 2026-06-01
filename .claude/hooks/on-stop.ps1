@@ -59,7 +59,18 @@ if ($secretsFound.Count -gt 0) {
     exit 1
 }
 
-# 3) Estado git
+# 3) Wireframes huerfanos (implementer FASE 0 sin completar implementacion real)
+$wireframeDir = Join-Path $root "frontend\src\wireframes"
+if (Test-Path $wireframeDir) {
+    $wireframes = Get-ChildItem $wireframeDir -Filter "*.jsx" -ErrorAction SilentlyContinue
+    if ($wireframes.Count -gt 0) {
+        Write-Host "[harness] AVISO - Wireframes temporales presentes (sesion FASE 0 sin cerrar):" -ForegroundColor Yellow
+        $wireframes | ForEach-Object { Write-Host "  frontend/src/wireframes/$($_.Name)" -ForegroundColor Yellow }
+        Write-Host "          Elimina tras implementacion real o retomalos en la proxima sesion." -ForegroundColor Yellow
+    }
+}
+
+# 4) Estado git
 $gitStatus = git status --porcelain 2>$null
 if ($gitStatus) {
     Write-Host "[harness] Hay cambios no commiteados en el repo." -ForegroundColor Yellow

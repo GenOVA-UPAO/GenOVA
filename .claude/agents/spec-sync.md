@@ -26,8 +26,10 @@ NO rastrear: variables internas, funciones privadas, comentarios, clases CSS.
 
 Lee `progress/impl_<name>.md` y ejecuta:
 ```bash
-git diff HEAD~1 -- backend/routers/ backend/services/ frontend/src/services/ frontend/src/hooks/ backend/models.py
+git diff HEAD -- backend/routers/ backend/services/ frontend/src/services/ frontend/src/hooks/ backend/models.py
 ```
+> Usa `git diff HEAD` (working tree vs último commit), no `HEAD~1`: spec-sync corre
+> en el cierre de sesión ANTES del commit, así que los cambios de la sesión están sin commitear.
 
 Construye lista de cambios: `[{tipo, anterior, nuevo}, ...]`
 
@@ -47,10 +49,10 @@ Si no hay hits → escribe output con `status: no_refs_found` → **FIN**.
 
 Para cada hit:
 - Construye propuesta de sustitución textual exacta
-- Asigna severidad:
-  - `critical`: API path, endpoint HTTP
-  - `medium`: nombre de componente React, nombre de hook
-  - `low`: nombre de función de servicio, campo DTO
+- Asigna severidad (según cuánto rompe aguas abajo):
+  - `critical`: API path / endpoint HTTP · campo de contrato público (request/response DTO)
+  - `medium`: función de servicio exportada · componente React · hook custom
+  - `low`: nombre de tabla/modelo ORM referenciado solo en specs de datos
 
 ### PASO 4 — Output
 

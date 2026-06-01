@@ -112,6 +112,21 @@ Bearer` fallback once all clients are on cookies.
 - DB errors: use `commit_or_500()` helpers — never `str(e)` to client.
 - `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`: server-only, never `VITE_*`.
 
+## Skills & agentes
+
+Agentes SDD en `.claude/agents/`: `leader` (orquesta), `explorer` (mapa pre-spec),
+`spec_author` (specs), `implementer` (código), `reviewer` (aprueba), `skill-advisor`
+(broker de skills) y `spec-sync` (consistencia entre specs tras renombres).
+
+Skills instaladas en `.agents/skills/` (symlink desde `.claude/skills/`), registradas
+en `skills-catalog.json` (metadata + triggers + seguridad) y bloqueadas en `skills-lock.json`:
+- `find-skills` — descubrir/instalar skills (`npx skills find` / `add`)
+- `find-docs` — docs actualizadas de librerías vía `npx ctx7@latest library|docs`. El
+  `implementer` la usa antes de escribir código con una librería concreta.
+
+Para buscar/instalar/actualizar skills: pídeselo al `leader` ("busca una skill para…",
+"actualiza skills"). Post-clone en Windows: `scripts/setup-harness.ps1` recrea symlinks.
+
 ## CI pipeline
 
 Push/PR to `develop`/`main` triggers: `lint` + `backend-bdd` + `frontend-unit` (parallel) → `e2e`.
