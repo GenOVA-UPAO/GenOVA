@@ -10,7 +10,7 @@
 1. Lee `sdd/progress/current.md` — entiende en qué estado quedó la última sesión.
 2. Lee `feature_list.json` — identifica features pendientes y su estado.
 3. Ejecuta `./verify.ps1` — verifica que el entorno está verde antes de tocar código.
-4. Lee `docs/` si necesitas contexto técnico específico.
+4. Lee `CLAUDE.md` (o `docs/LABS.md` para la feature Labs) si necesitas contexto técnico.
 
 ## 2. Mapa del repositorio
 
@@ -37,7 +37,7 @@
 - **No saltes la fase de spec.** Toda feature `"sdd": true` pasa por `spec_author` con aprobación humana antes de tocar código.
 - **No saltes la puerta humana.** El leader para en `spec_ready` y espera confirmación.
 - **Documenta en tiempo real** en `sdd/progress/current.md`, no al final.
-- **Si no sabes algo, busca en `docs/` o `CLAUDE.md`** antes de inventarlo.
+- **Si no sabes algo, busca en `CLAUDE.md`** antes de inventarlo.
 - **Arquitectura GenOVA**: services → hooks → pages (frontend) · router → service → model (backend). No saltarse capas.
 
 ## 4. Flujo de trabajo (SDD)
@@ -94,7 +94,7 @@ Antes de terminar:
 
 ## 7. Si te bloqueas
 
-- Relee la sección relevante de `docs/` o `CLAUDE.md`.
+- Relee la sección relevante de `CLAUDE.md`.
 - Si una herramienta falla inesperadamente, **no improvises workaround**: documenta en `sdd/progress/current.md` con estado `blocked` y termina la sesión.
 
 ## 8. Compatibilidad multi-herramienta

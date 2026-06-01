@@ -417,7 +417,6 @@ GenOVA/
 ├── scorm-template/          # Plantilla base SCORM
 ├── deploy/                  # Nginx para producción
 ├── docs/LABS.md             # Spec funcional de la pestaña Labs
-├── ARCHITECTURE.md          # Documento arquitectónico extendido
 ├── CLAUDE.md                # Guía para Claude Code (contexto detallado del repo)
 ├── .editorconfig            # Estilo universal (LF, UTF-8, 2/4 spaces)
 └── docker-compose.yml
