@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "trustedSources": ["vercel-labs", "anthropics", "composio"],
+  "catalog": {
+    "find-skills": {
+      "installed": true,
+      "installedPath": ".agents/skills/find-skills/SKILL.md",
+      "description": "Discover and install agent skills from community registries via npx skills CLI",
+      "triggers": [
+        "find a skill",
+        "is there a skill for",
+        "install skill",
+        "search skill",
+        "hay una skill",
+        "busca una skill",
+        "existe una skill",
+        "que skill"
+      ],
+      "benefitsAgents": ["leader"],
+      "source": "vercel-labs/skills",
+      "lastVerified": "2026-06-01"
+    }
+  },
+  "pendingReview": []
+}

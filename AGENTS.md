@@ -17,6 +17,7 @@
 | Archivo / carpeta | Qué contiene | Cuándo leerlo |
 |---|---|---|
 | `feature_list.json` | Lista de features con estado (`pending/spec_ready/in_progress/done/blocked`) | Siempre, al empezar |
+| `skills-catalog.json` | Registro de skills disponibles/instaladas con triggers, sources y estado de seguridad | Al buscar o recomendar skills |
 | `progress/current.md` | Estado de la sesión activa | Siempre, al empezar |
 | `progress/history.md` | Bitácora append-only de sesiones anteriores | Si necesitas contexto histórico |
 | `specs/<CODIGO>_<nombre>.md` | Specs de HU, EP, EN, RN | Antes de implementar |
@@ -24,7 +25,7 @@
 | `bugs/<CODIGO>_<nombre>.md` | Specs de BU (defectos) | Antes de corregir bugs |
 | `CLAUDE.md` | Comandos de arranque, contexto de arquitectura | Contexto general al inicio |
 | `CHECKPOINTS.md` | Criterios objetivos de "estado final correcto" | Antes de declarar `done` |
-| `.claude/agents/` | Definiciones de subagentes | Si orquestas trabajo |
+| `.claude/agents/` | Definiciones de subagentes (leader, explorer, spec_author, implementer, reviewer, skill-advisor) | Si orquestas trabajo |
 | `frontend/src/` | React 19 + Vite + Tailwind | Para implementar frontend |
 | `backend/` | FastAPI + SQLAlchemy | Para implementar backend |
 | `tests/` | BDD (cucumber-js E2E, pytest-bdd backend) | Para verificar |
@@ -50,6 +51,7 @@
        ├─ Task con ID (HU-XXX, TA-XXX…) ─→ pregunta confirmación → spec_author
        ├─ Task sin ID ──────────────────→ sugiere TIPO-N → usuario confirma → spec_author
        ├─ Error/bug crítico ─────────────→ sugiere BU-N → usuario confirma → spec_author
+       ├─ Skill request ────────────────→ skill-advisor → presenta resultado → [instala si humano aprueba]
        └─ Pregunta conceptual ───────────→ responde leader directamente
 
 [SPEC]

@@ -55,6 +55,20 @@ Si el usuario confirma → lanza `spec_author` para crear el BU.
 Si el mensaje es "¿qué hace X?", "muéstrame Y", "explícame Z" — responde
 directamente sin crear spec ni lanzar subagentes.
 
+### Caso G — Skill request
+
+Si el mensaje contiene alguno de estos patrones (en español o inglés):
+`"find a skill"`, `"hay una skill"`, `"busca una skill"`, `"existe una skill"`,
+`"is there a skill for"`, `"instala skill"`, `"que skill"`, `"search skill"`:
+
+1. Lanza `skill-advisor` con la descripción completa de la tarea del usuario.
+2. Lee `progress/skill-advisor_<slug>.md` cuando termine.
+3. Presenta al usuario:
+   - `found_installed` → "Skill **[nombre]** ya instalada en `[path]`. ¿La uso para esta tarea?"
+   - `found_external` → "Skill **[nombre]** encontrada ([source]). ¿La instalo? Ejecutaré: `npx skills install [nombre]`". Espera confirmación explícita antes de instalar.
+   - `not_found` → "No encontré una skill específica para esto. ¿Continúo con el flujo SDD normal?"
+4. Si el usuario aprueba instalar: ejecuta `npx skills install <nombre>`. Luego pide a `skill-advisor` que actualice `skills-catalog.json`.
+
 ### Caso D — Feature en `spec_ready` esperando aprobación
 
 Recuérdalo al usuario: "El spec de [ID] en `specs/` está listo —
@@ -95,6 +109,12 @@ NUNCA lances `implementer` si la feature no está en `in_progress` con spec apro
 | Trivial (1 archivo) | spec_author → ⏸ → implementer |
 | Media (2-3 archivos) | spec_author → ⏸ → implementer → reviewer |
 | Compleja (refactor) | explorer → spec_author → ⏸ → implementer → reviewer |
+
+### Enrichment de skills pre-implementer (opcional)
+
+Antes de lanzar `implementer` para tasks de tipo `frontend`, `testing`, `devops` o `docs`:
+1. Consulta `skills-catalog.json` — si hay skills instaladas con triggers que hagan match con la tarea, menciónalas en el prompt del `implementer`: "Tienes disponible la skill `[nombre]` en `[path]` — úsala si aplica."
+2. Si no hay match en el catálogo, omite este paso y lanza `implementer` directamente.
 
 ### Cuándo lanzar `explorer` antes de `spec_author`
 
