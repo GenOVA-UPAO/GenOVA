@@ -1,7 +1,22 @@
 {
   "version": 1,
-  "trustedSources": ["vercel-labs", "anthropics", "composio"],
+  "trustedSources": ["vercel-labs", "anthropics", "composio", "upstash"],
   "catalog": {
+    "find-docs": {
+      "installed": true,
+      "installedPath": ".agents/skills/find-docs/SKILL.md",
+      "description": "Retrieves up-to-date documentation, API references, and code examples for any library or framework via Context7 CLI (ctx7)",
+      "triggers": [
+        "nueva tecnologia", "nueva libreria", "new library", "new technology",
+        "como usar", "how to use", "api de", "documentacion de",
+        "instalar libreria", "install package",
+        "shadcn", "tailwind", "fastapi", "sqlalchemy", "react",
+        "pgvector", "supabase", "vite", "pydantic", "react router"
+      ],
+      "benefitsAgents": ["implementer", "spec_author", "explorer"],
+      "source": "upstash/context7",
+      "lastVerified": "2026-06-01"
+    },
     "find-skills": {
       "installed": true,
       "installedPath": ".agents/skills/find-skills/SKILL.md",
@@ -23,3 +38,4 @@
   },
   "pendingReview": []
 }
+

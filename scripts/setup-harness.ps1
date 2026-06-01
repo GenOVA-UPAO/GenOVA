@@ -21,11 +21,11 @@ function Ensure-Symlink {
 
     if (Test-Path $linkFull -PathType Container) {
         $item = Get-Item $linkFull -Force
-        if ($item.LinkType -eq "SymbolicLink") {
+        if ($item.LinkType -eq "SymbolicLink" -or $item.LinkType -eq "Junction") {
             Write-Host "  OK  $Label" -ForegroundColor Green
             return
         }
-        Write-Host "  SKIP $Label - path exists but is not a symlink (manual review needed)" -ForegroundColor Yellow
+        Write-Host "  SKIP $Label - path exists but is not a link (manual review needed)" -ForegroundColor Yellow
         return
     }
 

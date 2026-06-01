@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "find-docs": {
+      "source": "upstash/context7",
+      "sourceType": "github",
+      "skillPath": "skills/find-docs/SKILL.md",
+      "computedHash": "d0321f889edc54a338b22615d6b00ace35f73f5879558e7183d0a70ceb819aa7"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",

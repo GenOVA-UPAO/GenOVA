@@ -35,3 +35,8 @@
 - [ ] Frontend sigue patrón services → hooks → pages (sin fetch en pages/hooks)
 - [ ] Backend sigue patrón router → service → model (sin lógica de negocio en routers)
 - [ ] Nuevas features siguen flujo SDD completo si tienen `"sdd": true` en feature_list.json
+
+## C8 — Wireframe gate (solo features con `## Mockup ASCII` en el spec)
+- [ ] `frontend/src/wireframes/<ID>_*Wireframe.jsx` existió y fue aprobado por el humano antes de FASE 1
+- [ ] Aprobación del wireframe documentada en `progress/current.md` o `progress/impl_<name>.md`
+- [ ] El archivo wireframe fue eliminado al completar la implementación real (no queda en el repo)
