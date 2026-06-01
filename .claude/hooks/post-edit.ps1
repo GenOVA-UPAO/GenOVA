@@ -1,8 +1,10 @@
 # post-edit.ps1 - Hook PostToolUse (Edit|Write)
 # Quick lint after edit. Frontend: pnpm lint. Backend: ruff check.
+# Debounce: skips if same area (frontend/backend) was linted within DEBOUNCE_SECS seconds.
 
 param([string]$FilePath = $env:CLAUDE_TOOL_INPUT_FILE_PATH)
 
+$DEBOUNCE_SECS = 30
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $root
 
@@ -24,7 +26,21 @@ function Show-Lint($label, $output, $exitCode) {
     Write-Host ""
 }
 
+function Test-Debounce($area) {
+    $stampFile = Join-Path $env:TEMP "genova_lint_$area.stamp"
+    if (Test-Path $stampFile) {
+        $lastRun = (Get-Item $stampFile).LastWriteTime
+        if ((New-TimeSpan -Start $lastRun -End (Get-Date)).TotalSeconds -lt $DEBOUNCE_SECS) {
+            Write-Host "[harness] Lint $area skipped (debounce ${DEBOUNCE_SECS}s)" -ForegroundColor DarkGray
+            return $true
+        }
+    }
+    $null | Out-File $stampFile
+    return $false
+}
+
 if ($FilePath -match "frontend[/\\]") {
+    if (Test-Debounce "frontend") { exit 0 }
     Write-Host "[harness] Lint frontend (pnpm lint)..."
     Push-Location frontend
     $result = pnpm lint 2>&1
@@ -33,6 +49,7 @@ if ($FilePath -match "frontend[/\\]") {
     Show-Lint "ESLint" $result $exit
 }
 elseif ($FilePath -match "backend[/\\]") {
+    if (Test-Debounce "backend") { exit 0 }
     Write-Host "[harness] Lint backend (ruff check)..."
     Push-Location backend
     $result = python -m ruff check . 2>&1

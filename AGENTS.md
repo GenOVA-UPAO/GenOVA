@@ -69,15 +69,22 @@
 |---|---|
 | Trivial (1 archivo) | 1 spec_author → ⏸ → 1 implementer |
 | Media (2-3 archivos) | 1 spec_author → ⏸ → 1 implementer → 1 reviewer |
-| Compleja (refactor) | 2-3 Explorers → 1 spec_author → ⏸ → 1 implementer → 1 reviewer |
+| Compleja (refactor) | explorer → 1 spec_author → ⏸ → 1 implementer → 1 reviewer |
 | Muy compleja | Divide en sub-features y aplica la tabla de nuevo |
+
+**Lanza `explorer` automáticamente** cuando la feature cumpla ≥1 de:
+- Toca más de 2 dominios (ej. auth + ova + scorm)
+- Menciona refactor, migración, pipeline o cambio de arquitectura
+- Involucra un servicio externo nuevo (LLM, storage, email)
+- Descripción ambigua en scope o el usuario expresa incertidumbre
+- Complejidad estimada ≥ 3 según criterios de `explorer.md`
 
 ## 6. Cierre de sesión
 
 Antes de terminar:
 
 1. Ejecuta `./verify.ps1` — todo verde.
-2. Si la feature acabó: cambia `status: "done"` en `feature_list.json`.
+2. Si la feature acabó: cambia `status: "done"` en `feature_list.json` y añade `"merge_commit": "<sha>"` con el hash del commit de cierre (trazabilidad git ↔ feature).
 3. Mueve el resumen de `progress/current.md` al final de `progress/history.md`.
 4. Vacía `progress/current.md` dejando solo la plantilla.
 5. Propone commit al humano (conventional commits). Espera aprobación explícita.

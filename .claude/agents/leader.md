@@ -94,7 +94,18 @@ NUNCA lances `implementer` si la feature no está en `in_progress` con spec apro
 |---|---|
 | Trivial (1 archivo) | spec_author → ⏸ → implementer |
 | Media (2-3 archivos) | spec_author → ⏸ → implementer → reviewer |
-| Compleja (refactor) | 2-3 Explorers → spec_author → ⏸ → implementer → reviewer |
+| Compleja (refactor) | explorer → spec_author → ⏸ → implementer → reviewer |
+
+### Cuándo lanzar `explorer` antes de `spec_author`
+
+Lanza `explorer` automáticamente (sin preguntar) cuando la feature cumpla ≥1 de:
+- Toca más de 2 dominios (e.g. auth + ova + scorm)
+- Menciona refactor, migración, pipeline, o cambio de arquitectura
+- Involucra un servicio externo nuevo (LLM, storage, email)
+- El usuario dice "no sé bien cómo hacerlo" o la descripción es ambigua en scope
+- Complejidad estimada ≥ 3 (ver `explorer.md` para escala 1-5)
+
+Instrúyele: "Analiza scope, dependencias y riesgos de [descripción]. Score de complejidad 1-5. Escribe reporte en `progress/explorer_<ID>.md`." Luego usa ese reporte como contexto para `spec_author`.
 
 ## Regla anti-teléfono-descompuesto
 
