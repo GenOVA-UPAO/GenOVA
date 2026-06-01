@@ -67,6 +67,22 @@ wireframe_ready -> progress/impl_<name>.md
 ```
 No avances a FASE 1 sin que el humano confirme (`"aprobado"`, `"ok wireframe"`, `"adelante"`).
 
+**0.5 — Sync wireframe → spec** (solo si el usuario aprobó con cambios visuales)
+
+Detecta si el mensaje de aprobación menciona modificaciones ("cambia X", "quita Y", "mueve Z", "no me gusta", "mejor sin el", etc.).
+
+Si hubo cambios:
+1. Lee el wireframe final (`frontend/src/wireframes/<ID>_*Wireframe.jsx`)
+2. Genera un nuevo ASCII que represente la estructura real del JSX:
+   - `+--+` para contenedores y cards
+   - `[ ]` para botones e inputs, `(v)` para dropdowns
+   - Preserva jerarquía: sidebar, header, main, modales
+3. Reemplaza la sección `## Mockup ASCII` en el archivo spec correspondiente
+4. Anota en `progress/current.md`:
+   `"Mockup ASCII actualizado en <spec-path> — refleja wireframe aprobado con cambios"`
+
+Si aprobó sin cambios → omite este paso.
+
 ---
 
 Si el spec **no contiene** `## Mockup ASCII` → salta directamente a FASE 1.

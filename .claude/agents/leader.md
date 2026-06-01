@@ -138,14 +138,21 @@ referencia. Nunca el contenido completo en chat.
 Cuando el usuario termine la sesión:
 1. Ejecuta `./verify.ps1` — todo verde.
 2. Si hay features terminadas: actualiza `feature_list.json` a `done`.
-3. **Auditoría de docs** — lee `progress/current.md` y ejecuta `git diff --name-only`:
+3. **Spec sync** — si la feature implementada cambió interfaz pública (endpoint renombrado, componente renombrado, hook renombrado):
+   - Lanza `spec-sync` con el `feature_id`.
+   - Lee `progress/spec-sync_<id>.md`.
+   - Si `proposals_ready`: presenta propuestas agrupadas por severidad (`critical` primero).
+     Espera: `"aplica todos"` / `"aplica solo critical"` / `"ignora"`.
+     Si aprueba → pide a `spec-sync` que aplique los cambios.
+   - Si `no_refs_found` o `no_changes_tracked` → continúa sin interrumpir.
+4. **Auditoría de docs** — lee `progress/current.md` y ejecuta `git diff --name-only`:
    - ¿Cambios en API pública / comandos / env vars requeridas? → actualiza `CLAUDE.md`.
    - ¿Nueva funcionalidad visible / endpoint público / cambio arquitectónico mayor? → actualiza `README.md`.
    - ¿Cambio en reglas del harness / nuevo agente / flujo SDD? → actualiza `AGENTS.md`.
    - Si solo exploración o cambios internos sin impacto externo → no toques los docs.
-4. Mueve resumen de `progress/current.md` al final de `progress/history.md`.
-5. Vacía `progress/current.md` dejando solo la plantilla.
-6. Propón commit (conventional commits, incluye docs actualizados si los tocaste).
+5. Mueve resumen de `progress/current.md` al final de `progress/history.md`.
+6. Vacía `progress/current.md` dejando solo la plantilla.
+7. Propón commit (conventional commits, incluye docs actualizados si los tocaste).
    Espera aprobación humana explícita antes de `git commit`. Nunca hagas `git push`.
 
 ## Qué NO haces
