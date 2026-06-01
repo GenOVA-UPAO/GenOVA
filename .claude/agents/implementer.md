@@ -34,10 +34,10 @@ cd frontend && npx shadcn@latest init --defaults
 ```
 (Idempotente; solo corre una vez por proyecto.)
 
-**Verifica el alias `@`**: los componentes shadcn importan `@/components/ui/*`. Confirma que
-`frontend/vite.config.js` resuelve `@` → `./src` y que existe `frontend/jsconfig.json` con
-`compilerOptions.paths` (`"@/*": ["./src/*"]`). `shadcn init` los configura; si no, créalos
-antes de generar el wireframe — sin el alias, el build rompe.
+**Alias `@` (ya cableado)**: `frontend/vite.config.js` resuelve `@` → `./src` y existe
+`frontend/jsconfig.json` con `paths` (`"@/*": ["./src/*"]`). No hace falta configurarlo —
+`shadcn init` solo agrega `components.json`, `lib/utils`, deps (clsx, tailwind-merge,
+lucide-react) y los tokens en `index.css`. Tailwind v4 es CSS-first: NO crear `tailwind.config.js`.
 
 **0.3 — Generar wireframe**
 Lee la sección `## Mockup ASCII` del spec. Crea:
