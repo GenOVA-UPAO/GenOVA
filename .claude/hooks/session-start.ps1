@@ -1,5 +1,5 @@
 # session-start.ps1 - Hook SessionStart
-# Quick repo verification + timestamp into progress/current.md + warn about stale features.
+# Quick repo verification + timestamp into sdd/progress/current.md + warn about stale features.
 # ASCII-only source so PowerShell 5.1 parses without BOM.
 
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -22,7 +22,7 @@ if ($verifyExit -ne 0) {
     Write-Host "[harness] verify.ps1 -Quick OK." -ForegroundColor Green
 }
 
-# 2) Stamp progress/current.md if Inicio is still the empty placeholder.
+# 2) Stamp sdd/progress/current.md if Inicio is still the empty placeholder.
 # The placeholder uses an em-dash (U+2014) so we build the regex with [char].
 $currentMd = Join-Path $root "progress\current.md"
 if (Test-Path $currentMd) {
@@ -34,7 +34,7 @@ if (Test-Path $currentMd) {
     if ($content -match $pattern) {
         $updated = $content -replace $pattern, "**Inicio:** $stamp | branch=$branch"
         Set-Content -Path $currentMd -Value $updated -Encoding UTF8
-        Write-Host "[harness] progress/current.md initialized ($stamp on $branch)." -ForegroundColor Green
+        Write-Host "[harness] sdd/progress/current.md initialized ($stamp on $branch)." -ForegroundColor Green
     }
 }
 

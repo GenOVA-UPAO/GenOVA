@@ -42,7 +42,7 @@ Selecciona el mejor candidato (prioridad: `safe: true` > relevancia > popularida
 
 ### PASO 4 — Output
 
-Escribe `progress/skill-advisor_<slug-de-tarea>.md` con el formato:
+Escribe `sdd/progress/skill-advisor_<slug-de-tarea>.md` con el formato:
 
 ```md
 # Skill Advisor Result: <tarea>
@@ -56,9 +56,9 @@ Escribe `progress/skill-advisor_<slug-de-tarea>.md` con el formato:
 
 Retorna al caller: una sola línea en formato:
 ```
-found_installed → progress/skill-advisor_<slug>.md
-found_external  → progress/skill-advisor_<slug>.md
-not_found       → progress/skill-advisor_<slug>.md
+found_installed → sdd/progress/skill-advisor_<slug>.md
+found_external  → sdd/progress/skill-advisor_<slug>.md
+not_found       → sdd/progress/skill-advisor_<slug>.md
 ```
 
 ## Actualización del catálogo post-instalación
@@ -81,7 +81,7 @@ Para cada skill con update, confirma que su `source` sigue dentro de `trustedSou
 - Source ya NO confiable → marcar `needs_review` y **NO incluir en el update automático**; requiere aprobación humana explícita por separado.
 
 ### PASO U3 — Output
-Escribe `progress/skill-advisor_update.md`:
+Escribe `sdd/progress/skill-advisor_update.md`:
 ```md
 # Skill Update Check — <fecha>
 ## Updates disponibles
@@ -91,8 +91,8 @@ Escribe `progress/skill-advisor_update.md`:
 ```
 Retorna una sola línea:
 ```
-updates_available → progress/skill-advisor_update.md
-all_current       → progress/skill-advisor_update.md
+updates_available → sdd/progress/skill-advisor_update.md
+all_current       → sdd/progress/skill-advisor_update.md
 ```
 
 ### PASO U4 — Apply (SOLO tras aprobación humana vía leader)

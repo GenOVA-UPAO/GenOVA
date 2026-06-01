@@ -7,7 +7,7 @@
 
 ## 1. Antes de empezar (obligatorio)
 
-1. Lee `progress/current.md` — entiende en qué estado quedó la última sesión.
+1. Lee `sdd/progress/current.md` — entiende en qué estado quedó la última sesión.
 2. Lee `feature_list.json` — identifica features pendientes y su estado.
 3. Ejecuta `./verify.ps1` — verifica que el entorno está verde antes de tocar código.
 4. Lee `docs/` si necesitas contexto técnico específico.
@@ -18,11 +18,11 @@
 |---|---|---|
 | `feature_list.json` | Lista de features con estado (`pending/spec_ready/in_progress/done/blocked`) | Siempre, al empezar |
 | `skills-catalog.json` | Registro de skills disponibles/instaladas con triggers, sources y estado de seguridad | Al buscar o recomendar skills |
-| `progress/current.md` | Estado de la sesión activa | Siempre, al empezar |
-| `progress/history.md` | Bitácora append-only de sesiones anteriores | Si necesitas contexto histórico |
-| `specs/<CODIGO>_<nombre>.md` | Specs de HU, EP, EN, RN | Antes de implementar |
-| `tasks/<CODIGO>_<nombre>.md` | Specs de TA (tareas técnicas) | Antes de implementar TA |
-| `bugs/<CODIGO>_<nombre>.md` | Specs de BU (defectos) | Antes de corregir bugs |
+| `sdd/progress/current.md` | Estado de la sesión activa | Siempre, al empezar |
+| `sdd/progress/history.md` | Bitácora append-only de sesiones anteriores | Si necesitas contexto histórico |
+| `sdd/specs/<CODIGO>_<nombre>.md` | Specs de HU, EP, EN, RN | Antes de implementar |
+| `sdd/tasks/<CODIGO>_<nombre>.md` | Specs de TA (tareas técnicas) | Antes de implementar TA |
+| `sdd/bugs/<CODIGO>_<nombre>.md` | Specs de BU (defectos) | Antes de corregir bugs |
 | `CLAUDE.md` | Comandos de arranque, contexto de arquitectura | Contexto general al inicio |
 | `CHECKPOINTS.md` | Criterios objetivos de "estado final correcto" | Antes de declarar `done` |
 | `.claude/agents/` | Definiciones de subagentes (leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync) | Si orquestas trabajo |
@@ -36,7 +36,7 @@
 - **No declares `done` sin tests verdes.** Ejecuta `./verify.ps1` antes de cerrar.
 - **No saltes la fase de spec.** Toda feature `"sdd": true` pasa por `spec_author` con aprobación humana antes de tocar código.
 - **No saltes la puerta humana.** El leader para en `spec_ready` y espera confirmación.
-- **Documenta en tiempo real** en `progress/current.md`, no al final.
+- **Documenta en tiempo real** en `sdd/progress/current.md`, no al final.
 - **Si no sabes algo, busca en `docs/` o `CLAUDE.md`** antes de inventarlo.
 - **Arquitectura GenOVA**: services → hooks → pages (frontend) · router → service → model (backend). No saltarse capas.
 
@@ -87,15 +87,15 @@ Antes de terminar:
 
 1. Ejecuta `./verify.ps1` — todo verde.
 2. Si la feature acabó: cambia `status: "done"` en `feature_list.json` y añade `"merge_commit": "<sha>"` con el hash del commit de cierre (trazabilidad git ↔ feature).
-3. Mueve el resumen de `progress/current.md` al final de `progress/history.md`.
-4. Vacía `progress/current.md` dejando solo la plantilla.
+3. Mueve el resumen de `sdd/progress/current.md` al final de `sdd/progress/history.md`.
+4. Vacía `sdd/progress/current.md` dejando solo la plantilla.
 5. Propone commit al humano (conventional commits). Espera aprobación explícita.
 6. No dejes `print()` de debug, archivos temporales ni TODOs sin contexto.
 
 ## 7. Si te bloqueas
 
 - Relee la sección relevante de `docs/` o `CLAUDE.md`.
-- Si una herramienta falla inesperadamente, **no improvises workaround**: documenta en `progress/current.md` con estado `blocked` y termina la sesión.
+- Si una herramienta falla inesperadamente, **no improvises workaround**: documenta en `sdd/progress/current.md` con estado `blocked` y termina la sesión.
 
 ## 8. Compatibilidad multi-herramienta
 

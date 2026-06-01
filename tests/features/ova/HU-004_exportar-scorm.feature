@@ -1,4 +1,4 @@
-# Extraído de specs/HU-004_exportar-ova-como-paquete-scorm.md § Escenarios BDD (Gherkin)
+# Extraído de sdd/specs/HU-004_exportar-ova-como-paquete-scorm.md § Escenarios BDD (Gherkin)
 # INC-002: Endpoint corregido. El spec definía POST /api/scorm/export que no existe.
 # El endpoint real es GET /api/ovas/{id}/scorm (302 redirect a Supabase Storage o bytes locales).
 # El botón de descarga aparece en /mis-ovas (card listo) y en el editor, no en /crear-ova estático.

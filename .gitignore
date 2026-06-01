@@ -286,3 +286,6 @@ backend/tools/prompt_lab_log.jsonl
 
 # Wireframes temporales del implementer (FASE 0) — se eliminan tras implementación real
 frontend/src/wireframes/
+
+# Audit — dumps HTML/JSON de recursos generados (servidos en :8090 vía launch.json, no se versionan)
+.audit/

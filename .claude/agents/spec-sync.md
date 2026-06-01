@@ -24,7 +24,7 @@ NO rastrear: variables internas, funciones privadas, comentarios, clases CSS.
 
 ### PASO 1 — Extrae cambios rastreables
 
-Lee `progress/impl_<name>.md` y ejecuta:
+Lee `sdd/progress/impl_<name>.md` y ejecuta:
 ```bash
 git diff HEAD -- backend/routers/ backend/services/ frontend/src/services/ frontend/src/hooks/ backend/models.py
 ```
@@ -37,7 +37,7 @@ Si la lista está vacía → escribe output con `status: no_changes_tracked` →
 
 ### PASO 2 — Escanea todos los specs
 
-Lee cada archivo en `specs/`, `tasks/`, `bugs/` (usa Glob `**/*.md`).
+Lee cada archivo en `sdd/specs/`, `sdd/tasks/`, `sdd/bugs/` (usa Glob `**/*.md`).
 
 Para cada nombre en la lista de cambios, busca con Grep en esos archivos.
 
@@ -56,7 +56,7 @@ Para cada hit:
 
 ### PASO 4 — Output
 
-Escribe `progress/spec-sync_<feature_id>.md`:
+Escribe `sdd/progress/spec-sync_<feature_id>.md`:
 
 ```md
 # Spec Sync — <feature_id>
@@ -74,18 +74,18 @@ Línea <N>: `<texto_original>` → `<texto_nuevo>`
 
 Retorna **una sola línea**:
 ```
-proposals_ready → progress/spec-sync_<feature_id>.md
+proposals_ready → sdd/progress/spec-sync_<feature_id>.md
 ```
 o
 ```
-no_refs_found → progress/spec-sync_<feature_id>.md
+no_refs_found → sdd/progress/spec-sync_<feature_id>.md
 ```
 
 ## Aplicar cambios (tras aprobación humana)
 
 Si el leader confirma "aplica todos" o "aplica solo critical":
 - Para cada propuesta aprobada: edita el spec file, sustituye el texto exacto
-- Anota en `progress/spec-sync_<feature_id>.md` bajo `## Aplicado`:
+- Anota en `sdd/progress/spec-sync_<feature_id>.md` bajo `## Aplicado`:
   `✓ <spec_file> línea <N> — actualizado`
 
 ## Qué NO haces

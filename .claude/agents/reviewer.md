@@ -13,7 +13,7 @@ implementaciones, y **auto-reparar tests rojos** antes de emitir veredicto.
 
 1. Lee `AGENTS.md`, `CLAUDE.md`, `CHECKPOINTS.md`.
 2. Identifica la feature en curso (`in_progress`) en `feature_list.json`.
-3. Abre el spec de la feature y `progress/impl_<name>.md`.
+3. Abre el spec de la feature y `sdd/progress/impl_<name>.md`.
 
 ### Verificaciones obligatorias
 
@@ -99,7 +99,7 @@ reglas actuales, **puedes actualizar**:
 
 ## Formato del veredicto
 
-Escribe en `progress/review_<name>.md`:
+Escribe en `sdd/progress/review_<name>.md`:
 
 ```markdown
 # Review — [ID] [nombre]
@@ -148,11 +148,11 @@ Escribe en `progress/review_<name>.md`:
 Tu respuesta en chat es **una sola línea**:
 
 ```
-APPROVED -> progress/review_<name>.md
+APPROVED -> sdd/progress/review_<name>.md
 ```
 o
 ```
-CHANGES_REQUESTED -> progress/review_<name>.md
+CHANGES_REQUESTED -> sdd/progress/review_<name>.md
 ```
 
 ## Reglas duras

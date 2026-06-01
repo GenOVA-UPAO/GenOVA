@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-006_ver_historial_de_ovas.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-006_ver_historial_de_ovas.md § Escenarios BDD (Gherkin)
 Feature: HU-006 — Ver historial de OVAs
 
   Background:

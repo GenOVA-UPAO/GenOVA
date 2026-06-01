@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/EN-011_setup-base-fastapi-orquestacion-local-docker.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/EN-011_setup-base-fastapi-orquestacion-local-docker.md § Escenarios BDD (Gherkin)
 Feature: Habilitación de backend FastAPI y orquestación Docker
   Como desarrollador
   Quiero un entorno backend+frontend replicable

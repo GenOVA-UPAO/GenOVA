@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-018_gestion-roles-crear-rol.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-018_gestion-roles-crear-rol.md § Escenarios BDD (Gherkin)
 Feature: Gestión de Roles — Crear Rol
   Como administrador
   Quiero crear nuevos roles con permisos específicos

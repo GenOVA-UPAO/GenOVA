@@ -1,4 +1,4 @@
-# Generado desde specs/EN-008_habilitar-base-datos-gestion-usuarios.md § Criterios de aceptación
+# Generado desde sdd/specs/EN-008_habilitar-base-datos-gestion-usuarios.md § Criterios de aceptación
 # INC-006: El spec no incluye sección "Escenarios BDD (Gherkin)". Escenarios escritos
 #          verbatim de los 5 criterios de aceptación y el checklist de verificación.
 #          Ver docs/tasks/TA-BDD-incompatibilidades.md.

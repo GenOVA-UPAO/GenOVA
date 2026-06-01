@@ -12,9 +12,9 @@ nunca implementar.
 ## Protocolo de arranque
 
 1. Lee `AGENTS.md`.
-2. Lee `feature_list.json` y `progress/current.md`.
+2. Lee `feature_list.json` y `sdd/progress/current.md`.
 3. **Detección de specs stale**: busca features con `"status": "in_progress"`.
-   Cuenta entradas de sesión en `progress/history.md` desde la última mención de esa feature.
+   Cuenta entradas de sesión en `sdd/progress/history.md` desde la última mención de esa feature.
    Si ≥3 sesiones sin actividad → avisa: "⚠️ [ID] lleva ≥3 sesiones en `in_progress` sin cierre. ¿Continuar, abortar o ignorar?"
 4. Ejecuta `./verify.ps1 -Quick`. Si falla, para y reporta antes de continuar.
 
@@ -62,7 +62,7 @@ directamente sin crear spec ni lanzar subagentes.
 `"is there a skill for"`, `"instala skill"`, `"que skill"`, `"search skill"`:
 
 1. Lanza `skill-advisor` con la descripción completa de la tarea del usuario.
-2. Lee `progress/skill-advisor_<slug>.md` cuando termine.
+2. Lee `sdd/progress/skill-advisor_<slug>.md` cuando termine.
 3. Presenta al usuario:
    - `found_installed` → "Skill **[nombre]** ya instalada en `[path]`. ¿La uso para esta tarea?"
    - `found_external` → "Skill **[nombre]** encontrada ([source]). ¿La instalo? Ejecutaré: `npx skills add [owner/repo@skill]`". Espera confirmación explícita antes de instalar.
@@ -74,7 +74,7 @@ directamente sin crear spec ni lanzar subagentes.
 `"hay actualizaciones de skills"`, `"check skill updates"`:
 
 1. Lanza `skill-advisor` en **MODO UPDATE**.
-2. Lee `progress/skill-advisor_update.md`.
+2. Lee `sdd/progress/skill-advisor_update.md`.
 3. Si `updates_available` → presenta la lista. Espera: `"actualiza todas"` / `"actualiza <skill>"` / `"ignora"`.
    - Si aprueba → pide a `skill-advisor` que ejecute PASO U4 (apply).
    - Skills marcadas `needs_review` se confirman por separado.
@@ -82,7 +82,7 @@ directamente sin crear spec ni lanzar subagentes.
 
 ### Caso D — Feature en `spec_ready` esperando aprobación
 
-Recuérdalo al usuario: "El spec de [ID] en `specs/` está listo —
+Recuérdalo al usuario: "El spec de [ID] en `sdd/specs/` está listo —
 revísalo y dime **'aprobado'** para continuar con la implementación."
 
 Cuando el usuario diga "aprobado":
@@ -136,12 +136,12 @@ Lanza `explorer` automáticamente (sin preguntar) cuando la feature cumpla ≥1 
 - El usuario dice "no sé bien cómo hacerlo" o la descripción es ambigua en scope
 - Complejidad estimada ≥ 3 (ver `explorer.md` para escala 1-5)
 
-Instrúyele: "Analiza scope, dependencias y riesgos de [descripción]. Score de complejidad 1-5. Escribe reporte en `progress/explorer_<ID>.md`." Luego usa ese reporte como contexto para `spec_author`.
+Instrúyele: "Analiza scope, dependencias y riesgos de [descripción]. Score de complejidad 1-5. Escribe reporte en `sdd/progress/explorer_<ID>.md`." Luego usa ese reporte como contexto para `spec_author`.
 
 ## Regla anti-teléfono-descompuesto
 
 Cuando lances subagentes, instrúyeles para **escribir resultados en archivos**
-(`specs/<ID>_<nombre>.md`, `progress/impl_<name>.md`) y devolverte solo la
+(`sdd/specs/<ID>_<nombre>.md`, `sdd/progress/impl_<name>.md`) y devolverte solo la
 referencia. Nunca el contenido completo en chat.
 
 ## Cierre de sesión
@@ -151,18 +151,18 @@ Cuando el usuario termine la sesión:
 2. Si hay features terminadas: actualiza `feature_list.json` a `done`.
 3. **Spec sync** — si la feature implementada cambió interfaz pública (endpoint renombrado, componente renombrado, hook renombrado):
    - Lanza `spec-sync` con el `feature_id`.
-   - Lee `progress/spec-sync_<id>.md`.
+   - Lee `sdd/progress/spec-sync_<id>.md`.
    - Si `proposals_ready`: presenta propuestas agrupadas por severidad (`critical` primero).
      Espera: `"aplica todos"` / `"aplica solo critical"` / `"ignora"`.
      Si aprueba → pide a `spec-sync` que aplique los cambios.
    - Si `no_refs_found` o `no_changes_tracked` → continúa sin interrumpir.
-4. **Auditoría de docs** — lee `progress/current.md` y ejecuta `git diff --name-only`:
+4. **Auditoría de docs** — lee `sdd/progress/current.md` y ejecuta `git diff --name-only`:
    - ¿Cambios en API pública / comandos / env vars requeridas? → actualiza `CLAUDE.md`.
    - ¿Nueva funcionalidad visible / endpoint público / cambio arquitectónico mayor? → actualiza `README.md`.
    - ¿Cambio en reglas del harness / nuevo agente / flujo SDD? → actualiza `AGENTS.md`.
    - Si solo exploración o cambios internos sin impacto externo → no toques los docs.
-5. Mueve resumen de `progress/current.md` al final de `progress/history.md`.
-6. Vacía `progress/current.md` dejando solo la plantilla.
+5. Mueve resumen de `sdd/progress/current.md` al final de `sdd/progress/history.md`.
+6. Vacía `sdd/progress/current.md` dejando solo la plantilla.
 7. Propón commit (conventional commits, incluye docs actualizados si los tocaste).
    Espera aprobación humana explícita antes de `git commit`. Nunca hagas `git push`.
 

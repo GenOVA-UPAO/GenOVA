@@ -19,12 +19,12 @@ Este repositorio usa **Harness Engineering** combinado con **Spec-Driven Develop
 3. **Registrar los agentes** desde `.claude/agents/` como instrucciones de sistema en tu plataforma
 4. El agente `leader` es el punto de entrada — cualquier mensaje pasa primero por él
 5. Para crear una spec: describir la feature en lenguaje natural; `leader` coordina `spec_author`
-6. Revisar estado actual: `feature_list.json` y `progress/current.md`
+6. Revisar estado actual: `feature_list.json` y `sdd/progress/current.md`
 7. Verificación manual: `./verify.ps1 -Quick`
 
 #### Prompt de inicio (starter prompt)
 
-**Claude Code:** la inicialización ya está configurada automáticamente. `CLAUDE.md` instruye al agente a leer `AGENTS.md → feature_list.json → progress/current.md` al arrancar, y el hook `session-start.ps1` corre `verify.ps1 -Quick` sin intervención manual.
+**Claude Code:** la inicialización ya está configurada automáticamente. `CLAUDE.md` instruye al agente a leer `AGENTS.md → feature_list.json → sdd/progress/current.md` al arrancar, y el hook `session-start.ps1` corre `verify.ps1 -Quick` sin intervención manual.
 
 **Otras plataformas de agentes:** copia este prompt como **system message** de tu conversación:
 
@@ -34,7 +34,7 @@ Eres el agente **leader** de GenOVA.
 Al iniciar esta sesión:
 1. Lee `AGENTS.md` — mapa de navegación del repo y reglas del harness
 2. Lee `feature_list.json` — estado de todas las features (pending/spec_ready/in_progress/done/blocked)
-3. Lee `progress/current.md` — estado de la sesión anterior
+3. Lee `sdd/progress/current.md` — estado de la sesión anterior
 
 Rol y reglas:
 - Actúas siempre como orchestrator. Nunca implementas código directamente.
@@ -92,7 +92,7 @@ Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` 
 
 | Hook | Evento | Acción |
 |---|---|---|
-| `session-start.ps1` | SessionStart | Corre `verify.ps1 -Quick`, marca timestamp en `progress/current.md`, avisa si una feature lleva >72 h en progreso |
+| `session-start.ps1` | SessionStart | Corre `verify.ps1 -Quick`, marca timestamp en `sdd/progress/current.md`, avisa si una feature lleva >72 h en progreso |
 | `post-edit.ps1` | PostToolUse (Edit\|Write) | Lint inmediato — `pnpm lint` (frontend) o `ruff check` (backend); muestra primeras 20 líneas de error. **Debounce 30 s**: no relinta el mismo área dos veces seguidas |
 | `on-stop.ps1` | Stop | `verify.ps1` completo + escaneo de 9 patrones de secretos (bloquea salida si encuentra) + aviso de **wireframes huérfanos** (FASE 0 sin completar) |
 | `status-line.ps1` | Status bar | Muestra `GENOVA <branch> \| <feature_id_o_idle>` en tiempo real |
@@ -161,11 +161,11 @@ Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para recrear los syml
 | `feature_list.json` | Registro de todas las features y su estado |
 | `CHECKPOINTS.md` | Criterios objetivos de calidad (actualizable por reviewer) |
 | `verify.ps1` | Orquestador de verificación (lint + tests) |
-| `progress/current.md` | Estado de la sesión activa |
-| `progress/history.md` | Bitácora append-only de sesiones anteriores |
-| `specs/HU-*.md`, `EN-*.md` | Especificaciones de historias y enablers |
-| `tasks/TA-*.md` | Especificaciones de tareas técnicas |
-| `bugs/BU-*.md` | Especificaciones de defectos |
+| `sdd/progress/current.md` | Estado de la sesión activa |
+| `sdd/progress/history.md` | Bitácora append-only de sesiones anteriores |
+| `sdd/specs/HU-*.md`, `EN-*.md` | Especificaciones de historias y enablers |
+| `sdd/tasks/TA-*.md` | Especificaciones de tareas técnicas |
+| `sdd/bugs/BU-*.md` | Especificaciones de defectos |
 | `.claude/agents/` | Definiciones de agentes (Markdown portables) |
 | `.claude/hooks/` | Scripts PowerShell de lifecycle |
 | `.claude/settings.json` | Configuración de hooks y permisos |
@@ -387,8 +387,11 @@ GenOVA/
 ├── skills-catalog.json      # registro de skills (metadata + triggers + seguridad)
 ├── skills-lock.json         # lock de versiones/hash (gestionado por npx skills)
 ├── feature_list.json        # estado de todas las features (SDD)
-├── progress/                # current.md (sesión activa) + history.md (bitácora)
-├── specs/ · tasks/ · bugs/  # especificaciones SDD (HU/EN/RN/EP · TA · BU)
+├── sdd/                     # contenido SDD agrupado
+│   ├── specs/               # HU / EN / RN / EP
+│   ├── tasks/               # TA (tareas técnicas)
+│   ├── bugs/                # BU (defectos)
+│   └── progress/            # current.md (sesión activa) + history.md (bitácora)
 ├── frontend/                # React + Vite (ESLint max-lines: 200)
 ├── backend/                 # FastAPI
 │   ├── pyproject.toml       # uv + ruff + pytest config

@@ -6,7 +6,7 @@
           {
             "type": "command",
             "command": "powershell -ExecutionPolicy Bypass -File ./.claude/hooks/session-start.ps1",
-            "description": "Al abrir sesion: verify.ps1 -Quick + marca timestamp en progress/current.md + avisa de features stale."
+            "description": "Al abrir sesion: verify.ps1 -Quick + marca timestamp en sdd/progress/current.md + avisa de features stale."
           }
         ]
       }

@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-013_duplicar_ova_existente.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-013_duplicar_ova_existente.md § Escenarios BDD (Gherkin)
 Feature: HU-013 — Duplicar OVA Existente
 
   Background:

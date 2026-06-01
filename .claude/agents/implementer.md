@@ -13,7 +13,7 @@ de `feature_list.json` siguiendo su spec ya aprobado.
 
 - La feature está en `in_progress` en `feature_list.json`. Si está en `pending`
   o `spec_ready`, paras — el leader no debería haberte lanzado.
-- Existen los archivos de spec en `specs/`, `tasks/` o `bugs/` según el tipo.
+- Existen los archivos de spec en `sdd/specs/`, `sdd/tasks/` o `sdd/bugs/` según el tipo.
 
 ## Protocolo
 
@@ -21,7 +21,7 @@ de `feature_list.json` siguiendo su spec ya aprobado.
 
 **0.1 — Skill check**
 Invoca `skill-advisor` con la descripción: `"React wireframe mockup shadcn/ui Tailwind"`.
-Lee `progress/skill-advisor_<slug>.md`. Si hay skill instalada relevante, úsala.
+Lee `sdd/progress/skill-advisor_<slug>.md`. Si hay skill instalada relevante, úsala.
 
 **0.2 — Setup shadcn/ui**
 Verifica si shadcn/ui está instalado:
@@ -61,14 +61,14 @@ Agrega ruta de preview temporal en el router de la app:
 ```
 
 **0.4 — Gate de aprobación**
-Anota en `progress/current.md`:
+Anota en `sdd/progress/current.md`:
 ```
 Wireframe generado: frontend/src/wireframes/<archivo>.jsx
 Ruta preview: /wireframes/<id>
 ```
 Retorna **una sola línea** y para:
 ```
-wireframe_ready -> progress/impl_<name>.md
+wireframe_ready -> sdd/progress/impl_<name>.md
 ```
 No avances a FASE 1 sin que el humano confirme (`"aprobado"`, `"ok wireframe"`, `"adelante"`).
 
@@ -83,7 +83,7 @@ Si hubo cambios:
    - `[ ]` para botones e inputs, `(v)` para dropdowns
    - Preserva jerarquía: sidebar, header, main, modales
 3. Reemplaza la sección `## Mockup ASCII` en el archivo spec correspondiente
-4. Anota en `progress/current.md`:
+4. Anota en `sdd/progress/current.md`:
    `"Mockup ASCII actualizado en <spec-path> — refleja wireframe aprobado con cambios"`
 
 Si aprobó sin cambios → omite este paso.
@@ -107,7 +107,7 @@ Si la feature menciona una librería, framework, SDK, o paquete concreto
 4. Usa esa documentación para guiar la implementación — no inventes APIs
 
 Máximo 3 llamadas a `ctx7` por feature. Si quota error → continúa con conocimiento
-de entrenamiento y anota en `progress/current.md`:
+de entrenamiento y anota en `sdd/progress/current.md`:
 `"ctx7 quota reached — used training knowledge for <lib>"`
 
 Si la feature es JS/Python puro sin librerías externas nuevas → omite este paso.
@@ -116,7 +116,7 @@ Si la feature es JS/Python puro sin librerías externas nuevas → omite este pa
 
 1. **Lee** `AGENTS.md`, `CLAUDE.md`, `CHECKPOINTS.md`.
 2. **Lee el spec completo** de la feature (requirements, alcance, criterios de aceptación).
-3. **Anota** en `progress/current.md`:
+3. **Anota** en `sdd/progress/current.md`:
    - `Feature en curso: [ID] — [nombre]`
    - `Plan: [resumen de las tareas del spec]`
 4. **Para cada tarea del spec en orden**:
@@ -125,7 +125,7 @@ Si la feature es JS/Python puro sin librerías externas nuevas → omite este pa
    c. Marca la tarea `[x]` en el archivo spec (si usa formato checklist TA).
 5. **Verifica** ejecutando `powershell -File ./verify.ps1`. Si falla → vuelve al paso 4.
 6. **Trazabilidad**: confirma que cada criterio de aceptación tiene al menos un test.
-   Anótalo en `progress/impl_<name>.md` como mapa `Criterio N → test`.
+   Anótalo en `sdd/progress/impl_<name>.md` como mapa `Criterio N → test`.
 7. Si existía un wireframe aprobado → **elimínalo**:
    ```
    frontend/src/wireframes/<ID>_*Wireframe.jsx
@@ -160,18 +160,18 @@ Si la feature es JS/Python puro sin librerías externas nuevas → omite este pa
 - ❌ Si una tarea requiere desviarse del spec, paras y reportas — no inventes
   nuevos requirements ni decisiones de diseño.
 - ✅ Toda escritura de código va acompañada de su test antes de pasar a la siguiente tarea.
-- ✅ Si una herramienta falla inesperadamente, para y anota `blocked` en `progress/current.md`.
+- ✅ Si una herramienta falla inesperadamente, para y anota `blocked` en `sdd/progress/current.md`.
 
 ## Comunicación con el leader
 
 Tu respuesta final es **una sola línea**:
 
 ```
-done -> progress/impl_<name>.md
+done -> sdd/progress/impl_<name>.md
 ```
 o
 ```
-blocked -> progress/impl_<name>.md
+blocked -> sdd/progress/impl_<name>.md
 ```
 
 Nunca devuelvas el diff completo en chat. El leader lo leerá del disco si lo necesita.

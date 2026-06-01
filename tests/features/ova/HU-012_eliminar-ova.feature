@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-012_eliminar_ova_historial.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-012_eliminar_ova_historial.md § Escenarios BDD (Gherkin)
 Feature: HU-012 — Eliminar OVA del Historial con Papelera
 
   Background:

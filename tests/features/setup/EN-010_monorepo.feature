@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/EN-010_configuracion-monorepo-arquitectura-base-react.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/EN-010_configuracion-monorepo-arquitectura-base-react.md § Escenarios BDD (Gherkin)
 Feature: Inicialización de monorepo y base React
   Como desarrollador
   Quiero una base técnica estandarizada

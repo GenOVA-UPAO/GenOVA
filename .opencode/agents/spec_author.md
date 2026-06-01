@@ -30,11 +30,11 @@ detectar si contiene **más de una** especificación solicitada.
 2. Espera confirmación del usuario antes de continuar.
 3. Procesa cada spec **secuencialmente** con el flujo completo de 4 pasos.
 4. Al terminar cada una, avisa antes de pasar a la siguiente:
-   > "✓ `spec_ready -> specs/[CODIGO]_[nombre].md` · Continuando con [N+1 / Total]..."
+   > "✓ `spec_ready -> sdd/specs/[CODIGO]_[nombre].md` · Continuando con [N+1 / Total]..."
 5. Al finalizar todas, muestra resumen:
    > "Todas las specs generadas:
-   > - `spec_ready -> specs/[CODIGO1]_[nombre1].md`
-   > - `spec_ready -> specs/[CODIGO2]_[nombre2].md`"
+   > - `spec_ready -> sdd/specs/[CODIGO1]_[nombre1].md`
+   > - `spec_ready -> sdd/specs/[CODIGO2]_[nombre2].md`"
 
 ### Si el mensaje contiene una sola spec
 PASO 0 no corre. Inicia directamente con el PASO 1 del flujo estándar.
@@ -79,15 +79,15 @@ Antes de escribir, verifica que el borrador tiene **todas** las secciones obliga
 | BU | Pasos para reproducir · Comportamiento esperado · Comportamiento actual · Escenario de regresión |
 
 Si falta alguna sección obligatoria y puedes inferirla → complétala.
-Si no puedes sin más información → responde `blocked -> progress/spec_<nombre>.md` con la lista de secciones faltantes.
+Si no puedes sin más información → responde `blocked -> sdd/progress/spec_<nombre>.md` con la lista de secciones faltantes.
 
 Crea el archivo en la ruta correcta según el tipo:
 
 | Tipo | Ruta |
 |------|------|
-| HU, EP, EN, RN | `specs/[CODIGO]_[nombre_descriptivo].md` |
-| TA | `tasks/[CODIGO]_[nombre_descriptivo].md` |
-| BU | `bugs/[CODIGO]_[nombre_descriptivo].md` |
+| HU, EP, EN, RN | `sdd/specs/[CODIGO]_[nombre_descriptivo].md` |
+| TA | `sdd/tasks/[CODIGO]_[nombre_descriptivo].md` |
+| BU | `sdd/bugs/[CODIGO]_[nombre_descriptivo].md` |
 
 Agrega la entry al `feature_list.json` con `"status": "spec_ready"`.
 
@@ -191,21 +191,21 @@ Feature: Regresión [CODIGO]
 
 **Spec única** — una sola línea:
 ```
-spec_ready -> specs/[CODIGO]_[nombre].md
+spec_ready -> sdd/specs/[CODIGO]_[nombre].md
 ```
 o
 ```
-blocked -> progress/spec_[nombre].md
+blocked -> sdd/progress/spec_[nombre].md
 ```
 
 **Múltiples specs** — una línea por spec al finalizar cada una, más resumen al final:
 ```
-✓ spec_ready -> specs/[CODIGO1]_[nombre1].md · Continuando con [2/N]...
-✓ spec_ready -> specs/[CODIGO2]_[nombre2].md · Continuando con [3/N]...
+✓ spec_ready -> sdd/specs/[CODIGO1]_[nombre1].md · Continuando con [2/N]...
+✓ spec_ready -> sdd/specs/[CODIGO2]_[nombre2].md · Continuando con [3/N]...
 ...
 Todas las specs generadas: [lista]
 ```
 
-Si te bloqueas en alguna, escribe la razón en `progress/spec_<name>.md` y avisa
+Si te bloqueas en alguna, escribe la razón en `sdd/progress/spec_<name>.md` y avisa
 antes de continuar con la siguiente. Nunca devuelvas el contenido del spec en
 chat — vive en disco.

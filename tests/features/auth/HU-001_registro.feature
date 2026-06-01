@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-001_registro-cuenta-usuario.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-001_registro-cuenta-usuario.md § Escenarios BDD (Gherkin)
 Feature: Registro de cuenta de usuario
   Como estudiante
   Quiero registrarme con email y contraseña

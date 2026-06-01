@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **Al iniciar sesión**: lee `AGENTS.md` → `feature_list.json` → `progress/current.md`.
+> **Al iniciar sesión**: lee `AGENTS.md` → `feature_list.json` → `sdd/progress/current.md`.
 > Actúa siempre como el agente `leader` definido en `.claude/agents/leader.md`.
 
 ## Project

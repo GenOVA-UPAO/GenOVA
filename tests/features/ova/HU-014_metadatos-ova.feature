@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-014_renombrar_y_editar_metadatos_del_ova.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-014_renombrar_y_editar_metadatos_del_ova.md § Escenarios BDD (Gherkin)
 Feature: HU-014 — Renombrar y Editar Metadatos del OVA
 
   Background:

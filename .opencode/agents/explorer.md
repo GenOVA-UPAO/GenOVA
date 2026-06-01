@@ -49,7 +49,7 @@ no te invoca. No te ofendas.
 
 ## Salida obligatoria
 
-Escribe el reporte en `progress/explorer_<feature_id>.md` con esta estructura:
+Escribe el reporte en `sdd/progress/explorer_<feature_id>.md` con esta estructura:
 
 ```markdown
 # Explorer report — <feature_id> <title>

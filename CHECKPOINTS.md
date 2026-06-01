@@ -6,7 +6,7 @@
 ## C1 — Tests verdes
 - [ ] `pnpm test:unit` pasa al 100% (cucumber-js)
 - [ ] `pytest tests/step_defs/ -v --tb=short` pasa al 100%
-- [ ] No hay tests en `[ ]` sin justificación documentada en `progress/impl_*.md`
+- [ ] No hay tests en `[ ]` sin justificación documentada en `sdd/progress/impl_*.md`
 
 ## C2 — Lint limpio
 - [ ] `pnpm lint` sale con exit 0 (ESLint max-lines: 200, sin errores)
@@ -24,11 +24,11 @@
 
 ## C5 — Trazabilidad specs ↔ tests
 - [ ] Cada `R<n>` del spec de la feature tiene al menos un test concreto
-- [ ] El mapa `R<n> → test` está documentado en `progress/impl_<name>.md`
+- [ ] El mapa `R<n> → test` está documentado en `sdd/progress/impl_<name>.md`
 
 ## C6 — Estado del repo limpio
 - [ ] `verify.ps1` termina sin errores (PASA en todas las secciones)
-- [ ] `progress/current.md` refleja estado actualizado
+- [ ] `sdd/progress/current.md` refleja estado actualizado
 - [ ] No hay archivos temporales, `print()` de debug, ni TODOs sin contexto
 
 ## C7 — Arquitectura GenOVA respetada
@@ -38,5 +38,5 @@
 
 ## C8 — Wireframe gate (solo features con `## Mockup ASCII` en el spec)
 - [ ] `frontend/src/wireframes/<ID>_*Wireframe.jsx` existió y fue aprobado por el humano antes de FASE 1
-- [ ] Aprobación del wireframe documentada en `progress/current.md` o `progress/impl_<name>.md`
+- [ ] Aprobación del wireframe documentada en `sdd/progress/current.md` o `sdd/progress/impl_<name>.md`
 - [ ] El archivo wireframe fue eliminado al completar la implementación real (no queda en el repo)

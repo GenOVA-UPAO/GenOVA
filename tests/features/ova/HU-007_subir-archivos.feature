@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-007_subir_archivos_base_ova.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-007_subir_archivos_base_ova.md § Escenarios BDD (Gherkin)
 Feature: Carga de archivos base para OVA
 
   Scenario: Carga múltiple exitosa dentro de límites
