@@ -22,6 +22,40 @@ Este repositorio usa **Harness Engineering** combinado con **Spec-Driven Develop
 6. Revisar estado actual: `feature_list.json` y `progress/current.md`
 7. Verificación manual: `./verify.ps1 -Quick`
 
+#### Prompt de inicio (starter prompt)
+
+**Claude Code:** la inicialización ya está configurada automáticamente. `CLAUDE.md` instruye al agente a leer `AGENTS.md → feature_list.json → progress/current.md` al arrancar, y el hook `session-start.ps1` corre `verify.ps1 -Quick` sin intervención manual.
+
+**Otras plataformas de agentes:** copia este prompt como **system message** de tu conversación:
+
+```
+Eres el agente **leader** de GenOVA.
+
+Al iniciar esta sesión:
+1. Lee `AGENTS.md` — mapa de navegación del repo y reglas del harness
+2. Lee `feature_list.json` — estado de todas las features (pending/spec_ready/in_progress/done/blocked)
+3. Lee `progress/current.md` — estado de la sesión anterior
+
+Rol y reglas:
+- Actúas siempre como orchestrator. Nunca implementas código directamente.
+- Toda feature nueva pasa por spec_author con aprobación humana antes de implementarse.
+- No declaras done sin tests verdes (./verify.ps1).
+- Usas subagentes según el tipo de tarea: spec_author, implementer, reviewer, explorer.
+- Una sola feature activa a la vez.
+
+Clasificación de mensajes entrantes:
+- Feature nueva / Historia de Usuario → coordina spec_author (HU o EN)
+- Bug reportado → coordina spec_author (BU)
+- Tarea técnica → coordina spec_author (TA)
+- Pregunta conceptual o de estado → responde directamente como leader
+
+Contexto del proyecto:
+- GenOVA — plataforma web para generación asistida por IA de Objetos Virtuales de Aprendizaje (OVA) con exportación SCORM 1.2.
+- Stack: React 19 + FastAPI + Supabase PostgreSQL + pgvector + Groq/OpenRouter.
+- Arquitectura frontend: services → hooks → pages. Backend: router → service → model.
+- Límite: 200 líneas por archivo (hard rule en ESLint y ruff).
+```
+
 ### Flujo SDD completo
 
 ```
@@ -122,9 +156,21 @@ OPENROUTER_API_KEY=...
 # Opcional — filtra qué modelos expone /api/ova/llm-options
 # IDs disponibles: groq-llama-3.3-70b, groq-gpt-oss-120b, groq-qwen3-32b, openrouter-deepseek-v4-flash
 OVA_ENABLED_LLMS=
+
+# Producción — orígenes permitidos (CORS). Obligatorio si ENV=production.
+CORS_ORIGINS=https://tu-dominio.com
+
+# Auth — desactiva el fallback Authorization: Bearer una vez todos los clientes usan cookies
+AUTH_ACCEPT_BEARER=1   # default 1 (acepta); pon 0 en producción cuando estés listo
+
+# Pool de conexiones (Supabase Transaction pooler, puerto 6543)
+DB_POOL_SIZE=10
+DB_MAX_OVERFLOW=10
 ```
 
 > ⚠️ `JWT_SECRET` es obligatorio. El backend **falla al arrancar** si la variable está vacía, contiene un valor débil (`change-me`, `secret`, `test`, `changeme`) o tiene menos de 16 caracteres.
+>
+> ⚠️ Usa el pooler de **Transacciones** de Supabase (puerto `6543`), no el de Sesiones. El pooler de sesiones es incompatible con `pool_pre_ping=True` bajo carga.
 
 ### Supabase Storage (persistencia de OVAs)
 
@@ -278,7 +324,7 @@ GenOVA/
 │   ├── scorm/               # Empaquetado SCORM 1.2 (template + service)
 │   ├── storage/             # Wrapper de Supabase Storage (signed URLs)
 │   ├── uploads/             # Subida temporal de archivos (alimenta RAG)
-│   ├── migrations/          # SQL 001–014 aplicados al arrancar
+│   ├── migrations/          # SQL 001–017 aplicados al arrancar (próximo: 018)
 │   ├── rate_limit.py        # SlowAPI shared limiter
 │   ├── security.py          # bcrypt + JWT + dummy-hash timing defense
 │   ├── main.py              # Entry point (CORS, logging, lifespan, registro de routers)
@@ -336,6 +382,23 @@ GET /api/scorm/health
 GET /api/ova/health
 GET /api/uploads/health
 ```
+
+## CI/CD
+
+Push o PR a `develop` / `main` dispara el pipeline en paralelo:
+
+```
+lint ──────────────────┐
+backend-bdd ───────────┼──→ e2e
+frontend-unit (BDD) ───┘
+```
+
+Secrets requeridos en el repositorio CI:
+
+| Secret | Descripción |
+|---|---|
+| `TEST_DATABASE_URL` | PostgreSQL de test (no usar la BD de producción) |
+| `TEST_JWT_SECRET` | Secret JWT para los tests (mínimo 16 chars) |
 
 ## Seed de desarrollo
 
