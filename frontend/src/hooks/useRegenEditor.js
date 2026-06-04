@@ -82,7 +82,7 @@ export function useRegenEditor() {
         clearInterval(pollIntervalRef.current)
         setIsRegenerating(false)
       }
-    }, 1500)
+    }, 4000)
   }
 
   const handleToggleCheck = (phaseId) => {

@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-010_maquetacion-layout-principal-enrutamiento-modular.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-010_maquetacion-layout-principal-enrutamiento-modular.md § Escenarios BDD (Gherkin)
 # INC-005: El escenario "Modularidad de componentes de layout" es una verificación de lint
 #          estático, no testeable via E2E/browser. Marcado con @lint.
 #          Ver docs/tasks/TA-BDD-incompatibilidades.md.

@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-011_editar_ova_generado.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-011_editar_ova_generado.md § Escenarios BDD (Gherkin)
 Feature: HU-011 — Editar OVA Generado
 
   Background:

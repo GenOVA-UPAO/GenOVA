@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-020_gestion-roles-eliminar-rol.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-020_gestion-roles-eliminar-rol.md § Escenarios BDD (Gherkin)
 Feature: Gestión de Roles — Eliminar Rol
   Como administrador
   Quiero eliminar roles obsoletos

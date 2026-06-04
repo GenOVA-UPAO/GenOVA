@@ -1,40 +1,45 @@
-import { useEffect, useState } from 'react'
-import { Navigate, Route, Routes, useNavigate, Outlet } from 'react-router'
-import { clearToken, getToken, isTokenExpired } from './lib/auth.js'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { Navigate, Route, Routes, Outlet } from 'react-router'
+import { isLoggedIn } from './lib/auth.js'
+import { apiFetch } from './lib/http.js'
 import { AppLayout } from './layouts/AppLayout.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
-import { CrearOvaPage } from './pages/CrearOvaPage.jsx'
-import { AdminRolesPage } from './pages/AdminRolesPage.jsx'
-import { AdminUsersPage } from './pages/AdminUsersPage.jsx'
-import { MisOvasPage } from './pages/MisOvasPage.jsx'
-import { EditarOvaPage } from './pages/EditarOvaPage.jsx'
-import { PapeleraPage } from './pages/PapeleraPage.jsx'
-import { ProfilePage } from './pages/ProfilePage.jsx'
-import { EngagePage } from './pages/EngagePage.jsx'
-import { ExplorePage } from './pages/ExplorePage.jsx'
-import { NotFoundPage } from './pages/NotFoundPage.jsx'
-import { LabsPage } from './pages/LabsPage.jsx'
+
+// Code-split heavier authenticated routes so the login bundle stays tiny.
+const CrearOvaPage = lazy(() => import('./pages/CrearOvaPage.jsx').then((m) => ({ default: m.CrearOvaPage })))
+const AdminRolesPage = lazy(() => import('./pages/AdminRolesPage.jsx').then((m) => ({ default: m.AdminRolesPage })))
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage.jsx').then((m) => ({ default: m.AdminUsersPage })))
+const MisOvasPage = lazy(() => import('./pages/MisOvasPage.jsx').then((m) => ({ default: m.MisOvasPage })))
+const EditarOvaPage = lazy(() => import('./pages/EditarOvaPage.jsx').then((m) => ({ default: m.EditarOvaPage })))
+const PapeleraPage = lazy(() => import('./pages/PapeleraPage.jsx').then((m) => ({ default: m.PapeleraPage })))
+const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
+const EngagePage = lazy(() => import('./pages/EngagePage.jsx').then((m) => ({ default: m.EngagePage })))
+const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx').then((m) => ({ default: m.ExplorePage })))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
+const LabsPage = lazy(() => import('./pages/LabsPage.jsx').then((m) => ({ default: m.LabsPage })))
 
 import { Toaster } from 'sonner'
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-[400px] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
+    </div>
+  )
+}
 
 export function AdminRoute() {
-  const [loading, setLoading] = useState(() => Boolean(getToken()))
+  const [loading, setLoading] = useState(() => isLoggedIn())
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    const token = getToken()
-    if (!token) return
+    if (!isLoggedIn()) return
 
     const checkAdmin = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+        const response = await apiFetch('/api/auth/me')
         if (response.status === 200) {
           const user = await response.json()
           setIsAdmin(user.role === 'administrador')
@@ -70,54 +75,40 @@ export function AdminRoute() {
 }
 
 function ProtectedLayout() {
-  const token = getToken()
-  if (!token || isTokenExpired(token)) {
+  if (!isLoggedIn()) {
     return <Navigate to="/login" replace />
   }
   return <AppLayout />
 }
 
 function App() {
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const token = getToken()
-      if (!token || isTokenExpired(token)) {
-        clearToken()
-        navigate('/login', { replace: true })
-      }
-    }, 60000)
-
-    return () => clearInterval(interval)
-  }, [navigate])
-
   return (
     <>
       <Toaster position="top-right" richColors closeButton />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route element={<ProtectedLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/crear-ova" element={<CrearOvaPage />} />
-          <Route path="/mis-ovas" element={<MisOvasPage />} />
-          <Route path="/mis-ovas/:ovaId/editar" element={<EditarOvaPage />} />
-          <Route path="/papelera" element={<PapeleraPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/metodologia/engage" element={<EngagePage />} />
-          <Route path="/metodologia/explore" element={<ExplorePage />} />
-          
-          {/* Unified Admin pages nested in AppLayout and protected by AdminRoute */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin/roles" element={<AdminRolesPage />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/admin/labs" element={<LabsPage />} />
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route element={<ProtectedLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/crear-ova" element={<CrearOvaPage />} />
+            <Route path="/mis-ovas" element={<MisOvasPage />} />
+            <Route path="/mis-ovas/:ovaId/editar" element={<EditarOvaPage />} />
+            <Route path="/papelera" element={<PapeleraPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/metodologia/engage" element={<EngagePage />} />
+            <Route path="/metodologia/explore" element={<ExplorePage />} />
+
+            <Route element={<AdminRoute />}>
+              <Route path="/admin/roles" element={<AdminRolesPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/labs" element={<LabsPage />} />
+            </Route>
           </Route>
-        </Route>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
     </>
   )
 }

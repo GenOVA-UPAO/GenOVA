@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-019_gestion-roles-editar-rol.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-019_gestion-roles-editar-rol.md § Escenarios BDD (Gherkin)
 Feature: Gestión de Roles — Editar Rol
   Como administrador
   Quiero editar el nombre y permisos de un rol existente

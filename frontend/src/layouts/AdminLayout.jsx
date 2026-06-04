@@ -1,25 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Navigate, NavLink, Outlet, useNavigate } from 'react-router'
-import { clearToken, getToken } from '../lib/auth.js'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+import { clearSession, isLoggedIn } from '../lib/auth.js'
+import { apiFetch } from '../lib/http.js'
 
 export function AdminLayout() {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(() => Boolean(getToken()))
+  const [loading, setLoading] = useState(() => isLoggedIn())
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    const token = getToken()
-    if (!token) return
+    if (!isLoggedIn()) return
 
     const checkAdmin = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+        const response = await apiFetch('/api/auth/me')
         if (response.status === 200) {
           const user = await response.json()
           setIsAdmin(user.role === 'administrador')
@@ -36,8 +30,8 @@ export function AdminLayout() {
     checkAdmin()
   }, [])
 
-  const handleLogout = () => {
-    clearToken()
+  const handleLogout = async () => {
+    await clearSession()
     navigate('/login')
   }
 

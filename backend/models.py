@@ -40,6 +40,12 @@ class User(Base):
 
 class Ova(Base):
     __tablename__ = "ovas"
+    __table_args__ = (
+        # Partial index speeds `WHERE deleted_at IS NULL` list queries (the
+        # default soft-delete filter) without bloating with tombstones.
+        Index("idx_ovas_active", "user_id", "created_at",
+              postgresql_where=text("deleted_at IS NULL")),
+    )
 
     id = _pk_column()
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
@@ -153,6 +159,9 @@ class RagChunk(Base):
     pgvector column managed via raw SQL in `backend/rag/store.py`; SQLAlchemy
     treats it as opaque text-equivalent here (we only read it via raw queries)."""
     __tablename__ = "rag_chunks"
+    __table_args__ = (
+        Index("idx_rag_chunks_expires_at", "expires_at"),
+    )
 
     id = _pk_column()
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

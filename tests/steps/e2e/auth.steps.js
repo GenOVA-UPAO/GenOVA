@@ -27,8 +27,17 @@ Then('debo recibir un JWT con expiración de 24 horas', async ({ page }) => {
     () => /dashboard|mis-ovas/.test(window.location.pathname),
     { timeout: 10000 }
   )
-  const token = await page.evaluate(() => localStorage.getItem('genova_token'))
-  if (!token) throw new Error('Token not found in localStorage')
+  // Auth token lives in the httpOnly `genova_token` cookie (JS can't read it),
+  // not localStorage. Verify the cookie exists, is httpOnly, and expires in ~24h.
+  const cookies = await page.context().cookies()
+  const token = cookies.find((c) => c.name === 'genova_token')
+  if (!token) throw new Error('genova_token cookie not found')
+  if (!token.httpOnly) throw new Error('genova_token cookie is not httpOnly')
+  const secondsToExpiry = token.expires - Date.now() / 1000
+  const twentyFourHours = 24 * 60 * 60
+  if (Math.abs(secondsToExpiry - twentyFourHours) > 5 * 60) {
+    throw new Error(`Expected ~24h expiry, got ~${Math.round(secondsToExpiry / 3600)}h`)
+  }
 })
 
 Then('debo ser redirigido al dashboard', async ({ page }) => {

@@ -1,4 +1,4 @@
-# Extraído de specs/HU-015_ver-editar-perfil.md § Escenarios Gherkin (BDD)
+# Extraído de sdd/specs/HU-015_ver-editar-perfil.md § Escenarios Gherkin (BDD)
 # INC-001: spec usaba formato plano sin Feature/Scenario — convertido a Gherkin estándar.
 # Los pasos son verbatim del spec; solo se añadió la estructura Feature/Scenario.
 Feature: Ver y editar perfil de usuario

@@ -1,4 +1,4 @@
-# Extraído de specs/HU-003_visualizar-completa-5E.md § Escenarios BDD (Gherkin)
+# Extraído de sdd/specs/HU-003_visualizar-completa-5E.md § Escenarios BDD (Gherkin)
 # INC-003: Scenario "Botón Editar deshabilitado" actualizado — HU-011 ya implementado.
 # El botón Editar ahora está habilitado y redirige al editor. Referencia "Sprint 2" eliminada.
 Feature: Visualizar completa 5E

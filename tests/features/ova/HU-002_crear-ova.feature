@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-002_crear_nuevo_ova_desde_prompt.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-002_crear_nuevo_ova_desde_prompt.md § Escenarios BDD (Gherkin)
 Feature: Crear nuevo OVA desde prompt
 
   Scenario: Generación exitosa con datos válidos

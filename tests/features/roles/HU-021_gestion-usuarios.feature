@@ -1,4 +1,4 @@
-# Extraído de specs/HU-021_gestion-roles-asignar-rol-usuario.md § Escenarios Gherkin
+# Extraído de sdd/specs/HU-021_gestion-roles-asignar-rol-usuario.md § Escenarios Gherkin
 # INC-001: La spec usa formato informal (Dado/Cuando/Entonces sin wrapper Feature/Scenario).
 #          Convertido a Gherkin estándar.
 # INC-004: El contrato API de /api/users/{id}/reset-password-whatsapp en la spec expone

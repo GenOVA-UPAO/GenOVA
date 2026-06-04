@@ -1,4 +1,4 @@
-# Extraído verbatim de specs/HU-008_inicio-sesion-credenciales.md § Escenarios BDD (Gherkin)
+# Extraído verbatim de sdd/specs/HU-008_inicio-sesion-credenciales.md § Escenarios BDD (Gherkin)
 Feature: Inicio de sesión con credenciales
   Como estudiante
   Quiero iniciar sesión con mi correo y contraseña

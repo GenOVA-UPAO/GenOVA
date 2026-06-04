@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { getToken } from '../lib/auth.js'
+import { apiFetch } from '../lib/http.js'
 import { useChangePassword } from './useChangePassword.js'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 function getInitials(fullName) {
   if (!fullName) return 'U'
@@ -36,11 +34,8 @@ export function useProfile() {
   const passwordForm = useChangePassword()
 
   const fetchProfile = async () => {
-    const token = getToken()
     try {
-      const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await apiFetch('/api/auth/me')
       if (response.status === 200) {
         const data = await response.json()
         setFullName(data.full_name || '')
@@ -95,11 +90,9 @@ export function useProfile() {
     if (!validate()) return
 
     setSaving(true)
-    const token = getToken()
     try {
-      const response = await fetch(`${apiBaseUrl}/api/users/me`, {
+      const response = await apiFetch('/api/users/me', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           full_name: fullName.trim(),
           email: email.trim().toLowerCase(),

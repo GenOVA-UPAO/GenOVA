@@ -1,68 +1,33 @@
-import { getToken } from '../lib/auth.js'
+import { apiFetch, apiJson } from '../lib/http.js'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-
-function authHeaders() {
-  const token = getToken()
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  }
+export function fetchOvaEditorData(ovaId) {
+  return apiJson(`/api/ovas/${ovaId}/editar`)
 }
 
-async function handleResponse(res) {
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) {
-    throw new Error(data.message || `Error ${res.status}`)
-  }
-  return data
-}
-
-export async function fetchOvaEditorData(ovaId) {
-  const res = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/editar`, {
-    headers: authHeaders(),
-  })
-  return handleResponse(res)
-}
-
-export async function savePhaseContent(ovaId, phaseId, content) {
-  const res = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/fases/${phaseId}`, {
+export function savePhaseContent(ovaId, phaseId, content) {
+  return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}`, {
     method: 'PATCH',
-    headers: authHeaders(),
     body: JSON.stringify({ content }),
   })
-  return handleResponse(res)
 }
 
-export async function triggerRegen(ovaId, { prompt = null, faseIds = [] } = {}) {
-  const res = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/regenerar`, {
+export function triggerRegen(ovaId, { prompt = null, faseIds = [] } = {}) {
+  return apiJson(`/api/ovas/${ovaId}/regenerar`, {
     method: 'POST',
-    headers: authHeaders(),
     body: JSON.stringify({ prompt, fase_ids: faseIds }),
   })
-  return handleResponse(res)
 }
 
-export async function pollRegenProgress(ovaId, jobId) {
-  const res = await fetch(
-    `${API_BASE_URL}/api/ovas/${ovaId}/regenerar/${jobId}/progress`,
-    { headers: authHeaders() },
-  )
-  return handleResponse(res)
+export function pollRegenProgress(ovaId, jobId) {
+  return apiJson(`/api/ovas/${ovaId}/regenerar/${jobId}/progress`)
 }
 
-export async function fetchOvaVersions(ovaId) {
-  const res = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/versiones`, {
-    headers: authHeaders(),
-  })
-  return handleResponse(res)
+export function fetchOvaVersions(ovaId) {
+  return apiJson(`/api/ovas/${ovaId}/versiones`)
 }
 
 export async function downloadEditedScorm(ovaId) {
-  const token = getToken()
-  const res = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/export-scorm`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const res = await apiFetch(`/api/ovas/${ovaId}/export-scorm`)
   if (!res.ok) {
     const data = await res.json().catch(() => ({}))
     throw new Error(data.message || 'Error al exportar SCORM')

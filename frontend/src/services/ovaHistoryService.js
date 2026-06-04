@@ -1,132 +1,75 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:8000'
+import { apiFetch, apiJson } from '../lib/http.js'
 
-import { getToken } from '../lib/auth.js'
-
-function buildAuthHeaders() {
-  const token = getToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
-
-async function parseResponse(response) {
-  const data = await response.json().catch(() => ({}))
-  if (!response.ok) {
-    const error = new Error(data?.message || 'No se pudo completar la operación.')
-    error.code = data?.error || ''
-    error.status = response.status
-    throw error
-  }
-  return data
-}
-
-export async function fetchOvas({ page = 1, limit = 10, search = '', status = '' } = {}) {
+export function fetchOvas({ page = 1, limit = 10, search = '', status = '' } = {}) {
   const params = new URLSearchParams({ page, limit })
   if (search.trim()) params.set('search', search.trim())
   if (status.trim()) params.set('status', status.trim())
-
-  const response = await fetch(`${API_BASE_URL}/api/ovas?${params}`, {
-    headers: buildAuthHeaders(),
-  })
-  return parseResponse(response)
+  return apiJson(`/api/ovas?${params}`)
 }
 
-export async function deleteOva(ovaId) {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}`, {
-    method: 'DELETE',
-    headers: buildAuthHeaders(),
-  })
-  return parseResponse(response)
+export function deleteOva(ovaId) {
+  return apiJson(`/api/ovas/${ovaId}`, { method: 'DELETE' })
 }
 
-export async function fetchTrashedOvas({ page = 1, limit = 10 } = {}) {
+export function fetchTrashedOvas({ page = 1, limit = 10 } = {}) {
   const params = new URLSearchParams({ page, limit })
-  const response = await fetch(`${API_BASE_URL}/api/ovas/papelera?${params}`, {
-    headers: buildAuthHeaders(),
-  })
-  return parseResponse(response)
+  return apiJson(`/api/ovas/papelera?${params}`)
 }
 
-export async function fetchTrashCount() {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/papelera/count`, {
-    headers: buildAuthHeaders(),
-  })
-  return parseResponse(response)
+export function fetchTrashCount() {
+  return apiJson('/api/ovas/papelera/count')
 }
 
-export async function restoreOva(ovaId) {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/restaurar`, {
-    method: 'PATCH',
-    headers: buildAuthHeaders(),
-  })
-  return parseResponse(response)
+export function restoreOva(ovaId) {
+  return apiJson(`/api/ovas/${ovaId}/restaurar`, { method: 'PATCH' })
 }
 
-export async function permanentDeleteOva(ovaId) {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/permanente`, {
-    method: 'DELETE',
-    headers: buildAuthHeaders(),
-  })
-  return parseResponse(response)
+export function permanentDeleteOva(ovaId) {
+  return apiJson(`/api/ovas/${ovaId}/permanente`, { method: 'DELETE' })
 }
 
-export async function batchMoveToTrash(ovaIds) {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/lote/papelera`, {
+export function batchMoveToTrash(ovaIds) {
+  return apiJson('/api/ovas/lote/papelera', {
     method: 'POST',
-    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ ova_ids: ovaIds }),
   })
-  return parseResponse(response)
 }
 
-export async function batchRestore(ovaIds) {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/lote/restaurar`, {
+export function batchRestore(ovaIds) {
+  return apiJson('/api/ovas/lote/restaurar', {
     method: 'POST',
-    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ ova_ids: ovaIds }),
   })
-  return parseResponse(response)
 }
 
-export async function duplicateOva(ovaId) {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/duplicar`, {
-    method: 'POST',
-    headers: buildAuthHeaders(),
-  })
-  return parseResponse(response)
+export function duplicateOva(ovaId) {
+  return apiJson(`/api/ovas/${ovaId}/duplicar`, { method: 'POST' })
 }
 
-export async function updateOvaMetadata(ovaId, { title, description }) {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/metadata`, {
+export function updateOvaMetadata(ovaId, { title, description }) {
+  return apiJson(`/api/ovas/${ovaId}/metadata`, {
     method: 'PATCH',
-    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, description }),
   })
-  return parseResponse(response)
 }
 
-export async function batchPermanentDelete(ovaIds) {
-
-  const response = await fetch(`${API_BASE_URL}/api/ovas/lote/permanente`, {
+export function batchPermanentDelete(ovaIds) {
+  return apiJson('/api/ovas/lote/permanente', {
     method: 'DELETE',
-    headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ ova_ids: ovaIds }),
   })
-  return parseResponse(response)
 }
 
 export async function downloadOvaFile(ovaId, title = 'ova') {
-  const response = await fetch(`${API_BASE_URL}/api/ovas/${ovaId}/download`, {
-    headers: buildAuthHeaders(),
-  })
-
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
+  const res = await apiFetch(`/api/ovas/${ovaId}/download`)
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
     const error = new Error(data?.message || 'No se pudo descargar el archivo.')
     error.code = data?.error || ''
-    error.status = response.status
+    error.status = res.status
     throw error
   }
-
-  const blob = await response.blob()
+  const blob = await res.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

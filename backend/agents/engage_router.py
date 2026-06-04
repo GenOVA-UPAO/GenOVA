@@ -3,7 +3,7 @@ import logging
 import os
 import re
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -17,6 +17,7 @@ from auth.dependencies import get_current_user
 from database import get_db
 from models import User
 from rag.retriever import build_contexto_usuario, top_k
+from rate_limit import limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -89,7 +90,9 @@ def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
 
 
 @router.post("/generate")
+@limiter.limit("5/minute")
 def generate_engage_resource(
+    request: Request,
     payload: GenerateEngageRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),

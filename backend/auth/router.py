@@ -1,5 +1,8 @@
 """Auth router — login, register, /me. Mounts the reset-password sub-router."""
 import logging
+import threading
+import time
+from collections import defaultdict, deque
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
@@ -28,6 +31,42 @@ from security import (
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+# Per-email login throttle complements the per-IP slowapi limiter: blocks a
+# distributed attacker that rotates IPs against one account. In-memory only —
+# fine for single Render instance; needs Redis when scaling horizontally.
+_EMAIL_LOGIN_WINDOW_S = 60.0
+_EMAIL_LOGIN_MAX = 5
+_email_attempts: dict[str, deque[float]] = defaultdict(deque)
+_email_attempts_lock = threading.Lock()
+
+# Cookie used by the new httpOnly auth flow.
+_COOKIE_NAME = "genova_token"
+_COOKIE_MAX_AGE = JWT_EXPIRES_MINUTES * 60
+
+
+def _email_throttled(email: str) -> bool:
+    now = time.monotonic()
+    with _email_attempts_lock:
+        q = _email_attempts[email]
+        while q and now - q[0] > _EMAIL_LOGIN_WINDOW_S:
+            q.popleft()
+        if len(q) >= _EMAIL_LOGIN_MAX:
+            return True
+        q.append(now)
+        return False
+
+
+def _set_auth_cookie(response: JSONResponse, token: str) -> None:
+    response.set_cookie(
+        key=_COOKIE_NAME,
+        value=token,
+        max_age=_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        path="/",
+    )
 
 
 class LoginRequest(BaseModel):
@@ -71,6 +110,16 @@ def _invalid_credentials() -> JSONResponse:
 @limiter.limit("10/minute")
 def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     email = payload.email.strip().lower()
+
+    if _email_throttled(email):
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content={
+                "error": "too_many_attempts",
+                "message": "Demasiados intentos para esta cuenta. Espera un minuto.",
+            },
+        )
+
     user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
 
     if not user:
@@ -103,14 +152,16 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
     db.commit()
 
     token = build_token(str(user.id), str(user.email))
-    return JSONResponse(
+    response = JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
             "access_token": token,
             "token_type": "bearer",
-            "expires_in": JWT_EXPIRES_MINUTES * 60,
+            "expires_in": _COOKIE_MAX_AGE,
         },
     )
+    _set_auth_cookie(response, token)
+    return response
 
 
 @router.post("/register")
@@ -140,10 +191,19 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
     db.refresh(user)
 
     token = build_token(str(user.id), str(user.email))
-    return JSONResponse(
+    response = JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={"access_token": token, "token_type": "bearer"},
     )
+    _set_auth_cookie(response, token)
+    return response
+
+
+@router.post("/logout")
+def logout() -> JSONResponse:
+    response = JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
+    response.delete_cookie(key=_COOKIE_NAME, path="/")
+    return response
 
 
 @router.get("/me")

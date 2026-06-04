@@ -1,0 +1,76 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File ./.claude/hooks/session-start.ps1",
+            "description": "Al abrir sesion: verify.ps1 -Quick + marca timestamp en sdd/progress/current.md + avisa de features stale."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File ./.claude/hooks/post-edit.ps1",
+            "description": "Lint rapido tras editar. Frontend: pnpm lint. Backend: ruff check."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File ./.claude/hooks/on-stop.ps1",
+            "description": "Antes de cerrar: verify.ps1 completo + bloqueo si detecta secretos."
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "powershell -ExecutionPolicy Bypass -File ./.claude/hooks/status-line.ps1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm lint*)",
+      "Bash(pnpm test:unit*)",
+      "Bash(pnpm test:e2e*)",
+      "Bash(pnpm build*)",
+      "Bash(python -m ruff*)",
+      "Bash(uv run ruff*)",
+      "Bash(uv run pytest*)",
+      "Bash(uv sync*)",
+      "Bash(pytest*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git rev-parse*)",
+      "Bash(git ls-files*)",
+      "Bash(git check-ignore*)",
+      "Bash(npx ctx7@latest library*)",
+      "Bash(npx ctx7@latest docs*)",
+      "Bash(npx skills find*)",
+      "Bash(npx skills add*)",
+      "Bash(npx skills check*)",
+      "Bash(npx skills update*)",
+      "Bash(npx skills list*)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(npm publish*)",
+      "Bash(pnpm publish*)"
+    ]
+  }
+}
