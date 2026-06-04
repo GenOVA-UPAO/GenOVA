@@ -2,6 +2,40 @@
 
 Plataforma web para la generación asistida por IA de Objetos Virtuales de Aprendizaje (OVA) con exportación SCORM 1.2. Implementa la metodología 5E (ENGAGE y EXPLORE) y empaqueta los resultados como paquetes SCORM listos para subir a un LMS.
 
+## Contenido
+
+- [Harness Engineering + SDD](#harness-engineering--sdd)
+- [Stack](#stack)
+- [Requisitos previos](#requisitos-previos)
+- [Configuración de entorno](#configuración-de-entorno)
+- [Ejecución](#ejecución)
+- [Scripts disponibles](#scripts-disponibles-raíz)
+- [Comandos backend](#comandos-backend)
+- [Estructura del monorepo](#estructura-del-monorepo)
+- [Convenciones de código](#convenciones-de-código)
+- [Funcionalidades principales](#funcionalidades-principales)
+- [Cómo funciona la generación (5E)](#cómo-funciona-la-generación-5e)
+- [Rutas del frontend](#rutas-del-frontend)
+- [Endurecimiento de seguridad](#endurecimiento-de-seguridad)
+- [Endpoints de salud](#endpoints-de-salud)
+- [CI/CD](#cicd)
+- [Seed de desarrollo](#seed-de-desarrollo)
+- [Documentación detallada](#documentación-detallada)
+
+## Documentación detallada
+
+Este README es el **overview**. La referencia profunda vive en [`docs/`](docs/) (la
+genera/actualiza el agente `doc_author`):
+
+| Doc | Contenido |
+|---|---|
+| [docs/api.md](docs/api.md) | Referencia REST completa (~70 endpoints) + Swagger `/docs` |
+| [docs/database.md](docs/database.md) | Esquema de BD (tablas, índices, pgvector) |
+| [docs/generacion-5e.md](docs/generacion-5e.md) | Pipeline 5E, 10 tipos de recurso, fallback LLM, validador HTML |
+| [docs/deployment.md](docs/deployment.md) | Deploy cloud (Vercel/Render/Supabase) + **referencia completa de env vars** |
+| [docs/testing.md](docs/testing.md) | Estrategia BDD (unit/backend/e2e) + CI |
+| [docs/labs.md](docs/labs.md) | Sandbox de iteración de prompts (admin) |
+
 ## Harness Engineering + SDD
 
 ### ¿Qué es?
@@ -40,7 +74,7 @@ Rol y reglas:
 - Actúas siempre como orchestrator. Nunca implementas código directamente.
 - Toda feature nueva pasa por spec_author con aprobación humana antes de implementarse.
 - No declaras done sin tests verdes (./verify.ps1).
-- Usas subagentes según el tipo de tarea: spec_author, implementer, reviewer, explorer, skill-advisor, spec-sync.
+- Usas subagentes según el tipo de tarea: spec_author, implementer, reviewer, explorer, skill-advisor, spec-sync, doc_author.
 - Una sola feature activa a la vez.
 
 Clasificación de mensajes entrantes:
@@ -70,6 +104,7 @@ Contexto del proyecto:
                         → verify.ps1 entre tareas
                    → reviewer (CHECKPOINTS.md C1-C8, auto-fix tests)
                    → done
+                   → ⏸ HUMANO → doc_author (genera/actualiza docs en docs/) — opcional
                    → spec-sync (propone actualizar specs que referencian
                                 interfaces renombradas) — en cierre de sesión
 ```
@@ -87,6 +122,7 @@ Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` 
 | `explorer` | Mapea codebase antes de specs complejas; devuelve score de complejidad 1–5 y riesgos | Features cross-stack o de alto riesgo |
 | `skill-advisor` | Broker de skills — busca, verifica seguridad (trustedSources + scanner) y actualiza skills instaladas. Service agent idempotente | Al pedir "busca una skill" / "actualiza skills"; el implementer lo consulta en FASE 0 |
 | `spec-sync` | Tras renombres de interfaz pública (endpoint, componente, hook), detecta specs que referencian lo viejo y propone actualizaciones | Cierre de sesión, tras una feature `done` |
+| `doc_author` | Genera/actualiza documentación en `docs/` con el mismo flujo interactivo de 4 pasos que `spec_author`; detecta solapamiento y actualiza la doc existente en vez de duplicar | Al pedir "documenta X" o cuando el leader lo ofrece al cerrar una feature `done` |
 
 ### Hooks automáticos
 
@@ -104,6 +140,8 @@ Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` 
 ./verify.ps1 -Quick   # solo lint + unit (sin backend)
 ./verify.ps1 -E2E     # incluye Playwright E2E (requiere ambos servidores)
 ```
+
+Estrategia de pruebas completa (BDD unit/backend/e2e + CI) en [docs/testing.md](docs/testing.md).
 
 ### Skills
 
@@ -333,6 +371,11 @@ pnpm prod:docker
 
 Usa `docker-compose.prod.yml` con Nginx como gateway en el puerto `80`. Las rutas `/api/*` se redirigen al backend y `/*` al frontend estático.
 
+**Despliegue cloud**: la topología recomendada es **frontend → Vercel**, **backend → Render**
+y **BD/Storage → Supabase** (Transaction pooler 6543 + bucket `scorm-packages`). Qué variables
+setear en cada plataforma y la referencia completa de env vars están en
+[docs/deployment.md](docs/deployment.md).
+
 ## Scripts disponibles (raíz)
 
 | Comando | Acción |
@@ -374,7 +417,7 @@ Override env para los tests manuales: `BASE`, `EMAIL`, `PASS`, `PHASE`, `TYPE`, 
 ```
 GenOVA/
 ├── .claude/
-│   ├── agents/              # 7 agentes: leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync
+│   ├── agents/              # 8 agentes: leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync, doc_author
 │   ├── hooks/               # session-start, post-edit, on-stop, status-line (PowerShell)
 │   └── settings.json        # hooks + permisos
 ├── .agents/skills/          # store canónico de skills (find-skills, find-docs)
@@ -416,7 +459,8 @@ GenOVA/
 │   └── tools/prompt_lab.py  # Utilidad CLI para probar prompts (fuera de la API)
 ├── scorm-template/          # Plantilla base SCORM
 ├── deploy/                  # Nginx para producción
-├── docs/labs.md             # Doc funcional de la pestaña Labs
+├── docs/                    # Referencia profunda (api, database, generacion-5e, deployment, testing, labs)
+│   └── README.md            # Índice de docs (mantenido por doc_author)
 ├── CLAUDE.md                # Guía para Claude Code (contexto detallado del repo)
 ├── .editorconfig            # Estilo universal (LF, UTF-8, 2/4 spaces)
 └── docker-compose.yml
@@ -438,6 +482,36 @@ GenOVA/
   - `/admin/roles` — CRUD de roles y sus permisos (JSONB), con flujo de "eliminar y reasignar".
   - `/admin/users` — listado de usuarios y asignación de roles.
   - `/admin/labs` — sandbox de prompts: edita, ejecuta contra 1–2 modelos en paralelo, compara, marca ganadores, exporta como SCORM, pide al LLM una versión mejorada del prompt.
+
+## Cómo funciona la generación (5E)
+
+GenOVA aplica la metodología **5E**; hoy cubre **ENGAGE** y **EXPLORE**, cada una con **10
+tipos de recurso** (cómic, podcast, gamificación, dilema ético, escape room, simulador…).
+El backend genera con LLMs reales en un pipeline `texto → JSON → HTML`, valida y auto-repara
+el HTML (incluye callbacks SCORM), recurre a una **cadena de fallback** entre proveedores
+(Groq + OpenRouter) y empaqueta todo en un único SCORM 1.2. Opcionalmente ancla la generación
+con **RAG** (archivos del usuario) e inserta imágenes (Pollinations / FLUX) y audio (TTS Groq).
+
+→ Detalle completo en [docs/generacion-5e.md](docs/generacion-5e.md).
+
+## Rutas del frontend
+
+React Router 7 (`frontend/src/App.jsx`). Las rutas protegidas exigen sesión; las admin exigen
+rol `administrador` (verificado contra `/api/auth/me`).
+
+| Ruta | Página | Acceso |
+|---|---|---|
+| `/login`, `/register` | Login / Registro | Público |
+| `/dashboard` | Dashboard | Protegido |
+| `/crear-ova` | Crear OVA | Protegido |
+| `/mis-ovas` | Mis OVAs (listado/búsqueda) | Protegido |
+| `/mis-ovas/:ovaId/editar` | Editor de OVA | Protegido |
+| `/papelera` | Papelera (soft-delete) | Protegido |
+| `/profile` | Perfil | Protegido |
+| `/metodologia/engage`, `/metodologia/explore` | Vistas 5E | Protegido |
+| `/admin/roles` | CRUD de roles y permisos | Admin |
+| `/admin/users` | Gestión de usuarios | Admin |
+| `/admin/labs` | Sandbox de prompts | Admin |
 
 ## Endurecimiento de seguridad
 
@@ -465,6 +539,9 @@ GET /api/scorm/health
 GET /api/ova/health
 GET /api/uploads/health
 ```
+
+> **API completa** (~70 endpoints) en [docs/api.md](docs/api.md). Con el backend corriendo,
+> Swagger interactivo en `http://localhost:8000/docs` y ReDoc en `/redoc`.
 
 ## CI/CD
 
