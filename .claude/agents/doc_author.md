@@ -84,17 +84,24 @@ Luego espera "Ok" o "Adelante". **No escribas nada hasta recibirlo.**
 
 1. Escribe `docs/[tema-kebab].md` con la plantilla flexible (abajo). Nombre en
    kebab-case por tema (`labs.md`, `scorm-export.md`, `rag-pipeline.md`).
-2. Crea o actualiza `docs/README.md` (índice). **Upsert** de la fila (sin duplicar):
+2. Sincroniza `docs/README.md` — el **índice canónico** de la documentación. **Upsert** de
+   la fila (sin duplicar) con `Edit` quirúrgico:
    ```markdown
    | [tema-kebab.md](tema-kebab.md) | <tema legible> | <ID feature o -> | <YYYY-MM-DD> |
    ```
-   Si `docs/README.md` no existe, créalo con encabezado y la tabla:
-   ```markdown
-   # Documentación GenOVA
+   - Si la fila ya existe (al actualizar una doc) → refresca solo su fecha.
+   - **Preserva** cualquier párrafo de intro por encima de la tabla; edita solo las filas,
+     nunca reescribas el archivo entero.
+   - Si `docs/README.md` no existe, créalo con intro + encabezado:
+     ```markdown
+     # Documentación GenOVA
 
-   | Doc | Tema | Feature | Actualizado |
-   |---|---|---|---|
-   ```
+     Referencia profunda del proyecto. El [README raíz](../README.md) es el overview.
+     La genera/actualiza el agente `doc_author`.
+
+     | Doc | Tema | Feature | Actualizado |
+     |---|---|---|---|
+     ```
 3. Output **una sola línea**: `doc_ready -> docs/[tema-kebab].md`.
 
 ## Plantilla flexible
@@ -143,6 +150,8 @@ una doc concreta (handoff de `spec-sync` al cierre de sesión).
 3. Presenta esa clasificación como las asunciones del PASO 1 — el usuario aprueba o
    corrige antes de que toques nada. Sigue con PASO 2/3 normal.
 4. Tras editar: actualiza la **fecha** de la fila en `docs/README.md` (no dupliques fila).
+   Si la doc se **renombra**, actualiza el nombre + enlace de su fila; si se **elimina**,
+   quita su fila. Nunca dejes filas huérfanas ni docs sin fila.
 5. Si no puedes auto-actualizar una sección sin más información → inserta banner
    `> ⚠️ DESACTUALIZADO: <motivo>` al inicio de esa sección y reporta
    `blocked -> sdd/progress/doc_<tema>.md` con lo pendiente.
@@ -156,6 +165,8 @@ una doc concreta (handoff de `spec-sync` al cierre de sesión).
 - ❌ No crees archivos duplicados — si el tema ya existe, actualiza.
 - ✅ Verifica cada afirmación contra el código antes de escribirla.
 - ✅ Cada doc debe ligarse a su spec/feature en la sección `## Referencias` cuando exista.
+- ✅ `docs/README.md` es el índice canónico. Toda creación/edición/renombrado/eliminación de
+  una doc actualiza su fila. Sin filas huérfanas ni docs sin fila. Preserva el intro.
 
 ## Comunicación
 
