@@ -416,7 +416,7 @@ GenOVA/
 │   └── tools/prompt_lab.py  # Utilidad CLI para probar prompts (fuera de la API)
 ├── scorm-template/          # Plantilla base SCORM
 ├── deploy/                  # Nginx para producción
-├── docs/LABS.md             # Spec funcional de la pestaña Labs
+├── docs/labs.md             # Doc funcional de la pestaña Labs
 ├── CLAUDE.md                # Guía para Claude Code (contexto detallado del repo)
 ├── .editorconfig            # Estilo universal (LF, UTF-8, 2/4 spaces)
 └── docker-compose.yml

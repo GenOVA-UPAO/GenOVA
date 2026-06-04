@@ -80,6 +80,19 @@ directamente sin crear spec ni lanzar subagentes.
    - Skills marcadas `needs_review` se confirman por separado.
 4. Si `all_current` → "Todas las skills están al día."
 
+### Caso H — Solicitud de documentación
+
+Si el mensaje contiene alguno de estos patrones:
+`"documenta"`, `"crea doc"`, `"haz la documentación"`, `"genera doc"`, `"document this"`,
+`"actualiza la doc"`:
+
+1. Identifica el tema/feature a documentar y confirma el archivo destino:
+   > "Voy a documentar **[tema]** en `docs/[tema-kebab].md`. ¿Confirmas el tema y el nombre?"
+2. Si el usuario confirma → lanza `doc_author` con el tema, el `feature_id` (si aplica),
+   la ruta de la spec ligada y `sdd/progress/impl_<name>.md` (si existe) como contexto.
+3. Lee `doc_ready -> docs/...` (o `blocked -> sdd/progress/doc_<tema>.md`) cuando termine
+   y repórtalo al usuario.
+
 ### Caso D — Feature en `spec_ready` esperando aprobación
 
 Recuérdalo al usuario: "El spec de [ID] en `sdd/specs/` está listo —
@@ -108,7 +121,7 @@ Si una feature tiene `"status": "aborted"` en `feature_list.json`:
 
 ```
 pending → [spec_author] → spec_ready → ⏸ HUMANO → in_progress
-        → [implementer] → [reviewer] → done
+        → [implementer] → [reviewer] → done → ⏸ HUMANO → [doc_author] → docs/
 ```
 
 NUNCA lances `implementer` si la feature no está en `in_progress` con spec aprobado.
@@ -156,11 +169,21 @@ Cuando el usuario termine la sesión:
      Espera: `"aplica todos"` / `"aplica solo critical"` / `"ignora"`.
      Si aprueba → pide a `spec-sync` que aplique los cambios.
    - Si `no_refs_found` o `no_changes_tracked` → continúa sin interrumpir.
+   - **Handoff a docs**: con la lista de símbolos renombrados, haz `Grep` también en `docs/`.
+     Si alguna doc los referencia → ofrece: "`docs/<x>.md` referencia `[símbolo]` que cambió
+     a `[nuevo]`. ¿La actualizo con `doc_author`?". Si aprueba → lanza `doc_author` en
+     MODO ACTUALIZACIÓN con esa doc y la lista de símbolos. Así una doc no queda
+     desincronizada cuando una nueva actualización toca algo ya documentado.
 4. **Auditoría de docs** — lee `sdd/progress/current.md` y ejecuta `git diff --name-only`:
    - ¿Cambios en API pública / comandos / env vars requeridas? → actualiza `CLAUDE.md`.
    - ¿Nueva funcionalidad visible / endpoint público / cambio arquitectónico mayor? → actualiza `README.md`.
    - ¿Cambio en reglas del harness / nuevo agente / flujo SDD? → actualiza `AGENTS.md`.
    - Si solo exploración o cambios internos sin impacto externo → no toques los docs.
+   - **Docs de feature** (`docs/*.md`): si alguna feature llegó a `done` esta sesión →
+     ofrece: "Feature **[ID]** terminada. ¿Genero/actualizo su doc en `docs/`?". Si aprueba →
+     lanza `doc_author` con el `feature_id`, la ruta de la spec y `sdd/progress/impl_<name>.md`.
+     `CLAUDE.md`/`README.md`/`AGENTS.md` los tocas tú; las docs de feature en `docs/` las
+     hace `doc_author`.
 5. Mueve resumen de `sdd/progress/current.md` al final de `sdd/progress/history.md`.
 6. Vacía `sdd/progress/current.md` dejando solo la plantilla.
 7. Propón commit (conventional commits, incluye docs actualizados si los tocaste).
