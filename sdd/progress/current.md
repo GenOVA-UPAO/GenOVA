@@ -125,8 +125,65 @@ Veredicto: **APROBADO**. C1 tests 4/4 + verify unit · C2 ruff · C3 todos <200
 str(e)/tokens, commit_or_500, best-effort) · C5 R→test · C6 verify.ps1 · C7
 service+model (sin router por diseño) · C8 N/A. **EN-012 → `done`** en feature_list.
 
+## EN-013 — Implementación (implementer, EN CURSO)
+
+**Feature en curso:** EN-013 — Persistencia del estado de generación (jobs).
+ALCANCE = BACKEND solamente. NO se toca `frontend/src/` (el switch del cliente
+al flujo de jobs es HU-023). Spec sin `## Mockup ASCII` → sin wireframe gate.
+Backend puro (SQLAlchemy/FastAPI ya en uso, sin librerías nuevas → sin ctx7).
+
+**Plan (router → service/runner → model + migración 019):**
+1. Migración `backend/migrations/019_ova_generation_jobs.sql`: `ova_jobs` +
+   `ova_job_resources` (idempotente, patrón 005/018, índice por
+   `(job_id, phase_order, resource_order)`).
+2. Modelos `OvaJob`/`OvaJobResource` en módulo aparte `backend/ova/jobs_model.py`
+   + re-export en `models.py` (models.py ~188 líneas → C3).
+3. `backend/ova/jobs_service.py`: crear job+recursos, consultar estado, resume,
+   barrido perezoso de `interrupted`. `backend/ova/jobs_runner.py`: hilo background
+   con Session propia (sessionmaker), reusa regen_agents + llm_router, persiste
+   incremental (R4), máx 2 reintentos + timeout, error_id vía
+   error_log_service.log_generation_error (R6), un fallo no aborta el resto.
+4. `backend/ova/jobs_router.py` montado bajo `/api/ova/jobs`: POST (rate-limit),
+   GET {job_id}, GET ?ova_id, POST {job_id}/resume.
+5. Tests pytest-bdd con SQLite in-memory + mock del LLM (monkeypatch a
+   regenerate_phase_content). Mapa R1–R9 → test en impl_en-013.md.
+
+**Decisiones de diseño:**
+- El runner recibe el `job_id` y crea su propia Session (NO reusa la del request),
+  igual que `regen_service._finalize_edit`.
+- `ova_job_resources.content` guarda el HTML del recurso (persistencia incremental
+  R4); `ova_phase_id` queda nullable (se materializa el OVA en HU-023, fuera de
+  alcance aquí). Esto evita tocar `/save` y el pipeline de producción.
+- Barrido perezoso: en GET, jobs `running` sin `updated_at` reciente → `interrupted`.
+
+**COMPLETO (listo para review):**
+- Migración 019 + modelos `OvaJob`/`OvaJobResource` (módulo aparte, re-export en models.py).
+- Service (crear/consultar/resume/barrido) + runner (hilo, Session propia, persistencia
+  incremental R4, reintentos máx 2 + timeout, error_id vía EN-012, fallo aislado R6) +
+  exec (generación por recurso) + helpers (Pydantic max_length, serialización segura R8) +
+  router montado en `/api/ova/jobs` (POST rate-limit, GET {id}, GET ?ova_id, POST resume).
+- Tests BDD `tests/features/setup/EN-013_jobs.feature` (7 esc.) +
+  `backend/tests/step_defs/test_jobs_steps.py` (SQLite in-memory StaticPool + LLM mockeado,
+  runner síncrono) → 7 passed. EN-012 sigue 4/4 (11 total).
+- `./verify.ps1` → PASA (ESLint, ruff, frontend unit BDD). Backend BDD SKIP (:8000 offline).
+- Todos los archivos backend < 200 líneas (C3). NO se tocó `frontend/src/`.
+- Mapa R1–R9 → test en `sdd/progress/impl_en-013.md` (C5). EN-013 NO marcada `done`
+  (lo hace el reviewer).
+
+## EN-013 — Revisión (leader inline, APROBADO)
+
+Reviewer subagente se cortó por límite de sesión → revisión inline. **APROBADO**:
+auth+rate-limit+ownership · hilo con Session propia · reintentos/timeout vía
+ThreadPool · persistencia incremental · error_id vía EN-012 (err saneado, nunca al
+cliente) · migración 019 idempotente + FK correctas · montado en `/api/ova/jobs` ·
+**11 tests verdes** (EN-013 7 + EN-012 4) · todo el código de app < 200.
+- Hallazgo C3: `test_jobs_steps.py` 389 líneas. **Decisión del usuario**: la regla
+  < 200 **NO aplica a tests** → CHECKPOINTS C3 actualizado (exención de tests),
+  test restaurado a su forma original (no se parte). Ver memoria
+  `genova-200-line-rule-tests-exempt`.
+- **EN-013 → `done`**. Frontend (switch al flujo de jobs) = HU-023, siguiente.
+
 ## Próximo paso
 
-⏸ Puerta humana. **EN-013** es el siguiente (migración 019, modelos OvaJob/
-OvaJobResource, jobs_router/service, mover orquestación al server). Toca generación
-en producción → confirmar antes de implementar.
+Commit EN-013. Luego **HU-023** (background + reanudar desde Mis OVAs) o **HU-022**
+(recuperar parciales): ambas son el frontend que consume EN-013/EN-012. ⏸ humano.
