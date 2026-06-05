@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from database import Base
+from ova.error_log_model import OvaErrorLog  # noqa: F401  — registers ova_error_logs table
 
 
 def _pk_column() -> Column:

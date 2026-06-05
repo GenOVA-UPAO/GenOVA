@@ -76,8 +76,57 @@ Fase B (después): specs vía spec_author, por ítem.
 EN-012, EN-013, HU-022, HU-023, HU-024, HU-025, HU-026, HU-027, HU-028, HU-029, HU-030, HU-031, HU-032, HU-033, RN-005.
 Backlog = 80 ítems. Reglas transversales: máx 4 recursos/fase · versionado 3 niveles · chat=editar · reordenar solo dentro de la fase · eliminar recurso = HU-026.
 
+## Implementación (EN CURSO)
+
+Commit hito specs: `2208230`. Orden de impl: **EN-012 → EN-013 → HU-022 → HU-023 → HU-024 → HU-025 → HU-026 → HU-027 → HU-032 → HU-033 → HU-028 → HU-029 → HU-030 → HU-031**.
+
+- **EN-012** `in_progress` (primer feature, aislado): tabla `ova_error_logs` (migración 018) + helper `log_generation_error()` + sanitización + tests. EN-013 usará después su `error_id` (migración 019).
+
+## EN-012 — Implementación (implementer, EN CURSO)
+
+**Feature en curso:** EN-012 — Observabilidad de errores de generación en Supabase.
+Spec sin `## Mockup ASCII` → sin wireframe gate. Backend puro (SQLAlchemy ya en uso,
+sin librerías nuevas → sin ctx7).
+
+**Plan (router → service → model + migración):**
+1. Migración `backend/migrations/018_ova_error_logs.sql` (tabla `ova_error_logs`,
+   PK `error_id`, columnas nullable para `ova_id`/`job_id`/`job_resource_id`).
+2. Modelo `OvaErrorLog` en módulo nuevo `backend/ova/error_log_model.py` (models.py
+   está a 188 líneas; añadirlo dentro lo pasaría de 200 → C3). `models.py` lo re-exporta
+   para que `import models` lo registre en la metadata.
+3. Service `backend/ova/error_log_service.py`: `log_generation_error(...)` genera UUID,
+   sanea (R4), persiste con `commit_or_500()`, no rompe el flujo si falla (R7), devuelve `error_id`.
+4. Sanitizador `_sanitize` (regex de keys/tokens/credenciales).
+5. Tests BDD `backend/tests/step_defs/test_error_log_steps.py` + feature
+   `tests/features/setup/EN-012_error-log.feature`, con SQLite in-memory (sin backend live).
+
+**Decisiones:**
+- No se wirea ningún consumidor (engage_router/explore_router) en EN-012 para no tocar
+  el pipeline; EN-013/HU-022 lo conectarán (spec lo marca opcional y de riesgo).
+- No hay endpoint nuevo: la consulta se hace en el dashboard de Supabase (fuera de alcance).
+
+**COMPLETO (listo para review):**
+- Migración 018, modelo `OvaErrorLog` (módulo aparte, re-export en models.py), service
+  `log_generation_error()` con `_sanitize` (R4) + `commit_or_500` + try/except (R7).
+- Tests BDD: `tests/features/setup/EN-012_error-log.feature` (4 esc.) +
+  `backend/tests/step_defs/test_error_log_steps.py` (SQLite in-memory, sin backend live) → 4 passed.
+- Mapa R1–R8 → test documentado en `sdd/progress/impl_en-012.md` (C5).
+- `./verify.ps1` → PASA (ESLint, ruff, frontend unit BDD). Backend BDD SKIP (:8000 offline);
+  los 4 tests EN-012 corren standalone y pasan.
+- Dev-deps backend sincronizadas (`uv sync --extra dev`: faltaban pytest-bdd/pytest-cov).
+- Archivos nuevos bajo 200 líneas (model 45 · service 96 · steps 198 · migración 21). EN-012 NO
+  marcada `done` (lo hace el reviewer).
+
+## EN-012 — Revisión (leader inline, APROBADO)
+
+Reviewer subagente se cortó por límite de sesión → revisión hecha inline.
+Veredicto: **APROBADO**. C1 tests 4/4 + verify unit · C2 ruff · C3 todos <200
+(service 97 · model 45 · models.py 188 · tests 198) · C4 sanitización OK (sin
+str(e)/tokens, commit_or_500, best-effort) · C5 R→test · C6 verify.ps1 · C7
+service+model (sin router por diseño) · C8 N/A. **EN-012 → `done`** en feature_list.
+
 ## Próximo paso
 
-⏸ Puerta humana. Todo el editor OVA está en specs. Opciones:
-1. **Implementar** (orden: EN-013 → EN-012 → HU-022 → HU-023 → HU-024 → HU-025 → HU-026 → HU-027 → HU-032 → HU-033 → HU-028 → HU-029 → HU-030 → HU-031) con implementer/reviewer, puerta humana por feature.
-2. **Pausar/commit** de specs + backlog + feature_list (conventional commits).
+⏸ Puerta humana. **EN-013** es el siguiente (migración 019, modelos OvaJob/
+OvaJobResource, jobs_router/service, mover orquestación al server). Toca generación
+en producción → confirmar antes de implementar.
