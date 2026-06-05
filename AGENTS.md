@@ -34,10 +34,10 @@
 
 ## 3. Reglas duras (no negociables)
 
-- **Una sola feature a la vez.** No mezcles cambios de varias tareas en la misma sesión.
-- **No declares `done` sin tests verdes.** Ejecuta `./verify.ps1` antes de cerrar.
+- **Una sola feature a la vez** (ejecución secuencial): no mezcles diffs de varias features en el mismo paso. En **modo batch** (ver `leader.md` Caso I) se implementan varias `spec_ready` de corrido, pero igual **una tras otra** (implementer → reviewer → verify por feature), nunca en paralelo ni en un diff mezclado.
+- **No declares `done` sin tests verdes.** Ejecuta `./verify.ps1` antes de cerrar (también por cada feature del lote).
 - **No saltes la fase de spec.** Toda feature `"sdd": true` pasa por `spec_author` con aprobación humana antes de tocar código.
-- **No saltes la puerta humana.** El leader para en `spec_ready` y espera confirmación.
+- **No saltes la puerta humana.** El leader para en `spec_ready` y espera confirmación. En modo batch la puerta es **única al inicio del lote** (aprobación del plan ordenado); el `reviewer` y `verify.ps1` por feature siguen siendo obligatorios.
 - **Documenta en tiempo real** en `sdd/progress/current.md`, no al final.
 - **Si no sabes algo, busca en `CLAUDE.md`** antes de inventarlo.
 - **Arquitectura GenOVA**: services → hooks → pages (frontend) · router → service → model (backend). No saltarse capas.

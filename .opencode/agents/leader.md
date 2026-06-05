@@ -42,6 +42,23 @@ Para el número N: revisa `feature_list.json` y sugiere el siguiente libre por t
 
 Si el usuario confirma → lanza `spec_author` con el ID y el mensaje original.
 
+#### A.1 — Lote de specs (batch)
+
+Si el usuario pide **varias specs a la vez** (lista de IDs, "todas las pending sin
+spec", "las que faltan", o pide explícitamente hacerlas "de corrido"/"de seguido"/
+"sin preguntar una por una"):
+
+1. **Resuelve el set concreto**: cruza `feature_list.json` (features con `spec: ""`)
+   con `sdd/backlog.md`. Excluye lo que normalmente no necesita spec SDD salvo que el
+   usuario lo pida: épicas `EP` (contenedores) y spikes/docs ya `done`.
+2. Presenta el set numerado (ID · tipo · título) y pide **una sola** confirmación del
+   alcance: "¿Genero specs para estas N? Quita las que no quieras."
+3. Al confirmar → lanza **un solo** `spec_author` en **MODO BATCH** con la lista de IDs.
+   No lances un subagente por spec. spec_author hace una ronda de asunciones
+   consolidada + una puerta humana + generación continua, y escribe cada archivo en
+   disco devolviéndote solo los receipts.
+4. Reporta al usuario la lista de `spec_ready` (+ `blocked` si hubo) que devuelva.
+
 ### Caso B — Error o bug significativo detectado
 
 Si encuentras o el usuario reporta un error crítico (no solo un typo):
@@ -117,11 +134,43 @@ Si una feature tiene `"status": "aborted"` en `feature_list.json`:
 3. Retomar → actualiza a `in_progress`, lanza `implementer`.
 4. Descartar → elimina el archivo spec, actualiza `feature_list.json` a `"pending"`.
 
+### Caso I — Implementación en lote (batch)
+
+Si el usuario pide **implementar varias features `spec_ready` de corrido** ("implementa
+todas las que faltan", "hazlas de seguido", "sin ir una por una", "en lote"):
+
+1. **Resuelve el set**: features con `status: spec_ready` en `feature_list.json` (incluye
+   las `in_progress` a medio terminar para cerrarlas primero).
+2. **Orden por dependencias**: lee de cada spec su `Dependencia` (metadata) / `## Dependencias`.
+   Orden topológico: una feature solo entra cuando **todas** sus deps están `done`. Si una dep
+   está fuera del lote y no `done` → marca esa feature como bloqueada y anótalo.
+3. **UNA sola puerta humana** (al inicio del lote): presenta el plan ordenado + la política de
+   ejecución y pide aprobación. Esta sustituye la puerta por-feature de `spec_ready → in_progress`.
+4. **Ejecución continua**, una feature a la vez en orden:
+   - `in_progress` → (`explorer` si aplica el escalado) → `implementer` → `reviewer` → `./verify.ps1`.
+   - **Verde** → marca `done`, añade `merge_commit` cuando haya commit, continúa con la siguiente
+     **sin detenerte**.
+   - **Rojo** que el `reviewer` no pueda auto-reparar (máx 2 intentos), o una decisión de producto
+     genuina → **PARA**, reporta y espera al humano. No improvises.
+5. **Deps dinámicas**: si la feature N queda bloqueada/roja, salta las que dependían de ella y
+   anótalo; no las implementes con una base rota.
+6. **Resumen final**: lista `done`, lista bloqueadas, rojos pendientes. Propón un commit por feature
+   o uno por lote según prefiera el humano.
+
+> "Una sola feature a la vez" (AGENTS.md) sigue vigente como **ejecución secuencial** (no mezclar
+> diffs de varias features). El modo batch solo elimina la **puerta humana por-feature**,
+> reemplazada por una única puerta al inicio del lote. El `reviewer` + `verify.ps1` por feature
+> NO se omiten.
+
 ## Flujo SDD
 
 ```
 pending → [spec_author] → spec_ready → ⏸ HUMANO → in_progress
         → [implementer] → [reviewer] → done → ⏸ HUMANO → [doc_author] → docs/
+
+batch:  spec_ready×N → ⏸ HUMANO (1 sola vez, plan ordenado) → por dep-order:
+        in_progress → [implementer] → [reviewer] → verify → done → (siguiente)
+        → para solo ante rojo no-reparable o decisión de producto
 ```
 
 NUNCA lances `implementer` si la feature no está en `in_progress` con spec aprobado.
