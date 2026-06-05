@@ -1,5 +1,23 @@
 # HU-013: Duplicar OVA Existente
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-013 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Media |
+| Estimación | 5 SP |
+| Dependencia | HU-006 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-17 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 |
+
 ## Historia de Usuario
 Como estudiante del curso de ML de UPAO, quiero poder duplicar un OVA existente para usarlo como punto de partida para un nuevo material relacionado, ahorrando tiempo al no tener que empezar desde cero con un prompt nuevo.
 

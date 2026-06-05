@@ -1,5 +1,23 @@
 # HU-014: Renombrar y Editar Metadatos del OVA
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-014 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Media |
+| Estimación | 3 SP |
+| Dependencia | HU-006 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-17 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 |
+
 ## Historia de Usuario
 Como estudiante del curso de ML de UPAO, quiero poder cambiar el título y la descripción de un OVA desde el historial, para organizarlos con nombres más descriptivos que me ayuden a identificarlos fácilmente sin necesidad de abrirlos.
 

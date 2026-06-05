@@ -1,5 +1,23 @@
 # HU-010: Maquetación del Layout Principal y Enrutamiento Modular
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-010 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP2: Plataforma Web y Autenticacion |
+| Sprint | Sprint 1 |
+| Status | To Do |
+| Prioridad | Alta |
+| Estimación | 8 SP |
+| Dependencia | EN-010, SP-008 |
+| Responsable | — |
+| Fase | SDD - Plan + Implement |
+| Fecha creación | 2026-04-30 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-02 |
+
 ## Ruta de guardado
 `specs/HU-010_maquetacion-layout-principal-enrutamiento-modular.md`
 

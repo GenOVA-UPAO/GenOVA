@@ -1,5 +1,23 @@
 # EN-008: Habilitar Base de Datos para Gestión de Usuarios
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | EN-008 |
+| Tipo | Habilitador |
+| Épica/Tema | EP2: Plataforma Web y Autenticacion |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 5 SP |
+| Dependencia | TA-001 |
+| Responsable | JUAN DIEGO CARRANZA JACINTO |
+| Fase | SDD - Plan + Implement |
+| Fecha creación | 2026-05-04 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-06 |
+
 ## Ruta de guardado
 `specs/EN-008_habilitar-base-datos-gestion-usuarios.md`
 

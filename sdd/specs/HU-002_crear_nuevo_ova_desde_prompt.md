@@ -1,5 +1,23 @@
 # HU-002: Crear nuevo OVA desde prompt
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-002 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 8 SP |
+| Dependencia | SP-008, SP-001 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-11 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-14 |
+
 ## Historia de Usuario
 Como **usuario general del sistema** (rol configurable por administración, con valor por defecto “usuarios generales autenticados”),
 quiero ingresar un tema de ML en un prompt y seleccionar el modelo LLM,

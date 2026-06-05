@@ -1,5 +1,23 @@
 # HU-006: Ver historial de OVAs
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-006 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 5 SP |
+| Dependencia | EN-008 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-18 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 |
+
 ## Historia de Usuario
 Como estudiante del curso de ML de UPAO, quiero ver el historial de OVAs creados, para gestionarlos o descargarlos nuevamente. Esto centraliza mi trabajo: facilita reutilizar OVAs anteriores, descargar versiones anteriores y eliminar los obsoletos sin tener que regenerarlos desde cero.
 

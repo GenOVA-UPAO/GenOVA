@@ -1,5 +1,23 @@
 # HU-004: Exportar OVA como paquete SCORM
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-004 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP4: Motor de Exportacion SCORM |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 13 SP |
+| Dependencia | TA-002 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-15 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-21 |
+
 ## Ruta de guardado
 `specs/HU-004_exportar-ova-como-paquete-scorm.md`
 

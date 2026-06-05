@@ -1,5 +1,23 @@
 # HU-008: Inicio de Sesión con Credenciales
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-008 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP2: Plataforma Web y Autenticacion |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 5 SP |
+| Dependencia | HU-001 |
+| Responsable | JUAN DIEGO CARRANZA JACINTO |
+| Fase | SDD - Plan + Implement |
+| Fecha creación | 2026-05-11 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-13 |
+
 ## Ruta de guardado
 `specs/HU-008_inicio-sesion-credenciales.md`
 

@@ -1,5 +1,23 @@
 # EN-011: Setup Base de FastAPI y Orquestación Local (Docker)
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | EN-011 |
+| Tipo | Habilitador |
+| Épica/Tema | EP2: Plataforma Web y Autenticacion |
+| Sprint | Sprint 1 |
+| Status | To Do |
+| Prioridad | Alta |
+| Estimación | 5 SP |
+| Dependencia | TA-001 |
+| Responsable | — |
+| Fase | SDD - Plan + Implement |
+| Fecha creación | 2026-04-28 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-04-29 |
+
 ## Ruta de guardado
 `specs/EN-011_setup-base-fastapi-orquestacion-local-docker.md`
 
