@@ -1,5 +1,23 @@
 # HU-007: Subir archivos base para el OVA
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-007 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 8 SP |
+| Dependencia | SP-008 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-11 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-14 |
+
 ## Historia de Usuario
 Como estudiante del curso de ML de UPAO, quiero subir archivos adjuntos en la plataforma, para que la IA utilice mi propio material como contexto y mejore la pertinencia y profundidad del OVA generado.
 

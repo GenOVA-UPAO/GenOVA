@@ -1,5 +1,23 @@
 # HU-003: Visualizar completa 5E
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-003 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 13 SP |
+| Dependencia | HU-002, HU-007, SP-008 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-15 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 |
+
 ## Historia de Usuario
 Como **estudiante del curso de ML de UPAO**,
 quiero ver una vista previa de las 5 fases del modelo pedagógico 5E (Enganche, Exploración, Explicación, Elaboración, Evaluación),

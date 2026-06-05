@@ -1,5 +1,23 @@
 # Especificación Funcional y Técnica — HU-021: Gestión de Usuarios y Roles
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-021 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP2: Plataforma Web y Autenticacion |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 5 SP |
+| Dependencia | HU-018 |
+| Responsable | JUAN DIEGO CARRANZA JACINTO |
+| Fase | SDD - Plan + Implement |
+| Fecha creación | 2026-05-17 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-18 |
+
 Este documento define la especificación técnica y funcional completa para la historia de usuario **HU-021: Gestión de Usuarios y Roles**, siguiendo los lineamientos de la metodología de desarrollo estructurado (SDD) y las políticas de seguridad jerárquica del sistema.
 
 ---

@@ -1,5 +1,23 @@
 # HU-012: Eliminar OVA del Historial
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-012 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Media |
+| Estimación | 3 SP |
+| Dependencia | HU-006 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-17 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 |
+
 ## Historia de Usuario
 Como estudiante del curso de ML de UPAO, quiero poder eliminar OVAs que ya no necesito de mi historial, para mantener mi espacio de trabajo organizado y no acumular material obsoleto.
 

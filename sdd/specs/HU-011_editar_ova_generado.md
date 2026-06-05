@@ -1,5 +1,23 @@
 # HU-011: Editar OVA Generado
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-011 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 8 SP |
+| Dependencia | HU-003, HU-006 |
+| Responsable | JEFFRY ANDERSON ROMERO URIOL |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-17 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 |
+
 ## Historia de Usuario
 Como estudiante del curso de ML de UPAO, quiero poder editar el contenido de un OVA ya generado (modificar el prompt original o editar el texto de fases individuales), para corregir errores o mejorar el material sin tener que generar un OVA completamente nuevo desde cero.
 

@@ -1,5 +1,23 @@
 # Especificación Funcional y Técnica — HU-016: Cambiar Contraseña desde el Perfil
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-016 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP2: Plataforma Web y Autenticacion |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Media (inferido) |
+| Estimación | 3 SP (inferido) |
+| Dependencia | HU-015 (inferido) |
+| Responsable | — |
+| Fase | SDD - Plan + Implement |
+| Fecha creación | 2026-05-24 (inferido) |
+| Fecha actualización | — |
+| Fecha Fin (info) | — |
+
 Este documento define la especificación técnica y funcional completa para la historia de usuario **HU-016: Cambiar Contraseña desde el Perfil**, siguiendo los lineamientos de la metodología de desarrollo estructurado (SDD).
 
 ---

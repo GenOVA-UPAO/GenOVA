@@ -1,5 +1,23 @@
 # HU-019: Gestión de Roles — Editar Rol
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-019 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP2: Plataforma Web y Autenticacion |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 5 SP |
+| Dependencia | HU-018 |
+| Responsable | JUAN DIEGO CARRANZA JACINTO |
+| Fase | SDD - Plan + Implement |
+| Fecha creación | 2026-05-17 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-18 |
+
 ## Ruta de guardado
 `specs/HU-019_gestion-roles-editar-rol.md`
 

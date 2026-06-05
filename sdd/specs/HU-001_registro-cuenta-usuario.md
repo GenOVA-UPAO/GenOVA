@@ -1,5 +1,23 @@
 # HU-001: Registro de Cuenta de Usuario
 
+> Metadata (de `sdd/backlog.md`):
+
+| Campo | Valor |
+|---|---|
+| ID | HU-001 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP2: Plataforma Web y Autenticacion |
+| Sprint | Sprint 1 |
+| Status | Closed |
+| Prioridad | Alta |
+| Estimación | 8 SP |
+| Dependencia | EN-008 |
+| Responsable | JUAN DIEGO CARRANZA JACINTO |
+| Fase | SDD - Plan + Implement |
+| Fecha creación | 2026-05-07 |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-10 |
+
 ## Ruta de guardado
 `specs/HU-001_registro-cuenta-usuario.md`
 
