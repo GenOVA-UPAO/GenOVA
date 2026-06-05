@@ -29,7 +29,12 @@
 - **Descripción**: HU → `Historia de usuario` (Como/quiero/para) + `Contexto`; resto → `Objetivo` + `Contexto`.
 - **Criterios**: bullets atómicos, una verificación por línea.
 - **Fechas**: `Fecha creación` = *Fecha Inicio* de Notion (ISO); `Fecha actualización` = `—` hasta editar el spec; `Fecha Fin (info)` = dato informativo.
-- Marcas de origen: `(añadido fuera de captura)`, `(inferido)`, `(borrador)`, `(añadido — roadmap editor OVA)`.
+- Marcas de origen: `(añadido fuera de captura)`, `(inferido)`, `(borrador)`, `(añadido — roadmap editor OVA)`, `(propuesto)`.
+
+### Reglas de negocio transversales
+- **Máx 4 recursos por fase 5E**: cada fase admite como máximo 4 recursos. Afecta a la generación (HU-002) y a añadir recurso (HU-032), que rechaza si la fase ya tiene 4.
+- **Versionado de 3 niveles**: major `vN` (generación del OVA completo) · minor `vN.M` (regeneración de recurso/s, HU-029) · patch `vN.M.P` (edición granular sub-recurso, HU-031). El major lo gestiona HU-028.
+- **Chat del workspace = editar**; crear un recurso nuevo es acción aparte (HU-032).
 
 ---
 
@@ -45,7 +50,7 @@
 
 ## Índice por tipo
 
-**77 ítems** — 10 EP · 30 HU · 13 EN · 5 RN · 7 TA · 9 SP · 3 DO.
+**80 ítems** — 10 EP · 33 HU · 13 EN · 5 RN · 7 TA · 9 SP · 3 DO.
 
 ### Épicas (EP)
 | ID | Título | Épica/Tema | Sprint | Status |
@@ -94,6 +99,9 @@
 | HU-028 | Versionado de OVA (historial, diff y revertir) | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` |
 | HU-029 | Micro-versionado por recurso editado | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
 | HU-030 | "Mis OVAs": acceso al workspace + versión en metadata | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
+| HU-031 | Selección y edición granular de elementos dentro de un recurso | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
+| HU-032 | Añadir recurso al OVA (máx 4 por fase) | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
+| HU-033 | Reordenar recursos del OVA | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
 
 ### Habilitadores (EN)
 | ID | Título | Épica | Sprint | Status | Prioridad |
@@ -1544,6 +1552,103 @@
 
 ---
 
+### HU-031 — Selección y edición granular de elementos dentro de un recurso
+
+> `(añadido — roadmap editor OVA)` — desgajado de HU-026 (granularidad por debajo del recurso).
+
+| Campo | Valor |
+|---|---|
+| ID | HU-031 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | To Do |
+| Prioridad | Media |
+| Estimación | 8 SP (inferido) |
+| Dependencia | HU-026 |
+| Responsable | — |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-15 (inferido) |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 (inferido) |
+
+**Historia de usuario:** Como estudiante del curso de ML de UPAO, quiero seleccionar un elemento concreto dentro de un recurso para regenerarlo o editarlo, para hacer ajustes muy finos sin tocar el resto del recurso.
+
+**Contexto:** Granularidad por debajo del recurso (página/elemento completo) que HU-026 dejó explícitamente fuera. No se fija qué tipos de elemento son editables: depende de los tipos de recurso que el OVA llegue a soportar. Requiere marcar los sub-elementos en el render y que el backend pueda rehacer/editar un fragmento. En el esquema de versiones (3 niveles) corresponde al nivel **patch** `vN.M.P` (major `vN` = generación completa, minor `vN.M` = recurso/HU-029).
+
+**Criterios de aceptación:**
+- Se puede seleccionar un sub-elemento dentro de un recurso.
+- El sub-elemento ofrece "Regenerar" y "Editar" (prompt puntual).
+- El cambio afecta solo ese sub-elemento; el resto del recurso queda intacto.
+- El render marca los sub-elementos identificables y el backend puede rehacer/editar un fragmento.
+- Interfaz responsive; < 200 líneas/archivo; patrón services → hooks → pages.
+
+---
+
+### HU-032 — Añadir recurso al OVA (máx 4 por fase)
+
+> `(añadido — roadmap editor OVA)`
+
+| Campo | Valor |
+|---|---|
+| ID | HU-032 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | To Do |
+| Prioridad | Media |
+| Estimación | 5 SP (inferido) |
+| Dependencia | HU-025, HU-002 |
+| Responsable | — |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-15 (inferido) |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 (inferido) |
+
+**Historia de usuario:** Como estudiante del curso de ML de UPAO, quiero añadir un recurso nuevo a una fase del OVA con un botón "+ Añadir recurso" (vía prompt), para enriquecer el OVA sin regenerarlo, respetando el máximo de recursos por fase.
+
+**Contexto:** El chat del workspace edita recursos existentes; crear es esta acción aparte. Regla dura transversal: máx 4 recursos por fase.
+
+**Criterios de aceptación:**
+- Botón "+ Añadir recurso" por fase en el workspace.
+- Al añadir, se pide un prompt que genera el nuevo recurso en esa fase.
+- Máx 4 recursos por fase: si la fase ya tiene 4, el botón se deshabilita o rechaza con aviso.
+- El recurso nuevo se versiona como minor `vN.M`.
+- Interfaz responsive; < 200 líneas/archivo; services → hooks → pages.
+
+---
+
+### HU-033 — Reordenar recursos del OVA
+
+> `(añadido — roadmap editor OVA)`
+
+| Campo | Valor |
+|---|---|
+| ID | HU-033 |
+| Tipo | Historia de Usuario |
+| Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
+| Sprint | Sprint 1 |
+| Status | To Do |
+| Prioridad | Media |
+| Estimación | 5 SP (inferido) |
+| Dependencia | HU-025 |
+| Responsable | — |
+| Fase | SDD - Implement |
+| Fecha creación | 2026-05-15 (inferido) |
+| Fecha actualización | — |
+| Fecha Fin (info) | 2026-05-20 (inferido) |
+
+**Historia de usuario:** Como estudiante del curso de ML de UPAO, quiero reorganizar el orden de los recursos del OVA, para ajustar la secuencia pedagógica.
+
+**Criterios de aceptación:**
+- Se puede reordenar los recursos dentro de una fase (p. ej. drag-drop).
+- No se pueden mover recursos entre fases (reordenamiento limitado a la propia fase).
+- El nuevo orden se persiste (`phase_order`/`resource_order`).
+- El cambio se refleja en preview y código.
+- Interfaz responsive; < 200 líneas/archivo; services → hooks → pages.
+
+---
+
 ### EN-012 — Observabilidad de errores de generación en Supabase
 
 > `(añadido — roadmap editor OVA)` — soporta HU-022.
@@ -2421,4 +2526,4 @@
 
 ---
 
-_Fin del backlog — 77 ítems (10 EP + 67 hijos), organizado por épica y estandarizado._
+_Fin del backlog — 80 ítems (10 EP + 70 hijos), organizado por épica y estandarizado._

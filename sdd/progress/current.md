@@ -43,11 +43,41 @@ Fase B (después): specs vía spec_author, por ítem.
 - `feature_list.json` → `spec_dirs` con SP→sdd/spikes/, DO→sdd/docs-specs/.
 - `.claude/agents/spec_author.md` extendido: tipos SP/DO, rutas, lectura de `sdd/backlog.md`, bloque de metadata de 13 campos obligatorio, templates SP/DO, tablas de secciones obligatorias y status mapping (Closed→done, To Do→pending).
 
-**Pendiente (por ítem, con puerta humana):**
-- Step 4: anteponer bloque de metadata a specs ya `done` (HU-001…021, etc.).
-- Step 5: reconciliar `feature_list.json` con los 77 ítems (status mapeado).
-- Step 3: redactar specs nuevos con spec_author (flujo 4 pasos), explorer antes para las features del editor OVA.
+**Base mecánica (COMPLETA):**
+- Step 5: `feature_list.json` reconciliado a 77 ítems (28 done / 49 pending, status mapeado Closed→done, To Do→pending; sin degradar los ya done). JSON validado, sin IDs duplicados.
+- Step 4: bloque de metadata antepuesto a los 21 specs `done` (verificado 21/21).
+- `verify.ps1 -Quick` verde.
+
+**Pendiente (interactivo, por ítem, puerta humana):**
+- Step 3: redactar specs de los 49 pending con spec_author (flujo 4 pasos). Para las features del editor OVA (HU-022…HU-030, EN-012/013) conviene `explorer` antes (pipeline de generación, versionado existente, storage).
+
+## Fase B — redacción de specs (EN CURSO)
+
+- `explorer` mapeó el sustrato del editor OVA (pipeline gen client-orquestado, versionado OVA-completo ya existe sin revert/diff, jobs in-memory, sin error log).
+- **EN-013** spec redactada vía spec_author (4 pasos, asunciones aprobadas) → `spec_ready -> sdd/specs/EN-013_persistencia-estado-generacion.md`. feature_list actualizado.
+
+- Corrección clave: **recurso = elemento generable dentro de una fase** (no la fase entera). EN-013 ajustado (`ova_job_resources` = 1 fila por recurso, con `resource_type`/`resource_order`).
+- **HU-022** spec redactada (recurso parcial + Error ID + "X" por recurso + reintento individual y múltiple con "seleccionar todos los fallidos") → `spec_ready -> sdd/specs/HU-022_recuperar-recursos-parciales.md`. Incluye Mockup ASCII → aplica C8 (wireframe gate) en impl.
+
+- **HU-023** spec redactada (background + reanudar desde Mis OVAs, polling, continuar interrumpido) → `spec_ready -> sdd/specs/HU-023_generacion-background-reanudacion.md`. Mockup ASCII → C8.
+
+## Specs spec_ready (Fase B)
+- EN-013 jobs · HU-022 recuperar parciales · HU-023 background/reanudar (trío job server-side, orden impl EN-013→HU-022→HU-023).
+- HU-024 archivos estilo chat (UI, reusa HU-007).
+- HU-025 workspace (cáscara split, Preview/Code, SCORM, anclajes HU-026/027/028).
+- HU-026 editar por click (Regenerar/Editar/Eliminar + edición por código). Desgajó **HU-031** (granular sub-recurso, nuevo en backlog → 78 ítems).
+- HU-027 seleccionar recursos como contexto del prompt.
+- HU-028 versionado OVA (badge versión + historial + diff + revertir + "…" duplicar/eliminar). Backend nuevo revert/diff.
+
+- HU-029 micro-versionado por recurso. **Esquema de versiones de 3 niveles**: major `vN` (generación completa, HU-028) · minor `vN.M` (recurso, HU-029) · patch `vN.M.P` (granular, HU-031). Cross-ref añadida a HU-028 y HU-031.
+- HU-030 Mis OVAs→workspace + versión. EN-012 error log Supabase. HU-031 edición granular sub-recurso (patch).
+
+## Bloque editor OVA — specs COMPLETO (16 spec_ready)
+EN-012, EN-013, HU-022, HU-023, HU-024, HU-025, HU-026, HU-027, HU-028, HU-029, HU-030, HU-031, HU-032, HU-033, RN-005.
+Backlog = 80 ítems. Reglas transversales: máx 4 recursos/fase · versionado 3 niveles · chat=editar · reordenar solo dentro de la fase · eliminar recurso = HU-026.
 
 ## Próximo paso
 
-Elegir con qué arrancar la redacción de specs (decisión del usuario).
+⏸ Puerta humana. Todo el editor OVA está en specs. Opciones:
+1. **Implementar** (orden: EN-013 → EN-012 → HU-022 → HU-023 → HU-024 → HU-025 → HU-026 → HU-027 → HU-032 → HU-033 → HU-028 → HU-029 → HU-030 → HU-031) con implementer/reviewer, puerta humana por feature.
+2. **Pausar/commit** de specs + backlog + feature_list (conventional commits).
