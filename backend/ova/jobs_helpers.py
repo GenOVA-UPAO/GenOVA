@@ -9,11 +9,26 @@ from pydantic import BaseModel, Field
 
 from models import OvaJob, OvaJobResource
 
-# A 5E generation produces ENGAGE + EXPLORE resources. The client may request a
-# subset of phases; each phase yields one resource row here (HU-022/HU-023 will
-# expand to multiple resources per phase). resource_type stays None until the
-# concrete generator is wired — the runner resolves a numeric id from it.
-_DEFAULT_PHASES = (("engage", 1), ("explore", 2))
+# HU-022/B1: a 5E generation produces one resource row per chosen resource. The
+# client picks N resources by (phase_type, resource_type); `resource_type` is the
+# id/name the runner resolves to a numeric ENGAGE/EXPLORE generator id (1-10) via
+# RECURSOS_META. When the client omits `resources` we fall back to one generic
+# ENGAGE + one generic EXPLORE resource (legacy "phases" shape, back-compat).
+_DEFAULT_PLAN = (("engage", 1), ("explore", 2))
+_PHASE_ORDER = {"engage": 1, "explore": 2}
+
+
+class ResourceRequest(BaseModel):
+    """One chosen resource: which 5E phase and which resource type (id 1-10 or name)."""
+
+    phase_type: str = Field(min_length=1, max_length=30)
+    resource_type: str = Field(min_length=1, max_length=40)
+
+
+class ResumeRequest(BaseModel):
+    """Optional body of POST /jobs/{id}/resume — restrict resume to these resources (B4)."""
+
+    resource_ids: list[str] = Field(default_factory=list, max_length=50)
 
 
 class StartJobRequest(BaseModel):
@@ -22,31 +37,48 @@ class StartJobRequest(BaseModel):
     prompt: str = Field(min_length=1, max_length=4000)
     llm: str | None = Field(default=None, max_length=120)
     upload_ids: list[str] = Field(default_factory=list, max_length=50)
+    # B1: the real plan — one entry per chosen resource. `phases` (list of phase
+    # names) is accepted for back-compat only when `resources` is empty.
+    resources: list[ResourceRequest] = Field(default_factory=list, max_length=50)
     phases: list[str] = Field(default_factory=list, max_length=20)
 
 
 def build_resource_plan(payload: StartJobRequest) -> list[dict]:
-    """Translate the requested phases into the resource rows to create (R1, R2).
+    """Translate the chosen resources into the rows to create — one per resource (R1, R2).
 
-    Falls back to the default ENGAGE+EXPLORE plan when the client omits `phases`.
+    Each `resources` entry becomes its own `ova_job_resources` row, keyed in
+    (phase_order, resource_order) so the runner walks ENGAGE before EXPLORE and
+    preserves the client's order within a phase. Falls back to the legacy phase
+    plan (1 generic resource per phase) when `resources` is omitted.
     """
-    requested = [p.strip().lower() for p in payload.phases if p and p.strip()]
-    if not requested:
-        return [
-            {"phase_type": t, "phase_order": o, "resource_type": None, "resource_order": 0}
-            for t, o in _DEFAULT_PHASES
-        ]
-    plan: list[dict] = []
-    for order, phase_type in enumerate(requested, start=1):
-        plan.append(
-            {
-                "phase_type": phase_type,
-                "phase_order": order,
-                "resource_type": None,
-                "resource_order": 0,
-            }
-        )
-    return plan
+    if payload.resources:
+        plan: list[dict] = []
+        seq: dict[str, int] = {}
+        for r in payload.resources:
+            phase = r.phase_type.strip().lower()
+            order = seq.get(phase, 0)
+            seq[phase] = order + 1
+            plan.append({
+                "phase_type": phase,
+                "phase_order": _PHASE_ORDER.get(phase, 99),
+                "resource_type": r.resource_type.strip(),
+                "resource_order": order,
+            })
+        return plan
+    return _legacy_phase_plan(payload.phases)
+
+
+def _legacy_phase_plan(phases: list[str]) -> list[dict]:
+    """Back-compat: one generic resource per requested phase (resource_type None)."""
+    requested = [p.strip().lower() for p in phases if p and p.strip()]
+    rows = (
+        list(enumerate(requested, start=1)) if requested else None
+    )
+    pairs = [(t, o) for o, t in rows] if rows else list(_DEFAULT_PLAN)
+    return [
+        {"phase_type": t, "phase_order": o, "resource_type": None, "resource_order": 0}
+        for t, o in pairs
+    ]
 
 
 def job_params(payload: StartJobRequest) -> dict:
@@ -55,6 +87,7 @@ def job_params(payload: StartJobRequest) -> dict:
         "llm": payload.llm,
         "upload_ids": list(payload.upload_ids),
         "phases": list(payload.phases),
+        "resources": [r.model_dump() for r in payload.resources],
     }
 
 

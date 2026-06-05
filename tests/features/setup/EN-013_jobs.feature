@@ -47,3 +47,50 @@ Feature: Persistencia del estado de generación de OVA (EN-013)
     Given un job creado por un usuario
     When otro usuario distinto intenta consultarlo
     Then el servicio no devuelve el job
+
+  # HU-022/B1 — el plan crea una fila por recurso elegido (no 1 genérico por fase).
+  Scenario: El plan de recursos crea una fila por recurso elegido
+    Given el cliente elige varios recursos con su fase y tipo
+    When se construye el plan de recursos
+    Then hay una fila por cada recurso elegido con su resource_type
+    And cada recurso conserva su fase y su orden dentro de la fase
+
+  # HU-022/B2 — al terminar con ≥1 recurso done se materializa el OVA parcial (R1/R2).
+  Scenario: Un job con recursos generados materializa un OVA parcial
+    Given un job donde un recurso se genera y otro falla siempre
+    When el runner ejecuta el job
+    Then el job queda ligado a un OVA con sus fases generadas
+    And solo los recursos done se vuelven fases del OVA
+
+  # HU-022/B2/R8 — fallo total no crea un OVA vacío.
+  Scenario: Un fallo total no materializa ningún OVA
+    Given un job donde todos los recursos fallan siempre
+    When el runner ejecuta el job
+    Then el job termina en error sin OVA asociado
+
+  # HU-022/B3 — el contenido de un recurso done se lee por su propio endpoint.
+  Scenario: El contenido de un recurso done se obtiene aparte del estado
+    Given un job con un recurso done con contenido
+    When el dueño solicita el contenido de ese recurso
+    Then recibe el HTML del recurso
+    But el estado del job sigue sin exponer el contenido
+
+  # HU-022/B4 — resume acepta un subconjunto de recursos del job.
+  Scenario: Reintentar un subconjunto de recursos del job
+    Given un job interrupted con varios recursos pending
+    When se resuelven los recursos a reanudar para un subconjunto válido
+    Then solo se reanudan los recursos solicitados
+
+  # HU-022/B4 — un id ajeno al job se rechaza sin filtrar detalle.
+  Scenario: Reintentar con un recurso ajeno al job se rechaza
+    Given un job interrupted con varios recursos pending
+    When se resuelven los recursos a reanudar incluyendo un id ajeno
+    Then la resolución se rechaza como no encontrada
+
+  # HU-022/B4/R6/R7 — un recurso done en el subset de resume es inocuo: no se
+  # relanza ni se sobrescribe; solo se regenera el error del subset.
+  Scenario: Reintentar un subconjunto con un recurso done no lo regenera
+    Given un job interrupted con un recurso done y otro en error
+    When el usuario reanuda el subconjunto que incluye el recurso done
+    Then solo se regenera el recurso en error
+    And el recurso done conserva su contenido original sin relanzarse

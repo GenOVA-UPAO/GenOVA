@@ -66,13 +66,13 @@ def _select_resources(
     stmt = (
         select(OvaJobResource)
         .where(OvaJobResource.job_id == job_id)
+        # R7: never re-run a resource already `done` (don't overwrite good
+        # content), whether on a fresh run or a client-picked resume subset.
+        .where(OvaJobResource.status != "done")
         .order_by(OvaJobResource.phase_order, OvaJobResource.resource_order)
     )
     if only is not None:
         stmt = stmt.where(OvaJobResource.id.in_(only))
-    else:
-        # Fresh run: skip resources already done (idempotent re-entry).
-        stmt = stmt.where(OvaJobResource.status != "done")
     return list(db.execute(stmt).scalars().all())
 
 
@@ -123,6 +123,24 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     job.status = "done" if any_done else "error"
     job.finished_at = _now()
     db.commit()
+    # R1/R2/R8: with ≥1 done resource, persist the partial OVA so it shows up in
+    # "Mis OVAs"; with none, leave the job error-only (no empty OVA). Skip if the
+    # job already materialized an OVA on a previous run (resume re-entry).
+    if any_done and job.ova_id is None:
+        _materialize(db, job)
+
+
+def _materialize(db: Session, job: OvaJob) -> None:
+    from ova.jobs_materialize import materialize_partial_ova
+
+    done = list(
+        db.execute(
+            select(OvaJobResource)
+            .where(OvaJobResource.job_id == job.id, OvaJobResource.status == "done")
+            .order_by(OvaJobResource.phase_order, OvaJobResource.resource_order)
+        ).scalars().all()
+    )
+    materialize_partial_ova(db, job, done)
 
 
 def _safe_mark_error(db: Session, job_id: uuid.UUID) -> None:

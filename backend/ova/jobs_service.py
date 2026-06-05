@@ -89,6 +89,26 @@ def list_resources(db: Session, job_id: uuid.UUID) -> list[OvaJobResource]:
     )
 
 
+def get_resource(
+    db: Session, job_id: uuid.UUID, resource_id: uuid.UUID
+) -> OvaJobResource | None:
+    """Fetch one resource scoped to its job (ownership is checked on the job)."""
+    return db.execute(
+        select(OvaJobResource).where(
+            OvaJobResource.id == resource_id,
+            OvaJobResource.job_id == job_id,
+        )
+    ).scalar_one_or_none()
+
+
+def resource_ids_in_job(db: Session, job_id: uuid.UUID) -> set[uuid.UUID]:
+    """All resource ids of a job — used to validate a resume subset belongs to it (B4)."""
+    rows = db.execute(
+        select(OvaJobResource.id).where(OvaJobResource.job_id == job_id)
+    ).scalars().all()
+    return set(rows)
+
+
 def resumable_resource_ids(db: Session, job_id: uuid.UUID) -> list[uuid.UUID]:
     """IDs of resources eligible for resume — only pending/error, never done (R7)."""
     rows = db.execute(
@@ -98,6 +118,17 @@ def resumable_resource_ids(db: Session, job_id: uuid.UUID) -> list[uuid.UUID]:
         )
     ).scalars().all()
     return list(rows)
+
+
+def resumable_subset(
+    db: Session, job_id: uuid.UUID, requested: list[uuid.UUID]
+) -> list[uuid.UUID]:
+    """Keep only the requested ids that are resumable (pending/error), dropping
+    `done` ones so a client subset never re-runs and overwrites good content
+    (R6/R7). Preserves the requested order. Ownership is validated by the caller.
+    """
+    eligible = set(resumable_resource_ids(db, job_id))
+    return [rid for rid in requested if rid in eligible]
 
 
 def mark_job_resuming(db: Session, job: OvaJob) -> None:

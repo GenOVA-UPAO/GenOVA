@@ -59,6 +59,29 @@ recuperable** ese estado parcial en la interfaz.
 - **HU-002** — flujo de creación de OVA desde prompt.
 - Toca (frontend): `hooks/useOvaCreation.js`, `pages/CrearOvaPage.jsx`, lista/tarjetas de recursos (`components/PhaseCard.jsx` u homólogo), `services/ovaCreationService.js`.
 
+> **Extensión de alcance aprobada (2026-06-05, gate humano).** La exploración
+> reveló que EN-013 (marcado `done`) entregó solo el esqueleto del job: persiste
+> estado por recurso pero **no materializa el OVA**, **no expone el contenido** y
+> su `resume`/contrato de recursos no bastan para esta HU. Por decisión humana,
+> HU-022 **absorbe** estos gaps backend (no se reabre EN-013) y **extiende el
+> contrato de `POST /api/ova/jobs`**:
+> - **B1** — `POST /api/ova/jobs` acepta `resources:[{phase_type, resource_type}]`
+>   (en vez de solo `phases: list[str]`); `build_resource_plan` crea una fila
+>   `ova_job_resources` por recurso elegido (antes: 1 genérico por fase con
+>   `resource_type=None`).
+> - **B2** — el runner **materializa** el OVA parcial al terminar con ≥1 recurso
+>   `done` (`Ova`/`OvaVersion`/`OvaPhase`, `job.ova_id`, `tie_uploads_to_ova`),
+>   de modo que el borrador aparece en "Mis OVAs" (R1/R2). Fallo total → sin OVA (R8).
+> - **B3** — nuevo `GET /api/ova/jobs/{job_id}/resources/{rid}/content` para
+>   previsualizar recursos `done` (R1). El contenido sigue **fuera** de
+>   `GET /jobs/{id}` (no filtra por defecto).
+> - **B4** — `POST /api/ova/jobs/{job_id}/resume` acepta `resource_ids[]` opcional
+>   para reintento **individual** (R6) y **en lote** (R7); sin él, relanza todos
+>   los `pending`/`error`.
+>
+> Todo lo backend respeta R4/R8 de EN-013 (cookie JWT, `@limiter.limit`,
+> nunca `str(e)`/tokens, `commit_or_500()`) y < 200 líneas/archivo.
+
 ## Reglas de negocio
 
 1. **R1** — Si la generación falla con **≥1 recurso `done`**, el OVA se conserva como **borrador parcial** con sus recursos generados (no se descarta lo logrado).

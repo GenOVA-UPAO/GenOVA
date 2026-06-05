@@ -51,6 +51,23 @@ CREATE TABLE ova_error_logs (
   user_id TEXT, error_category VARCHAR(20) NOT NULL DEFAULT 'other',
   message TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE ovas (
+  id TEXT PRIMARY KEY, user_id TEXT NOT NULL, title TEXT NOT NULL,
+  description TEXT, status VARCHAR(20) NOT NULL DEFAULT 'borrador',
+  file_path TEXT, storage_key TEXT, current_version_id TEXT, deleted_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
+);
+CREATE TABLE ova_versions (
+  id TEXT PRIMARY KEY, ova_id TEXT NOT NULL, version_number INTEGER NOT NULL,
+  prompt TEXT NOT NULL, is_active BOOLEAN NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE ova_phases (
+  id TEXT PRIMARY KEY, version_id TEXT NOT NULL, phase_type VARCHAR(30) NOT NULL,
+  phase_order INTEGER NOT NULL, content TEXT NOT NULL, regenerated BOOLEAN NOT NULL DEFAULT 0,
+  resource_type_id INTEGER, title VARCHAR(120),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 _SECRET = "sk-livesecret0123456789ABCDEFghijklmnop"
@@ -76,6 +93,11 @@ def Sess(engine, monkeypatch):
     factory = sessionmaker(bind=engine, future=True)
     # The runner creates its OWN session via SessionLocal — point it at our DB.
     monkeypatch.setattr(jobs_runner, "SessionLocal", factory)
+    # B2 materialization builds + stores a SCORM zip; skip the (disk/storage) I/O
+    # in unit tests — we assert the Ova/OvaPhase rows, not the zip bytes.
+    from ova import jobs_materialize
+
+    monkeypatch.setattr(jobs_materialize, "_persist_scorm", lambda *a, **k: None)
     return factory
 
 
@@ -175,7 +197,7 @@ def job_con_fallo(db, monkeypatch):
     user_id = uuid.uuid4()
 
     def agent(phase_type, rtype, concept):
-        if rtype == 2:  # the second resource maps to "Infografía Animada" → id 2
+        if rtype == 2:  # the second resource maps to "Storyboard de Video" → ENGAGE id 2
             raise RuntimeError("provider 500 internal error")
         return f"<html>{rtype}</html>"
 
@@ -386,3 +408,274 @@ def otro_usuario_consulta(db, ctx):
 @then("el servicio no devuelve el job")
 def no_devuelve_job(other_result):
     assert other_result is None
+
+
+# Scenario 8 (HU-022/B1): el plan crea una fila por recurso elegido (Gap D)
+@scenario(FEATURE, "El plan de recursos crea una fila por recurso elegido")
+def test_plan_recurso_por_fila():
+    pass
+
+
+@given("el cliente elige varios recursos con su fase y tipo", target_fixture="ctx")
+def cliente_elige_recursos():
+    from ova.jobs_helpers import StartJobRequest
+
+    payload = StartJobRequest(
+        prompt="árboles de decisión",
+        resources=[
+            {"phase_type": "engage", "resource_type": "Cómic Interactivo"},
+            {"phase_type": "engage", "resource_type": "Micro-Podcast"},
+            {"phase_type": "explore", "resource_type": "5"},
+        ],
+    )
+    return {"payload": payload}
+
+
+@when("se construye el plan de recursos", target_fixture="plan")
+def construye_plan(ctx):
+    from ova.jobs_helpers import build_resource_plan
+
+    return build_resource_plan(ctx["payload"])
+
+
+@then("hay una fila por cada recurso elegido con su resource_type")
+def fila_por_recurso(plan):
+    assert len(plan) == 3
+    assert [r["resource_type"] for r in plan] == ["Cómic Interactivo", "Micro-Podcast", "5"]
+
+
+@then("cada recurso conserva su fase y su orden dentro de la fase")
+def conserva_fase_orden(plan):
+    engage = [r for r in plan if r["phase_type"] == "engage"]
+    explore = [r for r in plan if r["phase_type"] == "explore"]
+    assert [r["resource_order"] for r in engage] == [0, 1]
+    assert all(r["phase_order"] == 1 for r in engage)
+    assert [r["resource_order"] for r in explore] == [0]
+    assert all(r["phase_order"] == 2 for r in explore)
+
+
+# Scenario 9 (HU-022/B2): materializa OVA parcial con ≥1 done (R1/R2)
+@scenario(FEATURE, "Un job con recursos generados materializa un OVA parcial")
+def test_materializa_ova_parcial():
+    pass
+
+
+@given("un job donde un recurso se genera y otro falla siempre", target_fixture="ctx")
+def job_parcial(db, monkeypatch):
+    user_id = uuid.uuid4()
+
+    def agent(phase_type, rtype, concept):
+        if rtype == 2:  # "Storyboard de Video" → falla siempre
+            raise RuntimeError("provider down")
+        return f"<html>{rtype}</html>"
+
+    _stub_agent(monkeypatch, agent)
+    job = _make_job(db, user_id=user_id, resources=_engage_plan(3))
+    return {"user_id": user_id, "job": job}
+
+
+@then("el job queda ligado a un OVA con sus fases generadas")
+def job_ligado_ova(db, ctx):
+    from sqlalchemy import select
+
+    from models import Ova, OvaPhase
+
+    job = jobs_service.get_job(db, ctx["job"].id, ctx["user_id"])
+    assert job.ova_id is not None
+    ova = db.execute(select(Ova).where(Ova.id == job.ova_id)).scalar_one_or_none()
+    assert ova is not None and ova.status == "borrador"
+    phases = db.execute(select(OvaPhase)).scalars().all()
+    assert len(phases) >= 1
+    ctx["ova_phases"] = phases
+
+
+@then("solo los recursos done se vuelven fases del OVA")
+def solo_done_fases(db, ctx):
+    resources = jobs_service.list_resources(db, ctx["job"].id)
+    done = [r for r in resources if r.status == "done"]
+    assert len(ctx["ova_phases"]) == len(done)
+    assert all(p.content and p.content.strip() for p in ctx["ova_phases"])
+
+
+# Scenario 10 (HU-022/B2/R8): fallo total no materializa OVA
+@scenario(FEATURE, "Un fallo total no materializa ningún OVA")
+def test_fallo_total_sin_ova():
+    pass
+
+
+@given("un job donde todos los recursos fallan siempre", target_fixture="ctx")
+def job_fallo_total(db, monkeypatch):
+    user_id = uuid.uuid4()
+    _stub_agent(monkeypatch, lambda pt, rt, c: (_ for _ in ()).throw(RuntimeError("down")))
+    job = _make_job(db, user_id=user_id, resources=_engage_plan(2))
+    return {"user_id": user_id, "job": job}
+
+
+@then("el job termina en error sin OVA asociado")
+def job_error_sin_ova(db, ctx):
+    from sqlalchemy import select
+
+    from models import Ova
+
+    job = jobs_service.get_job(db, ctx["job"].id, ctx["user_id"])
+    assert job.status == "error"
+    assert job.ova_id is None
+    assert db.execute(select(Ova)).scalars().first() is None
+
+
+# Scenario 11 (HU-022/B3): contenido de un recurso done aparte del estado
+@scenario(FEATURE, "El contenido de un recurso done se obtiene aparte del estado")
+def test_contenido_aparte():
+    pass
+
+
+@given("un job con un recurso done con contenido", target_fixture="ctx")
+def job_recurso_done(db):
+    user_id = uuid.uuid4()
+    job = _make_job(db, user_id=user_id, resources=_engage_plan(1))
+    res = jobs_service.list_resources(db, job.id)[0]
+    res.status = "done"
+    res.content = "<html>contenido del recurso</html>"
+    db.commit()
+    return {"user_id": user_id, "job": job, "rid": res.id}
+
+
+@when("el dueño solicita el contenido de ese recurso", target_fixture="content")
+def solicita_contenido(db, ctx):
+    res = jobs_service.get_resource(db, ctx["job"].id, ctx["rid"])
+    assert res is not None and res.status == "done"
+    return res.content
+
+
+@then("recibe el HTML del recurso")
+def recibe_html(content):
+    assert content == "<html>contenido del recurso</html>"
+
+
+@then("el estado del job sigue sin exponer el contenido")
+def estado_sin_contenido(db, ctx):
+    job = jobs_service.get_job(db, ctx["job"].id, ctx["user_id"])
+    resources = jobs_service.list_resources(db, job.id)
+    payload = job_to_dict(job, resources)
+    assert "content" not in payload["resources"][0]
+
+
+# Scenario 12 (HU-022/B4): reanudar un subconjunto válido
+@scenario(FEATURE, "Reintentar un subconjunto de recursos del job")
+def test_resume_subconjunto():
+    pass
+
+
+@given("un job interrupted con varios recursos pending", target_fixture="ctx")
+def job_interrupted_pending(db):
+    user_id = uuid.uuid4()
+    job = _make_job(db, user_id=user_id, resources=_engage_plan(3), status="interrupted")
+    res = jobs_service.list_resources(db, job.id)
+    return {"user_id": user_id, "job": job, "ids": [r.id for r in res]}
+
+
+@when("se resuelven los recursos a reanudar para un subconjunto válido",
+      target_fixture="resolved")
+def resuelve_subconjunto(db, ctx):
+    from ova.jobs_helpers import ResumeRequest
+    from ova.jobs_router import _resolve_resume_targets
+
+    subset = [str(ctx["ids"][0])]
+    return _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=subset))
+
+
+@then("solo se reanudan los recursos solicitados")
+def solo_solicitados(ctx, resolved):
+    targets, error = resolved
+    assert error is None
+    assert targets == [ctx["ids"][0]]
+
+
+# Scenario 13 (HU-022/B4): id ajeno se rechaza
+@scenario(FEATURE, "Reintentar con un recurso ajeno al job se rechaza")
+def test_resume_ajeno_rechazado():
+    pass
+
+
+@when("se resuelven los recursos a reanudar incluyendo un id ajeno",
+      target_fixture="resolved")
+def resuelve_ajeno(db, ctx):
+    from ova.jobs_helpers import ResumeRequest
+    from ova.jobs_router import _resolve_resume_targets
+
+    foreign = [str(ctx["ids"][0]), str(uuid.uuid4())]
+    return _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=foreign))
+
+
+@then("la resolución se rechaza como no encontrada")
+def resolucion_rechazada(resolved):
+    targets, error = resolved
+    assert targets == []
+    assert error is not None
+    assert error.status_code == 404
+
+
+# Scenario 14 (HU-022/B4/R6/R7): un done en el subset de resume no se relanza
+@scenario(FEATURE, "Reintentar un subconjunto con un recurso done no lo regenera")
+def test_resume_done_en_subset():
+    pass
+
+
+_DONE_HTML = "<html>contenido original done</html>"
+
+
+@given("un job interrupted con un recurso done y otro en error", target_fixture="ctx")
+def job_done_y_error(db, monkeypatch):
+    user_id = uuid.uuid4()
+    # Agent only ever runs for resumable resources; record which resource_types it
+    # was asked to (re)generate, so we can prove the `done` one is never relaunched.
+    seen = {"rtypes": []}
+
+    def agent(phase_type, rtype, concept):
+        seen["rtypes"].append(rtype)
+        return f"<html>regenerado {rtype}</html>"
+
+    _stub_agent(monkeypatch, agent)
+    job = _make_job(db, user_id=user_id, resources=_engage_plan(2), status="interrupted")
+    res = jobs_service.list_resources(db, job.id)
+    res[0].status = "done"  # ENGAGE id 1 — already good, must stay intact
+    res[0].content = _DONE_HTML
+    res[1].status = "error"  # ENGAGE id 2 — the one to retry
+    db.commit()
+    return {
+        "user_id": user_id, "job": job,
+        "done_id": res[0].id, "error_id": res[1].id, "seen": seen,
+    }
+
+
+@when("el usuario reanuda el subconjunto que incluye el recurso done")
+def reanuda_subset_con_done(db, ctx):
+    from ova.jobs_helpers import ResumeRequest
+    from ova.jobs_router import _resolve_resume_targets
+
+    subset = [str(ctx["done_id"]), str(ctx["error_id"])]
+    targets, error = _resolve_resume_targets(
+        db, ctx["job"].id, ResumeRequest(resource_ids=subset)
+    )
+    assert error is None
+    ctx["targets"] = targets
+    jobs_runner.run_job(ctx["job"].id, targets)
+    db.expire_all()
+
+
+@then("solo se regenera el recurso en error")
+def solo_error_regenerado(db, ctx):
+    # The resolved subset excludes the done id; only the error resource is targeted.
+    assert ctx["targets"] == [ctx["error_id"]]
+    # And the agent was invoked exactly once — for the ENGAGE id 2 (error) resource.
+    assert ctx["seen"]["rtypes"] == [2]
+    error_res = jobs_service.get_resource(db, ctx["job"].id, ctx["error_id"])
+    assert error_res.status == "done"
+    assert error_res.content == "<html>regenerado 2</html>"
+
+
+@then("el recurso done conserva su contenido original sin relanzarse")
+def done_intacto(db, ctx):
+    done_res = jobs_service.get_resource(db, ctx["job"].id, ctx["done_id"])
+    assert done_res.status == "done"
+    assert done_res.content == _DONE_HTML
