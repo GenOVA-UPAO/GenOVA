@@ -77,8 +77,8 @@
     { "id": "EN-009", "name": "integracion_frontend_backend", "title": "Integración Frontend ↔ Backend de Agentes", "spec": "", "status": "pending" },
     { "id": "EN-010", "name": "monorepo_arquitectura_base", "title": "Configuración Monorepo y Arquitectura Base React", "spec": "sdd/specs/EN-010_configuracion-monorepo-arquitectura-base-react.md", "status": "done" },
     { "id": "EN-011", "name": "fastapi_docker", "title": "Setup Base FastAPI y Orquestación Docker", "spec": "sdd/specs/EN-011_setup-base-fastapi-orquestacion-local-docker.md", "status": "done" },
-    { "id": "EN-012", "name": "error_log_supabase", "title": "Observabilidad de errores de generación en Supabase", "spec": "sdd/specs/EN-012_observabilidad-errores-supabase.md", "status": "spec_ready" },
-    { "id": "EN-013", "name": "persistencia_estado_generacion", "title": "Persistencia del estado de generación (jobs)", "spec": "sdd/specs/EN-013_persistencia-estado-generacion.md", "status": "spec_ready" },
+    { "id": "EN-012", "name": "error_log_supabase", "title": "Observabilidad de errores de generación en Supabase", "spec": "sdd/specs/EN-012_observabilidad-errores-supabase.md", "status": "done", "merge_commit": "a3201ca" },
+    { "id": "EN-013", "name": "persistencia_estado_generacion", "title": "Persistencia del estado de generación (jobs)", "spec": "sdd/specs/EN-013_persistencia-estado-generacion.md", "status": "done", "merge_commit": "c4f6d07" },
 
     { "id": "RN-001", "name": "latencia_278ms", "title": "Latencia ≤ 278 ms", "spec": "", "status": "pending" },
     { "id": "RN-002", "name": "tiempo_generacion_180s", "title": "Tiempo de generación ≤ 180 segundos (MTTG)", "spec": "", "status": "pending" },

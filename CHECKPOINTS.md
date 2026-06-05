@@ -12,9 +12,10 @@
 - [ ] `pnpm lint` sale con exit 0 (ESLint max-lines: 200, sin errores)
 - [ ] `ruff check backend/` sale con exit 0 (E, F, W, I, B, UP, S, SIM)
 
-## C3 — Límite de líneas respetado
+## C3 — Límite de líneas respetado (NO aplica a archivos de test)
 - [ ] Ningún archivo en `frontend/src/` supera 200 líneas
 - [ ] Ningún archivo en `backend/` supera 200 líneas (excepción: `backend/tools/prompt_lab.py`)
+- [ ] **Exentos del límite**: archivos de test (`backend/tests/**`, `tests/**`, `test_*.py`, `*_test.py`, `*.test.*`, `*.steps.*`)
 
 ## C4 — Seguridad básica
 - [ ] No hay tokens, API keys, passwords, ni OTPs en respuestas HTTP
