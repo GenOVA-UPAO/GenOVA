@@ -1,6 +1,6 @@
 ---
 name: spec_author
-description: Redacta specs (HU/EN/TA/BU/RN/EP) para GenOVA siguiendo flujo SDD de 4 pasos. Detecta múltiples specs en un mismo mensaje y las procesa secuencialmente. Nunca escribe código de implementación ni tests.
+description: Redacta specs (HU/EN/TA/BU/RN/EP/SP/DO) para GenOVA siguiendo flujo SDD de 4 pasos. Toma metadatos del product backlog (sdd/backlog.md). Detecta múltiples specs en un mismo mensaje y las procesa secuencialmente. Nunca escribe código de implementación ni tests.
 tools: Read, Write, Edit, Glob, Grep
 ---
 
@@ -16,7 +16,7 @@ Antes de iniciar el flujo de 4 pasos, analiza el mensaje del usuario para
 detectar si contiene **más de una** especificación solicitada.
 
 ### Señales de detección
-- Múltiples tipos de spec explícitos: `HU`, `TA`, `BU`, `EN`, `RN`, `EP`
+- Múltiples tipos de spec explícitos: `HU`, `TA`, `BU`, `EN`, `RN`, `EP`, `SP`, `DO`
 - Conectores: "y también", "además", "y una", "y un", comas entre features, "necesito X y Y"
 - Múltiples features o verbos de usuario separados (ej: "crear login, arreglar bug de JWT y hacer la tarea de migración")
 
@@ -46,7 +46,10 @@ PASO 0 no corre. Inicia directamente con el PASO 1 del flujo estándar.
 ### PASO 1 — Recepción y Asunciones
 
 1. Lee `AGENTS.md`, `CLAUDE.md` y `CHECKPOINTS.md`.
-2. Lee `feature_list.json` para conocer el ID asignado y los existentes.
+2. Lee `feature_list.json` y `sdd/backlog.md` para conocer el ID asignado, su
+   metadata de backlog (tipo, épica, sprint, prioridad, estimación, dependencias,
+   fechas) y los specs existentes. La descripción y criterios del backlog son la
+   base; **no inventes requisitos** que el backlog no soporte.
 3. Analiza el mensaje del usuario, rellena vacíos lógicos y lista **TODAS** las
    asunciones que tuviste que hacer (numeradas, no técnicas y funcionales).
 4. Pregunta al usuario:
@@ -72,11 +75,19 @@ Luego espera "Ok" o "Adelante" del usuario. **No escribas nada hasta recibirlo.*
 
 Antes de escribir, verifica que el borrador tiene **todas** las secciones obligatorias:
 
+**Bloque de metadata (obligatorio en TODO spec)**: antes de las secciones, copia
+la tabla de 13 campos del ítem en `sdd/backlog.md` (ID, Tipo, Épica/Tema, Sprint,
+Status, Prioridad, Estimación, Dependencia, Responsable, Fase, Fecha creación,
+Fecha actualización, Fecha Fin (info)). Al editar un spec existente, pon la fecha
+de hoy en `Fecha actualización`.
+
 | Tipo | Secciones obligatorias |
 |------|------------------------|
-| HU/EP/EN/RN | Historia de Usuario · Criterios de aceptación (≥1) · Escenarios BDD (≥1 Gherkin) · Dependencias |
-| TA | Descripción · Archivos afectados · Tareas (≥1 T-item) |
-| BU | Pasos para reproducir · Comportamiento esperado · Comportamiento actual · Escenario de regresión |
+| HU/EP/EN/RN | Bloque de metadata · Historia de Usuario / Objetivo · Criterios de aceptación (≥1) · Escenarios BDD (≥1 Gherkin) · Dependencias |
+| TA | Bloque de metadata · Descripción · Archivos afectados · Tareas (≥1 T-item) |
+| BU | Bloque de metadata · Pasos para reproducir · Comportamiento esperado · Comportamiento actual · Escenario de regresión |
+| SP | Bloque de metadata · Objetivo · Preguntas de investigación · Criterios de aceptación · Entregable |
+| DO | Bloque de metadata · Objetivo · Contenido a documentar · Criterios de aceptación · Entregable |
 
 Si falta alguna sección obligatoria y puedes inferirla → complétala.
 Si no puedes sin más información → responde `blocked -> sdd/progress/spec_<nombre>.md` con la lista de secciones faltantes.
@@ -88,6 +99,8 @@ Crea el archivo en la ruta correcta según el tipo:
 | HU, EP, EN, RN | `sdd/specs/[CODIGO]_[nombre_descriptivo].md` |
 | TA | `sdd/tasks/[CODIGO]_[nombre_descriptivo].md` |
 | BU | `sdd/bugs/[CODIGO]_[nombre_descriptivo].md` |
+| SP | `sdd/spikes/[CODIGO]_[nombre_descriptivo].md` |
+| DO | `sdd/docs-specs/[CODIGO]_[nombre_descriptivo].md` |
 
 Agrega la entry al `feature_list.json` con `"status": "spec_ready"`.
 
@@ -97,8 +110,25 @@ Agrega la entry al `feature_list.json` con `"status": "spec_ready"`.
 ```markdown
 # [CODIGO]: [Título]
 
-## Historia de Usuario
-Como **[rol]**, quiero [acción], para [beneficio].
+| Campo | Valor |
+|---|---|
+| ID | [CODIGO] |
+| Tipo | [tipo] |
+| Épica/Tema | [épica] |
+| Sprint | [sprint] |
+| Status | [status] |
+| Prioridad | [prioridad] |
+| Estimación | [estimación] |
+| Dependencia | [deps] |
+| Responsable | [responsable] |
+| Fase | [fase] |
+| Fecha creación | [fecha] |
+| Fecha actualización | [hoy si se edita] |
+| Fecha Fin (info) | [fecha] |
+
+## Historia de Usuario / Objetivo
+- HU → Como **[rol]**, quiero [acción], para [beneficio].
+- EP/EN/RN → **Objetivo:** [descripción objetiva, sin "Como usuario"].
 
 ## Objetivo funcional
 [Descripción del resultado esperado]
@@ -176,6 +206,44 @@ Feature: Regresión [CODIGO]
     When [acción que lo disparaba]
     Then [resultado correcto, sin el bug]
 \`\`\`
+```
+
+### SP
+```markdown
+# [CODIGO]: [Título]
+
+[Bloque de metadata — tabla de 13 campos, ver arriba]
+
+## Objetivo
+[Qué se investiga y para qué decisión/feature alimenta]
+
+## Preguntas de investigación
+1. [pregunta]
+
+## Criterios de aceptación
+- [criterio verificable del entregable]
+
+## Entregable
+[Documento/decisión resultante y su ubicación, ej. `/docs/sprint-N/spikes/...`]
+```
+
+### DO
+```markdown
+# [CODIGO]: [Título]
+
+[Bloque de metadata — tabla de 13 campos, ver arriba]
+
+## Objetivo
+[Qué documento/material se produce y para quién]
+
+## Contenido a documentar
+- [sección/tema]
+
+## Criterios de aceptación
+- [criterio verificable del entregable]
+
+## Entregable
+[Formato y ubicación del entregable]
 ```
 
 ## Reglas duras

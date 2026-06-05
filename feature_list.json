@@ -1,168 +1,108 @@
 {
   "project": "genova",
   "description": "Plataforma web para generación asistida por IA de OVAs con exportación SCORM 1.2 (metodología 5E).",
+  "backlog_source": "sdd/backlog.md",
   "rules": {
     "one_feature_at_a_time": true,
     "require_tests_to_close": true,
     "require_approved_spec_to_implement": true,
     "valid_status": ["pending", "spec_ready", "in_progress", "aborted", "done", "blocked"],
     "sdd_required_when": "feature has \"sdd\": true",
+    "status_mapping_from_backlog": { "Closed": "done", "Done": "done", "To Do": "pending", "In Progress": "in_progress" },
     "spec_dirs": {
       "HU": "sdd/specs/",
       "EP": "sdd/specs/",
       "EN": "sdd/specs/",
       "RN": "sdd/specs/",
       "TA": "sdd/tasks/",
-      "BU": "sdd/bugs/"
+      "BU": "sdd/bugs/",
+      "SP": "sdd/spikes/",
+      "DO": "sdd/docs-specs/"
     }
   },
   "features": [
-    {
-      "id": "EN-008",
-      "name": "base_datos_gestion_usuarios",
-      "title": "Habilitar Base de Datos para Gestión de Usuarios",
-      "spec": "sdd/specs/EN-008_habilitar-base-datos-gestion-usuarios.md",
-      "status": "done"
-    },
-    {
-      "id": "EN-010",
-      "name": "monorepo_arquitectura_base",
-      "title": "Configuración Monorepo y Arquitectura Base React",
-      "spec": "sdd/specs/EN-010_configuracion-monorepo-arquitectura-base-react.md",
-      "status": "done"
-    },
-    {
-      "id": "EN-011",
-      "name": "fastapi_docker",
-      "title": "Setup Base FastAPI y Orquestación Docker",
-      "spec": "sdd/specs/EN-011_setup-base-fastapi-orquestacion-local-docker.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-001",
-      "name": "registro_cuenta_usuario",
-      "title": "Registro de Cuenta de Usuario",
-      "spec": "sdd/specs/HU-001_registro-cuenta-usuario.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-002",
-      "name": "crear_ova_desde_prompt",
-      "title": "Crear nuevo OVA desde prompt",
-      "spec": "sdd/specs/HU-002_crear_nuevo_ova_desde_prompt.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-003",
-      "name": "visualizar_5e",
-      "title": "Visualizar completa 5E",
-      "spec": "sdd/specs/HU-003_visualizar-completa-5E.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-004",
-      "name": "exportar_scorm",
-      "title": "Exportar OVA como paquete SCORM",
-      "spec": "sdd/specs/HU-004_exportar-ova-como-paquete-scorm.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-006",
-      "name": "historial_ovas",
-      "title": "Ver historial de OVAs",
-      "spec": "sdd/specs/HU-006_ver_historial_de_ovas.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-007",
-      "name": "subir_archivos",
-      "title": "Subir archivos base para OVA (RAG)",
-      "spec": "sdd/specs/HU-007_subir_archivos_base_ova.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-008",
-      "name": "inicio_sesion",
-      "title": "Inicio de sesión con credenciales",
-      "spec": "sdd/specs/HU-008_inicio-sesion-credenciales.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-010",
-      "name": "layout_principal",
-      "title": "Maquetación Layout Principal y Enrutamiento Modular",
-      "spec": "sdd/specs/HU-010_maquetacion-layout-principal-enrutamiento-modular.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-011",
-      "name": "editar_ova",
-      "title": "Editar OVA generado",
-      "spec": "sdd/specs/HU-011_editar_ova_generado.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-012",
-      "name": "eliminar_ova",
-      "title": "Eliminar OVA del historial (soft-delete)",
-      "spec": "sdd/specs/HU-012_eliminar_ova_historial.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-013",
-      "name": "duplicar_ova",
-      "title": "Duplicar OVA existente",
-      "spec": "sdd/specs/HU-013_duplicar_ova_existente.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-014",
-      "name": "metadatos_ova",
-      "title": "Renombrar y editar metadatos del OVA",
-      "spec": "sdd/specs/HU-014_renombrar_y_editar_metadatos_del_ova.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-015",
-      "name": "ver_editar_perfil",
-      "title": "Ver y Editar Perfil de Usuario",
-      "spec": "sdd/specs/HU-015_ver-editar-perfil.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-016",
-      "name": "cambiar_contrasena",
-      "title": "Cambiar Contraseña desde el Perfil",
-      "spec": "sdd/specs/HU-016_cambiar-contrasena.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-018",
-      "name": "crear_rol",
-      "title": "Gestión de Roles — Crear Rol",
-      "spec": "sdd/specs/HU-018_gestion-roles-crear-rol.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-019",
-      "name": "editar_rol",
-      "title": "Gestión de Roles — Editar Rol",
-      "spec": "sdd/specs/HU-019_gestion-roles-editar-rol.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-020",
-      "name": "eliminar_rol",
-      "title": "Gestión de Roles — Eliminar Rol",
-      "spec": "sdd/specs/HU-020_gestion-roles-eliminar-rol.md",
-      "status": "done"
-    },
-    {
-      "id": "HU-021",
-      "name": "gestion_usuarios",
-      "title": "Gestión de Usuarios y Roles",
-      "spec": "sdd/specs/HU-021_gestion-roles-asignar-rol-usuario.md",
-      "status": "done"
-    }
+    { "id": "EP-1", "name": "especificacion_sistema", "title": "Especificación del Sistema (SDD — Fase Specify)", "spec": "", "status": "pending" },
+    { "id": "EP-2", "name": "plataforma_web_autenticacion", "title": "Plataforma Web y Autenticación", "spec": "", "status": "pending" },
+    { "id": "EP-3", "name": "interfaz_creacion_gestion_ovas", "title": "Interfaz de Creación y Gestión de OVAs", "spec": "", "status": "pending" },
+    { "id": "EP-4", "name": "motor_exportacion_scorm", "title": "Motor de Exportación SCORM", "spec": "", "status": "pending" },
+    { "id": "EP-5", "name": "sistema_multiagente", "title": "Especificación del Sistema Multiagente", "spec": "", "status": "pending" },
+    { "id": "EP-6", "name": "base_conocimiento_rag", "title": "Base de Conocimiento Contextual RAG", "spec": "", "status": "pending" },
+    { "id": "EP-7", "name": "despliegue_infraestructura_cloud", "title": "Despliegue e Infraestructura Cloud", "spec": "", "status": "pending" },
+    { "id": "EP-8", "name": "validacion_tecnica_calidad", "title": "Validación Técnica y de Calidad", "spec": "", "status": "pending" },
+    { "id": "EP-9", "name": "evaluacion_usabilidad_ux", "title": "Evaluación de Usabilidad y UX", "spec": "", "status": "pending" },
+    { "id": "EP-10", "name": "documentacion_cierre", "title": "Documentación y Cierre del Proyecto", "spec": "", "status": "pending" },
+
+    { "id": "HU-001", "name": "registro_cuenta_usuario", "title": "Registro de Cuenta de Usuario", "spec": "sdd/specs/HU-001_registro-cuenta-usuario.md", "status": "done" },
+    { "id": "HU-002", "name": "crear_ova_desde_prompt", "title": "Crear nuevo OVA desde prompt", "spec": "sdd/specs/HU-002_crear_nuevo_ova_desde_prompt.md", "status": "done" },
+    { "id": "HU-003", "name": "visualizar_5e", "title": "Visualizar completa 5E", "spec": "sdd/specs/HU-003_visualizar-completa-5E.md", "status": "done" },
+    { "id": "HU-004", "name": "exportar_scorm", "title": "Exportar OVA como paquete SCORM", "spec": "sdd/specs/HU-004_exportar-ova-como-paquete-scorm.md", "status": "done" },
+    { "id": "HU-005", "name": "evaluar_sus", "title": "Evaluar plataforma mediante encuesta SUS", "spec": "", "status": "pending" },
+    { "id": "HU-006", "name": "historial_ovas", "title": "Ver historial de OVAs", "spec": "sdd/specs/HU-006_ver_historial_de_ovas.md", "status": "done" },
+    { "id": "HU-007", "name": "subir_archivos", "title": "Subir archivos base para el OVA (RAG)", "spec": "sdd/specs/HU-007_subir_archivos_base_ova.md", "status": "done" },
+    { "id": "HU-008", "name": "inicio_sesion", "title": "Inicio de sesión con credenciales", "spec": "sdd/specs/HU-008_inicio-sesion-credenciales.md", "status": "done" },
+    { "id": "HU-009", "name": "recuperar_contrasena", "title": "Recuperación de contraseña", "spec": "", "status": "pending" },
+    { "id": "HU-010", "name": "layout_principal", "title": "Maquetación Layout Principal y Enrutamiento Modular", "spec": "sdd/specs/HU-010_maquetacion-layout-principal-enrutamiento-modular.md", "status": "done" },
+    { "id": "HU-011", "name": "editar_ova", "title": "Editar OVA generado", "spec": "sdd/specs/HU-011_editar_ova_generado.md", "status": "done" },
+    { "id": "HU-012", "name": "eliminar_ova", "title": "Eliminar OVA del historial (soft-delete)", "spec": "sdd/specs/HU-012_eliminar_ova_historial.md", "status": "done" },
+    { "id": "HU-013", "name": "duplicar_ova", "title": "Duplicar OVA existente", "spec": "sdd/specs/HU-013_duplicar_ova_existente.md", "status": "done" },
+    { "id": "HU-014", "name": "metadatos_ova", "title": "Renombrar y editar metadatos del OVA", "spec": "sdd/specs/HU-014_renombrar_y_editar_metadatos_del_ova.md", "status": "done" },
+    { "id": "HU-015", "name": "ver_editar_perfil", "title": "Ver y Editar Perfil de Usuario", "spec": "sdd/specs/HU-015_ver-editar-perfil.md", "status": "done" },
+    { "id": "HU-016", "name": "cambiar_contrasena", "title": "Cambiar Contraseña desde el Perfil", "spec": "sdd/specs/HU-016_cambiar-contrasena.md", "status": "done" },
+    { "id": "HU-017", "name": "eliminar_cuenta", "title": "Eliminar / dar de baja cuenta", "spec": "", "status": "pending" },
+    { "id": "HU-018", "name": "crear_rol", "title": "Gestión de Roles — Crear Rol", "spec": "sdd/specs/HU-018_gestion-roles-crear-rol.md", "status": "done" },
+    { "id": "HU-019", "name": "editar_rol", "title": "Gestión de Roles — Editar Rol", "spec": "sdd/specs/HU-019_gestion-roles-editar-rol.md", "status": "done" },
+    { "id": "HU-020", "name": "eliminar_rol", "title": "Gestión de Roles — Eliminar Rol", "spec": "sdd/specs/HU-020_gestion-roles-eliminar-rol.md", "status": "done" },
+    { "id": "HU-021", "name": "gestion_usuarios", "title": "Gestión de Usuarios y Roles", "spec": "sdd/specs/HU-021_gestion-roles-asignar-rol-usuario.md", "status": "done" },
+    { "id": "HU-022", "name": "recuperar_recursos_parciales", "title": "Recuperación de recursos parciales tras error de generación", "spec": "", "status": "pending" },
+    { "id": "HU-023", "name": "generacion_background", "title": "Generación de OVA en background persistente y reanudación", "spec": "", "status": "pending" },
+    { "id": "HU-024", "name": "archivos_chat", "title": "Carga de archivos contextuales estilo chat", "spec": "", "status": "pending" },
+    { "id": "HU-025", "name": "workspace_edicion_ova", "title": "Workspace de edición de OVA (panel dividido)", "spec": "", "status": "pending" },
+    { "id": "HU-026", "name": "edicion_click_preview", "title": "Edición de recurso por click en el preview", "spec": "", "status": "pending" },
+    { "id": "HU-027", "name": "seleccion_recursos_contexto", "title": "Selección de recursos como contexto del prompt", "spec": "", "status": "pending" },
+    { "id": "HU-028", "name": "versionado_ova", "title": "Versionado de OVA (historial, diff y revertir)", "spec": "", "status": "pending" },
+    { "id": "HU-029", "name": "microversionado_recurso", "title": "Micro-versionado por recurso editado", "spec": "", "status": "pending" },
+    { "id": "HU-030", "name": "mis_ovas_workspace", "title": "Mis OVAs: acceso al workspace + versión en metadata", "spec": "", "status": "pending" },
+
+    { "id": "EN-001", "name": "gherkin_sprint1", "title": "Habilitar especificaciones Gherkin Sprint 1", "spec": "", "status": "pending" },
+    { "id": "EN-002", "name": "automatizacion_bdd", "title": "Habilitar automatización BDD", "spec": "", "status": "pending" },
+    { "id": "EN-003", "name": "orquestacion_agentes", "title": "Habilitar orquestación de agentes Prometheus", "spec": "", "status": "pending" },
+    { "id": "EN-004", "name": "pgvector", "title": "Habilitar pgvector (BD Vectorial)", "spec": "", "status": "pending" },
+    { "id": "EN-005", "name": "pipeline_rag", "title": "Habilitar pipeline RAG end-to-end", "spec": "", "status": "pending" },
+    { "id": "EN-006", "name": "entornos_cloud", "title": "Habilitar entornos Cloud y orquestación", "spec": "", "status": "pending" },
+    { "id": "EN-007", "name": "integracion_canvas", "title": "Habilitar pruebas de integración en Canvas", "spec": "", "status": "pending" },
+    { "id": "EN-008", "name": "base_datos_gestion_usuarios", "title": "Habilitar Base de Datos para Gestión de Usuarios", "spec": "sdd/specs/EN-008_habilitar-base-datos-gestion-usuarios.md", "status": "done" },
+    { "id": "EN-009", "name": "integracion_frontend_backend", "title": "Integración Frontend ↔ Backend de Agentes", "spec": "", "status": "pending" },
+    { "id": "EN-010", "name": "monorepo_arquitectura_base", "title": "Configuración Monorepo y Arquitectura Base React", "spec": "sdd/specs/EN-010_configuracion-monorepo-arquitectura-base-react.md", "status": "done" },
+    { "id": "EN-011", "name": "fastapi_docker", "title": "Setup Base FastAPI y Orquestación Docker", "spec": "sdd/specs/EN-011_setup-base-fastapi-orquestacion-local-docker.md", "status": "done" },
+    { "id": "EN-012", "name": "error_log_supabase", "title": "Observabilidad de errores de generación en Supabase", "spec": "", "status": "pending" },
+    { "id": "EN-013", "name": "persistencia_estado_generacion", "title": "Persistencia del estado de generación (jobs)", "spec": "", "status": "pending" },
+
+    { "id": "RN-001", "name": "latencia_278ms", "title": "Latencia ≤ 278 ms", "spec": "", "status": "pending" },
+    { "id": "RN-002", "name": "tiempo_generacion_180s", "title": "Tiempo de generación ≤ 180 segundos (MTTG)", "spec": "", "status": "pending" },
+    { "id": "RN-003", "name": "seguridad_api_keys", "title": "Seguridad y manejo de API Keys", "spec": "", "status": "pending" },
+    { "id": "RN-004", "name": "humo_rendimiento", "title": "Prueba de humo de rendimiento post-despliegue", "spec": "", "status": "pending" },
+    { "id": "RN-005", "name": "frontend_responsive", "title": "Frontend responsive", "spec": "", "status": "pending" },
+
+    { "id": "TA-001", "name": "config_repos_ramas", "title": "Configuración de repositorios y ramas", "spec": "", "status": "pending" },
+    { "id": "TA-002", "name": "template_scorm_xml", "title": "Crear template base SCORM XML", "spec": "", "status": "pending" },
+    { "id": "TA-003", "name": "scripts_precision_ia", "title": "Ejecutar scripts de precisión IA", "spec": "", "status": "pending" },
+    { "id": "TA-004", "name": "coordinacion_sus", "title": "Preparación y coordinación de sesión SUS", "spec": "", "status": "pending" },
+    { "id": "TA-005", "name": "validacion_scorm_cloud", "title": "Validación SCORM con SCORM Cloud Rustici", "spec": "", "status": "pending" },
+    { "id": "TA-006", "name": "despliegue_backend_render", "title": "Configuración del Entorno de Producción y Despliegue del Backend en Render", "spec": "", "status": "done" },
+    { "id": "TA-007", "name": "despliegue_frontend_vercel", "title": "Configuración y Despliegue del Frontend en Vercel", "spec": "", "status": "done" },
+
+    { "id": "SP-001", "name": "comparativa_apis", "title": "Comparativa APIs multimodales", "spec": "", "status": "done" },
+    { "id": "SP-002", "name": "metodologia_5e", "title": "Metodología 5E y Estructura OVA", "spec": "", "status": "done" },
+    { "id": "SP-003", "name": "mapeo_recursos_5e", "title": "Mapeo de recursos y estructura de 5E", "spec": "", "status": "done" },
+    { "id": "SP-004", "name": "herramientas_orquestacion", "title": "Spike: Herramientas de Orquestación y Despliegue", "spec": "", "status": "pending" },
+    { "id": "SP-005", "name": "investigacion_sdd", "title": "Investigación Spec-Driven Development", "spec": "", "status": "done" },
+    { "id": "SP-006", "name": "estructura_scorm", "title": "Estructura Técnica del Estándar SCORM", "spec": "", "status": "done" },
+    { "id": "SP-007", "name": "metodologia_prometheus", "title": "Metodología Prometheus para Agentes", "spec": "", "status": "pending" },
+    { "id": "SP-008", "name": "principios_frontend", "title": "Investigación de buenos principios para el frontend de aplicaciones web", "spec": "", "status": "pending" },
+    { "id": "SP-009", "name": "harness_engineering", "title": "Ingeniería de Harness Engineering en Sistemas de IA", "spec": "", "status": "pending" },
+
+    { "id": "DO-001", "name": "documentacion_tecnica", "title": "Documentación técnica completa", "spec": "", "status": "pending" },
+    { "id": "DO-002", "name": "videos_demostrativos", "title": "Videos demostrativos del funcionamiento", "spec": "", "status": "pending" },
+    { "id": "DO-003", "name": "reporte_comparativo_llm", "title": "Reporte comparativo de agentes LLM", "spec": "", "status": "pending" }
   ]
 }
