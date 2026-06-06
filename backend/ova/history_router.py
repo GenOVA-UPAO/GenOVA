@@ -43,8 +43,10 @@ def list_ovas(
     total_items = db.execute(count_query).scalar_one()
     total_pages = max(1, math.ceil(total_items / limit))
 
-    # Eager-load owner for admin view — eliminates N+1 lazy loads per row.
-    # Applied after count_query is built so the subquery stays clean.
+    # Eager-load versions (HU-030: expose active version_number) and owner (admin).
+    # Applied after count_query to keep the subquery clean. Python-side filter in
+    # _ova_to_dict picks the is_active=True entry — versions are few per OVA.
+    base_query = base_query.options(joinedload(Ova.versions))
     if admin:
         base_query = base_query.options(joinedload(Ova.owner))
 

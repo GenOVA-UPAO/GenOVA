@@ -38,3 +38,18 @@ las specs del editor avanzado de OVA y empezar la implementación.
 - CHECKPOINTS C3: el límite <200 líneas **no aplica a tests** (decisión del usuario).
 
 **Estado:** PAUSADO. Pendiente: HU-023/HU-022 (frontend que consume jobs) y resto del editor (HU-024…033, versionado). Backlog en `sdd/backlog.md`; 80 ítems, 30 done.
+
+---
+
+## 2026-06-05/06 — HU-022 frontend + lote EP-3 iniciado
+
+**Agente:** leader (orquesta: implementer, reviewer)
+**Alcance:** Frontend HU-022 (F1-F4) completado. Inicio lote EP-3 (12 features spec_ready).
+
+**Completado:**
+- **HU-022 frontend F1-F4**: `ovaCreationService.js` (startJob/getJobStatus/getResourceContent/resumeJob), `useOvaJob.js` (165 líneas, polling + viewmodel + retry), `useOvaCreation.js` adelgazado a 68 líneas, `useResourceContent.js`, `lib/ovaJobViewModel.js`, componentes `ResourceList`/`ProgressPanel`/`ResourcePreview`/`TotalFailurePanel`, `CrearOvaPage` reescrito. 5 BDD scenarios HU-022 verdes.
+- **Migración shadcn/ui completa**: Button, Badge, Checkbox, Input, Textarea, Select, Label, Dialog, Alert, Table — todos los archivos frontend migrados, `frontend/README.md` actualizado, `AGENTS.md` 4 fixes aplicados.
+- **HU-022 done**: `merge_commit: 0ff7465`, verify.ps1 PASA (12/12 unit BDD).
+- Lote EP-3 aprobado: HU-024→HU-023→HU-025→HU-030→HU-033→HU-026→HU-028→HU-027→HU-029→HU-032→HU-031→RN-005.
+
+**Estado:** LOTE EP-3 en ejecución.

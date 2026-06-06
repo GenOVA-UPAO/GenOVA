@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { HtmlCodePreview } from './HtmlCodePreview.jsx'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 
 const PHASE_LABELS = {
   motivacion: 'Motivación',
@@ -41,67 +44,58 @@ export function PhaseCard({
   const isLoading = isRegenerating && regenProgress?.regenningPhases?.includes(phase.id)
 
   return (
-    <div className={`rounded-xl border bg-white p-5 shadow-sm transition-all ${checked ? 'border-indigo-300 ring-1 ring-indigo-200' : 'border-slate-200'}`}>
+    <div className={`rounded-xl border bg-background p-5 shadow-sm transition-all ${checked ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border'}`}>
       <div className="flex items-center gap-3 mb-3">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={checked}
-          onChange={() => onCheckToggle(phase.id)}
+          onCheckedChange={() => onCheckToggle(phase.id)}
           disabled={isRegenerating}
-          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
         />
-        <span className="text-sm font-semibold text-slate-800">
+        <span className="text-sm font-semibold">
           {phase.phase_order}. {label}
         </span>
-        {phase.regenerated && (
-          <span className="rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-xs text-indigo-600 font-medium">
+        {phase.regenerated ? (
+          <span className="rounded-full bg-primary/5 border border-primary/20 px-2 py-0.5 text-xs text-primary font-medium">
             IA
           </span>
-        )}
+        ) : null}
       </div>
 
       {isLoading ? (
         <div className="flex items-center gap-3 py-4">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" />
-          <span className="text-xs text-slate-500">Regenerando fase...</span>
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+          <span className="text-xs text-muted-foreground">Regenerando fase...</span>
         </div>
       ) : editing ? (
         <div className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-slate-500 font-medium mb-1">Editor</p>
-              <textarea
+              <p className="text-xs text-muted-foreground font-medium mb-1">Editor</p>
+              <Textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 rows={6}
-                className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 resize-none"
+                className="resize-none"
               />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium mb-1">Vista previa</p>
+              <p className="text-xs text-muted-foreground font-medium mb-1">Vista previa</p>
               <div className="min-h-[120px]">
                 {draft ? (
                   <HtmlCodePreview htmlContent={draft} defaultView="preview" height="300px" />
                 ) : (
-                  <span className="text-sm text-slate-300 italic">Sin contenido</span>
+                  <span className="text-sm text-muted-foreground italic">Sin contenido</span>
                 )}
               </div>
             </div>
           </div>
           <div className="flex gap-2 justify-end">
-            <button
-              onClick={() => setEditing(false)}
-              className="rounded-lg border border-slate-200 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-            >
+            <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
               Cancelar
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
-            >
+            </Button>
+            <Button size="sm" onClick={handleSave} disabled={saving}>
               {saving ? 'Guardando...' : 'Guardar fase'}
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -110,27 +104,27 @@ export function PhaseCard({
         </div>
       )}
 
-      {!editing && !isLoading && (
-        <div className="flex gap-2 pt-2 border-t border-slate-100">
-          <button
-            onClick={() => {
-              setDraft(phase.content)
-              setEditing(true)
-            }}
+      {!editing && !isLoading ? (
+        <div className="flex gap-2 pt-2 border-t border-border">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { setDraft(phase.content); setEditing(true) }}
             disabled={isRegenerating}
-            className="flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             ✏ Editar
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => onRegenSingle(phase.id, label)}
             disabled={isRegenerating}
-            className="flex items-center gap-1 rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="text-primary border-primary/30 hover:bg-primary/5"
           >
             ↺ Regenerar
-          </button>
+          </Button>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

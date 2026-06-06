@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { startJob, getJobStatus, resumeJob } from '../services/ovaCreationService.js'
+
+// States that don't need polling.
+const TERMINAL_STATUSES = new Set(['done', 'error'])
 import {
   toResourceViewModel,
   pruneSelection,
@@ -142,6 +145,31 @@ export function useOvaJob() {
     [clearTimer, schedule]
   )
 
+  // Restore an in-progress job from "Mis OVAs" (HU-023 R4).
+  const restore = useCallback(
+    async (existingJobId) => {
+      clearTimer()
+      setError('')
+      setJob(null)
+      setSelectedFailedIds([])
+      jobIdRef.current = existingJobId
+      setJobId(existingJobId)
+      setPhase('polling')
+      try {
+        const data = await getJobStatus(existingJobId)
+        setJob(data)
+        if (TERMINAL_STATUSES.has(data.status)) {
+          setPhase('terminal')
+        } else {
+          schedule()
+        }
+      } catch {
+        schedule()
+      }
+    },
+    [clearTimer, schedule]
+  )
+
   const retryOne = useCallback((resourceId) => resumeAndPoll([resourceId]), [resumeAndPoll])
   const retrySelected = useCallback(
     () => resumeAndPoll(cleanSelection),
@@ -162,6 +190,6 @@ export function useOvaJob() {
   return {
     jobId, job, phase, error, viewModel, outcome,
     selectedFailedIds: cleanSelection,
-    start, reset, retryOne, retrySelected, retryAll, toggleFailed, selectAllFailed,
+    start, reset, restore, retryOne, retrySelected, retryAll, toggleFailed, selectAllFailed,
   }
 }

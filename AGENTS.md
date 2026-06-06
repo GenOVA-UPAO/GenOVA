@@ -10,14 +10,15 @@
 1. Lee `sdd/progress/current.md` — entiende en qué estado quedó la última sesión.
 2. Lee `feature_list.json` — identifica features pendientes y su estado.
 3. Ejecuta `./verify.ps1` — verifica que el entorno está verde antes de tocar código.
-4. Lee `CLAUDE.md` (o `docs/labs.md` para la feature Labs) si necesitas contexto técnico.
+4. Lee `CLAUDE.md` y `docs/<tema>.md` si aplica (ver índice en `docs/README.md`).
 
 ## 2. Mapa del repositorio
 
 | Archivo / carpeta | Qué contiene | Cuándo leerlo |
 |---|---|---|
 | `feature_list.json` | Lista de features con estado (`pending/spec_ready/in_progress/done/blocked`) | Siempre, al empezar |
-| `skills-catalog.json` | Registro de skills disponibles/instaladas con triggers, sources y estado de seguridad | Al buscar o recomendar skills |
+| `skills-catalog.json` | Registro de skills instaladas (triggers, sources, security) | Al buscar o recomendar skills |
+| `skills-lock.json` | Lock de versiones de skills instaladas | Al instalar/actualizar skills |
 | `sdd/progress/current.md` | Estado de la sesión activa | Siempre, al empezar |
 | `sdd/progress/history.md` | Bitácora append-only de sesiones anteriores | Si necesitas contexto histórico |
 | `sdd/specs/<CODIGO>_<nombre>.md` | Specs de HU, EP, EN, RN | Antes de implementar |
@@ -28,7 +29,8 @@
 | `docs/<tema>.md` | Documentación funcional/técnica por tema (la genera `doc_author`) | Al usar/entender una feature |
 | `docs/README.md` | Índice de documentación (doc · tema · feature · fecha) | Para navegar las docs |
 | `.claude/agents/` | Definiciones de subagentes (leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync, doc_author) | Si orquestas trabajo |
-| `frontend/src/` | React 19 + Vite + Tailwind | Para implementar frontend |
+| `frontend/src/` | React 19 + Vite + Tailwind CSS + shadcn/ui | Para implementar frontend |
+| `frontend/README.md` | Stack frontend, convenciones shadcn/ui, comandos dev | Antes de implementar frontend |
 | `backend/` | FastAPI + SQLAlchemy | Para implementar backend |
 | `tests/` | BDD (cucumber-js E2E, pytest-bdd backend) | Para verificar |
 

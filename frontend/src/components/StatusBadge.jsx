@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui/badge'
+
 const STATUS_LABELS = {
   borrador: 'Borrador',
   generando: 'Generando',
@@ -14,10 +16,10 @@ const STATUS_CLASSES = {
 
 export function StatusBadge({ status }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_CLASSES[status] || STATUS_CLASSES.borrador}`}
+    <Badge
+      className={`rounded-full font-semibold ${STATUS_CLASSES[status] || STATUS_CLASSES.borrador}`}
     >
       {STATUS_LABELS[status] || status}
-    </span>
+    </Badge>
   )
 }

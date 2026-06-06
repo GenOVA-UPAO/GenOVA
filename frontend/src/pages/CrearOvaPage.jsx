@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router'
 import { useOvaCreation } from '../hooks/useOvaCreation.js'
 import { PhaseSelectModal } from '../components/PhaseSelectModal.jsx'
 import { PromptPanel } from '../components/crear/PromptPanel.jsx'
@@ -7,16 +8,26 @@ import { ResourcePreview } from '../components/crear/ResourcePreview.jsx'
 import { TotalFailurePanel } from '../components/crear/TotalFailurePanel.jsx'
 
 export function CrearOvaPage() {
+  const location = useLocation()
   const {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
     engageSelection, exploreSelection, totalResources,
     canConfigure, canGenerate, isGenerating,
-    generate, reset, minChars,
+    generate, reset, restore, minChars,
     job,
     uploads, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
     isUploadingFiles, maxUploadFiles, uploadError,
   } = useOvaCreation()
+
+  // HU-023 R4 — resume an in-progress job navigated from Mis OVAs.
+  useEffect(() => {
+    const jobId = location.state?.resumeJobId
+    if (jobId && job.phase === 'idle') {
+      restore(jobId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const { jobId, job: jobData, viewModel, outcome, selectedFailedIds, error } = job
   const hasJob = job.phase !== 'idle'
@@ -56,7 +67,7 @@ export function CrearOvaPage() {
         uploadsProps={uploadsProps}
       />
 
-      {hasJob && viewModel.length > 0 && (
+      {hasJob && viewModel.length > 0 ? (
         <ProgressPanel
           job={jobData} viewModel={viewModel}
           selectedIds={selectedFailedIds} activeId={activeId}
@@ -64,22 +75,22 @@ export function CrearOvaPage() {
           onPreview={setPinnedId}
           onSelectAll={job.selectAllFailed} onRetrySelected={job.retrySelected}
         />
-      )}
+      ) : null}
 
-      {isTerminal && outcome.totalFail && (
+      {isTerminal && outcome.totalFail ? (
         <TotalFailurePanel viewModel={viewModel} onRetryAll={job.retryAll} />
-      )}
+      ) : null}
 
-      {hasJob && activeResource && (
+      {hasJob && activeResource ? (
         <ResourcePreview jobId={jobId} resource={activeResource} concept={prompt.trim()} />
-      )}
+      ) : null}
 
-      {isModalOpen && (
+      {isModalOpen ? (
         <PhaseSelectModal
           onClose={closeModal} onConfirm={confirmSelections}
           initialEngage={engageSelection} initialExplore={exploreSelection}
         />
-      )}
+      ) : null}
     </div>
   )
 }

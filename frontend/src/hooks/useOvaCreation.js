@@ -20,7 +20,7 @@ export function useOvaCreation() {
   } = useOvaUploads()
 
   const jobApi = useOvaJob()
-  const { phase, start, reset: resetJob } = jobApi
+  const { phase, start, reset: resetJob, restore } = jobApi
 
   const totalResources = engageSelection.length + exploreSelection.length
   const canConfigure = prompt.trim().length >= MIN_CHARS
@@ -58,7 +58,7 @@ export function useOvaCreation() {
     isModalOpen, openModal, closeModal, confirmSelections,
     engageSelection, exploreSelection, totalResources,
     canConfigure, canGenerate, isGenerating,
-    generate, reset, minChars: MIN_CHARS,
+    generate, reset, restore, minChars: MIN_CHARS,
     // job orchestration (viewmodel, outcome, retry actions, jobId)
     job: jobApi,
     // uploads

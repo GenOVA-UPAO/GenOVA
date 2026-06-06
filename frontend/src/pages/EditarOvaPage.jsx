@@ -5,36 +5,20 @@ import { PhaseCard } from '../components/PhaseCard.jsx'
 import { VersionHistory } from '../components/VersionHistory.jsx'
 import { downloadEditedScorm } from '../services/ovaEditService.js'
 import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
 export function EditarOvaPage() {
   const { ovaId } = useParams()
   const navigate = useNavigate()
 
   const {
-    loading,
-    ovaData,
-    prompt,
-    setPrompt,
-    phases,
-    versions,
-    currentVersionNum,
-    checkedPhases,
-    historyOpen,
-    setHistoryOpen,
-    confirmModal,
-    setConfirmModal,
-    isRegenerating,
-    regenProgress,
-    downloading,
-    setDownloading,
-    selectedCount,
-    isReady,
-    handleToggleCheck,
-    handleToggleAll,
-    handleSavePhase,
-    handleRegenSingle,
-    handleRegenSelected,
-    handleRegenFull,
+    loading, ovaData, prompt, setPrompt, phases, versions, currentVersionNum,
+    checkedPhases, historyOpen, setHistoryOpen, confirmModal, setConfirmModal,
+    isRegenerating, regenProgress, downloading, setDownloading, selectedCount,
+    isReady, handleToggleCheck, handleToggleAll, handleSavePhase,
+    handleRegenSingle, handleRegenSelected, handleRegenFull,
   } = useRegenEditor()
 
   const handleExportScorm = async () => {
@@ -52,8 +36,8 @@ export function EditarOvaPage() {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
-          <p className="text-xs text-slate-400">Cargando editor...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+          <p className="text-xs text-muted-foreground">Cargando editor...</p>
         </div>
       </div>
     )
@@ -63,7 +47,7 @@ export function EditarOvaPage() {
 
   return (
     <div className="space-y-6">
-      {confirmModal && (
+      {confirmModal ? (
         <ConfirmModal
           title={confirmModal.title}
           message={confirmModal.message}
@@ -73,92 +57,83 @@ export function EditarOvaPage() {
           onCancel={() => setConfirmModal(null)}
           isLoading={isRegenerating}
         />
-      )}
+      ) : null}
 
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <button
+          <Button
+            variant="link"
+            size="sm"
             onClick={() => navigate('/mis-ovas')}
-            className="mb-1 text-xs text-indigo-600 hover:underline font-medium"
+            className="mb-1 h-auto p-0 text-xs"
           >
             ← Volver a Mis OVAs
-          </button>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Editar OVA
-          </h1>
-          <p className="text-sm text-slate-500 mt-0.5">{ovaData.title}</p>
+          </Button>
+          <h1 className="text-2xl font-bold tracking-tight">Editar OVA</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{ovaData.title}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {currentVersionNum && (
-            <span className="rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-bold text-slate-600">
-              v{currentVersionNum}
-            </span>
-          )}
-          <button
+          {currentVersionNum ? (
+            <Badge variant="outline" className="rounded-full">v{currentVersionNum}</Badge>
+          ) : null}
+          <Button
             onClick={handleExportScorm}
             disabled={!isReady || downloading || isRegenerating}
             title={!isReady ? 'El OVA debe estar listo para exportar' : 'Exportar como SCORM'}
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="bg-green-600 hover:bg-green-700 text-white"
           >
             {downloading ? 'Exportando...' : 'Exportar SCORM'}
-          </button>
+          </Button>
         </div>
       </div>
 
-      {isRegenerating && (
-        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 space-y-2">
+      {isRegenerating ? (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-indigo-700">{regenProgress.stage}</span>
-            <span className="text-indigo-600 font-bold">{regenProgress.percentage}%</span>
+            <span className="font-medium text-primary">{regenProgress.stage}</span>
+            <span className="text-primary font-bold">{regenProgress.percentage}%</span>
           </div>
-          <div className="h-2 w-full rounded-full bg-indigo-100 overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-primary/10 overflow-hidden">
             <div
-              className="h-full rounded-full bg-indigo-500 transition-all duration-500"
+              className="h-full rounded-full bg-primary transition-all duration-500"
               style={{ width: `${regenProgress.percentage}%` }}
             />
           </div>
         </div>
-      )}
+      ) : null}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
-        <h2 className="text-sm font-semibold text-slate-800">Prompt original</h2>
-        <textarea
+      <div className="rounded-xl border border-border bg-background p-5 shadow-sm space-y-3">
+        <h2 className="text-sm font-semibold">Prompt original</h2>
+        <Textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           disabled={isRegenerating}
           rows={4}
-          className="w-full rounded-lg border border-slate-200 p-3 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 resize-none disabled:opacity-50 disabled:bg-slate-50"
+          className="resize-none"
           placeholder="Prompt del OVA..."
         />
-        <button
+        <Button
+          variant="outline"
           onClick={handleRegenFull}
           disabled={isRegenerating}
-          className="rounded-lg border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="text-primary border-primary/30 hover:bg-primary/5"
         >
           ↺ Regenerar OVA completo
-        </button>
+        </Button>
       </div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-800">Fases del OVA</h2>
+          <h2 className="text-sm font-semibold">Fases del OVA</h2>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleToggleAll}
-              disabled={isRegenerating}
-              className="text-xs text-indigo-600 hover:underline font-medium disabled:opacity-40"
-            >
+            <Button variant="link" size="sm" onClick={handleToggleAll} disabled={isRegenerating} className="h-auto p-0 text-xs">
               {checkedPhases.size === phases.length ? 'Deseleccionar todas' : 'Seleccionar todas'}
-            </button>
-            {selectedCount > 0 && (
-              <button
-                onClick={handleRegenSelected}
-                disabled={isRegenerating}
-                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors disabled:opacity-40"
-              >
+            </Button>
+            {selectedCount > 0 ? (
+              <Button size="sm" onClick={handleRegenSelected} disabled={isRegenerating}>
                 ↺ Regenerar seleccionadas ({selectedCount})
-              </button>
-            )}
+              </Button>
+            ) : null}
           </div>
         </div>
 

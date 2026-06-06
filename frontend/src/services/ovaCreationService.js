@@ -17,6 +17,11 @@ export function getJobStatus(jobId) {
   return apiJson(`/api/ova/jobs/${jobId}`)
 }
 
+// GET /api/ova/jobs?ova_id=<id> → latest job for an OVA (HU-023 lookup).
+export function getJobByOvaId(ovaId) {
+  return apiJson(`/api/ova/jobs?ova_id=${ovaId}`)
+}
+
 // GET /api/ova/jobs/{job_id}/resources/{resource_id}/content → { id, phase_type,
 // resource_type, content }. Only for `done` resources (409 otherwise, 404 if alien).
 export function getResourceContent(jobId, resourceId) {

@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { markLoggedIn } from '../lib/auth.js'
 import { apiFetch } from '../lib/http.js'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
@@ -28,9 +32,7 @@ export function RegisterPage() {
     setTouched({ fullName: true, email: true, password: true })
     setServerError('')
 
-    if (!isFullNameValid || !isEmailValid || !isPasswordValid || isSubmitting) {
-      return
-    }
+    if (!isFullNameValid || !isEmailValid || !isPasswordValid || isSubmitting) return
 
     setIsSubmitting(true)
 
@@ -39,7 +41,6 @@ export function RegisterPage() {
         method: 'POST',
         body: JSON.stringify({ full_name: fullName.trim(), email, password }),
       })
-
       const data = await response.json()
 
       if (response.status === 201) {
@@ -57,106 +58,102 @@ export function RegisterPage() {
   }
 
   return (
-    <section className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-
-        <h1 className="text-2xl font-semibold text-slate-900">Crear cuenta</h1>
-        <p className="mt-2 text-sm text-slate-600">
+    <section className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4">
+      <div className="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-sm">
+        <h1 className="text-2xl font-semibold tracking-tight">Crear cuenta</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           Regístrate para guardar y acceder a tus OVAs.
         </p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
-          <label className="block text-sm font-medium text-slate-700">
-            Nombre completo
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="fullName">Nombre completo</Label>
+            <Input
+              id="fullName"
               type="text"
               name="name"
               autoComplete="name"
               placeholder="Ejemplo: Solange"
               value={fullName}
+              aria-invalid={showFullNameError}
               onChange={(event) => {
                 setFullName(event.target.value)
                 setTouched((prev) => ({ ...prev, fullName: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
-            {showFullNameError && (
-              <span className="mt-1 block text-xs text-rose-600">
+            {showFullNameError ? (
+              <p className="text-xs text-destructive">
                 El nombre completo debe tener al menos 3 caracteres y máximo 100.
-              </span>
-            )}
-          </label>
+              </p>
+            ) : null}
+          </div>
 
-          <label className="block text-sm font-medium text-slate-700">
-            Correo
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Correo</Label>
+            <Input
+              id="email"
               type="email"
               name="email"
               autoComplete="email"
               inputMode="email"
               placeholder="estudiante@upao.edu"
               value={email}
+              aria-invalid={showEmailError}
               onChange={(event) => {
                 setEmail(event.target.value)
                 setTouched((prev) => ({ ...prev, email: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
-            {showEmailError && (
-              <span className="mt-1 block text-xs text-rose-600">
-                Ingresa un correo con formato válido.
-              </span>
-            )}
-          </label>
+            {showEmailError ? (
+              <p className="text-xs text-destructive">Ingresa un correo con formato válido.</p>
+            ) : null}
+          </div>
 
-          <label className="block text-sm font-medium text-slate-700">
-            Contraseña
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Contraseña</Label>
+            <Input
+              id="password"
               type="password"
               name="password"
               autoComplete="new-password"
               placeholder="••••••••"
               value={password}
+              aria-invalid={showPasswordError}
               onChange={(event) => {
                 setPassword(event.target.value)
                 setTouched((prev) => ({ ...prev, password: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
-            {showPasswordError ? (
-              <span className="mt-1 block text-xs text-rose-600">
-                Mínimo 8 caracteres con letras y números.
-              </span>
-            ) : (
-              <span className="mt-1 block text-xs text-slate-500">
-                Usa al menos 8 caracteres con letras y números.
-              </span>
-            )}
-          </label>
+            <p className="text-xs text-muted-foreground">
+              {showPasswordError
+                ? <span className="text-destructive">Mínimo 8 caracteres con letras y números.</span>
+                : 'Usa al menos 8 caracteres con letras y números.'}
+            </p>
+          </div>
 
-          {serverError && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              {serverError}
-            </div>
-          )}
+          {serverError ? (
+            <Alert variant="destructive">
+              <AlertDescription>{serverError}</AlertDescription>
+            </Alert>
+          ) : null}
 
-          <button
+          <Button
             type="submit"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="w-full gap-2"
             disabled={!isFullNameValid || !isEmailValid || !isPasswordValid || isSubmitting}
           >
-            {isSubmitting && (
+            {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-            )}
+            ) : null}
             {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
-          </button>
+          </Button>
 
-          <p className="text-center text-sm text-slate-600">
+          <p className="text-center text-sm text-muted-foreground">
             ¿Ya tienes cuenta?{' '}
-            <Link to="/login" className="font-medium text-slate-900">
+            <Link to="/login" className="font-medium text-foreground hover:underline">
               Iniciar sesión
             </Link>
           </p>

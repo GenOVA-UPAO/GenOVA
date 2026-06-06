@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { ResourceList } from './ResourceList.jsx'
 
 const STATUS_LABEL = {
@@ -12,22 +13,24 @@ const STATUS_LABEL = {
 function RetryHeader({ failedCount, selectedCount, onSelectAll, onRetrySelected }) {
   if (failedCount === 0) return null
   return (
-    <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
-      <button
+    <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
         onClick={onSelectAll}
-        className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
       >
         Seleccionar todos los fallidos
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="destructive"
+        size="sm"
         onClick={onRetrySelected}
         disabled={selectedCount === 0}
-        className="rounded-md bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         Reintentar seleccionados ({selectedCount})
-      </button>
+      </Button>
     </div>
   )
 }
@@ -43,18 +46,18 @@ export function ProgressPanel({
   const pct = Math.round((doneCount / total) * 100)
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm space-y-4">
+    <div className="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-sm space-y-4">
       <div>
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-          <span className="font-medium text-slate-700">{STATUS_LABEL[status] || status}</span>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="font-medium text-foreground">{STATUS_LABEL[status] || status}</span>
+          <span className="text-xs font-semibold text-muted-foreground">
             {doneCount}/{viewModel.length} listos
           </span>
         </div>
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
-              failedCount ? 'bg-amber-500' : 'bg-indigo-600'
+              failedCount ? 'bg-amber-500' : 'bg-primary'
             }`}
             style={{ width: `${pct}%` }}
           />

@@ -1,63 +1,58 @@
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+
 export function EditMetadataModal({ form, onChange, onSubmit, onCancel, isLoading, error }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="text-base font-bold text-slate-900">Editar metadatos</h2>
-        <p className="mt-1 text-xs text-slate-500">Actualiza el título y descripción del OVA.</p>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onCancel() }}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Editar metadatos</DialogTitle>
+        </DialogHeader>
+        <p className="text-xs text-muted-foreground -mt-2">Actualiza el título y descripción del OVA.</p>
 
-        <div className="mt-4 space-y-4">
-          <div>
-            <label htmlFor="metadata-title" className="text-xs font-semibold text-slate-700">
-              Título *
-            </label>
-            <input
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="metadata-title">Título *</Label>
+            <Input
               id="metadata-title"
               name="title"
               type="text"
               value={form.title}
               onChange={onChange}
               maxLength={250}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
               placeholder="Ej. Regresión lineal aplicada"
             />
-            <p className="mt-1 text-[11px] text-slate-400">{form.title.length}/100</p>
+            <p className="text-[11px] text-muted-foreground">{form.title.length}/100</p>
           </div>
 
-          <div>
-            <label htmlFor="metadata-description" className="text-xs font-semibold text-slate-700">
-              Descripción
-            </label>
-            <textarea
+          <div className="space-y-1.5">
+            <Label htmlFor="metadata-description">Descripción</Label>
+            <Textarea
               id="metadata-description"
               name="description"
               value={form.description}
               onChange={onChange}
               rows={4}
-              className="mt-1 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className="resize-none"
               placeholder="Opcional"
             />
           </div>
 
-          {error && <p className="text-xs font-medium text-red-600">{error}</p>}
+          {error ? <p className="text-xs font-medium text-destructive">{error}</p> : null}
         </div>
 
-        <div className="mt-5 flex gap-3">
-          <button
-            onClick={onCancel}
-            disabled={isLoading}
-            className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
-          >
+        <div className="flex gap-3 pt-2 border-t border-border">
+          <Button variant="outline" className="flex-1" onClick={onCancel} disabled={isLoading}>
             Cancelar
-          </button>
-          <button
-            onClick={onSubmit}
-            disabled={isLoading}
-            className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
-          >
+          </Button>
+          <Button className="flex-1" onClick={onSubmit} disabled={isLoading}>
             {isLoading ? 'Guardando...' : 'Guardar'}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

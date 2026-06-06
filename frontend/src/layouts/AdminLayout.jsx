@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, NavLink, Outlet, useNavigate } from 'react-router'
 import { clearSession, isLoggedIn } from '../lib/auth.js'
 import { apiFetch } from '../lib/http.js'
+import { Button } from '@/components/ui/button'
 
 export function AdminLayout() {
   const navigate = useNavigate()
@@ -100,12 +101,13 @@ export function AdminLayout() {
             >
               <span>Volver a la App</span>
             </NavLink>
-            <button
+            <Button
+              variant="ghost"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium text-rose-400 hover:bg-rose-950/20 hover:text-rose-300 transition-all text-left"
+              className="w-full justify-start gap-3 text-rose-400 hover:bg-rose-950/20 hover:text-rose-300"
             >
-              <span>Cerrar sesión</span>
-            </button>
+              Cerrar sesión
+            </Button>
           </div>
         </div>
       </aside>

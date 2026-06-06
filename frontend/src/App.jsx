@@ -19,13 +19,14 @@ const EngagePage = lazy(() => import('./pages/EngagePage.jsx').then((m) => ({ de
 const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx').then((m) => ({ default: m.ExplorePage })))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
 const LabsPage = lazy(() => import('./pages/LabsPage.jsx').then((m) => ({ default: m.LabsPage })))
+const OvaWorkspacePage = lazy(() => import('./pages/OvaWorkspacePage.jsx').then((m) => ({ default: m.OvaWorkspacePage })))
 
 import { Toaster } from 'sonner'
 
 function RouteFallback() {
   return (
     <div className="flex min-h-[400px] items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
     </div>
   )
 }
@@ -60,8 +61,8 @@ export function AdminRoute() {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600"></div>
-          <p className="text-xs text-slate-400 font-medium">Verificando acceso de administrador...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+          <p className="text-xs text-muted-foreground font-medium">Verificando acceso de administrador...</p>
         </div>
       </div>
     )
@@ -94,6 +95,7 @@ function App() {
             <Route path="/crear-ova" element={<CrearOvaPage />} />
             <Route path="/mis-ovas" element={<MisOvasPage />} />
             <Route path="/mis-ovas/:ovaId/editar" element={<EditarOvaPage />} />
+            <Route path="/ova/:ovaId/workspace" element={<OvaWorkspacePage />} />
             <Route path="/papelera" element={<PapeleraPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/metodologia/engage" element={<EngagePage />} />
