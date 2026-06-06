@@ -53,7 +53,7 @@
     { "id": "HU-019", "name": "editar_rol", "title": "Gestión de Roles — Editar Rol", "spec": "sdd/specs/HU-019_gestion-roles-editar-rol.md", "status": "done" },
     { "id": "HU-020", "name": "eliminar_rol", "title": "Gestión de Roles — Eliminar Rol", "spec": "sdd/specs/HU-020_gestion-roles-eliminar-rol.md", "status": "done" },
     { "id": "HU-021", "name": "gestion_usuarios", "title": "Gestión de Usuarios y Roles", "spec": "sdd/specs/HU-021_gestion-roles-asignar-rol-usuario.md", "status": "done" },
-    { "id": "HU-022", "name": "recuperar_recursos_parciales", "title": "Recuperación de recursos parciales tras error de generación", "spec": "sdd/specs/HU-022_recuperar-recursos-parciales.md", "status": "done" },
+    { "id": "HU-022", "name": "recuperar_recursos_parciales", "title": "Recuperación de recursos parciales tras error de generación", "spec": "sdd/specs/HU-022_recuperar-recursos-parciales.md", "status": "done", "merge_commit": "0ff7465" },
     { "id": "HU-023", "name": "generacion_background", "title": "Generación de OVA en background persistente y reanudación", "spec": "sdd/specs/HU-023_generacion-background-reanudacion.md", "status": "spec_ready" },
     { "id": "HU-024", "name": "archivos_chat", "title": "Carga de archivos contextuales estilo chat", "spec": "sdd/specs/HU-024_archivos-contextuales-chat.md", "status": "spec_ready" },
     { "id": "HU-025", "name": "workspace_edicion_ova", "title": "Workspace de edición de OVA (panel dividido)", "spec": "sdd/specs/HU-025_workspace-edicion-ova.md", "status": "spec_ready" },
