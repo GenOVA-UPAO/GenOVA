@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, Outlet } from 'react-router'
 import { isLoggedIn } from './lib/auth.js'
 import { apiFetch } from './lib/http.js'
 import { AppLayout } from './layouts/AppLayout.jsx'
+import { WorkspaceLayout } from './layouts/WorkspaceLayout.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
@@ -95,7 +96,6 @@ function App() {
             <Route path="/crear-ova" element={<CrearOvaPage />} />
             <Route path="/mis-ovas" element={<MisOvasPage />} />
             <Route path="/mis-ovas/:ovaId/editar" element={<EditarOvaPage />} />
-            <Route path="/ova/:ovaId/workspace" element={<OvaWorkspacePage />} />
             <Route path="/papelera" element={<PapeleraPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/metodologia/engage" element={<EngagePage />} />
@@ -106,6 +106,10 @@ function App() {
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/labs" element={<LabsPage />} />
             </Route>
+          </Route>
+          {/* Workspace gets full-bleed layout: no sidebar, no padding, no max-width */}
+          <Route element={<WorkspaceLayout />}>
+            <Route path="/ova/:ovaId/workspace" element={<OvaWorkspacePage />} />
           </Route>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<NotFoundPage />} />

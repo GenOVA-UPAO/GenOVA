@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { useOvaCreation } from '../hooks/useOvaCreation.js'
 import { PhaseSelectModal } from '../components/PhaseSelectModal.jsx'
 import { PromptPanel } from '../components/crear/PromptPanel.jsx'
 import { ProgressPanel } from '../components/crear/ProgressPanel.jsx'
 import { ResourcePreview } from '../components/crear/ResourcePreview.jsx'
 import { TotalFailurePanel } from '../components/crear/TotalFailurePanel.jsx'
+import { Button } from '@/components/ui/button'
+
+const REDIRECT_DELAY_MS = 2000
 
 export function CrearOvaPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
@@ -32,6 +36,14 @@ export function CrearOvaPage() {
   const { jobId, job: jobData, viewModel, outcome, selectedFailedIds, error } = job
   const hasJob = job.phase !== 'idle'
   const isTerminal = job.phase === 'terminal'
+  const ovaId = jobData?.ova_id ?? null
+
+  // When done with at least one resource, auto-navigate to workspace.
+  useEffect(() => {
+    if (!isTerminal || !outcome.anyDone || !ovaId) return
+    const go = setTimeout(() => navigate(`/ova/${ovaId}/workspace`), REDIRECT_DELAY_MS)
+    return () => clearTimeout(go)
+  }, [isTerminal, outcome.anyDone, ovaId, navigate])
 
   // Preview selection: derive the active resource during render (no effect).
   // The user's pinned pick wins while it's still done; otherwise fall back to
@@ -46,6 +58,9 @@ export function CrearOvaPage() {
     uploads, activeUploadsCount, maxUploadFiles, isUploadingFiles, uploadError,
     onFilesSelected: handleFilesSelected, onRemove: handleRemoveUpload,
   }
+
+  // When terminal + anyDone, the workspace CTA replaces the small ResourcePreview.
+  const showWorkspaceCta = isTerminal && outcome.anyDone && ovaId
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto px-1 sm:px-0">
@@ -81,9 +96,29 @@ export function CrearOvaPage() {
         <TotalFailurePanel viewModel={viewModel} onRetryAll={job.retryAll} />
       ) : null}
 
-      {hasJob && activeResource ? (
+      {showWorkspaceCta ? (
+        /* Full-width workspace redirect card — replaces the small ResourcePreview */
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 flex flex-col sm:flex-row items-center gap-5 shadow-sm">
+          <div className="flex-1 min-w-0">
+            <p className="text-base font-semibold text-emerald-800">
+              ✓ OVA generado exitosamente
+            </p>
+            <p className="mt-1 text-sm text-emerald-700">
+              Abriendo el workspace en breve…
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="lg"
+            className="shrink-0 bg-emerald-700 hover:bg-emerald-800 text-white gap-2"
+            onClick={() => navigate(`/ova/${ovaId}/workspace`)}
+          >
+            Abrir workspace →
+          </Button>
+        </div>
+      ) : (hasJob && activeResource ? (
         <ResourcePreview jobId={jobId} resource={activeResource} concept={prompt.trim()} />
-      ) : null}
+      ) : null)}
 
       {isModalOpen ? (
         <PhaseSelectModal
