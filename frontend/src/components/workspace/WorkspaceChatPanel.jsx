@@ -1,14 +1,17 @@
 import { useRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import { FileChip } from '../crear/FileChip.jsx'
 
 /**
  * HU-025 — workspace left panel: prompt + file attachments.
- * Anchors for HU-027 (resource selection) are present as disabled placeholders.
+ * HU-027 — resource selection mode: toggle phases as context scope for regen.
  */
 export function WorkspaceChatPanel({
   prompt, setPrompt, isRegenerating, onSubmit, uploads,
+  // HU-027
+  phases, selectionMode, selectedPhaseIds, onToggleSelectionMode, onTogglePhaseSelection,
 }) {
   const fileInputRef = useRef(null)
   const { uploads: files, activeUploadsCount, maxUploadFiles, isUploadingFiles,
@@ -16,12 +19,11 @@ export function WorkspaceChatPanel({
 
   const canUploadMore = activeUploadsCount < maxUploadFiles
   const hasFiles = files.length > 0
+  const selectedCount = selectedPhaseIds?.length ?? 0
 
   const handleDrop = (e) => {
     e.preventDefault()
-    if (e.dataTransfer.files?.length > 0) {
-      void onFilesSelected(e.dataTransfer.files)
-    }
+    if (e.dataTransfer.files?.length > 0) void onFilesSelected(e.dataTransfer.files)
   }
 
   const handleFileChange = (e) => {
@@ -36,16 +38,39 @@ export function WorkspaceChatPanel({
           Describe los cambios que quieres aplicar al OVA.
         </p>
 
-        {/* HU-027 anchor — resource selection button (no logic yet) */}
+        {/* HU-027: resource selection toggle */}
         <Button
-          variant="outline"
+          variant={selectionMode ? 'default' : 'outline'}
           size="sm"
-          disabled
-          className="w-full text-xs text-muted-foreground"
-          title="Seleccionar recursos (próximamente)"
+          className="w-full text-xs"
+          onClick={onToggleSelectionMode}
         >
-          ☐ Seleccionar recursos
+          ☐ {selectionMode ? `Seleccionando recursos (${selectedCount} elegido${selectedCount !== 1 ? 's' : ''})` : 'Seleccionar recursos'}
         </Button>
+
+        {/* HU-027: phase checkboxes in selection mode */}
+        {selectionMode && Array.isArray(phases) && phases.length > 0 ? (
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-muted-foreground">
+              El prompt aplicará solo a los recursos marcados.
+            </p>
+            {phases.map((phase) => (
+              <label
+                key={phase.id}
+                className="flex items-center gap-2 cursor-pointer rounded-md border border-border px-2 py-1.5 text-xs hover:bg-muted/50"
+              >
+                <Checkbox
+                  checked={selectedPhaseIds?.includes(phase.id) ?? false}
+                  onCheckedChange={() => onTogglePhaseSelection?.(phase.id)}
+                />
+                <span className="capitalize">{phase.phase_type}</span>
+                {phase.title ? (
+                  <span className="text-muted-foreground truncate">— {phase.title}</span>
+                ) : null}
+              </label>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div
@@ -56,19 +81,12 @@ export function WorkspaceChatPanel({
         {hasFiles ? (
           <div className="flex flex-wrap gap-2">
             {files.map((u) => (
-              <FileChip
-                key={u.clientId}
-                file={u}
-                onRemove={onRemove}
-                disabled={isRegenerating || disabled}
-              />
+              <FileChip key={u.clientId} file={u} onRemove={onRemove} disabled={isRegenerating || disabled} />
             ))}
           </div>
         ) : null}
 
-        {uploadError ? (
-          <p className="text-xs text-destructive">{uploadError}</p>
-        ) : null}
+        {uploadError ? <p className="text-xs text-destructive">{uploadError}</p> : null}
 
         <div className="flex items-end gap-2">
           <div className="flex-1 relative">
@@ -76,7 +94,7 @@ export function WorkspaceChatPanel({
               rows={3}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Escribe un cambio o mejora para el OVA…"
+              placeholder={selectionMode && selectedCount > 0 ? `Cambio para ${selectedCount} recurso${selectedCount !== 1 ? 's' : ''}…` : 'Escribe un cambio o mejora para el OVA…'}
               className="resize-none pr-8"
               disabled={isRegenerating}
               onKeyDown={(e) => {
@@ -93,9 +111,7 @@ export function WorkspaceChatPanel({
               disabled={isRegenerating || disabled || isUploadingFiles}
             />
             <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
+              type="button" variant="ghost" size="icon-sm"
               onClick={() => fileInputRef.current?.click()}
               disabled={isRegenerating || !canUploadMore}
               title="Adjuntar archivo de apoyo"
@@ -106,7 +122,6 @@ export function WorkspaceChatPanel({
               </svg>
             </Button>
           </div>
-
           <Button
             type="button"
             onClick={onSubmit}

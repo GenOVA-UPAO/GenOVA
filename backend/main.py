@@ -23,10 +23,13 @@ from auth.router import router as auth_router
 from database import Base, engine
 from labs.generation_routes import router as labs_gen_router
 from labs.router import router as labs_router
+from ova.add_phase_router import router as ova_add_phase_router
 from ova.edit_router import router as ova_edit_router
 from ova.history_router import router as ova_history_router
 from ova.jobs_router import router as ova_jobs_router
+from ova.phase_version_router import router as ova_phase_version_router
 from ova.router import router as ova_router
+from ova.subelement_router import router as ova_subelement_router
 from rag.router import router as rag_router
 from rate_limit import limiter
 from roles.router import router as roles_router
@@ -168,6 +171,9 @@ app.include_router(ova_router, prefix="/api/ova", tags=["ova"])
 app.include_router(ova_jobs_router, prefix="/api/ova/jobs", tags=["ova-jobs"])
 app.include_router(ova_history_router, prefix="/api/ovas", tags=["ovas"])
 app.include_router(ova_edit_router, prefix="/api/ovas", tags=["ovas-edit"])
+app.include_router(ova_phase_version_router, prefix="/api/ovas", tags=["ovas-phase-versions"])
+app.include_router(ova_add_phase_router, prefix="/api/ovas", tags=["ovas-add-phase"])
+app.include_router(ova_subelement_router, prefix="/api/ovas", tags=["ovas-subelement"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])

@@ -6,12 +6,14 @@ import { useOvaWorkspace } from '../hooks/useOvaWorkspace.js'
 import { WorkspaceChatPanel } from '../components/workspace/WorkspaceChatPanel.jsx'
 import { WorkspaceOvaPanel } from '../components/workspace/WorkspaceOvaPanel.jsx'
 import { WorkspaceResizableDivider } from '../components/workspace/WorkspaceResizableDivider.jsx'
+import { VersionHistoryPanel } from '../components/workspace/VersionHistoryPanel.jsx'
 import { getSavedRatio } from '../lib/workspaceUtils.js'
 
 export function OvaWorkspacePage() {
   const { ovaId } = useParams()
   const ws = useOvaWorkspace(ovaId)
   const [ratio, setRatio] = useState(() => getSavedRatio(0.38))
+  const [historyOpen, setHistoryOpen] = useState(false)
   const containerRef = useRef(null)
 
   const handleRatioChange = useCallback((r) => setRatio(r), [])
@@ -32,6 +34,11 @@ export function OvaWorkspacePage() {
     isRegenerating: ws.isRegenerating,
     onSubmit: ws.submitPrompt,
     uploads: uploadsProps,
+    phases: ws.phases,
+    selectionMode: ws.selectionMode,
+    selectedPhaseIds: ws.selectedPhaseIds,
+    onToggleSelectionMode: ws.toggleSelectionMode,
+    onTogglePhaseSelection: ws.togglePhaseSelection,
   }
 
   const ovaProps = {
@@ -40,12 +47,27 @@ export function OvaWorkspacePage() {
     isReady: ws.isReady,
     isLoading: ws.loading,
     onDownload: ws.downloadScorm,
+    onReorder: ws.reorderWithinPhase,
+    ovaId,
+    onEditPhase: ws.savePhase,
+    onRegenPhase: ws.regenPhase,
+    onDeletePhase: ws.deleteOvaPhase,
+    onPhaseReverted: ws.load,
+    onAddPhase: ws.addOvaPhase,
     onResourceClick: undefined,
-    onHistoryOpen: undefined,
+    onHistoryOpen: () => setHistoryOpen(true),
   }
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <VersionHistoryPanel
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        versions={ws.versionHistory}
+        currentVersionId={ws.ova?.current_version?.id}
+        onRevert={ws.revertVersion}
+        onDiff={ws.getDiff}
+      />
       {/* Topbar */}
       <header className="flex items-center gap-3 border-b border-border px-4 py-2.5 bg-background shrink-0">
         <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">

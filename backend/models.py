@@ -100,6 +100,26 @@ class OvaPhase(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     version = relationship("OvaVersion", back_populates="phases")
+    micro_versions = relationship(
+        "OvaPhaseVersion", back_populates="phase",
+        order_by="OvaPhaseVersion.minor_number.desc()", cascade="all, delete-orphan"
+    )
+
+
+class OvaPhaseVersion(Base):
+    """HU-029 — micro-version record per phase edit (vN.M minor versioning)."""
+    __tablename__ = "ova_phase_versions"
+
+    id = _pk_column()
+    phase_id = Column(UUID(as_uuid=True), ForeignKey("ova_phases.id", ondelete="CASCADE"),
+                      nullable=False, index=True)
+    ova_id = Column(UUID(as_uuid=True), ForeignKey("ovas.id", ondelete="CASCADE"),
+                    nullable=False, index=True)
+    minor_number = Column(Integer, nullable=False, default=1)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    phase = relationship("OvaPhase", back_populates="micro_versions")
 
 
 class Session(Base):
