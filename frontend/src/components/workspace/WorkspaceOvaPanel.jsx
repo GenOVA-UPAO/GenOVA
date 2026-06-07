@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { OvaFiveEViewer } from '../OvaFiveEViewer.jsx'
+import { WorkspaceHtmlPreview } from './WorkspaceHtmlPreview.jsx'
 import { WorkspaceResourceList } from './WorkspaceResourceList.jsx'
 
 /**
@@ -106,8 +106,9 @@ export function WorkspaceOvaPanel({
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-auto">
+      {/* Content — preview uses overflow-hidden (iframe scrolls internally),
+           code list uses overflow-auto */}
+      <div className={`flex-1 ${tab === 'preview' ? 'overflow-hidden' : 'overflow-auto'}`}>
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
@@ -117,10 +118,9 @@ export function WorkspaceOvaPanel({
             <p className="text-sm text-muted-foreground">El OVA no tiene contenido aún.</p>
           </div>
         ) : tab === 'preview' ? (
-          // HU-026 anchor: pass onResourceClick for click-to-edit (noop here)
-          <div className="p-4" onClick={onResourceClick}>
-            <OvaFiveEViewer phases={phases} conceptName="" />
-          </div>
+          // WorkspaceHtmlPreview renders backend OvaPhase HTML directly via iframe.
+          // HU-026 anchor: onResourceClick forwarded for future click-to-edit.
+          <WorkspaceHtmlPreview phases={phases} onResourceClick={onResourceClick} />
         ) : (
           <div className="p-4 space-y-4">
             {Object.entries(grouped).map(([type, group]) => (
