@@ -60,9 +60,19 @@ def materialize_partial_ova(
 def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uuid.UUID:
     prompt = job.prompt or ""
     title = (prompt[:80].rstrip()) or "OVA parcial"
-    ova = Ova(user_id=job.user_id, title=title, description=prompt, status="borrador")
-    db.add(ova)
-    db.flush()
+
+    # Reuse the placeholder OVA created at job start (job.ova_id is always set now).
+    # Fall back to creating a new one only for legacy jobs without a pre-created OVA.
+    ova = db.get(Ova, job.ova_id) if job.ova_id is not None else None
+
+    if ova is None:
+        ova = Ova(user_id=job.user_id, title=title, description=prompt, status="borrador")
+        db.add(ova)
+        db.flush()
+        job.ova_id = ova.id
+    else:
+        ova.title = title
+        ova.status = "borrador"
 
     version = OvaVersion(ova_id=ova.id, version_number=1, prompt=prompt, is_active=True)
     db.add(version)
@@ -71,7 +81,6 @@ def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uui
     phases_data = _add_phases(db, version.id, resources)
     _persist_scorm(ova, title, phases_data, str(job.user_id))
     ova.current_version_id = version.id
-    job.ova_id = ova.id
     db.commit()
 
     _tie_uploads(db, job, str(ova.id))

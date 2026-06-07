@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import OvaJob, OvaJobResource
+from models import Ova, OvaJob, OvaJobResource
 from users.admin_helpers import commit_or_500
 
 # A "running" job whose updated_at is older than this is presumed dead (its
@@ -37,8 +37,16 @@ def create_job(
 
     `resources` items: {phase_type, phase_order, resource_type, resource_order}.
     Returns the persisted job (status "queued"); the caller launches the runner.
+
+    An `Ova` placeholder (status="generando") is created immediately so it
+    shows up in "Mis OVAs" during generation (HU-023 fix). The runner updates
+    it to "borrador" on completion or "error" on total failure.
     """
-    job = OvaJob(user_id=user_id, prompt=prompt, params=params or {}, status="queued")
+    title = (prompt[:80].rstrip()) or "OVA en generación"
+    ova = Ova(user_id=user_id, title=title, description=prompt, status="generando")
+    db.add(ova)
+    db.flush()
+    job = OvaJob(user_id=user_id, ova_id=ova.id, prompt=prompt, params=params or {}, status="queued")
     db.add(job)
     db.flush()
     for r in resources:

@@ -123,11 +123,21 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     job.status = "done" if any_done else "error"
     job.finished_at = _now()
     db.commit()
-    # R1/R2/R8: with ≥1 done resource, persist the partial OVA so it shows up in
-    # "Mis OVAs"; with none, leave the job error-only (no empty OVA). Skip if the
-    # job already materialized an OVA on a previous run (resume re-entry).
-    if any_done and job.ova_id is None:
+    if any_done:
+        # Materialize only when ova_id still None (legacy jobs). New jobs already
+        # have a placeholder OVA; _build_ova will update it in place.
         _materialize(db, job)
+    elif job.ova_id is not None:
+        # Total failure: mark the pre-created placeholder OVA as "error" so the
+        # user sees it in "Mis OVAs" with an error badge instead of disappearing.
+        try:
+            from models import Ova as _Ova
+            ova = db.get(_Ova, job.ova_id)
+            if ova is not None:
+                ova.status = "error"
+                db.commit()
+        except Exception:
+            logger.exception("Failed to mark placeholder OVA as error for job %s", job.id)
 
 
 def _materialize(db: Session, job: OvaJob) -> None:
