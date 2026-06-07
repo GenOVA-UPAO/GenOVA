@@ -5,7 +5,7 @@ WORKDIR /app
 RUN corepack enable
 
 COPY package.json pnpm-lock.yaml ./
-RUN echo 'onlyBuiltDependencies[]=msw' > .npmrc && pnpm install
+RUN pnpm install --ignore-scripts
 
 COPY . .
 
