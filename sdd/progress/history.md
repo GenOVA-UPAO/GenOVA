@@ -53,3 +53,40 @@ las specs del editor avanzado de OVA y empezar la implementación.
 - Lote EP-3 aprobado: HU-024→HU-023→HU-025→HU-030→HU-033→HU-026→HU-028→HU-027→HU-029→HU-032→HU-031→RN-005.
 
 **Estado:** LOTE EP-3 en ejecución.
+
+---
+
+## 2026-06-06 — Lote EP-3 parte 2 (HU-033/026/028/027/029/032/031 + RN-005)
+
+**Agente:** leader (orquesta: implementer, reviewer inline)
+**Alcance:** 8 features restantes del lote EP-3 — workspace editor completo.
+**Commit:** `b62e216`
+
+**Completado:**
+
+**Backend (nuevos routers + endpoints):**
+- `PATCH /{ova_id}/fases/reorder` — reordenar fases intra-tipo (HU-033)
+- `DELETE /{ova_id}/fases/{fase_id}` — eliminar fase + nueva versión (HU-026)
+- `POST /{ova_id}/versiones/{v}/revert` + `GET /versiones/diff` (HU-028)
+- `OvaPhaseVersion` model + migración 020 + micro-versioning en save/regen (HU-029)
+- `POST /{ova_id}/fases` — añadir recurso, máx 4 por tipo (HU-032)
+- `PATCH /{ova_id}/fases/{fase_id}/subelementos/{sub_id}` — 501 fallback (HU-031)
+- Todos los endpoints nuevos: `@limiter.limit` + `commit_or_500`
+
+**Frontend (nuevos componentes y hooks):**
+- `WorkspacePhaseItem` — drag handle + edit/regen/delete/history por fase
+- `WorkspaceResourceList` — agrupado por phase_type + botón Añadir
+- `PhaseVersionHistory` — dialog micro-versiones por recurso
+- `VersionHistoryPanel` — diff + revertir a nivel OVA
+- `AddResourceModal` — modal de prompt con guard max-4
+- `useOvaWorkspace` ampliado: reorderWithinPhase, deleteOvaPhase, addOvaPhase, revertVersion, getDiff, selectionMode, togglePhaseSelection
+- `WorkspaceChatPanel` — modo selección + checkboxes por fase (HU-027)
+- Drag-drop nativo HTML5 con optimistic update + rollback
+
+**Tests:** 7 .feature + 7 step files — 52 scenarios, 171 steps verdes.
+
+**RN-005:** checklist responsivo documentado en `sdd/progress/impl_RN-005.md`. Workspace usa `sm:` breakpoint → mobile tabs Chat|Preview.
+
+**Verificación:** `verify.ps1 -Quick` PASA (ESLint + ruff + 52 BDD unit).
+
+**Estado:** EP-3 lote completo. Todas las features `done`.
