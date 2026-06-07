@@ -16,12 +16,12 @@ Feature: HU-013 — Duplicar OVA Existente
     Then el botón "Duplicar" del OVA "ov-1" está deshabilitado
     And al pasar el cursor muestra "No disponible mientras se genera el OVA"
 
-  Scenario: CA-03 — Duplicación exitosa y redirección al editor
+  Scenario: CA-03 — Duplicación exitosa y redirección al workspace
     When "ana@upao.edu" hace clic en "Duplicar" del OVA "Redes Neuronales"
     Then el botón muestra "Duplicando..." y se deshabilita temporalmente
     And se crea un nuevo OVA con título "Redes Neuronales (copia)" y status "borrador"
-    And "ana@upao.edu" es redirigida a "/mis-ovas/{nuevo_id}/editar"
-    And el editor muestra las mismas 5 fases que tenía la versión activa v2 del original
+    And "ana@upao.edu" es redirigida a "/ova/{nuevo_id}/workspace"
+    And el workspace muestra los mismos 5 recursos que tenía la versión activa v2 del original
 
   Scenario: CA-04 — El duplicado aparece en el historial
     Given el duplicado "Redes Neuronales (copia)" fue creado

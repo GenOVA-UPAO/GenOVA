@@ -13,14 +13,18 @@ const POLL_MS = 3000
 export function useOvaWorkspace(ovaId) {
   const [ova, setOva] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
   const [prompt, setPrompt] = useState('')
   const [isRegenerating, setIsRegenerating] = useState(false)
+  const [regenProgress, setRegenProgress] = useState({ percentage: 0, stage: '' })
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedPhaseIds, setSelectedPhaseIds] = useState([])
 
   const regenTimerRef = useRef(null)
   const pollRegenRef = useRef(null)
+  const loadRef = useRef(null)
+  const loadRetryRef = useRef(null)
   const mountedRef = useRef(true)
   const uploads = useOvaUploads()
 
@@ -30,9 +34,19 @@ export function useOvaWorkspace(ovaId) {
     setError('')
     try {
       const data = await fetchOvaEditorData(ovaId)
-      if (mountedRef.current) setOva(data)
+      if (!mountedRef.current) return
+      setOva(data)
+      setGenerating(false)
     } catch (err) {
-      if (mountedRef.current) setError(err?.message || 'No se pudo cargar el OVA.')
+      if (!mountedRef.current) return
+      // OVA still finishing generation (e.g. right after the create handoff):
+      // don't show a dead error — poll until it flips to "listo".
+      if (err?.status === 409 || err?.code === 'ova_generating') {
+        setGenerating(true)
+        loadRetryRef.current = setTimeout(() => loadRef.current?.(), 3000)
+      } else {
+        setError(err?.message || 'No se pudo cargar el OVA.')
+      }
     } finally {
       if (mountedRef.current) setLoading(false)
     }
@@ -45,10 +59,12 @@ export function useOvaWorkspace(ovaId) {
       try {
         const progress = await pollRegenProgress(ovaId, jobId)
         if (!mountedRef.current) return
-        if (progress.status === 'done' || progress.status === 'error') {
+        setRegenProgress({ percentage: progress.percentage ?? 0, stage: progress.stage ?? '' })
+        // Backend reports terminal state as 'success' / 'error' (not 'done').
+        if (progress.status === 'success' || progress.status === 'error') {
           setIsRegenerating(false)
           void load()
-          if (progress.status === 'done') toast.success('OVA regenerado.')
+          if (progress.status === 'success') toast.success('OVA regenerado.')
           else toast.error('La regeneración falló.')
         } else {
           regenTimerRef.current = setTimeout(() => pollRegenRef.current?.(jobId), POLL_MS)
@@ -65,7 +81,23 @@ export function useOvaWorkspace(ovaId) {
 
   useEffect(() => {
     pollRegenRef.current = pollRegen
-  }, [pollRegen])
+    loadRef.current = load
+  }, [pollRegen, load])
+
+  // Shared regen kickoff: reset progress, fire request, start polling.
+  const runRegen = useCallback(async (body) => {
+    setIsRegenerating(true)
+    setRegenProgress({ percentage: 0, stage: '' })
+    try {
+      const { job_id } = await triggerRegen(ovaId, body)
+      regenTimerRef.current = setTimeout(() => pollRegenRef.current?.(job_id), POLL_MS)
+      return true
+    } catch (err) {
+      setIsRegenerating(false)
+      toast.error(err?.message || 'No se pudo iniciar la regeneración.')
+      return false
+    }
+  }, [ovaId])
 
   useEffect(() => {
     mountedRef.current = true
@@ -78,6 +110,7 @@ export function useOvaWorkspace(ovaId) {
       cancelled = true
       mountedRef.current = false
       if (regenTimerRef.current) clearTimeout(regenTimerRef.current)
+      if (loadRetryRef.current) clearTimeout(loadRetryRef.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ovaId])
@@ -96,17 +129,9 @@ export function useOvaWorkspace(ovaId) {
 
   const submitPrompt = useCallback(async () => {
     if (!prompt.trim() || isRegenerating) return
-    setIsRegenerating(true)
-    try {
-      const faseIds = selectionMode && selectedPhaseIds.length > 0 ? selectedPhaseIds : []
-      const { job_id } = await triggerRegen(ovaId, { prompt: prompt.trim(), faseIds })
-      setPrompt('')
-      regenTimerRef.current = setTimeout(() => pollRegenRef.current?.(job_id), POLL_MS)
-    } catch (err) {
-      setIsRegenerating(false)
-      toast.error(err?.message || 'No se pudo iniciar la regeneración.')
-    }
-  }, [prompt, isRegenerating, ovaId, selectionMode, selectedPhaseIds])
+    const faseIds = selectionMode && selectedPhaseIds.length > 0 ? selectedPhaseIds : []
+    if (await runRegen({ prompt: prompt.trim(), faseIds })) setPrompt('')
+  }, [prompt, isRegenerating, selectionMode, selectedPhaseIds, runRegen])
 
   const downloadScorm = useCallback(async () => {
     try {
@@ -139,16 +164,16 @@ export function useOvaWorkspace(ovaId) {
   }, [ovaId, load])
 
   // HU-026/027: regen single phase with optional prompt
-  const regenPhase = useCallback(async (phaseId, prompt) => {
-    setIsRegenerating(true)
-    try {
-      const { job_id } = await triggerRegen(ovaId, { prompt: prompt || null, faseIds: [phaseId] })
-      regenTimerRef.current = setTimeout(() => pollRegenRef.current?.(job_id), POLL_MS)
-    } catch (err) {
-      setIsRegenerating(false)
-      toast.error(err?.message || 'No se pudo iniciar la regeneración.')
-    }
-  }, [ovaId])
+  const regenPhase = useCallback(
+    (phaseId, prompt) => runRegen({ prompt: prompt || null, faseIds: [phaseId] }),
+    [runRegen]
+  )
+
+  // Full regen from the OVA's original prompt (no specific phases). Salvaged
+  // from the legacy editor's "Regenerar OVA completo".
+  const regenAll = useCallback(() => {
+    if (!isRegenerating) runRegen({ prompt: null, faseIds: [] })
+  }, [isRegenerating, runRegen])
 
   // HU-032: add new resource to a phase (max 4 per phase_type)
   const addOvaPhase = useCallback(async (phaseType, prompt) => {
@@ -194,19 +219,26 @@ export function useOvaWorkspace(ovaId) {
   const versionNumber = ova?.current_version?.version_number ?? null
   const isReady = ova?.status === 'listo'
 
+  // HU-027: select/deselect every phase at once
+  const toggleSelectAll = useCallback(() => {
+    setSelectedPhaseIds((ids) =>
+      ids.length === phases.length ? [] : phases.map((p) => p.id)
+    )
+  }, [phases])
+
   return {
-    ova, phases, loading, error, isReady,
+    ova, phases, loading, generating, error, isReady,
     versionNumber,
     prompt, setPrompt,
-    isRegenerating,
-    submitPrompt, downloadScorm, load,
+    isRegenerating, regenProgress,
+    submitPrompt, regenAll, downloadScorm, load,
     uploads,
     reorderWithinPhase,
     deleteOvaPhase, savePhase, regenPhase,
     revertVersion, getDiff,
     versionHistory: ova?.version_history ?? [],
     selectionMode, selectedPhaseIds,
-    toggleSelectionMode, togglePhaseSelection,
+    toggleSelectionMode, togglePhaseSelection, toggleSelectAll,
     addOvaPhase,
   }
 }

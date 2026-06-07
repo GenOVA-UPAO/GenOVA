@@ -120,6 +120,6 @@ def duplicate_ova(
             "title": new_title,
             "status": "borrador",
             "message": "OVA duplicado correctamente.",
-            "edit_url": f"/mis-ovas/{new_id}/editar",
+            "edit_url": f"/ova/{new_id}/workspace",
         },
     )

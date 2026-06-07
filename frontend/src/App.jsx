@@ -9,11 +9,9 @@ import { RegisterPage } from './pages/RegisterPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 
 // Code-split heavier authenticated routes so the login bundle stays tiny.
-const CrearOvaPage = lazy(() => import('./pages/CrearOvaPage.jsx').then((m) => ({ default: m.CrearOvaPage })))
 const AdminRolesPage = lazy(() => import('./pages/AdminRolesPage.jsx').then((m) => ({ default: m.AdminRolesPage })))
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage.jsx').then((m) => ({ default: m.AdminUsersPage })))
 const MisOvasPage = lazy(() => import('./pages/MisOvasPage.jsx').then((m) => ({ default: m.MisOvasPage })))
-const EditarOvaPage = lazy(() => import('./pages/EditarOvaPage.jsx').then((m) => ({ default: m.EditarOvaPage })))
 const PapeleraPage = lazy(() => import('./pages/PapeleraPage.jsx').then((m) => ({ default: m.PapeleraPage })))
 const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
 const EngagePage = lazy(() => import('./pages/EngagePage.jsx').then((m) => ({ default: m.EngagePage })))
@@ -94,7 +92,6 @@ function App() {
           <Route element={<ProtectedLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mis-ovas" element={<MisOvasPage />} />
-            <Route path="/mis-ovas/:ovaId/editar" element={<EditarOvaPage />} />
             <Route path="/papelera" element={<PapeleraPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/metodologia/engage" element={<EngagePage />} />
@@ -106,9 +103,11 @@ function App() {
               <Route path="/admin/labs" element={<LabsPage />} />
             </Route>
           </Route>
-          {/* Full-bleed layout: no sidebar, no container padding, no max-width */}
+          {/* Full-bleed layout: no sidebar, no container padding, no max-width.
+              Both routes render the SAME OvaWorkspacePage (unified create+edit
+              surface): /crear-ova = creation mode, /ova/:id/workspace = edit mode. */}
           <Route element={<WorkspaceLayout />}>
-            <Route path="/crear-ova" element={<CrearOvaPage />} />
+            <Route path="/crear-ova" element={<OvaWorkspacePage />} />
             <Route path="/ova/:ovaId/workspace" element={<OvaWorkspacePage />} />
           </Route>
           <Route path="/" element={<Navigate to="/login" replace />} />

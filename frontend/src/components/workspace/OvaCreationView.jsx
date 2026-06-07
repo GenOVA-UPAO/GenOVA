@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
-import { useOvaCreation } from '../hooks/useOvaCreation.js'
-import { PhaseSelectModal } from '../components/PhaseSelectModal.jsx'
-import { CrearOvaChatPanel } from '../components/crear/CrearOvaChatPanel.jsx'
-import { CrearOvaPreviewPanel } from '../components/crear/CrearOvaPreviewPanel.jsx'
+import { useLocation } from 'react-router'
+import { useOvaCreation } from '../../hooks/useOvaCreation.js'
+import { PhaseSelectModal } from '../PhaseSelectModal.jsx'
+import { CrearOvaChatPanel } from '../crear/CrearOvaChatPanel.jsx'
+import { CrearOvaPreviewPanel } from '../crear/CrearOvaPreviewPanel.jsx'
 
 /**
- * Creation workspace — mirrors /ova/:id/workspace visually.
- * Left: CrearOvaChatPanel (same structure as WorkspaceChatPanel).
- * Right: CrearOvaPreviewPanel (same structure as WorkspaceHtmlPreview).
- * On success: navigates immediately to /ova/:id/workspace — the visual
- * similarity between both pages makes the transition seamless.
+ * Creation mode of the unified OVA workspace.
+ * Left: CrearOvaChatPanel (prompt + resource config + live progress).
+ * Right: CrearOvaPreviewPanel (resources preview as they generate).
+ * On success it calls onCreated(ovaId); the parent shell swaps to edit mode
+ * in place (no separate page), so create and edit are one surface.
  */
-export function CrearOvaPage() {
+export function OvaCreationView({ onCreated }) {
   const location = useLocation()
-  const navigate = useNavigate()
   const {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
@@ -38,11 +37,11 @@ export function CrearOvaPage() {
   const isTerminal = job.phase === 'terminal'
   const ovaId = jobData?.ova_id ?? null
 
-  // Navigate immediately to workspace when generation succeeds (0ms).
+  // Hand off to edit mode once generation finishes with at least one resource.
   useEffect(() => {
     if (!isTerminal || !outcome.anyDone || !ovaId) return
-    navigate(`/ova/${ovaId}/workspace`, { replace: true })
-  }, [isTerminal, outcome.anyDone, ovaId, navigate])
+    onCreated?.(ovaId)
+  }, [isTerminal, outcome.anyDone, ovaId, onCreated])
 
   // Pinned resource for right panel (user click or auto first-done).
   const [pinnedId, setPinnedId] = useState(null)
@@ -58,7 +57,7 @@ export function CrearOvaPage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      {/* Topbar — same minimal style as OvaWorkspacePage */}
+      {/* Topbar — same minimal style as edit mode */}
       <header className="flex items-center gap-3 border-b border-border px-4 py-2.5 bg-background shrink-0">
         <div className="flex-1 min-w-0">
           <h1 className="text-sm font-semibold">Crear OVA</h1>
