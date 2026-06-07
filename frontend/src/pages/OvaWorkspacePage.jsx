@@ -112,7 +112,7 @@ export function OvaWorkspacePage() {
           >
             <div
               className="overflow-hidden border-r border-border"
-              style={{ width: `${ratio * 100}%` }}
+              style={{ width: `${ratio * 100}%`, minWidth: '300px' }}
             >
               <WorkspaceChatPanel {...chatProps} />
             </div>
