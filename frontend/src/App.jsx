@@ -93,7 +93,6 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/crear-ova" element={<CrearOvaPage />} />
             <Route path="/mis-ovas" element={<MisOvasPage />} />
             <Route path="/mis-ovas/:ovaId/editar" element={<EditarOvaPage />} />
             <Route path="/papelera" element={<PapeleraPage />} />
@@ -107,8 +106,9 @@ function App() {
               <Route path="/admin/labs" element={<LabsPage />} />
             </Route>
           </Route>
-          {/* Workspace gets full-bleed layout: no sidebar, no padding, no max-width */}
+          {/* Full-bleed layout: no sidebar, no container padding, no max-width */}
           <Route element={<WorkspaceLayout />}>
+            <Route path="/crear-ova" element={<CrearOvaPage />} />
             <Route path="/ova/:ovaId/workspace" element={<OvaWorkspacePage />} />
           </Route>
           <Route path="/" element={<Navigate to="/login" replace />} />
