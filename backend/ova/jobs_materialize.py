@@ -13,6 +13,7 @@ materialization failure is logged and contained — the job state is unaffected.
 import logging
 import uuid
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from agents.engage_prompts import RECURSOS_META as ENGAGE_META
@@ -61,18 +62,25 @@ def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uui
     prompt = job.prompt or ""
     title = (prompt[:80].rstrip()) or "OVA parcial"
 
+    # Full success (every requested resource is done) yields a ready-to-export
+    # OVA; a partial recovery (HU-022) stays a "borrador" for the user to finish.
+    total = db.execute(
+        select(func.count()).select_from(OvaJobResource).where(OvaJobResource.job_id == job.id)
+    ).scalar_one()
+    final_status = "listo" if total and len(resources) >= total else "borrador"
+
     # Reuse the placeholder OVA created at job start (job.ova_id is always set now).
     # Fall back to creating a new one only for legacy jobs without a pre-created OVA.
     ova = db.get(Ova, job.ova_id) if job.ova_id is not None else None
 
     if ova is None:
-        ova = Ova(user_id=job.user_id, title=title, description=prompt, status="borrador")
+        ova = Ova(user_id=job.user_id, title=title, description=prompt, status=final_status)
         db.add(ova)
         db.flush()
         job.ova_id = ova.id
     else:
         ova.title = title
-        ova.status = "borrador"
+        ova.status = final_status
 
     version = OvaVersion(ova_id=ova.id, version_number=1, prompt=prompt, is_active=True)
     db.add(version)

@@ -515,12 +515,17 @@ def job_fallo_total(db, monkeypatch):
 def job_error_sin_ova(db, ctx):
     from sqlalchemy import select
 
-    from models import Ova
+    from models import Ova, OvaVersion
 
     job = jobs_service.get_job(db, ctx["job"].id, ctx["user_id"])
     assert job.status == "error"
-    assert job.ova_id is None
-    assert db.execute(select(Ova)).scalars().first() is None
+    # HU-023: a placeholder OVA is pre-created at job start. On total failure it
+    # is marked "error" (not deleted) so it still shows in "Mis OVAs"; crucially
+    # nothing is *materialized* — no version/phases are built from 0 done resources.
+    if job.ova_id is not None:
+        ova = db.get(Ova, job.ova_id)
+        assert ova is not None and ova.status == "error"
+    assert db.execute(select(OvaVersion)).scalars().first() is None
 
 
 # Scenario 11 (HU-022/B3): contenido de un recurso done aparte del estado

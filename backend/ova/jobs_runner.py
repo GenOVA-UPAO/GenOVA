@@ -5,18 +5,18 @@ Launched in a daemon thread by `jobs_router`. Owns its **own** DB Session
 job's resources in order, reusing the existing generation agents
 (`regen_agents.regenerate_phase_content`). Each resource is persisted the moment
 it finishes (R4); a failing resource is retried up to `MAX_ATTEMPTS` within
-`LLM_TIMEOUT_S`, then logged via `error_log_service.log_generation_error` and
+`RESOURCE_TIMEOUT_S`, then logged via `error_log_service.log_generation_error` and
 left `error` with its opaque `error_id` — without aborting the others (R6).
 
 The whole worker is wrapped so an unexpected error never takes down the process.
 """
 import logging
+import os
 import uuid
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from agents.llm_router import _LLM_TIMEOUT_S
 from database import SessionLocal
 from models import OvaJob, OvaJobResource
 from ova.error_log_service import log_generation_error
@@ -25,8 +25,11 @@ from ova.jobs_runner_exec import generate_resource_html
 logger = logging.getLogger(__name__)
 
 # R6: each resource gets at most 2 retries on top of the first attempt.
-MAX_ATTEMPTS = 3
-LLM_TIMEOUT_S = _LLM_TIMEOUT_S
+MAX_ATTEMPTS = int(os.getenv("RESOURCE_MAX_ATTEMPTS", "3"))
+# Per-resource wall-clock budget for the whole fallback chain. Must exceed the
+# per-LLM-call timeout (LLM_TIMEOUT_S, 120s) so a slow primary can finish (or
+# time out) and the chain still has room to reach a working fallback.
+RESOURCE_TIMEOUT_S = float(os.getenv("RESOURCE_TIMEOUT_S", "240"))
 
 
 def run_job(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID] | None = None) -> None:
@@ -95,7 +98,7 @@ def _process_resource(db: Session, job: OvaJob, resource: OvaJobResource) -> boo
     """
     resource.status = "running"
     db.commit()
-    html, err = generate_resource_html(resource, job.prompt, MAX_ATTEMPTS, LLM_TIMEOUT_S)
+    html, err = generate_resource_html(resource, job.prompt, MAX_ATTEMPTS, RESOURCE_TIMEOUT_S)
     resource.attempts = MAX_ATTEMPTS if err else (resource.attempts or 0) + 1
     if html:
         resource.content = html

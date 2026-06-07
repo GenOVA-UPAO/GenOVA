@@ -3,10 +3,14 @@ import logging
 import os
 import time
 
+from groq import APIConnectionError as GroqAPIConnectionError
 from groq import APIStatusError as GroqAPIStatusError
+from groq import APITimeoutError as GroqAPITimeoutError
 from groq import Groq
 from groq import RateLimitError as GroqRateLimitError
+from openai import APIConnectionError as OpenAIAPIConnectionError
 from openai import APIStatusError as OpenAIAPIStatusError
+from openai import APITimeoutError as OpenAIAPITimeoutError
 from openai import OpenAI
 from openai import RateLimitError as OpenAIRateLimitError
 
@@ -14,7 +18,10 @@ logger = logging.getLogger(__name__)
 
 # Cap per-call wait so a stuck provider doesn't hang the request thread
 # (Render free workers have no per-request timeout — they hang forever).
-_LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "30"))
+# 120s default: the 'codigo' task streams up to 12k tokens of HTML, which
+# legitimately takes 1–2 min; a 30s cap aborted valid generations mid-stream.
+# Tune down via LLM_TIMEOUT_S where workers are time-boxed.
+_LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "120"))
 
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=_LLM_TIMEOUT_S)
 
@@ -34,9 +41,10 @@ openrouter_client = OpenAI(
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
 _MODELOS: dict[str, tuple] = {
     "texto":        ("groq",       "llama-3.3-70b-versatile",       {}),
-    # DeepSeek V4 Flash: 284B MoE / 13B active, 1M context, LiveCodeBench
-    # 91.6 / SWE-bench 79. Free tier first (50 req/day, 1000 with $10 prepaid).
-    "codigo":       ("openrouter", "deepseek/deepseek-v4-flash:free", {}),
+    # DeepSeek V4 Flash: 284B MoE / 13B active, 1M context, strong on code.
+    # NOTE: there is no ":free" variant on OpenRouter (that id 404s). The paid
+    # tier is cheap (~$0.20/M in, $0.80/M out) and handles long HTML reliably.
+    "codigo":       ("openrouter", "deepseek/deepseek-v4-flash",    {}),
     "orquestador":  ("groq",       "openai/gpt-oss-120b",           {"reasoning_effort": "medium"}),
     "razonamiento": ("groq",       "qwen/qwen3-32b",                {"reasoning_effort": "default"}),
 }
@@ -51,9 +59,8 @@ _FALLBACK_OR_MODEL   = "meta-llama/llama-3.3-70b-instruct:free"
 # safety-net Groq model that almost always responds within free tier.
 _FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
-        # Paid DeepSeek is first fallback — very cheap ($0.20/M input,
-        # $0.80/M output) but reliable and handles long HTML well.
-        ("openrouter", "deepseek/deepseek-v4-flash", {}),
+        # Free, valid code model first; then a general free model; the last
+        # entry is the fast Groq safety net that almost always responds.
         ("openrouter", "qwen/qwen3-coder:free", {}),
         ("openrouter", _FALLBACK_OR_MODEL, {}),
         ("groq", "llama-3.3-70b-versatile", {}),
@@ -103,6 +110,12 @@ _RECOVERABLE_ERRORS = (
     OpenAIRateLimitError,
     GroqAPIStatusError,
     OpenAIAPIStatusError,
+    # Timeouts / connection drops: advance the chain to the next (often faster)
+    # model instead of failing the whole resource and retrying the same slow one.
+    GroqAPITimeoutError,
+    OpenAIAPITimeoutError,
+    GroqAPIConnectionError,
+    OpenAIAPIConnectionError,
     EmptyContentError,
 )
 
