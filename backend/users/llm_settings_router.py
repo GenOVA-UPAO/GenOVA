@@ -51,7 +51,7 @@ def get_llm_settings(current_user: User = Depends(get_current_user)):
     return {
         "settings": merge_with_defaults(current_user.llm_settings),
         "catalog": filtered_catalog,
-        "catalog_all": {e["provider"]: e for e in all_entries if e.get("active")},
+        "catalog_all": [e for e in all_entries if e.get("active")],
         "defaults": DEFAULTS,
         "enabled_models": enabled,
         "timeout_bounds": [TIMEOUT_MIN, TIMEOUT_MAX],
