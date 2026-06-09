@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { fetchLlmSettings, saveLlmSettings, saveEnabledModels } from '../services/llmSettingsService.js'
 
@@ -8,17 +8,20 @@ export const TASK_LABELS = {
   orquestador: 'Orquestador',
   razonamiento: 'Razonamiento',
 }
-const DEFAULT_TIMEOUT = 120
 
-function _flatCatalog(catalog) {
-  if (!catalog) return []
-  if (Array.isArray(catalog)) return catalog
-  const entries = []
-  for (const [, models] of Object.entries(catalog)) {
-    if (Array.isArray(models)) entries.push(...models)
-  }
-  return entries
+export const CATEGORY_LABELS = {
+  all: 'Todos',
+  recommended: 'Recomendados',
+  texto: 'Texto',
+  codigo: 'Código',
+  razonamiento: 'Razonamiento',
+  multimodal: 'Multimodal',
+  imagen: 'Imagen',
+  embedding: 'Embedding',
+  audio: 'Audio',
 }
+
+const DEFAULT_TIMEOUT = 120
 
 /**
  * Per-user LLM settings (general config). One hook used by BOTH the workspace
@@ -29,36 +32,76 @@ export function useLlmSettings(enabled = true) {
   const [settings, setSettings] = useState(null)
   const [catalog, setCatalog] = useState({})
   const [catalogAll, setCatalogAll] = useState([])
+  const [catalogFull, setCatalogFull] = useState([])
+  const [fullTotal, setFullTotal] = useState(0)
+  const [fullPage, setFullPage] = useState(1)
+  const [fullHasMore, setFullHasMore] = useState(false)
+  const [categories, setCategories] = useState([])
   const [enabledModels, setEnabledModels] = useState([])
   const [defaults, setDefaults] = useState({})
   const [bounds, setBounds] = useState([30, 300])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [saving, setSaving] = useState(false)
   const [enabledSaving, setEnabledSaving] = useState(false)
   const [error, setError] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const debounceRef = useRef(null)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const load = useCallback(async (opts = {}) => {
+    const { append = false, page: reqPage = 1, search, category } = opts
+    const s = search !== undefined ? search : searchQuery
+    const c = category !== undefined ? category : categoryFilter
+    if (!append) setLoading(true)
+    else setLoadingMore(true)
     setError('')
     try {
-      const data = await fetchLlmSettings()
+      const data = await fetchLlmSettings({ search: s, category: c, page: reqPage, page_size: 50 })
       setSettings(data.settings || {})
       setCatalog(data.catalog || {})
-      setCatalogAll(data.catalog_all ? Object.values(data.catalog_all) : [])
+      setCatalogAll(Array.isArray(data.catalog_all) ? data.catalog_all : [])
       setEnabledModels(Array.isArray(data.enabled_models) ? data.enabled_models : [])
       setDefaults(data.defaults || {})
       if (Array.isArray(data.timeout_bounds)) setBounds(data.timeout_bounds)
+      if (Array.isArray(data.catalog_full)) {
+        setCatalogFull(append ? (prev) => [...prev, ...data.catalog_full] : data.catalog_full)
+      }
+      setFullTotal(data.full_total || 0)
+      setFullPage(data.full_page || 1)
+      setFullHasMore(data.full_has_more || false)
+      if (Array.isArray(data.categories)) setCategories(data.categories)
     } catch (err) {
       setError(err?.message || 'No se pudo cargar la configuración.')
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
-  }, [])
+  }, [searchQuery, categoryFilter])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (enabled) void load()
-  }, [enabled, load])
+    if (enabled) void load({ search: '', category: 'all', page: 1 })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled])
+
+  const loadMore = useCallback(() => {
+    if (loadingMore || !fullHasMore) return
+    void load({ append: true, page: fullPage + 1 })
+  }, [load, fullPage, fullHasMore, loadingMore])
+
+  const handleSearch = useCallback((q) => {
+    setSearchQuery(q)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      void load({ page: 1 })
+    }, 300)
+  }, [load])
+
+  const handleCategory = useCallback((cat) => {
+    setCategoryFilter(cat)
+    void load({ page: 1, category: cat })
+  }, [load])
 
   const setModel = useCallback((tipo, provider, modelId) => {
     setSettings((s) => ({ ...s, [tipo]: { ...s[tipo], provider, model_id: modelId } }))
@@ -121,8 +164,7 @@ export function useLlmSettings(enabled = true) {
     try {
       const data = await saveEnabledModels(enabledModels)
       if (Array.isArray(data?.models)) setEnabledModels(data.models)
-      // Reload to refresh the filtered catalog dropdowns
-      await load()
+      await load({})
       toast.success('Modelos habilitados actualizados.')
       return true
     } catch (err) {
@@ -134,11 +176,14 @@ export function useLlmSettings(enabled = true) {
   }, [enabledModels, load])
 
   return {
-    settings, catalog, catalogAll, enabledModels, defaults, bounds,
-    loading, saving, enabledSaving, error,
-    load, setModel, setTipoTimeout, resetTipo, save,
+    settings, catalog, catalogAll, catalogFull, fullTotal, fullPage, fullHasMore,
+    enabledModels, defaults, bounds, categories,
+    loading, loadingMore, saving, enabledSaving, error,
+    searchQuery, categoryFilter,
+    load, loadMore, handleSearch, handleCategory,
+    setModel, setTipoTimeout, resetTipo, save,
     isDefaultModel, isModelEnabled, toggleModel, saveEnabled,
     taskLabels: TASK_LABELS,
-    flatCatalog: useCallback(() => _flatCatalog(catalog), [catalog]),
+    categoryLabels: CATEGORY_LABELS,
   }
 }

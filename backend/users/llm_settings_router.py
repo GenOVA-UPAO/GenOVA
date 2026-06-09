@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from agents.catalog_refresh import get_catalog_entries
+from agents.catalog_refresh import get_catalog_entries, get_full_catalog_entries
 from agents.model_catalog import (
     DEFAULTS,
     TIMEOUT_MAX,
@@ -31,9 +31,15 @@ class LlmSettingsUpdate(BaseModel):
 
 
 @router.get("/me/llm-settings")
-def get_llm_settings(current_user: User = Depends(get_current_user)):
+def get_llm_settings(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
     """Effective per-type config (user override or default) + filtered catalog +
-    enabled_models + bounds."""
+    enabled_models + full catalog (search/category/paginated).
+
+    Query params: search, category, page, page_size
+    """
     all_entries = get_catalog_entries()
     enabled = current_user.enabled_models or []
     enabled_keys = {(e["provider"], e["model_id"]) for e in enabled if isinstance(e, dict)}
@@ -48,10 +54,42 @@ def get_llm_settings(current_user: User = Depends(get_current_user)):
             continue
         filtered_catalog.setdefault(p, []).append(entry)
 
+    full = get_full_catalog_entries()
+    search = (request.query_params.get("search") or "").strip().lower()
+    category = (request.query_params.get("category") or "all").strip().lower()
+
+    if search:
+        full = [
+            e
+            for e in full
+            if search in e["model_id"].lower() or search in (e.get("label") or "").lower()
+        ]
+    if category == "recommended":
+        full = [e for e in full if e.get("curated")]
+    elif category and category != "all":
+        full = [e for e in full if e.get("category") == category]
+
+    page = max(1, int(request.query_params.get("page") or 1))
+    page_size = min(int(request.query_params.get("page_size") or 50), 100)
+    offset = (page - 1) * page_size
+    total = len(full)
+    page_items = full[offset : offset + page_size]
+
+    all_categories = sorted(
+        {e.get("category", "texto") for e in get_full_catalog_entries() if e.get("active")}
+    )
+
     return {
         "settings": merge_with_defaults(current_user.llm_settings),
         "catalog": filtered_catalog,
         "catalog_all": [e for e in all_entries if e.get("active")],
+        "catalog_full": page_items,
+        "full_total": total,
+        "full_page": page,
+        "full_page_size": page_size,
+        "full_has_more": offset + page_size < total,
+        "categories": ["all", "recommended"]
+        + [c for c in all_categories if c not in ("all", "recommended")],
         "defaults": DEFAULTS,
         "enabled_models": enabled,
         "timeout_bounds": [TIMEOUT_MIN, TIMEOUT_MAX],

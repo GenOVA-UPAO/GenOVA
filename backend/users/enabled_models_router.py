@@ -11,7 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from agents.model_catalog import DEFAULTS, is_valid_model
+from agents.catalog_refresh import get_full_catalog_entries
+from agents.model_catalog import DEFAULTS
 from auth.dependencies import get_current_user
 from database import get_db
 from models import User
@@ -26,6 +27,8 @@ class EnabledModelsUpdate(BaseModel):
 
 
 def _validate_enabled_models(payload: list[dict]) -> list[dict]:
+    full = get_full_catalog_entries()
+    valid_keys = {(e["provider"], e["model_id"]) for e in full}
     seen: set[tuple[str, str]] = set()
     clean: list[dict] = []
     for item in payload:
@@ -36,7 +39,7 @@ def _validate_enabled_models(payload: list[dict]) -> list[dict]:
         key = (provider, model_id)
         if key in seen:
             continue
-        if not is_valid_model(provider, model_id):
+        if key not in valid_keys:
             raise ValueError(f"Modelo no reconocido: {provider}/{model_id}")
         seen.add(key)
         clean.append({"provider": provider, "model_id": model_id})

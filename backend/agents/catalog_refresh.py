@@ -23,15 +23,110 @@ _OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
 # In-memory cache — built on startup, read by every request (no DB hit).
 # Thread-safe: written only by the refresh thread, guarded by _CL.
 _catalog: list[dict] = list(CATALOG_ENTRIES)
+_full_catalog: list[dict] = []
 _CL = RLock()
 
 _CATALOG_REFRESH_TIMEOUT = float(os.getenv("CATALOG_REFRESH_TIMEOUT_S", "15"))
+
+_CURATED_KEYS: set[tuple[str, str]] = {(e["provider"], e["model_id"]) for e in CATALOG_ENTRIES}
+
+MODALITY_CATEGORY = {
+    "text": "texto",
+    "multimodal": "multimodal",
+    "image": "imagen",
+    "embedding": "embedding",
+    "audio": "audio",
+}
+
+_CODIGO_KEYWORDS = (
+    "coder",
+    "code",
+    "dev",
+    "programming",
+    "claude",
+    "gpt-4",
+    "deepseek",
+    "gemini-pro",
+    "gemini-flash",
+    "o1",
+    "o3",
+    "o4",
+)
+
+_RAZONAMIENTO_KEYWORDS = (
+    "r1",
+    "reasoning",
+    "think",
+    "gpt-oss",
+    "gpt-5",
+)
+
+
+def categorize_model(api_entry: dict, provider: str) -> str:
+    arch = api_entry.get("architecture") or {}
+    modality = arch.get("modality", "text") if isinstance(arch, dict) else str(arch)
+    category = MODALITY_CATEGORY.get(modality, "texto")
+    mid = (api_entry.get("id") or "").lower()
+    if category in ("texto", "multimodal"):
+        if any(kw in mid for kw in _CODIGO_KEYWORDS):
+            return "codigo"
+        if any(kw in mid for kw in _RAZONAMIENTO_KEYWORDS):
+            return "razonamiento"
+    return category
 
 
 def get_catalog_entries() -> list[dict]:
     """Return the current merged catalog (fast path — in-memory)."""
     with _CL:
         return list(_catalog)
+
+
+def get_full_catalog_entries() -> list[dict]:
+    """Return ALL models from both providers with categories and pricing."""
+    with _CL:
+        return list(_full_catalog)
+
+
+def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[dict]:
+    curated_keys = _CURATED_KEYS
+    result: list[dict] = []
+
+    for model_id, raw in or_data.items():
+        curated = ("openrouter", model_id) in curated_keys
+        result.append(
+            {
+                "provider": "openrouter",
+                "model_id": model_id,
+                "label": raw.get("name") or model_id,
+                "category": categorize_model(raw, "openrouter"),
+                "pricing": format_pricing(raw.get("pricing")),
+                "context_length": raw.get("context_length"),
+                "curated": curated,
+                "active": True,
+                "task": "codigo" if curated else None,
+            }
+        )
+
+    for model_id in groq_ids:
+        curated = ("groq", model_id) in curated_keys
+        result.append(
+            {
+                "provider": "groq",
+                "model_id": model_id,
+                "label": model_id,
+                "category": categorize_model(
+                    {"id": model_id, "architecture": {"modality": "text"}}, "groq"
+                ),
+                "pricing": None,
+                "context_length": 128000,
+                "curated": curated,
+                "active": True,
+                "task": "texto" if curated else None,
+            }
+        )
+
+    result.sort(key=lambda e: (not e["curated"], e["provider"], e["model_id"]))
+    return result
 
 
 def format_pricing(pricing: dict | None) -> str | None:
@@ -154,9 +249,12 @@ def refresh_catalog(db=None) -> None:
     _merge_groq(groq_ids)
     _rebuild_catalog()
 
+    full = _build_full_catalog(or_data, groq_ids)
+
     with _CL:
         _catalog = list(CATALOG_ENTRIES)
-    logger.info("In-memory catalog updated (%d entries)", len(_catalog))
+        _full_catalog = full
+    logger.info("In-memory catalog updated (%d curated | %d total)", len(_catalog), len(full))
 
     # Persist raw API data to Supabase cache.
     if db and (or_data or groq_ids):
