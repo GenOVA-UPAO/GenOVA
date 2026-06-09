@@ -23,7 +23,20 @@ _OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
 # In-memory cache — built on startup, read by every request (no DB hit).
 # Thread-safe: written only by the refresh thread, guarded by _CL.
 _catalog: list[dict] = list(CATALOG_ENTRIES)
-_full_catalog: list[dict] = []
+_full_catalog: list[dict] = [
+    {
+        "provider": e["provider"],
+        "model_id": e["model_id"],
+        "label": e["label"],
+        "category": e.get("task") or "texto",
+        "pricing": e.get("pricing"),
+        "context_length": e.get("context_length"),
+        "curated": True,
+        "active": True,
+        "task": e.get("task"),
+    }
+    for e in CATALOG_ENTRIES
+]
 _CL = RLock()
 
 _CATALOG_REFRESH_TIMEOUT = float(os.getenv("CATALOG_REFRESH_TIMEOUT_S", "15"))
@@ -253,8 +266,11 @@ def refresh_catalog(db=None) -> None:
 
     with _CL:
         _catalog = list(CATALOG_ENTRIES)
-        _full_catalog = full
-    logger.info("In-memory catalog updated (%d curated | %d total)", len(_catalog), len(full))
+        if full:
+            _full_catalog = full
+    logger.info(
+        "In-memory catalog updated (%d curated | %d total)", len(_catalog), len(full) if full else 0
+    )
 
     # Persist raw API data to Supabase cache.
     if db and (or_data or groq_ids):
