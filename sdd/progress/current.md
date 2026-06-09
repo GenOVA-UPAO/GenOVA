@@ -1,64 +1,51 @@
 # Sesión actual
 
 > Este archivo se vacía al cerrar cada sesión y su contenido se mueve a `history.md`.
-> Mantenlo actualizado en tiempo real mientras trabajas, no al final.
 
 ## 2026-06-07 — Unificar crear+editar OVA en un solo workspace + arreglar generación/SCORM
-
-**Agente:** leader (inline) + spec-sync (chip, HU-011/HU-013)
-**Alcance:** finalizar HU-025 (superficie única crear+editar) + corregir generación EXPLORE y habilitación de SCORM.
-
-### Unificación crear+editar (frontend)
-- `OvaWorkspacePage` ahora es un shell: `ovaId` → `OvaEditView`, sin id → `OvaCreationView`. `/crear-ova` y `/ova/:id/workspace` renderizan el mismo componente.
-- Nuevos: `components/workspace/OvaCreationView.jsx`, `OvaEditView.jsx`.
-- `useOvaWorkspace`: fix bug poll, `regenProgress`, `regenAll`, `toggleSelectAll`.
-- `WorkspaceChatPanel`: barra de progreso, botón "Regenerar OVA completo", "Seleccionar todas".
-- Borrado legacy: `CrearOvaPage`, `EditarOvaPage`, `PhaseCard`, `VersionHistory`, `useRegenEditor`, `useRegenConfirmModal`.
-- `backend/ova/duplicate_router.py`: `edit_url` → `/ova/{id}/workspace`.
-
-### Generación EXPLORE + SCORM (backend)
-- `agents/llm_router.py`: fix modelo inexistente, timeout 120s, timeouts recuperables.
-- `ova/jobs_runner.py`: budget por-recurso desacoplado.
-- `ova/jobs_materialize.py`: todos los recursos done → OVA listo.
-- `tests/step_defs/test_jobs_steps.py`: scenario 10 alineado.
 
 **Estado:** completo. Pendiente: commit (2) + cierre.
 
 ---
 
-## 2026-06-08 — Catálogo unificado de modelos con fetch de APIs + enable/disable por usuario + pricing (HU-034)
+## 2026-06-08 — Catálogo unificado de modelos (HU-034)
+
+**Estado:** completo. Commit: `f143a76`.
+
+---
+
+## 2026-06-08 — Arquitectura Multi-Agente Prometheus con LangGraph (EN-003 / EP-5)
 
 **Agente:** opencode (inline)
-**Alcance:** unificar catálogos duplicados (model_catalog.py + llm_helpers.py), fetch APIs para pricing en vivo, enable/disable de modelos por usuario, mostrar pricing en UI.
+**Alcance:** implementar la arquitectura multi-agente Prometheus sobre LangGraph, refactorizar ENGAGE/EXPLORE, agregar las 3 fases 5E faltantes (EXPLAIN, ELABORATE, EVALUATE) con sus 10 recursos cada una.
 
-### Backend — catálogo y fetch de APIs
-- `agents/model_catalog.py`: añadido `CATALOG_ENTRIES` (9 modelos curados con metadata), + `is_default_model()`, `_build_provider_catalog()`, `_rebuild_catalog()`. Mantiene compatibilidad con funciones existentes.
-- `agents/catalog_refresh.py` (nuevo): fetch OpenRouter (httpx, sin auth) + Groq (SDK existente) en paralelo, mergea pricing/context_length/active, guarda en Supabase + memoria global con RLock. `format_pricing()`: tokens unitarios → $X.XX/1M.
-- `agents/catalog_cache.py` (nuevo): `load_from_cache` / `save_to_cache` para tabla `catalog_cache`.
-- `models.py`: + `CatalogCache` (provider, raw_data, expires_at), + `User.enabled_models JSONB`.
-- `migrations/022_catalog_cache.sql`, `migrations/023_user_enabled_models.sql` (nuevos).
-- `main.py`: lifespan llama `_background_catalog_refresh()` + `POST /api/admin/refresh-catalog` (admin-only).
-- `users/enabled_models_router.py` (nuevo): GET/PUT toggle de modelos, validado contra catálogo, defaults siempre activos.
-- `users/llm_settings_router.py`: GET devuelve catálogo filtrado + `catalog_all` + `enabled_models`.
-- `users/router.py`: incluye `enabled_models_router`.
+### Nuevo paquete: `backend/prometheus/` (14 archivos)
+- `state.py`: `OvaGenerationState` (TypedDict compartido)
+- `graph.py`: `StateGraph` con 8 nodos + conditional edges (concierge → fases → validate → next/retry → assemble)
+- `checkpointer.py`: `PostgresSaver` con fallback `MemorySaver`
+- `nodes/`: 8 nodos — `concierge.py` (LLM-driven decompose prompt → metas por fase), `engage.py`, `explore.py`, `explain.py`, `elaborate.py`, `evaluate.py` (PEVR loop por recurso), `validate.py` (html_validator), `assemble.py` (SCORM builder)
+- `tools/`: `llm_generate.py` (wrapper generar_texto), `rag_search.py`
+- `plans/`: `two_step.py` (texto→JSON→HTML), `direct_code.py` (código directo), `podcast.py` (TTS)
 
-### Backend — pipeline de generación
-- `agents/llm_router.py`: `_resolve_primary()` + `generar_texto()` aceptan `enabled_models`. Si modelo no habilitado ni default → cae en default.
-- `ova/llm_helpers.py`: eliminado `LLM_CATALOG`. `_enabled_llm_options()` usa `get_catalog_entries()`. `_ova_output_dir()` se mantiene.
-- `ova/jobs_helpers.py`: `job_params()` snapshotea `enabled_models` en el job.
-- `ova/jobs_router.py`: pasa `current_user.enabled_models` a `job_params()`.
-- `ova/jobs_runner.py`, `jobs_runner_exec.py`, `regen_agents.py`: threading de `enabled_models` por todo el pipeline.
-- `ova/router.py`: `/llm-options` marcado como deprecated (sigue funcionando).
-- `tests/step_defs/test_jobs_steps.py`: stub wrapper acepta `enabled_models`.
+### Nuevos prompts: 3 fases (3 archivos, ~400 líneas)
+- `explain_prompts.py`: 10 recursos de teoría (Video, Lectura, Mapa Conceptual, FAQ, Demo, Glosario, Timeline, Diagrama, Tabla, Infografía)
+- `elaborate_prompts.py`: 10 recursos de aplicación (Caso, Ejercicio, Proyecto, Simulación, Análisis, Escenario, Lab, Problemas, Estrategia, Reto)
+- `evaluate_prompts.py`: 10 recursos de evaluación (Quiz, Rúbrica, Desafío, Examen, Completar, Relacionar, Crucigrama, Desarrollo, Simulación, Diploma)
 
-### Frontend
-- `useLlmSettings.js`: + `enabledModels`, `catalogAll`, `toggleModel()`, `saveEnabled()`, `isDefaultModel()`, `isModelEnabled()`.
-- `llmSettingsService.js`: + `saveEnabledModels()`.
-- `LlmSettingsCard.jsx`: refactorizado en 2 secciones — catálogo completo con toggles (con pricing + context_length) + LlmSettingsForm con dropdowns filtrados.
-- `LlmSettingsForm.jsx`: adaptado a catalog entries como objetos (label + pricing en dropdown).
-- `LlmEnginesPanel.jsx`: ahora bebe de `useLlmSettings` mostrando solo habilitados + defaults, con pricing real de API.
-- Eliminados: `useLlmOptions.js`, `llmOptionsService.js`.
-- `feature_list.json`: entrada HU-034 `in_progress`.
+### Integraciones (6 archivos modificados)
+- `jobs_runner.py`: refactorizado — loop manual reemplazado por `invoke_ova_generation()` con LangGraph checkpointing
+- `jobs_helpers.py`: `_DEFAULT_PLAN` y `_PHASE_ORDER` extendidos a 5 fases
+- `regen_agents.py`: dispatch a 5 fases + mappings de name→id para las 3 nuevas
+- `jobs_materialize.py`: `_resolve_type` maneja las 5 fases
+- `requirements.txt`: + `langgraph>=0.6.0`, `langgraph-checkpoint-postgres>=2.0.0`
+- `feature_list.json`: EN-003 `in_progress`
+
+### Flujo del grafo
+```
+concierge (LLM orquestador: prompt → metas) → engage | explore | explain | elaborate | evaluate
+  → validate (html_validator) → OK? → next resource/phase → assemble → END
+                         → retry → fase correspondiente
+```
 
 ### Verificación
 - FE: ESLint ✓

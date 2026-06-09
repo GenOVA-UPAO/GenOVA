@@ -1,14 +1,9 @@
 """EN-013 — background runner that generates a job's resources server-side.
 
-Launched in a daemon thread by `jobs_router`. Owns its **own** DB Session
-(never the request session) like `regen_service._finalize_edit`, and walks the
-job's resources in order, reusing the existing generation agents
-(`regen_agents.regenerate_phase_content`). Each resource is persisted the moment
-it finishes (R4); a failing resource is retried up to `MAX_ATTEMPTS` within
-`RESOURCE_TIMEOUT_S`, then logged via `error_log_service.log_generation_error` and
-left `error` with its opaque `error_id` — without aborting the others (R6).
-
-The whole worker is wrapped so an unexpected error never takes down the process.
+Now powered by the Prometheus LangGraph (EP-5, EN-003). The runner creates
+the graph state from the job params, invokes the compiled graph with LangGraph
+checkpointing, and persists the results back to OvaJobResource rows + materializes
+the OVA/SCORM.
 """
 
 import logging
@@ -21,38 +16,106 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import OvaJob, OvaJobResource
 from ova.error_log_service import log_generation_error
-from ova.jobs_runner_exec import generate_resource_html
 
 logger = logging.getLogger(__name__)
 
-# R6: each resource gets at most 2 retries on top of the first attempt.
 MAX_ATTEMPTS = int(os.getenv("RESOURCE_MAX_ATTEMPTS", "3"))
-# Per-resource wall-clock budget for the whole fallback chain. Must exceed the
-# per-LLM-call timeout (LLM_TIMEOUT_S, 120s) so a slow primary can finish (or
-# time out) and the chain still has room to reach a working fallback.
-RESOURCE_TIMEOUT_S = float(os.getenv("RESOURCE_TIMEOUT_S", "240"))
 
 
 def run_job(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID] | None = None) -> None:
-    """Background entrypoint. `only_resource_ids` restricts work to a resume set."""
     db = SessionLocal()
     try:
         job = db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one_or_none()
         if job is None:
             return
         _start_job(db, job)
-        resources = _select_resources(db, job_id, only_resource_ids)
-        any_done = _has_done_resource(db, job_id)
-        for resource in resources:
-            if _process_resource(db, job, resource):
-                any_done = True
-        _finish_job(db, job, any_done)
+
+        params = job.params or {}
+        llm_config = params.get("llm_config") or {}
+        enabled_models = params.get("enabled_models") or []
+
+        try:
+            from prometheus.graph import invoke_ova_generation
+
+            initial_state = {
+                "prompt": job.prompt or "",
+                "upload_ids": params.get("upload_ids") or [],
+                "llm_config": llm_config,
+                "enabled_models": enabled_models,
+                "phases": {},
+                "phase_order": [],
+                "results": [],
+                "errors": [],
+                "current_phase_idx": 0,
+                "current_resource_idx": 0,
+            }
+
+            final_state = invoke_ova_generation(initial_state, str(job_id))
+
+            results = final_state.get("results", [])
+            errors = final_state.get("errors", [])
+            any_done = len(results) > 0
+
+            _persist_results(db, job, results, errors)
+            _finish_job(db, job, any_done)
+
+        except Exception:
+            logger.exception("Prometheus graph failed for job %s", job_id)
+            _finish_job(db, job, False)
+
     except Exception:
-        # R6/R8: a runner crash must never tumble the process; mark the job and move on.
         logger.exception("Job runner crashed for job %s", job_id)
         _safe_mark_error(db, job_id)
     finally:
         db.close()
+
+
+def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list[dict]) -> None:
+    resources = list(
+        db.execute(
+            select(OvaJobResource)
+            .where(OvaJobResource.job_id == job.id)
+            .order_by(OvaJobResource.phase_order, OvaJobResource.resource_order)
+        )
+        .scalars()
+        .all()
+    )
+
+    result_map = {}
+    for r in results:
+        phase = r.get("phase", "")
+        rt = r.get("resource_type", "")
+        key = f"{phase}:{rt}"
+        if key not in result_map:
+            result_map[key] = r
+
+    for res in resources:
+        key = f"{res.phase_type}:{res.resource_type}"
+        r = result_map.get(key)
+        if r and r.get("html"):
+            res.content = r["html"]
+            res.status = "done"
+            res.attempts = (res.attempts or 0) + 1
+        else:
+            existing_attempts = res.attempts or 0
+            if existing_attempts < MAX_ATTEMPTS:
+                res.status = "pending"
+                res.attempts = existing_attempts + 1
+            else:
+                err_msg = f"generation failed after {existing_attempts} attempts"
+                eid = log_generation_error(
+                    db,
+                    message=err_msg,
+                    error_category="model_error",
+                    user_id=job.user_id,
+                    ova_id=job.ova_id,
+                    job_id=job.id,
+                    job_resource_id=res.id,
+                )
+                res.status = "error"
+                res.error_id = uuid.UUID(eid)
+
+    db.commit()
 
 
 def _start_job(db: Session, job: OvaJob) -> None:
@@ -62,22 +125,6 @@ def _start_job(db: Session, job: OvaJob) -> None:
 
         job.started_at = _now()
     db.commit()
-
-
-def _select_resources(
-    db: Session, job_id: uuid.UUID, only: list[uuid.UUID] | None
-) -> list[OvaJobResource]:
-    stmt = (
-        select(OvaJobResource)
-        .where(OvaJobResource.job_id == job_id)
-        # R7: never re-run a resource already `done` (don't overwrite good
-        # content), whether on a fresh run or a client-picked resume subset.
-        .where(OvaJobResource.status != "done")
-        .order_by(OvaJobResource.phase_order, OvaJobResource.resource_order)
-    )
-    if only is not None:
-        stmt = stmt.where(OvaJobResource.id.in_(only))
-    return list(db.execute(stmt).scalars().all())
 
 
 def _has_done_resource(db: Session, job_id: uuid.UUID) -> bool:
@@ -91,54 +138,6 @@ def _has_done_resource(db: Session, job_id: uuid.UUID) -> bool:
     )
 
 
-def _resource_budget(llm_config: dict) -> float:
-    """Per-resource wall-clock cap, raised to fit the user's per-call timeouts."""
-    timeouts = [
-        float(v["timeout_s"])
-        for v in llm_config.values()
-        if isinstance(v, dict) and v.get("timeout_s")
-    ]
-    return (
-        max([RESOURCE_TIMEOUT_S, *(t + 30 for t in timeouts)]) if timeouts else RESOURCE_TIMEOUT_S
-    )
-
-
-def _process_resource(db: Session, job: OvaJob, resource: OvaJobResource) -> bool:
-    """Generate one resource with retries+timeout. Returns True if it ended done.
-
-    A failure here is contained: it logs an error_id and persists the resource as
-    `error`, then returns False so the loop continues with the rest (R6).
-    """
-    resource.status = "running"
-    db.commit()
-    params = job.params or {}
-    llm_config = params.get("llm_config") or {}
-    enabled_models = params.get("enabled_models") or []
-    budget = _resource_budget(llm_config)
-    html, err = generate_resource_html(
-        resource, job.prompt, MAX_ATTEMPTS, budget, llm_config, enabled_models
-    )
-    resource.attempts = MAX_ATTEMPTS if err else (resource.attempts or 0) + 1
-    if html:
-        resource.content = html
-        resource.status = "done"
-        db.commit()  # R4: persist the moment the resource completes.
-        return True
-    error_id = log_generation_error(
-        db,
-        message=err,
-        error_category="model_error",
-        user_id=job.user_id,
-        ova_id=job.ova_id,
-        job_id=job.id,
-        job_resource_id=resource.id,
-    )
-    resource.status = "error"
-    resource.error_id = uuid.UUID(error_id)
-    db.commit()
-    return False
-
-
 def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     from ova.jobs_service import _now
 
@@ -146,12 +145,8 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     job.finished_at = _now()
     db.commit()
     if any_done:
-        # Materialize only when ova_id still None (legacy jobs). New jobs already
-        # have a placeholder OVA; _build_ova will update it in place.
         _materialize(db, job)
     elif job.ova_id is not None:
-        # Total failure: mark the pre-created placeholder OVA as "error" so the
-        # user sees it in "Mis OVAs" with an error badge instead of disappearing.
         try:
             from models import Ova as _Ova
 

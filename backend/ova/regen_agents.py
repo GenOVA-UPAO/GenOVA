@@ -1,13 +1,18 @@
 """Call real LLM agents for OVA phase regeneration.
 
 Translates an OvaPhase (phase_type + resource_type_id) back to the correct
-ENGAGE or EXPLORE generation pipeline so regen produces fresh AI content
-instead of static placeholder text.
+5E generation pipeline so regen produces fresh AI content.
 """
 
 import logging
 
+from agents.elaborate_prompts import CODE_ONLY as ELABORATE_CODE_ONLY
+from agents.elaborate_prompts import RECURSOS_META as ELABORATE_META
 from agents.engage_prompts import RECURSOS_META as ENGAGE_META
+from agents.evaluate_prompts import CODE_ONLY as EVALUATE_CODE_ONLY
+from agents.evaluate_prompts import RECURSOS_META as EVALUATE_META
+from agents.explain_prompts import CODE_ONLY as EXPLAIN_CODE_ONLY
+from agents.explain_prompts import RECURSOS_META as EXPLAIN_META
 from agents.explore_prompts import CODE_ONLY as EXPLORE_CODE_ONLY
 from agents.explore_prompts import RECURSOS_META as EXPLORE_META
 
@@ -16,6 +21,20 @@ logger = logging.getLogger(__name__)
 # Map resource_type name → numeric id for fallback title parsing.
 _ENGAGE_NAME_TO_ID = {v["tipo"]: k for k, v in ENGAGE_META.items()}
 _EXPLORE_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLORE_META.items()}
+_EXPLAIN_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLAIN_META.items()}
+_ELABORATE_NAME_TO_ID = {v["tipo"]: k for k, v in ELABORATE_META.items()}
+_EVALUATE_NAME_TO_ID = {v["tipo"]: k for k, v in EVALUATE_META.items()}
+
+
+def _phase_meta(phase_type: str):
+    mapping = {
+        "engage": ENGAGE_META,
+        "explore": EXPLORE_META,
+        "explain": EXPLAIN_META,
+        "elaborate": ELABORATE_META,
+        "evaluate": EVALUATE_META,
+    }
+    return mapping.get(phase_type, ENGAGE_META)
 
 
 def resolve_resource_type(phase: object) -> int | None:
@@ -27,10 +46,21 @@ def resolve_resource_type(phase: object) -> int | None:
     if phase.resource_type_id:
         return phase.resource_type_id
 
-    # Fallback: parse from title like "ENGAGE · Cómic Interactivo" or "Cómic Interactivo"
     title = (phase.title or "").strip()
     name = title.split(" · ", 1)[1].strip() if " · " in title else title
-    lookup = _ENGAGE_NAME_TO_ID if phase.phase_type == "engage" else _EXPLORE_NAME_TO_ID
+    if phase.phase_type == "engage":
+        lookup = _ENGAGE_NAME_TO_ID
+    elif phase.phase_type == "explore":
+        lookup = _EXPLORE_NAME_TO_ID
+    elif phase.phase_type == "explain":
+        lookup = _EXPLAIN_NAME_TO_ID
+    elif phase.phase_type == "elaborate":
+        lookup = _ELABORATE_NAME_TO_ID
+    elif phase.phase_type == "evaluate":
+        lookup = _EVALUATE_NAME_TO_ID
+    else:
+        lookup = _ENGAGE_NAME_TO_ID
+
     rid = lookup.get(name)
     if rid:
         return rid
@@ -62,6 +92,12 @@ def regenerate_phase_content(
             return _generate_engage(resource_type, concept, llm_config, enabled_models)
         elif phase_type == "explore":
             return _generate_explore(resource_type, concept, llm_config, enabled_models)
+        elif phase_type == "explain":
+            return _generate_explain(resource_type, concept, llm_config, enabled_models)
+        elif phase_type == "elaborate":
+            return _generate_elaborate(resource_type, concept, llm_config, enabled_models)
+        elif phase_type == "evaluate":
+            return _generate_evaluate(resource_type, concept, llm_config, enabled_models)
         else:
             logger.warning("Unknown phase_type '%s' for regen", phase_type)
             return None
@@ -139,6 +175,42 @@ def _generate_explore(
     )
     html, _ = validate_and_repair(html, "explore", n)
     return html
+
+
+def _generate_explain(
+    n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
+) -> str:
+    """Run the EXPLAIN generation pipeline for resource type n."""
+    from prometheus.plans.direct_code import direct_code_gen
+    from prometheus.plans.two_step import two_step_gen
+
+    if n in EXPLAIN_CODE_ONLY:
+        return direct_code_gen("explain", n, concept, llm_config, enabled_models)
+    return two_step_gen("explain", n, concept, llm_config, enabled_models)
+
+
+def _generate_elaborate(
+    n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
+) -> str:
+    """Run the ELABORATE generation pipeline for resource type n."""
+    from prometheus.plans.direct_code import direct_code_gen
+    from prometheus.plans.two_step import two_step_gen
+
+    if n in ELABORATE_CODE_ONLY:
+        return direct_code_gen("elaborate", n, concept, llm_config, enabled_models)
+    return two_step_gen("elaborate", n, concept, llm_config, enabled_models)
+
+
+def _generate_evaluate(
+    n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
+) -> str:
+    """Run the EVALUATE generation pipeline for resource type n."""
+    from prometheus.plans.direct_code import direct_code_gen
+    from prometheus.plans.two_step import two_step_gen
+
+    if n in EVALUATE_CODE_ONLY:
+        return direct_code_gen("evaluate", n, concept, llm_config, enabled_models)
+    return two_step_gen("evaluate", n, concept, llm_config, enabled_models)
 
 
 def _safe_parse_json(raw: str, parser):

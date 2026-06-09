@@ -15,8 +15,8 @@ from models import OvaJob, OvaJobResource
 # id/name the runner resolves to a numeric ENGAGE/EXPLORE generator id (1-10) via
 # RECURSOS_META. When the client omits `resources` we fall back to one generic
 # ENGAGE + one generic EXPLORE resource (legacy "phases" shape, back-compat).
-_DEFAULT_PLAN = (("engage", 1), ("explore", 2))
-_PHASE_ORDER = {"engage": 1, "explore": 2}
+_DEFAULT_PLAN = (("engage", 1), ("explore", 2), ("explain", 3), ("elaborate", 4), ("evaluate", 5))
+_PHASE_ORDER = {"engage": 1, "explore": 2, "explain": 3, "elaborate": 4, "evaluate": 5}
 
 
 class ResourceRequest(BaseModel):

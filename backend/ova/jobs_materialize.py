@@ -10,13 +10,17 @@ instead of duplicating the SCORM build, and never leaks `str(e)` to any client.
 Runs inside the background runner's own DB Session (no request session), so a
 materialization failure is logged and contained — the job state is unaffected.
 """
+
 import logging
 import uuid
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from agents.elaborate_prompts import RECURSOS_META as ELABORATE_META
 from agents.engage_prompts import RECURSOS_META as ENGAGE_META
+from agents.evaluate_prompts import RECURSOS_META as EVALUATE_META
+from agents.explain_prompts import RECURSOS_META as EXPLAIN_META
 from agents.explore_prompts import RECURSOS_META as EXPLORE_META
 from models import Ova, OvaJob, OvaJobResource, OvaPhase, OvaVersion
 
@@ -24,12 +28,26 @@ logger = logging.getLogger(__name__)
 
 _ENGAGE_NAME_TO_ID = {v["tipo"]: k for k, v in ENGAGE_META.items()}
 _EXPLORE_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLORE_META.items()}
+_EXPLAIN_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLAIN_META.items()}
+_ELABORATE_NAME_TO_ID = {v["tipo"]: k for k, v in ELABORATE_META.items()}
+_EVALUATE_NAME_TO_ID = {v["tipo"]: k for k, v in EVALUATE_META.items()}
 
 
 def _resolve_type(phase_type: str, resource_type: str | None) -> tuple[int | None, str | None]:
     """Map a job resource_type (numeric id or name) to (resource_type_id, title)."""
-    meta = ENGAGE_META if phase_type == "engage" else EXPLORE_META
-    name_to_id = _ENGAGE_NAME_TO_ID if phase_type == "engage" else _EXPLORE_NAME_TO_ID
+    if phase_type == "engage":
+        meta, name_to_id = ENGAGE_META, _ENGAGE_NAME_TO_ID
+    elif phase_type == "explore":
+        meta, name_to_id = EXPLORE_META, _EXPLORE_NAME_TO_ID
+    elif phase_type == "explain":
+        meta, name_to_id = EXPLAIN_META, _EXPLAIN_NAME_TO_ID
+    elif phase_type == "elaborate":
+        meta, name_to_id = ELABORATE_META, _ELABORATE_NAME_TO_ID
+    elif phase_type == "evaluate":
+        meta, name_to_id = EVALUATE_META, _EVALUATE_NAME_TO_ID
+    else:
+        meta, name_to_id = ENGAGE_META, _ENGAGE_NAME_TO_ID
+
     raw = (resource_type or "").strip()
     rid: int | None = None
     if raw.isdigit():
@@ -100,21 +118,25 @@ def _add_phases(db: Session, version_id, resources: list[OvaJobResource]) -> lis
     phases_data: list[dict] = []
     for order, r in enumerate(resources, start=1):
         rid, ptitle = _resolve_type(r.phase_type, r.resource_type)
-        db.add(OvaPhase(
-            version_id=version_id,
-            phase_type=r.phase_type,
-            phase_order=order,
-            content=r.content or "",
-            regenerated=False,
-            resource_type_id=rid,
-            title=ptitle,
-        ))
-        phases_data.append({
-            "type": r.phase_type,
-            "order": order,
-            "content": r.content or "",
-            "title": ptitle,
-        })
+        db.add(
+            OvaPhase(
+                version_id=version_id,
+                phase_type=r.phase_type,
+                phase_order=order,
+                content=r.content or "",
+                regenerated=False,
+                resource_type_id=rid,
+                title=ptitle,
+            )
+        )
+        phases_data.append(
+            {
+                "type": r.phase_type,
+                "order": order,
+                "content": r.content or "",
+                "title": ptitle,
+            }
+        )
     return phases_data
 
 
