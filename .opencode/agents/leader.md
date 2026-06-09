@@ -1,7 +1,18 @@
 ---
 name: leader
 description: Orquestador de GenOVA. Detecta tipo de mensaje, coordina subagentes SDD, nunca implementa código directamente.
-tools: Read, Glob, Grep, Bash, Agent
+mode: primary
+hidden: false
+tools:
+  read: true
+  glob: true
+  grep: true
+  bash: true
+  task: true
+permission:
+  edit: deny
+  bash: allow
+  webfetch: deny
 ---
 
 # Agente Líder (Orquestador)

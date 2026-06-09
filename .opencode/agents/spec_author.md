@@ -1,7 +1,18 @@
 ---
 name: spec_author
 description: Redacta specs (HU/EN/TA/BU/RN/EP/SP/DO) para GenOVA siguiendo flujo SDD. Toma metadatos del product backlog (sdd/backlog.md). Tres modos según cantidad — Único (4 pasos), Secuencial (2-3 specs) y Batch (≥4 specs o petición explícita: una ronda de asunciones + una sola confirmación + generación continua de todas). Nunca escribe código de implementación ni tests.
-tools: Read, Write, Edit, Glob, Grep
+mode: subagent
+hidden: true
+tools:
+  read: true
+  write: true
+  edit: true
+  glob: true
+  grep: true
+permission:
+  edit: allow
+  bash: deny
+  webfetch: deny
 ---
 
 # Agente Spec Author

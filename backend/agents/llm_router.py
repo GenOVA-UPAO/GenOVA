@@ -1,4 +1,5 @@
 """LLM routing — Groq (primary) + OpenRouter (secondary / arbitrary model)."""
+
 import logging
 import os
 import time
@@ -13,6 +14,8 @@ from openai import APIStatusError as OpenAIAPIStatusError
 from openai import APITimeoutError as OpenAIAPITimeoutError
 from openai import OpenAI
 from openai import RateLimitError as OpenAIRateLimitError
+
+from agents.model_catalog import clamp_timeout, is_valid_model
 
 logger = logging.getLogger(__name__)
 
@@ -40,19 +43,19 @@ openrouter_client = OpenAI(
 # (provider, model_id, extra_kwargs)
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
 _MODELOS: dict[str, tuple] = {
-    "texto":        ("groq",       "llama-3.3-70b-versatile",       {}),
+    "texto": ("groq", "llama-3.3-70b-versatile", {}),
     # DeepSeek V4 Flash: 284B MoE / 13B active, 1M context, strong on code.
     # NOTE: there is no ":free" variant on OpenRouter (that id 404s). The paid
     # tier is cheap (~$0.20/M in, $0.80/M out) and handles long HTML reliably.
-    "codigo":       ("openrouter", "deepseek/deepseek-v4-flash",    {}),
-    "orquestador":  ("groq",       "openai/gpt-oss-120b",           {"reasoning_effort": "medium"}),
-    "razonamiento": ("groq",       "qwen/qwen3-32b",                {"reasoning_effort": "default"}),
+    "codigo": ("openrouter", "deepseek/deepseek-v4-flash", {}),
+    "orquestador": ("groq", "openai/gpt-oss-120b", {"reasoning_effort": "medium"}),
+    "razonamiento": ("groq", "qwen/qwen3-32b", {"reasoning_effort": "default"}),
 }
 
-_VISION_MODEL  = "meta-llama/llama-4-scout-17b-16e-instruct"
+_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 _FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
-_FALLBACK_OR_MODEL   = "meta-llama/llama-3.3-70b-instruct:free"
+_FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 
 # Per-task fallback chain. Tried in order on any APIStatusError (rate-limit,
 # 402 insufficient credit, provider-specific errors). The last entry is the
@@ -80,16 +83,25 @@ _FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
 }
 
 
-def _chat(provider: str, model_id: str, prompt: str, max_tokens: int, extra: dict) -> str:
+def _chat(
+    provider: str,
+    model_id: str,
+    prompt: str,
+    max_tokens: int,
+    extra: dict,
+    timeout: float | None = None,
+) -> str:
     msgs = [{"role": "user", "content": prompt}]
     if provider == "groq":
+        client = groq_client.with_options(timeout=timeout) if timeout else groq_client
         # Groq models support up to 8192 output tokens. Previous cap at 3500
         # truncated HTML resources mid-script, breaking interactivity.
-        r = groq_client.chat.completions.create(
+        r = client.chat.completions.create(
             model=model_id, messages=msgs, max_completion_tokens=min(max_tokens, 8192), **extra
         )
     else:
-        r = openrouter_client.chat.completions.create(
+        client = openrouter_client.with_options(timeout=timeout) if timeout else openrouter_client
+        r = client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **extra
         )
     content = r.choices[0].message.content if r.choices else None
@@ -120,12 +132,50 @@ _RECOVERABLE_ERRORS = (
 )
 
 
-def generar_texto(prompt: str, tarea: str, max_tokens: int = 3000) -> str:
+def _resolve_primary(
+    tarea: str, llm_config: dict | None, enabled_models: list | None = None
+) -> tuple[tuple, float | None]:
+    """Pick the primary (provider, model, extra) and per-call timeout, honoring a
+    valid per-user override for `tarea`; fall back to the system default model.
+
+    If `enabled_models` is provided, the user's model choice is checked against it
+    (plus system defaults are always allowed). Models disabled by the user silently
+    fall back to the default."""
+    from agents.model_catalog import is_default_model
+
+    default = _MODELOS.get(tarea, _MODELOS["texto"])
+    cfg = (llm_config or {}).get(tarea) or {}
+    provider, model_id = cfg.get("provider"), cfg.get("model_id")
+    timeout = clamp_timeout(cfg.get("timeout_s")) if cfg.get("timeout_s") is not None else None
+
+    if provider and model_id and is_valid_model(provider, model_id):
+        if enabled_models is None:
+            return (provider, model_id, {}), timeout
+        enabled_keys = {
+            (e["provider"], e["model_id"])
+            for e in enabled_models
+            if isinstance(e, dict) and e.get("provider") and e.get("model_id")
+        }
+        key = (provider, model_id)
+        if key in enabled_keys or is_default_model(provider, model_id):
+            return (provider, model_id, {}), timeout
+    return default, timeout
+
+
+def generar_texto(
+    prompt: str,
+    tarea: str,
+    max_tokens: int = 3000,
+    llm_config: dict | None = None,
+    enabled_models: list | None = None,
+) -> str:
     """Route a task to its model and walk the per-task fallback chain on any
     recoverable API error (rate-limit, 402 insufficient credit, provider 5xx,
     Crucible/sub-host failures). The chain ends in a Groq model that almost
-    always responds within the free tier."""
-    primary = _MODELOS.get(tarea, _MODELOS["texto"])
+    always responds within the free tier. `llm_config` carries per-user model/
+    timeout overrides for the primary attempt. `enabled_models` restricts overrides
+    to models the user has explicitly enabled (system defaults always pass)."""
+    primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
     chain: list[tuple[str, str, dict]] = [primary, *_FALLBACK_CHAIN.get(tarea, [])]
 
     last_err: Exception | None = None
@@ -135,24 +185,37 @@ def generar_texto(prompt: str, tarea: str, max_tokens: int = 3000) -> str:
             backoff = min(2 ** (i - 1), 8)
             logger.info(
                 "Task '%s' switching to %s → %s/%s (backoff %ds)",
-                tarea, role, proveedor, model_id, backoff,
+                tarea,
+                role,
+                proveedor,
+                model_id,
+                backoff,
             )
             time.sleep(backoff)
         try:
-            return _chat(proveedor, model_id, prompt, max_tokens, extra)
+            return _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
         except _RECOVERABLE_ERRORS as exc:
             last_err = exc
             next_step = (
-                f"{chain[i + 1][0]}/{chain[i + 1][1]}" if i + 1 < len(chain) else "<chain exhausted>"
+                f"{chain[i + 1][0]}/{chain[i + 1][1]}"
+                if i + 1 < len(chain)
+                else "<chain exhausted>"
             )
             logger.warning(
                 "Task '%s' %s %s/%s failed (%s). Next: %s.",
-                tarea, role, proveedor, model_id, type(exc).__name__, next_step,
+                tarea,
+                role,
+                proveedor,
+                model_id,
+                type(exc).__name__,
+                next_step,
             )
     raise last_err or RuntimeError("All LLM fallbacks failed")
 
 
-def generar_texto_with_model(prompt: str, model_id: str, provider: str, max_tokens: int = 4000) -> str:
+def generar_texto_with_model(
+    prompt: str, model_id: str, provider: str, max_tokens: int = 4000
+) -> str:
     """Call an arbitrary model on the given provider (groq or openrouter)."""
     try:
         if provider == "groq":
@@ -170,7 +233,12 @@ def generar_texto_with_model(prompt: str, model_id: str, provider: str, max_toke
         return response.choices[0].message.content
 
     except (GroqRateLimitError, OpenAIRateLimitError):
-        logger.warning("Rate limit on model='%s' provider='%s'; falling back to %s", model_id, provider, _FALLBACK_OR_MODEL)
+        logger.warning(
+            "Rate limit on model='%s' provider='%s'; falling back to %s",
+            model_id,
+            provider,
+            _FALLBACK_OR_MODEL,
+        )
         response = openrouter_client.chat.completions.create(
             model=_FALLBACK_OR_MODEL,
             messages=[{"role": "user", "content": prompt}],
@@ -188,5 +256,3 @@ def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
         timeout=_LLM_TIMEOUT_S,
     )
     return response.choices[0].message.content
-
-

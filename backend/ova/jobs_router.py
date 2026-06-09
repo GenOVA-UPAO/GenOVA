@@ -6,6 +6,7 @@ All four endpoints require auth (cookie JWT) and the mutating one is rate-limite
 (R8, C4). Error responses carry only generic messages + `error_id` — never
 `str(e)` or tokens.
 """
+
 import threading
 import uuid
 
@@ -55,7 +56,7 @@ def start_job(
         db,
         user_id=current_user.id,
         prompt=payload.prompt.strip(),
-        params=job_params(payload),
+        params=job_params(payload, current_user.llm_settings, current_user.enabled_models),
         resources=build_resource_plan(payload),
     )
     _launch(job.id)

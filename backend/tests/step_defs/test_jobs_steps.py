@@ -9,6 +9,7 @@ happens. The runner is invoked synchronously (`run_job`) for deterministic state
 `DATABASE_URL` is set to SQLite *before* importing `database`/`models` so the app
 binds to a throwaway engine; we then point `SessionLocal` at the shared one.
 """
+
 import os
 import sys
 import uuid
@@ -111,12 +112,17 @@ def db(Sess):
 
 
 def _stub_agent(monkeypatch, behavior):
-    """Replace the LLM agent: `behavior(phase_type, rtype, concept) -> html|raise`."""
+    """Replace the LLM agent: `behavior(phase_type, rtype, concept) -> html|raise`.
+
+    The real `regenerate_phase_content` takes extra `llm_config` and `enabled_models`
+    args (per-user model overrides); the wrapper absorbs them so stubs stay 3-arg.
+    """
     from ova import jobs_runner_exec
 
-    monkeypatch.setattr(
-        jobs_runner_exec.regen_agents, "regenerate_phase_content", behavior
-    )
+    def wrapper(phase_type, rtype, concept, llm_config=None, enabled_models=None):
+        return behavior(phase_type, rtype, concept)
+
+    monkeypatch.setattr(jobs_runner_exec.regen_agents, "regenerate_phase_content", wrapper)
 
 
 def _make_job(db, *, user_id, resources, status="queued"):
@@ -136,8 +142,12 @@ _FAILING_NAME = "Storyboard de Video"  # ENGAGE id 2
 
 def _engage_plan(n):
     return [
-        {"phase_type": "engage", "phase_order": i + 1,
-         "resource_type": _ENGAGE_NAMES[i % len(_ENGAGE_NAMES)], "resource_order": 0}
+        {
+            "phase_type": "engage",
+            "phase_order": i + 1,
+            "resource_type": _ENGAGE_NAMES[i % len(_ENGAGE_NAMES)],
+            "resource_order": 0,
+        }
         for i in range(n)
     ]
 
@@ -148,13 +158,12 @@ def test_continua_tras_desconexion():
     pass
 
 
-@given("un usuario autenticado inicia la generación de un OVA con 2 fases",
-       target_fixture="ctx")
+@given("un usuario autenticado inicia la generación de un OVA con 2 fases", target_fixture="ctx")
 def inicia_generacion():
     return {"user_id": uuid.uuid4()}
 
 
-@given("el servidor crea un job con sus recursos \"pending\"")
+@given('el servidor crea un job con sus recursos "pending"')
 def crea_job(db, ctx, monkeypatch):
     _stub_agent(monkeypatch, lambda pt, rt, c: f"<html>{pt}-{rt}</html>")
     ctx["job"] = _make_job(db, user_id=ctx["user_id"], resources=_engage_plan(2))
@@ -191,8 +200,7 @@ def test_recurso_falla_sin_abortar():
     pass
 
 
-@given("un job de generación con 3 recursos donde el segundo falla siempre",
-       target_fixture="ctx")
+@given("un job de generación con 3 recursos donde el segundo falla siempre", target_fixture="ctx")
 def job_con_fallo(db, monkeypatch):
     user_id = uuid.uuid4()
 
@@ -212,7 +220,7 @@ def runner_ejecuta_2(db, ctx):
     db.expire_all()
 
 
-@then("el recurso que falla queda en estado \"error\" con un error_id")
+@then('el recurso que falla queda en estado "error" con un error_id')
 def recurso_falla_error_id(db, ctx):
     resources = jobs_service.list_resources(db, ctx["job"].id)
     failed = [r for r in resources if r.resource_type == _FAILING_NAME]
@@ -222,20 +230,20 @@ def recurso_falla_error_id(db, ctx):
     uuid.UUID(str(failed[0].error_id))
 
 
-@then("los otros recursos quedan \"done\"")
+@then('los otros recursos quedan "done"')
 def otros_done(db, ctx):
     resources = jobs_service.list_resources(db, ctx["job"].id)
     done = [r for r in resources if r.resource_type != _FAILING_NAME]
     assert done and all(r.status == "done" for r in done)
 
 
-@then("el job termina \"done\" porque al menos un recurso quedó listo")
+@then('el job termina "done" porque al menos un recurso quedó listo')
 def job_done(db, ctx):
     job = jobs_service.get_job(db, ctx["job"].id, ctx["user_id"])
     assert job.status == "done"
 
 
-@then("el contenido de los recursos \"done\" quedó persistido")
+@then('el contenido de los recursos "done" quedó persistido')
 def contenido_done_persistido(db, ctx):
     resources = jobs_service.list_resources(db, ctx["job"].id)
     for r in resources:
@@ -270,7 +278,7 @@ def maximo_intentos(db, ctx):
     assert ctx["calls"]["n"] == jobs_runner.MAX_ATTEMPTS
 
 
-@then("queda \"error\" con un error_id")
+@then('queda "error" con un error_id')
 def queda_error(db, ctx):
     resources = jobs_service.list_resources(db, ctx["job"].id)
     assert resources[0].status == "error"
@@ -283,8 +291,7 @@ def test_reanudar_solo_pendientes():
     pass
 
 
-@given("un job \"interrupted\" con un recurso \"done\" y dos \"pending\"",
-       target_fixture="ctx")
+@given('un job "interrupted" con un recurso "done" y dos "pending"', target_fixture="ctx")
 def job_interrupted(db):
     user_id = uuid.uuid4()
     job = _make_job(db, user_id=user_id, resources=_engage_plan(3), status="interrupted")
@@ -300,12 +307,12 @@ def solicita_reanudables(db, ctx):
     return jobs_service.resumable_resource_ids(db, ctx["job"].id)
 
 
-@then("solo se listan los recursos \"pending\"")
+@then('solo se listan los recursos "pending"')
 def solo_pending(db, ctx, resumable):
     assert len(resumable) == 2
 
 
-@then("el recurso \"done\" no se incluye")
+@then('el recurso "done" no se incluye')
 def done_excluido(ctx, resumable):
     assert ctx["done_id"] not in resumable
 
@@ -316,7 +323,7 @@ def test_barrido_interrupted():
     pass
 
 
-@given("un job \"running\" cuyo progreso quedó obsoleto", target_fixture="ctx")
+@given('un job "running" cuyo progreso quedó obsoleto', target_fixture="ctx")
 def job_stale(db):
     from datetime import timedelta
 
@@ -334,7 +341,7 @@ def dueno_consulta(db, ctx):
     return jobs_service.get_job(db, ctx["job"].id, ctx["user_id"])
 
 
-@then("el job pasa a \"interrupted\"")
+@then('el job pasa a "interrupted"')
 def pasa_interrupted(fetched):
     assert fetched.status == "interrupted"
 
@@ -345,8 +352,7 @@ def test_no_filtra_sensibles():
     pass
 
 
-@given("un recurso que falló por un error interno del proveedor LLM",
-       target_fixture="ctx")
+@given("un recurso que falló por un error interno del proveedor LLM", target_fixture="ctx")
 def recurso_fallo_sensible(db, monkeypatch):
     user_id = uuid.uuid4()
 
@@ -579,8 +585,7 @@ def job_interrupted_pending(db):
     return {"user_id": user_id, "job": job, "ids": [r.id for r in res]}
 
 
-@when("se resuelven los recursos a reanudar para un subconjunto válido",
-      target_fixture="resolved")
+@when("se resuelven los recursos a reanudar para un subconjunto válido", target_fixture="resolved")
 def resuelve_subconjunto(db, ctx):
     from ova.jobs_helpers import ResumeRequest
     from ova.jobs_router import _resolve_resume_targets
@@ -602,8 +607,7 @@ def test_resume_ajeno_rechazado():
     pass
 
 
-@when("se resuelven los recursos a reanudar incluyendo un id ajeno",
-      target_fixture="resolved")
+@when("se resuelven los recursos a reanudar incluyendo un id ajeno", target_fixture="resolved")
 def resuelve_ajeno(db, ctx):
     from ova.jobs_helpers import ResumeRequest
     from ova.jobs_router import _resolve_resume_targets
@@ -648,8 +652,11 @@ def job_done_y_error(db, monkeypatch):
     res[1].status = "error"  # ENGAGE id 2 — the one to retry
     db.commit()
     return {
-        "user_id": user_id, "job": job,
-        "done_id": res[0].id, "error_id": res[1].id, "seen": seen,
+        "user_id": user_id,
+        "job": job,
+        "done_id": res[0].id,
+        "error_id": res[1].id,
+        "seen": seen,
     }
 
 
@@ -659,9 +666,7 @@ def reanuda_subset_con_done(db, ctx):
     from ova.jobs_router import _resolve_resume_targets
 
     subset = [str(ctx["done_id"]), str(ctx["error_id"])]
-    targets, error = _resolve_resume_targets(
-        db, ctx["job"].id, ResumeRequest(resource_ids=subset)
-    )
+    targets, error = _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=subset))
     assert error is None
     ctx["targets"] = targets
     jobs_runner.run_job(ctx["job"].id, targets)

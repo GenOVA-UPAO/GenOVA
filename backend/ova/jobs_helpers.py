@@ -5,6 +5,7 @@ model, C7) and under 200 lines. Nothing here touches the LLM or the DB beyond
 serializing already-loaded ORM rows. Responses expose only `status` + `error_id`
 per resource — never `str(e)`, content, tokens or credentials (R8).
 """
+
 from pydantic import BaseModel, Field
 
 from models import OvaJob, OvaJobResource
@@ -58,12 +59,14 @@ def build_resource_plan(payload: StartJobRequest) -> list[dict]:
             phase = r.phase_type.strip().lower()
             order = seq.get(phase, 0)
             seq[phase] = order + 1
-            plan.append({
-                "phase_type": phase,
-                "phase_order": _PHASE_ORDER.get(phase, 99),
-                "resource_type": r.resource_type.strip(),
-                "resource_order": order,
-            })
+            plan.append(
+                {
+                    "phase_type": phase,
+                    "phase_order": _PHASE_ORDER.get(phase, 99),
+                    "resource_type": r.resource_type.strip(),
+                    "resource_order": order,
+                }
+            )
         return plan
     return _legacy_phase_plan(payload.phases)
 
@@ -71,9 +74,7 @@ def build_resource_plan(payload: StartJobRequest) -> list[dict]:
 def _legacy_phase_plan(phases: list[str]) -> list[dict]:
     """Back-compat: one generic resource per requested phase (resource_type None)."""
     requested = [p.strip().lower() for p in phases if p and p.strip()]
-    rows = (
-        list(enumerate(requested, start=1)) if requested else None
-    )
+    rows = list(enumerate(requested, start=1)) if requested else None
     pairs = [(t, o) for o, t in rows] if rows else list(_DEFAULT_PLAN)
     return [
         {"phase_type": t, "phase_order": o, "resource_type": None, "resource_order": 0}
@@ -81,13 +82,24 @@ def _legacy_phase_plan(phases: list[str]) -> list[dict]:
     ]
 
 
-def job_params(payload: StartJobRequest) -> dict:
-    """Persist the generation request shape for later replay/resume (R9)."""
+def job_params(
+    payload: StartJobRequest, llm_config: dict | None = None, enabled_models: list | None = None
+) -> dict:
+    """Persist the generation request shape for later replay/resume (R9).
+
+    `llm_config` is the OVA owner's per-type model/timeout config, snapshotted
+    into the job so the background runner uses the user's choices without a DB
+    lookup (and a later settings change doesn't mutate an in-flight job).
+    `enabled_models` is the user's enabled model allowlist — snapshotted so
+    the runner can enforce it.
+    """
     return {
         "llm": payload.llm,
         "upload_ids": list(payload.upload_ids),
         "phases": list(payload.phases),
         "resources": [r.model_dump() for r in payload.resources],
+        "llm_config": llm_config or {},
+        "enabled_models": enabled_models or [],
     }
 
 

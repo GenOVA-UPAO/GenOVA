@@ -10,6 +10,7 @@ left `error` with its opaque `error_id` — without aborting the others (R6).
 
 The whole worker is wrapped so an unexpected error never takes down the process.
 """
+
 import logging
 import os
 import uuid
@@ -90,6 +91,18 @@ def _has_done_resource(db: Session, job_id: uuid.UUID) -> bool:
     )
 
 
+def _resource_budget(llm_config: dict) -> float:
+    """Per-resource wall-clock cap, raised to fit the user's per-call timeouts."""
+    timeouts = [
+        float(v["timeout_s"])
+        for v in llm_config.values()
+        if isinstance(v, dict) and v.get("timeout_s")
+    ]
+    return (
+        max([RESOURCE_TIMEOUT_S, *(t + 30 for t in timeouts)]) if timeouts else RESOURCE_TIMEOUT_S
+    )
+
+
 def _process_resource(db: Session, job: OvaJob, resource: OvaJobResource) -> bool:
     """Generate one resource with retries+timeout. Returns True if it ended done.
 
@@ -98,7 +111,13 @@ def _process_resource(db: Session, job: OvaJob, resource: OvaJobResource) -> boo
     """
     resource.status = "running"
     db.commit()
-    html, err = generate_resource_html(resource, job.prompt, MAX_ATTEMPTS, RESOURCE_TIMEOUT_S)
+    params = job.params or {}
+    llm_config = params.get("llm_config") or {}
+    enabled_models = params.get("enabled_models") or []
+    budget = _resource_budget(llm_config)
+    html, err = generate_resource_html(
+        resource, job.prompt, MAX_ATTEMPTS, budget, llm_config, enabled_models
+    )
     resource.attempts = MAX_ATTEMPTS if err else (resource.attempts or 0) + 1
     if html:
         resource.content = html
@@ -135,6 +154,7 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
         # user sees it in "Mis OVAs" with an error badge instead of disappearing.
         try:
             from models import Ova as _Ova
+
             ova = db.get(_Ova, job.ova_id)
             if ova is not None:
                 ova.status = "error"
@@ -151,7 +171,9 @@ def _materialize(db: Session, job: OvaJob) -> None:
             select(OvaJobResource)
             .where(OvaJobResource.job_id == job.id, OvaJobResource.status == "done")
             .order_by(OvaJobResource.phase_order, OvaJobResource.resource_order)
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     )
     materialize_partial_ova(db, job, done)
 

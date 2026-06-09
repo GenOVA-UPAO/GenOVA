@@ -1,7 +1,18 @@
 ---
 name: spec-sync
 description: Detecta cambios de interfaz pública en features implementadas y propone actualizaciones a specs que los referencian. Agente de servicio — sin estado, idempotente.
-tools: Read, Write, Edit, Glob, Grep
+mode: subagent
+hidden: true
+tools:
+  read: true
+  write: true
+  edit: true
+  glob: true
+  grep: true
+permission:
+  edit: allow
+  bash: deny
+  webfetch: deny
 ---
 
 # Agente Spec-Sync

@@ -45,6 +45,8 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         if not ova:
             return
 
+        llm_config = _owner_llm_config(db, ova.user_id)
+
         current_version = _get_active_version(ova_id, db)
         if not current_version:
             current_version = _ensure_version_exists(ova, db)
@@ -77,7 +79,7 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
             new_content = phase.content
 
             if should_regen:
-                new_content = _regen_phase(phase, prompt) or phase.content
+                new_content = _regen_phase(phase, prompt, llm_config) or phase.content
 
             new_phase = OvaPhase(
                 version_id=new_version.id,
@@ -118,14 +120,22 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         db.close()
 
 
-def _regen_phase(phase: OvaPhase, concept: str) -> str | None:
+def _owner_llm_config(db: Session, user_id) -> dict:
+    """Load the OVA owner's per-type LLM overrides (empty = system defaults)."""
+    from models import User
+
+    user = db.get(User, user_id)
+    return (user.llm_settings if user else None) or {}
+
+
+def _regen_phase(phase: OvaPhase, concept: str, llm_config: dict | None = None) -> str | None:
     """Call the real LLM agent for a single phase. Returns HTML or None."""
     rtype = resolve_resource_type(phase)
     if rtype is None:
         logger.warning("Skipping regen for phase %s — unknown resource_type", phase.id)
         return None
     logger.info("Regenerating %s/%d for concept=%r", phase.phase_type, rtype, concept[:60])
-    return regenerate_phase_content(phase.phase_type, rtype, concept)
+    return regenerate_phase_content(phase.phase_type, rtype, concept, llm_config)
 
 
 def _build_and_persist(ova, ova_id, new_version, version_num, phases_data, db):

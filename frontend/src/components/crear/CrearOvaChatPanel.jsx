@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { FileChip } from './FileChip.jsx'
@@ -6,6 +6,8 @@ import { SelectionChips } from './SelectionChips.jsx'
 import { LlmEnginesPanel } from '../LlmEnginesPanel.jsx'
 import { ProgressPanel } from './ProgressPanel.jsx'
 import { TotalFailurePanel } from './TotalFailurePanel.jsx'
+import { LlmSettingsModal } from '../workspace/LlmSettingsModal.jsx'
+import { GearButton } from '../settings/GearButton.jsx'
 
 /**
  * Left panel for creation workspace. Mirrors WorkspaceChatPanel structure:
@@ -23,6 +25,7 @@ export function CrearOvaChatPanel({
   jobToggleFailed, jobRetryOne, jobSelectAllFailed, jobRetrySelected, onPreviewPin, activeId,
 }) {
   const fileInputRef = useRef(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const { uploads, activeUploadsCount, maxUploadFiles, isUploadingFiles,
     uploadError, onFilesSelected, onRemove, disabled } = uploadsProps
 
@@ -42,15 +45,17 @@ export function CrearOvaChatPanel({
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">
+      <LlmSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
 
       {/* Scrollable body — resource config + progress */}
       <div className="flex-1 overflow-y-auto">
 
         {/* Header */}
-        <div className="px-4 pt-4 pb-2">
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Crear OVA
           </p>
+          <GearButton onClick={() => setSettingsOpen(true)} />
         </div>
 
         {/* Resource selection */}

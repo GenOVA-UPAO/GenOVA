@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # Load .env before importing modules that read env vars at import time.
 load_dotenv()
 
-from fastapi import FastAPI, Response
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -19,6 +19,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from agents.router import router as agents_router
+from auth.dependencies import require_admin
 from auth.router import router as auth_router
 from database import Base, engine
 from labs.generation_routes import router as labs_gen_router
@@ -87,6 +88,19 @@ def _background_rag_purge() -> None:
         logger.exception("RAG startup cleanup failed (continuing).")
 
 
+def _background_catalog_refresh() -> None:
+    """Fetch model catalogs from OpenRouter + Groq and cache in Supabase."""
+    try:
+        from sqlalchemy.orm import Session
+
+        from agents.catalog_refresh import refresh_catalog
+
+        with Session(engine) as session:
+            refresh_catalog(session)
+    except Exception:
+        logger.exception("Catalog refresh on startup failed (continuing).")
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     run_migrations()
@@ -94,6 +108,8 @@ async def lifespan(_: FastAPI):
     seed_db()
     # Fire-and-forget cleanup; boot completes without waiting on the DB.
     asyncio.create_task(asyncio.to_thread(_background_rag_purge))
+    # Fire-and-forget catalog refresh from provider APIs.
+    asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
     yield
 
 
@@ -158,6 +174,29 @@ def db_health(response: Response) -> dict[str, str]:
         connection.execute(text("SELECT 1"))
     response.headers["Cache-Control"] = _HEALTH_CACHE
     return {"status": "ok", "scope": "db"}
+
+
+@app.post("/api/admin/refresh-catalog")
+@limiter.limit("2/minute")
+def admin_refresh_catalog(
+    request: Request,
+    _admin: None = Depends(require_admin),
+):
+    """Force-refresh the LLM model catalog from provider APIs (admin-only)."""
+    from sqlalchemy.orm import Session
+
+    from agents.catalog_refresh import get_catalog_entries, refresh_catalog
+
+    try:
+        with Session(engine) as session:
+            refresh_catalog(session)
+        return {"status": "ok", "entries": len(get_catalog_entries())}
+    except Exception as exc:
+        logger.exception("Admin catalog refresh failed")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Catalog refresh failed: {exc}",
+        ) from exc
 
 
 app.include_router(agents_router, prefix="/api/agents", tags=["agents"])

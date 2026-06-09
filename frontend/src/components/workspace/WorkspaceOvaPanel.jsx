@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { WorkspaceHtmlPreview } from './WorkspaceHtmlPreview.jsx'
 import { WorkspaceResourceList } from './WorkspaceResourceList.jsx'
+import { LlmSettingsModal } from './LlmSettingsModal.jsx'
+import { GearButton } from '../settings/GearButton.jsx'
 
 /**
  * HU-025 — workspace right panel: Preview/Code tabs + toolbar.
@@ -27,6 +29,7 @@ export function WorkspaceOvaPanel({
   onHistoryOpen,
 }) {
   const [tab, setTab] = useState('preview')
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const hasPhases = Array.isArray(phases) && phases.length > 0
 
@@ -51,6 +54,7 @@ export function WorkspaceOvaPanel({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      <LlmSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       {/* Toolbar */}
       <div className="flex items-center gap-2 border-b border-border px-3 py-2 bg-background shrink-0 flex-wrap">
         <div className="flex items-center gap-1.5 rounded-md border border-border bg-muted/30 p-0.5">
@@ -91,7 +95,8 @@ export function WorkspaceOvaPanel({
           ⏱ Historial
         </Button>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1">
+          <GearButton onClick={() => setSettingsOpen(true)} />
           <Button
             type="button"
             size="sm"

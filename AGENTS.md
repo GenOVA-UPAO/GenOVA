@@ -110,7 +110,7 @@ Este repositorio soporta múltiples AI coding tools. `AGENTS.md` es la fuente de
 |---|---|---|---|
 | Claude Code | `CLAUDE.md` + `AGENTS.md` | `.claude/agents/` | Herramienta primaria |
 | Codex CLI | `AGENTS.md` | — | Nativo |
-| Opencode | `AGENTS.md` | `.opencode/agents/` (symlink) | `.opencode/opencode.json` |
+| Opencode | `AGENTS.md` | `.opencode/agents/` (copias transformadas desde `.claude/agents/`) | `.opencode/opencode.json` |
 | GitHub Copilot | `AGENTS.md` + `.github/copilot-instructions.md` | `.github/agents/sdd-leader.agent.md` | Workspace instructions |
 | Antigravity | `GEMINI.md` → `AGENTS.md` | — | `GEMINI.md` |
 
@@ -119,7 +119,7 @@ Este repositorio soporta múltiples AI coding tools. `AGENTS.md` es la fuente de
 | Symlink | Apunta a | Creado por |
 |---|---|---|
 | `.claude/skills/<name>/` | `.agents/skills/<name>/` | `npx skills add` |
-| `.opencode/agents/` | `.claude/agents/` | `scripts/setup-harness.ps1` |
+| `.opencode/agents/*.md` | Copia transformada desde `.claude/agents/*.md` (mode/hidden/permission para Opencode) | `scripts/setup-harness.ps1` |
 
-**Post-clone en Windows**: ejecuta `scripts/setup-harness.ps1` para recrear symlinks.
+**Post-clone en Windows**: ejecuta `scripts/setup-harness.ps1` para recrear symlinks y resincronizar agentes de Opencode.
 Para verificar sin crear: `scripts/setup-harness.ps1 -Check`.

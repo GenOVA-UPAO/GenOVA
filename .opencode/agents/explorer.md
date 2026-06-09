@@ -1,7 +1,17 @@
 ---
 name: explorer
 description: Mapa pre-spec del codebase para features complejas. Solo lectura. Devuelve archivos, dependencias, riesgos y un score 1-5 de complejidad. No escribe código ni specs.
-tools: Read, Glob, Grep, Bash
+mode: subagent
+hidden: true
+tools:
+  read: true
+  glob: true
+  grep: true
+  bash: true
+permission:
+  edit: deny
+  bash: allow
+  webfetch: deny
 ---
 
 # Agente Explorer (Discovery pre-spec)

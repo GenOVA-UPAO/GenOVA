@@ -1,62 +1,23 @@
 """LLM catalog and OVA output-directory helpers shared by the OVA routers.
 
-`LLM_CATALOG` exposes the actual generation engines (Groq + OpenRouter) the
-backend uses today. Frontend can read `/api/ova/llm-options` to render a
-picker; `OVA_ENABLED_LLMS` filters which entries are surfaced (by `id`).
+The LLM catalog is now sourced from agents/catalog_refresh (in-memory merged
+catalog, refreshed at startup from provider APIs). The legacy LLM_CATALOG and
+_enabled_llm_options()/ids() have been removed — use `get_catalog_entries()`
+from agents.catalog_refresh directly, or consume the filtered catalog returned
+by GET /api/users/me/llm-settings on the frontend.
 """
+
 import os
 
-LLM_CATALOG = [
-    {
-        "id": "groq-llama-3.3-70b",
-        "label": "Llama 3.3 70B (Groq)",
-        "provider": "Groq",
-        "task": "texto",
-        "quality_tier": "high",
-        "cost_tier": "low",
-        "notes": "Generación de texto general (ENGAGE/EXPLORE step 1).",
-    },
-    {
-        "id": "groq-gpt-oss-120b",
-        "label": "GPT-OSS 120B (Groq)",
-        "provider": "Groq",
-        "task": "orquestador",
-        "quality_tier": "high",
-        "cost_tier": "medium",
-        "notes": "Razonamiento + orquestación multi-paso.",
-    },
-    {
-        "id": "groq-qwen3-32b",
-        "label": "Qwen3 32B (Groq)",
-        "provider": "Groq",
-        "task": "razonamiento",
-        "quality_tier": "high",
-        "cost_tier": "low",
-    },
-    {
-        "id": "openrouter-deepseek-v4-flash",
-        "label": "DeepSeek V4 Flash (OpenRouter)",
-        "provider": "OpenRouter",
-        "task": "codigo",
-        "quality_tier": "high",
-        "cost_tier": "low",
-        "notes": "Generación de HTML/JS interactivo (step 2). LiveCodeBench 91.6 / SWE-bench 79.0. Mejor seguimiento de reglas anidadas.",
-    },
-]
-
-
-def _enabled_llm_ids() -> set[str]:
-    """Parse OVA_ENABLED_LLMS into a set of catalog IDs. Empty/unset means
-    enable everything in the catalog."""
-    raw = os.getenv("OVA_ENABLED_LLMS", "").strip()
-    if not raw:
-        return {item["id"] for item in LLM_CATALOG}
-    return {item.strip().lower() for item in raw.split(",") if item.strip()}
+from agents.catalog_refresh import get_catalog_entries
 
 
 def _enabled_llm_options() -> list[dict]:
-    allowed = _enabled_llm_ids()
-    return [item for item in LLM_CATALOG if item["id"] in allowed]
+    """Return the full catalog of active models (for backward compat with
+    any remaining internal consumers). New code should use
+    `get_catalog_entries()` directly."""
+    entries = get_catalog_entries()
+    return [e for e in entries if e.get("active")]
 
 
 def _ova_output_dir() -> str:

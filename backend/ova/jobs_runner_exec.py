@@ -5,6 +5,7 @@ code each stay well under the 200-line cap (C3) and so tests can monkeypatch the
 single agent call (`regen_agents.regenerate_phase_content`) without touching the
 job loop. No DB access here — the caller persists the result.
 """
+
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
@@ -38,10 +39,24 @@ def _resource_type_id(resource) -> int | None:
     return _RESOURCE_NAME_TO_ID.get(name)
 
 
-def _call_agent_with_timeout(phase_type: str, rtype: int, concept: str, timeout_s: float) -> str | None:
+def _call_agent_with_timeout(
+    phase_type: str,
+    rtype: int,
+    concept: str,
+    timeout_s: float,
+    llm_config: dict | None = None,
+    enabled_models: list | None = None,
+) -> str | None:
     """Run one agent call, capping wall time so a stuck provider can't hang the thread."""
     with ThreadPoolExecutor(max_workers=1) as pool:
-        future = pool.submit(regen_agents.regenerate_phase_content, phase_type, rtype, concept)
+        future = pool.submit(
+            regen_agents.regenerate_phase_content,
+            phase_type,
+            rtype,
+            concept,
+            llm_config,
+            enabled_models,
+        )
         try:
             return future.result(timeout=timeout_s)
         except FutureTimeout as exc:
@@ -50,7 +65,12 @@ def _call_agent_with_timeout(phase_type: str, rtype: int, concept: str, timeout_
 
 
 def generate_resource_html(
-    resource, concept: str, max_attempts: int, timeout_s: float
+    resource,
+    concept: str,
+    max_attempts: int,
+    timeout_s: float,
+    llm_config: dict | None = None,
+    enabled_models: list | None = None,
 ) -> tuple[str | None, str | None]:
     """Generate HTML for one resource. Returns (html, error_message).
 
@@ -61,14 +81,20 @@ def generate_resource_html(
     rtype = _resource_type_id(resource)
     if rtype is None:
         return None, (
-            f"unknown resource_type {resource.resource_type!r} "
-            f"for phase {resource.phase_type}"
+            f"unknown resource_type {resource.resource_type!r} for phase {resource.phase_type}"
         )
 
     last_err = "generation failed"
     for attempt in range(1, max_attempts + 1):
         try:
-            html = _call_agent_with_timeout(resource.phase_type, rtype, concept, timeout_s)
+            html = _call_agent_with_timeout(
+                resource.phase_type,
+                rtype,
+                concept,
+                timeout_s,
+                llm_config,
+                enabled_models,
+            )
             if html and html.strip():
                 return html, None
             last_err = "model returned empty content"
@@ -76,6 +102,10 @@ def generate_resource_html(
             last_err = f"{type(exc).__name__}: {exc}"
             logger.warning(
                 "Resource %s/%s attempt %d/%d failed: %s",
-                resource.phase_type, rtype, attempt, max_attempts, type(exc).__name__,
+                resource.phase_type,
+                rtype,
+                attempt,
+                max_attempts,
+                type(exc).__name__,
             )
     return None, f"{last_err} after {max_attempts} attempts"
