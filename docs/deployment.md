@@ -105,8 +105,7 @@ cp frontend/.env.example frontend/.env
 | `OVA_OUTPUT_DIR` | `backend/scorm_output` | | Carpeta SCORM (fallback disco) |
 | `OVA_MAX_GENERATED_IMAGES` | 2 | | Cap de imágenes por recurso |
 | `OVA_GENERATION_DURATION_SECONDS` | 14 | | Duración simulada del job (Labs) |
-| `POLLINATIONS_TOKEN` | — | | Token Pollinations (más cuota de imágenes) |
-| `HF_TOKEN` | — | | Token Hugging Face (fallback FLUX.1-schnell) |
+| `HF_TOKEN` | — | | Token Hugging Face (FLUX.1-schnell image generation) |
 | `HF_IMAGE_MODEL` | `black-forest-labs/FLUX.1-schnell` | | Modelo HF de imagen |
 | `SUPABASE_URL` | — | | Proyecto Supabase (habilita Storage) |
 | `SUPABASE_SERVICE_ROLE_KEY` | — | | Service role (server-only, **nunca** `VITE_*`) |

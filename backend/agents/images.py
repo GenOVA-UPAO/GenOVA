@@ -1,41 +1,23 @@
-"""Pollinations.ai image generation.
+"""Image generation via Hugging Face Inference API (FLUX.1-schnell by default).
 
-Free, no-key image API. Each request renders the prompt server-side and returns
-a JPEG. We fetch with limited concurrency and base64-encode so the resulting
-HTML stays self-contained (SCORM packages must not depend on external URLs).
+Returns a base64 JPEG data URI so the resulting HTML stays self-contained
+(SCORM packages must not depend on external URLs). Returns None on any failure
+so the caller can render a placeholder instead.
 """
 import base64
 import hashlib
 import logging
 import os
-import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 
 logger = logging.getLogger(__name__)
 
-_BASE = "https://image.pollinations.ai/prompt/"
-_TIMEOUT_S = 15  # Lowered from 25s — placeholder is better than long waits.
-_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; GenOVA/1.0; +https://genova.ai)",
-    "Referer": "https://genova.ai",
-    "Accept": "image/*",
-}
-
 # Simple in-memory cache: prompt hash → data_uri. Avoids re-fetching the same
 # images during regeneration or retry flows.
 _cache: dict[str, str] = {}
 _MAX_CACHE = 100
-
-
-def _build_headers() -> dict[str, str]:
-    """Add Authorization if POLLINATIONS_TOKEN is set (gives higher quota)."""
-    h = dict(_HEADERS)
-    token = os.getenv("POLLINATIONS_TOKEN")
-    if token:
-        h["Authorization"] = f"Bearer {token}"
-    return h
 
 
 def _cache_key(prompt: str, w: int, h: int) -> str:
@@ -48,10 +30,9 @@ def fetch_image_data_uri(
     height: int = 512,
     model: str | None = None,
 ) -> str | None:
-    """Render `prompt` using Hugging Face Inference API (if HF_TOKEN is configured)
-    with fallback to Pollinations.ai, and return a base64 JPEG data URI.
+    """Render `prompt` using Hugging Face Inference API and return a base64 JPEG data URI.
 
-    Returns None on any failure so the caller can render a placeholder/fallback.
+    Requires HF_TOKEN env var. Returns None if not configured or on any failure.
     """
     import json
 
@@ -64,59 +45,41 @@ def fetch_image_data_uri(
         return _cache[key]
 
     hf_token = os.getenv("HF_TOKEN", "").strip()
-    if hf_token:
-        # Option 1: Hugging Face Inference API (FLUX.1-schnell)
-        hf_model = os.getenv("HF_IMAGE_MODEL", "black-forest-labs/FLUX.1-schnell").strip()
-        url = f"https://api-inference.huggingface.co/models/{hf_model}"
-        headers = {
-            "Authorization": f"Bearer {hf_token}",
-            "Content-Type": "application/json",
-            "x-wait-for-model": "true",
-        }
-        try:
-            logger.info("Attempting Hugging Face image generation for prompt %r using model %s", clean[:60], hf_model)
-            resp = httpx.post(
-                url,
-                content=json.dumps({"inputs": clean}).encode("utf-8"),
-                headers=headers,
-                timeout=30.0,
-                verify=True,
-            )
-            resp.raise_for_status()
-            data = resp.content
-            if data.startswith(b"{") and b"error" in data:
-                logger.warning(
-                    "HF Inference API returned JSON error: %s",
-                    data.decode("utf-8", errors="ignore")[:200],
-                )
-                raise RuntimeError("HF Inference API returned error")
+    if not hf_token:
+        return None
 
-            uri = "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
-            if len(_cache) >= _MAX_CACHE:
-                _cache.pop(next(iter(_cache)))
-            _cache[key] = uri
-            return uri
-        except Exception as exc:
-            logger.warning("Hugging Face image generation failed for %r, falling back to Pollinations: %s", clean[:60], exc)
-
-    # Option 2 / Fallback: Pollinations.ai
-    params = {"width": width, "height": height, "nologo": "true"}
-    if model:
-        params["model"] = model
-    qs = urllib.parse.urlencode(params)
-    url = f"{_BASE}{urllib.parse.quote(clean)}?{qs}"
+    hf_model = os.getenv("HF_IMAGE_MODEL", "black-forest-labs/FLUX.1-schnell").strip()
+    url = f"https://api-inference.huggingface.co/models/{hf_model}"
+    headers = {
+        "Authorization": f"Bearer {hf_token}",
+        "Content-Type": "application/json",
+        "x-wait-for-model": "true",
+    }
     try:
-        logger.info("Attempting Pollinations image generation for prompt %r", clean[:60])
-        resp = httpx.get(url, headers=_build_headers(), timeout=_TIMEOUT_S, verify=True)
+        logger.info("Attempting Hugging Face image generation for prompt %r using model %s", clean[:60], hf_model)
+        resp = httpx.post(
+            url,
+            content=json.dumps({"inputs": clean}).encode("utf-8"),
+            headers=headers,
+            timeout=30.0,
+            verify=True,
+        )
         resp.raise_for_status()
         data = resp.content
+        if data.startswith(b"{") and b"error" in data:
+            logger.warning(
+                "HF Inference API returned JSON error: %s",
+                data.decode("utf-8", errors="ignore")[:200],
+            )
+            return None
+
         uri = "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
         if len(_cache) >= _MAX_CACHE:
             _cache.pop(next(iter(_cache)))
         _cache[key] = uri
         return uri
     except Exception as exc:
-        logger.warning("Pollinations fetch failed for prompt %r: %s", clean[:60], exc)
+        logger.warning("Hugging Face image generation failed for %r: %s", clean[:60], exc)
         return None
 
 

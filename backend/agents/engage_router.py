@@ -37,16 +37,14 @@ _IMG_PLACEHOLDER = (
 )
 
 
-# Pollinations free anonymous tier throttles hard, so we only generate the
-# first N images per resource and let the rest render text-only.
 _MAX_GENERATED_IMAGES = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
 
 
 def _enrich_with_images(json_data) -> dict[str, str]:
     """For step-1 JSON whose items contain a `prompt_imagen` field, fetch up
-    to `_MAX_GENERATED_IMAGES` images via Pollinations and add an
-    `image_placeholder` to each item that gets one. Returns the
-    {placeholder: data_uri} map for post-LLM replacement."""
+    to `_MAX_GENERATED_IMAGES` images and add an `image_placeholder` to each
+    item that gets one. Returns the {placeholder: data_uri} map for
+    post-LLM replacement."""
     if not isinstance(json_data, list) or not json_data:
         return {}
     first = json_data[0] if isinstance(json_data[0], dict) else None

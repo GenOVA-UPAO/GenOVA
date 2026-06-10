@@ -119,9 +119,8 @@ del [README](../README.md) y [database.md](database.md) (`rag_chunks`).
 ## Imágenes
 
 Recursos cuyo JSON trae campos `prompt_imagen` disparan generación de imágenes en paralelo
-(`backend/agents/images.py`): **Pollinations** (token opcional `POLLINATIONS_TOKEN`) con
-fallback a **Hugging Face FLUX.1-schnell** (`HF_TOKEN`). Límite por recurso:
+(`backend/agents/images.py`): **Hugging Face FLUX.1-schnell** (`HF_TOKEN`). Límite por recurso:
 `OVA_MAX_GENERATED_IMAGES` (default 2). Los placeholders `__IMG_1__`, `__IMG_2__`… se
-reemplazan por data URIs (o un SVG placeholder si falla).
+reemplazan por data URIs (o un SVG placeholder si falla o `HF_TOKEN` no está configurado).
 
 _Fuentes: `backend/agents/` (`engage_router.py`, `explore_router.py`, `llm_router.py`, `html_validator.py`, `engage_prompts.py`, `audio_helpers.py`, `images.py`)._
