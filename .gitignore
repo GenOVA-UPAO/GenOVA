@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -35,6 +35,9 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+
+# Antigravity / Gemini local configuration
+.gemini/
 
 # Unit test / coverage reports
 htmlcov/
@@ -151,6 +154,7 @@ activemq-data/
 .env
 .env.*
 !.env.example
+!.env.production
 .envrc
 .venv
 env/
@@ -197,9 +201,9 @@ cython_debug/
 .abstra/
 
 # Visual Studio Code
-#   Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
+#   Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore
 #   that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#   and can be added to the global gitignore or merged into this file. However, if you prefer, 
+#   and can be added to the global gitignore or merged into this file. However, if you prefer,
 #   you could uncomment the following to ignore the entire vscode folder
 .vscode/
 pyrightconfig.json
@@ -244,3 +248,19 @@ node_modules/
 history.jsonl
 stats-cache.json
 nul
+
+# playwright-bdd generated test files
+tests/.features-gen/
+tests/playwright-report/
+
+*.zip
+
+# Prompt Lab — outputs temporales (los winners/ sí se commitean)
+backend/tools/outputs/
+backend/tools/prompt_lab_log.jsonl
+
+# Wireframes temporales del implementer (FASE 0) — se eliminan tras implementación real
+frontend/src/wireframes/
+
+# Audit — dumps HTML/JSON de recursos generados (servidos en :8090 vía launch.json, no se versionan)
+.audit/

@@ -1,46 +1,108 @@
-import os
+"""Idempotent SQL migration runner.
+
+Each *.sql file under `backend/migrations/` is applied at most once. Applied
+filenames are tracked in the `_migrations_applied` table (bootstrapped by
+`016_migrations_applied.sql`). Files prior to 016 are also skipped after their
+first successful run via the same table — we backfill them on first boot if
+they execute cleanly.
+"""
 import glob
+import logging
+import os
+
 from sqlalchemy import text
+
 from database import engine
 
-def run_migrations():
-    print("Iniciando la aplicación de migraciones SQL...")
-    
-    # Get migrations directory
+logger = logging.getLogger(__name__)
+
+_BOOTSTRAP_FILE = "016_migrations_applied.sql"
+_TRACKING_TABLE_DDL = (
+    "CREATE TABLE IF NOT EXISTS _migrations_applied ("
+    " filename TEXT PRIMARY KEY,"
+    " applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()"
+    ")"
+)
+
+
+def _split_statements(sql: str) -> list[str]:
+    cleaned_lines = [
+        line for line in sql.splitlines() if not line.strip().startswith("--")
+    ]
+    cleaned = "\n".join(cleaned_lines)
+    return [q.strip() for q in cleaned.split(";") if q.strip()]
+
+
+def _applied_set(conn) -> set[str]:
+    rows = conn.execute(text("SELECT filename FROM _migrations_applied")).fetchall()
+    return {r[0] for r in rows}
+
+
+def run_migrations() -> None:
     migrations_dir = os.path.join(os.path.dirname(__file__), "migrations")
     if not os.path.exists(migrations_dir):
-        print(f"Directorio de migraciones no encontrado: {migrations_dir}")
+        logger.warning("Migrations directory not found: %s", migrations_dir)
         return
-        
+
     sql_files = sorted(glob.glob(os.path.join(migrations_dir, "*.sql")))
-    
+    if not sql_files:
+        return
+
+    with engine.begin() as conn:
+        # Always ensure tracking table exists before reading it.
+        conn.execute(text(_TRACKING_TABLE_DDL))
+
     with engine.connect() as conn:
+        applied = _applied_set(conn)
+        skipped = 0
+        applied_now = 0
+
         for sql_file in sql_files:
-            print(f"Aplicando migración: {os.path.basename(sql_file)}")
-            with open(sql_file, "r", encoding="utf-8") as f:
+            name = os.path.basename(sql_file)
+            if name in applied:
+                skipped += 1
+                continue
+
+            with open(sql_file, encoding="utf-8") as f:
                 content = f.read()
-                
-            # Split by semicolon, filter out empty queries
-            queries = [q.strip() for q in content.split(";") if q.strip()]
-            
-            for query in queries:
+            statements = _split_statements(content)
+
+            file_ok = True
+            for query in statements:
                 try:
-                    # Execute each query individually
                     conn.execute(text(query))
-                    # Commit is handled automatically in autocommit mode, 
-                    # but since we are using connection directly, we should commit
                     conn.commit()
-                except Exception as e:
-                    # Ignore errors if they are about already existing items, 
-                    # but print other unexpected issues
-                    err_msg = str(e)
-                    if "already exists" in err_msg or "duplicate key" in err_msg:
-                        # Safe to ignore
-                        pass
-                    else:
-                        print(f"  Aviso al ejecutar query [{query[:50]}...]: {err_msg}")
-                        
-    print("Migraciones aplicadas exitosamente.")
+                except Exception as exc:
+                    err = str(exc).lower()
+                    if "already exists" in err or "duplicate key" in err:
+                        # First-time tracking pass on a legacy DB: schema already there.
+                        continue
+                    logger.warning(
+                        "Migration %s statement skipped (%s): %s...",
+                        name, type(exc).__name__, query[:60],
+                    )
+                    file_ok = False
+
+            if file_ok:
+                try:
+                    conn.execute(
+                        text(
+                            "INSERT INTO _migrations_applied (filename) VALUES (:f) "
+                            "ON CONFLICT (filename) DO NOTHING"
+                        ),
+                        {"f": name},
+                    )
+                    conn.commit()
+                    applied_now += 1
+                except Exception:
+                    logger.exception("Failed to record migration %s", name)
+
+        logger.info(
+            "Migrations done: %d applied, %d already-applied skipped.",
+            applied_now, skipped,
+        )
+
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     run_migrations()

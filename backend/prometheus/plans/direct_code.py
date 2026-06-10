@@ -1,0 +1,47 @@
+"""Direct code generation plan — single call to generate HTML without JSON step.
+
+Used for resources that are purely visual/code-based (simulators, animations, diagrams).
+"""
+
+from llm.router import generar_texto
+from llm.utils import strip_markdown
+
+_PROMPTS = {}
+
+
+def _load_prompts(phase: str):
+    if phase in _PROMPTS:
+        return _PROMPTS[phase]
+    if phase == "engage":
+        from agents import engage_prompts as mod
+    elif phase == "explore":
+        from agents import explore_prompts as mod
+    elif phase == "explain":
+        from agents import explain_prompts as mod
+    elif phase == "elaborate":
+        from agents import elaborate_prompts as mod
+    elif phase == "evaluate":
+        from agents import evaluate_prompts as mod
+    else:
+        from agents import engage_prompts as mod
+    _PROMPTS[phase] = mod
+    return mod
+
+
+def direct_code_gen(phase: str, n: int, concept: str, llm_config=None, enabled_models=None) -> str:
+    mod = _load_prompts(phase)
+
+    html = strip_markdown(
+        generar_texto(
+            mod.prompt_codigo(n, concept, ""),
+            "codigo",
+            12000,
+            llm_config,
+            enabled_models,
+        )
+    )
+
+    from llm.html_validator import validate_and_repair
+
+    html, _ = validate_and_repair(html, phase, n)
+    return html

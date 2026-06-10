@@ -2,112 +2,137 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Al iniciar sesión**: lee `AGENTS.md` → `feature_list.json` → `sdd/progress/current.md`.
+> Actúa siempre como el agente `leader` definido en `.claude/agents/leader.md`.
+
 ## Project
 
-GenOVA — web platform for AI-assisted generation of Virtual Learning Objects (OVA) with SCORM 1.2 export. Built as a pnpm monorepo.
+GenOVA — web platform for AI-assisted generation of Virtual Learning Objects (OVA) with SCORM 1.2 export.
+Built as a pnpm monorepo (React 19 + FastAPI). Backend supports both `pip` and `uv`.
 
 ## Commands
 
 ### Frontend (from repo root)
 
 ```bash
-pnpm install          # Install all frontend deps
-pnpm dev              # Vite dev server → http://localhost:5173
-pnpm build            # Production build
-pnpm lint             # ESLint
-pnpm format           # Prettier
+pnpm install          # deps
+pnpm dev              # Vite dev → http://localhost:5173
+pnpm build            # prod build
+pnpm lint             # ESLint (max-lines: 200, hard error)
+pnpm format           # Prettier check
+pnpm test:unit        # cucumber-js unit (no browser, no backend)
+pnpm test:e2e         # playwright-bdd (requires frontend + backend)
 ```
 
 ### Backend (from `backend/`)
 
 ```bash
-python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS/Linux
-pip install -r requirements.txt
+# pip workflow
+python -m venv venv && venv\Scripts\activate
+pip install -r requirements-dev.txt
 uvicorn main:app --reload --port 8000
+
+# uv workflow (faster)
+uv sync --extra dev
+uv run uvicorn main:app --reload --port 8000
+
+# Lint
+ruff check .          # or: uv run ruff check .
+ruff format .
+
+# Tests (backend must be running for BDD tests)
+pytest tests/step_defs/ -v --tb=short    # BDD (pytest-bdd)
+pytest                                    # all tests/test_*.py
 ```
 
-### Full stack with Docker
+### Verification (harness)
+
+```powershell
+./verify.ps1          # lint + unit tests + backend BDD (if backend up)
+./verify.ps1 -Quick   # lint + unit tests only (no backend needed)
+```
+
+### Docker
 
 ```bash
-pnpm dev:docker    # Dev (hot-reload, ports 5173 + 8000)
-pnpm prod:docker   # Prod (Nginx on port 80, /api/* → backend)
+pnpm dev:docker    # hot-reload, ports 5173 + 8000
+pnpm prod:docker   # Nginx on port 80
 ```
 
-### DB seed
+## Architecture summary
 
-Runs automatically on backend startup via `seed.py`. Creates `administrador` and `usuario` roles plus default test accounts.
+| Layer | Tech |
+|---|---|
+| Frontend | React 19, React Router 7, Tailwind CSS 4, Vite 8 |
+| Backend | FastAPI, SQLAlchemy 2, Uvicorn, SlowAPI |
+| DB | Supabase PostgreSQL + pgvector |
+| Auth | JWT HS256 + bcrypt + lockout |
+| LLMs | Groq + OpenRouter, fallback chains |
+| RAG | pgvector + Gemini gemini-embedding-2-preview (768-d) |
+| SCORM | Supabase Storage (302 redirect) or local disk fallback |
 
-### SQL migrations
+**Frontend pattern**: `services/*.js` (fetch) → `hooks/use*.js` (state) → `pages/*.jsx` (layout). Max 200 lines/file.  
+**Backend pattern**: `router.py` (HTTP) → `service.py` (logic) → `models.py` (ORM). Max 200 lines/file.
 
-Apply manually in order: `backend/migrations/001_init.sql` through `005_ova_versions_phases.sql`.
+## Migrations
 
-## Architecture
+Auto-applied on startup via `run_migrations()`. Files in `backend/migrations/` (001–017).
+Applied filenames are tracked in `_migrations_applied` (bootstrapped by 016) so
+each file runs at most once per database. Next migration: create
+`backend/migrations/018_<name>.sql`.
 
-### Backend — FastAPI
+## Database connection (Supabase)
 
-**Entry point**: `backend/main.py`  
-Registers all routers, calls `seed_db()` and `Base.metadata.create_all()` on startup.
+For Render free tier, point `DATABASE_URL` to the Supabase **Transaction**
+pooler (port 6543), not the Session pooler. Pool tuning is env-driven:
+`DB_POOL_SIZE=10`, `DB_MAX_OVERFLOW=10`. `pool_pre_ping=True` and
+`pool_recycle=300` are always on to survive pgbouncer's idle eviction.
 
-**Models** (`backend/models.py`): `User`, `Ova`, `OvaVersion`, `OvaPhase`, `Session`, `Role`, `UserRole`, `PasswordResetToken` — all UUIDs, PostgreSQL dialect (JSONB for role permissions).
+## Auth
 
-**Auth** (`backend/auth/`):
-- `dependencies.py`: `get_current_user` (Bearer JWT) and `require_admin` (role-name check) FastAPI dependencies.
-- Tokens issued via `security.py` (PyJWT + bcrypt). `JWT_EXPIRES_MINUTES` default 1440.
+JWT is issued by the backend and delivered as an httpOnly `Set-Cookie:
+genova_token=...; Secure; SameSite=Strict; HttpOnly` on `/login` and
+`/register`. The frontend never reads it directly; cookies travel automatically
+via `credentials: 'include'` in `frontend/src/lib/http.js`. Set
+`AUTH_ACCEPT_BEARER=0` in production env to reject the legacy `Authorization:
+Bearer` fallback once all clients are on cookies.
 
-**OVA lifecycle**:
-| Module | Prefix | Responsibility |
-|---|---|---|
-| `ova/generation_router.py` | `/api/ova` | Start generation job, poll progress |
-| `ova/edit_router.py` | `/api/ovas` | Trigger regen on existing OVA |
-| `ova/regen_service.py` | — | Background thread: create new `OvaVersion`, rebuild SCORM zip |
-| `ova/history_router.py` | `/api/ovas` | Version history |
-| `ova/duplicate_router.py` | `/api/ovas` | Copy existing OVA |
-| `ova/trash_router.py` | `/api/ovas` | Soft-delete / restore |
-| `scorm/service.py` | — | `build_scorm_zip_bytes()` assembles manifest, HTML, JS, CSS |
+`CORS_ORIGINS` (comma-separated frontend origins) is required when `ENV=production`.
 
-**Generation job pattern**: In-memory dict `_generation_jobs` (process-local, not Redis). Single-worker only. Frontend polls `GET /api/ova/generate/{job_id}/progress` until `status == "success"`. Finalization writes SCORM zip to `backend/scorm_output/{ova_id}_v{N}.zip` and persists `OvaVersion` + `OvaPhase` rows.
+## Dev seed accounts
 
-**Versioning invariant**: `OvaVersion` has a partial unique index — only one `is_active = TRUE` version per OVA. Edits always create a new version and deactivate the prior one.
+- `admin@genova.ai` / `admin1234password`
+- `user@genova.ai` / `user1234password`
 
-**Agents** (`backend/agents/`) — Metodología 5E resource generation:
-- `llm_router.py`: routes tasks using `groq` Python SDK (Groq) + `openai` client (OpenRouter). Task→model: `texto`→Groq llama-3.3-70b, `codigo`→OpenRouter qwen3-coder, `orquestador`→Groq gpt-oss-120b (`reasoning_effort=medium`), `razonamiento`→Groq qwen3-32b (`reasoning_effort=default`). Extra functions: `generar_vision()` (llama-4-scout, image RAG), `transcribir_audio()` (Whisper STT, 19.5 MB limit), `generar_audio_tts()` (Orpheus WAV). Auto-falls back to OpenRouter on Groq 429.
-- `engage_router.py`: POST `/api/agents/engage/generate` — 10 resource types for ENGAGE phase.
-- `explore_router.py`: POST `/api/agents/explore/generate` — 10 resource types for EXPLORE phase.
-- Most resources follow a two-step pattern: text/JSON generation → HTML generation via code agent.
+## Security rules (hard)
 
-**Other routers**: `rag/router.py` (stub), `roles/`, `users/`, `uploads/`.
+- Never log passwords, tokens, or API keys.
+- Never return reset tokens or OTPs in HTTP responses.
+- New endpoints with external input: `@limiter.limit("N/minute")` + `request: Request`.
+- DB errors: use `commit_or_500()` helpers — never `str(e)` to client.
+- `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`: server-only, never `VITE_*`.
 
-### Frontend — React 19 + Vite
+## Skills & agentes
 
-**Routing** (`frontend/src/App.jsx`): All routes declared here. `AdminRoute` component fetches `/api/auth/me` to check `role === 'administrador'`; redirects to `/dashboard` otherwise. Token expiry is polled every 60 s.
+Agentes SDD en `.claude/agents/`: `leader` (orquesta), `explorer` (mapa pre-spec),
+`spec_author` (specs; 3 modos — Único/Secuencial/Batch: ≥4 specs o petición explícita
+= una ronda de asunciones + una sola confirmación + generación continua de todas),
+`implementer` (código), `reviewer` (aprueba), `skill-advisor`
+(broker de skills), `spec-sync` (consistencia entre specs tras renombres) y `doc_author`
+(documentación en `docs/`, flujo interactivo de 4 pasos como `spec_author`; el `leader`
+lo ofrece al cerrar una feature `done` o ante "documenta X", y actualiza docs existentes
+en vez de duplicar).
 
-**Pages**: DashboardPage, CrearOvaPage, MisOvasPage, EditarOvaPage, PapeleraPage, ProfilePage, MetodologiaPage, EngagePage, ExplorePage, AdminRolesPage, AdminUsersPage, NotFoundPage.
+Skills instaladas en `.agents/skills/` (symlink desde `.claude/skills/`), registradas
+en `skills-catalog.json` (metadata + triggers + seguridad) y bloqueadas en `skills-lock.json`:
+- `find-skills` — descubrir/instalar skills (`npx skills find` / `add`)
+- `find-docs` — docs actualizadas de librerías vía `npx ctx7@latest library|docs`. El
+  `implementer` la usa antes de escribir código con una librería concreta.
 
-**Metodología 5E**: `MetodologiaPage` links to per-phase pages. Currently active: Engage (`/metodologia/engage`) and Explore (`/metodologia/explore`). Explain, Elaborate, Evaluate are marked _próximamente_.
+Para buscar/instalar/actualizar skills: pídeselo al `leader` ("busca una skill para…",
+"actualiza skills"). Post-clone en Windows: `scripts/setup-harness.ps1` recrea symlinks.
 
-**State / data fetching**: Custom hooks in `hooks/` (`useEngageGeneration`, `usePhaseGeneration`). API calls via `services/engageService.js` and `services/exploreService.js`.
+## CI pipeline
 
-**Auth utils**: `lib/auth.js` — `getToken()`, `clearToken()`, `isTokenExpired()`.
-
-### Environment variables
-
-**Backend** (`backend/.env`):
-```
-DATABASE_URL=postgresql+psycopg://...supabase.com.../postgres?sslmode=require
-JWT_SECRET=
-JWT_ALGORITHM=HS256
-JWT_EXPIRES_MINUTES=1440
-OVA_ENABLED_LLMS=openai,gemini,claude   # controls LLM picker in UI
-MIN_PROMPT_CHARS=10
-OVA_GENERATION_DURATION_SECONDS=14
-OVA_GENERATION_JOB_TTL_SECONDS=300
-GROQ_API_KEY=
-OPENROUTER_API_KEY=
-```
-
-**Frontend** (`frontend/.env`):
-```
-VITE_API_BASE_URL=http://localhost:8000
-```
+Push/PR to `develop`/`main` triggers: `lint` + `backend-bdd` + `frontend-unit` (parallel) → `e2e`.
+Secrets needed: `TEST_DATABASE_URL`, `TEST_JWT_SECRET`.

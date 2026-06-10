@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "trustedSources": ["vercel-labs", "anthropics", "composio", "upstash"],
+  "catalog": {
+    "find-docs": {
+      "installed": true,
+      "installedPath": ".agents/skills/find-docs/SKILL.md",
+      "description": "Retrieves up-to-date documentation, API references, and code examples for any library or framework via Context7 CLI (ctx7)",
+      "triggers": [
+        "nueva tecnologia", "nueva libreria", "new library", "new technology",
+        "como usar", "how to use", "api de", "documentacion de",
+        "instalar libreria", "install package",
+        "shadcn", "tailwind", "fastapi", "sqlalchemy", "react",
+        "pgvector", "supabase", "vite", "pydantic", "react router"
+      ],
+      "benefitsAgents": ["implementer"],
+      "source": "upstash/context7",
+      "lastVerified": "2026-06-01"
+    },
+    "find-skills": {
+      "installed": true,
+      "installedPath": ".agents/skills/find-skills/SKILL.md",
+      "description": "Discover and install agent skills from community registries via npx skills CLI",
+      "triggers": [
+        "find a skill",
+        "is there a skill for",
+        "install skill",
+        "search skill",
+        "hay una skill",
+        "busca una skill",
+        "existe una skill",
+        "que skill"
+      ],
+      "benefitsAgents": ["leader"],
+      "source": "vercel-labs/skills",
+      "lastVerified": "2026-06-01"
+    },
+    "frontend-design": {
+      "installed": true,
+      "installedPath": ".agents/skills/frontend-design/SKILL.md",
+      "description": "Crea interfaces frontend distintivas y de calidad de producción (componentes, páginas, dashboards React/HTML/CSS); evita la estética genérica de IA",
+      "triggers": [
+        "frontend", "ui", "ux", "diseño", "design", "componente",
+        "página", "page", "dashboard", "landing", "estilizar", "beautify",
+        "react component", "tailwind", "layout", "workspace", "panel"
+      ],
+      "benefitsAgents": ["implementer"],
+      "source": "anthropics/skills",
+      "securityAssessment": "Safe · 0 alerts (Socket) · Low Risk (Snyk)",
+      "lastVerified": "2026-06-05"
+    },
+    "vercel-react-best-practices": {
+      "installed": true,
+      "installedPath": ".agents/skills/vercel-react-best-practices/SKILL.md",
+      "description": "Guías de optimización de rendimiento React/Next.js de Vercel Engineering; usar al escribir, revisar o refactorizar código React para patrones de rendimiento óptimos",
+      "triggers": [
+        "react", "next.js", "rendimiento", "performance", "optimizar",
+        "refactor react", "hooks", "data fetching", "bundle", "re-render",
+        "memo", "useeffect", "componente react"
+      ],
+      "benefitsAgents": ["implementer"],
+      "source": "vercel-labs/agent-skills",
+      "securityAssessment": "Safe · 0 alerts (Socket) · Low Risk (Snyk)",
+      "lastVerified": "2026-06-05"
+    }
+  },
+  "pendingReview": []
+}
+

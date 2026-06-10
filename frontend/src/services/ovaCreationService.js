@@ -1,55 +1,45 @@
-import { getToken } from '../lib/auth.js'
+import { apiFetch, apiJson } from '../lib/http.js'
 
-const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+// ── HU-022: server-side generation jobs (EN-013) ────────────────────────────
+// All fetch/apiJson for the jobs flow lives here (R9: services own I/O).
 
-const authHeaders = () => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${getToken()}`,
-})
-
-export async function generateEngageResource(resource_type, concept) {
-  const res = await fetch(`${BASE}/api/agents/engage/generate`, {
+// POST /api/ova/jobs → 202 { job_id, status: "queued" }.
+// `resources` = [{ phase_type, resource_type }] (resource_type is the catalog id).
+export function startJob({ prompt, llm = null, uploadIds = [], resources }) {
+  return apiJson('/api/ova/jobs', {
     method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ resource_type, concept }),
+    body: JSON.stringify({ prompt, llm, upload_ids: uploadIds, resources }),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || 'Error generando recurso ENGAGE.')
-  }
-  return res.json()
 }
 
-export async function generateExploreResource(resource_type, concept) {
-  const res = await fetch(`${BASE}/api/agents/explore/generate`, {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ resource_type, concept }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || 'Error generando recurso EXPLORE.')
-  }
-  return res.json()
+// GET /api/ova/jobs/{job_id} → job state + per-resource status (no content).
+export function getJobStatus(jobId) {
+  return apiJson(`/api/ova/jobs/${jobId}`)
 }
 
-export async function saveOva(prompt, phases) {
-  const res = await fetch(`${BASE}/api/ova/save`, {
+// GET /api/ova/jobs?ova_id=<id> → latest job for an OVA (HU-023 lookup).
+export function getJobByOvaId(ovaId) {
+  return apiJson(`/api/ova/jobs?ova_id=${ovaId}`)
+}
+
+// GET /api/ova/jobs/{job_id}/resources/{resource_id}/content → { id, phase_type,
+// resource_type, content }. Only for `done` resources (409 otherwise, 404 if alien).
+export function getResourceContent(jobId, resourceId) {
+  return apiJson(`/api/ova/jobs/${jobId}/resources/${resourceId}/content`)
+}
+
+// POST /api/ova/jobs/{job_id}/resume → 202 { job_id, status, resumed }.
+// resourceIds omitted/empty → resume all pending/error; otherwise only those ids.
+export function resumeJob(jobId, resourceIds) {
+  const body = resourceIds && resourceIds.length > 0 ? { resource_ids: resourceIds } : {}
+  return apiJson(`/api/ova/jobs/${jobId}/resume`, {
     method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ prompt, phases }),
+    body: JSON.stringify(body),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || 'Error guardando OVA.')
-  }
-  return res.json()
 }
 
 export async function downloadOvaScorm(ovaId) {
-  const res = await fetch(`${BASE}/api/ova/${ovaId}/scorm`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
-  })
+  const res = await apiFetch(`/api/ova/${ovaId}/scorm`)
   if (!res.ok) throw new Error('No se pudo exportar el paquete SCORM.')
   const blob = await res.blob()
   const url = URL.createObjectURL(blob)

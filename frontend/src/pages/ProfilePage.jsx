@@ -1,11 +1,15 @@
 import { useProfile } from '../hooks/useProfile.js'
 import { ProfileForm } from '../components/ProfileForm.jsx'
 import { PasswordChangeForm } from '../components/PasswordChangeForm.jsx'
+import { LlmSettingsCard } from '../components/settings/LlmSettingsCard.jsx'
 
 export function ProfilePage() {
   const {
     fullName,
     email,
+    universityId,
+    gender,
+    phoneNumber,
     createdAt,
     role,
     loading,
@@ -19,6 +23,9 @@ export function ProfilePage() {
     fetchProfile,
     setFullName,
     setEmail,
+    setUniversityId,
+    setGender,
+    setPhoneNumber,
     setCurrentPassword,
     setNewPassword,
     setConfirmPassword,
@@ -39,7 +46,7 @@ export function ProfilePage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         {loading ? (
           <div className="flex h-64 items-center justify-center">
             <div className="flex flex-col items-center gap-3">
@@ -51,12 +58,18 @@ export function ProfilePage() {
           <ProfileForm
             fullName={fullName}
             email={email}
+            universityId={universityId}
+            gender={gender}
+            phoneNumber={phoneNumber}
             role={role}
             createdAt={createdAt}
             validationError={validationError}
             saving={saving}
             onFullNameChange={(e) => setFullName(e.target.value)}
             onEmailChange={(e) => setEmail(e.target.value)}
+            onUniversityIdChange={(e) => setUniversityId(e.target.value)}
+            onGenderChange={(e) => setGender(e.target.value)}
+            onPhoneNumberChange={(e) => setPhoneNumber(e.target.value)}
             onReset={fetchProfile}
             onSubmit={handleProfileSubmit}
             getInitials={getInitials}
@@ -78,6 +91,8 @@ export function ProfilePage() {
           />
         )}
       </div>
+
+      {!loading && <LlmSettingsCard />}
     </div>
   )
 }

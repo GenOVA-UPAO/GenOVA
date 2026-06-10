@@ -1,0 +1,4 @@
+# pnpm 11+ project settings (replaces package.json["pnpm"] field)
+# Only msw is allowed to run build/install scripts; all other packages blocked.
+allowBuilds:
+  msw: true

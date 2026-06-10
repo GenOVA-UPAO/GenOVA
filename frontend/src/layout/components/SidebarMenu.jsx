@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import { navigationLinks } from '../navigation/navLinks.js'
-import { getToken } from '../../lib/auth.js'
+import { isLoggedIn } from '../../lib/auth.js'
+import { apiFetch } from '../../lib/http.js'
 import { fetchTrashCount } from '../../services/ovaHistoryService.js'
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 function getSidebarLinkClasses({ isActive }) {
   if (isActive) {
@@ -19,19 +18,17 @@ export function SidebarMenu() {
   const location = useLocation()
 
   useEffect(() => {
-    const token = getToken()
-    if (!token) return
+    if (!isLoggedIn()) return
 
     const checkRole = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const response = await apiFetch('/api/auth/me')
         if (response.status === 200) {
           const user = await response.json()
           setIsAdmin(user.role === 'administrador')
         }
       } catch {
+        /* rol no disponible: el menú admin queda oculto */
       }
     }
 
@@ -79,6 +76,11 @@ export function SidebarMenu() {
             <li>
               <NavLink to="/admin/users" className={getSidebarLinkClasses}>
                 Gestión de Usuarios
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/admin/labs" className={getSidebarLinkClasses}>
+                🧪 Labs
               </NavLink>
             </li>
           </ul>

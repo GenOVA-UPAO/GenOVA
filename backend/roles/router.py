@@ -1,20 +1,36 @@
+import logging
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select, func
+from pydantic import BaseModel, Field
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+
+from auth.dependencies import require_admin
 from database import get_db
 from models import Role, UserRole
-from auth.dependencies import require_admin
-from pydantic import BaseModel, Field
-from typing import List, Optional
 from roles.delete_router import router as delete_router
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+
+def _commit_or_500(db: Session, op: str) -> None:
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        logger.exception("Roles DB write failed during %s", op)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo completar la operación. Intenta de nuevo.",
+        ) from None
 
 
 class RoleCreate(BaseModel):
     name: str = Field(..., max_length=64, min_length=1)
     description: str = Field(default="")
-    permissions: List[str] = Field(default_factory=list)
+    permissions: list[str] = Field(default_factory=list)
 
 
 @router.get("")
@@ -62,15 +78,8 @@ def create_role(
         name=name, description=payload.description, permissions=payload.permissions
     )
     db.add(new_role)
-    try:
-        db.commit()
-        db.refresh(new_role)
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error al crear el rol: {str(e)}",
-        )
+    _commit_or_500(db, "create_role")
+    db.refresh(new_role)
 
     return {
         "id": str(new_role.id),
@@ -81,13 +90,10 @@ def create_role(
     }
 
 
-from uuid import UUID
-
-
 class RoleUpdate(BaseModel):
-    name: Optional[str] = Field(None, max_length=64)
-    description: Optional[str] = Field(None)
-    permissions: Optional[List[str]] = Field(None)
+    name: str | None = Field(None, max_length=64)
+    description: str | None = Field(None)
+    permissions: list[str] | None = Field(None)
 
 
 @router.patch("/{id}")
@@ -103,7 +109,7 @@ def update_role(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Rol no encontrado (ID inválido).",
-        )
+        ) from None
 
     # 1. Look up role
     role = db.execute(select(Role).where(Role.id == role_uuid)).scalar_one_or_none()
@@ -145,15 +151,8 @@ def update_role(
     if payload.permissions is not None:
         role.permissions = payload.permissions  # type: ignore
 
-    try:
-        db.commit()
-        db.refresh(role)
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error al actualizar el rol: {str(e)}",
-        )
+    _commit_or_500(db, "update_role")
+    db.refresh(role)
 
     return {
         "id": str(role.id),

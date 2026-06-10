@@ -1,0 +1,17 @@
+{
+  "name": "genova-tests",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test:unit": "cucumber-js --config cucumber.unit.config.mjs",
+    "test:e2e": "bddgen --config playwright.config.js && playwright test --config playwright.config.js",
+    "test:e2e:ui": "bddgen --config playwright.config.js && playwright test --config playwright.config.js --ui"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.0.0",
+    "@playwright/test": "^1.50.0",
+    "happy-dom": "^14.0.0",
+    "playwright-bdd": "^8.0.0"
+  }
+}
