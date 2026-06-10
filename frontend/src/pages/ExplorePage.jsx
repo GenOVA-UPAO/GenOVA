@@ -1,4 +1,4 @@
-import { PhasePage } from '../components/phase/PhasePage.jsx'
+import { PhasePage } from '../pages/PhasePage.jsx'
 import { fetchExploreRecursos, generateExploreResource } from '../services/exploreService.js'
 
 export function ExplorePage() {

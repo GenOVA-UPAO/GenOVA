@@ -1,5 +1,36 @@
 # HU-011: Editar OVA Generado
 
+> ## ⚠️ SUPERSEDED — editor form legacy reemplazado por el workspace unificado
+>
+> La ruta `/mis-ovas/{ova_id}/editar` y la página `EditarOvaPage` (editor de
+> formulario por fases) **fueron eliminadas**. La edición de un OVA vive ahora en
+> el **workspace unificado** (HU-025) en `/ova/:ovaId/workspace`, que también
+> sirve la creación (`/crear-ova`). Desde "Mis OVAs", el botón de edición abre el
+> workspace (HU-030).
+>
+> **Las rutas, labels y mockups de este documento son históricos.** El flujo
+> vigente y sus criterios de aceptación viven en las HU del workspace. Mapa de
+> cobertura de los CA originales de HU-011:
+>
+> | CA original (HU-011) | Cubierto ahora por | Superficie vigente |
+> |---|---|---|
+> | CA-01 — Botón "Editar" abre edición | **HU-030** R1 | Card en "Mis OVAs" → abre `/ova/:id/workspace` |
+> | CA-02 — Botón deshabilitado en `generando` | **HU-030** / HU-006 | Card en "Mis OVAs" |
+> | CA-03 — Solo el creador puede editar (403) | **HU-025** | Acceso al workspace |
+> | CA-04 — Regenerar OVA completo (prompt) | **HU-025** | Chat izq. → `↺ Regenerar OVA completo` |
+> | CA-05 — Editar texto de fase sin IA | **HU-026** | Panel der. (Code) → recurso `Editar contenido` |
+> | CA-06 — Vista previa en tiempo real | **HU-025** R3 | Panel der. `Preview` / `Code` |
+> | CA-07 — Regenerar una fase con IA | **HU-026** | Recurso → `↺` (prompt para regenerar) |
+> | CA-08 — Regenerar múltiples fases seleccionadas | **HU-027** | Chat izq. `Seleccionar recursos` → `Aplicar` |
+> | CA-09 — Versionado incremental | **HU-028** | Badge `vN` + nueva versión por cambio |
+> | CA-10 — Historial de versiones | **HU-028** | Toolbar `⏱ Historial` → diálogo "Historial de versiones" |
+> | CA-11 — Exportar SCORM con contenido actualizado | **HU-025** R4 | Toolbar `⤓ SCORM` |
+>
+> El modelo de datos (`ova_versions`, `ova_phases`, `current_version_id`) y los
+> contratos de API descritos abajo **siguen vigentes** y son la base de las HU del
+> workspace; solo cambió la superficie de UI. El contenido restante se conserva
+> como referencia histórica del editor legacy.
+
 > Metadata (de `sdd/backlog.md`):
 
 | Campo | Valor |
@@ -8,14 +39,14 @@
 | Tipo | Historia de Usuario |
 | Épica/Tema | EP3: Interfaz de Creacion y Gestion de OVAs |
 | Sprint | Sprint 1 |
-| Status | Closed |
+| Status | Superseded (por HU-025…HU-030) |
 | Prioridad | Alta |
 | Estimación | 8 SP |
 | Dependencia | HU-003, HU-006 |
 | Responsable | JEFFRY ANDERSON ROMERO URIOL |
 | Fase | SDD - Implement |
 | Fecha creación | 2026-05-17 |
-| Fecha actualización | — |
+| Fecha actualización | 2026-06-07 |
 | Fecha Fin (info) | 2026-05-20 |
 
 ## Historia de Usuario

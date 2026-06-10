@@ -15,14 +15,20 @@
 | Responsable | JEFFRY ANDERSON ROMERO URIOL |
 | Fase | SDD - Implement |
 | Fecha creación | 2026-05-17 |
-| Fecha actualización | — |
+| Fecha actualización | 2026-06-07 |
 | Fecha Fin (info) | 2026-05-20 |
+
+> **Actualización 2026-06-07:** tras unificar crear+editar en el workspace
+> (HU-025), la redirección post-duplicado dejó de apuntar al editor form legacy
+> `/mis-ovas/{nuevo_id}/editar` (eliminado) y ahora apunta al workspace
+> `/ova/{nuevo_id}/workspace`. El backend (`backend/ova/duplicate_router.py`)
+> devuelve `edit_url: /ova/{nuevo_id}/workspace`.
 
 ## Historia de Usuario
 Como estudiante del curso de ML de UPAO, quiero poder duplicar un OVA existente para usarlo como punto de partida para un nuevo material relacionado, ahorrando tiempo al no tener que empezar desde cero con un prompt nuevo.
 
 ## Objetivo funcional
-Permitir al usuario crear una copia independiente de un OVA existente con un clic, copiando su título, descripción, prompt y fases de la versión activa, para que pueda editarla libremente sin afectar al original. El duplicado se crea de forma sincrónica y redirige al editor inmediatamente.
+Permitir al usuario crear una copia independiente de un OVA existente con un clic, copiando su título, descripción, prompt y fases de la versión activa, para que pueda editarla libremente sin afectar al original. El duplicado se crea de forma sincrónica y redirige al workspace inmediatamente.
 
 ## Alcance
 
@@ -32,7 +38,7 @@ Permitir al usuario crear una copia independiente de un OVA existente con un cli
 - Título del duplicado: `"{título original} (copia)"`. Si ya existe, `"{título original} (copia 2)"`, `"(copia 3)"`, etc.
 - El duplicado inicia con `status = 'borrador'` y sin archivo SCORM.
 - El duplicado pertenece al usuario que presionó "Duplicar" (no necesariamente al creador del original).
-- Redirección automática al editor del duplicado (`/mis-ovas/{nuevo_id}/editar`) tras la creación.
+- Redirección automática al workspace del duplicado (`/ova/{nuevo_id}/workspace`) tras la creación.
 - El botón "Duplicar" está **deshabilitado** para OVAs en estado `generando`, con tooltip explicativo.
 - El botón "Duplicar" **no aparece** para OVAs en la papelera.
 
@@ -74,7 +80,7 @@ Crea un duplicado independiente del OVA especificado.
   "title": "Redes Neuronales (copia)",
   "status": "borrador",
   "message": "OVA duplicado correctamente.",
-  "edit_url": "/mis-ovas/{nuevo_id}/editar"
+  "edit_url": "/ova/{nuevo_id}/workspace"
 }
 ```
 
@@ -104,7 +110,7 @@ Crea un duplicado independiente del OVA especificado.
 ### CA-03: Duplicación exitosa y redirección
 **Dado** que presiono "Duplicar" en un OVA con título "Redes Neuronales",
 **cuando** la operación completa,
-**entonces** se crea un nuevo OVA con título "Redes Neuronales (copia)" y status "borrador", y soy redirigido automáticamente a `/mis-ovas/{nuevo_id}/editar`.
+**entonces** se crea un nuevo OVA con título "Redes Neuronales (copia)" y status "borrador", y soy redirigido automáticamente al workspace `/ova/{nuevo_id}/workspace`.
 
 ### CA-04: El duplicado aparece en el historial
 **Dado** que el duplicado fue creado,
@@ -158,12 +164,12 @@ Feature: HU-013 — Duplicar OVA Existente
     Then el botón "Duplicar" del OVA "ov-1" está deshabilitado
     And al pasar el cursor muestra "No disponible mientras se genera el OVA"
 
-  Scenario: CA-03 — Duplicación exitosa y redirección al editor
+  Scenario: CA-03 — Duplicación exitosa y redirección al workspace
     When "ana@upao.edu" hace clic en "Duplicar" del OVA "Redes Neuronales"
     Then el botón muestra "Duplicando..." y se deshabilita temporalmente
     And se crea un nuevo OVA con título "Redes Neuronales (copia)" y status "borrador"
-    And "ana@upao.edu" es redirigida a "/mis-ovas/{nuevo_id}/editar"
-    And el editor muestra las mismas 5 fases que tenía la versión activa v2 del original
+    And "ana@upao.edu" es redirigida a "/ova/{nuevo_id}/workspace"
+    And el workspace muestra los mismos 5 recursos que tenía la versión activa v2 del original
 
   Scenario: CA-04 — El duplicado aparece en el historial
     Given el duplicado "Redes Neuronales (copia)" fue creado
@@ -261,6 +267,6 @@ Estado durante duplicación:
 
 - El endpoint `POST /api/ovas/{ova_id}/duplicar` debe ejecutarse en una **transacción atómica** que cree el `Ova`, el `OvaVersion` y los `OvaPhase` en un solo bloque; si falla, hace rollback completo.
 - La lógica de nombre auto-incremental puede implementarse con una consulta que cuente cuántos títulos del patrón `"{título} (copia*)"` ya existen para el usuario y derivar el siguiente número libre.
-- El `edit_url` en la respuesta del backend facilita que el frontend navegue directamente sin necesidad de construir la URL en el cliente.
+- El `edit_url` en la respuesta del backend (`/ova/{nuevo_id}/workspace`) facilita que el frontend navegue directamente al workspace sin necesidad de construir la URL en el cliente.
 - El frontend debe deshabilitar todos los botones de la card durante la operación de duplicación para evitar interacciones concurrentes.
 - No se copia `file_path` del original; el campo queda en `NULL` en el duplicado.

@@ -1,7 +1,18 @@
 ---
 name: skill-advisor
 description: Broker de skills para GenOVA. Busca, verifica seguridad y recomienda skills instaladas o externas. Agente de servicio puro — sin estado, idempotente.
-tools: Read, Glob, Grep, Bash, Agent
+mode: subagent
+hidden: true
+tools:
+  read: true
+  glob: true
+  grep: true
+  bash: true
+  task: true
+permission:
+  edit: deny
+  bash: allow
+  webfetch: deny
 ---
 
 # Agente Skill Advisor

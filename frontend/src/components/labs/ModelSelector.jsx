@@ -1,51 +1,61 @@
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel, SelectSeparator } from '@/components/ui/select'
+
+const EMPTY_VALUE = '__none__'
+
 function ModelPicker({ label, models, value, onChange }) {
   const groq = models.filter((m) => m.provider === 'groq')
   const openrouter = models.filter((m) => m.provider === 'openrouter')
 
+  const selectedKey = value ? `${value.provider}::${value.id}` : EMPTY_VALUE
+
+  function handleChange(key) {
+    if (key === EMPTY_VALUE) { onChange(null); return }
+    const [provider, ...rest] = key.split('::')
+    const id = rest.join('::')
+    const found = models.find((m) => m.id === id && m.provider === provider)
+    onChange(found || null)
+  }
+
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-semibold text-slate-600">{label}</label>
-      <select
-        value={value ? `${value.provider}::${value.id}` : ''}
-        onChange={(e) => {
-          const [provider, ...rest] = e.target.value.split('::')
-          const id = rest.join('::')
-          const found = models.find((m) => m.id === id && m.provider === provider)
-          onChange(found || null)
-        }}
-        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
-      >
-        <option value="">— Selecciona modelo —</option>
-        {groq.length > 0 && (
-          <optgroup label="Groq">
-            {groq.map((m) => (
-              <option key={m.id} value={`groq::${m.id}`}>
-                {m.label}
-              </option>
-            ))}
-          </optgroup>
-        )}
-        {openrouter.length > 0 && (
-          <optgroup label="OpenRouter">
-            {openrouter.map((m) => (
-              <option key={m.id} value={`openrouter::${m.id}`}>
-                {m.label}
-              </option>
-            ))}
-          </optgroup>
-        )}
-      </select>
-      {value && (
-        <span className="text-[10px] text-slate-400">
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-semibold text-muted-foreground">{label}</Label>
+      <Select value={selectedKey} onValueChange={handleChange}>
+        <SelectTrigger>
+          <SelectValue placeholder="— Selecciona modelo —" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={EMPTY_VALUE}>— Selecciona modelo —</SelectItem>
+          {groq.length > 0 ? (
+            <SelectGroup>
+              <SelectLabel>Groq</SelectLabel>
+              {groq.map((m) => (
+                <SelectItem key={m.id} value={`groq::${m.id}`}>{m.label}</SelectItem>
+              ))}
+            </SelectGroup>
+          ) : null}
+          {groq.length > 0 && openrouter.length > 0 ? <SelectSeparator /> : null}
+          {openrouter.length > 0 ? (
+            <SelectGroup>
+              <SelectLabel>OpenRouter</SelectLabel>
+              {openrouter.map((m) => (
+                <SelectItem key={m.id} value={`openrouter::${m.id}`}>{m.label}</SelectItem>
+              ))}
+            </SelectGroup>
+          ) : null}
+        </SelectContent>
+      </Select>
+      {value ? (
+        <span className="text-[10px] text-muted-foreground">
           {value.provider === 'groq' ? '🟢 Groq' : '🔵 OpenRouter'} · {value.id}
         </span>
-      )}
+      ) : null}
     </div>
   )
 }
 
 export function ModelSelector({ models, modelA, setModelA, modelB, setModelB }) {
-  if (!models.length) return <div className="text-xs text-slate-400">Cargando modelos...</div>
+  if (!models.length) return <div className="text-xs text-muted-foreground">Cargando modelos...</div>
   return (
     <div className="grid grid-cols-2 gap-3">
       <ModelPicker label="Modelo A" models={models} value={modelA} onChange={setModelA} />

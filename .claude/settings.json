@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File ./.claude/hooks/on-stop.ps1",
+            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path (git rev-parse --show-toplevel) '.claude/hooks/on-stop.ps1')\"",
             "description": "Antes de cerrar: verify.ps1 completo + bloqueo si detecta secretos."
           }
         ]

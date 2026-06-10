@@ -18,8 +18,8 @@
 | RN-N | Req. No Funcional | RN | `sdd/specs/` |
 | TA-N | Tarea técnica | TA | `sdd/tasks/` |
 | BU-N | Bug | BU | `sdd/bugs/` |
-| SP-N | Spike | (nuevo) | `sdd/spikes/` |
-| DO-N | Documentación | (nuevo) | `sdd/docs-specs/` |
+| SP-N | Spike | — | Tracking solo en `feature_list.json` (sin spec) |
+| DO-N | Documentación | — | Gestionado por `doc_author` → `docs/` |
 
 ### Mapeo de status (Notion → SDD `valid_status`, se aplica en Fase B)
 `Closed`/`Done` → `done` · `To Do` → `pending` · `In Progress` → `in_progress`
@@ -29,6 +29,7 @@
 - **Descripción**: HU → `Historia de usuario` (Como/quiero/para) + `Contexto`; resto → `Objetivo` + `Contexto`.
 - **Criterios**: bullets atómicos, una verificación por línea.
 - **Fechas**: `Fecha creación` = *Fecha Inicio* de Notion (ISO); `Fecha actualización` = `—` hasta editar el spec; `Fecha Fin (info)` = dato informativo.
+- **Títulos**: tecnología-agnósticos — describen QUÉ hace el sistema o el usuario, nunca mencionan librerías, frameworks ni patrones de implementación. Ejemplos correctos: "Workspace de edición de OVA", "Exportar OVA como paquete SCORM".
 - Marcas de origen: `(añadido fuera de captura)`, `(inferido)`, `(borrador)`, `(añadido — roadmap editor OVA)`, `(propuesto)`.
 
 ### Reglas de negocio transversales

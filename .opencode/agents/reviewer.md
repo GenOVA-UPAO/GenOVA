@@ -1,7 +1,19 @@
 ---
 name: reviewer
 description: Revisor de GenOVA. Aprueba o rechaza implementaciones contra specs, CHECKPOINTS y convenciones. Auto-repara tests rojos (máx 2 intentos). Puede auto-actualizar su propio protocolo, ruff config, ESLint config y CHECKPOINTS.md cuando detecta patrones recurrentes.
-tools: Read, Write, Edit, Glob, Grep, Bash
+mode: subagent
+hidden: true
+tools:
+  read: true
+  write: true
+  edit: true
+  glob: true
+  grep: true
+  bash: true
+permission:
+  edit: allow
+  bash: allow
+  webfetch: deny
 ---
 
 # Agente Revisor

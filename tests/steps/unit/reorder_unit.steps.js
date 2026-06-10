@@ -1,0 +1,47 @@
+import assert from 'node:assert/strict'
+import { Given, When, Then } from '@cucumber/cucumber'
+
+// HU-033 unit coverage — pure reorder logic. No browser, no backend.
+
+function applyReorder(items, fromIdx, toIdx) {
+  if (fromIdx === toIdx) return items
+  const updated = [...items]
+  const [moved] = updated.splice(fromIdx, 1)
+  updated.splice(toIdx, 0, moved)
+  return updated
+}
+
+function allSamePhaseType(phaseTypes) {
+  return new Set(phaseTypes).size <= 1
+}
+
+// ── Reorder within phase ─────────────────────────────────────────────────────
+Given('una fase con recursos en el orden {string}', function (csv) {
+  this.items = csv.split(',').map((name) => ({ name: name.trim() }))
+})
+
+When('el estudiante arrastra el recurso del índice {int} al índice {int}', function (from, to) {
+  this.result = applyReorder(this.items, from, to)
+})
+
+Then('el orden resultante es {string}', function (expected) {
+  const actual = this.result.map((i) => i.name).join(',')
+  assert.equal(actual, expected)
+})
+
+// ── Cross-phase validation ───────────────────────────────────────────────────
+Given('reorders con phase_types {string} y {string}', function (t1, t2) {
+  this.phaseTypes = [t1, t2]
+})
+
+When('se valida que todos pertenecen a la misma fase', function () {
+  this.valid = allSamePhaseType(this.phaseTypes)
+})
+
+Then('la validación falla por tipos distintos', function () {
+  assert.equal(this.valid, false)
+})
+
+Then('la validación pasa', function () {
+  assert.equal(this.valid, true)
+})

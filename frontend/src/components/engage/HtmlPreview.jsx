@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 
 // iframe stays in DOM via CSS hidden — never unmounted — so the blob URL is
 // never revoked while toggling views (StrictMode-safe).
@@ -28,49 +29,40 @@ export function HtmlPreview({ result }) {
     <div className="space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <p className="text-sm font-semibold text-slate-800">
+          <p className="text-sm font-semibold text-foreground">
             {result.emoji} {result.tipo} —{' '}
-            <span className="text-indigo-600">{result.concepto}</span>
+            <span className="text-primary">{result.concepto}</span>
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             ⏱ {result.duracion} · Interactividad: {result.interactividad}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1">
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant={view === 'preview' ? 'default' : 'secondary'}
               onClick={() => setView('preview')}
-              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-                view === 'preview'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
             >
               Vista previa
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              size="sm"
+              variant={view === 'code' ? 'default' : 'secondary'}
               onClick={() => setView('code')}
-              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-                view === 'code'
-                  ? 'bg-slate-700 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
             >
               Código
-            </button>
+            </Button>
           </div>
-          <button
-            onClick={downloadHtml}
-            className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-          >
+          <Button onClick={downloadHtml}>
             Descargar HTML
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="rounded-xl border border-border overflow-hidden shadow-sm">
         <iframe
           ref={iframeRef}
           title="Vista previa del recurso"

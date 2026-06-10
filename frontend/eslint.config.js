@@ -18,6 +18,7 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
     rules: {
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       'max-lines': [
         'error',
         {
@@ -26,6 +27,13 @@ export default defineConfig([
           skipComments: true,
         },
       ],
+    },
+  },
+  {
+    // shadcn/ui generated files export both components and CVA variant constants
+    files: ['**/components/ui/*.{js,jsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
   {

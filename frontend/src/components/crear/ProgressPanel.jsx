@@ -1,68 +1,84 @@
-const STATE_CONFIG = {
-  pending: { icon: null, cls: 'text-slate-400' },
-  generating: { icon: '…', cls: 'text-indigo-700 font-medium' },
-  retrying: { icon: '⟳', cls: 'text-amber-600 font-medium' },
-  done: { icon: '✓', cls: 'text-emerald-700' },
-  failed: { icon: '✗', cls: 'text-red-500' },
+import { Button } from '@/components/ui/button'
+import { ResourceList } from './ResourceList.jsx'
+
+const STATUS_LABEL = {
+  queued: 'En cola…',
+  running: 'Generando recursos…',
+  interrupted: 'Generación interrumpida',
+  error: 'La generación terminó con errores',
+  done: '¡OVA generado!',
+  canceled: 'Generación cancelada',
 }
 
-function PhaseChecklist({ phase, picks, completed, stepStates, offset }) {
-  if (!picks.length) return null
+function RetryHeader({ failedCount, selectedCount, onSelectAll, onRetrySelected }) {
+  if (failedCount === 0) return null
   return (
-    <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1">
-        {phase}
-      </p>
-      <ul className="space-y-1">
-        {picks.map((r, i) => {
-          const globalIdx = offset + i
-          const state = stepStates[globalIdx] || (i < completed ? 'done' : 'pending')
-          const cfg = STATE_CONFIG[state] || STATE_CONFIG.pending
-          return (
-            <li
-              key={`${phase}-${r.id}`}
-              className={`flex items-center gap-2 text-xs ${cfg.cls}`}
-            >
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-bold">
-                {cfg.icon ?? i + 1}
-              </span>
-              <span className="truncate">{r.emoji} {r.tipo}</span>
-            </li>
-          )
-        })}
-      </ul>
+    <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onSelectAll}
+      >
+        Seleccionar todos los fallidos
+      </Button>
+      <Button
+        type="button"
+        variant="destructive"
+        size="sm"
+        onClick={onRetrySelected}
+        disabled={selectedCount === 0}
+      >
+        Reintentar seleccionados ({selectedCount})
+      </Button>
     </div>
   )
 }
 
 export function ProgressPanel({
-  progress, engageSelection, exploreSelection, partial, stepStates = [],
+  job, viewModel, selectedIds, activeId,
+  onToggle, onRetryOne, onPreview, onSelectAll, onRetrySelected,
 }) {
+  const status = job?.status || 'queued'
+  const failedCount = viewModel.filter((r) => r.status === 'X').length
+  const doneCount = viewModel.filter((r) => r.status === 'check').length
+  const total = viewModel.length || 1
+  const pct = Math.round((doneCount / total) * 100)
+
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+    <div className="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-sm space-y-4">
       <div>
-        <div className="flex justify-between text-xs text-slate-600">
-          <span>{progress.label}</span>
-          <span className="font-semibold">{progress.pct}%</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <span className="font-medium text-foreground">{STATUS_LABEL[status] || status}</span>
+          <span className="text-xs font-semibold text-muted-foreground">
+            {doneCount}/{viewModel.length} listos
+          </span>
         </div>
-        <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-indigo-600 transition-all duration-700"
-            style={{ width: `${progress.pct}%` }}
+            className={`h-full rounded-full transition-all duration-500 ${
+              failedCount ? 'bg-amber-500' : 'bg-primary'
+            }`}
+            style={{ width: `${pct}%` }}
           />
         </div>
       </div>
-      <div className="grid sm:grid-cols-2 gap-4">
-        <PhaseChecklist
-          phase="🎯 ENGAGE" picks={engageSelection}
-          completed={partial.engage.length} stepStates={stepStates} offset={0}
-        />
-        <PhaseChecklist
-          phase="🔍 EXPLORE" picks={exploreSelection}
-          completed={partial.explore.length}
-          stepStates={stepStates} offset={engageSelection.length}
-        />
-      </div>
+
+      <ResourceList
+        viewModel={viewModel}
+        selectedIds={selectedIds}
+        activeId={activeId}
+        onToggle={onToggle}
+        onRetry={onRetryOne}
+        onPreview={onPreview}
+      />
+
+      <RetryHeader
+        failedCount={failedCount}
+        selectedCount={selectedIds.length}
+        onSelectAll={onSelectAll}
+        onRetrySelected={onRetrySelected}
+      />
     </div>
   )
 }

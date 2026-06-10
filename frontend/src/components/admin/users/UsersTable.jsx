@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { UserStatusBadge } from './StatusBadge.jsx'
 import { UserActionMenu } from './UserActionMenu.jsx'
+import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const COLS = [
   { label: 'Nombre Completo', cls: 'w-[18%] min-w-[140px]' },
@@ -13,16 +15,14 @@ const COLS = [
 ]
 
 function formatUnivId(value) {
-  if (!value) return <span className="text-slate-400 italic">--</span>
+  if (!value) return <span className="text-muted-foreground italic">--</span>
   return String(value).padStart(9, '0')
 }
 
 function RoleCell({ user, roles, isCurrentUserAdmin, isMe, isActionsDisabled, isUpdating, onChange, getRoleColorClasses }) {
   if (isMe) {
     return (
-      <span
-        className={`inline-flex items-center h-8 w-[140px] rounded-lg border px-3 text-xs font-semibold capitalize ${getRoleColorClasses(user.role?.name || 'administrador')}`}
-      >
+      <span className={`inline-flex items-center h-8 w-[140px] rounded-lg border px-3 text-xs font-semibold capitalize ${getRoleColorClasses(user.role?.name || 'administrador')}`}>
         {user.role?.name || 'Administrador'} 🧿
       </span>
     )
@@ -44,7 +44,7 @@ function RoleCell({ user, roles, isCurrentUserAdmin, isMe, isActionsDisabled, is
           )
         })}
       </select>
-      {isUpdating && <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" />}
+      {isUpdating ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary" /> : null}
     </div>
   )
 }
@@ -55,34 +55,34 @@ export function UsersTable({ users, roles, currentUser, updatingUserId, handlers
 
   return (
     <div className="overflow-x-auto min-h-[400px]">
-      <table className="w-full border-collapse text-left text-sm text-slate-600">
-        <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
-          <tr>
+      <Table>
+        <TableHeader className="bg-muted/40">
+          <TableRow>
             {COLS.map((c) => (
-              <th key={c.label} scope="col" className={`px-3 py-3 whitespace-nowrap ${c.cls}`}>
+              <TableHead key={c.label} className={`whitespace-nowrap text-xs uppercase tracking-wider ${c.cls}`}>
                 {c.label}
-              </th>
+              </TableHead>
             ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 bg-white">
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {users.map((user) => {
             const isMe = currentUser?.id === user.id
             const isUpdating = updatingUserId === user.id
             const targetIsAdmin = user.role?.name === 'administrador'
             const isActionsDisabled = targetIsAdmin && !isCurrentUserAdmin
             return (
-              <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
-                <td className="px-3 py-3 font-semibold text-slate-900">
-                  {user.full_name || <span className="text-slate-400 italic font-normal">No especificado</span>}
-                </td>
-                <td className="px-3 py-3 text-slate-700 break-all">{user.email}</td>
-                <td className="px-3 py-3 text-slate-600 font-mono text-xs">{formatUnivId(user.university_id)}</td>
-                <td className="px-3 py-3 text-slate-500 whitespace-nowrap">
-                  {user.phone_number || <span className="text-slate-400 italic">--</span>}
-                </td>
-                <td className="px-3 py-3"><UserStatusBadge user={user} /></td>
-                <td className="px-3 py-3">
+              <TableRow key={user.id}>
+                <TableCell className="font-semibold">
+                  {user.full_name || <span className="text-muted-foreground italic font-normal">No especificado</span>}
+                </TableCell>
+                <TableCell className="break-all">{user.email}</TableCell>
+                <TableCell className="font-mono text-xs">{formatUnivId(user.university_id)}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {user.phone_number || <span className="text-muted-foreground italic">--</span>}
+                </TableCell>
+                <TableCell><UserStatusBadge user={user} /></TableCell>
+                <TableCell>
                   <RoleCell
                     user={user} roles={roles}
                     isCurrentUserAdmin={isCurrentUserAdmin}
@@ -90,19 +90,20 @@ export function UsersTable({ users, roles, currentUser, updatingUserId, handlers
                     onChange={handlers.handleRoleChange}
                     getRoleColorClasses={getRoleColorClasses}
                   />
-                </td>
-                <td className="px-3 py-3 text-center relative">
+                </TableCell>
+                <TableCell className="text-center relative">
                   {isMe || isActionsDisabled ? (
-                    <span className="text-slate-300 text-xs italic">Protegido</span>
+                    <span className="text-muted-foreground text-xs italic">Protegido</span>
                   ) : (
                     <>
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => setOpenMenuFor((id) => (id === user.id ? null : user.id))}
-                        className="px-3 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
                       >
                         Acción ▾
-                      </button>
-                      {openMenuFor === user.id && (
+                      </Button>
+                      {openMenuFor === user.id ? (
                         <UserActionMenu
                           user={user}
                           onClose={() => setOpenMenuFor(null)}
@@ -112,15 +113,15 @@ export function UsersTable({ users, roles, currentUser, updatingUserId, handlers
                           onSendResetEmail={handlers.handleSendResetEmail}
                           onSendResetWhatsApp={handlers.runWhatsAppReset}
                         />
-                      )}
+                      ) : null}
                     </>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useProfile } from '../hooks/useProfile.js'
 import { ProfileForm } from '../components/ProfileForm.jsx'
 import { PasswordChangeForm } from '../components/PasswordChangeForm.jsx'
+import { LlmSettingsCard } from '../components/settings/LlmSettingsCard.jsx'
 
 export function ProfilePage() {
   const {
@@ -90,6 +91,8 @@ export function ProfilePage() {
           />
         )}
       </div>
+
+      {!loading && <LlmSettingsCard />}
     </div>
   )
 }

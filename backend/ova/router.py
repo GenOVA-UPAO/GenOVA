@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from database import get_db
 from models import Ova, OvaPhase, OvaVersion, User
-from ova.llm_helpers import _enabled_llm_options, _ova_output_dir
+from ova.crud.llm_helpers import _enabled_llm_options, _ova_output_dir
 from rag.store import tie_uploads_to_ova
 from scorm.service import build_scorm_zip_bytes
 from storage import StorageError, is_configured, signed_url, upload_zip
@@ -26,6 +26,9 @@ def ova_health() -> dict[str, str]:
 
 @router.get("/llm-options")
 def list_llm_options() -> dict[str, list[dict]]:
+    """Deprecated: use GET /api/users/me/llm-settings for the catalog filtered
+    by user-enabled models. This endpoint remains for backward compat; new code
+    should not use it."""
     return {"items": _enabled_llm_options()}
 
 
@@ -47,7 +50,9 @@ class SaveOvaRequest(BaseModel):
     upload_ids: list[str] = []
 
 
-def _persist_scorm_zip(zip_bytes: bytes, user_id: str, ova_id: str, version: int) -> tuple[str | None, str | None]:
+def _persist_scorm_zip(
+    zip_bytes: bytes, user_id: str, ova_id: str, version: int
+) -> tuple[str | None, str | None]:
     """Persist the SCORM zip. Prefer Supabase Storage; fall back to local disk.
 
     Returns `(storage_key, file_path)` — at least one is non-None.
@@ -87,21 +92,25 @@ def save_ova(
 
     phases_data = []
     for p in payload.phases:
-        db.add(OvaPhase(
-            version_id=version.id,
-            phase_type=p.type,
-            phase_order=p.order,
-            content=p.content,
-            regenerated=False,
-            resource_type_id=p.resource_type_id,
-            title=p.title,
-        ))
-        phases_data.append({
-            "type": p.type,
-            "order": p.order,
-            "content": p.content,
-            "title": p.title,
-        })
+        db.add(
+            OvaPhase(
+                version_id=version.id,
+                phase_type=p.type,
+                phase_order=p.order,
+                content=p.content,
+                regenerated=False,
+                resource_type_id=p.resource_type_id,
+                title=p.title,
+            )
+        )
+        phases_data.append(
+            {
+                "type": p.type,
+                "order": p.order,
+                "content": p.content,
+                "title": p.title,
+            }
+        )
 
     zip_bytes = build_scorm_zip_bytes(
         course_title=title,

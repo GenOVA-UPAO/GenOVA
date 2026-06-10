@@ -6,8 +6,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from database import Base
-from ova.error_log_model import OvaErrorLog  # noqa: F401  — registers ova_error_logs table
-from ova.jobs_model import OvaJob, OvaJobResource  # noqa: F401  — registers ova_jobs tables
+from generation.error_log_model import OvaErrorLog  # noqa: F401  — registers ova_error_logs table
+from generation.jobs_model import OvaJob, OvaJobResource  # noqa: F401  — registers ova_jobs tables
 
 
 def _pk_column() -> Column:
@@ -33,6 +33,14 @@ class User(Base):
     university_id = Column(Integer, unique=True, index=True)
     gender = Column(String(20))
     phone_number = Column(String(20), unique=True, index=True)
+    # Per-user LLM generation config (general, applies to all the user's OVAs):
+    # { "<tipo>": {"provider","model_id","timeout_s"} } for tipo in texto/codigo/
+    # orquestador/razonamiento. Empty = system defaults.
+    llm_settings = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    # Per-user enabled model allowlist: [{provider, model_id}, ...].
+    # Only models in this list (plus system defaults) appear in the LLM settings
+    # dropdowns. System defaults are always enabled regardless of this list.
+    enabled_models = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -45,8 +53,9 @@ class Ova(Base):
     __table_args__ = (
         # Partial index speeds `WHERE deleted_at IS NULL` list queries (the
         # default soft-delete filter) without bloating with tombstones.
-        Index("idx_ovas_active", "user_id", "created_at",
-              postgresql_where=text("deleted_at IS NULL")),
+        Index(
+            "idx_ovas_active", "user_id", "created_at", postgresql_where=text("deleted_at IS NULL")
+        ),
     )
 
     id = _pk_column()
@@ -62,35 +71,53 @@ class Ova(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     owner = relationship("User", back_populates="ovas")
-    versions = relationship("OvaVersion", back_populates="ova", foreign_keys="OvaVersion.ova_id",
-                            order_by="OvaVersion.version_number")
+    versions = relationship(
+        "OvaVersion",
+        back_populates="ova",
+        foreign_keys="OvaVersion.ova_id",
+        order_by="OvaVersion.version_number",
+    )
 
 
 class OvaVersion(Base):
     __tablename__ = "ova_versions"
     __table_args__ = (
-        Index("uq_one_active_version_per_ova", "ova_id", unique=True,
-              postgresql_where=text("is_active = TRUE")),
+        Index(
+            "uq_one_active_version_per_ova",
+            "ova_id",
+            unique=True,
+            postgresql_where=text("is_active = TRUE"),
+        ),
     )
 
     id = _pk_column()
-    ova_id = Column(UUID(as_uuid=True), ForeignKey("ovas.id", ondelete="CASCADE"), nullable=False, index=True)
+    ova_id = Column(
+        UUID(as_uuid=True), ForeignKey("ovas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     version_number = Column(Integer, nullable=False)
     prompt = Column(Text, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     ova = relationship("Ova", back_populates="versions", foreign_keys=[ova_id])
-    phases = relationship("OvaPhase", back_populates="version", order_by="OvaPhase.phase_order",
-                          cascade="all, delete-orphan")
+    phases = relationship(
+        "OvaPhase",
+        back_populates="version",
+        order_by="OvaPhase.phase_order",
+        cascade="all, delete-orphan",
+    )
 
 
 class OvaPhase(Base):
     __tablename__ = "ova_phases"
 
     id = _pk_column()
-    version_id = Column(UUID(as_uuid=True), ForeignKey("ova_versions.id", ondelete="CASCADE"),
-                        nullable=False, index=True)
+    version_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("ova_versions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     phase_type = Column(String(30), nullable=False)
     phase_order = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
@@ -100,6 +127,34 @@ class OvaPhase(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     version = relationship("OvaVersion", back_populates="phases")
+    micro_versions = relationship(
+        "OvaPhaseVersion",
+        back_populates="phase",
+        order_by="OvaPhaseVersion.minor_number.desc()",
+        cascade="all, delete-orphan",
+    )
+
+
+class OvaPhaseVersion(Base):
+    """HU-029 — micro-version record per phase edit (vN.M minor versioning)."""
+
+    __tablename__ = "ova_phase_versions"
+
+    id = _pk_column()
+    phase_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("ova_phases.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    ova_id = Column(
+        UUID(as_uuid=True), ForeignKey("ovas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    minor_number = Column(Integer, nullable=False, default=1)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    phase = relationship("OvaPhase", back_populates="micro_versions")
 
 
 class Session(Base):
@@ -160,10 +215,9 @@ class RagChunk(Base):
     """One embedded chunk from a user upload. The `embedding` column is a
     pgvector column managed via raw SQL in `backend/rag/store.py`; SQLAlchemy
     treats it as opaque text-equivalent here (we only read it via raw queries)."""
+
     __tablename__ = "rag_chunks"
-    __table_args__ = (
-        Index("idx_rag_chunks_expires_at", "expires_at"),
-    )
+    __table_args__ = (Index("idx_rag_chunks_expires_at", "expires_at"),)
 
     id = _pk_column()
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
@@ -187,3 +241,18 @@ class PasswordResetToken(Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
 
     user = relationship("User", backref="password_reset_tokens")
+
+
+class CatalogCache(Base):
+    """One row per provider (groq | openrouter) holding the raw API response
+    from the model-list endpoints. Upserted on each catalog refresh with a 24h
+    TTL so we can rebuild the merged catalog even if both providers are
+    unreachable."""
+
+    __tablename__ = "catalog_cache"
+
+    id = _pk_column()
+    provider = Column(String(20), unique=True, nullable=False, index=True)
+    raw_data = Column(JSONB, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

@@ -7,12 +7,12 @@ import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
-from agents.llm_router import generar_texto, generar_texto_with_model
-from agents.podcast import build_podcast_html, podcast_audio_b64
-from agents.utils import parse_json, strip_markdown
 from database import SessionLocal
 from labs.catalog import quality_check_html
 from labs.prompt_utils import CONCEPT_PH, ENGAGE_CODE, ENGAGE_PODCAST, EXPLORE_CODE
+from llm.podcast import build_podcast_html, podcast_audio_b64
+from llm.router import generar_texto, generar_texto_with_model
+from llm.utils import parse_json, strip_markdown
 from models import LabResult
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ def _generate_one(
                 json_data = parse_json(raw)
             except Exception:
                 json_data = {"contenido": raw}
-            from agents.engage_prompts import prompt_html as engage_html
+            from prometheus.prompts.engage_prompts import prompt_html as engage_html
             html = strip_markdown(generar_texto(engage_html(resource_type, concept, json.dumps(json_data, ensure_ascii=False, indent=2)), "codigo", max_tokens=4000))
             return html, json_data, None
         # explore
@@ -71,7 +71,7 @@ def _generate_one(
             json_data = parse_json(raw)
         except Exception:
             json_data = {"contenido": raw}
-        from agents.explore_prompts import prompt_html as explore_html
+        from prometheus.prompts.explore_prompts import prompt_html as explore_html
         html = strip_markdown(generar_texto(explore_html(resource_type, concept, json.dumps(json_data, ensure_ascii=False, indent=2)), "codigo", max_tokens=4000))
         return html, json_data, None
     except Exception as exc:

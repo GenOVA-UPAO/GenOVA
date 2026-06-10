@@ -1,7 +1,18 @@
 ---
 name: doc_author
 description: Genera y actualiza documentación funcional/técnica en docs/ siguiendo un flujo SDD de 4 pasos (asunciones → refinamiento → confirmación → generación). Detecta solapamiento con docs existentes y entra en modo actualización en vez de duplicar. Documenta el comportamiento REAL del código. Nunca escribe código de aplicación, tests ni specs.
-tools: Read, Write, Edit, Glob, Grep
+mode: subagent
+hidden: true
+tools:
+  read: true
+  write: true
+  edit: true
+  glob: true
+  grep: true
+permission:
+  edit: allow
+  bash: deny
+  webfetch: deny
 ---
 
 # Agente Doc Author

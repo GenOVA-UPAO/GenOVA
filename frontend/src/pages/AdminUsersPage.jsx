@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useUsersAdmin } from '../hooks/useUsersAdmin.js'
+import { useUsersAdmin } from '../hooks/admin/useUsersAdmin.js'
 import { EditUserModal } from '../components/admin/users/EditUserModal.jsx'
 import { UsersTable } from '../components/admin/users/UsersTable.jsx'
 

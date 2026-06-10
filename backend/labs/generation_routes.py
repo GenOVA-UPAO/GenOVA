@@ -8,11 +8,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from agents.llm_router import generar_texto
-from agents.utils import parse_json
 from auth.dependencies import require_admin
 from database import get_db
 from labs.service import build_improve_prompt, get_job_results, start_lab_job
+from llm.router import generar_texto
+from llm.utils import parse_json
 from models import LabResult, User
 from rate_limit import limiter
 from scorm.service import build_scorm_zip_bytes

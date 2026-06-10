@@ -1,39 +1,29 @@
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
 export function ProfileForm({
-  fullName,
-  email,
-  universityId,
-  gender,
-  phoneNumber,
-  role,
-  createdAt,
-  validationError,
-  saving,
-  onFullNameChange,
-  onEmailChange,
-  onUniversityIdChange,
-  onGenderChange,
-  onPhoneNumberChange,
-  onReset,
-  onSubmit,
-  getInitials,
-  formatDate
+  fullName, email, universityId, gender, phoneNumber, role, createdAt,
+  validationError, saving,
+  onFullNameChange, onEmailChange, onUniversityIdChange, onGenderChange,
+  onPhoneNumberChange, onReset, onSubmit, getInitials, formatDate
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
+    <div className="rounded-xl border border-border bg-background shadow-md overflow-hidden">
       <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row items-center gap-5 pb-6 border-b border-slate-100">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 to-violet-600 text-2xl font-bold text-white shadow-lg">
+        <div className="flex flex-col sm:flex-row items-center gap-5 pb-6 border-b border-border">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-violet-600 text-2xl font-bold text-white shadow-lg">
             {getInitials()}
           </div>
           <div className="text-center sm:text-left space-y-1">
-            <h2 className="text-lg font-bold text-slate-900 capitalize">
-              {fullName || 'Usuario'}
-            </h2>
+            <h2 className="text-lg font-bold capitalize">{fullName || 'Usuario'}</h2>
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 capitalize border border-indigo-100">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize">
                 Rol: {role}
-              </span>
-              <span className="text-xs text-slate-400">
+              </Badge>
+              <span className="text-xs text-muted-foreground">
                 Miembro desde el {formatDate(createdAt)}
               </span>
             </div>
@@ -42,119 +32,107 @@ export function ProfileForm({
 
         <div className="grid grid-cols-1 gap-6">
           <div className="space-y-1.5">
-            <label htmlFor="fullName" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            <Label htmlFor="fullName" className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Nombre Completo
-            </label>
-            <input
-              type="text"
+            </Label>
+            <Input
               id="fullName"
+              type="text"
               value={fullName}
               onChange={onFullNameChange}
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${validationError.fullName ? 'border-rose-400' : 'border-slate-200'}`}
+              aria-invalid={!!validationError.fullName}
               disabled={saving}
               placeholder="Ej: Juan Pérez"
             />
-            {validationError.fullName && (
-              <p className="text-xs text-rose-600 font-medium">{validationError.fullName}</p>
-            )}
+            {validationError.fullName ? (
+              <p className="text-xs text-destructive font-medium">{validationError.fullName}</p>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="email" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Correo Electrónico
-            </label>
-            <input
-              type="email"
+            </Label>
+            <Input
               id="email"
+              type="email"
               value={email}
               onChange={onEmailChange}
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${validationError.email ? 'border-rose-400' : 'border-slate-200'}`}
+              aria-invalid={!!validationError.email}
               disabled={saving}
               placeholder="usuario@correo.com"
             />
-            {validationError.email && (
-              <p className="text-xs text-rose-600 font-medium">{validationError.email}</p>
-            )}
+            {validationError.email ? (
+              <p className="text-xs text-destructive font-medium">{validationError.email}</p>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="universityId" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            <Label htmlFor="universityId" className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Código Universitario (UPAO)
-            </label>
-            <input
-              type="number"
+            </Label>
+            <Input
               id="universityId"
+              type="number"
               value={universityId}
               onChange={onUniversityIdChange}
-              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${validationError.universityId ? 'border-rose-400' : 'border-slate-200'}`}
+              aria-invalid={!!validationError.universityId}
               disabled={saving}
               placeholder="Ej: 257022"
               min="1"
             />
-            <p className="text-[10px] text-slate-400">Se autocompletará con ceros a la izquierda a 9 dígitos al guardarse.</p>
+            <p className="text-[10px] text-muted-foreground">Se autocompletará con ceros a la izquierda a 9 dígitos al guardarse.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label htmlFor="gender" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              <Label htmlFor="gender" className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Sexo / Género
-              </label>
-              <select
-                id="gender"
-                value={gender}
-                onChange={onGenderChange}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors cursor-pointer"
-                disabled={saving}
-              >
-                <option value="masculino">Masculino</option>
-                <option value="femenino">Femenino</option>
-                <option value="otro">Otro / No especificado</option>
-              </select>
+              </Label>
+              <Select value={gender} onValueChange={(val) => onGenderChange({ target: { value: val } })} disabled={saving}>
+                <SelectTrigger id="gender">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="masculino">Masculino</SelectItem>
+                  <SelectItem value="femenino">Femenino</SelectItem>
+                  <SelectItem value="otro">Otro / No especificado</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="phoneNumber" className="text-xs font-bold uppercase tracking-wide text-slate-500">
+              <Label htmlFor="phoneNumber" className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Teléfono de contacto
-              </label>
-              <input
-                type="text"
+              </Label>
+              <Input
                 id="phoneNumber"
+                type="text"
                 value={phoneNumber}
                 onChange={onPhoneNumberChange}
-                className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors ${validationError.phoneNumber ? 'border-rose-400' : 'border-slate-200'}`}
+                aria-invalid={!!validationError.phoneNumber}
                 disabled={saving}
                 placeholder="Ej: +51987285992"
               />
-              {validationError.phoneNumber && (
-                <p className="text-xs text-rose-600 font-medium">{validationError.phoneNumber}</p>
-              )}
+              {validationError.phoneNumber ? (
+                <p className="text-xs text-destructive font-medium">{validationError.phoneNumber}</p>
+              ) : null}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={onReset}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50"
-            disabled={saving}
-          >
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+          <Button type="button" variant="outline" onClick={onReset} disabled={saving}>
             Restablecer
-          </button>
-          <button
-            type="submit"
-            className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-bold text-white shadow-md shadow-indigo-600/10 hover:bg-indigo-700 hover:shadow-indigo-700/20 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
-            disabled={saving}
-          >
+          </Button>
+          <Button type="submit" disabled={saving} className="gap-2">
             {saving ? (
               <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 Guardando...
               </>
-            ) : (
-              'Guardar Cambios'
-            )}
-          </button>
+            ) : 'Guardar Cambios'}
+          </Button>
         </div>
       </form>
     </div>
