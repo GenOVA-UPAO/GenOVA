@@ -7,15 +7,20 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from agents.engage_prompts import RECURSOS_META, prompt_html, prompt_simulador, prompt_texto
-from agents.html_validator import validate_and_repair
-from agents.images import fetch_images_parallel
-from agents.llm_router import generar_texto
-from agents.podcast import build_podcast_html, podcast_audio_b64
-from agents.utils import parse_json, strip_markdown
 from auth.dependencies import get_current_user
 from database import get_db
+from llm.html_validator import validate_and_repair
+from llm.images import fetch_images_parallel
+from llm.podcast import build_podcast_html, podcast_audio_b64
+from llm.router import generar_texto
+from llm.utils import parse_json, strip_markdown
 from models import User
+from prometheus.prompts.engage_prompts import (
+    RECURSOS_META,
+    prompt_html,
+    prompt_simulador,
+    prompt_texto,
+)
 from rag.retriever import build_contexto_usuario, top_k
 from rate_limit import limiter
 

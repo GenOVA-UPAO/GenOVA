@@ -2,7 +2,7 @@
 
 import logging
 
-from agents.llm_router import generar_texto
+from llm.router import generar_texto
 
 logger = logging.getLogger(__name__)
 

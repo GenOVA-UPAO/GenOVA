@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from database import get_db
+from generation.regen_service import _finalize_edit, _regen_jobs, _regen_jobs_lock
 from models import Ova, OvaPhase, User
 from ova.edit_helpers import (
     _ensure_version_exists,
@@ -17,7 +18,6 @@ from ova.edit_helpers import (
     _is_ova_owner,
     _resolve_regen_stage,
 )
-from ova.regen_service import _finalize_edit, _regen_jobs, _regen_jobs_lock
 
 router = APIRouter()
 

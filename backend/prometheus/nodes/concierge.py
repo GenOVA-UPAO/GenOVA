@@ -8,7 +8,7 @@ deterministic plan (4 resources per phase) on any LLM failure.
 import json
 import logging
 
-from agents.llm_router import generar_texto
+from llm.router import generar_texto
 from prometheus.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)

@@ -5,19 +5,19 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from agents.explore_prompts import (
+from auth.dependencies import get_current_user
+from database import get_db
+from llm.html_validator import validate_and_repair
+from llm.router import generar_texto
+from llm.utils import parse_json, strip_markdown
+from models import User
+from prometheus.prompts.explore_prompts import (
     CODE_ONLY,
     RECURSOS_META,
     prompt_codigo,
     prompt_html,
     prompt_texto,
 )
-from agents.html_validator import validate_and_repair
-from agents.llm_router import generar_texto
-from agents.utils import parse_json, strip_markdown
-from auth.dependencies import get_current_user
-from database import get_db
-from models import User
 from rag.retriever import build_contexto_usuario, top_k
 from rate_limit import limiter
 

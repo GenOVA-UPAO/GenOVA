@@ -4,7 +4,7 @@ Each prompt fixes the resource FORMAT but adapts all content to whatever
 Machine Learning concept is passed in `concept` — no hardcoded ML subtopic.
 """
 
-from agents.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
+from llm.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
 
 # fmt: off
 RECURSOS_META = {

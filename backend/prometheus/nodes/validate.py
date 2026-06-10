@@ -5,7 +5,7 @@ Conditional edges in the graph use the result to route to next_phase or retry.
 
 import logging
 
-from agents.html_validator import validate_and_repair
+from llm.html_validator import validate_and_repair
 from prometheus.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)

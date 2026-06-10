@@ -15,7 +15,7 @@ from openai import APITimeoutError as OpenAIAPITimeoutError
 from openai import OpenAI
 from openai import RateLimitError as OpenAIRateLimitError
 
-from agents.model_catalog import clamp_timeout, is_valid_model
+from llm.model_catalog import clamp_timeout, is_valid_model
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +141,7 @@ def _resolve_primary(
     If `enabled_models` is provided, the user's model choice is checked against it
     (plus system defaults are always allowed). Models disabled by the user silently
     fall back to the default."""
-    from agents.model_catalog import is_default_model
+    from llm.model_catalog import is_default_model
 
     default = _MODELOS.get(tarea, _MODELOS["texto"])
     cfg = (llm_config or {}).get(tarea) or {}

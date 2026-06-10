@@ -14,8 +14,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database import SessionLocal
+from generation.error_log_service import log_generation_error
 from models import OvaJob, OvaJobResource
-from ova.error_log_service import log_generation_error
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list
 def _start_job(db: Session, job: OvaJob) -> None:
     job.status = "running"
     if job.started_at is None:
-        from ova.jobs_service import _now
+        from generation.jobs_service import _now
 
         job.started_at = _now()
     db.commit()
@@ -139,7 +139,7 @@ def _has_done_resource(db: Session, job_id: uuid.UUID) -> bool:
 
 
 def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
-    from ova.jobs_service import _now
+    from generation.jobs_service import _now
 
     job.status = "done" if any_done else "error"
     job.finished_at = _now()
@@ -159,7 +159,7 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
 
 
 def _materialize(db: Session, job: OvaJob) -> None:
-    from ova.jobs_materialize import materialize_partial_ova
+    from generation.jobs_materialize import materialize_partial_ova
 
     done = list(
         db.execute(
@@ -178,7 +178,7 @@ def _safe_mark_error(db: Session, job_id: uuid.UUID) -> None:
         db.rollback()
         job = db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one_or_none()
         if job is not None and job.status not in ("done", "canceled"):
-            from ova.jobs_service import _now
+            from generation.jobs_service import _now
 
             job.status = "error"
             job.finished_at = _now()

@@ -17,12 +17,12 @@ import uuid
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from agents.elaborate_prompts import RECURSOS_META as ELABORATE_META
-from agents.engage_prompts import RECURSOS_META as ENGAGE_META
-from agents.evaluate_prompts import RECURSOS_META as EVALUATE_META
-from agents.explain_prompts import RECURSOS_META as EXPLAIN_META
-from agents.explore_prompts import RECURSOS_META as EXPLORE_META
 from models import Ova, OvaJob, OvaJobResource, OvaPhase, OvaVersion
+from prometheus.prompts.elaborate_prompts import RECURSOS_META as ELABORATE_META
+from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
+from prometheus.prompts.evaluate_prompts import RECURSOS_META as EVALUATE_META
+from prometheus.prompts.explain_prompts import RECURSOS_META as EXPLAIN_META
+from prometheus.prompts.explore_prompts import RECURSOS_META as EXPLORE_META
 
 logger = logging.getLogger(__name__)
 

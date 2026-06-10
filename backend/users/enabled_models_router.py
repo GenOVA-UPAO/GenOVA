@@ -11,10 +11,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from agents.catalog_refresh import get_full_catalog_entries
-from agents.model_catalog import DEFAULTS
 from auth.dependencies import get_current_user
 from database import get_db
+from llm.catalog_refresh import get_full_catalog_entries
+from llm.model_catalog import DEFAULTS
 from models import User
 from rate_limit import limiter
 

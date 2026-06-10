@@ -24,8 +24,8 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401  — registers ORM tables on the shared metadata
+from generation.jobs_helpers import job_to_dict  # noqa: E402
 from ova import jobs_runner, jobs_service  # noqa: E402
-from ova.jobs_helpers import job_to_dict  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-013_jobs.feature")
@@ -134,7 +134,7 @@ def _make_job(db, *, user_id, resources, status="queued"):
     return job
 
 
-# Real ENGAGE resource names (agents.engage_prompts.RECURSOS_META) so the runner
+# Real ENGAGE resource names (prometheus.prompts.engage_prompts.RECURSOS_META) so the runner
 # resolves each to its numeric id (1, 2, 3) exactly as in production.
 _ENGAGE_NAMES = ["Cómic Interactivo", "Storyboard de Video", "Micro-Podcast"]
 _FAILING_NAME = "Storyboard de Video"  # ENGAGE id 2
@@ -424,7 +424,7 @@ def test_plan_recurso_por_fila():
 
 @given("el cliente elige varios recursos con su fase y tipo", target_fixture="ctx")
 def cliente_elige_recursos():
-    from ova.jobs_helpers import StartJobRequest
+    from generation.jobs_helpers import StartJobRequest
 
     payload = StartJobRequest(
         prompt="árboles de decisión",
@@ -439,7 +439,7 @@ def cliente_elige_recursos():
 
 @when("se construye el plan de recursos", target_fixture="plan")
 def construye_plan(ctx):
-    from ova.jobs_helpers import build_resource_plan
+    from generation.jobs_helpers import build_resource_plan
 
     return build_resource_plan(ctx["payload"])
 
@@ -587,8 +587,8 @@ def job_interrupted_pending(db):
 
 @when("se resuelven los recursos a reanudar para un subconjunto válido", target_fixture="resolved")
 def resuelve_subconjunto(db, ctx):
-    from ova.jobs_helpers import ResumeRequest
-    from ova.jobs_router import _resolve_resume_targets
+    from generation.jobs_helpers import ResumeRequest
+    from generation.jobs_router import _resolve_resume_targets
 
     subset = [str(ctx["ids"][0])]
     return _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=subset))
@@ -609,8 +609,8 @@ def test_resume_ajeno_rechazado():
 
 @when("se resuelven los recursos a reanudar incluyendo un id ajeno", target_fixture="resolved")
 def resuelve_ajeno(db, ctx):
-    from ova.jobs_helpers import ResumeRequest
-    from ova.jobs_router import _resolve_resume_targets
+    from generation.jobs_helpers import ResumeRequest
+    from generation.jobs_router import _resolve_resume_targets
 
     foreign = [str(ctx["ids"][0]), str(uuid.uuid4())]
     return _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=foreign))
@@ -662,8 +662,8 @@ def job_done_y_error(db, monkeypatch):
 
 @when("el usuario reanuda el subconjunto que incluye el recurso done")
 def reanuda_subset_con_done(db, ctx):
-    from ova.jobs_helpers import ResumeRequest
-    from ova.jobs_router import _resolve_resume_targets
+    from generation.jobs_helpers import ResumeRequest
+    from generation.jobs_router import _resolve_resume_targets
 
     subset = [str(ctx["done_id"]), str(ctx["error_id"])]
     targets, error = _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=subset))

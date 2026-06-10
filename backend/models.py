@@ -6,8 +6,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from database import Base
-from ova.error_log_model import OvaErrorLog  # noqa: F401  — registers ova_error_logs table
-from ova.jobs_model import OvaJob, OvaJobResource  # noqa: F401  — registers ova_jobs tables
+from generation.error_log_model import OvaErrorLog  # noqa: F401  — registers ova_error_logs table
+from generation.jobs_model import OvaJob, OvaJobResource  # noqa: F401  — registers ova_jobs tables
 
 
 def _pk_column() -> Column:

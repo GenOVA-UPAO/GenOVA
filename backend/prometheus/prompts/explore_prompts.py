@@ -3,7 +3,7 @@
 Each prompt fixes the resource FORMAT but adapts its content, datasets and
 mechanics to whatever Machine Learning concept is passed in `concept`.
 """
-from agents.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
+from llm.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
 
 RECURSOS_META = {
     1: {"tipo": "Simulador Virtual Lab", "duracion": "3–4 min", "interactividad": "Alta", "emoji": "🧪"},

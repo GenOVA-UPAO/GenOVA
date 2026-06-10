@@ -125,7 +125,11 @@ def slug(text: str) -> str:
 def show_dry_run(phase: str, rtype: int, concept: str) -> None:
     try:
         if phase == "engage":
-            from agents.engage_prompts import prompt_html, prompt_simulador, prompt_texto
+            from prometheus.prompts.engage_prompts import (
+                prompt_html,
+                prompt_simulador,
+                prompt_texto,
+            )
             if rtype == 10:
                 print("\n── prompt_simulador ──────────────────────────────────")
                 print(prompt_simulador(concept))
@@ -135,7 +139,12 @@ def show_dry_run(phase: str, rtype: int, concept: str) -> None:
                 print("\n── prompt_html (paso 2) ──────────────────────────────")
                 print(prompt_html(rtype, concept, '{"placeholder": "...JSON del paso 1..."}'))
         else:
-            from agents.explore_prompts import CODE_ONLY, prompt_codigo, prompt_html, prompt_texto
+            from prometheus.prompts.explore_prompts import (
+                CODE_ONLY,
+                prompt_codigo,
+                prompt_html,
+                prompt_texto,
+            )
             if rtype in CODE_ONLY:
                 print("\n── prompt_codigo ─────────────────────────────────────")
                 print(prompt_codigo(rtype, concept))

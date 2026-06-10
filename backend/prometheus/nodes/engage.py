@@ -6,10 +6,10 @@ Verify happens in the separate validate node (conditional edge in graph).
 
 import logging
 
-from agents.engage_prompts import RECURSOS_META
 from prometheus.plans.direct_code import direct_code_gen
 from prometheus.plans.podcast import podcast_gen
 from prometheus.plans.two_step import two_step_gen
+from prometheus.prompts.engage_prompts import RECURSOS_META
 from prometheus.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)

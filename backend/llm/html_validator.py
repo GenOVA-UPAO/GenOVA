@@ -6,7 +6,7 @@ the response reaches the client.
 """
 import logging
 
-from agents.utils import SCORM_JS
+from llm.utils import SCORM_JS
 
 logger = logging.getLogger(__name__)
 

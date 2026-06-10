@@ -12,13 +12,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database import SessionLocal
+from generation.regen_agents import regenerate_phase_content, resolve_resource_type
 from models import Ova, OvaPhase, OvaVersion
 from ova.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _ova_output_dir,
 )
-from ova.regen_agents import regenerate_phase_content, resolve_resource_type
 
 logger = logging.getLogger(__name__)
 

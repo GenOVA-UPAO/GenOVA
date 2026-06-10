@@ -2,9 +2,9 @@
 
 import logging
 
-from agents.explore_prompts import RECURSOS_META
 from prometheus.plans.direct_code import direct_code_gen
 from prometheus.plans.two_step import two_step_gen
+from prometheus.prompts.explore_prompts import RECURSOS_META
 from prometheus.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)

@@ -10,12 +10,12 @@ EXPLORE_CODE   = {1, 6, 10}
 def get_base_prompt(phase: str, resource_type: int) -> str:
     """Return hardcoded prompt template with {concept} placeholder."""
     if phase == "engage":
-        from agents.engage_prompts import prompt_simulador, prompt_texto
+        from prometheus.prompts.engage_prompts import prompt_simulador, prompt_texto
         if resource_type in ENGAGE_CODE:
             return prompt_simulador(CONCEPT_PH)
         return prompt_texto(resource_type, CONCEPT_PH)
     # explore
-    from agents.explore_prompts import CODE_ONLY, prompt_codigo, prompt_texto
+    from prometheus.prompts.explore_prompts import CODE_ONLY, prompt_codigo, prompt_texto
     if resource_type in CODE_ONLY:
         return prompt_codigo(resource_type, CONCEPT_PH)
     return prompt_texto(resource_type, CONCEPT_PH)

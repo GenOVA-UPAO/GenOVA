@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from database import get_db
+from generation.regen_router import router as regen_router
 from models import Ova, OvaPhase, OvaVersion, User
 from ova.edit_helpers import (
     _ensure_version_exists,
@@ -17,7 +18,6 @@ from ova.edit_helpers import (
 )
 from ova.edit_view_router import router as edit_view_router
 from ova.phase_version_router import record_phase_micro_version
-from ova.regen_router import router as regen_router
 from rate_limit import limiter
 from users.admin_helpers import commit_or_500
 

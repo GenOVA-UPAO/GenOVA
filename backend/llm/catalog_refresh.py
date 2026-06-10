@@ -13,7 +13,7 @@ from threading import RLock
 
 import httpx
 
-from agents.model_catalog import CATALOG_ENTRIES, _rebuild_catalog
+from llm.model_catalog import CATALOG_ENTRIES, _rebuild_catalog
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +194,7 @@ def _fetch_openrouter() -> dict[str, dict]:
 def _fetch_groq() -> set[str]:
     """Fetch the available model ids from Groq. Returns a set of model_id strings."""
     try:
-        from agents.llm_router import groq_client
+        from llm.router import groq_client
 
         resp = groq_client.models.list()
         ids = {m.id for m in resp.data if m.id}
@@ -275,7 +275,7 @@ def refresh_catalog(db=None) -> None:
     # Persist raw API data to Supabase cache.
     if db and (or_data or groq_ids):
         try:
-            from agents.catalog_cache import save_to_cache
+            from llm.catalog_cache import save_to_cache
 
             if or_data:
                 save_to_cache(db, "openrouter", {"models": or_data})

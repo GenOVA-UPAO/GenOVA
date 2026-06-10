@@ -8,8 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from agents.catalog_refresh import get_catalog_entries, get_full_catalog_entries
-from agents.model_catalog import (
+from auth.dependencies import get_current_user
+from database import get_db
+from llm.catalog_refresh import get_catalog_entries, get_full_catalog_entries
+from llm.model_catalog import (
     DEFAULTS,
     TIMEOUT_MAX,
     TIMEOUT_MIN,
@@ -17,8 +19,6 @@ from agents.model_catalog import (
     merge_with_defaults,
     sanitize_settings,
 )
-from auth.dependencies import get_current_user
-from database import get_db
 from models import User
 from rate_limit import limiter
 

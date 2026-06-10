@@ -3,13 +3,13 @@
 The LLM catalog is now sourced from agents/catalog_refresh (in-memory merged
 catalog, refreshed at startup from provider APIs). The legacy LLM_CATALOG and
 _enabled_llm_options()/ids() have been removed — use `get_catalog_entries()`
-from agents.catalog_refresh directly, or consume the filtered catalog returned
+from llm.catalog_refresh directly, or consume the filtered catalog returned
 by GET /api/users/me/llm-settings on the frontend.
 """
 
 import os
 
-from agents.catalog_refresh import get_catalog_entries
+from llm.catalog_refresh import get_catalog_entries
 
 
 def _enabled_llm_options() -> list[dict]:

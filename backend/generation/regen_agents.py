@@ -6,15 +6,15 @@ Translates an OvaPhase (phase_type + resource_type_id) back to the correct
 
 import logging
 
-from agents.elaborate_prompts import CODE_ONLY as ELABORATE_CODE_ONLY
-from agents.elaborate_prompts import RECURSOS_META as ELABORATE_META
-from agents.engage_prompts import RECURSOS_META as ENGAGE_META
-from agents.evaluate_prompts import CODE_ONLY as EVALUATE_CODE_ONLY
-from agents.evaluate_prompts import RECURSOS_META as EVALUATE_META
-from agents.explain_prompts import CODE_ONLY as EXPLAIN_CODE_ONLY
-from agents.explain_prompts import RECURSOS_META as EXPLAIN_META
-from agents.explore_prompts import CODE_ONLY as EXPLORE_CODE_ONLY
-from agents.explore_prompts import RECURSOS_META as EXPLORE_META
+from prometheus.prompts.elaborate_prompts import CODE_ONLY as ELABORATE_CODE_ONLY
+from prometheus.prompts.elaborate_prompts import RECURSOS_META as ELABORATE_META
+from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
+from prometheus.prompts.evaluate_prompts import CODE_ONLY as EVALUATE_CODE_ONLY
+from prometheus.prompts.evaluate_prompts import RECURSOS_META as EVALUATE_META
+from prometheus.prompts.explain_prompts import CODE_ONLY as EXPLAIN_CODE_ONLY
+from prometheus.prompts.explain_prompts import RECURSOS_META as EXPLAIN_META
+from prometheus.prompts.explore_prompts import CODE_ONLY as EXPLORE_CODE_ONLY
+from prometheus.prompts.explore_prompts import RECURSOS_META as EXPLORE_META
 
 logger = logging.getLogger(__name__)
 
@@ -115,11 +115,11 @@ def _generate_engage(
     n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
 ) -> str:
     """Run the ENGAGE generation pipeline for resource type n."""
-    from agents.engage_prompts import prompt_html, prompt_simulador, prompt_texto
-    from agents.html_validator import validate_and_repair
-    from agents.llm_router import generar_texto
-    from agents.podcast import build_podcast_html, podcast_audio_b64
-    from agents.utils import parse_json, strip_markdown
+    from llm.html_validator import validate_and_repair
+    from llm.podcast import build_podcast_html, podcast_audio_b64
+    from llm.router import generar_texto
+    from llm.utils import parse_json, strip_markdown
+    from prometheus.prompts.engage_prompts import prompt_html, prompt_simulador, prompt_texto
 
     if n == 10:
         html = strip_markdown(
@@ -151,10 +151,10 @@ def _generate_explore(
     n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
 ) -> str:
     """Run the EXPLORE generation pipeline for resource type n."""
-    from agents.explore_prompts import prompt_codigo, prompt_html, prompt_texto
-    from agents.html_validator import validate_and_repair
-    from agents.llm_router import generar_texto
-    from agents.utils import parse_json, strip_markdown
+    from llm.html_validator import validate_and_repair
+    from llm.router import generar_texto
+    from llm.utils import parse_json, strip_markdown
+    from prometheus.prompts.explore_prompts import prompt_codigo, prompt_html, prompt_texto
 
     if n in EXPLORE_CODE_ONLY:
         html = strip_markdown(

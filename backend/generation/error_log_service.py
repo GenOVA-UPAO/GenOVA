@@ -14,7 +14,7 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from ova.error_log_model import DEFAULT_CATEGORY, ERROR_CATEGORIES, OvaErrorLog
+from generation.error_log_model import DEFAULT_CATEGORY, ERROR_CATEGORIES, OvaErrorLog
 from users.admin_helpers import commit_or_500
 
 logger = logging.getLogger(__name__)

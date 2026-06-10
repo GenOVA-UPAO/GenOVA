@@ -16,16 +16,16 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from database import get_db
-from models import User
-from ova import jobs_service
-from ova.jobs_helpers import (
+from generation.jobs_helpers import (
     ResumeRequest,
     StartJobRequest,
     build_resource_plan,
     job_params,
     job_to_dict,
 )
-from ova.jobs_runner import run_job
+from generation.jobs_runner import run_job
+from models import User
+from ova import jobs_service
 from rate_limit import limiter
 
 router = APIRouter()

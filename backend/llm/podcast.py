@@ -8,8 +8,8 @@ import base64
 import html
 import logging
 
-from agents.audio_helpers import generar_audio_tts
-from agents.utils import SCORM_JS
+from llm.audio_helpers import generar_audio_tts
+from llm.utils import SCORM_JS
 
 logger = logging.getLogger(__name__)
 

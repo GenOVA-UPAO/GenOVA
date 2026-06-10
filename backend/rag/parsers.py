@@ -82,14 +82,14 @@ def _parse_pptx(path: str) -> str:
 
 
 def _parse_audio(path: str) -> str:
-    from agents.audio_helpers import transcribir_audio
+    from llm.audio_helpers import transcribir_audio
     return transcribir_audio(path)
 
 
 def _parse_image(path: str) -> str:
     import base64
 
-    from agents.llm_router import generar_vision
+    from llm.router import generar_vision
 
     with open(path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode("ascii")

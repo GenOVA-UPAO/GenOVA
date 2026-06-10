@@ -18,27 +18,41 @@ from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
-from agents.router import router as agents_router
+from api.auth import router as auth_router
+from api.labs import generation_router as labs_gen_router
+from api.labs import router as labs_router
+from api.llm import router as agents_router
+from api.ova import (
+    add_phase_router as ova_add_phase_router,
+)
+from api.ova import (
+    edit_router as ova_edit_router,
+)
+from api.ova import (
+    history_router as ova_history_router,
+)
+from api.ova import (
+    jobs_router as ova_jobs_router,
+)
+from api.ova import (
+    phase_version_router as ova_phase_version_router,
+)
+from api.ova import (
+    router as ova_router,
+)
+from api.ova import (
+    subelement_router as ova_subelement_router,
+)
+from api.rag import router as rag_router
+from api.rag import uploads_router
+from api.scorm import router as scorm_router
+from api.users import roles_router
+from api.users import router as users_router
 from auth.dependencies import require_admin
-from auth.router import router as auth_router
 from database import Base, engine
-from labs.generation_routes import router as labs_gen_router
-from labs.router import router as labs_router
-from ova.add_phase_router import router as ova_add_phase_router
-from ova.edit_router import router as ova_edit_router
-from ova.history_router import router as ova_history_router
-from ova.jobs_router import router as ova_jobs_router
-from ova.phase_version_router import router as ova_phase_version_router
-from ova.router import router as ova_router
-from ova.subelement_router import router as ova_subelement_router
-from rag.router import router as rag_router
 from rate_limit import limiter
-from roles.router import router as roles_router
 from run_migrations import run_migrations
-from scorm.router import router as scorm_router
 from seed import seed_db
-from uploads.router import router as uploads_router
-from users.router import router as users_router
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO").upper(),
@@ -93,7 +107,7 @@ def _background_catalog_refresh() -> None:
     try:
         from sqlalchemy.orm import Session
 
-        from agents.catalog_refresh import refresh_catalog
+        from llm.catalog_refresh import refresh_catalog
 
         with Session(engine) as session:
             refresh_catalog(session)
@@ -185,7 +199,7 @@ def admin_refresh_catalog(
     """Force-refresh the LLM model catalog from provider APIs (admin-only)."""
     from sqlalchemy.orm import Session
 
-    from agents.catalog_refresh import get_catalog_entries, refresh_catalog
+    from llm.catalog_refresh import get_catalog_entries, refresh_catalog
 
     try:
         with Session(engine) as session:
@@ -199,22 +213,22 @@ def admin_refresh_catalog(
         ) from exc
 
 
-app.include_router(agents_router, prefix="/api/agents", tags=["agents"])
-app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(rag_router, prefix="/api/rag", tags=["rag"])
-app.include_router(roles_router, prefix="/api/roles", tags=["roles"])
-app.include_router(roles_router, prefix="/roles", tags=["roles"])
-app.include_router(scorm_router, prefix="/api/scorm", tags=["scorm"])
-app.include_router(ova_router, prefix="/api/ova", tags=["ova"])
-app.include_router(ova_jobs_router, prefix="/api/ova/jobs", tags=["ova-jobs"])
-app.include_router(ova_history_router, prefix="/api/ovas", tags=["ovas"])
-app.include_router(ova_edit_router, prefix="/api/ovas", tags=["ovas-edit"])
-app.include_router(ova_phase_version_router, prefix="/api/ovas", tags=["ovas-phase-versions"])
-app.include_router(ova_add_phase_router, prefix="/api/ovas", tags=["ovas-add-phase"])
-app.include_router(ova_subelement_router, prefix="/api/ovas", tags=["ovas-subelement"])
-app.include_router(users_router, prefix="/api/users", tags=["users"])
-app.include_router(users_router, prefix="/users", tags=["users"])
-app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
-app.include_router(labs_router, prefix="/api/labs", tags=["labs"])
-app.include_router(labs_gen_router, prefix="/api/labs", tags=["labs"])
+app.include_router(agents_router, prefix="/api/agents", tags=["LLM Catalog"])
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(rag_router, prefix="/api/rag", tags=["RAG"])
+app.include_router(roles_router, prefix="/api/roles", tags=["Roles"])
+app.include_router(roles_router, prefix="/roles", tags=["Roles"])
+app.include_router(scorm_router, prefix="/api/scorm", tags=["SCORM"])
+app.include_router(ova_router, prefix="/api/ova", tags=["OVA"])
+app.include_router(ova_jobs_router, prefix="/api/ova/jobs", tags=["Generation"])
+app.include_router(ova_history_router, prefix="/api/ovas", tags=["OVA"])
+app.include_router(ova_edit_router, prefix="/api/ovas", tags=["OVA"])
+app.include_router(ova_phase_version_router, prefix="/api/ovas", tags=["OVA"])
+app.include_router(ova_add_phase_router, prefix="/api/ovas", tags=["OVA"])
+app.include_router(ova_subelement_router, prefix="/api/ovas", tags=["OVA"])
+app.include_router(users_router, prefix="/api/users", tags=["Users"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
+app.include_router(uploads_router, prefix="/api/uploads", tags=["RAG"])
+app.include_router(labs_router, prefix="/api/labs", tags=["Labs"])
+app.include_router(labs_gen_router, prefix="/api/labs", tags=["Labs"])

@@ -26,8 +26,8 @@ def _resource_type_id(resource) -> int | None:
     """
     global _RESOURCE_NAME_TO_ID
     if not _RESOURCE_NAME_TO_ID:
-        from agents.engage_prompts import RECURSOS_META as ENGAGE_META
-        from agents.explore_prompts import RECURSOS_META as EXPLORE_META
+        from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
+        from prometheus.prompts.explore_prompts import RECURSOS_META as EXPLORE_META
 
         _RESOURCE_NAME_TO_ID = {
             **{v["tipo"]: k for k, v in ENGAGE_META.items()},

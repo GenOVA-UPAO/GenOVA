@@ -5,8 +5,8 @@ Phase-agnostic. Dispatch to the correct prompt module based on `phase`.
 
 import json
 
-from agents.llm_router import generar_texto
-from agents.utils import parse_json, strip_markdown
+from llm.router import generar_texto
+from llm.utils import parse_json, strip_markdown
 
 _PROMPTS = {}
 
@@ -57,7 +57,7 @@ def two_step_gen(phase: str, n: int, concept: str, llm_config=None, enabled_mode
         )
     )
 
-    from agents.html_validator import validate_and_repair
+    from llm.html_validator import validate_and_repair
 
     html, _ = validate_and_repair(html, phase, n)
     return html

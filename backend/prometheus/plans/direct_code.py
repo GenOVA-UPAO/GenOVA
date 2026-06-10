@@ -3,8 +3,8 @@
 Used for resources that are purely visual/code-based (simulators, animations, diagrams).
 """
 
-from agents.llm_router import generar_texto
-from agents.utils import strip_markdown
+from llm.router import generar_texto
+from llm.utils import strip_markdown
 
 _PROMPTS = {}
 
@@ -41,7 +41,7 @@ def direct_code_gen(phase: str, n: int, concept: str, llm_config=None, enabled_m
         )
     )
 
-    from agents.html_validator import validate_and_repair
+    from llm.html_validator import validate_and_repair
 
     html, _ = validate_and_repair(html, phase, n)
     return html
