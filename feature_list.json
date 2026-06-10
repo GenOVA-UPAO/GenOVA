@@ -6,7 +6,7 @@
     "one_feature_at_a_time": true,
     "require_tests_to_close": true,
     "require_approved_spec_to_implement": true,
-    "valid_status": ["pending", "spec_ready", "in_progress", "aborted", "done", "blocked"],
+    "valid_status": ["pending", "spec_ready", "in_progress", "aborted", "done", "blocked", "amended"],
     "sdd_required_when": "feature has \"sdd\": true",
     "status_mapping_from_backlog": { "Closed": "done", "Done": "done", "To Do": "pending", "In Progress": "in_progress" },
     "spec_dirs": {
@@ -15,9 +15,7 @@
       "EN": "sdd/specs/",
       "RN": "sdd/specs/",
       "TA": "sdd/tasks/",
-      "BU": "sdd/bugs/",
-      "SP": "sdd/spikes/",
-      "DO": "sdd/docs-specs/"
+      "BU": "sdd/bugs/"
     }
   },
   "features": [
@@ -68,10 +66,8 @@
     { "id": "HU-034", "name": "catalogo_modelos_apis", "title": "Catálogo unificado de modelos con fetch de APIs OpenRouter/Groq + enable/disable + pricing en UI", "spec": "", "status": "done", "merge_commit": "f143a76" },
     { "id": "EN-003", "name": "orquestacion_prometheus", "title": "Orquestación multiagente Prometheus con LangGraph", "spec": "", "status": "done", "merge_commit": "9fa8211" },
 
-
     { "id": "EN-001", "name": "gherkin_sprint1", "title": "Habilitar especificaciones Gherkin Sprint 1", "spec": "", "status": "pending" },
     { "id": "EN-002", "name": "automatizacion_bdd", "title": "Habilitar automatización BDD", "spec": "", "status": "pending" },
-    { "id": "EN-003", "name": "orquestacion_agentes", "title": "Habilitar orquestación de agentes Prometheus", "spec": "", "status": "pending" },
     { "id": "EN-004", "name": "pgvector", "title": "Habilitar pgvector (BD Vectorial)", "spec": "", "status": "pending" },
     { "id": "EN-005", "name": "pipeline_rag", "title": "Habilitar pipeline RAG end-to-end", "spec": "", "status": "pending" },
     { "id": "EN-006", "name": "entornos_cloud", "title": "Habilitar entornos Cloud y orquestación", "spec": "", "status": "pending" },

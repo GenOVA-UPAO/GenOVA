@@ -13,10 +13,16 @@ nunca implementar.
 
 1. Lee `AGENTS.md`.
 2. Lee `feature_list.json` y `sdd/progress/current.md`.
-3. **Detección de specs stale**: busca features con `"status": "in_progress"`.
+3. Lee `sdd/progress/sprint.md`.
+   - Si no existe o está vacío:
+     Pregunta: "¿En qué sprint estás actualmente? (1, 2 o 3)"
+     Al recibir respuesta → crea `sdd/progress/sprint.md` con número + fechas del sprint
+     (extraídas de la tabla "Roadmap por Sprint" en `sdd/backlog.md`).
+   - Si existe → ejecuta **Sprint Check** (ver §Sprint Check más abajo).
+4. **Detección de specs stale**: busca features con `"status": "in_progress"`.
    Cuenta entradas de sesión en `sdd/progress/history.md` desde la última mención de esa feature.
    Si ≥3 sesiones sin actividad → avisa: "⚠️ [ID] lleva ≥3 sesiones en `in_progress` sin cierre. ¿Continuar, abortar o ignorar?"
-4. Ejecuta `./verify.ps1 -Quick`. Si falla, para y reporta antes de continuar.
+5. Ejecuta `./verify.ps1 -Quick`. Si falla, para y reporta antes de continuar.
 
 ## Detección de mensajes
 
@@ -30,13 +36,33 @@ tarea técnica, bug, mejora), **siempre pregunta antes de actuar**:
 > "¿Creo una spec para esto? Si es así, sugiero el código **[TIPO]-[N]**
 > ([descripción del tipo]). ¿Confirmas ese ID o prefieres otro?"
 
-Tipos válidos:
+Tipos válidos para spec SDD:
 - `HU-N` — Historia de Usuario (funcionalidad de producto)
 - `EN-N` — Enabler / Habilitador técnico
 - `TA-N` — Tarea Técnica interna
 - `BU-N` — Bug / Defecto
 - `RN-N` — Requisito No Funcional
 - `EP-N` — Épica
+
+**Tipos que NO siguen flujo SDD:**
+- `SP-N` — Spike de investigación → NO lances `spec_author`.
+  Responde: "Los spikes no siguen el flujo SDD. Puedo marcarlo `in_progress` en
+  `feature_list.json` para que registres el avance, y `done` cuando termines. ¿Lo hago?"
+- `DO-N` — Tarea de documentación → trátala como **Caso H**.
+  Lanza `doc_author` directamente. NO lances `spec_author`.
+
+**Antes de proponer un nuevo ID**, ejecuta este árbol de decisión:
+
+> **¿Es refactorización / mejora interna de algo ya existente?**
+> - Sí → busca en `feature_list.json` items `done` relacionados con el área que se toca.
+>   - Si encuentras uno: propón marcarlo `amended` y actualizar su spec (ver **Caso K**). No crees item nuevo.
+>   - Si no hay `done` relacionado: busca `pending`/`spec_ready` que cubran el mismo scope.
+>     Si existe: "Esto parece cubierto por [ID] ([status]). ¿Trabajamos dentro de ese scope?"
+>   - Si nada aplica y el cambio es puramente técnico (sin impacto visible al usuario):
+>     propón `TA-N`, no `HU-N`.
+>
+> **¿Es funcionalidad nueva que el usuario percibe directamente?**
+> - Sí → propón el nuevo ID normalmente (HU/EN/RN según corresponda).
 
 Para el número N: revisa `feature_list.json` y sugiere el siguiente libre por tipo.
 
@@ -49,8 +75,9 @@ spec", "las que faltan", o pide explícitamente hacerlas "de corrido"/"de seguid
 "sin preguntar una por una"):
 
 1. **Resuelve el set concreto**: cruza `feature_list.json` (features con `spec: ""`)
-   con `sdd/backlog.md`. Excluye lo que normalmente no necesita spec SDD salvo que el
-   usuario lo pida: épicas `EP` (contenedores) y spikes/docs ya `done`.
+   con `sdd/backlog.md`. Excluye siempre del flujo SDD: épicas `EP` (contenedores),
+   items `SP` (spikes — no necesitan spec), items `DO` (docs — los gestiona
+   `doc_author` directamente). Solo inclúyelos si el usuario los pide explícitamente.
 2. Presenta el set numerado (ID · tipo · título) y pide **una sola** confirmación del
    alcance: "¿Genero specs para estas N? Quita las que no quieras."
 3. Al confirmar → lanza **un solo** `spec_author` en **MODO BATCH** con la lista de IDs.
@@ -237,6 +264,69 @@ Cuando el usuario termine la sesión:
 6. Vacía `sdd/progress/current.md` dejando solo la plantilla.
 7. Propón commit (conventional commits, incluye docs actualizados si los tocaste).
    Espera aprobación humana explícita antes de `git commit`. Nunca hagas `git push`.
+
+### Caso K — Marcar item `done` como `amended`
+
+Cuando el árbol de decisión de Caso A determina que un item `done` debe actualizarse:
+
+1. Actualiza `feature_list.json`: cambia `"status": "done"` → `"status": "amended"`.
+   Conserva el `merge_commit` original; añade `"amended_commit": "<sha-cuando-haya>"`.
+2. Abre el spec existente y añade al final:
+   ```markdown
+   ## Cambios posteriores
+   **[fecha]**: [descripción breve de qué cambió y por qué]
+   ```
+3. Actualiza `Fecha actualización` en el bloque de metadata del spec.
+4. Reporta: "Item [ID] marcado como `amended`. Spec actualizado en `[ruta]`."
+5. NO relanzas `spec_author` ni `implementer` — el cambio ya está hecho en código.
+
+---
+
+## Sprint Check
+
+Se ejecuta: (a) al arrancar sesión si `sprint.md` existe, y (b) antes de lanzar
+`spec_author` o `implementer` por primera vez en cada sesión.
+
+**Pasos:**
+1. Lee `sdd/progress/sprint.md` → obtén sprint actual y fechas.
+2. Calcula: `hoy`, `días_restantes = fecha_fin − hoy`, `total = fecha_fin − fecha_inicio`.
+3. Lee `sdd/backlog.md` → extrae todos los IDs donde la columna Sprint = "Sprint N"
+   (incluye HU, EN, TA, RN — excluye SP y DO).
+4. Cruza con `feature_list.json` → filtra los que tienen `status: pending` o `spec_ready`.
+5. Busca también items de sprints **anteriores** con `status: pending/spec_ready` (overdue).
+6. Muestra resumen compacto:
+
+```
+📅 Sprint [N] · [inicio] – [fin] · [días_restantes] días restantes
+
+🚨 Overdue (Sprint anterior): [IDs] — pendientes del sprint pasado
+📋 Pendientes Sprint [N]: [IDs] ([count] items)
+```
+
+Si `días_restantes ≤ 7` (sprint crítico), añade:
+```
+⚡ Sprint crítico. Sugiero lote prioritario: [IDs ordenados Alta-prioridad primero]
+¿Arranco este lote o prefieres elegir tú?
+```
+
+7. Si no hay nada pendiente ni overdue → muestra solo la línea de sprint y continúa.
+8. El resumen es **informativo y no bloquea**, salvo en sprint crítico (≤7 días) donde
+   sí espera respuesta antes de continuar con spec/impl.
+
+---
+
+### Caso J — Cambio de sprint
+
+Patrones: `"pasando al sprint X"`, `"estoy en sprint X"`, `"cambio de sprint"`,
+`"vamos al sprint X"`, `"siguiente sprint"`, `"sprint [número]"`:
+
+1. Extrae el número de sprint del mensaje.
+2. Lee `sdd/backlog.md` → obtén fechas de inicio y fin del sprint indicado.
+3. Actualiza `sdd/progress/sprint.md` con número + fechas nuevas.
+4. Confirma: "Sprint actualizado a Sprint [N] · [inicio] – [fin]."
+5. Ejecuta Sprint Check con el nuevo sprint.
+
+---
 
 ## Qué NO haces
 

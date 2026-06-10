@@ -90,3 +90,76 @@ las specs del editor avanzado de OVA y empezar la implementación.
 **Verificación:** `verify.ps1 -Quick` PASA (ESLint + ruff + 52 BDD unit).
 
 **Estado:** EP-3 lote completo. Todas las features `done`.
+
+---
+
+## 2026-06-07 — Unificar crear+editar OVA en workspace + arreglar generación/SCORM
+
+**Agente:** opencode (inline)
+**Alcance:** HU-025 workspace unificado — crear y editar OVA en un solo panel dividido. Fix generación EXPLORE completa y exportación SCORM habilitada.
+
+**Completado:**
+- `CrearOvaPage` → workspace full-bleed split-panel (preview izquierda, chat derecha)
+- `WorkspaceHtmlPreview` reemplaza `OvaFiveEViewer` (fix preview en blanco)
+- OVA placeholder creado al inicio del job → aparece en Mis OVAs inmediatamente
+- EXPLORE generation completa + SCORM export habilitado (`52242dd`)
+- HU-025: `merge_commit: ff3b7b7` (conjunto de commits `c701602`…`52242dd`)
+
+**Verificación:** verify.ps1 PASA.
+
+**Estado:** DONE.
+
+---
+
+## 2026-06-08 — Catálogo unificado de modelos (HU-034)
+
+**Agente:** opencode (inline)
+**Alcance:** Catálogo ~300 modelos con fetch de APIs OpenRouter/Groq, pricing en UI, enable/disable por usuario, infinite scroll y filtro por categoría.
+
+**Completado:**
+- `GET /catalog/all` — agrega OpenRouter + Groq (~300 modelos), deduplica por ID
+- `frontend/src/pages/CatalogPage.jsx` — búsqueda, filtro categoría, infinite scroll, toggle enable/disable
+- Fix `catalog_all` — colisión de keys en dict causaba retorno de solo 2 modelos
+- Pre-populate catálogo curado para evitar UI vacía en entornos sin API keys
+- `merge_commit: f143a76`
+
+**Verificación:** verify.ps1 PASA.
+
+**Estado:** DONE.
+
+---
+
+## 2026-06-08 — Arquitectura Multi-Agente Prometheus con LangGraph (EN-003 / EP-5)
+
+**Agente:** opencode (inline)
+**Alcance:** Implementar arquitectura multi-agente Prometheus sobre LangGraph. Refactorizar ENGAGE/EXPLORE, añadir 3 fases 5E faltantes (EXPLAIN, ELABORATE, EVALUATE) con 10 recursos cada una (50 recursos total).
+
+**Completado:**
+
+**Nuevo paquete `backend/prometheus/` (14 archivos):**
+- `state.py`: `OvaGenerationState` TypedDict compartido
+- `graph.py`: `StateGraph` con 8 nodos + conditional edges (concierge → fases → validate → next/retry → assemble)
+- `checkpointer.py`: `PostgresSaver` con fallback `MemorySaver`
+- `nodes/`: concierge, engage, explore, explain, elaborate, evaluate, validate, assemble
+- `tools/`: `llm_generate.py`, `rag_search.py`
+- `plans/`: `two_step.py`, `direct_code.py`, `podcast.py`
+
+**Nuevos prompts (3 archivos, ~400 líneas):**
+- `explain_prompts.py`: Video, Lectura, Mapa Conceptual, FAQ, Demo, Glosario, Timeline, Diagrama, Tabla, Infografía
+- `elaborate_prompts.py`: Caso, Ejercicio, Proyecto, Simulación, Análisis, Escenario, Lab, Problemas, Estrategia, Reto
+- `evaluate_prompts.py`: Quiz, Rúbrica, Desafío, Examen, Completar, Relacionar, Crucigrama, Desarrollo, Simulación, Diploma
+
+**Integraciones (6 archivos modificados):**
+- `jobs_runner.py`: loop manual → `invoke_ova_generation()` con LangGraph checkpointing
+- `jobs_helpers.py`: `_DEFAULT_PLAN` + `_PHASE_ORDER` extendidos a 5 fases
+- `regen_agents.py`: dispatch a 5 fases + mappings name→id
+- `jobs_materialize.py`: `_resolve_type` maneja 5 fases
+- `requirements.txt`: + `langgraph>=0.6.0`, `langgraph-checkpoint-postgres>=2.0.0`
+
+**Flujo:** `concierge → engage|explore|explain|elaborate|evaluate → validate → next/retry → assemble → END`
+
+- `merge_commit: 9fa8211`
+
+**Verificación:** verify.ps1 PASA (ESLint + ruff + 52 BDD unit).
+
+**Estado:** DONE.
