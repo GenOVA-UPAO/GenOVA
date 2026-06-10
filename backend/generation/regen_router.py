@@ -12,7 +12,7 @@ from auth.dependencies import get_current_user
 from database import get_db
 from generation.regen_service import _finalize_edit, _regen_jobs, _regen_jobs_lock
 from models import Ova, OvaPhase, User
-from ova.edit_helpers import (
+from ova.crud.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _is_ova_owner,

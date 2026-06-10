@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Ova, OvaJob, OvaJobResource
-from users.admin_helpers import commit_or_500
+from users.admin.helpers import commit_or_500
 
 # A "running" job whose updated_at is older than this is presumed dead (its
 # process died / Render slept) and is lazily marked "interrupted" on the next

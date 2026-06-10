@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import require_permission
 from database import get_db
 from models import Role, User, UserRole
-from users.admin_helpers import (
+from users.admin.helpers import (
     assert_can_touch_target,
     commit_or_500,
     get_target_user,

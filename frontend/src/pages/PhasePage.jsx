@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { usePhaseGeneration } from '../../hooks/usePhaseGeneration.js'
+import { usePhaseGeneration } from '../../hooks/labs/usePhaseGeneration.js'
 import { ResourceCard } from '../engage/ResourceCard.jsx'
 import { HtmlPreview } from '../engage/HtmlPreview.jsx'
 

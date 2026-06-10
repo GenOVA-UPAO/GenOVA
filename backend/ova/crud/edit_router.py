@@ -10,16 +10,16 @@ from auth.dependencies import get_current_user
 from database import get_db
 from generation.regen_router import router as regen_router
 from models import Ova, OvaPhase, OvaVersion, User
-from ova.edit_helpers import (
+from ova.crud.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _is_ova_owner,
     _ova_output_dir,
 )
-from ova.edit_view_router import router as edit_view_router
-from ova.phase_version_router import record_phase_micro_version
+from ova.crud.edit_view_router import router as edit_view_router
+from ova.phases.phase_version_router import record_phase_micro_version
 from rate_limit import limiter
-from users.admin_helpers import commit_or_500
+from users.admin.helpers import commit_or_500
 
 router = APIRouter()
 

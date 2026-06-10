@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from database import get_db
 from models import Ova, OvaPhase, User
-from ova.edit_helpers import _get_active_version, _is_ova_owner
+from ova.crud.edit_helpers import _get_active_version, _is_ova_owner
 from rate_limit import limiter
 
 router = APIRouter()

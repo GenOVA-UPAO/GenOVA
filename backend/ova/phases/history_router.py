@@ -134,9 +134,9 @@ def download_ova(
     )
 
 
-from ova.duplicate_router import router as duplicate_router
-from ova.manage_router import router as manage_router
-from ova.trash_router import router as trash_router
+from ova.lifecycle.duplicate_router import router as duplicate_router  # noqa: E402
+from ova.lifecycle.manage_router import router as manage_router  # noqa: E402
+from ova.lifecycle.trash_router import router as trash_router  # noqa: E402
 
 router.include_router(trash_router)
 router.include_router(duplicate_router)

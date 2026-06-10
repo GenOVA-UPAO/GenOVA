@@ -18,15 +18,15 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from database import get_db
 from models import Ova, OvaPhase, User
-from ova.edit_helpers import (
+from ova.crud.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _is_ova_owner,
     _phase_to_dict,
 )
-from ova.phase_version_router import record_phase_micro_version
+from ova.phases.phase_version_router import record_phase_micro_version
 from rate_limit import limiter
-from users.admin_helpers import commit_or_500
+from users.admin.helpers import commit_or_500
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

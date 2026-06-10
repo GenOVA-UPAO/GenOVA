@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from database import get_db
 from models import Ova, OvaPhase, OvaVersion, User
-from ova.edit_helpers import (
+from ova.crud.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _is_ova_owner,
@@ -16,7 +16,7 @@ from ova.edit_helpers import (
     _version_to_dict,
 )
 from rate_limit import limiter
-from users.admin_helpers import commit_or_500
+from users.admin.helpers import commit_or_500
 
 router = APIRouter()
 

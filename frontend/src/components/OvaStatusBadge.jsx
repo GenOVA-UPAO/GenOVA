@@ -14,7 +14,7 @@ const STATUS_CLASSES = {
   error: 'bg-red-50 text-red-700 border-red-200',
 }
 
-export function StatusBadge({ status }) {
+export function OvaStatusBadge({ status }) {
   return (
     <Badge
       className={`rounded-full font-semibold ${STATUS_CLASSES[status] || STATUS_CLASSES.borrador}`}

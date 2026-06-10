@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
-import { useOvaCreation } from '../../hooks/useOvaCreation.js'
+import { useOvaCreation } from '../../hooks/ova/useOvaCreation.js'
 import { PhaseSelectModal } from '../PhaseSelectModal.jsx'
 import { CrearOvaChatPanel } from '../crear/CrearOvaChatPanel.jsx'
 import { CrearOvaPreviewPanel } from '../crear/CrearOvaPreviewPanel.jsx'

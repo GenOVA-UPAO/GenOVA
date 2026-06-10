@@ -10,7 +10,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
 
-from ova import regen_agents
+from generation import regen_agents
 
 logger = logging.getLogger(__name__)
 

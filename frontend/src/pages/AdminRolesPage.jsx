@@ -1,4 +1,4 @@
-import { useRoles } from '../hooks/useRoles.js'
+import { useRoles } from '../hooks/admin/useRoles.js'
 import { AVAILABLE_PERMISSIONS } from '../lib/permissions.js'
 import { RoleFormModal } from '../components/RoleFormModal.jsx'
 import { DeleteRoleModal } from '../components/DeleteRoleModal.jsx'

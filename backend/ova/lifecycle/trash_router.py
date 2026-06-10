@@ -9,7 +9,7 @@ from auth.dependencies import get_current_user
 from database import get_db
 from models import Ova, User
 from ova.helpers import _delete_scorm_file, _is_admin, _ova_to_dict
-from ova.trash_batch_router import router as trash_batch_router
+from ova.lifecycle.trash_batch_router import router as trash_batch_router
 
 router = APIRouter()
 

@@ -20,7 +20,7 @@ from auth.dependencies import require_permission
 from auth.email import send_reset_email
 from database import get_db
 from models import PasswordResetToken, User
-from users.admin_helpers import (
+from users.admin.helpers import (
     APP_URL,
     assert_can_touch_target,
     commit_or_500,

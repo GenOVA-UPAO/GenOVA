@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { useOvaList } from '../hooks/useOvaList.js'
+import { useOvaList } from '../hooks/ova/useOvaList.js'
 import { OvaCard } from '../components/OvaCard.jsx'
 import { TrashModal } from '../components/TrashModal.jsx'
 import { BulkTrashModal } from '../components/BulkTrashModal.jsx'

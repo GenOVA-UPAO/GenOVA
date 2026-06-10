@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { StatusBadge } from './StatusBadge'
-import { useJobByOva } from '../hooks/useJobByOva.js'
+import { OvaStatusBadge } from './OvaStatusBadge'
+import { useJobByOva } from '../hooks/ova/useJobByOva.js'
 import { toast } from 'sonner'
 
 export function OvaCard({
@@ -59,7 +59,7 @@ export function OvaCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3 className="text-sm font-semibold text-foreground truncate">{ova.title}</h3>
-            <StatusBadge status={ova.status} />
+            <OvaStatusBadge status={ova.status} />
             {ova.version_number ? (
               <Badge variant="outline" className="text-[10px] text-muted-foreground">
                 v{ova.version_number}

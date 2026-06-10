@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { StatusBadge } from './StatusBadge'
+import { OvaStatusBadge } from './OvaStatusBadge'
 
 export function TrashedOvaCard({ ova, isSelected, onToggleSelect, onRestore, onPermanentDelete, isRestoring, isDeleting }) {
   const formatDate = (iso) => {
@@ -19,7 +19,7 @@ export function TrashedOvaCard({ ova, isSelected, onToggleSelect, onRestore, onP
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3 className="text-sm font-semibold text-foreground truncate">{ova.title}</h3>
-            <StatusBadge status={ova.status} />
+            <OvaStatusBadge status={ova.status} />
           </div>
           {ova.description ? (
             <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{ova.description}</p>
