@@ -82,7 +82,7 @@
     { "id": "RN-001", "name": "latencia_278ms", "title": "Latencia ≤ 278 ms", "spec": "", "status": "pending" },
     { "id": "RN-002", "name": "tiempo_generacion_180s", "title": "Tiempo de generación ≤ 180 segundos (MTTG)", "spec": "sdd/specs/RN-002_tiempo-generacion-180s.md", "status": "spec_ready" },
     { "id": "RN-003", "name": "seguridad_api_keys", "title": "Seguridad y manejo de API Keys", "spec": "sdd/specs/RN-003_seguridad-api-keys.md", "status": "done" },
-    { "id": "RN-004", "name": "humo_rendimiento", "title": "Prueba de humo de rendimiento post-despliegue", "spec": "sdd/specs/RN-004_prueba-humo-rendimiento.md", "status": "spec_ready" },
+    { "id": "RN-004", "name": "humo_rendimiento", "title": "Prueba de humo de rendimiento post-despliegue", "spec": "sdd/specs/RN-004_prueba-humo-rendimiento.md", "status": "done" },
     { "id": "RN-005", "name": "frontend_responsive", "title": "Frontend responsive", "spec": "sdd/specs/RN-005_frontend-responsive.md", "status": "done", "merge_commit": "b62e216" },
 
     { "id": "TA-001", "name": "config_repos_ramas", "title": "Configuración de repositorios y ramas", "spec": "", "status": "pending" },
