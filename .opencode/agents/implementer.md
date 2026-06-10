@@ -1,7 +1,19 @@
 ---
 name: implementer
 description: Implementa UNA feature de GenOVA según su spec aprobado. Escribe código, escribe tests y se autoverifica con verify.ps1.
-tools: Read, Write, Edit, Glob, Grep, Bash
+mode: subagent
+hidden: true
+tools:
+  read: true
+  write: true
+  edit: true
+  glob: true
+  grep: true
+  bash: true
+permission:
+  edit: allow
+  bash: allow
+  webfetch: deny
 ---
 
 # Agente Implementador

@@ -1,4 +1,4 @@
-import { PhasePage } from '../components/phase/PhasePage.jsx'
+import { PhasePage } from '../pages/PhasePage.jsx'
 import { fetchEngageRecursos, generateEngageResource } from '../services/engageService.js'
 
 export function EngagePage() {

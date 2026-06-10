@@ -1,30 +1,29 @@
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+
 export function TrashModal({ ova, onConfirm, onCancel, isLoading }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="text-base font-bold text-slate-900">Mover a la papelera</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          ¿Mover a la papelera{' '}
-          <span className="font-semibold text-slate-800">"{ova.title}"</span>?
-        </p>
-        <p className="mt-1 text-xs text-slate-400">Podrás restaurarlo desde la sección Papelera.</p>
-        <div className="mt-5 flex gap-3">
-          <button
-            onClick={onCancel}
-            disabled={isLoading}
-            className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
-          >
-            {isLoading ? 'Moviendo...' : 'Mover'}
-          </button>
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onCancel() }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Mover a la papelera</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-1">
+          <p className="text-sm text-muted-foreground">
+            ¿Mover a la papelera{' '}
+            <span className="font-semibold text-foreground">"{ova.title}"</span>?
+          </p>
+          <p className="text-xs text-muted-foreground/70">Podrás restaurarlo desde la sección Papelera.</p>
         </div>
-      </div>
-    </div>
+        <div className="flex gap-3 pt-2">
+          <Button variant="outline" className="flex-1" onClick={onCancel} disabled={isLoading}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" className="flex-1" onClick={onConfirm} disabled={isLoading}>
+            {isLoading ? 'Moviendo...' : 'Mover'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

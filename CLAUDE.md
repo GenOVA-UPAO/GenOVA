@@ -115,7 +115,9 @@ Bearer` fallback once all clients are on cookies.
 ## Skills & agentes
 
 Agentes SDD en `.claude/agents/`: `leader` (orquesta), `explorer` (mapa pre-spec),
-`spec_author` (specs), `implementer` (código), `reviewer` (aprueba), `skill-advisor`
+`spec_author` (specs; 3 modos — Único/Secuencial/Batch: ≥4 specs o petición explícita
+= una ronda de asunciones + una sola confirmación + generación continua de todas),
+`implementer` (código), `reviewer` (aprueba), `skill-advisor`
 (broker de skills), `spec-sync` (consistencia entre specs tras renombres) y `doc_author`
 (documentación en `docs/`, flujo interactivo de 4 pasos como `spec_author`; el `leader`
 lo ofrece al cerrar una feature `done` o ante "documenta X", y actualiza docs existentes

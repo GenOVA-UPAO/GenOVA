@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { markLoggedIn } from '../lib/auth.js'
 import { apiFetch } from '../lib/http.js'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -20,9 +24,7 @@ export function LoginPage() {
     setTouched({ email: true, password: true })
     setServerError('')
 
-    if (!isEmailValid || password.length === 0 || isSubmitting) {
-      return
-    }
+    if (!isEmailValid || password.length === 0 || isSubmitting) return
 
     setIsSubmitting(true)
 
@@ -31,7 +33,6 @@ export function LoginPage() {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       })
-
       const data = await response.json()
 
       if (response.status === 200) {
@@ -54,39 +55,40 @@ export function LoginPage() {
       setIsSubmitting(false)
     }
   }
+
   return (
-    <section className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Iniciar sesión</h1>
-        <p className="mt-2 text-sm text-slate-600">Accede para continuar al curso de ML.</p>
+    <section className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4">
+      <div className="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-sm">
+        <h1 className="text-2xl font-semibold tracking-tight">Iniciar sesión</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Accede para continuar al curso de ML.</p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
-          <label className="block text-sm font-medium text-slate-700">
-            Correo
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Correo</Label>
+            <Input
+              id="email"
               type="email"
               name="email"
               autoComplete="email"
               inputMode="email"
               placeholder="estudiante@genova.ai"
               value={email}
+              aria-invalid={touched.email && email.length > 0 && !isEmailValid}
               onChange={(event) => {
                 setEmail(event.target.value)
                 setTouched((prev) => ({ ...prev, email: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
-            {touched.email && email.length > 0 && !isEmailValid && (
-              <span className="mt-1 block text-xs text-rose-600">
-                Ingresa un correo con formato válido.
-              </span>
-            )}
-          </label>
+            {touched.email && email.length > 0 && !isEmailValid ? (
+              <p className="text-xs text-destructive">Ingresa un correo con formato válido.</p>
+            ) : null}
+          </div>
 
-          <label className="block text-sm font-medium text-slate-700">
-            Contraseña
-            <input
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Contraseña</Label>
+            <Input
+              id="password"
               type="password"
               name="password"
               autoComplete="current-password"
@@ -97,29 +99,29 @@ export function LoginPage() {
                 setTouched((prev) => ({ ...prev, password: true }))
                 if (serverError) setServerError('')
               }}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
             />
-          </label>
+          </div>
 
-          {serverError && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              {serverError}
-            </div>
-          )}
+          {serverError ? (
+            <Alert variant="destructive">
+              <AlertDescription>{serverError}</AlertDescription>
+            </Alert>
+          ) : null}
 
-          <button
+          <Button
             type="submit"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="w-full gap-2"
             disabled={!isEmailValid || password.length === 0 || isSubmitting}
           >
-            {isSubmitting && (
+            {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-            )}
+            ) : null}
             {isSubmitting ? 'Ingresando...' : 'Entrar'}
-          </button>
-          <p className="text-center text-sm text-slate-600">
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
             ¿No tienes cuenta?{' '}
-            <Link to="/register" className="font-medium text-slate-900">
+            <Link to="/register" className="font-medium text-foreground hover:underline">
               Crear cuenta
             </Link>
           </p>

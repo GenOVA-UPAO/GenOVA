@@ -26,6 +26,40 @@ export function fetchOvaVersions(ovaId) {
   return apiJson(`/api/ovas/${ovaId}/versiones`)
 }
 
+export function revertToVersion(ovaId, versionId) {
+  return apiJson(`/api/ovas/${ovaId}/versiones/${versionId}/revert`, { method: 'POST' })
+}
+
+export function fetchVersionDiff(ovaId, v1, v2) {
+  return apiJson(`/api/ovas/${ovaId}/versiones/diff?v1=${v1}&v2=${v2}`)
+}
+
+export function addPhase(ovaId, phaseType, prompt) {
+  return apiJson(`/api/ovas/${ovaId}/fases`, {
+    method: 'POST',
+    body: JSON.stringify({ phase_type: phaseType, prompt }),
+  })
+}
+
+export function fetchPhaseVersions(ovaId, phaseId) {
+  return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}/versiones`)
+}
+
+export function revertPhaseVersion(ovaId, phaseId, mvId) {
+  return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}/versiones/${mvId}/revert`, { method: 'POST' })
+}
+
+export function deletePhase(ovaId, phaseId) {
+  return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}`, { method: 'DELETE' })
+}
+
+export function reorderPhases(ovaId, reorders) {
+  return apiJson(`/api/ovas/${ovaId}/fases/reorder`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reorders }),
+  })
+}
+
 export async function downloadEditedScorm(ovaId) {
   const res = await apiFetch(`/api/ovas/${ovaId}/export-scorm`)
   if (!res.ok) {

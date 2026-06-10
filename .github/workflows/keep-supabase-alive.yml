@@ -1,0 +1,34 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Daily at noon UTC (well within 7-day pause window)
+  workflow_dispatch:        # Manual trigger from GitHub UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase prod
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL_PROD }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY_PROD }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/roles?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY")
+          echo "Prod ping status: $STATUS"
+          [ "$STATUS" -lt 500 ] || exit 1
+
+      - name: Ping Supabase test
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL_TEST }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY_TEST }}
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/roles?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY")
+          echo "Test ping status: $STATUS"
+          [ "$STATUS" -lt 500 ] || exit 1

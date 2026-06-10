@@ -1,4 +1,6 @@
-import { StatusBadge } from './StatusBadge'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { OvaStatusBadge } from './OvaStatusBadge'
 
 export function TrashedOvaCard({ ova, isSelected, onToggleSelect, onRestore, onPermanentDelete, isRestoring, isDeleting }) {
   const formatDate = (iso) => {
@@ -7,48 +9,51 @@ export function TrashedOvaCard({ ova, isSelected, onToggleSelect, onRestore, onP
   }
 
   return (
-    <div className={`rounded-xl border bg-white p-5 shadow-sm transition-all ${isSelected ? 'border-indigo-300 ring-1 ring-indigo-200' : 'border-slate-200'}`}>
+    <div className={`rounded-xl border bg-white p-5 shadow-sm transition-all ${isSelected ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border'}`}>
       <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={isSelected}
-          onChange={() => onToggleSelect(ova.id)}
-          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+          onCheckedChange={() => onToggleSelect(ova.id)}
+          className="mt-0.5"
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <h3 className="text-sm font-semibold text-slate-900 truncate">{ova.title}</h3>
-            <StatusBadge status={ova.status} />
+            <h3 className="text-sm font-semibold text-foreground truncate">{ova.title}</h3>
+            <OvaStatusBadge status={ova.status} />
           </div>
-          {ova.description && (
-            <p className="text-xs text-slate-500 line-clamp-2 mt-1">{ova.description}</p>
-          )}
-          {ova.owner && (
-            <p className="mt-1.5 text-xs text-slate-400">
-              Por: <span className="font-medium text-slate-600">{ova.owner.full_name}</span>
+          {ova.description ? (
+            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{ova.description}</p>
+          ) : null}
+          {ova.owner ? (
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Por: <span className="font-medium text-foreground">{ova.owner.full_name}</span>
             </p>
-          )}
+          ) : null}
           <p className="mt-1.5 text-xs text-red-400 font-medium">
             Eliminado el {formatDate(ova.deleted_at)}
           </p>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
-        <button
+      <div className="mt-4 flex items-center gap-2 border-t border-border pt-3">
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => onRestore(ova.id)}
           disabled={isRestoring || isDeleting}
-          className="flex-1 rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 transition-all hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex-1 text-primary border-primary/30 hover:bg-primary/5"
         >
           {isRestoring ? 'Restaurando...' : '↩ Restaurar'}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => onPermanentDelete(ova)}
           disabled={isRestoring || isDeleting}
-          className="flex-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition-all hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/5"
         >
           {isDeleting ? 'Eliminando...' : '🗑 Borrar definitivamente'}
-        </button>
+        </Button>
       </div>
     </div>
   )

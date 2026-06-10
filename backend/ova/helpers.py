@@ -20,12 +20,21 @@ def _is_admin(user: User, db: Session) -> bool:
 
 
 def _ova_to_dict(ova: Ova, include_owner: bool = False) -> dict:
+    # Find active version number when versions are already eager-loaded (HU-030).
+    active_version_number: int | None = None
+    if ova.versions:
+        for v in ova.versions:
+            if v.is_active:
+                active_version_number = v.version_number
+                break
+
     data = {
         "id": str(ova.id),
         "title": ova.title,
         "description": ova.description,
         "status": ova.status,
         "file_path": ova.file_path,
+        "version_number": active_version_number,
         "created_at": ova.created_at.isoformat() if ova.created_at else None,
         "updated_at": ova.updated_at.isoformat() if ova.updated_at else None,
     }

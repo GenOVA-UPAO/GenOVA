@@ -185,11 +185,11 @@ El harness no depende de Claude Code. `AGENTS.md` es la base de reglas que leen 
 |---|---|---|
 | Claude Code | `CLAUDE.md` + `AGENTS.md` | `.claude/agents/` |
 | Codex CLI | `AGENTS.md` | — |
-| Opencode | `AGENTS.md` | `.opencode/agents/` (junction) |
+| Opencode | `AGENTS.md` | `.opencode/agents/` (copias transformadas) |
 | GitHub Copilot | `AGENTS.md` + `.github/copilot-instructions.md` | `.github/agents/sdd-leader.agent.md` |
 | Antigravity / Gemini CLI | `GEMINI.md` → `AGENTS.md` | — |
 
-Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para recrear los symlinks/junctions (`.opencode/agents` → `.claude/agents`, `.claude/skills/*` → `.agents/skills/*`). Usa `-Check` para verificar sin crear.
+Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para resincronizar agentes de Opencode (`.opencode/agents/*.md` desde `.claude/agents/*.md`, con transformación de `mode/hidden/permission`) y recrear symlinks de skills (`.claude/skills/*` → `.agents/skills/*`). Usa `-Check` para verificar sin crear.
 
 ### Archivos clave del harness
 
@@ -210,11 +210,11 @@ Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para recrear los syml
 | `skills-catalog.json` | Registro de skills instaladas (metadata, triggers, seguridad) |
 | `skills-lock.json` | Lock de versiones/hash de skills (lo gestiona `npx skills`) |
 | `.agents/skills/` | Store canónico de skills (`find-skills`, `find-docs`) |
-| `scripts/setup-harness.ps1` | Recrea symlinks/junctions post-clone (Windows) |
+| `scripts/setup-harness.ps1` | Sincroniza agentes de Opencode + recrea symlinks de skills (Windows) |
 | `GEMINI.md` | Override de reglas para Antigravity / Gemini CLI |
 | `.github/copilot-instructions.md` | Reglas de workspace para GitHub Copilot |
 | `.github/agents/sdd-leader.agent.md` | Adaptador del leader para Copilot |
-| `.opencode/` | `opencode.json` + agents (junction → `.claude/agents`) |
+| `.opencode/` | `opencode.json` + agents transformados para Opencode |
 
 ## Stack
 

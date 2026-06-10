@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Renders HTML content with a toggle between iframe preview and raw code view.
  * Falls back to plain text when content is not HTML.
  *
  * The iframe stays mounted at all times (CSS hidden, not unmounted) so the
- * blob URL is never revoked while the user is toggling views. React StrictMode
- * double-invocation would revoke the URL on simulated unmount otherwise.
+ * blob URL is never revoked while the user is toggling views.
  */
 
 function looksLikeHtml(content) {
@@ -17,33 +17,27 @@ function looksLikeHtml(content) {
 function ViewToggle({ view, onSwitch, charCount }) {
   return (
     <div className="flex items-center gap-1.5">
-      <button
+      <Button
         type="button"
+        size="sm"
+        variant={view === 'preview' ? 'default' : 'secondary'}
         onClick={() => onSwitch('preview')}
-        className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-          view === 'preview'
-            ? 'bg-indigo-600 text-white shadow-sm'
-            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-        }`}
       >
         Vista previa
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        size="sm"
+        variant={view === 'code' ? 'default' : 'secondary'}
         onClick={() => onSwitch('code')}
-        className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-          view === 'code'
-            ? 'bg-slate-700 text-white shadow-sm'
-            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-        }`}
       >
         Código
-      </button>
-      {view === 'code' && (
-        <span className="ml-auto text-[10px] text-slate-400">
+      </Button>
+      {view === 'code' ? (
+        <span className="ml-auto text-[10px] text-muted-foreground">
           {charCount.toLocaleString()} chars
         </span>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -53,8 +47,6 @@ export function HtmlCodePreview({ htmlContent, defaultView = 'preview', height =
   const blobUrlRef = useRef(null)
   const iframeRef = useRef(null)
 
-  // Manage blob URL imperatively so it is never revoked while the component
-  // is mounted, regardless of StrictMode double-effect invocations.
   useEffect(() => {
     if (!htmlContent) return
     const url = URL.createObjectURL(new Blob([htmlContent], { type: 'text/html' }))
@@ -69,15 +61,14 @@ export function HtmlCodePreview({ htmlContent, defaultView = 'preview', height =
   if (!htmlContent) return null
 
   if (!looksLikeHtml(htmlContent)) {
-    return <p className="text-sm text-slate-700 whitespace-pre-wrap">{htmlContent}</p>
+    return <p className="text-sm text-foreground whitespace-pre-wrap">{htmlContent}</p>
   }
 
   return (
     <div className="space-y-2">
       <ViewToggle view={view} onSwitch={setView} charCount={htmlContent.length} />
 
-      <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        {/* iframe stays in DOM — CSS hides it. Unmounting would revoke the blob URL. */}
+      <div className="rounded-xl border border-border overflow-hidden shadow-sm">
         <iframe
           ref={iframeRef}
           title="Vista previa del recurso"

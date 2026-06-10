@@ -15,7 +15,7 @@
 | Responsable | JEFFRY ANDERSON ROMERO URIOL |
 | Fase | SDD - Implement |
 | Fecha creación | 2026-05-15 |
-| Fecha actualización | — |
+| Fecha actualización | 2026-06-07 |
 | Fecha Fin (info) | 2026-05-20 |
 
 ## Historia de Usuario
@@ -38,7 +38,8 @@ Mostrar el output principal del OVA generado como una vista previa navegable y e
   - Bloques de código con etiqueta de lenguaje (`code`)
   - Imágenes con pie de foto (`image`)
 - Indicador visual de fase activa (color diferenciado por fase).
-- Botón "Editar" por fase, habilitado — redirige al editor en `/mis-ovas/{id}/editar`.
+- Botón "Editar" por fase, habilitado — abre el workspace de edición en `/ova/{id}/workspace`.
+  > **Nota (2026-06-07):** el editor form legacy `/mis-ovas/{id}/editar` fue eliminado. La edición por fase/recurso vive ahora en el **workspace unificado** (HU-025) vía click-to-edit (HU-026); el acceso desde "Mis OVAs" lo cubre HU-030.
 - La vista aparece automáticamente al completarse la generación del OVA (progreso 100%).
 - Se reinicia (desaparece) al iniciar una nueva generación.
 
@@ -56,7 +57,7 @@ Mostrar el output principal del OVA generado como una vista previa navegable y e
 2. Todo el contenido de cada fase debe ser visible sin truncamiento en la interfaz.
 3. La vista previa solo se muestra cuando `ova_content` está disponible (generación exitosa).
 4. Cada pestaña activa muestra el contenido completo de su fase sin paginación interna.
-5. El botón "Editar" debe estar habilitado en cada fase y redirigir a `/mis-ovas/{id}/editar`.
+5. El botón "Editar" debe estar habilitado en cada fase y abrir el workspace en `/ova/{id}/workspace`.
 6. Si la respuesta de generación no incluye `ova_content`, la vista previa no se muestra (no se renderiza el componente).
 7. Las secciones de tipo desconocido se ignoran silenciosamente (sin error).
 
@@ -69,7 +70,7 @@ Mostrar el output principal del OVA generado como una vista previa navegable y e
 6. El contenido renderiza correctamente texto enriquecido (encabezados, párrafos).
 7. El contenido renderiza correctamente listas ordenadas y desordenadas.
 8. El contenido renderiza correctamente bloques de código con indicador de lenguaje.
-9. Cada fase muestra un botón "Editar" habilitado que redirige a `/mis-ovas/{id}/editar`.
+9. Cada fase muestra un botón "Editar" habilitado que abre el workspace en `/ova/{id}/workspace`.
 10. La vista aparece automáticamente al finalizar la generación del OVA.
 11. Al iniciar una nueva generación, la vista previa anterior desaparece.
 
@@ -108,7 +109,7 @@ Feature: Visualizar completa 5E
     Given la vista previa del OVA está visible
     When el estudiante visualiza cualquier fase
     Then cada fase muestra un botón "Editar" habilitado
-    And al hacer clic el sistema redirige a "/mis-ovas/{id}/editar"
+    And al hacer clic el sistema abre el workspace en "/ova/{id}/workspace"
 
   Scenario: Vista previa se reinicia al generar un nuevo OVA
     Given la vista previa del OVA generado está visible

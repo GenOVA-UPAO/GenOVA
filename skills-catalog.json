@@ -34,6 +34,34 @@
       "benefitsAgents": ["leader"],
       "source": "vercel-labs/skills",
       "lastVerified": "2026-06-01"
+    },
+    "frontend-design": {
+      "installed": true,
+      "installedPath": ".agents/skills/frontend-design/SKILL.md",
+      "description": "Crea interfaces frontend distintivas y de calidad de producción (componentes, páginas, dashboards React/HTML/CSS); evita la estética genérica de IA",
+      "triggers": [
+        "frontend", "ui", "ux", "diseño", "design", "componente",
+        "página", "page", "dashboard", "landing", "estilizar", "beautify",
+        "react component", "tailwind", "layout", "workspace", "panel"
+      ],
+      "benefitsAgents": ["implementer"],
+      "source": "anthropics/skills",
+      "securityAssessment": "Safe · 0 alerts (Socket) · Low Risk (Snyk)",
+      "lastVerified": "2026-06-05"
+    },
+    "vercel-react-best-practices": {
+      "installed": true,
+      "installedPath": ".agents/skills/vercel-react-best-practices/SKILL.md",
+      "description": "Guías de optimización de rendimiento React/Next.js de Vercel Engineering; usar al escribir, revisar o refactorizar código React para patrones de rendimiento óptimos",
+      "triggers": [
+        "react", "next.js", "rendimiento", "performance", "optimizar",
+        "refactor react", "hooks", "data fetching", "bundle", "re-render",
+        "memo", "useeffect", "componente react"
+      ],
+      "benefitsAgents": ["implementer"],
+      "source": "vercel-labs/agent-skills",
+      "securityAssessment": "Safe · 0 alerts (Socket) · Low Risk (Snyk)",
+      "lastVerified": "2026-06-05"
     }
   },
   "pendingReview": []
