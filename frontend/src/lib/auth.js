@@ -5,6 +5,8 @@
 // `genova_session` flag (plus the legacy JWT for backwards-compat with the
 // cucumber unit suite) to drive client-side routing decisions.
 
+import { clearCurrentUser } from './me.js'
+
 const SESSION_KEY = 'genova_session'
 const TOKEN_KEY = 'genova_token'  // legacy — kept for unit tests; do NOT send as Bearer
 
@@ -27,8 +29,9 @@ export function clearSession() {
     ls.removeItem(SESSION_KEY)
     ls.removeItem(TOKEN_KEY)
   }
-  // Best-effort cookie clear. Imported lazily so tests don't pull http.js
-  // network code when they only exercise the localStorage shim.
+  clearCurrentUser()
+  // Best-effort cookie clear. http.js imported lazily so tests that only
+  // exercise the localStorage shim don't pull its network code at module load.
   return import('./http.js')
     .then(({ apiFetch }) => apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {}))
     .catch(() => {})

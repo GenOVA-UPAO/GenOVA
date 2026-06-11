@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { useOvaList } from '../hooks/ova/useOvaList.js'
+import { useGeneratingJobs } from '../hooks/ova/useGeneratingJobs.js'
 import { OvaCard } from '../components/OvaCard.jsx'
 import { TrashModal } from '../components/TrashModal.jsx'
 import { BulkTrashModal } from '../components/BulkTrashModal.jsx'
@@ -11,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export function MisOvasPage() {
   const list = useOvaList()
+  const { jobs, resume } = useGeneratingJobs(list.ovas)
 
   return (
     <div className="space-y-6">
@@ -129,10 +131,12 @@ export function MisOvasPage() {
             <OvaCard
               key={ova.id}
               ova={ova}
+              job={jobs[ova.id]}
+              onResume={resume}
               isSelected={list.selectedIds.has(ova.id)}
               onToggleSelect={list.handleToggleSelect}
               onMoveToTrash={list.handleMoveToTrashRequest}
-              onDownload={(id) => list.handleDownload(id, ova.title)}
+              onDownload={list.handleDownload}
               onDuplicate={list.handleDuplicate}
               onEditMetadata={list.openMetadataModal}
               isMoving={list.movingId === ova.id}

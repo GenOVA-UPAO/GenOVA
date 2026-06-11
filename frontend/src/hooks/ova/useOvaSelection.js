@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 export function useOvaSelection(ovas) {
   const [selectedIds, setSelectedIds] = useState(new Set())
@@ -6,13 +6,15 @@ export function useOvaSelection(ovas) {
   const selectableIds = ovas.filter((o) => o.status !== 'generando').map((o) => o.id)
   const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id))
 
-  const handleToggleSelect = (id) => {
+  // Stable identity (functional setState) so memoized OvaCard isn't re-rendered
+  // just because the parent re-rendered (Vercel: rerender-functional-setstate).
+  const handleToggleSelect = useCallback((id) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
       return next
     })
-  }
+  }, [])
 
   const handleSelectAll = () => {
     if (allSelected) {

@@ -19,25 +19,41 @@ export function WorkspaceResizableDivider({ onRatioChange, containerRef }) {
 
   useEffect(() => {
     let lastRatio = null
+    let rafId = 0
+    let pendingX = 0
 
-    const onMove = (e) => {
+    // Coalesce mousemove bursts to one ratio update per frame (Vercel:
+    // rerender-transitions) — parent layout re-renders at most once per paint.
+    const flush = () => {
+      rafId = 0
       if (!dragging.current || !containerRef.current) return
       const rect = containerRef.current.getBoundingClientRect()
-      lastRatio = clamp((e.clientX - rect.left) / rect.width)
+      lastRatio = clamp((pendingX - rect.left) / rect.width)
       onRatioChange(lastRatio)
+    }
+
+    const onMove = (e) => {
+      if (!dragging.current) return
+      pendingX = e.clientX
+      if (!rafId) rafId = requestAnimationFrame(flush)
     }
 
     const onUp = () => {
       if (!dragging.current) return
       dragging.current = false
+      if (rafId) {
+        cancelAnimationFrame(rafId)
+        rafId = 0
+      }
       document.body.style.userSelect = ''
       document.body.style.cursor = ''
       if (lastRatio !== null) saveSplitRatio(lastRatio)
     }
 
-    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mousemove', onMove, { passive: true })
     window.addEventListener('mouseup', onUp)
     return () => {
+      if (rafId) cancelAnimationFrame(rafId)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
     }

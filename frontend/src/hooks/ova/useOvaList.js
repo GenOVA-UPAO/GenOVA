@@ -73,7 +73,8 @@ export function useOvaList() {
     }
   }
 
-  const handleMoveToTrashRequest = (ova) => setOvaToTrash(ova)
+  // Stable identities for props handed to the memoized OvaCard.
+  const handleMoveToTrashRequest = useCallback((ova) => setOvaToTrash(ova), [])
   const handleTrashCancel = () => setOvaToTrash(null)
 
   const handleTrashConfirm = async () => {
@@ -112,7 +113,7 @@ export function useOvaList() {
     }
   }
 
-  const handleDuplicate = async (ovaId) => {
+  const handleDuplicate = useCallback(async (ovaId) => {
     setDuplicatingId(ovaId)
     try {
       const res = await duplicateOva(ovaId)
@@ -123,9 +124,9 @@ export function useOvaList() {
     } finally {
       setDuplicatingId('')
     }
-  }
+  }, [navigate])
 
-  const handleDownload = async (ovaId, title) => {
+  const handleDownload = useCallback(async (ovaId, title) => {
     setDownloadingId(ovaId)
     try {
       await downloadOvaFile(ovaId, title)
@@ -134,7 +135,7 @@ export function useOvaList() {
     } finally {
       setDownloadingId('')
     }
-  }
+  }, [])
 
   const isEmpty = !loading && !error && ovas.length === 0
 
