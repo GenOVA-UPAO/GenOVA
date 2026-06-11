@@ -25,7 +25,7 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401  — registers ORM tables on the shared metadata
 from generation.jobs_helpers import job_to_dict  # noqa: E402
-from ova import jobs_runner, jobs_service  # noqa: E402
+from generation import jobs_runner, jobs_service  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-013_jobs.feature")
