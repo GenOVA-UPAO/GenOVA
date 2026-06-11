@@ -96,7 +96,7 @@ def Sess(engine, monkeypatch):
     monkeypatch.setattr(jobs_runner, "SessionLocal", factory)
     # B2 materialization builds + stores a SCORM zip; skip the (disk/storage) I/O
     # in unit tests — we assert the Ova/OvaPhase rows, not the zip bytes.
-    from ova import jobs_materialize
+    from generation import jobs_materialize
 
     monkeypatch.setattr(jobs_materialize, "_persist_scorm", lambda *a, **k: None)
     return factory
@@ -117,7 +117,7 @@ def _stub_agent(monkeypatch, behavior):
     The real `regenerate_phase_content` takes extra `llm_config` and `enabled_models`
     args (per-user model overrides); the wrapper absorbs them so stubs stay 3-arg.
     """
-    from ova import jobs_runner_exec
+    from generation import jobs_runner_exec
 
     def wrapper(phase_type, rtype, concept, llm_config=None, enabled_models=None):
         return behavior(phase_type, rtype, concept)
