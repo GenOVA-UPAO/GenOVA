@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { updateOvaMetadata } from '../services/ovaHistoryService.js'
+import { updateOvaMetadata } from '../../services/ovaHistoryService.js'
 
 export function useOvaMetadata(setOvas) {
   const [metadataModalOpen, setMetadataModalOpen] = useState(false)

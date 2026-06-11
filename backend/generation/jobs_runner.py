@@ -48,6 +48,7 @@ def run_job(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID] | None = None)
                 "errors": [],
                 "current_phase_idx": 0,
                 "current_resource_idx": 0,
+                "only_resource_ids": [str(r) for r in only_resource_ids] if only_resource_ids else None,
             }
 
             final_state = invoke_ova_generation(initial_state, str(job_id))
@@ -88,14 +89,39 @@ def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list
         key = f"{phase}:{rt}"
         if key not in result_map:
             result_map[key] = r
+        title = r.get("title", "")
+        if title and title != rt:
+            result_map.setdefault(f"{phase}:{title}", r)
+
+    exhausted_map = {
+        f"{e.get('phase', '')}:{e.get('title') or e.get('resource_type', '')}": e
+        for e in errors
+        if e.get("exhausted")
+    }
 
     for res in resources:
+        if res.status == "done":
+            continue
         key = f"{res.phase_type}:{res.resource_type}"
         r = result_map.get(key)
         if r and r.get("html"):
             res.content = r["html"]
             res.status = "done"
             res.attempts = (res.attempts or 0) + 1
+        elif key in exhausted_map:
+            e = exhausted_map[key]
+            eid = log_generation_error(
+                db,
+                message=e.get("error", "generation failed"),
+                error_category="model_error",
+                user_id=job.user_id,
+                ova_id=job.ova_id,
+                job_id=job.id,
+                job_resource_id=res.id,
+            )
+            res.status = "error"
+            res.error_id = uuid.UUID(eid)
+            res.attempts = e.get("attempts", MAX_ATTEMPTS)
         else:
             existing_attempts = res.attempts or 0
             if existing_attempts < MAX_ATTEMPTS:

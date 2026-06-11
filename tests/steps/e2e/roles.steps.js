@@ -31,10 +31,10 @@ When('ingreso el nombre {string}', async ({ page }, name) => {
 })
 
 When('selecciono los permisos {string} y {string}', async ({ page }, _p1, _p2) => {
-  // Permission IDs in feature don't match UI labels — select first 2 available checkboxes
-  const checkboxes = page.locator('input[type=checkbox]')
-  await checkboxes.nth(0).check()
-  await checkboxes.nth(1).check()
+  // shadcn Checkbox renders <button role="checkbox"> — the hidden input is aria-hidden
+  const checkboxes = page.locator('button[role=checkbox]')
+  await checkboxes.nth(0).click()
+  await checkboxes.nth(1).click()
 })
 
 Then('el sistema debe crear el rol y retornar 201', async ({ page }) => {

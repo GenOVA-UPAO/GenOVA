@@ -443,7 +443,7 @@ GenOVA/
 │   ├── .python-version      # 3.11 (uv lo lee)
 │   ├── auth/                # Login, registro, JWT, reset-password + SMTP
 │   ├── ova/                 # Save, listado, edición, regeneración, papelera, duplicar
-│   ├── agents/              # 5E: ENGAGE + EXPLORE + LLM router + audio helpers + Pollinations + podcast
+│   ├── agents/              # 5E: ENGAGE + EXPLORE + LLM router + audio helpers + HF images + podcast
 │   ├── labs/                # Sandbox de iteración de prompts (admin)
 │   ├── rag/                 # Ingesta + retrieval pgvector (multimodal Gemini)
 │   ├── roles/               # CRUD de roles y permisos (JSONB)
@@ -490,7 +490,7 @@ tipos de recurso** (cómic, podcast, gamificación, dilema ético, escape room, 
 El backend genera con LLMs reales en un pipeline `texto → JSON → HTML`, valida y auto-repara
 el HTML (incluye callbacks SCORM), recurre a una **cadena de fallback** entre proveedores
 (Groq + OpenRouter) y empaqueta todo en un único SCORM 1.2. Opcionalmente ancla la generación
-con **RAG** (archivos del usuario) e inserta imágenes (Pollinations / FLUX) y audio (TTS Groq).
+con **RAG** (archivos del usuario) e inserta imágenes (HF FLUX.1-schnell) y audio (TTS Groq).
 
 → Detalle completo en [docs/generacion-5e.md](docs/generacion-5e.md).
 

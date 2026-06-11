@@ -6,7 +6,7 @@ import {
   markSelected,
   pollResults,
   startGeneration,
-} from '../services/labsService.js'
+} from '../../services/labsService.js'
 import { useLabPrompt } from './useLabPrompt.js'
 
 // Cut from 2s → 5s. Generation latency dwarfs the polling interval; this

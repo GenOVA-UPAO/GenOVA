@@ -24,8 +24,8 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401  — registers ORM tables on the shared metadata
+from generation import jobs_runner, jobs_service  # noqa: E402
 from generation.jobs_helpers import job_to_dict  # noqa: E402
-from ova import jobs_runner, jobs_service  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-013_jobs.feature")
@@ -96,7 +96,7 @@ def Sess(engine, monkeypatch):
     monkeypatch.setattr(jobs_runner, "SessionLocal", factory)
     # B2 materialization builds + stores a SCORM zip; skip the (disk/storage) I/O
     # in unit tests — we assert the Ova/OvaPhase rows, not the zip bytes.
-    from ova import jobs_materialize
+    from generation import jobs_materialize
 
     monkeypatch.setattr(jobs_materialize, "_persist_scorm", lambda *a, **k: None)
     return factory
@@ -112,17 +112,74 @@ def db(Sess):
 
 
 def _stub_agent(monkeypatch, behavior):
-    """Replace the LLM agent: `behavior(phase_type, rtype, concept) -> html|raise`.
+    """Patch invoke_ova_generation to run behavior(phase_type, rtype_int, concept) per resource."""
+    from prometheus import graph as prom_graph
+    from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
+    from prometheus.prompts.explore_prompts import RECURSOS_META as EXPLORE_META
 
-    The real `regenerate_phase_content` takes extra `llm_config` and `enabled_models`
-    args (per-user model overrides); the wrapper absorbs them so stubs stay 3-arg.
-    """
-    from ova import jobs_runner_exec
+    _NAME_TO_ID = {
+        **{v["tipo"]: k for k, v in ENGAGE_META.items()},
+        **{v["tipo"]: k for k, v in EXPLORE_META.items()},
+    }
 
-    def wrapper(phase_type, rtype, concept, llm_config=None, enabled_models=None):
-        return behavior(phase_type, rtype, concept)
+    def fake_invoke(initial_state: dict, thread_id: str, checkpointer=None) -> dict:
+        from sqlalchemy import select
 
-    monkeypatch.setattr(jobs_runner_exec.regen_agents, "regenerate_phase_content", wrapper)
+        from models import OvaJobResource
+
+        only_ids = initial_state.get("only_resource_ids")
+        concept = initial_state.get("prompt", "")
+        job_uuid = uuid.UUID(thread_id)
+        db = jobs_runner.SessionLocal()
+        try:
+            resources = (
+                db.execute(select(OvaJobResource).where(OvaJobResource.job_id == job_uuid))
+                .scalars()
+                .all()
+            )
+            results, errors = [], []
+            for res in resources:
+                if only_ids is not None and str(res.id) not in only_ids:
+                    continue
+                name = (res.resource_type or "").strip()
+                rtype_int = int(name) if name.isdigit() else _NAME_TO_ID.get(name)
+                if rtype_int is None:
+                    continue
+                html, last_err = None, "generation failed"
+                for _ in range(jobs_runner.MAX_ATTEMPTS):
+                    try:
+                        html = behavior(res.phase_type, rtype_int, concept)
+                        if html:
+                            break
+                        last_err = "empty response"
+                    except Exception as exc:
+                        last_err = str(exc)
+                        html = None
+                if html:
+                    results.append(
+                        {
+                            "phase": res.phase_type,
+                            "html": html,
+                            "resource_type": res.resource_type,
+                            "title": res.resource_type,
+                        }
+                    )
+                else:
+                    errors.append(
+                        {
+                            "phase": res.phase_type,
+                            "resource_type": res.resource_type,
+                            "title": res.resource_type,
+                            "error": last_err,
+                            "exhausted": True,
+                            "attempts": jobs_runner.MAX_ATTEMPTS,
+                        }
+                    )
+            return {"results": results, "errors": errors}
+        finally:
+            db.close()
+
+    monkeypatch.setattr(prom_graph, "invoke_ova_generation", fake_invoke)
 
 
 def _make_job(db, *, user_id, resources, status="queued"):

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { getRoleColorClasses } from '../lib/roleUtils.js'
+import { getRoleColorClasses } from '../../lib/roleUtils.js'
 import {
   fetchCurrentUser,
   fetchRoles,
@@ -11,7 +11,7 @@ import {
   updateUserProfile,
   updateUserRole,
   updateUserStatus,
-} from '../services/adminUsersService.js'
+} from '../../services/adminUsersService.js'
 
 const FAILURE_MSG = 'Error de conexión con el servidor.'
 
