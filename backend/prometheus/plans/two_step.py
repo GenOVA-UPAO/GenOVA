@@ -15,17 +15,17 @@ def _load_prompts(phase: str):
     if phase in _PROMPTS:
         return _PROMPTS[phase]
     if phase == "engage":
-        from agents import engage_prompts as mod
+        from prometheus.prompts import engage_prompts as mod
     elif phase == "explore":
-        from agents import explore_prompts as mod
+        from prometheus.prompts import explore_prompts as mod
     elif phase == "explain":
-        from agents import explain_prompts as mod
+        from prometheus.prompts import explain_prompts as mod
     elif phase == "elaborate":
-        from agents import elaborate_prompts as mod
+        from prometheus.prompts import elaborate_prompts as mod
     elif phase == "evaluate":
-        from agents import evaluate_prompts as mod
+        from prometheus.prompts import evaluate_prompts as mod
     else:
-        from agents import engage_prompts as mod
+        from prometheus.prompts import engage_prompts as mod
     _PROMPTS[phase] = mod
     return mod
 
