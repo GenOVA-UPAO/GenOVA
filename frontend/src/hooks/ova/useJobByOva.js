@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { getJobByOvaId, getJobStatus, resumeJob } from '../services/ovaCreationService.js'
+import { getJobByOvaId, getJobStatus, resumeJob } from '../../services/ovaCreationService.js'
 
 const POLL_MS = 4000
 const TERMINAL = new Set(['done', 'error', 'interrupted'])

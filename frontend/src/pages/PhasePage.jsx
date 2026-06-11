@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { usePhaseGeneration } from '../../hooks/labs/usePhaseGeneration.js'
-import { ResourceCard } from '../engage/ResourceCard.jsx'
-import { HtmlPreview } from '../engage/HtmlPreview.jsx'
+import { usePhaseGeneration } from '../hooks/labs/usePhaseGeneration.js'
+import { ResourceCard } from '../components/engage/ResourceCard.jsx'
+import { HtmlPreview } from '../components/engage/HtmlPreview.jsx'
 
 export function PhasePage({ phase, emoji, description, fetchRecursos, generateResource }) {
   const [recursos, setRecursos] = useState([])

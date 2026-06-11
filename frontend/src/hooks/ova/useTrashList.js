@@ -6,7 +6,7 @@ import {
   fetchTrashedOvas,
   permanentDeleteOva,
   restoreOva,
-} from '../services/ovaHistoryService.js'
+} from '../../services/ovaHistoryService.js'
 
 function nextPageAfterDrop(currentPage, totalItems, dropped) {
   const newTotal = totalItems - dropped

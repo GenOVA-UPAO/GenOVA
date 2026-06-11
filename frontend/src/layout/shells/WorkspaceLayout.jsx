@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router'
-import { isLoggedIn } from '../lib/auth.js'
-import { Navbar } from '../layout/components/Navbar.jsx'
-import { Sidebar } from '../layout/components/Sidebar.jsx'
+import { isLoggedIn } from '../../lib/auth.js'
+import { Navbar } from '../components/Navbar.jsx'
+import { Sidebar } from '../components/Sidebar.jsx'
 
 /**
  * Workspace layout: Navbar + app Sidebar + a full-bleed Outlet (no max-width,

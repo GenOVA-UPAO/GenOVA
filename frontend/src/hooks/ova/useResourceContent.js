@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { getResourceContent } from '../services/ovaCreationService.js'
+import { getResourceContent } from '../../services/ovaCreationService.js'
 
 // Loads the HTML of a `done` resource for preview (B3). State + service call
 // only — the fetch itself lives in ovaCreationService (R9). Ignores stale

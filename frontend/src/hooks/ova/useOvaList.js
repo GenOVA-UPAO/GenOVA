@@ -7,7 +7,7 @@ import {
   downloadOvaFile,
   duplicateOva,
   fetchOvas,
-} from '../services/ovaHistoryService.js'
+} from '../../services/ovaHistoryService.js'
 import { useOvaMetadata } from './useOvaMetadata.js'
 import { useOvaSelection } from './useOvaSelection.js'
 import { useOvaFilters } from './useOvaFilters.js'

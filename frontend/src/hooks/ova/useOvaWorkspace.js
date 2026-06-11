@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { fetchOvaEditorData, downloadEditedScorm, triggerRegen, pollRegenProgress, reorderPhases, deletePhase, savePhaseContent, revertToVersion, fetchVersionDiff, addPhase } from '../services/ovaEditService.js'
+import { fetchOvaEditorData, downloadEditedScorm, triggerRegen, pollRegenProgress, reorderPhases, deletePhase, savePhaseContent, revertToVersion, fetchVersionDiff, addPhase } from '../../services/ovaEditService.js'
 import { useOvaUploads } from './useOvaUploads.js'
 
 const POLL_MS = 3000

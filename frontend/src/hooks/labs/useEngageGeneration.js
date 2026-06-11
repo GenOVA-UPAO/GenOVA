@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { generateEngageResource } from '../services/engageService.js'
+import { generateEngageResource } from '../../services/engageService.js'
 
 export function useEngageGeneration() {
   const [selectedResource, setSelectedResource] = useState(null)

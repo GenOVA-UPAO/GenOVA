@@ -1,6 +1,6 @@
-import { MainContainer } from '../layout/components/MainContainer.jsx'
-import { Navbar } from '../layout/components/Navbar.jsx'
-import { Sidebar } from '../layout/components/Sidebar.jsx'
+import { MainContainer } from '../components/MainContainer.jsx'
+import { Navbar } from '../components/Navbar.jsx'
+import { Sidebar } from '../components/Sidebar.jsx'
 
 export function AppLayout() {
   return (

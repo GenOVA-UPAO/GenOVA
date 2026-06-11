@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { deleteTempFile, listTempFiles, uploadTempFiles } from '../services/uploadService.js'
+import { deleteTempFile, listTempFiles, uploadTempFiles } from '../../services/uploadService.js'
 
 const MAX_UPLOAD_FILES = Number(import.meta.env.VITE_UPLOAD_MAX_FILES || 5)
 
