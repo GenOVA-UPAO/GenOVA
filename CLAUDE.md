@@ -87,6 +87,9 @@ For Render free tier, point `DATABASE_URL` to the Supabase **Transaction**
 pooler (port 6543), not the Session pooler. Pool tuning is env-driven:
 `DB_POOL_SIZE=10`, `DB_MAX_OVERFLOW=10`. `pool_pre_ping=True` and
 `pool_recycle=300` are always on to survive pgbouncer's idle eviction.
+psycopg3 server-side prepared statements are disabled (`prepare_threshold=None`)
+— they collide across sessions on the Transaction pooler
+(`DuplicatePreparedStatement: "_pg3_0" already exists`).
 
 ## Auth
 
