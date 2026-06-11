@@ -12,7 +12,9 @@ Then('debo ver el panel de administración con su propio layout', async ({ page 
 })
 
 Then('debo ver la lista de roles registrados', async ({ page }) => {
-  await page.waitForSelector('table, [role=table]', { timeout: 8000 })
+  // 15s (> DB connect_timeout): the first roles fetch can wait on a cold
+  // Supabase pooler connection under concurrent e2e load.
+  await page.waitForSelector('table, [role=table]', { timeout: 15000 })
 })
 
 Then('debo ver al menos los roles {string} y {string}', async ({ page }, r1, r2) => {
@@ -42,7 +44,7 @@ Then('el sistema debe crear el rol y retornar 201', async ({ page }) => {
 })
 
 Then('el nuevo rol {string} debe aparecer inmediatamente en la lista', async ({ page }, name) => {
-  await page.waitForSelector(`text=${name}`, { timeout: 8000 })
+  await page.waitForSelector(`text=${name}`, { timeout: 15000 })
 })
 
 Then('debo ver el mensaje {string}', async ({ page }, msg) => {
