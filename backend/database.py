@@ -15,6 +15,13 @@ if not database_url:
 if database_url.startswith("postgres://"):
     database_url = "postgresql://" + database_url[len("postgres://") :]
 
+# This project ships psycopg v3 (psycopg[binary]), not psycopg2. A bare
+# postgresql:// (what Supabase's UI copies) would resolve to the psycopg2 dialect
+# and fail with "No module named 'psycopg2'". Pin the v3 driver explicitly so the
+# connection string copied straight from Supabase works as-is.
+if database_url.startswith("postgresql://"):
+    database_url = "postgresql+psycopg://" + database_url[len("postgresql://") :]
+
 # Fail fast on the most common misconfig: the Supabase *project* REST URL
 # (https://<ref>.supabase.co) pasted in instead of the Postgres connection
 # string. Otherwise SQLAlchemy raises a cryptic "Can't load plugin
