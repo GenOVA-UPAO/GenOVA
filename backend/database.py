@@ -61,6 +61,11 @@ else:
         # IPv6-only direct connection used from an IPv4-only CI runner) instead of
         # hanging startup migrations until the CI step times out.
         "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "10")),
+        # The Supabase Transaction pooler (port 6543) multiplexes clients over
+        # shared server connections, so psycopg3's server-side prepared
+        # statements collide across sessions (DuplicatePreparedStatement
+        # "_pg3_0" already exists). Disable them entirely.
+        "prepare_threshold": None,
     }
 
 engine = create_engine(database_url, connect_args=connect_args, **engine_kwargs)
