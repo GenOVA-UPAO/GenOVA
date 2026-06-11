@@ -152,6 +152,12 @@ else:
         *_extra,
     ]
 
+# ProcessTimeMiddleware must be innermost so BaseHTTPMiddleware does not wrap
+# CORSMiddleware — that combination causes 502 on OPTIONS preflight in Starlette.
+app.add_middleware(ProcessTimeMiddleware)
+app.add_middleware(GZipMiddleware, minimum_size=1024)
+# CORSMiddleware must be outermost: it intercepts OPTIONS before any other
+# middleware runs, avoiding the BaseHTTPMiddleware / preflight incompatibility.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -160,11 +166,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     max_age=86400,
 )
-# Compress JSON / HTML responses larger than 1KB. Saves ~70% bandwidth on
-# Render free tier outbound and shaves transit latency for SCORM previews.
-app.add_middleware(GZipMiddleware, minimum_size=1024)
-# Added last → outermost layer; times total server processing including CORS.
-app.add_middleware(ProcessTimeMiddleware)
+logger.info("CORS allowed origins: %s", allowed_origins)
 
 
 _HEALTH_CACHE = "public, max-age=10"
