@@ -30,7 +30,7 @@ def _load_prompts(phase: str):
     return mod
 
 
-def two_step_gen(phase: str, n: int, concept: str, llm_config=None, enabled_models=None) -> str:
+def two_step_gen(phase: str, n: int, concept: str, llm_config=None, enabled_models=None, theme=None) -> str:
     mod = _load_prompts(phase)
 
     raw = generar_texto(
@@ -46,10 +46,15 @@ def two_step_gen(phase: str, n: int, concept: str, llm_config=None, enabled_mode
     except Exception:
         json_data = {"contenido": raw}
 
+    from llm.themes import build_design_system
+
+    theme = theme or {}
+    ds = build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
+
     json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
     html = strip_markdown(
         generar_texto(
-            mod.prompt_html(n, concept, json_str, ""),
+            mod.prompt_html(n, concept, json_str, "", ds),
             "codigo",
             12000,
             llm_config,
@@ -58,6 +63,7 @@ def two_step_gen(phase: str, n: int, concept: str, llm_config=None, enabled_mode
     )
 
     from llm.html_validator import validate_and_repair
+    from prometheus.refine import maybe_refine
 
     html, _ = validate_and_repair(html, phase, n)
-    return html
+    return maybe_refine(html, phase, n, concept, llm_config, enabled_models, theme)

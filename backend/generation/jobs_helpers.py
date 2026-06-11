@@ -6,6 +6,8 @@ serializing already-loaded ORM rows. Responses expose only `status` + `error_id`
 per resource — never `str(e)`, content, tokens or credentials (R8).
 """
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from models import OvaJob, OvaJobResource
@@ -32,16 +34,28 @@ class ResumeRequest(BaseModel):
     resource_ids: list[str] = Field(default_factory=list, max_length=50)
 
 
+class ThemeRequest(BaseModel):
+    """OVA content theme: two independent axes, both defaulting to the UPAO brand.
+
+    color  — "upao" (azul/naranja/blanco fijo) | "free" (the LLM picks a palette).
+    design — "upao" (plantilla estructurada) | "free" (the LLM picks the layout).
+    """
+
+    color: Literal["upao", "free"] = "upao"
+    design: Literal["upao", "free"] = "upao"
+
+
 class StartJobRequest(BaseModel):
     """Body of POST /api/ova/jobs. All free-text inputs are length-capped (C4)."""
 
     prompt: str = Field(min_length=1, max_length=4000)
-    llm: str | None = Field(default=None, max_length=120)
     upload_ids: list[str] = Field(default_factory=list, max_length=50)
     # B1: the real plan — one entry per chosen resource. `phases` (list of phase
     # names) is accepted for back-compat only when `resources` is empty.
     resources: list[ResourceRequest] = Field(default_factory=list, max_length=50)
     phases: list[str] = Field(default_factory=list, max_length=20)
+    # OVA content theme (color × design). Defaults to UPAO brand when omitted.
+    theme: ThemeRequest = Field(default_factory=ThemeRequest)
 
 
 def build_resource_plan(payload: StartJobRequest) -> list[dict]:
@@ -94,10 +108,10 @@ def job_params(
     the runner can enforce it.
     """
     return {
-        "llm": payload.llm,
         "upload_ids": list(payload.upload_ids),
         "phases": list(payload.phases),
         "resources": [r.model_dump() for r in payload.resources],
+        "theme": payload.theme.model_dump(),
         "llm_config": llm_config or {},
         "enabled_models": enabled_models or [],
     }

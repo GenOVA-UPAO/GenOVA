@@ -23,8 +23,9 @@ RECURSOS_META = {
 CODE_ONLY = {3, 5, 8, 10}
 
 
-def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    ds = design_system or DESIGN_SYSTEM
     t = {
         3: f"""[ROL] Desarrollador front-end de mapas conceptuales interactivos.
 [CURSO] {CURSO_CONTEXTO}
@@ -32,7 +33,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Mapa conceptual HTML5 donde el estudiante explore visualmente subtemas y relaciones de "{concept}".
 [TAREA] Grafo SVG con 6-8 nodos clave de "{concept}", conexiones etiquetadas, nodos expandibles al clic con definicion breve, leyenda de colores y boton "Explorar todo". Nodos SVG reales con <text>.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al explorar todos los nodos.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         5: f"""[ROL] Desarrollador front-end de demostraciones animadas educativas.
@@ -41,7 +42,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Demo animada HTML5 que ilustre paso a paso el funcionamiento de "{concept}".
 [TAREA] Animacion SVG/canvas con escena inicial, controles play/pause/step, 4-5 pasos progresivos, texto explicativo por paso y boton "Repetir". requestAnimationFrame.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() tras completar todos los pasos.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         8: f"""[ROL] Desarrollador front-end de diagramas de framework educativo.
@@ -50,7 +51,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Diagrama HTML5 que muestre la arquitectura o taxonomia de "{concept}" como framework visual.
 [TAREA] Diagrama SVG con bloques jerarquicos de "{concept}", flechas de flujo, tooltips al hover, zoom/reset y leyenda. SVG con viewBox + preserveAspectRatio.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al explorar todos los tooltips.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         10: f"""[ROL] Desarrollador front-end de infografias interactivas.
@@ -59,7 +60,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Infografia HTML5 que comunique la esencia y datos clave de "{concept}".
 [TAREA] 5-6 secciones reveladas progresivamente con iconos SVG, dato impactante por seccion, barra de progreso y boton "Ver resumen" final. Animaciones de entrada.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al llegar a la seccion final.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
     }
@@ -112,8 +113,11 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
 
 
 # fmt: off
-def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = "") -> str:
+def prompt_html(
+    n: int, concept: str, data_json: str, contexto_usuario: str = "", design_system: str | None = None
+) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    ds = design_system or DESIGN_SYSTEM
     estilos = {
         1: "storyboard de video: guion visual con bloques temporales, narracion estilizada, prompt video en caja copiable",
         2: "lectura guiada: texto con secciones expandibles, preguntas con toggle de respuesta, disenio articulo academico",
@@ -130,7 +134,7 @@ def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = ""
 {data_json}
 [FORMATO] {estilo}
 [REQUISITOS] HTML5 autocontenido: CSS en <style>, JS en <script>. Minimo 300 lineas de calidad. Navegacion, filtros, feedback y animaciones funcionales. Paleta educativa clara.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar la exploracion.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.""" + contexto
 # fmt: on
