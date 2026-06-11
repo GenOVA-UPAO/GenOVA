@@ -1,5 +1,6 @@
 """Auth router — login, register, /me. Mounts the reset-password sub-router."""
 import logging
+import os
 import threading
 import time
 from collections import defaultdict, deque
@@ -43,6 +44,14 @@ _email_attempts_lock = threading.Lock()
 # Cookie used by the new httpOnly auth flow.
 _COOKIE_NAME = "genova_token"
 _COOKIE_MAX_AGE = JWT_EXPIRES_MINUTES * 60
+# When the frontend and backend live on different domains (e.g. Vercel +
+# Railway) the session cookie is cross-site, so the browser only attaches it to
+# API calls when SameSite=None. None is rejected unless Secure is also set, so
+# we force Secure in that case. Same-origin deployments can keep the default.
+_COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
+if _COOKIE_SAMESITE not in {"lax", "strict", "none"}:
+    _COOKIE_SAMESITE = "lax"
+_COOKIE_SECURE = _COOKIE_SAMESITE == "none" or os.getenv("COOKIE_SECURE", "1") != "0"
 
 
 def _email_throttled(email: str) -> bool:
@@ -63,8 +72,8 @@ def _set_auth_cookie(response: JSONResponse, token: str) -> None:
         value=token,
         max_age=_COOKIE_MAX_AGE,
         httponly=True,
-        secure=True,
-        samesite="strict",
+        secure=_COOKIE_SECURE,
+        samesite=_COOKIE_SAMESITE,
         path="/",
     )
 
@@ -202,7 +211,13 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
 @router.post("/logout")
 def logout() -> JSONResponse:
     response = JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
-    response.delete_cookie(key=_COOKIE_NAME, path="/")
+    response.delete_cookie(
+        key=_COOKIE_NAME,
+        path="/",
+        httponly=True,
+        secure=_COOKIE_SECURE,
+        samesite=_COOKIE_SAMESITE,
+    )
     return response
 
 
