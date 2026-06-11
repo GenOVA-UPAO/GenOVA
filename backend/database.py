@@ -50,6 +50,10 @@ else:
         "keepalives_idle": 30,
         "keepalives_interval": 10,
         "keepalives_count": 3,
+        # Fail fast on an unreachable host (e.g. a paused Supabase project, or the
+        # IPv6-only direct connection used from an IPv4-only CI runner) instead of
+        # hanging startup migrations until the CI step times out.
+        "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "10")),
     }
 
 engine = create_engine(database_url, connect_args=connect_args, **engine_kwargs)
