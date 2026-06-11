@@ -10,6 +10,23 @@ database_url = os.getenv("DATABASE_URL")
 if not database_url:
     raise RuntimeError("DATABASE_URL is required")
 
+# Normalize the legacy scheme some hosts emit (Supabase/Heroku give postgres://);
+# SQLAlchemy needs the postgresql:// driver name.
+if database_url.startswith("postgres://"):
+    database_url = "postgresql://" + database_url[len("postgres://") :]
+
+# Fail fast on the most common misconfig: the Supabase *project* REST URL
+# (https://<ref>.supabase.co) pasted in instead of the Postgres connection
+# string. Otherwise SQLAlchemy raises a cryptic "Can't load plugin
+# sqlalchemy.dialects:https" at engine creation.
+if database_url.startswith(("http://", "https://")):
+    raise RuntimeError(
+        "DATABASE_URL must be a postgresql:// connection string, not an http(s) URL. "
+        "Use the Supabase Postgres connection string "
+        "(postgresql://postgres:<password>@<host>:6543/postgres — the Transaction "
+        "pooler), not the project URL."
+    )
+
 connect_args: dict = {}
 engine_kwargs: dict = {"echo": False, "future": True}
 
