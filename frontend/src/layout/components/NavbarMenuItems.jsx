@@ -3,10 +3,10 @@ import { navigationLinks } from '../navigation/navLinks.js'
 
 function getLinkClasses({ isActive }) {
   if (isActive) {
-    return 'rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white'
+    return 'rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground'
   }
 
-  return 'rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200'
+  return 'rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-accent'
 }
 
 export function NavbarMenuItems() {
