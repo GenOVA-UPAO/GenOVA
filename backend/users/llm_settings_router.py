@@ -10,7 +10,12 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from database import get_db
-from llm.catalog_refresh import get_catalog_entries, get_full_catalog_entries
+from llm.catalog_refresh import (
+    get_catalog_entries,
+    get_full_catalog_entries,
+    get_provider_status,
+    refresh_catalog,
+)
 from llm.model_catalog import (
     DEFAULTS,
     TIMEOUT_MAX,
@@ -93,7 +98,24 @@ def get_llm_settings(
         "defaults": DEFAULTS,
         "enabled_models": enabled,
         "timeout_bounds": [TIMEOUT_MIN, TIMEOUT_MAX],
+        "catalog_status": get_provider_status(),
     }
+
+
+@router.post("/me/llm-settings/refresh-catalog")
+@limiter.limit("3/minute")
+def refresh_llm_catalog(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Re-fetch the provider catalogs on demand (retry path after a transient
+    failure). Always 200 — the per-provider status payload IS the result."""
+    try:
+        refresh_catalog(db)
+    except Exception:
+        logger.exception("User-triggered catalog refresh failed")
+    return {"catalog_status": get_provider_status()}
 
 
 @router.put("/me/llm-settings")
