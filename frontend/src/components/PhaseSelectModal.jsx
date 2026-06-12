@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react'
 import { fetchEngageRecursos } from '../services/engageService.js'
 import { fetchExploreRecursos } from '../services/exploreService.js'
+import { fetchExplainRecursos } from '../services/explainService.js'
+import { fetchElaborateRecursos } from '../services/elaborateService.js'
+import { fetchEvaluateRecursos } from '../services/evaluateService.js'
 import { ResourceCard } from './engage/ResourceCard.jsx'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 
 const PHASES = [
-  { key: 'engage', emoji: '🎯', label: 'ENGAGE', fetch: fetchEngageRecursos },
-  { key: 'explore', emoji: '🔍', label: 'EXPLORE', fetch: fetchExploreRecursos },
+  { key: 'engage',    emoji: '🎯', label: 'ENGAGE',    fetch: fetchEngageRecursos },
+  { key: 'explore',   emoji: '🔍', label: 'EXPLORE',   fetch: fetchExploreRecursos },
+  { key: 'explain',   emoji: '💡', label: 'EXPLAIN',   fetch: fetchExplainRecursos },
+  { key: 'elaborate', emoji: '🔧', label: 'ELABORATE', fetch: fetchElaborateRecursos },
+  { key: 'evaluate',  emoji: '✅', label: 'EVALUATE',  fetch: fetchEvaluateRecursos },
 ]
 
 export const MAX_PER_PHASE = 4
+
+const EMPTY_PICKS = () =>
+  Object.fromEntries(PHASES.map((p) => [p.key, []]))
 
 function toggleSelection(list, resource) {
   const idx = list.findIndex((r) => r.id === resource.id)
@@ -19,18 +28,22 @@ function toggleSelection(list, resource) {
   return [...list, resource]
 }
 
-export function PhaseSelectModal({ onClose, onConfirm, initialEngage, initialExplore }) {
+export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
   const [step, setStep] = useState(0)
-  const [recursos, setRecursos] = useState({ engage: [], explore: [] })
+  const [recursos, setRecursos] = useState(EMPTY_PICKS())
   const [loading, setLoading] = useState(true)
-  const [picks, setPicks] = useState({
-    engage: Array.isArray(initialEngage) ? initialEngage : [],
-    explore: Array.isArray(initialExplore) ? initialExplore : [],
-  })
+  const [picks, setPicks] = useState(() => ({
+    ...EMPTY_PICKS(),
+    ...(initialSelections ?? {}),
+  }))
 
   useEffect(() => {
-    Promise.all([fetchEngageRecursos(), fetchExploreRecursos()])
-      .then(([e, ex]) => setRecursos({ engage: e.recursos ?? [], explore: ex.recursos ?? [] }))
+    Promise.all(PHASES.map((p) => p.fetch()))
+      .then((results) => {
+        const next = {}
+        PHASES.forEach((p, i) => { next[p.key] = results[i].recursos ?? [] })
+        setRecursos(next)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
@@ -49,10 +62,12 @@ export function PhaseSelectModal({ onClose, onConfirm, initialEngage, initialExp
   function handleNext() {
     if (!isLast) {
       setStep((s) => s + 1)
-    } else if (picks.engage.length && picks.explore.length) {
-      onConfirm({ engage: picks.engage, explore: picks.explore })
+    } else if (PHASES.every((p) => picks[p.key].length > 0)) {
+      onConfirm(picks)
     }
   }
+
+  const total = PHASES.reduce((s, p) => s + picks[p.key].length, 0)
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
@@ -117,7 +132,7 @@ export function PhaseSelectModal({ onClose, onConfirm, initialEngage, initialExp
             {step === 0 ? 'Cancelar' : '← Atrás'}
           </Button>
           <Button onClick={handleNext} disabled={!canAdvance}>
-            {isLast ? `Confirmar (${picks.engage.length}+${picks.explore.length}) ✓` : 'Siguiente →'}
+            {isLast ? `Confirmar (${total}) ✓` : 'Siguiente →'}
           </Button>
         </footer>
       </DialogContent>

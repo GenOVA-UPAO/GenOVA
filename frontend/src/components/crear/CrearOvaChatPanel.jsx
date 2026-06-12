@@ -18,7 +18,7 @@ import { GearButton } from '../settings/GearButton.jsx'
 export function CrearOvaChatPanel({
   prompt, setPrompt, minChars,
   canConfigure, canGenerate, isGenerating, isDone,
-  openModal, engageSelection, exploreSelection, totalResources,
+  openModal, selections, totalResources,
   theme, setTheme,
   generate, reset, error,
   uploadsProps,
@@ -33,7 +33,7 @@ export function CrearOvaChatPanel({
 
   const canUploadMore = activeUploadsCount < maxUploadFiles
   const hasFiles = uploads.length > 0
-  const hasResources = engageSelection.length > 0 || exploreSelection.length > 0
+  const hasResources = totalResources > 0
 
   const handleDrop = (e) => {
     e.preventDefault()
@@ -78,8 +78,7 @@ export function CrearOvaChatPanel({
 
           {hasResources ? (
             <SelectionChips
-              engage={engageSelection}
-              explore={exploreSelection}
+              selections={selections}
               onEdit={openModal}
               editable={false}
             />
