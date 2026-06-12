@@ -20,8 +20,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
+      context: .
+      dockerfile: frontend/Dockerfile.prod
     container_name: genova-frontend-prod
     expose:
       - '80'

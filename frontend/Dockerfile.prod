@@ -7,12 +7,16 @@ ENV CI=true
 RUN corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --no-frozen-lockfile
+COPY frontend/package.json ./frontend/
 
-COPY . .
-RUN pnpm run build
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
+
+COPY frontend/ ./frontend/
+
+RUN pnpm --filter frontend build
 
 FROM nginx:1.27-alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/frontend/dist /usr/share/nginx/html
+COPY --from=builder /app/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
