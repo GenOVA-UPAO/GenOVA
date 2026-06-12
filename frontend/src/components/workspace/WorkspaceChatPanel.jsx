@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { ListChecks, Paperclip, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
@@ -69,7 +70,7 @@ export function WorkspaceChatPanel({
             onClick={onRegenAll}
             disabled={isRegenerating}
           >
-            ↺ Regenerar OVA completo
+            <RotateCcw className="h-3.5 w-3.5" /> Regenerar OVA completo
           </Button>
         ) : null}
 
@@ -81,7 +82,8 @@ export function WorkspaceChatPanel({
           onClick={onToggleSelectionMode}
           disabled={isRegenerating}
         >
-          ☐ {selectionMode ? `Seleccionando recursos (${selectedCount} elegido${selectedCount !== 1 ? 's' : ''})` : 'Seleccionar recursos'}
+          <ListChecks className="h-3.5 w-3.5" />
+          {selectionMode ? `Seleccionando recursos (${selectedCount} elegido${selectedCount !== 1 ? 's' : ''})` : 'Seleccionar recursos'}
         </Button>
 
         {/* HU-027: phase checkboxes in selection mode */}
@@ -164,9 +166,7 @@ export function WorkspaceChatPanel({
               title="Adjuntar archivo de apoyo"
               className="absolute right-1 bottom-1"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-              </svg>
+              <Paperclip className="h-4 w-4" />
             </Button>
           </div>
           <Button
