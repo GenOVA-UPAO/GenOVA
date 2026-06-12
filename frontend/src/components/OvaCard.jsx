@@ -1,13 +1,18 @@
+import { memo } from 'react'
 import { useNavigate } from 'react-router'
+import { Play, Clock, Pencil, FileText, Copy, Download, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { OvaStatusBadge } from './OvaStatusBadge'
-import { useJobByOva } from '../hooks/ova/useJobByOva.js'
 import { toast } from 'sonner'
 
-export function OvaCard({
+const EMPTY_JOB = {}
+
+function OvaCardImpl({
   ova,
+  job = EMPTY_JOB,
+  onResume,
   isSelected,
   onToggleSelect,
   onMoveToTrash,
@@ -22,8 +27,8 @@ export function OvaCard({
   const isGenerating = ova.status === 'generando'
   const isReady = ova.status === 'listo'
 
-  // HU-023: poll job state for generating OVAs (lightweight, per-card).
-  const { jobId, progress, isInterrupted, resume } = useJobByOva(ova.id, isGenerating)
+  // HU-023: job state polled centrally by useGeneratingJobs (one timer).
+  const { jobId, progress, isInterrupted } = job
 
   const formatDate = (iso) => {
     if (!iso) return '-'
@@ -38,7 +43,7 @@ export function OvaCard({
 
   const handleContinue = async () => {
     try {
-      await resume()
+      await onResume(ova.id)
       navigate('/crear-ova', { state: { resumeJobId: jobId } })
     } catch {
       toast.error('No se pudo continuar la generación.')
@@ -47,7 +52,7 @@ export function OvaCard({
 
   return (
     <div
-      className={`rounded-xl border bg-white p-5 shadow-sm hover:shadow-md transition-all ${isSelected ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border'}`}
+      className={`rounded-xl border bg-card p-5 shadow-sm hover:shadow-md transition-all ${isSelected ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border'}`}
     >
       <div className="flex items-start gap-3">
         <Checkbox
@@ -91,9 +96,9 @@ export function OvaCard({
               variant="outline"
               size="sm"
               onClick={handleContinue}
-              className="flex-1 text-primary border-primary/30 hover:bg-primary/5"
+              className="flex-1 gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
             >
-              ▶ Continuar
+              <Play className="h-3.5 w-3.5" /> Continuar
             </Button>
           ) : (
             <Button
@@ -101,9 +106,9 @@ export function OvaCard({
               size="sm"
               onClick={handleResume}
               disabled={!jobId}
-              className="flex-1 text-primary border-primary/30 hover:bg-primary/5"
+              className="flex-1 gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
             >
-              ⏳ Reanudar / Ver progreso
+              <Clock className="h-3.5 w-3.5" /> Reanudar / Ver progreso
             </Button>
           )}
         </div>
@@ -117,9 +122,9 @@ export function OvaCard({
             onClick={() => navigate(`/ova/${ova.id}/workspace`)}
             disabled={isGenerating || isDuplicating}
             title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Abrir en workspace'}
-            className="flex-1 text-primary border-primary/30 hover:bg-primary/5"
+            className="flex-1 gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
           >
-            ✏ Editar
+            <Pencil className="h-3.5 w-3.5" /> Editar
           </Button>
           <Button
             variant="outline"
@@ -127,9 +132,9 @@ export function OvaCard({
             onClick={() => onEditMetadata(ova)}
             disabled={isGenerating || isDuplicating}
             title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Editar título y descripción'}
-            className="flex-1 text-primary border-primary/30 hover:bg-primary/5"
+            className="flex-1 gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
           >
-            📝 Metadatos
+            <FileText className="h-3.5 w-3.5" /> Metadatos
           </Button>
         </div>
         <div className="flex items-center gap-1.5">
@@ -139,19 +144,19 @@ export function OvaCard({
             onClick={() => onDuplicate(ova.id)}
             disabled={isGenerating || isDuplicating}
             title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Duplicar OVA'}
-            className="flex-1"
+            className="flex-1 gap-1.5"
           >
-            {isDuplicating ? 'Duplicando...' : '⧉ Duplicar'}
+            <Copy className="h-3.5 w-3.5" /> {isDuplicating ? 'Duplicando...' : 'Duplicar'}
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onDownload(ova.id)}
+            onClick={() => onDownload(ova.id, ova.title)}
             disabled={!isReady || isDownloading || isDuplicating}
             title={!isReady ? 'Solo disponible cuando el OVA está listo' : 'Descargar paquete SCORM'}
-            className="flex-1"
+            className="flex-1 gap-1.5"
           >
-            {isDownloading ? 'Descargando...' : 'Descargar'}
+            <Download className="h-3.5 w-3.5" /> {isDownloading ? 'Descargando...' : 'Descargar'}
           </Button>
           <Button
             variant="outline"
@@ -159,12 +164,16 @@ export function OvaCard({
             onClick={() => onMoveToTrash(ova)}
             disabled={isGenerating || isMoving || isDuplicating}
             title={isGenerating ? 'No se puede eliminar mientras se está generando' : 'Mover a la papelera'}
-            className="flex-1 text-destructive border-destructive/30 hover:bg-destructive/5"
+            className="flex-1 gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/5"
           >
-            {isMoving ? 'Moviendo...' : 'Papelera'}
+            <Trash2 className="h-3.5 w-3.5" /> {isMoving ? 'Moviendo...' : 'Papelera'}
           </Button>
         </div>
       </div>
     </div>
   )
 }
+
+// Memoized: parent (MisOvasPage) re-renders on list/filter/page changes, but a
+// card only needs to re-render when its own props change (Vercel: rerender-memo).
+export const OvaCard = memo(OvaCardImpl)

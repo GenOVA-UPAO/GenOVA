@@ -23,8 +23,9 @@ RECURSOS_META = {
 CODE_ONLY = {3, 5, 9}
 
 
-def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    ds = design_system or DESIGN_SYSTEM
     t = {
         3: f"""[ROL] Desarrollador front-end de desafios cronometrados educativos.
 [CURSO] {CURSO_CONTEXTO}
@@ -32,7 +33,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Desafio contrarreloj HTML5 que evalue dominio de "{concept}" bajo presion de tiempo.
 [TAREA] Cronometro regresivo 90 s visible, 8 preguntas secuenciales de opcion multiple sobre "{concept}", puntuacion con bonus por velocidad, barra de progreso, pantalla final con puntaje y feedback por pregunta. Cronometro real setInterval.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje_final) al terminar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         5: f"""[ROL] Desarrollador front-end de ejercicios de completar espacios.
@@ -41,7 +42,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Ejercicio HTML5 de completar espacios que evalue vocabulario de "{concept}".
 [TAREA] 8 oraciones sobre "{concept}" con espacio en blanco, validacion flexible (ignora mayusculas/acentos), feedback inmediato con correccion, barra de progreso, puntaje y boton "Reintentar". Validacion JS real.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 280 lineas.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje_final) al completar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         9: f"""[ROL] Desarrollador front-end de simulaciones evaluativas.
@@ -50,7 +51,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Simulacion evaluativa HTML5 donde el estudiante demuestre dominio practico de "{concept}".
 [TAREA] Escenario profesional concreto, 3-4 decisiones evaluables mediante controles interactivos, evaluacion contra criterios objetivos de "{concept}", puntuacion con pesos, reporte final con fortalezas y areas de mejora.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas. Evaluacion real basada en criterios.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje_final) al finalizar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
     }
@@ -109,8 +110,11 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
 
 
 # fmt: off
-def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = "") -> str:
+def prompt_html(
+    n: int, concept: str, data_json: str, contexto_usuario: str = "", design_system: str | None = None
+) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    ds = design_system or DESIGN_SYSTEM
     estilos = {
         1: "quiz interactivo: preguntas secuenciales con botones de opcion, feedback animado, barra de progreso, pantalla de resultados con repaso",
         2: "rubrica interactiva: tabla de criterios con niveles seleccionables, puntuacion automatica, reflexion segun rango, disenio formulario",
@@ -128,7 +132,7 @@ def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = ""
 {data_json}
 [FORMATO] {estilo}
 [REQUISITOS] HTML5 autocontenido: CSS en <style>, JS en <script>. Minimo 300 lineas de calidad. Evaluacion con puntuacion, feedback, navegacion y resultados funcionales. Paleta evaluativa clara.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje) al finalizar.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.""" + contexto
 # fmt: on

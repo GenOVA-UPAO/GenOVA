@@ -13,8 +13,8 @@ export function ProfileForm({
   return (
     <div className="rounded-xl border border-border bg-background shadow-md overflow-hidden">
       <form onSubmit={onSubmit} className="p-6 sm:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row items-center gap-5 pb-6 border-b border-border">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-violet-600 text-2xl font-bold text-white shadow-lg">
+        <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-border">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary font-display text-2xl font-bold text-primary-foreground ring-2 ring-accent-brand/40 ring-offset-2 ring-offset-background shadow-md">
             {getInitials()}
           </div>
           <div className="text-center sm:text-left space-y-1">
@@ -38,6 +38,7 @@ export function ProfileForm({
             <Input
               id="fullName"
               type="text"
+              autoComplete="name"
               value={fullName}
               onChange={onFullNameChange}
               aria-invalid={!!validationError.fullName}
@@ -56,6 +57,7 @@ export function ProfileForm({
             <Input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={onEmailChange}
               aria-invalid={!!validationError.email}
@@ -74,6 +76,7 @@ export function ProfileForm({
             <Input
               id="universityId"
               type="number"
+              inputMode="numeric"
               value={universityId}
               onChange={onUniversityIdChange}
               aria-invalid={!!validationError.universityId}
@@ -107,7 +110,8 @@ export function ProfileForm({
               </Label>
               <Input
                 id="phoneNumber"
-                type="text"
+                type="tel"
+                autoComplete="tel"
                 value={phoneNumber}
                 onChange={onPhoneNumberChange}
                 aria-invalid={!!validationError.phoneNumber}

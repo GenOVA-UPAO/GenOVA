@@ -18,6 +18,7 @@ export function OvaCreationView({ onCreated }) {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
     engageSelection, exploreSelection, totalResources,
+    theme, setTheme,
     canConfigure, canGenerate, isGenerating,
     generate, reset, restore, minChars,
     job,
@@ -78,6 +79,7 @@ export function OvaCreationView({ onCreated }) {
             openModal={openModal}
             engageSelection={engageSelection} exploreSelection={exploreSelection}
             totalResources={totalResources}
+            theme={theme} setTheme={setTheme}
             generate={generate} reset={reset} error={error}
             uploadsProps={uploadsProps}
             hasJob={hasJob}

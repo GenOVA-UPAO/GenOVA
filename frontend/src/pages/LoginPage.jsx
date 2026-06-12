@@ -57,9 +57,12 @@ export function LoginPage() {
   }
 
   return (
-    <section className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4">
-      <div className="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight">Iniciar sesión</h1>
+    <section className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4">
+      <div className="w-full max-w-md rounded-2xl border border-border border-t-2 border-t-accent-brand bg-card p-7 shadow-lg">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-brand">
+          GenOVA · UPAO
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">Iniciar sesión</h1>
         <p className="mt-2 text-sm text-muted-foreground">Accede para continuar al curso de ML.</p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>

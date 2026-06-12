@@ -17,6 +17,10 @@ export function saveLlmSettings(settings) {
   })
 }
 
+export function refreshLlmCatalog() {
+  return apiJson('/api/users/me/llm-settings/refresh-catalog', { method: 'POST' })
+}
+
 export function saveEnabledModels(models) {
   return apiJson('/api/users/me/enabled-models', {
     method: 'PUT',

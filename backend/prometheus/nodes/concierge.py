@@ -5,10 +5,10 @@ Uses the LLM 'orquestador' task to analyze the prompt and select which of the
 deterministic plan (4 resources per phase) on any LLM failure.
 """
 
-import json
 import logging
 
 from llm.router import generar_texto
+from llm.utils import parse_json
 from prometheus.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)
@@ -61,25 +61,32 @@ def concierge_node(state: OvaGenerationState) -> dict:
 
 
 def _llm_decompose(prompt: str) -> dict | None:
-    sys_prompt = f"""[ROL] Orquestador de generación de OVAs educativos (metodología 5E).
-[TAREA] Analiza el prompt del usuario y selecciona entre 2 y 4 recursos por fase 5E que mejor se adapten al tema, nivel y énfasis solicitado. Elige los IDs numéricos.
+    sys_prompt = f"""[ROL] Orquestador pedagógico de OVAs (metodología constructivista 5E) para un curso universitario de Machine Learning.
+[TAREA] Diseña la secuencia 5E para el concepto del usuario. Selecciona entre 2 y 4 recursos por fase (IDs numéricos del catálogo) que mejor enseñen ESE concepto concreto.
 
 Catálogo de recursos disponibles:
 {_RESOURCE_CATALOG}
 
-Reglas:
-- ENGAGE: recursos que enganchen al estudiante (cómic, juego, dilema, simulador...)
-- EXPLORE: recursos de exploración profunda (lab, experimento, mapa mental...)
-- EXPLAIN: recursos que expliquen teoría (video, lectura, FAQ, diagrama...)
-- ELABORATE: recursos de aplicación práctica (estudio de caso, proyecto, simulación...)
-- EVALUATE: recursos de evaluación (quiz, examen, desafío, rúbrica...)
+Objetivo pedagógico de cada fase (elige recursos que lo cumplan):
+- ENGAGE: despertar curiosidad y activar ideas previas, sin tecnicismos (cómic, juego, dilema, noticia, simulador intuitivo...).
+- EXPLORE: que el estudiante manipule y descubra patrones antes de la teoría (lab, experimento, mapa mental, drag&drop...).
+- EXPLAIN: formalizar la teoría con claridad (video, lectura guiada, FAQ, diagrama, infografía...).
+- ELABORATE: aplicar a problemas reales y transferir (estudio de caso, mini-proyecto, simulación aplicada, reto...).
+- EVALUATE: comprobar el logro del aprendizaje (quiz, examen, desafío, rúbrica, crucigrama...).
+
+Reglas de selección:
+- Fidelidad: cada recurso debe encajar con la naturaleza del concepto (no genérico).
+- Variedad: NO repitas el mismo ID dentro de una fase; mezcla formatos (interactivo + lectura).
+- Progresión: ordena los IDs de cada fase de menor a mayor exigencia cognitiva.
 
 [SALIDA] JSON puro sin markdown: {{"engage": [ids], "explore": [ids], "explain": [ids], "elaborate": [ids], "evaluate": [ids]}}"""
 
-    full = f"{sys_prompt}\n\nPrompt del usuario: {prompt}"
+    full = f"{sys_prompt}\n\nConcepto del usuario: {prompt}"
     try:
         raw = generar_texto(full, "orquestador", max_tokens=800)
-        data = json.loads(raw.strip().removeprefix("```json").removesuffix("```").strip())
+        data = parse_json(raw)
+        if not isinstance(data, dict):
+            return None
         plan = {}
         for phase in _PHASE_ORDER:
             ids = data.get(phase, [])
@@ -89,7 +96,7 @@ Reglas:
                     for i in ids
                     if isinstance(i, (int, str)) and str(i).isdigit() and 1 <= int(i) <= 10
                 ]
-                plan[phase] = valid[:4]
+                plan[phase] = list(dict.fromkeys(valid))[:4]  # dedup, keep order
             else:
                 plan[phase] = []
         return plan

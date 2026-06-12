@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { updateOvaMetadata } from '../../services/ovaHistoryService.js'
 
@@ -9,12 +9,13 @@ export function useOvaMetadata(setOvas) {
   const [metadataError, setMetadataError] = useState('')
   const [metadataSaving, setMetadataSaving] = useState(false)
 
-  const openMetadataModal = (ova) => {
+  // Stable so it can be passed to the memoized OvaCard without busting memo.
+  const openMetadataModal = useCallback((ova) => {
     setMetadataTargetId(ova.id)
     setMetadataForm({ title: ova.title || '', description: ova.description || '' })
     setMetadataError('')
     setMetadataModalOpen(true)
-  }
+  }, [])
 
   const closeMetadataModal = () => {
     setMetadataModalOpen(false)

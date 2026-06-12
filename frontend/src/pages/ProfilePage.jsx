@@ -2,6 +2,7 @@ import { useProfile } from '../hooks/useProfile.js'
 import { ProfileForm } from '../components/ProfileForm.jsx'
 import { PasswordChangeForm } from '../components/PasswordChangeForm.jsx'
 import { LlmSettingsCard } from '../components/settings/LlmSettingsCard.jsx'
+import { ProfileSkeleton } from '../components/ProfileSkeleton.jsx'
 
 export function ProfilePage() {
   const {
@@ -36,24 +37,19 @@ export function ProfilePage() {
   } = useProfile()
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           Configuración de Perfil
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Modifica tus datos de contacto y administra la seguridad de tu cuenta.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         {loading ? (
-          <div className="flex h-64 items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600"></div>
-              <p className="text-xs text-slate-400">Cargando perfil...</p>
-            </div>
-          </div>
+          <ProfileSkeleton />
         ) : (
           <ProfileForm
             fullName={fullName}
@@ -92,7 +88,7 @@ export function ProfilePage() {
         )}
       </div>
 
-      {!loading && <LlmSettingsCard />}
+      <LlmSettingsCard />
     </div>
   )
 }

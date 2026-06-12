@@ -19,6 +19,8 @@ export function useRoles() {
   const del = useRoleDelete(setRoles)
 
   const fetchRoles = async () => {
+    setLoading(true)
+    setError('')
     try {
       const response = await apiFetch('/api/roles')
       if (response.status === 200) {

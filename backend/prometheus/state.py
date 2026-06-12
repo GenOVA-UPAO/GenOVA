@@ -14,6 +14,8 @@ class OvaGenerationState(TypedDict, total=False):
     upload_ids: list[str]
     llm_config: dict
     enabled_models: list[dict]
+    theme: dict  # {"color": "upao"|"free", "design": "upao"|"free"}
+    job_id: str  # used by Fase 2 for incremental per-resource persistence
 
     phases: dict  # {phase_type: [{"resource_type": int, "resource_order": int}, ...]}
     phase_order: list[str]  # ["engage", "explore", "explain", "elaborate", "evaluate"]

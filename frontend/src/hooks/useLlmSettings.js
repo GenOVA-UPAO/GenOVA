@@ -1,25 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { fetchLlmSettings, saveLlmSettings, saveEnabledModels } from '../services/llmSettingsService.js'
-
-export const TASK_LABELS = {
-  texto: 'Texto',
-  codigo: 'Código / HTML interactivo',
-  orquestador: 'Orquestador',
-  razonamiento: 'Razonamiento',
-}
-
-export const CATEGORY_LABELS = {
-  all: 'Todos',
-  recommended: 'Recomendados',
-  texto: 'Texto',
-  codigo: 'Código',
-  razonamiento: 'Razonamiento',
-  multimodal: 'Multimodal',
-  imagen: 'Imagen',
-  embedding: 'Embedding',
-  audio: 'Audio',
-}
+import {
+  fetchLlmSettings, saveLlmSettings, saveEnabledModels, refreshLlmCatalog,
+} from '../services/llmSettingsService.js'
+import { TASK_LABELS, CATEGORY_LABELS } from '../lib/llmSettingsLabels.js'
 
 const DEFAULT_TIMEOUT = 120
 
@@ -44,6 +28,8 @@ export function useLlmSettings(enabled = true) {
   const [loadingMore, setLoadingMore] = useState(false)
   const [saving, setSaving] = useState(false)
   const [enabledSaving, setEnabledSaving] = useState(false)
+  const [catalogStatus, setCatalogStatus] = useState(null)
+  const [refreshingCatalog, setRefreshingCatalog] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -71,6 +57,7 @@ export function useLlmSettings(enabled = true) {
       setFullPage(data.full_page || 1)
       setFullHasMore(data.full_has_more || false)
       if (Array.isArray(data.categories)) setCategories(data.categories)
+      setCatalogStatus(data.catalog_status || null)
     } catch (err) {
       setError(err?.message || 'No se pudo cargar la configuración.')
     } finally {
@@ -101,6 +88,18 @@ export function useLlmSettings(enabled = true) {
   const handleCategory = useCallback((cat) => {
     setCategoryFilter(cat)
     void load({ page: 1, category: cat })
+  }, [load])
+
+  const retryRefresh = useCallback(async () => {
+    setRefreshingCatalog(true)
+    try {
+      await refreshLlmCatalog()
+      await load({})
+    } catch {
+      toast.error('No se pudo actualizar el catálogo. Intenta de nuevo en unos segundos.')
+    } finally {
+      setRefreshingCatalog(false)
+    }
   }, [load])
 
   const setModel = useCallback((tipo, provider, modelId) => {
@@ -179,6 +178,7 @@ export function useLlmSettings(enabled = true) {
     settings, catalog, catalogAll, catalogFull, fullTotal, fullPage, fullHasMore,
     enabledModels, defaults, bounds, categories,
     loading, loadingMore, saving, enabledSaving, error,
+    catalogStatus, refreshingCatalog, retryRefresh,
     searchQuery, categoryFilter,
     load, loadMore, handleSearch, handleCategory,
     setModel, setTipoTimeout, resetTipo, save,

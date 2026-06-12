@@ -9,7 +9,9 @@ via `get_catalog_entries()`.
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import RLock
+from datetime import UTC, datetime
+from threading import Lock, RLock
+from time import monotonic
 
 import httpx
 
@@ -38,6 +40,19 @@ _full_catalog: list[dict] = [
     for e in CATALOG_ENTRIES
 ]
 _CL = RLock()
+
+# Per-provider refresh health, exposed to the UI so a failed fetch is visible
+# instead of silently emptying the model dropdowns. source: api | cache | stale.
+_provider_status: dict[str, dict] = {
+    "openrouter": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
+    "groq": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
+}
+
+# Non-blocking guard: startup refresh and the user-facing retry endpoint may
+# race; the loser returns immediately instead of double-fetching.
+_refresh_lock = Lock()
+_last_full_success: float | None = None
+_FRESH_WINDOW_S = 60.0
 
 _CATALOG_REFRESH_TIMEOUT = float(os.getenv("CATALOG_REFRESH_TIMEOUT_S", "15"))
 
@@ -98,6 +113,12 @@ def get_full_catalog_entries() -> list[dict]:
     """Return ALL models from both providers with categories and pricing."""
     with _CL:
         return list(_full_catalog)
+
+
+def get_provider_status() -> dict[str, dict]:
+    """Snapshot of per-provider refresh health (for the settings UI)."""
+    with _CL:
+        return {provider: dict(st) for provider, st in _provider_status.items()}
 
 
 def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[dict]:
@@ -170,8 +191,10 @@ def format_pricing(pricing: dict | None) -> str | None:
     return None
 
 
-def _fetch_openrouter() -> dict[str, dict]:
-    """Fetch the full model list from OpenRouter. Returns {model_id: raw_entry}."""
+def _fetch_openrouter() -> dict[str, dict] | None:
+    """Fetch the full model list from OpenRouter. Returns {model_id: raw_entry},
+    or None when the fetch failed (so the caller can fall back instead of
+    treating the provider as having zero models)."""
     url = f"{_OR_API}/models"
     logger.info("Fetching OpenRouter model list from %s", url)
     try:
@@ -180,7 +203,7 @@ def _fetch_openrouter() -> dict[str, dict]:
         data = resp.json()
     except Exception:
         logger.exception("OpenRouter model list fetch failed")
-        return {}
+        return None
 
     models = {}
     for m in data.get("data", []):
@@ -191,8 +214,9 @@ def _fetch_openrouter() -> dict[str, dict]:
     return models
 
 
-def _fetch_groq() -> set[str]:
-    """Fetch the available model ids from Groq. Returns a set of model_id strings."""
+def _fetch_groq() -> set[str] | None:
+    """Fetch the available model ids from Groq. Returns a set of model_id strings,
+    or None when the fetch failed."""
     try:
         from llm.router import groq_client
 
@@ -202,7 +226,7 @@ def _fetch_groq() -> set[str]:
         return ids
     except Exception:
         logger.exception("Groq model list fetch failed")
-        return set()
+        return None
 
 
 def _merge_openrouter(api_models: dict[str, dict]) -> None:
@@ -231,55 +255,126 @@ def _merge_groq(available_ids: set[str]) -> None:
             entry["active"] = False
 
 
+def _load_cached(db, provider: str) -> dict | set | None:
+    """Read a provider's raw data back from the Supabase cache. Defensive: a
+    missing/expired row or an unexpected shape must never break the refresh."""
+    if db is None:
+        return None
+    try:
+        from llm.catalog_cache import load_from_cache
+
+        raw = load_from_cache(db, provider)
+    except Exception:
+        logger.exception("Catalog cache read failed for provider=%s", provider)
+        return None
+    if not isinstance(raw, dict):
+        return None
+    models = raw.get("models")
+    if provider == "openrouter":
+        return models if isinstance(models, dict) and models else None
+    if isinstance(models, (list, set)) and models:
+        return {str(m) for m in models}
+    return None
+
+
 def refresh_catalog(db=None) -> None:
     """Fetch provider APIs in parallel, merge into CATALOG_ENTRIES, rebuild CATALOG,
     optionally persist to cache, and update the in-memory copy.
 
+    Resilient by design: when a provider fetch fails we fall back to the DB
+    cache, and when that also fails we keep the last in-memory state for that
+    provider (never mass-deactivate its models) and flag it in
+    `_provider_status` so the UI can warn the user and offer a retry.
+
     `db` is an optional SQLAlchemy Session — if provided, we read/write Supabase
-    cache. Called from lifespan with a fresh session, or from the admin endpoint.
+    cache. Called from lifespan with a fresh session, from the admin endpoint,
+    or from the user-facing retry endpoint.
     """
-    global _catalog
+    global _catalog, _full_catalog, _last_full_success
 
-    # Fetch both providers in parallel.
-    or_data: dict = {}
-    groq_ids: set = set()
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        f_or = pool.submit(_fetch_openrouter)
-        f_groq = pool.submit(_fetch_groq)
-        for future in as_completed([f_or, f_groq], timeout=_CATALOG_REFRESH_TIMEOUT + 5):
-            if future is f_or:
-                try:
-                    or_data = future.result()
-                except Exception:
-                    logger.exception("OpenRouter fetch timed out or failed")
-            elif future is f_groq:
-                try:
-                    groq_ids = future.result()
-                except Exception:
-                    logger.exception("Groq fetch timed out or failed")
+    if not _refresh_lock.acquire(blocking=False):
+        logger.info("Catalog refresh already in progress — skipping")
+        return
+    try:
+        with _CL:
+            fresh = (
+                _last_full_success is not None
+                and monotonic() - _last_full_success < _FRESH_WINDOW_S
+            )
+        if fresh:
+            logger.info("Catalog refreshed <%.0fs ago — skipping", _FRESH_WINDOW_S)
+            return
 
-    _merge_openrouter(or_data)
-    _merge_groq(groq_ids)
-    _rebuild_catalog()
+        # Fetch both providers in parallel. None = fetch failed (vs empty data).
+        or_data: dict | None = None
+        groq_ids: set | None = None
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            f_or = pool.submit(_fetch_openrouter)
+            f_groq = pool.submit(_fetch_groq)
+            try:
+                for future in as_completed([f_or, f_groq], timeout=_CATALOG_REFRESH_TIMEOUT + 5):
+                    if future is f_or:
+                        or_data = future.result()
+                    elif future is f_groq:
+                        groq_ids = future.result()
+            except TimeoutError:
+                logger.exception("Catalog provider fetch timed out")
 
-    full = _build_full_catalog(or_data, groq_ids)
+        or_source = "api" if or_data is not None else None
+        groq_source = "api" if groq_ids is not None else None
 
-    with _CL:
-        _catalog = list(CATALOG_ENTRIES)
-        if full:
+        # Fall back to the Supabase cache for whichever provider failed.
+        if or_data is None:
+            cached = _load_cached(db, "openrouter")
+            if cached is not None:
+                or_data, or_source = cached, "cache"
+        if groq_ids is None:
+            cached = _load_cached(db, "groq")
+            if cached is not None:
+                groq_ids, groq_source = cached, "cache"
+
+        # Merge only providers with usable data — a failed provider keeps its
+        # previous active flags instead of being wiped from the catalog.
+        if or_data is not None:
+            _merge_openrouter(or_data)
+        if groq_ids is not None:
+            _merge_groq(groq_ids)
+        _rebuild_catalog()
+
+        full = _build_full_catalog(or_data or {}, groq_ids or set())
+        now = datetime.now(UTC).isoformat()
+
+        with _CL:
+            _catalog = list(CATALOG_ENTRIES)
+            # Carry over the previous slice of any provider that failed so the
+            # full-catalog browser doesn't lose it.
+            if or_data is None:
+                full.extend(e for e in _full_catalog if e["provider"] == "openrouter")
+            if groq_ids is None:
+                full.extend(e for e in _full_catalog if e["provider"] == "groq")
+            full.sort(key=lambda e: (not e["curated"], e["provider"], e["model_id"]))
             _full_catalog = full
-    logger.info(
-        "In-memory catalog updated (%d curated | %d total)", len(_catalog), len(full) if full else 0
-    )
+            for provider, source in (("openrouter", or_source), ("groq", groq_source)):
+                st = _provider_status[provider]
+                st["checked_at"] = now
+                st["ok"] = source is not None
+                st["source"] = source or "stale"
+                if source is not None:
+                    st["last_success_at"] = now
+            if or_source == "api" and groq_source == "api":
+                _last_full_success = monotonic()
+        logger.info("In-memory catalog updated (%d curated | %d total)", len(_catalog), len(full))
 
-    # Persist raw API data to Supabase cache.
-    if db and (or_data or groq_ids):
-        try:
-            from llm.catalog_cache import save_to_cache
+        # Persist raw API data to Supabase cache (never re-save cache reads).
+        if db is not None and (or_source == "api" or groq_source == "api"):
+            try:
+                from llm.catalog_cache import save_to_cache
 
-            if or_data:
-                save_to_cache(db, "openrouter", {"models": or_data})
-            if groq_ids:
-                save_to_cache(db, "groq", {"models": list(groq_ids)})
-        except Exception:
-            logger.exception("Failed to save catalog cache to DB")
+                if or_source == "api" and or_data:
+                    save_to_cache(db, "openrouter", {"models": or_data})
+                if groq_source == "api" and groq_ids:
+                    save_to_cache(db, "groq", {"models": list(groq_ids)})
+            except Exception:
+                logger.exception("Failed to save catalog cache to DB")
+    finally:
+        _refresh_lock.release()

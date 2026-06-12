@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { FileChip } from './FileChip.jsx'
 import { SelectionChips } from './SelectionChips.jsx'
+import { OvaThemeSelector } from './OvaThemeSelector.jsx'
 import { LlmEnginesPanel } from '../LlmEnginesPanel.jsx'
 import { ProgressPanel } from './ProgressPanel.jsx'
 import { TotalFailurePanel } from './TotalFailurePanel.jsx'
@@ -18,6 +19,7 @@ export function CrearOvaChatPanel({
   prompt, setPrompt, minChars,
   canConfigure, canGenerate, isGenerating, isDone,
   openModal, engageSelection, exploreSelection, totalResources,
+  theme, setTheme,
   generate, reset, error,
   uploadsProps,
   // generation state (shown in scrollable body during/after gen)
@@ -86,6 +88,8 @@ export function CrearOvaChatPanel({
               Elige hasta 4 recursos por fase (ENGAGE + EXPLORE).
             </p>
           )}
+
+          <OvaThemeSelector theme={theme} onChange={setTheme} disabled={isGenerating} />
 
           <LlmEnginesPanel />
 

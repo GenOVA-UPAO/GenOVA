@@ -11,6 +11,14 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  server: {
+    fs: {
+      // pnpm hoists deps to the monorepo root, so the dev server (rooted at
+      // frontend/) must be allowed to serve e.g. @fontsource-variable/geist
+      // woff2 files from ../node_modules. Without this Vite blocks them.
+      allow: [path.resolve(import.meta.dirname, '..')],
+    },
+  },
   build: {
     // Split out stable vendor bundles so app changes don't bust the long-lived
     // immutable cache for React / router code on Vercel.

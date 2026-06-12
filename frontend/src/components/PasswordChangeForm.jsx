@@ -14,10 +14,10 @@ export function PasswordChangeForm({
   onSubmit,
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-md overflow-hidden">
+    <div className="rounded-xl border border-border bg-background shadow-md overflow-hidden">
       <form onSubmit={onSubmit} className="p-6 space-y-6">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">
+          <h2 className="text-lg font-bold text-foreground">
             Seguridad de la Cuenta
           </h2>
           <p className="text-xs text-muted-foreground mt-1.5">

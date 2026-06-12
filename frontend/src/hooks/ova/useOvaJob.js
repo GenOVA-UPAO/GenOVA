@@ -80,7 +80,7 @@ export function useOvaJob() {
   useEffect(() => clearTimer, [clearTimer])
 
   const start = useCallback(
-    async ({ prompt, llm, uploadIds, selections: sel }) => {
+    async ({ prompt, uploadIds, selections: sel, theme }) => {
       clearTimer()
       selectionsRef.current = sel
       setSelections(sel)
@@ -90,7 +90,7 @@ export function useOvaJob() {
       setPhase('starting')
       try {
         const resources = toResourcesPayload(sel)
-        const { job_id } = await startJob({ prompt, llm, uploadIds, resources })
+        const { job_id } = await startJob({ prompt, uploadIds, resources, theme })
         jobIdRef.current = job_id
         setJobId(job_id)
         setPhase('polling')

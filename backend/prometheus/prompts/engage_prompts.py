@@ -89,21 +89,32 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
     return base + contexto if base else ""
 
 
-def prompt_simulador(concept: str, contexto_usuario: str = "") -> str:
+def prompt_simulador(concept: str, contexto_usuario: str = "", design_system: str | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    ds = design_system or DESIGN_SYSTEM
     return f"""[ROL] Desarrollador front-end de simuladores educativos interactivos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un simulador HTML5 autocontenido para la fase ENGAGE que provoque curiosidad: el estudiante manipula algo y ve el efecto, descubriendo la intuición central de "{concept}".
 [TAREA] Diseña la mecánica interactiva más apropiada para "{concept}" (slider, lienzo clicable, arrastre, botones...). Debe incluir: al menos un control manipulable, una visualización que reacciona en tiempo real (SVG o canvas), retroalimentación visual del estado, y un texto breve que interpreta lo que ocurre. Un botón de cierre ("¿Qué descubriste?") visible tras explorar.
 [REQUISITOS] HTML5 autocontenido con todo CSS y JS embebido. Mínimo 280 líneas de calidad sin secciones vacías. Paleta oscura elegante (educativa oscura). El control manipulable debe responder en <50ms a la interacción.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al pulsar el botón de cierre.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""" + contexto
 
 
-def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = "") -> str:
+def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None) -> str:
+    # ENGAGE's only code-only resource is type 10 (Simulador Intuitivo). The
+    # generic direct_code_gen plan calls prompt_codigo, so delegate to the
+    # simulator prompt (n is unused — engage has a single code-only type).
+    return prompt_simulador(concept, contexto_usuario, design_system)
+
+
+def prompt_html(
+    n: int, concept: str, data_json: str, contexto_usuario: str = "", design_system: str | None = None
+) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    ds = design_system or DESIGN_SYSTEM
     estilos = {
         1: "galería deslizable tipo cómic: tarjetas grandes de colores, bocadillos CSS, navegación prev/next con indicador de progreso",
         2: "storyboard vertical con marcadores de tiempo, narración en bloque de cita, prompt de video en una caja copiable",
@@ -127,7 +138,7 @@ def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = ""
 - Mínimo 280 líneas de calidad. Cada elemento debe ser funcional (navegación, botones, feedback, puntuación).
 - Paleta apropiada al tipo: cómic (clara vibrante), noticia (clara periodística), escape-room (oscura dramática),
   podcast (oscura íntima), timeline (clara académica), juegos (clara con acentos).
-{DESIGN_SYSTEM}
+{ds}
 [IMAGENES] Si un item de los datos incluye un campo "image_placeholder" (por ejemplo "__IMG_1__"), úsalo literalmente como src del tag <img> correspondiente (por ejemplo: <img src="__IMG_1__" alt="...">). Si un item NO tiene "image_placeholder", NO inventes uno y NO incluyas <img> para ese item — renderiza solo texto. El servidor reemplaza los placeholders válidos por imágenes reales al renderizar.
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar la actividad principal.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.""" + contexto

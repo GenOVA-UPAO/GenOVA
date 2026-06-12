@@ -7,9 +7,9 @@ import { fetchTrashCount } from '../../services/ovaHistoryService.js'
 
 function getSidebarLinkClasses({ isActive }) {
   if (isActive) {
-    return 'flex items-center justify-between rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm'
+    return 'flex items-center justify-between rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm'
   }
-  return 'flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors'
+  return 'flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-accent transition-colors'
 }
 
 export function SidebarMenu() {
@@ -55,7 +55,7 @@ export function SidebarMenu() {
           <NavLink to="/papelera" className={getSidebarLinkClasses}>
             <span>Papelera</span>
             {trashCount > 0 && (
-              <span className="ml-2 rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white min-w-[1.25rem] text-center">
+              <span className="ml-2 rounded-full bg-destructive px-1.5 py-0.5 text-xs font-bold text-white min-w-[1.25rem] text-center">
                 {trashCount}
               </span>
             )}
@@ -63,8 +63,8 @@ export function SidebarMenu() {
         </li>
       </ul>
       {isAdmin && (
-        <div className="pt-4 border-t border-slate-100">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="pt-4 border-t border-border">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Administración
           </p>
           <ul className="space-y-1.5">
@@ -80,7 +80,7 @@ export function SidebarMenu() {
             </li>
             <li>
               <NavLink to="/admin/labs" className={getSidebarLinkClasses}>
-                🧪 Labs
+                Labs
               </NavLink>
             </li>
           </ul>

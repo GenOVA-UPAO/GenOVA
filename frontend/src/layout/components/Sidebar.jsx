@@ -14,20 +14,20 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`hidden shrink-0 border-r border-slate-200 bg-white transition-all duration-300 md:block relative ${
+      className={`hidden shrink-0 border-r border-sidebar-border bg-sidebar transition-all duration-300 md:block relative ${
         isOpen ? 'w-64 p-4' : 'w-12 p-2 flex flex-col items-center'
       }`}
     >
       <div className={`flex items-center mb-4 ${isOpen ? 'justify-between' : 'justify-center'}`}>
         {isOpen && (
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground whitespace-nowrap">
             Navegación
           </p>
         )}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent transition-colors cursor-pointer"
           aria-label={isOpen ? 'Ocultar menú' : 'Mostrar menú'}
           title={isOpen ? 'Ocultar menú' : 'Mostrar menú'}
         >

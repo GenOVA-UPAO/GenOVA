@@ -13,6 +13,8 @@ export function useOvaCreation() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [engageSelection, setEngageSelection] = useState([])
   const [exploreSelection, setExploreSelection] = useState([])
+  // OVA content theme (color × design); default UPAO brand. Sent to the job.
+  const [theme, setTheme] = useState({ color: 'upao', design: 'upao' })
 
   const {
     uploads, uploadIds, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
@@ -44,11 +46,11 @@ export function useOvaCreation() {
     if (!canGenerate) return
     start({
       prompt: prompt.trim(),
-      llm: null,
       uploadIds,
       selections: { engage: engageSelection, explore: exploreSelection },
+      theme,
     })
-  }, [canGenerate, start, prompt, uploadIds, engageSelection, exploreSelection])
+  }, [canGenerate, start, prompt, uploadIds, engageSelection, exploreSelection, theme])
 
   const openModal = useCallback(() => setIsModalOpen(true), [])
   const closeModal = useCallback(() => setIsModalOpen(false), [])
@@ -57,6 +59,7 @@ export function useOvaCreation() {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
     engageSelection, exploreSelection, totalResources,
+    theme, setTheme,
     canConfigure, canGenerate, isGenerating,
     generate, reset, restore, minChars: MIN_CHARS,
     // job orchestration (viewmodel, outcome, retry actions, jobId)

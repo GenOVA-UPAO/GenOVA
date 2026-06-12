@@ -23,8 +23,9 @@ RECURSOS_META = {
 CODE_ONLY = {4, 5, 7, 9}
 
 
-def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    ds = design_system or DESIGN_SYSTEM
     t = {
         4: f"""[ROL] Desarrollador front-end de simulaciones aplicadas interactivas.
 [CURSO] {CURSO_CONTEXTO}
@@ -32,7 +33,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Simulacion HTML5 donde el estudiante aplique "{concept}" en un escenario realista.
 [TAREA] Entorno simulado con escenario empresarial concreto, 3-4 parametros ajustables, visualizacion SVG/canvas reactiva, metricas visibles y boton "Aplicar" que ejecuta "{concept}". Iterar al menos 3 veces para descubrir patrones.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas. Visualizacion <100 ms.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() tras 3 iteraciones.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         5: f"""[ROL] Desarrollador front-end de dashboards de analisis de datos.
@@ -41,7 +42,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Dashboard HTML5 donde el estudiante analice datos de "{concept}" y extraiga conclusiones.
 [TAREA] Dataset hardcodeado de 15-20 registros, tabla filtrable/ordenable, 2 graficos SVG (scatter/bar/line) que reaccionan a filtros, 3 preguntas con selector, boton "Revelar insight". Graficos SVG reales.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al responder las 3 preguntas.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         7: f"""[ROL] Desarrollador front-end de laboratorios de codigo interactivo.
@@ -50,7 +51,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Lab de codigo HTML5 donde el estudiante experimente con "{concept}" escribiendo pseudocodigo.
 [TAREA] Editor simplificado (textarea), 3 ejercicios crecientes sobre "{concept}" con codigo inicial incompleto, boton "Ejecutar" que valida contra solucion esperada, feedback visual, "Ver solucion" tras 2 intentos. Validacion JS real.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar los 3 ejercicios.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         9: f"""[ROL] Desarrollador front-end de juegos de estrategia educativos.
@@ -59,7 +60,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "") -> str:
 [OBJETIVO] Juego de estrategia HTML5 por turnos que modele la logica de "{concept}" como mecanica.
 [TAREA] Tablero/escenario con 5-7 turnos de decision, oponente automatico basado en "{concept}", puntuacion que refleje calidad de decisiones, pantalla final con analisis y consejos. IA oponente funcional.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al terminar la partida.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
     }
@@ -112,8 +113,11 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
 
 
 # fmt: off
-def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = "") -> str:
+def prompt_html(
+    n: int, concept: str, data_json: str, contexto_usuario: str = "", design_system: str | None = None
+) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    ds = design_system or DESIGN_SYSTEM
     estilos = {
         1: "estudio de caso: narrativa destacada, preguntas secuenciales con campo de respuesta y toggle de modelo, barra de progreso, disenio periodistico",
         2: "ejercicio guiado: pasos numerados, cada uno expandible con pista y validacion, indicador de paso actual, boton siguiente",
@@ -130,7 +134,7 @@ def prompt_html(n: int, concept: str, data_json: str, contexto_usuario: str = ""
 {data_json}
 [FORMATO] {estilo}
 [REQUISITOS] HTML5 autocontenido: CSS en <style>, JS en <script>. Minimo 300 lineas de calidad. Checklists, revelaciones, navegacion y feedback funcionales. Paleta con acentos de accion.
-{DESIGN_SYSTEM}
+{ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar la actividad principal.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.""" + contexto
 # fmt: on

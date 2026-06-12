@@ -3,8 +3,7 @@ import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-
-const PROVIDER_LABELS = { groq: 'Groq', openrouter: 'OpenRouter' }
+import { formatContextLength, PROVIDER_LABELS } from '../../lib/llmCatalogUtils.js'
 
 /**
  * Reusable body for the per-user LLM config (general, applies to all OVAs).
@@ -12,7 +11,10 @@ const PROVIDER_LABELS = { groq: 'Groq', openrouter: 'OpenRouter' }
  * SAME form is mounted in the workspace modal and in the profile page.
  */
 export function LlmSettingsForm({ hook }) {
-  const { settings, catalog, bounds, loading, saving, taskLabels, setModel, setTipoTimeout, resetTipo } = hook
+  const {
+    settings, catalog, catalogStatus, bounds, loading, saving,
+    taskLabels, setModel, setTipoTimeout, resetTipo,
+  } = hook
   const [tmin, tmax] = bounds
 
   if (loading || !settings) {
@@ -64,28 +66,35 @@ export function LlmSettingsForm({ hook }) {
                     <SelectValue placeholder="Elige un modelo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(catalog).map(([provider, models]) => (
-                      <SelectGroup key={provider}>
-                        <SelectLabel>{PROVIDER_LABELS[provider] || provider}</SelectLabel>
-                        {(Array.isArray(models) ? models : []).map((m) => {
-                          const modelId = typeof m === 'string' ? m : m.model_id
-                          const label = typeof m === 'string' ? m : (m.label || m.model_id)
-                          const pricing = typeof m === 'string' ? null : m.pricing
-                          return (
-                            <SelectItem key={`${provider}::${modelId}`} value={`${provider}::${modelId}`} className="text-xs">
-                              <span className="flex items-center gap-2 w-full">
-                                <span className="truncate">{label}</span>
-                                {pricing && (
-                                  <span className="ml-auto shrink-0 text-[10px] text-muted-foreground/70">
-                                    {pricing}
-                                  </span>
-                                )}
-                              </span>
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectGroup>
-                    ))}
+                    {Object.entries(catalog).map(([provider, models]) => {
+                      const providerDown = catalogStatus?.[provider]?.ok === false
+                      return (
+                        <SelectGroup key={provider}>
+                          <SelectLabel className={providerDown ? 'text-muted-foreground/50' : ''}>
+                            {PROVIDER_LABELS[provider] || provider}
+                            {providerDown && ' (no disponible)'}
+                          </SelectLabel>
+                          {(Array.isArray(models) ? models : []).map((m) => {
+                            const modelId = typeof m === 'string' ? m : m.model_id
+                            const label = typeof m === 'string' ? m : (m.label || m.model_id)
+                            const pricing = typeof m === 'string' ? null : m.pricing
+                            const ctx = typeof m === 'string' ? null : formatContextLength(m.context_length)
+                            return (
+                              <SelectItem key={`${provider}::${modelId}`} value={`${provider}::${modelId}`} className="text-xs">
+                                <span className="flex items-center gap-2 w-full">
+                                  <span className="truncate">{label}</span>
+                                  {(pricing || ctx) && (
+                                    <span className="ml-auto shrink-0 text-[10px] text-muted-foreground/70">
+                                      {[pricing, ctx].filter(Boolean).join(' · ')}
+                                    </span>
+                                  )}
+                                </span>
+                              </SelectItem>
+                            )
+                          })}
+                        </SelectGroup>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
               </div>

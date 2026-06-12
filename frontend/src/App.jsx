@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, Outlet } from 'react-router'
 import { isLoggedIn } from './lib/auth.js'
-import { apiFetch } from './lib/http.js'
+import { getCurrentUser } from './lib/me.js'
 import { AppLayout } from './layout/shells/AppLayout.jsx'
 import { WorkspaceLayout } from './layout/shells/WorkspaceLayout.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
@@ -37,23 +37,18 @@ export function AdminRoute() {
   useEffect(() => {
     if (!isLoggedIn()) return
 
+    let cancelled = false
     const checkAdmin = async () => {
-      try {
-        const response = await apiFetch('/api/auth/me')
-        if (response.status === 200) {
-          const user = await response.json()
-          setIsAdmin(user.role === 'administrador')
-        } else {
-          setIsAdmin(false)
-        }
-      } catch {
-        setIsAdmin(false)
-      } finally {
-        setLoading(false)
-      }
+      const user = await getCurrentUser()
+      if (cancelled) return
+      setIsAdmin(user?.role === 'administrador')
+      setLoading(false)
     }
 
     checkAdmin()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   if (loading) {

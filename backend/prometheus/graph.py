@@ -1,7 +1,10 @@
 """LangGraph StateGraph for the OVA multi-agent generation pipeline.
 
-Implements Prometheus Architectural Design: Concierge → PhaseAgents → Validate
-→ [retry | next phase] → Assemble.
+Prometheus design: Concierge → PhaseAgents → Assemble. Each phase agent
+generates ALL its resources in one bounded-parallel batch (Fase 2) and advances
+`current_phase_idx`, so routing simply walks phase_order until it hits assemble.
+HTML validation/repair runs inside each generation plan (llm.html_validator),
+so the old per-resource `validate` loop node is no longer needed.
 
 The graph is compiled once and invoked per job via `invoke_ova_generation()`.
 """
@@ -17,10 +20,11 @@ from prometheus.nodes.engage import engage_node
 from prometheus.nodes.evaluate import evaluate_node
 from prometheus.nodes.explain import explain_node
 from prometheus.nodes.explore import explore_node
-from prometheus.nodes.validate import validate_node
 from prometheus.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)
+
+_PHASES = ("engage", "explore", "explain", "elaborate", "evaluate")
 
 
 def _route_next_phase(state: OvaGenerationState) -> str:
@@ -29,27 +33,6 @@ def _route_next_phase(state: OvaGenerationState) -> str:
     if idx < len(phases):
         return phases[idx]
     return "assemble"
-
-
-def _check_validation(state: OvaGenerationState) -> str:
-    phase = (
-        state.get("phase_order", [])[state.get("current_phase_idx", 0)]
-        if state.get("phase_order")
-        else ""
-    )
-    results = state.get("results", [])
-    errors = state.get("errors", [])
-    total = state.get("total_resources", 0)
-    done = len(results) + len(errors)
-
-    last_error = len(errors) > 0 and (len(results) + len(errors)) > 0
-    if last_error and len(results) == 0:
-        if (state.get("current_phase_idx", 0) + 1) < len(state.get("phase_order", [])):
-            return "next_phase"
-        return "assemble"
-    if done >= total:
-        return "next_phase"
-    return phase if phase in ("engage", "explore", "explain", "elaborate", "evaluate") else "engage"
 
 
 def build_ova_graph():
@@ -61,40 +44,16 @@ def build_ova_graph():
     graph.add_node("explain", explain_node)
     graph.add_node("elaborate", elaborate_node)
     graph.add_node("evaluate", evaluate_node)
-    graph.add_node("validate", validate_node)
     graph.add_node("assemble", assemble_node)
 
     graph.set_entry_point("concierge")
 
-    graph.add_conditional_edges(
-        "concierge",
-        _route_next_phase,
-        {
-            "engage": "engage",
-            "explore": "explore",
-            "explain": "explain",
-            "elaborate": "elaborate",
-            "evaluate": "evaluate",
-            "assemble": "assemble",
-        },
-    )
-
-    for phase in ("engage", "explore", "explain", "elaborate", "evaluate"):
-        graph.add_edge(phase, "validate")
-
-    graph.add_conditional_edges(
-        "validate",
-        _check_validation,
-        {
-            "engage": "engage",
-            "explore": "explore",
-            "explain": "explain",
-            "elaborate": "elaborate",
-            "evaluate": "evaluate",
-            "next_phase": "concierge",
-            "assemble": "assemble",
-        },
-    )
+    route_map = {**{p: p for p in _PHASES}, "assemble": "assemble"}
+    # Concierge builds the plan; every phase node advances current_phase_idx and
+    # re-routes to the next phase (or assemble) via the same router.
+    graph.add_conditional_edges("concierge", _route_next_phase, route_map)
+    for phase in _PHASES:
+        graph.add_conditional_edges(phase, _route_next_phase, route_map)
 
     graph.add_edge("assemble", END)
 

@@ -1,54 +1,25 @@
-"""ENGAGE agent node — generates one ENGAGE-phase resource per invocation.
+"""ENGAGE agent node — generates ALL engage resources for the job in parallel.
 
-PEVR loop: Perceive (RAG context) → Evaluate (select plan) → Respond (LLM call).
-Verify happens in the separate validate node (conditional edge in graph).
+Fase 2: the phase's resources run concurrently (bounded pool) and persist as
+they finish; see prometheus.runtime.run_phase. Dispatch picks the plan per type:
+podcast (3), direct simulator (10), else two-step (text→HTML).
 """
-
-import logging
 
 from prometheus.plans.direct_code import direct_code_gen
 from prometheus.plans.podcast import podcast_gen
 from prometheus.plans.two_step import two_step_gen
 from prometheus.prompts.engage_prompts import RECURSOS_META
+from prometheus.runtime import run_phase
 from prometheus.state import OvaGenerationState
 
-logger = logging.getLogger(__name__)
+
+def _dispatch(rt, concept, llm_config, enabled_models, theme):
+    if rt == 3:
+        return podcast_gen("engage", rt, concept, llm_config, enabled_models, theme)
+    if rt == 10:
+        return direct_code_gen("engage", rt, concept, llm_config, enabled_models, theme)
+    return two_step_gen("engage", rt, concept, llm_config, enabled_models, theme)
 
 
 def engage_node(state: OvaGenerationState) -> dict:
-    phases = state.get("phases", {})
-    resource_idx = state.get("current_resource_idx", 0)
-    resources = phases.get("engage", [])
-
-    if resource_idx >= len(resources):
-        return {}
-
-    goal = resources[resource_idx]
-    rt = goal["resource_type"]
-    concept = state.get("prompt", "")
-    llm_config = state.get("llm_config", {})
-    enabled_models = state.get("enabled_models", [])
-    meta = RECURSOS_META.get(rt, {"tipo": "Recurso", "emoji": ""})
-
-    logger.info("ENGAGE agent: generating '%s' (type %d)", meta["tipo"], rt)
-
-    try:
-        if rt == 3:
-            html = podcast_gen("engage", rt, concept, llm_config, enabled_models)
-        elif rt == 10:
-            html = direct_code_gen("engage", rt, concept, llm_config, enabled_models)
-        else:
-            html = two_step_gen("engage", rt, concept, llm_config, enabled_models)
-    except Exception as exc:
-        logger.exception("ENGAGE resource %d failed", rt)
-        return {
-            "errors": [{"phase": "engage", "resource_type": rt, "error": str(exc)}],
-            "current_resource_idx": resource_idx + 1,
-            "progress": state.get("progress", 0) + 1,
-        }
-
-    return {
-        "results": [{"phase": "engage", "html": html, "resource_type": rt, "title": meta["tipo"]}],
-        "current_resource_idx": resource_idx + 1,
-        "progress": state.get("progress", 0) + 1,
-    }
+    return run_phase(state, "engage", _dispatch, RECURSOS_META)

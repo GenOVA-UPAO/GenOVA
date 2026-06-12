@@ -42,6 +42,8 @@ def run_job(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID] | None = None)
                 "upload_ids": params.get("upload_ids") or [],
                 "llm_config": llm_config,
                 "enabled_models": enabled_models,
+                "theme": params.get("theme") or {"color": "upao", "design": "upao"},
+                "job_id": str(job_id),
                 "phases": {},
                 "phase_order": [],
                 "results": [],

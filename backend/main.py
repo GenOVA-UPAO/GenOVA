@@ -211,7 +211,7 @@ def admin_refresh_catalog(
         logger.exception("Admin catalog refresh failed")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Catalog refresh failed: {exc}",
+            detail="No se pudo refrescar el catálogo.",
         ) from exc
 
 
