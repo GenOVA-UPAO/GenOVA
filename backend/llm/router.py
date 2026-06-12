@@ -40,6 +40,13 @@ openrouter_client = OpenAI(
     timeout=_LLM_TIMEOUT_S,
 )
 
+# OpenCode Go uses the OpenAI-compatible endpoint.
+opencode_client = OpenAI(
+    api_key=os.getenv("OPENCODE_API_KEY"),
+    base_url="https://opencode.ai/zen/go/v1",
+    timeout=_LLM_TIMEOUT_S,
+)
+
 # (provider, model_id, extra_kwargs)
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
 _MODELOS: dict[str, tuple] = {
@@ -98,6 +105,11 @@ def _chat(
         # truncated HTML resources mid-script, breaking interactivity.
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_completion_tokens=min(max_tokens, 8192), **extra
+        )
+    elif provider == "opencode":
+        client = opencode_client.with_options(timeout=timeout) if timeout else opencode_client
+        r = client.chat.completions.create(
+            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
         )
     else:
         client = openrouter_client.with_options(timeout=timeout) if timeout else openrouter_client
@@ -223,6 +235,12 @@ def generar_texto_with_model(
                 model=model_id,
                 messages=[{"role": "user", "content": prompt}],
                 max_completion_tokens=max_tokens,
+            )
+        elif provider == "opencode":
+            response = opencode_client.chat.completions.create(
+                model=model_id,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=max_tokens,
             )
         else:
             response = openrouter_client.chat.completions.create(

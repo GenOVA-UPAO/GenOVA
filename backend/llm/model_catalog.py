@@ -97,6 +97,17 @@ CATALOG_ENTRIES = [
         "context_length": None,
         "active": True,
     },
+    # OpenCode Go — personal subscription (bearer token). No API refresh needed;
+    # model list is static and verified manually via GET /v1/models.
+    {
+        "provider": "opencode",
+        "model_id": "deepseek-v4-pro",
+        "label": "DeepSeek V4 Pro (OpenCode Go)",
+        "task": "codigo",
+        "pricing": None,
+        "context_length": 163840,
+        "active": True,
+    },
 ]
 
 
