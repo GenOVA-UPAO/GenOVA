@@ -1,7 +1,9 @@
 import { useProfile } from '../hooks/useProfile.js'
 import { ProfileForm } from '../components/ProfileForm.jsx'
 import { PasswordChangeForm } from '../components/PasswordChangeForm.jsx'
+import { ApiKeysCard } from '../components/settings/ApiKeysCard.jsx'
 import { LlmSettingsCard } from '../components/settings/LlmSettingsCard.jsx'
+import { OvaSettingsCard } from '../components/settings/OvaSettingsCard.jsx'
 import { ProfileSkeleton } from '../components/ProfileSkeleton.jsx'
 
 export function ProfilePage() {
@@ -89,6 +91,8 @@ export function ProfilePage() {
       </div>
 
       <LlmSettingsCard />
+      <OvaSettingsCard />
+      <ApiKeysCard />
     </div>
   )
 }

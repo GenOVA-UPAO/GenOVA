@@ -47,13 +47,14 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
     llm_config = state.get("llm_config", {})
     enabled_models = state.get("enabled_models", [])
     theme = state.get("theme", {})
+    image_settings = state.get("image_settings", {})
     job_id = state.get("job_id")
     workers = min(_concurrency(), len(resources))
 
     def _work(item: dict):
         rt = item["resource_type"]
         try:
-            return item, dispatch(rt, concept, llm_config, enabled_models, theme), None
+            return item, dispatch(rt, concept, llm_config, enabled_models, theme, image_settings), None
         except Exception as exc:  # noqa: BLE001 — isolate one resource's failure
             logger.exception("%s resource %s failed", phase, rt)
             return item, None, str(exc)

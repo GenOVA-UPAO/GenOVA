@@ -41,6 +41,11 @@ class User(Base):
     # Only models in this list (plus system defaults) appear in the LLM settings
     # dropdowns. System defaults are always enabled regardless of this list.
     enabled_models = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    # Per-user OVA generation settings: {max_images, image_provider}.
+    ova_settings = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    # Per-user provider API keys (never logged, returned masked):
+    # {groq, openrouter, opencode, siliconflow, runware, falai}
+    user_api_keys = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -241,6 +246,18 @@ class PasswordResetToken(Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
 
     user = relationship("User", backref="password_reset_tokens")
+
+
+class PlatformConfig(Base):
+    """Admin-only key-value store for platform-level API keys and config."""
+
+    __tablename__ = "platform_config"
+
+    key = Column(String(128), primary_key=True)
+    value = Column(Text, nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
 
 class CatalogCache(Base):

@@ -33,6 +33,7 @@ def run_job(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID] | None = None)
         params = job.params or {}
         llm_config = params.get("llm_config") or {}
         enabled_models = params.get("enabled_models") or []
+        image_settings = params.get("image_settings") or {}
 
         try:
             from prometheus.graph import invoke_ova_generation
@@ -43,6 +44,7 @@ def run_job(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID] | None = None)
                 "llm_config": llm_config,
                 "enabled_models": enabled_models,
                 "theme": params.get("theme") or {"color": "upao", "design": "upao"},
+                "image_settings": image_settings,
                 "job_id": str(job_id),
                 "phases": {},
                 "phase_order": [],

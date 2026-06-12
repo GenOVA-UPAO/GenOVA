@@ -9,7 +9,7 @@ from prometheus.state import OvaGenerationState
 EVALUATE_CODE_ONLY = {3, 5, 9}
 
 
-def _dispatch(rt, concept, llm_config, enabled_models, theme):
+def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None):
     gen = direct_code_gen if rt in EVALUATE_CODE_ONLY else two_step_gen
     return gen("evaluate", rt, concept, llm_config, enabled_models, theme)
 
