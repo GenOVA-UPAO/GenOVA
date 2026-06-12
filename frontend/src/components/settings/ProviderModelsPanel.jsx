@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { CaretDown, CaretUp } from '@phosphor-icons/react'
 
 function PricingBadge({ provider, pricing }) {
   if (provider === 'opencode') {
@@ -41,7 +41,7 @@ export function ProviderModelsPanel({ provider, models, loading }) {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
-        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        {open ? <CaretUp size={12} weight="bold" /> : <CaretDown size={12} weight="bold" />}
         {open ? 'Ocultar modelos' : `Ver modelos (${models.length})`}
       </button>
 

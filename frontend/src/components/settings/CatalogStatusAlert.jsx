@@ -1,4 +1,4 @@
-import { RefreshCw, TriangleAlert } from 'lucide-react'
+import { ArrowsClockwise, Warning } from '@phosphor-icons/react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { PROVIDER_LABELS } from '../../lib/llmCatalogUtils.js'
@@ -20,7 +20,7 @@ export function CatalogStatusAlert({ catalogStatus, refreshing, onRetry }) {
 
   return (
     <Alert className="border-accent-brand/40 bg-accent-brand/5">
-      <TriangleAlert className="text-accent-brand" />
+      <Warning weight="duotone" className="text-accent-brand" />
       <AlertTitle>No pudimos obtener los modelos de {names}</AlertTitle>
       <AlertDescription>
         Se muestran los últimos datos disponibles.
@@ -28,7 +28,7 @@ export function CatalogStatusAlert({ catalogStatus, refreshing, onRetry }) {
       </AlertDescription>
       <div className="col-start-2 mt-2">
         <Button size="sm" variant="outline" onClick={onRetry} disabled={refreshing}>
-          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+          <ArrowsClockwise size={14} weight="duotone" className={refreshing ? 'animate-spin' : ''} />
           {refreshing ? 'Reintentando…' : 'Reintentar'}
         </Button>
       </div>

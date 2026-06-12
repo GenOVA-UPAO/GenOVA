@@ -22,6 +22,7 @@ const LabsPage = lazy(() => import('./pages/LabsPage.jsx').then((m) => ({ defaul
 const OvaWorkspacePage = lazy(() => import('./pages/OvaWorkspacePage.jsx').then((m) => ({ default: m.OvaWorkspacePage })))
 
 import { Toaster } from 'sonner'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 
 function RouteFallback() {
   return (
@@ -81,6 +82,7 @@ function App() {
   return (
     <>
       <Toaster position="top-right" richColors closeButton />
+      <SpeedInsights />
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

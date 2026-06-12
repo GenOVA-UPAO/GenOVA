@@ -4,10 +4,14 @@ const INTERACTIVIDAD_COLOR = {
   Baja: 'bg-slate-100 text-slate-600',
 }
 
-export function ResourceCard({ resource, selected, onClick, selectionIndex = null, disabled = false }) {
-  let ring = 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-md'
+export function ResourceCard({
+  resource, selected, onClick, selectionIndex = null, disabled = false,
+  selectedRingCls = 'ring-2 ring-indigo-500 border-indigo-300 bg-indigo-50',
+  selectedBadgeCls = 'bg-indigo-600',
+}) {
+  let ring = 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
   if (selected) {
-    ring = 'ring-2 ring-indigo-500 border-indigo-300 bg-indigo-50'
+    ring = selectedRingCls
   } else if (disabled) {
     ring = 'border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed'
   }
@@ -39,7 +43,7 @@ export function ResourceCard({ resource, selected, onClick, selectionIndex = nul
           <p className="text-xs text-slate-500 mt-1">⏱ {resource.duracion}</p>
         </div>
         {selected && (
-          <span className="flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-white text-xs font-bold">
+          <span className={`flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full ${selectedBadgeCls} text-white text-xs font-bold`}>
             {selectionIndex ?? '✓'}
           </span>
         )}

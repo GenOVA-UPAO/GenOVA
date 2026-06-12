@@ -10,13 +10,14 @@ import {
 } from '../../lib/ovaJobViewModel.js'
 
 const POLL_MS = Number(import.meta.env?.VITE_JOB_POLL_MS || 2000)
-const EMPTY_SELECTIONS = { engage: [], explore: [] }
+const ALL_PHASES = ['engage', 'explore', 'explain', 'elaborate', 'evaluate']
+const EMPTY_SELECTIONS = Object.fromEntries(ALL_PHASES.map((p) => [p, []]))
 
-// Translate the modal selection ({ engage:[{id,...}], explore:[...] }) into the
+// Translate the modal selection ({ engage:[{id,...}], ... }) into the
 // `resources:[{phase_type, resource_type}]` array the jobs API expects (B1).
 function toResourcesPayload(selections) {
   const out = []
-  for (const phase of ['engage', 'explore']) {
+  for (const phase of ALL_PHASES) {
     for (const r of selections[phase] || []) {
       out.push({ phase_type: phase, resource_type: String(r.id) })
     }

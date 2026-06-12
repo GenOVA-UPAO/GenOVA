@@ -17,7 +17,7 @@ export function OvaCreationView({ onCreated }) {
   const {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
-    engageSelection, exploreSelection, totalResources,
+    selections, totalResources,
     theme, setTheme,
     canConfigure, canGenerate, isGenerating,
     generate, reset, restore, minChars,
@@ -77,7 +77,7 @@ export function OvaCreationView({ onCreated }) {
             canConfigure={canConfigure} canGenerate={canGenerate}
             isGenerating={isGenerating} isDone={isTerminal}
             openModal={openModal}
-            engageSelection={engageSelection} exploreSelection={exploreSelection}
+            selections={selections}
             totalResources={totalResources}
             theme={theme} setTheme={setTheme}
             generate={generate} reset={reset} error={error}
@@ -110,7 +110,7 @@ export function OvaCreationView({ onCreated }) {
       {isModalOpen ? (
         <PhaseSelectModal
           onClose={closeModal} onConfirm={confirmSelections}
-          initialEngage={engageSelection} initialExplore={exploreSelection}
+          initialSelections={selections}
         />
       ) : null}
     </div>

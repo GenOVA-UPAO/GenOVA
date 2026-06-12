@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { GripVertical } from 'lucide-react'
+import { DotsSixVertical } from '@phosphor-icons/react'
 import { SPLIT_MIN, SPLIT_MAX, saveSplitRatio } from '../../lib/workspaceUtils.js'
 
 /**
@@ -86,7 +86,7 @@ export function WorkspaceResizableDivider({ ratio, onRatioChange, containerRef }
     >
       <div className="relative flex items-center justify-center">
         <div className="h-16 w-0.5 rounded-full bg-border group-hover:bg-primary/40 transition-colors" />
-        <GripVertical className="absolute h-3.5 w-3.5 rounded bg-background text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+        <DotsSixVertical size={14} weight="bold" className="absolute rounded bg-background text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
       </div>
     </div>
   )

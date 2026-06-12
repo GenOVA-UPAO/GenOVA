@@ -1,4 +1,4 @@
-import { TriangleAlert } from 'lucide-react'
+import { Warning } from '@phosphor-icons/react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -38,7 +38,7 @@ export function LlmSettingsCard() {
 
       {error && !loading ? (
         <Alert variant="destructive">
-          <TriangleAlert />
+          <Warning weight="duotone" />
           <AlertTitle>No se pudo cargar la configuración de IA</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
           <div className="col-start-2 mt-2">

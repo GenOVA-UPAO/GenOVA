@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { Shield, Users, FlaskConical } from 'lucide-react'
+import { ShieldCheck, Users, Flask } from '@phosphor-icons/react'
 import { isLoggedIn } from '../lib/auth.js'
 import { getCurrentUser } from '../lib/me.js'
 
 const ADMIN_CARDS = [
   {
     to: '/admin/roles',
-    icon: Shield,
+    icon: ShieldCheck,
     title: 'Gestión de Roles',
     desc: 'Define conjuntos de permisos y configuraciones de acceso para los perfiles.',
   },
@@ -19,7 +19,7 @@ const ADMIN_CARDS = [
   },
   {
     to: '/admin/labs',
-    icon: FlaskConical,
+    icon: Flask,
     title: 'Labs',
     desc: 'Prueba y compara modelos de IA con prompts calibrados.',
   },
@@ -71,7 +71,7 @@ export function DashboardPage() {
               >
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/5 text-primary group-hover:bg-primary/10 transition-colors">
-                    <Icon className="h-5 w-5" />
+                    <Icon size={20} weight="duotone" />
                   </span>
                   <div>
                     <h3 className="font-bold group-hover:text-primary transition-colors">{title}</h3>

@@ -7,7 +7,7 @@ import { FileChip } from './FileChip.jsx'
 
 export function PromptPanel({
   prompt, setPrompt, minChars, canConfigure, canGenerate, isGenerating,
-  isDone, openModal, engageSelection, exploreSelection, totalResources,
+  isDone, openModal, selections, totalResources,
   generate, reset, error, uploadsProps,
 }) {
   const [isDragOver, setIsDragOver] = useState(false)
@@ -119,7 +119,7 @@ export function PromptPanel({
       ) : null}
 
       <p className="text-xs text-muted-foreground">
-        Mínimo {minChars} caracteres · elige hasta 4 recursos por fase (ENGAGE + EXPLORE).
+        Mínimo {minChars} caracteres · elige 1-4 recursos por cada una de las 5 fases 5E.
       </p>
 
       <p className="rounded bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-xs text-amber-800 shadow-sm">
@@ -127,8 +127,7 @@ export function PromptPanel({
       </p>
 
       <SelectionChips
-        engage={engageSelection}
-        explore={exploreSelection}
+        selections={selections}
         onEdit={openModal}
         editable={!isGenerating && !isDone}
       />

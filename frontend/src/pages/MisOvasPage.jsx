@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { FolderOpen, Search, SearchX } from 'lucide-react'
+import { FolderOpen, MagnifyingGlass, MagnifyingGlassMinus } from '@phosphor-icons/react'
 import { useOvaList } from '../hooks/ova/useOvaList.js'
 import { useGeneratingJobs } from '../hooks/ova/useGeneratingJobs.js'
 import { OvaCard } from '../components/OvaCard.jsx'
@@ -43,7 +43,7 @@ export function MisOvasPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlass size={16} weight="duotone" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Buscar por título..."
@@ -106,9 +106,9 @@ export function MisOvasPage() {
       ) : list.isEmpty ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 py-16 text-center">
           {list.searchInput || list.statusFilter ? (
-            <SearchX className="mb-4 h-10 w-10 text-muted-foreground/60" />
+            <MagnifyingGlassMinus size={40} weight="duotone" className="mb-4 text-muted-foreground/60" />
           ) : (
-            <FolderOpen className="mb-4 h-10 w-10 text-muted-foreground/60" />
+            <FolderOpen size={40} weight="duotone" className="mb-4 text-muted-foreground/60" />
           )}
           {list.searchInput || list.statusFilter ? (
             <>

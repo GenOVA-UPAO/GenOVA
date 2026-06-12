@@ -12,7 +12,10 @@ const STATUS_MAP = {
   error: 'X',
 }
 
-const PHASE_LABEL = { engage: 'ENGAGE', explore: 'EXPLORE' }
+const PHASE_LABEL = {
+  engage: 'ENGAGE', explore: 'EXPLORE', explain: 'EXPLAIN',
+  elaborate: 'ELABORATE', evaluate: 'EVALUATE',
+}
 
 export function mapResourceStatus(backendStatus) {
   return STATUS_MAP[backendStatus] || 'pendiente'
@@ -22,7 +25,7 @@ export function mapResourceStatus(backendStatus) {
 // selections so the viewmodel can show a friendly name + emoji per resource.
 function buildLabelIndex(selections) {
   const index = new Map()
-  for (const phase of ['engage', 'explore']) {
+  for (const phase of Object.keys(PHASE_LABEL)) {
     for (const r of selections[phase] || []) {
       index.set(`${phase}:${String(r.id)}`, { tipo: r.tipo, emoji: r.emoji })
     }
@@ -33,7 +36,7 @@ function buildLabelIndex(selections) {
 // Map the raw `resources` array from GET /jobs/{id} into the per-resource
 // viewmodel: { id, phase, phaseLabel, label, emoji, status, error_id, selectable }.
 // `selectable` is true only for resources in `error` (the ones the user may retry).
-export function toResourceViewModel(resources = [], selections = { engage: [], explore: [] }) {
+export function toResourceViewModel(resources = [], selections = {}) {
   const labels = buildLabelIndex(selections)
   return resources
     .slice()

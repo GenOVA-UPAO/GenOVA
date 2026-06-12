@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ListChecks, Paperclip, RotateCcw } from 'lucide-react'
+import { ListChecks, Paperclip, ArrowCounterClockwise } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
@@ -70,7 +70,7 @@ export function WorkspaceChatPanel({
             onClick={onRegenAll}
             disabled={isRegenerating}
           >
-            <RotateCcw className="h-3.5 w-3.5" /> Regenerar OVA completo
+            <ArrowCounterClockwise size={14} weight="duotone" /> Regenerar OVA completo
           </Button>
         ) : null}
 
@@ -82,7 +82,7 @@ export function WorkspaceChatPanel({
           onClick={onToggleSelectionMode}
           disabled={isRegenerating}
         >
-          <ListChecks className="h-3.5 w-3.5" />
+          <ListChecks size={14} weight="duotone" />
           {selectionMode ? `Seleccionando recursos (${selectedCount} elegido${selectedCount !== 1 ? 's' : ''})` : 'Seleccionar recursos'}
         </Button>
 
@@ -166,7 +166,7 @@ export function WorkspaceChatPanel({
               title="Adjuntar archivo de apoyo"
               className="absolute right-1 bottom-1"
             >
-              <Paperclip className="h-4 w-4" />
+              <Paperclip size={16} weight="duotone" />
             </Button>
           </div>
           <Button

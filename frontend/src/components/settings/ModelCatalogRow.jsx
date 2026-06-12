@@ -1,4 +1,4 @@
-import { Lock, Star, TriangleAlert } from 'lucide-react'
+import { Lock, Star, Warning } from '@phosphor-icons/react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { formatContextLength, pricingLabel } from '../../lib/llmCatalogUtils.js'
 
@@ -19,18 +19,20 @@ export function ModelCatalogRow({ model, locked, enabled, saving, categoryLabels
         <span className="truncate">{model.label || model.model_id}</span>
         {model.curated ? (
           <Star
-            className="h-3 w-3 shrink-0 text-accent-brand fill-accent-brand"
+            size={12} weight="fill"
+            className="shrink-0 text-accent-brand"
             aria-label="Recomendado para OVAs"
           />
         ) : (
-          <TriangleAlert
-            className="h-3 w-3 shrink-0 text-muted-foreground/60"
+          <Warning
+            size={12} weight="duotone"
+            className="shrink-0 text-muted-foreground/60"
             aria-label="No optimizado para OVAs"
           />
         )}
         {locked && (
           <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground shrink-0">
-            <Lock className="h-2.5 w-2.5" /> por defecto
+            <Lock size={10} weight="duotone" /> por defecto
           </span>
         )}
       </span>

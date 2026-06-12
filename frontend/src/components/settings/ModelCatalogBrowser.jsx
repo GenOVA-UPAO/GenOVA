@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { ChevronRight, CloudOff, Search, SearchX } from 'lucide-react'
+import { CaretRight, CloudSlash, MagnifyingGlass, MagnifyingGlassMinus } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { groupByProvider, PROVIDER_LABELS } from '../../lib/llmCatalogUtils.js'
 import { ModelCatalogRow } from './ModelCatalogRow.jsx'
@@ -35,13 +35,13 @@ export function ModelCatalogBrowser({ hook }) {
   return (
     <details className="group" open>
       <summary className="cursor-pointer text-sm font-medium text-foreground flex items-center gap-2 list-none select-none">
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-open:rotate-90 transition-transform" />
+        <CaretRight size={14} weight="bold" className="text-muted-foreground group-open:rotate-90 transition-transform" />
         Catálogo completo ({fullTotal} modelos)
       </summary>
 
       <div className="mt-3 space-y-3">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <MagnifyingGlass size={14} weight="duotone" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Buscar modelo..."
@@ -70,9 +70,9 @@ export function ModelCatalogBrowser({ hook }) {
         {isEmpty ? (
           <div className="flex flex-col items-center gap-2 py-8 text-center">
             {searchQuery ? (
-              <SearchX className="h-8 w-8 text-muted-foreground/50" />
+              <MagnifyingGlassMinus size={32} weight="duotone" className="text-muted-foreground/50" />
             ) : (
-              <CloudOff className="h-8 w-8 text-muted-foreground/50" />
+              <CloudSlash size={32} weight="duotone" className="text-muted-foreground/50" />
             )}
             <p className="text-xs text-muted-foreground">
               {searchQuery
