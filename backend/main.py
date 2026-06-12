@@ -216,7 +216,7 @@ def admin_refresh_catalog(
         ) from exc
 
 
-app.include_router(agents_router, prefix="/api/agents", tags=["LLM Catalog"])
+app.include_router(agents_router, prefix="/api/agents")
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(rag_router, prefix="/api/rag", tags=["RAG"])
