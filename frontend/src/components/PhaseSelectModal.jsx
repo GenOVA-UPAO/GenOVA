@@ -8,18 +8,26 @@ import { ResourceCard } from './engage/ResourceCard.jsx'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 
-const PHASES = [
-  { key: 'engage',    emoji: '🎯', label: 'ENGAGE',    fetch: fetchEngageRecursos },
-  { key: 'explore',   emoji: '🔍', label: 'EXPLORE',   fetch: fetchExploreRecursos },
-  { key: 'explain',   emoji: '💡', label: 'EXPLAIN',   fetch: fetchExplainRecursos },
-  { key: 'elaborate', emoji: '🔧', label: 'ELABORATE', fetch: fetchElaborateRecursos },
-  { key: 'evaluate',  emoji: '✅', label: 'EVALUATE',  fetch: fetchEvaluateRecursos },
+const PHASE_CFG = [
+  { key: 'engage',    emoji: '🎯', label: 'ENGAGE',    fetch: fetchEngageRecursos,
+    sub: 'Despierta curiosidad · activa saberes previos',
+    color: '#4338CA', bg: '#EEF2FF', ring: 'ring-2 ring-indigo-500 border-indigo-400 bg-indigo-50', badge: 'bg-indigo-600' },
+  { key: 'explore',   emoji: '🔍', label: 'EXPLORE',   fetch: fetchExploreRecursos,
+    sub: 'Descubre patrones · construye hipótesis',
+    color: '#065F46', bg: '#ECFDF5', ring: 'ring-2 ring-emerald-500 border-emerald-400 bg-emerald-50', badge: 'bg-emerald-700' },
+  { key: 'explain',   emoji: '💡', label: 'EXPLAIN',   fetch: fetchExplainRecursos,
+    sub: 'Formaliza conceptos · consolida la teoría',
+    color: '#1D4ED8', bg: '#EFF6FF', ring: 'ring-2 ring-blue-500 border-blue-400 bg-blue-50', badge: 'bg-blue-600' },
+  { key: 'elaborate', emoji: '🔧', label: 'ELABORATE', fetch: fetchElaborateRecursos,
+    sub: 'Aplica · transfiere a problemas reales',
+    color: '#92400E', bg: '#FFFBEB', ring: 'ring-2 ring-amber-500 border-amber-400 bg-amber-50', badge: 'bg-amber-700' },
+  { key: 'evaluate',  emoji: '✅', label: 'EVALUATE',  fetch: fetchEvaluateRecursos,
+    sub: 'Verifica aprendizajes · reflexiona el proceso',
+    color: '#5B21B6', bg: '#F5F3FF', ring: 'ring-2 ring-violet-500 border-violet-400 bg-violet-50', badge: 'bg-violet-600' },
 ]
 
 export const MAX_PER_PHASE = 4
-
-const EMPTY_PICKS = () =>
-  Object.fromEntries(PHASES.map((p) => [p.key, []]))
+const EMPTY_PICKS = () => Object.fromEntries(PHASE_CFG.map((p) => [p.key, []]))
 
 function toggleSelection(list, resource) {
   const idx = list.findIndex((r) => r.id === resource.id)
@@ -28,30 +36,46 @@ function toggleSelection(list, resource) {
   return [...list, resource]
 }
 
+function PhaseStep({ phase, index, step }) {
+  const on = index <= step
+  const active = index === step
+  const cfg = PHASE_CFG[index]
+  return (
+    <>
+      {index > 0 && (
+        <div className="flex-1 h-0.5 transition-colors duration-300"
+          style={{ backgroundColor: index <= step ? PHASE_CFG[index - 1].color : '#E5E7EB' }} />
+      )}
+      <div className="flex items-center justify-center w-7 h-7 rounded-full text-sm shrink-0 transition-all duration-200 select-none"
+        style={{ backgroundColor: on ? cfg.color : 'transparent', color: on ? 'white' : '#9CA3AF',
+          border: `2px solid ${on ? cfg.color : '#D1D5DB'}`, transform: active ? 'scale(1.15)' : 'scale(1)' }}>
+        {index < step ? '✓' : phase.emoji}
+      </div>
+    </>
+  )
+}
+
 export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
   const [step, setStep] = useState(0)
   const [recursos, setRecursos] = useState(EMPTY_PICKS())
   const [loading, setLoading] = useState(true)
-  const [picks, setPicks] = useState(() => ({
-    ...EMPTY_PICKS(),
-    ...(initialSelections ?? {}),
-  }))
+  const [picks, setPicks] = useState(() => ({ ...EMPTY_PICKS(), ...(initialSelections ?? {}) }))
 
   useEffect(() => {
-    Promise.all(PHASES.map((p) => p.fetch()))
+    Promise.all(PHASE_CFG.map((p) => p.fetch()))
       .then((results) => {
         const next = {}
-        PHASES.forEach((p, i) => { next[p.key] = results[i].recursos ?? [] })
+        PHASE_CFG.forEach((p, i) => { next[p.key] = results[i].recursos ?? [] })
         setRecursos(next)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
-  const phase = PHASES[step]
+  const phase = PHASE_CFG[step]
   const currentPicks = picks[phase.key]
   const currentList = recursos[phase.key]
-  const isLast = step === PHASES.length - 1
+  const isLast = step === PHASE_CFG.length - 1
   const canAdvance = currentPicks.length > 0
   const limitReached = currentPicks.length >= MAX_PER_PHASE
 
@@ -60,63 +84,77 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
   }
 
   function handleNext() {
-    if (!isLast) {
-      setStep((s) => s + 1)
-    } else if (PHASES.every((p) => picks[p.key].length > 0)) {
-      onConfirm(picks)
-    }
+    if (!isLast) { setStep((s) => s + 1); return }
+    if (PHASE_CFG.every((p) => picks[p.key].length > 0)) onConfirm(picks)
   }
 
-  const total = PHASES.reduce((s, p) => s + picks[p.key].length, 0)
+  const total = PHASE_CFG.reduce((s, p) => s + picks[p.key].length, 0)
+  const chNum = String(step + 1).padStart(2, '0')
 
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent className="top-auto bottom-0 left-0 right-0 w-full max-w-full translate-x-0 translate-y-0 rounded-t-2xl rounded-b-none sm:top-[50%] sm:bottom-auto sm:left-[50%] sm:right-auto sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-3xl sm:rounded-2xl max-h-[92vh] sm:max-h-[88vh] p-0 gap-0 flex flex-col overflow-hidden">
-        <header className="flex items-start justify-between gap-3 p-4 sm:p-5 border-b border-border">
-          <div className="min-w-0">
-            <p className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-wide font-medium mb-0.5">
-              Paso {step + 1} de {PHASES.length}
-            </p>
-            <h2 className="text-base sm:text-lg font-semibold truncate">
-              {phase.emoji} Fase {phase.label}
-            </h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Elige <b>1 a {MAX_PER_PHASE}</b> recursos · seleccionados{' '}
-              <span className={limitReached ? 'text-amber-600 font-semibold' : 'text-primary font-semibold'}>
+
+        {/* Phase header — tinted bg + left accent bar shift per phase */}
+        <header className="relative overflow-hidden px-5 pt-4 pb-5 border-b border-black/5 transition-colors duration-300"
+          style={{ backgroundColor: phase.bg, borderLeft: `4px solid ${phase.color}` }}>
+
+          {/* Editorial chapter number — faint typographic anchor */}
+          <span className="absolute right-5 top-1/2 -translate-y-1/2 font-heading leading-none select-none pointer-events-none"
+            style={{ color: phase.color, opacity: 0.09, fontSize: '5.5rem', fontWeight: 900 }} aria-hidden="true">
+            {chNum}
+          </span>
+
+          {/* Stepper */}
+          <div className="flex items-center gap-1.5 mb-4 pr-20">
+            {PHASE_CFG.map((p, i) => <PhaseStep key={p.key} phase={p} index={i} step={step} />)}
+          </div>
+
+          {/* Phase identity + selection dots */}
+          <div className="flex items-end justify-between gap-4 pr-20">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: phase.color }}>
+                Fase {step + 1} de {PHASE_CFG.length} · hasta {MAX_PER_PHASE} recursos
+              </p>
+              <h2 className="font-heading text-2xl font-semibold text-slate-900 leading-tight">
+                {phase.emoji} {phase.label}
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">{phase.sub}</p>
+            </div>
+            <div className="flex flex-col items-end gap-1 shrink-0 pb-0.5">
+              <div className="flex items-center gap-1">
+                {Array.from({ length: MAX_PER_PHASE }, (_, i) => (
+                  <span key={i} className="inline-block w-2.5 h-2.5 rounded-full transition-all duration-200"
+                    style={{ backgroundColor: i < currentPicks.length ? phase.color : '#E5E7EB',
+                      transform: i < currentPicks.length ? 'scale(1.1)' : 'scale(1)' }} />
+                ))}
+              </div>
+              <span className="text-[10px] font-semibold" style={{ color: limitReached ? '#D97706' : phase.color }}>
                 {currentPicks.length}/{MAX_PER_PHASE}
               </span>
-            </p>
+            </div>
           </div>
         </header>
 
-        <div className="flex gap-2 px-4 sm:px-5 pt-3 pb-1">
-          {PHASES.map((p, i) => (
-            <div
-              key={p.key}
-              className={`flex-1 h-1.5 rounded-full transition-colors duration-300 ${i <= step ? 'bg-primary' : 'bg-muted'}`}
-            />
-          ))}
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+        {/* Resource grid — key triggers fade-in on phase change */}
+        <div key={step} className="flex-1 overflow-y-auto p-4 sm:p-5 animate-in fade-in duration-200">
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2"
+                style={{ borderColor: `${phase.color}30`, borderTopColor: phase.color }} />
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {currentList.map((r) => {
                 const orderIdx = currentPicks.findIndex((p) => p.id === r.id)
                 const selected = orderIdx >= 0
-                const disabled = !selected && limitReached
                 return (
-                  <ResourceCard
-                    key={r.id}
-                    resource={r}
-                    selected={selected}
+                  <ResourceCard key={r.id} resource={r} selected={selected}
                     selectionIndex={selected ? orderIdx + 1 : null}
-                    disabled={disabled}
+                    disabled={!selected && limitReached}
                     onClick={selectResource}
+                    selectedRingCls={phase.ring}
+                    selectedBadgeCls={phase.badge}
                   />
                 )
               })}
@@ -124,16 +162,22 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
           )}
         </div>
 
-        <footer className="flex justify-between items-center gap-3 p-4 sm:p-5 border-t border-border">
-          <Button
-            variant="ghost"
-            onClick={step === 0 ? onClose : () => setStep((s) => s - 1)}
-          >
+        {/* Footer */}
+        <footer className="flex justify-between items-center gap-3 p-4 sm:p-5 border-t border-border bg-background">
+          <Button variant="ghost" onClick={step === 0 ? onClose : () => setStep((s) => s - 1)}>
             {step === 0 ? 'Cancelar' : '← Atrás'}
           </Button>
-          <Button onClick={handleNext} disabled={!canAdvance}>
-            {isLast ? `Confirmar (${total}) ✓` : 'Siguiente →'}
-          </Button>
+          <div className="flex items-center gap-3">
+            {total > 0 && (
+              <span className="text-xs text-muted-foreground hidden sm:block">
+                {total} recurso{total !== 1 ? 's' : ''} total{total !== 1 ? 'es' : ''}
+              </span>
+            )}
+            <Button onClick={handleNext} disabled={!canAdvance}
+              style={canAdvance ? { backgroundColor: phase.color, borderColor: phase.color } : undefined}>
+              {isLast ? `Confirmar (${total}) ✓` : 'Siguiente →'}
+            </Button>
+          </div>
         </footer>
       </DialogContent>
     </Dialog>
