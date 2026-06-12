@@ -1,7 +1,10 @@
 import { Link } from 'react-router'
+import { FolderOpen, Search, SearchX } from 'lucide-react'
 import { useOvaList } from '../hooks/ova/useOvaList.js'
 import { useGeneratingJobs } from '../hooks/ova/useGeneratingJobs.js'
 import { OvaCard } from '../components/OvaCard.jsx'
+import { OvaGridSkeleton } from '../components/OvaGridSkeleton.jsx'
+import { OvaListPagination } from '../components/OvaListPagination.jsx'
 import { TrashModal } from '../components/TrashModal.jsx'
 import { BulkTrashModal } from '../components/BulkTrashModal.jsx'
 import { EditMetadataModal } from '../components/EditMetadataModal.jsx'
@@ -40,9 +43,7 @@ export function MisOvasPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
-          <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-          </svg>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Buscar por título..."
@@ -76,7 +77,7 @@ export function MisOvasPage() {
       ) : null}
 
       {list.selectedIds.size > 0 ? (
-        <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+        <div className="sticky top-2 z-20 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-primary/5">
           <span className="text-sm font-semibold text-primary">
             {list.selectedIds.size} OVA{list.selectedIds.size > 1 ? 's' : ''} seleccionado{list.selectedIds.size > 1 ? 's' : ''}
           </span>
@@ -92,12 +93,7 @@ export function MisOvasPage() {
       ) : null}
 
       {list.loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-            <p className="text-xs text-muted-foreground">Cargando tus OVAs...</p>
-          </div>
-        </div>
+        <OvaGridSkeleton />
       ) : list.error ? (
         <div className="flex h-64 items-center justify-center p-6 text-center">
           <div className="space-y-3">
@@ -109,7 +105,11 @@ export function MisOvasPage() {
         </div>
       ) : list.isEmpty ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 py-16 text-center">
-          <div className="mb-4 text-4xl">📂</div>
+          {list.searchInput || list.statusFilter ? (
+            <SearchX className="mb-4 h-10 w-10 text-muted-foreground/60" />
+          ) : (
+            <FolderOpen className="mb-4 h-10 w-10 text-muted-foreground/60" />
+          )}
           {list.searchInput || list.statusFilter ? (
             <>
               <p className="text-sm font-semibold">Sin resultados para tu búsqueda</p>
@@ -147,20 +147,12 @@ export function MisOvasPage() {
         </div>
       )}
 
-      {!list.loading && !list.error && list.totalPages > 1 ? (
-        <div className="flex items-center justify-between border-t border-border pt-4 px-1">
-          <p className="text-xs text-muted-foreground font-medium">
-            Página <span className="text-foreground font-bold">{list.currentPage}</span> de <span className="text-foreground font-bold">{list.totalPages}</span>
-          </p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => list.handlePageChange(list.currentPage - 1)} disabled={list.currentPage === 1}>
-              &lt;&lt; Anterior
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => list.handlePageChange(list.currentPage + 1)} disabled={list.currentPage === list.totalPages}>
-              Siguiente &gt;&gt;
-            </Button>
-          </div>
-        </div>
+      {!list.loading && !list.error ? (
+        <OvaListPagination
+          currentPage={list.currentPage}
+          totalPages={list.totalPages}
+          onPageChange={list.handlePageChange}
+        />
       ) : null}
     </div>
   )
