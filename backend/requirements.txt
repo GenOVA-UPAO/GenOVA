@@ -7,7 +7,7 @@ python-dotenv==1.1.1
 bcrypt==4.3.0
 PyJWT==2.10.1
 python-multipart==0.0.20
-pydantic[email]>=2.6.0
+pydantic[email]==2.13.4
 slowapi>=0.1.9
 # AI SDKs — flexible to pick up security/bug patches; pin when stability is critical
 openai>=1.30.0
@@ -18,5 +18,5 @@ pypdf>=4.0.0
 python-docx>=1.1.0
 python-pptx>=1.0.0
 # Multi-agent orchestration (Prometheus via LangGraph)
-langgraph>=0.6.0
-langgraph-checkpoint-postgres>=2.0.0
+langgraph==0.6.11
+langgraph-checkpoint-postgres==2.0.25
