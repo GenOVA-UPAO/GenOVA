@@ -1,0 +1,8 @@
+node_modules
+.git
+.github
+.claude
+backend
+tests
+sdd
+*.md
