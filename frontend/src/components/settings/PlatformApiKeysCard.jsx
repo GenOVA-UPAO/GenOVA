@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Eye, EyeOff, Trash2 } from 'lucide-react'
+import { Eye, EyeSlash, Trash } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { getPlatformConfig, savePlatformConfigKey } from '../../services/ovaSettingsService.js'
 
@@ -75,7 +75,7 @@ function PlatformKeyRow({ provider, maskedValue, onSaved }) {
               className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive"
               title="Eliminar key"
             >
-              <Trash2 size={14} />
+              <Trash size={14} weight="duotone" />
             </button>
           )}
           {!editing && (
@@ -103,7 +103,7 @@ function PlatformKeyRow({ provider, maskedValue, onSaved }) {
               onClick={() => setShow((s) => !s)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
             >
-              {show ? <EyeOff size={14} /> : <Eye size={14} />}
+              {show ? <EyeSlash size={14} weight="duotone" /> : <Eye size={14} weight="duotone" />}
             </button>
           </div>
           <Button size="sm" onClick={handleSave} disabled={saving || !value.trim()}>

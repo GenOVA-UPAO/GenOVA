@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 
 export function OvaListPagination({ currentPage, totalPages, onPageChange }) {
@@ -16,7 +16,7 @@ export function OvaListPagination({ currentPage, totalPages, onPageChange }) {
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <CaretLeft size={16} weight="bold" />
           Anterior
         </Button>
         <Button
@@ -26,7 +26,7 @@ export function OvaListPagination({ currentPage, totalPages, onPageChange }) {
           disabled={currentPage === totalPages}
         >
           Siguiente
-          <ChevronRight className="h-4 w-4" />
+          <CaretRight size={16} weight="bold" />
         </Button>
       </div>
     </div>

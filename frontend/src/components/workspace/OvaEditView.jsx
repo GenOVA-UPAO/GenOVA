@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useOvaWorkspace } from '../../hooks/ova/useOvaWorkspace.js'
@@ -81,7 +81,7 @@ export function OvaEditView({ ovaId }) {
       <header className="flex items-center gap-3 border-b border-border px-4 py-2.5 bg-background shrink-0">
         <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
           <Link to="/mis-ovas">
-            <ArrowLeft className="h-4 w-4" /> Mis OVAs
+            <ArrowLeft size={16} weight="bold" /> Mis OVAs
           </Link>
         </Button>
         <div className="flex-1 min-w-0">

@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { useNavigate } from 'react-router'
-import { Play, Clock, Pencil, FileText, Copy, Download, Trash2 } from 'lucide-react'
+import { Play, Clock, PencilSimple, FileText, Copy, DownloadSimple, Trash } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -98,7 +98,7 @@ function OvaCardImpl({
               onClick={handleContinue}
               className="flex-1 gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
             >
-              <Play className="h-3.5 w-3.5" /> Continuar
+              <Play size={14} weight="duotone" /> Continuar
             </Button>
           ) : (
             <Button
@@ -108,7 +108,7 @@ function OvaCardImpl({
               disabled={!jobId}
               className="flex-1 gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
             >
-              <Clock className="h-3.5 w-3.5" /> Reanudar / Ver progreso
+              <Clock size={14} weight="duotone" /> Reanudar / Ver progreso
             </Button>
           )}
         </div>
@@ -124,7 +124,7 @@ function OvaCardImpl({
             title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Abrir en workspace'}
             className="flex-1 gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
           >
-            <Pencil className="h-3.5 w-3.5" /> Editar
+            <PencilSimple size={14} weight="duotone" /> Editar
           </Button>
           <Button
             variant="outline"
@@ -134,7 +134,7 @@ function OvaCardImpl({
             title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Editar título y descripción'}
             className="flex-1 gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
           >
-            <FileText className="h-3.5 w-3.5" /> Metadatos
+            <FileText size={14} weight="duotone" /> Metadatos
           </Button>
         </div>
         <div className="flex items-center gap-1.5">
@@ -146,7 +146,7 @@ function OvaCardImpl({
             title={isGenerating ? 'No disponible mientras se genera el OVA' : 'Duplicar OVA'}
             className="flex-1 gap-1.5"
           >
-            <Copy className="h-3.5 w-3.5" /> {isDuplicating ? 'Duplicando...' : 'Duplicar'}
+            <Copy size={14} weight="duotone" /> {isDuplicating ? 'Duplicando...' : 'Duplicar'}
           </Button>
           <Button
             variant="outline"
@@ -156,7 +156,7 @@ function OvaCardImpl({
             title={!isReady ? 'Solo disponible cuando el OVA está listo' : 'Descargar paquete SCORM'}
             className="flex-1 gap-1.5"
           >
-            <Download className="h-3.5 w-3.5" /> {isDownloading ? 'Descargando...' : 'Descargar'}
+            <DownloadSimple size={14} weight="duotone" /> {isDownloading ? 'Descargando...' : 'Descargar'}
           </Button>
           <Button
             variant="outline"
@@ -166,7 +166,7 @@ function OvaCardImpl({
             title={isGenerating ? 'No se puede eliminar mientras se está generando' : 'Mover a la papelera'}
             className="flex-1 gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/5"
           >
-            <Trash2 className="h-3.5 w-3.5" /> {isMoving ? 'Moviendo...' : 'Papelera'}
+            <Trash size={14} weight="duotone" /> {isMoving ? 'Moviendo...' : 'Papelera'}
           </Button>
         </div>
       </div>
