@@ -1,15 +1,22 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { GripVertical } from 'lucide-react'
 import { SPLIT_MIN, SPLIT_MAX, saveSplitRatio } from '../../lib/workspaceUtils.js'
 
 /**
  * HU-025 — drag handle between workspace panels.
- * Calls onRatioChange(ratio) while dragging.
+ * Calls onRatioChange(ratio) while dragging; arrow keys nudge ±2%.
  * Persists ratio to localStorage on drag end.
  */
-export function WorkspaceResizableDivider({ onRatioChange, containerRef }) {
+export function WorkspaceResizableDivider({ ratio, onRatioChange, containerRef }) {
   const dragging = useRef(false)
 
   const clamp = (r) => Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, r))
+
+  const nudge = (delta) => {
+    const next = clamp((ratio ?? 0.38) + delta)
+    onRatioChange(next)
+    saveSplitRatio(next)
+  }
 
   const startDrag = useCallback(() => {
     dragging.current = true
@@ -61,12 +68,26 @@ export function WorkspaceResizableDivider({ onRatioChange, containerRef }) {
 
   return (
     <div
-      className="hidden sm:flex w-2 shrink-0 cursor-col-resize items-center justify-center group"
+      className="hidden sm:flex w-3 shrink-0 cursor-col-resize items-center justify-center group outline-none transition-colors hover:bg-primary/10 active:bg-primary/15 focus-visible:ring-2 focus-visible:ring-ring/50"
       onMouseDown={startDrag}
       role="separator"
       aria-label="Ajustar paneles"
+      aria-orientation="vertical"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          nudge(-0.02)
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          nudge(0.02)
+        }
+      }}
     >
-      <div className="h-16 w-0.5 rounded-full bg-border group-hover:bg-primary/40 transition-colors" />
+      <div className="relative flex items-center justify-center">
+        <div className="h-16 w-0.5 rounded-full bg-border group-hover:bg-primary/40 transition-colors" />
+        <GripVertical className="absolute h-3.5 w-3.5 rounded bg-background text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+      </div>
     </div>
   )
 }
