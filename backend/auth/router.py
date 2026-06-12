@@ -52,6 +52,9 @@ _COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
 if _COOKIE_SAMESITE not in {"lax", "strict", "none"}:
     _COOKIE_SAMESITE = "lax"
 _COOKIE_SECURE = _COOKIE_SAMESITE == "none" or os.getenv("COOKIE_SECURE", "1") != "0"
+# CHIPS: required when SameSite=None so the cookie is partitioned by top-level site,
+# which satisfies browsers that are phasing out unpartitioned third-party cookies.
+_COOKIE_PARTITIONED = _COOKIE_SAMESITE == "none"
 
 
 def _email_throttled(email: str) -> bool:
@@ -75,6 +78,7 @@ def _set_auth_cookie(response: JSONResponse, token: str) -> None:
         secure=_COOKIE_SECURE,
         samesite=_COOKIE_SAMESITE,
         path="/",
+        partitioned=_COOKIE_PARTITIONED,
     )
 
 
@@ -211,12 +215,15 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
 @router.post("/logout")
 def logout() -> JSONResponse:
     response = JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
-    response.delete_cookie(
+    response.set_cookie(
         key=_COOKIE_NAME,
-        path="/",
+        value="",
+        max_age=0,
         httponly=True,
         secure=_COOKIE_SECURE,
         samesite=_COOKIE_SAMESITE,
+        path="/",
+        partitioned=_COOKIE_PARTITIONED,
     )
     return response
 
