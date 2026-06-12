@@ -11,7 +11,7 @@ The graph is compiled once and invoked per job via `invoke_ova_generation()`.
 
 import logging
 
-from langgraph.graph import END, StateGraph
+from langgraph.graph import END, START, StateGraph
 
 from prometheus.nodes.assemble import assemble_node
 from prometheus.nodes.concierge import concierge_node
@@ -46,7 +46,7 @@ def build_ova_graph():
     graph.add_node("evaluate", evaluate_node)
     graph.add_node("assemble", assemble_node)
 
-    graph.set_entry_point("concierge")
+    graph.add_edge(START, "concierge")
 
     route_map = {**{p: p for p in _PHASES}, "assemble": "assemble"}
     # Concierge builds the plan; every phase node advances current_phase_idx and
