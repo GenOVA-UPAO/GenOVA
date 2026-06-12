@@ -22,9 +22,10 @@ export function PhaseRow({ selections }) {
   )
 }
 
-export function SectionLabel({ num, title }) {
+export function SectionLabel({ num, title, Icon }) {
   return (
     <div className="flex items-center gap-2 mb-2">
+      {Icon && <Icon size={13} weight="duotone" className="text-primary/60 shrink-0" />}
       <span className="font-mono text-[10px] font-bold text-primary/40 shrink-0">{num}</span>
       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 shrink-0">{title}</span>
       <div className="flex-1 h-px bg-border/50" />

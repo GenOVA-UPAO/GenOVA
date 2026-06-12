@@ -10,6 +10,7 @@ import { TotalFailurePanel } from './TotalFailurePanel.jsx'
 import { LlmSettingsModal } from '../workspace/LlmSettingsModal.jsx'
 import { GearButton } from '../settings/GearButton.jsx'
 import { PhaseRow, SectionLabel } from './CrearOvaPanelHelpers.jsx'
+import { GridFour, Palette, Brain, Paperclip } from '@phosphor-icons/react'
 
 export function CrearOvaChatPanel({
   prompt, setPrompt, minChars,
@@ -52,7 +53,7 @@ export function CrearOvaChatPanel({
 
         {/* 01 — Recursos 5E */}
         <div className={`px-4 pt-3 pb-3 border-b border-border transition-opacity duration-300 ${isGenerating ? 'opacity-40 pointer-events-none' : ''}`}>
-          <SectionLabel num="01" title="Recursos 5E" />
+          <SectionLabel num="01" title="Recursos 5E" Icon={GridFour} />
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <PhaseRow selections={selections} />
             <Button type="button" variant="outline" size="sm" className="h-7 text-xs shrink-0"
@@ -67,13 +68,13 @@ export function CrearOvaChatPanel({
 
         {/* 02 — Tema del OVA */}
         <div className={`px-4 pt-3 pb-3 border-b border-border transition-opacity duration-300 ${isGenerating ? 'opacity-40 pointer-events-none' : ''}`}>
-          <SectionLabel num="02" title="Tema del OVA" />
+          <SectionLabel num="02" title="Tema del OVA" Icon={Palette} />
           <OvaThemeSelector theme={theme} onChange={setTheme} disabled={isGenerating} />
         </div>
 
         {/* 03 — Modelos */}
         <div className={`px-4 pt-3 pb-4 transition-opacity duration-300 ${isGenerating ? 'opacity-40 pointer-events-none' : ''}`}>
-          <SectionLabel num="03" title="Modelos" />
+          <SectionLabel num="03" title="Modelos" Icon={Brain} />
           <LlmEnginesPanel />
           <p className="mt-2 rounded-md bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[11px] text-amber-800">
             <b>Video:</b> Sin modelo disponible. Usa HeyGen, Synthesia o Sora con el contenido generado.
@@ -128,9 +129,7 @@ export function CrearOvaChatPanel({
             <Button type="button" variant="ghost" size="icon-sm" onClick={() => fileInputRef.current?.click()}
               disabled={locked || !canUploadMore || disabled} title={`Adjuntar (${activeUploadsCount}/${maxUploadFiles})`}
               className="absolute right-1 bottom-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-              </svg>
+              <Paperclip size={16} weight="duotone" />
             </Button>
           </div>
           <Button type="button" onClick={generate} disabled={!canGenerate || locked} size="sm"

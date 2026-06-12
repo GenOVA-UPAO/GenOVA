@@ -1,4 +1,4 @@
-import { Palette, Sparkles, LayoutTemplate, Wand2 } from 'lucide-react'
+import { PaintBrush, Sparkle, Layout, MagicWand } from '@phosphor-icons/react'
 
 /**
  * OVA content theme picker — two independent axes (Fase 1):
@@ -41,7 +41,7 @@ function Segment({ active, onClick, disabled, icon: Icon, label, children }) {
           : 'text-muted-foreground hover:text-foreground hover:bg-background/60',
       ].join(' ')}
     >
-      <Icon className="h-3.5 w-3.5 shrink-0" />
+      <Icon className="h-3.5 w-3.5 shrink-0" weight="duotone" />
       <span>{label}</span>
       {children}
     </button>
@@ -69,7 +69,7 @@ function Axis({ title, hint, value, onSelect, disabled, upaoIcon, upaoLabel, upa
           active={value === 'free'}
           onClick={() => onSelect('free')}
           disabled={disabled}
-          icon={Sparkles}
+          icon={Sparkle}
           label={freeLabel}
         />
       </div>
@@ -93,7 +93,7 @@ export function OvaThemeSelector({ theme, onChange, disabled }) {
         value={color}
         onSelect={(v) => set({ color: v })}
         disabled={disabled}
-        upaoIcon={Palette}
+        upaoIcon={PaintBrush}
         upaoLabel="UPAO"
         upaoExtra={<Swatches />}
         freeLabel="Libre"
@@ -105,13 +105,13 @@ export function OvaThemeSelector({ theme, onChange, disabled }) {
         value={design}
         onSelect={(v) => set({ design: v })}
         disabled={disabled}
-        upaoIcon={LayoutTemplate}
+        upaoIcon={Layout}
         upaoLabel="UPAO"
         freeLabel="Libre"
       />
 
       <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
-        <Wand2 className="h-3 w-3 shrink-0" />
+        <MagicWand size={12} weight="duotone" className="shrink-0" />
         {color === 'free' || design === 'free'
           ? 'La IA decidirá lo marcado como «Libre».'
           : 'Marca institucional UPAO: azul, naranja y blanco.'}
