@@ -52,9 +52,19 @@ _COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
 if _COOKIE_SAMESITE not in {"lax", "strict", "none"}:
     _COOKIE_SAMESITE = "lax"
 _COOKIE_SECURE = _COOKIE_SAMESITE == "none" or os.getenv("COOKIE_SECURE", "1") != "0"
-# CHIPS: required when SameSite=None so the cookie is partitioned by top-level site,
-# which satisfies browsers that are phasing out unpartitioned third-party cookies.
+# CHIPS (Partitioned) silences browser warnings for cross-site SameSite=None cookies.
+# Starlette delegates to http.cookies which only gained Partitioned support in Python
+# 3.14, so we skip the param and patch the raw Set-Cookie header instead.
 _COOKIE_PARTITIONED = _COOKIE_SAMESITE == "none"
+_COOKIE_NAME_BYTES = _COOKIE_NAME.encode()
+
+
+def _patch_partitioned(response: JSONResponse) -> None:
+    """Append '; Partitioned' to the genova_token Set-Cookie header."""
+    for i, (k, v) in enumerate(response.raw_headers):
+        if k == b"set-cookie" and v.startswith(_COOKIE_NAME_BYTES):
+            response.raw_headers[i] = (k, v + b"; Partitioned")
+            return
 
 
 def _email_throttled(email: str) -> bool:
@@ -78,8 +88,9 @@ def _set_auth_cookie(response: JSONResponse, token: str) -> None:
         secure=_COOKIE_SECURE,
         samesite=_COOKIE_SAMESITE,
         path="/",
-        partitioned=_COOKIE_PARTITIONED,
     )
+    if _COOKIE_PARTITIONED:
+        _patch_partitioned(response)
 
 
 class LoginRequest(BaseModel):
@@ -223,8 +234,9 @@ def logout() -> JSONResponse:
         secure=_COOKIE_SECURE,
         samesite=_COOKIE_SAMESITE,
         path="/",
-        partitioned=_COOKIE_PARTITIONED,
     )
+    if _COOKIE_PARTITIONED:
+        _patch_partitioned(response)
     return response
 
 
