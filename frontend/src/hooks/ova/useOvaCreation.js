@@ -27,7 +27,7 @@ export function useOvaCreation() {
   const totalResources = engageSelection.length + exploreSelection.length
   const canConfigure = prompt.trim().length >= MIN_CHARS
   const isGenerating = phase === 'starting' || phase === 'polling'
-  const canGenerate = canConfigure && totalResources > 0 && !isGenerating
+  const canGenerate = canConfigure && engageSelection.length > 0 && exploreSelection.length > 0 && !isGenerating
 
   const confirmSelections = useCallback(({ engage, explore }) => {
     setEngageSelection(engage ?? [])

@@ -8,7 +8,7 @@ per resource — never `str(e)`, content, tokens or credentials (R8).
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from models import OvaJob, OvaJobResource
 
@@ -56,6 +56,16 @@ class StartJobRequest(BaseModel):
     phases: list[str] = Field(default_factory=list, max_length=20)
     # OVA content theme (color × design). Defaults to UPAO brand when omitted.
     theme: ThemeRequest = Field(default_factory=ThemeRequest)
+
+    @model_validator(mode="after")
+    def require_engage_and_explore(self) -> "StartJobRequest":
+        if not self.resources:
+            return self
+        phases = {r.phase_type.strip().lower() for r in self.resources}
+        for required in ("engage", "explore"):
+            if required not in phases:
+                raise ValueError(f'Se requiere al menos un recurso de la fase "{required}".')
+        return self
 
 
 def build_resource_plan(payload: StartJobRequest) -> list[dict]:
