@@ -31,7 +31,7 @@ groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=_LLM_TIMEOUT_S)
 # OpenRouter uses the OpenAI-compatible endpoint.
 # HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
 openrouter_client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
+    api_key=os.getenv("OPENROUTER_API_KEY") or "not-configured",
     base_url="https://openrouter.ai/api/v1",
     default_headers={
         "HTTP-Referer": os.getenv("APP_URL", "https://genova.ai"),
@@ -42,7 +42,7 @@ openrouter_client = OpenAI(
 
 # OpenCode Go uses the OpenAI-compatible endpoint.
 opencode_client = OpenAI(
-    api_key=os.getenv("OPENCODE_API_KEY"),
+    api_key=os.getenv("OPENCODE_API_KEY") or "not-configured",
     base_url="https://opencode.ai/zen/go/v1",
     timeout=_LLM_TIMEOUT_S,
 )
