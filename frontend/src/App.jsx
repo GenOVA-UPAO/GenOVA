@@ -11,6 +11,7 @@ import { DashboardPage } from './pages/DashboardPage.jsx'
 // Code-split heavier authenticated routes so the login bundle stays tiny.
 const AdminRolesPage = lazy(() => import('./pages/AdminRolesPage.jsx').then((m) => ({ default: m.AdminRolesPage })))
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage.jsx').then((m) => ({ default: m.AdminUsersPage })))
+const AdminPlatformPage = lazy(() => import('./pages/AdminPlatformPage.jsx').then((m) => ({ default: m.AdminPlatformPage })))
 const MisOvasPage = lazy(() => import('./pages/MisOvasPage.jsx').then((m) => ({ default: m.MisOvasPage })))
 const PapeleraPage = lazy(() => import('./pages/PapeleraPage.jsx').then((m) => ({ default: m.PapeleraPage })))
 const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
@@ -95,6 +96,7 @@ function App() {
             <Route element={<AdminRoute />}>
               <Route path="/admin/roles" element={<AdminRolesPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/platform" element={<AdminPlatformPage />} />
               <Route path="/admin/labs" element={<LabsPage />} />
             </Route>
           </Route>

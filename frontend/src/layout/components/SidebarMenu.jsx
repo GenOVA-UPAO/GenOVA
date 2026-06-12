@@ -79,6 +79,11 @@ export function SidebarMenu() {
               </NavLink>
             </li>
             <li>
+              <NavLink to="/admin/platform" className={getSidebarLinkClasses}>
+                API Keys plataforma
+              </NavLink>
+            </li>
+            <li>
               <NavLink to="/admin/labs" className={getSidebarLinkClasses}>
                 Labs
               </NavLink>

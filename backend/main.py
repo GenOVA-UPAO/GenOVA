@@ -53,6 +53,7 @@ from database import Base, engine
 from rate_limit import limiter
 from run_migrations import run_migrations
 from seed import seed_db
+from users.admin.platform_settings_router import router as platform_settings_router
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO").upper(),
@@ -234,3 +235,4 @@ app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["RAG"])
 app.include_router(labs_router, prefix="/api/labs", tags=["Labs"])
 app.include_router(labs_gen_router, prefix="/api/labs", tags=["Labs"])
+app.include_router(platform_settings_router, prefix="/api/admin", tags=["Admin"])

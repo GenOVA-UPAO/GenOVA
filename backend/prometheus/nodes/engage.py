@@ -13,12 +13,12 @@ from prometheus.runtime import run_phase
 from prometheus.state import OvaGenerationState
 
 
-def _dispatch(rt, concept, llm_config, enabled_models, theme):
+def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None):
     if rt == 3:
         return podcast_gen("engage", rt, concept, llm_config, enabled_models, theme)
     if rt == 10:
         return direct_code_gen("engage", rt, concept, llm_config, enabled_models, theme)
-    return two_step_gen("engage", rt, concept, llm_config, enabled_models, theme)
+    return two_step_gen("engage", rt, concept, llm_config, enabled_models, theme, image_settings)
 
 
 def engage_node(state: OvaGenerationState) -> dict:

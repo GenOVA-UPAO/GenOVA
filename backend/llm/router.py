@@ -31,12 +31,19 @@ groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=_LLM_TIMEOUT_S)
 # OpenRouter uses the OpenAI-compatible endpoint.
 # HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
 openrouter_client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
+    api_key=os.getenv("OPENROUTER_API_KEY") or "not-configured",
     base_url="https://openrouter.ai/api/v1",
     default_headers={
         "HTTP-Referer": os.getenv("APP_URL", "https://genova.ai"),
         "X-Title": "GenOVA",
     },
+    timeout=_LLM_TIMEOUT_S,
+)
+
+# OpenCode Go uses the OpenAI-compatible endpoint.
+opencode_client = OpenAI(
+    api_key=os.getenv("OPENCODE_API_KEY") or "not-configured",
+    base_url="https://opencode.ai/zen/go/v1",
     timeout=_LLM_TIMEOUT_S,
 )
 
@@ -98,6 +105,11 @@ def _chat(
         # truncated HTML resources mid-script, breaking interactivity.
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_completion_tokens=min(max_tokens, 8192), **extra
+        )
+    elif provider == "opencode":
+        client = opencode_client.with_options(timeout=timeout) if timeout else opencode_client
+        r = client.chat.completions.create(
+            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
         )
     else:
         client = openrouter_client.with_options(timeout=timeout) if timeout else openrouter_client
@@ -223,6 +235,12 @@ def generar_texto_with_model(
                 model=model_id,
                 messages=[{"role": "user", "content": prompt}],
                 max_completion_tokens=max_tokens,
+            )
+        elif provider == "opencode":
+            response = opencode_client.chat.completions.create(
+                model=model_id,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=max_tokens,
             )
         else:
             response = openrouter_client.chat.completions.create(

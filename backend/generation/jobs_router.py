@@ -52,11 +52,26 @@ def start_job(
     db: Session = Depends(get_db),
 ):
     """Create a job + its resources, launch the runner, return {job_id, status}."""
+    from llm.key_resolver import resolve_key
+
+    ova_settings = current_user.ova_settings or {}
+    image_provider = ova_settings.get("image_provider", "huggingface")
+    resolved_image_settings = {
+        "max_images": ova_settings.get("max_images", 2),
+        "provider": image_provider,
+        "api_key": resolve_key(image_provider, current_user.user_api_keys or {}, db),
+    }
+
     job = jobs_service.create_job(
         db,
         user_id=current_user.id,
         prompt=payload.prompt.strip(),
-        params=job_params(payload, current_user.llm_settings, current_user.enabled_models),
+        params=job_params(
+            payload,
+            current_user.llm_settings,
+            current_user.enabled_models,
+            resolved_image_settings,
+        ),
         resources=build_resource_plan(payload),
     )
     _launch(job.id)

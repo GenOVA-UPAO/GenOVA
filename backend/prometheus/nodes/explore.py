@@ -9,7 +9,7 @@ from prometheus.state import OvaGenerationState
 EXPLORE_CODE_ONLY = {1, 6, 10}
 
 
-def _dispatch(rt, concept, llm_config, enabled_models, theme):
+def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None):
     gen = direct_code_gen if rt in EXPLORE_CODE_ONLY else two_step_gen
     return gen("explore", rt, concept, llm_config, enabled_models, theme)
 

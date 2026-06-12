@@ -29,10 +29,12 @@ def fetch_image_data_uri(
     width: int = 512,
     height: int = 512,
     model: str | None = None,
+    api_key: str | None = None,
 ) -> str | None:
     """Render `prompt` using Hugging Face Inference API and return a base64 JPEG data URI.
 
-    Requires HF_TOKEN env var. Returns None if not configured or on any failure.
+    `api_key` overrides HF_TOKEN env var (for per-user keys). Returns None if
+    no key is configured or on any failure.
     """
     import json
 
@@ -44,7 +46,7 @@ def fetch_image_data_uri(
     if key in _cache:
         return _cache[key]
 
-    hf_token = os.getenv("HF_TOKEN", "").strip()
+    hf_token = api_key or os.getenv("HF_TOKEN", "").strip()
     if not hf_token:
         return None
 

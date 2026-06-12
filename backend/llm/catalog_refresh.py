@@ -46,6 +46,7 @@ _CL = RLock()
 _provider_status: dict[str, dict] = {
     "openrouter": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
     "groq": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
+    "opencode": {"ok": True, "checked_at": None, "last_success_at": None, "source": "static"},
 }
 
 # Non-blocking guard: startup refresh and the user-facing retry endpoint may
@@ -158,6 +159,22 @@ def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[di
                 "task": "texto" if curated else None,
             }
         )
+
+    for entry in CATALOG_ENTRIES:
+        if entry["provider"] not in ("openrouter", "groq") and entry["active"]:
+            result.append(
+                {
+                    "provider": entry["provider"],
+                    "model_id": entry["model_id"],
+                    "label": entry["label"],
+                    "category": entry.get("task") or "codigo",
+                    "pricing": entry.get("pricing"),
+                    "context_length": entry.get("context_length"),
+                    "curated": (entry["provider"], entry["model_id"]) in curated_keys,
+                    "active": True,
+                    "task": entry.get("task"),
+                }
+            )
 
     result.sort(key=lambda e: (not e["curated"], e["provider"], e["model_id"]))
     return result
@@ -352,6 +369,8 @@ def refresh_catalog(db=None) -> None:
                 full.extend(e for e in _full_catalog if e["provider"] == "openrouter")
             if groq_ids is None:
                 full.extend(e for e in _full_catalog if e["provider"] == "groq")
+            # Static providers have no API refresh — always carry over.
+            full.extend(e for e in _full_catalog if e["provider"] not in ("openrouter", "groq"))
             full.sort(key=lambda e: (not e["curated"], e["provider"], e["model_id"]))
             _full_catalog = full
             for provider, source in (("openrouter", or_source), ("groq", groq_source)):

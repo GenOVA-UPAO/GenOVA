@@ -15,6 +15,7 @@ class OvaGenerationState(TypedDict, total=False):
     llm_config: dict
     enabled_models: list[dict]
     theme: dict  # {"color": "upao"|"free", "design": "upao"|"free"}
+    image_settings: dict  # {max_images, provider, api_key}
     job_id: str  # used by Fase 2 for incremental per-resource persistence
 
     phases: dict  # {phase_type: [{"resource_type": int, "resource_order": int}, ...]}

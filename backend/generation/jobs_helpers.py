@@ -97,7 +97,10 @@ def _legacy_phase_plan(phases: list[str]) -> list[dict]:
 
 
 def job_params(
-    payload: StartJobRequest, llm_config: dict | None = None, enabled_models: list | None = None
+    payload: StartJobRequest,
+    llm_config: dict | None = None,
+    enabled_models: list | None = None,
+    image_settings: dict | None = None,
 ) -> dict:
     """Persist the generation request shape for later replay/resume (R9).
 
@@ -106,6 +109,8 @@ def job_params(
     lookup (and a later settings change doesn't mutate an in-flight job).
     `enabled_models` is the user's enabled model allowlist — snapshotted so
     the runner can enforce it.
+    `image_settings` carries {max_images, provider, api_key} resolved at
+    job-creation time so the runner doesn't need a DB lookup.
     """
     return {
         "upload_ids": list(payload.upload_ids),
@@ -114,6 +119,7 @@ def job_params(
         "theme": payload.theme.model_dump(),
         "llm_config": llm_config or {},
         "enabled_models": enabled_models or [],
+        "image_settings": image_settings or {},
     }
 
 
