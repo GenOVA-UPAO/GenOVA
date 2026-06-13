@@ -35,20 +35,24 @@ class RoleCreate(BaseModel):
 
 @router.get("")
 def get_roles(current_user=Depends(require_admin), db: Session = Depends(get_db)):
-    roles = db.execute(select(Role)).scalars().all()
+    # Single JOIN query replaces N+1 COUNT queries — avoids Supabase latency
+    # accumulation when the roles table grows over multiple CI runs.
+    stmt = (
+        select(Role, func.count(UserRole.user_id).label("user_count"))
+        .outerjoin(UserRole, UserRole.role_id == Role.id)
+        .group_by(Role.id)
+    )
+    rows = db.execute(stmt).all()
     return [
         {
             "id": str(r.id),
             "name": r.name,
             "description": r.description or "",
             "permissions": r.permissions or [],
-            "user_count": db.execute(
-                select(func.count(UserRole.user_id)).where(UserRole.role_id == r.id)
-            ).scalar()
-            or 0,
+            "user_count": count or 0,
             "created_at": r.created_at.isoformat() if r.created_at else None,
         }
-        for r in roles
+        for r, count in rows
     ]
 
 
