@@ -20,7 +20,7 @@ export function fetchRoles() {
 }
 
 export function fetchUsersPage(page = 1) {
-  return send(`/api/users?page=${page}&limit=10`)
+  return send(`/api/users/?page=${page}&limit=10`)
 }
 
 export function updateUserRole(userId, roleId) {
