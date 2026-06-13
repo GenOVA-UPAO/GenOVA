@@ -71,7 +71,7 @@ export function OvaCreationView({ onCreated }) {
       {/* Split panels */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left — creation chat panel (420px, always visible) */}
-        <div className="w-full sm:w-[420px] sm:shrink-0 border-r border-border flex flex-col overflow-hidden">
+        <div className="w-full sm:w-2/5 md:w-[380px] lg:w-[420px] sm:shrink-0 border-r border-border flex flex-col overflow-hidden">
           <CrearOvaChatPanel
             prompt={prompt} setPrompt={setPrompt} minChars={minChars}
             canConfigure={canConfigure} canGenerate={canGenerate}

@@ -52,7 +52,7 @@ export function LabsPage() {
 
       {lab.selectedPhase ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             <div className="lg:col-span-1 rounded-xl border border-border bg-background p-5 shadow-sm space-y-4">
               <div className="border-b border-border pb-3">
                 <h2 className="text-sm font-bold">Configuración de prueba</h2>

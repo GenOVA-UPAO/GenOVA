@@ -9,7 +9,7 @@ export function ConfirmModal({ title, message, confirmLabel, onConfirm, onCancel
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground whitespace-pre-line">{message}</p>
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2">
           <Button variant="outline" className="flex-1" onClick={onCancel} disabled={isLoading}>
             Cancelar
           </Button>
