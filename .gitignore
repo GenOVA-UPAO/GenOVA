@@ -264,3 +264,6 @@ frontend/src/wireframes/
 
 # Audit — dumps HTML/JSON de recursos generados (servidos en :8090 vía launch.json, no se versionan)
 .audit/
+
+.vercel
+/vercel.json
