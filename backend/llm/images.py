@@ -4,6 +4,7 @@ Returns a base64 JPEG data URI so the resulting HTML stays self-contained
 (SCORM packages must not depend on external URLs). Returns None on any failure
 so the caller can render a placeholder instead.
 """
+
 import base64
 import hashlib
 import logging
@@ -51,14 +52,26 @@ def fetch_image_data_uri(
         return None
 
     hf_model = os.getenv("HF_IMAGE_MODEL", "black-forest-labs/FLUX.1-schnell").strip()
-    url = f"https://api-inference.huggingface.co/models/{hf_model}"
+    # HF retired the legacy serverless host (api-inference.huggingface.co — no
+    # longer resolves, hence "No address associated with hostname") in favour of
+    # the Inference Providers router. hf-inference keeps the same
+    # POST {"inputs": prompt} → image-bytes contract. Base is env-overridable so a
+    # third-party provider route (fal-ai, replicate…) can be swapped in later.
+    base = os.getenv(
+        "HF_INFERENCE_BASE", "https://router.huggingface.co/hf-inference/models"
+    ).rstrip("/")
+    url = f"{base}/{hf_model}"
     headers = {
         "Authorization": f"Bearer {hf_token}",
         "Content-Type": "application/json",
         "x-wait-for-model": "true",
     }
     try:
-        logger.info("Attempting Hugging Face image generation for prompt %r using model %s", clean[:60], hf_model)
+        logger.info(
+            "Attempting Hugging Face image generation for prompt %r using model %s",
+            clean[:60],
+            hf_model,
+        )
         resp = httpx.post(
             url,
             content=json.dumps({"inputs": clean}).encode("utf-8"),
