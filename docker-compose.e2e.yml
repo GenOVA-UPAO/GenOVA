@@ -1,0 +1,19 @@
+# Override para el harness E2E (scripts/ova-e2e.ps1).
+# Permite autenticar por Bearer desde el host sobre http://localhost, ya que la
+# cookie httpOnly es Secure (COOKIE_SAMESITE=none) y no viaja por http.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d backend
+services:
+  backend:
+    environment:
+      - AUTH_ACCEPT_BEARER=1
+      # El backend corre con uvicorn --reload sobre ./backend montado. Si la app
+      # escribe archivos de runtime DENTRO de ese dir (uploads temporales, .pyc),
+      # watchfiles dispara un reload que MATA el thread de generación a media
+      # corrida. Mandamos esos writers fuera del mount.
+      - UPLOAD_TEMP_DIR=/data/uploads
+      - PYTHONDONTWRITEBYTECODE=1
+      # (Validación rápida) reduce latencia por recurso: sin pase de refinado
+      # (2ª llamada codigo) ni generación de imágenes. Quitar para probar el flujo
+      # completo real.
+      - OVA_REFINE=0
+      - OVA_MAX_GENERATED_IMAGES=0
