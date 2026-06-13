@@ -25,12 +25,12 @@ export function ResourcePreview({ jobId, resource, concept }) {
   if (!enabled) return null
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <div className="rounded-xl border border-border bg-card p-4 sm:p-5 shadow-sm">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         Vista previa · {resource.emoji} {resource.label}
       </p>
-      {loading && <p className="text-sm text-slate-500">Cargando vista previa…</p>}
-      {error && <p className="text-sm text-rose-600">{error}</p>}
+      {loading && <p className="text-sm text-muted-foreground">Cargando vista previa…</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
       {result && <HtmlPreview result={result} />}
     </div>
   )

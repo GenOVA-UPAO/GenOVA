@@ -13,8 +13,8 @@ import { formatContextLength, PROVIDER_LABELS } from '../../lib/llmCatalogUtils.
 const TASK_VISUAL = {
   texto:        { Icon: Article, bar: 'bg-primary',      tint: 'bg-primary/[.04]'      },
   codigo:       { Icon: Code,    bar: 'bg-accent-brand', tint: 'bg-accent-brand/[.04]' },
-  orquestador:  { Icon: Robot,   bar: 'bg-emerald-600',  tint: 'bg-emerald-600/[.04]'  },
-  razonamiento: { Icon: Brain,   bar: 'bg-violet-600',   tint: 'bg-violet-600/[.04]'   },
+  orquestador:  { Icon: Robot,   bar: 'bg-primary/60',      tint: 'bg-primary/[.04]'      },
+  razonamiento: { Icon: Brain,   bar: 'bg-accent-brand/60', tint: 'bg-accent-brand/[.04]' },
 }
 
 export function LlmSettingsForm({ hook, readOnly = false }) {

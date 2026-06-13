@@ -95,7 +95,7 @@ export function OvaSettingsCard() {
               ))}
             </select>
             {imageProvider !== 'huggingface' && (
-              <p className="text-xs text-amber-600">
+              <p className="text-xs text-accent-brand">
                 Para usar {PROVIDER_LABELS[imageProvider] ?? imageProvider} necesitas configurar
                 tu API key en la sección siguiente.
               </p>
@@ -103,7 +103,7 @@ export function OvaSettingsCard() {
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
-          {success && <p className="text-sm text-green-600">Configuración guardada.</p>}
+          {success && <p className="text-sm text-primary">Configuración guardada.</p>}
 
           <div className="flex justify-end">
             <Button onClick={handleSave} disabled={saving || loading}>

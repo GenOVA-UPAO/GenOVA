@@ -4,8 +4,8 @@ import { groupByPhase } from '../../lib/ovaJobViewModel.js'
 
 // Visual config per UI status (R5): check ✔ · X ✖ · generando … · pendiente ○.
 const MARK = {
-  check: { icon: '✔', cls: 'text-emerald-600 border-emerald-200 bg-emerald-50' },
-  X: { icon: '✖', cls: 'text-rose-600 border-rose-200 bg-rose-50' },
+  check: { icon: '✔', cls: 'text-primary border-primary/20 bg-primary/10' },
+  X: { icon: '✖', cls: 'text-destructive border-destructive/20 bg-destructive/10' },
   generando: { icon: '…', cls: 'text-primary border-primary/20 bg-primary/5 animate-pulse' },
   pendiente: { icon: '○', cls: 'text-muted-foreground border-border bg-muted' },
 }

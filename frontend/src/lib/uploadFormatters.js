@@ -13,12 +13,12 @@ export function formatSize(sizeBytes) {
 
 export function getUploadBadge(upload) {
   if (upload.status === 'success') {
-    return 'border-emerald-200 bg-emerald-50 text-emerald-700'
+    return 'border-primary/20 bg-primary/10 text-primary'
   }
 
   if (upload.status === 'error') {
-    return 'border-rose-200 bg-rose-50 text-rose-700'
+    return 'border-destructive/20 bg-destructive/10 text-destructive'
   }
 
-  return 'border-slate-200 bg-slate-50 text-slate-700'
+  return 'border-border bg-muted text-muted-foreground'
 }

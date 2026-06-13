@@ -14,13 +14,13 @@ import { useResourceContent } from '../../hooks/ova/useResourceContent.js'
 const PHASE_META = {
   engage: {
     label: 'Enganche',
-    tab: 'bg-violet-600 text-white',
-    badge: 'bg-violet-100 text-violet-700 border-violet-200',
+    tab: 'bg-primary text-primary-foreground',
+    badge: 'bg-primary/10 text-primary border-primary/20',
   },
   explore: {
     label: 'Exploración',
-    tab: 'bg-sky-600 text-white',
-    badge: 'bg-sky-100 text-sky-700 border-sky-200',
+    tab: 'bg-primary text-primary-foreground',
+    badge: 'bg-primary/10 text-primary border-primary/20',
   },
 }
 
@@ -69,7 +69,7 @@ function ResourceIframe({ jobId, resourceId }) {
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-violet-500" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
       </div>
     )
   }

@@ -122,7 +122,7 @@ export function PromptPanel({
         Mínimo {minChars} caracteres · elige 1-4 recursos por cada una de las 5 fases 5E.
       </p>
 
-      <p className="rounded bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-xs text-amber-800 shadow-sm">
+      <p className="rounded bg-accent-brand/10 border border-accent-brand/30 px-2.5 py-1.5 text-xs text-accent-brand shadow-sm">
         <b>Video:</b> Sin modelo disponible. Usa HeyGen, Synthesia o Sora con el contenido generado por GenOVA.
       </p>
 

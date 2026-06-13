@@ -9,21 +9,22 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 
 const PHASE_CFG = [
+  // Espectro 5E on-brand: azul UPAO (engage→explain) → naranja UPAO (elaborate/evaluate).
   { key: 'engage',    emoji: '🎯', label: 'ENGAGE',    fetch: fetchEngageRecursos,
     sub: 'Despierta curiosidad · activa saberes previos',
-    color: '#4338CA', bg: '#EEF2FF', ring: 'ring-2 ring-indigo-500 border-indigo-400 bg-indigo-50', badge: 'bg-indigo-600' },
+    color: 'var(--primary)', bg: 'color-mix(in oklch, var(--primary) 8%, transparent)', ring: 'ring-2 ring-primary border-primary/40 bg-primary/5', badge: 'bg-primary' },
   { key: 'explore',   emoji: '🔍', label: 'EXPLORE',   fetch: fetchExploreRecursos,
     sub: 'Descubre patrones · construye hipótesis',
-    color: '#065F46', bg: '#ECFDF5', ring: 'ring-2 ring-emerald-500 border-emerald-400 bg-emerald-50', badge: 'bg-emerald-700' },
+    color: 'var(--primary)', bg: 'color-mix(in oklch, var(--primary) 8%, transparent)', ring: 'ring-2 ring-primary border-primary/40 bg-primary/5', badge: 'bg-primary' },
   { key: 'explain',   emoji: '💡', label: 'EXPLAIN',   fetch: fetchExplainRecursos,
     sub: 'Formaliza conceptos · consolida la teoría',
-    color: '#1D4ED8', bg: '#EFF6FF', ring: 'ring-2 ring-blue-500 border-blue-400 bg-blue-50', badge: 'bg-blue-600' },
+    color: 'var(--primary)', bg: 'color-mix(in oklch, var(--primary) 8%, transparent)', ring: 'ring-2 ring-primary border-primary/40 bg-primary/5', badge: 'bg-primary' },
   { key: 'elaborate', emoji: '🔧', label: 'ELABORATE', fetch: fetchElaborateRecursos,
     sub: 'Aplica · transfiere a problemas reales',
-    color: '#92400E', bg: '#FFFBEB', ring: 'ring-2 ring-amber-500 border-amber-400 bg-amber-50', badge: 'bg-amber-700' },
+    color: 'var(--accent-brand)', bg: 'color-mix(in oklch, var(--accent-brand) 8%, transparent)', ring: 'ring-2 ring-accent-brand border-accent-brand/40 bg-accent-brand/5', badge: 'bg-accent-brand' },
   { key: 'evaluate',  emoji: '✅', label: 'EVALUATE',  fetch: fetchEvaluateRecursos,
     sub: 'Verifica aprendizajes · reflexiona el proceso',
-    color: '#5B21B6', bg: '#F5F3FF', ring: 'ring-2 ring-violet-500 border-violet-400 bg-violet-50', badge: 'bg-violet-600' },
+    color: 'var(--accent-brand)', bg: 'color-mix(in oklch, var(--accent-brand) 8%, transparent)', ring: 'ring-2 ring-accent-brand border-accent-brand/40 bg-accent-brand/5', badge: 'bg-accent-brand' },
 ]
 
 export const MAX_PER_PHASE = 4
@@ -116,10 +117,10 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
               <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: phase.color }}>
                 Fase {step + 1} de {PHASE_CFG.length} · hasta {MAX_PER_PHASE} recursos
               </p>
-              <h2 className="font-heading text-2xl font-semibold text-slate-900 leading-tight">
+              <h2 className="font-heading text-2xl font-semibold text-foreground leading-tight">
                 {phase.emoji} {phase.label}
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">{phase.sub}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{phase.sub}</p>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0 pb-0.5">
               <div className="flex items-center gap-1">

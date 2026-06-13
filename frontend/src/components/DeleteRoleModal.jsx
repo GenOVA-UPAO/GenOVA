@@ -19,12 +19,12 @@ export function DeleteRoleModal({
 
         {deletingRole.user_count > 0 ? (
           <div className="space-y-4">
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            <div className="rounded-lg border border-accent-brand/30 bg-accent-brand/10 p-4 text-sm text-accent-brand">
               <div className="flex gap-2.5">
                 <span className="text-lg font-bold">⚠️</span>
                 <div>
                   <p className="font-semibold">Reasignación requerida</p>
-                  <p className="text-xs text-amber-700 mt-0.5">
+                  <p className="text-xs text-accent-brand/90 mt-0.5">
                     Este rol tiene <span className="font-bold">{deletingRole.user_count}</span> usuario(s) asignado(s). Para eliminarlo, migra sus usuarios a otro rol activo.
                   </p>
                 </div>

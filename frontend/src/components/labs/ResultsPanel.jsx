@@ -45,7 +45,7 @@ export function ResultsPanel({
             <Button
               onClick={onImprovePrompt}
               disabled={!canImprove || improving}
-              className="bg-violet-600 hover:bg-violet-700 text-white text-xs"
+              className="text-xs"
             >
               {improving ? 'Analizando...' : 'Mejorar prompt'}
             </Button>
@@ -54,9 +54,9 @@ export function ResultsPanel({
           {improvedPrompt ? (
             <div className="mt-4 space-y-3">
               {improvedPrompt.explanation ? (
-                <div className="rounded-lg bg-violet-50 border border-violet-200 p-3">
-                  <p className="text-xs font-semibold text-violet-700">Análisis de la IA</p>
-                  <p className="mt-1 text-xs text-violet-600 leading-relaxed">
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
+                  <p className="text-xs font-semibold text-primary">Análisis de la IA</p>
+                  <p className="mt-1 text-xs text-primary/80 leading-relaxed">
                     {improvedPrompt.explanation}
                   </p>
                 </div>
