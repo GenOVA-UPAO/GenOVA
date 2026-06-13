@@ -32,6 +32,60 @@ class Settings(BaseSettings):
     db_max_overflow: int = 10
     db_connect_timeout: int = 10
 
+    # --- Observabilidad / app ---
+    log_level: str = "INFO"
+    latency_threshold_ms: float = 278.0
+    app_url: str = "https://genova.ai"
+
+    # --- LLM (claves server-only + routing) ---
+    llm_timeout_s: float = 120.0
+    groq_api_key: str = ""
+    openrouter_api_key: str = ""
+    opencode_api_key: str = ""
+    gemini_api_key: str = ""
+    ova_enabled_llms: str = ""
+
+    # --- Proveedores de imágenes ---
+    hf_token: str = ""
+    siliconflow_api_key: str = ""
+    runware_api_key: str = ""
+    falai_api_key: str = ""
+    ova_max_generated_images: int = 2
+
+    # --- RAG ---
+    rag_embedder: str = "gemini"
+    rag_disabled: str = ""
+    rag_chunk_size: int = 800
+    rag_chunk_overlap: int = 150
+    rag_max_chunks_per_file: int = 100
+    rag_top_k: int = 5
+    rag_max_context_chars: int = 6000
+
+    # --- Uploads ---
+    upload_max_files: int = 5
+    upload_max_file_size_mb: int = 20
+    upload_temp_dir: str = ""
+
+    # --- Generación OVA ---
+    ova_gen_concurrency: int = 4
+    ova_refine: str = "1"
+    ova_generation_duration_seconds: int = 14
+    ova_output_dir: str = ""
+    ova_pg_checkpoint: str = ""
+    resource_max_attempts: int = 3
+    job_heartbeat_seconds: int = 30
+
+    # --- Supabase Storage ---
+    supabase_url: str = ""
+    supabase_service_role_key: str = ""
+    supabase_storage_bucket: str = "scorm-packages"
+
+    # --- SMTP ---
+    smtp_host: str = ""
+    smtp_port: int = 465
+    smtp_user: str = ""
+    smtp_password: str = ""
+
     @field_validator("jwt_secret")
     @classmethod
     def _strong_secret(cls, v: str) -> str:

@@ -7,26 +7,26 @@ the OVA/SCORM.
 """
 
 import logging
-import os
 import threading
 import uuid
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from config import settings
 from database import SessionLocal
 from generation.error_log_service import log_generation_error
 from models import OvaJob, OvaJobResource
 
 logger = logging.getLogger(__name__)
 
-MAX_ATTEMPTS = int(os.getenv("RESOURCE_MAX_ATTEMPTS", "3"))
+MAX_ATTEMPTS = settings.resource_max_attempts
 # Latido periódico de la fila ova_jobs mientras corre la generación. El nodo de
 # fase solo late al ENTRAR a la fase (runtime._touch_job); un recurso lento
 # (p.ej. el modelo 'codigo' tarda 2-3 min) deja pasar >STALE_AFTER_SECONDS sin
 # latido y el sweep marca el job 'interrupted' aunque está sano → el front lo
 # relanza ("carga indefinida"). Un latido cada HEARTBEAT_S lo evita.
-HEARTBEAT_S = int(os.getenv("JOB_HEARTBEAT_SECONDS", "30"))
+HEARTBEAT_S = settings.job_heartbeat_seconds
 
 
 def _start_heartbeat(job_id: uuid.UUID) -> tuple[threading.Thread, threading.Event]:

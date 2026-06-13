@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 import time
 from contextlib import asynccontextmanager
 
@@ -49,6 +48,7 @@ from api.scorm import router as scorm_router
 from api.users import roles_router
 from api.users import router as users_router
 from auth.dependencies import require_admin
+from config import settings
 from database import Base, engine
 from rate_limit import limiter
 from run_migrations import run_migrations
@@ -56,13 +56,13 @@ from seed import seed_db
 from users.admin.platform_settings_router import router as platform_settings_router
 
 logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    level=settings.log_level.upper(),
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
 
 # OE1 latency target (ms) for non-LLM endpoints.
-_LATENCY_THRESHOLD_MS = float(os.getenv("LATENCY_THRESHOLD_MS", "278"))
+_LATENCY_THRESHOLD_MS = settings.latency_threshold_ms
 # Paths excluded from slow-request warnings (LLM generation — inherently slow).
 _LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save", "/api/labs/generate")
 
@@ -132,8 +132,8 @@ app = FastAPI(title="GENOVA Backend API", version="0.1.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-_env = os.getenv("ENV", "dev").lower()
-_extra = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+_env = settings.env.lower()
+_extra = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
 if _env == "production":
     if not _extra:
         raise RuntimeError(

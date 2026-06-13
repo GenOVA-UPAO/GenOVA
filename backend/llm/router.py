@@ -1,7 +1,6 @@
 """LLM routing — Groq (primary) + OpenRouter (secondary / arbitrary model)."""
 
 import logging
-import os
 import time
 
 from groq import APIConnectionError as GroqAPIConnectionError
@@ -15,6 +14,7 @@ from openai import APITimeoutError as OpenAIAPITimeoutError
 from openai import OpenAI
 from openai import RateLimitError as OpenAIRateLimitError
 
+from config import settings
 from llm.model_catalog import clamp_timeout, is_valid_model
 
 logger = logging.getLogger(__name__)
@@ -24,22 +24,22 @@ logger = logging.getLogger(__name__)
 # 120s default: the 'codigo' task streams up to 12k tokens of HTML, which
 # legitimately takes 1–2 min; a 30s cap aborted valid generations mid-stream.
 # Tune down via LLM_TIMEOUT_S where workers are time-boxed.
-_LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "120"))
+_LLM_TIMEOUT_S = settings.llm_timeout_s
 
 # max_retries=0 en todos: ya recorremos nuestra propia cadena de fallback en
 # generar_texto, así que los reintentos internos del SDK (default 2) solo
 # multiplican la espera ante un proveedor lento/caído (3×timeout por intento +
 # la cadena externa) → la "carga indefinida". Un intento por modelo, y el control
 # de reintentos/backoff vive en generar_texto.
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=_LLM_TIMEOUT_S, max_retries=0)
+groq_client = Groq(api_key=settings.groq_api_key, timeout=_LLM_TIMEOUT_S, max_retries=0)
 
 # OpenRouter uses the OpenAI-compatible endpoint.
 # HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
 openrouter_client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY") or "not-configured",
+    api_key=settings.openrouter_api_key or "not-configured",
     base_url="https://openrouter.ai/api/v1",
     default_headers={
-        "HTTP-Referer": os.getenv("APP_URL", "https://genova.ai"),
+        "HTTP-Referer": settings.app_url,
         "X-Title": "GenOVA",
     },
     timeout=_LLM_TIMEOUT_S,
@@ -48,7 +48,7 @@ openrouter_client = OpenAI(
 
 # OpenCode Go uses the OpenAI-compatible endpoint.
 opencode_client = OpenAI(
-    api_key=os.getenv("OPENCODE_API_KEY") or "not-configured",
+    api_key=settings.opencode_api_key or "not-configured",
     base_url="https://opencode.ai/zen/go/v1",
     timeout=_LLM_TIMEOUT_S,
     max_retries=0,
