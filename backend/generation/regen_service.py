@@ -3,10 +3,12 @@
 Replaces the previous simulated-content approach with actual calls to the
 ENGAGE/EXPLORE generation agents via `regen_agents.py`.
 """
+
 import logging
 import os
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -73,13 +75,20 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         db.add(new_version)
         db.flush()
 
+        # Regenerate the selected phases concurrently (each _regen_phase is a
+        # pure-LLM call with no DB access). Regen-all is otherwise sequential —
+        # N phases × 2 LLM calls each — so the progress bar sat at 99% for
+        # minutes. DB writes below stay in this thread, in phase order.
+        to_regen = [p for p in current_phases if regen_all or str(p.id) in phase_ids_to_regen]
+        regen_content = _regen_phases_parallel(to_regen, prompt, llm_config)
+
         new_phases_data = []
         for phase in current_phases:
             should_regen = regen_all or str(phase.id) in phase_ids_to_regen
             new_content = phase.content
 
             if should_regen:
-                new_content = _regen_phase(phase, prompt, llm_config) or phase.content
+                new_content = regen_content.get(str(phase.id)) or phase.content
 
             new_phase = OvaPhase(
                 version_id=new_version.id,
@@ -91,16 +100,17 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
                 title=phase.title,
             )
             db.add(new_phase)
-            new_phases_data.append({
-                "type": phase.phase_type,
-                "order": phase.phase_order,
-                "content": new_content,
-                "title": phase.title,
-            })
+            new_phases_data.append(
+                {
+                    "type": phase.phase_type,
+                    "order": phase.phase_order,
+                    "content": new_content,
+                    "title": phase.title,
+                }
+            )
 
         db.flush()
-        _build_and_persist(ova, ova_id, new_version, new_version_number,
-                           new_phases_data, db)
+        _build_and_persist(ova, ova_id, new_version, new_version_number, new_phases_data, db)
 
         with _regen_jobs_lock:
             job = _regen_jobs.get(job_id)
@@ -136,6 +146,36 @@ def _regen_phase(phase: OvaPhase, concept: str, llm_config: dict | None = None) 
         return None
     logger.info("Regenerating %s/%d for concept=%r", phase.phase_type, rtype, concept[:60])
     return regenerate_phase_content(phase.phase_type, rtype, concept, llm_config)
+
+
+def _regen_concurrency() -> int:
+    try:
+        return max(1, int(os.getenv("OVA_GEN_CONCURRENCY", "4")))
+    except ValueError:
+        return 4
+
+
+def _regen_phases_parallel(
+    phases: list[OvaPhase], concept: str, llm_config: dict | None
+) -> dict[str, str | None]:
+    """Regenerate `phases` concurrently, returning {phase_id: html|None}.
+
+    Each task is an isolated LLM call (no DB); a single phase's failure yields
+    None for that phase without aborting the rest. Caller writes the rows.
+    """
+    if not phases:
+        return {}
+    workers = min(_regen_concurrency(), len(phases))
+
+    def _one(phase: OvaPhase) -> tuple[str, str | None]:
+        try:
+            return str(phase.id), _regen_phase(phase, concept, llm_config)
+        except Exception:
+            logger.exception("Regen failed for phase %s", phase.id)
+            return str(phase.id), None
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return dict(pool.map(_one, phases))
 
 
 def _build_and_persist(ova, ova_id, new_version, version_num, phases_data, db):
