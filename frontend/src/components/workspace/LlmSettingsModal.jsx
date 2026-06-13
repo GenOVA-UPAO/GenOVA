@@ -13,6 +13,7 @@ import { LlmSettingsForm } from '../settings/LlmSettingsForm.jsx'
  */
 export function LlmSettingsModal({ open, onOpenChange }) {
   const hook = useLlmSettings(open)
+  const { hasOwnLlmKey } = hook
 
   async function handleSave() {
     const ok = await hook.save()
@@ -21,7 +22,7 @@ export function LlmSettingsModal({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Configuración de IA</DialogTitle>
           <DialogDescription>
@@ -33,15 +34,19 @@ export function LlmSettingsModal({ open, onOpenChange }) {
           </DialogDescription>
         </DialogHeader>
 
-        <LlmSettingsForm hook={hook} />
+        <div className="max-h-[60vh] overflow-y-auto">
+          <LlmSettingsForm hook={hook} readOnly={!hasOwnLlmKey} />
+        </div>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={hook.saving}>
-            Cancelar
+            {hasOwnLlmKey ? 'Cancelar' : 'Cerrar'}
           </Button>
-          <Button onClick={handleSave} disabled={hook.saving || hook.loading}>
-            {hook.saving ? 'Guardando…' : 'Guardar'}
-          </Button>
+          {hasOwnLlmKey && (
+            <Button onClick={handleSave} disabled={hook.saving || hook.loading}>
+              {hook.saving ? 'Guardando…' : 'Guardar'}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

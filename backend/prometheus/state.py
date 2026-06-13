@@ -4,9 +4,8 @@ TypedDict ensures nodes read/write a well-known shape; LangGraph's StateGraph
 merges partial return dicts from each node into the running state automatically.
 """
 
+import operator
 from typing import Annotated, TypedDict
-
-from langgraph.graph.message import add_messages
 
 
 class OvaGenerationState(TypedDict, total=False):
@@ -28,8 +27,8 @@ class OvaGenerationState(TypedDict, total=False):
 
     rag_context: str
 
-    results: Annotated[list[dict], add_messages]  # [{phase, html, resource_type, ..}]
-    errors: Annotated[list[dict], add_messages]  # [{phase, resource_type, error}]
+    results: Annotated[list[dict], operator.add]  # [{phase, html, resource_type, ..}]
+    errors: Annotated[list[dict], operator.add]  # [{phase, resource_type, error}]
 
     # SCORM assembly
     scorm_zip_path: str

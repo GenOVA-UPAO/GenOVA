@@ -1,3 +1,4 @@
+import { Lock } from '@phosphor-icons/react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -10,12 +11,13 @@ import { formatContextLength, PROVIDER_LABELS } from '../../lib/llmCatalogUtils.
  * Presentational — driven by a `useLlmSettings()` hook passed in `hook`, so the
  * SAME form is mounted in the workspace modal and in the profile page.
  */
-export function LlmSettingsForm({ hook }) {
+export function LlmSettingsForm({ hook, readOnly = false }) {
   const {
     settings, catalog, catalogStatus, bounds, loading, saving,
     taskLabels, setModel, setTipoTimeout, resetTipo,
   } = hook
   const [tmin, tmax] = bounds
+  const disabled = saving || readOnly
 
   if (loading || !settings) {
     return (
@@ -27,10 +29,21 @@ export function LlmSettingsForm({ hook }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-muted-foreground">
-        Configuración general de IA: aplica a <strong>todos</strong> tus OVAs (no por OVA ni por recurso).
-        El modelo de <strong>Código / HTML interactivo</strong> es el que genera los recursos visuales.
-      </p>
+      {readOnly ? (
+        <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+          <Lock weight="duotone" size={14} className="mt-0.5 shrink-0" />
+          <span>
+            Modelos asignados por el administrador.{' '}
+            <span className="font-medium text-foreground">Añade una API key</span>{' '}
+            en Mi Perfil → API Keys para personalizar.
+          </span>
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Configuración general de IA: aplica a <strong>todos</strong> tus OVAs (no por OVA ni por recurso).
+          El modelo de <strong>Código / HTML interactivo</strong> es el que genera los recursos visuales.
+        </p>
+      )}
 
       {Object.entries(taskLabels).map(([tipo, label]) => {
         const cur = settings[tipo] || {}
@@ -41,14 +54,16 @@ export function LlmSettingsForm({ hook }) {
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {label}
               </Label>
-              <button
-                type="button"
-                onClick={() => resetTipo(tipo)}
-                disabled={saving}
-                className="text-[10px] font-medium text-primary hover:underline disabled:opacity-50"
-              >
-                Restaurar por defecto
-              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  onClick={() => resetTipo(tipo)}
+                  disabled={saving}
+                  className="text-[10px] font-medium text-primary hover:underline disabled:opacity-50"
+                >
+                  Restaurar por defecto
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-[1fr_120px]">
@@ -60,7 +75,7 @@ export function LlmSettingsForm({ hook }) {
                     const [provider, ...rest] = v.split('::')
                     setModel(tipo, provider, rest.join('::'))
                   }}
-                  disabled={saving}
+                  disabled={disabled}
                 >
                   <SelectTrigger className="h-9 text-xs">
                     <SelectValue placeholder="Elige un modelo" />
@@ -106,7 +121,7 @@ export function LlmSettingsForm({ hook }) {
                   min={tmin}
                   max={tmax}
                   value={cur.timeout_s ?? ''}
-                  disabled={saving}
+                  disabled={disabled}
                   onChange={(e) => setTipoTimeout(tipo, Number(e.target.value))}
                   className="h-9 text-xs"
                 />

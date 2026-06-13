@@ -170,15 +170,24 @@ def clamp_timeout(value) -> float | None:
     return t if TIMEOUT_MIN <= t <= TIMEOUT_MAX else None
 
 
-def merge_with_defaults(user_settings: dict | None) -> dict:
+def merge_with_defaults(
+    user_settings: dict | None,
+    extra_keys: set[tuple[str, str]] | None = None,
+) -> dict:
     """Effective per-type config: a valid user override or the system default,
-    each with a usable timeout_s. Used by the generation pipeline and the GET."""
+    each with a usable timeout_s. Used by the generation pipeline and the GET.
+
+    `extra_keys` is the set of (provider, model_id) the user has explicitly
+    enabled — models not in the curated CATALOG are accepted when they appear
+    here (user opted in via the model browser).
+    """
     user_settings = user_settings or {}
     out: dict[str, dict] = {}
     for tipo, dflt in DEFAULTS.items():
         u = user_settings.get(tipo) or {}
         provider, model_id = u.get("provider"), u.get("model_id")
-        if provider and model_id and is_valid_model(provider, model_id):
+        extra_ok = bool(extra_keys and (provider, model_id) in extra_keys)
+        if provider and model_id and (is_valid_model(provider, model_id) or extra_ok):
             entry = {"provider": provider, "model_id": model_id}
         else:
             entry = dict(dflt)
@@ -188,10 +197,18 @@ def merge_with_defaults(user_settings: dict | None) -> dict:
     return out
 
 
-def sanitize_settings(payload: dict | None) -> dict:
+def sanitize_settings(
+    payload: dict | None,
+    extra_keys: set[tuple[str, str]] | None = None,
+) -> dict:
     """Validate a PUT payload, keeping only valid (provider, model_id, timeout_s)
     entries per known type. Raises ValueError on an invalid model/timeout so the
-    router can return 400."""
+    router can return 400.
+
+    `extra_keys` is the set of (provider, model_id) the user has explicitly
+    enabled — models not in the curated CATALOG are accepted when they appear
+    here (user opted in via the model browser).
+    """
     payload = payload or {}
     clean: dict[str, dict] = {}
     for tipo, raw in payload.items():
@@ -200,7 +217,8 @@ def sanitize_settings(payload: dict | None) -> dict:
         provider, model_id = raw.get("provider"), raw.get("model_id")
         if not (provider and model_id):
             continue
-        if not is_valid_model(provider, model_id):
+        extra_ok = bool(extra_keys and (provider, model_id) in extra_keys)
+        if not is_valid_model(provider, model_id) and not extra_ok:
             raise ValueError(f"Modelo no permitido para {tipo}: {provider}/{model_id}")
         t = clamp_timeout(raw.get("timeout_s", DEFAULT_TIMEOUT_S))
         if t is None:
