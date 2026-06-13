@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import { UserStatusBadge } from './StatusBadge.jsx'
 import { UserActionMenu } from './UserActionMenu.jsx'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 // `hide` oculta columnas secundarias en pantallas chicas para que la tabla no
 // desborde en móvil (correo/estado/rol/acciones siempre visibles).
@@ -52,7 +52,6 @@ function RoleCell({ user, roles, isCurrentUserAdmin, isMe, isActionsDisabled, is
 }
 
 export function UsersTable({ users, roles, currentUser, updatingUserId, handlers, getRoleColorClasses }) {
-  const [openMenuFor, setOpenMenuFor] = useState(null)
   const isCurrentUserAdmin = currentUser?.role === 'administrador'
 
   return (
@@ -93,30 +92,25 @@ export function UsersTable({ users, roles, currentUser, updatingUserId, handlers
                     getRoleColorClasses={getRoleColorClasses}
                   />
                 </TableCell>
-                <TableCell className="text-center relative">
+                <TableCell className="text-center">
                   {isMe || isActionsDisabled ? (
                     <span className="text-muted-foreground text-xs italic">Protegido</span>
                   ) : (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setOpenMenuFor((id) => (id === user.id ? null : user.id))}
-                      >
-                        Acción ▾
-                      </Button>
-                      {openMenuFor === user.id ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">Acción ▾</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
                         <UserActionMenu
                           user={user}
-                          onClose={() => setOpenMenuFor(null)}
                           onEdit={() => handlers.openEdit(user)}
                           onToggleStatus={handlers.handleToggleStatus}
                           onUnlock={handlers.handleUnlockUser}
                           onSendResetEmail={handlers.handleSendResetEmail}
                           onSendResetWhatsApp={handlers.runWhatsAppReset}
                         />
-                      ) : null}
-                    </>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </TableCell>
               </TableRow>

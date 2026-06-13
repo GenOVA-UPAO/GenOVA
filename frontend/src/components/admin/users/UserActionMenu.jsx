@@ -1,20 +1,9 @@
 import { isLockedOut } from './statusHelpers.js'
+import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 
-function Item({ onClick, tone = 'text-foreground hover:bg-muted', icon, label, disabled }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`w-full px-4 py-2 text-xs flex items-center gap-2 transition-colors ${
-        disabled ? 'text-muted-foreground/40 cursor-not-allowed' : `${tone} cursor-pointer`
-      }`}
-    >
-      <span>{icon}</span> {label}
-    </button>
-  )
-}
-
+// Ítems del menú de acciones de usuario. Se renderizan dentro de un
+// <DropdownMenuContent> (radix) en UsersTable: portal + cierre con escape/
+// click-fuera + foco accesible, y sin clipping dentro del overflow de la tabla.
 export function UserActionMenu({
   user,
   onEdit,
@@ -22,41 +11,37 @@ export function UserActionMenu({
   onUnlock,
   onSendResetEmail,
   onSendResetWhatsApp,
-  onClose,
 }) {
-  function close(fn) {
-    onClose?.()
-    return fn
-  }
   return (
-    <div className="absolute right-2 sm:right-5 mt-1 w-52 rounded-lg bg-popover shadow-xl border border-border py-1.5 z-20 text-left">
-      <Item icon="✏️" label="Editar Perfil" onClick={() => close(onEdit)()} />
-      <Item
-        icon={user.is_active ? '🚫' : '✅'}
-        label={user.is_active ? 'Desactivar Cuenta' : 'Activar Cuenta'}
-        tone={user.is_active ? 'text-accent-brand hover:bg-accent-brand/10' : 'text-primary hover:bg-primary/10'}
-        onClick={() => close(() => onToggleStatus(user.id, !user.is_active))()}
-      />
+    <>
+      <DropdownMenuItem onSelect={onEdit}>
+        <span>✏️</span> Editar Perfil
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        onSelect={() => onToggleStatus(user.id, !user.is_active)}
+        className={user.is_active ? 'text-accent-brand' : 'text-primary'}
+      >
+        <span>{user.is_active ? '🚫' : '✅'}</span>
+        {user.is_active ? 'Desactivar Cuenta' : 'Activar Cuenta'}
+      </DropdownMenuItem>
       {isLockedOut(user) && (
-        <Item
-          icon="🔓"
-          label="Desbloquear Cuenta"
-          tone="text-primary hover:bg-primary/10"
-          onClick={() => close(() => onUnlock(user.id))()}
-        />
+        <DropdownMenuItem onSelect={() => onUnlock(user.id)} className="text-primary">
+          <span>🔓</span> Desbloquear Cuenta
+        </DropdownMenuItem>
       )}
-      <div className="border-t border-border my-1" />
-      <Item icon="✉️" label="Restablecer por Correo" onClick={() => close(() => onSendResetEmail(user.id))()} />
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onSelect={() => onSendResetEmail(user.id)}>
+        <span>✉️</span> Restablecer por Correo
+      </DropdownMenuItem>
       {user.phone_number ? (
-        <Item
-          icon="💬"
-          label="Enlace WhatsApp"
-          tone="text-primary hover:bg-primary/10"
-          onClick={() => close(() => onSendResetWhatsApp(user.id))()}
-        />
+        <DropdownMenuItem onSelect={() => onSendResetWhatsApp(user.id)} className="text-primary">
+          <span>💬</span> Enlace WhatsApp
+        </DropdownMenuItem>
       ) : (
-        <Item icon="💬" label="Sin Teléfono" disabled />
+        <DropdownMenuItem disabled>
+          <span>💬</span> Sin Teléfono
+        </DropdownMenuItem>
       )}
-    </div>
+    </>
   )
 }
