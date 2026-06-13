@@ -1,105 +1,119 @@
-import { Lock } from '@phosphor-icons/react'
+import { Article, Brain, Code, Lock, Robot } from '@phosphor-icons/react'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { formatContextLength, PROVIDER_LABELS } from '../../lib/llmCatalogUtils.js'
 
 /**
- * Reusable body for the per-user LLM config (general, applies to all OVAs).
- * Presentational — driven by a `useLlmSettings()` hook passed in `hook`, so the
- * SAME form is mounted in the workspace modal and in the profile page.
+ * Task-type → model assignment. Each card is colour-coded by role so the user
+ * can scan the config at a glance (azul=texto, naranja=código, etc.).
+ * `readOnly` disables all controls and shows a lock banner.
  */
+const TASK_VISUAL = {
+  texto:        { Icon: Article, bar: 'bg-primary',      tint: 'bg-primary/[.04]'      },
+  codigo:       { Icon: Code,    bar: 'bg-accent-brand', tint: 'bg-accent-brand/[.04]' },
+  orquestador:  { Icon: Robot,   bar: 'bg-emerald-600',  tint: 'bg-emerald-600/[.04]'  },
+  razonamiento: { Icon: Brain,   bar: 'bg-violet-600',   tint: 'bg-violet-600/[.04]'   },
+}
+
 export function LlmSettingsForm({ hook, readOnly = false }) {
   const {
     settings, catalog, catalogStatus, bounds, loading, saving,
     taskLabels, setModel, setTipoTimeout, resetTipo,
   } = hook
   const [tmin, tmax] = bounds
-  const disabled = saving || readOnly
+  const locked = saving || readOnly
 
   if (loading || !settings) {
     return (
-      <div className="flex items-center justify-center py-10">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+      <div className="flex items-center justify-center py-8">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      {readOnly ? (
-        <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
-          <Lock weight="duotone" size={14} className="mt-0.5 shrink-0" />
-          <span>
-            Modelos asignados por el administrador.{' '}
-            <span className="font-medium text-foreground">Añade una API key</span>{' '}
-            en Mi Perfil → API Keys para personalizar.
-          </span>
+    <div className="space-y-2">
+      {readOnly && (
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+          <Lock weight="duotone" size={13} className="shrink-0 text-muted-foreground" />
+          <p className="text-xs text-muted-foreground">
+            Configurado por el administrador.{' '}
+            <span className="font-semibold text-foreground">Añade una API key</span>
+            {' '}en Mi Perfil → API Keys para personalizar.
+          </p>
         </div>
-      ) : (
-        <p className="text-xs text-muted-foreground">
-          Configuración general de IA: aplica a <strong>todos</strong> tus OVAs (no por OVA ni por recurso).
-          El modelo de <strong>Código / HTML interactivo</strong> es el que genera los recursos visuales.
-        </p>
       )}
 
-      {Object.entries(taskLabels).map(([tipo, label]) => {
+      {Object.keys(taskLabels).map((tipo) => {
         const cur = settings[tipo] || {}
         const value = cur.provider && cur.model_id ? `${cur.provider}::${cur.model_id}` : ''
-        return (
-          <div key={tipo} className="rounded-lg border border-border p-3 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {label}
-              </Label>
-              {!readOnly && (
-                <button
-                  type="button"
-                  onClick={() => resetTipo(tipo)}
-                  disabled={saving}
-                  className="text-[10px] font-medium text-primary hover:underline disabled:opacity-50"
-                >
-                  Restaurar por defecto
-                </button>
-              )}
-            </div>
+        const { Icon, bar = 'bg-border', tint = '' } = TASK_VISUAL[tipo] || {}
 
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-[1fr_120px]">
-              <div className="space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Modelo</Label>
+        return (
+          <div
+            key={tipo}
+            className={`relative overflow-hidden rounded-xl border border-border/70 transition-shadow hover:shadow-sm ${tint}`}
+          >
+            <div className={`absolute inset-y-0 left-0 w-[3px] rounded-l-xl ${bar}`} />
+
+            <div className="pl-5 pr-4 py-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  {Icon && <Icon weight="duotone" size={13} className="text-muted-foreground" />}
+                  <span className="text-[10px] font-bold uppercase tracking-[.09em] text-muted-foreground">
+                    {taskLabels[tipo]}
+                  </span>
+                </div>
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => resetTipo(tipo)}
+                    disabled={saving}
+                    className="text-[10px] text-muted-foreground/50 hover:text-primary transition-colors disabled:opacity-30"
+                  >
+                    Restaurar
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
                 <Select
                   value={value}
                   onValueChange={(v) => {
-                    const [provider, ...rest] = v.split('::')
-                    setModel(tipo, provider, rest.join('::'))
+                    const [p, ...r] = v.split('::')
+                    setModel(tipo, p, r.join('::'))
                   }}
-                  disabled={disabled}
+                  disabled={locked}
                 >
-                  <SelectTrigger className="h-9 text-xs">
+                  <SelectTrigger className="h-8 flex-1 min-w-0 text-xs border-border/50 bg-background/70">
                     <SelectValue placeholder="Elige un modelo" />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(catalog).map(([provider, models]) => {
-                      const providerDown = catalogStatus?.[provider]?.ok === false
+                      const down = catalogStatus?.[provider]?.ok === false
                       return (
                         <SelectGroup key={provider}>
-                          <SelectLabel className={providerDown ? 'text-muted-foreground/50' : ''}>
+                          <SelectLabel className={`text-[10px] ${down ? 'opacity-40' : ''}`}>
                             {PROVIDER_LABELS[provider] || provider}
-                            {providerDown && ' (no disponible)'}
+                            {down && ' · no disponible'}
                           </SelectLabel>
                           {(Array.isArray(models) ? models : []).map((m) => {
-                            const modelId = typeof m === 'string' ? m : m.model_id
-                            const label = typeof m === 'string' ? m : (m.label || m.model_id)
+                            const mid = typeof m === 'string' ? m : m.model_id
+                            const mlabel = typeof m === 'string' ? m : (m.label || m.model_id)
                             const pricing = typeof m === 'string' ? null : m.pricing
                             const ctx = typeof m === 'string' ? null : formatContextLength(m.context_length)
                             return (
-                              <SelectItem key={`${provider}::${modelId}`} value={`${provider}::${modelId}`} className="text-xs">
+                              <SelectItem
+                                key={`${provider}::${mid}`}
+                                value={`${provider}::${mid}`}
+                                className="text-xs"
+                              >
                                 <span className="flex items-center gap-2 w-full">
-                                  <span className="truncate">{label}</span>
+                                  <span className="truncate">{mlabel}</span>
                                   {(pricing || ctx) && (
-                                    <span className="ml-auto shrink-0 text-[10px] text-muted-foreground/70">
+                                    <span className="ml-auto shrink-0 text-[10px] text-muted-foreground/60">
                                       {[pricing, ctx].filter(Boolean).join(' · ')}
                                     </span>
                                   )}
@@ -112,25 +126,29 @@ export function LlmSettingsForm({ hook, readOnly = false }) {
                     })}
                   </SelectContent>
                 </Select>
-              </div>
 
-              <div className="space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Timeout (s)</Label>
-                <Input
-                  type="number"
-                  min={tmin}
-                  max={tmax}
-                  value={cur.timeout_s ?? ''}
-                  disabled={disabled}
-                  onChange={(e) => setTipoTimeout(tipo, Number(e.target.value))}
-                  className="h-9 text-xs"
-                />
+                <div className="flex shrink-0 items-center gap-1">
+                  <Input
+                    type="number"
+                    min={tmin}
+                    max={tmax}
+                    value={cur.timeout_s ?? ''}
+                    disabled={locked}
+                    onChange={(e) => setTipoTimeout(tipo, Number(e.target.value))}
+                    className="h-8 w-14 text-center text-xs border-border/50 bg-background/70"
+                    title={`Timeout: ${tmin}–${tmax} s`}
+                  />
+                  <span className="text-[10px] text-muted-foreground/40">s</span>
+                </div>
               </div>
             </div>
           </div>
         )
       })}
-      <p className="text-[10px] text-muted-foreground">Timeout permitido: {tmin}–{tmax} s por llamada.</p>
+
+      <p className="text-[10px] text-muted-foreground/50 px-0.5">
+        Timeout: {tmin}–{tmax} s · aplica a todos tus OVAs
+      </p>
     </div>
   )
 }
