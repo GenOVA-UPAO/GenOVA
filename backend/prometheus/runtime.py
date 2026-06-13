@@ -13,11 +13,12 @@ import logging
 import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from database import SessionLocal
-from models import OvaJobResource
+from models import OvaJob, OvaJobResource
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +50,17 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
     theme = state.get("theme", {})
     image_settings = state.get("image_settings", {})
     job_id = state.get("job_id")
+    _touch_job(job_id)  # heartbeat at phase entry (covers a slow first resource)
     workers = min(_concurrency(), len(resources))
 
     def _work(item: dict):
         rt = item["resource_type"]
         try:
-            return item, dispatch(rt, concept, llm_config, enabled_models, theme, image_settings), None
+            return (
+                item,
+                dispatch(rt, concept, llm_config, enabled_models, theme, image_settings),
+                None,
+            )
         except Exception as exc:  # noqa: BLE001 — isolate one resource's failure
             logger.exception("%s resource %s failed", phase, rt)
             return item, None, str(exc)
@@ -80,6 +86,33 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
         "errors": errors,
         "progress": state.get("progress", 0) + len(resources),
     }
+
+
+def _touch_job(job_id) -> None:
+    """Bump OvaJob.updated_at so the stale-sweep doesn't kill a healthy long run.
+
+    jobs_service._sweep_if_stale presumes a "running" job dead once its
+    updated_at goes stale (>180s), but the runner only writes ova_job_resources
+    rows — the parent ova_jobs row is never touched mid-run. Without this
+    heartbeat a slow-but-healthy generation is swept to "interrupted" and the UI
+    relaunches it in a loop ("sigue cargando"). Best-effort: never aborts the run.
+    """
+    if not job_id:
+        return
+    db = SessionLocal()
+    try:
+        db.execute(
+            update(OvaJob)
+            .where(OvaJob.id == uuid.UUID(str(job_id)))
+            .values(updated_at=datetime.now(UTC))
+        )
+        db.commit()
+    except Exception:  # noqa: BLE001 — heartbeat is best-effort
+        logger.exception("job heartbeat failed for %s", job_id)
+        with contextlib.suppress(Exception):
+            db.rollback()
+    finally:
+        db.close()
 
 
 def _persist_done(job_id, phase: str, rt, html: str) -> None:
@@ -108,7 +141,10 @@ def _persist_done(job_id, phase: str, rt, html: str) -> None:
             .scalars()
             .all()
         )
-        target = next((r for r in rows if r.resource_type is not None and str(r.resource_type) == str(rt)), None)
+        target = next(
+            (r for r in rows if r.resource_type is not None and str(r.resource_type) == str(rt)),
+            None,
+        )
         if target is None:
             target = next((r for r in rows if r.resource_type is None), None)
         if target is None:
@@ -117,6 +153,12 @@ def _persist_done(job_id, phase: str, rt, html: str) -> None:
         target.content = html
         target.status = "done"
         target.attempts = (target.attempts or 0) + 1
+        # Heartbeat the parent job in the same transaction (see _touch_job).
+        db.execute(
+            update(OvaJob)
+            .where(OvaJob.id == uuid.UUID(str(job_id)))
+            .values(updated_at=datetime.now(UTC))
+        )
         db.commit()
     except Exception:  # noqa: BLE001 — incremental persist is best-effort
         logger.exception("incremental persist failed for %s/%s", phase, rt)
