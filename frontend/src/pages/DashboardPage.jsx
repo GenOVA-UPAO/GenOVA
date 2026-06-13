@@ -43,21 +43,29 @@ export function DashboardPage() {
   }, [])
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Bienvenido al panel principal del curso de ML.</p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Bienvenido al panel principal del curso de ML.</p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-        <p className="text-sm text-muted-foreground">
-          Aquí se mostrarán métricas, progreso y accesos rápidos a actividades.
+      <div className="relative overflow-hidden rounded-xl border border-border border-l-4 border-l-accent-brand bg-card p-6 shadow-sm">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-2 -top-4 select-none font-display text-8xl font-semibold text-foreground/5"
+        >
+          ML
+        </span>
+        <p className="text-xs font-bold uppercase tracking-widest text-accent-brand">Tu espacio</p>
+        <p className="mt-2 max-w-lg text-sm text-muted-foreground">
+          Aquí se mostrarán métricas, progreso y accesos rápidos a tus actividades de
+          generación de Objetos Virtuales de Aprendizaje.
         </p>
       </div>
 
       {!loading && isAdmin ? (
         <div className="space-y-4 pt-4 border-t border-border">
-          <h2 className="text-lg font-bold">Panel de Administración de Sistema</h2>
+          <h2 className="text-xl font-bold">Panel de Administración de Sistema</h2>
           <p className="text-xs text-muted-foreground">
             Accesos directos para la gestión de accesos y cuentas:
           </p>

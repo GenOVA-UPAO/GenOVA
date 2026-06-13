@@ -11,6 +11,7 @@
     "format": "prettier --check ."
   },
   "dependencies": {
+    "@fontsource-variable/fraunces": "^5.2.9",
     "@fontsource-variable/geist": "^5.2.9",
     "@phosphor-icons/react": "^2.1.10",
     "@vercel/speed-insights": "^2.0.0",
