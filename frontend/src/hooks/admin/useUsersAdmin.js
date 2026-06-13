@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getRoleColorClasses } from '../../lib/roleUtils.js'
 import {
@@ -20,39 +21,45 @@ function detail(body, fallback) {
 }
 
 export function useUsersAdmin() {
-  const [users, setUsers] = useState([])
-  const [roles, setRoles] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const qc = useQueryClient()
+  const [currentPage, setCurrentPage] = useState(1)
   const [updatingUserId, setUpdatingUserId] = useState('')
   const [updateError, setUpdateError] = useState('')
-  const [currentUser, setCurrentUser] = useState(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
 
-  async function loadUsers(page = 1) {
-    setLoading(true)
-    setError('')
-    const { ok, body } = await fetchUsersPage(page)
-    if (ok) {
-      setUsers(body.users || [])
-      setTotalPages(body.total_pages || 1)
-      setCurrentPage(body.page || 1)
-      setTotalItems(body.total_items || 0)
-    } else {
-      setError('No se pudo cargar la lista de usuarios.')
-    }
-    setLoading(false)
-  }
+  const usersQuery = useQuery({
+    queryKey: ['adminUsers', currentPage],
+    queryFn: async () => {
+      const { ok, body } = await fetchUsersPage(currentPage)
+      if (!ok) throw new Error('No se pudo cargar la lista de usuarios.')
+      return body
+    },
+  })
+  const rolesQuery = useQuery({
+    queryKey: ['adminRoles'],
+    queryFn: async () => {
+      const { ok, body } = await fetchRoles()
+      return ok ? body : []
+    },
+  })
+  const currentUserQuery = useQuery({
+    queryKey: ['me'],
+    queryFn: async () => {
+      const { ok, body } = await fetchCurrentUser()
+      return ok ? body : null
+    },
+  })
 
-  useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- bootstrap */
-    fetchCurrentUser().then(({ ok, body }) => ok && setCurrentUser(body))
-    fetchRoles().then(({ ok, body }) => ok && setRoles(body))
-    loadUsers(1)
-    /* eslint-enable react-hooks/set-state-in-effect */
-  }, [])
+  const users = usersQuery.data?.users || []
+  const totalPages = usersQuery.data?.total_pages || 1
+  const totalItems = usersQuery.data?.total_items || 0
+
+  const loadUsers = useCallback(
+    (page = currentPage) => {
+      setCurrentPage(page)
+      qc.invalidateQueries({ queryKey: ['adminUsers'] })
+    },
+    [currentPage, qc],
+  )
 
   async function withUpdating(userId, fn) {
     setUpdatingUserId(userId)
@@ -66,11 +73,13 @@ export function useUsersAdmin() {
     }
   }
 
+  const refreshUsers = () => qc.invalidateQueries({ queryKey: ['adminUsers'] })
+
   async function handleRoleChange(userId, roleId) {
     await withUpdating(userId, async () => {
       const { ok, body } = await updateUserRole(userId, roleId)
       if (!ok) return toast.error(detail(body, 'Error al actualizar el rol.'))
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: body.role } : u)))
+      refreshUsers()
       toast.success('Rol del usuario actualizado.')
     })
   }
@@ -83,7 +92,7 @@ export function useUsersAdmin() {
         return false
       }
       toast.success('Perfil actualizado.')
-      loadUsers(currentPage)
+      refreshUsers()
       return true
     })
   }
@@ -92,7 +101,7 @@ export function useUsersAdmin() {
     await withUpdating(userId, async () => {
       const { ok, body } = await updateUserStatus(userId, isActive)
       if (!ok) return toast.error(detail(body, 'Error al actualizar el estado.'))
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, is_active: isActive } : u)))
+      refreshUsers()
       toast.success(isActive ? 'Usuario activado.' : 'Usuario desactivado.')
     })
   }
@@ -101,11 +110,7 @@ export function useUsersAdmin() {
     await withUpdating(userId, async () => {
       const { ok, body } = await unlockUser(userId)
       if (!ok) return toast.error(detail(body, 'Error al desbloquear al usuario.'))
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId ? { ...u, failed_login_attempts: 0, locked_until: null } : u
-        )
-      )
+      refreshUsers()
       toast.success('Usuario desbloqueado.')
     })
   }
@@ -131,13 +136,20 @@ export function useUsersAdmin() {
   }
 
   function handlePageChange(newPage) {
-    if (newPage >= 1 && newPage <= totalPages) loadUsers(newPage)
+    if (newPage >= 1 && newPage <= totalPages) setCurrentPage(newPage)
   }
 
   return {
-    users, roles, loading, error,
-    updatingUserId, updateError, currentUser,
-    currentPage, totalPages, totalItems,
+    users,
+    roles: rolesQuery.data || [],
+    loading: usersQuery.isLoading,
+    error: usersQuery.isError ? 'No se pudo cargar la lista de usuarios.' : '',
+    updatingUserId,
+    updateError,
+    currentUser: currentUserQuery.data || null,
+    currentPage,
+    totalPages,
+    totalItems,
     fetchUsers: loadUsers,
     handleRoleChange, handleEditUser, handleToggleStatus, handleUnlockUser,
     handleSendResetEmail, handleGenerateResetWhatsApp,
