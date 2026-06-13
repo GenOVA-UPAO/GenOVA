@@ -6,6 +6,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
@@ -24,17 +25,37 @@ from llm.model_catalog import (
     merge_with_defaults,
     sanitize_settings,
 )
-from models import User
+from models import Role, User, UserRole
 from rate_limit import limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+_LLM_PROVIDERS = ("groq", "openrouter", "opencode")
+
+
 def _enabled_keys(user) -> set[tuple[str, str]]:
     """Set of (provider, model_id) the user has explicitly enabled."""
     enabled = user.enabled_models or []
     return {(e["provider"], e["model_id"]) for e in enabled if isinstance(e, dict)}
+
+
+def _has_own_llm_key(user, db: Session) -> bool:
+    """True when user has a personal LLM API key, or holds the admin role."""
+    own = user.user_api_keys or {}
+    if any(own.get(p) for p in _LLM_PROVIDERS):
+        return True
+    return (
+        db.execute(
+            select(UserRole)
+            .join(Role)
+            .where(UserRole.user_id == user.id, Role.name == "administrador")
+        )
+        .scalars()
+        .first()
+        is not None
+    )
 
 
 class LlmSettingsUpdate(BaseModel):
@@ -45,6 +66,7 @@ class LlmSettingsUpdate(BaseModel):
 def get_llm_settings(
     request: Request,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """Effective per-type config (user override or default) + filtered catalog +
     enabled_models + full catalog (search/category/paginated).
@@ -106,6 +128,7 @@ def get_llm_settings(
 
     return {
         "settings": merge_with_defaults(current_user.llm_settings, extra_keys=enabled_keys),
+        "has_own_llm_key": _has_own_llm_key(current_user, db),
         "catalog": filtered_catalog,
         "catalog_all": [e for e in all_entries if e.get("active")],
         "catalog_full": page_items,

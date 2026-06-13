@@ -13,6 +13,7 @@ import { LlmSettingsForm } from '../settings/LlmSettingsForm.jsx'
  */
 export function LlmSettingsModal({ open, onOpenChange }) {
   const hook = useLlmSettings(open)
+  const { hasOwnLlmKey } = hook
 
   async function handleSave() {
     const ok = await hook.save()
@@ -33,15 +34,17 @@ export function LlmSettingsModal({ open, onOpenChange }) {
           </DialogDescription>
         </DialogHeader>
 
-        <LlmSettingsForm hook={hook} />
+        <LlmSettingsForm hook={hook} readOnly={!hasOwnLlmKey} />
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={hook.saving}>
-            Cancelar
+            {hasOwnLlmKey ? 'Cancelar' : 'Cerrar'}
           </Button>
-          <Button onClick={handleSave} disabled={hook.saving || hook.loading}>
-            {hook.saving ? 'Guardando…' : 'Guardar'}
-          </Button>
+          {hasOwnLlmKey && (
+            <Button onClick={handleSave} disabled={hook.saving || hook.loading}>
+              {hook.saving ? 'Guardando…' : 'Guardar'}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

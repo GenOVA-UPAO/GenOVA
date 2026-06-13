@@ -24,6 +24,7 @@ export function useLlmSettings(enabled = true) {
   const [enabledModels, setEnabledModels] = useState([])
   const [defaults, setDefaults] = useState({})
   const [bounds, setBounds] = useState([30, 300])
+  const [hasOwnLlmKey, setHasOwnLlmKey] = useState(false)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -45,6 +46,7 @@ export function useLlmSettings(enabled = true) {
     try {
       const data = await fetchLlmSettings({ search: s, category: c, page: reqPage, page_size: 50 })
       setSettings(data.settings || {})
+      setHasOwnLlmKey(data.has_own_llm_key ?? false)
       setCatalog(data.catalog || {})
       setCatalogAll(Array.isArray(data.catalog_all) ? data.catalog_all : [])
       setEnabledModels(Array.isArray(data.enabled_models) ? data.enabled_models : [])
@@ -177,6 +179,7 @@ export function useLlmSettings(enabled = true) {
   return {
     settings, catalog, catalogAll, catalogFull, fullTotal, fullPage, fullHasMore,
     enabledModels, defaults, bounds, categories,
+    hasOwnLlmKey,
     loading, loadingMore, saving, enabledSaving, error,
     catalogStatus, refreshingCatalog, retryRefresh,
     searchQuery, categoryFilter,
