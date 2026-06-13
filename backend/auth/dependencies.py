@@ -1,18 +1,17 @@
-import os
-
 import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from config import settings
 from database import get_db
 from models import Role, User, UserRole
 from security import JWT_ALGORITHM, JWT_SECRET
 
 _COOKIE_NAME = "genova_token"
 # Set AUTH_ACCEPT_BEARER=0 in production once all clients use cookies.
-_ACCEPT_BEARER = os.getenv("AUTH_ACCEPT_BEARER", "1") == "1"
+_ACCEPT_BEARER = settings.auth_accept_bearer
 _security_scheme = HTTPBearer(auto_error=False)
 
 
