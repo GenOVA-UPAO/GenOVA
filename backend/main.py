@@ -16,6 +16,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from api.auth import router as auth_router
@@ -157,6 +158,9 @@ else:
 # CORSMiddleware — that combination causes 502 on OPTIONS preflight in Starlette.
 app.add_middleware(ProcessTimeMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
+# Trust X-Forwarded-Proto from Railway's edge proxy so 307 trailing-slash
+# redirects are generated with https:// instead of http://.
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 # CORSMiddleware must be outermost: it intercepts OPTIONS before any other
 # middleware runs, avoiding the BaseHTTPMiddleware / preflight incompatibility.
 app.add_middleware(
