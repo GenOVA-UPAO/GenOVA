@@ -96,13 +96,25 @@ def build_resource_plan(payload: StartJobRequest) -> list[dict]:
 
 
 def _legacy_phase_plan(phases: list[str]) -> list[dict]:
-    """Back-compat: one generic resource per requested phase (resource_type None)."""
+    """Back-compat: one default resource per requested phase.
+
+    Each phase gets its `_DEFAULT_PLAN` resource_type id (not None): a row with
+    resource_type=None materializes into an OvaPhase with no resource_type_id/
+    title, which regen can't map back to a generator and silently skips
+    ("unknown resource_type"). phase_order comes from `_PHASE_ORDER`, never from
+    the resource id.
+    """
+    default_rt = dict(_DEFAULT_PLAN)
     requested = [p.strip().lower() for p in phases if p and p.strip()]
-    rows = list(enumerate(requested, start=1)) if requested else None
-    pairs = [(t, o) for o, t in rows] if rows else list(_DEFAULT_PLAN)
+    phase_list = requested or [p for p, _ in _DEFAULT_PLAN]
     return [
-        {"phase_type": t, "phase_order": o, "resource_type": None, "resource_order": 0}
-        for t, o in pairs
+        {
+            "phase_type": t,
+            "phase_order": _PHASE_ORDER.get(t, 99),
+            "resource_type": str(default_rt.get(t, 1)),
+            "resource_order": 0,
+        }
+        for t in phase_list
     ]
 
 

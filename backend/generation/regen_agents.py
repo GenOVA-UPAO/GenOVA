@@ -25,6 +25,17 @@ _EXPLAIN_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLAIN_META.items()}
 _ELABORATE_NAME_TO_ID = {v["tipo"]: k for k, v in ELABORATE_META.items()}
 _EVALUATE_NAME_TO_ID = {v["tipo"]: k for k, v in EVALUATE_META.items()}
 
+# Default resource_type id per phase, used to recover legacy OvaPhase rows that
+# were materialized without a resource_type_id (or title) — otherwise regen can't
+# map them to a generator and skips them. Mirrors jobs_helpers._DEFAULT_PLAN.
+_PHASE_DEFAULT_ID = {
+    "engage": 1,
+    "explore": 2,
+    "explain": 3,
+    "elaborate": 4,
+    "evaluate": 5,
+}
+
 
 def _phase_meta(phase_type: str):
     mapping = {
@@ -64,6 +75,20 @@ def resolve_resource_type(phase: object) -> int | None:
     rid = lookup.get(name)
     if rid:
         return rid
+
+    # Legacy recovery: an OvaPhase saved without resource_type_id and without a
+    # parseable title (pre-fix jobs) can still regenerate using the phase default
+    # instead of being skipped. Only for known 5E phases; unknown stays None.
+    fallback = _PHASE_DEFAULT_ID.get(phase.phase_type)
+    if fallback is not None:
+        logger.warning(
+            "Unresolved resource_type for phase %s (type=%s, title=%r) — using default id %d",
+            phase.id,
+            phase.phase_type,
+            phase.title,
+            fallback,
+        )
+        return fallback
 
     logger.warning(
         "Cannot resolve resource_type for phase %s (type=%s, title=%r)",
