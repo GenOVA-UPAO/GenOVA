@@ -5,7 +5,7 @@ import uuid
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
@@ -72,9 +72,7 @@ def regenerate_ova(
     if payload.fase_ids:
         valid_phase_ids = {
             str(p.id)
-            for p in db.execute(
-                select(OvaPhase).where(OvaPhase.version_id == active_version.id)
-            )
+            for p in db.execute(select(OvaPhase).where(OvaPhase.version_id == active_version.id))
             .scalars()
             .all()
         }
@@ -94,6 +92,19 @@ def regenerate_ova(
         else active_version.prompt
     )
 
+    # Phases actually being regenerated: an explicit subset, else every phase of
+    # the active version ("Regenerar OVA completo"). Used to pace the progress
+    # estimate — without it a full regen counts 0 phases and the bar saturates at
+    # 99% in one _EST_SECONDS_PER_PHASE window while real work keeps running.
+    if payload.fase_ids:
+        total_phases = len(payload.fase_ids)
+    else:
+        total_phases = db.scalar(
+            select(func.count())
+            .select_from(OvaPhase)
+            .where(OvaPhase.version_id == active_version.id)
+        )
+
     ova.status = "generando"
     db.commit()
 
@@ -104,6 +115,7 @@ def regenerate_ova(
             "ova_id": ova_id,
             "prompt": effective_prompt,
             "phase_ids": payload.fase_ids,
+            "total_phases": max(int(total_phases or 1), 1),
             "started_at": time.time(),
             "status": "running",
         }
@@ -161,7 +173,7 @@ def get_regen_progress(
     if job_status in ("success", "error"):
         percentage = 100
     else:
-        n_phases = max(len(job.get("phase_ids", [])), 1)
+        n_phases = max(int(job.get("total_phases", 1)), 1)
         est_total = n_phases * _EST_SECONDS_PER_PHASE
         elapsed = max(0.0, time.time() - float(job["started_at"]))
         percentage = min(99, int((elapsed / est_total) * 100))
