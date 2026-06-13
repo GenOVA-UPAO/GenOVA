@@ -30,10 +30,14 @@ export default defineConfig([
     },
   },
   {
-    // shadcn/ui generated files export both components and CVA variant constants
+    // shadcn/ui: primitivas vendored (generadas por el CLI). Se mantienen tal cual
+    // las emite shadcn, así que quedan exentas de las reglas propias del proyecto
+    // (max-lines, exports mixtos, imports sin usar del scaffold).
     files: ['**/components/ui/*.{js,jsx}'],
     rules: {
       'react-refresh/only-export-components': 'off',
+      'max-lines': 'off',
+      'no-unused-vars': 'off',
     },
   },
   {
