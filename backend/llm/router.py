@@ -26,7 +26,12 @@ logger = logging.getLogger(__name__)
 # Tune down via LLM_TIMEOUT_S where workers are time-boxed.
 _LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "120"))
 
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=_LLM_TIMEOUT_S)
+# max_retries=0 en todos: ya recorremos nuestra propia cadena de fallback en
+# generar_texto, así que los reintentos internos del SDK (default 2) solo
+# multiplican la espera ante un proveedor lento/caído (3×timeout por intento +
+# la cadena externa) → la "carga indefinida". Un intento por modelo, y el control
+# de reintentos/backoff vive en generar_texto.
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=_LLM_TIMEOUT_S, max_retries=0)
 
 # OpenRouter uses the OpenAI-compatible endpoint.
 # HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
@@ -38,6 +43,7 @@ openrouter_client = OpenAI(
         "X-Title": "GenOVA",
     },
     timeout=_LLM_TIMEOUT_S,
+    max_retries=0,
 )
 
 # OpenCode Go uses the OpenAI-compatible endpoint.
@@ -45,6 +51,7 @@ opencode_client = OpenAI(
     api_key=os.getenv("OPENCODE_API_KEY") or "not-configured",
     base_url="https://opencode.ai/zen/go/v1",
     timeout=_LLM_TIMEOUT_S,
+    max_retries=0,
 )
 
 # (provider, model_id, extra_kwargs)
@@ -172,6 +179,35 @@ def _resolve_primary(
     return default, timeout
 
 
+def _retry_after_seconds(exc: Exception) -> float | None:
+    """Lee el header Retry-After del 429, si lo trae (Groq/OpenAI lo exponen)."""
+    resp = getattr(exc, "response", None)
+    if resp is None:
+        return None
+    try:
+        val = resp.headers.get("retry-after")
+        return float(val) if val else None
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
+def _retry_delay(exc: Exception | None, prev_provider: str | None, next_provider: str, i: int) -> float:
+    """Backoff adaptativo antes del intento i (>0) de la cadena de fallback.
+
+    Genérico: exponencial acotado. Rate-limit (429): honra un Retry-After corto;
+    si el siguiente intento es de OTRO proveedor, no espera (su ventana de límite
+    es independiente); si es el mismo proveedor saturado, espera un poco más."""
+    base = min(2 ** (i - 1), 8)
+    if isinstance(exc, (GroqRateLimitError, OpenAIRateLimitError)):
+        ra = _retry_after_seconds(exc)
+        if ra is not None and ra <= 20:
+            return ra
+        if next_provider != prev_provider:
+            return 0.0
+        return float(min(base * 2, 15))
+    return float(base)
+
+
 def generar_texto(
     prompt: str,
     tarea: str,
@@ -189,23 +225,26 @@ def generar_texto(
     chain: list[tuple[str, str, dict]] = [primary, *_FALLBACK_CHAIN.get(tarea, [])]
 
     last_err: Exception | None = None
+    prev_provider: str | None = None
     for i, (proveedor, model_id, extra) in enumerate(chain):
         role = "primary" if i == 0 else f"fallback {i}/{len(chain) - 1}"
         if i > 0:
-            backoff = min(2 ** (i - 1), 8)
+            backoff = _retry_delay(last_err, prev_provider, proveedor, i)
             logger.info(
-                "Task '%s' switching to %s → %s/%s (backoff %ds)",
+                "Task '%s' switching to %s → %s/%s (backoff %.1fs)",
                 tarea,
                 role,
                 proveedor,
                 model_id,
                 backoff,
             )
-            time.sleep(backoff)
+            if backoff:
+                time.sleep(backoff)
         try:
             return _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
         except _RECOVERABLE_ERRORS as exc:
             last_err = exc
+            prev_provider = proveedor
             next_step = (
                 f"{chain[i + 1][0]}/{chain[i + 1][1]}"
                 if i + 1 < len(chain)
