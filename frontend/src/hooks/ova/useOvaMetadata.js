@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { updateOvaMetadata } from '../../services/ovaHistoryService.js'
 
-export function useOvaMetadata(setOvas) {
+export function useOvaMetadata(onSaved) {
   const [metadataModalOpen, setMetadataModalOpen] = useState(false)
   const [metadataTargetId, setMetadataTargetId] = useState('')
   const [metadataForm, setMetadataForm] = useState({ title: '', description: '' })
@@ -47,13 +47,7 @@ export function useOvaMetadata(setOvas) {
         title: metadataForm.title,
         description: metadataForm.description,
       })
-      setOvas((prev) =>
-        prev.map((item) =>
-          item.id === metadataTargetId
-            ? { ...item, title: response.title, description: response.description }
-            : item
-        )
-      )
+      onSaved?.()
       toast.success(response.message || 'Metadatos actualizados correctamente.')
       closeMetadataModal()
     } catch (err) {
