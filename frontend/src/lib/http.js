@@ -1,7 +1,10 @@
 // Pull base URL safely. Vite injects `import.meta.env`; raw Node (used by the
 // cucumber-js unit suite) leaves it undefined, so guard the access.
 const ENV = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {}
-const RAW_BASE = ENV.VITE_API_BASE_URL || 'http://localhost:8000'
+// Production fallback ensures https:// even if VITE_API_BASE_URL is missing at build time.
+const RAW_BASE =
+  ENV.VITE_API_BASE_URL ||
+  (ENV.PROD ? 'https://genova-backend-production.up.railway.app' : 'http://localhost:8000')
 export const API_BASE = RAW_BASE.replace(/\/$/, '')
 
 const DEFAULT_TIMEOUT_MS = 15000
