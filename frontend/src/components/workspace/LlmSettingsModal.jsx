@@ -22,7 +22,7 @@ export function LlmSettingsModal({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Configuración de IA</DialogTitle>
           <DialogDescription>
@@ -34,7 +34,9 @@ export function LlmSettingsModal({ open, onOpenChange }) {
           </DialogDescription>
         </DialogHeader>
 
-        <LlmSettingsForm hook={hook} readOnly={!hasOwnLlmKey} />
+        <div className="max-h-[60vh] overflow-y-auto">
+          <LlmSettingsForm hook={hook} readOnly={!hasOwnLlmKey} />
+        </div>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={hook.saving}>
