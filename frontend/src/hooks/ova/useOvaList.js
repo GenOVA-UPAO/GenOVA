@@ -172,12 +172,10 @@ export function useOvaList() {
     handleSelectAll: selection.handleSelectAll,
     // metadata
     metadataModalOpen: metadata.metadataModalOpen,
-    metadataForm: metadata.metadataForm,
-    metadataError: metadata.metadataError,
+    metadataInitial: metadata.metadataInitial,
     metadataSaving: metadata.metadataSaving,
     openMetadataModal: metadata.openMetadataModal,
     closeMetadataModal: metadata.closeMetadataModal,
-    handleMetadataChange: metadata.handleMetadataChange,
-    handleMetadataSave: metadata.handleMetadataSave,
+    saveMetadata: metadata.saveMetadata,
   }
 }

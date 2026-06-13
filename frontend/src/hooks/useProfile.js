@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { apiFetch } from '../lib/http.js'
-import { useChangePassword } from './useChangePassword.js'
 
 function getInitials(fullName) {
   if (!fullName) return 'U'
@@ -19,136 +18,59 @@ function formatDate(isoString) {
   })
 }
 
+// Lectura del perfil vía TanStack Query; el form vive en ProfileForm (RHF+Zod).
 export function useProfile() {
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [universityId, setUniversityId] = useState('')
-  const [gender, setGender] = useState('otro')
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [createdAt, setCreatedAt] = useState('')
-  const [role, setRole] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [validationError, setValidationError] = useState({ fullName: '', email: '', universityId: '', phoneNumber: '' })
-
-  const passwordForm = useChangePassword()
-
-  const fetchProfile = async () => {
-    try {
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['me-profile'],
+    queryFn: async () => {
       const response = await apiFetch('/api/auth/me')
-      if (response.status === 200) {
-        const data = await response.json()
-        setFullName(data.full_name || '')
-        setEmail(data.email || '')
-        setUniversityId(data.university_id || '')
-        setGender(data.gender || 'otro')
-        setPhoneNumber(data.phone_number || '')
-        setCreatedAt(data.created_at || '')
-        setRole(data.role || 'usuario')
-      } else {
-        toast.error('No se pudo cargar la información de perfil.')
-      }
-    } catch {
-      toast.error('Error al conectar con el servidor.')
-    } finally {
-      setLoading(false)
-    }
+      if (response.status !== 200) throw new Error('No se pudo cargar la información de perfil.')
+      return response.json()
+    },
+  })
+
+  const profile = {
+    full_name: data?.full_name || '',
+    email: data?.email || '',
+    university_id: data?.university_id ? String(data.university_id) : '',
+    gender: data?.gender || 'otro',
+    phone_number: data?.phone_number || '',
   }
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial del perfil al montar
-    fetchProfile()
-  }, [])
-
-  const validate = () => {
-    const errors = { fullName: '', email: '', universityId: '', phoneNumber: '' }
-    let isValid = true
-    if (fullName.trim().length < 3) {
-      errors.fullName = 'El nombre completo debe tener al menos 3 caracteres.'
-      isValid = false
-    }
-    if (!email.trim()) {
-      errors.email = 'El correo electrónico es requerido.'
-      isValid = false
-    } else if (!/@.*\./.test(email)) {
-      errors.email = 'El formato del correo electrónico es inválido.'
-      isValid = false
-    }
-    if (phoneNumber) {
-      const cleaned = phoneNumber.replace('+', '').replace(' ', '').replace('-', '')
-      if (isNaN(cleaned)) {
-        errors.phoneNumber = 'El número de teléfono solo debe contener dígitos.'
-        isValid = false
-      }
-    }
-    setValidationError(errors)
-    return isValid
-  }
-
-  const handleProfileSubmit = async (e) => {
-    e.preventDefault()
-    if (!validate()) return
-
-    setSaving(true)
+  const saveProfile = async (values) => {
     try {
       const response = await apiFetch('/api/users/me', {
         method: 'PATCH',
         body: JSON.stringify({
-          full_name: fullName.trim(),
-          email: email.trim().toLowerCase(),
-          university_id: universityId ? parseInt(universityId, 10) : null,
-          gender: gender || null,
-          phone_number: phoneNumber.trim() || null,
+          full_name: values.full_name.trim(),
+          email: values.email.trim().toLowerCase(),
+          university_id: values.university_id ? parseInt(values.university_id, 10) : null,
+          gender: values.gender || null,
+          phone_number: values.phone_number?.trim() || null,
         }),
       })
       if (response.status === 200) {
-        const data = await response.json()
-        setFullName(data.full_name || '')
-        setEmail(data.email || '')
-        setUniversityId(data.university_id || '')
-        setGender(data.gender || 'otro')
-        setPhoneNumber(data.phone_number || '')
+        await refetch()
         toast.success('¡Perfil actualizado con éxito!')
-      } else {
-        const data = await response.json().catch(() => ({}))
-        toast.error(data.detail || 'Error al actualizar el perfil.')
+        return true
       }
+      const data2 = await response.json().catch(() => ({}))
+      toast.error(data2.detail || 'Error al actualizar el perfil.')
+      return false
     } catch {
       toast.error('Error de conexión con el servidor.')
-    } finally {
-      setSaving(false)
+      return false
     }
   }
 
   return {
-    fullName,
-    email,
-    universityId,
-    gender,
-    phoneNumber,
-    createdAt,
-    role,
-    loading,
-    saving,
-    validationError,
-    fetchProfile,
-    setFullName,
-    setEmail,
-    setUniversityId,
-    setGender,
-    setPhoneNumber,
-    handleProfileSubmit,
-    getInitials: () => getInitials(fullName),
+    profile,
+    role: data?.role || 'usuario',
+    createdAt: data?.created_at || '',
+    loading: isLoading,
+    saveProfile,
+    refetch,
+    getInitials: () => getInitials(profile.full_name),
     formatDate,
-    // password
-    currentPassword: passwordForm.currentPassword,
-    newPassword: passwordForm.newPassword,
-    confirmPassword: passwordForm.confirmPassword,
-    savingPassword: passwordForm.savingPassword,
-    passwordValidationError: passwordForm.passwordValidationError,
-    setCurrentPassword: passwordForm.setCurrentPassword,
-    setNewPassword: passwordForm.setNewPassword,
-    setConfirmPassword: passwordForm.setConfirmPassword,
-    handlePasswordSubmit: passwordForm.handlePasswordSubmit,
   }
 }

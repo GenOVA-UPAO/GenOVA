@@ -2,69 +2,55 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { updateOvaMetadata } from '../../services/ovaHistoryService.js'
 
+// El form vive en EditMetadataModal (React Hook Form). Este hook sólo maneja
+// apertura/cierre del modal, los valores iniciales y la llamada a la API.
 export function useOvaMetadata(onSaved) {
   const [metadataModalOpen, setMetadataModalOpen] = useState(false)
   const [metadataTargetId, setMetadataTargetId] = useState('')
-  const [metadataForm, setMetadataForm] = useState({ title: '', description: '' })
-  const [metadataError, setMetadataError] = useState('')
+  const [metadataInitial, setMetadataInitial] = useState({ title: '', description: '' })
   const [metadataSaving, setMetadataSaving] = useState(false)
 
   // Stable so it can be passed to the memoized OvaCard without busting memo.
   const openMetadataModal = useCallback((ova) => {
     setMetadataTargetId(ova.id)
-    setMetadataForm({ title: ova.title || '', description: ova.description || '' })
-    setMetadataError('')
+    setMetadataInitial({ title: ova.title || '', description: ova.description || '' })
     setMetadataModalOpen(true)
   }, [])
 
-  const closeMetadataModal = () => {
+  const closeMetadataModal = useCallback(() => {
     setMetadataModalOpen(false)
     setMetadataTargetId('')
-    setMetadataError('')
-    setMetadataForm({ title: '', description: '' })
-  }
+  }, [])
 
-  const handleMetadataChange = (event) => {
-    const { name, value } = event.target
-    setMetadataForm((prev) => ({ ...prev, [name]: value }))
-    if (metadataError) setMetadataError('')
-  }
-
-  const handleMetadataSave = async () => {
-    const trimmedTitle = metadataForm.title.trim()
-    if (!trimmedTitle) {
-      setMetadataError('El título es obligatorio.')
-      return
-    }
-    if (trimmedTitle.length > 100) {
-      setMetadataError('El título no puede superar 100 caracteres.')
-      return
-    }
-    setMetadataSaving(true)
-    setMetadataError('')
-    try {
-      const response = await updateOvaMetadata(metadataTargetId, {
-        title: metadataForm.title,
-        description: metadataForm.description,
-      })
-      onSaved?.()
-      toast.success(response.message || 'Metadatos actualizados correctamente.')
-      closeMetadataModal()
-    } catch (err) {
-      setMetadataError(err.message || 'No se pudieron guardar los metadatos.')
-    } finally {
-      setMetadataSaving(false)
-    }
-  }
+  const saveMetadata = useCallback(
+    async (values) => {
+      setMetadataSaving(true)
+      try {
+        const response = await updateOvaMetadata(metadataTargetId, {
+          title: values.title,
+          description: values.description || '',
+        })
+        onSaved?.()
+        toast.success(response.message || 'Metadatos actualizados correctamente.')
+        setMetadataModalOpen(false)
+        setMetadataTargetId('')
+        return true
+      } catch (err) {
+        toast.error(err.message || 'No se pudieron guardar los metadatos.')
+        return false
+      } finally {
+        setMetadataSaving(false)
+      }
+    },
+    [metadataTargetId, onSaved],
+  )
 
   return {
     metadataModalOpen,
-    metadataForm,
-    metadataError,
+    metadataInitial,
     metadataSaving,
     openMetadataModal,
     closeMetadataModal,
-    handleMetadataChange,
-    handleMetadataSave,
+    saveMetadata,
   }
 }

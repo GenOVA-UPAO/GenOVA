@@ -26,7 +26,7 @@ export function MisOvasPage() {
         <BulkTrashModal count={list.selectedIds.size} onConfirm={list.handleBulkTrashConfirm} onCancel={() => list.setShowBulkModal(false)} isLoading={list.bulkLoading} />
       ) : null}
       {list.metadataModalOpen ? (
-        <EditMetadataModal form={list.metadataForm} onChange={list.handleMetadataChange} onSubmit={list.handleMetadataSave} onCancel={list.closeMetadataModal} isLoading={list.metadataSaving} error={list.metadataError} />
+        <EditMetadataModal initial={list.metadataInitial} onSave={list.saveMetadata} onCancel={list.closeMetadataModal} isLoading={list.metadataSaving} />
       ) : null}
 
       <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
