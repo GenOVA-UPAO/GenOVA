@@ -26,6 +26,11 @@ def _to_libpq_url(url: str) -> str:
 
 
 def get_checkpointer():
+    # In CI (GitHub Actions sets CI=true) use MemorySaver to avoid holding
+    # psycopg connections against the shared test DB pool.
+    if os.getenv("CI"):
+        logger.info("CI environment — LangGraph MemorySaver")
+        return MemorySaver()
     url = os.getenv("DATABASE_URL", "")
     if url and ("postgresql" in url or url.startswith("postgres://")):
         try:
