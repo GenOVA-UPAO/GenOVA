@@ -369,8 +369,16 @@ def refresh_catalog(db=None) -> None:
                 full.extend(e for e in _full_catalog if e["provider"] == "openrouter")
             if groq_ids is None:
                 full.extend(e for e in _full_catalog if e["provider"] == "groq")
-            # Static providers have no API refresh — always carry over.
-            full.extend(e for e in _full_catalog if e["provider"] not in ("openrouter", "groq"))
+            # Static providers are already included by _build_full_catalog —
+            # no extend needed (would create duplicates like a double opencode entry).
+            seen_keys: set[tuple[str, str]] = set()
+            deduped: list[dict] = []
+            for e in full:
+                key = (e["provider"], e["model_id"])
+                if key not in seen_keys:
+                    seen_keys.add(key)
+                    deduped.append(e)
+            full = deduped
             full.sort(key=lambda e: (not e["curated"], e["provider"], e["model_id"]))
             _full_catalog = full
             for provider, source in (("openrouter", or_source), ("groq", groq_source)):

@@ -51,10 +51,8 @@ opencode_client = OpenAI(
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
 _MODELOS: dict[str, tuple] = {
     "texto": ("groq", "llama-3.3-70b-versatile", {}),
-    # DeepSeek V4 Flash: 284B MoE / 13B active, 1M context, strong on code.
-    # NOTE: there is no ":free" variant on OpenRouter (that id 404s). The paid
-    # tier is cheap (~$0.20/M in, $0.80/M out) and handles long HTML reliably.
-    "codigo": ("openrouter", "deepseek/deepseek-v4-flash", {}),
+    # DeepSeek V4 Pro via OpenCode Go subscription — stronger code model.
+    "codigo": ("opencode", "deepseek-v4-pro", {}),
     "orquestador": ("groq", "openai/gpt-oss-120b", {"reasoning_effort": "medium"}),
     "razonamiento": ("groq", "qwen/qwen3-32b", {"reasoning_effort": "default"}),
 }
