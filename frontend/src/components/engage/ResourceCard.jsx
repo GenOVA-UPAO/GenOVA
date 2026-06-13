@@ -1,19 +1,19 @@
 const INTERACTIVIDAD_COLOR = {
-  Alta: 'bg-emerald-100 text-emerald-700',
-  Media: 'bg-amber-100 text-amber-700',
-  Baja: 'bg-slate-100 text-slate-600',
+  Alta: 'bg-primary/10 text-primary',
+  Media: 'bg-accent-brand/10 text-accent-brand',
+  Baja: 'bg-muted text-muted-foreground',
 }
 
 export function ResourceCard({
   resource, selected, onClick, selectionIndex = null, disabled = false,
-  selectedRingCls = 'ring-2 ring-indigo-500 border-indigo-300 bg-indigo-50',
-  selectedBadgeCls = 'bg-indigo-600',
+  selectedRingCls = 'ring-2 ring-primary border-primary/40 bg-primary/5',
+  selectedBadgeCls = 'bg-primary',
 }) {
-  let ring = 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
+  let ring = 'border-border bg-card hover:border-primary/30 hover:shadow-md'
   if (selected) {
     ring = selectedRingCls
   } else if (disabled) {
-    ring = 'border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed'
+    ring = 'border-border bg-muted/40 opacity-50 cursor-not-allowed'
   }
 
   function handleClick() {
@@ -33,17 +33,17 @@ export function ResourceCard({
         <span className="text-2xl leading-none mt-0.5">{resource.emoji}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-slate-900 text-sm">{resource.tipo}</span>
+            <span className="font-semibold text-foreground text-sm">{resource.tipo}</span>
             <span
               className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${INTERACTIVIDAD_COLOR[resource.interactividad] || INTERACTIVIDAD_COLOR.Baja}`}
             >
               {resource.interactividad}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">⏱ {resource.duracion}</p>
+          <p className="text-xs text-muted-foreground mt-1">⏱ {resource.duracion}</p>
         </div>
         {selected && (
-          <span className={`flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full ${selectedBadgeCls} text-white text-xs font-bold`}>
+          <span className={`flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full ${selectedBadgeCls} text-primary-foreground text-xs font-bold`}>
             {selectionIndex ?? '✓'}
           </span>
         )}
