@@ -161,7 +161,8 @@ def test_editar_rol_duplicado():
     target_fixture="test_role_id",
 )
 def rol_personalizado(base_url, admin_token, role_id, name):
-    return _ensure_role(base_url, admin_token, name)
+    unique_name = f"{name}_{uuid.uuid4().hex[:6]}"
+    return _ensure_role(base_url, admin_token, unique_name)
 
 
 @given(parsers.parse('que tengo el modal de edición del rol "{nombre}" abierto'))

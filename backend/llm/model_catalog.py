@@ -134,7 +134,7 @@ def _rebuild_catalog() -> None:
 # System defaults per generation type (mirror llm_router._MODELOS primaries).
 DEFAULTS: dict[str, dict] = {
     "texto": {"provider": "groq", "model_id": "llama-3.3-70b-versatile"},
-    "codigo": {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-flash"},
+    "codigo": {"provider": "opencode", "model_id": "deepseek-v4-pro"},
     "orquestador": {"provider": "groq", "model_id": "openai/gpt-oss-120b"},
     "razonamiento": {"provider": "groq", "model_id": "qwen/qwen3-32b"},
 }

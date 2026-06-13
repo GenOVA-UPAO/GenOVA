@@ -489,6 +489,9 @@ def cliente_elige_recursos():
             {"phase_type": "engage", "resource_type": "Cómic Interactivo"},
             {"phase_type": "engage", "resource_type": "Micro-Podcast"},
             {"phase_type": "explore", "resource_type": "5"},
+            {"phase_type": "explain", "resource_type": "Infografía"},
+            {"phase_type": "elaborate", "resource_type": "Quiz"},
+            {"phase_type": "evaluate", "resource_type": "Rúbrica"},
         ],
     )
     return {"payload": payload}
@@ -503,18 +506,29 @@ def construye_plan(ctx):
 
 @then("hay una fila por cada recurso elegido con su resource_type")
 def fila_por_recurso(plan):
-    assert len(plan) == 3
-    assert [r["resource_type"] for r in plan] == ["Cómic Interactivo", "Micro-Podcast", "5"]
+    assert len(plan) == 6
+    assert [r["resource_type"] for r in plan] == [
+        "Cómic Interactivo", "Micro-Podcast", "5", "Infografía", "Quiz", "Rúbrica",
+    ]
 
 
 @then("cada recurso conserva su fase y su orden dentro de la fase")
 def conserva_fase_orden(plan):
     engage = [r for r in plan if r["phase_type"] == "engage"]
     explore = [r for r in plan if r["phase_type"] == "explore"]
+    explain = [r for r in plan if r["phase_type"] == "explain"]
+    elaborate = [r for r in plan if r["phase_type"] == "elaborate"]
+    evaluate = [r for r in plan if r["phase_type"] == "evaluate"]
     assert [r["resource_order"] for r in engage] == [0, 1]
     assert all(r["phase_order"] == 1 for r in engage)
     assert [r["resource_order"] for r in explore] == [0]
     assert all(r["phase_order"] == 2 for r in explore)
+    assert [r["resource_order"] for r in explain] == [0]
+    assert all(r["phase_order"] == 3 for r in explain)
+    assert [r["resource_order"] for r in elaborate] == [0]
+    assert all(r["phase_order"] == 4 for r in elaborate)
+    assert [r["resource_order"] for r in evaluate] == [0]
+    assert all(r["phase_order"] == 5 for r in evaluate)
 
 
 # Scenario 9 (HU-022/B2): materializa OVA parcial con ≥1 done (R1/R2)
