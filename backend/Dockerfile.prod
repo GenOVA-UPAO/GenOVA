@@ -1,9 +1,13 @@
 FROM python:3.12-slim
 
+# uv: instalador de dependencias ~10x más rápido que pip (binario oficial).
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV UV_LINK_MODE=copy
 
 # Railway builds from repo root with dockerfilePath=/backend/Dockerfile.prod,
 # so COPY paths must include the backend/ prefix.
@@ -11,8 +15,9 @@ COPY backend/requirements.txt ./
 # Railway Metal builder requires id=s/<service-id>-<target> for cache mounts.
 # The service ID (e131728c-...) is the Railway service ID for GenOVA Backend.
 # If you recreate the service, update this ID from the Railway dashboard URL.
-RUN --mount=type=cache,id=s/e131728c-6c18-47b5-832c-81f733254bea-/root/.cache/pip,target=/root/.cache/pip \
-    pip install -r requirements.txt
+# requirements.txt sigue siendo la fuente (paridad pip/uv); --system = sin venv.
+RUN --mount=type=cache,id=s/e131728c-6c18-47b5-832c-81f733254bea-/root/.cache/uv,target=/root/.cache/uv \
+    uv pip install --system -r requirements.txt
 
 COPY backend/ .
 
