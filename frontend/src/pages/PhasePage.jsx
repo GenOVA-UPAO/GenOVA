@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { usePhaseGeneration } from '../hooks/labs/usePhaseGeneration.js'
 import { ResourceCard } from '../components/engage/ResourceCard.jsx'
 import { HtmlPreview } from '../components/engage/HtmlPreview.jsx'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export function PhasePage({ phase, emoji, description, fetchRecursos, generateResource }) {
   const [recursos, setRecursos] = useState([])
@@ -33,15 +35,15 @@ export function PhasePage({ phase, emoji, description, fetchRecursos, generateRe
       <header className="space-y-1">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{emoji}</span>
-          <h1 className="text-2xl font-semibold text-slate-900">Fase {phase}</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Fase {phase}</h1>
         </div>
-        <p className="text-slate-600 text-sm">{description}</p>
+        <p className="text-muted-foreground text-sm">{description}</p>
       </header>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-        <h2 className="text-base font-semibold text-slate-800">1. Elige el tipo de recurso</h2>
+      <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+        <h2 className="text-base font-semibold text-foreground">1. Elige el tipo de recurso</h2>
         {loadingRecursos ? (
-          <p className="text-sm text-slate-500">Cargando recursos...</p>
+          <p className="text-sm text-muted-foreground">Cargando recursos...</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {recursos.map(r => (
@@ -56,49 +58,50 @@ export function PhasePage({ phase, emoji, description, fetchRecursos, generateRe
         )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-        <h2 className="text-base font-semibold text-slate-800">2. Define el concepto</h2>
+      <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+        <h2 className="text-base font-semibold text-foreground">2. Define el concepto</h2>
         <div className="flex gap-3 flex-wrap">
-          <input
+          <Input
             type="text"
             value={concept}
             onChange={e => { setConcept(e.target.value); reset() }}
             placeholder="Ej: K-Means, Regresión Lineal, Redes Neuronales..."
-            className="flex-1 min-w-64 rounded-lg border border-slate-300 px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="h-10 flex-1 w-full sm:w-auto sm:min-w-64"
             disabled={loading}
           />
-          <button
+          <Button
             onClick={generate}
             disabled={!canGenerate}
-            className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            size="lg"
+            className="w-full sm:w-auto px-5"
           >
             {loading ? 'Generando con IA...' : 'Generar recurso'}
-          </button>
+          </Button>
         </div>
 
         {selectedResource && (
-          <p className="text-xs text-slate-500">
-            Recurso: <span className="font-medium text-indigo-600">{selectedResource.emoji} {selectedResource.tipo}</span>
+          <p className="text-xs text-muted-foreground">
+            Recurso: <span className="font-medium text-primary">{selectedResource.emoji} {selectedResource.tipo}</span>
           </p>
         )}
 
         {loading && (
-          <div className="flex items-center gap-3 text-sm text-slate-600">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" />
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
             <span>Llamando a Groq + OpenRouter... esto puede tomar 20–60 segundos.</span>
           </div>
         )}
 
         {error && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 text-sm text-destructive">
             {error}
           </div>
         )}
       </div>
 
       {result && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-          <h2 className="text-base font-semibold text-slate-800">3. Vista previa</h2>
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+          <h2 className="text-base font-semibold text-foreground">3. Vista previa</h2>
           <HtmlPreview result={result} />
         </div>
       )}

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   batchPermanentDelete,
@@ -15,39 +16,32 @@ function nextPageAfterDrop(currentPage, totalItems, dropped) {
 }
 
 export function useTrashList() {
-  const [ovas, setOvas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const qc = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
-
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [restoringId, setRestoringId] = useState('')
   const [deletingId, setDeletingId] = useState('')
   const [bulkLoading, setBulkLoading] = useState(false)
   const [confirmModal, setConfirmModal] = useState(null)
 
-  const loadTrash = useCallback(async (page = 1) => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await fetchTrashedOvas({ page, limit: 10 })
-      setOvas(data.ovas || [])
-      setTotalPages(data.total_pages || 1)
-      setCurrentPage(data.page || 1)
-      setTotalItems(data.total_items || 0)
-    } catch {
-      setError('No se pudo cargar la papelera.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['trashList', currentPage],
+    queryFn: () => fetchTrashedOvas({ page: currentPage, limit: 10 }),
+  })
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial de la papelera
-    loadTrash(1)
-  }, [loadTrash])
+  const ovas = data?.ovas || []
+  const totalPages = data?.total_pages || 1
+  const totalItems = data?.total_items || 0
+  const error = isError ? 'No se pudo cargar la papelera.' : ''
+
+  const loadTrash = useCallback(
+    (page = 1) => {
+      setCurrentPage(page)
+      qc.invalidateQueries({ queryKey: ['trashList'] })
+      qc.invalidateQueries({ queryKey: ['ovaList'] })
+    },
+    [qc],
+  )
 
   const handleToggleSelect = (id) => {
     setSelectedIds((prev) => {
@@ -65,7 +59,7 @@ export function useTrashList() {
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      loadTrash(newPage)
+      setCurrentPage(newPage)
       setSelectedIds(new Set())
     }
   }
@@ -155,11 +149,11 @@ export function useTrashList() {
     })
   }
 
-  const isEmpty = !loading && !error && ovas.length === 0
+  const isEmpty = !isLoading && !isError && ovas.length === 0
 
   return {
     ovas,
-    loading,
+    loading: isLoading,
     error,
     currentPage,
     totalPages,

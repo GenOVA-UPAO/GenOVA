@@ -36,7 +36,6 @@ export function useRoles() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial de roles al montar
     fetchRoles()
   }, [])
 

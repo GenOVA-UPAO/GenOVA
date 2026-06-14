@@ -11,8 +11,8 @@ truncated stub); otherwise the original is kept.
 """
 
 import logging
-import os
 
+from config import settings
 from llm.html_validator import validate_html
 from llm.router import generar_texto
 from llm.themes import build_design_system
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def _refine_enabled() -> bool:
-    return os.getenv("OVA_REFINE", "1").strip().lower() not in ("0", "false", "no")
+    return str(settings.ova_refine).strip().lower() not in ("0", "false", "no")
 
 
 def _quality_issues(html: str, phase: str, rt: int) -> list[str]:

@@ -70,6 +70,7 @@ function PlatformKeyRow({ provider, maskedValue, onSaved }) {
         <div className="flex gap-1 shrink-0">
           {maskedValue && !editing && (
             <button
+              type="button"
               onClick={handleDelete}
               disabled={saving}
               className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive"

@@ -122,6 +122,7 @@ export function WorkspaceChatPanel({
         ) : null}
       </div>
 
+      {/* biome-ignore lint/a11y: zona drag&drop; la carga de archivos tiene alternativa accesible vía botón */}
       <div
         className="border-t border-border p-3 space-y-2"
         onDragOver={(e) => e.preventDefault()}

@@ -53,3 +53,21 @@ export async function savePlatformConfigKey(provider, key) {
   }
   return res.json()
 }
+
+export async function getAdminLlmConfig() {
+  const res = await apiFetch('/api/admin/llm-config')
+  if (!res.ok) throw new Error('No se pudo cargar la configuración de modelos.')
+  return res.json()
+}
+
+export async function saveAdminLlmConfig(config) {
+  const res = await apiFetch('/api/admin/llm-config', {
+    method: 'PUT',
+    body: JSON.stringify(config),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail || 'No se pudo guardar la configuración de modelos.')
+  }
+  return res.json()
+}

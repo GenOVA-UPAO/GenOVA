@@ -25,9 +25,10 @@ export function ApiKeysCard() {
     fetchLlmSettings({ page_size: 500 })
       .then(({ catalog }) => {
         const grouped = {}
-        ;(catalog ?? []).forEach((m) => {
-          ;(grouped[m.provider] ??= []).push(m)
-        })
+        for (const m of catalog ?? []) {
+          if (!grouped[m.provider]) grouped[m.provider] = []
+          grouped[m.provider].push(m)
+        }
         setCatalogByProvider(grouped)
       })
       .catch(() => {})

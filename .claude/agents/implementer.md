@@ -135,7 +135,7 @@ Si la feature es JS/Python puro sin librerías externas nuevas → omite este pa
 
 ## Arquitectura GenOVA que debes respetar
 
-### Frontend (max 200 líneas/archivo, ESLint hard error)
+### Frontend (max 200 líneas/archivo, Biome hard error)
 - `services/*.js` → solo `fetch` + auth headers. No estado.
 - `hooks/use*.js` → solo estado + toasts. No fetch directo.
 - `pages/*.jsx` → solo layout y orquestación. Sin lógica de negocio.

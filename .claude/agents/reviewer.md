@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Revisor de GenOVA. Aprueba o rechaza implementaciones contra specs, CHECKPOINTS y convenciones. Auto-repara tests rojos (máx 2 intentos). Puede auto-actualizar su propio protocolo, ruff config, ESLint config y CHECKPOINTS.md cuando detecta patrones recurrentes.
+description: Revisor de GenOVA. Aprueba o rechaza implementaciones contra specs, CHECKPOINTS y convenciones. Auto-repara tests rojos (máx 2 intentos). Puede auto-actualizar su propio protocolo, ruff config, Biome config y CHECKPOINTS.md cuando detecta patrones recurrentes.
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -86,7 +86,7 @@ reglas actuales, **puedes actualizar**:
 |---|---|
 | `.claude/agents/reviewer.md` | Agregar checks nuevos a este protocolo |
 | `backend/pyproject.toml` (`[tool.ruff]`) | Reglas ruff nuevas o ajustes de severidad |
-| `frontend/eslint.config.js` | Reglas ESLint nuevas o ajustes |
+| `frontend/biome.json` | Reglas Biome nuevas o ajustes |
 | `CHECKPOINTS.md` | Agregar criterios objetivos de calidad |
 
 **Antes de aplicar el cambio**, documenta en el veredicto:

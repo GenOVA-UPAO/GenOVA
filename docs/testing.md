@@ -80,7 +80,7 @@ frontend-unit (BDD) ───┘
 
 | Job | Hace |
 |---|---|
-| `lint` | ESLint (frontend) + `ruff check` (backend) |
+| `lint` | Biome (frontend) + `ruff check` (backend) |
 | `frontend-unit` | `pnpm test:unit` (cucumber-js) |
 | `backend-bdd` | levanta backend, espera `/health`, corre `pytest tests/step_defs/` |
 | `e2e` | instala Chromium, levanta backend + frontend, corre `pnpm test:e2e`; sube `playwright-report` si falla |

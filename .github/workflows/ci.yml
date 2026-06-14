@@ -11,11 +11,11 @@ jobs:
     name: Lint Frontend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install
@@ -26,12 +26,16 @@ jobs:
     name: Lint Backend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
+      - uses: astral-sh/setup-uv@v8.2.0
+        with: { enable-cache: true }
 
-      - run: pip install ruff && ruff check backend/
+      - run: uvx ruff check backend/
+
+      - name: Deps parity (pyproject <-> requirements)
+        run: python3 scripts/sync_deps.py --check
+        working-directory: backend
 
   backend-bdd:
     name: Backend BDD (pytest-bdd)
@@ -43,19 +47,16 @@ jobs:
       GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
       OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with: { python-version: '3.11' }
 
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('backend/requirements-dev.txt') }}
-          restore-keys: pip-
+      - uses: astral-sh/setup-uv@v8.2.0
+        with: { enable-cache: true }
 
       - name: Install backend deps
-        run: pip install -r requirements-dev.txt
+        run: uv pip install --system -r requirements-dev.txt
         working-directory: backend
 
       - name: Start backend
@@ -73,19 +74,19 @@ jobs:
           cat /tmp/backend.log
           exit 1
 
-      - name: Run BDD step defs
-        run: pytest tests/step_defs/ -v --tb=short
+      - name: Run BDD step defs + unit
+        run: pytest tests/step_defs/ tests/test_llm_config_store.py -v --tb=short
         working-directory: backend
 
   frontend-unit:
     name: Frontend Unit BDD (cucumber-js)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install
@@ -103,16 +104,16 @@ jobs:
       GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
       OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ hashFiles('tests/package.json') }}
@@ -120,17 +121,14 @@ jobs:
 
       - run: pnpm --filter genova-tests exec playwright install --with-deps chromium
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with: { python-version: '3.11' }
 
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('backend/requirements-dev.txt') }}
-          restore-keys: pip-
+      - uses: astral-sh/setup-uv@v8.2.0
+        with: { enable-cache: true }
 
       - name: Install backend deps
-        run: pip install -r requirements-dev.txt
+        run: uv pip install --system -r requirements-dev.txt
         working-directory: backend
 
       - name: Start backend
@@ -150,7 +148,7 @@ jobs:
 
       - run: pnpm test:e2e
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report

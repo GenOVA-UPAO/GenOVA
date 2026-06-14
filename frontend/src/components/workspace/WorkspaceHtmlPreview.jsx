@@ -13,28 +13,28 @@ import { Badge } from '@/components/ui/badge'
 const PHASE_META = {
   engage: {
     label: 'Enganche',
-    tab: 'bg-violet-600 text-white',
-    badge: 'bg-violet-100 text-violet-700 border-violet-200',
+    tab: 'bg-primary text-primary-foreground',
+    badge: 'bg-primary/10 text-primary border-primary/20',
   },
   explore: {
     label: 'Exploración',
-    tab: 'bg-sky-600 text-white',
-    badge: 'bg-sky-100 text-sky-700 border-sky-200',
+    tab: 'bg-primary/85 text-primary-foreground',
+    badge: 'bg-primary/10 text-primary border-primary/20',
   },
   explain: {
     label: 'Explicación',
-    tab: 'bg-emerald-600 text-white',
-    badge: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    tab: 'bg-primary/70 text-primary-foreground',
+    badge: 'bg-primary/10 text-primary border-primary/20',
   },
   elaborate: {
     label: 'Elaboración',
-    tab: 'bg-amber-600 text-white',
-    badge: 'bg-amber-100 text-amber-700 border-amber-200',
+    tab: 'bg-accent-brand/85 text-primary-foreground',
+    badge: 'bg-accent-brand/10 text-accent-brand border-accent-brand/25',
   },
   evaluate: {
     label: 'Evaluación',
-    tab: 'bg-rose-600 text-white',
-    badge: 'bg-rose-100 text-rose-700 border-rose-200',
+    tab: 'bg-accent-brand text-primary-foreground',
+    badge: 'bg-accent-brand/10 text-accent-brand border-accent-brand/25',
   },
 }
 
@@ -70,6 +70,7 @@ export function WorkspaceHtmlPreview({ phases, onResourceClick }) {
   const activeMeta = active ? getMeta(active.phase_type) : DEFAULT_META
 
   return (
+    // biome-ignore lint/a11y: delegación de clic; los recursos internos son botones focusables y operables por teclado
     <section className="flex flex-col h-full" onClick={onResourceClick}>
       {/* Resource tabs */}
       <nav

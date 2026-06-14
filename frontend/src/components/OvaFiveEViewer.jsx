@@ -3,11 +3,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 const PHASE_COLORS = {
-  enganche: { tab: 'bg-violet-600 text-white', badge: 'bg-violet-100 text-violet-700 border-violet-200' },
-  exploracion: { tab: 'bg-sky-600 text-white', badge: 'bg-sky-100 text-sky-700 border-sky-200' },
-  explicacion: { tab: 'bg-emerald-600 text-white', badge: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  elaboracion: { tab: 'bg-amber-600 text-white', badge: 'bg-amber-100 text-amber-700 border-amber-200' },
-  evaluacion: { tab: 'bg-rose-600 text-white', badge: 'bg-rose-100 text-rose-700 border-rose-200' },
+  enganche: { tab: 'bg-primary text-primary-foreground', badge: 'bg-primary/10 text-primary border-primary/20' },
+  exploracion: { tab: 'bg-primary/85 text-primary-foreground', badge: 'bg-primary/10 text-primary border-primary/20' },
+  explicacion: { tab: 'bg-primary/70 text-primary-foreground', badge: 'bg-primary/10 text-primary border-primary/20' },
+  elaboracion: { tab: 'bg-accent-brand/85 text-primary-foreground', badge: 'bg-accent-brand/10 text-accent-brand border-accent-brand/25' },
+  evaluacion: { tab: 'bg-accent-brand text-primary-foreground', badge: 'bg-accent-brand/10 text-accent-brand border-accent-brand/25' },
 }
 
 const DEFAULT_TAB = 'bg-muted text-muted-foreground'
@@ -117,7 +117,7 @@ export function OvaFiveEViewer({ content }) {
         ) : null}
       </header>
 
-      <nav role="tablist" aria-label="Fases del modelo 5E" className="flex flex-wrap gap-1 border-b border-border px-5 py-3">
+      <div role="tablist" aria-label="Fases del modelo 5E" className="flex flex-wrap gap-1 border-b border-border px-5 py-3">
         {phases.map((phase, i) => {
           const isActive = i === activeIndex
           const c = phaseColor(phase.id)
@@ -138,7 +138,7 @@ export function OvaFiveEViewer({ content }) {
             </button>
           )
         })}
-      </nav>
+      </div>
 
       <div id={`panel-${activePhase?.id}`} role="tabpanel" aria-labelledby={`tab-${activePhase?.id}`} className="px-5 py-5">
         {activePhase ? <PhasePanel phase={activePhase} colors={colors} /> : null}

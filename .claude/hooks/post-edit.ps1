@@ -46,7 +46,7 @@ if ($FilePath -match "frontend[/\\]") {
     $result = pnpm lint 2>&1
     $exit = $LASTEXITCODE
     Pop-Location
-    Show-Lint "ESLint" $result $exit
+    Show-Lint "Biome" $result $exit
 }
 elseif ($FilePath -match "backend[/\\]") {
     if (Test-Debounce "backend") { exit 0 }

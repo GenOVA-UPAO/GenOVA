@@ -149,8 +149,10 @@ export function MyForm() {
 
 ## Line limit
 
-ESLint enforces **max 200 lines** per file (`skipBlankLines: true`, `skipComments: true`).
-Exemptions: test files, `AdminUsersPage.jsx`, `useUsersAdmin.js`, `wireframes/**`.
+Biome enforces **max 200 lines** per file via `style/noExcessiveLinesPerFile`
+(`skipBlankLines: true`; comments DO count — Biome has no `skipComments`).
+Exemptions (in `biome.json` overrides): `components/ui/*`, `AdminUsersPage.jsx`,
+`useUsersAdmin.js`, `wireframes/**`.
 
 If a migration would push a file over 200, extract a sub-component.
 
@@ -174,8 +176,8 @@ If a migration would push a file over 200, extract a sub-component.
 pnpm install        # install dependencies
 pnpm dev            # Vite dev server -> http://localhost:5173
 pnpm build          # production build
-pnpm lint           # ESLint (must be 0 errors)
-pnpm format         # Prettier check
+pnpm lint           # Biome lint (must be 0 errors)
+pnpm format         # Biome format check
 pnpm test:unit      # cucumber-js unit tests (no browser, no backend)
 pnpm test:e2e       # Playwright BDD (requires frontend + backend running)
 ```

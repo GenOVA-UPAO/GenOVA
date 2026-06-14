@@ -37,7 +37,7 @@ export function ModelCatalogRow({ model, locked, enabled, saving, categoryLabels
         )}
       </span>
       <span className="text-[10px] text-muted-foreground shrink-0">
-        {(categoryLabels || {})[model.category || 'texto'] || model.category || 'texto'}
+        {categoryLabels?.[model.category || 'texto'] || model.category || 'texto'}
       </span>
       {ctx && (
         <span className="text-[10px] text-muted-foreground/70 shrink-0 hidden sm:inline">{ctx}</span>

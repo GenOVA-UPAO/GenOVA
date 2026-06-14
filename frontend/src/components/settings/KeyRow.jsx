@@ -12,8 +12,6 @@ const PROVIDER_META = {
   falai: { label: 'fal.ai', placeholder: '...', href: 'https://fal.ai/keys' },
 }
 
-export { PROVIDER_META }
-
 export function KeyRow({ provider, maskedValue, onSaved }) {
   const meta = PROVIDER_META[provider] ?? { label: provider, placeholder: '...', href: '#' }
   const [editing, setEditing] = useState(false)
@@ -72,6 +70,7 @@ export function KeyRow({ provider, maskedValue, onSaved }) {
         <div className="flex gap-1 shrink-0">
           {maskedValue && !editing && (
             <button
+              type="button"
               onClick={handleDelete}
               disabled={saving}
               className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive"

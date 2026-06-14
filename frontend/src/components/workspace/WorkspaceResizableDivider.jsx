@@ -67,12 +67,16 @@ export function WorkspaceResizableDivider({ ratio, onRatioChange, containerRef }
   }, [onRatioChange, containerRef])
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: splitter ARIA (role=separator) no tiene elemento nativo equivalente
     <div
       className="hidden sm:flex w-3 shrink-0 cursor-col-resize items-center justify-center group outline-none transition-colors hover:bg-primary/10 active:bg-primary/15 focus-visible:ring-2 focus-visible:ring-ring/50"
       onMouseDown={startDrag}
       role="separator"
       aria-label="Ajustar paneles"
       aria-orientation="vertical"
+      aria-valuenow={Math.round((ratio ?? 0.38) * 100)}
+      aria-valuemin={Math.round(SPLIT_MIN * 100)}
+      aria-valuemax={Math.round(SPLIT_MAX * 100)}
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'ArrowLeft') {

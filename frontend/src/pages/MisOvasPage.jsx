@@ -26,7 +26,7 @@ export function MisOvasPage() {
         <BulkTrashModal count={list.selectedIds.size} onConfirm={list.handleBulkTrashConfirm} onCancel={() => list.setShowBulkModal(false)} isLoading={list.bulkLoading} />
       ) : null}
       {list.metadataModalOpen ? (
-        <EditMetadataModal form={list.metadataForm} onChange={list.handleMetadataChange} onSubmit={list.handleMetadataSave} onCancel={list.closeMetadataModal} isLoading={list.metadataSaving} error={list.metadataError} />
+        <EditMetadataModal initial={list.metadataInitial} onSave={list.saveMetadata} onCancel={list.closeMetadataModal} isLoading={list.metadataSaving} />
       ) : null}
 
       <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
@@ -119,7 +119,7 @@ export function MisOvasPage() {
             <>
               <p className="text-sm font-semibold">Aún no has creado ningún OVA</p>
               <p className="mt-1 text-xs text-muted-foreground">Genera tu primer objeto virtual de aprendizaje con ayuda de la IA.</p>
-              <Button asChild className="mt-5">
+              <Button asChild className="mt-5 bg-accent-brand text-accent-brand-foreground hover:bg-accent-brand/90">
                 <Link to="/crear-ova">Crear mi primer OVA</Link>
               </Button>
             </>
@@ -127,22 +127,27 @@ export function MisOvasPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {list.ovas.map((ova) => (
-            <OvaCard
+          {list.ovas.map((ova, i) => (
+            <div
               key={ova.id}
-              ova={ova}
-              job={jobs[ova.id]}
-              onResume={resume}
-              isSelected={list.selectedIds.has(ova.id)}
-              onToggleSelect={list.handleToggleSelect}
-              onMoveToTrash={list.handleMoveToTrashRequest}
-              onDownload={list.handleDownload}
-              onDuplicate={list.handleDuplicate}
-              onEditMetadata={list.openMetadataModal}
-              isMoving={list.movingId === ova.id}
-              isDownloading={list.downloadingId === ova.id}
-              isDuplicating={list.duplicatingId === ova.id}
-            />
+              className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+              style={{ animationDelay: `${Math.min(i, 8) * 40}ms`, animationFillMode: 'backwards' }}
+            >
+              <OvaCard
+                ova={ova}
+                job={jobs[ova.id]}
+                onResume={resume}
+                isSelected={list.selectedIds.has(ova.id)}
+                onToggleSelect={list.handleToggleSelect}
+                onMoveToTrash={list.handleMoveToTrashRequest}
+                onDownload={list.handleDownload}
+                onDuplicate={list.handleDuplicate}
+                onEditMetadata={list.openMetadataModal}
+                isMoving={list.movingId === ova.id}
+                isDownloading={list.downloadingId === ova.id}
+                isDuplicating={list.duplicatingId === ova.id}
+              />
+            </div>
           ))}
         </div>
       )}

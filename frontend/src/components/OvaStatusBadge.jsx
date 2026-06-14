@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { StateBadge } from '@/components/ui/StateBadge'
 
 const STATUS_LABELS = {
   borrador: 'Borrador',
@@ -7,19 +7,19 @@ const STATUS_LABELS = {
   error: 'Error',
 }
 
-const STATUS_CLASSES = {
-  borrador: 'bg-slate-100 text-slate-700 border-slate-200',
-  generando: 'bg-amber-50 text-amber-700 border-amber-200',
-  listo: 'bg-green-50 text-green-700 border-green-200',
-  error: 'bg-red-50 text-red-700 border-red-200',
+// Mapea el estado del OVA a un estado semántico on-brand (tokens UPAO):
+// generando = naranja (en progreso), listo = azul (logrado), error = destructive.
+const STATUS_TO_STATE = {
+  borrador: 'neutral',
+  generando: 'warning',
+  listo: 'success',
+  error: 'error',
 }
 
 export function OvaStatusBadge({ status }) {
   return (
-    <Badge
-      className={`rounded-full font-semibold ${STATUS_CLASSES[status] || STATUS_CLASSES.borrador}`}
-    >
+    <StateBadge status={STATUS_TO_STATE[status] || 'neutral'}>
       {STATUS_LABELS[status] || status}
-    </Badge>
+    </StateBadge>
   )
 }

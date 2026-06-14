@@ -57,7 +57,7 @@ export function ProgressPanel({
         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
-              failedCount ? 'bg-amber-500' : 'bg-primary'
+              failedCount ? 'bg-accent-brand' : 'bg-primary'
             }`}
             style={{ width: `${pct}%` }}
           />

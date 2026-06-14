@@ -37,6 +37,7 @@ export function PromptPanel({
       <h2 className="text-base font-semibold">Tema del OVA</h2>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        {/* biome-ignore lint/a11y: zona drag&drop; la carga de archivos tiene alternativa accesible vía botón */}
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -86,7 +87,7 @@ export function PromptPanel({
                 disabled={isGenerating || uploadsProps.disabled || !canUploadMore}
                 title="Adjuntar archivos de apoyo (PDF, Word, PowerPoint, Audio, Imagen)"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg aria-hidden="true" className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
               </Button>
@@ -122,7 +123,7 @@ export function PromptPanel({
         Mínimo {minChars} caracteres · elige 1-4 recursos por cada una de las 5 fases 5E.
       </p>
 
-      <p className="rounded bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-xs text-amber-800 shadow-sm">
+      <p className="rounded bg-accent-brand/10 border border-accent-brand/30 px-2.5 py-1.5 text-xs text-accent-brand shadow-sm">
         <b>Video:</b> Sin modelo disponible. Usa HeyGen, Synthesia o Sora con el contenido generado por GenOVA.
       </p>
 

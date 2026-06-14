@@ -1,45 +1,33 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { markLoggedIn } from '../lib/auth.js'
 import { apiFetch } from '../lib/http.js'
+import { registerSchema } from '../lib/schemas/auth.js'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
-
 export function RegisterPage() {
   const navigate = useNavigate()
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [touched, setTouched] = useState({ fullName: false, email: false, password: false })
   const [serverError, setServerError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { full_name: '', email: '', password: '' },
+  })
 
-  const isFullNameValid = fullName.trim().length >= 3 && fullName.trim().length <= 100
-  const isEmailValid = emailRegex.test(email)
-  const isPasswordValid = passwordRegex.test(password)
-
-  const showFullNameError = touched.fullName && fullName.length > 0 && !isFullNameValid
-  const showEmailError = touched.email && email.length > 0 && !isEmailValid
-  const showPasswordError = touched.password && password.length > 0 && !isPasswordValid
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setTouched({ fullName: true, email: true, password: true })
+  const onSubmit = async ({ full_name, email, password }) => {
     setServerError('')
-
-    if (!isFullNameValid || !isEmailValid || !isPasswordValid || isSubmitting) return
-
-    setIsSubmitting(true)
-
     try {
       const response = await apiFetch('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ full_name: fullName.trim(), email, password }),
+        body: JSON.stringify({ full_name: full_name.trim(), email, password }),
       })
       const data = await response.json()
 
@@ -52,8 +40,6 @@ export function RegisterPage() {
       setServerError(data?.message || 'No se pudo completar el registro.')
     } catch {
       setServerError('No se pudo conectar con el servidor. Intenta de nuevo.')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -65,27 +51,19 @@ export function RegisterPage() {
           Regístrate para guardar y acceder a tus OVAs.
         </p>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
+        <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="space-y-1.5">
             <Label htmlFor="fullName">Nombre completo</Label>
             <Input
               id="fullName"
               type="text"
-              name="name"
               autoComplete="name"
               placeholder="Ejemplo: Solange"
-              value={fullName}
-              aria-invalid={showFullNameError}
-              onChange={(event) => {
-                setFullName(event.target.value)
-                setTouched((prev) => ({ ...prev, fullName: true }))
-                if (serverError) setServerError('')
-              }}
+              aria-invalid={!!errors.full_name}
+              {...register('full_name')}
             />
-            {showFullNameError ? (
-              <p className="text-xs text-destructive">
-                El nombre completo debe tener al menos 3 caracteres y máximo 100.
-              </p>
+            {errors.full_name ? (
+              <p className="text-xs text-destructive">{errors.full_name.message}</p>
             ) : null}
           </div>
 
@@ -94,20 +72,14 @@ export function RegisterPage() {
             <Input
               id="email"
               type="email"
-              name="email"
               autoComplete="email"
               inputMode="email"
               placeholder="estudiante@upao.edu"
-              value={email}
-              aria-invalid={showEmailError}
-              onChange={(event) => {
-                setEmail(event.target.value)
-                setTouched((prev) => ({ ...prev, email: true }))
-                if (serverError) setServerError('')
-              }}
+              aria-invalid={!!errors.email}
+              {...register('email')}
             />
-            {showEmailError ? (
-              <p className="text-xs text-destructive">Ingresa un correo con formato válido.</p>
+            {errors.email ? (
+              <p className="text-xs text-destructive">{errors.email.message}</p>
             ) : null}
           </div>
 
@@ -116,20 +88,14 @@ export function RegisterPage() {
             <Input
               id="password"
               type="password"
-              name="password"
               autoComplete="new-password"
               placeholder="••••••••"
-              value={password}
-              aria-invalid={showPasswordError}
-              onChange={(event) => {
-                setPassword(event.target.value)
-                setTouched((prev) => ({ ...prev, password: true }))
-                if (serverError) setServerError('')
-              }}
+              aria-invalid={!!errors.password}
+              {...register('password')}
             />
             <p className="text-xs text-muted-foreground">
-              {showPasswordError
-                ? <span className="text-destructive">Mínimo 8 caracteres con letras y números.</span>
+              {errors.password
+                ? <span className="text-destructive">{errors.password.message}</span>
                 : 'Usa al menos 8 caracteres con letras y números.'}
             </p>
           </div>
@@ -143,7 +109,7 @@ export function RegisterPage() {
           <Button
             type="submit"
             className="w-full gap-2"
-            disabled={!isFullNameValid || !isEmailValid || !isPasswordValid || isSubmitting}
+            disabled={isSubmitting}
           >
             {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />

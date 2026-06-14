@@ -25,9 +25,9 @@ const EXPLORE_RESOURCES = [
 ]
 
 const INTERACTIVIDAD_COLOR = {
-  Alta: 'bg-green-100 text-green-700',
-  Media: 'bg-yellow-100 text-yellow-700',
-  Baja: 'bg-slate-100 text-slate-500',
+  Alta: 'bg-primary/10 text-primary',
+  Media: 'bg-accent-brand/10 text-accent-brand',
+  Baja: 'bg-muted text-muted-foreground',
 }
 
 function ResourceGrid({ resources, phase, selectedPhase, selectedType, onSelect }) {
@@ -38,15 +38,16 @@ function ResourceGrid({ resources, phase, selectedPhase, selectedType, onSelect 
         return (
           <button
             key={r.id}
+            type="button"
             onClick={() => onSelect(phase, r.id)}
             className={`rounded-lg border p-3 text-left transition-all ${
               active
-                ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                : 'border-border bg-card hover:border-primary/30 hover:bg-muted/50'
             }`}
           >
             <span className="text-xl">{r.emoji}</span>
-            <p className="mt-1 text-xs font-medium text-slate-800 leading-tight">{r.tipo}</p>
+            <p className="mt-1 text-xs font-medium text-foreground leading-tight">{r.tipo}</p>
             <span
               className={`mt-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${INTERACTIVIDAD_COLOR[r.interactividad]}`}
             >
@@ -63,7 +64,7 @@ export function PhaseResourceSelector({ selectedPhase, selectedType, onSelect })
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           🎯 Fase ENGAGE
         </h3>
         <ResourceGrid
@@ -75,7 +76,7 @@ export function PhaseResourceSelector({ selectedPhase, selectedType, onSelect })
         />
       </div>
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           🔍 Fase EXPLORE
         </h3>
         <ResourceGrid

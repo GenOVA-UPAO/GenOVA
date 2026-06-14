@@ -1,12 +1,13 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
+// Espectro 5E on-brand: azul UPAO (primeras fases) → naranja UPAO (cierre/logro).
 const PHASE_STYLE = {
-  engage:    'bg-indigo-100 text-indigo-700 border-indigo-200',
-  explore:   'bg-emerald-100 text-emerald-700 border-emerald-200',
-  explain:   'bg-blue-100 text-blue-700 border-blue-200',
-  elaborate: 'bg-amber-100 text-amber-700 border-amber-200',
-  evaluate:  'bg-violet-100 text-violet-700 border-violet-200',
+  engage:    'bg-primary/10 text-primary border-primary/20',
+  explore:   'bg-primary/10 text-primary border-primary/20',
+  explain:   'bg-primary/10 text-primary border-primary/20',
+  elaborate: 'bg-accent-brand/10 text-accent-brand border-accent-brand/25',
+  evaluate:  'bg-accent-brand/10 text-accent-brand border-accent-brand/25',
 }
 
 const PHASE_EMOJI = {
@@ -27,7 +28,7 @@ function PhaseGroup({ phase, items }) {
           key={`${phase}-${r.id}`}
           className={`rounded-full gap-1.5 ${PHASE_STYLE[phase]}`}
         >
-          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-white/70 text-[10px] font-bold">
+          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-background/70 text-[10px] font-bold">
             {i + 1}
           </span>
           {r.emoji} {r.tipo}

@@ -32,8 +32,8 @@ function Run-Step {
     }
 }
 
-# [1] Frontend ESLint
-Run-Step "Frontend ESLint (pnpm lint)" {
+# [1] Frontend lint (Biome)
+Run-Step "Frontend lint (Biome, pnpm lint)" {
     pnpm lint
 }
 
@@ -53,6 +53,18 @@ Run-Step "Backend ruff check" {
     $ErrorActionPreference = $prev
     # NOTE: must NOT use `exit` inside this scriptblock — in PS5 it terminates
     # the whole verify.ps1 process. Set LASTEXITCODE so Run-Step reads it.
+    $global:LASTEXITCODE = $finalExit
+}
+
+# [2b] Paridad de dependencias backend (pyproject.toml <-> requirements.txt)
+Run-Step "Backend deps parity (sync_deps.py --check)" {
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    Push-Location backend
+    & python scripts/sync_deps.py --check 2>&1 | ForEach-Object { Write-Host $_ }
+    $finalExit = $LASTEXITCODE
+    Pop-Location
+    $ErrorActionPreference = $prev
     $global:LASTEXITCODE = $finalExit
 }
 

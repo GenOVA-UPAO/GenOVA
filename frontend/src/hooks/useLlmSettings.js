@@ -69,9 +69,7 @@ export function useLlmSettings(enabled = true) {
   }, [searchQuery, categoryFilter])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (enabled) void load({ search: '', category: 'all', page: 1 })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled])
 
   const loadMore = useCallback(() => {

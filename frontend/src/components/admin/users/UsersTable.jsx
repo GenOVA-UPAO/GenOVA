@@ -1,14 +1,16 @@
-import { useState } from 'react'
 import { UserStatusBadge } from './StatusBadge.jsx'
 import { UserActionMenu } from './UserActionMenu.jsx'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
+// `hide` oculta columnas secundarias en pantallas chicas para que la tabla no
+// desborde en móvil (correo/estado/rol/acciones siempre visibles).
 const COLS = [
   { label: 'Nombre Completo', cls: 'w-[18%] min-w-[140px]' },
   { label: 'Correo Electrónico', cls: 'w-[18%] min-w-[160px]' },
-  { label: 'Código UPAO', cls: 'w-[12%] min-w-[100px]' },
-  { label: 'Teléfono', cls: 'w-[10%] min-w-[110px]' },
+  { label: 'Código UPAO', cls: 'w-[12%] min-w-[100px]', hide: 'hidden lg:table-cell' },
+  { label: 'Teléfono', cls: 'w-[10%] min-w-[110px]', hide: 'hidden md:table-cell' },
   { label: 'Estado', cls: 'w-[10%] min-w-[90px]' },
   { label: 'Rol Asignado', cls: 'w-[20%] min-w-[150px]' },
   { label: 'Acciones', cls: 'w-[12%] min-w-[100px] text-center' },
@@ -38,7 +40,7 @@ function RoleCell({ user, roles, isCurrentUserAdmin, isMe, isActionsDisabled, is
         {roles.map((r) => {
           if (r.name === 'administrador' && !isCurrentUserAdmin) return null
           return (
-            <option key={r.id} value={r.id} className="bg-white text-slate-700 font-medium">
+            <option key={r.id} value={r.id} className="bg-popover text-foreground font-medium">
               {r.name}
             </option>
           )
@@ -50,7 +52,6 @@ function RoleCell({ user, roles, isCurrentUserAdmin, isMe, isActionsDisabled, is
 }
 
 export function UsersTable({ users, roles, currentUser, updatingUserId, handlers, getRoleColorClasses }) {
-  const [openMenuFor, setOpenMenuFor] = useState(null)
   const isCurrentUserAdmin = currentUser?.role === 'administrador'
 
   return (
@@ -59,7 +60,7 @@ export function UsersTable({ users, roles, currentUser, updatingUserId, handlers
         <TableHeader className="bg-muted/40">
           <TableRow>
             {COLS.map((c) => (
-              <TableHead key={c.label} className={`whitespace-nowrap text-xs uppercase tracking-wider ${c.cls}`}>
+              <TableHead key={c.label} className={`whitespace-nowrap text-xs uppercase tracking-wider ${c.cls} ${c.hide || ''}`}>
                 {c.label}
               </TableHead>
             ))}
@@ -76,9 +77,9 @@ export function UsersTable({ users, roles, currentUser, updatingUserId, handlers
                 <TableCell className="font-semibold">
                   {user.full_name || <span className="text-muted-foreground italic font-normal">No especificado</span>}
                 </TableCell>
-                <TableCell className="break-all">{user.email}</TableCell>
-                <TableCell className="font-mono text-xs">{formatUnivId(user.university_id)}</TableCell>
-                <TableCell className="whitespace-nowrap">
+                <TableCell className="break-words">{user.email}</TableCell>
+                <TableCell className="font-mono text-xs hidden lg:table-cell">{formatUnivId(user.university_id)}</TableCell>
+                <TableCell className="whitespace-nowrap hidden md:table-cell">
                   {user.phone_number || <span className="text-muted-foreground italic">--</span>}
                 </TableCell>
                 <TableCell><UserStatusBadge user={user} /></TableCell>
@@ -91,30 +92,25 @@ export function UsersTable({ users, roles, currentUser, updatingUserId, handlers
                     getRoleColorClasses={getRoleColorClasses}
                   />
                 </TableCell>
-                <TableCell className="text-center relative">
+                <TableCell className="text-center">
                   {isMe || isActionsDisabled ? (
                     <span className="text-muted-foreground text-xs italic">Protegido</span>
                   ) : (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setOpenMenuFor((id) => (id === user.id ? null : user.id))}
-                      >
-                        Acción ▾
-                      </Button>
-                      {openMenuFor === user.id ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">Acción ▾</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
                         <UserActionMenu
                           user={user}
-                          onClose={() => setOpenMenuFor(null)}
                           onEdit={() => handlers.openEdit(user)}
                           onToggleStatus={handlers.handleToggleStatus}
                           onUnlock={handlers.handleUnlockUser}
                           onSendResetEmail={handlers.handleSendResetEmail}
                           onSendResetWhatsApp={handlers.runWhatsAppReset}
                         />
-                      ) : null}
-                    </>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </TableCell>
               </TableRow>

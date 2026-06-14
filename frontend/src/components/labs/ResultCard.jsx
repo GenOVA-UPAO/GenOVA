@@ -1,16 +1,12 @@
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { StateBadge } from '@/components/ui/StateBadge'
 import { checkHtmlQuality } from '../../lib/labQuality.js'
 
 function QualityBadge({ ok, label }) {
   return (
-    <Badge
-      className={`rounded-full gap-1 text-[10px] ${
-        ok ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-600 border-red-200'
-      }`}
-    >
+    <StateBadge status={ok ? 'success' : 'error'} className="gap-1 text-[10px]">
       {ok ? '✓' : '✗'} {label}
-    </Badge>
+    </StateBadge>
   )
 }
 
@@ -38,15 +34,12 @@ export function ResultCard({ result, isWinner, onSelectWinner, onExportScorm }) 
           <span className="text-xs font-semibold text-foreground">
             {result.model_id?.split('/').pop() || result.model_id}
           </span>
-          <Badge
-            className={`ml-2 rounded text-[10px] ${
-              result.provider === 'groq'
-                ? 'bg-green-100 text-green-700 border-green-200'
-                : 'bg-blue-100 text-blue-700 border-blue-200'
-            }`}
+          <StateBadge
+            status={result.provider === 'groq' ? 'success' : 'info'}
+            className="ml-2 text-[10px]"
           >
             {result.provider}
-          </Badge>
+          </StateBadge>
         </div>
         {isDone ? (
           <span className="text-[10px] text-muted-foreground">

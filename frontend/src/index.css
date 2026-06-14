@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/fraunces";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -60,8 +61,9 @@ body {
 @theme inline {
   --font-heading: var(--font-display);
   --font-sans: 'Geist Variable', sans-serif;
-  /* Distinctive humanist serif for display titles — zero web-font dependency. */
-  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  /* Editorial display serif — self-hosted (Fraunces variable) para carácter
+     consistente en todas las plataformas; Georgia como fallback. */
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --color-accent-brand: var(--accent-brand);
   --color-accent-brand-foreground: var(--accent-brand-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -153,6 +155,8 @@ body {
   /* Page titles get the editorial display serif; smaller headings stay sans. */
   h1 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+    line-height: 1.08;
   }
 }

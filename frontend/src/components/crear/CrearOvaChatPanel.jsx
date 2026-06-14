@@ -76,7 +76,7 @@ export function CrearOvaChatPanel({
         <div className={`px-4 pt-3 pb-4 transition-opacity duration-300 ${isGenerating ? 'opacity-40 pointer-events-none' : ''}`}>
           <SectionLabel num="03" title="Modelos" Icon={Brain} />
           <LlmEnginesPanel />
-          <p className="mt-2 rounded-md bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[11px] text-amber-800">
+          <p className="mt-2 rounded-md bg-accent-brand/10 border border-accent-brand/30 px-2.5 py-1.5 text-[11px] text-accent-brand">
             <b>Video:</b> Sin modelo disponible. Usa HeyGen, Synthesia o Sora con el contenido generado.
           </p>
         </div>
@@ -106,6 +106,7 @@ export function CrearOvaChatPanel({
       </div>
 
       {/* Bottom: prompt + generate */}
+      {/* biome-ignore lint/a11y: zona drag&drop; la carga de archivos tiene alternativa accesible vía botón */}
       <div className="border-t border-border bg-muted/10 p-3 space-y-2 shrink-0"
         onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
         {uploadError ? <p className="text-xs text-destructive">{uploadError}</p> : null}

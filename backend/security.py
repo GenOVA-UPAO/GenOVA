@@ -1,17 +1,11 @@
-import os
-
 import bcrypt
 
-JWT_SECRET = os.getenv("JWT_SECRET", "")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-JWT_EXPIRES_MINUTES = int(os.getenv("JWT_EXPIRES_MINUTES", "1440"))
+from config import settings
 
-_WEAK_SECRETS = {"", "change-me", "changeme", "secret", "test"}
-if JWT_SECRET in _WEAK_SECRETS or len(JWT_SECRET) < 16:
-    raise RuntimeError(
-        "JWT_SECRET must be set to a strong random value (>=16 chars). "
-        "Generate with: python -c \"import secrets; print(secrets.token_urlsafe(48))\""
-    )
+# Validados/centralizados en config.Settings (JWT_SECRET ya se valida allí).
+JWT_SECRET = settings.jwt_secret
+JWT_ALGORITHM = settings.jwt_algorithm
+JWT_EXPIRES_MINUTES = settings.jwt_expires_minutes
 
 # bcrypt truncates input at 72 bytes; we enforce a hard ceiling earlier in the
 # request pipeline so the CPU cost of hashing a multi-MB password cannot be

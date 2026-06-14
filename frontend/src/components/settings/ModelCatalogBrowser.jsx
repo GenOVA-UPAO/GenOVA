@@ -62,7 +62,7 @@ export function ModelCatalogBrowser({ hook }) {
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-accent'}`}
             >
-              {(hook.categoryLabels || {})[cat] || cat}
+              {hook.categoryLabels?.[cat] || cat}
             </button>
           ))}
         </div>

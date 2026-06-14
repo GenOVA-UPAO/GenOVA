@@ -1,33 +1,29 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { markLoggedIn } from '../lib/auth.js'
 import { apiFetch } from '../lib/http.js'
+import { loginSchema } from '../lib/schemas/auth.js'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 export function LoginPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [touched, setTouched] = useState({ email: false, password: false })
   const [serverError, setServerError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  })
 
-  const isEmailValid = emailRegex.test(email)
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setTouched({ email: true, password: true })
+  const onSubmit = async ({ email, password }) => {
     setServerError('')
-
-    if (!isEmailValid || password.length === 0 || isSubmitting) return
-
-    setIsSubmitting(true)
-
     try {
       const response = await apiFetch('/auth/login', {
         method: 'POST',
@@ -51,8 +47,6 @@ export function LoginPage() {
       setServerError(data?.message || 'No se pudo iniciar sesión.')
     } catch {
       setServerError('No se pudo conectar con el servidor. Intenta de nuevo.')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -65,26 +59,20 @@ export function LoginPage() {
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Iniciar sesión</h1>
         <p className="mt-2 text-sm text-muted-foreground">Accede para continuar al curso de ML.</p>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
+        <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="space-y-1.5">
             <Label htmlFor="email">Correo</Label>
             <Input
               id="email"
               type="email"
-              name="email"
               autoComplete="email"
               inputMode="email"
               placeholder="estudiante@genova.ai"
-              value={email}
-              aria-invalid={touched.email && email.length > 0 && !isEmailValid}
-              onChange={(event) => {
-                setEmail(event.target.value)
-                setTouched((prev) => ({ ...prev, email: true }))
-                if (serverError) setServerError('')
-              }}
+              aria-invalid={!!errors.email}
+              {...register('email')}
             />
-            {touched.email && email.length > 0 && !isEmailValid ? (
-              <p className="text-xs text-destructive">Ingresa un correo con formato válido.</p>
+            {errors.email ? (
+              <p className="text-xs text-destructive">{errors.email.message}</p>
             ) : null}
           </div>
 
@@ -93,16 +81,14 @@ export function LoginPage() {
             <Input
               id="password"
               type="password"
-              name="password"
               autoComplete="current-password"
               placeholder="••••••••"
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value)
-                setTouched((prev) => ({ ...prev, password: true }))
-                if (serverError) setServerError('')
-              }}
+              aria-invalid={!!errors.password}
+              {...register('password')}
             />
+            {errors.password ? (
+              <p className="text-xs text-destructive">{errors.password.message}</p>
+            ) : null}
           </div>
 
           {serverError ? (
@@ -114,7 +100,7 @@ export function LoginPage() {
           <Button
             type="submit"
             className="w-full gap-2"
-            disabled={!isEmailValid || password.length === 0 || isSubmitting}
+            disabled={isSubmitting}
           >
             {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />

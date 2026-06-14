@@ -8,36 +8,7 @@ import { OvaSettingsCard } from '../components/settings/OvaSettingsCard.jsx'
 import { ProfileSkeleton } from '../components/ProfileSkeleton.jsx'
 
 export function ProfilePage() {
-  const {
-    fullName,
-    email,
-    universityId,
-    gender,
-    phoneNumber,
-    createdAt,
-    role,
-    loading,
-    saving,
-    currentPassword,
-    newPassword,
-    confirmPassword,
-    savingPassword,
-    validationError,
-    passwordValidationError,
-    fetchProfile,
-    setFullName,
-    setEmail,
-    setUniversityId,
-    setGender,
-    setPhoneNumber,
-    setCurrentPassword,
-    setNewPassword,
-    setConfirmPassword,
-    handleProfileSubmit,
-    handlePasswordSubmit,
-    getInitials,
-    formatDate,
-  } = useProfile()
+  const { profile, role, createdAt, loading, saveProfile, getInitials, formatDate } = useProfile()
 
   return (
     <div className="space-y-6">
@@ -64,39 +35,15 @@ export function ProfilePage() {
               <ProfileSkeleton />
             ) : (
               <ProfileForm
-                fullName={fullName}
-                email={email}
-                universityId={universityId}
-                gender={gender}
-                phoneNumber={phoneNumber}
+                profile={profile}
                 role={role}
                 createdAt={createdAt}
-                validationError={validationError}
-                saving={saving}
-                onFullNameChange={(e) => setFullName(e.target.value)}
-                onEmailChange={(e) => setEmail(e.target.value)}
-                onUniversityIdChange={(e) => setUniversityId(e.target.value)}
-                onGenderChange={(e) => setGender(e.target.value)}
-                onPhoneNumberChange={(e) => setPhoneNumber(e.target.value)}
-                onReset={fetchProfile}
-                onSubmit={handleProfileSubmit}
+                onSave={saveProfile}
                 getInitials={getInitials}
                 formatDate={formatDate}
               />
             )}
-            {!loading && (
-              <PasswordChangeForm
-                currentPassword={currentPassword}
-                newPassword={newPassword}
-                confirmPassword={confirmPassword}
-                validationError={passwordValidationError}
-                savingPassword={savingPassword}
-                onCurrentPasswordChange={(e) => setCurrentPassword(e.target.value)}
-                onNewPasswordChange={(e) => setNewPassword(e.target.value)}
-                onConfirmPasswordChange={(e) => setConfirmPassword(e.target.value)}
-                onSubmit={handlePasswordSubmit}
-              />
-            )}
+            {!loading && <PasswordChangeForm />}
           </div>
         </TabsContent>
 

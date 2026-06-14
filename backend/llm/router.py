@@ -1,7 +1,6 @@
 """LLM routing — Groq (primary) + OpenRouter (secondary / arbitrary model)."""
 
 import logging
-import os
 import time
 
 from groq import APIConnectionError as GroqAPIConnectionError
@@ -15,6 +14,7 @@ from openai import APITimeoutError as OpenAIAPITimeoutError
 from openai import OpenAI
 from openai import RateLimitError as OpenAIRateLimitError
 
+from config import settings
 from llm.model_catalog import clamp_timeout, is_valid_model
 
 logger = logging.getLogger(__name__)
@@ -24,32 +24,41 @@ logger = logging.getLogger(__name__)
 # 120s default: the 'codigo' task streams up to 12k tokens of HTML, which
 # legitimately takes 1–2 min; a 30s cap aborted valid generations mid-stream.
 # Tune down via LLM_TIMEOUT_S where workers are time-boxed.
-_LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "120"))
+_LLM_TIMEOUT_S = settings.llm_timeout_s
 
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=_LLM_TIMEOUT_S)
+# max_retries=0 en todos: ya recorremos nuestra propia cadena de fallback en
+# generar_texto, así que los reintentos internos del SDK (default 2) solo
+# multiplican la espera ante un proveedor lento/caído (3×timeout por intento +
+# la cadena externa) → la "carga indefinida". Un intento por modelo, y el control
+# de reintentos/backoff vive en generar_texto.
+groq_client = Groq(api_key=settings.groq_api_key, timeout=_LLM_TIMEOUT_S, max_retries=0)
 
 # OpenRouter uses the OpenAI-compatible endpoint.
 # HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
 openrouter_client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY") or "not-configured",
+    api_key=settings.openrouter_api_key or "not-configured",
     base_url="https://openrouter.ai/api/v1",
     default_headers={
-        "HTTP-Referer": os.getenv("APP_URL", "https://genova.ai"),
+        "HTTP-Referer": settings.app_url,
         "X-Title": "GenOVA",
     },
     timeout=_LLM_TIMEOUT_S,
+    max_retries=0,
 )
 
 # OpenCode Go uses the OpenAI-compatible endpoint.
 opencode_client = OpenAI(
-    api_key=os.getenv("OPENCODE_API_KEY") or "not-configured",
+    api_key=settings.opencode_api_key or "not-configured",
     base_url="https://opencode.ai/zen/go/v1",
     timeout=_LLM_TIMEOUT_S,
+    max_retries=0,
 )
 
-# (provider, model_id, extra_kwargs)
+# (provider, model_id, extra_kwargs) — SEMILLA. El admin puede sobrescribir por
+# tarea desde la UI (llm_config_store / PlatformConfig); estas se usan cuando no
+# hay config admin o la entrada guardada es inválida.
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
-_MODELOS: dict[str, tuple] = {
+_SEED_MODELOS: dict[str, tuple] = {
     "texto": ("groq", "llama-3.3-70b-versatile", {}),
     # DeepSeek V4 Pro via OpenCode Go subscription — stronger code model.
     "codigo": ("opencode", "deepseek-v4-pro", {}),
@@ -62,10 +71,11 @@ _VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 _FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
 _FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 
-# Per-task fallback chain. Tried in order on any APIStatusError (rate-limit,
-# 402 insufficient credit, provider-specific errors). The last entry is the
-# safety-net Groq model that almost always responds within free tier.
-_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
+# Per-task fallback chain — SEMILLA (el admin puede sobrescribirla por tarea).
+# Tried in order on any APIStatusError (rate-limit, 402 insufficient credit,
+# provider-specific errors). The last entry is the safety-net Groq model that
+# almost always responds within free tier.
+_SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
         # Free, valid code model first; then a general free model; the last
         # entry is the fast Groq safety net that almost always responds.
@@ -88,6 +98,55 @@ _FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
 }
 
 
+def _entry_tuple(e: dict) -> tuple | None:
+    """{provider, model_id, extra} → (provider, model_id, extra) o None."""
+    p, m = e.get("provider"), e.get("model_id")
+    if not (p and m):
+        return None
+    extra = e.get("extra")
+    return (p, m, extra if isinstance(extra, dict) else {})
+
+
+def _default_models() -> dict[str, tuple]:
+    """Defaults por tarea: config admin (llm_config_store) ⊕ semilla."""
+    from llm import llm_config_store
+
+    out = dict(_SEED_MODELOS)
+    for tarea, e in (llm_config_store.stored_cached().get("defaults") or {}).items():
+        t = _entry_tuple(e)
+        if t and tarea in out:
+            out[tarea] = t
+    return out
+
+
+def _fallback_chain(tarea: str) -> list[tuple]:
+    """Cadena de fallback para la tarea: config admin o semilla."""
+    from llm import llm_config_store
+
+    stored = (llm_config_store.stored_cached().get("fallbacks") or {}).get(tarea)
+    if stored:
+        chain = [t for t in (_entry_tuple(e) for e in stored) if t]
+        if chain:
+            return chain
+    return _SEED_FALLBACK_CHAIN.get(tarea, [])
+
+
+def effective_llm_config() -> dict:
+    """Config efectiva (semilla ⊕ admin) en forma JSON, para la API/UI admin."""
+    defaults = {
+        tarea: {"provider": p, "model_id": m, "extra": x}
+        for tarea, (p, m, x) in _default_models().items()
+    }
+    fallbacks = {
+        tarea: [
+            {"provider": p, "model_id": m, "extra": x}
+            for (p, m, x) in _fallback_chain(tarea)
+        ]
+        for tarea in _SEED_MODELOS
+    }
+    return {"defaults": defaults, "fallbacks": fallbacks}
+
+
 def _chat(
     provider: str,
     model_id: str,
@@ -106,8 +165,15 @@ def _chat(
         )
     elif provider == "opencode":
         client = opencode_client.with_options(timeout=timeout) if timeout else opencode_client
+        call_extra = dict(extra)
+        # Los modelos DeepSeek "thinking" (p.ej. deepseek-v4-pro) gastan el
+        # presupuesto de tokens en reasoning y devuelven `content` vacío en
+        # prompts largos (código) → EmptyContentError. Desactivar el thinking
+        # salvo override explícito hace que emitan la respuesta en `content`.
+        if "deepseek" in model_id and "extra_body" not in call_extra:
+            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
     else:
         client = openrouter_client.with_options(timeout=timeout) if timeout else openrouter_client
@@ -153,7 +219,8 @@ def _resolve_primary(
     fall back to the default."""
     from llm.model_catalog import is_default_model
 
-    default = _MODELOS.get(tarea, _MODELOS["texto"])
+    models = _default_models()
+    default = models.get(tarea, models["texto"])
     cfg = (llm_config or {}).get(tarea) or {}
     provider, model_id = cfg.get("provider"), cfg.get("model_id")
     timeout = clamp_timeout(cfg.get("timeout_s")) if cfg.get("timeout_s") is not None else None
@@ -172,6 +239,35 @@ def _resolve_primary(
     return default, timeout
 
 
+def _retry_after_seconds(exc: Exception) -> float | None:
+    """Lee el header Retry-After del 429, si lo trae (Groq/OpenAI lo exponen)."""
+    resp = getattr(exc, "response", None)
+    if resp is None:
+        return None
+    try:
+        val = resp.headers.get("retry-after")
+        return float(val) if val else None
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
+def _retry_delay(exc: Exception | None, prev_provider: str | None, next_provider: str, i: int) -> float:
+    """Backoff adaptativo antes del intento i (>0) de la cadena de fallback.
+
+    Genérico: exponencial acotado. Rate-limit (429): honra un Retry-After corto;
+    si el siguiente intento es de OTRO proveedor, no espera (su ventana de límite
+    es independiente); si es el mismo proveedor saturado, espera un poco más."""
+    base = min(2 ** (i - 1), 8)
+    if isinstance(exc, (GroqRateLimitError, OpenAIRateLimitError)):
+        ra = _retry_after_seconds(exc)
+        if ra is not None and ra <= 20:
+            return ra
+        if next_provider != prev_provider:
+            return 0.0
+        return float(min(base * 2, 15))
+    return float(base)
+
+
 def generar_texto(
     prompt: str,
     tarea: str,
@@ -186,26 +282,29 @@ def generar_texto(
     timeout overrides for the primary attempt. `enabled_models` restricts overrides
     to models the user has explicitly enabled (system defaults always pass)."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
-    chain: list[tuple[str, str, dict]] = [primary, *_FALLBACK_CHAIN.get(tarea, [])]
+    chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea)]
 
     last_err: Exception | None = None
+    prev_provider: str | None = None
     for i, (proveedor, model_id, extra) in enumerate(chain):
         role = "primary" if i == 0 else f"fallback {i}/{len(chain) - 1}"
         if i > 0:
-            backoff = min(2 ** (i - 1), 8)
+            backoff = _retry_delay(last_err, prev_provider, proveedor, i)
             logger.info(
-                "Task '%s' switching to %s → %s/%s (backoff %ds)",
+                "Task '%s' switching to %s → %s/%s (backoff %.1fs)",
                 tarea,
                 role,
                 proveedor,
                 model_id,
                 backoff,
             )
-            time.sleep(backoff)
+            if backoff:
+                time.sleep(backoff)
         try:
             return _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
         except _RECOVERABLE_ERRORS as exc:
             last_err = exc
+            prev_provider = proveedor
             next_step = (
                 f"{chain[i + 1][0]}/{chain[i + 1][1]}"
                 if i + 1 < len(chain)

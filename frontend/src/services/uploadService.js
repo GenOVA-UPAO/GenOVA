@@ -15,7 +15,7 @@ async function parseResponse(response) {
 
 export async function uploadTempFiles(files) {
   const formData = new FormData()
-  files.forEach((file) => formData.append('files', file))
+  for (const file of files) formData.append('files', file)
   const res = await apiFetch(UPLOADS_TEMP, { method: 'POST', body: formData })
   return parseResponse(res)
 }

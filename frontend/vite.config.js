@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -27,7 +27,7 @@ export default defineConfig({
         // Vite 8 (Rolldown) requiere manualChunks como función, no objeto.
         manualChunks(id) {
           if (!id.includes('node_modules')) return
-          if (id.includes('lucide-react')) return 'vendor-icons'
+          if (id.includes('@phosphor-icons')) return 'vendor-icons'
           if (id.includes('radix-ui')) return 'vendor-radix'
           if (id.includes('react-router')) return 'vendor-router'
           if (id.includes('sonner')) return 'vendor-ui'

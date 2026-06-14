@@ -112,7 +112,6 @@ export function useOvaWorkspace(ovaId) {
       if (regenTimerRef.current) clearTimeout(regenTimerRef.current)
       if (loadRetryRef.current) clearTimeout(loadRetryRef.current)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ovaId])
 
   // HU-027: toggle resource selection mode

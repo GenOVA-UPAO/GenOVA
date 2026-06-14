@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # GitHub Actions de los workflows → última versión (incluye setup-uv, que no
+  # tiene alias de major y se fija por tag completo).
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Frontend + tests (pnpm workspace: un solo lockfile en la raíz).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+    groups:
+      npm:
+        patterns: ["*"]
+
+  # Backend: ecosystem 'uv' (actualiza pyproject.toml + uv.lock juntos).
+  # NOTA: requirements.txt es un espejo; tras un PR de uv corre
+  #   python backend/scripts/sync_deps.py --write
+  # para realinearlo (el check de paridad de CI lo exige).
+  - package-ecosystem: "uv"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+    groups:
+      python:
+        patterns: ["*"]

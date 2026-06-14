@@ -10,13 +10,13 @@ stays as a reconciliation pass (it skips rows already marked "done").
 
 import contextlib
 import logging
-import os
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 
 from sqlalchemy import select, update
 
+from config import settings
 from database import SessionLocal
 from models import OvaJob, OvaJobResource
 
@@ -26,10 +26,7 @@ DEFAULT_CONCURRENCY = 4
 
 
 def _concurrency() -> int:
-    try:
-        return max(1, int(os.getenv("OVA_GEN_CONCURRENCY", str(DEFAULT_CONCURRENCY))))
-    except ValueError:
-        return DEFAULT_CONCURRENCY
+    return max(1, settings.ova_gen_concurrency)
 
 
 def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:

@@ -37,7 +37,7 @@ export function PapeleraPage() {
           </p>
         </div>
         {!loading && !error && totalItems > 0 ? (
-          <Badge className="bg-red-50 text-red-600 border-red-200 self-start md:self-auto">
+          <Badge variant="destructive" className="self-start md:self-auto">
             {totalItems} OVA{totalItems > 1 ? 's' : ''} en papelera
           </Badge>
         ) : null}

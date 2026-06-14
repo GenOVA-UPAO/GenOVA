@@ -1,21 +1,12 @@
 export function FileChip({ file, onRemove, disabled }) {
   const extension = file.filename.split('.').pop().toLowerCase()
+  // El emoji ya distingue el tipo; el chip usa un único estilo on-brand (tokens).
+  const colorClass = 'bg-muted text-foreground border-border'
   let icon = '📄'
-  let colorClass = 'bg-slate-50 text-slate-700 border-slate-200'
-
-  if (extension === 'pdf') {
-    icon = '📕'
-    colorClass = 'bg-rose-50 text-rose-700 border-rose-100'
-  } else if (['docx', 'pptx'].includes(extension)) {
-    icon = '📘'
-    colorClass = 'bg-blue-50 text-blue-700 border-blue-100'
-  } else if (['mp3', 'wav', 'm4a', 'aac', 'ogg', 'webm'].includes(extension)) {
-    icon = '🎵'
-    colorClass = 'bg-amber-50 text-amber-700 border-amber-100'
-  } else if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extension)) {
-    icon = '🖼️'
-    colorClass = 'bg-emerald-50 text-emerald-700 border-emerald-100'
-  }
+  if (extension === 'pdf') icon = '📕'
+  else if (['docx', 'pptx'].includes(extension)) icon = '📘'
+  else if (['mp3', 'wav', 'm4a', 'aac', 'ogg', 'webm'].includes(extension)) icon = '🎵'
+  else if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extension)) icon = '🖼️'
 
   const formatSize = (bytes) => {
     if (!bytes) return ''
@@ -25,10 +16,10 @@ export function FileChip({ file, onRemove, disabled }) {
 
   let ragBadge = null
   if (file.status === 'uploading') {
-    ragBadge = <span className="text-[10px] text-indigo-500 animate-pulse font-medium">Subiendo...</span>
+    ragBadge = <span className="text-[10px] text-primary animate-pulse font-medium">Subiendo...</span>
   } else if (file.status === 'error') {
     ragBadge = (
-      <span className="text-[10px] text-rose-500 font-semibold" title={file.message}>
+      <span className="text-[10px] text-destructive font-semibold" title={file.message}>
         Error
       </span>
     )
@@ -38,7 +29,7 @@ export function FileChip({ file, onRemove, disabled }) {
       const count = file.ragStatus.chunks || 0
       ragBadge = (
         <span
-          className="text-[10px] text-emerald-600 font-bold bg-emerald-100/80 px-1 rounded-sm"
+          className="text-[10px] text-primary font-bold bg-primary/10 px-1 rounded-sm"
           title={`Ingestado en RAG: ${count} fragmentos`}
         >
           RAG ({count})
@@ -46,15 +37,15 @@ export function FileChip({ file, onRemove, disabled }) {
       )
     } else if (status === 'error') {
       ragBadge = (
-        <span className="text-[10px] text-rose-500 font-medium" title={file.ragStatus.message || 'Error RAG'}>
+        <span className="text-[10px] text-destructive font-medium" title={file.ragStatus.message || 'Error RAG'}>
           Fallo RAG
         </span>
       )
     } else {
-      ragBadge = <span className="text-[10px] text-slate-400">Listo</span>
+      ragBadge = <span className="text-[10px] text-muted-foreground">Listo</span>
     }
   } else if (file.status === 'success') {
-    ragBadge = <span className="text-[10px] text-indigo-500 font-medium">Listo</span>
+    ragBadge = <span className="text-[10px] text-primary font-medium">Listo</span>
   }
 
   return (
@@ -74,10 +65,10 @@ export function FileChip({ file, onRemove, disabled }) {
           type="button"
           onClick={() => void onRemove(file.clientId)}
           disabled={disabled}
-          className="p-0.5 rounded-full hover:bg-black/5 text-current/60 hover:text-current cursor-pointer transition-colors"
+          className="p-0.5 rounded-full hover:bg-foreground/5 text-current/60 hover:text-current cursor-pointer transition-colors"
           title="Quitar"
         >
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg aria-hidden="true" className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>

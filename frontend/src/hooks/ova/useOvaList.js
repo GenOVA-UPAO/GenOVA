@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   batchMoveToTrash,
@@ -14,13 +15,8 @@ import { useOvaFilters } from './useOvaFilters.js'
 
 export function useOvaList() {
   const navigate = useNavigate()
-  const [ovas, setOvas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
+  const qc = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
 
   const [ovaToTrash, setOvaToTrash] = useState(null)
   const [showBulkModal, setShowBulkModal] = useState(false)
@@ -37,38 +33,39 @@ export function useOvaList() {
     handleStatusChange,
   } = useOvaFilters(() => setCurrentPage(1))
 
-  const selection = useOvaSelection(ovas)
-  const metadata = useOvaMetadata(setOvas)
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['ovaList', currentPage, search, statusFilter],
+    queryFn: () => fetchOvas({ page: currentPage, limit: 10, search, status: statusFilter }),
+  })
+  const ovas = data?.ovas || []
+  const totalPages = data?.total_pages || 1
+  const totalItems = data?.total_items || 0
+  const loading = isLoading
+  const error = isError ? 'No se pudo cargar el historial de OVAs.' : ''
 
-  const loadOvas = useCallback(
-    async (page = 1, searchTerm = search, statusTerm = statusFilter) => {
-      setLoading(true)
-      setError('')
-      try {
-        const data = await fetchOvas({ page, limit: 10, search: searchTerm, status: statusTerm })
-        setOvas(data.ovas || [])
-        setTotalPages(data.total_pages || 1)
-        setCurrentPage(data.page || 1)
-        setTotalItems(data.total_items || 0)
-      } catch {
-        setError('No se pudo cargar el historial de OVAs.')
-      } finally {
-        setLoading(false)
-      }
-    },
-    [search, statusFilter]
+  const invalidateList = useCallback(
+    () => qc.invalidateQueries({ queryKey: ['ovaList'] }),
+    [qc],
   )
 
+  const loadOvas = useCallback(
+    (page = currentPage) => {
+      setCurrentPage(page)
+      invalidateList()
+    },
+    [currentPage, invalidateList],
+  )
+
+  const selection = useOvaSelection(ovas)
+  const metadata = useOvaMetadata(invalidateList)
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- recarga el listado al cambiar filtros
-    loadOvas(1, search, statusFilter)
     selection.clearSelection()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, statusFilter])
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      loadOvas(newPage, search, statusFilter)
+      setCurrentPage(newPage)
       selection.clearSelection()
     }
   }
@@ -87,7 +84,7 @@ export function useOvaList() {
       const newTotal = totalItems - 1
       const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
       const targetPage = currentPage > newTotalPages ? newTotalPages : currentPage
-      loadOvas(targetPage, search, statusFilter)
+      loadOvas(targetPage)
     } catch (err) {
       toast.error(err.message || 'Error al mover el OVA a la papelera.')
     } finally {
@@ -105,7 +102,7 @@ export function useOvaList() {
       const newTotal = totalItems - (res.moved?.length || 0)
       const newTotalPages = Math.max(1, Math.ceil(newTotal / 10))
       const targetPage = currentPage > newTotalPages ? newTotalPages : currentPage
-      loadOvas(targetPage, search, statusFilter)
+      loadOvas(targetPage)
     } catch (err) {
       toast.error(err.message || 'Error al mover los OVAs.')
     } finally {
@@ -174,12 +171,10 @@ export function useOvaList() {
     handleSelectAll: selection.handleSelectAll,
     // metadata
     metadataModalOpen: metadata.metadataModalOpen,
-    metadataForm: metadata.metadataForm,
-    metadataError: metadata.metadataError,
+    metadataInitial: metadata.metadataInitial,
     metadataSaving: metadata.metadataSaving,
     openMetadataModal: metadata.openMetadataModal,
     closeMetadataModal: metadata.closeMetadataModal,
-    handleMetadataChange: metadata.handleMetadataChange,
-    handleMetadataSave: metadata.handleMetadataSave,
+    saveMetadata: metadata.saveMetadata,
   }
 }

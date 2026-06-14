@@ -1,10 +1,24 @@
+import { useForm, useWatch } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { metadataSchema } from '@/lib/schemas/ova.js'
 
-export function EditMetadataModal({ form, onChange, onSubmit, onCancel, isLoading, error }) {
+export function EditMetadataModal({ initial, onSave, onCancel, isLoading }) {
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(metadataSchema),
+    defaultValues: { title: initial?.title || '', description: initial?.description || '' },
+  })
+  const title = useWatch({ control, name: 'title' }) || ''
+
   return (
     <Dialog open={true} onOpenChange={(open) => { if (!open) onCancel() }}>
       <DialogContent className="max-w-lg">
@@ -13,45 +27,41 @@ export function EditMetadataModal({ form, onChange, onSubmit, onCancel, isLoadin
         </DialogHeader>
         <p className="text-xs text-muted-foreground -mt-2">Actualiza el título y descripción del OVA.</p>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit(onSave)} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="metadata-title">Título *</Label>
             <Input
               id="metadata-title"
-              name="title"
               type="text"
-              value={form.title}
-              onChange={onChange}
               maxLength={250}
               placeholder="Ej. Regresión lineal aplicada"
+              aria-invalid={!!errors.title}
+              {...register('title')}
             />
-            <p className="text-[11px] text-muted-foreground">{form.title.length}/100</p>
+            <p className="text-[11px] text-muted-foreground">{title.length}/100</p>
+            {errors.title ? <p className="text-xs font-medium text-destructive">{errors.title.message}</p> : null}
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="metadata-description">Descripción</Label>
             <Textarea
               id="metadata-description"
-              name="description"
-              value={form.description}
-              onChange={onChange}
               rows={4}
               className="resize-none"
               placeholder="Opcional"
+              {...register('description')}
             />
           </div>
 
-          {error ? <p className="text-xs font-medium text-destructive">{error}</p> : null}
-        </div>
-
-        <div className="flex gap-3 pt-2 border-t border-border">
-          <Button variant="outline" className="flex-1" onClick={onCancel} disabled={isLoading}>
-            Cancelar
-          </Button>
-          <Button className="flex-1" onClick={onSubmit} disabled={isLoading}>
-            {isLoading ? 'Guardando...' : 'Guardar'}
-          </Button>
-        </div>
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2 border-t border-border">
+            <Button type="button" variant="outline" className="flex-1" onClick={onCancel} disabled={isLoading}>
+              Cancelar
+            </Button>
+            <Button type="submit" className="flex-1" disabled={isLoading}>
+              {isLoading ? 'Guardando...' : 'Guardar'}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

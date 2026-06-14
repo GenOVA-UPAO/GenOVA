@@ -1,12 +1,12 @@
-import os
-
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
+from config import settings
+
 load_dotenv()
 
-database_url = os.getenv("DATABASE_URL")
+database_url = settings.database_url
 if not database_url:
     raise RuntimeError("DATABASE_URL is required")
 
@@ -47,8 +47,8 @@ else:
     engine_kwargs.update(
         pool_pre_ping=True,
         pool_recycle=300,
-        pool_size=int(os.getenv("DB_POOL_SIZE", "10")),
-        max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "10")),
+        pool_size=settings.db_pool_size,
+        max_overflow=settings.db_max_overflow,
     )
     # Lightweight keepalive — covers cases where pre-ping passes but the
     # connection drops mid-request.
@@ -60,7 +60,7 @@ else:
         # Fail fast on an unreachable host (e.g. a paused Supabase project, or the
         # IPv6-only direct connection used from an IPv4-only CI runner) instead of
         # hanging startup migrations until the CI step times out.
-        "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "10")),
+        "connect_timeout": settings.db_connect_timeout,
         # The Supabase Transaction pooler (port 6543) multiplexes clients over
         # shared server connections, so psycopg3's server-side prepared
         # statements collide across sessions (DuplicatePreparedStatement
