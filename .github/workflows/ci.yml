@@ -73,8 +73,8 @@ jobs:
           cat /tmp/backend.log
           exit 1
 
-      - name: Run BDD step defs
-        run: pytest tests/step_defs/ -v --tb=short
+      - name: Run BDD step defs + unit
+        run: pytest tests/step_defs/ tests/test_llm_config_store.py -v --tb=short
         working-directory: backend
 
   frontend-unit:

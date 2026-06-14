@@ -91,3 +91,43 @@ def put_platform_config(
 
     keys = _load_platform_keys(db)
     return {"platform_config": {p: mask_key(keys.get(p)) for p in PROVIDERS}}
+
+
+@router.get("/llm-config")
+def get_llm_config(_admin: None = Depends(require_admin)):
+    """Modelos por tarea + cadena de fallback efectivos (semilla ⊕ admin)."""
+    from llm import llm_config_store
+    from llm.model_catalog import TASKS
+    from llm.router import effective_llm_config
+
+    return {
+        "config": effective_llm_config(),
+        "tasks": list(TASKS),
+        "providers": list(llm_config_store.PROVIDERS),
+    }
+
+
+@router.put("/llm-config")
+@limiter.limit("10/minute")
+def put_llm_config(
+    request: Request,
+    payload: dict,
+    _admin: None = Depends(require_admin),
+):
+    """Persiste defaults/fallbacks por tarea (admin). Valida contra el catálogo;
+    entradas inválidas se descartan en silencio (nunca rompe la generación)."""
+    from llm import llm_config_store
+    from llm.model_catalog import TASKS
+    from llm.router import effective_llm_config
+
+    try:
+        clean = llm_config_store.sanitize_config(payload)
+        llm_config_store.save_stored(clean)
+    except Exception:
+        logger.exception("LLM model config write failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo guardar la configuración de modelos.",
+        ) from None
+
+    return {"config": effective_llm_config(), "tasks": list(TASKS)}

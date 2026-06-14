@@ -54,9 +54,11 @@ opencode_client = OpenAI(
     max_retries=0,
 )
 
-# (provider, model_id, extra_kwargs)
+# (provider, model_id, extra_kwargs) — SEMILLA. El admin puede sobrescribir por
+# tarea desde la UI (llm_config_store / PlatformConfig); estas se usan cuando no
+# hay config admin o la entrada guardada es inválida.
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
-_MODELOS: dict[str, tuple] = {
+_SEED_MODELOS: dict[str, tuple] = {
     "texto": ("groq", "llama-3.3-70b-versatile", {}),
     # DeepSeek V4 Pro via OpenCode Go subscription — stronger code model.
     "codigo": ("opencode", "deepseek-v4-pro", {}),
@@ -69,10 +71,11 @@ _VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 _FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
 _FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 
-# Per-task fallback chain. Tried in order on any APIStatusError (rate-limit,
-# 402 insufficient credit, provider-specific errors). The last entry is the
-# safety-net Groq model that almost always responds within free tier.
-_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
+# Per-task fallback chain — SEMILLA (el admin puede sobrescribirla por tarea).
+# Tried in order on any APIStatusError (rate-limit, 402 insufficient credit,
+# provider-specific errors). The last entry is the safety-net Groq model that
+# almost always responds within free tier.
+_SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
         # Free, valid code model first; then a general free model; the last
         # entry is the fast Groq safety net that almost always responds.
@@ -93,6 +96,55 @@ _FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
         ("groq", _FALLBACK_GROQ_MODEL, {}),
     ],
 }
+
+
+def _entry_tuple(e: dict) -> tuple | None:
+    """{provider, model_id, extra} → (provider, model_id, extra) o None."""
+    p, m = e.get("provider"), e.get("model_id")
+    if not (p and m):
+        return None
+    extra = e.get("extra")
+    return (p, m, extra if isinstance(extra, dict) else {})
+
+
+def _default_models() -> dict[str, tuple]:
+    """Defaults por tarea: config admin (llm_config_store) ⊕ semilla."""
+    from llm import llm_config_store
+
+    out = dict(_SEED_MODELOS)
+    for tarea, e in (llm_config_store.stored_cached().get("defaults") or {}).items():
+        t = _entry_tuple(e)
+        if t and tarea in out:
+            out[tarea] = t
+    return out
+
+
+def _fallback_chain(tarea: str) -> list[tuple]:
+    """Cadena de fallback para la tarea: config admin o semilla."""
+    from llm import llm_config_store
+
+    stored = (llm_config_store.stored_cached().get("fallbacks") or {}).get(tarea)
+    if stored:
+        chain = [t for t in (_entry_tuple(e) for e in stored) if t]
+        if chain:
+            return chain
+    return _SEED_FALLBACK_CHAIN.get(tarea, [])
+
+
+def effective_llm_config() -> dict:
+    """Config efectiva (semilla ⊕ admin) en forma JSON, para la API/UI admin."""
+    defaults = {
+        tarea: {"provider": p, "model_id": m, "extra": x}
+        for tarea, (p, m, x) in _default_models().items()
+    }
+    fallbacks = {
+        tarea: [
+            {"provider": p, "model_id": m, "extra": x}
+            for (p, m, x) in _fallback_chain(tarea)
+        ]
+        for tarea in _SEED_MODELOS
+    }
+    return {"defaults": defaults, "fallbacks": fallbacks}
 
 
 def _chat(
@@ -160,7 +212,8 @@ def _resolve_primary(
     fall back to the default."""
     from llm.model_catalog import is_default_model
 
-    default = _MODELOS.get(tarea, _MODELOS["texto"])
+    models = _default_models()
+    default = models.get(tarea, models["texto"])
     cfg = (llm_config or {}).get(tarea) or {}
     provider, model_id = cfg.get("provider"), cfg.get("model_id")
     timeout = clamp_timeout(cfg.get("timeout_s")) if cfg.get("timeout_s") is not None else None
@@ -222,7 +275,7 @@ def generar_texto(
     timeout overrides for the primary attempt. `enabled_models` restricts overrides
     to models the user has explicitly enabled (system defaults always pass)."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
-    chain: list[tuple[str, str, dict]] = [primary, *_FALLBACK_CHAIN.get(tarea, [])]
+    chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea)]
 
     last_err: Exception | None = None
     prev_provider: str | None = None
