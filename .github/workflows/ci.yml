@@ -28,10 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
+      - uses: astral-sh/setup-uv@v6
+        with: { enable-cache: true }
 
-      - run: pip install ruff && ruff check backend/
+      - run: uvx ruff check backend/
 
   backend-bdd:
     name: Backend BDD (pytest-bdd)
@@ -45,17 +45,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-
-      - uses: actions/cache@v4
+      - uses: astral-sh/setup-uv@v6
         with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('backend/requirements-dev.txt') }}
-          restore-keys: pip-
+          enable-cache: true
+          python-version: '3.11'
 
       - name: Install backend deps
-        run: pip install -r requirements-dev.txt
+        run: uv pip install --system -r requirements-dev.txt
         working-directory: backend
 
       - name: Start backend
@@ -120,17 +116,13 @@ jobs:
 
       - run: pnpm --filter genova-tests exec playwright install --with-deps chromium
 
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-
-      - uses: actions/cache@v4
+      - uses: astral-sh/setup-uv@v6
         with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('backend/requirements-dev.txt') }}
-          restore-keys: pip-
+          enable-cache: true
+          python-version: '3.11'
 
       - name: Install backend deps
-        run: pip install -r requirements-dev.txt
+        run: uv pip install --system -r requirements-dev.txt
         working-directory: backend
 
       - name: Start backend
