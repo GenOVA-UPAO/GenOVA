@@ -165,8 +165,15 @@ def _chat(
         )
     elif provider == "opencode":
         client = opencode_client.with_options(timeout=timeout) if timeout else opencode_client
+        call_extra = dict(extra)
+        # Los modelos DeepSeek "thinking" (p.ej. deepseek-v4-pro) gastan el
+        # presupuesto de tokens en reasoning y devuelven `content` vacío en
+        # prompts largos (código) → EmptyContentError. Desactivar el thinking
+        # salvo override explícito hace que emitan la respuesta en `content`.
+        if "deepseek" in model_id and "extra_body" not in call_extra:
+            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
     else:
         client = openrouter_client.with_options(timeout=timeout) if timeout else openrouter_client

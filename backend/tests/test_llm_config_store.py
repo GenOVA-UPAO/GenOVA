@@ -80,3 +80,51 @@ def test_effective_config_shape(monkeypatch):
     assert set(eff["defaults"]) == set(router._SEED_MODELOS)
     assert set(eff["fallbacks"]) == set(router._SEED_MODELOS)
     assert eff["defaults"]["codigo"]["provider"] == "opencode"
+
+
+# --- _chat: opencode DeepSeek thinking-disabled injection -------------------
+
+
+class _FakeClient:
+    """Cliente OpenAI-compatible falso: registra kwargs y devuelve content fijo."""
+
+    def __init__(self, sink):
+        self._sink = sink
+
+    def with_options(self, **_kw):
+        return self
+
+    @property
+    def chat(self):
+        return self
+
+    @property
+    def completions(self):
+        return self
+
+    def create(self, **kw):
+        self._sink.update(kw)
+        msg = type("M", (), {"content": "<div>ok</div>"})()
+        choice = type("C", (), {"message": msg})()
+        return type("R", (), {"choices": [choice]})()
+
+
+def test_opencode_deepseek_injects_thinking_disabled(monkeypatch):
+    sink = {}
+    monkeypatch.setattr(router, "opencode_client", _FakeClient(sink))
+    router._chat("opencode", "deepseek-v4-pro", "hola", 100, {}, None)
+    assert sink["extra_body"] == {"thinking": {"type": "disabled"}}
+
+
+def test_opencode_non_deepseek_no_injection(monkeypatch):
+    sink = {}
+    monkeypatch.setattr(router, "opencode_client", _FakeClient(sink))
+    router._chat("opencode", "otro-modelo", "hola", 100, {}, None)
+    assert "extra_body" not in sink
+
+
+def test_opencode_explicit_extra_body_preserved(monkeypatch):
+    sink = {}
+    monkeypatch.setattr(router, "opencode_client", _FakeClient(sink))
+    router._chat("opencode", "deepseek-v4-pro", "hola", 100, {"extra_body": {"x": 1}}, None)
+    assert sink["extra_body"] == {"x": 1}
