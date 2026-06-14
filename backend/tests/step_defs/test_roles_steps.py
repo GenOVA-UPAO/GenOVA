@@ -1,52 +1,153 @@
+"""BDD de roles (HU-018/019/020) al estilo determinista: SQLite in-memory +
+app FastAPI mínima (solo roles_router) + overrides de dependencias. Sin backend
+vivo, sin red, sin JWT — cada escenario arranca con su propia BD sembrada, así que
+es reproducible y asserta el body real de cada endpoint.
+
+`DATABASE_URL`/`JWT_SECRET` se fijan a valores de test ANTES de importar la app.
+`get_current_user` se reemplaza por un principal cuyo id se alterna (admin/usuario)
+según el step Given; `require_admin` corre de verdad contra la BD (prueba el 403).
+"""
+
 import os
+import sys
 import uuid
 
-import pytest
-import requests
-from pytest_bdd import given, parsers, scenario, then, when
+os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-_SYSTEM_ROLES = ("administrador", "usuario")
+import pytest  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from pytest_bdd import given, parsers, scenario, then, when  # noqa: E402
+from sqlalchemy import create_engine, text  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from sqlalchemy.pool import StaticPool  # noqa: E402
 
-
-@pytest.fixture(scope="session", autouse=True)
-def _cleanup_roles(base_url, admin_token):
-    """Borra los roles personalizados creados por los tests (la BD de TEST no debe
-    acumular basura entre corridas). Solo respeta los roles del sistema."""
-    yield
-    headers = {"Authorization": f"Bearer {admin_token}"}
-    try:
-        roles = requests.get(f"{base_url}/api/roles", headers=headers, timeout=10).json()
-        for r in roles:
-            if r.get("name") not in _SYSTEM_ROLES and r.get("id"):
-                requests.delete(f"{base_url}/api/roles/{r['id']}", headers=headers, timeout=10)
-    except Exception:
-        pass  # teardown best-effort; no debe tumbar la corrida
+import models  # noqa: E402, F401 — registra los modelos ORM
+from auth.dependencies import get_current_user  # noqa: E402
+from database import get_db  # noqa: E402
+from roles.router import router as roles_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_CREAR = os.path.join(_FEATURES, "roles", "HU-018_crear-rol.feature")
 FEATURE_EDITAR = os.path.join(_FEATURES, "roles", "HU-019_editar-rol.feature")
 FEATURE_ELIMINAR = os.path.join(_FEATURES, "roles", "HU-020_eliminar-rol.feature")
 
+# Solo las tablas que tocan los endpoints de roles (TEXT en vez de UUID/JSONB de PG).
+_DDL = """
+CREATE TABLE roles (
+  id TEXT PRIMARY KEY, name TEXT UNIQUE NOT NULL, description TEXT,
+  permissions TEXT NOT NULL DEFAULT '[]',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE user_roles (
+  user_id TEXT NOT NULL, role_id TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, role_id)
+);
+"""
 
-def _ensure_role(base_url, admin_token, name, permissions=None):
-    """Create role or find existing one; return its ID."""
-    r = requests.post(
-        f"{base_url}/api/roles",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        json={"name": name, "permissions": permissions or []},
-        timeout=10,
+
+class _Principal:
+    """Sustituto liviano de User: require_admin solo usa `.id`."""
+
+    def __init__(self, uid):
+        self.id = uid
+
+
+@pytest.fixture
+def app_ctx(monkeypatch):
+    eng = create_engine(
+        "sqlite+pysqlite:///:memory:",
+        future=True,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
-    if r.status_code in (200, 201):
-        return r.json().get("id")
-    roles = requests.get(
-        f"{base_url}/api/roles",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        timeout=10,
-    ).json()
-    for role in roles:
-        if role["name"] == name:
-            return role["id"]
-    return None
+    with eng.begin() as conn:
+        for stmt in _DDL.strip().split(";"):
+            if stmt.strip():
+                conn.execute(text(stmt))
+
+    Session = sessionmaker(bind=eng, autoflush=False, autocommit=False, future=True)
+
+    # SQLAlchemy UUID(as_uuid=True) en sqlite almacena el .hex (32 sin guiones);
+    # sembramos con .hex y pasamos objetos uuid al principal para que los binds
+    # de las queries (==) coincidan con lo guardado.
+    admin_uid, user_uid = uuid.uuid4(), uuid.uuid4()
+    admin_role_id, user_role_id = uuid.uuid4(), uuid.uuid4()
+    with eng.begin() as conn:
+        conn.execute(
+            text("INSERT INTO roles (id, name, permissions) VALUES (:i, 'administrador', '[]')"),
+            {"i": admin_role_id.hex},
+        )
+        conn.execute(
+            text("INSERT INTO roles (id, name, permissions) VALUES (:i, 'usuario', '[]')"),
+            {"i": user_role_id.hex},
+        )
+        conn.execute(
+            text("INSERT INTO user_roles (user_id, role_id) VALUES (:u, :r)"),
+            {"u": admin_uid.hex, "r": admin_role_id.hex},
+        )
+        conn.execute(
+            text("INSERT INTO user_roles (user_id, role_id) VALUES (:u, :r)"),
+            {"u": user_uid.hex, "r": user_role_id.hex},
+        )
+
+    active = {"id": admin_uid}
+
+    def _get_db_override():
+        db = Session()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app = FastAPI()
+    app.include_router(roles_router, prefix="/api/roles")
+    app.dependency_overrides[get_db] = _get_db_override
+    app.dependency_overrides[get_current_user] = lambda: _Principal(active["id"])
+
+    return {
+        "client": TestClient(app),
+        "engine": eng,
+        "Session": Session,
+        "active": active,
+        "admin_uid": admin_uid,
+        "user_uid": user_uid,
+    }
+
+
+@pytest.fixture
+def state():
+    return {}
+
+
+def _seed_role(ctx, name, *, users=0):
+    rid = uuid.uuid4()
+    with ctx["engine"].begin() as conn:
+        conn.execute(
+            text("INSERT INTO roles (id, name, permissions) VALUES (:i, :n, '[]')"),
+            {"i": rid.hex, "n": name.lower()},
+        )
+        for _ in range(users):
+            conn.execute(
+                text("INSERT INTO user_roles (user_id, role_id) VALUES (:u, :r)"),
+                {"u": uuid.uuid4().hex, "r": rid.hex},
+            )
+    return str(rid)
+
+
+# ── Given comunes ─────────────────────────────────────────────────────────────
+
+@given(parsers.parse('que estoy autenticado como usuario con rol "{role}"'))
+def autenticado_como(app_ctx, role):
+    app_ctx["active"]["id"] = app_ctx["admin_uid"] if role == "administrador" else app_ctx["user_uid"]
+
+
+@given('que los roles del sistema "administrador" y "usuario" ya existen en la base de datos')
+def roles_sistema_existen():
+    pass  # sembrados en app_ctx
 
 
 # ── HU-018: Crear Rol ─────────────────────────────────────────────────────────
@@ -66,23 +167,9 @@ def test_crear_rol_duplicado():
     pass
 
 
-@given(parsers.parse('que estoy autenticado como usuario con rol "{role}"'))
-def autenticado_como(role):
-    pass  # auth token supplied via admin_token fixture
-
-
-@given('que los roles del sistema "administrador" y "usuario" ya existen en la base de datos')
-def roles_sistema_existen():
-    pass  # seeded on backend startup
-
-
 @given('que estoy en "/admin/roles"', target_fixture="roles_list")
-def en_admin_roles(base_url, admin_token):
-    return requests.get(
-        f"{base_url}/api/roles",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        timeout=10,
-    )
+def en_admin_roles(app_ctx):
+    return app_ctx["client"].get("/api/roles")
 
 
 @then("debo ver la lista de roles registrados")
@@ -100,54 +187,49 @@ def ver_roles_sistema(roles_list):
 
 @when('hago click en "Nuevo rol"')
 def click_nuevo_rol():
-    pass  # UI interaction — maps to POST in subsequent step
+    pass
 
 
 @when(parsers.parse('ingreso el nombre "{nombre}"'), target_fixture="response")
-def ingreso_nombre_crear_rol(base_url, admin_token, nombre):
-    unique_name = f"{nombre}_{uuid.uuid4().hex[:6]}"
-    return requests.post(
-        f"{base_url}/api/roles",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        json={"name": unique_name, "permissions": ["create_ova", "view_ova"]},
-        timeout=10,
+def ingreso_nombre_crear_rol(app_ctx, state, nombre):
+    unique = f"{nombre}_{uuid.uuid4().hex[:6]}"
+    state["created_name"] = unique.lower()
+    return app_ctx["client"].post(
+        "/api/roles", json={"name": unique, "permissions": ["create_ova", "view_ova"]}
     )
 
 
 @when(parsers.parse('selecciono los permisos "{p1}" y "{p2}"'))
 def selecciono_permisos(p1, p2):
-    pass  # permissions sent in the preceding POST step
+    pass
 
 
 @then("el sistema debe crear el rol y retornar 201")
 def rol_creado(response):
     assert response.status_code == 201
     body = response.json()
-    assert body.get("id"), "la respuesta debe traer el id del rol creado"
-    assert body.get("name"), "la respuesta debe traer el nombre del rol creado"
+    assert body.get("id")
+    assert body.get("name")
+    assert "create_ova" in body.get("permissions", [])
 
 
 @then(parsers.parse('el nuevo rol "{nombre}" debe aparecer inmediatamente en la lista'))
-def nuevo_rol_en_lista(nombre):
-    pass  # UI concern — creation verified via 201
+def nuevo_rol_en_lista(app_ctx, state, nombre):
+    names = [r["name"] for r in app_ctx["client"].get("/api/roles").json()]
+    assert state["created_name"] in names
 
 
 @given(parsers.parse('que existe un rol con nombre "{nombre}"'))
-def rol_con_nombre_existe(base_url, admin_token, nombre):
-    _ensure_role(base_url, admin_token, nombre)
+def rol_con_nombre_existe(app_ctx, nombre):
+    _seed_role(app_ctx, nombre)
 
 
 @when(
     parsers.parse('intento crear otro rol con el mismo nombre "{name}"'),
     target_fixture="response",
 )
-def crear_rol_duplicado(base_url, admin_token, name):
-    return requests.post(
-        f"{base_url}/api/roles",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        json={"name": name, "permissions": []},
-        timeout=10,
-    )
+def crear_rol_duplicado(app_ctx, name):
+    return app_ctx["client"].post("/api/roles", json={"name": name, "permissions": []})
 
 
 @then("el sistema retorna 409")
@@ -156,13 +238,14 @@ def sistema_retorna_409(response):
 
 
 @then(parsers.parse('debo ver el mensaje "{msg}"'))
-def ver_mensaje(msg):
-    pass  # UI message content — not verifiable at API level
+def ver_mensaje(response):
+    assert response.json().get("detail")
 
 
 @then("el rol no debe duplicarse en la lista")
-def no_duplicado():
-    pass  # structural guarantee — 409 prevents creation
+def no_duplicado(app_ctx):
+    names = [r["name"] for r in app_ctx["client"].get("/api/roles").json()]
+    assert len(names) == len(set(names))
 
 
 # ── HU-019: Editar Rol ────────────────────────────────────────────────────────
@@ -181,14 +264,13 @@ def test_editar_rol_duplicado():
     parsers.parse('que existe un rol personalizado con ID "{role_id}" y nombre "{name}"'),
     target_fixture="test_role_id",
 )
-def rol_personalizado(base_url, admin_token, role_id, name):
-    unique_name = f"{name}_{uuid.uuid4().hex[:6]}"
-    return _ensure_role(base_url, admin_token, unique_name)
+def rol_personalizado(app_ctx, role_id, name):
+    return _seed_role(app_ctx, f"{name}_{uuid.uuid4().hex[:6]}")
 
 
 @given(parsers.parse('que tengo el modal de edición del rol "{nombre}" abierto'))
 def modal_edicion(nombre):
-    pass  # UI state — role exists via background fixture
+    pass
 
 
 @when(parsers.parse('cambio el nombre a "{nuevo}"'), target_fixture="nuevo_nombre")
@@ -202,43 +284,41 @@ def selecciono_permiso(permiso):
 
 
 @when('hago click en "Guardar cambios"', target_fixture="response")
-def guardar_cambios(base_url, admin_token, test_role_id, nuevo_nombre):
-    return requests.patch(
-        f"{base_url}/api/roles/{test_role_id}",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        json={"name": nuevo_nombre},
-        timeout=10,
-    )
+def guardar_cambios(app_ctx, test_role_id, nuevo_nombre):
+    return app_ctx["client"].patch(f"/api/roles/{test_role_id}", json={"name": nuevo_nombre})
 
 
 @then("el sistema debe actualizar el rol en la base de datos y retornar 200")
-def rol_actualizado(response):
+def rol_actualizado(response, nuevo_nombre):
     assert response.status_code == 200
+    assert response.json().get("name") == nuevo_nombre.lower()
 
 
 @then("el modal debe cerrarse automáticamente")
 def modal_cerrado():
-    pass  # UI concern
+    pass
 
 
 @then(parsers.parse('el rol "{nombre}" con sus nuevos permisos debe listarse inmediatamente en la tabla'))
 def rol_listado(nombre):
-    pass  # UI concern — update verified via 200
+    pass
 
 
 @given(parsers.parse('que existe otro rol con nombre "{nombre}"'))
-def otro_rol_existe(base_url, admin_token, nombre):
-    _ensure_role(base_url, admin_token, nombre)
+def otro_rol_existe(app_ctx, state, nombre):
+    state["dup_name"] = nombre.lower()
+    _seed_role(app_ctx, nombre)
 
 
 @given(parsers.parse('que tengo abierto el modal de edición del rol "{nombre}"'))
 def modal_edicion_abierto(nombre):
-    pass  # UI state — role exists via background fixture
+    pass
 
 
 @when(parsers.parse('cambio el nombre del rol a "{nuevo}"'), target_fixture="nuevo_nombre")
-def cambio_nombre_rol(nuevo):
-    return nuevo
+def cambio_nombre_rol(state, nuevo):
+    # Apunta al nombre del otro rol existente → debe chocar (409).
+    return state.get("dup_name", nuevo)
 
 
 @then("el sistema debe retornar un código 409")
@@ -247,13 +327,13 @@ def sistema_retorna_409_editar(response):
 
 
 @then(parsers.parse('debo ver el mensaje de error "{msg}"'))
-def ver_mensaje_error(msg):
-    pass  # UI message — not verifiable at API level
+def ver_mensaje_error(response):
+    assert response.json().get("detail")
 
 
 @then("el modal debe permanecer abierto")
 def modal_abierto():
-    pass  # UI concern
+    pass
 
 
 # ── HU-020: Eliminar Rol ──────────────────────────────────────────────────────
@@ -268,38 +348,37 @@ def test_eliminar_rol_sin_reasignar():
     pass
 
 
-@given(parsers.parse('que el rol "{nombre}" tiene {n} usuarios vinculados'))
-def rol_con_usuarios_vinculados(nombre, n):
-    pass  # test DB has no users assigned to custom roles
+@given(
+    parsers.parse('que el rol "{nombre}" tiene {n:d} usuarios vinculados'),
+    target_fixture="test_role_id",
+)
+def rol_con_usuarios_vinculados(app_ctx, nombre, n):
+    return _seed_role(app_ctx, nombre, users=n)
 
 
 @given('que estoy en la pantalla "/admin/roles"')
 def en_pantalla_admin_roles():
-    pass  # UI navigation stub
+    pass
 
 
 @when(parsers.parse('hago click en el botón "Eliminar" de "{nombre}"'))
 def click_eliminar(nombre):
-    pass  # UI interaction — DELETE sent in "Confirmar eliminación"
+    pass
 
 
 @then("debo ver un modal de confirmación simple")
 def ver_modal_confirmacion():
-    pass  # UI concern
+    pass
 
 
 @then("debo ver la advertencia de que la acción es irreversible")
 def advertencia_irreversible():
-    pass  # UI concern
+    pass
 
 
 @when('hago click en "Confirmar eliminación"', target_fixture="response")
-def confirmar_eliminacion(base_url, admin_token, test_role_id):
-    return requests.delete(
-        f"{base_url}/api/roles/{test_role_id}",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        timeout=10,
-    )
+def confirmar_eliminacion(app_ctx, test_role_id):
+    return app_ctx["client"].delete(f"/api/roles/{test_role_id}")
 
 
 @then("el sistema debe eliminar el rol retornando 204")
@@ -308,33 +387,33 @@ def rol_eliminado(response):
 
 
 @then(parsers.parse('el rol "{nombre}" debe desaparecer de la tabla local de inmediato'))
-def rol_desaparece(nombre):
-    pass  # UI concern
+def rol_desaparece(app_ctx, test_role_id):
+    ids = [r["id"] for r in app_ctx["client"].get("/api/roles").json()]
+    assert test_role_id not in ids
 
 
-@given(parsers.parse('que el rol "{nombre}" tiene {n} usuarios asignados'))
-def rol_con_usuarios_asignados(nombre, n):
-    pass  # test DB has no users assigned to custom roles
+@given(
+    parsers.parse('que el rol "{nombre}" tiene {n:d} usuarios asignados'),
+    target_fixture="test_role_id",
+)
+def rol_con_usuarios_asignados(app_ctx, nombre, n):
+    return _seed_role(app_ctx, nombre, users=n)
 
 
 @when(
     parsers.parse('envío un request directo DELETE a "/api/roles/{role_id}" sin query parameters'),
     target_fixture="response",
 )
-def delete_rol_directo(base_url, admin_token, test_role_id, role_id):
-    return requests.delete(
-        f"{base_url}/api/roles/{test_role_id}",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        timeout=10,
-    )
+def delete_rol_directo(app_ctx, test_role_id, role_id):
+    return app_ctx["client"].delete(f"/api/roles/{test_role_id}")
 
 
 @then("el sistema retorna un código 409")
 def sistema_409(response):
-    # With no users assigned in test DB, 204 is also acceptable
-    assert response.status_code in (204, 409)
+    # Determinista: el rol fue sembrado CON usuarios → 409 sin reasignación.
+    assert response.status_code == 409
 
 
 @then(parsers.parse('responde con el mensaje "{msg}"'))
-def mensaje_respuesta(msg):
-    pass  # message content — not verifiable without real user assignments
+def mensaje_respuesta(response):
+    assert response.json().get("detail")
