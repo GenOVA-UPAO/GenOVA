@@ -87,7 +87,7 @@ Contexto del proyecto:
 - GenOVA — plataforma web para generación asistida por IA de Objetos Virtuales de Aprendizaje (OVA) con exportación SCORM 1.2.
 - Stack: React 19 + FastAPI + Supabase PostgreSQL + pgvector + Groq/OpenRouter.
 - Arquitectura frontend: services → hooks → pages. Backend: router → service → model.
-- Límite: 200 líneas por archivo (hard rule en ESLint y ruff).
+- Límite: 200 líneas por archivo (hard rule en Biome y ruff).
 ```
 
 ### Flujo SDD completo
@@ -175,7 +175,7 @@ Cuando un spec de frontend incluye una sección `## Mockup ASCII`, el `implement
 3. ⏸ El humano aprueba. Si pide cambios, el `## Mockup ASCII` del spec se actualiza para reflejar el wireframe aprobado.
 4. Recién entonces arranca FASE 1 (implementación real). Al terminar, el wireframe se elimina.
 
-Los wireframes son temporales: están en `.gitignore` y exentos del límite `max-lines` de ESLint. Se eligió **shadcn/ui** porque los componentes se copian al repo (ownership total, sin lock de versión), adopta los design tokens existentes (indigo + slate) y es compatible con Tailwind v4.
+Los wireframes son temporales: están en `.gitignore` y exentos del límite de líneas de Biome. Se eligió **shadcn/ui** porque los componentes se copian al repo (ownership total, sin lock de versión), adopta los design tokens existentes (indigo + slate) y es compatible con Tailwind v4.
 
 ### Portabilidad multi-herramienta
 
@@ -383,8 +383,8 @@ setear en cada plataforma y la referencia completa de env vars están en
 | `pnpm dev` | Frontend en modo desarrollo |
 | `pnpm build` | Build de producción del frontend |
 | `pnpm preview` | Previsualiza el build (`http://localhost:4173`) |
-| `pnpm lint` | ESLint sobre el frontend (`max-lines: 200`, error) |
-| `pnpm format` | Prettier sobre el frontend |
+| `pnpm lint` | Biome lint sobre el frontend (`noExcessiveLinesPerFile: 200`, error) |
+| `pnpm format` | Biome format sobre el frontend |
 | `pnpm dev:docker` | Levanta todo con Docker (dev) |
 | `pnpm prod:docker` | Levanta todo con Docker (prod) |
 
@@ -435,7 +435,7 @@ GenOVA/
 │   ├── tasks/               # TA (tareas técnicas)
 │   ├── bugs/                # BU (defectos)
 │   └── progress/            # current.md (sesión activa) + history.md (bitácora)
-├── frontend/                # React + Vite (ESLint max-lines: 200)
+├── frontend/                # React + Vite (Biome, 200-line cap)
 ├── backend/                 # FastAPI
 │   ├── pyproject.toml       # uv + ruff + pytest config
 │   ├── requirements.txt     # pip (sincronizado con pyproject)
@@ -468,7 +468,7 @@ GenOVA/
 
 ## Convenciones de código
 
-- **Máx 200 líneas por archivo** (frontend ESLint hard error, backend convención). Única excepción: `backend/tools/prompt_lab.py` (CLI manual, fuera de la API).
+- **Máx 200 líneas por archivo** (frontend Biome hard error, backend convención). Única excepción: `backend/tools/prompt_lab.py` (CLI manual, fuera de la API).
 - **Capa de servicios separada de hooks y páginas**: `services/*.js` hace `fetch`, `hooks/*.js` mantiene estado, `pages/*.jsx` solo orquesta layout.
 - **Mobile-first**: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
 

@@ -9,7 +9,7 @@
 - [ ] No hay tests en `[ ]` sin justificación documentada en `sdd/progress/impl_*.md`
 
 ## C2 — Lint limpio
-- [ ] `pnpm lint` sale con exit 0 (ESLint max-lines: 200, sin errores)
+- [ ] `pnpm lint` sale con exit 0 (Biome noExcessiveLinesPerFile: 200, sin errores)
 - [ ] `ruff check backend/` sale con exit 0 (E, F, W, I, B, UP, S, SIM)
 
 ## C3 — Límite de líneas respetado (NO aplica a archivos de test)

@@ -18,8 +18,8 @@ Built as a pnpm monorepo (React 19 + FastAPI). Backend supports both `pip` and `
 pnpm install          # deps
 pnpm dev              # Vite dev → http://localhost:5173
 pnpm build            # prod build
-pnpm lint             # ESLint (max-lines: 200, hard error)
-pnpm format           # Prettier check
+pnpm lint             # Biome lint (noExcessiveLinesPerFile: 200, hard error)
+pnpm format           # Biome format check
 pnpm test:unit        # cucumber-js unit (no browser, no backend)
 pnpm test:e2e         # playwright-bdd (requires frontend + backend)
 ```

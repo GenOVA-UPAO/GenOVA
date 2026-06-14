@@ -24,7 +24,7 @@ export async function apiFetch(path, init = {}, { timeoutMs = DEFAULT_TIMEOUT_MS
   const t = setTimeout(() => ctrl.abort(), timeoutMs)
   const isFormData = typeof FormData !== 'undefined' && init.body instanceof FormData
   const baseHeaders = { 'X-Requested-With': 'XMLHttpRequest' }
-  if (init.body && !isFormData && !(init.headers && init.headers['Content-Type'])) {
+  if (init.body && !isFormData && !(init.headers?.['Content-Type'])) {
     baseHeaders['Content-Type'] = 'application/json'
   }
   const headers = { ...baseHeaders, ...(init.headers || {}) }

@@ -12,7 +12,7 @@ GenOVA is a pnpm monorepo (React 19 + FastAPI) for AI-assisted generation of Vir
 ## Architecture patterns (strictly enforced)
 - Frontend: `services/*.js` (fetch) → `hooks/use*.js` (state) → `pages/*.jsx` (layout)
 - Backend: `router.py` (HTTP) → `service.py` (logic) → `models.py` (ORM)
-- Max 200 lines/file (hard ESLint error on frontend)
+- Max 200 lines/file (hard Biome error on frontend)
 
 ## Verification
 ```powershell

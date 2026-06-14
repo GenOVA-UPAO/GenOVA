@@ -7,7 +7,7 @@ export function fetchLlmSettings(params = {}) {
   if (params.page) searchParams.set('page', String(params.page))
   if (params.page_size) searchParams.set('page_size', String(params.page_size))
   const qs = searchParams.toString()
-  return apiJson(`/api/users/me/llm-settings${qs ? '?' + qs : ''}`)
+  return apiJson(`/api/users/me/llm-settings${qs ? `?${qs}` : ''}`)
 }
 
 export function saveLlmSettings(settings) {
