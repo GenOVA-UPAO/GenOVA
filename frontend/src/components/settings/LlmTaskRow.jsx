@@ -1,5 +1,11 @@
 import { ArrowDown, ArrowUp, Plus, Trash } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import {
+  addFallback as addFb,
+  moveFallback,
+  removeFallback as removeFb,
+  setFallback as setFb,
+} from '../../lib/llmConfigDraft.js'
 import { LlmModelSelect } from './LlmModelSelect.jsx'
 
 const TASK_LABELS = {
@@ -33,24 +39,14 @@ export function LlmTaskRow({ task, value, models, disabled, onChange }) {
   const setDefault = (provider, model_id) =>
     onChange({ ...value, default: { ...value.default, provider, model_id } })
 
-  const setFallback = (i, provider, model_id) => {
-    const next = fallbacks.map((f, j) => (j === i ? { ...f, provider, model_id } : f))
-    onChange({ ...value, fallbacks: next })
-  }
+  const setFallback = (i, provider, model_id) =>
+    onChange({ ...value, fallbacks: setFb(fallbacks, i, provider, model_id) })
 
-  const addFallback = () =>
-    onChange({ ...value, fallbacks: [...fallbacks, { provider: '', model_id: '', extra: {} }] })
+  const addFallback = () => onChange({ ...value, fallbacks: addFb(fallbacks) })
 
-  const removeFallback = (i) =>
-    onChange({ ...value, fallbacks: fallbacks.filter((_, j) => j !== i) })
+  const removeFallback = (i) => onChange({ ...value, fallbacks: removeFb(fallbacks, i) })
 
-  const move = (i, dir) => {
-    const j = i + dir
-    if (j < 0 || j >= fallbacks.length) return
-    const next = [...fallbacks]
-    ;[next[i], next[j]] = [next[j], next[i]]
-    onChange({ ...value, fallbacks: next })
-  }
+  const move = (i, dir) => onChange({ ...value, fallbacks: moveFallback(fallbacks, i, dir) })
 
   return (
     <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">

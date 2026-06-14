@@ -2,36 +2,8 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { useAdminLlmConfig } from '../../hooks/admin/useAdminLlmConfig.js'
+import { toDraft, toPayload } from '../../lib/llmConfigDraft.js'
 import { LlmTaskRow } from './LlmTaskRow.jsx'
-
-function toDraft(cfg, tasks) {
-  const defaults = cfg?.defaults ?? {}
-  const fallbacks = cfg?.fallbacks ?? {}
-  const draft = {}
-  for (const t of tasks) {
-    draft[t] = {
-      default: defaults[t] ?? { provider: '', model_id: '', extra: {} },
-      fallbacks: fallbacks[t] ?? [],
-    }
-  }
-  return draft
-}
-
-function toPayload(draft, tasks) {
-  const defaults = {}
-  const fallbacks = {}
-  for (const t of tasks) {
-    const d = draft[t]?.default
-    if (d?.provider && d?.model_id) {
-      defaults[t] = { provider: d.provider, model_id: d.model_id, extra: d.extra ?? {} }
-    }
-    const fb = (draft[t]?.fallbacks ?? []).filter((f) => f.provider && f.model_id)
-    if (fb.length) {
-      fallbacks[t] = fb.map((f) => ({ provider: f.provider, model_id: f.model_id, extra: f.extra ?? {} }))
-    }
-  }
-  return { defaults, fallbacks }
-}
 
 export function PlatformLlmConfigCard() {
   const { config, catalog, save } = useAdminLlmConfig()
