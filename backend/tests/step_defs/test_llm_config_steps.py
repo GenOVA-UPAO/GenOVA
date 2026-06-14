@@ -1,13 +1,51 @@
-import os
+"""BDD de la API admin de config de modelos LLM (EN-014) determinista: SQLite
+in-memory + app FastAPI mínima (platform_settings_router) + overrides. Sin backend
+vivo ni red.
 
-import pytest
-import requests
-from pytest_bdd import given, parsers, scenario, then, when
+`require_admin` corre de verdad contra la BD sembrada (roles + user_roles), así que
+el 403 del no-admin es real. La persistencia del store (PlatformConfig vía
+SessionLocal global) se reemplaza por un dict en proceso por escenario, de modo que
+GET/PUT y el merge semilla⊕admin de `effective_llm_config()` se ejercitan sin tocar
+Postgres. `sanitize_config` corre real (valida contra el catálogo).
+"""
+
+import os
+import sys
+import uuid
+
+os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+import pytest  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from pytest_bdd import given, parsers, scenario, then, when  # noqa: E402
+from sqlalchemy import create_engine, text  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from sqlalchemy.pool import StaticPool  # noqa: E402
+
+import models  # noqa: E402, F401 — registra los modelos ORM
+from auth.dependencies import get_current_user  # noqa: E402
+from database import get_db  # noqa: E402
+from llm import llm_config_store  # noqa: E402
+from rate_limit import limiter  # noqa: E402
+from users.admin.platform_settings_router import router as admin_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "admin", "EN-014_llm-config.feature")
 
-_URL = "/api/admin/llm-config"
+# Solo las tablas que require_admin consulta (TEXT en vez de UUID/JSONB de PG).
+_DDL = """
+CREATE TABLE roles (
+  id TEXT PRIMARY KEY, name TEXT UNIQUE NOT NULL, permissions TEXT NOT NULL DEFAULT '[]'
+);
+CREATE TABLE user_roles (
+  user_id TEXT NOT NULL, role_id TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, role_id)
+);
+"""
 
 
 def _split_model(spec: str) -> tuple[str, str]:
@@ -16,16 +54,74 @@ def _split_model(spec: str) -> tuple[str, str]:
     return provider, model_id
 
 
-@pytest.fixture(autouse=True)
-def _reset_after(base_url, admin_token):
-    """Restablece la config a vacío (cae a semilla) tras cada escenario."""
-    yield
-    requests.put(
-        f"{base_url}{_URL}",
-        headers={"Authorization": f"Bearer {admin_token}"},
-        json={"defaults": {}, "fallbacks": {}},
-        timeout=10,
+class _Principal:
+    """Sustituto liviano de User: require_admin solo usa `.id`."""
+
+    def __init__(self, uid):
+        self.id = uid
+
+
+@pytest.fixture
+def ctx(monkeypatch):
+    eng = create_engine(
+        "sqlite+pysqlite:///:memory:",
+        future=True,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
+    with eng.begin() as conn:
+        for stmt in _DDL.strip().split(";"):
+            if stmt.strip():
+                conn.execute(text(stmt))
+
+    # UUID(as_uuid=True) en sqlite guarda el .hex; sembramos con .hex y pasamos
+    # objetos uuid al principal para que los binds (==) coincidan.
+    admin_uid, user_uid = uuid.uuid4(), uuid.uuid4()
+    admin_role_id = uuid.uuid4()
+    with eng.begin() as conn:
+        conn.execute(
+            text("INSERT INTO roles (id, name) VALUES (:i, 'administrador')"),
+            {"i": admin_role_id.hex},
+        )
+        conn.execute(
+            text("INSERT INTO user_roles (user_id, role_id) VALUES (:u, :r)"),
+            {"u": admin_uid.hex, "r": admin_role_id.hex},
+        )
+
+    Session = sessionmaker(bind=eng, autoflush=False, autocommit=False, future=True)
+
+    def _get_db_override():
+        db = Session()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    # Persistencia del store en proceso: evita la SessionLocal global / Postgres.
+    # sanitize_config sigue real → valida contra el catálogo.
+    box = {"data": {}}
+    monkeypatch.setattr(llm_config_store, "save_stored", lambda clean: box.__setitem__("data", clean))
+    monkeypatch.setattr(llm_config_store, "stored_cached", lambda: box["data"])
+
+    limiter.enabled = False  # SlowAPI tiene estado global → desactivar evita fugas.
+
+    active = {"id": admin_uid}
+
+    app = FastAPI()
+    app.state.limiter = limiter
+    app.include_router(admin_router, prefix="/api/admin")
+    app.dependency_overrides[get_db] = _get_db_override
+    app.dependency_overrides[get_current_user] = lambda: _Principal(active["id"])
+
+    return {
+        "client": TestClient(app),
+        "active": active,
+        "admin_uid": admin_uid,
+        "user_uid": user_uid,
+    }
+
+
+_URL = "/api/admin/llm-config"
 
 
 # ── Scenarios ─────────────────────────────────────────────────────────────────
@@ -57,39 +153,33 @@ def test_user_put_forbidden():
 
 # ── Given ─────────────────────────────────────────────────────────────────────
 
-@given("que estoy autenticado como administrador", target_fixture="auth")
-def auth_admin(admin_token):
-    return {"Authorization": f"Bearer {admin_token}"}
+@given("que estoy autenticado como administrador")
+def auth_admin(ctx):
+    ctx["active"]["id"] = ctx["admin_uid"]
 
 
-@given("que estoy autenticado como usuario normal", target_fixture="auth")
-def auth_user(user_token):
-    return {"Authorization": f"Bearer {user_token}"}
+@given("que estoy autenticado como usuario normal")
+def auth_user(ctx):
+    ctx["active"]["id"] = ctx["user_uid"]  # sin rol administrador → require_admin 403
 
 
 # ── When ──────────────────────────────────────────────────────────────────────
 
 @when("solicito la configuración de modelos", target_fixture="response")
-def get_config(base_url, auth):
-    return requests.get(f"{base_url}{_URL}", headers=auth, timeout=10)
+def get_config(ctx):
+    return ctx["client"].get(_URL)
 
 
-@when(
-    parsers.parse('guardo el modelo de codigo como "{spec}"'),
-    target_fixture="response",
-)
-def put_codigo(base_url, auth, spec):
+@when(parsers.parse('guardo el modelo de codigo como "{spec}"'), target_fixture="response")
+def put_codigo(ctx, spec):
     provider, model_id = _split_model(spec)
     body = {"defaults": {"codigo": {"provider": provider, "model_id": model_id}}, "fallbacks": {}}
-    return requests.put(f"{base_url}{_URL}", headers=auth, json=body, timeout=10)
+    return ctx["client"].put(_URL, json=body)
 
 
-@when(
-    parsers.parse('intento guardar el modelo de codigo como "{spec}"'),
-    target_fixture="response",
-)
-def put_codigo_intento(base_url, auth, spec):
-    return put_codigo(base_url, auth, spec)
+@when(parsers.parse('intento guardar el modelo de codigo como "{spec}"'), target_fixture="response")
+def put_codigo_intento(ctx, spec):
+    return put_codigo(ctx, spec)
 
 
 # ── Then ──────────────────────────────────────────────────────────────────────
@@ -113,20 +203,14 @@ def each_task_default(response):
 
 
 @then(parsers.parse('al consultar la config el modelo de codigo es "{spec}"'))
-def codigo_is(base_url, admin_token, spec):
+def codigo_is(ctx, spec):
     provider, model_id = _split_model(spec)
-    data = requests.get(
-        f"{base_url}{_URL}", headers={"Authorization": f"Bearer {admin_token}"}, timeout=10
-    ).json()
-    cod = data["config"]["defaults"]["codigo"]
+    cod = ctx["client"].get(_URL).json()["config"]["defaults"]["codigo"]
     assert (cod["provider"], cod["model_id"]) == (provider, model_id)
 
 
 @then(parsers.parse('al consultar la config el modelo de codigo no es "{spec}"'))
-def codigo_is_not(base_url, admin_token, spec):
+def codigo_is_not(ctx, spec):
     provider, model_id = _split_model(spec)
-    data = requests.get(
-        f"{base_url}{_URL}", headers={"Authorization": f"Bearer {admin_token}"}, timeout=10
-    ).json()
-    cod = data["config"]["defaults"]["codigo"]
+    cod = ctx["client"].get(_URL).json()["config"]["defaults"]["codigo"]
     assert (cod["provider"], cod["model_id"]) != (provider, model_id)

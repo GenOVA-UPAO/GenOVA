@@ -1,5 +1,6 @@
 # Cubre la API admin de config de modelos LLM (EN-014): GET de la config efectiva,
-# PUT con validación contra el catálogo, y acceso solo-admin. Requiere backend vivo.
+# PUT con validación contra el catálogo, y acceso solo-admin. Test determinista
+# (SQLite + TestClient), no requiere backend vivo.
 Feature: Config admin de modelos LLM por tarea + fallback (EN-014)
 
   Scenario: Admin obtiene la configuración efectiva
