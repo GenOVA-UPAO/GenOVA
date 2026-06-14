@@ -1,19 +1,9 @@
 import assert from 'node:assert/strict'
 import { Given, When, Then } from '@cucumber/cucumber'
+import { allSamePhaseType, applyReorder } from '../../../frontend/src/lib/resourceReorder.js'
 
-// HU-033 unit coverage — pure reorder logic. No browser, no backend.
-
-function applyReorder(items, fromIdx, toIdx) {
-  if (fromIdx === toIdx) return items
-  const updated = [...items]
-  const [moved] = updated.splice(fromIdx, 1)
-  updated.splice(toIdx, 0, moved)
-  return updated
-}
-
-function allSamePhaseType(phaseTypes) {
-  return new Set(phaseTypes).size <= 1
-}
+// HU-033 unit coverage — importa la lógica real de resourceReorder (usada por
+// WorkspaceResourceList). Sin browser/backend.
 
 // ── Reorder within phase ─────────────────────────────────────────────────────
 Given('una fase con recursos en el orden {string}', function (csv) {
