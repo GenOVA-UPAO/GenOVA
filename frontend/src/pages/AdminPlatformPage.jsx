@@ -1,4 +1,5 @@
 import { PlatformApiKeysCard } from '../components/settings/PlatformApiKeysCard.jsx'
+import { PlatformLlmConfigCard } from '../components/settings/PlatformLlmConfigCard.jsx'
 
 export function AdminPlatformPage() {
   return (
@@ -8,10 +9,11 @@ export function AdminPlatformPage() {
           Configuración de plataforma
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          API keys globales usadas por todos los usuarios cuando no tienen la suya propia.
+          API keys y modelos de generación globales, usados por todos los usuarios.
         </p>
       </div>
 
+      <PlatformLlmConfigCard />
       <PlatformApiKeysCard />
     </div>
   )
