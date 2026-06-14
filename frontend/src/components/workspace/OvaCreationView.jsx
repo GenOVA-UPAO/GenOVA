@@ -30,7 +30,6 @@ export function OvaCreationView({ onCreated }) {
   useEffect(() => {
     const jobId = location.state?.resumeJobId
     if (jobId && job.phase === 'idle') restore(jobId)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const { jobId, job: jobData, viewModel, outcome, selectedFailedIds, error } = job

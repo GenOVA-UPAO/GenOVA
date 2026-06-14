@@ -14,7 +14,7 @@ export function LabsPage() {
 
   useEffect(() => {
     lab.loadModels()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   const canGenerate =
     lab.selectedPhase &&

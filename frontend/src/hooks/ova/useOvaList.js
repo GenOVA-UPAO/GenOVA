@@ -61,7 +61,6 @@ export function useOvaList() {
 
   useEffect(() => {
     selection.clearSelection()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, statusFilter])
 
   const handlePageChange = (newPage) => {
