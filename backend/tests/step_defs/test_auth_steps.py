@@ -1,27 +1,110 @@
+"""BDD de auth (HU-001 registro / HU-008 login) determinista: SQLite in-memory +
+app FastAPI mínima (auth_router) + overrides. Sin backend vivo ni red — register,
+login y lockout corren in-process contra una BD sembrada por escenario.
+
+El rate-limiter de SlowAPI se desactiva (su estado es global y filtraría entre
+tests); el throttle por-email (`_email_attempts`) se resetea por escenario y es el
+que produce el 429 del bloqueo de forma determinista.
+"""
+
 import os
+import sys
 import uuid
 
-import requests
-from pytest_bdd import given, parsers, scenario, then, when
+os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+import pytest  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from pytest_bdd import given, parsers, scenario, then, when  # noqa: E402
+from sqlalchemy import create_engine, text  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from sqlalchemy.pool import StaticPool  # noqa: E402
+
+import models  # noqa: E402, F401
+from auth import router as auth_router_mod  # noqa: E402
+from auth.router import router as auth_router  # noqa: E402
+from database import get_db  # noqa: E402
+from rate_limit import limiter  # noqa: E402
+from security import hash_password  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
-FEATURE_AUTH_LOGIN = os.path.join(_FEATURES, "auth", "HU-008_login.feature")
-FEATURE_AUTH_REGISTER = os.path.join(_FEATURES, "auth", "HU-001_registro.feature")
+FEATURE_LOGIN = os.path.join(_FEATURES, "auth", "HU-008_login.feature")
+FEATURE_REGISTER = os.path.join(_FEATURES, "auth", "HU-001_registro.feature")
+
+_SEED_EMAIL = "user@genova.ai"
+_SEED_PASS = "user1234password"
+
+# Solo las columnas que mapea el modelo User (TEXT en vez de UUID/JSONB de PG).
+_DDL = """
+CREATE TABLE users (
+  id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
+  failed_login_attempts INTEGER NOT NULL DEFAULT 0, locked_until TIMESTAMP,
+  full_name TEXT, is_active BOOLEAN NOT NULL DEFAULT 1,
+  university_id INTEGER, gender TEXT, phone_number TEXT,
+  llm_settings TEXT NOT NULL DEFAULT '{}', enabled_models TEXT NOT NULL DEFAULT '[]',
+  ova_settings TEXT NOT NULL DEFAULT '{}', user_api_keys TEXT NOT NULL DEFAULT '{}',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
+);
+"""
+
+
+@pytest.fixture
+def client():
+    eng = create_engine(
+        "sqlite+pysqlite:///:memory:",
+        future=True,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    with eng.begin() as conn:
+        for stmt in _DDL.strip().split(";"):
+            if stmt.strip():
+                conn.execute(text(stmt))
+        conn.execute(
+            text(
+                "INSERT INTO users (id, email, password_hash, full_name) "
+                "VALUES (:i, :e, :p, 'Seed User')"
+            ),
+            {"i": uuid.uuid4().hex, "e": _SEED_EMAIL, "p": hash_password(_SEED_PASS)},
+        )
+
+    Session = sessionmaker(bind=eng, autoflush=False, autocommit=False, future=True)
+
+    def _get_db_override():
+        db = Session()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    # SlowAPI tiene estado global → desactivarlo evita fugas entre tests; el
+    # throttle por-email se resetea aquí y es el que produce el 429 del bloqueo.
+    limiter.enabled = False
+    auth_router_mod._email_attempts.clear()
+
+    app = FastAPI()
+    app.state.limiter = limiter
+    app.include_router(auth_router, prefix="/api/auth")
+    app.dependency_overrides[get_db] = _get_db_override
+    return TestClient(app)
 
 
 # ── HU-008: Login ────────────────────────────────────────────────────────────
 
-@scenario(FEATURE_AUTH_LOGIN, "Login exitoso")
+@scenario(FEATURE_LOGIN, "Login exitoso")
 def test_login_exitoso():
     pass
 
 
-@scenario(FEATURE_AUTH_LOGIN, "Credenciales inválidas")
+@scenario(FEATURE_LOGIN, "Credenciales inválidas")
 def test_login_credenciales_invalidas():
     pass
 
 
-@scenario(FEATURE_AUTH_LOGIN, "Bloqueo tras intentos fallidos")
+@scenario(FEATURE_LOGIN, "Bloqueo tras intentos fallidos")
 def test_login_bloqueo():
     pass
 
@@ -32,93 +115,79 @@ def pagina_login():
 
 
 @when("ingreso un correo registrado y contraseña válida", target_fixture="response")
-def login_valido(base_url):
-    return requests.post(
-        f"{base_url}/api/auth/login",
-        json={"email": "user@genova.ai", "password": "user1234password"},
-        timeout=10,
-    )
-
-
-@when("envío el formulario")
-def envio_formulario():
-    pass  # form submission is implicit in the preceding API call step
+def login_valido(client):
+    return client.post("/api/auth/login", json={"email": _SEED_EMAIL, "password": _SEED_PASS})
 
 
 @then("debo recibir un JWT con expiración de 24 horas")
 def jwt_recibido(response):
     assert response.status_code == 200
-    assert "access_token" in response.json()
+    body = response.json()
+    assert body.get("access_token")
+    assert body.get("token_type") == "bearer"
 
 
 @then("debo ser redirigido al dashboard")
 def redireccion_dashboard():
-    pass  # frontend redirect — not verifiable at API level
+    pass
 
 
 @when("ingreso un correo o contraseña inválidos", target_fixture="response")
-def login_invalido(base_url):
-    return requests.post(
-        f"{base_url}/api/auth/login",
-        json={"email": "noexiste@test.com", "password": "wrongpass"},
-        timeout=10,
+def login_invalido(client):
+    return client.post(
+        "/api/auth/login", json={"email": "noexiste@test.com", "password": "wrongpass"}
     )
 
 
 @then("debo recibir un error descriptivo")
 def error_descriptivo(response):
-    assert response.status_code in (400, 401, 403, 422)
+    assert response.status_code == 401
+    assert response.json().get("message")
 
 
 @then("no debo acceder al dashboard")
 def no_acceder_dashboard():
-    pass  # frontend concern
+    pass
 
 
 @given("que realizo 5 intentos fallidos consecutivos", target_fixture="lockout_email")
-def cinco_intentos_fallidos(base_url):
+def cinco_intentos_fallidos(client):
     email = f"lockout_{uuid.uuid4().hex[:8]}@test.com"
-    requests.post(
-        f"{base_url}/api/auth/register",
+    client.post(
+        "/api/auth/register",
         json={"email": email, "password": "validpass123", "full_name": "LT"},
-        timeout=10,
     )
     for _ in range(5):
-        requests.post(
-            f"{base_url}/api/auth/login",
-            json={"email": email, "password": "wrongpassword"},
-            timeout=10,
-        )
+        client.post("/api/auth/login", json={"email": email, "password": "wrongpassword"})
     return email
 
 
 @when("intento iniciar sesión nuevamente", target_fixture="response")
-def intento_adicional(base_url, lockout_email):
-    return requests.post(
-        f"{base_url}/api/auth/login",
-        json={"email": lockout_email, "password": "wrongpassword"},
-        timeout=10,
+def intento_adicional(client, lockout_email):
+    return client.post(
+        "/api/auth/login", json={"email": lockout_email, "password": "wrongpassword"}
     )
 
 
 @then("la cuenta debe quedar bloqueada por 15 minutos")
 def cuenta_bloqueada(response):
-    assert response.status_code in (401, 403, 429)
+    # 5 intentos llenan la ventana → el 6º queda throttled (429) de forma determinista.
+    assert response.status_code == 429
 
 
 @then("debo recibir un mensaje indicando el bloqueo")
-def mensaje_bloqueo():
-    pass  # message content tested implicitly via status code
+def mensaje_bloqueo(response):
+    assert response.json().get("message") or response.json().get("error")
 
 
 # ── HU-001: Registro ─────────────────────────────────────────────────────────
 
-@scenario(FEATURE_AUTH_REGISTER, "Registro exitoso con credenciales válidas")
+@scenario(FEATURE_REGISTER, "Registro exitoso con credenciales válidas")
 def test_registro_exitoso():
     pass
 
 
-@scenario(FEATURE_AUTH_REGISTER, "Registro fallido por email duplicado")
+@scenario(FEATURE_REGISTER, "Registro fallido por email duplicado")
 def test_registro_email_duplicado():
     pass
 
@@ -132,49 +201,48 @@ def pagina_registro():
     "ingreso un correo válido y una contraseña alfanumérica de mínimo 8 caracteres",
     target_fixture="response",
 )
-def registro_valido(base_url):
+def registro_valido(client):
     email = f"test_{uuid.uuid4().hex[:8]}@test.com"
-    return requests.post(
-        f"{base_url}/api/auth/register",
+    return client.post(
+        "/api/auth/register",
         json={"email": email, "password": "newpass99", "full_name": "Test User"},
-        timeout=10,
     )
 
 
 @then("el sistema debe crear la cuenta")
 def cuenta_creada(response):
-    assert response.status_code in (200, 201)
+    assert response.status_code == 201
 
 
 @then("los campos university_id, gender y phone_number deben crearse como NULL")
 def campos_null():
-    pass  # DB schema contract — verified by migration 013
+    pass
 
 
 @then("debo recibir un JWT")
 def jwt_presente(response):
-    assert "access_token" in response.json()
+    assert response.json().get("access_token")
 
 
 @given(parsers.parse('que el correo "{email}" ya está registrado'))
 def correo_ya_registrado(email):
-    pass  # user@genova.ai is seeded on backend startup
+    pass  # user@genova.ai se siembra en el fixture client
 
 
 @when("intento registrarme con ese correo", target_fixture="response")
-def registro_email_duplicado_request(base_url):
-    return requests.post(
-        f"{base_url}/api/auth/register",
-        json={"email": "user@genova.ai", "password": "somepassword123", "full_name": "Dup"},
-        timeout=10,
+def registro_email_duplicado_request(client):
+    return client.post(
+        "/api/auth/register",
+        json={"email": _SEED_EMAIL, "password": "somepassword123", "full_name": "Dup"},
     )
 
 
 @then("debo ver un mensaje indicando que el correo ya existe")
 def mensaje_correo_duplicado(response):
-    assert response.status_code in (400, 409)
+    assert response.status_code == 400
+    assert response.json().get("error") == "email_exists"
 
 
 @then("no debo ser redirigido al dashboard")
 def no_redirigido():
-    pass  # frontend concern
+    pass
