@@ -49,10 +49,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+
       - uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-          python-version: '3.11'
+        with: { enable-cache: true }
 
       - name: Install backend deps
         run: uv pip install --system -r requirements-dev.txt
@@ -120,10 +121,11 @@ jobs:
 
       - run: pnpm --filter genova-tests exec playwright install --with-deps chromium
 
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+
       - uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-          python-version: '3.11'
+        with: { enable-cache: true }
 
       - name: Install backend deps
         run: uv pip install --system -r requirements-dev.txt
