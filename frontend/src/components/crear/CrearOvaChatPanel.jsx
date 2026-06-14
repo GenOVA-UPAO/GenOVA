@@ -106,6 +106,7 @@ export function CrearOvaChatPanel({
       </div>
 
       {/* Bottom: prompt + generate */}
+      {/* biome-ignore lint/a11y: zona drag&drop; la carga de archivos tiene alternativa accesible vía botón */}
       <div className="border-t border-border bg-muted/10 p-3 space-y-2 shrink-0"
         onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
         {uploadError ? <p className="text-xs text-destructive">{uploadError}</p> : null}

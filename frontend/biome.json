@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "includes": ["**", "!**/dist"] },
+  "files": { "includes": ["**", "!**/dist", "!**/public"] },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -41,6 +41,27 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["**/*.{js,jsx}"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": {
+              "level": "warn",
+              "options": {
+                "inputComponents": [
+                  "Checkbox",
+                  "Input",
+                  "Select",
+                  "Textarea",
+                  "Switch"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     {
       "includes": ["**/components/ui/*.{js,jsx}"],
       "linter": {

@@ -70,6 +70,7 @@ export function WorkspaceHtmlPreview({ phases, onResourceClick }) {
   const activeMeta = active ? getMeta(active.phase_type) : DEFAULT_META
 
   return (
+    // biome-ignore lint/a11y: delegación de clic; los recursos internos son botones focusables y operables por teclado
     <section className="flex flex-col h-full" onClick={onResourceClick}>
       {/* Resource tabs */}
       <nav

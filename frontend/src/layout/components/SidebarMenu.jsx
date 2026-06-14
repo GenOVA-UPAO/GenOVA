@@ -94,4 +94,3 @@ export function SidebarMenu() {
     </nav>
   )
 }
-export default SidebarMenu

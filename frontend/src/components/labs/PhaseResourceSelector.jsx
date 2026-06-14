@@ -38,6 +38,7 @@ function ResourceGrid({ resources, phase, selectedPhase, selectedType, onSelect 
         return (
           <button
             key={r.id}
+            type="button"
             onClick={() => onSelect(phase, r.id)}
             className={`rounded-lg border p-3 text-left transition-all ${
               active

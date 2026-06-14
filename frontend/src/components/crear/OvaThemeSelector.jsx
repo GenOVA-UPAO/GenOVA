@@ -26,6 +26,7 @@ function Swatches() {
 
 function Segment({ active, onClick, disabled, icon: Icon, label, children }) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: control segmentado (role=radio en radiogroup) requiere <button> para el estilo
     <button
       type="button"
       role="radio"

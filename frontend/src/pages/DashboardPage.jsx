@@ -94,5 +94,3 @@ export function DashboardPage() {
     </section>
   )
 }
-
-export default DashboardPage

@@ -74,6 +74,7 @@ export function WorkspaceResourceList({ phases, phaseType, onReorder, onEdit, on
         </Button>
       </div>
       {phases.map((phase, idx) => (
+        // biome-ignore lint/a11y: reordenamiento por drag&drop de fases (sin elemento nativo)
         <div
           key={phase.id}
           draggable

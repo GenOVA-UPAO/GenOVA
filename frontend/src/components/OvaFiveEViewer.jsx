@@ -117,7 +117,7 @@ export function OvaFiveEViewer({ content }) {
         ) : null}
       </header>
 
-      <nav role="tablist" aria-label="Fases del modelo 5E" className="flex flex-wrap gap-1 border-b border-border px-5 py-3">
+      <div role="tablist" aria-label="Fases del modelo 5E" className="flex flex-wrap gap-1 border-b border-border px-5 py-3">
         {phases.map((phase, i) => {
           const isActive = i === activeIndex
           const c = phaseColor(phase.id)
@@ -138,7 +138,7 @@ export function OvaFiveEViewer({ content }) {
             </button>
           )
         })}
-      </nav>
+      </div>
 
       <div id={`panel-${activePhase?.id}`} role="tabpanel" aria-labelledby={`tab-${activePhase?.id}`} className="px-5 py-5">
         {activePhase ? <PhasePanel phase={activePhase} colors={colors} /> : null}
