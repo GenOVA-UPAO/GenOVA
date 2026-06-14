@@ -33,6 +33,10 @@ jobs:
 
       - run: uvx ruff check backend/
 
+      - name: Deps parity (pyproject <-> requirements)
+        run: python3 scripts/sync_deps.py --check
+        working-directory: backend
+
   backend-bdd:
     name: Backend BDD (pytest-bdd)
     runs-on: ubuntu-latest

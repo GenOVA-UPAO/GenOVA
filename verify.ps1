@@ -56,6 +56,18 @@ Run-Step "Backend ruff check" {
     $global:LASTEXITCODE = $finalExit
 }
 
+# [2b] Paridad de dependencias backend (pyproject.toml <-> requirements.txt)
+Run-Step "Backend deps parity (sync_deps.py --check)" {
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    Push-Location backend
+    & python scripts/sync_deps.py --check 2>&1 | ForEach-Object { Write-Host $_ }
+    $finalExit = $LASTEXITCODE
+    Pop-Location
+    $ErrorActionPreference = $prev
+    $global:LASTEXITCODE = $finalExit
+}
+
 # [3] Frontend unit tests (cucumber-js, no backend)
 Run-Step "Frontend unit BDD (pnpm test:unit)" {
     pnpm test:unit
