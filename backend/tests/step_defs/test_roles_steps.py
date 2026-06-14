@@ -1,8 +1,26 @@
 import os
 import uuid
 
+import pytest
 import requests
 from pytest_bdd import given, parsers, scenario, then, when
+
+_SYSTEM_ROLES = ("administrador", "usuario")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _cleanup_roles(base_url, admin_token):
+    """Borra los roles personalizados creados por los tests (la BD de TEST no debe
+    acumular basura entre corridas). Solo respeta los roles del sistema."""
+    yield
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    try:
+        roles = requests.get(f"{base_url}/api/roles", headers=headers, timeout=10).json()
+        for r in roles:
+            if r.get("name") not in _SYSTEM_ROLES and r.get("id"):
+                requests.delete(f"{base_url}/api/roles/{r['id']}", headers=headers, timeout=10)
+    except Exception:
+        pass  # teardown best-effort; no debe tumbar la corrida
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_CREAR = os.path.join(_FEATURES, "roles", "HU-018_crear-rol.feature")
@@ -104,6 +122,9 @@ def selecciono_permisos(p1, p2):
 @then("el sistema debe crear el rol y retornar 201")
 def rol_creado(response):
     assert response.status_code == 201
+    body = response.json()
+    assert body.get("id"), "la respuesta debe traer el id del rol creado"
+    assert body.get("name"), "la respuesta debe traer el nombre del rol creado"
 
 
 @then(parsers.parse('el nuevo rol "{nombre}" debe aparecer inmediatamente en la lista'))
