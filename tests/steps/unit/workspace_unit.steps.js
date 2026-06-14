@@ -1,15 +1,9 @@
 import assert from 'node:assert/strict'
 import { Given, When, Then } from '@cucumber/cucumber'
+import { clampRatio } from '../../../frontend/src/lib/workspaceUtils.js'
 
-// HU-025 unit coverage — split ratio clamping logic (pure, no browser).
-// Mirrors the clamping logic in WorkspaceResizableDivider.jsx.
-
-const MIN_RATIO = 0.2
-const MAX_RATIO = 0.8
-
-function clampRatio(r) {
-  return Math.min(MAX_RATIO, Math.max(MIN_RATIO, r))
-}
+// HU-025 unit coverage — split ratio clamping (importa el código real de
+// workspaceUtils, usado por WorkspaceResizableDivider; sin browser).
 
 // ── Ratio clamping ───────────────────────────────────────────────────────────
 Given('un drag hasta una posición de ratio {float}', function (ratio) {
