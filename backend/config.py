@@ -68,12 +68,16 @@ class Settings(BaseSettings):
 
     # --- Generación OVA ---
     ova_gen_concurrency: int = 4
+    ova_images: str = "1"
     ova_refine: str = "1"
     ova_generation_duration_seconds: int = 14
     ova_output_dir: str = ""
     ova_pg_checkpoint: str = ""
     resource_max_attempts: int = 3
     job_heartbeat_seconds: int = 30
+    ova_critic: str = "0"
+    ova_reflection_rounds: int = 1
+    ova_editor: str = "0"
 
     # --- Supabase Storage ---
     supabase_url: str = ""

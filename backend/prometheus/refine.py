@@ -22,7 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 def _refine_enabled() -> bool:
-    return str(settings.ova_refine).strip().lower() not in ("0", "false", "no")
+    from prometheus.nodes_config import get_nodes_config
+
+    nc = get_nodes_config()
+    return str(nc.get("ova_refine", settings.ova_refine)).strip().lower() not in ("0", "false", "no")
 
 
 def _quality_issues(html: str, phase: str, rt: int) -> list[str]:
@@ -51,6 +54,35 @@ dependencia externa (CDN/fonts/jquery). Mantén o mejora la longitud y la calida
 [SALIDA] Solo el documento HTML completo y corregido desde <!DOCTYPE html>, sin markdown."""
 
 
+def apply_feedback(
+    html: str,
+    concept: str,
+    feedback: list,
+    phase: str,
+    rt: int,
+    llm_config=None,
+    enabled_models=None,
+    theme=None,
+) -> str:
+    """Re-generate HTML incorporating explicit feedback list.
+
+    Best-effort: returns original html on any LLM failure.  Used by the
+    Generador-Crítico loop (EN-015) to apply critic feedback without the
+    structural regression check — acceptance by puntaje is handled by the caller.
+    """
+    theme = theme or {}
+    ds = build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
+    try:
+        return strip_markdown(
+            generar_texto(
+                _refine_prompt(html, concept, feedback, ds), "codigo", 12000, llm_config, enabled_models
+            )
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("apply_feedback failed for %s/%s", phase, rt)
+        return html
+
+
 def maybe_refine(
     html: str, phase: str, rt: int, concept: str, llm_config=None, enabled_models=None, theme=None
 ) -> str:
@@ -66,15 +98,7 @@ def maybe_refine(
     if not issues:
         return html
 
-    theme = theme or {}
-    ds = build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
-    try:
-        refined = strip_markdown(
-            generar_texto(_refine_prompt(html, concept, issues, ds), "codigo", 12000, llm_config, enabled_models)
-        )
-    except Exception:  # noqa: BLE001 — refine is best-effort, never fail the resource
-        logger.exception("refine failed for %s/%s", phase, rt)
-        return html
+    refined = apply_feedback(html, concept, issues, phase, rt, llm_config, enabled_models, theme)
 
     # Accept only if it does not regress structurally and isn't a truncated stub.
     before = len(validate_html(html, phase, rt))

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { fetchEngageRecursos } from '../services/engageService.js'
 import { fetchExploreRecursos } from '../services/exploreService.js'
 import { fetchExplainRecursos } from '../services/explainService.js'
 import { fetchElaborateRecursos } from '../services/elaborateService.js'
 import { fetchEvaluateRecursos } from '../services/evaluateService.js'
+import { getAdminNodesConfig } from '../services/ovaSettingsService.js'
+import { isVideoResource } from '../lib/nodesConfigDraft.js'
 import { ResourceCard } from './engage/ResourceCard.jsx'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -61,6 +64,14 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
   const [recursos, setRecursos] = useState(EMPTY_PICKS())
   const [loading, setLoading] = useState(true)
   const [picks, setPicks] = useState(() => ({ ...EMPTY_PICKS(), ...(initialSelections ?? {}) }))
+
+  const { data: nodesData } = useQuery({
+    queryKey: ['admin', 'nodes-config'],
+    queryFn: getAdminNodesConfig,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  })
+  const videoKeyConfigured = nodesData?.video_api_key_configured ?? true
 
   useEffect(() => {
     Promise.all(PHASE_CFG.map((p) => p.fetch()))
@@ -149,6 +160,7 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
               {currentList.map((r) => {
                 const orderIdx = currentPicks.findIndex((p) => p.id === r.id)
                 const selected = orderIdx >= 0
+                const isVideo = isVideoResource(phase.key, r.id)
                 return (
                   <ResourceCard key={r.id} resource={r} selected={selected}
                     selectionIndex={selected ? orderIdx + 1 : null}
@@ -156,6 +168,7 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
                     onClick={selectResource}
                     selectedRingCls={phase.ring}
                     selectedBadgeCls={phase.badge}
+                    showVideoHint={isVideo && !videoKeyConfigured}
                   />
                 )
               })}

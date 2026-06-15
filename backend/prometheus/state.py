@@ -34,6 +34,8 @@ class OvaGenerationState(TypedDict, total=False):
     results: Annotated[list[dict], operator.add]  # [{phase, html, resource_type, ..}]
     errors: Annotated[list[dict], operator.add]  # [{phase, resource_type, error}]
 
+    coherence_report: dict  # Editor 5E output (EN-016); empty in EN-015
+
     # SCORM assembly
     scorm_zip_path: str
     ova_status: str  # "listo" | "borrador" | "error"

@@ -8,6 +8,7 @@ export function ResourceCard({
   resource, selected, onClick, selectionIndex = null, disabled = false,
   selectedRingCls = 'ring-2 ring-primary border-primary/40 bg-primary/5',
   selectedBadgeCls = 'bg-primary',
+  showVideoHint = false,
 }) {
   let ring = 'border-border bg-card hover:border-primary/30 hover:shadow-md'
   if (selected) {
@@ -41,6 +42,11 @@ export function ResourceCard({
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">⏱ {resource.duracion}</p>
+          {showVideoHint && (
+            <span className="ml-1 text-xs text-amber-600 font-medium" title="Sin API key de video — generará prompt copiable">
+              ⚠ Modo prompt
+            </span>
+          )}
         </div>
         {selected && (
           <span className={`flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full ${selectedBadgeCls} text-primary-foreground text-xs font-bold`}>
