@@ -1,67 +1,45 @@
 # Pipeline 5E — Generación completa de OVAs
 
-> Pipeline multiagente (Prometheus + LangGraph) que genera Objetos Virtuales de Aprendizaje
-> aplicando las 5 fases del modelo instruccional 5E: Engage, Explore, Explain, Elaborate, Evaluate.
-> 50 tipos de recurso en total, orquestados por un nodo Concierge que descompone el prompt del
-> usuario y un grafo de 8 nodos que genera, valida y empaqueta cada recurso.
+> Catálogo de los **50 tipos de recurso** (10 por fase 5E: Engage, Explore, Explain, Elaborate,
+> Evaluate) y las plantillas de prompt con que se generan. La **arquitectura del motor** (grafo
+> LangGraph de 7 nodos, paralelismo, persistencia, planes) vive en [prometheus.md](prometheus.md);
+> este documento se centra en el catálogo y los prompts.
 
 | Archivo | Rol |
 |---|---|
-| `backend/prometheus/graph.py` | Construcción del StateGraph (8 nodos + edges condicionales) |
-| `backend/prometheus/state.py` | `OvaGenerationState` TypedDict compartido |
 | `backend/prometheus/nodes/concierge.py` | Descomposición del prompt en plan de recursos por fase |
-| `backend/prometheus/nodes/engage.py` — `evaluate.py` | Agentes de generación por fase (PEVR) |
-| `backend/prometheus/nodes/validate.py` | Nodo de validación post-generación |
-| `backend/prometheus/nodes/assemble.py` | Ensamblado final del OVA y SCORM |
+| `backend/prometheus/prompts/engage_prompts.py` … `evaluate_prompts.py` | Prompts y metadatos (`RECURSOS_META`) de los 50 recursos |
 | `backend/prometheus/plans/two_step.py` | Plan de generación en 2 pasos (texto → código) |
 | `backend/prometheus/plans/direct_code.py` | Plan de generación directa (código en 1 paso) |
-| `backend/prometheus/plans/podcast.py` | Plan de podcast (monólogo → TTS → HTML) |
-| `backend/agents/engage_prompts.py` — `evaluate_prompts.py` | Prompts y metadatos de los 50 recursos |
-| `backend/agents/html_validator.py` | Validación y auto-reparación de HTML generado |
-| `backend/agents/utils.py` | Contexto compartido (`CURSO_CONTEXTO`, `DESIGN_SYSTEM`, `SCORM_JS`) |
-| `backend/prometheus/checkpointer.py` | Persistencia de estado (PostgresSaver / MemorySaver) |
+| `backend/prometheus/plans/podcast.py` | Despacho del plan podcast (monólogo) |
+| `backend/llm/podcast.py` | TTS de Groq + reproductor HTML del podcast |
+| `backend/llm/html_validator.py` | Validación y auto-reparación de HTML generado |
+| `backend/llm/utils.py` | Contexto compartido (`CURSO_CONTEXTO`, `DESIGN_SYSTEM`, `SCORM_JS`) |
+| `backend/llm/router.py` | Enrutado de LLM por tarea + cadenas de fallback |
 
 ---
 
 ## Resumen
 
-El pipeline recibe un `prompt` del usuario (tema, nivel, énfasis) y produce un OVA completo con
-recursos HTML5 autocontenidos, validados y empaquetados en SCORM 1.2. La orquestación corre sobre
-**LangGraph** (8 nodos, edges condicionales), con checkpointing en PostgreSQL para tolerancia a
-fallos. Cada recurso se genera con LLMs reales (Groq + OpenRouter), usando uno de tres planes de
-generación según el tipo de recurso.
+El pipeline recibe un `prompt` del usuario y produce un OVA completo con recursos HTML5
+autocontenidos, validados y empaquetados en SCORM 1.2. La orquestación corre sobre **LangGraph**:
+un grafo de **7 nodos** (`concierge` + 5 fases + `assemble`) donde cada nodo de fase genera
+**todos** sus recursos en paralelo acotado. Cada recurso se genera con LLMs reales (Groq +
+OpenRouter) usando uno de tres planes según el tipo. Detalle completo del flujo en
+[prometheus.md](prometheus.md).
 
 ---
 
 ## Arquitectura del grafo
 
 ```
-┌──────────┐    ┌─────────┐    ┌──────────┐
-│ Concierge │───→│ Engage  │───→│ Validate │
-│ (plan)   │    └─────────┘    └────┬─────┘
-└──────────┘         │              │ next_phase ─→ vuelve a Concierge
-      │              │  ┌─────────┐ │ retry ──────→ misma fase
-      │              └─→│ Explore │─┤ ok ─────────→ siguiente recurso
-      │                 └─────────┘ │
-      │                 ┌─────────┐ │
-      ├────────────────→│ Explain │─┤
-      │                 └─────────┘ │
-      │                 ┌──────────┐│
-      ├────────────────→│Elaborate │┤
-      │                 └──────────┘│
-      │                 ┌──────────┐│
-      └────────────────→│ Evaluate │┘
-                        └──────────┘
-                              │
-                              ▼
-                        ┌──────────┐
-                        │ Assemble │──→ END
-                        └──────────┘
+START → concierge → [engage → explore → explain → elaborate → evaluate] → assemble → END
 ```
 
-**8 nodos**: `concierge`, `engage`, `explore`, `explain`, `elaborate`, `evaluate`, `validate`,
-`assemble`. El flujo es determinista: Concierge produce un plan, luego el grafo itera fase por
-fase generando un recurso a la vez y pasando por validación tras cada uno.
+**7 nodos**: `concierge`, `engage`, `explore`, `explain`, `elaborate`, `evaluate`, `assemble`.
+No hay nodo `validate`: la validación/reparación y el refine ocurren **dentro** de cada plan de
+generación. Cada nodo de fase genera **todos** los recursos de su fase en paralelo acotado
+(`run_phase`), no uno a uno. Ver [prometheus.md](prometheus.md#arquitectura-del-grafo).
 
 ---
 
@@ -86,7 +64,7 @@ plan de generación que le corresponde.
 | 9 | 🔐 Escape Room Virtual | 3–4 min | Alta | two_step |
 | 10 | 🎛️ Simulador Intuitivo | 2–3 min | Alta | **direct_code** |
 
-**Archivo**: `backend/agents/engage_prompts.py`  
+**Archivo**: `backend/prometheus/prompts/engage_prompts.py`  
 **Funciones**: `prompt_texto(n, concept, ctx)`, `prompt_simulador(concept, ctx)` (recurso 10),
 `prompt_html(n, concept, data_json, ctx)`.  
 El recurso 3 usa `podcast_gen` (no `direct_code_gen`), el 10 usa `direct_code_gen`, los demás
@@ -107,7 +85,7 @@ usan `two_step_gen`.
 | 9 | 🗺️ Mapa Mental | 5–6 min | Alta | two_step |
 | 10 | 💡 Lab de Hipótesis | 5–7 min | Alta | **direct_code** |
 
-**Archivo**: `backend/agents/explore_prompts.py`  
+**Archivo**: `backend/prometheus/prompts/explore_prompts.py`  
 **Funciones**: `prompt_codigo(n, concept, ctx)` (para 1,6,10), `prompt_texto(n, concept, ctx)`,
 `prompt_html(n, concept, data_json, ctx)`.  
 `CODE_ONLY = {1, 6, 10}` → usan `direct_code_gen`.
@@ -127,7 +105,7 @@ usan `two_step_gen`.
 | 9 | 📊 Tabla Comparativa | 2–3 min | Media | two_step |
 | 10 | 🎨 Infografía Interactiva | 2–3 min | Alta | **direct_code** |
 
-**Archivo**: `backend/agents/explain_prompts.py`  
+**Archivo**: `backend/prometheus/prompts/explain_prompts.py`  
 `CODE_ONLY = {3, 5, 8, 10}` → usan `direct_code_gen`.
 
 ### ELABORATE — Aplicar y practicar
@@ -145,7 +123,7 @@ usan `two_step_gen`.
 | 9 | ♟️ Juego de Estrategia | 4–5 min | Alta | **direct_code** |
 | 10 | 🏗️ Reto de Diseño | 6–8 min | Media | two_step |
 
-**Archivo**: `backend/agents/elaborate_prompts.py`  
+**Archivo**: `backend/prometheus/prompts/elaborate_prompts.py`  
 `CODE_ONLY = {4, 5, 7, 9}` → usan `direct_code_gen`.
 
 ### EVALUATE — Evaluar el aprendizaje
@@ -163,7 +141,7 @@ usan `two_step_gen`.
 | 9 | 🎯 Simulación Evaluativa | 3–4 min | Alta | **direct_code** |
 | 10 | 🏆 Diploma de Logro | 1–2 min | Baja | two_step |
 
-**Archivo**: `backend/agents/evaluate_prompts.py`  
+**Archivo**: `backend/prometheus/prompts/evaluate_prompts.py`  
 `CODE_ONLY = {3, 5, 9}` → usan `direct_code_gen`.
 
 ---
@@ -262,91 +240,31 @@ HTML con reproductor de audio embebido + SCORM
 ```
 
 - El LLM produce un monólogo donde el narrador **es** el concepto hablando en primera persona.
-- `backend/agents/podcast.py` sintetiza el audio con **Groq TTS** (`generar_audio_tts`) y
+- `backend/llm/podcast.py` sintetiza el audio con **Groq TTS** (`generar_audio_tts`) y
   construye un reproductor HTML5 oscuro con visualizador de onda CSS animado.
 - Si el TTS falla, se degrada a texto con botón "He terminado de leer".
 
 ---
 
-## Ciclo PEVR (Perceive → Evaluate → Verify → Respond)
+## Selección de plan por fase
 
-Cada nodo de fase (`engage_node`, `explore_node`, …) implementa el ciclo PEVR del diseño
-arquitectónico Prometheus. La **V** (Verify) ocurre en un nodo separado (`validate_node`)
-conectado por edges condicionales.
-
-### Perceive
-El estado `rag_context` (poblado por herramientas RAG antes de invocar el grafo) se inyecta en
-cada prompt vía `format_contexto_usuario()`. Si el usuario subió archivos, el contexto recuperado
-de la BD vectorial ancla la generación al material de estudio.
-
-### Evaluate
-Cada nodo de fase evalúa el `resource_type` y selecciona el plan:
+Cada nodo de fase elige el plan según el `resource_type` (tabla `_dispatch`):
 - **ENGAGE**: `rt == 3` → `podcast_gen`, `rt == 10` → `direct_code_gen`, resto → `two_step_gen`
 - **EXPLORE**: `rt in {1, 6, 10}` → `direct_code_gen`, resto → `two_step_gen`
 - **EXPLAIN**: `rt in {3, 5, 8, 10}` → `direct_code_gen`, resto → `two_step_gen`
 - **ELABORATE**: `rt in {4, 5, 7, 9}` → `direct_code_gen`, resto → `two_step_gen`
 - **EVALUATE**: `rt in {3, 5, 9}` → `direct_code_gen`, resto → `two_step_gen`
 
-### Verify
-El nodo `validate_node` recibe el HTML generado, la fase y el `resource_type`, y llama a
-`validate_and_repair()`. El resultado (`valid: bool`) determina el routing condicional:
-- `True` → siguiente recurso de la misma fase, o cambio a la siguiente fase si se completaron todos.
-- `False` → se reintenta el mismo recurso (el error se acumula en `state.errors`).
-
-### Respond
-El plan de generación invoca `generar_texto()` del `llm_router`, que enruta al proveedor
-primario (Groq u OpenRouter) y aplica cadena de fallback ante errores recuperables
-(rate-limit, 402 sin crédito, 5xx, respuesta vacía).
-
----
-
-## Flujo del grafo (LangGraph)
-
-### Construcción
-`backend/prometheus/graph.py` — `build_ova_graph()`:
-
-1. **8 nodos** registrados en un `StateGraph(OvaGenerationState)`.
-2. **Entry point**: `concierge`.
-3. **Edge condicional desde Concierge**: `_route_next_phase` → dirige a la primera fase del
-   `phase_order`, o a `assemble` si no hay fases.
-4. **Cada fase → validate**: edge fijo.
-5. **Edge condicional desde validate**: `_check_validation` → decide entre:
-   - `"engage"` / `"explore"` / … — misma fase, siguiente recurso
-   - `"next_phase"` — vuelve a `concierge`, que avanza `current_phase_idx` y resetea
-     `current_resource_idx`
-   - `"assemble"` — todas las fases completadas
-6. **assemble → END**: edge fijo.
-
-### Invocación
-`invoke_ova_generation(initial_state, thread_id, checkpointer)`:
-- Compila el grafo con un `PostgresSaver` (o `MemorySaver` en dev/local).
-- Usa `thread_id = job_id` para checkpointing.
-- Invoca con `config = {"configurable": {"thread_id": thread_id}}`.
-
-### Routing condicional
-
-`_route_next_phase(state)`:
-- Lee `phase_order[idx]`. Si `idx < len(phase_order)` → devuelve el nombre de la fase. Si no → `"assemble"`.
-
-`_check_validation(state)`:
-- Si el último recurso falló y no hay resultados → avanza a `next_phase` o `assemble`.
-- Si `done >= total_resources` → `next_phase`.
-- Si no → reintenta la misma fase (el `current_resource_idx` ya se incrementó en el nodo de fase).
-
-### Una invocación = un recurso
-
-Cada nodo de fase genera **exactamente un recurso** por invocación. El grafo itera:
-1. Entra a la fase con `current_resource_idx = 0`.
-2. Genera recurso `resources[idx]`, incrementa `current_resource_idx`.
-3. Pasa por `validate`.
-4. Si `idx < len(resources)` → vuelve a la misma fase.
-5. Si `idx == len(resources)` → `next_phase` → `concierge` avanza `current_phase_idx`.
+El contexto RAG (`rag_context`, si hay `upload_ids`) se inyecta en los prompts vía
+`format_contexto_usuario()`. La validación/reparación y el refine ocurren **dentro del plan**, no
+como nodos. El flujo del grafo (router determinista, generación paralela por fase, persistencia
+incremental, checkpointing) está documentado en [prometheus.md](prometheus.md).
 
 ---
 
 ## Validación y auto-reparación de HTML
 
-`backend/agents/html_validator.py` — `validate_and_repair(html, phase, resource_type)`
+`backend/llm/html_validator.py` — `validate_and_repair(html, phase, resource_type)`
 
 ### Checks de validación (`validate_html`)
 
@@ -372,7 +290,7 @@ el HTML se entrega igual (best-effort), pero se registra warning con las fallas 
 
 ## Contexto compartido en prompts
 
-`backend/agents/utils.py` inyecta tres bloques fijos en **todos** los prompts de generación:
+`backend/llm/utils.py` inyecta tres bloques fijos en **todos** los prompts de generación:
 
 ### `CURSO_CONTEXTO`
 Define la audiencia y alcance: curso universitario de Machine Learning, primer contacto,
@@ -415,7 +333,7 @@ Si hay contexto RAG recuperado de archivos subidos por el usuario, lo envuelve e
 
 ## Enrutado de LLM y fallback
 
-`backend/agents/llm_router.py` — `generar_texto(prompt, tarea, max_tokens)`.
+`backend/llm/router.py` — `generar_texto(prompt, tarea, max_tokens)`.
 
 Cada **tarea** tiene un modelo primario y una cadena de respaldo que se recorre ante errores
 recuperables (rate-limit, `APIStatusError`, `EmptyContentError`):
@@ -439,11 +357,10 @@ Timeout por llamada: `LLM_TIMEOUT_S` (default 120 s).
 
 ## Checkpointing
 
-`backend/prometheus/checkpointer.py` — `get_checkpointer()`:
-- Si `DATABASE_URL` está configurada → `PostgresSaver` sobre Supabase PostgreSQL.
-- Si no → `MemorySaver` (desarrollo / tests).
-- El `thread_id` de LangGraph se iguala al `job_id` de la generación, permitiendo reanudar
-  trabajos interrumpidos.
+`backend/prometheus/checkpointer.py` — `get_checkpointer()`: **`MemorySaver` por defecto** (a
+propósito). El progreso real se persiste a nivel `OvaJobResource`, no en checkpoints del grafo; la
+reanudación re-invoca el grafo y salta las filas ya `done`. `PostgresSaver` es **opt-in** con
+`OVA_PG_CHECKPOINT=1`. Motivos en [prometheus.md](prometheus.md#checkpointing).
 
 ---
 
@@ -459,7 +376,7 @@ Timeout por llamada: `LLM_TIMEOUT_S` (default 120 s).
 
 ## Prompts de generación — ENGAGE
 
-Plantillas exactas de `backend/agents/engage_prompts.py`. Cada `{concept}` es el placeholder
+Plantillas exactas de `backend/prometheus/prompts/engage_prompts.py`. Cada `{concept}` es el placeholder
 del concepto de ML; los recursos two_step usan `prompt_texto` (paso 1) + `prompt_html` (paso 2);
 el recurso 3 es podcast (solo `prompt_texto`) y el 10 es direct_code (solo `prompt_simulador`).
 `prompt_html` comparte cuerpo entre recursos: solo cambia el `[FORMATO]` por recurso.
@@ -599,7 +516,7 @@ Cuerpo idéntico al de los demás two_step de ENGAGE; solo cambia el `[FORMATO]`
 ```
 
 > Nota: el HTML final NO lo genera un segundo LLM. El monólogo se sintetiza a audio con Groq TTS
-> y el reproductor lo construye `build_podcast_html()` en `backend/agents/podcast.py`.
+> y el reproductor lo construye `build_podcast_html()` en `backend/llm/podcast.py`.
 
 ### Recurso 4 — 🎮 Juego de Gamificación (two_step)
 
@@ -869,7 +786,7 @@ Cuerpo idéntico al de los demás two_step de ENGAGE; solo cambia el `[FORMATO]`
 
 ## Prompts de generación — EXPLORE
 
-Plantillas exactas de `backend/agents/explore_prompts.py`. `CODE_ONLY = {1, 6, 10}` →
+Plantillas exactas de `backend/prometheus/prompts/explore_prompts.py`. `CODE_ONLY = {1, 6, 10}` →
 `prompt_codigo` (un solo paso). El resto (2,3,4,5,7,8,9) → `prompt_texto` + `prompt_html`.
 El cuerpo de `prompt_html` es común; solo cambia el `[FORMATO]`.
 
@@ -1240,7 +1157,7 @@ El cuerpo de `prompt_html` es común; solo cambia el `[FORMATO]`.
 
 ## Prompts de generación — EXPLAIN
 
-Plantillas exactas de `backend/agents/explain_prompts.py`. `CODE_ONLY = {3, 5, 8, 10}` →
+Plantillas exactas de `backend/prometheus/prompts/explain_prompts.py`. `CODE_ONLY = {3, 5, 8, 10}` →
 `prompt_codigo` (un solo paso). El resto (1,2,4,6,7,9) → `prompt_texto` + `prompt_html`.
 El cuerpo de `prompt_html` es común; solo cambia el `[FORMATO]`.
 
@@ -1590,7 +1507,7 @@ El cuerpo de `prompt_html` es común; solo cambia el `[FORMATO]`.
 
 ## Prompts de generación — ELABORATE
 
-Plantillas exactas de `backend/agents/elaborate_prompts.py`. `CODE_ONLY = {4, 5, 7, 9}` →
+Plantillas exactas de `backend/prometheus/prompts/elaborate_prompts.py`. `CODE_ONLY = {4, 5, 7, 9}` →
 `prompt_codigo` (un solo paso). El resto (1,2,3,6,8,10) → `prompt_texto` + `prompt_html`.
 El cuerpo de `prompt_html` es común; solo cambia el `[FORMATO]`.
 
@@ -1942,7 +1859,7 @@ El cuerpo de `prompt_html` es común; solo cambia el `[FORMATO]`.
 
 ## Prompts de generación — EVALUATE
 
-Plantillas exactas de `backend/agents/evaluate_prompts.py`. `CODE_ONLY = {3, 5, 9}` →
+Plantillas exactas de `backend/prometheus/prompts/evaluate_prompts.py`. `CODE_ONLY = {3, 5, 9}` →
 `prompt_codigo` (un solo paso). El resto (1,2,4,6,7,8,10) → `prompt_texto` + `prompt_html`.
 El cuerpo de `prompt_html` es común; solo cambia el `[FORMATO]`.
 
@@ -2311,4 +2228,4 @@ El cuerpo de `prompt_html` es común; solo cambia el `[FORMATO]`.
 ---
 
 *Fuentes: `backend/prometheus/` (graph, state, nodes, plans, checkpointer),
-`backend/agents/` (engage_prompts — evaluate_prompts, llm_router, html_validator, utils, podcast).*
+`backend/prometheus/prompts/` (engage_prompts — evaluate_prompts) y `backend/llm/` (router, html_validator, utils, podcast).*

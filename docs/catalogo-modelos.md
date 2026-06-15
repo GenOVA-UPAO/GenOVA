@@ -8,12 +8,12 @@
 
 | Archivo | Rol |
 |---|---|
-| `backend/agents/model_catalog.py` | Allowlist curado (9 modelos), defaults del sistema, validación |
-| `backend/agents/catalog_refresh.py` | Fetch paralelo OpenRouter + Groq, merge con curados, catálogo completo |
-| `backend/agents/catalog_cache.py` | Persistencia en Supabase (`catalog_cache`) con TTL 24 h |
+| `backend/llm/model_catalog.py` | Allowlist curado (9 modelos), defaults del sistema, validación |
+| `backend/llm/catalog_refresh.py` | Fetch paralelo OpenRouter + Groq, merge con curados, catálogo completo |
+| `backend/llm/catalog_cache.py` | Persistencia en Supabase (`catalog_cache`) con TTL 24 h |
 | `backend/users/llm_settings_router.py` | GET/PUT de configuración por tarea (modelo + timeout) |
 | `backend/users/enabled_models_router.py` | GET/PUT de toggle habilitar/deshabilitar modelos |
-| `backend/agents/llm_router.py` | Resolución runtime del modelo primario con validación de enabled |
+| `backend/llm/router.py` | Resolución runtime del modelo primario con validación de enabled |
 | `frontend/src/components/settings/LlmSettingsCard.jsx` | UI del catálogo completo (~310 modelos) con búsqueda, filtros, scroll infinito |
 | `frontend/src/components/settings/LlmSettingsForm.jsx` | Dropdowns de asignación por tarea + slider de timeout |
 | `frontend/src/components/workspace/LlmSettingsModal.jsx` | Modal accesible desde el workspace sin ir a Perfil |
