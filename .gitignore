@@ -270,3 +270,5 @@ frontend/src/wireframes/
 
 # Harness E2E de OVAs (scripts/ova-e2e.ps1) — resultados navegables, no se versionan
 /test-output/
+
+/.mcp.json
