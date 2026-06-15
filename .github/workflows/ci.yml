@@ -93,6 +93,30 @@ jobs:
 
       - run: pnpm test:unit
 
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with: { node-version: 22, cache: pnpm }
+
+      - run: pnpm install --frozen-lockfile
+
+      # Audita solo dependencias de PRODUCCIÓN (las de dev/test las cubre Dependabot).
+      - name: pnpm audit (prod)
+        run: pnpm audit --prod --audit-level high
+
+      - uses: astral-sh/setup-uv@v8.2.0
+        with: { enable-cache: true }
+
+      - name: pip-audit (backend)
+        run: uvx pip-audit -r requirements.txt
+        working-directory: backend
+
   e2e:
     name: E2E BDD (playwright-bdd)
     runs-on: ubuntu-latest

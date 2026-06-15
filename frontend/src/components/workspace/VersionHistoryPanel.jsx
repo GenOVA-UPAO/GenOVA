@@ -4,6 +4,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { sortVersionsDesc } from '../../lib/ovaVersioning.js'
 
 /**
  * HU-028 — Version history dialog.
@@ -35,7 +36,7 @@ export function VersionHistoryPanel({ open, onOpenChange, versions, currentVersi
     onOpenChange(false)
   }
 
-  const sorted = [...(versions ?? [])].sort((a, b) => b.version_number - a.version_number)
+  const sorted = sortVersionsDesc(versions)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

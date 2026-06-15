@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { applyReorder } from '../../lib/resourceReorder.js'
 import { WorkspacePhaseItem } from './WorkspacePhaseItem.jsx'
 import { AddResourceModal } from './AddResourceModal.jsx'
 
@@ -38,11 +39,8 @@ export function WorkspaceResourceList({ phases, phaseType, onReorder, onEdit, on
     const fromIdx = dragIdxRef.current
     if (fromIdx === null || fromIdx === toIdx) return
 
-    const updated = [...phases]
-    const [moved] = updated.splice(fromIdx, 1)
-    updated.splice(toIdx, 0, moved)
     dragIdxRef.current = null
-    onReorder(updated)
+    onReorder(applyReorder(phases, fromIdx, toIdx))
   }
 
   function handleDragEnd() {

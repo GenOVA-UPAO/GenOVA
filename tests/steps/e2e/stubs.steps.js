@@ -85,7 +85,7 @@ Then('debo recibir un mensaje indicando el bloqueo', async () => {})
 
 Given(
   'que los roles del sistema {string} y {string} ya existen en la base de datos',
-  async () => {}
+  async ({}, _admin, _user) => {}
 )
 
 Then('debo ver la opción {string} en el menú del panel', async ({ page }, option) => {
@@ -108,7 +108,7 @@ Given('que estoy en {string}', async ({ page }, path) => {
   await page.goto(path)
 })
 
-Given('que existe un rol con nombre {string}', async () => {})
+Given('que existe un rol con nombre {string}', async ({}, _name) => {})
 
 When('intento crear otro rol con el mismo nombre {string}', async ({ page }, name) => {
   await page.goto('/admin/roles')

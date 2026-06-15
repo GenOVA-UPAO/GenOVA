@@ -4,6 +4,7 @@ updates:
   # tiene alias de major y se fija por tag completo).
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     commit-message:
@@ -15,6 +16,7 @@ updates:
   # Frontend + tests (pnpm workspace: un solo lockfile en la raíz).
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     commit-message:
@@ -29,6 +31,7 @@ updates:
   # para realinearlo (el check de paridad de CI lo exige).
   - package-ecosystem: "uv"
     directory: "/backend"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     commit-message:

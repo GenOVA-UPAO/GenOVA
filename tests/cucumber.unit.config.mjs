@@ -19,6 +19,7 @@ export default {
     join(__dir, 'features/ova/HU-029_micro-versionado.feature'),
     join(__dir, 'features/ova/HU-032_anadir-recurso.feature'),
     join(__dir, 'features/ova/HU-031_edicion-granular.feature'),
+    join(__dir, 'features/admin/llm-config-unit.feature'),
   ],
   require: [join(__dir, 'steps/unit/**/*.js')],
   worldParameters: {},

@@ -37,6 +37,7 @@ def _ova_to_dict(ova: Ova, include_owner: bool = False) -> dict:
         "version_number": active_version_number,
         "created_at": ova.created_at.isoformat() if ova.created_at else None,
         "updated_at": ova.updated_at.isoformat() if ova.updated_at else None,
+        "deleted_at": ova.deleted_at.isoformat() if ova.deleted_at else None,
     }
     if include_owner and ova.owner:
         data["owner"] = {

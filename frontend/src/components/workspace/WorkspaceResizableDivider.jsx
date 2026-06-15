@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { DotsSixVertical } from '@phosphor-icons/react'
-import { SPLIT_MIN, SPLIT_MAX, saveSplitRatio } from '../../lib/workspaceUtils.js'
+import { SPLIT_MIN, SPLIT_MAX, clampRatio, saveSplitRatio } from '../../lib/workspaceUtils.js'
 
 /**
  * HU-025 — drag handle between workspace panels.
@@ -10,10 +10,8 @@ import { SPLIT_MIN, SPLIT_MAX, saveSplitRatio } from '../../lib/workspaceUtils.j
 export function WorkspaceResizableDivider({ ratio, onRatioChange, containerRef }) {
   const dragging = useRef(false)
 
-  const clamp = (r) => Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, r))
-
   const nudge = (delta) => {
-    const next = clamp((ratio ?? 0.38) + delta)
+    const next = clampRatio((ratio ?? 0.38) + delta)
     onRatioChange(next)
     saveSplitRatio(next)
   }
@@ -35,7 +33,7 @@ export function WorkspaceResizableDivider({ ratio, onRatioChange, containerRef }
       rafId = 0
       if (!dragging.current || !containerRef.current) return
       const rect = containerRef.current.getBoundingClientRect()
-      lastRatio = clamp((pendingX - rect.left) / rect.width)
+      lastRatio = clampRatio((pendingX - rect.left) / rect.width)
       onRatioChange(lastRatio)
     }
 

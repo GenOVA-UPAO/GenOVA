@@ -1,15 +1,12 @@
 import assert from 'node:assert/strict'
 import { Given, When, Then } from '@cucumber/cucumber'
+import {
+  findActiveVersion as findActive,
+  sortVersionsDesc as sortDesc,
+} from '../../../frontend/src/lib/ovaVersioning.js'
 
-// HU-028 unit coverage — pure version list logic. No browser, no backend.
-
-function findActive(versions) {
-  return versions.find((v) => v.is_active) ?? null
-}
-
-function sortDesc(versions) {
-  return [...versions].sort((a, b) => b.version_number - a.version_number)
-}
+// HU-028 unit coverage — importa la lógica real de ovaVersioning (usada por
+// VersionHistoryPanel). Sin browser/backend.
 
 // ── Active version ───────────────────────────────────────────────────────────
 Given('un historial con versiones {int}, {int} y {int} donde la activa es la {int}', function (v1, v2, v3, active) {

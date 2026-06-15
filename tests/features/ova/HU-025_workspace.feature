@@ -5,12 +5,12 @@ Feature: Workspace de edición OVA — split panel (HU-025)
   Scenario: El ratio del divider se clampea al mínimo
     Given un drag hasta una posición de ratio 0.1
     When se clampea el ratio
-    Then el ratio resultante es 0.2
+    Then el ratio resultante es 0.25
 
   Scenario: El ratio del divider se clampea al máximo
     Given un drag hasta una posición de ratio 0.9
     When se clampea el ratio
-    Then el ratio resultante es 0.8
+    Then el ratio resultante es 0.65
 
   Scenario: Un ratio válido no se modifica
     Given un drag hasta una posición de ratio 0.4
