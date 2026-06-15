@@ -26,7 +26,15 @@ export function useGeneratingJobs(ovas) {
   const results = useQueries({
     queries: ids.map((ovaId) => ({
       queryKey: ['ovaJob', ovaId],
-      queryFn: () => getJobByOvaId(ovaId),
+      queryFn: async () => {
+        try {
+          return await getJobByOvaId(ovaId)
+        } catch (err) {
+          // OVA huérfana (generando sin registro ova_job): no reintentamos.
+          if (err?.status === 404) return null
+          throw err
+        }
+      },
       staleTime: 0,
       refetchInterval: (query) => {
         const status = query.state.data?.status

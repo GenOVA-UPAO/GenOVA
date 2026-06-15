@@ -59,11 +59,12 @@ opencode_client = OpenAI(
 # hay config admin o la entrada guardada es inválida.
 # Groq uses max_completion_tokens; OpenRouter uses max_tokens (OpenAI-compat).
 _SEED_MODELOS: dict[str, tuple] = {
-    "texto": ("groq", "llama-3.3-70b-versatile", {}),
+    # Groq quota se agota rápido con prompts largos → OpenRouter como primario.
+    "texto": ("openrouter", "deepseek/deepseek-v4-flash", {}),
     # DeepSeek V4 Pro via OpenCode Go subscription — stronger code model.
     "codigo": ("opencode", "deepseek-v4-pro", {}),
-    "orquestador": ("groq", "openai/gpt-oss-120b", {"reasoning_effort": "medium"}),
-    "razonamiento": ("groq", "qwen/qwen3-32b", {"reasoning_effort": "default"}),
+    "orquestador": ("openrouter", "deepseek/deepseek-v4-flash", {}),
+    "razonamiento": ("openrouter", "deepseek/deepseek-v4-flash", {}),
 }
 
 _VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
@@ -77,22 +78,23 @@ _FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 # almost always responds within free tier.
 _SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
-        # Free, valid code model first; then a general free model; the last
-        # entry is the fast Groq safety net that almost always responds.
         ("openrouter", "qwen/qwen3-coder:free", {}),
         ("openrouter", _FALLBACK_OR_MODEL, {}),
         ("groq", "llama-3.3-70b-versatile", {}),
     ],
     "texto": [
-        ("groq", _FALLBACK_GROQ_MODEL, {}),
+        ("openrouter", "deepseek/deepseek-chat-v3.1", {}),
         ("openrouter", _FALLBACK_OR_MODEL, {}),
+        ("groq", _FALLBACK_GROQ_MODEL, {}),
     ],
     "orquestador": [
-        ("groq", "qwen/qwen3-32b", {}),
+        ("openrouter", "deepseek/deepseek-chat-v3.1", {}),
+        ("openrouter", _FALLBACK_OR_MODEL, {}),
         ("groq", _FALLBACK_GROQ_MODEL, {}),
     ],
     "razonamiento": [
-        ("groq", "openai/gpt-oss-120b", {"reasoning_effort": "low"}),
+        ("openrouter", "deepseek/deepseek-chat-v3.1", {}),
+        ("openrouter", _FALLBACK_OR_MODEL, {}),
         ("groq", _FALLBACK_GROQ_MODEL, {}),
     ],
 }

@@ -90,6 +90,24 @@ CATALOG_ENTRIES = [
     },
     {
         "provider": "openrouter",
+        "model_id": "deepseek/deepseek-v4-flash",
+        "label": "DeepSeek V4 Flash (OpenRouter)",
+        "task": "texto",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+    },
+    {
+        "provider": "openrouter",
+        "model_id": "deepseek/deepseek-chat-v3.1",
+        "label": "DeepSeek Chat V3.1 (OpenRouter)",
+        "task": "texto",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+    },
+    {
+        "provider": "openrouter",
         "model_id": "meta-llama/llama-3.3-70b-instruct:free",
         "label": "Llama 3.3 70B (OpenRouter · free)",
         "task": "texto",
@@ -131,12 +149,12 @@ def _rebuild_catalog() -> None:
     CATALOG = _build_provider_catalog()
 
 
-# System defaults per generation type (mirror llm_router._MODELOS primaries).
+# System defaults per generation type (mirror llm_router._SEED_MODELOS primaries).
 DEFAULTS: dict[str, dict] = {
-    "texto": {"provider": "groq", "model_id": "llama-3.3-70b-versatile"},
+    "texto": {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-flash"},
     "codigo": {"provider": "opencode", "model_id": "deepseek-v4-pro"},
-    "orquestador": {"provider": "groq", "model_id": "openai/gpt-oss-120b"},
-    "razonamiento": {"provider": "groq", "model_id": "qwen/qwen3-32b"},
+    "orquestador": {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-flash"},
+    "razonamiento": {"provider": "openrouter", "model_id": "deepseek/deepseek-v4-flash"},
 }
 
 TASKS: tuple[str, ...] = tuple(DEFAULTS.keys())
