@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
+
+const WF_PAGES = [['/wireframe1','Nav'],['/wireframe2','Dashboard'],['/wireframe3','Mis OVAs'],['/wireframe4','Crear OVA'],['/wireframe5','Generación'],['/wireframe6','Editor']]
 
 const NAV = [
   { to: '/dashboard', label: 'Dashboard', d: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -76,16 +79,24 @@ export function WireframeNavbarPage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const navigate = useNavigate()
 
   const activeLabel = [...NAV, ...ADMIN].find((n) => n.to === active)?.label ?? 'Página'
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Wireframe banner */}
-      <div className="flex items-center justify-center gap-4 bg-accent-brand py-1.5 text-xs font-semibold text-white tracking-wide">
-        <span>WIREFRAME — Rediseño Navbar / Sidebar</span>
-        <button type="button" onClick={() => setIsAdmin(!isAdmin)} className="rounded border border-white/40 px-2 py-0.5 transition-colors hover:bg-white/20 cursor-pointer">
-          {isAdmin ? 'Vista Admin activa' : 'Vista Normal — activar Admin'}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 bg-accent-brand px-4 py-1.5 text-[11px] font-semibold text-white">
+        <span className="font-bold tracking-widest uppercase opacity-80">WF</span>
+        <span className="opacity-30">|</span>
+        {WF_PAGES.map(([path, label]) => (
+          <button key={path} type="button" onClick={() => navigate(path)}
+            className={`rounded px-2 py-0.5 transition-colors cursor-pointer ${path === '/wireframe1' ? 'bg-white/25' : 'hover:bg-white/15'}`}>
+            {label}
+          </button>
+        ))}
+        <button type="button" onClick={() => setIsAdmin(!isAdmin)} className="ml-auto rounded border border-white/40 px-2 py-0.5 hover:bg-white/15 cursor-pointer">
+          {isAdmin ? 'Admin ON' : 'Admin OFF'}
         </button>
       </div>
 
