@@ -2,7 +2,7 @@ import logging
 import os
 
 from fastapi import APIRouter, Depends, Request, status
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -292,10 +292,17 @@ def export_scorm(
             content={"error": "ova_not_ready", "message": "El OVA no está listo."},
         )
 
+    active_version = _get_active_version(ova_id, db)
+    version_num = active_version.version_number if active_version else 1
+    safe_title = (
+        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
+    )
+    filename = f"{safe_title}_v{version_num}.zip"
+
     if ova.storage_key and is_configured():
         try:
-            url = signed_url(str(ova.storage_key))
-            return RedirectResponse(url=url, status_code=302)
+            url = signed_url(str(ova.storage_key), download_as=filename)
+            return JSONResponse({"download_url": url, "filename": filename})
         except StorageError:
             logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
 
@@ -308,14 +315,8 @@ def export_scorm(
             },
         )
 
-    active_version = _get_active_version(ova_id, db)
-    version_num = active_version.version_number if active_version else 1
-    safe_title = (
-        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
-    )
-
     return FileResponse(
         path=ova.file_path,
-        filename=f"{safe_title}_v{version_num}.zip",
+        filename=filename,
         media_type="application/zip",
     )

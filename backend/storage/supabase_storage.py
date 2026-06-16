@@ -99,12 +99,23 @@ def upload_zip(object_key: str, zip_bytes: bytes) -> str:
     return object_key
 
 
-def signed_url(object_key: str, ttl_seconds: int = DEFAULT_SIGNED_URL_TTL) -> str:
-    """Generate a short-lived signed URL for download."""
+def signed_url(
+    object_key: str,
+    ttl_seconds: int = DEFAULT_SIGNED_URL_TTL,
+    download_as: str | None = None,
+) -> str:
+    """Generate a short-lived signed URL for download.
+
+    Pass ``download_as`` to embed a Content-Disposition filename so browsers
+    save the file with a human-readable name instead of the storage key.
+    """
     client = _get_client()
     bucket = _bucket_name()
     try:
-        result = client.storage.from_(bucket).create_signed_url(object_key, ttl_seconds)
+        options = {"download": download_as} if download_as else None
+        result = client.storage.from_(bucket).create_signed_url(
+            object_key, ttl_seconds, options=options
+        )
     except Exception as exc:
         logger.exception("Supabase signed_url failed for key=%s", object_key)
         raise StorageError(f"Signed URL generation failed: {exc}") from exc
