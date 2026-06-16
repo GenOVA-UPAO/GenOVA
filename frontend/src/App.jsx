@@ -20,6 +20,7 @@ const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx').then((m) => ({ 
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
 const LabsPage = lazy(() => import('./pages/LabsPage.jsx').then((m) => ({ default: m.LabsPage })))
 const OvaWorkspacePage = lazy(() => import('./pages/OvaWorkspacePage.jsx').then((m) => ({ default: m.OvaWorkspacePage })))
+const WireframeNavbarPage = lazy(() => import('./pages/WireframeNavbarPage.jsx').then((m) => ({ default: m.WireframeNavbarPage })))
 
 import { Toaster } from 'sonner'
 import { SpeedInsights } from '@vercel/speed-insights/react'
@@ -85,6 +86,7 @@ function App() {
       <SpeedInsights />
       <Suspense fallback={<RouteFallback />}>
         <Routes>
+          <Route path="/wireframe1" element={<WireframeNavbarPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedLayout />}>
