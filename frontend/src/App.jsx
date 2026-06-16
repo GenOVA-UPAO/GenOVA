@@ -29,6 +29,9 @@ const WireframeAdminRolesPage = lazy(() => import('./pages/WireframeAdminRolesPa
 const WireframeAdminUsersPage = lazy(() => import('./pages/WireframeAdminUsersPage.jsx').then((m) => ({ default: m.WireframeAdminUsersPage })))
 const WireframeAdminPlatformPage = lazy(() => import('./pages/WireframeAdminPlatformPage.jsx').then((m) => ({ default: m.WireframeAdminPlatformPage })))
 const WireframeProfilePage = lazy(() => import('./pages/WireframeProfilePage.jsx').then((m) => ({ default: m.WireframeProfilePage })))
+const WireframeModelsPage = lazy(() => import('./pages/WireframeModelsPage.jsx').then((m) => ({ default: m.WireframeModelsPage })))
+const WireframeFallbackChainPage = lazy(() => import('./pages/WireframeFallbackChainPage.jsx').then((m) => ({ default: m.WireframeFallbackChainPage })))
+const WireframeVinculacionPage = lazy(() => import('./pages/WireframeVinculacionPage.jsx').then((m) => ({ default: m.WireframeVinculacionPage })))
 
 import { Toaster } from 'sonner'
 import { SpeedInsights } from '@vercel/speed-insights/react'
@@ -104,6 +107,9 @@ function App() {
           <Route path="/wireframe8" element={<WireframeAdminUsersPage />} />
           <Route path="/wireframe9" element={<WireframeAdminPlatformPage />} />
           <Route path="/wireframe10" element={<WireframeProfilePage />} />
+          <Route path="/wireframe11" element={<WireframeModelsPage />} />
+          <Route path="/wireframe12" element={<WireframeFallbackChainPage />} />
+          <Route path="/wireframe13" element={<WireframeVinculacionPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedLayout />}>

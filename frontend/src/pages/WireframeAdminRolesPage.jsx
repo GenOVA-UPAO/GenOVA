@@ -8,14 +8,14 @@ const ROLES = [
   },
   {
     key: 'docente', label: 'Docente', color: 'bg-accent-brand', users: 15,
-    perms: ['Crear OVAs', 'Exportar SCORM', 'Ver OVAs propios', 'Editar OVAs propios', 'Invitar estudiantes'],
+    perms: ['Crear OVAs', 'Exportar SCORM', 'Ver OVAs propios', 'Editar OVAs propios', 'Invitar estudiantes', 'Vincular cuentas de estudiantes'],
   },
   {
     key: 'estudiante', label: 'Estudiante', color: 'bg-emerald-500', users: 142,
     perms: ['Ver OVAs asignados', 'Descargar SCORM asignados'],
   },
 ]
-const ALL_PERMS = ['Crear OVAs', 'Exportar SCORM', 'Ver OVAs propios', 'Editar OVAs propios', 'Ver OVAs de otros', 'Invitar estudiantes', 'Gestionar usuarios', 'Gestionar roles', 'Configurar API Keys', 'Ver métricas del sistema', 'Activar modo crítico']
+const ALL_PERMS = ['Crear OVAs', 'Exportar SCORM', 'Ver OVAs propios', 'Editar OVAs propios', 'Ver OVAs de otros', 'Invitar estudiantes', 'Vincular cuentas de estudiantes', 'Gestionar usuarios', 'Gestionar roles', 'Configurar API Keys', 'Ver métricas del sistema', 'Activar modo crítico']
 
 export function WireframeAdminRolesPage() {
   const [isAdmin, setIsAdmin] = useState(true)

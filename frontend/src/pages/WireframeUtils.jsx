@@ -12,6 +12,9 @@ export const WF_PAGES = [
   ['/wireframe8', 'Usuarios'],
   ['/wireframe9', 'Plataforma'],
   ['/wireframe10', 'Perfil'],
+  ['/wireframe11', 'Modelos'],
+  ['/wireframe12', 'Fallback'],
+  ['/wireframe13', 'Vincular'],
 ]
 
 export function WireframeBanner({ extra }) {

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import { WireframeShell } from './WireframeShell.jsx'
 
 const OVA_STATS = [
@@ -14,9 +15,16 @@ const ADMIN_METRICS = [
   { label: 'Uptime motor', value: '99.8%' },
 ]
 
+const LINKED_MINI = [
+  { name: 'Luis Torres', ownKey: false },
+  { name: 'Valentina Cruz', ownKey: true },
+  { name: 'Pedro Sánchez', ownKey: false },
+]
+
 export function WireframeProfilePage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [editMode, setEditMode] = useState(false)
+  const navigate = useNavigate()
 
   return (
     <WireframeShell isAdmin={isAdmin} setIsAdmin={setIsAdmin}>
@@ -96,6 +104,27 @@ export function WireframeProfilePage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Estudiantes vinculados (Docente) */}
+        {!isAdmin && (
+          <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold">Estudiantes vinculados <span className="font-normal text-muted-foreground">(3)</span></p>
+              <button type="button" onClick={() => navigate('/wireframe13')} className="text-xs font-semibold text-primary hover:underline cursor-pointer">Gestionar →</button>
+            </div>
+            {LINKED_MINI.map((s) => (
+              <div key={s.name} className="flex items-center gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                  {s.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <p className="flex-1 text-sm">{s.name}</p>
+                <span className={`text-[10px] font-bold ${s.ownKey ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  {s.ownKey ? '✓ Clave propia' : '↑ Heredando'}
+                </span>
+              </div>
+            ))}
           </div>
         )}
 
