@@ -11,10 +11,16 @@ const NODES_CFG = [
   { id: 'fmt', name: 'Formatter', color: 'bg-teal-500', desc: 'Post-procesa y valida el HTML final' },
 ]
 const PROVIDERS = [
-  { key: 'groq', name: 'Groq', desc: 'LLM principal — Llama 3.3 70B', masked: 'gsk_••••••••••••••••••••••••••', status: 'ok' },
-  { key: 'openrouter', name: 'OpenRouter', desc: 'Fallback LLM — múltiples modelos', masked: 'sk-or-••••••••••••••••••••••••', status: 'ok' },
-  { key: 'gemini', name: 'Gemini', desc: 'Embeddings RAG — gemini-embedding-2 (768d)', masked: 'AIza••••••••••••••••••••••••', status: 'warning' },
+  { key: 'groq', name: 'Groq', desc: 'LLM principal — Llama 3.3 70B', masked: 'gsk_••••••••••••••••••••••••••', status: 'ok', compat: true },
+  { key: 'openrouter', name: 'OpenRouter', desc: 'Fallback LLM — múltiples modelos', masked: 'sk-or-••••••••••••••••••••••••', status: 'ok', compat: true },
+  { key: 'gemini', name: 'Gemini', desc: 'Embeddings RAG — gemini-embedding-2 (768d)', masked: 'AIza••••••••••••••••••••••••', status: 'warning', compat: false },
+  { key: 'siliconflow', name: 'SiliconFlow', desc: 'LLM / imagen — modelos open source a bajo costo', masked: 'sk-••••••••••••••••••••••••••••', status: 'ok', compat: true },
+  { key: 'runware', name: 'Runware', desc: 'Generación de imágenes — Stable Diffusion XL', masked: 'rw-••••••••••••••••••••••••••••', status: 'ok', compat: false },
+  { key: 'fal', name: 'fal.ai', desc: 'Inferencia rápida — imagen, video y audio en la nube', masked: '••••••••:••••••••••••••••••••••', status: 'ok', compat: false },
+  { key: 'opencode', name: 'OpenCode', desc: 'Modelos especializados en código', masked: 'sk-oc-••••••••••••••••••••••••', status: 'idle', compat: true },
 ]
+const S_BADGE = { ok: 'bg-emerald-100 text-emerald-700', warning: 'bg-amber-100 text-amber-700', idle: 'bg-muted text-muted-foreground' }
+const S_LABEL = { ok: '● Conectado', warning: '⚠ Error de cuota', idle: '○ Sin configurar' }
 const SYS_PARAMS = [
   { label: 'Límite de requests por minuto', value: '30', hint: 'Por usuario autenticado (SlowAPI)' },
   { label: 'Pool size de base de datos', value: '10', hint: 'DB_POOL_SIZE — conexiones Supabase' },
@@ -28,6 +34,8 @@ export function WireframeAdminPlatformPage() {
   const [globalMode, setGlobalMode] = useState('normal')
   const [nodeActive, setNodeActive] = useState(() => Object.fromEntries(NODES_CFG.map((n) => [n.id, true])))
   const [revealed, setRevealed] = useState({})
+  const [addingProvider, setAddingProvider] = useState(false)
+  const [newCompat, setNewCompat] = useState(true)
   const tabCls = (on) => `px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${on ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`
 
   return (
@@ -91,12 +99,16 @@ export function WireframeAdminPlatformPage() {
         {tab === 'apikeys' && (
           <div className="space-y-3">
             {PROVIDERS.map((p) => (
-              <div key={p.key} className="rounded-2xl border border-border bg-card p-5 space-y-3">
+              <div key={p.key} className="rounded-2xl border border-border bg-card p-4 space-y-3">
                 <div className="flex items-start justify-between gap-3">
-                  <div><p className="font-semibold">{p.name}</p><p className="text-xs text-muted-foreground mt-0.5">{p.desc}</p></div>
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${p.status === 'ok' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                    {p.status === 'ok' ? '● Conectado' : '⚠ Error de cuota'}
-                  </span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold">{p.name}</p>
+                      {p.compat && <span className="rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-semibold text-blue-700">Compatible OpenAI</span>}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{p.desc}</p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${S_BADGE[p.status]}`}>{S_LABEL[p.status]}</span>
                 </div>
                 <div className="flex gap-2">
                   <input type={revealed[p.key] ? 'text' : 'password'} defaultValue={p.masked}
@@ -110,6 +122,10 @@ export function WireframeAdminPlatformPage() {
                 <button type="button" className="text-xs text-primary hover:underline cursor-pointer font-medium">Probar conexión →</button>
               </div>
             ))}
+            <button type="button" onClick={() => setAddingProvider(true)}
+              className="flex items-center gap-2 w-full rounded-2xl border-2 border-dashed border-border px-5 py-3.5 text-sm font-semibold text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer transition-colors">
+              + Agregar proveedor
+            </button>
           </div>
         )}
 
@@ -130,6 +146,51 @@ export function WireframeAdminPlatformPage() {
           </div>
         )}
       </div>
+
+      {addingProvider && (
+        <>
+          {/* biome-ignore lint/a11y: backdrop dismiss */}
+          <div className="fixed inset-0 z-40 bg-foreground/25 backdrop-blur-sm" onClick={() => setAddingProvider(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <p className="text-sm font-semibold">Agregar proveedor de IA</p>
+                <button type="button" onClick={() => setAddingProvider(false)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent cursor-pointer" aria-label="Cerrar">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+              <div className="p-5 space-y-4">
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Nombre del proveedor</p>
+                  <input placeholder="ej. Mistral, Together AI..." className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Tipo de API</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[[true, 'Compatible OpenAI', 'Usa openai-python SDK o fetch a /v1/chat/completions'], [false, 'API propia', 'Integración personalizada con SDK del proveedor']].map(([val, label, desc]) => (
+                      <button key={label} type="button" onClick={() => setNewCompat(val)}
+                        className={`rounded-xl border p-3 text-left cursor-pointer transition-all ${newCompat === val ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border hover:bg-accent'}`}>
+                        <p className="text-xs font-semibold">{label}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {newCompat && <div><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Base URL</p>
+                  <input placeholder="https://api.proveedor.com/v1" className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-primary/20" />
+                </div>}
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">API Key</p>
+                  <input type="password" placeholder="sk-••••••••••••••••••••••••" className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-primary/20" />
+                </div>
+              </div>
+              <div className="border-t border-border px-5 py-4">
+                <button type="button" onClick={() => setAddingProvider(false)} className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer transition-opacity">
+                  Guardar proveedor
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </WireframeShell>
   )
 }
