@@ -18,6 +18,7 @@ const PROVIDERS = [
   { key: 'runware', name: 'Runware', desc: 'Generación de imágenes — Stable Diffusion XL', masked: 'rw-••••••••••••••••••••••••••••', status: 'ok', compat: false },
   { key: 'fal', name: 'fal.ai', desc: 'Inferencia rápida — imagen, video y audio en la nube', masked: '••••••••:••••••••••••••••••••••', status: 'ok', compat: false },
   { key: 'opencode', name: 'OpenCode', desc: 'Modelos especializados en código', masked: 'sk-oc-••••••••••••••••••••••••', status: 'idle', compat: true },
+  { key: 'huggingface', name: 'HuggingFace', desc: 'Inferencia open source — imagen, texto, embeddings (FLUX.1, SDXL, Llama)', masked: 'hf_••••••••••••••••••••', status: 'ok', compat: false },
 ]
 const S_BADGE = { ok: 'bg-emerald-100 text-emerald-700', warning: 'bg-amber-100 text-amber-700', idle: 'bg-muted text-muted-foreground' }
 const S_LABEL = { ok: '● Conectado', warning: '⚠ Error de cuota', idle: '○ Sin configurar' }

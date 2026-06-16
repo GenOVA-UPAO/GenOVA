@@ -1,66 +1,44 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
 import { WireframeShell } from './WireframeShell.jsx'
 import { WireframeModelApiPanel } from './WireframeModelApiPanel.jsx'
+import { WireframeModelCatalog } from './WireframeModelCatalog.jsx'
 
-const CATALOG = {
-  llm: [
-    { key: 'groq', name: 'Groq', models: [
-      { id: 'llama-3.3-70b', name: 'Llama 3.3 70B', ctx: '128K', speed: 'Rápido', quality: 'Alto' },
-      { id: 'llama-3.1-8b', name: 'Llama 3.1 8B Instant', ctx: '128K', speed: 'Ultra', quality: 'Medio' },
-    ]},
-    { key: 'openrouter', name: 'OpenRouter', models: [
-      { id: 'claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', ctx: '200K', speed: 'Moderado', quality: 'Muy alto' },
-      { id: 'gpt-4o-mini', name: 'GPT-4o mini', ctx: '128K', speed: 'Rápido', quality: 'Alto' },
-      { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', ctx: '1M', speed: 'Muy rápido', quality: 'Alto' },
-    ]},
-    { key: 'siliconflow', name: 'SiliconFlow', models: [
-      { id: 'qwen-2.5-72b', name: 'Qwen 2.5 72B', ctx: '32K', speed: 'Rápido', quality: 'Alto' },
-      { id: 'deepseek-v3', name: 'DeepSeek V3', ctx: '64K', speed: 'Moderado', quality: 'Muy alto' },
-    ]},
-  ],
-  emb: [
-    { key: 'gemini', name: 'Gemini', models: [
-      { id: 'gemini-emb-2', name: 'gemini-embedding-2-preview', ctx: '—', speed: '768d', quality: 'Recomendado' },
-    ]},
-    { key: 'openai', name: 'OpenAI (via OR)', models: [
-      { id: 'text-emb-3-small', name: 'text-embedding-3-small', ctx: '—', speed: '1536d', quality: 'Alto' },
-    ]},
-  ],
-  img: [
-    { key: 'runware', name: 'Runware', models: [
-      { id: 'flux-schnell', name: 'FLUX.1 Schnell', ctx: '—', speed: 'Ultra', quality: 'Alto' },
-      { id: 'dreamshaper-xl', name: 'Dreamshaper XL', ctx: '—', speed: 'Rápido', quality: 'Artístico' },
-    ]},
-    { key: 'fal', name: 'fal.ai', models: [
-      { id: 'fal-flux', name: 'FLUX Schnell', ctx: '—', speed: 'Ultra', quality: 'Alto' },
-      { id: 'sdxl-lightning', name: 'SDXL Lightning', ctx: '—', speed: 'Rápido', quality: 'Medio' },
-    ]},
-  ],
+const TASKS = [
+  { key: 'gen', label: 'Generación', desc: 'Redacción de contenido OVA',
+    d: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
+  { key: 'reason', label: 'Razonamiento', desc: 'Análisis y planificación (Director)',
+    d: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+  { key: 'code', label: 'Código', desc: 'Generación HTML / SCORM',
+    d: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
+  { key: 'emb', label: 'Embeddings', desc: 'Vectorización RAG',
+    d: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4' },
+  { key: 'img', label: 'Imagen', desc: 'Recursos visuales del OVA',
+    d: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
+  { key: 'video', label: 'Video', desc: 'Clips multimedia', disabled: true,
+    d: 'M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
+]
+const TASK_ACTIVE = {
+  gen: { name: 'Llama 3.3 70B', prov: 'Groq' },
+  reason: { name: 'DeepSeek R1 Distill 70B', prov: 'Groq' },
+  code: { name: 'DeepSeek V3', prov: 'SiliconFlow' },
+  emb: { name: 'gemini-embedding-2-preview', prov: 'Gemini' },
+  img: { name: 'FLUX.1-schnell', prov: 'HuggingFace' },
 }
-const USE_LABELS = { llm: 'LLM — Generación', emb: 'Embeddings — RAG', img: 'Imagen' }
-const ACTIVE_DEF = { llm: 'llama-3.3-70b', emb: 'gemini-emb-2', img: 'flux-schnell' }
-const SPD = { Ultra: 'bg-purple-100 text-purple-700', 'Muy rápido': 'bg-blue-100 text-blue-700', Rápido: 'bg-emerald-100 text-emerald-700', Moderado: 'bg-amber-100 text-amber-700' }
 
 export function WireframeModelsPage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [hasOwnKey, setHasOwnKey] = useState(false)
-  const [useCase, setUseCase] = useState('llm')
-  const [provider, setProvider] = useState('groq')
-  const [active, setActive] = useState({ ...ACTIVE_DEF })
-  const navigate = useNavigate()
+  const [mainTab, setMainTab] = useState('assign')
   const canEdit = hasOwnKey || isAdmin
-  const tabCls = (on) => `px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${on ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`
-  const catalog = CATALOG[useCase]
-  const curProvider = catalog.find(p => p.key === provider) ?? catalog[0]
+  const tabCls = (on) => `px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${on ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`
 
   return (
     <WireframeShell isAdmin={isAdmin} setIsAdmin={setIsAdmin}>
-      <div className="p-6 space-y-5 max-w-4xl">
+      <div className="p-6 space-y-5 max-w-5xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="font-display text-2xl font-semibold">Configurar modelos</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Selecciona los modelos de IA para la generación de OVAs</p>
+            <h1 className="font-display text-2xl font-semibold">Modelos de IA</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Asigna modelos a cada tarea y explora el catálogo completo</p>
           </div>
           {!isAdmin && (
             <button type="button" onClick={() => setHasOwnKey(!hasOwnKey)} className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold cursor-pointer border transition-colors ${hasOwnKey ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'border-border text-muted-foreground hover:bg-accent'}`}>
@@ -68,72 +46,65 @@ export function WireframeModelsPage() {
             </button>
           )}
         </div>
-        {isAdmin ? (
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 flex items-center gap-3">
-            <span className="text-primary text-lg">⚙</span>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-primary">Configuración global gestionada en Plataforma</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Los modelos por defecto para todos los usuarios se configuran en Administración → Plataforma.</p>
-            </div>
-            <button type="button" onClick={() => navigate('/wireframe9')} className="shrink-0 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 cursor-pointer">Ir a Plataforma →</button>
-          </div>
-        ) : !hasOwnKey && (
-          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 flex items-center gap-3">
-            <span className="text-blue-500 shrink-0">ℹ</span>
-            <div>
-              <p className="text-sm font-semibold text-blue-800">Usando configuración de Plataforma UPAO</p>
-              <p className="text-xs text-blue-700 mt-0.5">Los modelos activos son los del administrador. Agrega tu API Key para personalizar.</p>
+        <div className="flex gap-1 border-b border-border -mx-1 px-1">
+          <button type="button" onClick={() => setMainTab('assign')} className={tabCls(mainTab === 'assign')}>Asignación por tarea</button>
+          <button type="button" onClick={() => setMainTab('catalog')} className={tabCls(mainTab === 'catalog')}>Catálogo de modelos</button>
+        </div>
+
+        {mainTab === 'assign' && (
+          <div className="space-y-5">
+            {isAdmin ? (
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 flex items-center gap-3">
+                <span className="text-primary text-lg">⚙</span>
+                <p className="text-sm text-primary font-medium flex-1">Esta configuración aplica como <strong>default global</strong> para todos los usuarios. Cada usuario puede sobreescribirla con su propia API Key.</p>
+              </div>
+            ) : !hasOwnKey && (
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 flex items-center gap-3">
+                <span className="text-blue-500 shrink-0">ℹ</span>
+                <div>
+                  <p className="text-sm font-semibold text-blue-800">Usando configuración de Plataforma UPAO</p>
+                  <p className="text-xs text-blue-700 mt-0.5">Agrega tu API Key para personalizar los modelos de cada tarea.</p>
+                </div>
+              </div>
+            )}
+            {!isAdmin && <WireframeModelApiPanel onHasKey={setHasOwnKey} />}
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ${!canEdit ? 'opacity-60 pointer-events-none' : ''}`}>
+              {TASKS.map((t) => (
+                <div key={t.key} className={`rounded-2xl border bg-card p-4 space-y-3 ${t.disabled ? 'opacity-50 border-dashed border-border' : 'border-border'}`}>
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                      <svg className="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={t.d} />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold leading-tight">{t.label}</p>
+                      <p className="text-[11px] text-muted-foreground leading-tight">{t.desc}</p>
+                    </div>
+                  </div>
+                  {t.disabled ? (
+                    <div className="rounded-lg bg-muted/50 px-3 py-2.5 text-center">
+                      <p className="text-xs font-semibold text-muted-foreground">Próximamente</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="rounded-lg bg-muted/50 px-3 py-2.5">
+                        <p className="text-xs font-semibold truncate">{TASK_ACTIVE[t.key]?.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{TASK_ACTIVE[t.key]?.prov}</p>
+                      </div>
+                      <button type="button" onClick={() => setMainTab('catalog')}
+                        className="w-full rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-accent cursor-pointer transition-colors text-center">
+                        Cambiar modelo
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
-        {!isAdmin && <WireframeModelApiPanel onHasKey={setHasOwnKey} />}
-        <div className={`space-y-4 ${!canEdit ? 'opacity-60 pointer-events-none select-none' : ''}`}>
-          {!canEdit && <div className="rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-center text-xs text-muted-foreground">🔒 Agrega una API Key para seleccionar modelos personalizados</div>}
-          <div className="flex gap-2">
-            {Object.entries(USE_LABELS).map(([key, label]) => (
-              <button key={key} type="button" onClick={() => { setUseCase(key); setProvider(CATALOG[key][0].key) }} className={tabCls(useCase === key)}>{label}</button>
-            ))}
-          </div>
-          <div className="grid grid-cols-[9rem_1fr] gap-4">
-            <div className="space-y-1.5">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Proveedor</p>
-              {catalog.map((p) => (
-                <button key={p.key} type="button" onClick={() => setProvider(p.key)}
-                  className={`w-full rounded-xl border px-3 py-2 text-sm font-semibold text-left cursor-pointer transition-all ${provider === p.key ? 'border-primary bg-primary/5' : 'border-border hover:bg-accent'}`}>
-                  {p.name}
-                </button>
-              ))}
-            </div>
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Modelos — {curProvider?.name}</p>
-              {curProvider?.models.map((m) => (
-                <button key={m.id} type="button" onClick={() => setActive(a => ({ ...a, [useCase]: m.id }))}
-                  className={`w-full rounded-xl border p-3.5 text-left cursor-pointer transition-all ${active[useCase] === m.id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-card hover:bg-accent'}`}>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold">{m.name}</p>
-                    {active[useCase] === m.id && <span className="rounded-full bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold">ACTIVO</span>}
-                    <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-semibold ${SPD[m.speed] ?? 'bg-muted text-muted-foreground'}`}>{m.speed}</span>
-                  </div>
-                  <p className="mt-1 text-[11px] text-muted-foreground">Contexto: {m.ctx} · Calidad: {m.quality}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <div className="px-5 py-3 border-b border-border bg-muted/30">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Configuración activa</p>
-          </div>
-          {Object.entries(USE_LABELS).map(([key, label], i, arr) => (
-            <div key={key} className={`flex items-center gap-4 px-5 py-3 ${i < arr.length - 1 ? 'border-b border-border' : ''}`}>
-              <p className="text-xs font-medium flex-1">{label}</p>
-              <p className="text-xs font-semibold text-primary font-mono">{active[key]}</p>
-              <span className={`text-[10px] rounded-full px-2 py-0.5 font-semibold ${hasOwnKey || isAdmin ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                {hasOwnKey ? 'Propia' : isAdmin ? 'Global' : 'Plataforma'}
-              </span>
-            </div>
-          ))}
-        </div>
+
+        {mainTab === 'catalog' && <WireframeModelCatalog canEdit={canEdit} />}
       </div>
     </WireframeShell>
   )

@@ -12,8 +12,9 @@ const CHAINS = {
     { id: 2, provider: 'OpenAI (OR)', model: 'text-embedding-3-small', tag: 'Fallback 1', cond: 'Al recibir error de API' },
   ]},
   img: { label: 'Imagen — Recursos visuales', desc: 'Generadores de imagen para los recursos del OVA', entries: [
-    { id: 1, provider: 'Runware', model: 'FLUX.1 Schnell', tag: 'Primario', cond: null },
-    { id: 2, provider: 'fal.ai', model: 'FLUX Schnell', tag: 'Fallback 1', cond: 'Al recibir error de API' },
+    { id: 1, provider: 'HuggingFace', model: 'FLUX.1-schnell', tag: 'Primario', cond: null },
+    { id: 2, provider: 'Runware', model: 'FLUX.1 Schnell', tag: 'Fallback 1', cond: 'Al recibir error de cuota' },
+    { id: 3, provider: 'fal.ai', model: 'FLUX Schnell', tag: 'Fallback 2', cond: 'Al recibir error de API' },
   ]},
 }
 const TAG_CLS = { Primario: 'bg-primary/10 text-primary', 'Fallback 1': 'bg-amber-100 text-amber-700', 'Fallback 2': 'bg-muted text-muted-foreground' }

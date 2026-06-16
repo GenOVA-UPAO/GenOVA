@@ -3,6 +3,7 @@ import { useState } from 'react'
 const USER_PROVIDERS = [
   { key: 'groq', name: 'Groq', compat: true, masked: 'gsk_••••••••••••••••', hasKey: true },
   { key: 'openrouter', name: 'OpenRouter', compat: true, masked: '', hasKey: false },
+  { key: 'huggingface', name: 'HuggingFace', compat: false, masked: 'hf_••••••••••••••••••••', hasKey: true },
   { key: 'siliconflow', name: 'SiliconFlow', compat: true, masked: '', hasKey: false },
   { key: 'runware', name: 'Runware', compat: false, masked: '', hasKey: false },
   { key: 'fal', name: 'fal.ai', compat: false, masked: '', hasKey: false },
