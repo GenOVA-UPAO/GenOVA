@@ -21,50 +21,84 @@ const ALL_MODELS = [
   { id: 'fal-flux', name: 'FLUX Schnell', prov: 'fal.ai', cat: 'img', ctx: '—', pIn: 0.003, pOut: 0 },
   { id: 'fal-sdxl', name: 'SDXL Lightning', prov: 'fal.ai', cat: 'img', ctx: '—', pIn: 0.004, pOut: 0 },
 ]
-const CATS = { all: 'Todos', llm: 'LLM', reasoning: 'Razonamiento', code: 'Código', emb: 'Embeddings', img: 'Imagen' }
-const CC = {
-  llm: 'bg-blue-100 text-blue-700',
-  reasoning: 'bg-purple-100 text-purple-700',
-  code: 'bg-amber-100 text-amber-700',
-  emb: 'bg-emerald-100 text-emerald-700',
-  img: 'bg-rose-100 text-rose-700',
-}
-const PROVS = ['Todos', ...new Set(ALL_MODELS.map(m => m.prov))]
+const CATS_MAP = { llm: 'LLM', reasoning: 'Razonamiento', code: 'Código', emb: 'Embeddings', img: 'Imagen' }
+const CC = { llm: 'bg-blue-100 text-blue-700', reasoning: 'bg-purple-100 text-purple-700', code: 'bg-amber-100 text-amber-700', emb: 'bg-emerald-100 text-emerald-700', img: 'bg-rose-100 text-rose-700' }
+const PROVS_LIST = [...new Set(ALL_MODELS.map(m => m.prov))]
 const fmtPrice = (m) => {
   if (m.pIn === 0 && m.pOut === 0) return 'Gratis'
   if (m.cat === 'img') return `$${m.pIn.toFixed(3)}/img`
   if (m.cat === 'emb') return `$${m.pIn.toFixed(2)}/1M`
   return `$${m.pIn} ↑ · $${m.pOut} ↓`
 }
+const ICO_TAG = 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z'
+const ICO_SRV = 'M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01'
 
-export function WireframeModelCatalog({ canEdit }) {
+function FilterDrop({ iconD, label, options, sel, onToggle }) {
+  const [open, setOpen] = useState(false)
+  const active = sel.size > 0
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => setOpen(!open)}
+        className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors ${active ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:bg-accent'}`}>
+        <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconD} />
+        </svg>
+        {label}
+        {active && <span className="rounded-full bg-primary text-white text-[9px] font-bold px-1.5 leading-5">{sel.size}</span>}
+        <svg className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <>
+          {/* biome-ignore lint/a11y: backdrop dismiss */}
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-full mt-1.5 z-20 rounded-xl border border-border bg-card shadow-xl py-1 min-w-[180px]">
+            {options.map(opt => (
+              <button key={opt.key} type="button" onClick={() => onToggle(opt.key)}
+                className="flex items-center gap-2.5 w-full px-3 py-2 text-xs hover:bg-accent cursor-pointer transition-colors text-left">
+                <span className={`h-4 w-4 rounded border shrink-0 flex items-center justify-center ${sel.has(opt.key) ? 'bg-primary border-primary text-white' : 'border-border'}`}>
+                  {sel.has(opt.key) && <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                </span>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+export function WireframeModelCatalog({ canEdit, onSavedChange }) {
   const [q, setQ] = useState('')
-  const [cat, setCat] = useState('all')
-  const [prov, setProv] = useState('Todos')
-  const chipCls = (on) => `rounded-lg px-3 py-1.5 text-xs font-semibold cursor-pointer transition-colors border ${on ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-accent'}`
+  const [cats, setCats] = useState(new Set())
+  const [provs, setProvs] = useState(new Set())
+  const [saved, setSaved] = useState(new Set())
+  const toggle = (setter, key) => setter(s => { const n = new Set(s); n.has(key) ? n.delete(key) : n.add(key); return n })
+  const toggleSave = (m) => {
+    const next = new Set(saved); next.has(m.id) ? next.delete(m.id) : next.add(m.id)
+    setSaved(next)
+    onSavedChange?.(ALL_MODELS.filter(x => next.has(x.id)))
+  }
+  const catOpts = Object.entries(CATS_MAP).map(([key, label]) => ({ key, label }))
+  const provOpts = PROVS_LIST.map(p => ({ key: p, label: p }))
   const filtered = ALL_MODELS.filter(m =>
-    (cat === 'all' || m.cat === cat) &&
-    (prov === 'Todos' || m.prov === prov) &&
+    (cats.size === 0 || cats.has(m.cat)) &&
+    (provs.size === 0 || provs.has(m.prov)) &&
     (q === '' || m.name.toLowerCase().includes(q.toLowerCase()) || m.prov.toLowerCase().includes(q.toLowerCase()))
   )
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3">
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar por nombre de modelo o proveedor..."
-          className="rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 w-full max-w-md" />
-        <div className="flex flex-wrap gap-1.5 items-center">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mr-1 shrink-0">Categoría</span>
-          {Object.entries(CATS).map(([key, label]) => (
-            <button key={key} type="button" onClick={() => setCat(key)} className={chipCls(cat === key)}>{label}</button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-1.5 items-center">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mr-1 shrink-0">Proveedor</span>
-          {PROVS.map(p => (
-            <button key={p} type="button" onClick={() => setProv(p)} className={chipCls(prov === p)}>{p}</button>
-          ))}
-        </div>
+      <div className="flex flex-wrap gap-2.5 items-center">
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar modelo o proveedor..."
+          className="rounded-xl border border-border bg-muted/30 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 w-full sm:w-72" />
+        <FilterDrop iconD={ICO_TAG} label="Categoría" options={catOpts} sel={cats} onToggle={k => toggle(setCats, k)} />
+        <FilterDrop iconD={ICO_SRV} label="Proveedor" options={provOpts} sel={provs} onToggle={k => toggle(setProvs, k)} />
+        {(cats.size > 0 || provs.size > 0) && (
+          <button type="button" onClick={() => { setCats(new Set()); setProvs(new Set()) }} className="text-xs text-muted-foreground hover:text-foreground cursor-pointer underline">Limpiar</button>
+        )}
       </div>
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
         <div className="overflow-x-auto">
@@ -77,24 +111,21 @@ export function WireframeModelCatalog({ canEdit }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">Sin resultados para esa búsqueda</td></tr>
-              )}
+              {filtered.length === 0 && <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">Sin resultados</td></tr>}
               {filtered.map((m, i) => (
                 <tr key={m.id} className={`hover:bg-accent/30 transition-colors ${i < filtered.length - 1 ? 'border-b border-border' : ''}`}>
                   <td className="px-4 py-3 font-medium whitespace-nowrap">{m.name}</td>
                   <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{m.prov}</td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${CC[m.cat]}`}>{CATS[m.cat]}</span>
-                  </td>
+                  <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${CC[m.cat]}`}>{CATS_MAP[m.cat]}</span></td>
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{m.ctx}</td>
                   <td className="px-4 py-3 font-mono text-xs whitespace-nowrap">{fmtPrice(m)}</td>
                   <td className="px-4 py-3">
-                    {canEdit && (
-                      <button type="button" className="rounded-lg bg-primary/10 text-primary px-2.5 py-1 text-xs font-semibold hover:bg-primary/20 cursor-pointer transition-colors whitespace-nowrap">
-                        Usar
+                    {canEdit ? (
+                      <button type="button" onClick={() => toggleSave(m)}
+                        className={`rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer transition-colors whitespace-nowrap ${saved.has(m.id) ? 'bg-primary text-primary-foreground hover:opacity-80' : 'bg-primary/10 text-primary hover:bg-primary/20'}`}>
+                        {saved.has(m.id) ? '✓ Guardado' : 'Guardar'}
                       </button>
-                    )}
+                    ) : <span className="text-[10px] text-muted-foreground/40">—</span>}
                   </td>
                 </tr>
               ))}
@@ -102,7 +133,7 @@ export function WireframeModelCatalog({ canEdit }) {
           </table>
         </div>
         <div className="border-t border-border px-4 py-2.5 bg-muted/30">
-          <p className="text-[11px] text-muted-foreground">{filtered.length} de {ALL_MODELS.length} modelos · precios en USD por 1M tokens (texto) o por inferencia (imagen)</p>
+          <p className="text-[11px] text-muted-foreground">{filtered.length} de {ALL_MODELS.length} modelos · {saved.size} guardados · precios en USD</p>
         </div>
       </div>
     </div>
