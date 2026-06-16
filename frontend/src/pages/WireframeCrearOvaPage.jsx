@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { WireframeBanner } from './WireframeUtils.jsx'
+import { ThemeModalContent } from './WireframeThemeModal.jsx'
 
 const PHASES_5E = [
   { key: 'engage', label: 'Engage', cls: 'text-red-500', resources: ['Video introductorio', 'Pregunta detonadora', 'Actividad motivacional'] },
@@ -8,12 +9,6 @@ const PHASES_5E = [
   { key: 'explain', label: 'Explain', cls: 'text-blue-500', resources: ['Explicación conceptual', 'Infografía', 'Video explicativo'] },
   { key: 'elaborate', label: 'Elaborate', cls: 'text-purple-500', resources: ['Caso de aplicación', 'Ejercicio práctico'] },
   { key: 'evaluate', label: 'Evaluate', cls: 'text-emerald-500', resources: ['Cuestionario', 'Rúbrica de evaluación'] },
-]
-const THEMES = [
-  { key: 'uu', label: 'UPAO Clásico', desc: 'Paleta + plantilla UPAO', color: 'bg-primary' },
-  { key: 'ul', label: 'UPAO Creativo', desc: 'Paleta UPAO, diseño libre', color: 'bg-primary/60' },
-  { key: 'lu', label: 'Color libre', desc: 'Color IA, plantilla UPAO', color: 'bg-accent-brand' },
-  { key: 'll', label: 'Totalmente libre', desc: 'Color y diseño IA', color: 'bg-accent-brand/60' },
 ]
 const MOCK_FILES = ['curriculum_biologia_upao.pdf', 'notas_clase_fotosintesis.docx']
 
@@ -32,7 +27,7 @@ const SvgBtn = ({ d, active, onClick, title }) => (
 export function WireframeCrearOvaPage() {
   const [panel, setPanel] = useState(null)
   const [prompt, setPrompt] = useState('')
-  const [theme, setTheme] = useState('uu')
+  const [theme, setTheme] = useState({ colorMode: 'upao', designMode: 'upao', palette: null })
   const [selected, setSelected] = useState({ engage: ['Video introductorio'], explore: [], explain: ['Explicación conceptual'], elaborate: [], evaluate: ['Cuestionario'] })
   const navigate = useNavigate()
 
@@ -90,8 +85,8 @@ export function WireframeCrearOvaPage() {
             {/* Theme badge */}
             <div className="px-5 pb-3">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-medium border border-border">
-                <div className={`h-2.5 w-2.5 rounded-full ${THEMES.find((t) => t.key === theme)?.color}`} />
-                {THEMES.find((t) => t.key === theme)?.label}
+                <div className={`h-2.5 w-2.5 rounded-full ${theme.colorMode === 'upao' ? 'bg-primary' : theme.colorMode === 'ai' ? 'bg-purple-500' : 'bg-accent-brand'}`} />
+                {`Color: ${theme.colorMode === 'ai' ? 'IA' : theme.colorMode === 'upao' ? 'UPAO' : 'Custom'} · Diseño: ${theme.designMode === 'ai' ? 'IA' : theme.designMode === 'upao' ? 'UPAO' : 'Propio'}`}
               </span>
             </div>
 
@@ -118,7 +113,7 @@ export function WireframeCrearOvaPage() {
           {/* biome-ignore lint/a11y: backdrop dismiss */}
           <div className="fixed inset-0 z-40 bg-foreground/25 backdrop-blur-sm" onClick={() => setPanel(null)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-            <div className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+            <div className={`w-full ${panel === 'theme' ? 'max-w-2xl' : 'max-w-lg'} rounded-2xl border border-border bg-card shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden`}>
               {/* Modal header */}
               <div className="flex items-center justify-between border-b border-border px-5 py-4">
                 <p className="text-sm font-semibold">
@@ -180,22 +175,7 @@ export function WireframeCrearOvaPage() {
               )}
 
               {/* Theme */}
-              {panel === 'theme' && (
-                <div className="p-5 space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    {THEMES.map((t) => (
-                      <button key={t.key} type="button" onClick={() => setTheme(t.key)}
-                        className={`flex items-center gap-3 rounded-xl border p-4 text-left cursor-pointer transition-all ${theme === t.key ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-border hover:bg-accent'}`}>
-                        <div className={`h-9 w-9 shrink-0 rounded-xl shadow-sm ${t.color}`} />
-                        <div><p className="text-sm font-semibold">{t.label}</p><p className="text-xs text-muted-foreground">{t.desc}</p></div>
-                      </button>
-                    ))}
-                  </div>
-                  <button type="button" onClick={() => setPanel(null)} className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer transition-opacity">
-                    Aplicar tema
-                  </button>
-                </div>
-              )}
+              {panel === 'theme' && <ThemeModalContent theme={theme} setTheme={setTheme} onClose={() => setPanel(null)} />}
             </div>
           </div>
         </>
