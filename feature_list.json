@@ -64,6 +64,8 @@
     { "id": "HU-032", "name": "anadir_recurso", "title": "Añadir recurso al OVA (máx 4 por fase)", "spec": "sdd/specs/HU-032_anadir-recurso.md", "status": "done", "merge_commit": "b62e216" },
     { "id": "HU-033", "name": "reordenar_recursos", "title": "Reordenar recursos del OVA", "spec": "sdd/specs/HU-033_reordenar-recursos.md", "status": "done", "merge_commit": "b62e216" },
     { "id": "HU-034", "name": "catalogo_modelos_apis", "title": "Catálogo unificado de modelos con fetch de APIs OpenRouter/Groq + enable/disable + pricing en UI", "spec": "", "status": "done", "merge_commit": "f143a76" },
+    { "id": "HU-035", "name": "configuracion_modelos_fallback", "title": "Configuración dedicada de modelos y fallback", "spec": "sdd/specs/HU-035_configuracion-modelos-fallback.md", "status": "spec_ready" },
+    { "id": "HU-036", "name": "vinculacion_usuarios_permisos", "title": "Vinculación de usuarios con permisos granulares", "spec": "sdd/specs/HU-036_vinculacion-usuarios-permisos.md", "status": "spec_ready" },
     { "id": "EN-003", "name": "orquestacion_prometheus", "title": "Orquestación multiagente Prometheus con LangGraph", "spec": "", "status": "done", "merge_commit": "9fa8211" },
 
     { "id": "EN-001", "name": "gherkin_sprint1", "title": "Habilitar especificaciones Gherkin Sprint 1", "spec": "", "status": "pending" },
@@ -87,6 +89,7 @@
     { "id": "RN-003", "name": "seguridad_api_keys", "title": "Seguridad y manejo de API Keys", "spec": "sdd/specs/RN-003_seguridad-api-keys.md", "status": "done" },
     { "id": "RN-004", "name": "humo_rendimiento", "title": "Prueba de humo de rendimiento post-despliegue", "spec": "sdd/specs/RN-004_prueba-humo-rendimiento.md", "status": "done" },
     { "id": "RN-005", "name": "frontend_responsive", "title": "Frontend responsive", "spec": "sdd/specs/RN-005_frontend-responsive.md", "status": "done", "merge_commit": "b62e216" },
+    { "id": "RN-006", "name": "experiencia_visual_unificada_frontend", "title": "Experiencia visual unificada del frontend", "spec": "sdd/specs/RN-006_experiencia-visual-unificada-frontend.md", "status": "in_progress" },
 
     { "id": "TA-001", "name": "config_repos_ramas", "title": "Configuración de repositorios y ramas", "spec": "", "status": "pending" },
     { "id": "TA-002", "name": "template_scorm_xml", "title": "Crear template base SCORM XML", "spec": "", "status": "pending" },

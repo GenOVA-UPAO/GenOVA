@@ -36,7 +36,7 @@ export function AdminUsersPage() {
     <div className="space-y-6 relative">
       <header className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h1 className="font-display text-2xl font-semibold text-foreground sm:text-3xl">
             Gestión de Usuarios
           </h1>
           <p className="text-sm text-muted-foreground mt-1">

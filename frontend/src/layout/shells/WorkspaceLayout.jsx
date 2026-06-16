@@ -16,11 +16,11 @@ export function WorkspaceLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="flex h-screen flex-col bg-background text-foreground">
       <Navbar />
-      <div className="flex w-full flex-1 min-h-0">
+      <div className="flex min-h-0 w-full flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <Outlet />
         </main>
       </div>

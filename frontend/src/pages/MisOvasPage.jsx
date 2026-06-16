@@ -31,7 +31,7 @@ export function MisOvasPage() {
 
       <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Mis OVAs</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-3xl">Mis OVAs</h1>
           <p className="text-sm text-muted-foreground mt-1">Gestiona y descarga tus objetos virtuales de aprendizaje generados.</p>
         </div>
         {!list.loading && !list.error ? (
@@ -126,7 +126,7 @@ export function MisOvasPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {list.ovas.map((ova, i) => (
             <div
               key={ova.id}

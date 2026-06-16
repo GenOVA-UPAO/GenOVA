@@ -21,7 +21,7 @@ export function AdminRolesPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Gestión de Roles</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-3xl">Gestión de Roles</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
             Define los conjuntos de permisos y configuraciones de acceso para los diferentes perfiles del sistema.
           </p>
@@ -31,7 +31,7 @@ export function AdminRolesPage() {
         </Button>
       </div>
 
-      <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         {loading ? (
           <div className="flex h-64 items-center justify-center">
             <div className="flex flex-col items-center gap-3">

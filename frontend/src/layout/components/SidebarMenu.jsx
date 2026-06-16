@@ -1,96 +1,110 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
+import { Flask, FolderOpen, GearSix, House, PlusSquare, ShieldCheck, Trash, UserCircle, Users } from '@phosphor-icons/react'
 import { navigationLinks } from '../navigation/navLinks.js'
 import { isLoggedIn } from '../../lib/auth.js'
-import { apiFetch } from '../../lib/http.js'
+import { getCurrentUser } from '../../lib/me.js'
 import { fetchTrashCount } from '../../services/ovaHistoryService.js'
 
-function getSidebarLinkClasses({ isActive }) {
-  if (isActive) {
-    return 'flex items-center justify-between rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm'
-  }
-  return 'flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-accent transition-colors'
+const ICONS = { House, FolderOpen, PlusSquare, UserCircle }
+const ADMIN_LINKS = [
+  { to: '/admin/roles', label: 'Roles', icon: ShieldCheck },
+  { to: '/admin/users', label: 'Usuarios', icon: Users },
+  { to: '/admin/platform', label: 'Plataforma', icon: GearSix },
+  { to: '/admin/labs', label: 'Labs', icon: Flask },
+]
+
+function linkClasses({ isActive }) {
+  const base = 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors'
+  return isActive
+    ? `${base} bg-primary text-primary-foreground shadow-sm`
+    : `${base} text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`
 }
 
-export function SidebarMenu() {
-  const [isAdmin, setIsAdmin] = useState(false)
+function NavItem({ item, badge, onNavigate }) {
+  const Icon = item.icon
+  return (
+    <li>
+      <NavLink to={item.to} className={linkClasses} onClick={onNavigate}>
+        <Icon size={18} weight="duotone" className="shrink-0" />
+        <span className="flex-1 truncate">{item.label}</span>
+        {badge > 0 ? (
+          <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-white">
+            {badge}
+          </span>
+        ) : null}
+      </NavLink>
+    </li>
+  )
+}
+
+function Section({ title, children }) {
+  return (
+    <div>
+      <p className="px-2 pb-1.5 pt-4 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        {title}
+      </p>
+      <ul className="space-y-1">{children}</ul>
+    </div>
+  )
+}
+
+function initials(user) {
+  const name = user?.full_name || user?.email || 'Usuario'
+  return name.split(/\s|@/).filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+}
+
+export function SidebarMenu({ onNavigate }) {
+  const [user, setUser] = useState(null)
   const [trashCount, setTrashCount] = useState(0)
   const location = useLocation()
+  const isAdmin = user?.role === 'administrador'
+  const principal = navigationLinks.map((item) => ({ ...item, icon: ICONS[item.icon] }))
 
   useEffect(() => {
     if (!isLoggedIn()) return
-
-    const checkRole = async () => {
-      try {
-        const response = await apiFetch('/api/auth/me')
-        if (response.status === 200) {
-          const user = await response.json()
-          setIsAdmin(user.role === 'administrador')
-        }
-      } catch {
-        /* rol no disponible: el menú admin queda oculto */
-      }
+    let cancelled = false
+    getCurrentUser().then((current) => {
+      if (!cancelled) setUser(current)
+    })
+    return () => {
+      cancelled = true
     }
-
-    checkRole()
   }, [])
 
   useEffect(() => {
-    fetchTrashCount()
-      .then((data) => setTrashCount(data.count || 0))
-      .catch(() => {})
+    fetchTrashCount().then((data) => setTrashCount(data.count || 0)).catch(() => {})
   }, [location.pathname])
 
   return (
-    <nav aria-label="Navegación principal" className="space-y-4">
-      <ul className="space-y-1.5">
-        {navigationLinks.map((item) => (
-          <li key={item.to}>
-            <NavLink to={item.to} className={getSidebarLinkClasses}>
-              {item.label}
-            </NavLink>
-          </li>
-        ))}
-        <li>
-          <NavLink to="/papelera" className={getSidebarLinkClasses}>
-            <span>Papelera</span>
-            {trashCount > 0 && (
-              <span className="ml-2 rounded-full bg-destructive px-1.5 py-0.5 text-xs font-bold text-white min-w-[1.25rem] text-center">
-                {trashCount}
+    <>
+      <nav aria-label="Navegacion principal" className="flex-1 overflow-y-auto px-2 pb-3">
+        <Section title="Principal">
+          {principal.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
+          <NavItem item={{ to: '/papelera', label: 'Papelera', icon: Trash }} badge={trashCount} onNavigate={onNavigate} />
+        </Section>
+        {isAdmin ? (
+          <Section title="Administracion">
+            {ADMIN_LINKS.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
+          </Section>
+        ) : null}
+      </nav>
+      <div className="border-t border-sidebar-border p-3">
+        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+            {initials(user)}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="truncate text-sm font-medium">{user?.full_name || 'Usuario GenOVA'}</p>
+              <span className="shrink-0 rounded-full bg-accent-brand/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-accent-brand">
+                {isAdmin ? 'Admin' : user?.role || 'Usuario'}
               </span>
-            )}
-          </NavLink>
-        </li>
-      </ul>
-      {isAdmin && (
-        <div className="pt-4 border-t border-border">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Administración
-          </p>
-          <ul className="space-y-1.5">
-            <li>
-              <NavLink to="/admin/roles" className={getSidebarLinkClasses}>
-                Gestión de Roles
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/admin/users" className={getSidebarLinkClasses}>
-                Gestión de Usuarios
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/admin/platform" className={getSidebarLinkClasses}>
-                API Keys plataforma
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/admin/labs" className={getSidebarLinkClasses}>
-                Labs
-              </NavLink>
-            </li>
-          </ul>
+            </div>
+            <p className="truncate text-xs text-muted-foreground">{user?.email || 'sesion activa'}</p>
+          </div>
         </div>
-      )}
-    </nav>
+      </div>
+    </>
   )
 }

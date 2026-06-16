@@ -2,17 +2,21 @@ export const navigationLinks = [
   {
     to: '/dashboard',
     label: 'Dashboard',
-  },
-  {
-    to: '/crear-ova',
-    label: 'Crear OVA',
+    icon: 'House',
   },
   {
     to: '/mis-ovas',
     label: 'Mis OVAs',
+    icon: 'FolderOpen',
+  },
+  {
+    to: '/crear-ova',
+    label: 'Crear OVA',
+    icon: 'PlusSquare',
   },
   {
     to: '/profile',
     label: 'Mi Perfil',
+    icon: 'UserCircle',
   },
 ]
