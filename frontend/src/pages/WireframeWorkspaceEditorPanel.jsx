@@ -6,7 +6,7 @@ const NODES_DONE = [
   { name: 'Engage Writer', status: 'done', task: 'Engage generado — 2 recursos' },
   { name: 'Explore Writer', status: 'done', task: 'Explore generado — 1 recurso' },
   { name: 'Explain Writer', status: 'done', task: 'Explain generado — 2 recursos' },
-  { name: 'Elaborate Writer', status: 'idle', task: 'Sin recursos asignados' },
+  { name: 'Elaborate Writer', status: 'done', task: 'Elaborate generado — 1 recurso' },
   { name: 'Evaluate Writer', status: 'done', task: 'Evaluate generado — 2 recursos' },
   { name: 'Formatter', status: 'done', task: 'HTML post-procesado' },
 ]

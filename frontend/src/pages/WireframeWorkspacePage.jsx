@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import { WireframeBanner, STATUS_DOT } from './WireframeUtils.jsx'
 import { WireframeWorkspaceEditorPanel } from './WireframeWorkspaceEditorPanel.jsx'
-
 const NODES = [
   { id: 'dir', name: 'Director', color: 'bg-primary', status: 'active', task: 'Coordinando 7 recursos' },
   { id: 'eng', name: 'Engage Writer', color: 'bg-red-500', status: 'done', task: 'Video introductorio ✓' },
@@ -18,6 +17,7 @@ const RESOURCES = [
   { label: 'Mapa conceptual', phase: 'Explore', status: 'generating' },
   { label: 'Explicación conceptual', phase: 'Explain', status: 'pending' },
   { label: 'Infografía', phase: 'Explain', status: 'pending' },
+  { label: 'Caso de aplicación', phase: 'Elaborate', status: 'pending' },
   { label: 'Cuestionario', phase: 'Evaluate', status: 'pending' },
   { label: 'Rúbrica de evaluación', phase: 'Evaluate', status: 'pending' },
 ]
@@ -25,12 +25,12 @@ const CODE_PHASES = [
   { phase: 'Engage', cls: 'text-red-600 bg-red-50 border-red-200', items: ['Video introductorio', 'Pregunta detonadora'] },
   { phase: 'Explore', cls: 'text-amber-600 bg-amber-50 border-amber-200', items: ['Mapa conceptual'] },
   { phase: 'Explain', cls: 'text-blue-600 bg-blue-50 border-blue-200', items: ['Explicación conceptual', 'Infografía'] },
+  { phase: 'Elaborate', cls: 'text-purple-600 bg-purple-50 border-purple-200', items: ['Caso de aplicación'] },
   { phase: 'Evaluate', cls: 'text-emerald-600 bg-emerald-50 border-emerald-200', items: ['Cuestionario', 'Rúbrica'] },
 ]
 const R_CLS = { done: 'text-emerald-600', generating: 'text-primary', pending: 'text-muted-foreground/40' }
 const R_ICO = { done: '✓', generating: '⟳', pending: '○' }
 const tabCls = (on) => `flex-1 py-2.5 text-xs font-semibold transition-colors cursor-pointer ${on ? 'border-b-2 border-primary text-primary bg-primary/5' : 'text-muted-foreground hover:text-foreground'}`
-
 function NodeCard({ node }) {
   return (
     <div className={`rounded-xl border bg-card p-3 ${node.status === 'active' ? 'border-primary/40 ring-1 ring-primary/20' : 'border-border'}`}>
