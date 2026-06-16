@@ -46,7 +46,15 @@ function SidebarBody({ active, navigate, isAdmin }) {
       <div className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent transition-colors cursor-pointer">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">JR</div>
-          <div className="min-w-0"><p className="truncate text-sm font-medium">Jeffry Romero</p><p className="truncate text-xs text-muted-foreground">jeffry@upao.edu.pe</p></div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="truncate text-sm font-medium">Jeffry Romero</p>
+              <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${isAdmin ? 'bg-primary/15 text-primary' : 'bg-accent-brand/15 text-accent-brand'}`}>
+                {isAdmin ? 'Admin' : 'Estudiante'}
+              </span>
+            </div>
+            <p className="truncate text-xs text-muted-foreground">jeffry@upao.edu.pe</p>
+          </div>
         </div>
       </div>
     </>
@@ -79,7 +87,13 @@ export function WireframeShell({ children, isAdmin = false, setIsAdmin }) {
             <button type="button" onClick={() => setAvatarOpen(!avatarOpen)} className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 cursor-pointer" aria-label="Usuario">JR</button>
             {avatarOpen && (
               <div className="absolute right-0 top-11 z-50 w-52 rounded-xl border border-border bg-card py-1 shadow-xl">
-                <div className="border-b border-border px-4 py-2.5"><p className="text-sm font-semibold">Jeffry Romero</p><p className="text-xs text-muted-foreground">jeffry@upao.edu.pe</p></div>
+                <div className="border-b border-border px-4 py-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold">Jeffry Romero</p>
+                    <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${isAdmin ? 'bg-primary/15 text-primary' : 'bg-accent-brand/15 text-accent-brand'}`}>{isAdmin ? 'Admin' : 'Estudiante'}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">jeffry@upao.edu.pe</p>
+                </div>
                 <button type="button" className="flex w-full items-center px-4 py-2 text-sm hover:bg-accent cursor-pointer">Mi Perfil</button>
                 <button type="button" className="flex w-full items-center px-4 py-2 text-sm text-destructive hover:bg-accent cursor-pointer">Cerrar sesión</button>
               </div>
