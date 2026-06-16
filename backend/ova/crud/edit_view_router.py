@@ -165,9 +165,13 @@ def revert_to_version(
         select(OvaVersion).where(OvaVersion.ova_id == ova_id)
     ).scalars().all()
 
+    # Deactivate all first to avoid violating uq_one_active_version_per_ova
+    # (partial unique index WHERE is_active=TRUE) before activating the target.
     for v in all_versions:
-        v.is_active = str(v.id) == version_id
+        v.is_active = False
+    db.flush()
 
+    target.is_active = True
     ova.current_version_id = target.id
     commit_or_500(db, op="revert_version")
 
