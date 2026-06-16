@@ -22,4 +22,4 @@ def _enabled_llm_options() -> list[dict]:
 
 def _ova_output_dir() -> str:
     default = os.path.join(os.path.dirname(__file__), "..", "scorm_output")
-    return os.getenv("OVA_OUTPUT_DIR", default)
+    return os.getenv("OVA_OUTPUT_DIR") or default

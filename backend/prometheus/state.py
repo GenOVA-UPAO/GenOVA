@@ -1,7 +1,11 @@
-"""Shared state for the OVA generation LangGraph (Prometheus BDI beliefs layer).
+"""Shared state for the OVA generation LangGraph.
 
-TypedDict ensures nodes read/write a well-known shape; LangGraph's StateGraph
-merges partial return dicts from each node into the running state automatically.
+Single source of truth passed between nodes — the shared memory of the
+orchestrator-workers pipeline. In the Prometheus/BDI *design* layer this plays the
+"beliefs" role, but at runtime there is no belief-revision logic; it is just merged
+state (see docs/prometheus.md: design vs. runtime). TypedDict ensures nodes
+read/write a well-known shape; LangGraph's StateGraph merges partial return dicts
+from each node automatically.
 """
 
 import operator
@@ -29,6 +33,8 @@ class OvaGenerationState(TypedDict, total=False):
 
     results: Annotated[list[dict], operator.add]  # [{phase, html, resource_type, ..}]
     errors: Annotated[list[dict], operator.add]  # [{phase, resource_type, error}]
+
+    coherence_report: dict  # Editor 5E output (EN-016); empty in EN-015
 
     # SCORM assembly
     scorm_zip_path: str

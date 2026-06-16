@@ -36,7 +36,7 @@ def _resolve_regen_stage(pct: int) -> str:
 
 def _ova_output_dir() -> str:
     default = os.path.join(os.path.dirname(__file__), "..", "scorm_output")
-    return os.getenv("OVA_OUTPUT_DIR", default)
+    return os.getenv("OVA_OUTPUT_DIR") or default
 
 
 def _is_ova_owner(ova: Ova, user: User) -> bool:

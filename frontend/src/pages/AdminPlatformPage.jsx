@@ -1,5 +1,6 @@
 import { PlatformApiKeysCard } from '../components/settings/PlatformApiKeysCard.jsx'
 import { PlatformLlmConfigCard } from '../components/settings/PlatformLlmConfigCard.jsx'
+import { PlatformNodesCard } from '../components/settings/PlatformNodesCard.jsx'
 
 export function AdminPlatformPage() {
   return (
@@ -14,6 +15,7 @@ export function AdminPlatformPage() {
       </div>
 
       <PlatformLlmConfigCard />
+      <PlatformNodesCard />
       <PlatformApiKeysCard />
     </div>
   )

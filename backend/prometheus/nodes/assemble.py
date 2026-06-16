@@ -17,6 +17,14 @@ def assemble_node(state: OvaGenerationState) -> dict:
         logger.warning("No results to assemble")
         return {"ova_status": "error"}
 
+    coherence_report = state.get("coherence_report", {})
+    if coherence_report:
+        logger.info(
+            "Coherence report: %d hallazgos, %d parches",
+            len(coherence_report.get("hallazgos", [])),
+            len(coherence_report.get("parches", [])),
+        )
+
     phases_data = []
     for i, r in enumerate(results, start=1):
         phases_data.append(

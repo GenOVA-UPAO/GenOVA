@@ -1,8 +1,8 @@
 """LangGraph StateGraph for the OVA multi-agent generation pipeline.
 
-Prometheus design: Concierge → PhaseAgents → Assemble. Each phase agent
+Prometheus design: Concierge → PhaseAgents → Editor → Assemble. Each phase agent
 generates ALL its resources in one bounded-parallel batch (Fase 2) and advances
-`current_phase_idx`, so routing simply walks phase_order until it hits assemble.
+`current_phase_idx`, so routing simply walks phase_order until it hits editor.
 HTML validation/repair runs inside each generation plan (llm.html_validator),
 so the old per-resource `validate` loop node is no longer needed.
 
@@ -15,6 +15,7 @@ from langgraph.graph import END, START, StateGraph
 
 from prometheus.nodes.assemble import assemble_node
 from prometheus.nodes.concierge import concierge_node
+from prometheus.nodes.editor import editor_node
 from prometheus.nodes.elaborate import elaborate_node
 from prometheus.nodes.engage import engage_node
 from prometheus.nodes.evaluate import evaluate_node
@@ -32,7 +33,7 @@ def _route_next_phase(state: OvaGenerationState) -> str:
     idx = state.get("current_phase_idx", 0)
     if idx < len(phases):
         return phases[idx]
-    return "assemble"
+    return "editor"
 
 
 def build_ova_graph():
@@ -44,17 +45,19 @@ def build_ova_graph():
     graph.add_node("explain", explain_node)
     graph.add_node("elaborate", elaborate_node)
     graph.add_node("evaluate", evaluate_node)
+    graph.add_node("editor", editor_node)
     graph.add_node("assemble", assemble_node)
 
     graph.add_edge(START, "concierge")
 
-    route_map = {**{p: p for p in _PHASES}, "assemble": "assemble"}
+    route_map = {**{p: p for p in _PHASES}, "editor": "editor"}
     # Concierge builds the plan; every phase node advances current_phase_idx and
-    # re-routes to the next phase (or assemble) via the same router.
+    # re-routes to the next phase (or editor) via the same router.
     graph.add_conditional_edges("concierge", _route_next_phase, route_map)
     for phase in _PHASES:
         graph.add_conditional_edges(phase, _route_next_phase, route_map)
 
+    graph.add_edge("editor", "assemble")
     graph.add_edge("assemble", END)
 
     return graph

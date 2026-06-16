@@ -50,27 +50,34 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
     _touch_job(job_id)  # heartbeat at phase entry (covers a slow first resource)
     workers = min(_concurrency(), len(resources))
 
+    from prometheus.critic_loop import _critic_enabled, critic_loop  # EN-015
+
     def _work(item: dict):
         rt = item["resource_type"]
         try:
-            return (
-                item,
-                dispatch(rt, concept, llm_config, enabled_models, theme, image_settings),
-                None,
-            )
+            html = dispatch(rt, concept, llm_config, enabled_models, theme, image_settings)
+            score, issues = 0, []
+            if _critic_enabled():
+                html, score, issues = critic_loop(
+                    html, phase, rt, concept, llm_config, enabled_models, theme
+                )
+            return item, html, None, score, issues
         except Exception as exc:  # noqa: BLE001 — isolate one resource's failure
             logger.exception("%s resource %s failed", phase, rt)
-            return item, None, str(exc)
+            return item, None, str(exc), 0, []
 
     results, errors = [], []
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(_work, it) for it in resources]
         for fut in as_completed(futures):
-            item, html, err = fut.result()
+            item, html, err, score, issues = fut.result()
             rt = item["resource_type"]
             if html is not None:
                 title = (meta.get(rt) or {}).get("tipo", "")
-                results.append({"phase": phase, "html": html, "resource_type": rt, "title": title})
+                results.append({
+                    "phase": phase, "html": html, "resource_type": rt, "title": title,
+                    "score": score, "critic_issues": issues,
+                })
                 _persist_done(job_id, phase, rt, html)
             else:
                 # Failures stay in the errors list; the runner's end reconciliation

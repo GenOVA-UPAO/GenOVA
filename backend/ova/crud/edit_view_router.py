@@ -1,7 +1,8 @@
+import logging
 import os
 
 from fastapi import APIRouter, Depends, Request, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -16,7 +17,10 @@ from ova.crud.edit_helpers import (
     _version_to_dict,
 )
 from rate_limit import limiter
+from storage import StorageError, is_configured, signed_url
 from users.admin.helpers import commit_or_500
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -250,6 +254,13 @@ def export_scorm(
             status_code=status.HTTP_409_CONFLICT,
             content={"error": "ova_not_ready", "message": "El OVA no está listo."},
         )
+
+    if ova.storage_key and is_configured():
+        try:
+            url = signed_url(str(ova.storage_key))
+            return RedirectResponse(url=url, status_code=302)
+        except StorageError:
+            logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
 
     if not ova.file_path or not os.path.exists(ova.file_path):
         return JSONResponse(

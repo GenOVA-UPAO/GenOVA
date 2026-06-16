@@ -2,6 +2,7 @@
 
 import logging
 import time
+from threading import RLock
 
 from groq import APIConnectionError as GroqAPIConnectionError
 from groq import APIStatusError as GroqAPIStatusError
@@ -18,6 +19,31 @@ from config import settings
 from llm.model_catalog import clamp_timeout, is_valid_model
 
 logger = logging.getLogger(__name__)
+
+_key_cache: dict[str, tuple[str | None, float]] = {}
+_key_lock = RLock()
+_KEY_TTL_S = 30.0
+
+
+def _get_provider_key(provider: str) -> str | None:
+    """Resolve API key from DB (PlatformConfig) → env var. TTL 30s."""
+    now = time.monotonic()
+    with _key_lock:
+        hit = _key_cache.get(provider)
+        if hit and now - hit[1] < _KEY_TTL_S:
+            return hit[0]
+    from database import SessionLocal
+    from llm.key_resolver import resolve_key
+
+    db = SessionLocal()
+    try:
+        key = resolve_key(provider, None, db)
+    finally:
+        db.close()
+    with _key_lock:
+        _key_cache[provider] = (key, now)
+    return key
+
 
 # Cap per-call wait so a stuck provider doesn't hang the request thread
 # (Render free workers have no per-request timeout — they hang forever).
@@ -158,15 +184,18 @@ def _chat(
     timeout: float | None = None,
 ) -> str:
     msgs = [{"role": "user", "content": prompt}]
+    key = _get_provider_key(provider)
     if provider == "groq":
-        client = groq_client.with_options(timeout=timeout) if timeout else groq_client
+        opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
+        client = groq_client.with_options(**opts) if opts else groq_client
         # Groq models support up to 8192 output tokens. Previous cap at 3500
         # truncated HTML resources mid-script, breaking interactivity.
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_completion_tokens=min(max_tokens, 8192), **extra
         )
     elif provider == "opencode":
-        client = opencode_client.with_options(timeout=timeout) if timeout else opencode_client
+        opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
+        client = opencode_client.with_options(**opts) if opts else opencode_client
         call_extra = dict(extra)
         # Los modelos DeepSeek "thinking" (p.ej. deepseek-v4-pro) gastan el
         # presupuesto de tokens en reasoning y devuelven `content` vacío en
@@ -178,7 +207,8 @@ def _chat(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
     else:
-        client = openrouter_client.with_options(timeout=timeout) if timeout else openrouter_client
+        opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
+        client = openrouter_client.with_options(**opts) if opts else openrouter_client
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **extra
         )
@@ -328,24 +358,23 @@ def generar_texto_with_model(
     prompt: str, model_id: str, provider: str, max_tokens: int = 4000
 ) -> str:
     """Call an arbitrary model on the given provider (groq or openrouter)."""
+    key = _get_provider_key(provider)
+    msgs = [{"role": "user", "content": prompt}]
     try:
         if provider == "groq":
-            response = groq_client.chat.completions.create(
-                model=model_id,
-                messages=[{"role": "user", "content": prompt}],
-                max_completion_tokens=max_tokens,
+            client = groq_client.with_options(api_key=key) if key else groq_client
+            response = client.chat.completions.create(
+                model=model_id, messages=msgs, max_completion_tokens=max_tokens,
             )
         elif provider == "opencode":
-            response = opencode_client.chat.completions.create(
-                model=model_id,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens,
+            client = opencode_client.with_options(api_key=key) if key else opencode_client
+            response = client.chat.completions.create(
+                model=model_id, messages=msgs, max_tokens=max_tokens,
             )
         else:
-            response = openrouter_client.chat.completions.create(
-                model=model_id,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens,
+            client = openrouter_client.with_options(api_key=key) if key else openrouter_client
+            response = client.chat.completions.create(
+                model=model_id, messages=msgs, max_tokens=max_tokens,
             )
         return response.choices[0].message.content
 
@@ -356,17 +385,19 @@ def generar_texto_with_model(
             provider,
             _FALLBACK_OR_MODEL,
         )
-        response = openrouter_client.chat.completions.create(
-            model=_FALLBACK_OR_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_tokens,
+        fb_key = _get_provider_key("openrouter")
+        fb_client = openrouter_client.with_options(api_key=fb_key) if fb_key else openrouter_client
+        response = fb_client.chat.completions.create(
+            model=_FALLBACK_OR_MODEL, messages=msgs, max_tokens=max_tokens,
         )
         return response.choices[0].message.content
 
 
 def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
     """Multi-turn messages with image_url content blocks for RAG image analysis."""
-    response = groq_client.chat.completions.create(
+    key = _get_provider_key("groq")
+    client = groq_client.with_options(api_key=key) if key else groq_client
+    response = client.chat.completions.create(
         model=_VISION_MODEL,
         messages=messages,
         max_completion_tokens=max_tokens,
