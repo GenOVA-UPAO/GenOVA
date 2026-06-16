@@ -1,9 +1,11 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Link } from 'react-router'
+import { Brain } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
 import { useProfile } from '../hooks/useProfile.js'
 import { ProfileForm } from '../components/ProfileForm.jsx'
 import { PasswordChangeForm } from '../components/PasswordChangeForm.jsx'
 import { ApiKeysCard } from '../components/settings/ApiKeysCard.jsx'
-import { LlmSettingsCard } from '../components/settings/LlmSettingsCard.jsx'
 import { OvaSettingsCard } from '../components/settings/OvaSettingsCard.jsx'
 import { ProfileSkeleton } from '../components/ProfileSkeleton.jsx'
 
@@ -17,14 +19,28 @@ export function ProfilePage() {
           Configuración
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Gestiona tu perfil, modelos de IA y claves de acceso.
+          Gestiona tu perfil, preferencias de imagen y claves de acceso.
         </p>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <Brain size={20} weight="duotone" className="mt-0.5 shrink-0 text-primary" />
+          <div>
+            <p className="text-sm font-semibold text-primary">Modelos de IA ahora tiene pantalla propia</p>
+            <p className="text-xs text-muted-foreground">
+              Configura catalogo, asignacion por tarea y modelos personales desde la navegacion principal.
+            </p>
+          </div>
+        </div>
+        <Button asChild size="sm" className="self-start sm:self-auto">
+          <Link to="/modelos">Abrir Modelos</Link>
+        </Button>
       </div>
 
       <Tabs defaultValue="perfil" className="space-y-6">
         <TabsList variant="line">
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
-          <TabsTrigger value="modelos">Modelos IA</TabsTrigger>
           <TabsTrigger value="imagenes">Imágenes OVA</TabsTrigger>
           <TabsTrigger value="api-keys">API Keys</TabsTrigger>
         </TabsList>
@@ -45,10 +61,6 @@ export function ProfilePage() {
             )}
             {!loading && <PasswordChangeForm />}
           </div>
-        </TabsContent>
-
-        <TabsContent value="modelos">
-          <LlmSettingsCard />
         </TabsContent>
 
         <TabsContent value="imagenes">

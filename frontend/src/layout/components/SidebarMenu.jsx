@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
-import { Flask, FolderOpen, GearSix, House, PlusSquare, ShieldCheck, Trash, UserCircle, Users } from '@phosphor-icons/react'
+import {
+  ArrowsClockwise, Flask, FolderOpen, GearSix, House, PlusSquare, ShieldCheck,
+  Trash, UserCircle, Users,
+} from '@phosphor-icons/react'
 import { navigationLinks } from '../navigation/navLinks.js'
 import { isLoggedIn } from '../../lib/auth.js'
 import { getCurrentUser } from '../../lib/me.js'
@@ -12,6 +15,10 @@ const ADMIN_LINKS = [
   { to: '/admin/users', label: 'Usuarios', icon: Users },
   { to: '/admin/platform', label: 'Plataforma', icon: GearSix },
   { to: '/admin/labs', label: 'Labs', icon: Flask },
+]
+const CONFIG_LINKS = [
+  { to: '/modelos', label: 'Modelos', icon: GearSix },
+  { to: '/fallback', label: 'Fallback', icon: ArrowsClockwise },
 ]
 
 function linkClasses({ isActive }) {
@@ -82,6 +89,9 @@ export function SidebarMenu({ onNavigate }) {
         <Section title="Principal">
           {principal.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
           <NavItem item={{ to: '/papelera', label: 'Papelera', icon: Trash }} badge={trashCount} onNavigate={onNavigate} />
+        </Section>
+        <Section title="Configuracion">
+          {CONFIG_LINKS.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
         </Section>
         {isAdmin ? (
           <Section title="Administracion">

@@ -24,3 +24,15 @@ RN-006 aprobado e implementado parcialmente como primera fase del lote:
 - Validación: `pnpm --filter frontend lint` PASA, `pnpm --filter frontend build` PASA, `pnpm test:unit` PASA, `./verify.ps1` PASA (backend BDD skip por backend offline).
 
 Pendiente RN-006: revisión humana/commit antes de avanzar a HU-035 para no mezclar diffs de features.
+
+RN-006 commit: `c807892` — `feat(frontend): unify app shell visual design`.
+
+HU-035 aprobado e implementado:
+- Rutas reales `/modelos` y `/fallback` agregadas al router protegido.
+- Sidebar ahora incluye seccion Configuracion con Modelos y Fallback.
+- `/modelos` reutiliza `LlmSettingsCard`, catalogo, API keys y asignacion por tarea.
+- `/fallback` reutiliza `useAdminLlmConfig`, `LlmTaskRow` y `llmConfigDraft`; admin edita fallback global, usuario no admin ve estado informativo.
+- Perfil queda centrado en datos/API keys/imagenes y enlaza hacia `/modelos`.
+- Validacion: `pnpm --filter frontend lint` PASA, `pnpm --filter frontend build` PASA, `./verify.ps1` PASA (backend BDD skip por backend offline).
+
+Pendiente HU-035: commit separado antes de iniciar HU-036.
