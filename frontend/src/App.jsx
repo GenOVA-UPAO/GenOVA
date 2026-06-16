@@ -24,8 +24,7 @@ const WireframeNavbarPage = lazy(() => import('./pages/WireframeNavbarPage.jsx')
 const WireframeDashboardPage = lazy(() => import('./pages/WireframeDashboardPage.jsx').then((m) => ({ default: m.WireframeDashboardPage })))
 const WireframeMisOvasPage = lazy(() => import('./pages/WireframeMisOvasPage.jsx').then((m) => ({ default: m.WireframeMisOvasPage })))
 const WireframeCrearOvaPage = lazy(() => import('./pages/WireframeCrearOvaPage.jsx').then((m) => ({ default: m.WireframeCrearOvaPage })))
-const WireframeWorkspaceGenPage = lazy(() => import('./pages/WireframeWorkspaceGenPage.jsx').then((m) => ({ default: m.WireframeWorkspaceGenPage })))
-const WireframeWorkspaceEditorPage = lazy(() => import('./pages/WireframeWorkspaceEditorPage.jsx').then((m) => ({ default: m.WireframeWorkspaceEditorPage })))
+const WireframeWorkspacePage = lazy(() => import('./pages/WireframeWorkspacePage.jsx').then((m) => ({ default: m.WireframeWorkspacePage })))
 
 import { Toaster } from 'sonner'
 import { SpeedInsights } from '@vercel/speed-insights/react'
@@ -95,8 +94,8 @@ function App() {
           <Route path="/wireframe2" element={<WireframeDashboardPage />} />
           <Route path="/wireframe3" element={<WireframeMisOvasPage />} />
           <Route path="/wireframe4" element={<WireframeCrearOvaPage />} />
-          <Route path="/wireframe5" element={<WireframeWorkspaceGenPage />} />
-          <Route path="/wireframe6" element={<WireframeWorkspaceEditorPage />} />
+          <Route path="/wireframe5" element={<WireframeWorkspacePage />} />
+          <Route path="/wireframe6" element={<WireframeWorkspacePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedLayout />}>
