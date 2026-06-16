@@ -62,10 +62,10 @@
       "Bash(npx skills add*)",
       "Bash(npx skills check*)",
       "Bash(npx skills update*)",
-      "Bash(npx skills list*)"
+      "Bash(npx skills list*)",
+      "Bash(git push*)"
     ],
     "deny": [
-      "Bash(git push*)",
       "Bash(git push --force*)",
       "Bash(git reset --hard*)",
       "Bash(git clean -f*)",
