@@ -108,54 +108,98 @@ export function WireframeCrearOvaPage() {
               </button>
             </div>
 
-            {/* Config 5E panel */}
-            {panel === 'config' && (
-              <div className="border-t border-border p-5 bg-muted/20 space-y-4">
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Recursos por fase 5E (máx. 4 por fase)</p>
-                {PHASES_5E.map((ph) => (
-                  <div key={ph.key}>
-                    <p className={`text-sm font-bold mb-2 ${ph.cls}`}>{ph.label}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {ph.resources.map((res) => {
-                        const on = selected[ph.key]?.includes(res)
-                        return (
-                          <button key={res} type="button" onClick={() => toggle(ph.key, res)}
-                            className={`rounded-full px-3 py-1 text-xs font-medium border cursor-pointer transition-colors ${on ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-accent'}`}>
-                            {res}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {panel === 'files' && (
-              <div className="border-t border-border p-5 bg-muted/20">
-                <div className="rounded-xl border-2 border-dashed border-border p-8 text-center hover:bg-accent/50 transition-colors cursor-pointer">
-                  <svg className="h-10 w-10 mx-auto text-muted-foreground mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                  <p className="text-sm font-semibold">Arrastra archivos aquí</p>
-                  <p className="text-xs text-muted-foreground mt-1">PDF, DOCX, PPTX, MP3, imágenes — apoyan el RAG del OVA</p>
-                </div>
-              </div>
-            )}
-            {panel === 'theme' && (
-              <div className="border-t border-border p-5 bg-muted/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Tema visual del OVA</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {THEMES.map((t) => (
-                    <button key={t.key} type="button" onClick={() => setTheme(t.key)}
-                      className={`flex items-center gap-3 rounded-xl border p-3 text-left cursor-pointer transition-all ${theme === t.key ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-border hover:bg-accent'}`}>
-                      <div className={`h-8 w-8 shrink-0 rounded-lg ${t.color}`} />
-                      <div><p className="text-sm font-semibold">{t.label}</p><p className="text-xs text-muted-foreground">{t.desc}</p></div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Modal con backdrop blur */}
+      {panel && (
+        <>
+          {/* biome-ignore lint/a11y: backdrop dismiss */}
+          <div className="fixed inset-0 z-40 bg-foreground/25 backdrop-blur-sm" onClick={() => setPanel(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <div className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+              {/* Modal header */}
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <p className="text-sm font-semibold">
+                  {panel === 'config' && 'Configurar recursos 5E'}
+                  {panel === 'files' && 'Subir archivos de referencia'}
+                  {panel === 'theme' && 'Tema visual del OVA'}
+                </p>
+                <button type="button" onClick={() => setPanel(null)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent cursor-pointer transition-colors" aria-label="Cerrar">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              {/* Config 5E */}
+              {panel === 'config' && (
+                <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                  <p className="text-xs text-muted-foreground">Selecciona los recursos a generar por fase (máx. 4 por fase)</p>
+                  {PHASES_5E.map((ph) => (
+                    <div key={ph.key}>
+                      <p className={`text-sm font-bold mb-2 ${ph.cls}`}>{ph.label}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {ph.resources.map((res) => {
+                          const on = selected[ph.key]?.includes(res)
+                          return (
+                            <button key={res} type="button" onClick={() => toggle(ph.key, res)}
+                              className={`rounded-full px-3 py-1 text-xs font-medium border cursor-pointer transition-colors ${on ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-accent'}`}>
+                              {res}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-2 border-t border-border">
+                    <button type="button" onClick={() => setPanel(null)} className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer transition-opacity">
+                      Confirmar selección
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Files */}
+              {panel === 'files' && (
+                <div className="p-5 space-y-4">
+                  <div className="rounded-xl border-2 border-dashed border-border p-10 text-center hover:bg-accent/40 transition-colors cursor-pointer">
+                    <svg className="h-12 w-12 mx-auto text-muted-foreground mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                    <p className="text-sm font-semibold">Arrastra archivos aquí</p>
+                    <p className="text-xs text-muted-foreground mt-1">PDF, DOCX, PPTX, MP3, imágenes</p>
+                    <p className="text-xs text-muted-foreground">Alimentan el RAG del OVA generado</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {MOCK_FILES.map((f) => (
+                      <span key={f} className="flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-medium border border-border">
+                        <svg className="h-3.5 w-3.5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={IcoPaper} /></svg>
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Theme */}
+              {panel === 'theme' && (
+                <div className="p-5 space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    {THEMES.map((t) => (
+                      <button key={t.key} type="button" onClick={() => setTheme(t.key)}
+                        className={`flex items-center gap-3 rounded-xl border p-4 text-left cursor-pointer transition-all ${theme === t.key ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-border hover:bg-accent'}`}>
+                        <div className={`h-9 w-9 shrink-0 rounded-xl shadow-sm ${t.color}`} />
+                        <div><p className="text-sm font-semibold">{t.label}</p><p className="text-xs text-muted-foreground">{t.desc}</p></div>
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" onClick={() => setPanel(null)} className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer transition-opacity">
+                    Aplicar tema
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
