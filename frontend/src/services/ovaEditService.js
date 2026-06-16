@@ -66,6 +66,18 @@ export async function downloadEditedScorm(ovaId) {
     const data = await res.json().catch(() => ({}))
     throw new Error(data.message || 'Error al exportar SCORM')
   }
+  const contentType = res.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) {
+    const data = await res.json()
+    const a = document.createElement('a')
+    a.href = data.download_url
+    if (data.filename) a.download = data.filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    return
+  }
+  // disk fallback: stream binary
   const disposition = res.headers.get('Content-Disposition') || ''
   const match = disposition.match(/filename="?([^"]+)"?/)
   const filename = match ? match[1] : 'ova.zip'
@@ -74,6 +86,8 @@ export async function downloadEditedScorm(ovaId) {
   const a = document.createElement('a')
   a.href = url
   a.download = filename
+  document.body.appendChild(a)
   a.click()
+  document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
