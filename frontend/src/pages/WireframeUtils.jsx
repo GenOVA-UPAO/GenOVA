@@ -8,6 +8,10 @@ export const WF_PAGES = [
   ['/wireframe4', 'Crear OVA'],
   ['/wireframe5', 'Workspace (gen)'],
   ['/wireframe6', 'Workspace (edit)'],
+  ['/wireframe7', 'Roles'],
+  ['/wireframe8', 'Usuarios'],
+  ['/wireframe9', 'Plataforma'],
+  ['/wireframe10', 'Perfil'],
 ]
 
 export function WireframeBanner({ extra }) {
