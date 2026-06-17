@@ -69,8 +69,8 @@
     { "id": "HU-036", "name": "vinculacion_usuarios_permisos", "title": "Vinculación de usuarios con permisos granulares", "spec": "sdd/specs/HU-036_vinculacion-usuarios-permisos.md", "status": "in_progress" },
     { "id": "EN-003", "name": "orquestacion_prometheus", "title": "Orquestación multiagente Prometheus con LangGraph", "spec": "", "status": "done", "merge_commit": "9fa8211" },
 
-    { "id": "EN-001", "name": "gherkin_sprint1", "title": "Habilitar especificaciones Gherkin Sprint 1", "spec": "sdd/specs/EN-001_especificaciones-gherkin-sprint1.md", "status": "spec_ready" },
-    { "id": "EN-002", "name": "automatizacion_bdd", "title": "Habilitar automatización BDD", "spec": "sdd/specs/EN-002_automatizacion-bdd.md", "status": "spec_ready" },
+    { "id": "EN-001", "name": "gherkin_sprint1", "title": "Habilitar especificaciones Gherkin Sprint 1", "spec": "sdd/specs/EN-001_especificaciones-gherkin-sprint1.md", "status": "done" },
+    { "id": "EN-002", "name": "automatizacion_bdd", "title": "Habilitar automatización BDD", "spec": "sdd/specs/EN-002_automatizacion-bdd.md", "status": "done" },
     { "id": "EN-004", "name": "pgvector", "title": "Habilitar pgvector (BD Vectorial)", "spec": "sdd/specs/EN-004_habilitar-pgvector.md", "status": "done" },
     { "id": "EN-005", "name": "pipeline_rag", "title": "Habilitar pipeline RAG end-to-end", "spec": "sdd/specs/EN-005_pipeline-rag-end-to-end.md", "status": "done" },
     { "id": "EN-006", "name": "entornos_cloud", "title": "Habilitar entornos Cloud y orquestación", "spec": "sdd/specs/EN-006_entornos-cloud-orquestacion.md", "status": "done" },
@@ -83,7 +83,7 @@
     { "id": "EN-013", "name": "persistencia_estado_generacion", "title": "Persistencia del estado de generación (jobs)", "spec": "sdd/specs/EN-013_persistencia-estado-generacion.md", "status": "done", "merge_commit": "c4f6d07" },
     { "id": "EN-015", "name": "critico-evaluator-optimizer", "title": "Crítico evaluator-optimizer pedagógico por recurso", "spec": "sdd/specs/EN-015_critico-evaluator-optimizer.md", "status": "done" },
     { "id": "EN-016", "name": "editor-coherencia-5e", "title": "Editor de Coherencia 5E", "spec": "sdd/specs/EN-016_editor-coherencia-5e.md", "status": "done" },
-    { "id": "EN-017", "name": "panel-nodos-prometheus", "title": "Panel de Nodos/Agentes Prometheus + Nodo Video + Nodo Imágenes", "spec": "sdd/specs/EN-017_panel-nodos-prometheus.md", "status": "in_progress" },
+    { "id": "EN-017", "name": "panel-nodos-prometheus", "title": "Panel de Nodos/Agentes Prometheus + Nodo Video + Nodo Imágenes", "spec": "sdd/specs/EN-017_panel-nodos-prometheus.md", "status": "done", "merge_commit": "3ed88fa36f38a7748bcfccb023eb841a39e89385" },
 
     { "id": "RN-001", "name": "latencia_278ms", "title": "Latencia ≤ 278 ms", "spec": "", "status": "pending" },
     { "id": "RN-002", "name": "tiempo_generacion_180s", "title": "Tiempo de generación ≤ 180 segundos (MTTG)", "spec": "sdd/specs/RN-002_tiempo-generacion-180s.md", "status": "spec_ready" },

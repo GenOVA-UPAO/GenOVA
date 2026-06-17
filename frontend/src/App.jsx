@@ -6,6 +6,8 @@ import { AppLayout } from './layout/shells/AppLayout.jsx'
 import { WorkspaceLayout } from './layout/shells/WorkspaceLayout.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage.jsx'
+import { ResetPasswordPage } from './pages/ResetPasswordPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 
 // Code-split heavier authenticated routes so the login bundle stays tiny.
@@ -115,6 +117,8 @@ function App() {
           <Route path="/wireframe13" element={<WireframeVinculacionPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mis-ovas" element={<MisOvasPage />} />
