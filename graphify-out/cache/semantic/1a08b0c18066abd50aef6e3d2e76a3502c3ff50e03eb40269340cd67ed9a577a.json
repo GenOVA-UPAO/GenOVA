@@ -1,0 +1,1 @@
+{"nodes": [{"id": "sdd_leader_agent", "label": "SDD Leader Agent", "file_type": "rationale", "source_file": ".github/agents/sdd-leader.agent.md"}], "edges": [{"source": "sdd_leader_agent", "target": "sp_writing_plans_skill", "relation": "references", "confidence": "INFERRED", "confidence_score": 0.9, "source_file": ".github/agents/sdd-leader.agent.md"}], "hyperedges": []}
