@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { Key, SlidersHorizontal } from '@phosphor-icons/react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { LlmSettingsCard } from '../components/settings/LlmSettingsCard.jsx'
 

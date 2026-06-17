@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { PaintBrush, List, SignOut, UserCircle, X, Plus } from '@phosphor-icons/react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { NavbarBrand } from './NavbarBrand.jsx'
 import { SidebarMenu } from './SidebarMenu.jsx'
 import { ThemeModal } from '../../components/ThemeModal.jsx'

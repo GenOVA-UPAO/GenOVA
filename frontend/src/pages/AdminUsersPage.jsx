@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Users, MagnifyingGlass } from '@phosphor-icons/react'
 import { useUsersAdmin } from '../hooks/admin/useUsersAdmin.js'
 import { EditUserModal } from '../components/admin/users/EditUserModal.jsx'

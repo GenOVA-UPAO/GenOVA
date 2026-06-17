@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { Link } from 'react-router'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useOvaWorkspace } from '../../hooks/ova/useOvaWorkspace.js'

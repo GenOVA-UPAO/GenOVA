@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useRoles } from '../hooks/admin/useRoles.js'
 import { AVAILABLE_PERMISSIONS } from '../lib/permissions.js'
 import { RoleFormModal } from '../components/RoleFormModal.jsx'

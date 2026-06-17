@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Flask, FolderOpen, Plus, ShieldCheck, Users, Clock, CaretRight } from '@phosphor-icons/react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { getCurrentUser } from '../lib/me.js'
 import { fetchOvas } from '../services/ovaHistoryService.js'

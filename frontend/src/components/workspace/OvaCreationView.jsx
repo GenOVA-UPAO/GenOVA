@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useOvaCreation } from '../../hooks/ova/useOvaCreation.js'
 import { PhaseSelectModal } from '../PhaseSelectModal.jsx'
 import { CrearOvaChatPanel } from '../crear/CrearOvaChatPanel.jsx'

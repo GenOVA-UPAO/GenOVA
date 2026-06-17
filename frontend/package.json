@@ -19,7 +19,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.40.0",
+    "motion": "^12.40.0",
     "radix-ui": "^1.5.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -34,10 +34,12 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.0",
     "@tailwindcss/vite": "^4.3.1",
+    "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "tailwindcss": "^4.3.1",
+    "typescript": "^6.0.3",
     "vite": "^8.0.16"
   }
 }

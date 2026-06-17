@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { Brain } from '@phosphor-icons/react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { useProfile } from '../hooks/useProfile.js'
 import { ProfileForm } from '../components/ProfileForm.jsx'

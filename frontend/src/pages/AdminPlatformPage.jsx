@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { HardDrives, Cpu, Key, Robot } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PlatformApiKeysCard } from '../components/settings/PlatformApiKeysCard.jsx'

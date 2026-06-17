@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { LinkSimple, PaperPlaneTilt, ShieldCheck, UsersThree } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getCurrentUser } from '../lib/me.js'

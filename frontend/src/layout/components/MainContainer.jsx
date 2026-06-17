@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from 'react-router'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 
 export function MainContainer() {
   const location = useLocation()
