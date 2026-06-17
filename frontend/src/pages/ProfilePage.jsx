@@ -8,6 +8,7 @@ import { PasswordChangeForm } from '../components/PasswordChangeForm.jsx'
 import { ApiKeysCard } from '../components/settings/ApiKeysCard.jsx'
 import { OvaSettingsCard } from '../components/settings/OvaSettingsCard.jsx'
 import { ProfileSkeleton } from '../components/ProfileSkeleton.jsx'
+import { DeleteAccountForm } from '../components/DeleteAccountForm.jsx'
 
 export function ProfilePage() {
   const { profile, role, createdAt, loading, saveProfile, getInitials, formatDate } = useProfile()
@@ -59,7 +60,12 @@ export function ProfilePage() {
                 formatDate={formatDate}
               />
             )}
-            {!loading && <PasswordChangeForm />}
+            {!loading && (
+              <div className="space-y-8">
+                <PasswordChangeForm />
+                <DeleteAccountForm />
+              </div>
+            )}
           </div>
         </TabsContent>
 

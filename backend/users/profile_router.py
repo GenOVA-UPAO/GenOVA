@@ -156,3 +156,76 @@ def change_password(
     current_user.password_hash = hash_password(new_pass)
     _commit_or_500(db, "change_password")
     return {"message": "Contraseña actualizada con éxito."}
+
+
+class UserDeleteRequest(BaseModel):
+    password: str = Field(..., description="Contraseña actual para confirmar")
+
+@router.delete("/me")
+def delete_account(
+    payload: UserDeleteRequest,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not verify_password(payload.password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Contraseña incorrecta",
+        )
+
+    from sqlalchemy.sql import func
+
+    from models import Role, UserRole
+
+    user_roles = db.execute(
+        select(Role.name)
+        .join(UserRole, UserRole.role_id == Role.id)
+        .where(UserRole.user_id == current_user.id)
+    ).scalars().all()
+
+    if "administrador" in user_roles:
+        total_admins = db.execute(
+            select(func.count(UserRole.user_id))
+            .join(Role, Role.id == UserRole.role_id)
+            .join(User, User.id == UserRole.user_id)
+            .where(Role.name == "administrador", User.is_active)
+        ).scalar()
+        if total_admins and total_admins <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No puedes eliminar tu cuenta porque eres el único administrador activo.",
+            )
+
+    import uuid
+    uid_suffix = str(uuid.uuid4())[:8]
+
+    current_user.is_active = False
+    current_user.email = f"deleted_{current_user.id}@{uid_suffix}.removed.local"
+    current_user.full_name = "[eliminado]"
+    current_user.phone_number = None
+    current_user.university_id = None
+
+    _commit_or_500(db, "delete_account")
+
+    from fastapi.responses import JSONResponse
+
+    from auth.router import (
+        _COOKIE_NAME,
+        _COOKIE_PARTITIONED,
+        _COOKIE_SAMESITE,
+        _COOKIE_SECURE,
+        _patch_partitioned,
+    )
+    response = JSONResponse(content={"message": "Cuenta eliminada exitosamente."})
+    response.set_cookie(
+        key=_COOKIE_NAME,
+        value="",
+        max_age=0,
+        httponly=True,
+        secure=_COOKIE_SECURE,
+        samesite=_COOKIE_SAMESITE,
+        path="/",
+    )
+    if _COOKIE_PARTITIONED:
+        _patch_partitioned(response)
+    return response

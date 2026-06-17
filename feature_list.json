@@ -39,7 +39,7 @@
     { "id": "HU-006", "name": "historial_ovas", "title": "Ver historial de OVAs", "spec": "sdd/specs/HU-006_ver_historial_de_ovas.md", "status": "done" },
     { "id": "HU-007", "name": "subir_archivos", "title": "Subir archivos base para el OVA (RAG)", "spec": "sdd/specs/HU-007_subir_archivos_base_ova.md", "status": "done" },
     { "id": "HU-008", "name": "inicio_sesion", "title": "Inicio de sesión con credenciales", "spec": "sdd/specs/HU-008_inicio-sesion-credenciales.md", "status": "done" },
-    { "id": "HU-009", "name": "recuperar_contrasena", "title": "Recuperación de contraseña", "spec": "sdd/specs/HU-009_recuperacion-contrasena.md", "status": "spec_ready" },
+    { "id": "HU-009", "name": "recuperar_contrasena", "title": "Recuperación de contraseña", "spec": "sdd/specs/HU-009_recuperacion-contrasena.md", "status": "done", "merge_commit": "1fc42f1" },
     { "id": "HU-010", "name": "layout_principal", "title": "Maquetación Layout Principal y Enrutamiento Modular", "spec": "sdd/specs/HU-010_maquetacion-layout-principal-enrutamiento-modular.md", "status": "done" },
     { "id": "HU-011", "name": "editar_ova", "title": "Editar OVA generado", "spec": "sdd/specs/HU-011_editar_ova_generado.md", "status": "done" },
     { "id": "HU-012", "name": "eliminar_ova", "title": "Eliminar OVA del historial (soft-delete)", "spec": "sdd/specs/HU-012_eliminar_ova_historial.md", "status": "done" },
