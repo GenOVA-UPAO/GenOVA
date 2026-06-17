@@ -148,15 +148,47 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    /* Subtle noise texture overlay */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+    background-blend-mode: multiply;
   }
   html {
     @apply font-sans;
   }
   /* Page titles get the editorial display serif; smaller headings stay sans. */
-  h1 {
+  h1, .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.015em;
     font-weight: 600;
     line-height: 1.08;
   }
+}
+
+/* Custom UI Utilities for GenOVA */
+@layer utilities {
+  .glass {
+    @apply bg-background/70 backdrop-blur-md border-white/20 shadow-lg dark:bg-background/50 dark:border-white/10;
+  }
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-primary/10 shadow-sm dark:border-primary/20 dark:shadow-none;
+  }
+  .text-glow {
+    text-shadow: 0 0 20px var(--color-primary);
+  }
+  .animate-slide-up {
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+}
+
+@keyframes slideUp {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }

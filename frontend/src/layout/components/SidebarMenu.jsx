@@ -28,20 +28,26 @@ function linkClasses({ isActive }) {
     : `${base} text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`
 }
 
+import { motion } from 'framer-motion'
+
 function NavItem({ item, badge, onNavigate }) {
   const Icon = item.icon
   return (
-    <li>
+    <motion.li whileHover={{ x: 2 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
       <NavLink to={item.to} className={linkClasses} onClick={onNavigate}>
         <Icon size={18} weight="duotone" className="shrink-0" />
         <span className="flex-1 truncate">{item.label}</span>
         {badge > 0 ? (
-          <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-white">
+          <motion.span 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+          >
             {badge}
-          </span>
+          </motion.span>
         ) : null}
       </NavLink>
-    </li>
+    </motion.li>
   )
 }
 

@@ -43,6 +43,8 @@ class User(Base):
     enabled_models = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     # Per-user OVA generation settings: {max_images, image_provider}.
     ova_settings = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    # Per-user theme preferences: {colorMode, designMode, palette}.
+    theme_settings = Column(JSONB, nullable=False, server_default=text("'{\"colorMode\": \"upao\", \"designMode\": \"upao\", \"palette\": null}'::jsonb"))
     # Per-user provider API keys (never logged, returned masked):
     # {groq, openrouter, opencode, siliconflow, runware, falai}
     user_api_keys = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))

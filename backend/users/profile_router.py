@@ -105,6 +105,7 @@ def update_profile(
         "university_id": current_user.university_id,
         "gender": current_user.gender or "",
         "phone_number": current_user.phone_number or "",
+        "theme_settings": current_user.theme_settings,
         "created_at": current_user.created_at.isoformat()
         if current_user.created_at
         else None,
@@ -114,6 +115,24 @@ def update_profile(
     }
 
 
+class UserThemeUpdate(BaseModel):
+    colorMode: str
+    designMode: str
+    palette: dict | None = None
+
+@router.patch("/me/theme")
+def update_theme(
+    payload: UserThemeUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    current_user.theme_settings = {
+        "colorMode": payload.colorMode,
+        "designMode": payload.designMode,
+        "palette": payload.palette,
+    }
+    _commit_or_500(db, "update_theme")
+    return {"message": "Tema actualizado", "theme_settings": current_user.theme_settings}
 
 class UserPasswordChange(BaseModel):
     current_password: str = Field(..., description="Contraseña actual")

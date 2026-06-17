@@ -261,10 +261,9 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
         "university_id": current_user.university_id,
         "gender": current_user.gender or "",
         "phone_number": current_user.phone_number or "",
+        "theme_settings": current_user.theme_settings,
         "role": role.name if role else "usuario",
         "permissions": permissions,
         "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
     }
-
-
 router.include_router(reset_router)

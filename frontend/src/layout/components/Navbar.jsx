@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { List, SignOut, UserCircle, X } from '@phosphor-icons/react'
+import { PaintBrush, List, SignOut, UserCircle, X, Plus } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { NavbarBrand } from './NavbarBrand.jsx'
 import { SidebarMenu } from './SidebarMenu.jsx'
+import { ThemeModal } from '../../components/ThemeModal.jsx'
 import { clearSession } from '../../lib/auth.js'
 import { getCurrentUser } from '../../lib/me.js'
 
@@ -15,7 +17,9 @@ export function Navbar() {
   const navigate = useNavigate()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
+  const [themeModalOpen, setThemeModalOpen] = useState(false)
   const [user, setUser] = useState(null)
+  const dropdownRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -25,6 +29,16 @@ export function Navbar() {
     return () => {
       cancelled = true
     }
+  }, [])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setAvatarOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
   const handleLogout = async () => {
@@ -47,39 +61,61 @@ export function Navbar() {
         <div className="flex-1" />
         <Link
           to="/crear-ova"
-          className="hidden items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 sm:flex"
+          className="hidden items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:flex"
         >
-          + Crear OVA
+          <Plus size={16} weight="bold" /> Crear OVA
         </Link>
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             type="button"
             onClick={() => setAvatarOpen((open) => !open)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90 active:scale-95"
             aria-label="Menu de usuario"
           >
             {initials(user)}
           </button>
-          {avatarOpen ? (
-            <div className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-border bg-card py-1 shadow-xl">
-              <div className="border-b border-border px-4 py-2.5">
-                <p className="truncate text-sm font-semibold">{user?.full_name || 'Usuario GenOVA'}</p>
-                <p className="truncate text-xs text-muted-foreground">{user?.email || 'sesion activa'}</p>
-              </div>
-              <Link to="/profile" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent">
-                <UserCircle size={16} weight="duotone" /> Mi Perfil
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-destructive hover:bg-accent"
+          <AnimatePresence>
+            {avatarOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute right-0 top-11 z-50 w-56 rounded-xl border border-border bg-card py-1 shadow-xl"
               >
-                <SignOut size={16} weight="duotone" /> Cerrar sesion
-              </button>
-            </div>
-          ) : null}
+                <div className="border-b border-border px-4 py-2.5">
+                  <p className="truncate text-sm font-semibold">{user?.full_name || 'Usuario GenOVA'}</p>
+                  <p className="truncate text-xs text-muted-foreground">{user?.email || 'sesion activa'}</p>
+                </div>
+                <Link to="/profile" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent" onClick={() => setAvatarOpen(false)}>
+                  <UserCircle size={16} weight="duotone" /> Mi Perfil
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { setAvatarOpen(false); setThemeModalOpen(true); }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-accent"
+                >
+                  <PaintBrush size={16} weight="duotone" /> Apariencia
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-destructive hover:bg-accent"
+                >
+                  <SignOut size={16} weight="duotone" /> Cerrar sesion
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
+      {themeModalOpen && (
+        <ThemeModal 
+          initialTheme={user?.theme_settings} 
+          onClose={() => setThemeModalOpen(false)} 
+          onSaved={(newTheme) => { setUser({ ...user, theme_settings: newTheme }) }} 
+        />
+      )}
       {drawerOpen ? (
         <>
           <button
