@@ -9,7 +9,7 @@ import { profileSchema } from '@/lib/schemas/user.js'
 
 const LABEL = 'text-xs font-bold uppercase tracking-wide text-muted-foreground'
 
-export function ProfileForm({ profile, role, createdAt, onSave, getInitials, formatDate }) {
+export function ProfileForm({ profile, role, createdAt, onSave, getInitials, formatDate, hideHeader = false }) {
   const {
     register,
     control,
@@ -19,24 +19,26 @@ export function ProfileForm({ profile, role, createdAt, onSave, getInitials, for
   } = useForm({ resolver: zodResolver(profileSchema), defaultValues: profile })
 
   return (
-    <div className="rounded-xl border border-border bg-background shadow-md overflow-hidden">
-      <form onSubmit={handleSubmit(onSave)} className="p-6 sm:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-border">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary font-display text-2xl font-bold text-primary-foreground ring-2 ring-accent-brand/40 ring-offset-2 ring-offset-background shadow-md">
-            {getInitials()}
-          </div>
-          <div className="text-center sm:text-left space-y-1">
-            <h2 className="text-lg font-bold capitalize">{profile.full_name || 'Usuario'}</h2>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize">
-                Rol: {role}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                Miembro desde el {formatDate(createdAt)}
-              </span>
+    <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+      <form onSubmit={handleSubmit(onSave)} className="space-y-6">
+        {!hideHeader && (
+          <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-border/50">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent-brand font-display text-2xl font-bold text-primary-foreground shadow-lg">
+              {getInitials()}
+            </div>
+            <div className="text-center sm:text-left space-y-1">
+              <h2 className="text-lg font-bold capitalize font-display">{profile.full_name || 'Usuario'}</h2>
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 capitalize shadow-sm">
+                  Rol: {role}
+                </Badge>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Miembro desde el {formatDate(createdAt)}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 gap-6">
           <div className="space-y-1.5">

@@ -70,14 +70,15 @@ export function DeleteAccountForm() {
   }
 
   return (
-    <div className="rounded-xl border border-destructive/20 bg-card p-6 shadow-sm">
-      <div className="flex items-center gap-2 mb-1 text-destructive">
-        <WarningCircle size={20} weight="fill" />
-        <h2 className="text-lg font-semibold tracking-tight">Zona de peligro</h2>
+    <div className="glass-card rounded-3xl border-destructive/20 bg-destructive/5 p-6 sm:p-8">
+      <div className="flex flex-col gap-2 mb-4 text-destructive">
+        <h2 className="text-lg font-bold font-display tracking-tight flex items-center gap-2">
+          <WarningCircle size={22} weight="fill" /> Zona de peligro
+        </h2>
+        <p className="text-sm font-medium text-muted-foreground/80">
+          Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate de estar seguro.
+        </p>
       </div>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate de estar seguro.
-      </p>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>

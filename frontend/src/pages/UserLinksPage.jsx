@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { LinkSimple, PaperPlaneTilt, ShieldCheck } from '@phosphor-icons/react'
+import { LinkSimple, PaperPlaneTilt, ShieldCheck, UsersThree } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getCurrentUser } from '../lib/me.js'
@@ -21,18 +22,18 @@ function can(user, permission) {
 function LinkRow({ link, onDelete, admin = false }) {
   const person = admin ? link.linked || { email: link.invite_email } : link.linked || { email: link.invite_email }
   return (
-    <div className="flex items-center gap-4 border-b border-border px-5 py-3.5 last:border-0">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+    <div className="flex items-center gap-4 border-b border-border/50 px-5 py-4 last:border-0 hover:bg-accent/30 transition-colors">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent-brand/20 text-sm font-bold text-primary shadow-sm border border-primary/20">
         {(person?.full_name || person?.email || '?').slice(0, 2).toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{person?.full_name || person?.email || 'Invitacion pendiente'}</p>
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="truncate text-sm font-bold">{person?.full_name || person?.email || 'Invitación pendiente'}</p>
+        <p className="truncate text-xs font-medium text-muted-foreground mt-0.5">
           {admin && link.owner ? `${link.owner.email} -> ` : ''}
-          {person?.email || link.invite_email || 'Sin email'} · {link.status}
+          {person?.email || link.invite_email || 'Sin email'} · <span className={link.status === 'activo' ? 'text-emerald-600' : 'text-amber-600'}>{link.status}</span>
         </p>
       </div>
-      <Button variant="outline" size="sm" onClick={() => onDelete(link.id)}>
+      <Button variant="outline" size="sm" onClick={() => onDelete(link.id)} className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive shadow-sm">
         Desvincular
       </Button>
     </div>
@@ -104,74 +105,102 @@ export function UserLinksPage() {
   }
 
   return (
-    <section className="mx-auto max-w-5xl space-y-6">
+    <motion.section 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mx-auto max-w-5xl space-y-6 pb-10"
+    >
       <header>
-        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-accent-brand">
-          Usuarios y permisos
-        </p>
-        <h1 className="font-display text-2xl font-semibold text-foreground sm:text-3xl">
+        <h1 className="font-display text-3xl font-semibold text-foreground sm:text-4xl flex items-center gap-3">
+          <UsersThree className="text-primary" weight="duotone" />
           Vincular cuentas
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Gestiona usuarios vinculados para heredar configuracion IA cuando no tengan claves propias.
+        <p className="mt-1.5 text-sm font-medium text-muted-foreground">
+          Gestiona usuarios vinculados para heredar la configuración de modelos de IA cuando no tengan API Keys propias.
         </p>
       </header>
 
       {!hasUserLinks && !hasAdminLinks ? (
-        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
-          <ShieldCheck size={28} weight="duotone" className="mx-auto text-muted-foreground" />
-          <p className="mt-3 text-sm font-semibold">No tienes permiso para vincular usuarios</p>
-          <p className="mt-1 text-xs text-muted-foreground">Solicita el permiso users:link a un administrador.</p>
+        <div className="rounded-3xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center glass-card">
+          <ShieldCheck size={32} weight="duotone" className="mx-auto text-muted-foreground" />
+          <p className="mt-4 text-base font-bold">No tienes permiso para vincular usuarios</p>
+          <p className="mt-1.5 text-sm font-medium text-muted-foreground">Solicita el permiso <code className="bg-background px-1.5 py-0.5 rounded border border-border">users:link</code> a un administrador.</p>
         </div>
       ) : (
-        <>
-          {hasUserLinks ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-border bg-card p-5">
-                <p className="text-sm font-semibold">Invitar por email</p>
-                <div className="mt-3 flex gap-2">
-                  <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="estudiante@upao.edu.pe" />
-                  <Button onClick={handleInvite} disabled={!email.trim()} aria-label="Enviar invitacion">
-                    <PaperPlaneTilt size={16} />
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          
+          <div className="md:col-span-5 space-y-6">
+            {hasUserLinks ? (
+              <div className="glass-card rounded-3xl border-border bg-card p-6 shadow-sm space-y-5">
+                <div>
+                  <p className="text-base font-bold font-display">Invitar por email</p>
+                  <p className="text-xs text-muted-foreground mt-1">Envía una invitación directa al correo institucional.</p>
+                </div>
+                <div className="flex gap-2">
+                  <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="estudiante@upao.edu.pe" className="bg-muted/30" />
+                  <Button onClick={handleInvite} disabled={!email.trim()} aria-label="Enviar invitacion" className="shadow-md shrink-0">
+                    <PaperPlaneTilt size={16} weight="bold" />
                   </Button>
                 </div>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-5">
-                <p className="text-sm font-semibold">Codigo de vinculacion</p>
-                <div className="mt-3 flex gap-2">
-                  <Button variant="outline" onClick={handleCode}><LinkSimple size={16} /> Generar</Button>
-                  {generatedCode ? <code className="rounded-lg bg-primary/5 px-3 py-2 text-sm font-bold text-primary">{generatedCode}</code> : null}
+                
+                <hr className="border-border/50 my-2" />
+                
+                <div>
+                  <p className="text-base font-bold font-display">Código de vinculación</p>
+                  <p className="text-xs text-muted-foreground mt-1">El estudiante ingresa este código en su perfil para vincularse a tu cuenta.</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="outline" onClick={handleCode} className="shadow-sm border-primary/20 text-primary hover:bg-primary/5">
+                    <LinkSimple size={16} weight="bold" className="mr-2" /> Generar código
+                  </Button>
+                  {generatedCode ? <code className="flex-1 text-center rounded-xl bg-primary/10 border border-primary/20 px-3 py-2 text-sm font-bold text-primary tracking-widest">{generatedCode}</code> : null}
                 </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          <div className="rounded-xl border border-border bg-card">
-            <div className="border-b border-border px-5 py-3">
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {hasAdminLinks ? 'Todos los vinculos' : 'Usuarios vinculados'} ({links.length})
+            <div className="glass-card rounded-3xl border-border bg-card p-6 shadow-sm space-y-4">
+              <div>
+                <p className="text-base font-bold font-display">Aceptar invitación</p>
+                <p className="text-xs text-muted-foreground mt-1">Ingresa el código que te proporcionó el docente.</p>
+              </div>
+              <div className="flex gap-2">
+                <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej: ABC-123" className="bg-muted/30 uppercase" />
+                <Button variant="default" onClick={handleAccept} disabled={!code.trim()} className="shadow-md shrink-0">
+                  Aceptar
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="md:col-span-7 glass-card rounded-3xl border-border bg-card shadow-sm overflow-hidden flex flex-col h-full min-h-[400px]">
+            <div className="border-b border-border/50 bg-muted/10 px-6 py-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between">
+                <span>{hasAdminLinks ? 'Todos los vinculos' : 'Estudiantes vinculados'}</span>
+                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">{links.length}</span>
               </p>
             </div>
-            {loading ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">Cargando...</div>
-            ) : links.length > 0 ? (
-              links.map((link) => (
-                <LinkRow key={link.id} link={link} onDelete={handleDelete} admin={hasAdminLinks} />
-              ))
-            ) : (
-              <div className="p-8 text-center text-sm text-muted-foreground">Sin vinculos todavia.</div>
-            )}
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-5">
-            <p className="text-sm font-semibold">Aceptar codigo</p>
-            <div className="mt-3 flex gap-2">
-              <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="ABC-123" />
-              <Button variant="outline" onClick={handleAccept} disabled={!code.trim()}>Aceptar</Button>
+            
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="p-10 text-center text-sm font-medium text-muted-foreground animate-pulse">Cargando...</div>
+              ) : links.length > 0 ? (
+                links.map((link) => (
+                  <LinkRow key={link.id} link={link} onDelete={handleDelete} admin={hasAdminLinks} />
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center p-12 text-center h-full">
+                  <div className="rounded-full bg-muted/30 p-4 mb-4">
+                    <UsersThree size={32} weight="duotone" className="text-muted-foreground/50" />
+                  </div>
+                  <p className="text-sm font-bold text-foreground">Sin estudiantes vinculados</p>
+                  <p className="text-xs font-medium text-muted-foreground mt-1">Comparte tu código o invita por email para empezar.</p>
+                </div>
+              )}
             </div>
           </div>
-        </>
+
+        </div>
       )}
-    </section>
+    </motion.section>
   )
 }
