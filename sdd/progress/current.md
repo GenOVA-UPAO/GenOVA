@@ -36,3 +36,15 @@ HU-035 aprobado e implementado:
 - Validacion: `pnpm --filter frontend lint` PASA, `pnpm --filter frontend build` PASA, `./verify.ps1` PASA (backend BDD skip por backend offline).
 
 Pendiente HU-035: commit separado antes de iniciar HU-036.
+
+---
+
+Lote specs overdue Sprint 1 (sesión Antigravity):
+
+Estado: SPECS GENERADAS y APROBADAS — HU-009, HU-017, EN-001, EN-002 creadas en `sdd/specs/` y registradas como `spec_ready` en `feature_list.json`.
+
+TA-001 y TA-002 formalizados y cerrados como `done` (ya implementados de facto).
+
+Auditoría completa de Sprint 1 y Sprint 2: 36 done, 2 in_progress (EN-017, HU-036), 4 spec_ready (HU-009, HU-017, EN-001, EN-002), 1 spec_ready Sprint 2 (RN-002).
+
+Pendiente: implementación en lote de specs aprobadas.

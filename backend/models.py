@@ -196,6 +196,26 @@ class UserRole(Base):
     role = relationship("Role", back_populates="users")
 
 
+class UserLink(Base):
+    """Permission-gated relation where one user can link another user."""
+
+    __tablename__ = "user_links"
+
+    id = _pk_column()
+    owner_user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    linked_user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    invite_email = Column(String(255), nullable=True, index=True)
+    code_hash = Column(String(255), nullable=False)
+    status = Column(String(20), nullable=False, default="pending", server_default="pending")
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    consumed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
 class LabResult(Base):
     __tablename__ = "lab_results"
 

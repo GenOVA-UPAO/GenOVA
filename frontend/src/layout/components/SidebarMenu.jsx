@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import {
-  ArrowsClockwise, Flask, FolderOpen, GearSix, House, PlusSquare, ShieldCheck,
-  Trash, UserCircle, Users,
+  ArrowsClockwise, Flask, FolderOpen, GearSix, House, LinkSimple, PlusSquare,
+  ShieldCheck, Trash, UserCircle, Users,
 } from '@phosphor-icons/react'
 import { navigationLinks } from '../navigation/navLinks.js'
 import { isLoggedIn } from '../../lib/auth.js'
@@ -61,12 +61,17 @@ function initials(user) {
   return name.split(/\s|@/).filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase()
 }
 
+function hasPermission(user, permission) {
+  return user?.role === 'administrador' || (user?.permissions || []).includes(permission)
+}
+
 export function SidebarMenu({ onNavigate }) {
   const [user, setUser] = useState(null)
   const [trashCount, setTrashCount] = useState(0)
   const location = useLocation()
   const isAdmin = user?.role === 'administrador'
   const principal = navigationLinks.map((item) => ({ ...item, icon: ICONS[item.icon] }))
+  const canLink = hasPermission(user, 'users:link') || hasPermission(user, 'users:link:admin')
 
   useEffect(() => {
     if (!isLoggedIn()) return
@@ -92,6 +97,9 @@ export function SidebarMenu({ onNavigate }) {
         </Section>
         <Section title="Configuracion">
           {CONFIG_LINKS.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
+          {canLink ? (
+            <NavItem item={{ to: '/vinculacion', label: 'Vincular', icon: LinkSimple }} onNavigate={onNavigate} />
+          ) : null}
         </Section>
         {isAdmin ? (
           <Section title="Administracion">

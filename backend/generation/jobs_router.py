@@ -59,7 +59,7 @@ def start_job(
     resolved_image_settings = {
         "max_images": ova_settings.get("max_images", 2),
         "provider": image_provider,
-        "api_key": resolve_key(image_provider, current_user.user_api_keys or {}, db),
+        "api_key": resolve_key(image_provider, current_user.user_api_keys or {}, db, current_user.id),
     }
 
     job = jobs_service.create_job(

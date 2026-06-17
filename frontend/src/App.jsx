@@ -17,6 +17,7 @@ const PapeleraPage = lazy(() => import('./pages/PapeleraPage.jsx').then((m) => (
 const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
 const ModelsPage = lazy(() => import('./pages/ModelsPage.jsx').then((m) => ({ default: m.ModelsPage })))
 const FallbackPage = lazy(() => import('./pages/FallbackPage.jsx').then((m) => ({ default: m.FallbackPage })))
+const UserLinksPage = lazy(() => import('./pages/UserLinksPage.jsx').then((m) => ({ default: m.UserLinksPage })))
 const EngagePage = lazy(() => import('./pages/EngagePage.jsx').then((m) => ({ default: m.EngagePage })))
 const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx').then((m) => ({ default: m.ExplorePage })))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
@@ -121,6 +122,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/modelos" element={<ModelsPage />} />
             <Route path="/fallback" element={<FallbackPage />} />
+            <Route path="/vinculacion" element={<UserLinksPage />} />
             <Route path="/metodologia/engage" element={<EngagePage />} />
             <Route path="/metodologia/explore" element={<ExplorePage />} />
 
