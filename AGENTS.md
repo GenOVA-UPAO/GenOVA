@@ -102,7 +102,24 @@ Antes de terminar:
 6. Propone commit al humano (conventional commits). Espera aprobación explícita.
 7. No dejes `print()` de debug, archivos temporales ni TODOs sin contexto.
 
-## 7. Si te bloqueas
+## 7. Skills instaladas y su propósito
+
+| Skill | Path | Cuándo usarla |
+|---|---|---|
+| `find-docs` | `.agents/skills/find-docs/` | Antes de usar lib/framework nuevo → docs actualizadas via ctx7 |
+| `find-skills` | `.agents/skills/find-skills/` | Buscar/instalar skills externas |
+| `frontend-design` | `.agents/skills/frontend-design/` | Componentes React, UI/UX, diseño de pantallas |
+| `vercel-react-best-practices` | `.agents/skills/vercel-react-best-practices/` | Optimización React (memo, re-renders, bundles) |
+| `caveman` | `.agents/skills/caveman/` | Comprimir output ~75% tokens. Niveles: lite/full/ultra/wenyan |
+| `backprop` | `.agents/skills/backprop/` | Auto-fix falla intento 2 → §B entry en spec + §V en CHECKPOINTS.md |
+| `sp-writing-plans` | `.agents/skills/sp-writing-plans/` | Spec aprobado → plan TDD detallado en `docs/superpowers/plans/` |
+| `sp-subagent` | `.agents/skills/sp-subagent/` | Plan con ≥3 tareas independientes → subagente fresco por tarea |
+| `sp-verify` | `.agents/skills/sp-verify/` | Antes de APPROVED → evidencia fresca de `verify.ps1` |
+| `graphify` | `.claude/skills/graphify/` | Knowledge graph del codebase. Instalar: `uv tool install graphifyy && graphify install --project && graphify .` |
+
+**Consulta `skills-catalog.json`** para triggers, fuentes y evaluación de seguridad de cada skill.
+
+## 8. Si te bloqueas
 
 - Relee la sección relevante de `CLAUDE.md`.
 - Si una herramienta falla inesperadamente, **no improvises workaround**: documenta en `sdd/progress/current.md` con estado `blocked` y termina la sesión.
@@ -123,7 +140,7 @@ Este repositorio soporta múltiples AI coding tools. `AGENTS.md` es la fuente de
 
 | Symlink | Apunta a | Creado por |
 |---|---|---|
-| `.claude/skills/<name>/` | `.agents/skills/<name>/` | `npx skills add` |
+| `.claude/skills/<name>/` | `.agents/skills/<name>/` | `npx skills add` o `cmd mklink /J` |
 | `.opencode/agents/*.md` | Copia transformada desde `.claude/agents/*.md` (mode/hidden/permission para Opencode) | `scripts/setup-harness.ps1` |
 
 **Post-clone en Windows**: ejecuta `scripts/setup-harness.ps1` para recrear symlinks y resincronizar agentes de Opencode.
