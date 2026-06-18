@@ -127,6 +127,7 @@ def generate_engage_resource(
                 ova_settings.get("image_provider", "huggingface"),
                 current_user.user_api_keys or {},
                 db,
+                current_user.id,
             ),
         }
 

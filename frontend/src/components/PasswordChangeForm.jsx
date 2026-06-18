@@ -26,11 +26,11 @@ export function PasswordChangeForm() {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-background shadow-md overflow-hidden">
-      <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+    <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Seguridad de la Cuenta</h2>
-          <p className="text-xs text-muted-foreground mt-1.5">
+          <h2 className="text-lg font-bold font-display text-foreground">Seguridad de la Cuenta</h2>
+          <p className="text-sm font-medium text-muted-foreground mt-1">
             Actualiza tu contraseña periódicamente para mantener tu cuenta protegida.
           </p>
         </div>

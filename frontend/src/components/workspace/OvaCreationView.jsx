@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
+import { motion, AnimatePresence } from 'motion/react'
 import { useOvaCreation } from '../../hooks/ova/useOvaCreation.js'
 import { PhaseSelectModal } from '../PhaseSelectModal.jsx'
 import { CrearOvaChatPanel } from '../crear/CrearOvaChatPanel.jsx'
 import { CrearOvaPreviewPanel } from '../crear/CrearOvaPreviewPanel.jsx'
+
+const topbarVariants = {
+  hidden: { opacity: 0, y: -20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+}
+
+const contentVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.4, delay: 0.1 } }
+}
 
 /**
  * Creation mode of the unified OVA workspace.
@@ -56,21 +67,31 @@ export function OvaCreationView({ onCreated }) {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 bg-background text-foreground">
       {/* Topbar — same minimal style as edit mode */}
-      <header className="flex items-center gap-3 border-b border-border px-4 py-2.5 bg-background shrink-0">
+      <motion.header 
+        variants={topbarVariants}
+        initial="hidden"
+        animate="show"
+        className="flex items-center gap-4 border-b border-border/50 px-5 py-3 bg-card/60 backdrop-blur-md shrink-0 z-10"
+      >
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold">Crear OVA</h1>
-          <p className="text-xs text-muted-foreground hidden sm:block">
+          <h1 className="text-base font-display font-semibold truncate text-foreground">Crear OVA</h1>
+          <p className="text-xs font-medium text-muted-foreground hidden sm:block mt-0.5">
             Define el tema, configura los recursos y genera con IA.
           </p>
         </div>
-      </header>
+      </motion.header>
 
       {/* Split panels */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <motion.div 
+        variants={contentVariants}
+        initial="hidden"
+        animate="show"
+        className="flex flex-1 min-h-0 overflow-hidden"
+      >
         {/* Left — creation chat panel (420px, always visible) */}
-        <div className="w-full sm:w-2/5 md:w-[380px] lg:w-[420px] sm:shrink-0 border-r border-border flex flex-col overflow-hidden">
+        <div className="w-full sm:w-2/5 md:w-[380px] lg:w-[420px] sm:shrink-0 border-r border-border/50 bg-card/30 flex flex-col overflow-hidden">
           <CrearOvaChatPanel
             prompt={prompt} setPrompt={setPrompt} minChars={minChars}
             canConfigure={canConfigure} canGenerate={canGenerate}
@@ -96,7 +117,7 @@ export function OvaCreationView({ onCreated }) {
         </div>
 
         {/* Right — live resource preview (desktop only; mobile: left panel is full-width) */}
-        <div className="hidden sm:flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="hidden sm:flex flex-col flex-1 min-h-0 overflow-hidden bg-muted/10">
           <CrearOvaPreviewPanel
             jobId={jobId}
             viewModel={viewModel}
@@ -104,14 +125,16 @@ export function OvaCreationView({ onCreated }) {
             onPin={setPinnedId}
           />
         </div>
-      </div>
+      </motion.div>
 
-      {isModalOpen ? (
-        <PhaseSelectModal
-          onClose={closeModal} onConfirm={confirmSelections}
-          initialSelections={selections}
-        />
-      ) : null}
+      <AnimatePresence>
+        {isModalOpen && (
+          <PhaseSelectModal
+            onClose={closeModal} onConfirm={confirmSelections}
+            initialSelections={selections}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

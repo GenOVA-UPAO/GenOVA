@@ -14,12 +14,16 @@ def seed_db():
             {
                 "name": "administrador",
                 "description": "Rol del sistema con acceso total",
-                "permissions": ["create_ova", "view_ova", "export_ova", "manage_users", "manage_roles"]
+                "permissions": [
+                    "create_ova", "view_ova", "export_ova", "manage_users", "manage_roles",
+                    "ai:models:self", "ai:fallback:self", "ai:models:platform",
+                    "users:link", "users:link:admin",
+                ]
             },
             {
                 "name": "usuario",
                 "description": "Rol base para estudiantes y docentes",
-                "permissions": ["create_ova", "view_ova", "export_ova"]
+                "permissions": ["create_ova", "view_ova", "export_ova", "ai:models:self"]
             }
         ]
 

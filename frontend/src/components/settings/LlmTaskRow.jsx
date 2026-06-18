@@ -9,10 +9,17 @@ import {
 import { LlmModelSelect } from './LlmModelSelect.jsx'
 
 const TASK_LABELS = {
-  texto: 'Texto',
+  texto: 'Texto (Generación OVA)',
   codigo: 'Código (HTML)',
-  orquestador: 'Orquestador',
+  orquestador: 'Orquestador (Planificación)',
   razonamiento: 'Razonamiento',
+}
+
+const TASK_DESCS = {
+  texto: 'Modelo principal utilizado para generar el contenido de los recursos educativos.',
+  codigo: 'Especializado en generar estructuras HTML y recursos interactivos SCORM.',
+  orquestador: 'Coordina los agentes secundarios para la generación paso a paso.',
+  razonamiento: 'Se utiliza para evaluaciones complejas o toma de decisiones semánticas.',
 }
 
 function IconBtn({ title, onClick, disabled, children }) {
@@ -22,7 +29,7 @@ function IconBtn({ title, onClick, disabled, children }) {
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className="p-1 rounded text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
+      className="p-1.5 rounded-xl border border-border/50 text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-30 transition-colors shadow-sm bg-card/50 backdrop-blur-sm"
     >
       {children}
     </button>
@@ -49,62 +56,89 @@ export function LlmTaskRow({ task, value, models, disabled, onChange }) {
   const move = (i, dir) => onChange({ ...value, fallbacks: moveFallback(fallbacks, i, dir) })
 
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">{TASK_LABELS[task] ?? task}</h3>
-        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          {fallbacks.length} fallback{fallbacks.length === 1 ? '' : 's'}
-        </span>
+    <div className="rounded-3xl border border-border bg-card overflow-hidden glass-card shadow-sm hover:border-primary/20 transition-all">
+      <div className="px-6 py-5 border-b border-border/50 bg-muted/20">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-bold text-foreground font-display">{TASK_LABELS[task] ?? task}</h3>
+            <p className="text-[11px] font-medium text-muted-foreground mt-1 leading-snug">{TASK_DESCS[task] ?? 'Configuración de modelos de IA'}</p>
+          </div>
+          <span className="shrink-0 rounded-md bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary border border-primary/20 uppercase tracking-widest self-start">
+            {fallbacks.length} fallback{fallbacks.length === 1 ? '' : 's'}
+          </span>
+        </div>
       </div>
 
-      <label className="block space-y-1">
-        <span className="text-xs font-medium text-muted-foreground">Modelo primario</span>
-        <LlmModelSelect
-          models={models}
-          provider={value.default?.provider}
-          modelId={value.default?.model_id}
-          onChange={setDefault}
-          disabled={disabled}
-          ariaLabel={`Modelo primario de ${task}`}
-        />
-      </label>
-
-      <div className="space-y-2">
-        <span className="text-xs font-medium text-muted-foreground">Cadena de fallback</span>
-        {fallbacks.length === 0 && (
-          <p className="text-xs text-muted-foreground italic">Sin fallback (usa la semilla del sistema).</p>
-        )}
-        {fallbacks.map((f, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <span className="w-5 shrink-0 text-center text-xs text-muted-foreground">{i + 1}</span>
-            <div className="flex-1">
-              <LlmModelSelect
-                models={models}
-                provider={f.provider}
-                modelId={f.model_id}
-                onChange={(p, m) => setFallback(i, p, m)}
-                disabled={disabled}
-                ariaLabel={`Fallback ${i + 1} de ${task}`}
-              />
-            </div>
-            <IconBtn title="Subir" onClick={() => move(i, -1)} disabled={disabled || i === 0}>
-              <ArrowUp size={15} weight="bold" />
-            </IconBtn>
-            <IconBtn
-              title="Bajar"
-              onClick={() => move(i, 1)}
-              disabled={disabled || i === fallbacks.length - 1}
-            >
-              <ArrowDown size={15} weight="bold" />
-            </IconBtn>
-            <IconBtn title="Quitar" onClick={() => removeFallback(i)} disabled={disabled}>
-              <Trash size={15} weight="duotone" />
-            </IconBtn>
+      <div className="p-6 space-y-6">
+        <label className="block space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="shrink-0 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 border border-emerald-500/20 tracking-widest uppercase">Primario</span>
+            <span className="text-xs font-bold text-foreground">Modelo principal</span>
           </div>
-        ))}
-        <Button size="sm" variant="outline" onClick={addFallback} disabled={disabled}>
-          <Plus size={14} weight="bold" /> Agregar fallback
-        </Button>
+          <LlmModelSelect
+            models={models}
+            provider={value.default?.provider}
+            modelId={value.default?.model_id}
+            onChange={setDefault}
+            disabled={disabled}
+            ariaLabel={`Modelo primario de ${task}`}
+          />
+        </label>
+
+        <div className="space-y-4">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            Cadena de fallback
+          </span>
+          {fallbacks.length === 0 && (
+            <p className="text-xs font-medium text-muted-foreground/80 bg-muted/30 p-4 rounded-2xl border border-border/50 text-center italic">
+              No hay modelos de respaldo configurados. Si el primario falla, se detendrá la tarea.
+            </p>
+          )}
+          {fallbacks.map((f, i) => (
+            <div key={i} className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl border ${disabled ? 'border-border/50 bg-muted/20' : 'border-border bg-card/50 hover:bg-accent/30'} transition-all shadow-sm`}>
+              <div className="flex flex-col items-center justify-center shrink-0 w-8 hidden sm:flex">
+                <span className="text-[10px] font-bold text-muted-foreground/60 bg-muted px-2 py-1 rounded-md border border-border">#{i + 1}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <LlmModelSelect
+                  models={models}
+                  provider={f.provider}
+                  modelId={f.model_id}
+                  onChange={(p, m) => setFallback(i, p, m)}
+                  disabled={disabled}
+                  ariaLabel={`Fallback ${i + 1} de ${task}`}
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2 shrink-0 sm:ml-2">
+                <span className="text-[10px] font-bold text-muted-foreground/60 bg-muted px-2 py-1 rounded-md border border-border sm:hidden mr-auto">#{i + 1}</span>
+                <IconBtn title="Subir" onClick={() => move(i, -1)} disabled={disabled || i === 0}>
+                  <ArrowUp size={16} weight="bold" />
+                </IconBtn>
+                <IconBtn
+                  title="Bajar"
+                  onClick={() => move(i, 1)}
+                  disabled={disabled || i === fallbacks.length - 1}
+                >
+                  <ArrowDown size={16} weight="bold" />
+                </IconBtn>
+                <button
+                  type="button"
+                  title="Quitar"
+                  onClick={() => removeFallback(i)}
+                  disabled={disabled}
+                  className="p-1.5 rounded-xl border border-destructive/30 text-destructive hover:bg-destructive/10 disabled:opacity-30 transition-colors shadow-sm ml-1 bg-destructive/5"
+                >
+                  <Trash size={16} weight="duotone" />
+                </button>
+              </div>
+            </div>
+          ))}
+          <div className="pt-2">
+            <Button size="sm" variant="outline" onClick={addFallback} disabled={disabled} className="w-full text-xs font-bold shadow-sm border-dashed rounded-xl py-5 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all">
+              <Plus size={16} weight="bold" className="mr-2" /> Añadir modelo de respaldo
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )

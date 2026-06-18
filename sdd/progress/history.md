@@ -163,3 +163,20 @@ las specs del editor avanzado de OVA y empezar la implementación.
 **Verificación:** verify.ps1 PASA (ESLint + ruff + 52 BDD unit).
 
 **Estado:** DONE.
+
+---
+
+## 2026-06-16 — Completado lote de implementaciones y validaciones
+
+**Agente:** leader (orquesta: implementer)
+**Alcance:** Completar las especificaciones y características pendientes que estaban en estado spec_ready (principalmente Gherkin, Autenticación y métricas de rendimiento).
+
+**Completado:**
+- **EN-017** → done (ya implementado, commit 3ed88fa)
+- **EN-001** → done (features Gherkin ya existentes por dominio en tests/features/)
+- **EN-002** → done (step definitions y CI ya existentes en backend/tests/step_defs/ y verify.ps1)
+- **HU-009** → done (Recuperación de contraseña, commit 1fc42f1)
+- **HU-017** → done (Eliminar cuenta, commit a1de6dc)
+- **RN-002** → done (Tiempo de generación ≤ 180s, validado por RN-004)
+
+**Estado:** DONE. Lote finalizado con éxito.

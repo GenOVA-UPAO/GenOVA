@@ -4,9 +4,9 @@ import { Sidebar } from '../components/Sidebar.jsx'
 
 export function AppLayout() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="flex h-screen flex-col bg-background text-foreground">
       <Navbar />
-      <div className="flex w-full flex-1">
+      <div className="flex min-h-0 w-full flex-1 overflow-hidden">
         <Sidebar />
         <MainContainer />
       </div>

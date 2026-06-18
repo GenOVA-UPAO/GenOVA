@@ -97,6 +97,12 @@ export function LoginPage() {
             </Alert>
           ) : null}
 
+          <div className="flex items-center justify-end">
+            <Link to="/recuperar-contrasena" className="text-sm font-medium text-foreground hover:underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+
           <Button
             type="submit"
             className="w-full gap-2"

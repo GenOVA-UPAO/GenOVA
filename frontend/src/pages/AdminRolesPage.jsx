@@ -1,10 +1,9 @@
+import { motion } from 'motion/react'
 import { useRoles } from '../hooks/admin/useRoles.js'
 import { AVAILABLE_PERMISSIONS } from '../lib/permissions.js'
 import { RoleFormModal } from '../components/RoleFormModal.jsx'
 import { DeleteRoleModal } from '../components/DeleteRoleModal.jsx'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 export function AdminRolesPage() {
   const {
@@ -17,90 +16,98 @@ export function AdminRolesPage() {
     setIsDeleteModalOpen, setReassignRoleId, setDeleteError,
   } = useRoles()
 
+  const getRoleColor = (name) => {
+    switch (name.toLowerCase()) {
+      case 'administrador': return 'bg-primary text-primary-foreground border-primary/20 shadow-md shadow-primary/20'
+      case 'usuario': return 'bg-accent-brand text-white border-accent-brand/20 shadow-md shadow-accent-brand/20'
+      default: return 'bg-emerald-500 text-white border-emerald-500/20 shadow-md shadow-emerald-500/20'
+    }
+  }
+
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6 mx-auto max-w-5xl pb-10"
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Gestión de Roles</h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
+          <h1 className="font-display text-3xl font-semibold sm:text-4xl">Gestión de Roles</h1>
+          <p className="mt-1.5 text-sm font-medium text-muted-foreground">
             Define los conjuntos de permisos y configuraciones de acceso para los diferentes perfiles del sistema.
           </p>
         </div>
-        <Button onClick={handleOpenModal}>
-          <span className="mr-1 text-base font-bold">+</span> Nuevo rol
+        <Button onClick={handleOpenModal} className="shadow-md font-bold">
+          <span className="mr-2 text-lg leading-none">+</span> Nuevo rol
         </Button>
       </div>
 
-      <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden">
+      <div className="space-y-5">
         {loading ? (
-          <div className="flex h-64 items-center justify-center">
+          <div className="flex h-64 items-center justify-center glass-card rounded-3xl">
             <div className="flex flex-col items-center gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-              <p className="text-xs text-muted-foreground">Cargando roles...</p>
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary shadow-sm" />
+              <p className="text-sm font-bold text-muted-foreground">Cargando roles...</p>
             </div>
           </div>
         ) : error ? (
-          <div className="flex h-64 items-center justify-center p-6 text-center">
-            <div className="max-w-md space-y-3">
-              <p className="text-sm text-destructive font-medium">{error}</p>
-              <Button variant="outline" size="sm" onClick={fetchRoles}>Reintentar</Button>
+          <div className="flex h-64 items-center justify-center p-6 text-center glass-card rounded-3xl border-destructive/20 bg-destructive/5">
+            <div className="max-w-md space-y-4">
+              <p className="text-sm text-destructive font-bold">{error}</p>
+              <Button variant="outline" size="sm" onClick={fetchRoles} className="shadow-sm">Reintentar</Button>
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[15%]">Nombre del Rol</TableHead>
-                  <TableHead className="w-[25%]">Descripción</TableHead>
-                  <TableHead className="w-[10%] text-center">Usuarios</TableHead>
-                  <TableHead className="w-[40%]">Permisos Asignados</TableHead>
-                  <TableHead className="w-[10%] text-center">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {roles.map((role) => (
-                  <TableRow key={role.id}>
-                    <TableCell className="font-semibold">
-                      <div className="flex items-center gap-2">
-                        <span className={`h-2 w-2 rounded-full ${role.name === 'administrador' ? 'bg-primary' : role.name === 'usuario' ? 'bg-teal-500' : 'bg-muted-foreground'}`} />
-                        <span className="capitalize">{role.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground max-w-sm">
-                      <p className="line-clamp-2">{role.description || 'Sin descripción'}</p>
-                    </TableCell>
-                    <TableCell className="text-center font-medium">{role.user_count ?? 0}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1.5">
-                        {role.permissions?.length > 0 ? (
-                          role.permissions.map((perm) => {
-                            const label = AVAILABLE_PERMISSIONS.find((p) => p.id === perm)?.label || perm
-                            return (
-                              <Badge key={perm} variant="outline" className="bg-primary/5 text-primary border-primary/20 text-xs">
-                                {label}
-                              </Badge>
-                            )
-                          })
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Ninguno</span>
+          <div className="grid gap-5">
+            {roles.map((role) => (
+              <div key={role.id} className="rounded-3xl border-2 border-border/40 bg-card p-6 glass-card shadow-sm hover:border-primary/20 transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 border ${getRoleColor(role.name)}`}>
+                      <span className="text-lg font-display font-bold uppercase">{role.name.charAt(0)}</span>
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg font-display capitalize flex items-center gap-2">
+                        {role.name}
+                        {['administrador', 'usuario'].includes(role.name.toLowerCase()) && (
+                          <span className="bg-muted px-2 py-0.5 rounded-md text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Sistema</span>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center space-x-2">
-                      {['administrador', 'usuario'].includes(role.name) ? (
-                        <span className="text-xs text-muted-foreground italic">Sistema</span>
-                      ) : (
-                        <>
-                          <Button variant="ghost" size="xs" onClick={() => handleEditClick(role)} className="text-primary">Editar</Button>
-                          <Button variant="ghost" size="xs" onClick={() => handleDeleteClick(role)} className="text-destructive">Eliminar</Button>
-                        </>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </p>
+                      <p className="text-xs font-medium text-muted-foreground mt-0.5">{role.user_count ?? 0} usuarios activos</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleEditClick(role)} className="shadow-sm border-primary/20 hover:bg-primary/5 text-primary">
+                      Editar permisos
+                    </Button>
+                    {!['administrador', 'usuario'].includes(role.name.toLowerCase()) && (
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteClick(role)} className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive shadow-sm">
+                        Eliminar
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                {role.description && (
+                  <p className="text-sm text-muted-foreground font-medium mb-4">{role.description}</p>
+                )}
+
+                <div className="flex flex-wrap gap-2">
+                  {role.permissions?.length > 0 ? (
+                    role.permissions.map((perm) => {
+                      const label = AVAILABLE_PERMISSIONS.find((p) => p.id === perm)?.label || perm
+                      return (
+                        <span key={perm} className="rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold text-primary shadow-sm">
+                          {label}
+                        </span>
+                      )
+                    })
+                  ) : (
+                    <span className="text-xs font-bold text-muted-foreground/60 bg-muted/30 px-3 py-1 rounded-full">Sin permisos asignados</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -133,6 +140,6 @@ export function AdminRolesPage() {
           onCancel={() => setIsDeleteModalOpen(false)}
         />
       ) : null}
-    </div>
+    </motion.div>
   )
 }

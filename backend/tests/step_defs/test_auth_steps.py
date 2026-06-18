@@ -45,7 +45,9 @@ CREATE TABLE users (
   full_name TEXT, is_active BOOLEAN NOT NULL DEFAULT 1,
   university_id INTEGER, gender TEXT, phone_number TEXT,
   llm_settings TEXT NOT NULL DEFAULT '{}', enabled_models TEXT NOT NULL DEFAULT '[]',
-  ova_settings TEXT NOT NULL DEFAULT '{}', user_api_keys TEXT NOT NULL DEFAULT '{}',
+  ova_settings TEXT NOT NULL DEFAULT '{}',
+  theme_settings TEXT NOT NULL DEFAULT '{}',
+  user_api_keys TEXT NOT NULL DEFAULT '{}',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
 );
 """

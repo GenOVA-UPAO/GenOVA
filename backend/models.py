@@ -43,6 +43,8 @@ class User(Base):
     enabled_models = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     # Per-user OVA generation settings: {max_images, image_provider}.
     ova_settings = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    # Per-user theme preferences: {colorMode, designMode, palette}.
+    theme_settings = Column(JSONB, nullable=False, server_default=text("'{\"colorMode\": \"upao\", \"designMode\": \"upao\", \"palette\": null}'::jsonb"))
     # Per-user provider API keys (never logged, returned masked):
     # {groq, openrouter, opencode, siliconflow, runware, falai}
     user_api_keys = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
@@ -194,6 +196,26 @@ class UserRole(Base):
 
     user = relationship("User", back_populates="roles")
     role = relationship("Role", back_populates="users")
+
+
+class UserLink(Base):
+    """Permission-gated relation where one user can link another user."""
+
+    __tablename__ = "user_links"
+
+    id = _pk_column()
+    owner_user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    linked_user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    invite_email = Column(String(255), nullable=True, index=True)
+    code_hash = Column(String(255), nullable=False)
+    status = Column(String(20), nullable=False, default="pending", server_default="pending")
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    consumed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 class LabResult(Base):

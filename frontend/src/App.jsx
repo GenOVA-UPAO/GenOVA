@@ -6,6 +6,8 @@ import { AppLayout } from './layout/shells/AppLayout.jsx'
 import { WorkspaceLayout } from './layout/shells/WorkspaceLayout.jsx'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { RegisterPage } from './pages/RegisterPage.jsx'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage.jsx'
+import { ResetPasswordPage } from './pages/ResetPasswordPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 
 // Code-split heavier authenticated routes so the login bundle stays tiny.
@@ -15,11 +17,26 @@ const AdminPlatformPage = lazy(() => import('./pages/AdminPlatformPage.jsx').the
 const MisOvasPage = lazy(() => import('./pages/MisOvasPage.jsx').then((m) => ({ default: m.MisOvasPage })))
 const PapeleraPage = lazy(() => import('./pages/PapeleraPage.jsx').then((m) => ({ default: m.PapeleraPage })))
 const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
+const ModelsPage = lazy(() => import('./pages/ModelsPage.jsx').then((m) => ({ default: m.ModelsPage })))
+const FallbackPage = lazy(() => import('./pages/FallbackPage.jsx').then((m) => ({ default: m.FallbackPage })))
+const UserLinksPage = lazy(() => import('./pages/UserLinksPage.jsx').then((m) => ({ default: m.UserLinksPage })))
 const EngagePage = lazy(() => import('./pages/EngagePage.jsx').then((m) => ({ default: m.EngagePage })))
 const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx').then((m) => ({ default: m.ExplorePage })))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
 const LabsPage = lazy(() => import('./pages/LabsPage.jsx').then((m) => ({ default: m.LabsPage })))
 const OvaWorkspacePage = lazy(() => import('./pages/OvaWorkspacePage.jsx').then((m) => ({ default: m.OvaWorkspacePage })))
+const WireframeNavbarPage = lazy(() => import('./pages/WireframeNavbarPage.jsx').then((m) => ({ default: m.WireframeNavbarPage })))
+const WireframeDashboardPage = lazy(() => import('./pages/WireframeDashboardPage.jsx').then((m) => ({ default: m.WireframeDashboardPage })))
+const WireframeMisOvasPage = lazy(() => import('./pages/WireframeMisOvasPage.jsx').then((m) => ({ default: m.WireframeMisOvasPage })))
+const WireframeCrearOvaPage = lazy(() => import('./pages/WireframeCrearOvaPage.jsx').then((m) => ({ default: m.WireframeCrearOvaPage })))
+const WireframeWorkspacePage = lazy(() => import('./pages/WireframeWorkspacePage.jsx').then((m) => ({ default: m.WireframeWorkspacePage })))
+const WireframeAdminRolesPage = lazy(() => import('./pages/WireframeAdminRolesPage.jsx').then((m) => ({ default: m.WireframeAdminRolesPage })))
+const WireframeAdminUsersPage = lazy(() => import('./pages/WireframeAdminUsersPage.jsx').then((m) => ({ default: m.WireframeAdminUsersPage })))
+const WireframeAdminPlatformPage = lazy(() => import('./pages/WireframeAdminPlatformPage.jsx').then((m) => ({ default: m.WireframeAdminPlatformPage })))
+const WireframeProfilePage = lazy(() => import('./pages/WireframeProfilePage.jsx').then((m) => ({ default: m.WireframeProfilePage })))
+const WireframeModelsPage = lazy(() => import('./pages/WireframeModelsPage.jsx').then((m) => ({ default: m.WireframeModelsPage })))
+const WireframeFallbackChainPage = lazy(() => import('./pages/WireframeFallbackChainPage.jsx').then((m) => ({ default: m.WireframeFallbackChainPage })))
+const WireframeVinculacionPage = lazy(() => import('./pages/WireframeVinculacionPage.jsx').then((m) => ({ default: m.WireframeVinculacionPage })))
 
 import { Toaster } from 'sonner'
 import { SpeedInsights } from '@vercel/speed-insights/react'
@@ -85,13 +102,31 @@ function App() {
       <SpeedInsights />
       <Suspense fallback={<RouteFallback />}>
         <Routes>
+          <Route path="/wireframe1" element={<WireframeNavbarPage />} />
+          <Route path="/wireframe2" element={<WireframeDashboardPage />} />
+          <Route path="/wireframe3" element={<WireframeMisOvasPage />} />
+          <Route path="/wireframe4" element={<WireframeCrearOvaPage />} />
+          <Route path="/wireframe5" element={<WireframeWorkspacePage />} />
+          <Route path="/wireframe6" element={<WireframeWorkspacePage />} />
+          <Route path="/wireframe7" element={<WireframeAdminRolesPage />} />
+          <Route path="/wireframe8" element={<WireframeAdminUsersPage />} />
+          <Route path="/wireframe9" element={<WireframeAdminPlatformPage />} />
+          <Route path="/wireframe10" element={<WireframeProfilePage />} />
+          <Route path="/wireframe11" element={<WireframeModelsPage />} />
+          <Route path="/wireframe12" element={<WireframeFallbackChainPage />} />
+          <Route path="/wireframe13" element={<WireframeVinculacionPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mis-ovas" element={<MisOvasPage />} />
             <Route path="/papelera" element={<PapeleraPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/modelos" element={<ModelsPage />} />
+            <Route path="/fallback" element={<FallbackPage />} />
+            <Route path="/vinculacion" element={<UserLinksPage />} />
             <Route path="/metodologia/engage" element={<EngagePage />} />
             <Route path="/metodologia/explore" element={<ExplorePage />} />
 

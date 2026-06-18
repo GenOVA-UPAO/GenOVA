@@ -1,8 +1,13 @@
+import logging
+
 from dotenv import load_dotenv
+from fastapi import HTTPException, status
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from config import settings
+
+_logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -79,3 +84,16 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def commit_or_500(db: Session, op: str) -> None:
+    """Commit the current session or roll back and raise HTTP 500."""
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        _logger.exception("DB write failed during %s", op)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo completar la operación. Intenta de nuevo.",
+        ) from None

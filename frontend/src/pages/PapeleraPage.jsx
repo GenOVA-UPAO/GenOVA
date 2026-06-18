@@ -31,7 +31,7 @@ export function PapeleraPage() {
 
       <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Papelera</h1>
+          <h1 className="font-display text-2xl font-semibold sm:text-3xl">Papelera</h1>
           <p className="text-sm text-muted-foreground mt-1">
             OVAs movidos a la papelera. Restáuralos o elimínalos definitivamente.
           </p>
@@ -98,7 +98,7 @@ export function PapeleraPage() {
           <p className="mt-1 text-xs text-muted-foreground">Los OVAs que muevas a la papelera aparecerán aquí.</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {ovas.map((ova) => (
             <TrashedOvaCard
               key={ova.id}

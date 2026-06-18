@@ -115,6 +115,51 @@ CATALOG_ENTRIES = [
         "context_length": None,
         "active": True,
     },
+    # OpenRouter meta-models — special routers, not single models.
+    # openrouter/auto: free auto-router; sends the prompt to whichever free model
+    # OpenRouter considers best for the task on that turn. Zero direct cost.
+    {
+        "provider": "openrouter",
+        "model_id": "openrouter/auto",
+        "label": "Auto (OpenRouter · mejor modelo gratis)",
+        "task": "texto",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+        "notes": "Enruta automáticamente al mejor modelo gratuito disponible para la tarea.",
+    },
+    {
+        "provider": "openrouter",
+        "model_id": "openrouter/auto",
+        "label": "Auto (OpenRouter · mejor modelo gratis)",
+        "task": "orquestador",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+        "notes": "Enruta automáticamente al mejor modelo gratuito disponible para la tarea.",
+    },
+    {
+        "provider": "openrouter",
+        "model_id": "openrouter/auto",
+        "label": "Auto (OpenRouter · mejor modelo gratis)",
+        "task": "razonamiento",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+        "notes": "Enruta automáticamente al mejor modelo gratuito disponible para la tarea.",
+    },
+    # openrouter/fusion: ensembles multiple models — higher quality but slower and
+    # more expensive (each call hits several models internally).
+    {
+        "provider": "openrouter",
+        "model_id": "openrouter/fusion",
+        "label": "Fusion (OpenRouter · ensemble de modelos)",
+        "task": "texto",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+        "notes": "Fusiona varios modelos para mayor calidad. Más lento y costoso.",
+    },
     # OpenCode Go — personal subscription (bearer token). No API refresh needed;
     # model list is static and verified manually via GET /v1/models.
     {
@@ -133,7 +178,7 @@ def _build_provider_catalog() -> dict[str, list[str]]:
     """Derive the legacy CATALOG {provider: [model_ids]} from CATALOG_ENTRIES."""
     cat: dict[str, list[str]] = {}
     for e in CATALOG_ENTRIES:
-        if e["active"]:
+        if e["active"] and e["model_id"] not in cat.get(e["provider"], []):
             cat.setdefault(e["provider"], []).append(e["model_id"])
     return cat
 

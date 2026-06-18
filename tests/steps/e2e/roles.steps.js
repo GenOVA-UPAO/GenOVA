@@ -12,14 +12,14 @@ Then('debo ver el panel de administración con su propio layout', async ({ page 
 })
 
 Then('debo ver la lista de roles registrados', async ({ page }) => {
-  // The first roles fetch can fail on a cold Supabase pooler connection
-  // under concurrent e2e load. If the page lands on its error state,
-  // recover through its own "Reintentar" button instead of giving up.
-  const table = page.locator('table, [role=table]').first()
+  // The redesigned admin page uses cards (not a <table>).
+  // "Editar permisos" only appears once roles have actually loaded.
+  // If the page lands on its error state, recover via "Reintentar".
+  const roleCard = page.getByRole('button', { name: 'Editar permisos' }).first()
   const retry = page.getByRole('button', { name: 'Reintentar' })
   for (let attempt = 0; ; attempt++) {
-    await table.or(retry).first().waitFor({ state: 'visible', timeout: 15000 })
-    if (await table.isVisible()) return
+    await roleCard.or(retry).first().waitFor({ state: 'visible', timeout: 15000 })
+    if (await roleCard.isVisible()) return
     if (attempt >= 2) throw new Error('Roles list still failing after 3 attempts')
     await retry.click()
   }
@@ -31,6 +31,14 @@ Then('debo ver al menos los roles {string} y {string}', async ({ page }, r1, r2)
 })
 
 When('hago click en {string}', async ({ page }, btnText) => {
+  if (btnText === 'Cerrar sesión') {
+    // Logout button lives inside the avatar dropdown (conditional render).
+    // Must open the dropdown first so the button is in the DOM.
+    await page.getByRole('button', { name: 'Menu de usuario' }).click()
+    await page.getByRole('button', { name: 'Cerrar sesión' }).waitFor({ state: 'visible', timeout: 5000 })
+    await page.getByRole('button', { name: 'Cerrar sesión' }).click()
+    return
+  }
   await page.getByRole('button', { name: btnText }).click()
 })
 

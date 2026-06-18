@@ -172,6 +172,17 @@ jobs:
 
       - run: pnpm test:e2e
 
+      - name: Debug backend on failure
+        if: failure()
+        run: |
+          echo "=== Backend startup log ==="
+          cat /tmp/backend.log || echo "(no log file)"
+          echo "=== Login probe ==="
+          curl -v -X POST http://localhost:8000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"admin@genova.ai","password":"admin1234password"}' \
+            2>&1 || true
+
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
