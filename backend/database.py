@@ -1,13 +1,12 @@
 import logging
 
+from config import settings
 from dotenv import load_dotenv
 from fastapi import HTTPException, status
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 _logger = logging.getLogger(__name__)
-
-from config import settings
 
 load_dotenv()
 
