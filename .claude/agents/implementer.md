@@ -153,6 +153,22 @@ Si la feature es JS/Python puro sin librerías externas nuevas → omite este pa
 - Nunca retornar tokens o OTPs en respuestas HTTP.
 - Nuevos endpoints con input externo: `Field(max_length=…)` en Pydantic.
 
+## Skill sp-subagent (features con ≥3 tareas independientes)
+
+Si el leader te pasó un plan en `docs/superpowers/plans/` y el plan contiene
+≥3 tareas genuinamente independientes (sin acoplamiento de estado o datos entre ellas),
+puedes usar el skill `sp-subagent` (`.agents/skills/sp-subagent/SKILL.md`) para despachar
+un subagente fresco por tarea en vez de ejecutarlas secuencialmente.
+
+**Cuándo usar sp-subagent:**
+- Plan generado por sp-writing-plans con ≥3 tasks independientes
+- Tareas no se pasan datos críticos entre sí (output de T1 no es input de T2)
+
+**Cuándo NO usar sp-subagent (seguir flujo secuencial normal):**
+- ≤2 tareas
+- Tareas acopladas (modelo → router → frontend del mismo flujo)
+- No hay plan previo de sp-writing-plans
+
 ## Reglas duras
 
 - ❌ Si la feature no está en `in_progress` con spec aprobado, paras.

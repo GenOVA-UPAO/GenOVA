@@ -1,0 +1,1 @@
+{"nodes": [{"id": "gemini_md", "label": "GEMINI.md", "file_type": "document", "source_file": "GEMINI.md"}], "edges": [{"source": "gemini_md", "target": "agents_md", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "GEMINI.md"}], "hyperedges": []}

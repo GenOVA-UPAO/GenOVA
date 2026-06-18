@@ -3,7 +3,7 @@ import math
 import os
 
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
@@ -112,8 +112,9 @@ def download_ova(
     # Prefer Supabase Storage signed URL (production path).
     if ova.storage_key and is_configured():
         try:
-            url = signed_url(str(ova.storage_key))
-            return RedirectResponse(url=url, status_code=302)
+            filename = f"{safe_title}.zip"
+            url = signed_url(str(ova.storage_key), download_as=filename)
+            return JSONResponse({"download_url": url, "filename": filename})
         except StorageError:
             logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
 

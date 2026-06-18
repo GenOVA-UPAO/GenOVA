@@ -1,3 +1,4 @@
+import logging
 import os
 
 from fastapi import APIRouter, Depends, Request, status
@@ -19,7 +20,10 @@ from ova.crud.edit_helpers import (
 from ova.crud.edit_view_router import router as edit_view_router
 from ova.phases.phase_version_router import record_phase_micro_version
 from rate_limit import limiter
+from storage import StorageError, is_configured, upload_zip
 from users.admin.helpers import commit_or_500
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -348,18 +352,31 @@ def save_phase(
 
     from scorm.service import build_scorm_zip_bytes
 
-    output_dir = _ova_output_dir()
-    os.makedirs(output_dir, exist_ok=True)
-    file_path = os.path.join(output_dir, f"{ova_id}_v{new_version_number}.zip")
     zip_bytes = build_scorm_zip_bytes(
         course_title=ova.title,
         module_title="OVA Generado por GenOVA",
         phases=new_phases_data,
     )
-    with open(file_path, "wb") as f:
-        f.write(zip_bytes)
 
-    ova.file_path = file_path
+    object_key = f"{current_user.id}/{ova_id}_v{new_version_number}.zip"
+    stored_key: str | None = None
+    stored_path: str | None = None
+    if is_configured():
+        try:
+            upload_zip(object_key, zip_bytes)
+            stored_key = object_key
+        except StorageError:
+            logger.warning("Supabase upload failed for %s; falling back to disk", object_key)
+
+    if not stored_key:
+        output_dir = _ova_output_dir()
+        os.makedirs(output_dir, exist_ok=True)
+        stored_path = os.path.join(output_dir, f"{ova_id}_v{new_version_number}.zip")
+        with open(stored_path, "wb") as f:
+            f.write(zip_bytes)
+
+    ova.storage_key = stored_key
+    ova.file_path = stored_path
     ova.current_version_id = new_version.id
     db.commit()
 

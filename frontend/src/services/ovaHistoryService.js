@@ -69,6 +69,18 @@ export async function downloadOvaFile(ovaId, title = 'ova') {
     error.status = res.status
     throw error
   }
+  const contentType = res.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) {
+    const data = await res.json()
+    const a = document.createElement('a')
+    a.href = data.download_url
+    if (data.filename) a.download = data.filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    return
+  }
+  // disk fallback: stream binary
   const blob = await res.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

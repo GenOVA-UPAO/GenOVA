@@ -146,7 +146,8 @@ Cuando el usuario diga "aprobado":
 1. Lee el spec y extrae la sección `## Dependencias`.
 2. Para cada ID listado, verifica en `feature_list.json` que su `"status"` sea `"done"`.
 3. Si alguna dependencia no está en `done` → **bloquea**: "No puedo iniciar [ID] — depende de [DEP-N] que está en `[status]`. Resuélvela primero."
-4. Si todas en `done` → actualiza `feature_list.json` a `in_progress` y lanza `implementer`.
+4. **Plan de implementación** — invoca skill `sp-writing-plans` (`.agents/skills/sp-writing-plans/SKILL.md`) para generar plan detallado en `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`. Esto es opcional para features triviales (≤2 tareas evidentes), obligatorio para features con ≥3 tareas o scope medio-alto. Pregunta al usuario: "¿Genero plan de implementación antes de arrancar el implementer? (recomendado para features medianas/grandes)"
+5. Si todas en `done` → actualiza `feature_list.json` a `in_progress` y lanza `implementer` (con referencia al plan si se generó: "Plan disponible en `docs/superpowers/plans/<archivo>.md`").
 
 ### Caso E — Feature en `in_progress` (sesión interrumpida)
 

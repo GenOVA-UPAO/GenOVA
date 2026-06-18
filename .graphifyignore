@@ -1,0 +1,38 @@
+# Exclude third-party/generated directories (not project source)
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+backend/.pytest_cache/
+backend/.ruff_cache/
+node_modules/
+.pnpm-store/
+dist/
+build/
+graphify-out/
+.claude/plans/
+.claude/sessions/
+.claude/todos/
+tests/.features-gen/
+tests/playwright-report/
+.opencode/
+
+# Secrets — never send to LLM
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Binary/generated file types
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.pdf
+*.zip
+*.pyc
+*.lock
+*.jsonl

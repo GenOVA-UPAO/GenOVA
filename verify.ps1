@@ -122,6 +122,19 @@ if ($E2E) {
     }
 }
 
+# [graphify] Actualización incremental del knowledge graph (solo código, sin LLM)
+# No bloqueante: si falla o no existe el grafo, verify sigue siendo PASA.
+if (Test-Path "graphify-out/graph.json") {
+    Write-Host ""
+    Write-Host "--- Graphify update (knowledge graph, codigo only) ---" -ForegroundColor Cyan
+    graphify update . 2>&1 | ForEach-Object { Write-Host "  $_" }
+    # Notificar si hay docs/specs modificados que requieren rebuild semantico
+    $needsUpdate = graphify check-update . 2>&1
+    if ($needsUpdate -match "needs_update|pending") {
+        Write-Host "  INFO: docs/specs cambiaron - corre 'scripts/graphify-rebuild.ps1' para actualizar semantica" -ForegroundColor Yellow
+    }
+}
+
 # Resumen
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan

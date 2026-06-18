@@ -1,3 +1,4 @@
+import logging
 import os
 
 from fastapi import APIRouter, Depends, Request, status
@@ -12,11 +13,15 @@ from ova.crud.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _is_ova_owner,
+    _ova_output_dir,
     _phase_to_dict,
     _version_to_dict,
 )
 from rate_limit import limiter
+from storage import StorageError, is_configured, signed_url, upload_zip
 from users.admin.helpers import commit_or_500
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -161,10 +166,46 @@ def revert_to_version(
         select(OvaVersion).where(OvaVersion.ova_id == ova_id)
     ).scalars().all()
 
+    # Deactivate all first to avoid violating uq_one_active_version_per_ova
+    # (partial unique index WHERE is_active=TRUE) before activating the target.
     for v in all_versions:
-        v.is_active = str(v.id) == version_id
+        v.is_active = False
+    db.flush()
 
+    target.is_active = True
     ova.current_version_id = target.id
+
+    # Rebuild SCORM for the reverted version so export-scorm reflects the
+    # correct content (ova.storage_key was still pointing at the previous zip).
+    from scorm.service import build_scorm_zip_bytes
+
+    phases_data = [
+        {"type": p.phase_type, "order": p.phase_order, "content": p.content}
+        for p in target.phases
+    ]
+    zip_bytes = build_scorm_zip_bytes(
+        course_title=ova.title,
+        module_title="OVA Generado por GenOVA",
+        phases=phases_data,
+    )
+    object_key = f"{current_user.id}/{ova_id}_v{target.version_number}.zip"
+    stored_key: str | None = None
+    stored_path: str | None = None
+    if is_configured():
+        try:
+            upload_zip(object_key, zip_bytes)
+            stored_key = object_key
+        except StorageError:
+            logger.warning("Supabase upload failed on revert for %s; falling back to disk", object_key)
+    if not stored_key:
+        output_dir = _ova_output_dir()
+        os.makedirs(output_dir, exist_ok=True)
+        stored_path = os.path.join(output_dir, f"{ova_id}_v{target.version_number}.zip")
+        with open(stored_path, "wb") as f:
+            f.write(zip_bytes)
+    ova.storage_key = stored_key
+    ova.file_path = stored_path
+
     commit_or_500(db, op="revert_version")
 
     return {
@@ -251,6 +292,20 @@ def export_scorm(
             content={"error": "ova_not_ready", "message": "El OVA no está listo."},
         )
 
+    active_version = _get_active_version(ova_id, db)
+    version_num = active_version.version_number if active_version else 1
+    safe_title = (
+        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
+    )
+    filename = f"{safe_title}_v{version_num}.zip"
+
+    if ova.storage_key and is_configured():
+        try:
+            url = signed_url(str(ova.storage_key), download_as=filename)
+            return JSONResponse({"download_url": url, "filename": filename})
+        except StorageError:
+            logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
+
     if not ova.file_path or not os.path.exists(ova.file_path):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -260,14 +315,8 @@ def export_scorm(
             },
         )
 
-    active_version = _get_active_version(ova_id, db)
-    version_num = active_version.version_number if active_version else 1
-    safe_title = (
-        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
-    )
-
     return FileResponse(
         path=ova.file_path,
-        filename=f"{safe_title}_v{version_num}.zip",
+        filename=filename,
         media_type="application/zip",
     )

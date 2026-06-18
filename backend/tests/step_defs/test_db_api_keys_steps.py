@@ -85,8 +85,10 @@ def db_without_groq_key(request):
 
 
 @given('env var "GROQ_API_KEY" is not set')
-def env_no_groq_key():
-    pass  # already set to "" in module header
+def env_no_groq_key(request):
+    prev = os.environ.get("GROQ_API_KEY")
+    os.environ["GROQ_API_KEY"] = ""
+    request.addfinalizer(lambda: os.environ.update({"GROQ_API_KEY": prev}) if prev is not None else os.environ.pop("GROQ_API_KEY", None))
 
 
 @when('_get_provider_key is called for "groq"')  # noqa: F811 — duplicate step reuse
