@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user, require_permission
-from database import get_db
+from database import commit_or_500, get_db
 from models import User, UserLink
 from rate_limit import limiter
 from security import hash_password, verify_password
@@ -47,17 +47,6 @@ def _serialize(link: UserLink, owner: User | None = None, linked: User | None = 
     }
 
 
-def _commit_or_500(db: Session, op: str) -> None:
-    try:
-        db.commit()
-    except Exception as exc:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"No se pudo completar {op}.",
-        ) from exc
-
-
 @router.get("/me/links")
 def list_my_links(
     current_user: User = Depends(require_permission("users:link")),
@@ -68,13 +57,16 @@ def list_my_links(
         .where(UserLink.owner_user_id == current_user.id)
         .order_by(UserLink.created_at.desc())
     ).scalars().all()
+    linked_ids = [lnk.linked_user_id for lnk in links if lnk.linked_user_id]
+    linked_map: dict = {}
+    if linked_ids:
+        linked_map = {
+            u.id: u
+            for u in db.execute(select(User).where(User.id.in_(linked_ids))).scalars().all()
+        }
     return {
         "links": [
-            _serialize(
-                link,
-                owner=current_user,
-                linked=db.get(User, link.linked_user_id) if link.linked_user_id else None,
-            )
+            _serialize(link, owner=current_user, linked=linked_map.get(link.linked_user_id))
             for link in links
         ]
     }
@@ -95,7 +87,7 @@ def create_link_code(
         expires_at=expires_at,
     )
     db.add(link)
-    _commit_or_500(db, "la creacion del codigo")
+    commit_or_500(db, "la creacion del codigo")
     db.refresh(link)
     return {"link": _serialize(link, owner=current_user), "code": code}
 
@@ -117,7 +109,7 @@ def invite_link(
         expires_at=expires_at,
     )
     db.add(link)
-    _commit_or_500(db, "la invitacion")
+    commit_or_500(db, "la invitacion")
     db.refresh(link)
     return {"link": _serialize(link, owner=current_user), "code": code}
 
@@ -151,7 +143,7 @@ def accept_link(
         link.linked_user_id = current_user.id
         link.status = "active"
         link.consumed_at = now
-        _commit_or_500(db, "la vinculacion")
+        commit_or_500(db, "la vinculacion")
         db.refresh(link)
         return {
             "link": _serialize(
@@ -173,7 +165,7 @@ def delete_my_link(
     if not link or link.owner_user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vinculo no encontrado.")
     db.delete(link)
-    _commit_or_500(db, "la desvinculacion")
+    commit_or_500(db, "la desvinculacion")
     return {"status": "ok"}
 
 
@@ -184,12 +176,21 @@ def list_all_links(
 ):
     del current_user
     links = db.execute(select(UserLink).order_by(UserLink.created_at.desc())).scalars().all()
+    user_ids = {lnk.owner_user_id for lnk in links} | {
+        lnk.linked_user_id for lnk in links if lnk.linked_user_id
+    }
+    users_map: dict = {}
+    if user_ids:
+        users_map = {
+            u.id: u
+            for u in db.execute(select(User).where(User.id.in_(user_ids))).scalars().all()
+        }
     return {
         "links": [
             _serialize(
                 link,
-                owner=db.get(User, link.owner_user_id),
-                linked=db.get(User, link.linked_user_id) if link.linked_user_id else None,
+                owner=users_map.get(link.owner_user_id),
+                linked=users_map.get(link.linked_user_id) if link.linked_user_id else None,
             )
             for link in links
         ]
@@ -207,5 +208,5 @@ def delete_any_link(
     if not link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vinculo no encontrado.")
     db.delete(link)
-    _commit_or_500(db, "la desvinculacion")
+    commit_or_500(db, "la desvinculacion")
     return {"status": "ok"}

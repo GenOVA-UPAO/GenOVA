@@ -1,29 +1,14 @@
-import logging
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from database import commit_or_500, get_db
 from models import User
 from security import hash_password, verify_password
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
-
-
-def _commit_or_500(db: Session, op: str) -> None:
-    try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("Profile DB write failed during %s", op)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo completar la operación. Intenta de nuevo.",
-        ) from None
 
 
 class UserProfileUpdate(BaseModel):
@@ -95,7 +80,7 @@ def update_profile(
     current_user.gender = gender
     current_user.phone_number = phone_number
 
-    _commit_or_500(db, "update_profile")
+    commit_or_500(db, "update_profile")
     db.refresh(current_user)
 
     return {
@@ -131,7 +116,7 @@ def update_theme(
         "designMode": payload.designMode,
         "palette": payload.palette,
     }
-    _commit_or_500(db, "update_theme")
+    commit_or_500(db, "update_theme")
     db.refresh(current_user)
     return {"message": "Tema actualizado", "theme_settings": current_user.theme_settings}
 
@@ -174,7 +159,7 @@ def change_password(
         )
 
     current_user.password_hash = hash_password(new_pass)
-    _commit_or_500(db, "change_password")
+    commit_or_500(db, "change_password")
     return {"message": "Contraseña actualizada con éxito."}
 
 
@@ -225,7 +210,7 @@ def delete_account(
     current_user.phone_number = None
     current_user.university_id = None
 
-    _commit_or_500(db, "delete_account")
+    commit_or_500(db, "delete_account")
 
     from fastapi.responses import JSONResponse
 

@@ -1,4 +1,3 @@
-import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,24 +6,11 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_admin
-from database import get_db
+from database import commit_or_500, get_db
 from models import Role, UserRole
 from roles.delete_router import router as delete_router
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
-
-
-def _commit_or_500(db: Session, op: str) -> None:
-    try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("Roles DB write failed during %s", op)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo completar la operación. Intenta de nuevo.",
-        ) from None
 
 
 class RoleCreate(BaseModel):
@@ -82,7 +68,7 @@ def create_role(
         name=name, description=payload.description, permissions=payload.permissions
     )
     db.add(new_role)
-    _commit_or_500(db, "create_role")
+    commit_or_500(db, "create_role")
     db.refresh(new_role)
 
     return {
@@ -155,7 +141,7 @@ def update_role(
     if payload.permissions is not None:
         role.permissions = payload.permissions  # type: ignore
 
-    _commit_or_500(db, "update_role")
+    commit_or_500(db, "update_role")
     db.refresh(role)
 
     return {
