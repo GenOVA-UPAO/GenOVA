@@ -77,3 +77,11 @@ Given(
 Then('debo ver el mensaje de error {string}', async ({ page }, msg) => {
   await page.waitForSelector(`text=${msg}`, { timeout: 5000 })
 })
+
+// The logout button lives inside the avatar dropdown (conditional render).
+// This step opens the dropdown first so the button is in the DOM before clicking.
+When('hago click en "Cerrar sesión"', async ({ page }) => {
+  await page.getByRole('button', { name: 'Menu de usuario' }).click()
+  await page.getByRole('button', { name: 'Cerrar sesión' }).waitFor({ state: 'visible', timeout: 5000 })
+  await page.getByRole('button', { name: 'Cerrar sesión' }).click()
+})

@@ -102,7 +102,7 @@ export function Navbar() {
                   onClick={handleLogout}
                   className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-destructive hover:bg-accent"
                 >
-                  <SignOut size={16} weight="duotone" /> Cerrar sesion
+                  <SignOut size={16} weight="duotone" /> Cerrar sesión
                 </button>
               </motion.div>
             )}
