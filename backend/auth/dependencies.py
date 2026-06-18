@@ -54,6 +54,11 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuario no encontrado.",
         )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Cuenta desactivada.",
+        )
     return user
 
 

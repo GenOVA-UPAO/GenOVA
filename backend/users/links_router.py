@@ -136,6 +136,11 @@ def accept_link(
         select(UserLink).where(
             UserLink.status == "pending",
             UserLink.expires_at > now,
+            # Scope to links the current user could legitimately redeem.
+            # This prevents brute-forcing all platform codes and eliminates
+            # the 403 info-leak (code valid but wrong email).
+            (UserLink.invite_email.is_(None))
+            | (UserLink.invite_email == current_user.email.lower()),
         )
     ).scalars().all()
     for link in pending:
@@ -143,8 +148,6 @@ def accept_link(
             continue
         if link.owner_user_id == current_user.id:
             raise HTTPException(status_code=400, detail="No puedes vincularte contigo mismo.")
-        if link.invite_email and link.invite_email.lower() != current_user.email.lower():
-            raise HTTPException(status_code=403, detail="Este codigo fue generado para otro correo.")
         link.linked_user_id = current_user.id
         link.status = "active"
         link.consumed_at = now

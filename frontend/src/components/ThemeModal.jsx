@@ -83,12 +83,14 @@ function MiniPreview({ colorMode, designMode, palette }) {
 export function ThemeModal({ initialTheme, onClose, onSaved }) {
   const [theme, setTheme] = useState(initialTheme || { colorMode: 'upao', designMode: 'upao', palette: null })
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const { colorMode, designMode, palette } = theme
   const set = (key, val) => setTheme((p) => ({ ...p, [key]: val }))
 
   const handleSave = async () => {
     setSaving(true)
+    setSaveError('')
     try {
       const res = await apiFetch('/api/users/me/theme', {
         method: 'PATCH',
@@ -98,10 +100,11 @@ export function ThemeModal({ initialTheme, onClose, onSaved }) {
         onSaved?.(theme)
         onClose()
       } else {
-        console.error('Failed to save theme')
+        const data = await res.json().catch(() => ({}))
+        setSaveError(data?.detail || data?.message || 'No se pudo guardar el tema.')
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
+      setSaveError('No se pudo conectar con el servidor.')
     } finally {
       setSaving(false)
     }
@@ -156,7 +159,10 @@ export function ThemeModal({ initialTheme, onClose, onSaved }) {
             </div>
           </div>
 
-          <div className="border-t border-border px-5 py-4">
+          <div className="border-t border-border px-5 py-4 space-y-2">
+            {saveError ? (
+              <p className="text-xs text-destructive text-center">{saveError}</p>
+            ) : null}
             <button type="button" onClick={handleSave} disabled={saving} className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 cursor-pointer transition-opacity disabled:opacity-50">
               {saving ? 'Guardando...' : 'Aplicar tema'}
             </button>

@@ -51,7 +51,7 @@ def forgot_password(
     db: Session = Depends(get_db)
 ):
     email = payload.email.strip().lower()
-    user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    user = db.execute(select(User).where(User.email == email, User.is_active)).scalar_one_or_none()
 
     response = {"message": "Si el correo electrónico está registrado en GenOVA, recibirás un enlace para restablecer tu contraseña."}
     if not user:

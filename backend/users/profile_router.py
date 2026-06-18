@@ -132,6 +132,7 @@ def update_theme(
         "palette": payload.palette,
     }
     _commit_or_500(db, "update_theme")
+    db.refresh(current_user)
     return {"message": "Tema actualizado", "theme_settings": current_user.theme_settings}
 
 class UserPasswordChange(BaseModel):
