@@ -6,6 +6,7 @@ filenames are tracked in the `_migrations_applied` table (bootstrapped by
 first successful run via the same table — we backfill them on first boot if
 they execute cleanly.
 """
+import contextlib
 import glob
 import logging
 import os
@@ -77,10 +78,8 @@ def run_migrations() -> None:
                     # Without this, a single failed statement leaves the transaction
                     # in "aborted" mode and every subsequent execute() raises
                     # InternalError, preventing later migrations from applying.
-                    try:
+                    with contextlib.suppress(Exception):
                         conn.rollback()
-                    except Exception:
-                        pass
                     err = str(exc).lower()
                     if "already exists" in err or "duplicate key" in err:
                         # First-time tracking pass on a legacy DB: schema already there.
