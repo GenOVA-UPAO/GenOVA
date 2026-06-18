@@ -31,6 +31,14 @@ Then('debo ver al menos los roles {string} y {string}', async ({ page }, r1, r2)
 })
 
 When('hago click en {string}', async ({ page }, btnText) => {
+  if (btnText === 'Cerrar sesión') {
+    // Logout button lives inside the avatar dropdown (conditional render).
+    // Must open the dropdown first so the button is in the DOM.
+    await page.getByRole('button', { name: 'Menu de usuario' }).click()
+    await page.getByRole('button', { name: 'Cerrar sesión' }).waitFor({ state: 'visible', timeout: 5000 })
+    await page.getByRole('button', { name: 'Cerrar sesión' }).click()
+    return
+  }
   await page.getByRole('button', { name: btnText }).click()
 })
 
