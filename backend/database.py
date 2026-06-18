@@ -1,10 +1,11 @@
 import logging
 
-from config import settings
 from dotenv import load_dotenv
 from fastapi import HTTPException, status
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
+
+from config import settings
 
 _logger = logging.getLogger(__name__)
 
