@@ -111,9 +111,10 @@ export function ThemeModal({ initialTheme, onClose, onSaved }) {
     <>
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop */}
       {/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop */}
-      <div 
-        className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm" 
-        onClick={onClose} 
+      {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: backdrop */}
+      <div
+        className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm"
+        onClick={onClose}
       />
       <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
