@@ -178,7 +178,7 @@ def _build_provider_catalog() -> dict[str, list[str]]:
     """Derive the legacy CATALOG {provider: [model_ids]} from CATALOG_ENTRIES."""
     cat: dict[str, list[str]] = {}
     for e in CATALOG_ENTRIES:
-        if e["active"]:
+        if e["active"] and e["model_id"] not in cat.get(e["provider"], []):
             cat.setdefault(e["provider"], []).append(e["model_id"])
     return cat
 

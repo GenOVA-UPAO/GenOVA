@@ -143,6 +143,8 @@ def accept_link(
             continue
         if link.owner_user_id == current_user.id:
             raise HTTPException(status_code=400, detail="No puedes vincularte contigo mismo.")
+        if link.invite_email and link.invite_email.lower() != current_user.email.lower():
+            raise HTTPException(status_code=403, detail="Este codigo fue generado para otro correo.")
         link.linked_user_id = current_user.id
         link.status = "active"
         link.consumed_at = now

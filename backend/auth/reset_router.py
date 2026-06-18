@@ -6,6 +6,7 @@ force is infeasible — we still rate-limit by IP to throttle scripted attempts.
 """
 import logging
 import os
+import secrets
 from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
@@ -58,8 +59,7 @@ def forgot_password(
 
     db.execute(PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user.id))
 
-    import uuid
-    token_str = str(uuid.uuid4())
+    token_str = secrets.token_urlsafe(32)
 
     token_record = PasswordResetToken(
         user_id=user.id,
@@ -74,7 +74,7 @@ def forgot_password(
     if os.getenv("SMTP_USER") and os.getenv("SMTP_PASSWORD"):
         background_tasks.add_task(send_reset_email, email, reset_link, user.full_name)
     else:
-        logger.info("SMTP not configured. Reset link for %s: %s", email, reset_link)
+        logger.warning("SMTP not configured — reset link could not be emailed to %s", email)
 
     return response
 

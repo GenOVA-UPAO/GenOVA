@@ -7,7 +7,10 @@ Priority chain for every provider:
   4. Env var (GROQ_API_KEY, OPENROUTER_API_KEY, …)
 """
 
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 PROVIDERS = ("groq", "openrouter", "opencode", "siliconflow", "runware", "falai")
 
@@ -46,6 +49,7 @@ def _inherited_key(provider: str, user_id, db) -> str | None:
         key = (owner.user_api_keys or {}).get(provider, "").strip()
         return key or None
     except Exception:
+        logger.warning("_inherited_key: DB error for user_id=%s provider=%s", user_id, provider, exc_info=True)
         return None
 
 
