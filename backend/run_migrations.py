@@ -73,6 +73,13 @@ def run_migrations() -> None:
         # Fresh connection per file so an OperationalError in one migration
         # (e.g. lock timeout, dropped connection) cannot poison later ones.
         with engine.connect() as conn:
+            # DDL statements (e.g. ALTER TABLE) must wait for an ACCESS
+            # EXCLUSIVE lock. If the server's statement_timeout is short and
+            # concurrent queries hold the table, the lock wait is canceled.
+            # Disable it for the duration of this migration connection.
+            with contextlib.suppress(Exception):
+                conn.execute(text("SET statement_timeout = '0'"))
+                conn.commit()
             for query in statements:
                 try:
                     conn.execute(text(query))
