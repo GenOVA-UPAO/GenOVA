@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import {
-  ArrowsClockwise, Flask, FolderOpen, Gear, House, LinkSimple, PlusSquare,
+  Flask, FolderOpen, Gear, House, LinkSimple, PlusSquare,
   ShieldCheck, Trash, UserCircle, Users,
 } from '@phosphor-icons/react'
 import { navigationLinks } from '../navigation/navLinks.js'
@@ -18,7 +18,6 @@ const ADMIN_LINKS = [
 ]
 const CONFIG_LINKS = [
   { to: '/modelos', label: 'Modelos', icon: Gear },
-  { to: '/fallback', label: 'Fallback', icon: ArrowsClockwise },
 ]
 
 function linkClasses({ isActive }) {
