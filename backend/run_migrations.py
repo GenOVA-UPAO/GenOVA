@@ -5,8 +5,12 @@ filenames are tracked in the `_migrations_applied` table (bootstrapped below).
 Each file runs in a single transaction so SET LOCAL changes survive pgbouncer's
 per-transaction server-session reassignment.
 
-On lock contention or timeout, the runner terminates competing backends, wipes
-the public schema, and retries once on a clean database (dropout-and-retry).
+Squash migrations (000_*) are skipped on existing databases — they are designed
+for fresh deployments only. If any incremental migration (001+) is already
+recorded, the squash is auto-marked applied without running.
+
+On lock contention or timeout, the failing migration is logged as a warning and
+startup continues. The migration retries on the next deployment.
 """
 import glob
 import logging
@@ -53,42 +57,25 @@ def _record_applied(name: str) -> None:
         )
 
 
-def _wipe_schema() -> None:
-    """Wipe and recreate the public schema for a clean retry."""
-    logger.warning("Migration dropout — wiping schema for clean retry.")
-    # Best-effort: terminate competing connections. Managed Postgres (Supabase)
-    # may deny this if both sides run as postgres superuser — that's fine, we
-    # proceed with the DROP regardless.
-    try:
-        with engine.begin() as conn:
-            conn.execute(text(
-                "SELECT pg_terminate_backend(pid) FROM pg_stat_activity"
-                " WHERE datname = current_database() AND pid <> pg_backend_pid()"
-            ))
-    except Exception as exc:
-        logger.warning("Could not terminate backends (%s) — proceeding with schema drop.", exc)
+def run_migrations() -> None:
+    migrations_dir = os.path.join(os.path.dirname(__file__), "migrations")
+    if not os.path.exists(migrations_dir):
+        logger.warning("Migrations directory not found: %s", migrations_dir)
+        return
 
-    with engine.begin() as conn:
-        conn.execute(text("SET LOCAL statement_timeout = '0'"))
-        conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
-        conn.execute(text("CREATE SCHEMA IF NOT EXISTS public"))
-        conn.execute(text("GRANT ALL ON SCHEMA public TO postgres"))
-        conn.execute(text("GRANT ALL ON SCHEMA public TO public"))
-    logger.info("Schema wiped. Retrying migrations on clean database.")
+    sql_files = sorted(glob.glob(os.path.join(migrations_dir, "*.sql")))
+    if not sql_files:
+        return
 
-
-def _apply_files(sql_files: list[str]) -> str | None:
-    """Apply pending migrations. Returns the failing filename, or None on success."""
     with engine.begin() as conn:
         conn.execute(text(_TRACKING_TABLE_DDL))
 
     with engine.connect() as conn:
         applied = _applied_set(conn)
 
-    # Squash migrations (000_*) are designed for fresh databases only.
-    # If any incremental migration is already applied the schema is already
-    # present — auto-mark squash files without running them to avoid
-    # competing for locks on live tables during blue-green deploys.
+    # Squash migrations (000_*) are for fresh databases only. If any incremental
+    # migration is already recorded the schema already exists — auto-mark the
+    # squash without running it to avoid DDL lock fights on live tables.
     has_incremental = any(not f.startswith("000_") for f in applied)
 
     skipped = 0
@@ -128,38 +115,16 @@ def _apply_files(sql_files: list[str]) -> str | None:
                 except Exception:
                     logger.exception("Failed to record migration %s after schema-exists", name)
             else:
-                logger.warning("Migration %s failed (%s): %s", name, type(exc).__name__, exc)
-                return name
+                logger.warning(
+                    "Migration %s failed (%s): %s — will retry on next startup.",
+                    name, type(exc).__name__, exc,
+                )
 
     logger.info(
         "Migrations done: %d applied, %d already-applied skipped.",
         applied_now,
         skipped,
     )
-    return None
-
-
-def run_migrations() -> None:
-    migrations_dir = os.path.join(os.path.dirname(__file__), "migrations")
-    if not os.path.exists(migrations_dir):
-        logger.warning("Migrations directory not found: %s", migrations_dir)
-        return
-
-    sql_files = sorted(glob.glob(os.path.join(migrations_dir, "*.sql")))
-    if not sql_files:
-        return
-
-    failed = _apply_files(sql_files)
-    if failed:
-        logger.warning("Migration dropout triggered by '%s' — wiping schema and retrying.", failed)
-        _wipe_schema()
-        retry_failed = _apply_files(sql_files)
-        if retry_failed:
-            logger.error(
-                "Migration '%s' failed even after schema wipe. "
-                "Startup continues but database may be incomplete.",
-                retry_failed,
-            )
 
 
 if __name__ == "__main__":
