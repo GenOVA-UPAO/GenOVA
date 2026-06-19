@@ -74,7 +74,6 @@ def run_migrations() -> None:
                 # lock (ALTER TABLE, CREATE INDEX) is never canceled by the
                 # server's short default timeout.
                 conn.execute(text("SET LOCAL statement_timeout = '0'"))
-                conn.execute(text("SET LOCAL lock_timeout = '10s'"))
                 for query in statements:
                     conn.execute(text(query))
 
