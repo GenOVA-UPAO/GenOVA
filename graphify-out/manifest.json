@@ -735,8 +735,8 @@
     "semantic_hash": ""
   },
   "backend/run_migrations.py": {
-    "mtime": 1781848475.6510658,
-    "ast_hash": "cc7a726d185b39a7131f6d95c3dce1f9",
+    "mtime": 1781884969.624223,
+    "ast_hash": "c9f84ffb7a7db6317653959786068c16",
     "semantic_hash": ""
   },
   "backend/scorm/__init__.py": {
@@ -3750,8 +3750,8 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/ModelsPage.jsx": {
-    "mtime": 1781846648.6534228,
-    "ast_hash": "eb3d22ed45effa577e3959fef2c1caba",
+    "mtime": 1781886006.1765752,
+    "ast_hash": "fe88898aedb6133d5f5986f41d9e94ca",
     "semantic_hash": ""
   },
   "frontend/src/pages/ResetPasswordPage.jsx": {
@@ -3910,8 +3910,153 @@
     "semantic_hash": ""
   },
   "backend/migrations/000_schema_complete.sql": {
-    "mtime": 1781847931.3449204,
-    "ast_hash": "a596cf74e3b24aba91c7df3ead65dd9e",
+    "mtime": 1781882016.1347835,
+    "ast_hash": "b593379e1b071305943e3ec8012e56ae",
+    "semantic_hash": ""
+  },
+  "backend/migrations/027_add_theme_settings.sql": {
+    "mtime": 1781882812.3888743,
+    "ast_hash": "6e51904a86c5b58e095c66671b0f1058",
+    "semantic_hash": ""
+  },
+  "backend/migrations/001_init.sql": {
+    "mtime": 1781884950.790839,
+    "ast_hash": "146c2bf2ba344bcda60b248d75e49026",
+    "semantic_hash": ""
+  },
+  "backend/migrations/002_add_password_hash.sql": {
+    "mtime": 1781884950.7918384,
+    "ast_hash": "6ceaf0e64531c2735d29e9daaf8d41fb",
+    "semantic_hash": ""
+  },
+  "backend/migrations/003_auth_lockout.sql": {
+    "mtime": 1781884950.7918384,
+    "ast_hash": "51b12429f56b831c731be72c09738697",
+    "semantic_hash": ""
+  },
+  "backend/migrations/004_roles_permissions.sql": {
+    "mtime": 1781884950.7928398,
+    "ast_hash": "ad282524b03d0ef36c4c186c5edae692",
+    "semantic_hash": ""
+  },
+  "backend/migrations/005_ova_versions_phases.sql": {
+    "mtime": 1781884950.7938378,
+    "ast_hash": "86c7090953296d4632b0090152a83ea6",
+    "semantic_hash": ""
+  },
+  "backend/migrations/006_ova_deleted_at.sql": {
+    "mtime": 1781884950.7938378,
+    "ast_hash": "28e14b1cc385242f6089c6e79129a57b",
+    "semantic_hash": ""
+  },
+  "backend/migrations/007_ovas_missing_columns.sql": {
+    "mtime": 1781884950.7948382,
+    "ast_hash": "e628c28423df7da236dc8824c2956f88",
+    "semantic_hash": ""
+  },
+  "backend/migrations/008_labs.sql": {
+    "mtime": 1781884950.7948382,
+    "ast_hash": "cec427484101742eff98c79faddbd0a9",
+    "semantic_hash": ""
+  },
+  "backend/migrations/009_drop_prompt_versions.sql": {
+    "mtime": 1781884950.795838,
+    "ast_hash": "9a382d89d35117a0ebbf207df42ff7ed",
+    "semantic_hash": ""
+  },
+  "backend/migrations/010_pgvector.sql": {
+    "mtime": 1781884950.795838,
+    "ast_hash": "aea232b2c6c270a13d5053b5049bb409",
+    "semantic_hash": ""
+  },
+  "backend/migrations/011_rag_chunks.sql": {
+    "mtime": 1781884950.7968388,
+    "ast_hash": "fcd03a11931eea4be944b8b694c889fc",
+    "semantic_hash": ""
+  },
+  "backend/migrations/012_ova_storage_key.sql": {
+    "mtime": 1781884950.7968388,
+    "ast_hash": "e15695522efeee6e74c9431e95b1770f",
+    "semantic_hash": ""
+  },
+  "backend/migrations/013_user_extended_profile_fields.sql": {
+    "mtime": 1781884957.160834,
+    "ast_hash": "fc0249fb69963704e0c88444614efe8b",
+    "semantic_hash": ""
+  },
+  "backend/migrations/014_ova_phase_resource_metadata.sql": {
+    "mtime": 1781884950.7978377,
+    "ast_hash": "e03394c2b220874169363a597d342fcc",
+    "semantic_hash": ""
+  },
+  "backend/migrations/015_ovas_created_at_index.sql": {
+    "mtime": 1781884950.7978377,
+    "ast_hash": "b3f567ce3a50ab8692f2a4ab2fc47194",
+    "semantic_hash": ""
+  },
+  "backend/migrations/016_migrations_applied.sql": {
+    "mtime": 1781884950.7988384,
+    "ast_hash": "90948c228c5f4d0b9cee64c578771d63",
+    "semantic_hash": ""
+  },
+  "backend/migrations/017_soft_delete_indexes.sql": {
+    "mtime": 1781884950.7988384,
+    "ast_hash": "05e161caaa4d7f4d0cfe9eab7f4f5ceb",
+    "semantic_hash": ""
+  },
+  "backend/migrations/018_enable_rls.sql": {
+    "mtime": 1781884950.7988384,
+    "ast_hash": "08aab45c1442e8ce387c240373f4e1ee",
+    "semantic_hash": ""
+  },
+  "backend/migrations/018_ova_error_logs.sql": {
+    "mtime": 1781884950.7998383,
+    "ast_hash": "5302c2880b5628f5c06a4f2eb3db34f3",
+    "semantic_hash": ""
+  },
+  "backend/migrations/019_ova_generation_jobs.sql": {
+    "mtime": 1781884950.7998383,
+    "ast_hash": "b463f87472787fc27aa9ddf9f1b3fb01",
+    "semantic_hash": ""
+  },
+  "backend/migrations/020_ova_phase_versions.sql": {
+    "mtime": 1781884950.8008385,
+    "ast_hash": "d84ba7489b239d1f0b501eeefd212b3c",
+    "semantic_hash": ""
+  },
+  "backend/migrations/021_user_llm_settings.sql": {
+    "mtime": 1781884950.8008385,
+    "ast_hash": "d87acc4919b1fec8c365e971318e5712",
+    "semantic_hash": ""
+  },
+  "backend/migrations/022_catalog_cache.sql": {
+    "mtime": 1781884950.8018408,
+    "ast_hash": "6d8b623d6b3755323eb6cacfb6c0b749",
+    "semantic_hash": ""
+  },
+  "backend/migrations/023_user_enabled_models.sql": {
+    "mtime": 1781884950.8018408,
+    "ast_hash": "db71386360223d2a8899546b71dee94d",
+    "semantic_hash": ""
+  },
+  "backend/migrations/024_ova_user_api_keys.sql": {
+    "mtime": 1781884950.8028395,
+    "ast_hash": "679ea8592fa6a26112e1a536b17f91d2",
+    "semantic_hash": ""
+  },
+  "backend/migrations/025_reset_orphan_generating_ovas.sql": {
+    "mtime": 1781884957.161786,
+    "ast_hash": "1090fed1a2d9bae4d2332ae25f29c646",
+    "semantic_hash": ""
+  },
+  "backend/migrations/026_user_links.sql": {
+    "mtime": 1781884950.8028395,
+    "ast_hash": "8d9ebb883612bebc741e136346f194be",
+    "semantic_hash": ""
+  },
+  "backend/migrations/028_rls_policies.sql": {
+    "mtime": 1781885143.1364524,
+    "ast_hash": "4566efadbc9aec6abe7c90159edba299",
     "semantic_hash": ""
   }
 }
