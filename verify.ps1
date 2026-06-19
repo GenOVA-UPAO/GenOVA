@@ -133,6 +133,14 @@ if (Test-Path "graphify-out/graph.json") {
     if ($needsUpdate -match "needs_update|pending") {
         Write-Host "  INFO: docs/specs cambiaron - corre 'scripts/graphify-rebuild.ps1' para actualizar semantica" -ForegroundColor Yellow
     }
+    # Auto-commit graphify-out/ si hay cambios
+    $graphifyDirty = git status --porcelain graphify-out/ 2>$null
+    if ($graphifyDirty) {
+        git add graphify-out/ 2>$null
+        $date = Get-Date -Format "yyyy-MM-dd"
+        git commit -m "chore(graphify): sync knowledge graph $date [skip ci]" --no-gpg-sign 2>&1 | Out-Null
+        Write-Host "  [graphify] Auto-committed graphify-out/ changes." -ForegroundColor Green
+    }
 }
 
 # Resumen
