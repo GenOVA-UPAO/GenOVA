@@ -2090,8 +2090,8 @@
     "semantic_hash": "9f65e7785f8f0c735e77084c5af0dc69"
   },
   "verify.ps1": {
-    "mtime": 1781730901.7264583,
-    "ast_hash": "81a55f9ecea605c8c6744a6dde05e3a7",
+    "mtime": 1781886925.6929102,
+    "ast_hash": "3235c7c48f90ab5bcb10a2e182dd1f88",
     "semantic_hash": ""
   },
   ".agents/skills/vercel-react-best-practices/metadata.json": {
