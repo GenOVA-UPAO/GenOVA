@@ -1,15 +1,11 @@
-"""Ova, OvaVersion, OvaPhase, OvaPhaseVersion ORM models.
-
-Extracted from models.py (C3 200-line cap). Re-exported by models.py so
-``import models`` registers all tables in Base.metadata.
-"""
+"""Ova, OvaVersion, OvaPhase, OvaPhaseVersion ORM models."""
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Text, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from database import Base
-from models import _pk_column  # defined before this module is imported → safe circular import
+from models_base import _pk_column
 
 
 class Ova(Base):

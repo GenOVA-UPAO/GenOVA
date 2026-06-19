@@ -77,14 +77,6 @@
           }
         }
       }
-    },
-    {
-      "includes": ["**/AdminUsersPage.jsx", "**/useUsersAdmin.js"],
-      "linter": { "rules": { "style": { "noExcessiveLinesPerFile": "off" } } }
-    },
-    {
-      "includes": ["**/wireframes/**/*.jsx"],
-      "linter": { "rules": { "style": { "noExcessiveLinesPerFile": "off" } } }
     }
   ],
   "assist": {

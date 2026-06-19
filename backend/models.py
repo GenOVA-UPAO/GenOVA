@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
@@ -8,17 +6,8 @@ from sqlalchemy.sql import func
 from database import Base
 from generation.error_log_model import OvaErrorLog  # noqa: F401  — registers ova_error_logs table
 from generation.jobs_model import OvaJob, OvaJobResource  # noqa: F401  — registers ova_jobs tables
+from models_base import _pk_column
 from models_ova import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
-
-
-def _pk_column() -> Column:
-    """UUID primary key shared by every table."""
-    return Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
 
 
 class User(Base):
