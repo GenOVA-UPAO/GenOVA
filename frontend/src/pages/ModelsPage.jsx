@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { Key, SlidersHorizontal, GearSix } from '@phosphor-icons/react'
+import { Key, SlidersHorizontal, Gear } from '@phosphor-icons/react'
 import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { LlmSettingsCard } from '../components/settings/LlmSettingsCard.jsx'
@@ -28,7 +28,7 @@ export function ModelsPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         {[
-          ['Catálogo vivo', 'Explora modelos con estado y búsqueda.', GearSix],
+          ['Catálogo vivo', 'Explora modelos con estado y búsqueda.', Gear],
           ['Asignación por tarea', 'Cada agente usa un modelo específico.', SlidersHorizontal],
           ['Control personal', 'Usa tus propias API keys para más opciones.', Key],
         ].map(([title, text, Icon]) => (
