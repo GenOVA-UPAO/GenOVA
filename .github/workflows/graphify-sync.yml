@@ -1,0 +1,36 @@
+name: Graphify Sync
+
+on:
+  push:
+    branches: [develop, main]
+    paths-ignore:
+      - 'graphify-out/**'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Update knowledge graph
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+
+      - name: Install graphify
+        run: uv tool install graphifyy
+
+      - name: Update graph (AST only, no API cost)
+        run: graphify update .
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(graphify): sync knowledge graph [skip ci]"
+          file_pattern: "graphify-out/**"
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
