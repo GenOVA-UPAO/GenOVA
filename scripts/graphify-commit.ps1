@@ -1,8 +1,8 @@
 # graphify-commit.ps1
-# Stages all graphify-out/ changes and commits with a standard message.
+# Runs graphify update (AST only, no API cost), then stages and commits graphify-out/.
 #
 # Usage:
-#   scripts/graphify-commit.ps1              # commit current graphify-out state
+#   scripts/graphify-commit.ps1              # update + commit current graphify-out state
 #   scripts/graphify-commit.ps1 -Message "custom note"
 
 param(
@@ -11,6 +11,14 @@ param(
 
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
+
+if (-not (Test-Path "graphify-out/graph.json")) {
+    Write-Host "graphify-commit: no graph found. Run 'graphify update .' first to initialize." -ForegroundColor Yellow
+    exit 0
+}
+
+Write-Host "graphify-commit: updating graph..." -ForegroundColor Cyan
+graphify update . 2>&1 | ForEach-Object { Write-Host "  $_" }
 
 $changed = git status --porcelain graphify-out/
 if (-not $changed) {
