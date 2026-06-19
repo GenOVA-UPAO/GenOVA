@@ -735,8 +735,8 @@
     "semantic_hash": ""
   },
   "backend/run_migrations.py": {
-    "mtime": 1781846959.4248438,
-    "ast_hash": "b31f4b91e60734ab8f0049d22de42528",
+    "mtime": 1781848475.6510658,
+    "ast_hash": "cc7a726d185b39a7131f6d95c3dce1f9",
     "semantic_hash": ""
   },
   "backend/scorm/__init__.py": {
@@ -2098,136 +2098,6 @@
     "mtime": 1781131862.5524297,
     "ast_hash": "3ab18e9c45a0081e54ffe9f4200aa4aa",
     "semantic_hash": "3ab18e9c45a0081e54ffe9f4200aa4aa"
-  },
-  "backend/migrations/001_init.sql": {
-    "mtime": 1779750220.954667,
-    "ast_hash": "146c2bf2ba344bcda60b248d75e49026",
-    "semantic_hash": "146c2bf2ba344bcda60b248d75e49026"
-  },
-  "backend/migrations/002_add_password_hash.sql": {
-    "mtime": 1779750220.954667,
-    "ast_hash": "6ceaf0e64531c2735d29e9daaf8d41fb",
-    "semantic_hash": "6ceaf0e64531c2735d29e9daaf8d41fb"
-  },
-  "backend/migrations/003_auth_lockout.sql": {
-    "mtime": 1779750220.9556673,
-    "ast_hash": "51b12429f56b831c731be72c09738697",
-    "semantic_hash": "51b12429f56b831c731be72c09738697"
-  },
-  "backend/migrations/004_roles_permissions.sql": {
-    "mtime": 1779750220.9556673,
-    "ast_hash": "ad282524b03d0ef36c4c186c5edae692",
-    "semantic_hash": "ad282524b03d0ef36c4c186c5edae692"
-  },
-  "backend/migrations/005_ova_versions_phases.sql": {
-    "mtime": 1779570688.516475,
-    "ast_hash": "86c7090953296d4632b0090152a83ea6",
-    "semantic_hash": "86c7090953296d4632b0090152a83ea6"
-  },
-  "backend/migrations/006_ova_deleted_at.sql": {
-    "mtime": 1779570688.5174758,
-    "ast_hash": "28e14b1cc385242f6089c6e79129a57b",
-    "semantic_hash": "28e14b1cc385242f6089c6e79129a57b"
-  },
-  "backend/migrations/007_ovas_missing_columns.sql": {
-    "mtime": 1779570688.5184734,
-    "ast_hash": "e628c28423df7da236dc8824c2956f88",
-    "semantic_hash": "e628c28423df7da236dc8824c2956f88"
-  },
-  "backend/migrations/008_labs.sql": {
-    "mtime": 1779750220.9566698,
-    "ast_hash": "cec427484101742eff98c79faddbd0a9",
-    "semantic_hash": "cec427484101742eff98c79faddbd0a9"
-  },
-  "backend/migrations/009_drop_prompt_versions.sql": {
-    "mtime": 1779750220.9566698,
-    "ast_hash": "9a382d89d35117a0ebbf207df42ff7ed",
-    "semantic_hash": "9a382d89d35117a0ebbf207df42ff7ed"
-  },
-  "backend/migrations/010_pgvector.sql": {
-    "mtime": 1779750220.962673,
-    "ast_hash": "aea232b2c6c270a13d5053b5049bb409",
-    "semantic_hash": "aea232b2c6c270a13d5053b5049bb409"
-  },
-  "backend/migrations/011_rag_chunks.sql": {
-    "mtime": 1779750220.9686725,
-    "ast_hash": "fcd03a11931eea4be944b8b694c889fc",
-    "semantic_hash": "fcd03a11931eea4be944b8b694c889fc"
-  },
-  "backend/migrations/012_ova_storage_key.sql": {
-    "mtime": 1779750220.974177,
-    "ast_hash": "e15695522efeee6e74c9431e95b1770f",
-    "semantic_hash": "e15695522efeee6e74c9431e95b1770f"
-  },
-  "backend/migrations/013_user_extended_profile_fields.sql": {
-    "mtime": 1779750220.9801831,
-    "ast_hash": "fc0249fb69963704e0c88444614efe8b",
-    "semantic_hash": "fc0249fb69963704e0c88444614efe8b"
-  },
-  "backend/migrations/014_ova_phase_resource_metadata.sql": {
-    "mtime": 1779757611.1175883,
-    "ast_hash": "c140806e316465362eae4561d9463dd9",
-    "semantic_hash": "c140806e316465362eae4561d9463dd9"
-  },
-  "backend/migrations/015_ovas_created_at_index.sql": {
-    "mtime": 1779851317.2486882,
-    "ast_hash": "8664bb3370ac5ad33193384e20fa0523",
-    "semantic_hash": "8664bb3370ac5ad33193384e20fa0523"
-  },
-  "backend/migrations/016_migrations_applied.sql": {
-    "mtime": 1779979846.2284806,
-    "ast_hash": "d0f0a1ad1a698fd857d8b7741274efb8",
-    "semantic_hash": "d0f0a1ad1a698fd857d8b7741274efb8"
-  },
-  "backend/migrations/017_soft_delete_indexes.sql": {
-    "mtime": 1779980174.4156892,
-    "ast_hash": "d5f814c851b5a8764be057d82f9191f5",
-    "semantic_hash": "d5f814c851b5a8764be057d82f9191f5"
-  },
-  "backend/migrations/018_enable_rls.sql": {
-    "mtime": 1781562695.5529857,
-    "ast_hash": "08aab45c1442e8ce387c240373f4e1ee",
-    "semantic_hash": "08aab45c1442e8ce387c240373f4e1ee"
-  },
-  "backend/migrations/018_ova_error_logs.sql": {
-    "mtime": 1780677760.386815,
-    "ast_hash": "5302c2880b5628f5c06a4f2eb3db34f3",
-    "semantic_hash": "5302c2880b5628f5c06a4f2eb3db34f3"
-  },
-  "backend/migrations/019_ova_generation_jobs.sql": {
-    "mtime": 1780677760.386815,
-    "ast_hash": "b463f87472787fc27aa9ddf9f1b3fb01",
-    "semantic_hash": "b463f87472787fc27aa9ddf9f1b3fb01"
-  },
-  "backend/migrations/020_ova_phase_versions.sql": {
-    "mtime": 1781131862.883167,
-    "ast_hash": "d84ba7489b239d1f0b501eeefd212b3c",
-    "semantic_hash": "d84ba7489b239d1f0b501eeefd212b3c"
-  },
-  "backend/migrations/021_user_llm_settings.sql": {
-    "mtime": 1781131862.8842165,
-    "ast_hash": "d87acc4919b1fec8c365e971318e5712",
-    "semantic_hash": "d87acc4919b1fec8c365e971318e5712"
-  },
-  "backend/migrations/022_catalog_cache.sql": {
-    "mtime": 1781131862.8842165,
-    "ast_hash": "6d8b623d6b3755323eb6cacfb6c0b749",
-    "semantic_hash": "6d8b623d6b3755323eb6cacfb6c0b749"
-  },
-  "backend/migrations/023_user_enabled_models.sql": {
-    "mtime": 1781131862.8852167,
-    "ast_hash": "db71386360223d2a8899546b71dee94d",
-    "semantic_hash": "db71386360223d2a8899546b71dee94d"
-  },
-  "backend/migrations/024_ova_user_api_keys.sql": {
-    "mtime": 1781277450.7671175,
-    "ast_hash": "90bcef03d529b76eee7ae57df14448ab",
-    "semantic_hash": "90bcef03d529b76eee7ae57df14448ab"
-  },
-  "backend/migrations/025_reset_orphan_generating_ovas.sql": {
-    "mtime": 1781562695.368478,
-    "ast_hash": "1090fed1a2d9bae4d2332ae25f29c646",
-    "semantic_hash": "1090fed1a2d9bae4d2332ae25f29c646"
   },
   "backend/scripts/__init__.py": {
     "mtime": 1781368330.0796003,
@@ -3854,16 +3724,6 @@
     "ast_hash": "6d5180a782d64c8cf51ba01c2a2184d8",
     "semantic_hash": ""
   },
-  "backend/migrations/026_user_links.sql": {
-    "mtime": 1781846648.6268194,
-    "ast_hash": "8d9ebb883612bebc741e136346f194be",
-    "semantic_hash": ""
-  },
-  "backend/migrations/027_user_theme_settings.sql": {
-    "mtime": 1781846648.6268194,
-    "ast_hash": "4ba637fe0fd4b46dc5007bb6c966cb76",
-    "semantic_hash": ""
-  },
   "backend/users/links_router.py": {
     "mtime": 1781846648.6313243,
     "ast_hash": "aef9dcfa0e5bdf9c570565cbcfae6cd2",
@@ -4047,6 +3907,11 @@
   "sdd/tasks/TA-001_configuracion-repos-ramas.md": {
     "mtime": 1781846648.6716697,
     "ast_hash": "4d99143127407134209058a6234de17a",
+    "semantic_hash": ""
+  },
+  "backend/migrations/000_schema_complete.sql": {
+    "mtime": 1781847931.3449204,
+    "ast_hash": "a596cf74e3b24aba91c7df3ead65dd9e",
     "semantic_hash": ""
   }
 }
