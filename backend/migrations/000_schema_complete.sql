@@ -301,24 +301,29 @@ CREATE INDEX IF NOT EXISTS idx_ova_job_resources_order       ON ova_job_resource
 
 -- ---------------------------------------------------------------------------
 -- RLS (service role bypasses — no functional impact; blocks anon/authenticated)
+-- Conditional: only ALTER TABLE when RLS is not yet enabled so we avoid
+-- acquiring ACCESS EXCLUSIVE locks on tables that already have RLS on
+-- (which would block during blue-green deploys with live connections).
 -- ---------------------------------------------------------------------------
-ALTER TABLE users                ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ovas                 ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sessions             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE roles                ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_roles           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_links           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ova_versions         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ova_phases           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ova_phase_versions   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE lab_results          ENABLE ROW LEVEL SECURITY;
-ALTER TABLE rag_chunks           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE password_reset_tokens ENABLE ROW LEVEL SECURITY;
-ALTER TABLE platform_config      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE catalog_cache        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ova_error_logs       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ova_jobs             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ova_job_resources    ENABLE ROW LEVEL SECURITY;
+DO $$
+DECLARE
+    tbl text;
+BEGIN
+    FOREACH tbl IN ARRAY ARRAY[
+        'users', 'ovas', 'sessions', 'roles', 'user_roles', 'user_links',
+        'ova_versions', 'ova_phases', 'ova_phase_versions', 'lab_results',
+        'rag_chunks', 'password_reset_tokens', 'platform_config', 'catalog_cache',
+        'ova_error_logs', 'ova_jobs', 'ova_job_resources'
+    ]
+    LOOP
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_class WHERE relname = tbl AND relrowsecurity = true
+        ) THEN
+            EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', tbl);
+        END IF;
+    END LOOP;
+END;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- Data fix: orphan OVAs stuck in 'generando' with no associated job

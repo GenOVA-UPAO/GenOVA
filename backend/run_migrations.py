@@ -5,9 +5,9 @@ filenames are tracked in the `_migrations_applied` table (bootstrapped below).
 Each file runs in a single transaction so SET LOCAL changes (e.g. disabling
 statement_timeout) survive pgbouncer's per-transaction session reassignment.
 """
+import glob
 import logging
 import os
-import glob
 
 from sqlalchemy import text
 
@@ -74,6 +74,7 @@ def run_migrations() -> None:
                 # lock (ALTER TABLE, CREATE INDEX) is never canceled by the
                 # server's short default timeout.
                 conn.execute(text("SET LOCAL statement_timeout = '0'"))
+                conn.execute(text("SET LOCAL lock_timeout = '10s'"))
                 for query in statements:
                     conn.execute(text(query))
 
