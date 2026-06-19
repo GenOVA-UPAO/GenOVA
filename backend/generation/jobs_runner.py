@@ -15,6 +15,7 @@ from sqlalchemy import select
 from config import settings
 from database import SessionLocal
 from generation.jobs_progress import (
+    MAX_ATTEMPTS,  # noqa: F401 — re-exported for test/monkeypatch access
     _finish_job,
     _has_done_resource,
     _persist_results,
