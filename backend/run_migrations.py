@@ -55,10 +55,29 @@ def run_migrations() -> None:
     skipped = 0
     applied_now = 0
 
+    # If any incremental migration (non-squash) is already applied, the DB
+    # was built from the incremental files — squash migrations (000_*) are
+    # designed for fresh databases only and would just re-run no-ops while
+    # competing for locks against live traffic. Mark them as applied instantly.
+    has_incremental = any(not f.startswith("000_") for f in applied)
+
     for sql_file in sql_files:
         name = os.path.basename(sql_file)
         if name in applied:
             skipped += 1
+            continue
+
+        if name.startswith("000_") and has_incremental:
+            with engine.begin() as conn:
+                conn.execute(
+                    text(
+                        "INSERT INTO _migrations_applied (filename) VALUES (:f)"
+                        " ON CONFLICT (filename) DO NOTHING"
+                    ),
+                    {"f": name},
+                )
+            applied_now += 1
+            logger.info("Squash migration %s auto-marked applied (incremental schema already present)", name)
             continue
 
         with open(sql_file, encoding="utf-8") as f:
