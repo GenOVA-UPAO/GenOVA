@@ -168,7 +168,6 @@
 - [[_COMMUNITY_Button UI Components|Button UI Components]]
 - [[_COMMUNITY_State Badge Components|State Badge Components]]
 - [[_COMMUNITY_Generation Domain Logic|Generation Domain Logic]]
-- [[_COMMUNITY_Database Connection|Database Connection]]
 - [[_COMMUNITY_Rate Limiting Middleware|Rate Limiting Middleware]]
 - [[_COMMUNITY_CI and Requirements|CI and Requirements]]
 - [[_COMMUNITY_Auth BDD Steps|Auth BDD Steps]]
@@ -219,7 +218,6 @@
 - [[_COMMUNITY_Community 238|Community 238]]
 - [[_COMMUNITY_Community 239|Community 239]]
 - [[_COMMUNITY_Community 240|Community 240]]
-- [[_COMMUNITY_Community 241|Community 241]]
 - [[_COMMUNITY_Community 242|Community 242]]
 - [[_COMMUNITY_Community 243|Community 243]]
 - [[_COMMUNITY_Community 244|Community 244]]
@@ -306,7 +304,6 @@
 - [[_COMMUNITY_Community 325|Community 325]]
 - [[_COMMUNITY_Community 326|Community 326]]
 - [[_COMMUNITY_Community 327|Community 327]]
-- [[_COMMUNITY_Community 328|Community 328]]
 - [[_COMMUNITY_Community 329|Community 329]]
 - [[_COMMUNITY_Community 330|Community 330]]
 - [[_COMMUNITY_Community 331|Community 331]]
@@ -317,18 +314,12 @@
 - [[_COMMUNITY_Community 336|Community 336]]
 - [[_COMMUNITY_Community 337|Community 337]]
 - [[_COMMUNITY_Community 338|Community 338]]
-- [[_COMMUNITY_Community 339|Community 339]]
-- [[_COMMUNITY_Community 340|Community 340]]
 - [[_COMMUNITY_Community 341|Community 341]]
 - [[_COMMUNITY_Community 342|Community 342]]
 - [[_COMMUNITY_Community 343|Community 343]]
 - [[_COMMUNITY_Community 344|Community 344]]
-- [[_COMMUNITY_Community 345|Community 345]]
 - [[_COMMUNITY_Community 346|Community 346]]
 - [[_COMMUNITY_Community 347|Community 347]]
-- [[_COMMUNITY_Community 348|Community 348]]
-- [[_COMMUNITY_Community 349|Community 349]]
-- [[_COMMUNITY_Community 350|Community 350]]
 - [[_COMMUNITY_Community 351|Community 351]]
 - [[_COMMUNITY_Community 352|Community 352]]
 - [[_COMMUNITY_Community 353|Community 353]]
@@ -475,7 +466,6 @@
 - [[_COMMUNITY_Community 496|Community 496]]
 - [[_COMMUNITY_Community 497|Community 497]]
 - [[_COMMUNITY_Community 498|Community 498]]
-- [[_COMMUNITY_Community 499|Community 499]]
 - [[_COMMUNITY_Community 500|Community 500]]
 - [[_COMMUNITY_Community 501|Community 501]]
 - [[_COMMUNITY_Community 502|Community 502]]
@@ -500,10 +490,8 @@
 - [[_COMMUNITY_Community 521|Community 521]]
 - [[_COMMUNITY_Community 522|Community 522]]
 - [[_COMMUNITY_Community 523|Community 523]]
-- [[_COMMUNITY_Community 524|Community 524]]
 - [[_COMMUNITY_Community 525|Community 525]]
 - [[_COMMUNITY_Community 526|Community 526]]
-- [[_COMMUNITY_Community 527|Community 527]]
 - [[_COMMUNITY_Community 528|Community 528]]
 - [[_COMMUNITY_Community 530|Community 530]]
 - [[_COMMUNITY_Community 531|Community 531]]
@@ -608,7 +596,7 @@ Cohesion: 0.07
 Nodes (41): Request, Session, User, Request, Session, User, Request, Session (+33 more)
 
 ### Community 13 - "Temporary Upload Management"
-Cohesion: 0.15
+Cohesion: 0.16
 Nodes (28): Path, Session, User, claim_user_uploads(), count_user_uploads(), create_temp_upload(), delete_user_upload(), get_upload_storage_path() (+20 more)
 
 ### Community 14 - "LLM Config Mock Tests"
@@ -776,8 +764,8 @@ Cohesion: 0.07
 Nodes (28): Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 2: prompt_html (+20 more)
 
 ### Community 55 - "LLM Catalog Refresh"
-Cohesion: 0.24
-Nodes (7): useAdminNodesConfig(), criticRoundsVisible(), hasUnsavedChanges(), isVideoResource(), NODE_FLAG_DEFAULTS, VIDEO_RESOURCE_TYPES, PlatformNodesCard()
+Cohesion: 0.40
+Nodes (3): commit_or_500(), Session, Commit the current session or roll back and raise HTTP 500.
 
 ### Community 56 - "Model Catalog Validation"
 Cohesion: 0.10
@@ -824,8 +812,8 @@ Cohesion: 0.14
 Nodes (13): Common Skill Categories, Find Skills, How to Help Users Find Skills, Step 1: Understand What They Need, Step 2: Check the Leaderboard First, Step 3: Search for Skills, Step 4: Verify Quality Before Recommending, Step 5: Present Options to the User (+5 more)
 
 ### Community 67 - "Lab Prompt Editor"
-Cohesion: 0.12
-Nodes (13): ModelSelector(), ENGAGE_RESOURCES, EXPLORE_RESOURCES, INTERACTIVIDAD_COLOR, PhaseResourceSelector(), PromptEditor(), ResultCard(), ResultsPanel() (+5 more)
+Cohesion: 0.09
+Nodes (21): ModelSelector(), ENGAGE_RESOURCES, EXPLORE_RESOURCES, INTERACTIVIDAD_COLOR, PhaseResourceSelector(), PromptEditor(), ResultCard(), ResultsPanel() (+13 more)
 
 ### Community 68 - "E2E Testing Dependencies"
 Cohesion: 0.14
@@ -1566,10 +1554,6 @@ Nodes (3): Hard rules, SDD Leader — GenOVA Orchestrator, Task classification
 ### Community 327 - "Community 327"
 Cohesion: 0.50
 Nodes (3): File-System Paths, Import Paths, Prefer Statically Analyzable Paths
-
-### Community 328 - "Community 328"
-Cohesion: 0.35
-Nodes (8): useLabPrompt(), downloadScorm(), fetchModels(), fetchPrompts(), improvePrompt(), markSelected(), pollResults(), startGeneration()
 
 ### Community 329 - "Community 329"
 Cohesion: 0.50

@@ -236,7 +236,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "api_ova",
-      "community": 84,
+      "community": 238,
       "norm_label": "ova.py"
     },
     {
@@ -256,7 +256,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "api_rag",
-      "community": 84,
+      "community": 17,
       "norm_label": "rag.py"
     },
     {
@@ -276,7 +276,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "api_scorm",
-      "community": 84,
+      "community": 102,
       "norm_label": "scorm.py"
     },
     {
@@ -326,7 +326,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "auth_dependencies",
-      "community": 87,
+      "community": 17,
       "norm_label": "dependencies.py"
     },
     {
@@ -336,7 +336,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "auth_dependencies_extract_token",
-      "community": 87,
+      "community": 5,
       "norm_label": "_extract_token()"
     },
     {
@@ -346,7 +346,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_auth_dependencies_py_request",
-      "community": 87,
+      "community": 5,
       "norm_label": "request"
     },
     {
@@ -356,7 +356,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "httpauthorizationcredentials",
-      "community": 87,
+      "community": 5,
       "norm_label": "httpauthorizationcredentials"
     },
     {
@@ -366,7 +366,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "auth_dependencies_get_current_user",
-      "community": 87,
+      "community": 5,
       "norm_label": "get_current_user()"
     },
     {
@@ -376,7 +376,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "backend_auth_dependencies_py_session",
-      "community": 87,
+      "community": 5,
       "norm_label": "session"
     },
     {
@@ -396,7 +396,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "auth_dependencies_require_admin",
-      "community": 87,
+      "community": 5,
       "norm_label": "require_admin()"
     },
     {
@@ -406,7 +406,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "auth_dependencies_require_permission",
-      "community": 87,
+      "community": 17,
       "norm_label": "require_permission()"
     },
     {
@@ -416,7 +416,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "auth_dependencies_rationale_19",
-      "community": 87,
+      "community": 5,
       "norm_label": "prefer the httponly cookie; fall back to bearer when explicitly enabled."
     },
     {
@@ -656,7 +656,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "auth_router_loginrequest",
-      "community": 5,
+      "community": 22,
       "norm_label": "loginrequest"
     },
     {
@@ -846,7 +846,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_database",
-      "community": 238,
+      "community": 55,
       "norm_label": "database.py"
     },
     {
@@ -856,7 +856,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "backend_database_get_db",
-      "community": 238,
+      "community": 55,
       "norm_label": "get_db()"
     },
     {
@@ -866,7 +866,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "backend_database_commit_or_500",
-      "community": 238,
+      "community": 55,
       "norm_label": "commit_or_500()"
     },
     {
@@ -876,7 +876,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "backend_database_py_session",
-      "community": 238,
+      "community": 55,
       "norm_label": "session"
     },
     {
@@ -886,7 +886,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "backend_database_rationale_90",
-      "community": 238,
+      "community": 55,
       "norm_label": "commit the current session or roll back and raise http 500."
     },
     {
@@ -926,7 +926,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "generation_error_log_model",
-      "community": 8,
+      "community": 1,
       "norm_label": "error_log_model.py"
     },
     {
@@ -936,7 +936,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "generation_error_log_model_ovaerrorlog",
-      "community": 8,
+      "community": 1,
       "norm_label": "ovaerrorlog"
     },
     {
@@ -946,7 +946,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "base",
-      "community": 8,
+      "community": 1,
       "norm_label": "base"
     },
     {
@@ -1476,7 +1476,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "generation_jobs_model",
-      "community": 8,
+      "community": 1,
       "norm_label": "jobs_model.py"
     },
     {
@@ -1486,7 +1486,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "generation_jobs_model_job_pk",
-      "community": 8,
+      "community": 1,
       "norm_label": "_job_pk()"
     },
     {
@@ -1496,7 +1496,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "backend_generation_jobs_model_py_column",
-      "community": 8,
+      "community": 1,
       "norm_label": "column"
     },
     {
@@ -1506,7 +1506,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "generation_jobs_model_ovajob",
-      "community": 8,
+      "community": 1,
       "norm_label": "ovajob"
     },
     {
@@ -1516,7 +1516,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "generation_jobs_model_ovajobresource",
-      "community": 8,
+      "community": 1,
       "norm_label": "ovajobresource"
     },
     {
@@ -1536,7 +1536,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "generation_jobs_model_rationale_37",
-      "community": 8,
+      "community": 1,
       "norm_label": "one generation, tied to a user and (once materialized) an ova (r1, r9)."
     },
     {
@@ -1546,7 +1546,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "generation_jobs_model_rationale_57",
-      "community": 8,
+      "community": 1,
       "norm_label": "one generable resource inside a phase; the unit of progress (r2, r4)."
     },
     {
@@ -2406,7 +2406,7 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "generation_regen_agents_generate_engage",
-      "community": 20,
+      "community": 497,
       "norm_label": "_generate_engage()"
     },
     {
@@ -2416,7 +2416,7 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "generation_regen_agents_generate_explore",
-      "community": 20,
+      "community": 497,
       "norm_label": "_generate_explore()"
     },
     {
@@ -2456,7 +2456,7 @@
       "source_location": "L241",
       "_origin": "ast",
       "id": "generation_regen_agents_safe_parse_json",
-      "community": 20,
+      "community": 497,
       "norm_label": "_safe_parse_json()"
     },
     {
@@ -2506,7 +2506,7 @@
       "source_location": "L178",
       "_origin": "ast",
       "id": "generation_regen_agents_rationale_178",
-      "community": 20,
+      "community": 497,
       "norm_label": "run the explore generation pipeline for resource type n."
     },
     {
@@ -2546,7 +2546,7 @@
       "source_location": "L242",
       "_origin": "ast",
       "id": "generation_regen_agents_rationale_242",
-      "community": 20,
+      "community": 497,
       "norm_label": "parse json from llm output with fallback to raw text dict."
     },
     {
@@ -2616,7 +2616,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "generation_regen_service",
-      "community": 74,
+      "community": 11,
       "norm_label": "regen_service.py"
     },
     {
@@ -2626,7 +2626,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "generation_regen_service_finalize_edit",
-      "community": 74,
+      "community": 11,
       "norm_label": "_finalize_edit()"
     },
     {
@@ -2636,7 +2636,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "generation_regen_service_owner_llm_config",
-      "community": 74,
+      "community": 11,
       "norm_label": "_owner_llm_config()"
     },
     {
@@ -2646,7 +2646,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "backend_generation_regen_service_py_session",
-      "community": 74,
+      "community": 1,
       "norm_label": "session"
     },
     {
@@ -2656,7 +2656,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "generation_regen_service_regen_phase",
-      "community": 74,
+      "community": 20,
       "norm_label": "_regen_phase()"
     },
     {
@@ -2666,7 +2666,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "backend_generation_regen_service_py_ovaphase",
-      "community": 74,
+      "community": 1,
       "norm_label": "ovaphase"
     },
     {
@@ -2676,7 +2676,7 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "generation_regen_service_regen_concurrency",
-      "community": 74,
+      "community": 11,
       "norm_label": "_regen_concurrency()"
     },
     {
@@ -2686,7 +2686,7 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "generation_regen_service_regen_phases_parallel",
-      "community": 74,
+      "community": 11,
       "norm_label": "_regen_phases_parallel()"
     },
     {
@@ -2706,7 +2706,7 @@
       "source_location": "L217",
       "_origin": "ast",
       "id": "generation_regen_service_mark_ova_error",
-      "community": 74,
+      "community": 11,
       "norm_label": "_mark_ova_error()"
     },
     {
@@ -2736,7 +2736,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "generation_regen_service_rationale_134",
-      "community": 74,
+      "community": 11,
       "norm_label": "load the ova owner's per-type llm overrides (empty = system defaults)."
     },
     {
@@ -2746,7 +2746,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "generation_regen_service_rationale_142",
-      "community": 74,
+      "community": 20,
       "norm_label": "call the real llm agent for a single phase. returns html or none."
     },
     {
@@ -2776,7 +2776,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "generation_regen_service_rationale_218",
-      "community": 74,
+      "community": 11,
       "norm_label": "set ova status to error on regen failure."
     },
     {
@@ -2866,7 +2866,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "labs_generation_generate_one",
-      "community": 12,
+      "community": 497,
       "norm_label": "_generate_one()"
     },
     {
@@ -2926,7 +2926,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "labs_generation_rationale_48",
-      "community": 12,
+      "community": 497,
       "norm_label": "run one resource generation. returns (html, raw_json, error)."
     },
     {
@@ -3146,7 +3146,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "labs_router",
-      "community": 87,
+      "community": 17,
       "norm_label": "router.py"
     },
     {
@@ -3186,7 +3186,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "labs_router_rationale_1",
-      "community": 87,
+      "community": 17,
       "norm_label": "labs api router \u2014 admin-only model catalog and base-prompt lookup."
     },
     {
@@ -3386,7 +3386,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "llm_catalog_refresh_get_provider_status",
-      "community": 30,
+      "community": 5,
       "norm_label": "get_provider_status()"
     },
     {
@@ -3506,7 +3506,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "llm_catalog_refresh_rationale_120",
-      "community": 30,
+      "community": 5,
       "norm_label": "snapshot of per-provider refresh health (for the settings ui)."
     },
     {
@@ -3586,7 +3586,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "llm_elaborate_router",
-      "community": 12,
+      "community": 33,
       "norm_label": "elaborate_router.py"
     },
     {
@@ -3596,7 +3596,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "llm_elaborate_router_generateelaboraterequest",
-      "community": 12,
+      "community": 33,
       "norm_label": "generateelaboraterequest"
     },
     {
@@ -3606,7 +3606,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "llm_elaborate_router_retrieve_contexto",
-      "community": 12,
+      "community": 33,
       "norm_label": "_retrieve_contexto()"
     },
     {
@@ -3616,7 +3616,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "backend_llm_elaborate_router_py_session",
-      "community": 12,
+      "community": 33,
       "norm_label": "session"
     },
     {
@@ -3626,7 +3626,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "llm_elaborate_router_generate_two_step",
-      "community": 12,
+      "community": 497,
       "norm_label": "_generate_two_step()"
     },
     {
@@ -3636,7 +3636,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "llm_elaborate_router_list_recursos",
-      "community": 12,
+      "community": 33,
       "norm_label": "list_recursos()"
     },
     {
@@ -3646,7 +3646,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "llm_elaborate_router_generate_elaborate_resource",
-      "community": 12,
+      "community": 33,
       "norm_label": "generate_elaborate_resource()"
     },
     {
@@ -3656,7 +3656,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "backend_llm_elaborate_router_py_request",
-      "community": 12,
+      "community": 33,
       "norm_label": "request"
     },
     {
@@ -3666,7 +3666,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "backend_llm_elaborate_router_py_user",
-      "community": 12,
+      "community": 33,
       "norm_label": "user"
     },
     {
@@ -3676,7 +3676,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "llm_engage_router",
-      "community": 23,
+      "community": 12,
       "norm_label": "engage_router.py"
     },
     {
@@ -3686,7 +3686,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "llm_engage_router_generateengagerequest",
-      "community": 23,
+      "community": 12,
       "norm_label": "generateengagerequest"
     },
     {
@@ -3696,7 +3696,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "llm_engage_router_list_recursos",
-      "community": 23,
+      "community": 12,
       "norm_label": "list_recursos()"
     },
     {
@@ -3706,7 +3706,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "llm_engage_router_retrieve_contexto",
-      "community": 23,
+      "community": 12,
       "norm_label": "_retrieve_contexto()"
     },
     {
@@ -3716,7 +3716,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "backend_llm_engage_router_py_session",
-      "community": 23,
+      "community": 12,
       "norm_label": "session"
     },
     {
@@ -3726,7 +3726,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "llm_engage_router_generate_engage_resource",
-      "community": 23,
+      "community": 12,
       "norm_label": "generate_engage_resource()"
     },
     {
@@ -3736,7 +3736,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_llm_engage_router_py_request",
-      "community": 23,
+      "community": 12,
       "norm_label": "request"
     },
     {
@@ -3746,7 +3746,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_llm_engage_router_py_user",
-      "community": 23,
+      "community": 12,
       "norm_label": "user"
     },
     {
@@ -3796,7 +3796,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "llm_evaluate_router_generate_two_step",
-      "community": 12,
+      "community": 497,
       "norm_label": "_generate_two_step()"
     },
     {
@@ -3886,7 +3886,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "llm_explain_router_generate_two_step",
-      "community": 12,
+      "community": 497,
       "norm_label": "_generate_two_step()"
     },
     {
@@ -3976,7 +3976,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "llm_explore_router_generate_two_step",
-      "community": 12,
+      "community": 497,
       "norm_label": "_generate_two_step()"
     },
     {
@@ -4316,7 +4316,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "llm_key_resolver",
-      "community": 127,
+      "community": 93,
       "norm_label": "key_resolver.py"
     },
     {
@@ -4326,7 +4326,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "llm_key_resolver_inherited_key",
-      "community": 127,
+      "community": 93,
       "norm_label": "_inherited_key()"
     },
     {
@@ -4336,7 +4336,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "llm_key_resolver_resolve_key",
-      "community": 127,
+      "community": 93,
       "norm_label": "resolve_key()"
     },
     {
@@ -4366,7 +4366,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "llm_key_resolver_rationale_57",
-      "community": 127,
+      "community": 93,
       "norm_label": "return the best available api key for `provider` or none."
     },
     {
@@ -4706,7 +4706,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "llm_podcast_podcast_audio_b64",
-      "community": 23,
+      "community": 497,
       "norm_label": "podcast_audio_b64()"
     },
     {
@@ -4716,7 +4716,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "llm_podcast_build_podcast_html",
-      "community": 23,
+      "community": 497,
       "norm_label": "build_podcast_html()"
     },
     {
@@ -4736,7 +4736,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "llm_podcast_rationale_18",
-      "community": 23,
+      "community": 497,
       "norm_label": "return the monologue narrated as a base64 wav, or none if tts fails."
     },
     {
@@ -4866,7 +4866,7 @@
       "source_location": "L303",
       "_origin": "ast",
       "id": "llm_router_generar_texto",
-      "community": 12,
+      "community": 497,
       "norm_label": "generar_texto()"
     },
     {
@@ -5136,7 +5136,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "llm_utils_strip_markdown",
-      "community": 12,
+      "community": 497,
       "norm_label": "strip_markdown()"
     },
     {
@@ -5146,7 +5146,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "llm_utils_parse_json",
-      "community": 12,
+      "community": 497,
       "norm_label": "parse_json()"
     },
     {
@@ -5366,7 +5366,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_models",
-      "community": 8,
+      "community": 1,
       "norm_label": "models.py"
     },
     {
@@ -5376,7 +5376,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_models_pk_column",
-      "community": 8,
+      "community": 1,
       "norm_label": "_pk_column()"
     },
     {
@@ -5386,7 +5386,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_models_py_column",
-      "community": 8,
+      "community": 1,
       "norm_label": "column"
     },
     {
@@ -5436,7 +5436,7 @@
       "source_location": "L145",
       "_origin": "ast",
       "id": "backend_models_ovaphaseversion",
-      "community": 8,
+      "community": 1,
       "norm_label": "ovaphaseversion"
     },
     {
@@ -5446,7 +5446,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "backend_models_session",
-      "community": 8,
+      "community": 1,
       "norm_label": "session"
     },
     {
@@ -5486,7 +5486,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "backend_models_labresult",
-      "community": 8,
+      "community": 1,
       "norm_label": "labresult"
     },
     {
@@ -5496,7 +5496,7 @@
       "source_location": "L241",
       "_origin": "ast",
       "id": "backend_models_ragchunk",
-      "community": 8,
+      "community": 1,
       "norm_label": "ragchunk"
     },
     {
@@ -5516,7 +5516,7 @@
       "source_location": "L273",
       "_origin": "ast",
       "id": "backend_models_platformconfig",
-      "community": 8,
+      "community": 1,
       "norm_label": "platformconfig"
     },
     {
@@ -5526,7 +5526,7 @@
       "source_location": "L285",
       "_origin": "ast",
       "id": "backend_models_catalogcache",
-      "community": 8,
+      "community": 1,
       "norm_label": "catalogcache"
     },
     {
@@ -5536,7 +5536,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "backend_models_rationale_14",
-      "community": 8,
+      "community": 1,
       "norm_label": "uuid primary key shared by every table."
     },
     {
@@ -5546,7 +5546,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "backend_models_rationale_146",
-      "community": 8,
+      "community": 1,
       "norm_label": "hu-029 \u2014 micro-version record per phase edit (vn.m minor versioning)."
     },
     {
@@ -5566,7 +5566,7 @@
       "source_location": "L242",
       "_origin": "ast",
       "id": "backend_models_rationale_242",
-      "community": 8,
+      "community": 1,
       "norm_label": "one embedded chunk from a user upload. the `embedding` column is a     pgvector"
     },
     {
@@ -5576,7 +5576,7 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "backend_models_rationale_274",
-      "community": 8,
+      "community": 1,
       "norm_label": "admin-only key-value store for platform-level api keys and config."
     },
     {
@@ -5616,7 +5616,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "crud_edit_helpers",
-      "community": 1,
+      "community": 321,
       "norm_label": "edit_helpers.py"
     },
     {
@@ -5636,7 +5636,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "crud_edit_helpers_ova_output_dir",
-      "community": 1,
+      "community": 321,
       "norm_label": "_ova_output_dir()"
     },
     {
@@ -5646,7 +5646,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "crud_edit_helpers_is_ova_owner",
-      "community": 1,
+      "community": 321,
       "norm_label": "_is_ova_owner()"
     },
     {
@@ -5676,7 +5676,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "crud_edit_helpers_get_active_version",
-      "community": 1,
+      "community": 321,
       "norm_label": "_get_active_version()"
     },
     {
@@ -5716,7 +5716,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "crud_edit_helpers_phase_to_dict",
-      "community": 1,
+      "community": 321,
       "norm_label": "_phase_to_dict()"
     },
     {
@@ -5736,7 +5736,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "crud_edit_helpers_version_to_dict",
-      "community": 1,
+      "community": 321,
       "norm_label": "_version_to_dict()"
     },
     {
@@ -5866,7 +5866,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "crud_edit_view_router_get_ova_editor",
-      "community": 1,
+      "community": 321,
       "norm_label": "get_ova_editor()"
     },
     {
@@ -6136,7 +6136,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "ova_helpers_batchidsrequest",
-      "community": 17,
+      "community": 5,
       "norm_label": "batchidsrequest"
     },
     {
@@ -6606,7 +6606,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "ovaphaseversion",
-      "community": 321,
+      "community": 1,
       "norm_label": "ovaphaseversion"
     },
     {
@@ -6626,7 +6626,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "backend_ova_phases_phase_version_router_py_user",
-      "community": 321,
+      "community": 1,
       "norm_label": "user"
     },
     {
@@ -6646,7 +6646,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "backend_ova_phases_phase_version_router_py_request",
-      "community": 321,
+      "community": 1,
       "norm_label": "request"
     },
     {
@@ -7956,7 +7956,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "plans_podcast_podcast_gen",
-      "community": 23,
+      "community": 497,
       "norm_label": "podcast_gen()"
     },
     {
@@ -9456,7 +9456,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "roles_delete_router",
-      "community": 5,
+      "community": 17,
       "norm_label": "delete_router.py"
     },
     {
@@ -9556,7 +9556,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_run_migrations",
-      "community": 84,
+      "community": 43,
       "norm_label": "run_migrations.py"
     },
     {
@@ -9566,7 +9566,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "backend_run_migrations_split_statements",
-      "community": 84,
+      "community": 43,
       "norm_label": "_split_statements()"
     },
     {
@@ -9576,7 +9576,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "backend_run_migrations_applied_set",
-      "community": 84,
+      "community": 43,
       "norm_label": "_applied_set()"
     },
     {
@@ -9586,7 +9586,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "backend_run_migrations_kill_zombies",
-      "community": 84,
+      "community": 43,
       "norm_label": "_kill_zombies()"
     },
     {
@@ -9596,7 +9596,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "backend_run_migrations_record_applied",
-      "community": 84,
+      "community": 43,
       "norm_label": "_record_applied()"
     },
     {
@@ -9606,7 +9606,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "backend_run_migrations_run_migrations",
-      "community": 84,
+      "community": 43,
       "norm_label": "run_migrations()"
     },
     {
@@ -9616,7 +9616,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "backend_run_migrations_rationale_1",
-      "community": 84,
+      "community": 43,
       "norm_label": "idempotent sql migration runner.  each *.sql file under `backend/migrations/` is"
     },
     {
@@ -9626,7 +9626,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_run_migrations_rationale_50",
-      "community": 84,
+      "community": 43,
       "norm_label": "terminate idle-in-transaction connections older than 30 s.      these stale conn"
     },
     {
@@ -9646,7 +9646,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scorm_router",
-      "community": 84,
+      "community": 102,
       "norm_label": "router.py"
     },
     {
@@ -9656,7 +9656,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "scorm_router_scorm_health",
-      "community": 84,
+      "community": 102,
       "norm_label": "scorm_health()"
     },
     {
@@ -14676,7 +14676,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "uploads_router",
-      "community": 13,
+      "community": 17,
       "norm_label": "router.py"
     },
     {
@@ -14686,7 +14686,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "uploads_router_uploads_health",
-      "community": 13,
+      "community": 17,
       "norm_label": "uploads_health()"
     },
     {
@@ -15746,7 +15746,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_llm_settings_router",
-      "community": 30,
+      "community": 5,
       "norm_label": "llm_settings_router.py"
     },
     {
@@ -15756,7 +15756,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "users_llm_settings_router_enabled_keys",
-      "community": 30,
+      "community": 5,
       "norm_label": "_enabled_keys()"
     },
     {
@@ -15766,7 +15766,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "users_llm_settings_router_has_own_llm_key",
-      "community": 30,
+      "community": 5,
       "norm_label": "_has_own_llm_key()"
     },
     {
@@ -15776,7 +15776,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "backend_users_llm_settings_router_py_session",
-      "community": 30,
+      "community": 5,
       "norm_label": "session"
     },
     {
@@ -15796,7 +15796,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "users_llm_settings_router_get_llm_settings",
-      "community": 30,
+      "community": 5,
       "norm_label": "get_llm_settings()"
     },
     {
@@ -15806,7 +15806,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "backend_users_llm_settings_router_py_request",
-      "community": 30,
+      "community": 5,
       "norm_label": "request"
     },
     {
@@ -15816,7 +15816,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "backend_users_llm_settings_router_py_user",
-      "community": 30,
+      "community": 5,
       "norm_label": "user"
     },
     {
@@ -15826,7 +15826,7 @@
       "source_location": "L150",
       "_origin": "ast",
       "id": "users_llm_settings_router_refresh_llm_catalog",
-      "community": 30,
+      "community": 5,
       "norm_label": "refresh_llm_catalog()"
     },
     {
@@ -15836,7 +15836,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "users_llm_settings_router_put_llm_settings",
-      "community": 30,
+      "community": 5,
       "norm_label": "put_llm_settings()"
     },
     {
@@ -15846,7 +15846,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_1",
-      "community": 30,
+      "community": 5,
       "norm_label": "per-user llm generation settings (general config, applies to all the user's ovas"
     },
     {
@@ -15856,7 +15856,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_39",
-      "community": 30,
+      "community": 5,
       "norm_label": "set of (provider, model_id) the user has explicitly enabled."
     },
     {
@@ -15866,7 +15866,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_45",
-      "community": 30,
+      "community": 5,
       "norm_label": "true when user has a personal llm api key, or holds the admin role."
     },
     {
@@ -15876,7 +15876,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_71",
-      "community": 30,
+      "community": 5,
       "norm_label": "effective per-type config (user override or default) + filtered catalog +     en"
     },
     {
@@ -15886,7 +15886,7 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_155",
-      "community": 30,
+      "community": 5,
       "norm_label": "re-fetch the provider catalogs on demand (retry path after a transient     failu"
     },
     {
@@ -15896,7 +15896,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_172",
-      "community": 30,
+      "community": 5,
       "norm_label": "validate against the catalog and persist. 400 on any invalid model/timeout."
     },
     {
@@ -15996,7 +15996,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_profile_router",
-      "community": 5,
+      "community": 17,
       "norm_label": "profile_router.py"
     },
     {
@@ -18796,7 +18796,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engage_resourcecard",
-      "community": 43,
+      "community": 47,
       "norm_label": "resourcecard.jsx"
     },
     {
@@ -18806,7 +18806,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engage_resourcecard_interactividad_color",
-      "community": 43,
+      "community": 47,
       "norm_label": "interactividad_color"
     },
     {
@@ -18816,7 +18816,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "engage_resourcecard_resourcecard",
-      "community": 43,
+      "community": 47,
       "norm_label": "resourcecard()"
     },
     {
@@ -19186,7 +19186,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "settings_llmtaskrow",
-      "community": 33,
+      "community": 35,
       "norm_label": "llmtaskrow.jsx"
     },
     {
@@ -19196,7 +19196,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "settings_llmtaskrow_task_labels",
-      "community": 33,
+      "community": 35,
       "norm_label": "task_labels"
     },
     {
@@ -19206,7 +19206,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "settings_llmtaskrow_task_descs",
-      "community": 33,
+      "community": 35,
       "norm_label": "task_descs"
     },
     {
@@ -19216,7 +19216,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "settings_llmtaskrow_iconbtn",
-      "community": 33,
+      "community": 35,
       "norm_label": "iconbtn()"
     },
     {
@@ -19316,7 +19316,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "settings_ovasettingscard",
-      "community": 339,
+      "community": 27,
       "norm_label": "ovasettingscard.jsx"
     },
     {
@@ -19326,7 +19326,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "settings_ovasettingscard_provider_labels",
-      "community": 339,
+      "community": 27,
       "norm_label": "provider_labels"
     },
     {
@@ -19406,7 +19406,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "settings_platformnodescard",
-      "community": 55,
+      "community": 35,
       "norm_label": "platformnodescard.jsx"
     },
     {
@@ -19416,7 +19416,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "settings_platformnodescard_toggle",
-      "community": 55,
+      "community": 35,
       "norm_label": "toggle()"
     },
     {
@@ -19426,7 +19426,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "settings_platformnodescard_nodebadge",
-      "community": 55,
+      "community": 35,
       "norm_label": "nodebadge()"
     },
     {
@@ -19436,7 +19436,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "settings_platformnodescard_configurablerow",
-      "community": 55,
+      "community": 35,
       "norm_label": "configurablerow()"
     },
     {
@@ -19446,7 +19446,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "settings_platformnodescard_platformnodescard",
-      "community": 55,
+      "community": 35,
       "norm_label": "platformnodescard()"
     },
     {
@@ -20766,7 +20766,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "admin_useadminnodesconfig",
-      "community": 339,
+      "community": 27,
       "norm_label": "useadminnodesconfig.js"
     },
     {
@@ -20776,7 +20776,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "admin_useadminnodesconfig_nodes_key",
-      "community": 339,
+      "community": 27,
       "norm_label": "nodes_key"
     },
     {
@@ -20786,7 +20786,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "admin_useadminnodesconfig_useadminnodesconfig",
-      "community": 55,
+      "community": 35,
       "norm_label": "useadminnodesconfig()"
     },
     {
@@ -20866,7 +20866,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "labs_useengagegeneration",
-      "community": 43,
+      "community": 47,
       "norm_label": "useengagegeneration.js"
     },
     {
@@ -20876,7 +20876,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "labs_useengagegeneration_useengagegeneration",
-      "community": 43,
+      "community": 47,
       "norm_label": "useengagegeneration()"
     },
     {
@@ -20886,7 +20886,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "labs_uselabgeneration",
-      "community": 328,
+      "community": 67,
       "norm_label": "uselabgeneration.js"
     },
     {
@@ -20906,7 +20906,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "labs_uselabprompt",
-      "community": 328,
+      "community": 67,
       "norm_label": "uselabprompt.js"
     },
     {
@@ -20916,7 +20916,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "labs_uselabprompt_uselabprompt",
-      "community": 328,
+      "community": 67,
       "norm_label": "uselabprompt()"
     },
     {
@@ -20926,7 +20926,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "labs_usephasegeneration",
-      "community": 43,
+      "community": 47,
       "norm_label": "usephasegeneration.js"
     },
     {
@@ -20936,7 +20936,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "labs_usephasegeneration_usephasegeneration",
-      "community": 43,
+      "community": 47,
       "norm_label": "usephasegeneration()"
     },
     {
@@ -21176,7 +21176,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ova_useovauploads",
-      "community": 93,
+      "community": 27,
       "norm_label": "useovauploads.js"
     },
     {
@@ -21186,7 +21186,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "ova_useovauploads_max_upload_files",
-      "community": 93,
+      "community": 27,
       "norm_label": "max_upload_files"
     },
     {
@@ -21196,7 +21196,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "ova_useovauploads_generateclientid",
-      "community": 93,
+      "community": 27,
       "norm_label": "generateclientid()"
     },
     {
@@ -21206,7 +21206,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "ova_useovauploads_fromserveritem",
-      "community": 93,
+      "community": 27,
       "norm_label": "fromserveritem()"
     },
     {
@@ -21216,7 +21216,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "ova_useovauploads_touploadingitem",
-      "community": 93,
+      "community": 27,
       "norm_label": "touploadingitem()"
     },
     {
@@ -21886,7 +21886,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_llmconfigdraft",
-      "community": 33,
+      "community": 35,
       "norm_label": "llmconfigdraft.js"
     },
     {
@@ -21896,7 +21896,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "lib_llmconfigdraft_emptyentry",
-      "community": 33,
+      "community": 35,
       "norm_label": "emptyentry()"
     },
     {
@@ -21906,7 +21906,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "lib_llmconfigdraft_movefallback",
-      "community": 33,
+      "community": 35,
       "norm_label": "movefallback()"
     },
     {
@@ -21916,7 +21916,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "lib_llmconfigdraft_addfallback",
-      "community": 33,
+      "community": 35,
       "norm_label": "addfallback()"
     },
     {
@@ -21926,7 +21926,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "lib_llmconfigdraft_removefallback",
-      "community": 33,
+      "community": 35,
       "norm_label": "removefallback()"
     },
     {
@@ -21936,7 +21936,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "lib_llmconfigdraft_setfallback",
-      "community": 33,
+      "community": 35,
       "norm_label": "setfallback()"
     },
     {
@@ -21946,7 +21946,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "lib_llmconfigdraft_todraft",
-      "community": 33,
+      "community": 35,
       "norm_label": "todraft()"
     },
     {
@@ -22026,7 +22026,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_nodesconfigdraft",
-      "community": 55,
+      "community": 35,
       "norm_label": "nodesconfigdraft.js"
     },
     {
@@ -22036,7 +22036,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "lib_nodesconfigdraft_node_flag_defaults",
-      "community": 55,
+      "community": 35,
       "norm_label": "node_flag_defaults"
     },
     {
@@ -22046,7 +22046,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "lib_nodesconfigdraft_hasunsavedchanges",
-      "community": 55,
+      "community": 35,
       "norm_label": "hasunsavedchanges()"
     },
     {
@@ -22056,7 +22056,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "lib_nodesconfigdraft_criticroundsvisible",
-      "community": 55,
+      "community": 35,
       "norm_label": "criticroundsvisible()"
     },
     {
@@ -22066,7 +22066,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "lib_nodesconfigdraft_video_resource_types",
-      "community": 55,
+      "community": 35,
       "norm_label": "video_resource_types"
     },
     {
@@ -22076,7 +22076,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "lib_nodesconfigdraft_isvideoresource",
-      "community": 55,
+      "community": 35,
       "norm_label": "isvideoresource()"
     },
     {
@@ -22716,7 +22716,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_engagepage",
-      "community": 43,
+      "community": 47,
       "norm_label": "engagepage.jsx"
     },
     {
@@ -22726,7 +22726,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "pages_engagepage_engagepage",
-      "community": 43,
+      "community": 47,
       "norm_label": "engagepage()"
     },
     {
@@ -22736,7 +22736,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_explorepage",
-      "community": 43,
+      "community": 47,
       "norm_label": "explorepage.jsx"
     },
     {
@@ -22746,7 +22746,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "pages_explorepage_explorepage",
-      "community": 43,
+      "community": 47,
       "norm_label": "explorepage()"
     },
     {
@@ -22966,7 +22966,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_phasepage",
-      "community": 43,
+      "community": 47,
       "norm_label": "phasepage.jsx"
     },
     {
@@ -22976,7 +22976,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "pages_phasepage_phasepage",
-      "community": 43,
+      "community": 47,
       "norm_label": "phasepage()"
     },
     {
@@ -24526,7 +24526,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_engageservice",
-      "community": 43,
+      "community": 47,
       "norm_label": "engageservice.js"
     },
     {
@@ -24536,7 +24536,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "services_engageservice_fetchengagerecursos",
-      "community": 43,
+      "community": 47,
       "norm_label": "fetchengagerecursos()"
     },
     {
@@ -24546,7 +24546,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "services_engageservice_generateengageresource",
-      "community": 43,
+      "community": 47,
       "norm_label": "generateengageresource()"
     },
     {
@@ -24616,7 +24616,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_exploreservice",
-      "community": 43,
+      "community": 47,
       "norm_label": "exploreservice.js"
     },
     {
@@ -24626,7 +24626,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "services_exploreservice_fetchexplorerecursos",
-      "community": 43,
+      "community": 47,
       "norm_label": "fetchexplorerecursos()"
     },
     {
@@ -24636,7 +24636,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "services_exploreservice_generateexploreresource",
-      "community": 43,
+      "community": 47,
       "norm_label": "generateexploreresource()"
     },
     {
@@ -24646,7 +24646,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_labsservice",
-      "community": 328,
+      "community": 67,
       "norm_label": "labsservice.js"
     },
     {
@@ -24656,7 +24656,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "services_labsservice_fetchmodels",
-      "community": 328,
+      "community": 67,
       "norm_label": "fetchmodels()"
     },
     {
@@ -24666,7 +24666,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "services_labsservice_fetchprompts",
-      "community": 328,
+      "community": 67,
       "norm_label": "fetchprompts()"
     },
     {
@@ -24676,7 +24676,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "services_labsservice_startgeneration",
-      "community": 328,
+      "community": 67,
       "norm_label": "startgeneration()"
     },
     {
@@ -24686,7 +24686,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "services_labsservice_pollresults",
-      "community": 328,
+      "community": 67,
       "norm_label": "pollresults()"
     },
     {
@@ -24696,7 +24696,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "services_labsservice_improveprompt",
-      "community": 328,
+      "community": 67,
       "norm_label": "improveprompt()"
     },
     {
@@ -24706,7 +24706,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "services_labsservice_markselected",
-      "community": 328,
+      "community": 67,
       "norm_label": "markselected()"
     },
     {
@@ -24716,7 +24716,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "services_labsservice_downloadscorm",
-      "community": 328,
+      "community": 67,
       "norm_label": "downloadscorm()"
     },
     {
@@ -25116,7 +25116,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_ovasettingsservice",
-      "community": 339,
+      "community": 27,
       "norm_label": "ovasettingsservice.js"
     },
     {
@@ -25126,7 +25126,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "services_ovasettingsservice_getovasettings",
-      "community": 339,
+      "community": 27,
       "norm_label": "getovasettings()"
     },
     {
@@ -25136,7 +25136,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "services_ovasettingsservice_saveovasettings",
-      "community": 339,
+      "community": 27,
       "norm_label": "saveovasettings()"
     },
     {
@@ -25206,7 +25206,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "services_ovasettingsservice_getadminnodesconfig",
-      "community": 339,
+      "community": 27,
       "norm_label": "getadminnodesconfig()"
     },
     {
@@ -25216,7 +25216,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "services_ovasettingsservice_saveadminnodesconfig",
-      "community": 339,
+      "community": 27,
       "norm_label": "saveadminnodesconfig()"
     },
     {
@@ -25226,7 +25226,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_uploadservice",
-      "community": 93,
+      "community": 27,
       "norm_label": "uploadservice.js"
     },
     {
@@ -25236,7 +25236,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "services_uploadservice_parseresponse",
-      "community": 93,
+      "community": 27,
       "norm_label": "parseresponse()"
     },
     {
@@ -25246,7 +25246,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "services_uploadservice_uploadtempfiles",
-      "community": 93,
+      "community": 27,
       "norm_label": "uploadtempfiles()"
     },
     {
@@ -25256,7 +25256,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "services_uploadservice_listtempfiles",
-      "community": 93,
+      "community": 27,
       "norm_label": "listtempfiles()"
     },
     {
@@ -25266,7 +25266,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "services_uploadservice_deletetempfile",
-      "community": 93,
+      "community": 27,
       "norm_label": "deletetempfile()"
     },
     {
@@ -26206,7 +26206,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "unit_llm_config_unit_steps",
-      "community": 33,
+      "community": 35,
       "norm_label": "llm_config_unit.steps.js"
     },
     {
@@ -26216,7 +26216,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "unit_llm_config_unit_steps_parseentry",
-      "community": 33,
+      "community": 35,
       "norm_label": "parseentry()"
     },
     {
@@ -26226,7 +26226,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "unit_llm_config_unit_steps_parselist",
-      "community": 33,
+      "community": 35,
       "norm_label": "parselist()"
     },
     {
@@ -26236,7 +26236,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "unit_llm_config_unit_steps_fmtlist",
-      "community": 33,
+      "community": 35,
       "norm_label": "fmtlist()"
     },
     {
@@ -26306,7 +26306,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "unit_nodes_config_unit_steps",
-      "community": 55,
+      "community": 35,
       "norm_label": "nodes_config_unit.steps.js"
     },
     {
