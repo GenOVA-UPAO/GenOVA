@@ -1,16 +1,16 @@
 # Graph Report - GenOVA  (2026-06-19)
 
 ## Corpus Check
-- 776 files · ~387,996 words
+- 778 files · ~388,425 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5008 nodes · 6989 edges · 531 communities (335 shown, 196 thin omitted)
+- 5009 nodes · 6989 edges · 532 communities (336 shown, 196 thin omitted)
 - Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 754 edges (avg confidence: 0.61)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `18219103`
+- Built from commit: `67125968`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -540,21 +540,21 @@
 - 1-file cycle: `backend/rag/store.py -> backend/rag/store.py`
 - 1-file cycle: `backend/users/admin/helpers.py -> backend/users/admin/helpers.py`
 - 2-file cycle: `backend/auth/dependencies.py -> backend/main.py -> backend/auth/dependencies.py`
-- 3-file cycle: `backend/api/ova.py -> backend/generation/jobs_router.py -> backend/main.py -> backend/api/ova.py`
-- 3-file cycle: `backend/api/ova.py -> backend/ova/router.py -> backend/main.py -> backend/api/ova.py`
 - 3-file cycle: `backend/api/auth.py -> backend/auth/reset_router.py -> backend/main.py -> backend/api/auth.py`
-- 3-file cycle: `backend/api/auth.py -> backend/auth/router.py -> backend/main.py -> backend/api/auth.py`
 - 3-file cycle: `backend/api/users.py -> backend/roles/router.py -> backend/main.py -> backend/api/users.py`
+- 3-file cycle: `backend/api/users.py -> backend/users/router.py -> backend/main.py -> backend/api/users.py`
+- 3-file cycle: `backend/api/rag.py -> backend/rag/router.py -> backend/main.py -> backend/api/rag.py`
+- 3-file cycle: `backend/api/auth.py -> backend/auth/router.py -> backend/main.py -> backend/api/auth.py`
 - 3-file cycle: `backend/api/scorm.py -> backend/scorm/router.py -> backend/main.py -> backend/api/scorm.py`
 - 3-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/main.py -> backend/api/llm.py`
-- 3-file cycle: `backend/api/rag.py -> backend/rag/router.py -> backend/main.py -> backend/api/rag.py`
+- 3-file cycle: `backend/api/rag.py -> backend/uploads/router.py -> backend/main.py -> backend/api/rag.py`
 - 3-file cycle: `backend/api/labs.py -> backend/labs/generation_routes.py -> backend/main.py -> backend/api/labs.py`
 - 3-file cycle: `backend/api/labs.py -> backend/labs/router.py -> backend/main.py -> backend/api/labs.py`
-- 3-file cycle: `backend/api/rag.py -> backend/uploads/router.py -> backend/main.py -> backend/api/rag.py`
-- 3-file cycle: `backend/api/users.py -> backend/users/router.py -> backend/main.py -> backend/api/users.py`
-- 4-file cycle: `backend/api/ova.py -> backend/generation/jobs_router.py -> backend/auth/dependencies.py -> backend/main.py -> backend/api/ova.py`
+- 3-file cycle: `backend/api/ova.py -> backend/generation/jobs_router.py -> backend/main.py -> backend/api/ova.py`
+- 3-file cycle: `backend/api/ova.py -> backend/ova/router.py -> backend/main.py -> backend/api/ova.py`
+- 4-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/llm/explore_router.py -> backend/main.py -> backend/api/llm.py`
 
-## Communities (531 total, 196 thin omitted)
+## Communities (532 total, 196 thin omitted)
 
 ### Community 0 - "Navigation and Layout Components"
 Cohesion: 0.05

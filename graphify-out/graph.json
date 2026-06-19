@@ -25570,6 +25570,16 @@
       "norm_label": "test:e2e:ui"
     },
     {
+      "label": "graphify-commit.ps1",
+      "file_type": "code",
+      "source_file": "scripts/graphify-commit.ps1",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "scripts_graphify_commit",
+      "community": 529,
+      "norm_label": "graphify-commit.ps1"
+    },
+    {
       "label": "graphify-rebuild.ps1",
       "file_type": "code",
       "source_file": "scripts/graphify-rebuild.ps1",
@@ -74764,9 +74774,9 @@
       "source_file": "backend/run_migrations.py",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_run_migrations",
-      "target": "backend_run_migrations_kill_zombies",
-      "confidence_score": 1.0
+      "target": "backend_run_migrations_kill_zombies"
     },
     {
       "relation": "contains",
@@ -74836,9 +74846,9 @@
       "source_file": "backend/run_migrations.py",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_run_migrations_rationale_50",
-      "target": "backend_run_migrations_kill_zombies",
-      "confidence_score": 1.0
+      "target": "backend_run_migrations_kill_zombies"
     },
     {
       "relation": "calls",
@@ -74847,9 +74857,9 @@
       "source_file": "backend/run_migrations.py",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "backend_run_migrations_run_migrations",
-      "target": "backend_run_migrations_kill_zombies",
-      "confidence_score": 1.0
+      "target": "backend_run_migrations_kill_zombies"
     },
     {
       "relation": "calls",
@@ -122129,5 +122139,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "18219103bb4af79fd48e645319c28246c303c329"
+  "built_at_commit": "67125968c71f052ee9b6b8430a89dba46fd8725f"
 }
