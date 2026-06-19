@@ -1,16 +1,16 @@
 # Graph Report - GenOVA  (2026-06-19)
 
 ## Corpus Check
-- 729 files · ~356,822 words
+- 779 files · ~389,380 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4995 nodes · 7016 edges · 530 communities (342 shown, 188 thin omitted)
+- 5010 nodes · 7054 edges · 535 communities (338 shown, 197 thin omitted)
 - Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 754 edges (avg confidence: 0.61)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6b551d10`
+- Built from commit: `29cce779`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -487,6 +487,7 @@
 - [[_COMMUNITY_Community 508|Community 508]]
 - [[_COMMUNITY_Community 509|Community 509]]
 - [[_COMMUNITY_Community 510|Community 510]]
+- [[_COMMUNITY_Community 511|Community 511]]
 - [[_COMMUNITY_Community 512|Community 512]]
 - [[_COMMUNITY_Community 513|Community 513]]
 - [[_COMMUNITY_Community 514|Community 514]]
@@ -495,6 +496,7 @@
 - [[_COMMUNITY_Community 517|Community 517]]
 - [[_COMMUNITY_Community 518|Community 518]]
 - [[_COMMUNITY_Community 519|Community 519]]
+- [[_COMMUNITY_Community 520|Community 520]]
 - [[_COMMUNITY_Community 521|Community 521]]
 - [[_COMMUNITY_Community 522|Community 522]]
 - [[_COMMUNITY_Community 523|Community 523]]
@@ -503,8 +505,11 @@
 - [[_COMMUNITY_Community 526|Community 526]]
 - [[_COMMUNITY_Community 527|Community 527]]
 - [[_COMMUNITY_Community 528|Community 528]]
+- [[_COMMUNITY_Community 530|Community 530]]
 - [[_COMMUNITY_Community 531|Community 531]]
 - [[_COMMUNITY_Community 532|Community 532]]
+- [[_COMMUNITY_Community 533|Community 533]]
+- [[_COMMUNITY_Community 534|Community 534]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `User` - 154 edges
@@ -540,31 +545,31 @@
 - 2-file cycle: `backend/auth/dependencies.py -> backend/main.py -> backend/auth/dependencies.py`
 - 3-file cycle: `backend/api/auth.py -> backend/auth/reset_router.py -> backend/main.py -> backend/api/auth.py`
 - 3-file cycle: `backend/api/auth.py -> backend/auth/router.py -> backend/main.py -> backend/api/auth.py`
-- 3-file cycle: `backend/api/rag.py -> backend/uploads/router.py -> backend/main.py -> backend/api/rag.py`
-- 3-file cycle: `backend/api/rag.py -> backend/rag/router.py -> backend/main.py -> backend/api/rag.py`
-- 3-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/main.py -> backend/api/llm.py`
-- 3-file cycle: `backend/api/scorm.py -> backend/scorm/router.py -> backend/main.py -> backend/api/scorm.py`
-- 3-file cycle: `backend/api/labs.py -> backend/labs/router.py -> backend/main.py -> backend/api/labs.py`
-- 3-file cycle: `backend/api/labs.py -> backend/labs/generation_routes.py -> backend/main.py -> backend/api/labs.py`
-- 3-file cycle: `backend/api/ova.py -> backend/generation/jobs_router.py -> backend/main.py -> backend/api/ova.py`
-- 3-file cycle: `backend/api/ova.py -> backend/ova/router.py -> backend/main.py -> backend/api/ova.py`
 - 3-file cycle: `backend/api/users.py -> backend/roles/router.py -> backend/main.py -> backend/api/users.py`
+- 3-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/main.py -> backend/api/llm.py`
+- 3-file cycle: `backend/api/labs.py -> backend/labs/generation_routes.py -> backend/main.py -> backend/api/labs.py`
+- 3-file cycle: `backend/api/scorm.py -> backend/scorm/router.py -> backend/main.py -> backend/api/scorm.py`
+- 3-file cycle: `backend/api/ova.py -> backend/generation/jobs_router.py -> backend/main.py -> backend/api/ova.py`
 - 3-file cycle: `backend/api/users.py -> backend/users/router.py -> backend/main.py -> backend/api/users.py`
-- 4-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/llm/elaborate_router.py -> backend/main.py -> backend/api/llm.py`
+- 3-file cycle: `backend/api/ova.py -> backend/ova/router.py -> backend/main.py -> backend/api/ova.py`
+- 3-file cycle: `backend/api/labs.py -> backend/labs/router.py -> backend/main.py -> backend/api/labs.py`
+- 3-file cycle: `backend/api/rag.py -> backend/rag/router.py -> backend/main.py -> backend/api/rag.py`
+- 3-file cycle: `backend/api/rag.py -> backend/uploads/router.py -> backend/main.py -> backend/api/rag.py`
+- 4-file cycle: `backend/api/auth.py -> backend/auth/router.py -> backend/auth/dependencies.py -> backend/main.py -> backend/api/auth.py`
 
-## Communities (530 total, 188 thin omitted)
+## Communities (535 total, 197 thin omitted)
 
 ### Community 0 - "Navigation and Layout Components"
-Cohesion: 0.05
-Nodes (39): markLoggedIn(), queryClient, ForgotPasswordPage(), schema, LoginPage(), RegisterPage(), ResetPasswordPage(), schema (+31 more)
+Cohesion: 0.06
+Nodes (29): ForgotPasswordPage(), schema, ResetPasswordPage(), schema, AdminPlatformPage, AdminRolesPage, AdminUsersPage, EngagePage (+21 more)
 
 ### Community 1 - "OVA Versioning Helpers"
-Cohesion: 0.15
-Nodes (36): Session, User, Ova, OvaPhase, OvaVersion, Ova, OvaPhase, Session (+28 more)
+Cohesion: 0.08
+Nodes (64): Ova, OvaJob, OvaJobResource, Session, UUID, Ova, OvaPhase, OvaVersion (+56 more)
 
 ### Community 2 - "Account Management Endpoints"
-Cohesion: 0.17
-Nodes (28): _issue_reset_token(), Admin endpoints: account status (activate, lock) + password-reset triggers.  Sec, Replace any existing reset tokens for the user with a fresh long token., trigger_reset_email(), trigger_reset_whatsapp(), unlock_user(), update_user_status(), UserStatusUpdate (+20 more)
+Cohesion: 0.22
+Nodes (21): _issue_reset_token(), Admin endpoints: account status (activate, lock) + password-reset triggers.  S, Replace any existing reset tokens for the user with a fresh long token., trigger_reset_email(), trigger_reset_whatsapp(), unlock_user(), update_user_status(), UserStatusUpdate (+13 more)
 
 ### Community 3 - "Error Logging and Sanitization"
 Cohesion: 0.22
@@ -572,35 +577,35 @@ Nodes (21): OvaJob, Session, UUID, Event, _finalize(), _finish_job(), _generate(
 
 ### Community 4 - "Job Step Database Tests"
 Cohesion: 0.04
-Nodes (3): db(), EN-013 — BDD steps for job persistence + the background runner.  Runs against a, Sess()
+Nodes (3): db(), EN-013 — BDD steps for job persistence + the background runner.  Runs against, Sess()
 
 ### Community 5 - "User Administration and Roles"
-Cohesion: 0.11
-Nodes (40): get_users(), Admin endpoint: paginated user listing., _serialize_user(), Admin endpoints: edit profile + change role., UserProfileAdminUpdate, UserRoleUpdate, LoginRequest, RegisterRequest (+32 more)
+Cohesion: 0.07
+Nodes (61): normalize_gender(), normalize_phone(), get_users(), Admin endpoint: paginated user listing., _serialize_user(), _check_duplicates(), Admin endpoints: edit profile + change role., update_user_profile() (+53 more)
 
 ### Community 6 - "Linter and Formatter Config"
 Cohesion: 0.04
 Nodes (46): source, assist, actions, enabled, useExhaustiveDependencies, useHookAtTopLevel, css, parser (+38 more)
 
 ### Community 8 - "Domain Service Layer"
-Cohesion: 0.16
-Nodes (24): Column, CatalogCache, LabResult, OvaPhaseVersion, _pk_column(), PlatformConfig, Column, RagChunk (+16 more)
+Cohesion: 0.15
+Nodes (26): Column, CatalogCache, LabResult, OvaPhaseVersion, _pk_column(), PlatformConfig, Column, RagChunk (+18 more)
 
 ### Community 9 - "Lab Generation Routes"
-Cohesion: 0.21
-Nodes (17): Ova, OvaJob, OvaJobResource, Session, UUID, _add_phases(), _build_ova(), materialize_partial_ova() (+9 more)
+Cohesion: 0.16
+Nodes (17): _build_provider_catalog(), clamp_timeout(), is_default_model(), is_valid_model(), merge_with_defaults(), Curated LLM model catalog + per-user config defaults and validation.  Single s, Derive the legacy CATALOG {provider: [model_ids]} from CATALOG_ENTRIES., Recompute CATALOG after catalog_refresh updates CATALOG_ENTRIES. (+9 more)
 
 ### Community 10 - "Frontend Dependencies"
 Cohesion: 0.05
 Nodes (40): dependencies, class-variance-authority, clsx, @fontsource-variable/fraunces, @fontsource-variable/geist, @hookform/resolvers, motion, @phosphor-icons/react (+32 more)
 
 ### Community 11 - "Background Regeneration Service"
-Cohesion: 0.15
-Nodes (23): Session, User, export_scorm(), get_version_diff(), list_ova_versions(), revert_to_version(), Cloud storage adapters. Currently only Supabase Storage is implemented; the modu, _bucket_name() (+15 more)
+Cohesion: 0.12
+Nodes (26): Session, User, _build_and_persist(), Build SCORM zip and persist to storage or disk., download_ova_scorm(), _persist_scorm_zip(), Persist the SCORM zip. Prefer Supabase Storage; fall back to local disk., save_ova() (+18 more)
 
 ### Community 12 - "Resource Generation Routers"
-Cohesion: 0.10
-Nodes (32): Request, Session, User, Request, Session, User, Request, Session (+24 more)
+Cohesion: 0.07
+Nodes (41): Request, Session, User, Request, Session, User, Request, Session (+33 more)
 
 ### Community 13 - "Temporary Upload Management"
 Cohesion: 0.15
@@ -615,40 +620,40 @@ Cohesion: 0.16
 Nodes (29): JSONResponse, Request, Session, User, UUID, Optional body of POST /jobs/{id}/resume — restrict resume to these resources (B4, ResumeRequest, find_job() (+21 more)
 
 ### Community 16 - "Authentication and Password Reset"
-Cohesion: 0.20
-Nodes (18): build_token(), _email_throttled(), get_me(), _invalid_credentials(), _is_locked(), login(), logout(), _patch_partitioned() (+10 more)
+Cohesion: 0.21
+Nodes (9): CrearOvaPreviewPanel(), DEFAULT_META, getMeta(), PHASE_META, ResourceIframe(), ResourcePreview(), HtmlPreview(), useResourceContent() (+1 more)
 
 ### Community 17 - "OVA Metadata and Trash"
-Cohesion: 0.15
-Nodes (24): Session, User, Session, User, Session, User, Session, User (+16 more)
+Cohesion: 0.12
+Nodes (29): Ova, Session, User, Session, User, Session, User, Session (+21 more)
 
 ### Community 18 - "Database Models and Schema"
 Cohesion: 0.16
-Nodes (13): build_scorm_zip_bytes(), Assemble a SCORM 1.2 package. Each phase becomes its own HTML resource     file, build_index_html(), build_manifest(), _is_full_document(), phase_label(), SCO shell: side nav of resources + iframe. One SCO for the whole OVA., Return a standalone HTML document for one OVA resource.      Full HTML documents (+5 more)
+Nodes (13): build_scorm_zip_bytes(), Assemble a SCORM 1.2 package. Each phase becomes its own HTML resource     file, build_index_html(), build_manifest(), _is_full_document(), phase_label(), SCO shell: side nav of resources + iframe. One SCO for the whole OVA., Return a standalone HTML document for one OVA resource.      Full HTML documen (+5 more)
 
 ### Community 19 - "LLM Routing and Fallbacks"
-Cohesion: 0.09
-Nodes (29): Exception, _chat(), _default_models(), effective_llm_config(), EmptyContentError, _entry_tuple(), _fallback_chain(), generar_texto_with_model() (+21 more)
+Cohesion: 0.10
+Nodes (26): Exception, _chat(), _default_models(), effective_llm_config(), EmptyContentError, _entry_tuple(), _fallback_chain(), generar_texto_with_model() (+18 more)
 
 ### Community 20 - "Phase Generation Agents"
-Cohesion: 0.11
-Nodes (25): _generate_elaborate(), _generate_engage(), _generate_evaluate(), _generate_explain(), _generate_explore(), Call real LLM agents for OVA phase regeneration.  Translates an OvaPhase (phase_, Generate fresh HTML for a single phase using the real LLM agents.      `llm_conf, Run the ENGAGE generation pipeline for resource type n. (+17 more)
+Cohesion: 0.12
+Nodes (25): _generate_elaborate(), _generate_engage(), _generate_evaluate(), _generate_explain(), _generate_explore(), Call real LLM agents for OVA phase regeneration.  Translates an OvaPhase (phas, Generate fresh HTML for a single phase using the real LLM agents.      `llm_co, Run the ENGAGE generation pipeline for resource type n. (+17 more)
 
 ### Community 21 - "Generation Prompts and Utils"
 Cohesion: 0.11
-Nodes (24): format_contexto_usuario(), Shared utilities for all phase generation routers., Wrap retrieved RAG context in a tagged block for prompt injection. Returns     ", prompt_codigo(), prompt_html(), prompt_texto(), Prompts for the 10 ELABORATE-phase resources (5E methodology).  Each prompt fixe, prompt_codigo() (+16 more)
+Nodes (24): format_contexto_usuario(), Shared utilities for all phase generation routers., Wrap retrieved RAG context in a tagged block for prompt injection. Returns, prompt_codigo(), prompt_html(), prompt_texto(), Prompts for the 10 ELABORATE-phase resources (5E methodology).  Each prompt fi, prompt_codigo() (+16 more)
 
 ### Community 22 - "Auth and Security Tests"
 Cohesion: 0.07
-Nodes (22): Permission-gated relation where one user can link another user., UserLink, hash_password(), Request, Session, User, UUID, client() (+14 more)
+Nodes (19): hash_password(), Request, Session, User, UUID, client(), BDD de auth (HU-001 registro / HU-008 login) determinista: SQLite in-memory + a, UserLink (+11 more)
 
 ### Community 23 - "User and Settings Administration"
-Cohesion: 0.12
-Nodes (18): Request, Session, User, generar_audio_tts(), Audio helpers for transcribing and generating audio via Groq APIs., Whisper STT for uploaded audio files. Groq free tier limit: 25 MB., Orpheus TTS — returns WAV bytes (Orpheus only supports the wav format)., transcribir_audio() (+10 more)
+Cohesion: 0.11
+Nodes (19): Request, Session, User, generar_audio_tts(), Audio helpers for transcribing and generating audio via Groq APIs., Whisper STT for uploaded audio files. Groq free tier limit: 25 MB., Orpheus TTS — returns WAV bytes (Orpheus only supports the wav format)., transcribir_audio() (+11 more)
 
 ### Community 24 - "Job Validation and Shaping"
 Cohesion: 0.10
-Nodes (23): OvaJob, OvaJobResource, build_resource_plan(), job_params(), job_to_dict(), _legacy_phase_plan(), EN-013 — request validation + response shaping for the jobs router.  Kept apart, Persist the generation request shape for later replay/resume (R9).      `llm_con (+15 more)
+Nodes (23): OvaJob, OvaJobResource, build_resource_plan(), job_params(), job_to_dict(), _legacy_phase_plan(), EN-013 — request validation + response shaping for the jobs router.  Kept apar, Persist the generation request shape for later replay/resume (R9).      `llm_c (+15 more)
 
 ### Community 25 - "Evaluation Resource Generation"
 Cohesion: 0.12
@@ -656,11 +661,11 @@ Nodes (16): CA-01: Botón "Mover a la papelera" en historial, CA-02: Botón desh
 
 ### Community 26 - "Critic Agent Logic Tests"
 Cohesion: 0.09
-Nodes (3): _make_state(), EN-015 — BDD steps for the Crítico evaluator-optimizer loop.  Calls run_phase di, run_phase_mock()
+Nodes (3): _make_state(), EN-015 — BDD steps for the Crítico evaluator-optimizer loop.  Calls run_phase, run_phase_mock()
 
 ### Community 27 - "Admin Settings API Hooks"
-Cohesion: 0.20
-Nodes (8): getApiKeys(), saveApiKey(), ApiKeysCard(), IMG_PROVIDERS, LLM_PROVIDERS, KeyRow(), PROVIDER_META, ProviderModelsPanel()
+Cohesion: 0.16
+Nodes (12): CATEGORY_LABELS, TASK_LABELS, fetchLlmSettings(), refreshLlmCatalog(), saveEnabledModels(), saveLlmSettings(), ApiKeysCard(), IMG_PROVIDERS (+4 more)
 
 ### Community 28 - "LLM Config BDD Tests"
 Cohesion: 0.11
@@ -668,11 +673,11 @@ Nodes (10): codigo_is(), codigo_is_not(), ctx(), _Principal, put_codigo(), put_c
 
 ### Community 29 - "Node Config BDD Tests"
 Cohesion: 0.09
-Nodes (3): ctx(), _Principal, EN-017 — BDD steps for Panel de Nodos/Agentes Prometheus.  Tests the admin /node
+Nodes (3): ctx(), _Principal, EN-017 — BDD steps for Panel de Nodos/Agentes Prometheus.  Tests the admin /no
 
 ### Community 30 - "Labs Worker and Quality"
-Cohesion: 0.10
-Nodes (31): Request, Session, User, get_provider_status(), Snapshot of per-provider refresh health (for the settings UI)., _build_provider_catalog(), clamp_timeout(), is_default_model() (+23 more)
+Cohesion: 0.19
+Nodes (17): Request, Session, User, get_provider_status(), Snapshot of per-provider refresh health (for the settings UI)., _enabled_keys(), get_llm_settings(), _has_own_llm_key() (+9 more)
 
 ### Community 31 - "UI Component Registry"
 Cohesion: 0.09
@@ -683,20 +688,20 @@ Cohesion: 0.05
 Nodes (38): Agentes, Archivos clave del harness, CI/CD, Comandos backend, Con Docker (recomendado), Configuración de entorno, Contenido, Convenciones de código (+30 more)
 
 ### Community 33 - "LLM Config Draft Management"
-Cohesion: 0.19
-Nodes (9): addFallback(), emptyEntry(), moveFallback(), removeFallback(), setFallback(), toDraft(), LlmModelSelect(), TASK_DESCS (+1 more)
+Cohesion: 0.16
+Nodes (13): useAdminLlmConfig(), addFallback(), emptyEntry(), moveFallback(), removeFallback(), setFallback(), toDraft(), toPayload() (+5 more)
 
 ### Community 34 - "OVA Materialization Logic"
-Cohesion: 0.23
-Nodes (11): Session, UUID, chunks_for_upload(), insert_chunks(), purge_expired(), pgvector persistence layer for RAG chunks.  We use raw SQL because SQLAlchemy do, Debug helper: return all chunks for an upload (without embeddings)., Serialize a float vector to pgvector's text format: [v1,v2,v3,...] (+3 more)
+Cohesion: 0.20
+Nodes (13): Session, UUID, chunks_for_upload(), insert_chunks(), purge_expired(), pgvector persistence layer for RAG chunks.  We use raw SQL because SQLAlchemy, Debug helper: return all chunks for an upload (without embeddings)., Serialize a float vector to pgvector's text format: [v1,v2,v3,...] (+5 more)
 
 ### Community 35 - "LLM Catalog UI Components"
-Cohesion: 0.17
-Nodes (11): formatContextLength(), groupByProvider(), pricingLabel(), PROVIDER_LABELS, CatalogStatusAlert(), LlmSettingsCard(), LlmSettingsForm(), TASK_VISUAL (+3 more)
+Cohesion: 0.21
+Nodes (12): useLlmSettings(), formatContextLength(), groupByProvider(), pricingLabel(), PROVIDER_LABELS, ModelsPage(), CatalogStatusAlert(), LlmSettingsCard() (+4 more)
 
 ### Community 36 - "API Key Persistence Tests"
 Cohesion: 0.14
-Nodes (8): Session, db_with_cached_key(), db_with_groq_key(), db_without_groq_key(), _make_sqlite_session(), EN-018 — BDD steps for DB-first LLM API key resolution.  Patches database.Sessio, Return an in-memory SQLite session with PlatformConfig rows., _reset_key_cache()
+Nodes (8): Session, db_with_cached_key(), db_with_groq_key(), db_without_groq_key(), _make_sqlite_session(), EN-018 — BDD steps for DB-first LLM API key resolution.  Patches database.Sess, Return an in-memory SQLite session with PlatformConfig rows., _reset_key_cache()
 
 ### Community 37 - "LLM Settings Router"
 Cohesion: 0.06
@@ -711,8 +716,8 @@ Cohesion: 0.15
 Nodes (13): cn(), Checkbox(), Label(), Separator(), Table(), TableBody(), TableCaption(), TableCell() (+5 more)
 
 ### Community 40 - "Multi-Provider Image Generation"
-Cohesion: 0.13
-Nodes (17): enrich_with_images(), _falai(), get_image_data_uri(), _hf(), Multi-provider image generation with a uniform interface.  All providers return, Generate an image for `prompt` using the specified provider.      Returns a base, For engage JSON whose items have `prompt_imagen`, fetch images and inject     `i, Download an image URL and return a base64 JPEG data URI. (+9 more)
+Cohesion: 0.25
+Nodes (10): enrich_with_images(), _falai(), get_image_data_uri(), Multi-provider image generation with a uniform interface.  All providers return, Generate an image for `prompt` using the specified provider.      Returns a base, For engage JSON whose items have `prompt_imagen`, fetch images and inject     `i, Download an image URL and return a base64 JPEG data URI., _runware() (+2 more)
 
 ### Community 41 - "Agent Documentation and Skills"
 Cohesion: 0.07
@@ -720,35 +725,35 @@ Nodes (21): C1 — Tests verdes, C2 — Lint limpio, C3 — Límite de líneas r
 
 ### Community 42 - "Engage Phase Generation"
 Cohesion: 0.09
-Nodes (21): User, BaseException, quality_check_html(), Available LLM models curated for Labs experimentation., Return {cdn_ok, scorm_ok, min_length_ok, char_count} for generated HTML., get_job_results(), Background generation workers and job store for Labs., Spawn one worker thread per model_config; return job_id. (+13 more)
+Nodes (29): Labs domain — prompt experimentation, model evaluation, single-resource generati, Request, Session, User, BaseException, quality_check_html(), Available LLM models curated for Labs experimentation., Return {cdn_ok, scorm_ok, min_length_ok, char_count} for generated HTML. (+21 more)
 
 ### Community 43 - "Resource Selection UI"
-Cohesion: 0.16
-Nodes (8): INTERACTIVIDAD_COLOR, ResourceCard(), usePhaseGeneration(), PhasePage(), fetchEngageRecursos(), generateEngageResource(), fetchExploreRecursos(), generateExploreResource()
+Cohesion: 0.09
+Nodes (17): EMPTY_PICKS(), PHASE_CFG, PhaseSelectModal(), INTERACTIVIDAD_COLOR, ResourceCard(), usePhaseGeneration(), PhasePage(), fetchElaborateRecursos() (+9 more)
 
 ### Community 44 - "Pluggable Text Embedders"
 Cohesion: 0.18
-Nodes (13): ABC, Embedder, GeminiEmbedder, GeminiV1Embedder, get_embedder(), LocalEmbedder, Pluggable embedder. Default backend is Google's `gemini-embedding-2-preview` (vi, Default: gemini-embedding-2-preview. Supports text + multimodal binary. (+5 more)
+Nodes (13): ABC, Embedder, GeminiEmbedder, GeminiV1Embedder, get_embedder(), LocalEmbedder, Pluggable embedder. Default backend is Google's `gemini-embedding-2-preview` (v, Default: gemini-embedding-2-preview. Supports text + multimodal binary. (+5 more)
 
 ### Community 45 - "Platform Admin Config"
-Cohesion: 0.18
-Nodes (16): get_llm_config(), get_nodes_config_endpoint(), get_platform_config(), _load_platform_keys(), put_llm_config(), put_nodes_config_endpoint(), put_platform_config(), Admin-only platform API key management.  Admins can set platform-level API keys (+8 more)
+Cohesion: 0.16
+Nodes (18): get_llm_config(), get_nodes_config_endpoint(), get_platform_config(), _load_platform_keys(), put_llm_config(), put_nodes_config_endpoint(), put_platform_config(), Admin-only platform API key management.  Admins can set platform-level API key (+10 more)
 
 ### Community 46 - "User Admin UI"
 Cohesion: 0.12
 Nodes (19): useUsersAdmin(), getRoleColorClasses(), AdminUsersPage(), fetchCurrentUser(), fetchRoles(), fetchUsersPage(), generateResetWhatsApp(), send() (+11 more)
 
 ### Community 47 - "OVA Workspace API Hooks"
-Cohesion: 0.14
-Nodes (23): EMPTY_PICKS(), PHASE_CFG, PhaseSelectModal(), apiJson(), fetchElaborateRecursos(), generateElaborateResource(), fetchEvaluateRecursos(), generateEvaluateResource() (+15 more)
+Cohesion: 0.17
+Nodes (23): apiJson(), can(), UserLinksPage(), addPhase(), deletePhase(), downloadEditedScorm(), fetchOvaEditorData(), fetchOvaVersions() (+15 more)
 
 ### Community 48 - "HTML Validation and Repair"
-Cohesion: 0.16
-Nodes (17): _inject_scorm(), Inline HTML validation and auto-repair for generated resources.  Validates LLM o, Validate, attempt repair if needed, re-validate. Returns (html, failures)., Return a list of failure messages. Empty list = all OK., Best-effort repair of truncated HTML from LLM output.      Closes open tags and, Insert the SCORM JS snippet before the closing </script> or </body>., repair_truncated_html(), validate_and_repair() (+9 more)
+Cohesion: 0.17
+Nodes (15): _inject_scorm(), Inline HTML validation and auto-repair for generated resources.  Validates LLM, Return a list of failure messages. Empty list = all OK., Best-effort repair of truncated HTML from LLM output.      Closes open tags an, Insert the SCORM JS snippet before the closing </script> or </body>., repair_truncated_html(), validate_html(), apply_feedback() (+7 more)
 
 ### Community 49 - "Coherence Editor Tests"
 Cohesion: 0.14
-Nodes (5): _make_state(), EN-016 — BDD steps for the Editor de Coherencia 5E.  Tests editor_node directly, state_1_recurso(), state_2_recursos(), state_con_termino_x()
+Nodes (5): _make_state(), EN-016 — BDD steps for the Editor de Coherencia 5E.  Tests editor_node directl, state_1_recurso(), state_2_recursos(), state_con_termino_x()
 
 ### Community 50 - "Role Management Hooks"
 Cohesion: 0.21
@@ -763,8 +768,8 @@ Cohesion: 0.17
 Nodes (24): OvaJob, OvaJobResource, Session, UUID, create_job(), find_job_by_ova(), get_job(), get_resource() (+16 more)
 
 ### Community 53 - "OVA Creation Panels"
-Cohesion: 0.17
-Nodes (8): P_DOT, P_EMOJI, PhaseRow(), PHASES, SectionLabel(), OvaThemeSelector(), UPAO_SWATCHES, TotalFailurePanel()
+Cohesion: 0.08
+Nodes (18): LlmEnginesPanel(), PROVIDER_BADGE, PROVIDER_LABELS, P_DOT, P_EMOJI, PhaseRow(), PHASES, SectionLabel() (+10 more)
 
 ### Community 54 - "Phase Generation Hooks"
 Cohesion: 0.07
@@ -776,7 +781,7 @@ Nodes (7): useAdminNodesConfig(), criticRoundsVisible(), hasUnsavedChanges(), is
 
 ### Community 56 - "Model Catalog Validation"
 Cohesion: 0.10
-Nodes (4): _BrokenSession, indisponibilidad_temporal(), EN-012 — BDD steps for the generation error logger.  These run against an in-mem, Session whose commit raises — simulates a transient write failure (R7).
+Nodes (4): _BrokenSession, indisponibilidad_temporal(), EN-012 — BDD steps for the generation error logger.  These run against an in-m, Session whose commit raises — simulates a transient write failure (R7).
 
 ### Community 57 - "Job State Test Cases"
 Cohesion: 0.27
@@ -788,35 +793,35 @@ Nodes (9): DropdownMenuCheckboxItem(), DropdownMenuContent(), DropdownMenuItem()
 
 ### Community 59 - "Platform Node Admin UI"
 Cohesion: 0.24
-Nodes (5): Any, EmbedderError, _GeminiEmbedderBase, Embed a binary file (PDF, image, audio, video) directly. Returns         ONE vec, Shared core for Gemini embedding models (text input).
+Nodes (5): Any, EmbedderError, _GeminiEmbedderBase, Embed a binary file (PDF, image, audio, video) directly. Returns         ONE ve, Shared core for Gemini embedding models (text input).
 
 ### Community 60 - "User Profile Forms"
-Cohesion: 0.20
-Nodes (10): DeleteAccountForm(), OvaCardImpl(), PasswordChangeForm(), ProfileForm(), ProfileSkeleton(), useChangePassword(), formatDate(), getInitials() (+2 more)
+Cohesion: 0.18
+Nodes (11): DeleteAccountForm(), schema, PasswordChangeForm(), ProfileForm(), ProfileSkeleton(), useChangePassword(), formatDate(), getInitials() (+3 more)
 
 ### Community 61 - "LLM Config Store"
-Cohesion: 0.08
-Nodes (30): Session, admin_refresh_catalog(), Request, Force-refresh the LLM model catalog from provider APIs (admin-only)., _enabled_llm_options(), LLM catalog and OVA output-directory helpers shared by the OVA routers.  The LLM, Return the full catalog of active models (for backward compat with     any remai, datetime (+22 more)
+Cohesion: 0.18
+Nodes (15): _build_full_catalog(), categorize_model(), _fetch_groq(), _fetch_openrouter(), format_pricing(), _load_cached(), _merge_groq(), _merge_openrouter() (+7 more)
 
 ### Community 62 - "Theming and Design System"
 Cohesion: 0.19
 Nodes (13): build_design_system(), inject_design_system(), _layout_block(), _palette_block(), OVA content theming — single source of truth for the palette + design system inj, Helper for callers that prefer post-hoc injection (unused by the param path)., Build the [SISTEMA_DE_DISEÑO_OBLIGATORIO] block injected into HTML prompts., _upao_root_vars() (+5 more)
 
 ### Community 63 - "Job Polling and Progress"
-Cohesion: 0.07
-Nodes (28): CrearOvaChatPanel(), CrearOvaPreviewPanel(), DEFAULT_META, getMeta(), PHASE_META, ResourceIframe(), ResourcePreview(), HtmlPreview() (+20 more)
+Cohesion: 0.17
+Nodes (12): CrearOvaChatPanel(), ALL_PHASES, EMPTY_SELECTIONS, MIN_CHARS, useOvaCreation(), useOvaJob(), useOvaUploads(), useOvaWorkspace() (+4 more)
 
 ### Community 64 - "Project Scripts and Build"
 Cohesion: 0.13
 Nodes (14): name, packageManager, private, scripts, build, dev, dev:docker, format (+6 more)
 
 ### Community 65 - "RAG Vector Persistence"
-Cohesion: 0.09
-Nodes (26): schema, MainContainer(), initials(), Navbar(), NavbarBrand(), Sidebar(), ADMIN_LINKS, CONFIG_LINKS (+18 more)
+Cohesion: 0.19
+Nodes (8): ADMIN_LINKS, CONFIG_LINKS, hasPermission(), ICONS, initials(), SidebarMenu(), navigationLinks, fetchTrashCount()
 
 ### Community 66 - "LLM Engine Selection UI"
-Cohesion: 0.18
-Nodes (8): LlmEnginesPanel(), PROVIDER_BADGE, PROVIDER_LABELS, PHASE_EMOJI, PHASE_ORDER, PHASE_STYLE, SelectionChips(), useLlmSettings()
+Cohesion: 0.14
+Nodes (13): Common Skill Categories, Find Skills, How to Help Users Find Skills, Step 1: Understand What They Need, Step 2: Check the Leaderboard First, Step 3: Search for Skills, Step 4: Verify Quality Before Recommending, Step 5: Present Options to the User (+5 more)
 
 ### Community 67 - "Lab Prompt Editor"
 Cohesion: 0.12
@@ -827,76 +832,76 @@ Cohesion: 0.14
 Nodes (13): devDependencies, @cucumber/cucumber, happy-dom, playwright-bdd, @playwright/test, name, private, scripts (+5 more)
 
 ### Community 69 - "OVA Assembly Nodes"
-Cohesion: 0.13
-Nodes (13): OvaGenerationState, OvaGenerationState, OvaGenerationState, OvaGenerationState, assemble_node(), Assemble node — builds the OVA and SCORM zip from generated resources.  Reads al, engage_node(), explain_node() (+5 more)
+Cohesion: 0.18
+Nodes (9): OvaGenerationState, OvaGenerationState, assemble_node(), Assemble node — builds the OVA and SCORM zip from generated resources.  Reads, evaluate_node(), EVALUATE agent node — generates ALL evaluate resources in parallel (Fase 2)., OvaGenerationState, Shared state for the OVA generation LangGraph.  Single source of truth passed (+1 more)
 
 ### Community 70 - "Phase Runtime Execution"
 Cohesion: 0.07
 Nodes (28): Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 2: prompt_html (+20 more)
 
 ### Community 72 - "User API Key Management"
-Cohesion: 0.11
-Nodes (20): useOvaFilters(), useOvaList(), useOvaMetadata(), useOvaSelection(), ADMIN_CARDS, containerVariants, DashboardPage(), itemVariants (+12 more)
+Cohesion: 0.18
+Nodes (14): useOvaFilters(), useOvaList(), useOvaMetadata(), useOvaSelection(), batchMoveToTrash(), batchPermanentDelete(), batchRestore(), deleteOva() (+6 more)
 
 ### Community 73 - "OVA Management Modals"
-Cohesion: 0.10
-Nodes (18): BulkTrashModal(), ConfirmModal(), EditMetadataModal(), EMPTY_JOB, OvaCard, OvaGridSkeleton(), OvaListPagination(), OvaStatusBadge() (+10 more)
+Cohesion: 0.09
+Nodes (19): BulkTrashModal(), ConfirmModal(), EditMetadataModal(), EMPTY_JOB, OvaCard, OvaCardImpl(), OvaGridSkeleton(), OvaListPagination() (+11 more)
 
 ### Community 74 - "Resource Preview Components"
-Cohesion: 0.18
-Nodes (16): OvaPhase, Session, _build_and_persist(), _finalize_edit(), _mark_ova_error(), _owner_llm_config(), Background regen service — creates a new OvaVersion with real LLM content.  Repl, Load the OVA owner's per-type LLM overrides (empty = system defaults). (+8 more)
+Cohesion: 0.13
+Nodes (20): Session, User, OvaPhase, Session, _resolve_regen_stage(), get_regen_progress(), regenerate_ova(), RegenRequest (+12 more)
 
 ### Community 75 - "Node Configuration Store"
 Cohesion: 0.22
-Nodes (12): get_nodes_config(), invalidate(), is_video_resource(), load_stored(), Configuración de nodos/agentes Prometheus + store con TTL 30s (EN-017)., Return merged config: DB overrides take precedence over settings.*.      Merge d, Persist validated payload to PlatformConfig and invalidate cache., Return True when resource_type rt belongs to the video node for phase. (+4 more)
+Nodes (12): get_nodes_config(), invalidate(), is_video_resource(), load_stored(), Configuración de nodos/agentes Prometheus + store con TTL 30s (EN-017)., Return merged config: DB overrides take precedence over settings.*.      Merge, Persist validated payload to PlatformConfig and invalidate cache., Return True when resource_type rt belongs to the video node for phase. (+4 more)
 
 ### Community 76 - "Alert Dialog Components"
 Cohesion: 0.15
 Nodes (9): AlertDialogAction(), AlertDialogCancel(), AlertDialogContent(), AlertDialogDescription(), AlertDialogFooter(), AlertDialogHeader(), AlertDialogMedia(), AlertDialogOverlay() (+1 more)
 
 ### Community 77 - "Binary File Embedding"
-Cohesion: 0.19
-Nodes (11): OvaGenerationState, elaborate_node(), ELABORATE agent node — generates ALL elaborate resources in parallel (Fase 2)., _concurrency(), _persist_done(), Shared phase runtime — bounded-parallel resource generation + live persistence., Mark the matching OvaJobResource row `done` the moment it succeeds.      Matches, Generate every resource of `phase` in parallel and advance the phase index. (+3 more)
+Cohesion: 0.14
+Nodes (14): OvaGenerationState, OvaGenerationState, elaborate_node(), ELABORATE agent node — generates ALL elaborate resources in parallel (Fase 2)., engage_node(), ENGAGE agent node — generates ALL engage resources for the job in parallel.  Fas, _concurrency(), _persist_done() (+6 more)
 
 ### Community 78 - "LLM Catalog Helpers"
-Cohesion: 0.26
-Nodes (8): buildLabelIndex(), failedResourceIds(), jobOutcome(), PHASE_LABEL, pruneSelection(), STATUS_MAP, TERMINAL, toResourceViewModel()
+Cohesion: 0.13
+Nodes (14): ProgressPanel(), STATUS_LABEL, MARK, PHASE_EMOJI, ResourceList(), buildLabelIndex(), failedResourceIds(), groupByPhase() (+6 more)
 
 ### Community 79 - "RAG Ingestion Pipeline"
-Cohesion: 0.17
-Nodes (19): Session, detect_kind(), extract_text(), _parse_docx(), _parse_pdf(), _parse_pptx(), ParserError, File-type-aware text extractors for the RAG pipeline.  Each parser receives a fi (+11 more)
+Cohesion: 0.26
+Nodes (11): Session, _guess_mime(), _ingest_binary(), _ingest_text(), ingest_upload(), is_enabled(), End-to-end ingestion: parse → chunk → embed → persist. Best-effort: RAG ingesti, Embed a binary file (PDF/image/audio/video) as a single chunk via the     multi (+3 more)
 
 ### Community 80 - "E2E CLI Harness"
 Cohesion: 0.05
-Nodes (45): Response, ApiClient, FlowResult, Path, ApiClient, FlowResult, Namespace, ApiClient (+37 more)
+Nodes (46): Response, ApiClient, FlowResult, Path, ApiClient, FlowResult, Namespace, ApiClient (+38 more)
 
 ### Community 81 - "User Story Requirements"
 Cohesion: 0.15
 Nodes (12): HU-030: 'Mis OVAs' — acceso al workspace + versión en metadata, Alcance, Contexto, Criterios de aceptación, Dependencias, Escenarios BDD (Gherkin), Historia de Usuario, HU-025: Workspace de edición de OVA (panel dividido) (+4 more)
 
 ### Community 82 - "Job View Model Mapping"
-Cohesion: 0.18
-Nodes (14): _clean_entry(), _full_keys(), invalidate(), load_stored(), Config admin de modelos LLM por tarea + cadena de fallback.  El router (``llm/ro, Persiste la config (ya saneada) e invalida el cache., Config almacenada con cache TTL (lo que el router consulta por llamada)., Normaliza una entrada {provider, model_id, extra?, timeout_s?} o None. (+6 more)
+Cohesion: 0.15
+Nodes (16): get_full_catalog_entries(), Return ALL models from both providers with categories and pricing., _clean_entry(), _full_keys(), invalidate(), load_stored(), Config admin de modelos LLM por tarea + cadena de fallback.  El router (``llm/ro, Persiste la config (ya saneada) e invalida el cache. (+8 more)
 
 ### Community 83 - "SCORM Content Examples"
 Cohesion: 0.22
 Nodes (9): Regresión Lineal Simple · Comida Express (Elaborate), Regresión Lineal Simple · Evaluación (Evaluate), Introducción a la regresión lineal simple (SCORM Index), ENGAGE · ML – Regresión Lineal Simple (Comic), Regresión Lineal Simple · Laboratorio interactivo (Explore), Video Teórico (Explain), Estudio de Caso (Elaborate), Quiz Interactivo (Evaluate) (+1 more)
 
 ### Community 84 - "Email and API Clients"
-Cohesion: 0.08
-Nodes (20): OVA domain — CRUD, editing, versioning, trash, duplication, phase management.  P, RAG domain — vector search, file uploads, RAG ingestion pipeline.  Prefixes (set, SCORM domain — SCORM 1.2 package assembly and storage.  Prefix (set in main.py):, api_health(), db_health(), health(), lifespan(), ProcessTimeMiddleware (+12 more)
+Cohesion: 0.05
+Nodes (26): LLM domain — model catalog, LLM dispatch, per-phase generation endpoints (legacy, OVA domain — CRUD, editing, versioning, trash, duplication, phase management., RAG domain — vector search, file uploads, RAG ingestion pipeline.  Prefixes (s, SCORM domain — SCORM 1.2 package assembly and storage.  Prefix (set in main.py, api_health(), _background_catalog_refresh(), _background_rag_purge(), db_health() (+18 more)
 
 ### Community 85 - "Phase and Version Management"
-Cohesion: 0.18
-Nodes (16): Auth domain — login, register, password reset, JWT/cookie session., EmailNotConfigured, _html_body(), Send a password-reset email. Raises EmailNotConfigured when credentials     are, send_reset_email(), _err(), forgot_password(), ForgotPasswordRequest (+8 more)
+Cohesion: 0.15
+Nodes (23): Auth domain — login, register, password reset, JWT/cookie session., _err(), forgot_password(), ForgotPasswordRequest, Password reset finalization endpoint.  Lookup is by exact token match. Tokens, reset_password(), ResetPasswordSubmit, BackgroundTasks (+15 more)
 
 ### Community 86 - "User Model Allowlist"
-Cohesion: 0.24
-Nodes (10): Request, Session, User, get_full_catalog_entries(), Return ALL models from both providers with categories and pricing., EnabledModelsUpdate, get_enabled_models(), put_enabled_models() (+2 more)
+Cohesion: 0.20
+Nodes (9): TERMINAL, ALL_PHASES, EMPTY_SELECTIONS, POLL_MS, downloadOvaScorm(), getJobByOvaId(), getJobStatus(), resumeJob() (+1 more)
 
 ### Community 87 - "Lab Generation Hooks"
-Cohesion: 0.13
-Nodes (14): Labs domain — prompt experimentation, model evaluation, single-resource generati, _extract_token(), get_current_user(), Prefer the httpOnly cookie; fall back to Bearer when explicitly enabled., require_admin(), Request, Session, _background_catalog_refresh() (+6 more)
+Cohesion: 0.06
+Nodes (40): Admin user-management router. Mounts the listing, profile and account sub-route, Users & Roles domain — profiles, admin management, LLM settings, model allowlist, _extract_token(), get_current_user(), Prefer the httpOnly cookie; fall back to Bearer when explicitly enabled., require_admin(), Request, Session (+32 more)
 
 ### Community 88 - "Workspace Resource Reordering"
 Cohesion: 0.27
@@ -919,16 +924,16 @@ Cohesion: 0.18
 Nodes (8): SelectContent(), SelectGroup(), SelectItem(), SelectLabel(), SelectScrollDownButton(), SelectScrollUpButton(), SelectSeparator(), SelectTrigger()
 
 ### Community 93 - "Generation Progress UI"
-Cohesion: 0.18
-Nodes (13): COLOR_MODES, DESIGN_MODES, PALETTES, ThemeModal(), apiFetch(), fromServerItem(), generateClientId(), MAX_UPLOAD_FILES (+5 more)
+Cohesion: 0.38
+Nodes (8): fromServerItem(), generateClientId(), MAX_UPLOAD_FILES, toUploadingItem(), deleteTempFile(), listTempFiles(), parseResponse(), uploadTempFiles()
 
 ### Community 94 - "Lab Quality Results"
 Cohesion: 0.07
 Nodes (27): Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 1: prompt_texto, Paso 2: prompt_html, Paso 2: prompt_html (+19 more)
 
 ### Community 95 - "Workspace Layout Utilities"
-Cohesion: 0.27
-Nodes (8): clampRatio(), getSavedRatio(), saveSplitRatio(), useOvaWorkspace(), contentVariants, OvaEditView(), topbarVariants, WorkspaceResizableDivider()
+Cohesion: 0.20
+Nodes (10): findActiveVersion(), sortVersionsDesc(), clampRatio(), getSavedRatio(), saveSplitRatio(), contentVariants, topbarVariants, VersionHistoryPanel() (+2 more)
 
 ### Community 96 - "File Upload Management"
 Cohesion: 0.07
@@ -939,8 +944,8 @@ Cohesion: 0.08
 Nodes (25): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+17 more)
 
 ### Community 98 - "Generation Graph Orchestration"
-Cohesion: 0.20
-Nodes (9): Jobs Background Runner, get_checkpointer(), LangGraph checkpointer for the OVA generation graph.  Default is an in-process M, Strip the SQLAlchemy driver suffix so libpq/psycopg can parse the URL.      ``da, _to_libpq_url(), Concierge Node, build_ova_graph(), invoke_ova_generation() (+1 more)
+Cohesion: 0.16
+Nodes (11): OvaGenerationState, Jobs Background Runner, get_checkpointer(), LangGraph checkpointer for the OVA generation graph.  Default is an in-process M, Strip the SQLAlchemy driver suffix so libpq/psycopg can parse the URL.      ``da, _to_libpq_url(), Concierge Node, build_ova_graph() (+3 more)
 
 ### Community 99 - "Coherence Editor Node"
 Cohesion: 0.15
@@ -951,12 +956,12 @@ Cohesion: 0.08
 Nodes (23): A.1 — Lote de specs (batch), Agente Líder (Orquestador), Caso A — Mensaje de tarea (con o sin ID), Caso B — Error o bug significativo detectado, Caso C — Pregunta conceptual / exploración pura, Caso D — Feature en `spec_ready` esperando aprobación, Caso E — Feature en `in_progress` (sesión interrumpida), Caso F — Feature en `aborted` (+15 more)
 
 ### Community 101 - "LLM Settings Management"
-Cohesion: 0.39
-Nodes (6): CATEGORY_LABELS, TASK_LABELS, fetchLlmSettings(), refreshLlmCatalog(), saveEnabledModels(), saveLlmSettings()
+Cohesion: 0.27
+Nodes (12): clearSession(), clearToken(), decodeToken(), getToken(), isLoggedIn(), isTokenExpired(), markLoggedIn(), safeLocalStorage() (+4 more)
 
 ### Community 102 - "Document Text Extraction"
-Cohesion: 0.26
-Nodes (15): Request, Session, User, User, export_scorm(), improve_prompt(), ImprovePromptRequest, list_recent_results() (+7 more)
+Cohesion: 0.17
+Nodes (10): admin_refresh_catalog(), Request, Force-refresh the LLM model catalog from provider APIs (admin-only)., _enabled_llm_options(), LLM catalog and OVA output-directory helpers shared by the OVA routers.  The L, Return the full catalog of active models (for backward compat with     any rema, get_catalog_entries(), Return the current merged catalog (fast path — in-memory). (+2 more)
 
 ### Community 103 - "Dependency Management Utilities"
 Cohesion: 0.39
@@ -968,7 +973,7 @@ Nodes (24): EN-012 — Observabilidad de errores de generación en Supabase, EN-
 
 ### Community 105 - "Resource Quality Assurance"
 Cohesion: 0.33
-Nodes (7): Quality criteria for each ENGAGE and EXPLORE resource. Used by test_resource_qua, auth(), check_html_quality(), generate(), main(), Devuelve lista de fallas. Vacía = todo OK., sep()
+Nodes (7): Quality criteria for each ENGAGE and EXPLORE resource. Used by test_resource_qu, auth(), check_html_quality(), generate(), main(), Devuelve lista de fallas. Vacía = todo OK., sep()
 
 ### Community 106 - "Prompt Laboratory Tool"
 Cohesion: 0.08
@@ -992,11 +997,11 @@ Nodes (7): buildCommand, headers, ignoreCommand, installCommand, outputDirectory
 
 ### Community 111 - "Agent Resource Generation"
 Cohesion: 0.32
-Nodes (7): _call_agent_with_timeout(), generate_resource_html(), EN-013 — per-resource generation with retries + timeout.  Isolated from `jobs_ru, Map a job resource to the numeric ENGAGE/EXPLORE id the agents expect.      Reso, Run one agent call, capping wall time so a stuck provider can't hang the thread., Generate HTML for one resource. Returns (html, error_message).      Retries up t, _resource_type_id()
+Nodes (7): _call_agent_with_timeout(), generate_resource_html(), EN-013 — per-resource generation with retries + timeout.  Isolated from `jobs_, Map a job resource to the numeric ENGAGE/EXPLORE id the agents expect.      Re, Run one agent call, capping wall time so a stuck provider can't hang the thread., Generate HTML for one resource. Returns (html, error_message).      Retries up, _resource_type_id()
 
 ### Community 112 - "SCORM API Integration"
-Cohesion: 0.14
-Nodes (13): Common Skill Categories, Find Skills, How to Help Users Find Skills, Step 1: Understand What They Need, Step 2: Check the Leaderboard First, Step 3: Search for Skills, Step 4: Verify Quality Before Recommending, Step 5: Present Options to the User (+5 more)
+Cohesion: 0.21
+Nodes (6): NavbarBrand(), COLOR_MODES, DESIGN_MODES, PALETTES, ThemeModal(), getCurrentUser()
 
 ### Community 113 - "Project Metadata"
 Cohesion: 0.29
@@ -1007,8 +1012,8 @@ Cohesion: 0.09
 Nodes (21): Alcance, Configuración funcional requerida, Criterios de aceptación (detallados), Definición de terminado (DoD), EN-010: Configuración del Monorepo y Arquitectura Base React, Escenarios BDD (Gherkin), Estructura esperada, Historia de usuario (+13 more)
 
 ### Community 115 - "Audio Processing Helpers"
-Cohesion: 0.14
-Nodes (13): Common Skill Categories, Find Skills, How to Help Users Find Skills, Step 1: Understand What They Need, Step 2: Check the Leaderboard First, Step 3: Search for Skills, Step 4: Verify Quality Before Recommending, Step 5: Present Options to the User (+5 more)
+Cohesion: 0.17
+Nodes (11): Authentication, Common Mistakes, Documentation Lookup, Error Handling, Result fields, Selection process, Step 1: Resolve a Library, Step 2: Query Documentation (+3 more)
 
 ### Community 116 - "LLM Provider Profiles"
 Cohesion: 0.52
@@ -1027,8 +1032,8 @@ Cohesion: 0.40
 Nodes (3): OvaFiveEViewer(), PHASE_COLORS, phaseColor()
 
 ### Community 120 - "Version History Management"
-Cohesion: 0.29
-Nodes (9): can(), UserLinksPage(), acceptLink(), createLinkCode(), deleteAnyLink(), deleteMyLink(), fetchAllLinks(), fetchMyLinks() (+1 more)
+Cohesion: 0.33
+Nodes (5): MainContainer(), initials(), Navbar(), Sidebar(), AppLayout()
 
 ### Community 121 - "Role Validation Logic"
 Cohesion: 0.33
@@ -1052,11 +1057,11 @@ Nodes (5): REST API Reference, Editorial Team Architecture, LLM Model Catalog, D
 
 ### Community 126 - "Application Configuration"
 Cohesion: 0.40
-Nodes (3): Configuración central tipada y validada (pydantic-settings).  Reemplaza progresi, Settings, BaseSettings
+Nodes (3): Configuración central tipada y validada (pydantic-settings).  Reemplaza progre, Settings, BaseSettings
 
 ### Community 127 - "Catalog Cache Service"
-Cohesion: 0.16
-Nodes (13): Request, Session, User, _inherited_key(), mask_key(), API key resolution: user key → inherited key → platform DB key → env var.  Prior, Return the best available API key for `provider` or None., Return '••••••••XXXX' (last 4 chars visible) or None when key absent. (+5 more)
+Cohesion: 0.50
+Nodes (4): _inherited_key(), API key resolution: user key → inherited key → platform DB key → env var.  Pri, Return the best available API key for `provider` or None., resolve_key()
 
 ### Community 128 - "RBAC Database Schema"
 Cohesion: 0.04
@@ -1092,7 +1097,7 @@ Nodes (17): Agente Spec Author, BU, Comunicación, Contenido por tipo, HU / EP /
 
 ### Community 137 - "Critic Feedback Loop"
 Cohesion: 0.40
-Nodes (4): _critic_enabled(), critic_loop(), Generador-Crítico bounded loop (EN-015).  Extracted from runtime.py to respect t, Run bounded evaluate→(optionally re-generate) loop.      Returns (best_html, bes
+Nodes (4): _critic_enabled(), critic_loop(), Generador-Crítico bounded loop (EN-015).  Extracted from runtime.py to respect, Run bounded evaluate→(optionally re-generate) loop.      Returns (best_html, b
 
 ### Community 138 - "Text Chunking Utility"
 Cohesion: 0.50
@@ -1100,7 +1105,7 @@ Nodes (4): chunk_text(), _normalize(), Sliding-window chunker. No external deps.
 
 ### Community 139 - "Resource Completion Logic"
 Cohesion: 0.19
-Nodes (12): Session, UUID, log_generation_error(), _normalize_category(), EN-012 — reusable generation error logging.  `log_generation_error()` mints an o, Strip secrets and clamp length before the message ever hits the DB (R4)., Persist a sanitized generation error and return its opaque `error_id`.      The, _sanitize() (+4 more)
+Nodes (12): Session, UUID, log_generation_error(), _normalize_category(), EN-012 — reusable generation error logging.  `log_generation_error()` mints an, Strip secrets and clamp length before the message ever hits the DB (R4)., Persist a sanitized generation error and return its opaque `error_id`.      Th, _sanitize() (+4 more)
 
 ### Community 140 - "User Profile Schemas"
 Cohesion: 0.40
@@ -1119,8 +1124,8 @@ Cohesion: 0.67
 Nodes (3): Render Backend Host, Supabase Database & Storage, Vercel Frontend Host
 
 ### Community 160 - "Database Connection"
-Cohesion: 0.26
-Nodes (9): CATALOG_KEY, CONFIG_KEY, useAdminLlmConfig(), toPayload(), FallbackPage(), getAdminLlmConfig(), saveAdminLlmConfig(), LlmTaskRow() (+1 more)
+Cohesion: 0.22
+Nodes (6): ADMIN_CARDS, containerVariants, DashboardPage(), itemVariants, STATUS_STYLE, fetchOvas()
 
 ### Community 168 - "Vector Database Tasks"
 Cohesion: 0.10
@@ -1135,8 +1140,8 @@ Cohesion: 0.11
 Nodes (17): Adding a shadcn component, Checkbox API, Code-splitting, Color — CSS variables, not hard-coded Tailwind colors, Color system, Conditional rendering — ternary, not &&, Conventions, Dev commands (+9 more)
 
 ### Community 178 - "Supabase MCP Config"
-Cohesion: 0.17
-Nodes (11): Authentication, Common Mistakes, Documentation Lookup, Error Handling, Result fields, Selection process, Step 1: Resolve a Library, Step 2: Query Documentation (+3 more)
+Cohesion: 0.39
+Nodes (8): detect_kind(), extract_text(), _parse_docx(), _parse_pdf(), _parse_pptx(), ParserError, File-type-aware text extractors for the RAG pipeline.  Each parser receives a, Extract plain text from a file at `path`. `filename` defaults to the     basena
 
 ### Community 180 - "Performance Requirements"
 Cohesion: 0.11
@@ -1203,8 +1208,8 @@ Cohesion: 0.14
 Nodes (13): Actualización del catálogo post-instalación, Agente Skill Advisor, MODO UPDATE — Actualizar skills instaladas, PASO 1 — Check local, PASO 2 — Búsqueda externa (solo si PASO 1 falla), PASO 3 — Safety check (para skills externas encontradas), PASO 4 — Output, PASO U1 — Check (+5 more)
 
 ### Community 238 - "Community 238"
-Cohesion: 0.06
-Nodes (13): Admin user-management router. Mounts the listing, profile and account sub-router, LLM domain — model catalog, LLM dispatch, per-phase generation endpoints (legacy, Users & Roles domain — profiles, admin management, LLM settings, model allowlist, commit_or_500(), Session, Commit the current session or roll back and raise HTTP 500., FastAPI, GenerateEvaluateRequest (+5 more)
+Cohesion: 0.40
+Nodes (3): commit_or_500(), Session, Commit the current session or roll back and raise HTTP 500.
 
 ### Community 239 - "Community 239"
 Cohesion: 0.15
@@ -1215,8 +1220,8 @@ Cohesion: 0.15
 Nodes (13): Esquema de base de datos, `lab_results`, Notas, `ova_phases`, `ova_versions`, `ovas`, `password_reset_tokens`, `rag_chunks` (+5 more)
 
 ### Community 241 - "Community 241"
-Cohesion: 0.23
-Nodes (10): Session, User, download_ova_scorm(), _persist_scorm_zip(), PhaseInput, Persist the SCORM zip. Prefer Supabase Storage; fall back to local disk.      Re, save_ova(), SaveOvaRequest (+2 more)
+Cohesion: 0.29
+Nodes (7): _hf(), _cache_key(), fetch_image_data_uri(), fetch_images_parallel(), Image generation via Hugging Face Inference API (FLUX.1-schnell by default)., Fetch a batch of prompts with limited concurrency (2 workers).      Returns on, Render `prompt` using Hugging Face Inference API and return a base64 JPEG data U
 
 ### Community 242 - "Community 242"
 Cohesion: 0.14
@@ -1279,8 +1284,8 @@ Cohesion: 0.17
 Nodes (12): 6.10 Use React DOM Resource Hints, 6.11 Use useTransition Over Manual Loading States, 6.1 Animate SVG Wrapper Instead of SVG Element, 6.2 CSS content-visibility for Long Lists, 6.3 Hoist Static JSX Elements, 6.4 Optimize SVG Precision, 6.5 Prevent Hydration Mismatch Without Flickering, 6.6 Suppress Expected Hydration Mismatches (+4 more)
 
 ### Community 257 - "Community 257"
-Cohesion: 0.17
-Nodes (11): Authentication, Common Mistakes, Documentation Lookup, Error Handling, Result fields, Selection process, Step 1: Resolve a Library, Step 2: Query Documentation (+3 more)
+Cohesion: 0.32
+Nodes (5): LoginPage(), RegisterPage(), email, loginSchema, registerSchema
 
 ### Community 258 - "Community 258"
 Cohesion: 0.17
@@ -1536,7 +1541,7 @@ Nodes (5): 8.1 Do Not Put Effect Events in Dependency Arrays, 8.2 Initialize App
 
 ### Community 321 - "Community 321"
 Cohesion: 0.29
-Nodes (10): Request, Session, User, OvaPhaseVersion, list_phase_versions(), _next_minor(), HU-029 — micro-versioning per phase: list + revert minor versions.  When a phase, Call after saving a phase to record a micro-version entry. (+2 more)
+Nodes (10): Request, Session, User, OvaPhaseVersion, list_phase_versions(), _next_minor(), HU-029 — micro-versioning per phase: list + revert minor versions.  When a pha, Call after saving a phase to record a micro-version entry. (+2 more)
 
 ### Community 322 - "Community 322"
 Cohesion: 0.40
@@ -1600,47 +1605,47 @@ Nodes (3): Criterios de aceptación, EN-017 — Panel de Nodos/Agentes Prometheu
 
 ### Community 337 - "Community 337"
 Cohesion: 0.28
-Nodes (8): OvaGenerationState, _apply_patches(), editor_node(), _parse_editor_response(), Editor de Coherencia 5E — LangGraph node (EN-016).  Revisa el arco completo del, Apply text patches in-place. Anti-regression: skip if HTML shrinks below 80%., Nodo LangGraph: revisa coherencia 5E del arco completo.      Noop cuando ova_edi, run_editor_node()
+Nodes (8): OvaGenerationState, _apply_patches(), editor_node(), _parse_editor_response(), Editor de Coherencia 5E — LangGraph node (EN-016).  Revisa el arco completo de, Apply text patches in-place. Anti-regression: skip if HTML shrinks below 80%., Nodo LangGraph: revisa coherencia 5E del arco completo.      Noop cuando ova_e, run_editor_node()
 
 ### Community 338 - "Community 338"
 Cohesion: 0.50
 Nodes (4): Cambio en tabla: `ovas`, Modelo de datos — cambios requeridos, Nueva tabla: `ova_phases`, Nueva tabla: `ova_versions`
 
 ### Community 339 - "Community 339"
-Cohesion: 0.29
-Nodes (7): NODES_KEY, getAdminNodesConfig(), getOvaSettings(), saveAdminNodesConfig(), saveOvaSettings(), OvaSettingsCard(), PROVIDER_LABELS
+Cohesion: 0.16
+Nodes (18): CATALOG_KEY, CONFIG_KEY, NODES_KEY, apiFetch(), getAdminLlmConfig(), getAdminNodesConfig(), getApiKeys(), getOvaSettings() (+10 more)
 
 ### Community 340 - "Community 340"
-Cohesion: 0.36
-Nodes (8): Request, Session, User, add_phase(), AddPhaseRequest, _count_phases_of_type(), _next_phase_order(), HU-032 — Add a new resource (OvaPhase) to a phase of the OVA.  Business rules:
+Cohesion: 0.46
+Nodes (7): commit(), findApi(), finish(), getApi(), getValue(), initialize(), setValue()
 
 ### Community 345 - "Community 345"
-Cohesion: 0.33
-Nodes (8): Request, Session, User, _effective(), get_ova_settings(), OvaSettingsUpdate, put_ova_settings(), Per-user OVA generation settings: image count and image provider.
+Cohesion: 0.40
+Nodes (3): LlmModelSelect(), ModelTaskCard(), TASK_META
 
 ### Community 346 - "Community 346"
 Cohesion: 0.31
-Nodes (6): GearButton(), DEFAULT_META, getMeta(), PHASE_META, WorkspaceHtmlPreview(), WorkspaceOvaPanel()
+Nodes (6): GearButton(), LlmSettingsModal(), DEFAULT_META, getMeta(), PHASE_META, WorkspaceHtmlPreview()
 
 ### Community 347 - "Community 347"
 Cohesion: 0.42
 Nodes (8): auth(), fmt_check(), generate(), main(), quick_check(), run_lab(), show_dry_run(), slug()
 
 ### Community 348 - "Community 348"
-Cohesion: 0.36
-Nodes (6): Request, Session, User, generate_explore_resource(), GenerateExploreRequest, _retrieve_contexto()
+Cohesion: 0.60
+Nodes (4): EmailNotConfigured, _html_body(), Send a password-reset email. Raises EmailNotConfigured when credentials     are, send_reset_email()
 
 ### Community 349 - "Community 349"
-Cohesion: 0.32
-Nodes (5): getPlatformConfig(), savePlatformConfigKey(), PlatformApiKeysCard(), PlatformKeyRow(), PROVIDER_META
+Cohesion: 0.50
+Nodes (4): Session, load_from_cache(), Read/write the catalog cache in Supabase (table catalog_cache).  A single row, save_to_cache()
 
 ### Community 350 - "Community 350"
-Cohesion: 0.33
-Nodes (3): FileChip(), formatSize(), WorkspaceChatPanel()
+Cohesion: 0.40
+Nodes (3): OvaGenerationState, explain_node(), EXPLAIN agent node — generates ALL explain resources in parallel (Fase 2).
 
 ### Community 351 - "Community 351"
-Cohesion: 0.60
-Nodes (3): findActiveVersion(), sortVersionsDesc(), VersionHistoryPanel()
+Cohesion: 0.70
+Nodes (4): markComplete(), maybeComplete(), openResource(), setActive()
 
 ### Community 496 - "Community 496"
 Cohesion: 0.15
@@ -1648,15 +1653,11 @@ Nodes (12): Alcance, Contexto, Criterios de aceptación, Dependencias, EN-002: H
 
 ### Community 497 - "Community 497"
 Cohesion: 0.50
-Nodes (4): OvaGenerationState, concierge_node(), _llm_decompose(), Concierge node — decomposes the user prompt into per-phase resource goals.  Uses
+Nodes (4): OvaGenerationState, concierge_node(), _llm_decompose(), Concierge node — decomposes the user prompt into per-phase resource goals.  Us
 
 ### Community 498 - "Community 498"
 Cohesion: 0.22
 Nodes (8): Common Failures, GenOVA-specific verification, Key Patterns, Overview, Red Flags - STOP, The Gate Function, The Iron Law, Verification Before Completion
-
-### Community 499 - "Community 499"
-Cohesion: 0.40
-Nodes (3): OvaGenerationState, evaluate_node(), EVALUATE agent node — generates ALL evaluate resources in parallel (Fase 2).
 
 ### Community 501 - "Community 501"
 Cohesion: 0.17
@@ -1722,10 +1723,6 @@ Nodes (10): Alcance, Contexto, Criterios de aceptacion, Dependencias, Escenarios
 Cohesion: 0.18
 Nodes (10): Alcance, Contexto, Criterios de aceptacion, Dependencias, Escenarios BDD (Gherkin), Incluye, No incluye, Objetivo (+2 more)
 
-### Community 519 - "Community 519"
-Cohesion: 0.24
-Nodes (6): ProgressPanel(), STATUS_LABEL, MARK, PHASE_EMOJI, ResourceList(), groupByPhase()
-
 ### Community 521 - "Community 521"
 Cohesion: 0.22
 Nodes (5): ADMIN_LINKS, CONFIG_LINKS, LINKS, lnk(), NavItem()
@@ -1738,10 +1735,6 @@ Nodes (9): Alcance, Criterios de aceptación, Datos de entrada/salida, Escenario
 Cohesion: 0.20
 Nodes (9): Alcance, Contexto, Criterios de aceptación, Dependencias, Estado actual, Incluye, No incluye, Objetivo (+1 more)
 
-### Community 524 - "Community 524"
-Cohesion: 0.50
-Nodes (4): Session, User, list_chunks_by_upload(), rag_health()
-
 ### Community 525 - "Community 525"
 Cohesion: 0.25
 Nodes (5): CODE_PHASES, HISTORY, NODES_DONE, TABS_L, TABS_R
@@ -1749,10 +1742,6 @@ Nodes (5): CODE_PHASES, HISTORY, NODES_DONE, TABS_L, TABS_R
 ### Community 526 - "Community 526"
 Cohesion: 0.25
 Nodes (5): NODES, R_CLS, R_ICON, R_TEXT, RESOURCES
-
-### Community 527 - "Community 527"
-Cohesion: 0.60
-Nodes (4): Session, User, duplicate_ova(), _unique_copy_title()
 
 ### Community 528 - "Community 528"
 Cohesion: 0.29
@@ -1763,19 +1752,19 @@ Cohesion: 0.40
 Nodes (3): ROLE_BADGE, ROLE_LABEL, USERS
 
 ## Knowledge Gaps
-- **2012 isolated node(s):** `semi`, `singleQuote`, `trailingComma`, `printWidth`, `Session` (+2007 more)
+- **2001 isolated node(s):** `supabase`, `semi`, `singleQuote`, `trailingComma`, `printWidth` (+1996 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **188 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **197 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `Document Text Extraction` to `OVA Versioning Helpers`, `Account Management Endpoints`, `User Administration and Roles`, `Domain Service Layer`, `Background Regeneration Service`, `Resource Generation Routers`, `Community 524`, `Temporary Upload Management`, `Job Status and Resumption`, `Authentication and Password Reset`, `Community 527`, `OVA Metadata and Trash`, `Auth and Security Tests`, `User and Settings Administration`, `Labs Worker and Quality`, `Engage Phase Generation`, `Community 321`, `Resource Preview Components`, `Community 340`, `Phase and Version Management`, `User Model Allowlist`, `Lab Generation Hooks`, `Community 345`, `Community 348`, `Community 238`, `Community 241`, `Catalog Cache Service`?**
-  _High betweenness centrality (0.017) - this node is a cross-community bridge._
-- **Why does `datetime` connect `LLM Config Store` to `OVA Versioning Helpers`, `Account Management Endpoints`, `Error Logging and Sanitization`, `OVA Materialization Logic`, `Binary File Embedding`, `Authentication and Password Reset`, `OVA Metadata and Trash`, `E2E CLI Harness`, `OVA Status Cards`, `Phase and Version Management`, `Auth and Security Tests`, `Community 347`?**
+- **Why does `FastAPI` connect `Lab Generation Hooks` to `OVA Versioning Helpers`, `Account Management Endpoints`, `User Administration and Roles`, `Role Management UI Tests`, `Background Regeneration Service`, `Resource Generation Routers`, `Temporary Upload Management`, `Job Status and Resumption`, `Lightweight Auth Context`, `OVA Metadata and Trash`, `Auth and Security Tests`, `User and Settings Administration`, `LLM Config BDD Tests`, `Node Config BDD Tests`, `Labs Worker and Quality`, `Engage Phase Generation`, `Platform Admin Config`, `Community 321`, `Resource Preview Components`, `Email and API Clients`, `Phase and Version Management`, `Community 238`?**
+  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+- **Why does `datetime` connect `Phase and Version Management` to `OVA Versioning Helpers`, `Account Management Endpoints`, `Error Logging and Sanitization`, `OVA Materialization Logic`, `User Administration and Roles`, `Binary File Embedding`, `E2E CLI Harness`, `OVA Metadata and Trash`, `LLM Config Store`, `OVA Status Cards`, `Auth and Security Tests`, `Community 347`, `Community 349`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `FastAPI` connect `Community 238` to `OVA Versioning Helpers`, `Account Management Endpoints`, `User Administration and Roles`, `Role Management UI Tests`, `Background Regeneration Service`, `Resource Generation Routers`, `Temporary Upload Management`, `Job Status and Resumption`, `Authentication and Password Reset`, `Community 527`, `OVA Metadata and Trash`, `Lightweight Auth Context`, `Auth and Security Tests`, `User and Settings Administration`, `LLM Config BDD Tests`, `Node Config BDD Tests`, `Labs Worker and Quality`, `Platform Admin Config`, `Community 321`, `Email and API Clients`, `Phase and Version Management`, `Community 340`, `Lab Generation Hooks`, `User Model Allowlist`, `Community 345`, `Community 348`, `Document Text Extraction`, `Community 241`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
+- **Why does `User` connect `Phase and Version Management` to `OVA Versioning Helpers`, `Account Management Endpoints`, `Community 321`, `User Administration and Roles`, `Domain Service Layer`, `Resource Preview Components`, `Engage Phase Generation`, `Resource Generation Routers`, `Background Regeneration Service`, `Temporary Upload Management`, `Job Status and Resumption`, `OVA Metadata and Trash`, `User and Settings Administration`, `Auth and Security Tests`, `Lab Generation Hooks`, `Labs Worker and Quality`?**
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
 - **Are the 152 inferred relationships involving `User` (e.g. with `UserStatusUpdate` and `UserProfileAdminUpdate`) actually correct?**
   _`User` has 152 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 70 inferred relationships involving `Ova` (e.g. with `Ova` and `OvaJob`) actually correct?**
