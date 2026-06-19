@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { apiFetch } from '../lib/http.js'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -89,9 +89,8 @@ export function ResetPasswordPage() {
           <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="space-y-1.5">
               <Label htmlFor="new_password">Nueva contraseña</Label>
-              <Input
+              <PasswordInput
                 id="new_password"
-                type="password"
                 autoComplete="new-password"
                 placeholder="••••••••"
                 aria-invalid={!!errors.new_password}
@@ -104,9 +103,8 @@ export function ResetPasswordPage() {
 
             <div className="space-y-1.5">
               <Label htmlFor="confirm_password">Confirmar contraseña</Label>
-              <Input
+              <PasswordInput
                 id="confirm_password"
-                type="password"
                 autoComplete="new-password"
                 placeholder="••••••••"
                 aria-invalid={!!errors.confirm_password}

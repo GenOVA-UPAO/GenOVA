@@ -1,13 +1,15 @@
 
+import { forwardRef } from 'react'
 import { cn } from "@/lib/utils"
 
 function Input({
   className,
   type,
   ...props
-}) {
+}, ref) {
   return (
     <input
+      ref={ref}
       type={type}
       data-slot="input"
       className={cn(
@@ -18,4 +20,6 @@ function Input({
   );
 }
 
-export { Input }
+const ForwardedInput = forwardRef(Input)
+
+export { ForwardedInput as Input }

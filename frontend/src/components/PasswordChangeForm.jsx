@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { changePasswordSchema } from '@/lib/schemas/user.js'
 import { useChangePassword } from '../hooks/useChangePassword.js'
@@ -38,14 +38,14 @@ export function PasswordChangeForm() {
         <div className="grid grid-cols-1 gap-6">
           <div className="space-y-1.5">
             <Label htmlFor="currentPassword" className={LABEL}>Contraseña Actual</Label>
-            <Input type="password" id="currentPassword" placeholder="••••••••"
+            <PasswordInput id="currentPassword" placeholder="••••••••"
               aria-invalid={!!errors.currentPassword} {...register('currentPassword')} />
             {errors.currentPassword ? <p className="text-xs text-destructive font-medium">{errors.currentPassword.message}</p> : null}
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="newPassword" className={LABEL}>Nueva Contraseña</Label>
-            <Input type="password" id="newPassword" placeholder="••••••••"
+            <PasswordInput id="newPassword" placeholder="••••••••"
               aria-invalid={!!errors.newPassword} {...register('newPassword')} />
             <p className="text-xs text-muted-foreground">Mínimo 8 caracteres alfanuméricos (letras y números)</p>
             {errors.newPassword ? <p className="text-xs text-destructive font-medium">{errors.newPassword.message}</p> : null}
@@ -53,7 +53,7 @@ export function PasswordChangeForm() {
 
           <div className="space-y-1.5">
             <Label htmlFor="confirmPassword" className={LABEL}>Confirmar Nueva Contraseña</Label>
-            <Input type="password" id="confirmPassword" placeholder="••••••••"
+            <PasswordInput id="confirmPassword" placeholder="••••••••"
               aria-invalid={!!errors.confirmPassword} {...register('confirmPassword')} />
             {errors.confirmPassword ? <p className="text-xs text-destructive font-medium">{errors.confirmPassword.message}</p> : null}
           </div>
