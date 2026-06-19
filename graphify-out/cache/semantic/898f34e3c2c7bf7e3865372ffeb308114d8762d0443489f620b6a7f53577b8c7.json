@@ -1,1 +1,0 @@
-{"nodes": [{"id": "skill_sp_verify", "label": "Verification Skill", "file_type": "concept", "source_file": ".agents/skills/sp-verify/SKILL.md"}], "edges": [{"source": "skill_sp_verify", "target": "verify_ps1", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": ".agents/skills/sp-verify/SKILL.md"}], "hyperedges": []}

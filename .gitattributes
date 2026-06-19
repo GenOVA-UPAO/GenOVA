@@ -1,5 +1,0 @@
-# Graphify auto-generated files: always keep our version on conflicts.
-# CI commits graphify-out/ after each push; local verify.ps1 also updates it.
-# "ours" during rebase = the commit being replayed (local work), preventing
-# conflicts when rebasing local branches onto CI graphify commits.
-graphify-out/** merge=ours

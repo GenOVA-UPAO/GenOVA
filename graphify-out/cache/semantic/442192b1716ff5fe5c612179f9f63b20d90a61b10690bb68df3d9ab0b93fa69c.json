@@ -1,1 +1,0 @@
-{"nodes": [{"id": "skill_backprop", "label": "Backprop Skill", "file_type": "concept", "source_file": ".agents/skills/backprop/SKILL.md"}], "edges": [{"source": "skill_backprop", "target": "checkpoints_md", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": ".agents/skills/backprop/SKILL.md"}], "hyperedges": []}
