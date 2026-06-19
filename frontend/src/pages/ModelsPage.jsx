@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowsClockwise, GridFour, Key, SlidersHorizontal, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, GridFour, Image, Key, SlidersHorizontal, X } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/button'
@@ -14,24 +14,34 @@ import { ModelTaskCard } from '../components/settings/ModelTaskCard.jsx'
 import { LlmTaskRow } from '../components/settings/LlmTaskRow.jsx'
 import { ModelCatalogBrowser } from '../components/settings/ModelCatalogBrowser.jsx'
 import { CatalogStatusAlert } from '../components/settings/CatalogStatusAlert.jsx'
+import { getOvaSettings } from '../services/ovaSettingsService.js'
+const IMG_LABEL = { huggingface: 'HuggingFace', siliconflow: 'SiliconFlow', runware: 'Runware', falai: 'fal.ai' }
 
 export function ModelsPage() {
   const [user, setUser] = useState(null)
   const [draft, setDraft] = useState(null)
   const [editTask, setEditTask] = useState(null)
+  const [imageProvider, setImageProvider] = useState('huggingface')
+  const [maxImages, setMaxImages] = useState(2)
   const userHook = useLlmSettings(true)
   const adminHook = useAdminLlmConfig()
   const isAdmin = user?.role === 'administrador'
   const tasks = adminHook.config.data?.tasks ?? ['texto', 'codigo', 'orquestador', 'razonamiento']
   const adminModels = adminHook.catalog.data ?? []
-
   useEffect(() => { getCurrentUser().then(setUser) }, [])
+  useEffect(() => {
+    getOvaSettings()
+      .then(({ settings }) => {
+        setImageProvider(settings?.image_provider ?? 'huggingface')
+        setMaxImages(settings?.max_images ?? 2)
+      })
+      .catch(() => {})
+  }, [])
   useEffect(() => {
     if (adminHook.config.data) {
       setDraft(toDraft(adminHook.config.data.config, adminHook.config.data.tasks ?? []))
     }
   }, [adminHook.config.data])
-
   const handleAdminSave = () => {
     if (!draft) return
     adminHook.save.mutate(toPayload(draft, tasks), {
@@ -42,7 +52,6 @@ export function ModelsPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="mx-auto max-w-5xl space-y-8 pb-12">
-
       {/* Header */}
       <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card px-6 py-5 shadow-sm">
         <div className="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-primary/[.04] blur-2xl pointer-events-none" />
@@ -61,6 +70,11 @@ export function ModelsPage() {
             <p className="text-sm text-muted-foreground font-medium max-w-sm">
               Modelo primario, cadena de fallback y override personal.
             </p>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-pink-200 bg-pink-50 dark:bg-pink-950/30 dark:border-pink-800 px-2.5 py-1 text-[10px] font-semibold text-pink-600">
+                <Image size={12} weight="duotone" />{IMG_LABEL[imageProvider] || imageProvider}</span>
+              <span className="text-[10px] text-muted-foreground/60">{maxImages === 0 ? 'Sin imágenes' : `${maxImages} img / OVA`}</span>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Button asChild variant="outline" size="sm" className="gap-1.5 border-primary/25 hover:bg-primary/5 text-primary text-xs font-bold">

@@ -5,7 +5,6 @@ import { useProfile } from '../hooks/useProfile.js'
 import { ProfileForm } from '../components/ProfileForm.jsx'
 import { PasswordChangeForm } from '../components/PasswordChangeForm.jsx'
 import { ApiKeysCard } from '../components/settings/ApiKeysCard.jsx'
-import { OvaSettingsCard } from '../components/settings/OvaSettingsCard.jsx'
 import { ProfileSkeleton } from '../components/ProfileSkeleton.jsx'
 import { DeleteAccountForm } from '../components/DeleteAccountForm.jsx'
 
@@ -86,7 +85,6 @@ export function ProfilePage() {
           </TabsContent>
 
           <TabsContent value="config" className="mt-0 space-y-5">
-            <OvaSettingsCard />
             <ApiKeysCard />
           </TabsContent>
 
