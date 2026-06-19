@@ -46,6 +46,28 @@ def _applied_set(conn) -> set[str]:
     return {r[0] for r in rows}
 
 
+def _kill_zombies() -> None:
+    """Terminate idle-in-transaction connections older than 30 s.
+
+    These stale connections hold locks that block DDL (ALTER TABLE, CREATE INDEX).
+    Runs before migrations; permission errors on managed Postgres are silently ignored.
+    """
+    try:
+        with engine.begin() as conn:
+            result = conn.execute(text(
+                "SELECT pg_terminate_backend(pid) FROM pg_stat_activity"
+                " WHERE datname = current_database()"
+                " AND pid <> pg_backend_pid()"
+                " AND state = 'idle in transaction'"
+                " AND state_change < NOW() - INTERVAL '30 seconds'"
+            ))
+            killed = sum(1 for (ok,) in result if ok)
+            if killed:
+                logger.info("Terminated %d idle-in-transaction zombie connection(s).", killed)
+    except Exception as exc:
+        logger.warning("Could not terminate zombie connections (%s).", exc)
+
+
 def _record_applied(name: str) -> None:
     with engine.begin() as conn:
         conn.execute(
@@ -66,6 +88,8 @@ def run_migrations() -> None:
     sql_files = sorted(glob.glob(os.path.join(migrations_dir, "*.sql")))
     if not sql_files:
         return
+
+    _kill_zombies()
 
     with engine.begin() as conn:
         conn.execute(text(_TRACKING_TABLE_DDL))
