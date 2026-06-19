@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import {
   Flask, FolderOpen, Gear, House, LinkSimple, PlusSquare,
-  ShieldCheck, Trash, UserCircle, Users,
+  ShieldCheck, Trash, Users,
 } from '@phosphor-icons/react'
 import { navigationLinks } from '../navigation/navLinks.js'
 import { isLoggedIn } from '../../lib/auth.js'
 import { getCurrentUser } from '../../lib/me.js'
 import { fetchTrashCount } from '../../services/ovaHistoryService.js'
 
-const ICONS = { House, FolderOpen, PlusSquare, UserCircle }
+const ICONS = { House, FolderOpen, PlusSquare }
 const ADMIN_LINKS = [
   { to: '/admin/roles', label: 'Roles', icon: ShieldCheck },
   { to: '/admin/users', label: 'Usuarios', icon: Users },
@@ -113,11 +113,17 @@ export function SidebarMenu({ onNavigate }) {
         ) : null}
       </nav>
       <div className="border-t border-sidebar-border p-3">
-        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+        <NavLink
+          to="/profile"
+          onClick={onNavigate}
+          className={({ isActive }) =>
+            `flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${isActive ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-sidebar-accent'}`
+          }
+        >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
             {initials(user)}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <p className="truncate text-sm font-medium">{user?.full_name || 'Usuario GenOVA'}</p>
               <span className="shrink-0 rounded-full bg-accent-brand/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-accent-brand">
@@ -126,7 +132,7 @@ export function SidebarMenu({ onNavigate }) {
             </div>
             <p className="truncate text-xs text-muted-foreground">{user?.email || 'sesion activa'}</p>
           </div>
-        </div>
+        </NavLink>
       </div>
     </>
   )

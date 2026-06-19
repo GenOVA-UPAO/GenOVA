@@ -14,9 +14,4 @@ export const navigationLinks = [
     label: 'Crear OVA',
     icon: 'PlusSquare',
   },
-  {
-    to: '/profile',
-    label: 'Mi Perfil',
-    icon: 'UserCircle',
-  },
 ]
