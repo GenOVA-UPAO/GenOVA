@@ -1,15 +1,13 @@
 """Idempotent SQL migration runner.
 
 Each *.sql file under `backend/migrations/` is applied at most once. Applied
-filenames are tracked in the `_migrations_applied` table (bootstrapped by
-`016_migrations_applied.sql`). Files prior to 016 are also skipped after their
-first successful run via the same table — we backfill them on first boot if
-they execute cleanly.
+filenames are tracked in the `_migrations_applied` table (bootstrapped below).
+Each file runs in a single transaction so SET LOCAL changes (e.g. disabling
+statement_timeout) survive pgbouncer's per-transaction session reassignment.
 """
-import contextlib
-import glob
 import logging
 import os
+import glob
 
 from sqlalchemy import text
 
@@ -17,7 +15,6 @@ from database import engine
 
 logger = logging.getLogger(__name__)
 
-_BOOTSTRAP_FILE = "016_migrations_applied.sql"
 _TRACKING_TABLE_DDL = (
     "CREATE TABLE IF NOT EXISTS _migrations_applied ("
     " filename TEXT PRIMARY KEY,"
@@ -50,7 +47,6 @@ def run_migrations() -> None:
         return
 
     with engine.begin() as conn:
-        # Always ensure tracking table exists before reading it.
         conn.execute(text(_TRACKING_TABLE_DDL))
 
     with engine.connect() as conn:
@@ -69,47 +65,50 @@ def run_migrations() -> None:
             content = f.read()
         statements = _split_statements(content)
 
-        file_ok = True
-        # Fresh connection per file so an OperationalError in one migration
-        # (e.g. lock timeout, dropped connection) cannot poison later ones.
-        with engine.connect() as conn:
-            # DDL statements (e.g. ALTER TABLE) must wait for an ACCESS
-            # EXCLUSIVE lock. If the server's statement_timeout is short and
-            # concurrent queries hold the table, the lock wait is canceled.
-            # Disable it for the duration of this migration connection.
-            with contextlib.suppress(Exception):
-                conn.execute(text("SET statement_timeout = '0'"))
-                conn.commit()
-            for query in statements:
-                try:
+        try:
+            # One transaction per file: SET LOCAL persists for the whole file
+            # even through pgbouncer's per-transaction server-session handoff.
+            # SQLAlchemy auto-commits on __exit__ and auto-rollbacks on error.
+            with engine.begin() as conn:
+                # Disable statement_timeout so DDL waiting for ACCESS EXCLUSIVE
+                # lock (ALTER TABLE, CREATE INDEX) is never canceled by the
+                # server's short default timeout.
+                conn.execute(text("SET LOCAL statement_timeout = '0'"))
+                for query in statements:
                     conn.execute(text(query))
-                    conn.commit()
-                except Exception as exc:
-                    with contextlib.suppress(Exception):
-                        conn.rollback()
-                    err = str(exc).lower()
-                    if "already exists" in err or "duplicate key" in err:
-                        # First-time tracking pass on a legacy DB: schema already there.
-                        continue
-                    logger.warning(
-                        "Migration %s statement skipped (%s): %s",
-                        name, type(exc).__name__, exc,
-                    )
-                    file_ok = False
 
-            if file_ok:
+            with engine.begin() as conn:
+                conn.execute(
+                    text(
+                        "INSERT INTO _migrations_applied (filename) VALUES (:f)"
+                        " ON CONFLICT (filename) DO NOTHING"
+                    ),
+                    {"f": name},
+                )
+            applied_now += 1
+
+        except Exception as exc:
+            err = str(exc).lower()
+            if "already exists" in err or "duplicate key" in err:
+                # Schema already present (manual apply or concurrent boot).
+                # Record as applied so we don't retry on every restart.
                 try:
-                    conn.execute(
-                        text(
-                            "INSERT INTO _migrations_applied (filename) VALUES (:f) "
-                            "ON CONFLICT (filename) DO NOTHING"
-                        ),
-                        {"f": name},
-                    )
-                    conn.commit()
+                    with engine.begin() as conn:
+                        conn.execute(
+                            text(
+                                "INSERT INTO _migrations_applied (filename) VALUES (:f)"
+                                " ON CONFLICT (filename) DO NOTHING"
+                            ),
+                            {"f": name},
+                        )
                     applied_now += 1
                 except Exception:
-                    logger.exception("Failed to record migration %s", name)
+                    logger.exception("Failed to record migration %s after schema-exists", name)
+            else:
+                logger.warning(
+                    "Migration %s failed (%s): %s",
+                    name, type(exc).__name__, exc,
+                )
 
     logger.info(
         "Migrations done: %d applied, %d already-applied skipped.",
