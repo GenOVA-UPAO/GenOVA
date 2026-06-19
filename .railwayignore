@@ -1,0 +1,10 @@
+# Agent / dev-only directories — not needed in Railway builds
+graphify-out/
+.claude/
+scripts/
+sdd/
+tests/
+
+# Dev artifacts
+backend/.venv/
+node_modules/
