@@ -94,10 +94,20 @@ export function LlmTaskRow({ task, value, models, disabled, onChange }) {
               No hay modelos de respaldo configurados. Si el primario falla, se detendrá la tarea.
             </p>
           )}
-          {fallbacks.map((f, i) => (
+          {fallbacks.map((f, i) => {
+            const fbModel = models.find((m) => m.provider === f.provider && m.model_id === f.model_id)
+            const modality = fbModel?.modality || 'text'
+            const MODALITY_SYMBOLS = { text: 'Aa', multimodal: '◆', image: '◇', audio: '♪' }
+            return (
             <div key={i} className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl border ${disabled ? 'border-border/50 bg-muted/20' : 'border-border bg-card/50 hover:bg-accent/30'} transition-all shadow-sm`}>
-              <div className="flex flex-col items-center justify-center shrink-0 w-8 hidden sm:flex">
+              <div className="flex items-center gap-2 shrink-0">
                 <span className="text-[10px] font-bold text-muted-foreground/60 bg-muted px-2 py-1 rounded-md border border-border">#{i + 1}</span>
+                {modality !== 'text' && (
+                  <span className="inline-flex items-center gap-0.5 rounded-full border border-purple-200 bg-purple-50 dark:bg-purple-950/30 dark:border-purple-800 px-1.5 py-0.5 text-[9px] font-bold text-purple-600">
+                    {MODALITY_SYMBOLS[modality]}
+                  </span>
+                )}
+                {i > 0 && <span className="hidden sm:inline text-[10px] text-muted-foreground/30 font-black">←</span>}
               </div>
               <div className="flex-1 min-w-0">
                 <LlmModelSelect
@@ -132,7 +142,8 @@ export function LlmTaskRow({ task, value, models, disabled, onChange }) {
                 </button>
               </div>
             </div>
-          ))}
+            )
+          })}
           <div className="pt-2">
             <Button size="sm" variant="outline" onClick={addFallback} disabled={disabled} className="w-full text-xs font-bold shadow-sm border-dashed rounded-xl py-5 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all">
               <Plus size={16} weight="bold" className="mr-2" /> Añadir modelo de respaldo

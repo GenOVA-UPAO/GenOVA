@@ -14,6 +14,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": 128000,
         "active": True,
+        "modality": "text",
     },
     {
         "provider": "groq",
@@ -23,6 +24,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": 128000,
         "active": True,
+        "modality": "text",
     },
     {
         "provider": "groq",
@@ -32,6 +34,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": 128000,
         "active": True,
+        "modality": "text",
     },
     {
         "provider": "groq",
@@ -41,6 +44,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": 128000,
         "active": True,
+        "modality": "text",
     },
     # OpenRouter — pricing populated at startup from /api/v1/models.
     {
@@ -51,6 +55,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "multimodal",
         "notes": "LiveCodeBench 91.6 / SWE-bench 79.0. Mejor seguimiento de reglas anidadas.",
     },
     {
@@ -61,6 +66,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
     },
     {
         "provider": "openrouter",
@@ -70,6 +76,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
     },
     {
         "provider": "openrouter",
@@ -79,6 +86,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
     },
     {
         "provider": "openrouter",
@@ -88,6 +96,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
     },
     {
         "provider": "openrouter",
@@ -97,6 +106,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
     },
     {
         "provider": "openrouter",
@@ -106,6 +116,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
     },
     # OpenRouter meta-models — special routers, not single models.
     # openrouter/auto: free auto-router; sends the prompt to whichever free model
@@ -118,6 +129,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
         "notes": "Enruta automáticamente al mejor modelo gratuito disponible para la tarea.",
     },
     {
@@ -128,6 +140,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
         "notes": "Enruta automáticamente al mejor modelo gratuito disponible para la tarea.",
     },
     {
@@ -138,6 +151,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
         "notes": "Enruta automáticamente al mejor modelo gratuito disponible para la tarea.",
     },
     # openrouter/fusion: ensembles multiple models — higher quality but slower and
@@ -150,6 +164,7 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": None,
         "active": True,
+        "modality": "text",
         "notes": "Fusiona varios modelos para mayor calidad. Más lento y costoso.",
     },
     # OpenCode Go — personal subscription (bearer token). No API refresh needed;
@@ -162,5 +177,6 @@ CATALOG_ENTRIES = [
         "pricing": None,
         "context_length": 163840,
         "active": True,
+        "modality": "text",
     },
 ]

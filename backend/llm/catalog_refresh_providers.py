@@ -142,12 +142,15 @@ def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[di
 
     for model_id, raw in or_data.items():
         curated = ("openrouter", model_id) in curated_keys
+        arch = raw.get("architecture") or {}
+        modality = arch.get("modality", "text") if isinstance(arch, dict) else "text"
         result.append(
             {
                 "provider": "openrouter",
                 "model_id": model_id,
                 "label": raw.get("name") or model_id,
                 "category": categorize_model(raw, "openrouter"),
+                "modality": modality,
                 "pricing": format_pricing(raw.get("pricing")),
                 "context_length": raw.get("context_length"),
                 "curated": curated,
@@ -166,6 +169,7 @@ def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[di
                 "category": categorize_model(
                     {"id": model_id, "architecture": {"modality": "text"}}, "groq"
                 ),
+                "modality": "text",
                 "pricing": None,
                 "context_length": 128000,
                 "curated": curated,
@@ -182,6 +186,7 @@ def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[di
                     "model_id": entry["model_id"],
                     "label": entry["label"],
                     "category": entry.get("task") or "codigo",
+                    "modality": entry.get("modality", "text"),
                     "pricing": entry.get("pricing"),
                     "context_length": entry.get("context_length"),
                     "curated": (entry["provider"], entry["model_id"]) in curated_keys,

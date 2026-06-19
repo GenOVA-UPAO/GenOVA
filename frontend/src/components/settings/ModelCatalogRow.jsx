@@ -1,10 +1,20 @@
 import { Lock, Star, Warning } from '@phosphor-icons/react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { formatContextLength, pricingLabel } from '../../lib/llmCatalogUtils.js'
+import { formatContextLength, MODALITY_META, pricingLabel } from '../../lib/llmCatalogUtils.js'
+
+const MODALITY_ICONS = {
+  text: 'Aa',
+  multimodal: '◆',
+  image: '◇',
+  audio: '♪',
+  embedding: '⬡',
+}
 
 /** One selectable model row inside the full-catalog browser. */
 export function ModelCatalogRow({ model, locked, enabled, saving, categoryLabels, onToggle }) {
   const ctx = formatContextLength(model.context_length)
+  const modality = model.modality || 'text'
+  const meta = MODALITY_META[modality] || MODALITY_META.text
   return (
     <label
       className={`flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs transition-colors
@@ -35,6 +45,10 @@ export function ModelCatalogRow({ model, locked, enabled, saving, categoryLabels
             <Lock size={10} weight="duotone" /> por defecto
           </span>
         )}
+      </span>
+      <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-bold shrink-0 ${meta.bg} ${meta.color}`}>
+        <span className="opacity-70">{MODALITY_ICONS[modality] || 'Aa'}</span>
+        {meta.label}
       </span>
       <span className="text-[10px] text-muted-foreground shrink-0">
         {categoryLabels?.[model.category || 'texto'] || model.category || 'texto'}
