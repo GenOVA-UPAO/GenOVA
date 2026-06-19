@@ -169,6 +169,27 @@ def delete_my_link(
     return {"status": "ok"}
 
 
+@router.post("/me/links/{link_id}/resend")
+@limiter.limit("3/minute")
+def resend_link(
+    request: Request,
+    link_id: UUID,
+    current_user: User = Depends(require_permission("users:link")),
+    db: Session = Depends(get_db),
+):
+    link = db.get(UserLink, link_id)
+    if not link or link.owner_user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vinculo no encontrado.")
+    if link.status != "pending":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Solo se pueden reenviar invitaciones pendientes.")
+    code = _new_code()
+    link.code_hash = hash_password(code)
+    link.expires_at = datetime.now(UTC) + timedelta(hours=24)
+    commit_or_500(db, "el reenvio")
+    db.refresh(link)
+    return {"link": _serialize(link, owner=current_user), "code": code}
+
+
 @router.get("/links/admin")
 def list_all_links(
     current_user: User = Depends(require_permission("users:link:admin")),

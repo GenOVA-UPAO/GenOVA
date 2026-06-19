@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     latency_threshold_ms: float = 278.0
     app_url: str = "https://genova.ai"
+    frontend_url: str = "http://localhost:5173"
 
     # --- LLM (claves server-only + routing) ---
     llm_timeout_s: float = 120.0

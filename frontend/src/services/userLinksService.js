@@ -33,3 +33,7 @@ export function deleteMyLink(linkId) {
 export function deleteAnyLink(linkId) {
   return apiJson(`/api/users/links/admin/${linkId}`, { method: 'DELETE' })
 }
+
+export function resendLink(linkId) {
+  return apiJson(`/api/users/me/links/${linkId}/resend`, { method: 'POST' })
+}

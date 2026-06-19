@@ -1,19 +1,16 @@
 import logging
-import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from config import settings
+
 logger = logging.getLogger(__name__)
 
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-try:
-    SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
-except ValueError:
-    SMTP_PORT = 465
-SMTP_USER = os.getenv("SMTP_USER", "").strip()
-# Google App passwords arrive with spaces — strip them so users can paste freely.
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").replace(" ", "")
+SMTP_HOST = settings.smtp_host or "smtp.gmail.com"
+SMTP_PORT = settings.smtp_port or 465
+SMTP_USER = (settings.smtp_user or "").strip()
+SMTP_PASSWORD = (settings.smtp_password or "").replace(" ", "")
 
 
 class EmailNotConfigured(RuntimeError):

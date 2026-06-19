@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { LinkSimple, PaperPlaneTilt, ShieldCheck, UsersThree } from '@phosphor-icons/react'
+import { LinkSimple, PaperPlaneTilt, UsersThree } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
@@ -13,14 +13,16 @@ import {
   fetchAllLinks,
   fetchMyLinks,
   inviteLink,
+  resendLink,
 } from '../services/userLinksService.js'
 
 function can(user, permission) {
   return user?.role === 'administrador' || (user?.permissions || []).includes(permission)
 }
 
-function LinkRow({ link, onDelete, admin = false }) {
+function LinkRow({ link, onDelete, onResend, admin = false, isOwner = false }) {
   const person = admin ? link.linked || { email: link.invite_email } : link.linked || { email: link.invite_email }
+  const isPending = link.status === 'pending'
   return (
     <div className="flex items-center gap-4 border-b border-border/50 px-5 py-4 last:border-0 hover:bg-accent/30 transition-colors">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent-brand/20 text-sm font-bold text-primary shadow-sm border border-primary/20">
@@ -33,8 +35,13 @@ function LinkRow({ link, onDelete, admin = false }) {
           {person?.email || link.invite_email || 'Sin email'} · <span className={link.status === 'activo' ? 'text-emerald-600' : 'text-amber-600'}>{link.status}</span>
         </p>
       </div>
+      {isPending && isOwner && (
+        <Button variant="ghost" size="sm" onClick={() => onResend(link.id)} className="text-primary hover:bg-primary/10 hover:text-primary">
+          <PaperPlaneTilt size={14} weight="bold" className="mr-1.5" /> Reenviar
+        </Button>
+      )}
       <Button variant="outline" size="sm" onClick={() => onDelete(link.id)} className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive shadow-sm">
-        Desvincular
+        {isPending ? 'Cancelar' : 'Desvincular'}
       </Button>
     </div>
   )
@@ -98,6 +105,17 @@ export function UserLinksPage() {
     toast.success('Cuenta vinculada.')
   }
 
+  const handleResend = async (linkId) => {
+    try {
+      const data = await resendLink(linkId)
+      setGeneratedCode(data.code)
+      toast.success('Invitacion reenviada.')
+      await load()
+    } catch (err) {
+      toast.error(err.message || 'No se pudo reenviar la invitacion.')
+    }
+  }
+
   const handleDelete = async (id) => {
     if (hasAdminLinks) await deleteAnyLink(id)
     else await deleteMyLink(id)
@@ -116,15 +134,27 @@ export function UserLinksPage() {
           Vincular cuentas
         </h1>
         <p className="mt-1.5 text-sm font-medium text-muted-foreground">
-          Gestiona usuarios vinculados para heredar la configuración de modelos de IA cuando no tengan API Keys propias.
+          {hasUserLinks || hasAdminLinks
+            ? 'Gestiona usuarios vinculados para heredar la configuración de modelos de IA cuando no tengan API Keys propias.'
+            : 'Vincula tu cuenta a un docente para heredar su configuración de modelos de IA.'}
         </p>
       </header>
 
+      {/* Estudiante: solo aceptar invitacion */}
       {!hasUserLinks && !hasAdminLinks ? (
-        <div className="rounded-3xl border-2 border-dashed border-border/60 bg-muted/20 p-12 text-center glass-card">
-          <ShieldCheck size={32} weight="duotone" className="mx-auto text-muted-foreground" />
-          <p className="mt-4 text-base font-bold">No tienes permiso para vincular usuarios</p>
-          <p className="mt-1.5 text-sm font-medium text-muted-foreground">Solicita el permiso <code className="bg-background px-1.5 py-0.5 rounded border border-border">users:link</code> a un administrador.</p>
+        <div className="mx-auto max-w-md">
+          <div className="glass-card rounded-3xl border-border bg-card p-6 shadow-sm space-y-4">
+            <div>
+              <p className="text-base font-bold font-display">Aceptar invitacion</p>
+              <p className="text-xs text-muted-foreground mt-1">Ingresa el codigo que te proporciono el docente.</p>
+            </div>
+            <div className="flex gap-2">
+              <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej: ABC-123" className="bg-muted/30 uppercase" />
+              <Button variant="default" onClick={handleAccept} disabled={!code.trim()} className="shadow-md shrink-0">
+                Aceptar
+              </Button>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
@@ -134,7 +164,7 @@ export function UserLinksPage() {
               <div className="glass-card rounded-3xl border-border bg-card p-6 shadow-sm space-y-5">
                 <div>
                   <p className="text-base font-bold font-display">Invitar por email</p>
-                  <p className="text-xs text-muted-foreground mt-1">Envía una invitación directa al correo institucional.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Envia una invitacion directa al correo institucional.</p>
                 </div>
                 <div className="flex gap-2">
                   <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="estudiante@upao.edu.pe" className="bg-muted/30" />
@@ -146,30 +176,17 @@ export function UserLinksPage() {
                 <hr className="border-border/50 my-2" />
                 
                 <div>
-                  <p className="text-base font-bold font-display">Código de vinculación</p>
-                  <p className="text-xs text-muted-foreground mt-1">El estudiante ingresa este código en su perfil para vincularse a tu cuenta.</p>
+                  <p className="text-base font-bold font-display">Codigo de vinculacion</p>
+                  <p className="text-xs text-muted-foreground mt-1">El estudiante ingresa este codigo en su perfil para vincularse a tu cuenta.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button variant="outline" onClick={handleCode} className="shadow-sm border-primary/20 text-primary hover:bg-primary/5">
-                    <LinkSimple size={16} weight="bold" className="mr-2" /> Generar código
+                    <LinkSimple size={16} weight="bold" className="mr-2" /> Generar codigo
                   </Button>
                   {generatedCode ? <code className="flex-1 text-center rounded-xl bg-primary/10 border border-primary/20 px-3 py-2 text-sm font-bold text-primary tracking-widest">{generatedCode}</code> : null}
                 </div>
               </div>
             ) : null}
-
-            <div className="glass-card rounded-3xl border-border bg-card p-6 shadow-sm space-y-4">
-              <div>
-                <p className="text-base font-bold font-display">Aceptar invitación</p>
-                <p className="text-xs text-muted-foreground mt-1">Ingresa el código que te proporcionó el docente.</p>
-              </div>
-              <div className="flex gap-2">
-                <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej: ABC-123" className="bg-muted/30 uppercase" />
-                <Button variant="default" onClick={handleAccept} disabled={!code.trim()} className="shadow-md shrink-0">
-                  Aceptar
-                </Button>
-              </div>
-            </div>
           </div>
 
           <div className="md:col-span-7 glass-card rounded-3xl border-border bg-card shadow-sm overflow-hidden flex flex-col h-full min-h-[400px]">
@@ -185,7 +202,14 @@ export function UserLinksPage() {
                 <div className="p-10 text-center text-sm font-medium text-muted-foreground animate-pulse">Cargando...</div>
               ) : links.length > 0 ? (
                 links.map((link) => (
-                  <LinkRow key={link.id} link={link} onDelete={handleDelete} admin={hasAdminLinks} />
+                  <LinkRow
+                    key={link.id}
+                    link={link}
+                    onDelete={handleDelete}
+                    onResend={handleResend}
+                    admin={hasAdminLinks}
+                    isOwner={user?.id === link.owner_user_id}
+                  />
                 ))
               ) : (
                 <div className="flex flex-col items-center justify-center p-12 text-center h-full">
@@ -193,7 +217,7 @@ export function UserLinksPage() {
                     <UsersThree size={32} weight="duotone" className="text-muted-foreground/50" />
                   </div>
                   <p className="text-sm font-bold text-foreground">Sin estudiantes vinculados</p>
-                  <p className="text-xs font-medium text-muted-foreground mt-1">Comparte tu código o invita por email para empezar.</p>
+                  <p className="text-xs font-medium text-muted-foreground mt-1">Comparte tu codigo o invita por email para empezar.</p>
                 </div>
               )}
             </div>

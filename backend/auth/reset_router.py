@@ -5,7 +5,6 @@ Lookup is by exact token match. Tokens are issued elsewhere
 force is infeasible — we still rate-limit by IP to throttle scripted attempts.
 """
 import logging
-import os
 import secrets
 from datetime import UTC, datetime, timedelta
 
@@ -16,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.email import send_reset_email
+from config import settings
 from database import get_db
 from models import PasswordResetToken, User
 from rate_limit import limiter
@@ -24,7 +24,7 @@ from security import hash_password
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+FRONTEND_URL = settings.frontend_url.rstrip("/")
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -71,7 +71,7 @@ def forgot_password(
 
     reset_link = f"{FRONTEND_URL}/reset-password?token={token_str}"
 
-    if os.getenv("SMTP_USER") and os.getenv("SMTP_PASSWORD"):
+    if settings.smtp_user and settings.smtp_password:
         background_tasks.add_task(send_reset_email, email, reset_link, user.full_name)
     else:
         logger.warning("SMTP not configured — reset link could not be emailed to %s", email)
