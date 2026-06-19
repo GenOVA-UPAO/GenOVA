@@ -55,29 +55,29 @@ def run_migrations() -> None:
 
     with engine.connect() as conn:
         applied = _applied_set(conn)
-        skipped = 0
-        applied_now = 0
 
-        for sql_file in sql_files:
-            name = os.path.basename(sql_file)
-            if name in applied:
-                skipped += 1
-                continue
+    skipped = 0
+    applied_now = 0
 
-            with open(sql_file, encoding="utf-8") as f:
-                content = f.read()
-            statements = _split_statements(content)
+    for sql_file in sql_files:
+        name = os.path.basename(sql_file)
+        if name in applied:
+            skipped += 1
+            continue
 
-            file_ok = True
+        with open(sql_file, encoding="utf-8") as f:
+            content = f.read()
+        statements = _split_statements(content)
+
+        file_ok = True
+        # Fresh connection per file so an OperationalError in one migration
+        # (e.g. lock timeout, dropped connection) cannot poison later ones.
+        with engine.connect() as conn:
             for query in statements:
                 try:
                     conn.execute(text(query))
                     conn.commit()
                 except Exception as exc:
-                    # Always rollback so the connection returns to a clean state.
-                    # Without this, a single failed statement leaves the transaction
-                    # in "aborted" mode and every subsequent execute() raises
-                    # InternalError, preventing later migrations from applying.
                     with contextlib.suppress(Exception):
                         conn.rollback()
                     err = str(exc).lower()
@@ -85,8 +85,8 @@ def run_migrations() -> None:
                         # First-time tracking pass on a legacy DB: schema already there.
                         continue
                     logger.warning(
-                        "Migration %s statement skipped (%s): %s...",
-                        name, type(exc).__name__, query[:60],
+                        "Migration %s statement skipped (%s): %s",
+                        name, type(exc).__name__, exc,
                     )
                     file_ok = False
 
@@ -104,10 +104,10 @@ def run_migrations() -> None:
                 except Exception:
                     logger.exception("Failed to record migration %s", name)
 
-        logger.info(
-            "Migrations done: %d applied, %d already-applied skipped.",
-            applied_now, skipped,
-        )
+    logger.info(
+        "Migrations done: %d applied, %d already-applied skipped.",
+        applied_now, skipped,
+    )
 
 
 if __name__ == "__main__":
