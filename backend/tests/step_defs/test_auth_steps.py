@@ -24,8 +24,8 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401
-from auth import router as auth_router_mod  # noqa: E402
 from auth.router import router as auth_router  # noqa: E402
+from auth.throttle import _email_attempts  # noqa: E402
 from database import get_db  # noqa: E402
 from rate_limit import limiter  # noqa: E402
 from security import hash_password  # noqa: E402
@@ -85,7 +85,7 @@ def client():
     # SlowAPI tiene estado global → desactivarlo evita fugas entre tests; el
     # throttle por-email se resetea aquí y es el que produce el 429 del bloqueo.
     limiter.enabled = False
-    auth_router_mod._email_attempts.clear()
+    _email_attempts.clear()
 
     app = FastAPI()
     app.state.limiter = limiter

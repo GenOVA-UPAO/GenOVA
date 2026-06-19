@@ -28,18 +28,15 @@ class AcceptRequest(BaseModel):
 
 
 def _new_code() -> str:
-    alphabet = string.ascii_uppercase + string.digits
-    raw = "".join(secrets.choice(alphabet) for _ in range(6))
+    raw = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
     return f"{raw[:3]}-{raw[3:]}"
 
 
 def _serialize(link: UserLink, owner: User | None = None, linked: User | None = None) -> dict:
     return {
-        "id": str(link.id),
-        "owner_user_id": str(link.owner_user_id),
+        "id": str(link.id), "owner_user_id": str(link.owner_user_id),
         "linked_user_id": str(link.linked_user_id) if link.linked_user_id else None,
-        "invite_email": link.invite_email,
-        "status": link.status,
+        "invite_email": link.invite_email, "status": link.status,
         "expires_at": link.expires_at.isoformat() if link.expires_at else None,
         "created_at": link.created_at.isoformat() if link.created_at else None,
         "owner": {"email": owner.email, "full_name": owner.full_name} if owner else None,
@@ -50,26 +47,18 @@ def _serialize(link: UserLink, owner: User | None = None, linked: User | None = 
 @router.get("/me/links")
 def list_my_links(
     current_user: User = Depends(require_permission("users:link")),
-    db: Session = Depends(get_db),
-):
+    db: Session = Depends(get_db)):
     links = db.execute(
         select(UserLink)
         .where(UserLink.owner_user_id == current_user.id)
         .order_by(UserLink.created_at.desc())
     ).scalars().all()
     linked_ids = [lnk.linked_user_id for lnk in links if lnk.linked_user_id]
-    linked_map: dict = {}
-    if linked_ids:
-        linked_map = {
-            u.id: u
-            for u in db.execute(select(User).where(User.id.in_(linked_ids))).scalars().all()
-        }
-    return {
-        "links": [
-            _serialize(link, owner=current_user, linked=linked_map.get(link.linked_user_id))
-            for link in links
-        ]
-    }
+    linked_map = (
+        {u.id: u for u in db.execute(select(User).where(User.id.in_(linked_ids))).scalars().all()}
+        if linked_ids else {}
+    )
+    return {"links": [_serialize(link, owner=current_user, linked=linked_map.get(link.linked_user_id)) for link in links]}
 
 
 @router.post("/me/links/code", status_code=status.HTTP_201_CREATED)
@@ -81,11 +70,7 @@ def create_link_code(
 ):
     code = _new_code()
     expires_at = datetime.now(UTC) + timedelta(hours=24)
-    link = UserLink(
-        owner_user_id=current_user.id,
-        code_hash=hash_password(code),
-        expires_at=expires_at,
-    )
+    link = UserLink(owner_user_id=current_user.id, code_hash=hash_password(code), expires_at=expires_at)
     db.add(link)
     commit_or_500(db, "la creacion del codigo")
     db.refresh(link)
@@ -124,13 +109,10 @@ def accept_link(
 ):
     code = payload.code.strip().upper()
     now = datetime.now(UTC)
+    # Only redeemable links: open invite or email-matched
     pending = db.execute(
         select(UserLink).where(
-            UserLink.status == "pending",
-            UserLink.expires_at > now,
-            # Scope to links the current user could legitimately redeem.
-            # This prevents brute-forcing all platform codes and eliminates
-            # the 403 info-leak (code valid but wrong email).
+            UserLink.status == "pending", UserLink.expires_at > now,
             (UserLink.invite_email.is_(None))
             | (UserLink.invite_email == current_user.email.lower()),
         )
@@ -145,13 +127,7 @@ def accept_link(
         link.consumed_at = now
         commit_or_500(db, "la vinculacion")
         db.refresh(link)
-        return {
-            "link": _serialize(
-                link,
-                owner=db.get(User, link.owner_user_id),
-                linked=current_user,
-            )
-        }
+        return {"link": _serialize(link, owner=db.get(User, link.owner_user_id), linked=current_user)}
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Codigo invalido o expirado.")
 
 
@@ -197,25 +173,12 @@ def list_all_links(
 ):
     del current_user
     links = db.execute(select(UserLink).order_by(UserLink.created_at.desc())).scalars().all()
-    user_ids = {lnk.owner_user_id for lnk in links} | {
-        lnk.linked_user_id for lnk in links if lnk.linked_user_id
-    }
-    users_map: dict = {}
-    if user_ids:
-        users_map = {
-            u.id: u
-            for u in db.execute(select(User).where(User.id.in_(user_ids))).scalars().all()
-        }
-    return {
-        "links": [
-            _serialize(
-                link,
-                owner=users_map.get(link.owner_user_id),
-                linked=users_map.get(link.linked_user_id) if link.linked_user_id else None,
-            )
-            for link in links
-        ]
-    }
+    user_ids = {lnk.owner_user_id for lnk in links} | {lnk.linked_user_id for lnk in links if lnk.linked_user_id}
+    users_map = (
+        {u.id: u for u in db.execute(select(User).where(User.id.in_(user_ids))).scalars().all()}
+        if user_ids else {}
+    )
+    return {"links": [_serialize(link, owner=users_map.get(link.owner_user_id), linked=users_map.get(link.linked_user_id) if link.linked_user_id else None) for link in links]}
 
 
 @router.delete("/links/admin/{link_id}")

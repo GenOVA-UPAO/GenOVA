@@ -1,9 +1,5 @@
 """Auth router — login, register, /me. Mounts the reset-password sub-router."""
 import logging
-import os
-import threading
-import time
-from collections import defaultdict, deque
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
@@ -15,8 +11,10 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from auth.cookies import clear_auth_cookie, set_auth_cookie
 from auth.dependencies import get_current_user
 from auth.reset_router import router as reset_router
+from auth.throttle import email_throttled
 from database import get_db
 from models import Role, User, UserRole
 from rate_limit import limiter
@@ -32,65 +30,6 @@ from security import (
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-# Per-email login throttle complements the per-IP slowapi limiter: blocks a
-# distributed attacker that rotates IPs against one account. In-memory only —
-# fine for single Render instance; needs Redis when scaling horizontally.
-_EMAIL_LOGIN_WINDOW_S = 60.0
-_EMAIL_LOGIN_MAX = 5
-_email_attempts: dict[str, deque[float]] = defaultdict(deque)
-_email_attempts_lock = threading.Lock()
-
-# Cookie used by the new httpOnly auth flow.
-_COOKIE_NAME = "genova_token"
-_COOKIE_MAX_AGE = JWT_EXPIRES_MINUTES * 60
-# When the frontend and backend live on different domains (e.g. Vercel +
-# Railway) the session cookie is cross-site, so the browser only attaches it to
-# API calls when SameSite=None. None is rejected unless Secure is also set, so
-# we force Secure in that case. Same-origin deployments can keep the default.
-_COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
-if _COOKIE_SAMESITE not in {"lax", "strict", "none"}:
-    _COOKIE_SAMESITE = "lax"
-_COOKIE_SECURE = _COOKIE_SAMESITE == "none" or os.getenv("COOKIE_SECURE", "1") != "0"
-# CHIPS (Partitioned) silences browser warnings for cross-site SameSite=None cookies.
-# Starlette delegates to http.cookies which only gained Partitioned support in Python
-# 3.14, so we skip the param and patch the raw Set-Cookie header instead.
-_COOKIE_PARTITIONED = _COOKIE_SAMESITE == "none"
-_COOKIE_NAME_BYTES = _COOKIE_NAME.encode()
-
-
-def _patch_partitioned(response: JSONResponse) -> None:
-    """Append '; Partitioned' to the genova_token Set-Cookie header."""
-    for i, (k, v) in enumerate(response.raw_headers):
-        if k == b"set-cookie" and v.startswith(_COOKIE_NAME_BYTES):
-            response.raw_headers[i] = (k, v + b"; Partitioned")
-            return
-
-
-def _email_throttled(email: str) -> bool:
-    now = time.monotonic()
-    with _email_attempts_lock:
-        q = _email_attempts[email]
-        while q and now - q[0] > _EMAIL_LOGIN_WINDOW_S:
-            q.popleft()
-        if len(q) >= _EMAIL_LOGIN_MAX:
-            return True
-        q.append(now)
-        return False
-
-
-def _set_auth_cookie(response: JSONResponse, token: str) -> None:
-    response.set_cookie(
-        key=_COOKIE_NAME,
-        value=token,
-        max_age=_COOKIE_MAX_AGE,
-        httponly=True,
-        secure=_COOKIE_SECURE,
-        samesite=_COOKIE_SAMESITE,
-        path="/",
-    )
-    if _COOKIE_PARTITIONED:
-        _patch_partitioned(response)
 
 
 class LoginRequest(BaseModel):
@@ -135,7 +74,7 @@ def _invalid_credentials() -> JSONResponse:
 def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     email = payload.email.strip().lower()
 
-    if _email_throttled(email):
+    if email_throttled(email):
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             content={
@@ -181,10 +120,10 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
         content={
             "access_token": token,
             "token_type": "bearer",
-            "expires_in": _COOKIE_MAX_AGE,
+            "expires_in": JWT_EXPIRES_MINUTES * 60,
         },
     )
-    _set_auth_cookie(response, token)
+    set_auth_cookie(response, token)
     return response
 
 
@@ -219,24 +158,14 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
         status_code=status.HTTP_201_CREATED,
         content={"access_token": token, "token_type": "bearer"},
     )
-    _set_auth_cookie(response, token)
+    set_auth_cookie(response, token)
     return response
 
 
 @router.post("/logout")
 def logout() -> JSONResponse:
     response = JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
-    response.set_cookie(
-        key=_COOKIE_NAME,
-        value="",
-        max_age=0,
-        httponly=True,
-        secure=_COOKIE_SECURE,
-        samesite=_COOKIE_SAMESITE,
-        path="/",
-    )
-    if _COOKIE_PARTITIONED:
-        _patch_partitioned(response)
+    clear_auth_cookie(response)
     return response
 
 
@@ -266,4 +195,6 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
         "permissions": permissions,
         "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
     }
+
+
 router.include_router(reset_router)

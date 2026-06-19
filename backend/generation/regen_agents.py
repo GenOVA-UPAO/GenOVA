@@ -24,10 +24,7 @@ _EXPLORE_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLORE_META.items()}
 _EXPLAIN_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLAIN_META.items()}
 _ELABORATE_NAME_TO_ID = {v["tipo"]: k for k, v in ELABORATE_META.items()}
 _EVALUATE_NAME_TO_ID = {v["tipo"]: k for k, v in EVALUATE_META.items()}
-
-# Default resource_type id per phase, used to recover legacy OvaPhase rows that
-# were materialized without a resource_type_id (or title) — otherwise regen can't
-# map them to a generator and skips them. Mirrors jobs_helpers._DEFAULT_PLAN.
+# Default resource_type id per phase — mirrors jobs_helpers._DEFAULT_PLAN.
 _PHASE_DEFAULT_ID = {
     "engage": 1,
     "explore": 2,
@@ -36,16 +33,13 @@ _PHASE_DEFAULT_ID = {
     "evaluate": 5,
 }
 
-
-def _phase_meta(phase_type: str):
-    mapping = {
-        "engage": ENGAGE_META,
-        "explore": EXPLORE_META,
-        "explain": EXPLAIN_META,
-        "elaborate": ELABORATE_META,
-        "evaluate": EVALUATE_META,
-    }
-    return mapping.get(phase_type, ENGAGE_META)
+_PHASE_LOOKUP = {
+    "engage": _ENGAGE_NAME_TO_ID,
+    "explore": _EXPLORE_NAME_TO_ID,
+    "explain": _EXPLAIN_NAME_TO_ID,
+    "elaborate": _ELABORATE_NAME_TO_ID,
+    "evaluate": _EVALUATE_NAME_TO_ID,
+}
 
 
 def resolve_resource_type(phase: object) -> int | None:
@@ -59,43 +53,21 @@ def resolve_resource_type(phase: object) -> int | None:
 
     title = (phase.title or "").strip()
     name = title.split(" · ", 1)[1].strip() if " · " in title else title
-    if phase.phase_type == "engage":
-        lookup = _ENGAGE_NAME_TO_ID
-    elif phase.phase_type == "explore":
-        lookup = _EXPLORE_NAME_TO_ID
-    elif phase.phase_type == "explain":
-        lookup = _EXPLAIN_NAME_TO_ID
-    elif phase.phase_type == "elaborate":
-        lookup = _ELABORATE_NAME_TO_ID
-    elif phase.phase_type == "evaluate":
-        lookup = _EVALUATE_NAME_TO_ID
-    else:
-        lookup = _ENGAGE_NAME_TO_ID
-
+    lookup = _PHASE_LOOKUP.get(phase.phase_type, _ENGAGE_NAME_TO_ID)
     rid = lookup.get(name)
     if rid:
         return rid
 
-    # Legacy recovery: an OvaPhase saved without resource_type_id and without a
-    # parseable title (pre-fix jobs) can still regenerate using the phase default
-    # instead of being skipped. Only for known 5E phases; unknown stays None.
+    # Legacy recovery: use phase default when resource_type_id is missing.
     fallback = _PHASE_DEFAULT_ID.get(phase.phase_type)
     if fallback is not None:
         logger.warning(
             "Unresolved resource_type for phase %s (type=%s, title=%r) — using default id %d",
-            phase.id,
-            phase.phase_type,
-            phase.title,
-            fallback,
-        )
+            phase.id, phase.phase_type, phase.title, fallback)
         return fallback
 
-    logger.warning(
-        "Cannot resolve resource_type for phase %s (type=%s, title=%r)",
-        phase.id,
-        phase.phase_type,
-        phase.title,
-    )
+    logger.warning("Cannot resolve resource_type for phase %s (type=%s, title=%r)",
+                   phase.id, phase.phase_type, phase.title)
     return None
 
 
@@ -115,24 +87,16 @@ def regenerate_phase_content(
     try:
         if phase_type == "engage":
             return _generate_engage(resource_type, concept, llm_config, enabled_models)
-        elif phase_type == "explore":
+        if phase_type == "explore":
             return _generate_explore(resource_type, concept, llm_config, enabled_models)
-        elif phase_type == "explain":
-            return _generate_explain(resource_type, concept, llm_config, enabled_models)
-        elif phase_type == "elaborate":
-            return _generate_elaborate(resource_type, concept, llm_config, enabled_models)
-        elif phase_type == "evaluate":
-            return _generate_evaluate(resource_type, concept, llm_config, enabled_models)
-        else:
-            logger.warning("Unknown phase_type '%s' for regen", phase_type)
-            return None
+        if phase_type in ("explain", "elaborate", "evaluate"):
+            return _generate_direct_or_two_step(phase_type, resource_type, concept,
+                                                llm_config, enabled_models)
+        logger.warning("Unknown phase_type '%s' for regen", phase_type)
+        return None
     except Exception:
-        logger.exception(
-            "Regen failed for %s/%d concept=%r",
-            phase_type,
-            resource_type,
-            concept[:60],
-        )
+        logger.exception("Regen failed for %s/%d concept=%r",
+                         phase_type, resource_type, concept[:60])
         return None
 
 
@@ -148,10 +112,7 @@ def _generate_engage(
 
     if n == 10:
         html = strip_markdown(
-            generar_texto(
-                prompt_simulador(concept, ""), "codigo", 12000, llm_config, enabled_models
-            )
-        )
+            generar_texto(prompt_simulador(concept, ""), "codigo", 12000, llm_config, enabled_models))
         html, _ = validate_and_repair(html, "engage", n)
         return html
 
@@ -164,10 +125,7 @@ def _generate_engage(
     json_data = _safe_parse_json(raw, parse_json)
     json_str = __import__("json").dumps(json_data, ensure_ascii=False, indent=2)
     html = strip_markdown(
-        generar_texto(
-            prompt_html(n, concept, json_str, ""), "codigo", 12000, llm_config, enabled_models
-        )
-    )
+        generar_texto(prompt_html(n, concept, json_str, ""), "codigo", 12000, llm_config, enabled_models))
     html, _ = validate_and_repair(html, "engage", n)
     return html
 
@@ -183,10 +141,7 @@ def _generate_explore(
 
     if n in EXPLORE_CODE_ONLY:
         html = strip_markdown(
-            generar_texto(
-                prompt_codigo(n, concept, ""), "codigo", 12000, llm_config, enabled_models
-            )
-        )
+            generar_texto(prompt_codigo(n, concept, ""), "codigo", 12000, llm_config, enabled_models))
         html, _ = validate_and_repair(html, "explore", n)
         return html
 
@@ -194,48 +149,28 @@ def _generate_explore(
     json_data = _safe_parse_json(raw, parse_json)
     json_str = __import__("json").dumps(json_data, ensure_ascii=False, indent=2)
     html = strip_markdown(
-        generar_texto(
-            prompt_html(n, concept, json_str, ""), "codigo", 12000, llm_config, enabled_models
-        )
-    )
+        generar_texto(prompt_html(n, concept, json_str, ""), "codigo", 12000, llm_config, enabled_models))
     html, _ = validate_and_repair(html, "explore", n)
     return html
 
 
-def _generate_explain(
-    n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
+def _generate_direct_or_two_step(
+    phase: str, n: int, concept: str,
+    llm_config: dict | None = None,
+    enabled_models: list | None = None,
 ) -> str:
-    """Run the EXPLAIN generation pipeline for resource type n."""
+    """Run generation for explain, elaborate, or evaluate phases."""
     from prometheus.plans.direct_code import direct_code_gen
     from prometheus.plans.two_step import two_step_gen
 
-    if n in EXPLAIN_CODE_ONLY:
-        return direct_code_gen("explain", n, concept, llm_config, enabled_models)
-    return two_step_gen("explain", n, concept, llm_config, enabled_models)
-
-
-def _generate_elaborate(
-    n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
-) -> str:
-    """Run the ELABORATE generation pipeline for resource type n."""
-    from prometheus.plans.direct_code import direct_code_gen
-    from prometheus.plans.two_step import two_step_gen
-
-    if n in ELABORATE_CODE_ONLY:
-        return direct_code_gen("elaborate", n, concept, llm_config, enabled_models)
-    return two_step_gen("elaborate", n, concept, llm_config, enabled_models)
-
-
-def _generate_evaluate(
-    n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
-) -> str:
-    """Run the EVALUATE generation pipeline for resource type n."""
-    from prometheus.plans.direct_code import direct_code_gen
-    from prometheus.plans.two_step import two_step_gen
-
-    if n in EVALUATE_CODE_ONLY:
-        return direct_code_gen("evaluate", n, concept, llm_config, enabled_models)
-    return two_step_gen("evaluate", n, concept, llm_config, enabled_models)
+    _code_only = {
+        "explain": EXPLAIN_CODE_ONLY,
+        "elaborate": ELABORATE_CODE_ONLY,
+        "evaluate": EVALUATE_CODE_ONLY,
+    }
+    if n in _code_only[phase]:
+        return direct_code_gen(phase, n, concept, llm_config, enabled_models)
+    return two_step_gen(phase, n, concept, llm_config, enabled_models)
 
 
 def _safe_parse_json(raw: str, parser):
