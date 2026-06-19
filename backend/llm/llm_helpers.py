@@ -82,9 +82,16 @@ def _default_models() -> dict[str, tuple]:
     return out
 
 
-def _fallback_chain(tarea: str) -> list[tuple]:
-    """Cadena de fallback para la tarea: config admin o semilla."""
+def _fallback_chain(tarea: str, llm_config: dict | None = None) -> list[tuple]:
+    """Cadena de fallback para la tarea: user override > config admin > semilla."""
     from llm import llm_config_store
+
+    cfg = (llm_config or {}).get(tarea) or {}
+    user_fbs = cfg.get("fallbacks")
+    if isinstance(user_fbs, list) and user_fbs:
+        chain = [t for t in (_entry_tuple(e) for e in user_fbs) if t]
+        if chain:
+            return chain
 
     stored = (llm_config_store.stored_cached().get("fallbacks") or {}).get(tarea)
     if stored:

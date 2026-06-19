@@ -119,7 +119,7 @@ def generar_texto(
     timeout overrides for the primary attempt. `enabled_models` restricts overrides
     to models the user has explicitly enabled (system defaults always pass)."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
-    chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea)]
+    chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea, llm_config)]
 
     last_err: Exception | None = None
     prev_provider: str | None = None

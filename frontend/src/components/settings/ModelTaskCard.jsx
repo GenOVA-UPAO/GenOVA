@@ -1,7 +1,27 @@
 import { motion } from 'motion/react'
-import { Article, Brain, Code, PencilSimple, Robot } from '@phosphor-icons/react'
+import { Article, Brain, Code, PencilSimple, Plus, Robot, Trash, X } from '@phosphor-icons/react'
 import { Input } from '@/components/ui/input'
 import { LlmModelSelect } from './LlmModelSelect.jsx'
+
+function UserChip({ f, i, models, chip, num, onRemove }) {
+  const label = models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.label ?? f.model_id ?? '—'
+  const modality = models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.modality || 'text'
+  const MODALITY_SYMBOLS = { text: 'Aa', multimodal: '◆', image: '◇', audio: '♪' }
+  return (
+    <span className="inline-flex items-center gap-1">
+      {i > 0 && <span className="text-[8px] text-muted-foreground/30 font-black">→</span>}
+      <span className={`inline-flex items-center gap-1 rounded-full pl-2 pr-1 py-0.5 text-[10px] font-semibold border ${chip}`}>
+        <span className={`text-[9px] ${num}`}>
+          {MODALITY_SYMBOLS[modality] || MODALITY_SYMBOLS.text}
+        </span>
+        <span className="truncate max-w-[70px]">{label}</span>
+        <button type="button" onClick={onRemove} className="ml-0.5 rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors">
+          <X size={10} weight="bold" />
+        </button>
+      </span>
+    </span>
+  )
+}
 
 const TASK_META = {
   texto: {
@@ -70,11 +90,14 @@ export function ModelTaskCard({
   task, index = 0,
   adminDraft, adminModels, isAdmin, adminDisabled, onAdminChange,
   isEditing, onEditChain,
-  userSettings, userModels, hasOwnLlmKey, userDisabled, onUserModel, onUserTimeout, onResetUser,
+  userSettings, userModels, hasOwnLlmKey, userDisabled,
+  onUserModel, onUserTimeout, onResetUser,
+  onUserFallback, onUserAddFallback, onUserRemoveFallback,
   bounds = [30, 300],
 }) {
   const m = TASK_META[task] ?? { label: task, desc: '', Icon: Robot, grad: 'from-border/10 to-transparent', accent: 'text-muted-foreground', iconBg: 'bg-muted border-border', badge: 'bg-muted text-muted-foreground border-border', chip: 'bg-muted text-muted-foreground border-border', num: 'text-muted-foreground' }
   const fallbacks = adminDraft?.fallbacks ?? []
+  const userFallbacks = userSettings?.fallbacks ?? []
 
   return (
     <motion.div
@@ -174,6 +197,62 @@ export function ModelTaskCard({
                 <span className="text-[10px] text-muted-foreground/40">s</span>
               </div>
             </div>
+            {userFallbacks.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-0.5">
+                {userFallbacks.slice(0, 4).map((f, i) => (
+                  <UserChip
+                    key={i} f={f} i={i}
+                    models={userModels}
+                    chip={m.chip} num={m.num}
+                    onRemove={() => onUserRemoveFallback(task, i)}
+                  />
+                ))}
+                {userFallbacks.length > 4 && (
+                  <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground border border-border/50">
+                    +{userFallbacks.length - 4}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="text-[10px] italic text-muted-foreground/40">
+                Sin cadena de respaldo personal
+              </div>
+            )}
+            {userFallbacks.map((f, i) => {
+              if (f.provider && f.model_id) return null
+              return (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-muted-foreground/50">#{i + 1}</span>
+                  <div className="flex-1">
+                    <LlmModelSelect
+                      models={userModels}
+                      provider={f.provider || undefined}
+                      modelId={f.model_id || undefined}
+                      onChange={(p, m) => onUserFallback(task, i, p, m)}
+                      disabled={userDisabled}
+                      ariaLabel={`Mi fallback ${i + 1} ${task}`}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onUserRemoveFallback(task, i)}
+                    disabled={userDisabled}
+                    className="p-1 rounded text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash size={12} weight="duotone" />
+                  </button>
+                </div>
+              )
+            })}
+            <button
+              type="button"
+              onClick={() => onUserAddFallback(task)}
+              disabled={userDisabled}
+              className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground/50 hover:text-primary transition-colors"
+            >
+              <Plus size={10} weight="bold" />
+              Añadir respaldo
+            </button>
           </div>
         )}
       </div>

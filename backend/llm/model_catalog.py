@@ -77,7 +77,8 @@ def merge_with_defaults(
     extra_keys: set[tuple[str, str]] | None = None,
 ) -> dict:
     """Effective per-type config: a valid user override or the system default,
-    each with a usable timeout_s. Used by the generation pipeline and the GET.
+    each with a usable timeout_s and fallback chain. Used by the generation
+    pipeline and the GET.
 
     `extra_keys` is the set of (provider, model_id) the user has explicitly
     enabled — models not in the curated CATALOG are accepted when they appear
@@ -95,6 +96,15 @@ def merge_with_defaults(
             entry = dict(dflt)
         t = clamp_timeout(u.get("timeout_s")) if u.get("timeout_s") is not None else None
         entry["timeout_s"] = t if t is not None else DEFAULT_TIMEOUT_S
+        raw_fbs = u.get("fallbacks")
+        if isinstance(raw_fbs, list):
+            entry["fallbacks"] = [
+                {"provider": f["provider"], "model_id": f["model_id"]}
+                for f in raw_fbs
+                if isinstance(f, dict) and f.get("provider") and f.get("model_id")
+            ]
+        else:
+            entry["fallbacks"] = []
         out[tipo] = entry
     return out
 
@@ -103,9 +113,9 @@ def sanitize_settings(
     payload: dict | None,
     extra_keys: set[tuple[str, str]] | None = None,
 ) -> dict:
-    """Validate a PUT payload, keeping only valid (provider, model_id, timeout_s)
-    entries per known type. Raises ValueError on an invalid model/timeout so the
-    router can return 400.
+    """Validate a PUT payload, keeping only valid (provider, model_id, timeout_s,
+    fallbacks) entries per known type. Raises ValueError on an invalid model/timeout
+    so the router can return 400.
 
     `extra_keys` is the set of (provider, model_id) the user has explicitly
     enabled — models not in the curated CATALOG are accepted when they appear
@@ -125,5 +135,15 @@ def sanitize_settings(
         t = clamp_timeout(raw.get("timeout_s", DEFAULT_TIMEOUT_S))
         if t is None:
             raise ValueError(f"Timeout fuera de rango para {tipo} (30-300s)")
-        clean[tipo] = {"provider": provider, "model_id": model_id, "timeout_s": t}
+        entry = {"provider": provider, "model_id": model_id, "timeout_s": t}
+        raw_fbs = raw.get("fallbacks")
+        if isinstance(raw_fbs, list):
+            entry["fallbacks"] = [
+                {"provider": f["provider"], "model_id": f["model_id"]}
+                for f in raw_fbs
+                if isinstance(f, dict) and f.get("provider") and f.get("model_id")
+            ]
+        else:
+            entry["fallbacks"] = []
+        clean[tipo] = entry
     return clean

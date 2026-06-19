@@ -110,6 +110,40 @@ export function useLlmSettings(enabled = true) {
     setSettings((s) => ({ ...s, [tipo]: { ...s[tipo], timeout_s: timeoutS } }))
   }, [])
 
+  const setFallback = useCallback((tipo, index, provider, modelId) => {
+    setSettings((s) => {
+      const fbs = [...(s[tipo]?.fallbacks || [])]
+      if (index >= 0 && index < fbs.length) {
+        fbs[index] = { provider, model_id: modelId }
+      }
+      return { ...s, [tipo]: { ...s[tipo], fallbacks: fbs } }
+    })
+  }, [])
+
+  const addFallback = useCallback((tipo) => {
+    setSettings((s) => {
+      const fbs = [...(s[tipo]?.fallbacks || []), { provider: '', model_id: '' }]
+      return { ...s, [tipo]: { ...s[tipo], fallbacks: fbs } }
+    })
+  }, [])
+
+  const removeFallback = useCallback((tipo, index) => {
+    setSettings((s) => {
+      const fbs = (s[tipo]?.fallbacks || []).filter((_, i) => i !== index)
+      return { ...s, [tipo]: { ...s[tipo], fallbacks: fbs } }
+    })
+  }, [])
+
+  const moveFallback = useCallback((tipo, index, dir) => {
+    setSettings((s) => {
+      const fbs = [...(s[tipo]?.fallbacks || [])]
+      const newIndex = index + dir
+      if (newIndex < 0 || newIndex >= fbs.length) return s
+      ;[fbs[index], fbs[newIndex]] = [fbs[newIndex], fbs[index]]
+      return { ...s, [tipo]: { ...s[tipo], fallbacks: fbs } }
+    })
+  }, [])
+
   const resetTipo = useCallback((tipo) => {
     setSettings((s) => ({ ...s, [tipo]: { ...defaults[tipo], timeout_s: DEFAULT_TIMEOUT } }))
   }, [defaults])
@@ -183,6 +217,7 @@ export function useLlmSettings(enabled = true) {
     searchQuery, categoryFilter,
     load, loadMore, handleSearch, handleCategory,
     setModel, setTipoTimeout, resetTipo, save,
+    setFallback, addFallback, removeFallback, moveFallback,
     isDefaultModel, isModelEnabled, toggleModel, saveEnabled,
     taskLabels: TASK_LABELS,
     categoryLabels: CATEGORY_LABELS,

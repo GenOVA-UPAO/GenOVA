@@ -114,6 +114,9 @@ export function ModelsPage() {
                 onUserModel={(p, mm) => userHook.setModel(task, p, mm)}
                 onUserTimeout={(t) => userHook.setTipoTimeout(task, t)}
                 onResetUser={() => userHook.resetTipo(task)}
+                onUserFallback={(t, i, p, m) => userHook.setFallback(t, i, p, m)}
+                onUserAddFallback={(t) => userHook.addFallback(t)}
+                onUserRemoveFallback={(t, i) => userHook.removeFallback(t, i)}
                 bounds={userHook.bounds}
               />
             ))}
