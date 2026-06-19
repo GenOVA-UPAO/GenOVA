@@ -1,58 +1,8 @@
 import { motion } from 'motion/react'
-import { Article, Brain, Code, PencilSimple, Plus, Robot, Trash, X } from '@phosphor-icons/react'
-import { Input } from '@/components/ui/input'
+import { PencilSimple } from '@phosphor-icons/react'
 import { LlmModelSelect } from './LlmModelSelect.jsx'
-
-function UserChip({ f, i, models, chip, num, onRemove }) {
-  const label = models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.label ?? f.model_id ?? '—'
-  const modality = models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.modality || 'text'
-  const MODALITY_SYMBOLS = { text: 'Aa', multimodal: '◆', image: '◇', audio: '♪' }
-  return (
-    <span className="inline-flex items-center gap-1">
-      {i > 0 && <span className="text-[8px] text-muted-foreground/30 font-black">→</span>}
-      <span className={`inline-flex items-center gap-1 rounded-full pl-2 pr-1 py-0.5 text-[10px] font-semibold border ${chip}`}>
-        <span className={`text-[9px] ${num}`}>
-          {MODALITY_SYMBOLS[modality] || MODALITY_SYMBOLS.text}
-        </span>
-        <span className="truncate max-w-[70px]">{label}</span>
-        <button type="button" onClick={onRemove} className="ml-0.5 rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors">
-          <X size={10} weight="bold" />
-        </button>
-      </span>
-    </span>
-  )
-}
-
-const TASK_META = {
-  texto: {
-    label: 'Texto', desc: 'Generación de contenido OVA', Icon: Article,
-    grad: 'from-primary/[.07] to-primary/[.02]',
-    accent: 'text-primary', iconBg: 'bg-primary/10 border-primary/20',
-    badge: 'bg-primary/10 text-primary border-primary/25',
-    chip: 'bg-primary/8 text-primary border-primary/20', num: 'text-primary font-black',
-  },
-  codigo: {
-    label: 'Código / HTML', desc: 'HTML interactivo SCORM', Icon: Code,
-    grad: 'from-accent-brand/[.07] to-accent-brand/[.02]',
-    accent: 'text-accent-brand', iconBg: 'bg-accent-brand/10 border-accent-brand/20',
-    badge: 'bg-accent-brand/10 text-accent-brand border-accent-brand/25',
-    chip: 'bg-accent-brand/8 text-accent-brand border-accent-brand/20', num: 'text-accent-brand font-black',
-  },
-  orquestador: {
-    label: 'Orquestador', desc: 'Coordinación y planificación', Icon: Robot,
-    grad: 'from-primary/[.05] to-primary/[.01]',
-    accent: 'text-primary/70', iconBg: 'bg-primary/8 border-primary/15',
-    badge: 'bg-primary/8 text-primary/70 border-primary/20',
-    chip: 'bg-primary/6 text-primary/70 border-primary/15', num: 'text-primary/70 font-black',
-  },
-  razonamiento: {
-    label: 'Razonamiento', desc: 'Evaluaciones semánticas', Icon: Brain,
-    grad: 'from-accent-brand/[.05] to-accent-brand/[.01]',
-    accent: 'text-accent-brand/70', iconBg: 'bg-accent-brand/8 border-accent-brand/15',
-    badge: 'bg-accent-brand/8 text-accent-brand/70 border-accent-brand/20',
-    chip: 'bg-accent-brand/6 text-accent-brand/70 border-accent-brand/15', num: 'text-accent-brand/70 font-black',
-  },
-}
+import { UserOverrideSection } from './UserOverrideSection.jsx'
+import { TASK_META } from '../../lib/taskMeta.js'
 
 function Chips({ fallbacks, models, chip, num }) {
   if (!fallbacks?.length) return (
@@ -97,7 +47,6 @@ export function ModelTaskCard({
 }) {
   const m = TASK_META[task] ?? { label: task, desc: '', Icon: Robot, grad: 'from-border/10 to-transparent', accent: 'text-muted-foreground', iconBg: 'bg-muted border-border', badge: 'bg-muted text-muted-foreground border-border', chip: 'bg-muted text-muted-foreground border-border', num: 'text-muted-foreground' }
   const fallbacks = adminDraft?.fallbacks ?? []
-  const userFallbacks = userSettings?.fallbacks ?? []
 
   return (
     <motion.div
@@ -129,6 +78,19 @@ export function ModelTaskCard({
 
       {/* Body */}
       <div className="px-5 py-4 space-y-4">
+        {(task === 'imagen' || task === 'video') ? (
+          <div className="flex flex-col items-center gap-3 py-5 text-center">
+            <div className={`rounded-full p-3 ${m.iconBg}`}>
+              <m.Icon size={22} weight="duotone" className={m.accent} />
+            </div>
+            <p className="text-xs font-semibold text-foreground">Sin {m.label.toLowerCase()} configurado</p>
+            <p className="text-[11px] text-muted-foreground max-w-[180px] leading-relaxed">
+              Agrega tu API key de generación de {m.label.toLowerCase()} en{' '}
+              <a href="/profile#config" className="font-bold text-primary hover:underline">Mi Perfil</a>
+              {' '}para activar este proveedor.
+            </p>
+          </div>
+        ) : (<>
         <div className="space-y-2.5">
           <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50">Plataforma UPAO</p>
           {isAdmin ? (
@@ -162,98 +124,18 @@ export function ModelTaskCard({
         </div>
 
         {hasOwnLlmKey && (
-          <div className="space-y-2.5 pt-3 border-t border-dashed border-border/50">
-            <div className="flex items-center justify-between">
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50">Tu override</p>
-              <button
-                type="button"
-                onClick={onResetUser}
-                disabled={userDisabled}
-                className="text-[9px] font-semibold text-muted-foreground/40 hover:text-destructive transition-colors disabled:opacity-30"
-              >
-                Restaurar
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 min-w-0">
-                <LlmModelSelect
-                  models={userModels}
-                  provider={userSettings?.provider}
-                  modelId={userSettings?.model_id}
-                  onChange={onUserModel}
-                  disabled={userDisabled}
-                  ariaLabel={`Mi modelo ${task}`}
-                />
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <Input
-                  type="number" min={bounds[0]} max={bounds[1]}
-                  value={userSettings?.timeout_s ?? ''}
-                  disabled={userDisabled}
-                  onChange={(e) => onUserTimeout(Number(e.target.value))}
-                  className="h-8 w-14 text-center text-xs border-border/50 bg-background/60"
-                  title={`Timeout: ${bounds[0]}–${bounds[1]} s`}
-                />
-                <span className="text-[10px] text-muted-foreground/40">s</span>
-              </div>
-            </div>
-            {userFallbacks.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-0.5">
-                {userFallbacks.slice(0, 4).map((f, i) => (
-                  <UserChip
-                    key={i} f={f} i={i}
-                    models={userModels}
-                    chip={m.chip} num={m.num}
-                    onRemove={() => onUserRemoveFallback(task, i)}
-                  />
-                ))}
-                {userFallbacks.length > 4 && (
-                  <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground border border-border/50">
-                    +{userFallbacks.length - 4}
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="text-[10px] italic text-muted-foreground/40">
-                Sin cadena de respaldo personal
-              </div>
-            )}
-            {userFallbacks.map((f, i) => {
-              if (f.provider && f.model_id) return null
-              return (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-muted-foreground/50">#{i + 1}</span>
-                  <div className="flex-1">
-                    <LlmModelSelect
-                      models={userModels}
-                      provider={f.provider || undefined}
-                      modelId={f.model_id || undefined}
-                      onChange={(p, m) => onUserFallback(task, i, p, m)}
-                      disabled={userDisabled}
-                      ariaLabel={`Mi fallback ${i + 1} ${task}`}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onUserRemoveFallback(task, i)}
-                    disabled={userDisabled}
-                    className="p-1 rounded text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash size={12} weight="duotone" />
-                  </button>
-                </div>
-              )
-            })}
-            <button
-              type="button"
-              onClick={() => onUserAddFallback(task)}
-              disabled={userDisabled}
-              className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground/50 hover:text-primary transition-colors"
-            >
-              <Plus size={10} weight="bold" />
-              Añadir respaldo
-            </button>
-          </div>
+          <UserOverrideSection
+            task={task} chip={m.chip} num={m.num}
+            userSettings={userSettings} userModels={userModels}
+            userDisabled={userDisabled} bounds={bounds}
+            onUserModel={onUserModel} onUserTimeout={onUserTimeout}
+            onResetUser={onResetUser}
+            onUserFallback={onUserFallback}
+            onUserAddFallback={onUserAddFallback}
+            onUserRemoveFallback={onUserRemoveFallback}
+          />
+        )}
+        </>
         )}
       </div>
     </motion.div>

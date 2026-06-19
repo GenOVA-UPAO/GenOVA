@@ -26,7 +26,7 @@ export function ModelsPage() {
   const userHook = useLlmSettings(true)
   const adminHook = useAdminLlmConfig()
   const isAdmin = user?.role === 'administrador'
-  const tasks = adminHook.config.data?.tasks ?? ['texto', 'codigo', 'orquestador', 'razonamiento']
+  const tasks = adminHook.config.data?.tasks ?? ['texto', 'codigo', 'orquestador', 'razonamiento', 'imagen', 'video']
   const adminModels = adminHook.catalog.data ?? []
   useEffect(() => { getCurrentUser().then(setUser) }, [])
   useEffect(() => {
