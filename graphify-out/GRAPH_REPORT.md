@@ -1,16 +1,16 @@
 # Graph Report - GenOVA  (2026-06-19)
 
 ## Corpus Check
-- 730 files · ~357,970 words
+- 730 files · ~358,019 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4998 nodes · 7041 edges · 519 communities (330 shown, 189 thin omitted)
+- 4998 nodes · 7041 edges · 518 communities (329 shown, 189 thin omitted)
 - Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 754 edges (avg confidence: 0.61)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0b8b3e3d`
+- Built from commit: `4e1a71b2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -89,7 +89,6 @@
 - [[_COMMUNITY_Output Generation and Indexing|Output Generation and Indexing]]
 - [[_COMMUNITY_User API Key Management|User API Key Management]]
 - [[_COMMUNITY_OVA Management Modals|OVA Management Modals]]
-- [[_COMMUNITY_Resource Preview Components|Resource Preview Components]]
 - [[_COMMUNITY_Node Configuration Store|Node Configuration Store]]
 - [[_COMMUNITY_Alert Dialog Components|Alert Dialog Components]]
 - [[_COMMUNITY_Binary File Embedding|Binary File Embedding]]
@@ -527,33 +526,33 @@
 - 1-file cycle: `backend/rag/store.py -> backend/rag/store.py`
 - 1-file cycle: `backend/users/admin/helpers.py -> backend/users/admin/helpers.py`
 - 2-file cycle: `backend/auth/dependencies.py -> backend/main.py -> backend/auth/dependencies.py`
-- 3-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/main.py -> backend/api/llm.py`
+- 3-file cycle: `backend/api/labs.py -> backend/labs/router.py -> backend/main.py -> backend/api/labs.py`
+- 3-file cycle: `backend/api/users.py -> backend/users/router.py -> backend/main.py -> backend/api/users.py`
+- 3-file cycle: `backend/api/auth.py -> backend/auth/reset_router.py -> backend/main.py -> backend/api/auth.py`
 - 3-file cycle: `backend/api/auth.py -> backend/auth/router.py -> backend/main.py -> backend/api/auth.py`
 - 3-file cycle: `backend/api/labs.py -> backend/labs/generation_routes.py -> backend/main.py -> backend/api/labs.py`
-- 3-file cycle: `backend/api/labs.py -> backend/labs/router.py -> backend/main.py -> backend/api/labs.py`
-- 3-file cycle: `backend/api/rag.py -> backend/uploads/router.py -> backend/main.py -> backend/api/rag.py`
-- 3-file cycle: `backend/api/auth.py -> backend/auth/reset_router.py -> backend/main.py -> backend/api/auth.py`
-- 3-file cycle: `backend/api/users.py -> backend/roles/router.py -> backend/main.py -> backend/api/users.py`
-- 3-file cycle: `backend/api/users.py -> backend/users/router.py -> backend/main.py -> backend/api/users.py`
+- 3-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/main.py -> backend/api/llm.py`
 - 3-file cycle: `backend/api/ova.py -> backend/generation/jobs_router.py -> backend/main.py -> backend/api/ova.py`
 - 3-file cycle: `backend/api/ova.py -> backend/ova/router.py -> backend/main.py -> backend/api/ova.py`
 - 3-file cycle: `backend/api/rag.py -> backend/rag/router.py -> backend/main.py -> backend/api/rag.py`
+- 3-file cycle: `backend/api/rag.py -> backend/uploads/router.py -> backend/main.py -> backend/api/rag.py`
 - 3-file cycle: `backend/api/scorm.py -> backend/scorm/router.py -> backend/main.py -> backend/api/scorm.py`
-- 4-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/llm/elaborate_router.py -> backend/main.py -> backend/api/llm.py`
+- 3-file cycle: `backend/api/users.py -> backend/roles/router.py -> backend/main.py -> backend/api/users.py`
+- 4-file cycle: `backend/api/llm.py -> backend/llm/catalog_router.py -> backend/llm/explain_router.py -> backend/main.py -> backend/api/llm.py`
 
-## Communities (519 total, 189 thin omitted)
+## Communities (518 total, 189 thin omitted)
 
 ### Community 0 - "Navigation and Layout Components"
 Cohesion: 0.05
-Nodes (42): MainContainer(), Sidebar(), isLoggedIn(), queryClient, ForgotPasswordPage(), schema, LoginPage(), RegisterPage() (+34 more)
+Nodes (36): queryClient, ForgotPasswordPage(), schema, LoginPage(), RegisterPage(), ResetPasswordPage(), schema, email (+28 more)
 
 ### Community 1 - "OVA Versioning Helpers"
-Cohesion: 0.10
-Nodes (64): Column, Session, User, Session, CatalogCache, LabResult, Ova, OvaPhase (+56 more)
+Cohesion: 0.08
+Nodes (71): Column, Session, User, OvaPhase, Session, CatalogCache, LabResult, Ova (+63 more)
 
 ### Community 2 - "Account Management Endpoints"
-Cohesion: 0.13
-Nodes (11): EMPTY_PICKS(), PHASE_CFG, PhaseSelectModal(), INTERACTIVIDAD_COLOR, ResourceCard(), usePhaseGeneration(), PhasePage(), fetchEngageRecursos() (+3 more)
+Cohesion: 0.21
+Nodes (22): _issue_reset_token(), Admin endpoints: account status (activate, lock) + password-reset triggers.  Sec, Replace any existing reset tokens for the user with a fresh long token., trigger_reset_email(), trigger_reset_whatsapp(), unlock_user(), update_user_status(), UserStatusUpdate (+14 more)
 
 ### Community 3 - "Error Logging and Sanitization"
 Cohesion: 0.22
@@ -564,8 +563,8 @@ Cohesion: 0.04
 Nodes (3): db(), EN-013 — BDD steps for job persistence + the background runner.  Runs against a, Sess()
 
 ### Community 5 - "User Administration and Roles"
-Cohesion: 0.08
-Nodes (57): _issue_reset_token(), Admin endpoints: account status (activate, lock) + password-reset triggers.  Sec, Replace any existing reset tokens for the user with a fresh long token., trigger_reset_email(), trigger_reset_whatsapp(), unlock_user(), update_user_status(), UserStatusUpdate (+49 more)
+Cohesion: 0.06
+Nodes (70): normalize_gender(), normalize_phone(), get_users(), Admin endpoint: paginated user listing., _serialize_user(), _check_duplicates(), Admin endpoints: edit profile + change role., update_user_profile() (+62 more)
 
 ### Community 6 - "Linter and Formatter Config"
 Cohesion: 0.04
@@ -584,8 +583,8 @@ Cohesion: 0.05
 Nodes (40): dependencies, class-variance-authority, clsx, @fontsource-variable/fraunces, @fontsource-variable/geist, @hookform/resolvers, motion, @phosphor-icons/react (+32 more)
 
 ### Community 11 - "Background Regeneration Service"
-Cohesion: 0.12
-Nodes (24): _build_and_persist(), Build SCORM zip and persist to storage or disk., download_ova_scorm(), _persist_scorm_zip(), Persist the SCORM zip. Prefer Supabase Storage; fall back to local disk.      Re, save_ova(), SaveOvaRequest, Cloud storage adapters. Currently only Supabase Storage is implemented; the modu (+16 more)
+Cohesion: 0.09
+Nodes (32): _build_and_persist(), _finalize_edit(), _mark_ova_error(), _owner_llm_config(), Background regen service — creates a new OvaVersion with real LLM content.  Repl, Load the OVA owner's per-type LLM overrides (empty = system defaults)., Regenerate `phases` concurrently, returning {phase_id: html|None}.      Each tas, Build SCORM zip and persist to storage or disk. (+24 more)
 
 ### Community 12 - "Resource Generation Routers"
 Cohesion: 0.08
@@ -608,8 +607,8 @@ Cohesion: 0.17
 Nodes (8): P_DOT, P_EMOJI, PhaseRow(), PHASES, SectionLabel(), OvaThemeSelector(), UPAO_SWATCHES, TotalFailurePanel()
 
 ### Community 17 - "OVA Metadata and Trash"
-Cohesion: 0.13
-Nodes (28): Ova, Session, User, Session, User, Session, User, Session (+20 more)
+Cohesion: 0.15
+Nodes (16): Request, Session, User, Request, Session, User, EnabledModelsUpdate, get_enabled_models() (+8 more)
 
 ### Community 18 - "Database Models and Schema"
 Cohesion: 0.16
@@ -660,8 +659,8 @@ Cohesion: 0.09
 Nodes (3): ctx(), _Principal, EN-017 — BDD steps for Panel de Nodos/Agentes Prometheus.  Tests the admin /node
 
 ### Community 30 - "Labs Worker and Quality"
-Cohesion: 0.19
-Nodes (17): Request, Session, User, get_provider_status(), Snapshot of per-provider refresh health (for the settings UI)., _enabled_keys(), get_llm_settings(), _has_own_llm_key() (+9 more)
+Cohesion: 0.29
+Nodes (9): can(), UserLinksPage(), acceptLink(), createLinkCode(), deleteAnyLink(), deleteMyLink(), fetchAllLinks(), fetchMyLinks() (+1 more)
 
 ### Community 31 - "UI Component Registry"
 Cohesion: 0.09
@@ -728,8 +727,8 @@ Cohesion: 0.12
 Nodes (19): useUsersAdmin(), getRoleColorClasses(), AdminUsersPage(), fetchCurrentUser(), fetchRoles(), fetchUsersPage(), generateResetWhatsApp(), send() (+11 more)
 
 ### Community 47 - "OVA Workspace API Hooks"
-Cohesion: 0.12
-Nodes (29): apiJson(), can(), UserLinksPage(), fetchElaborateRecursos(), generateElaborateResource(), fetchEvaluateRecursos(), generateEvaluateResource(), fetchExplainRecursos() (+21 more)
+Cohesion: 0.08
+Nodes (31): EMPTY_PICKS(), PHASE_CFG, PhaseSelectModal(), INTERACTIVIDAD_COLOR, ResourceCard(), usePhaseGeneration(), apiJson(), PhasePage() (+23 more)
 
 ### Community 48 - "HTML Validation and Repair"
 Cohesion: 0.16
@@ -800,8 +799,8 @@ Cohesion: 0.13
 Nodes (14): name, packageManager, private, scripts, build, dev, dev:docker, format (+6 more)
 
 ### Community 65 - "RAG Vector Persistence"
-Cohesion: 0.09
-Nodes (25): initials(), Navbar(), NavbarBrand(), ADMIN_LINKS, CONFIG_LINKS, hasPermission(), ICONS, initials() (+17 more)
+Cohesion: 0.07
+Nodes (31): MainContainer(), initials(), Navbar(), NavbarBrand(), Sidebar(), ADMIN_LINKS, CONFIG_LINKS, hasPermission() (+23 more)
 
 ### Community 66 - "LLM Engine Selection UI"
 Cohesion: 0.14
@@ -830,10 +829,6 @@ Nodes (20): useOvaFilters(), useOvaList(), useOvaMetadata(), useOvaSelection(), 
 ### Community 73 - "OVA Management Modals"
 Cohesion: 0.10
 Nodes (18): BulkTrashModal(), ConfirmModal(), EditMetadataModal(), EMPTY_JOB, OvaCard, OvaGridSkeleton(), OvaListPagination(), OvaStatusBadge() (+10 more)
-
-### Community 74 - "Resource Preview Components"
-Cohesion: 0.24
-Nodes (11): OvaPhase, _finalize_edit(), _mark_ova_error(), _owner_llm_config(), Background regen service — creates a new OvaVersion with real LLM content.  Repl, Load the OVA owner's per-type LLM overrides (empty = system defaults)., Regenerate `phases` concurrently, returning {phase_id: html|None}.      Each tas, Set OVA status to error on regen failure. (+3 more)
 
 ### Community 75 - "Node Configuration Store"
 Cohesion: 0.22
@@ -884,8 +879,8 @@ Cohesion: 0.14
 Nodes (13): Common Skill Categories, Find Skills, How to Help Users Find Skills, Step 1: Understand What They Need, Step 2: Check the Leaderboard First, Step 3: Search for Skills, Step 4: Verify Quality Before Recommending, Step 5: Present Options to the User (+5 more)
 
 ### Community 87 - "Lab Generation Hooks"
-Cohesion: 0.04
-Nodes (55): Admin user-management router. Mounts the listing, profile and account sub-router, RAG domain — vector search, file uploads, RAG ingestion pipeline.  Prefixes (set, User, Session, Session, User, Session, verify_password() (+47 more)
+Cohesion: 0.06
+Nodes (43): Admin user-management router. Mounts the listing, profile and account sub-router, RAG domain — vector search, file uploads, RAG ingestion pipeline.  Prefixes (set, User, Ova, Session, User, Session, User (+35 more)
 
 ### Community 88 - "Workspace Resource Reordering"
 Cohesion: 0.27
@@ -1516,8 +1511,8 @@ Cohesion: 0.40
 Nodes (5): 8.1 Do Not Put Effect Events in Dependency Arrays, 8.2 Initialize App Once, Not Per Mount, 8.3 Store Event Handlers in Refs, 8.4 useEffectEvent for Stable Callback Refs, 8. Advanced Patterns
 
 ### Community 321 - "Community 321"
-Cohesion: 0.13
-Nodes (26): Session, User, Session, Session, User, _is_ova_owner(), _phase_to_dict(), _resolve_regen_stage() (+18 more)
+Cohesion: 0.12
+Nodes (28): Session, User, Session, Session, _get_active_version(), _is_ova_owner(), _phase_to_dict(), _resolve_regen_stage() (+20 more)
 
 ### Community 322 - "Community 322"
 Cohesion: 0.40
@@ -1711,11 +1706,11 @@ Nodes (3): ROLE_BADGE, ROLE_LABEL, USERS
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `User` connect `OVA Versioning Helpers` to `LLM Config Draft Management`, `Community 321`, `User Administration and Roles`, `Resource Preview Components`, `Engage Phase Generation`, `Resource Generation Routers`, `Temporary Upload Management`, `Background Regeneration Service`, `Job Status and Resumption`, `OVA Metadata and Trash`, `Phase and Version Management`, `Auth and Security Tests`, `Lab Generation Hooks`, `Labs Worker and Quality`, `Catalog Cache Service`?**
+- **Why does `User` connect `OVA Versioning Helpers` to `LLM Config Draft Management`, `Account Management Endpoints`, `Community 321`, `User Administration and Roles`, `Engage Phase Generation`, `Resource Generation Routers`, `Temporary Upload Management`, `Job Status and Resumption`, `OVA Metadata and Trash`, `Phase and Version Management`, `Auth and Security Tests`, `Lab Generation Hooks`, `Catalog Cache Service`?**
   _High betweenness centrality (0.017) - this node is a cross-community bridge._
-- **Why does `datetime` connect `Lab Generation Hooks` to `OVA Versioning Helpers`, `OVA Materialization Logic`, `Error Logging and Sanitization`, `User Administration and Roles`, `Binary File Embedding`, `E2E CLI Harness`, `LLM Config Store`, `OVA Status Cards`, `Phase and Version Management`, `Auth and Security Tests`, `Community 347`, `Community 349`?**
+- **Why does `datetime` connect `Lab Generation Hooks` to `OVA Versioning Helpers`, `Account Management Endpoints`, `Error Logging and Sanitization`, `OVA Materialization Logic`, `Binary File Embedding`, `E2E CLI Harness`, `LLM Config Store`, `OVA Status Cards`, `Phase and Version Management`, `Auth and Security Tests`, `Community 347`, `Community 349`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `FastAPI` connect `Lab Generation Hooks` to `OVA Versioning Helpers`, `User Administration and Roles`, `Role Management UI Tests`, `Background Regeneration Service`, `Resource Generation Routers`, `Job Status and Resumption`, `Lightweight Auth Context`, `OVA Metadata and Trash`, `Auth and Security Tests`, `LLM Config BDD Tests`, `Node Config BDD Tests`, `Labs Worker and Quality`, `LLM Config Draft Management`, `Engage Phase Generation`, `Platform Admin Config`, `LLM Catalog Refresh`, `Community 321`, `Email and API Clients`, `Phase and Version Management`, `Community 238`, `Community 241`?**
+- **Why does `FastAPI` connect `Lab Generation Hooks` to `OVA Versioning Helpers`, `Account Management Endpoints`, `User Administration and Roles`, `Role Management UI Tests`, `Background Regeneration Service`, `Resource Generation Routers`, `Job Status and Resumption`, `Lightweight Auth Context`, `OVA Metadata and Trash`, `Auth and Security Tests`, `LLM Config BDD Tests`, `Node Config BDD Tests`, `LLM Config Draft Management`, `Engage Phase Generation`, `Platform Admin Config`, `LLM Catalog Refresh`, `Community 321`, `Email and API Clients`, `Phase and Version Management`, `Community 238`, `Community 241`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **Are the 152 inferred relationships involving `User` (e.g. with `UserStatusUpdate` and `UserProfileAdminUpdate`) actually correct?**
   _`User` has 152 INFERRED edges - model-reasoned connections that need verification._

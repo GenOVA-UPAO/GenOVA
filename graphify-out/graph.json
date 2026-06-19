@@ -480,7 +480,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "basemodel",
-      "community": 87,
+      "community": 5,
       "norm_label": "basemodel"
     },
     {
@@ -2530,7 +2530,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "generation_regen_router",
-      "community": 87,
+      "community": 321,
       "norm_label": "regen_router.py"
     },
     {
@@ -2540,7 +2540,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "generation_regen_router_regenrequest",
-      "community": 1,
+      "community": 321,
       "norm_label": "regenrequest"
     },
     {
@@ -2550,7 +2550,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "generation_regen_router_regenerate_ova",
-      "community": 1,
+      "community": 321,
       "norm_label": "regenerate_ova()"
     },
     {
@@ -2590,7 +2590,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "generation_regen_service",
-      "community": 74,
+      "community": 11,
       "norm_label": "regen_service.py"
     },
     {
@@ -2600,7 +2600,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "generation_regen_service_finalize_edit",
-      "community": 74,
+      "community": 11,
       "norm_label": "_finalize_edit()"
     },
     {
@@ -2610,7 +2610,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "generation_regen_service_owner_llm_config",
-      "community": 74,
+      "community": 11,
       "norm_label": "_owner_llm_config()"
     },
     {
@@ -2640,7 +2640,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "backend_generation_regen_service_py_ovaphase",
-      "community": 74,
+      "community": 1,
       "norm_label": "ovaphase"
     },
     {
@@ -2650,7 +2650,7 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "generation_regen_service_regen_concurrency",
-      "community": 74,
+      "community": 11,
       "norm_label": "_regen_concurrency()"
     },
     {
@@ -2660,7 +2660,7 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "generation_regen_service_regen_phases_parallel",
-      "community": 74,
+      "community": 11,
       "norm_label": "_regen_phases_parallel()"
     },
     {
@@ -2680,7 +2680,7 @@
       "source_location": "L217",
       "_origin": "ast",
       "id": "generation_regen_service_mark_ova_error",
-      "community": 74,
+      "community": 11,
       "norm_label": "_mark_ova_error()"
     },
     {
@@ -2690,7 +2690,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "generation_regen_service_rationale_1",
-      "community": 74,
+      "community": 11,
       "norm_label": "background regen service \u2014 creates a new ovaversion with real llm content.  repl"
     },
     {
@@ -2700,7 +2700,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "generation_regen_service_rationale_32",
-      "community": 74,
+      "community": 11,
       "norm_label": "background thread: regenerate selected phases with real llm agents,     create a"
     },
     {
@@ -2710,7 +2710,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "generation_regen_service_rationale_134",
-      "community": 74,
+      "community": 11,
       "norm_label": "load the ova owner's per-type llm overrides (empty = system defaults)."
     },
     {
@@ -2730,7 +2730,7 @@
       "source_location": "L161",
       "_origin": "ast",
       "id": "generation_regen_service_rationale_161",
-      "community": 74,
+      "community": 11,
       "norm_label": "regenerate `phases` concurrently, returning {phase_id: html|none}.      each tas"
     },
     {
@@ -2750,7 +2750,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "generation_regen_service_rationale_218",
-      "community": 74,
+      "community": 11,
       "norm_label": "set ova status to error on regen failure."
     },
     {
@@ -2930,7 +2930,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "labs_generation_routes_modelconfig",
-      "community": 87,
+      "community": 1,
       "norm_label": "modelconfig"
     },
     {
@@ -2940,7 +2940,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "labs_generation_routes_startgenerationrequest",
-      "community": 87,
+      "community": 1,
       "norm_label": "startgenerationrequest"
     },
     {
@@ -3360,7 +3360,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "llm_catalog_refresh_get_provider_status",
-      "community": 30,
+      "community": 5,
       "norm_label": "get_provider_status()"
     },
     {
@@ -3480,7 +3480,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "llm_catalog_refresh_rationale_120",
-      "community": 30,
+      "community": 5,
       "norm_label": "snapshot of per-provider refresh health (for the settings ui)."
     },
     {
@@ -5650,7 +5650,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "crud_edit_helpers_get_active_version",
-      "community": 1,
+      "community": 321,
       "norm_label": "_get_active_version()"
     },
     {
@@ -5970,7 +5970,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "crud_subelement_router",
-      "community": 87,
+      "community": 1,
       "norm_label": "subelement_router.py"
     },
     {
@@ -6030,7 +6030,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "crud_subelement_router_rationale_1",
-      "community": 87,
+      "community": 1,
       "norm_label": "hu-031 \u2014 granular sub-element editing within a phase resource.  returns 501 not"
     },
     {
@@ -6050,7 +6050,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "ova_helpers_is_admin",
-      "community": 17,
+      "community": 87,
       "norm_label": "_is_admin()"
     },
     {
@@ -6060,7 +6060,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_ova_helpers_py_user",
-      "community": 17,
+      "community": 87,
       "norm_label": "user"
     },
     {
@@ -6070,7 +6070,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "backend_ova_helpers_py_session",
-      "community": 17,
+      "community": 87,
       "norm_label": "session"
     },
     {
@@ -6080,7 +6080,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "ova_helpers_ova_to_dict",
-      "community": 17,
+      "community": 87,
       "norm_label": "_ova_to_dict()"
     },
     {
@@ -6090,7 +6090,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "backend_ova_helpers_py_ova",
-      "community": 17,
+      "community": 87,
       "norm_label": "ova"
     },
     {
@@ -6100,7 +6100,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "ova_helpers_delete_scorm_file",
-      "community": 17,
+      "community": 87,
       "norm_label": "_delete_scorm_file()"
     },
     {
@@ -6110,7 +6110,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "ova_helpers_batchidsrequest",
-      "community": 87,
+      "community": 5,
       "norm_label": "batchidsrequest"
     },
     {
@@ -6120,7 +6120,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "ova_helpers_updateovametadatarequest",
-      "community": 17,
+      "community": 87,
       "norm_label": "updateovametadatarequest"
     },
     {
@@ -6140,7 +6140,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lifecycle_duplicate_router",
-      "community": 87,
+      "community": 1,
       "norm_label": "duplicate_router.py"
     },
     {
@@ -6150,7 +6150,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "lifecycle_duplicate_router_unique_copy_title",
-      "community": 87,
+      "community": 1,
       "norm_label": "_unique_copy_title()"
     },
     {
@@ -6160,7 +6160,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "backend_ova_lifecycle_duplicate_router_py_session",
-      "community": 87,
+      "community": 1,
       "norm_label": "session"
     },
     {
@@ -6170,7 +6170,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "lifecycle_duplicate_router_duplicate_ova",
-      "community": 87,
+      "community": 1,
       "norm_label": "duplicate_ova()"
     },
     {
@@ -6200,7 +6200,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "lifecycle_manage_router_update_ova_metadata",
-      "community": 17,
+      "community": 87,
       "norm_label": "update_ova_metadata()"
     },
     {
@@ -6210,7 +6210,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "updateovametadatarequest",
-      "community": 17,
+      "community": 87,
       "norm_label": "updateovametadatarequest"
     },
     {
@@ -6220,7 +6220,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_ova_lifecycle_manage_router_py_user",
-      "community": 17,
+      "community": 87,
       "norm_label": "user"
     },
     {
@@ -6230,7 +6230,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "backend_ova_lifecycle_manage_router_py_session",
-      "community": 17,
+      "community": 87,
       "norm_label": "session"
     },
     {
@@ -6240,7 +6240,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "lifecycle_manage_router_delete_ova",
-      "community": 17,
+      "community": 87,
       "norm_label": "delete_ova()"
     },
     {
@@ -6260,7 +6260,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "lifecycle_trash_batch_router_batch_move_to_trash",
-      "community": 17,
+      "community": 87,
       "norm_label": "batch_move_to_trash()"
     },
     {
@@ -6270,7 +6270,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "batchidsrequest",
-      "community": 17,
+      "community": 87,
       "norm_label": "batchidsrequest"
     },
     {
@@ -6280,7 +6280,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_ova_lifecycle_trash_batch_router_py_user",
-      "community": 17,
+      "community": 87,
       "norm_label": "user"
     },
     {
@@ -6290,7 +6290,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "backend_ova_lifecycle_trash_batch_router_py_session",
-      "community": 17,
+      "community": 87,
       "norm_label": "session"
     },
     {
@@ -6300,7 +6300,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "lifecycle_trash_batch_router_batch_restore",
-      "community": 17,
+      "community": 87,
       "norm_label": "batch_restore()"
     },
     {
@@ -6310,7 +6310,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "lifecycle_trash_batch_router_batch_permanent_delete",
-      "community": 17,
+      "community": 87,
       "norm_label": "batch_permanent_delete()"
     },
     {
@@ -6320,7 +6320,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lifecycle_trash_router",
-      "community": 17,
+      "community": 87,
       "norm_label": "trash_router.py"
     },
     {
@@ -6330,7 +6330,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "lifecycle_trash_router_count_trashed_ovas",
-      "community": 17,
+      "community": 87,
       "norm_label": "count_trashed_ovas()"
     },
     {
@@ -6340,7 +6340,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_ova_lifecycle_trash_router_py_user",
-      "community": 17,
+      "community": 87,
       "norm_label": "user"
     },
     {
@@ -6350,7 +6350,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "backend_ova_lifecycle_trash_router_py_session",
-      "community": 17,
+      "community": 87,
       "norm_label": "session"
     },
     {
@@ -6360,7 +6360,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "lifecycle_trash_router_list_trashed_ovas",
-      "community": 17,
+      "community": 87,
       "norm_label": "list_trashed_ovas()"
     },
     {
@@ -6370,7 +6370,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "lifecycle_trash_router_restore_ova",
-      "community": 17,
+      "community": 87,
       "norm_label": "restore_ova()"
     },
     {
@@ -6380,7 +6380,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "lifecycle_trash_router_permanent_delete_ova",
-      "community": 17,
+      "community": 87,
       "norm_label": "permanent_delete_ova()"
     },
     {
@@ -6500,7 +6500,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "phases_history_router_list_ovas",
-      "community": 17,
+      "community": 87,
       "norm_label": "list_ovas()"
     },
     {
@@ -6510,7 +6510,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_ova_phases_history_router_py_user",
-      "community": 17,
+      "community": 87,
       "norm_label": "user"
     },
     {
@@ -6520,7 +6520,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "backend_ova_phases_history_router_py_session",
-      "community": 17,
+      "community": 87,
       "norm_label": "session"
     },
     {
@@ -6530,7 +6530,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "phases_history_router_download_ova",
-      "community": 17,
+      "community": 87,
       "norm_label": "download_ova()"
     },
     {
@@ -6600,7 +6600,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "backend_ova_phases_phase_version_router_py_user",
-      "community": 321,
+      "community": 1,
       "norm_label": "user"
     },
     {
@@ -6690,7 +6690,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "ova_router_saveovarequest",
-      "community": 11,
+      "community": 1,
       "norm_label": "saveovarequest"
     },
     {
@@ -6710,7 +6710,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "ova_router_save_ova",
-      "community": 11,
+      "community": 1,
       "norm_label": "save_ova()"
     },
     {
@@ -9473,7 +9473,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "roles_router",
-      "community": 87,
+      "community": 5,
       "norm_label": "router.py"
     },
     {
@@ -9483,7 +9483,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "roles_router_rolecreate",
-      "community": 87,
+      "community": 5,
       "norm_label": "rolecreate"
     },
     {
@@ -9493,7 +9493,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "roles_router_get_roles",
-      "community": 87,
+      "community": 5,
       "norm_label": "get_roles()"
     },
     {
@@ -9503,7 +9503,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_roles_router_py_session",
-      "community": 87,
+      "community": 5,
       "norm_label": "session"
     },
     {
@@ -9513,7 +9513,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "roles_router_create_role",
-      "community": 87,
+      "community": 5,
       "norm_label": "create_role()"
     },
     {
@@ -9523,7 +9523,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "roles_router_roleupdate",
-      "community": 87,
+      "community": 5,
       "norm_label": "roleupdate"
     },
     {
@@ -9533,7 +9533,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "roles_router_update_role",
-      "community": 87,
+      "community": 5,
       "norm_label": "update_role()"
     },
     {
@@ -10643,7 +10643,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "backend_security_verify_password",
-      "community": 87,
+      "community": 5,
       "norm_label": "verify_password()"
     },
     {
@@ -14753,7 +14753,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "admin_account_router",
-      "community": 5,
+      "community": 2,
       "norm_label": "account_router.py"
     },
     {
@@ -14763,7 +14763,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "admin_account_router_userstatusupdate",
-      "community": 5,
+      "community": 2,
       "norm_label": "userstatusupdate"
     },
     {
@@ -14773,7 +14773,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "admin_account_router_issue_reset_token",
-      "community": 5,
+      "community": 2,
       "norm_label": "_issue_reset_token()"
     },
     {
@@ -14783,7 +14783,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "backend_users_admin_account_router_py_session",
-      "community": 5,
+      "community": 2,
       "norm_label": "session"
     },
     {
@@ -14793,7 +14793,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "admin_account_router_update_user_status",
-      "community": 5,
+      "community": 2,
       "norm_label": "update_user_status()"
     },
     {
@@ -14803,7 +14803,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "backend_users_admin_account_router_py_user",
-      "community": 5,
+      "community": 2,
       "norm_label": "user"
     },
     {
@@ -14813,7 +14813,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "admin_account_router_unlock_user",
-      "community": 5,
+      "community": 2,
       "norm_label": "unlock_user()"
     },
     {
@@ -14823,7 +14823,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "admin_account_router_trigger_reset_email",
-      "community": 5,
+      "community": 2,
       "norm_label": "trigger_reset_email()"
     },
     {
@@ -14833,7 +14833,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "backend_users_admin_account_router_py_backgroundtasks",
-      "community": 5,
+      "community": 2,
       "norm_label": "backgroundtasks"
     },
     {
@@ -14843,7 +14843,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "admin_account_router_trigger_reset_whatsapp",
-      "community": 5,
+      "community": 2,
       "norm_label": "trigger_reset_whatsapp()"
     },
     {
@@ -14853,7 +14853,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "admin_account_router_rationale_1",
-      "community": 5,
+      "community": 2,
       "norm_label": "admin endpoints: account status (activate, lock) + password-reset triggers.  sec"
     },
     {
@@ -14863,7 +14863,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "admin_account_router_rationale_40",
-      "community": 5,
+      "community": 2,
       "norm_label": "replace any existing reset tokens for the user with a fresh long token."
     },
     {
@@ -14873,7 +14873,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "admin_helpers",
-      "community": 5,
+      "community": 2,
       "norm_label": "helpers.py"
     },
     {
@@ -14883,7 +14883,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "admin_helpers_parse_uuid",
-      "community": 5,
+      "community": 2,
       "norm_label": "parse_uuid()"
     },
     {
@@ -14893,7 +14893,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_users_admin_helpers_py_uuid",
-      "community": 5,
+      "community": 2,
       "norm_label": "uuid"
     },
     {
@@ -14903,7 +14903,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "admin_helpers_is_admin_user",
-      "community": 5,
+      "community": 2,
       "norm_label": "is_admin_user()"
     },
     {
@@ -14913,7 +14913,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "backend_users_admin_helpers_py_session",
-      "community": 5,
+      "community": 2,
       "norm_label": "session"
     },
     {
@@ -14923,7 +14923,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "admin_helpers_assert_can_touch_target",
-      "community": 5,
+      "community": 2,
       "norm_label": "assert_can_touch_target()"
     },
     {
@@ -14933,7 +14933,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "backend_users_admin_helpers_py_user",
-      "community": 5,
+      "community": 2,
       "norm_label": "user"
     },
     {
@@ -14943,7 +14943,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "admin_helpers_get_target_user",
-      "community": 5,
+      "community": 2,
       "norm_label": "get_target_user()"
     },
     {
@@ -14953,7 +14953,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "admin_helpers_commit_or_500",
-      "community": 5,
+      "community": 2,
       "norm_label": "commit_or_500()"
     },
     {
@@ -14983,7 +14983,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "admin_helpers_rationale_1",
-      "community": 5,
+      "community": 2,
       "norm_label": "shared helpers for the admin user-management routers.  keeps the user-facing mod"
     },
     {
@@ -14993,7 +14993,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "admin_helpers_rationale_41",
-      "community": 5,
+      "community": 2,
       "norm_label": "block hierarchy violations: non-admin callers cannot mutate admin users."
     },
     {
@@ -15003,7 +15003,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "admin_helpers_rationale_59",
-      "community": 5,
+      "community": 2,
       "norm_label": "commit and convert any db failure into a generic 500. the exception     detail i"
     },
     {
@@ -15463,7 +15463,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_enabled_models_router",
-      "community": 87,
+      "community": 17,
       "norm_label": "enabled_models_router.py"
     },
     {
@@ -15473,7 +15473,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "users_enabled_models_router_enabledmodelsupdate",
-      "community": 87,
+      "community": 17,
       "norm_label": "enabledmodelsupdate"
     },
     {
@@ -15483,7 +15483,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "users_enabled_models_router_validate_enabled_models",
-      "community": 87,
+      "community": 17,
       "norm_label": "_validate_enabled_models()"
     },
     {
@@ -15493,7 +15493,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "users_enabled_models_router_get_enabled_models",
-      "community": 87,
+      "community": 17,
       "norm_label": "get_enabled_models()"
     },
     {
@@ -15503,7 +15503,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "backend_users_enabled_models_router_py_user",
-      "community": 87,
+      "community": 17,
       "norm_label": "user"
     },
     {
@@ -15513,7 +15513,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "users_enabled_models_router_put_enabled_models",
-      "community": 87,
+      "community": 17,
       "norm_label": "put_enabled_models()"
     },
     {
@@ -15523,7 +15523,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_users_enabled_models_router_py_request",
-      "community": 87,
+      "community": 17,
       "norm_label": "request"
     },
     {
@@ -15533,7 +15533,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "backend_users_enabled_models_router_py_session",
-      "community": 87,
+      "community": 17,
       "norm_label": "session"
     },
     {
@@ -15543,7 +15543,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_enabled_models_router_rationale_1",
-      "community": 87,
+      "community": 17,
       "norm_label": "per-user enabled model allowlist \u2014 toggle which models from the catalog the user"
     },
     {
@@ -15733,7 +15733,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_llm_settings_router",
-      "community": 30,
+      "community": 5,
       "norm_label": "llm_settings_router.py"
     },
     {
@@ -15743,7 +15743,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "users_llm_settings_router_enabled_keys",
-      "community": 30,
+      "community": 5,
       "norm_label": "_enabled_keys()"
     },
     {
@@ -15753,7 +15753,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "users_llm_settings_router_has_own_llm_key",
-      "community": 30,
+      "community": 5,
       "norm_label": "_has_own_llm_key()"
     },
     {
@@ -15763,7 +15763,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "backend_users_llm_settings_router_py_session",
-      "community": 30,
+      "community": 5,
       "norm_label": "session"
     },
     {
@@ -15773,7 +15773,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "users_llm_settings_router_llmsettingsupdate",
-      "community": 30,
+      "community": 5,
       "norm_label": "llmsettingsupdate"
     },
     {
@@ -15783,7 +15783,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "users_llm_settings_router_get_llm_settings",
-      "community": 30,
+      "community": 5,
       "norm_label": "get_llm_settings()"
     },
     {
@@ -15793,7 +15793,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "backend_users_llm_settings_router_py_request",
-      "community": 30,
+      "community": 5,
       "norm_label": "request"
     },
     {
@@ -15803,7 +15803,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "backend_users_llm_settings_router_py_user",
-      "community": 30,
+      "community": 5,
       "norm_label": "user"
     },
     {
@@ -15813,7 +15813,7 @@
       "source_location": "L150",
       "_origin": "ast",
       "id": "users_llm_settings_router_refresh_llm_catalog",
-      "community": 30,
+      "community": 5,
       "norm_label": "refresh_llm_catalog()"
     },
     {
@@ -15823,7 +15823,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "users_llm_settings_router_put_llm_settings",
-      "community": 30,
+      "community": 5,
       "norm_label": "put_llm_settings()"
     },
     {
@@ -15833,7 +15833,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_1",
-      "community": 30,
+      "community": 5,
       "norm_label": "per-user llm generation settings (general config, applies to all the user's ovas"
     },
     {
@@ -15843,7 +15843,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_39",
-      "community": 30,
+      "community": 5,
       "norm_label": "set of (provider, model_id) the user has explicitly enabled."
     },
     {
@@ -15853,7 +15853,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_45",
-      "community": 30,
+      "community": 5,
       "norm_label": "true when user has a personal llm api key, or holds the admin role."
     },
     {
@@ -15863,7 +15863,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_71",
-      "community": 30,
+      "community": 5,
       "norm_label": "effective per-type config (user override or default) + filtered catalog +     en"
     },
     {
@@ -15873,7 +15873,7 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_155",
-      "community": 30,
+      "community": 5,
       "norm_label": "re-fetch the provider catalogs on demand (retry path after a transient     failu"
     },
     {
@@ -15883,7 +15883,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "users_llm_settings_router_rationale_172",
-      "community": 30,
+      "community": 5,
       "norm_label": "validate against the catalog and persist. 400 on any invalid model/timeout."
     },
     {
@@ -15893,7 +15893,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_ova_settings_router",
-      "community": 87,
+      "community": 17,
       "norm_label": "ova_settings_router.py"
     },
     {
@@ -15903,7 +15903,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "users_ova_settings_router_ovasettingsupdate",
-      "community": 87,
+      "community": 17,
       "norm_label": "ovasettingsupdate"
     },
     {
@@ -15913,7 +15913,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "users_ova_settings_router_effective",
-      "community": 87,
+      "community": 17,
       "norm_label": "_effective()"
     },
     {
@@ -15923,7 +15923,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "users_ova_settings_router_get_ova_settings",
-      "community": 87,
+      "community": 17,
       "norm_label": "get_ova_settings()"
     },
     {
@@ -15933,7 +15933,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "backend_users_ova_settings_router_py_user",
-      "community": 87,
+      "community": 17,
       "norm_label": "user"
     },
     {
@@ -15943,7 +15943,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "users_ova_settings_router_put_ova_settings",
-      "community": 87,
+      "community": 17,
       "norm_label": "put_ova_settings()"
     },
     {
@@ -15953,7 +15953,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "backend_users_ova_settings_router_py_request",
-      "community": 87,
+      "community": 17,
       "norm_label": "request"
     },
     {
@@ -15963,7 +15963,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "backend_users_ova_settings_router_py_session",
-      "community": 87,
+      "community": 17,
       "norm_label": "session"
     },
     {
@@ -15973,7 +15973,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_ova_settings_router_rationale_1",
-      "community": 87,
+      "community": 17,
       "norm_label": "per-user ova generation settings: image count and image provider."
     },
     {
@@ -15993,7 +15993,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "users_profile_router_userprofileupdate",
-      "community": 87,
+      "community": 5,
       "norm_label": "userprofileupdate"
     },
     {
@@ -16003,7 +16003,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "users_profile_router_update_profile",
-      "community": 87,
+      "community": 5,
       "norm_label": "update_profile()"
     },
     {
@@ -16013,7 +16013,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "backend_users_profile_router_py_session",
-      "community": 87,
+      "community": 5,
       "norm_label": "session"
     },
     {
@@ -16023,7 +16023,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "users_profile_router_userthemeupdate",
-      "community": 87,
+      "community": 5,
       "norm_label": "userthemeupdate"
     },
     {
@@ -16033,7 +16033,7 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "users_profile_router_update_theme",
-      "community": 87,
+      "community": 5,
       "norm_label": "update_theme()"
     },
     {
@@ -16043,7 +16043,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "users_profile_router_userpasswordchange",
-      "community": 87,
+      "community": 5,
       "norm_label": "userpasswordchange"
     },
     {
@@ -16053,7 +16053,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "users_profile_router_change_password",
-      "community": 87,
+      "community": 5,
       "norm_label": "change_password()"
     },
     {
@@ -16063,7 +16063,7 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "users_profile_router_userdeleterequest",
-      "community": 87,
+      "community": 5,
       "norm_label": "userdeleterequest"
     },
     {
@@ -16073,7 +16073,7 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "users_profile_router_delete_account",
-      "community": 87,
+      "community": 5,
       "norm_label": "delete_account()"
     },
     {
@@ -17523,7 +17523,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "src_app_protectedlayout",
-      "community": 0,
+      "community": 65,
       "norm_label": "protectedlayout()"
     },
     {
@@ -17943,7 +17943,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_phaseselectmodal",
-      "community": 2,
+      "community": 47,
       "norm_label": "phaseselectmodal.jsx"
     },
     {
@@ -17953,7 +17953,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "components_phaseselectmodal_phase_cfg",
-      "community": 2,
+      "community": 47,
       "norm_label": "phase_cfg"
     },
     {
@@ -17963,7 +17963,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "components_phaseselectmodal_empty_picks",
-      "community": 2,
+      "community": 47,
       "norm_label": "empty_picks()"
     },
     {
@@ -17973,7 +17973,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "components_phaseselectmodal_toggleselection",
-      "community": 2,
+      "community": 47,
       "norm_label": "toggleselection()"
     },
     {
@@ -17983,7 +17983,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "components_phaseselectmodal_phasestep",
-      "community": 2,
+      "community": 47,
       "norm_label": "phasestep()"
     },
     {
@@ -17993,7 +17993,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "components_phaseselectmodal_phaseselectmodal",
-      "community": 2,
+      "community": 47,
       "norm_label": "phaseselectmodal()"
     },
     {
@@ -18783,7 +18783,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engage_resourcecard",
-      "community": 2,
+      "community": 47,
       "norm_label": "resourcecard.jsx"
     },
     {
@@ -18793,7 +18793,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engage_resourcecard_interactividad_color",
-      "community": 2,
+      "community": 47,
       "norm_label": "interactividad_color"
     },
     {
@@ -18803,7 +18803,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "engage_resourcecard_resourcecard",
-      "community": 2,
+      "community": 47,
       "norm_label": "resourcecard()"
     },
     {
@@ -20853,7 +20853,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "labs_useengagegeneration",
-      "community": 2,
+      "community": 47,
       "norm_label": "useengagegeneration.js"
     },
     {
@@ -20863,7 +20863,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "labs_useengagegeneration_useengagegeneration",
-      "community": 2,
+      "community": 47,
       "norm_label": "useengagegeneration()"
     },
     {
@@ -20913,7 +20913,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "labs_usephasegeneration",
-      "community": 2,
+      "community": 47,
       "norm_label": "usephasegeneration.js"
     },
     {
@@ -20923,7 +20923,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "labs_usephasegeneration_usephasegeneration",
-      "community": 2,
+      "community": 47,
       "norm_label": "usephasegeneration()"
     },
     {
@@ -21373,7 +21373,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_maincontainer",
-      "community": 0,
+      "community": 65,
       "norm_label": "maincontainer.jsx"
     },
     {
@@ -21383,7 +21383,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "components_maincontainer_maincontainer",
-      "community": 0,
+      "community": 65,
       "norm_label": "maincontainer()"
     },
     {
@@ -21443,7 +21443,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_sidebar",
-      "community": 0,
+      "community": 65,
       "norm_label": "sidebar.jsx"
     },
     {
@@ -21453,7 +21453,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_sidebar_sidebar",
-      "community": 0,
+      "community": 65,
       "norm_label": "sidebar()"
     },
     {
@@ -21583,7 +21583,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "shells_applayout",
-      "community": 0,
+      "community": 65,
       "norm_label": "applayout.jsx"
     },
     {
@@ -21593,7 +21593,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "shells_applayout_applayout",
-      "community": 0,
+      "community": 65,
       "norm_label": "applayout()"
     },
     {
@@ -21603,7 +21603,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "shells_workspacelayout",
-      "community": 0,
+      "community": 65,
       "norm_label": "workspacelayout.jsx"
     },
     {
@@ -21613,7 +21613,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "shells_workspacelayout_workspacelayout",
-      "community": 0,
+      "community": 65,
       "norm_label": "workspacelayout()"
     },
     {
@@ -21663,7 +21663,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "lib_auth_isloggedin",
-      "community": 0,
+      "community": 65,
       "norm_label": "isloggedin()"
     },
     {
@@ -22703,7 +22703,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_engagepage",
-      "community": 2,
+      "community": 47,
       "norm_label": "engagepage.jsx"
     },
     {
@@ -22713,7 +22713,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "pages_engagepage_engagepage",
-      "community": 2,
+      "community": 47,
       "norm_label": "engagepage()"
     },
     {
@@ -22723,7 +22723,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_explorepage",
-      "community": 2,
+      "community": 47,
       "norm_label": "explorepage.jsx"
     },
     {
@@ -22733,7 +22733,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "pages_explorepage_explorepage",
-      "community": 2,
+      "community": 47,
       "norm_label": "explorepage()"
     },
     {
@@ -22953,7 +22953,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_phasepage",
-      "community": 2,
+      "community": 47,
       "norm_label": "phasepage.jsx"
     },
     {
@@ -22963,7 +22963,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "pages_phasepage_phasepage",
-      "community": 2,
+      "community": 47,
       "norm_label": "phasepage()"
     },
     {
@@ -22980,7 +22980,7 @@
       "label": "ProfilePage()",
       "file_type": "code",
       "source_file": "frontend/src/pages/ProfilePage.jsx",
-      "source_location": "L13",
+      "source_location": "L12",
       "_origin": "ast",
       "id": "pages_profilepage_profilepage",
       "community": 60,
@@ -23043,7 +23043,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_userlinkspage",
-      "community": 47,
+      "community": 30,
       "norm_label": "userlinkspage.jsx"
     },
     {
@@ -23053,7 +23053,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "pages_userlinkspage_can",
-      "community": 47,
+      "community": 30,
       "norm_label": "can()"
     },
     {
@@ -23063,7 +23063,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "pages_userlinkspage_linkrow",
-      "community": 47,
+      "community": 30,
       "norm_label": "linkrow()"
     },
     {
@@ -23073,7 +23073,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "pages_userlinkspage_userlinkspage",
-      "community": 47,
+      "community": 30,
       "norm_label": "userlinkspage()"
     },
     {
@@ -24513,7 +24513,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_engageservice",
-      "community": 2,
+      "community": 47,
       "norm_label": "engageservice.js"
     },
     {
@@ -24523,7 +24523,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "services_engageservice_fetchengagerecursos",
-      "community": 2,
+      "community": 47,
       "norm_label": "fetchengagerecursos()"
     },
     {
@@ -24533,7 +24533,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "services_engageservice_generateengageresource",
-      "community": 2,
+      "community": 47,
       "norm_label": "generateengageresource()"
     },
     {
@@ -24603,7 +24603,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_exploreservice",
-      "community": 2,
+      "community": 47,
       "norm_label": "exploreservice.js"
     },
     {
@@ -24613,7 +24613,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "services_exploreservice_fetchexplorerecursos",
-      "community": 2,
+      "community": 47,
       "norm_label": "fetchexplorerecursos()"
     },
     {
@@ -24623,7 +24623,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "services_exploreservice_generateexploreresource",
-      "community": 2,
+      "community": 47,
       "norm_label": "generateexploreresource()"
     },
     {
@@ -25263,7 +25263,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_userlinksservice",
-      "community": 47,
+      "community": 30,
       "norm_label": "userlinksservice.js"
     },
     {
@@ -25273,7 +25273,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "services_userlinksservice_fetchmylinks",
-      "community": 47,
+      "community": 30,
       "norm_label": "fetchmylinks()"
     },
     {
@@ -25283,7 +25283,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "services_userlinksservice_fetchalllinks",
-      "community": 47,
+      "community": 30,
       "norm_label": "fetchalllinks()"
     },
     {
@@ -25293,7 +25293,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "services_userlinksservice_createlinkcode",
-      "community": 47,
+      "community": 30,
       "norm_label": "createlinkcode()"
     },
     {
@@ -25303,7 +25303,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "services_userlinksservice_invitelink",
-      "community": 47,
+      "community": 30,
       "norm_label": "invitelink()"
     },
     {
@@ -25313,7 +25313,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "services_userlinksservice_acceptlink",
-      "community": 47,
+      "community": 30,
       "norm_label": "acceptlink()"
     },
     {
@@ -25323,7 +25323,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "services_userlinksservice_deletemylink",
-      "community": 47,
+      "community": 30,
       "norm_label": "deletemylink()"
     },
     {
@@ -25333,7 +25333,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "services_userlinksservice_deleteanylink",
-      "community": 47,
+      "community": 30,
       "norm_label": "deleteanylink()"
     },
     {
@@ -89321,9 +89321,9 @@
       "source_file": "frontend/src/components/settings/ModelTaskCard.jsx",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "settings_modeltaskcard",
-      "target": "settings_modeltaskcard_chips",
-      "confidence_score": 1.0
+      "target": "settings_modeltaskcard_chips"
     },
     {
       "relation": "contains",
@@ -101448,9 +101448,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_documentation_lookup"
     },
     {
       "relation": "contains",
@@ -101458,9 +101458,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L128",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_authentication",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_authentication"
     },
     {
       "relation": "contains",
@@ -101468,9 +101468,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L149",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_common_mistakes",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_common_mistakes"
     },
     {
       "relation": "contains",
@@ -101478,9 +101478,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L140",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_error_handling",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_error_handling"
     },
     {
       "relation": "contains",
@@ -101488,9 +101488,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library"
     },
     {
       "relation": "contains",
@@ -101498,9 +101498,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_step_2_query_documentation",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_step_2_query_documentation"
     },
     {
       "relation": "contains",
@@ -101508,9 +101508,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_workflow",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_workflow"
     },
     {
       "relation": "contains",
@@ -101518,9 +101518,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L64",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_result_fields",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_result_fields"
     },
     {
       "relation": "contains",
@@ -101528,9 +101528,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_selection_process",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_selection_process"
     },
     {
       "relation": "contains",
@@ -101538,9 +101538,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L89",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_version_specific_ids",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_version_specific_ids"
     },
     {
       "relation": "contains",
@@ -101548,9 +101548,9 @@
       "source_file": ".agents/skills/find-docs/SKILL.md",
       "source_location": "L113",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_docs_skill_md_find_docs_skill_step_2_query_documentation",
-      "target": "agents_skills_find_docs_skill_md_find_docs_skill_writing_good_queries",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_docs_skill_md_find_docs_skill_writing_good_queries"
     },
     {
       "relation": "contains",
@@ -101558,9 +101558,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_find_skills"
     },
     {
       "relation": "contains",
@@ -101568,9 +101568,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_common_skill_categories",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_common_skill_categories"
     },
     {
       "relation": "contains",
@@ -101578,9 +101578,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L34",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills"
     },
     {
       "relation": "contains",
@@ -101588,9 +101588,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L120",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_tips_for_effective_searches",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_tips_for_effective_searches"
     },
     {
       "relation": "contains",
@@ -101598,9 +101598,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_what_is_the_skills_cli",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_what_is_the_skills_cli"
     },
     {
       "relation": "contains",
@@ -101608,9 +101608,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_when_no_skills_are_found",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_when_no_skills_are_found"
     },
     {
       "relation": "contains",
@@ -101618,9 +101618,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_when_to_use_this_skill",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_when_to_use_this_skill"
     },
     {
       "relation": "contains",
@@ -101628,9 +101628,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_1_understand_what_they_need",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_1_understand_what_they_need"
     },
     {
       "relation": "contains",
@@ -101638,9 +101638,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_2_check_the_leaderboard_first",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_2_check_the_leaderboard_first"
     },
     {
       "relation": "contains",
@@ -101648,9 +101648,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_3_search_for_skills",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_3_search_for_skills"
     },
     {
       "relation": "contains",
@@ -101658,9 +101658,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L66",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_4_verify_quality_before_recommending",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_4_verify_quality_before_recommending"
     },
     {
       "relation": "contains",
@@ -101668,9 +101668,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_5_present_options_to_the_user",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_5_present_options_to_the_user"
     },
     {
       "relation": "contains",
@@ -101678,9 +101678,9 @@
       "source_file": ".agents/skills/find-skills/SKILL.md",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "agents_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_6_offer_to_install",
-      "confidence_score": 1.0
+      "target": "agents_skills_find_skills_skill_md_find_skills_skill_step_6_offer_to_install"
     },
     {
       "relation": "contains",
@@ -104978,9 +104978,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L20",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_documentation_lookup"
     },
     {
       "relation": "contains",
@@ -104988,9 +104988,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L128",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_authentication",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_authentication"
     },
     {
       "relation": "contains",
@@ -104998,9 +104998,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L149",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_common_mistakes",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_common_mistakes"
     },
     {
       "relation": "contains",
@@ -105008,9 +105008,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L140",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_error_handling",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_error_handling"
     },
     {
       "relation": "contains",
@@ -105018,9 +105018,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library"
     },
     {
       "relation": "contains",
@@ -105028,9 +105028,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_step_2_query_documentation",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_step_2_query_documentation"
     },
     {
       "relation": "contains",
@@ -105038,9 +105038,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_documentation_lookup",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_workflow",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_workflow"
     },
     {
       "relation": "contains",
@@ -105048,9 +105048,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L64",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_result_fields",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_result_fields"
     },
     {
       "relation": "contains",
@@ -105058,9 +105058,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_selection_process",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_selection_process"
     },
     {
       "relation": "contains",
@@ -105068,9 +105068,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L89",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_step_1_resolve_a_library",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_version_specific_ids",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_version_specific_ids"
     },
     {
       "relation": "contains",
@@ -105078,9 +105078,9 @@
       "source_file": ".claude/skills/find-docs/SKILL.md",
       "source_location": "L113",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_docs_skill_md_find_docs_skill_step_2_query_documentation",
-      "target": "claude_skills_find_docs_skill_md_find_docs_skill_writing_good_queries",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_docs_skill_md_find_docs_skill_writing_good_queries"
     },
     {
       "relation": "contains",
@@ -105088,9 +105088,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L6",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_find_skills"
     },
     {
       "relation": "contains",
@@ -105098,9 +105098,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_common_skill_categories",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_common_skill_categories"
     },
     {
       "relation": "contains",
@@ -105108,9 +105108,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L34",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills"
     },
     {
       "relation": "contains",
@@ -105118,9 +105118,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L120",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_tips_for_effective_searches",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_tips_for_effective_searches"
     },
     {
       "relation": "contains",
@@ -105128,9 +105128,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_what_is_the_skills_cli",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_what_is_the_skills_cli"
     },
     {
       "relation": "contains",
@@ -105138,9 +105138,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_when_no_skills_are_found",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_when_no_skills_are_found"
     },
     {
       "relation": "contains",
@@ -105148,9 +105148,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_when_to_use_this_skill",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_when_to_use_this_skill"
     },
     {
       "relation": "contains",
@@ -105158,9 +105158,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_1_understand_what_they_need",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_1_understand_what_they_need"
     },
     {
       "relation": "contains",
@@ -105168,9 +105168,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_2_check_the_leaderboard_first",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_2_check_the_leaderboard_first"
     },
     {
       "relation": "contains",
@@ -105178,9 +105178,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_3_search_for_skills",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_3_search_for_skills"
     },
     {
       "relation": "contains",
@@ -105188,9 +105188,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L66",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_4_verify_quality_before_recommending",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_4_verify_quality_before_recommending"
     },
     {
       "relation": "contains",
@@ -105198,9 +105198,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_5_present_options_to_the_user",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_5_present_options_to_the_user"
     },
     {
       "relation": "contains",
@@ -105208,9 +105208,9 @@
       "source_file": ".claude/skills/find-skills/SKILL.md",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "claude_skills_find_skills_skill_md_find_skills_skill_how_to_help_users_find_skills",
-      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_6_offer_to_install",
-      "confidence_score": 1.0
+      "target": "claude_skills_find_skills_skill_md_find_skills_skill_step_6_offer_to_install"
     },
     {
       "relation": "contains",
@@ -122566,5 +122566,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "0b8b3e3d86d3d3f12a205d90e0a64056e4ce1af9"
+  "built_at_commit": "4e1a71b2730da23bc7bb993bc91654ad1a4e9a18"
 }
