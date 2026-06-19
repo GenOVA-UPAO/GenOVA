@@ -22,7 +22,24 @@ if ($verifyExit -ne 0) {
     Write-Host "[harness] verify.ps1 -Quick OK." -ForegroundColor Green
 }
 
-# 2) Stamp sdd/progress/current.md if Inicio is still the empty placeholder.
+# 2) CI status on develop
+try {
+    $ciJson = gh run list --branch develop --limit 1 --json conclusion,displayTitle,url 2>$null | ConvertFrom-Json
+    if ($ciJson -and $ciJson.Count -gt 0) {
+        $run = $ciJson[0]
+        $icon = if ($run.conclusion -eq "success") { "OK" } else { "FAIL" }
+        $color = if ($run.conclusion -eq "success") { "Green" } else { "Red" }
+        Write-Host "--- CI develop: [$icon] $($run.displayTitle)" -ForegroundColor $color
+        if ($run.conclusion -ne "success") {
+            Write-Host "    $($run.url)" -ForegroundColor Yellow
+        }
+        Write-Host ""
+    }
+} catch {
+    # gh not available or not authenticated: skip silently
+}
+
+# 3) Stamp sdd/progress/current.md if Inicio is still the empty placeholder.
 # The placeholder uses an em-dash (U+2014) so we build the regex with [char].
 $currentMd = Join-Path $root "progress\current.md"
 if (Test-Path $currentMd) {
@@ -38,7 +55,7 @@ if (Test-Path $currentMd) {
     }
 }
 
-# 3) Stale in_progress features?
+# 4) Stale in_progress features?
 $featureList = Join-Path $root "feature_list.json"
 if (Test-Path $featureList) {
     try {
