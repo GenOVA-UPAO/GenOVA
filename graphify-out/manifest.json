@@ -1550,8 +1550,8 @@
     "semantic_hash": ""
   },
   "frontend/src/layout/components/SidebarMenu.jsx": {
-    "mtime": 1781846648.646781,
-    "ast_hash": "549861b93aab03b01d0e588d1545ab79",
+    "mtime": 1781887359.2552388,
+    "ast_hash": "17fb045b19e02cef4bdbc17f4b480776",
     "semantic_hash": ""
   },
   "frontend/src/layout/navigation/navLinks.js": {
@@ -3750,8 +3750,8 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/ModelsPage.jsx": {
-    "mtime": 1781886006.1765752,
-    "ast_hash": "fe88898aedb6133d5f5986f41d9e94ca",
+    "mtime": 1781887359.9216597,
+    "ast_hash": "a5f27cae1dffa1cb9cd54f8a45634605",
     "semantic_hash": ""
   },
   "frontend/src/pages/ResetPasswordPage.jsx": {
