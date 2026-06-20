@@ -32,7 +32,7 @@ export function UserOverrideSection({
   return (
     <div className="space-y-2.5 pt-3 border-t border-dashed border-border/50">
       <div className="flex items-center justify-between">
-        <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50">Tu override</p>
+        <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50">Tu modelo</p>
         <button
           type="button"
           onClick={onResetUser}

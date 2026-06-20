@@ -114,7 +114,7 @@ def get_llm_settings(
     if category == "recommended":
         full = [e for e in full if e.get("curated")]
     elif category and category != "all":
-        full = [e for e in full if e.get("category") == category]
+        full = [e for e in full if e.get("provider") == category]
 
     page = max(1, int(request.query_params.get("page") or 1))
     page_size = min(int(request.query_params.get("page_size") or 50), 100)
@@ -122,8 +122,8 @@ def get_llm_settings(
     total = len(full)
     page_items = full[offset : offset + page_size]
 
-    all_categories = sorted(
-        {e.get("category", "texto") for e in get_full_catalog_entries() if e.get("active")}
+    all_providers = sorted(
+        {e.get("provider", "") for e in get_full_catalog_entries() if e.get("active") and e.get("provider")}
     )
 
     return {
@@ -136,8 +136,7 @@ def get_llm_settings(
         "full_page": page,
         "full_page_size": page_size,
         "full_has_more": offset + page_size < total,
-        "categories": ["all", "recommended"]
-        + [c for c in all_categories if c not in ("all", "recommended")],
+        "categories": ["all", "recommended"] + all_providers,
         "defaults": DEFAULTS,
         "enabled_models": current_user.enabled_models or [],
         "timeout_bounds": [TIMEOUT_MIN, TIMEOUT_MAX],

@@ -8,6 +8,9 @@ export const TASK_LABELS = {
 export const CATEGORY_LABELS = {
   all: 'Todos',
   recommended: 'Recomendados',
+  groq: 'Groq',
+  openrouter: 'OpenRouter',
+  opencode: 'OpenCode',
   texto: 'Texto',
   codigo: 'Código',
   razonamiento: 'Razonamiento',

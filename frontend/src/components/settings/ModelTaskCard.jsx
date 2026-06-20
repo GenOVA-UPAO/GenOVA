@@ -123,7 +123,7 @@ export function ModelTaskCard({
           )}
         </div>
 
-        {hasOwnLlmKey && (
+        {hasOwnLlmKey && !isAdmin && (
           <UserOverrideSection
             task={task} chip={m.chip} num={m.num}
             userSettings={userSettings} userModels={userModels}
