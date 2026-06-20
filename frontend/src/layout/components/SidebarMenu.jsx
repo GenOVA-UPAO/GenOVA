@@ -13,7 +13,6 @@ const ICONS = { House, FolderOpen, PlusSquare }
 const ADMIN_LINKS = [
   { to: '/admin/roles', label: 'Roles', icon: ShieldCheck },
   { to: '/admin/users', label: 'Usuarios', icon: Users },
-  { to: '/admin/platform', label: 'Plataforma', icon: Gear },
   { to: '/admin/labs', label: 'Labs', icon: Flask },
 ]
 const CONFIG_LINKS = [
