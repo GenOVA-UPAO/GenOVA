@@ -11,10 +11,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_admin
-from database import get_db
-from llm.key_resolver import PROVIDERS, mask_key
+from core.database import get_db
+from core.rate_limit import limiter
+from llm.clients.key_resolver import PROVIDERS, mask_key
 from models import PlatformConfig
-from rate_limit import limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -96,9 +96,9 @@ def put_platform_config(
 @router.get("/llm-config")
 def get_llm_config(_admin: None = Depends(require_admin)):
     """Modelos por tarea + cadena de fallback efectivos (semilla ⊕ admin)."""
-    from llm import llm_config_store
-    from llm.model_catalog import TASKS
+    from llm.catalog.model_catalog import TASKS
     from llm.router import effective_llm_config
+    from llm.utils import llm_config_store
 
     return {
         "config": effective_llm_config(),
@@ -116,9 +116,9 @@ def put_llm_config(
 ):
     """Persiste defaults/fallbacks por tarea (admin). Valida contra el catálogo;
     entradas inválidas se descartan en silencio (nunca rompe la generación)."""
-    from llm import llm_config_store
-    from llm.model_catalog import TASKS
+    from llm.catalog.model_catalog import TASKS
     from llm.router import effective_llm_config
+    from llm.utils import llm_config_store
 
     try:
         clean = llm_config_store.sanitize_config(payload)

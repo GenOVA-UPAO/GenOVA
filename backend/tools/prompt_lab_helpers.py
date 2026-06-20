@@ -14,42 +14,58 @@ except ImportError:
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
-TOOL_DIR    = Path(__file__).parent
+TOOL_DIR = Path(__file__).parent
 BACKEND_DIR = TOOL_DIR.parent
 OUTPUTS_DIR = TOOL_DIR / "outputs"
 WINNERS_DIR = TOOL_DIR / "winners"
-LOG_FILE    = TOOL_DIR / "prompt_lab_log.jsonl"
+LOG_FILE = TOOL_DIR / "prompt_lab_log.jsonl"
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-BASE  = os.getenv("BASE",  "http://localhost:8000")
+BASE = os.getenv("BASE", "http://localhost:8000")
 EMAIL = os.getenv("EMAIL", "admin@genova.ai")
-PASS  = os.getenv("PASS",  "admin1234password")
+PASS = os.getenv("PASS", "admin1234password")
 
 RESOURCE_LABELS = {
     "engage": {
-        1: "Cómic Interactivo",    2: "Video Opening",         3: "Micro-Podcast",
-        4: "Juego de Gamificación", 5: "Dilema Ético",          6: "Noticia de Impacto",
-        7: "Juego de Roles",       8: "Timeline Interactivo",  9: "Escape Room Virtual",
+        1: "Cómic Interactivo",
+        2: "Video Opening",
+        3: "Micro-Podcast",
+        4: "Juego de Gamificación",
+        5: "Dilema Ético",
+        6: "Noticia de Impacto",
+        7: "Juego de Roles",
+        8: "Timeline Interactivo",
+        9: "Escape Room Virtual",
         10: "Simulador Intuitivo",
     },
     "explore": {
-        1: "Simulador Virtual Lab", 2: "Agente Socrático",      3: "Juego Drag & Drop",
-        4: "Video con Pausa Activa", 5: "Lectura Interactiva",  6: "Simulador de Slider",
-        7: "Experimento Guiado",   8: "Juego de Roles",         9: "Mapa Mental",
+        1: "Simulador Virtual Lab",
+        2: "Agente Socrático",
+        3: "Juego Drag & Drop",
+        4: "Video con Pausa Activa",
+        5: "Lectura Interactiva",
+        6: "Simulador de Slider",
+        7: "Experimento Guiado",
+        8: "Juego de Roles",
+        9: "Mapa Mental",
         10: "Lab de Hipótesis",
     },
 }
 
 # Checks rápidos inline (sin importar BeautifulSoup)
 FORBIDDEN_CDN = [
-    "cdn.jsdelivr.net", "cdnjs.cloudflare.com", "unpkg.com",
-    "code.jquery.com", "stackpath.bootstrapcdn.com",
+    "cdn.jsdelivr.net",
+    "cdnjs.cloudflare.com",
+    "unpkg.com",
+    "code.jquery.com",
+    "stackpath.bootstrapcdn.com",
 ]
 SCORM_REQUIRED = ["_scormInit", "_scormComplete", "cmi.core.lesson_status"]
 
 
 # ── API helpers ───────────────────────────────────────────────────────────────
+
 
 def auth() -> str:
     r = requests.post(
@@ -79,15 +95,16 @@ def generate(token: str, phase: str, rtype: int, concept: str) -> tuple:
 
 # ── Quality quick-check ───────────────────────────────────────────────────────
 
+
 def quick_check(html: str) -> dict:
     html_lower = html.lower()
-    cdn_found  = [c for c in FORBIDDEN_CDN if c in html_lower]
-    scorm_ok   = all(s in html for s in SCORM_REQUIRED)
+    cdn_found = [c for c in FORBIDDEN_CDN if c in html_lower]
+    scorm_ok = all(s in html for s in SCORM_REQUIRED)
     return {"chars": len(html), "cdn": cdn_found, "scorm": scorm_ok}
 
 
 def fmt_check(chk: dict) -> str:
-    cdn_part   = "CDN: NO" if not chk["cdn"] else f"CDN: ⚠ {', '.join(chk['cdn'])}"
+    cdn_part = "CDN: NO" if not chk["cdn"] else f"CDN: ⚠ {', '.join(chk['cdn'])}"
     scorm_part = "SCORM: SÍ" if chk["scorm"] else "SCORM: ✗"
     ok = "✓" if not chk["cdn"] and chk["scorm"] and chk["chars"] > 0 else "⚠"
     return f"{ok} {chk['chars']:>6} chars | {cdn_part} | {scorm_part}"

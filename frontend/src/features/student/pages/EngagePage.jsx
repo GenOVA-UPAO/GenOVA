@@ -1,0 +1,14 @@
+import { PhasePage } from '@/features/ova_workspace/pages/PhasePage.jsx'
+import { fetchEngageRecursos, generateEngageResource } from '@/features/ova_workspace/services/engageService.js'
+
+export function EngagePage() {
+  return (
+    <PhasePage
+      phase="ENGAGE"
+      emoji="🎯"
+      description="Selecciona un tipo de recurso, escribe el concepto de ML y genera el material con IA real."
+      fetchRecursos={fetchEngageRecursos}
+      generateResource={generateEngageResource}
+    />
+  )
+}

@@ -4,7 +4,7 @@ Used for resources that are purely visual/code-based (simulators, animations, di
 """
 
 from llm.router import generar_texto
-from llm.utils import strip_markdown
+from llm.utils.utils import strip_markdown
 
 _PROMPTS = {}
 
@@ -28,10 +28,12 @@ def _load_prompts(phase: str):
     return mod
 
 
-def direct_code_gen(phase: str, n: int, concept: str, llm_config=None, enabled_models=None, theme=None) -> str:
+def direct_code_gen(
+    phase: str, n: int, concept: str, llm_config=None, enabled_models=None, theme=None
+) -> str:
     mod = _load_prompts(phase)
 
-    from llm.themes import build_design_system
+    from llm.utils.themes import build_design_system
 
     theme = theme or {}
     ds = build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
@@ -46,7 +48,7 @@ def direct_code_gen(phase: str, n: int, concept: str, llm_config=None, enabled_m
         )
     )
 
-    from llm.html_validator import validate_and_repair
+    from llm.utils.html_validator import validate_and_repair
     from prometheus.refine import maybe_refine
 
     html, _ = validate_and_repair(html, phase, n)

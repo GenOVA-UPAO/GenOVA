@@ -15,31 +15,31 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware
+from users.roles_router import router as roles_router
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
-from api.auth import router as auth_router
-from api.labs import generation_router as labs_gen_router
-from api.labs import router as labs_router
-from api.llm import router as agents_router
-from api.ova import add_phase_router as ova_add_phase_router
-from api.ova import edit_router as ova_edit_router
-from api.ova import history_router as ova_history_router
-from api.ova import jobs_router as ova_jobs_router
-from api.ova import phase_version_router as ova_phase_version_router
-from api.ova import router as ova_router
-from api.ova import subelement_router as ova_subelement_router
-from api.rag import router as rag_router
-from api.rag import uploads_router
-from api.scorm import router as scorm_router
-from api.users import roles_router
-from api.users import router as users_router
 from auth.dependencies import require_admin
-from config import settings
-from database import Base, engine
-from rate_limit import limiter
+from auth.router import router as auth_router
+from core.config import settings
+from core.database import Base, engine
+from core.rate_limit import limiter
+from generation.jobs.jobs_router import router as ova_jobs_router
+from labs.generation_routes import router as labs_gen_router
+from labs.router import router as labs_router
+from llm.router import router as agents_router
+from ova.crud.edit_router import router as ova_edit_router
+from ova.crud.subelement_router import router as ova_subelement_router
+from ova.phases.add_phase_router import router as ova_add_phase_router
+from ova.phases.history_router import router as ova_history_router
+from ova.phases.phase_version_router import router as ova_phase_version_router
+from ova.router import router as ova_router
+from rag.router import router as rag_router
+from rag.router import uploads_router
 from run_migrations import run_migrations
+from scorm.router import router as scorm_router
 from seed import seed_db
 from users.admin.platform_settings_router import router as platform_settings_router
+from users.router import router as users_router
 
 logging.basicConfig(
     level=settings.log_level.upper(),
@@ -51,7 +51,6 @@ _LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save", "/api/labs/genera
 
 
 class ProcessTimeMiddleware(BaseHTTPMiddleware):
-
     async def dispatch(self, request, call_next):
         t0 = time.perf_counter()
         response = await call_next(request)
@@ -62,7 +61,10 @@ class ProcessTimeMiddleware(BaseHTTPMiddleware):
         ):
             logger.warning(
                 "SLOW %s %s → %.1fms (threshold %.0fms)",
-                request.method, request.url.path, ms, _LATENCY_THRESHOLD_MS,
+                request.method,
+                request.url.path,
+                ms,
+                _LATENCY_THRESHOLD_MS,
             )
         return response
 
@@ -72,6 +74,7 @@ def _background_rag_purge() -> None:
         from sqlalchemy.orm import Session
 
         from rag.store import purge_expired
+
         with Session(engine) as session:
             removed = purge_expired(session)
             if removed:
@@ -84,7 +87,8 @@ def _background_catalog_refresh() -> None:
     try:
         from sqlalchemy.orm import Session
 
-        from llm.catalog_refresh import refresh_catalog
+        from llm.catalog.catalog_refresh import refresh_catalog
+
         with Session(engine) as session:
             refresh_catalog(session)
     except Exception:
@@ -115,9 +119,14 @@ if _env == "production":
     allowed_origins = _extra
 else:
     allowed_origins = [
-        "http://localhost", "http://localhost:80", "http://localhost:3000",
-        "http://localhost:4173", "http://localhost:5173",
-        "http://127.0.0.1:3000", "http://127.0.0.1:4173", "http://127.0.0.1:5173",
+        "http://localhost",
+        "http://localhost:80",
+        "http://localhost:3000",
+        "http://localhost:4173",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:4173",
+        "http://127.0.0.1:5173",
         *_extra,
     ]
 
@@ -164,7 +173,8 @@ def admin_refresh_catalog(
 ):
     from sqlalchemy.orm import Session
 
-    from llm.catalog_refresh import get_catalog_entries, refresh_catalog
+    from llm.catalog.catalog_refresh import get_catalog_entries, refresh_catalog
+
     try:
         with Session(engine) as session:
             refresh_catalog(session)

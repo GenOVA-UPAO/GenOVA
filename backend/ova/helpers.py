@@ -12,9 +12,7 @@ VALID_STATUSES = {"borrador", "generando", "listo", "error"}
 
 def _is_admin(user: User, db: Session) -> bool:
     result = db.execute(
-        select(UserRole)
-        .join(Role)
-        .where(UserRole.user_id == user.id, Role.name == "administrador")
+        select(UserRole).join(Role).where(UserRole.user_id == user.id, Role.name == "administrador")
     ).scalar_one_or_none()
     return result is not None
 

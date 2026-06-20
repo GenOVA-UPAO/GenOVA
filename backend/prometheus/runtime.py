@@ -16,8 +16,8 @@ from datetime import UTC, datetime
 
 from sqlalchemy import select, update
 
-from config import settings
-from database import SessionLocal
+from core.config import settings
+from core.database import SessionLocal
 from models import OvaJob, OvaJobResource
 
 logger = logging.getLogger(__name__)
@@ -74,10 +74,16 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
             rt = item["resource_type"]
             if html is not None:
                 title = (meta.get(rt) or {}).get("tipo", "")
-                results.append({
-                    "phase": phase, "html": html, "resource_type": rt, "title": title,
-                    "score": score, "critic_issues": issues,
-                })
+                results.append(
+                    {
+                        "phase": phase,
+                        "html": html,
+                        "resource_type": rt,
+                        "title": title,
+                        "score": score,
+                        "critic_issues": issues,
+                    }
+                )
                 _persist_done(job_id, phase, rt, html)
             else:
                 # Failures stay in the errors list; the runner's end reconciliation

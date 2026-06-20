@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "docker",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-e", "setInterval(()=>{},9999999)"],
+      "port": 5173
+    },
+    {
       "name": "frontend",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["dev"],

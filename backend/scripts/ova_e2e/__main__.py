@@ -29,8 +29,14 @@ from scripts.ova_e2e.client import ApiClient  # noqa: E402
 from scripts.ova_e2e.rag_fixture import make_sample_pdf  # noqa: E402
 from scripts.ova_e2e.uploads import ingest  # noqa: E402
 
-_MIME = {".pdf": "application/pdf", ".png": "image/png", ".jpg": "image/jpeg",
-         ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif"}
+_MIME = {
+    ".pdf": "application/pdf",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+}
 
 
 def _parse_args() -> argparse.Namespace:
@@ -63,8 +69,10 @@ def main() -> int:
     args = _parse_args()
     # IMPORTANTE: fuera de backend/ — ese dir está montado con uvicorn --reload en
     # Docker, y escribir ahí dispara reloads que matan el thread de generación.
-    out_root = Path(args.out_dir) if args.out_dir else (
-        _BACKEND_ROOT.parent / "test-output" / datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    out_root = (
+        Path(args.out_dir)
+        if args.out_dir
+        else (_BACKEND_ROOT.parent / "test-output" / datetime.now().strftime("%Y-%m-%d_%H%M%S"))
     )
     out_root.mkdir(parents=True, exist_ok=True)
     log_path = out_root / "backend.log"
@@ -107,8 +115,11 @@ def main() -> int:
     print("\nRESUMEN")
     for s in summaries:
         r = s["report"]
-        print(f"  {s['profile']:<11} job={r['job_status']} hung={r['hung']} "
-              f"{s['passed']}/{s['total']} ok", flush=True)
+        print(
+            f"  {s['profile']:<11} job={r['job_status']} hung={r['hung']} "
+            f"{s['passed']}/{s['total']} ok",
+            flush=True,
+        )
     print(f"salida → {out_root}", flush=True)
     return 1 if failed else 0
 

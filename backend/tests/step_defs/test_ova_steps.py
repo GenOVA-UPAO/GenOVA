@@ -16,6 +16,7 @@ os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 import pytest  # noqa: E402
+from api.ova import history_router as ova_history_router  # noqa: E402
 from fastapi import FastAPI  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pytest_bdd import given, parsers, scenario, then, when  # noqa: E402
@@ -24,9 +25,8 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401
-from api.ova import history_router as ova_history_router  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
-from database import get_db  # noqa: E402
+from core.database import get_db  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_HISTORIAL = os.path.join(_FEATURES, "ova", "HU-006_historial.feature")
@@ -117,6 +117,7 @@ def ctx():
 
 # ── EN-008: Base de Datos ─────────────────────────────────────────────────────
 
+
 @scenario(FEATURE_DB, "Endpoint de salud de base de datos responde ok")
 def test_db_health():
     pass
@@ -139,6 +140,7 @@ def db_health_ok(response):
 
 
 # ── HU-006: Historial de OVAs ─────────────────────────────────────────────────
+
 
 @scenario(FEATURE_HISTORIAL, "CA-01 — Ver lista de OVAs propios")
 def test_historial_listado():

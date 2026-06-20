@@ -12,14 +12,14 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
+from core.rate_limit import limiter
 from models import Ova, OvaPhase, OvaPhaseVersion, User
 from ova.crud.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _is_ova_owner,
 )
-from rate_limit import limiter
 from users.admin.helpers import commit_or_500
 
 router = APIRouter()
@@ -60,10 +60,14 @@ def list_phase_versions(
     ).scalar_one_or_none()
 
     if not ova:
-        return JSONResponse(status_code=404, content={"error": "not_found", "message": "OVA no encontrado."})
+        return JSONResponse(
+            status_code=404, content={"error": "not_found", "message": "OVA no encontrado."}
+        )
 
     if not _is_ova_owner(ova, current_user):
-        return JSONResponse(status_code=403, content={"error": "forbidden", "message": "Sin permisos."})
+        return JSONResponse(
+            status_code=403, content={"error": "forbidden", "message": "Sin permisos."}
+        )
 
     mvs = (
         db.execute(
@@ -104,17 +108,26 @@ def revert_phase_version(
     ).scalar_one_or_none()
 
     if not ova:
-        return JSONResponse(status_code=404, content={"error": "not_found", "message": "OVA no encontrado."})
+        return JSONResponse(
+            status_code=404, content={"error": "not_found", "message": "OVA no encontrado."}
+        )
 
     if not _is_ova_owner(ova, current_user):
-        return JSONResponse(status_code=403, content={"error": "forbidden", "message": "Sin permisos."})
+        return JSONResponse(
+            status_code=403, content={"error": "forbidden", "message": "Sin permisos."}
+        )
 
     mv = db.execute(
-        select(OvaPhaseVersion).where(OvaPhaseVersion.id == mvid, OvaPhaseVersion.phase_id == fase_id)
+        select(OvaPhaseVersion).where(
+            OvaPhaseVersion.id == mvid, OvaPhaseVersion.phase_id == fase_id
+        )
     ).scalar_one_or_none()
 
     if not mv:
-        return JSONResponse(status_code=404, content={"error": "not_found", "message": "Micro-versión no encontrada."})
+        return JSONResponse(
+            status_code=404,
+            content={"error": "not_found", "message": "Micro-versión no encontrada."},
+        )
 
     active_version = _get_active_version(ova_id, db)
     if not active_version:
@@ -125,10 +138,19 @@ def revert_phase_version(
     ).scalar_one_or_none()
 
     if not phase:
-        return JSONResponse(status_code=404, content={"error": "phase_not_found", "message": "Fase no encontrada en versión activa."})
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": "phase_not_found",
+                "message": "Fase no encontrada en versión activa.",
+            },
+        )
 
     phase.content = mv.content
     record_phase_micro_version(db, phase.id, ova_id, mv.content)
     commit_or_500(db, op="revert_phase_version")
 
-    return {"message": f"Fase revertida a micro-versión {mv.minor_number}.", "minor_number": mv.minor_number}
+    return {
+        "message": f"Fase revertida a micro-versión {mv.minor_number}.",
+        "minor_number": mv.minor_number,
+    }

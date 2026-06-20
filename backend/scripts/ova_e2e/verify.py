@@ -40,9 +40,7 @@ def verify(
         checks.append({"name": "rag_ingesta", "ok": None, "detail": "omitido (--no-rag)"})
     else:
         n = rag_summary.get("chunks", 0)
-        checks.append(
-            {"name": "rag_ingesta", "ok": n > 0, "detail": f"{n} chunks persistidos"}
-        )
+        checks.append({"name": "rag_ingesta", "ok": n > 0, "detail": f"{n} chunks persistidos"})
 
     # (b) terminal dentro del timeout
     status = (flow.job or {}).get("status")
@@ -83,7 +81,9 @@ def verify(
     # (f) concierge corrio (best-effort sobre backend.log)
     if backend_log:
         ran = "Concierge plan:" in backend_log
-        checks.append({"name": "concierge_corrio", "ok": ran, "detail": _concierge_line(backend_log)})
+        checks.append(
+            {"name": "concierge_corrio", "ok": ran, "detail": _concierge_line(backend_log)}
+        )
     else:
         checks.append({"name": "concierge_corrio", "ok": None, "detail": "sin backend.log"})
 

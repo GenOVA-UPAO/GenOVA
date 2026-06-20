@@ -4,7 +4,7 @@ Each prompt fixes the resource FORMAT but adapts all scenarios, exercises and
 projects to whatever Machine Learning concept is passed in `concept`.
 """
 
-from llm.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
+from llm.utils.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
 
 # fmt: off
 RECURSOS_META = {
@@ -23,7 +23,9 @@ RECURSOS_META = {
 CODE_ONLY = {4, 5, 7, 9}
 
 
-def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None) -> str:
+def prompt_codigo(
+    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None
+) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
     ds = design_system or DESIGN_SYSTEM
     t = {

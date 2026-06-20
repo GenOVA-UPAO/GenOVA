@@ -48,9 +48,7 @@ def _is_ova_owner(ova: Ova, user: User) -> bool:
 
 def _get_active_version(ova_id, db: Session) -> OvaVersion | None:
     return db.execute(
-        select(OvaVersion).where(
-            OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True)
-        )
+        select(OvaVersion).where(OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True))
     ).scalar_one_or_none()
 
 
@@ -149,25 +147,19 @@ def _get_all_versions(ova_id: str, db: Session) -> list[OvaVersion]:
     )
 
 
-def _load_version_with_phases(
-    version_id: str, ova_id: str, db: Session
-) -> dict | None:
+def _load_version_with_phases(version_id: str, ova_id: str, db: Session) -> dict | None:
     """Load a version and its phases for side-by-side diff comparison.
 
     Returns ``{"version": ..., "phases": [...]}`` or ``None`` if not found.
     """
     ver = db.execute(
-        select(OvaVersion).where(
-            OvaVersion.id == version_id, OvaVersion.ova_id == ova_id
-        )
+        select(OvaVersion).where(OvaVersion.id == version_id, OvaVersion.ova_id == ova_id)
     ).scalar_one_or_none()
     if not ver:
         return None
     phases = (
         db.execute(
-            select(OvaPhase)
-            .where(OvaPhase.version_id == version_id)
-            .order_by(OvaPhase.phase_order)
+            select(OvaPhase).where(OvaPhase.version_id == version_id).order_by(OvaPhase.phase_order)
         )
         .scalars()
         .all()
@@ -178,9 +170,7 @@ def _load_version_with_phases(
     }
 
 
-def _rebuild_scorm_for_version(
-    ova: Ova, version: OvaVersion, user_id: str
-) -> None:
+def _rebuild_scorm_for_version(ova: Ova, version: OvaVersion, user_id: str) -> None:
     """Rebuild and persist the SCORM zip for *version*.
 
     Mutates ``ova.storage_key`` and ``ova.file_path`` in-place.
@@ -189,8 +179,7 @@ def _rebuild_scorm_for_version(
     from scorm.service import build_scorm_zip_bytes
 
     phases_data = [
-        {"type": p.phase_type, "order": p.phase_order, "content": p.content}
-        for p in version.phases
+        {"type": p.phase_type, "order": p.phase_order, "content": p.content} for p in version.phases
     ]
     zip_bytes = build_scorm_zip_bytes(
         course_title=ova.title,
@@ -213,9 +202,7 @@ def _rebuild_scorm_for_version(
     if not stored_key:
         output_dir = _ova_output_dir()
         os.makedirs(output_dir, exist_ok=True)
-        stored_path = os.path.join(
-            output_dir, f"{ova_id_str}_v{version.version_number}.zip"
-        )
+        stored_path = os.path.join(output_dir, f"{ova_id_str}_v{version.version_number}.zip")
         with open(stored_path, "wb") as f:
             f.write(zip_bytes)
     ova.storage_key = stored_key

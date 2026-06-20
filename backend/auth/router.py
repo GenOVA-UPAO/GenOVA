@@ -1,4 +1,5 @@
 """Auth router — login, register, /me. Mounts the reset-password sub-router."""
+
 import logging
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
@@ -15,10 +16,9 @@ from auth.cookies import clear_auth_cookie, set_auth_cookie
 from auth.dependencies import get_current_user
 from auth.reset_router import router as reset_router
 from auth.throttle import email_throttled
-from database import get_db
-from models import Role, User, UserRole
-from rate_limit import limiter
-from security import (
+from core.database import get_db
+from core.rate_limit import limiter
+from core.security import (
     JWT_ALGORITHM,
     JWT_EXPIRES_MINUTES,
     JWT_SECRET,
@@ -27,6 +27,7 @@ from security import (
     verify_dummy,
     verify_password,
 )
+from models import Role, User, UserRole
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

@@ -1,9 +1,10 @@
 """Auth cookie configuration and helpers for httpOnly JWT session cookies."""
+
 import os
 
 from fastapi.responses import JSONResponse
 
-from security import JWT_EXPIRES_MINUTES
+from core.security import JWT_EXPIRES_MINUTES
 
 _COOKIE_NAME = "genova_token"
 _COOKIE_MAX_AGE = JWT_EXPIRES_MINUTES * 60

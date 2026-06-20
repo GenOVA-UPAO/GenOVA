@@ -9,7 +9,7 @@ import json
 import logging
 import re
 
-from config import settings
+from core.config import settings
 from llm.router import generar_texto
 from prometheus.state import OvaGenerationState
 
@@ -37,7 +37,10 @@ def _parse_editor_response(response: str) -> dict:
         if not match:
             return {}
         data = json.loads(match.group())
-        return {"hallazgos": list(data.get("hallazgos", [])), "parches": list(data.get("parches", []))}
+        return {
+            "hallazgos": list(data.get("hallazgos", [])),
+            "parches": list(data.get("parches", [])),
+        }
     except Exception:  # noqa: BLE001
         logger.debug("editor parse failed; returning empty report")
         return {}
@@ -90,19 +93,27 @@ def editor_node(state: OvaGenerationState) -> dict:
             return (idx, r.get("resource_type", 0))
 
         extracto = [
-            {"phase": r.get("phase", ""), "title": r.get("title", ""), "extracto": r.get("html", "")[:600]}
+            {
+                "phase": r.get("phase", ""),
+                "title": r.get("title", ""),
+                "extracto": r.get("html", "")[:600],
+            }
             for r in sorted(results, key=_sort_key)
         ]
 
         prompt = _PROMPT_TMPL.format(recursos_json=json.dumps(extracto, ensure_ascii=False))
-        response = generar_texto(prompt, "texto", 1024, state.get("llm_config", {}), state.get("enabled_models", []))
+        response = generar_texto(
+            prompt, "texto", 1024, state.get("llm_config", {}), state.get("enabled_models", [])
+        )
         report = _parse_editor_response(response)
 
         parches = report.get("parches", [])
         if parches:
             _apply_patches(results, parches)
 
-        logger.info("Editor: %d hallazgos, %d parches", len(report.get("hallazgos", [])), len(parches))
+        logger.info(
+            "Editor: %d hallazgos, %d parches", len(report.get("hallazgos", [])), len(parches)
+        )
         return {"coherence_report": report}
 
     except Exception:  # noqa: BLE001

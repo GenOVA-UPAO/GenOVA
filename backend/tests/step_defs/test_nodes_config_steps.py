@@ -26,8 +26,8 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import prometheus.nodes_config as nc_mod  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
-from database import get_db  # noqa: E402
-from rate_limit import limiter  # noqa: E402
+from core.database import get_db  # noqa: E402
+from core.rate_limit import limiter  # noqa: E402
 from users.admin.platform_settings_router import router as admin_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
@@ -118,6 +118,7 @@ _URL = "/api/admin/nodes-config"
 
 # ── Scenarios ──────────────────────────────────────────────────────────────────
 
+
 @scenario(FEATURE, "GET retorna nodos y config con defaults cuando no hay DB config")
 def test_get_defaults():
     pass
@@ -140,6 +141,7 @@ def test_toggle_images_off():
 
 # ── Given ──────────────────────────────────────────────────────────────────────
 
+
 @given(parsers.parse('la tabla PlatformConfig no tiene entrada "{key}"'))
 def no_db_entry(ctx, key):
     ctx["box"]["data"] = {}
@@ -156,6 +158,7 @@ def images_off_in_store(ctx):
 
 
 # ── When ───────────────────────────────────────────────────────────────────────
+
 
 @when("el admin llama GET /api/admin/nodes-config", target_fixture="response")
 def get_nodes(ctx):
@@ -186,6 +189,7 @@ def call_get_nodes_config(ctx):
 
 
 # ── Then ───────────────────────────────────────────────────────────────────────
+
 
 @then(parsers.parse("la respuesta incluye nodes con al menos {n:d} nodos"))
 def nodes_count(response, n):

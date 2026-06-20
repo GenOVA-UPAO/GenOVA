@@ -6,7 +6,7 @@ Extracted from runtime.py to respect the 200-line file limit.  Called by
 
 import logging
 
-from config import settings
+from core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,11 @@ def _critic_enabled() -> bool:
     from prometheus.nodes_config import get_nodes_config
 
     nc = get_nodes_config()
-    return str(nc.get("ova_critic", settings.ova_critic)).strip().lower() not in ("0", "false", "no")
+    return str(nc.get("ova_critic", settings.ova_critic)).strip().lower() not in (
+        "0",
+        "false",
+        "no",
+    )
 
 
 def critic_loop(

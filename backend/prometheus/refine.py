@@ -12,11 +12,11 @@ truncated stub); otherwise the original is kept.
 
 import logging
 
-from config import settings
-from llm.html_validator import validate_html
+from core.config import settings
 from llm.router import generar_texto
-from llm.themes import build_design_system
-from llm.utils import strip_markdown
+from llm.utils.html_validator import validate_html
+from llm.utils.themes import build_design_system
+from llm.utils.utils import strip_markdown
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,11 @@ def _refine_enabled() -> bool:
     from prometheus.nodes_config import get_nodes_config
 
     nc = get_nodes_config()
-    return str(nc.get("ova_refine", settings.ova_refine)).strip().lower() not in ("0", "false", "no")
+    return str(nc.get("ova_refine", settings.ova_refine)).strip().lower() not in (
+        "0",
+        "false",
+        "no",
+    )
 
 
 def _quality_issues(html: str, phase: str, rt: int) -> list[str]:
@@ -75,7 +79,11 @@ def apply_feedback(
     try:
         return strip_markdown(
             generar_texto(
-                _refine_prompt(html, concept, feedback, ds), "codigo", 12000, llm_config, enabled_models
+                _refine_prompt(html, concept, feedback, ds),
+                "codigo",
+                12000,
+                llm_config,
+                enabled_models,
             )
         )
     except Exception:  # noqa: BLE001

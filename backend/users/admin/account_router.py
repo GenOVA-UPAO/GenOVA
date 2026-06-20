@@ -6,6 +6,7 @@ background, WhatsApp share URL) to the caller. The token itself never crosses
 the HTTP boundary back to the admin so that an admin cannot reset another
 user's password by reading the API response.
 """
+
 import logging
 import secrets
 import urllib.parse
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import require_permission
 from auth.email import send_reset_email
-from database import get_db
+from core.database import get_db
 from models import PasswordResetToken, User
 from users.admin.helpers import (
     APP_URL,
@@ -55,8 +56,9 @@ def update_user_status(
 ):
     target_uuid = parse_uuid(user_id)
     if target_uuid == current_user.id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="No puedes desactivar tu propia cuenta.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No puedes desactivar tu propia cuenta."
+        )
     assert_can_touch_target(caller=current_user, target_id=target_uuid, db=db)
 
     target_user = get_target_user(target_uuid, db)
@@ -112,8 +114,10 @@ def trigger_reset_whatsapp(
     target_user = get_target_user(target_uuid, db)
 
     if not target_user.phone_number:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="El usuario no tiene un número de teléfono registrado.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El usuario no tiene un número de teléfono registrado.",
+        )
 
     token = _issue_reset_token(db, target_uuid)
     commit_or_500(db, op="reset_password_whatsapp_token")

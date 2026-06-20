@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
 from models import Ova, OvaPhase, OvaVersion, User
 from ova.crud.llm_helpers import _enabled_llm_options, _ova_output_dir
 from rag.store import tie_uploads_to_ova

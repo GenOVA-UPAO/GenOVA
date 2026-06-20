@@ -1,29 +1,35 @@
 """Prompt helpers: base prompts and the AI prompt-improvement meta-prompt."""
+
 CONCEPT_PH = "{concept}"
 
 # Resource type classification (matches engage/explore router logic)
-ENGAGE_CODE    = {10}
+ENGAGE_CODE = {10}
 ENGAGE_PODCAST = {3}
-EXPLORE_CODE   = {1, 6, 10}
+EXPLORE_CODE = {1, 6, 10}
 
 
 def get_base_prompt(phase: str, resource_type: int) -> str:
     """Return hardcoded prompt template with {concept} placeholder."""
     if phase == "engage":
         from prometheus.prompts.engage_prompts import prompt_simulador, prompt_texto
+
         if resource_type in ENGAGE_CODE:
             return prompt_simulador(CONCEPT_PH)
         return prompt_texto(resource_type, CONCEPT_PH)
     # explore
     from prometheus.prompts.explore_prompts import CODE_ONLY, prompt_codigo, prompt_texto
+
     if resource_type in CODE_ONLY:
         return prompt_codigo(resource_type, CONCEPT_PH)
     return prompt_texto(resource_type, CONCEPT_PH)
 
 
 def build_improve_prompt(
-    current_prompt: str, winner_html: str,
-    concept: str, phase: str, resource_type: int,
+    current_prompt: str,
+    winner_html: str,
+    concept: str,
+    phase: str,
+    resource_type: int,
 ) -> str:
     """Build the meta-prompt sent to the orchestrator LLM for prompt improvement."""
     truncated = winner_html[:3000] + ("...[truncado]" if len(winner_html) > 3000 else "")

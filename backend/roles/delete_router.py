@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_admin
-from database import commit_or_500, get_db
+from core.database import commit_or_500, get_db
 from models import Role, UserRole
 
 router = APIRouter()
@@ -31,9 +31,7 @@ def delete_role(
     # 1. Look up role
     role = db.execute(select(Role).where(Role.id == role_uuid)).scalar_one_or_none()
     if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Rol no encontrado."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rol no encontrado.")
 
     # 2. Block system roles deletion
     if role.name in ["administrador", "usuario"]:
@@ -73,9 +71,7 @@ def delete_role(
             )
 
         # Look up target role
-        target_role = db.execute(
-            select(Role).where(Role.id == target_uuid)
-        ).scalar_one_or_none()
+        target_role = db.execute(select(Role).where(Role.id == target_uuid)).scalar_one_or_none()
         if not target_role:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -84,16 +80,18 @@ def delete_role(
 
         try:
             relations = (
-                db.execute(select(UserRole).where(UserRole.role_id == role_uuid))
-                .scalars()
-                .all()
+                db.execute(select(UserRole).where(UserRole.role_id == role_uuid)).scalars().all()
             )
             for rel in relations:
-                has_target = db.execute(
-                    select(UserRole).where(
-                        UserRole.user_id == rel.user_id, UserRole.role_id == target_uuid
+                has_target = (
+                    db.execute(
+                        select(UserRole).where(
+                            UserRole.user_id == rel.user_id, UserRole.role_id == target_uuid
+                        )
                     )
-                ).scalars().first()
+                    .scalars()
+                    .first()
+                )
                 if has_target:
                     db.delete(rel)
                 else:

@@ -24,8 +24,8 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401  — registers ORM tables on the shared metadata
-from generation import jobs_runner, jobs_service  # noqa: E402
-from generation.jobs_helpers import job_to_dict  # noqa: E402
+from generation.jobs import jobs_runner, jobs_service  # noqa: E402
+from generation.jobs.jobs_helpers import job_to_dict  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-013_jobs.feature")
@@ -96,7 +96,7 @@ def Sess(engine, monkeypatch):
     monkeypatch.setattr(jobs_runner, "SessionLocal", factory)
     # B2 materialization builds + stores a SCORM zip; skip the (disk/storage) I/O
     # in unit tests — we assert the Ova/OvaPhase rows, not the zip bytes.
-    from generation import jobs_materialize
+    from generation.jobs import jobs_materialize
 
     monkeypatch.setattr(jobs_materialize, "_persist_scorm", lambda *a, **k: None)
     return factory
@@ -481,7 +481,7 @@ def test_plan_recurso_por_fila():
 
 @given("el cliente elige varios recursos con su fase y tipo", target_fixture="ctx")
 def cliente_elige_recursos():
-    from generation.jobs_helpers import StartJobRequest
+    from generation.jobs.jobs_helpers import StartJobRequest
 
     payload = StartJobRequest(
         prompt="árboles de decisión",
@@ -499,7 +499,7 @@ def cliente_elige_recursos():
 
 @when("se construye el plan de recursos", target_fixture="plan")
 def construye_plan(ctx):
-    from generation.jobs_helpers import build_resource_plan
+    from generation.jobs.jobs_helpers import build_resource_plan
 
     return build_resource_plan(ctx["payload"])
 
@@ -508,7 +508,12 @@ def construye_plan(ctx):
 def fila_por_recurso(plan):
     assert len(plan) == 6
     assert [r["resource_type"] for r in plan] == [
-        "Cómic Interactivo", "Micro-Podcast", "5", "Infografía", "Quiz", "Rúbrica",
+        "Cómic Interactivo",
+        "Micro-Podcast",
+        "5",
+        "Infografía",
+        "Quiz",
+        "Rúbrica",
     ]
 
 
@@ -658,8 +663,8 @@ def job_interrupted_pending(db):
 
 @when("se resuelven los recursos a reanudar para un subconjunto válido", target_fixture="resolved")
 def resuelve_subconjunto(db, ctx):
-    from generation.jobs_helpers import ResumeRequest
-    from generation.jobs_router import _resolve_resume_targets
+    from generation.jobs.jobs_helpers import ResumeRequest
+    from generation.jobs.jobs_router import _resolve_resume_targets
 
     subset = [str(ctx["ids"][0])]
     return _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=subset))
@@ -680,8 +685,8 @@ def test_resume_ajeno_rechazado():
 
 @when("se resuelven los recursos a reanudar incluyendo un id ajeno", target_fixture="resolved")
 def resuelve_ajeno(db, ctx):
-    from generation.jobs_helpers import ResumeRequest
-    from generation.jobs_router import _resolve_resume_targets
+    from generation.jobs.jobs_helpers import ResumeRequest
+    from generation.jobs.jobs_router import _resolve_resume_targets
 
     foreign = [str(ctx["ids"][0]), str(uuid.uuid4())]
     return _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=foreign))
@@ -733,8 +738,8 @@ def job_done_y_error(db, monkeypatch):
 
 @when("el usuario reanuda el subconjunto que incluye el recurso done")
 def reanuda_subset_con_done(db, ctx):
-    from generation.jobs_helpers import ResumeRequest
-    from generation.jobs_router import _resolve_resume_targets
+    from generation.jobs.jobs_helpers import ResumeRequest
+    from generation.jobs.jobs_router import _resolve_resume_targets
 
     subset = [str(ctx["done_id"]), str(ctx["error_id"])]
     targets, error = _resolve_resume_targets(db, ctx["job"].id, ResumeRequest(resource_ids=subset))

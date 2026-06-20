@@ -6,8 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
-from generation.regen_router import router as regen_router
+from core.database import get_db
+from core.rate_limit import limiter
+from generation.regen.regen_router import router as regen_router
 from models import OvaPhase, User
 from ova.crud.edit_helpers import _rebuild_scorm_for_version
 from ova.crud.edit_phase_ops import (
@@ -20,7 +21,6 @@ from ova.crud.edit_phase_ops import (
 )
 from ova.crud.edit_view_router import router as edit_view_router
 from ova.phases.phase_version_router import record_phase_micro_version
-from rate_limit import limiter
 from users.admin.helpers import commit_or_500
 
 logger = logging.getLogger(__name__)
@@ -28,6 +28,7 @@ router = APIRouter()
 
 
 # ── Reorder phases ────────────────────────────────────────────────────────────
+
 
 @router.patch("/{ova_id}/fases/reorder")
 @limiter.limit("30/minute")
@@ -61,15 +62,16 @@ def reorder_phases(
     if len(phases) != len(payload.reorders):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "phases_not_found",
-                     "message": "Una o más fases no existen."},
+            content={"error": "phases_not_found", "message": "Una o más fases no existen."},
         )
     # R6: no cross-phase-type moves
     if len({p.phase_type for p in phases}) > 1:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"error": "cross_phase_move",
-                     "message": "No se puede mover un recurso entre fases distintas."},
+            content={
+                "error": "cross_phase_move",
+                "message": "No se puede mover un recurso entre fases distintas.",
+            },
         )
     # R5: update phase_order in-place (no new version)
     phase_map = {str(p.id): p for p in phases}
@@ -80,6 +82,7 @@ def reorder_phases(
 
 
 # ── Delete phase ──────────────────────────────────────────────────────────────
+
 
 @router.delete("/{ova_id}/fases/{fase_id}")
 @limiter.limit("20/minute")
@@ -103,12 +106,13 @@ def delete_phase(
     if not remaining:
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"error": "last_phase",
-                     "message": "No se puede eliminar la única fase restante."},
+            content={
+                "error": "last_phase",
+                "message": "No se puede eliminar la única fase restante.",
+            },
         )
     new_phases_data = [
-        {"type": p.phase_type, "order": p.phase_order, "content": p.content}
-        for p in remaining
+        {"type": p.phase_type, "order": p.phase_order, "content": p.content} for p in remaining
     ]
     new_version = _create_new_version(ova, active_version, new_phases_data, db)
     db.refresh(new_version, ["phases"])
@@ -124,6 +128,7 @@ def delete_phase(
 
 # ── Save phase content ────────────────────────────────────────────────────────
 
+
 @router.patch("/{ova_id}/fases/{fase_id}")
 def save_phase(
     ova_id: str,
@@ -135,8 +140,7 @@ def save_phase(
     if not payload.content.strip():
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "content_required",
-                     "message": "El contenido no puede estar vacío."},
+            content={"error": "content_required", "message": "El contenido no puede estar vacío."},
         )
     ova, active_version, err = _resolve_ova_and_version(ova_id, current_user, db)
     if err:
@@ -149,8 +153,11 @@ def save_phase(
         )
     current_phases = _list_phases(str(active_version.id), db)
     new_phases_data = [
-        {"type": p.phase_type, "order": p.phase_order,
-         "content": payload.content if str(p.id) == fase_id else p.content}
+        {
+            "type": p.phase_type,
+            "order": p.phase_order,
+            "content": payload.content if str(p.id) == fase_id else p.content,
+        }
         for p in current_phases
     ]
     new_version = _create_new_version(ova, active_version, new_phases_data, db)

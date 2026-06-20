@@ -15,37 +15,116 @@ _lock = RLock()
 
 _D = "Generador 5E"
 NODES = [
-    {"id": "concierge", "name": "Concierge", "role": "Planificador", "always_on": True,
-     "description": "Descompone el prompt en plan de recursos 5E (Planner GAIA)"},
-    {"id": "engage", "name": "Engage", "role": _D, "always_on": True, "phase": True,
-     "description": "Genera recursos de enganche — Fase 1 del modelo 5E"},
-    {"id": "explore", "name": "Explore", "role": _D, "always_on": True, "phase": True,
-     "description": "Genera recursos de exploración — Fase 2"},
-    {"id": "explain", "name": "Explain", "role": _D, "always_on": True, "phase": True,
-     "description": "Genera recursos de explicación formal — Fase 3"},
-    {"id": "elaborate", "name": "Elaborate", "role": _D, "always_on": True, "phase": True,
-     "description": "Genera recursos de elaboración — Fase 4"},
-    {"id": "evaluate", "name": "Evaluate", "role": _D, "always_on": True, "phase": True,
-     "description": "Genera recursos de evaluación — Fase 5"},
-    {"id": "images", "name": "Generador de imágenes", "role": "Medios",
-     "always_on": False, "configurable": True, "flag": "ova_images", "default": "1",
-     "description": "Genera imágenes AI para los recursos (engage). Desactivar ahorra créditos."},
-    {"id": "video", "name": "Nodo de Video", "role": "Medios", "always_on": True,
-     "status_key": "video_api_key",
-     "description": "Recursos de video 5E. Sin API key → genera prompt copiable para el estudiante."},
-    {"id": "refine", "name": "Refinador estructural", "role": "Corrector",
-     "always_on": False, "configurable": True, "flag": "ova_refine", "default": "1",
-     "description": "Detecta y corrige defectos HTML/JS. Corre en paralelo por recurso."},
-    {"id": "critic", "name": "Crítico pedagógico", "role": "Evaluador",
-     "always_on": False, "configurable": True, "flag": "ova_critic", "default": "0",
-     "description": "Evalúa calidad pedagógica; re-genera con feedback si score bajo.",
-     "param": {"key": "ova_reflection_rounds", "label": "Rondas máx",
-               "type": "int", "min": 0, "max": 3, "default": 1}},
-    {"id": "editor", "name": "Editor de Coherencia 5E", "role": "Editor",
-     "always_on": False, "configurable": True, "flag": "ova_editor", "default": "0",
-     "description": "Revisa terminología y progresión 5E antes de ensamblar."},
-    {"id": "assemble", "name": "Assembler", "role": "Ensamblador", "always_on": True,
-     "description": "Ensambla resultados y genera el paquete SCORM."},
+    {
+        "id": "concierge",
+        "name": "Concierge",
+        "role": "Planificador",
+        "always_on": True,
+        "description": "Descompone el prompt en plan de recursos 5E (Planner GAIA)",
+    },
+    {
+        "id": "engage",
+        "name": "Engage",
+        "role": _D,
+        "always_on": True,
+        "phase": True,
+        "description": "Genera recursos de enganche — Fase 1 del modelo 5E",
+    },
+    {
+        "id": "explore",
+        "name": "Explore",
+        "role": _D,
+        "always_on": True,
+        "phase": True,
+        "description": "Genera recursos de exploración — Fase 2",
+    },
+    {
+        "id": "explain",
+        "name": "Explain",
+        "role": _D,
+        "always_on": True,
+        "phase": True,
+        "description": "Genera recursos de explicación formal — Fase 3",
+    },
+    {
+        "id": "elaborate",
+        "name": "Elaborate",
+        "role": _D,
+        "always_on": True,
+        "phase": True,
+        "description": "Genera recursos de elaboración — Fase 4",
+    },
+    {
+        "id": "evaluate",
+        "name": "Evaluate",
+        "role": _D,
+        "always_on": True,
+        "phase": True,
+        "description": "Genera recursos de evaluación — Fase 5",
+    },
+    {
+        "id": "images",
+        "name": "Generador de imágenes",
+        "role": "Medios",
+        "always_on": False,
+        "configurable": True,
+        "flag": "ova_images",
+        "default": "1",
+        "description": "Genera imágenes AI para los recursos (engage). Desactivar ahorra créditos.",
+    },
+    {
+        "id": "video",
+        "name": "Nodo de Video",
+        "role": "Medios",
+        "always_on": True,
+        "status_key": "video_api_key",
+        "description": "Recursos de video 5E. Sin API key → genera prompt copiable para el estudiante.",
+    },
+    {
+        "id": "refine",
+        "name": "Refinador estructural",
+        "role": "Corrector",
+        "always_on": False,
+        "configurable": True,
+        "flag": "ova_refine",
+        "default": "1",
+        "description": "Detecta y corrige defectos HTML/JS. Corre en paralelo por recurso.",
+    },
+    {
+        "id": "critic",
+        "name": "Crítico pedagógico",
+        "role": "Evaluador",
+        "always_on": False,
+        "configurable": True,
+        "flag": "ova_critic",
+        "default": "0",
+        "description": "Evalúa calidad pedagógica; re-genera con feedback si score bajo.",
+        "param": {
+            "key": "ova_reflection_rounds",
+            "label": "Rondas máx",
+            "type": "int",
+            "min": 0,
+            "max": 3,
+            "default": 1,
+        },
+    },
+    {
+        "id": "editor",
+        "name": "Editor de Coherencia 5E",
+        "role": "Editor",
+        "always_on": False,
+        "configurable": True,
+        "flag": "ova_editor",
+        "default": "0",
+        "description": "Revisa terminología y progresión 5E antes de ensamblar.",
+    },
+    {
+        "id": "assemble",
+        "name": "Assembler",
+        "role": "Ensamblador",
+        "always_on": True,
+        "description": "Ensambla resultados y genera el paquete SCORM.",
+    },
 ]
 
 VIDEO_RESOURCE_TYPES: dict[str, list[int]] = {
@@ -65,7 +144,7 @@ def is_video_resource(phase: str, rt) -> bool:
 
 def load_stored() -> dict:
     """Read raw stored dict from PlatformConfig. Returns {} on error."""
-    from database import SessionLocal
+    from core.database import SessionLocal
     from models import PlatformConfig
 
     db = SessionLocal()
@@ -108,14 +187,16 @@ def get_nodes_config() -> dict:
     Merge done fresh each call so settings monkeypatches in tests work.
     Only the DB load is cached with TTL (mirrors effective_llm_config pattern).
     """
-    from config import settings
+    from core.config import settings
 
     db_data = stored_cached()
     return {
         "ova_images": db_data.get("ova_images", settings.ova_images),
         "ova_refine": db_data.get("ova_refine", settings.ova_refine),
         "ova_critic": db_data.get("ova_critic", settings.ova_critic),
-        "ova_reflection_rounds": db_data.get("ova_reflection_rounds", settings.ova_reflection_rounds),
+        "ova_reflection_rounds": db_data.get(
+            "ova_reflection_rounds", settings.ova_reflection_rounds
+        ),
         "ova_editor": db_data.get("ova_editor", settings.ova_editor),
     }
 

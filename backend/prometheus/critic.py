@@ -11,7 +11,7 @@ import logging
 import re
 
 from llm.router import generar_texto
-from llm.themes import build_design_system
+from llm.utils.themes import build_design_system
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,11 @@ def _parse_critic_response(response: str) -> dict:
         veredicto = str(data.get("veredicto", "aceptar"))
         if veredicto not in ("aceptar", "revisar"):
             veredicto = "aceptar"
-        return {"puntaje": max(0, min(100, puntaje)), "problemas": problemas, "veredicto": veredicto}
+        return {
+            "puntaje": max(0, min(100, puntaje)),
+            "problemas": problemas,
+            "veredicto": veredicto,
+        }
     except Exception:  # noqa: BLE001
         logger.debug("critic parse failed; falling back to accept")
         return dict(_FALLBACK)
@@ -64,12 +68,15 @@ def critique_resource(
     """
     theme = theme or {}
     ds = build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
-    prompt = _PROMPT_TMPL.format(
-        phase=phase,
-        rt=rt,
-        concept=concept,
-        html_excerpt=html[:2000],
-    ) + f"\n[DESIGN_SYSTEM]\n{ds}"
+    prompt = (
+        _PROMPT_TMPL.format(
+            phase=phase,
+            rt=rt,
+            concept=concept,
+            html_excerpt=html[:2000],
+        )
+        + f"\n[DESIGN_SYSTEM]\n{ds}"
+    )
 
     try:
         response = generar_texto(prompt, "texto", 512, llm_config, enabled_models)

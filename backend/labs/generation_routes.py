@@ -1,4 +1,5 @@
 """Labs generation, AI improvement, SCORM export, and results endpoints."""
+
 import io
 import uuid
 
@@ -9,12 +10,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_admin
-from database import get_db
+from core.database import get_db
+from core.rate_limit import limiter
 from labs.service import build_improve_prompt, get_job_results, start_lab_job
 from llm.router import generar_texto
-from llm.utils import parse_json
+from llm.utils.utils import parse_json
 from models import LabResult, User
-from rate_limit import limiter
 from scorm.service import build_scorm_zip_bytes
 
 router = APIRouter()
@@ -35,7 +36,7 @@ class StartGenerationRequest(BaseModel):
 
 class ImprovePromptRequest(BaseModel):
     current_prompt: str
-    result_id: str          # winner LabResult id
+    result_id: str  # winner LabResult id
     concept: str
     phase: str
     resource_type: int
@@ -152,18 +153,18 @@ def list_recent_results(
     return {
         "results": [
             {
-                "id":             str(r.id),
-                "phase":          r.phase,
-                "resource_type":  r.resource_type,
-                "concept":        r.concept,
-                "model_id":       r.model_id,
-                "provider":       r.provider,
+                "id": str(r.id),
+                "phase": r.phase,
+                "resource_type": r.resource_type,
+                "concept": r.concept,
+                "model_id": r.model_id,
+                "provider": r.provider,
                 "quality_checks": r.quality_checks,
-                "was_selected":   r.was_selected,
-                "generation_ms":  r.generation_ms,
-                "error_message":  r.error_message,
-                "has_html":       bool(r.html_content),
-                "created_at":     r.created_at.isoformat() if r.created_at else None,
+                "was_selected": r.was_selected,
+                "generation_ms": r.generation_ms,
+                "error_message": r.error_message,
+                "has_html": bool(r.html_content),
+                "created_at": r.created_at.isoformat() if r.created_at else None,
             }
             for r in results
         ]

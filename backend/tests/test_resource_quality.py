@@ -15,6 +15,7 @@ Uso:
     # Filtrar por fase y tipo:
     PHASE=engage TYPE=1 CONCEPT="Redes neuronales" python tests/test_resource_quality.py
 """
+
 import os
 import sys
 import time
@@ -35,16 +36,17 @@ except ImportError:
 sys.path.insert(0, os.path.dirname(__file__))
 from specs.resource_quality_spec import FORBIDDEN_CDN, QUALITY_BY_PHASE, SCORM_REQUIRED
 
-BASE    = os.getenv("BASE",    "http://localhost:8000")
-EMAIL   = os.getenv("EMAIL",   "admin@genova.ai")
-PASS    = os.getenv("PASS",    "admin1234password")
+BASE = os.getenv("BASE", "http://localhost:8000")
+EMAIL = os.getenv("EMAIL", "admin@genova.ai")
+PASS = os.getenv("PASS", "admin1234password")
 CONCEPT = os.getenv("CONCEPT", "Árboles de decisión")
 
 PHASE_FILTER = os.getenv("PHASE", "")  # "engage" | "explore" | ""
-TYPE_FILTER  = os.getenv("TYPE",  "")  # "1"–"10" | ""
+TYPE_FILTER = os.getenv("TYPE", "")  # "1"–"10" | ""
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 def sep(title: str, char: str = "─") -> None:
     print(f"\n{char * 60}")
@@ -85,9 +87,7 @@ def check_html_quality(html: str, spec: dict) -> list[str]:
     html_lower = html.lower()
 
     if len(html) < spec["min_chars"]:
-        failures.append(
-            f"html demasiado corto: {len(html)} chars < {spec['min_chars']} requeridos"
-        )
+        failures.append(f"html demasiado corto: {len(html)} chars < {spec['min_chars']} requeridos")
 
     for cdn in FORBIDDEN_CDN:
         if cdn in html_lower:
@@ -110,6 +110,7 @@ def check_html_quality(html: str, spec: dict) -> list[str]:
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     print(f"Backend : {BASE}")

@@ -179,4 +179,21 @@ las specs del editor avanzado de OVA y empezar la implementación.
 - **HU-017** → done (Eliminar cuenta, commit a1de6dc)
 - **RN-002** → done (Tiempo de generación ≤ 180s, validado por RN-004)
 
-**Estado:** DONE. Lote finalizado con éxito.
+**Estado:** DONE.
+
+---
+
+## 2026-06-20 — Auditoría y Reestructuración de Carpetas (Screaming Architecture)
+
+**Agente:** Antigravity (inline)
+**Alcance:** Organizar archivos planos con alta densidad en el frontend (`ova_workspace/components`, `ova_library/components`) y backend (`llm`, `generation`) en subcarpetas lógicas, actualizando todos los imports y resolviendo colisiones.
+
+**Completado:**
+- **Frontend `ova_workspace/components`**: Creados subdirectorios `creation`, `editor`, `modals`, `versioning`, `shared` y distribuidos los 23 componentes planos.
+- **Frontend `ova_library/components`**: Creados subdirectorios `modals`, `cards`, `viewer` y distribuidos los 10 componentes planos.
+- **Backend `llm`**: Creados subdirectorios `catalog`, `podcast`, `images`, `clients`, `phases`, `utils` y distribuidos los 24 archivos planos.
+- **Backend `generation`**: Creados subdirectorios `jobs`, `errors`, `regen` y distribuidos los 14 archivos planos.
+- **Imports y Formato**: Corregidos imports en todo el backend y frontend mediante scripts automatizados de migración y auto-corrección de Ruff, eliminando problemas de imports duplicados y ordenándolos bajo la configuración del espacio de trabajo.
+- **Verificación**: Compilación de producción Vite completada sin errores de dependencias y suite unitaria BDD 100% verde (63 escenarios, 268 pasos exitosos).
+
+**Estado:** DONE.

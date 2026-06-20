@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { Given, When, Then } from '@cucumber/cucumber'
-import { allSamePhaseType, applyReorder } from '../../../frontend/src/lib/resourceReorder.js'
+import { allSamePhaseType, applyReorder } from '../../../frontend/src/core/lib/resourceReorder.js'
 
 // HU-033 unit coverage — importa la lógica real de resourceReorder (usada por
 // WorkspaceResourceList). Sin browser/backend.

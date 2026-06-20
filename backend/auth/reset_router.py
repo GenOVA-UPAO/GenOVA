@@ -4,6 +4,7 @@ Lookup is by exact token match. Tokens are issued elsewhere
 (`users/admin_account_router.py`) using `secrets.token_urlsafe(32)`, so brute
 force is infeasible — we still rate-limit by IP to throttle scripted attempts.
 """
+
 import logging
 import secrets
 from datetime import UTC, datetime, timedelta
@@ -15,11 +16,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.email import send_reset_email
-from config import settings
-from database import get_db
+from core.config import settings
+from core.database import get_db
+from core.rate_limit import limiter
+from core.security import hash_password
 from models import PasswordResetToken, User
-from rate_limit import limiter
-from security import hash_password
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ FRONTEND_URL = settings.frontend_url.rstrip("/")
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+
 
 class ResetPasswordSubmit(BaseModel):
     token: str = Field(..., min_length=8, max_length=512)
@@ -48,12 +50,14 @@ def forgot_password(
     request: Request,
     payload: ForgotPasswordRequest,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     email = payload.email.strip().lower()
     user = db.execute(select(User).where(User.email == email, User.is_active)).scalar_one_or_none()
 
-    response = {"message": "Si el correo electrónico está registrado en GenOVA, recibirás un enlace para restablecer tu contraseña."}
+    response = {
+        "message": "Si el correo electrónico está registrado en GenOVA, recibirás un enlace para restablecer tu contraseña."
+    }
     if not user:
         return response
 
@@ -62,9 +66,7 @@ def forgot_password(
     token_str = secrets.token_urlsafe(32)
 
     token_record = PasswordResetToken(
-        user_id=user.id,
-        token=token_str,
-        expires_at=datetime.now(UTC) + timedelta(hours=1)
+        user_id=user.id, token=token_str, expires_at=datetime.now(UTC) + timedelta(hours=1)
     )
     db.add(token_record)
     db.commit()
@@ -95,7 +97,9 @@ def reset_password(request: Request, payload: ResetPasswordSubmit, db: Session =
         select(PasswordResetToken).where(PasswordResetToken.token == token_str)
     ).scalar_one_or_none()
     if not reset_token:
-        return _err("invalid_token", "El token de restablecimiento es inválido o ya ha sido utilizado.")
+        return _err(
+            "invalid_token", "El token de restablecimiento es inválido o ya ha sido utilizado."
+        )
 
     expires_at = reset_token.expires_at
     if expires_at.tzinfo is None:
@@ -113,8 +117,6 @@ def reset_password(request: Request, payload: ResetPasswordSubmit, db: Session =
     user.failed_login_attempts = 0
     user.locked_until = None
 
-    db.execute(
-        PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user.id)
-    )
+    db.execute(PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user.id))
     db.commit()
     return {"message": "Contraseña restablecida con éxito."}

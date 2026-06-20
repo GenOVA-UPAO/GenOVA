@@ -3,9 +3,14 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from database import Base
-from generation.error_log_model import OvaErrorLog  # noqa: F401  — registers ova_error_logs table
-from generation.jobs_model import OvaJob, OvaJobResource  # noqa: F401  — registers ova_jobs tables
+from core.database import Base
+from generation.errors.error_log_model import (
+    OvaErrorLog,  # noqa: F401  — registers ova_error_logs table
+)
+from generation.jobs.jobs_model import (  # noqa: F401  — registers ova_jobs tables
+    OvaJob,
+    OvaJobResource,
+)
 from models_base import _pk_column
 from models_ova import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
 
@@ -34,7 +39,13 @@ class User(Base):
     # Per-user OVA generation settings: {max_images, image_provider}.
     ova_settings = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
     # Per-user theme preferences: {colorMode, designMode, palette}.
-    theme_settings = Column(JSONB, nullable=False, server_default=text("'{\"colorMode\": \"upao\", \"designMode\": \"upao\", \"palette\": null}'::jsonb"))
+    theme_settings = Column(
+        JSONB,
+        nullable=False,
+        server_default=text(
+            '\'{"colorMode": "upao", "designMode": "upao", "palette": null}\'::jsonb'
+        ),
+    )
     # Per-user provider API keys (never logged, returned masked):
     # {groq, openrouter, opencode, siliconflow, runware, falai}
     user_api_keys = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))

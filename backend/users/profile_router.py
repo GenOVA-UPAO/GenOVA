@@ -4,9 +4,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import commit_or_500, get_db
+from core.database import commit_or_500, get_db
+from core.security import hash_password, verify_password
 from models import User
-from security import hash_password, verify_password
 
 router = APIRouter()
 
@@ -66,7 +66,9 @@ def update_profile(
 
     if payload.university_id:
         dup_univ = db.execute(
-            select(User).where(User.university_id == payload.university_id, User.id != current_user.id)
+            select(User).where(
+                User.university_id == payload.university_id, User.id != current_user.id
+            )
         ).scalar_one_or_none()
         if dup_univ:
             raise HTTPException(
@@ -91,12 +93,8 @@ def update_profile(
         "gender": current_user.gender or "",
         "phone_number": current_user.phone_number or "",
         "theme_settings": current_user.theme_settings,
-        "created_at": current_user.created_at.isoformat()
-        if current_user.created_at
-        else None,
-        "updated_at": current_user.updated_at.isoformat()
-        if current_user.updated_at
-        else None,
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        "updated_at": current_user.updated_at.isoformat() if current_user.updated_at else None,
     }
 
 
@@ -104,6 +102,7 @@ class UserThemeUpdate(BaseModel):
     colorMode: str
     designMode: str
     palette: dict | None = None
+
 
 @router.patch("/me/theme")
 def update_theme(
@@ -120,14 +119,11 @@ def update_theme(
     db.refresh(current_user)
     return {"message": "Tema actualizado", "theme_settings": current_user.theme_settings}
 
+
 class UserPasswordChange(BaseModel):
     current_password: str = Field(..., description="Contraseña actual")
-    new_password: str = Field(
-        ..., min_length=8, description="Nueva contraseña alfanumérica"
-    )
-    confirm_password: str = Field(
-        ..., min_length=8, description="Confirmación de nueva contraseña"
-    )
+    new_password: str = Field(..., min_length=8, description="Nueva contraseña alfanumérica")
+    confirm_password: str = Field(..., min_length=8, description="Confirmación de nueva contraseña")
 
 
 @router.post("/me/change-password")
@@ -166,6 +162,7 @@ def change_password(
 class UserDeleteRequest(BaseModel):
     password: str = Field(..., description="Contraseña actual para confirmar")
 
+
 @router.delete("/me")
 def delete_account(
     payload: UserDeleteRequest,
@@ -182,11 +179,15 @@ def delete_account(
 
     from models import Role, UserRole
 
-    user_roles = db.execute(
-        select(Role.name)
-        .join(UserRole, UserRole.role_id == Role.id)
-        .where(UserRole.user_id == current_user.id)
-    ).scalars().all()
+    user_roles = (
+        db.execute(
+            select(Role.name)
+            .join(UserRole, UserRole.role_id == Role.id)
+            .where(UserRole.user_id == current_user.id)
+        )
+        .scalars()
+        .all()
+    )
 
     if "administrador" in user_roles:
         total_admins = db.execute(
@@ -202,6 +203,7 @@ def delete_account(
             )
 
     import uuid
+
     uid_suffix = str(uuid.uuid4())[:8]
 
     current_user.is_active = False
@@ -221,6 +223,7 @@ def delete_account(
         _COOKIE_SECURE,
         _patch_partitioned,
     )
+
     response = JSONResponse(content={"message": "Cuenta eliminada exitosamente."})
     response.set_cookie(
         key=_COOKIE_NAME,

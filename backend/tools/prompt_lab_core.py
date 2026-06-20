@@ -26,17 +26,17 @@ from tools.prompt_lab_helpers import (
 
 def run_lab(phase: str, rtype: int, concept: str, n: int, open_browser: bool) -> None:
     label = RESOURCE_LABELS.get(phase, {}).get(rtype, f"type-{rtype}")
-    ts    = datetime.now().strftime("%Y%m%d_%H%M%S")
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     out_dir = OUTPUTS_DIR / f"{phase}_{rtype}_{ts}"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'─'*62}")
+    print(f"\n{'─' * 62}")
     print(f"  Prompt Lab  —  {phase.upper()} #{rtype}: {label}")
     print(f"  Concepto    :  {concept}")
     print(f"  Iteraciones :  {n}  (~{13 * n}s estimado)")
     if n > 3:
         print(f"  ⚠  n={n} puede provocar rate limit 429; se esperará 60s si ocurre.")
-    print("─"*62)
+    print("─" * 62)
 
     print("\nAutenticando...")
     try:
@@ -48,7 +48,7 @@ def run_lab(phase: str, rtype: int, concept: str, n: int, open_browser: bool) ->
 
     while True:  # bucle de regeneración ("r")
         html_files: list[Path | None] = []
-        checks:     list[dict]        = []
+        checks: list[dict] = []
 
         for i in range(1, n + 1):
             print(f"▶ Generando iteración {i}/{n}...", end=" ", flush=True)
@@ -57,7 +57,7 @@ def run_lab(phase: str, rtype: int, concept: str, n: int, open_browser: bool) ->
                 try:
                     result, elapsed = generate(token, phase, rtype, concept)
                     html = result.get("html_content") or ""
-                    chk  = quick_check(html)
+                    chk = quick_check(html)
                     print(f"({elapsed:.1f}s)  {fmt_check(chk)}")
                     out_file = out_dir / f"iter_{i}.html"
                     out_file.write_text(html, encoding="utf-8")
@@ -82,12 +82,12 @@ def run_lab(phase: str, rtype: int, concept: str, n: int, open_browser: bool) ->
                     break
 
         # Tabla resumen
-        print(f"\n{'─'*62}")
+        print(f"\n{'─' * 62}")
         print("  Resumen de iteraciones:")
         for i, (f, chk) in enumerate(zip(html_files, checks, strict=True), 1):
             path_info = f"→ {f.name}" if f else "→ FALLÓ"
             print(f"  Iter {i}: {fmt_check(chk)}  {path_info}")
-        print("─"*62)
+        print("─" * 62)
 
         # Abrir en browser
         if open_browser:

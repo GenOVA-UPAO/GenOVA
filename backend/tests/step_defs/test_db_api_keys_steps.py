@@ -44,6 +44,7 @@ def _reset_key_cache():
 
 # ── Scenario 1: key from PlatformConfig ──────────────────────────────────────
 
+
 @scenario(FEATURE, "resolve key from PlatformConfig when DB row exists")
 def test_resolve_from_db():
     pass
@@ -72,6 +73,7 @@ def assert_key_is_gsk(request):
 
 # ── Scenario 2: no DB row + no env var → None ────────────────────────────────
 
+
 @scenario(FEATURE, "resolve key returns None when no DB row and no env var")
 def test_resolve_none():
     pass
@@ -88,7 +90,13 @@ def db_without_groq_key(request):
 def env_no_groq_key(request):
     prev = os.environ.get("GROQ_API_KEY")
     os.environ["GROQ_API_KEY"] = ""
-    request.addfinalizer(lambda: os.environ.update({"GROQ_API_KEY": prev}) if prev is not None else os.environ.pop("GROQ_API_KEY", None))
+    request.addfinalizer(
+        lambda: (
+            os.environ.update({"GROQ_API_KEY": prev})
+            if prev is not None
+            else os.environ.pop("GROQ_API_KEY", None)
+        )
+    )
 
 
 @when('_get_provider_key is called for "groq"')  # noqa: F811 — duplicate step reuse
@@ -106,6 +114,7 @@ def assert_key_is_none(request):
 
 
 # ── Scenario 3: cache TTL ─────────────────────────────────────────────────────
+
 
 @scenario(FEATURE, "cache TTL — second call within 30s skips DB query")
 def test_cache_ttl():

@@ -26,9 +26,9 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 import models  # noqa: E402, F401
 from auth.router import router as auth_router  # noqa: E402
 from auth.throttle import _email_attempts  # noqa: E402
-from database import get_db  # noqa: E402
-from rate_limit import limiter  # noqa: E402
-from security import hash_password  # noqa: E402
+from core.database import get_db  # noqa: E402
+from core.rate_limit import limiter  # noqa: E402
+from core.security import hash_password  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_LOGIN = os.path.join(_FEATURES, "auth", "HU-008_login.feature")
@@ -95,6 +95,7 @@ def client():
 
 
 # ── HU-008: Login ────────────────────────────────────────────────────────────
+
 
 @scenario(FEATURE_LOGIN, "Login exitoso")
 def test_login_exitoso():
@@ -183,6 +184,7 @@ def mensaje_bloqueo(response):
 
 
 # ── HU-001: Registro ─────────────────────────────────────────────────────────
+
 
 @scenario(FEATURE_REGISTER, "Registro exitoso con credenciales válidas")
 def test_registro_exitoso():

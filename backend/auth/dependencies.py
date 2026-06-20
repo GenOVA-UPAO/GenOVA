@@ -4,10 +4,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from config import settings
-from database import get_db
+from core.config import settings
+from core.database import get_db
+from core.security import JWT_ALGORITHM, JWT_SECRET
 from models import Role, User, UserRole
-from security import JWT_ALGORITHM, JWT_SECRET
 
 _COOKIE_NAME = "genova_token"
 # Set AUTH_ACCEPT_BEARER=0 in production once all clients use cookies.
@@ -63,14 +63,17 @@ def get_current_user(
 
 
 def require_admin(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ) -> User:
-    is_admin = db.execute(
-        select(UserRole)
-        .join(Role)
-        .where(UserRole.user_id == current_user.id, Role.name == "administrador")
-    ).scalars().first()
+    is_admin = (
+        db.execute(
+            select(UserRole)
+            .join(Role)
+            .where(UserRole.user_id == current_user.id, Role.name == "administrador")
+        )
+        .scalars()
+        .first()
+    )
 
     if not is_admin:
         raise HTTPException(
@@ -82,29 +85,36 @@ def require_admin(
 
 def require_permission(required_permission: str):
     def dependency(
-        current_user: User = Depends(get_current_user),
-        db: Session = Depends(get_db)
+        current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
     ) -> User:
-        has_perm = db.execute(
-            select(Role)
-            .join(UserRole)
-            .where(
-                UserRole.user_id == current_user.id,
-                Role.permissions.contains([required_permission])
+        has_perm = (
+            db.execute(
+                select(Role)
+                .join(UserRole)
+                .where(
+                    UserRole.user_id == current_user.id,
+                    Role.permissions.contains([required_permission]),
+                )
             )
-        ).scalars().first()
+            .scalars()
+            .first()
+        )
 
         if not has_perm:
-            is_admin = db.execute(
-                select(UserRole)
-                .join(Role)
-                .where(UserRole.user_id == current_user.id, Role.name == "administrador")
-            ).scalars().first()
+            is_admin = (
+                db.execute(
+                    select(UserRole)
+                    .join(Role)
+                    .where(UserRole.user_id == current_user.id, Role.name == "administrador")
+                )
+                .scalars()
+                .first()
+            )
             if not is_admin:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail=f"Acceso denegado: se requiere el permiso '{required_permission}'.",
                 )
         return current_user
-    return dependency
 
+    return dependency

@@ -11,6 +11,7 @@ def show_dry_run(phase: str, rtype: int, concept: str) -> None:
                 prompt_simulador,
                 prompt_texto,
             )
+
             if rtype == 10:
                 print("\n── prompt_simulador ──────────────────────────────────")
                 print(prompt_simulador(concept))
@@ -26,6 +27,7 @@ def show_dry_run(phase: str, rtype: int, concept: str) -> None:
                 prompt_html,
                 prompt_texto,
             )
+
             if rtype in CODE_ONLY:
                 print("\n── prompt_codigo ─────────────────────────────────────")
                 print(prompt_codigo(rtype, concept))

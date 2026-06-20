@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
 from models import User
 from ova.uploads_service import (
     ALLOWED_MIME_TYPES,

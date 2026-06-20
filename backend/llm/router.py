@@ -6,7 +6,7 @@ import time
 from groq import RateLimitError as GroqRateLimitError
 from openai import RateLimitError as OpenAIRateLimitError
 
-from llm.clients import (
+from llm.clients.clients import (
     _LLM_TIMEOUT_S,
     _get_provider_key,
     _key_cache,
@@ -15,7 +15,7 @@ from llm.clients import (
     opencode_client,
     openrouter_client,
 )
-from llm.llm_helpers import (
+from llm.utils.llm_helpers import (
     _RECOVERABLE_ERRORS,
     _SEED_FALLBACK_CHAIN,
     _SEED_MODELOS,
@@ -163,7 +163,7 @@ def generar_texto_with_model(
     prompt: str, model_id: str, provider: str, max_tokens: int = 4000
 ) -> str:
     """Call an arbitrary model on the given provider (groq or openrouter)."""
-    from llm.llm_helpers import _FALLBACK_OR_MODEL
+    from llm.utils.llm_helpers import _FALLBACK_OR_MODEL
 
     key = _get_provider_key(provider)
     msgs = [{"role": "user", "content": prompt}]
@@ -171,17 +171,23 @@ def generar_texto_with_model(
         if provider == "groq":
             client = groq_client.with_options(api_key=key) if key else groq_client
             response = client.chat.completions.create(
-                model=model_id, messages=msgs, max_completion_tokens=max_tokens,
+                model=model_id,
+                messages=msgs,
+                max_completion_tokens=max_tokens,
             )
         elif provider == "opencode":
             client = opencode_client.with_options(api_key=key) if key else opencode_client
             response = client.chat.completions.create(
-                model=model_id, messages=msgs, max_tokens=max_tokens,
+                model=model_id,
+                messages=msgs,
+                max_tokens=max_tokens,
             )
         else:
             client = openrouter_client.with_options(api_key=key) if key else openrouter_client
             response = client.chat.completions.create(
-                model=model_id, messages=msgs, max_tokens=max_tokens,
+                model=model_id,
+                messages=msgs,
+                max_tokens=max_tokens,
             )
         return response.choices[0].message.content
 
@@ -195,7 +201,9 @@ def generar_texto_with_model(
         fb_key = _get_provider_key("openrouter")
         fb_client = openrouter_client.with_options(api_key=fb_key) if fb_key else openrouter_client
         response = fb_client.chat.completions.create(
-            model=_FALLBACK_OR_MODEL, messages=msgs, max_tokens=max_tokens,
+            model=_FALLBACK_OR_MODEL,
+            messages=msgs,
+            max_tokens=max_tokens,
         )
         return response.choices[0].message.content
 

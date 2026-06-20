@@ -18,7 +18,7 @@ import importlib  # noqa: E402
 
 from pytest_bdd import given, scenario, then, when  # noqa: E402
 
-from config import settings  # noqa: E402
+from core.config import settings  # noqa: E402
 
 # Import runtime directly without going through prometheus.__init__
 _runtime_mod = importlib.import_module("prometheus.runtime")
@@ -53,6 +53,7 @@ def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings):
 # Scenario 1 — Crítico apagado
 # ---------------------------------------------------------------------------
 
+
 @scenario(FEATURE, "Crítico apagado — sin cambio de comportamiento")
 def test_critico_apagado():
     pass
@@ -82,6 +83,7 @@ def no_score_no_issues(phase_result):
 # ---------------------------------------------------------------------------
 # Scenario 2 — Crítico acepta
 # ---------------------------------------------------------------------------
+
 
 @scenario(FEATURE, "Crítico acepta un recurso de calidad")
 def test_critico_acepta():
@@ -118,6 +120,7 @@ def score_85_no_issues(phase_result):
 # ---------------------------------------------------------------------------
 # Scenario 3 — Crítico re-genera
 # ---------------------------------------------------------------------------
+
 
 @scenario(FEATURE, "Crítico re-genera un recurso defectuoso")
 def test_critico_regenera():
@@ -157,12 +160,15 @@ def score_78_two_calls(ctx, phase_result):
     results = phase_result.get("results", [])
     assert len(results) == 1
     assert results[0]["score"] == 78, f"expected 78, got {results[0]['score']}"
-    assert len(ctx["critique_calls"]) == 2, f"expected 2 critique calls, got {len(ctx['critique_calls'])}"
+    assert len(ctx["critique_calls"]) == 2, (
+        f"expected 2 critique calls, got {len(ctx['critique_calls'])}"
+    )
 
 
 # ---------------------------------------------------------------------------
 # Scenario 4 — Rondas=0: evalúa pero no re-genera
 # ---------------------------------------------------------------------------
+
 
 @scenario(FEATURE, "Crítico con rondas=0 evalúa pero no re-genera")
 def test_critico_rondas_cero():
@@ -201,10 +207,10 @@ def critique_once(ctx, phase_result):
 # Scenario 5 — Crítico falla
 # ---------------------------------------------------------------------------
 
+
 @scenario(FEATURE, "Crítico falla — recurso aceptado igual")
 def test_critico_falla():
     pass
-
 
 
 @given('OVA_CRITIC está en "1"', target_fixture="ctx")

@@ -1,6 +1,7 @@
 """Admin user-management router. Mounts the listing, profile and account
 sub-routers. Each sub-module stays focused so files stay under the 200-line
 ceiling enforced project-wide."""
+
 from fastapi import APIRouter
 
 from users.admin.account_router import router as account_router

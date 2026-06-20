@@ -1,40 +1,40 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, Outlet } from 'react-router'
-import { isLoggedIn } from './lib/auth.js'
-import { getCurrentUser } from './lib/me.js'
-import { AppLayout } from './layout/shells/AppLayout.jsx'
-import { WorkspaceLayout } from './layout/shells/WorkspaceLayout.jsx'
-import { LoginPage } from './pages/LoginPage.jsx'
-import { RegisterPage } from './pages/RegisterPage.jsx'
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage.jsx'
-import { ResetPasswordPage } from './pages/ResetPasswordPage.jsx'
-import { DashboardPage } from './pages/DashboardPage.jsx'
+import { isLoggedIn } from '@/features/auth/services/auth.js'
+import { getCurrentUser } from '@/core/lib/me.js'
+import { AppLayout } from '@/core/layouts/shells/AppLayout.jsx'
+import { WorkspaceLayout } from '@/core/layouts/shells/WorkspaceLayout.jsx'
+import { LoginPage } from '@/features/auth/pages/LoginPage.jsx'
+import { RegisterPage } from '@/features/auth/pages/RegisterPage.jsx'
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage.jsx'
+import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage.jsx'
+import { DashboardPage } from '@/features/student/pages/DashboardPage.jsx'
 
 // Code-split heavier authenticated routes so the login bundle stays tiny.
-const AdminRolesPage = lazy(() => import('./pages/AdminRolesPage.jsx').then((m) => ({ default: m.AdminRolesPage })))
-const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage.jsx').then((m) => ({ default: m.AdminUsersPage })))
-const MisOvasPage = lazy(() => import('./pages/MisOvasPage.jsx').then((m) => ({ default: m.MisOvasPage })))
-const PapeleraPage = lazy(() => import('./pages/PapeleraPage.jsx').then((m) => ({ default: m.PapeleraPage })))
-const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
-const ModelsPage = lazy(() => import('./pages/ModelsPage.jsx').then((m) => ({ default: m.ModelsPage })))
-const UserLinksPage = lazy(() => import('./pages/UserLinksPage.jsx').then((m) => ({ default: m.UserLinksPage })))
-const EngagePage = lazy(() => import('./pages/EngagePage.jsx').then((m) => ({ default: m.EngagePage })))
-const ExplorePage = lazy(() => import('./pages/ExplorePage.jsx').then((m) => ({ default: m.ExplorePage })))
-const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
-const LabsPage = lazy(() => import('./pages/LabsPage.jsx').then((m) => ({ default: m.LabsPage })))
-const OvaWorkspacePage = lazy(() => import('./pages/OvaWorkspacePage.jsx').then((m) => ({ default: m.OvaWorkspacePage })))
-const WireframeNavbarPage = lazy(() => import('./pages/WireframeNavbarPage.jsx').then((m) => ({ default: m.WireframeNavbarPage })))
-const WireframeDashboardPage = lazy(() => import('./pages/WireframeDashboardPage.jsx').then((m) => ({ default: m.WireframeDashboardPage })))
-const WireframeMisOvasPage = lazy(() => import('./pages/WireframeMisOvasPage.jsx').then((m) => ({ default: m.WireframeMisOvasPage })))
-const WireframeCrearOvaPage = lazy(() => import('./pages/WireframeCrearOvaPage.jsx').then((m) => ({ default: m.WireframeCrearOvaPage })))
-const WireframeWorkspacePage = lazy(() => import('./pages/WireframeWorkspacePage.jsx').then((m) => ({ default: m.WireframeWorkspacePage })))
-const WireframeAdminRolesPage = lazy(() => import('./pages/WireframeAdminRolesPage.jsx').then((m) => ({ default: m.WireframeAdminRolesPage })))
-const WireframeAdminUsersPage = lazy(() => import('./pages/WireframeAdminUsersPage.jsx').then((m) => ({ default: m.WireframeAdminUsersPage })))
-const WireframeAdminPlatformPage = lazy(() => import('./pages/WireframeAdminPlatformPage.jsx').then((m) => ({ default: m.WireframeAdminPlatformPage })))
-const WireframeProfilePage = lazy(() => import('./pages/WireframeProfilePage.jsx').then((m) => ({ default: m.WireframeProfilePage })))
-const WireframeModelsPage = lazy(() => import('./pages/WireframeModelsPage.jsx').then((m) => ({ default: m.WireframeModelsPage })))
-const WireframeFallbackChainPage = lazy(() => import('./pages/WireframeFallbackChainPage.jsx').then((m) => ({ default: m.WireframeFallbackChainPage })))
-const WireframeVinculacionPage = lazy(() => import('./pages/WireframeVinculacionPage.jsx').then((m) => ({ default: m.WireframeVinculacionPage })))
+const AdminRolesPage = lazy(() => import('@/features/admin/pages/AdminRolesPage.jsx').then((m) => ({ default: m.AdminRolesPage })))
+const AdminUsersPage = lazy(() => import('@/features/admin/pages/AdminUsersPage.jsx').then((m) => ({ default: m.AdminUsersPage })))
+const MisOvasPage = lazy(() => import('@/features/ova_library/pages/MisOvasPage.jsx').then((m) => ({ default: m.MisOvasPage })))
+const PapeleraPage = lazy(() => import('@/features/ova_library/pages/PapeleraPage.jsx').then((m) => ({ default: m.PapeleraPage })))
+const ProfilePage = lazy(() => import('@/features/profile/pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
+const ModelsPage = lazy(() => import('@/features/ova_workspace/pages/ModelsPage.jsx').then((m) => ({ default: m.ModelsPage })))
+const UserLinksPage = lazy(() => import('@/features/profile/pages/UserLinksPage.jsx').then((m) => ({ default: m.UserLinksPage })))
+const EngagePage = lazy(() => import('@/features/student/pages/EngagePage.jsx').then((m) => ({ default: m.EngagePage })))
+const ExplorePage = lazy(() => import('@/features/student/pages/ExplorePage.jsx').then((m) => ({ default: m.ExplorePage })))
+const NotFoundPage = lazy(() => import('@/core/components/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
+const LabsPage = lazy(() => import('@/features/labs/pages/LabsPage.jsx').then((m) => ({ default: m.LabsPage })))
+const OvaWorkspacePage = lazy(() => import('@/features/ova_workspace/pages/OvaWorkspacePage.jsx').then((m) => ({ default: m.OvaWorkspacePage })))
+const WireframeNavbarPage = lazy(() => import('@/features/wireframes/WireframeNavbarPage.jsx').then((m) => ({ default: m.WireframeNavbarPage })))
+const WireframeDashboardPage = lazy(() => import('@/features/wireframes/WireframeDashboardPage.jsx').then((m) => ({ default: m.WireframeDashboardPage })))
+const WireframeMisOvasPage = lazy(() => import('@/features/wireframes/WireframeMisOvasPage.jsx').then((m) => ({ default: m.WireframeMisOvasPage })))
+const WireframeCrearOvaPage = lazy(() => import('@/features/wireframes/WireframeCrearOvaPage.jsx').then((m) => ({ default: m.WireframeCrearOvaPage })))
+const WireframeWorkspacePage = lazy(() => import('@/features/wireframes/WireframeWorkspacePage.jsx').then((m) => ({ default: m.WireframeWorkspacePage })))
+const WireframeAdminRolesPage = lazy(() => import('@/features/wireframes/WireframeAdminRolesPage.jsx').then((m) => ({ default: m.WireframeAdminRolesPage })))
+const WireframeAdminUsersPage = lazy(() => import('@/features/wireframes/WireframeAdminUsersPage.jsx').then((m) => ({ default: m.WireframeAdminUsersPage })))
+const WireframeAdminPlatformPage = lazy(() => import('@/features/wireframes/WireframeAdminPlatformPage.jsx').then((m) => ({ default: m.WireframeAdminPlatformPage })))
+const WireframeProfilePage = lazy(() => import('@/features/wireframes/WireframeProfilePage.jsx').then((m) => ({ default: m.WireframeProfilePage })))
+const WireframeModelsPage = lazy(() => import('@/features/wireframes/WireframeModelsPage.jsx').then((m) => ({ default: m.WireframeModelsPage })))
+const WireframeFallbackChainPage = lazy(() => import('@/features/wireframes/WireframeFallbackChainPage.jsx').then((m) => ({ default: m.WireframeFallbackChainPage })))
+const WireframeVinculacionPage = lazy(() => import('@/features/wireframes/WireframeVinculacionPage.jsx').then((m) => ({ default: m.WireframeVinculacionPage })))
 
 import { Toaster } from 'sonner'
 import { SpeedInsights } from '@vercel/speed-insights/react'

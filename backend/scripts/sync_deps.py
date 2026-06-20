@@ -98,11 +98,7 @@ def main() -> int:
         return 0
 
     rq = parse_requirements()
-    diffs = [
-        (k, pp.get(k), rq.get(k))
-        for k in sorted(set(pp) | set(rq))
-        if pp.get(k) != rq.get(k)
-    ]
+    diffs = [(k, pp.get(k), rq.get(k)) for k in sorted(set(pp) | set(rq)) if pp.get(k) != rq.get(k)]
     if diffs:
         print("DRIFT detectado entre pyproject.toml y requirements.txt:")
         for k, a, b in diffs:

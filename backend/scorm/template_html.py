@@ -102,7 +102,7 @@ def build_index_html(course_title: str, resources: list[dict]) -> str:
     """SCO shell: side nav of resources + iframe. One SCO for the whole OVA."""
     nav_buttons = "\n".join(
         f'        <button type="button" class="res-link" data-src="{r["file"]}">'
-        f'{r["label"]}</button>'
+        f"{r['label']}</button>"
         for r in resources
     )
     first_src = resources[0]["file"] if resources else ""

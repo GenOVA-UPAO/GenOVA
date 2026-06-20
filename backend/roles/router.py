@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_admin
-from database import commit_or_500, get_db
+from core.database import commit_or_500, get_db
 from models import Role, UserRole
 from roles.delete_router import router as delete_router
 
@@ -64,9 +64,7 @@ def create_role(
         )
 
     # Create role
-    new_role = Role(
-        name=name, description=payload.description, permissions=payload.permissions
-    )
+    new_role = Role(name=name, description=payload.description, permissions=payload.permissions)
     db.add(new_role)
     commit_or_500(db, "create_role")
     db.refresh(new_role)
@@ -104,9 +102,7 @@ def update_role(
     # 1. Look up role
     role = db.execute(select(Role).where(Role.id == role_uuid)).scalar_one_or_none()
     if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Rol no encontrado."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rol no encontrado.")
 
     # 2. Block system roles modification
     if role.name in ["administrador", "usuario"]:

@@ -49,9 +49,7 @@ def _get_or_create_active_version(ova: Ova, db: Session) -> OvaVersion:
 def _get_phase(phase_id: str, version_id: str, db: Session) -> OvaPhase | None:
     """Look up a single phase by id within a specific version."""
     return db.execute(
-        select(OvaPhase).where(
-            OvaPhase.id == phase_id, OvaPhase.version_id == version_id
-        )
+        select(OvaPhase).where(OvaPhase.id == phase_id, OvaPhase.version_id == version_id)
     ).scalar_one_or_none()
 
 
@@ -59,9 +57,7 @@ def _list_phases(version_id: str, db: Session) -> list[OvaPhase]:
     """Return all phases for *version_id* ordered by phase_order."""
     return list(
         db.execute(
-            select(OvaPhase)
-            .where(OvaPhase.version_id == version_id)
-            .order_by(OvaPhase.phase_order)
+            select(OvaPhase).where(OvaPhase.version_id == version_id).order_by(OvaPhase.phase_order)
         )
         .scalars()
         .all()

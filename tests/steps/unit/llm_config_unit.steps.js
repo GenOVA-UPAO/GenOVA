@@ -5,7 +5,7 @@ import {
   moveFallback,
   removeFallback,
   toPayload,
-} from '../../../frontend/src/lib/llmConfigDraft.js'
+} from '../../../frontend/src/core/lib/llmConfigDraft.js'
 
 // Lógica del panel admin de modelos LLM (sin browser/backend).
 // Importa el código real de frontend/src/lib/llmConfigDraft.js.

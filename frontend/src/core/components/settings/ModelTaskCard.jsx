@@ -1,0 +1,143 @@
+import { motion } from 'motion/react'
+import { PencilSimple } from '@phosphor-icons/react'
+import { LlmModelSelect } from '@/core/components/settings/LlmModelSelect.jsx'
+import { UserOverrideSection } from '@/core/components/settings/UserOverrideSection.jsx'
+import { TASK_META } from '@/core/lib/taskMeta.js'
+
+function Chips({ fallbacks, models, chip, num }) {
+  if (!fallbacks?.length) return (
+    <div className="flex items-center gap-1.5 text-[10px] italic text-muted-foreground/40">
+      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/20" />
+      Sin cadena de respaldo
+    </div>
+  )
+  const label = (f) => (models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.label ?? f.model_id ?? '—')
+  const modality = (f) => (models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.modality) || 'text'
+  const MODALITY_SYMBOLS = { text: 'Aa', multimodal: '◆', image: '◇', audio: '♪' }
+  return (
+    <div className="flex flex-wrap items-center gap-0.5">
+      {fallbacks.slice(0, 4).map((f, i) => (
+        <span key={i} className="inline-flex items-center gap-1">
+          {i > 0 && <span className="text-[8px] text-muted-foreground/30 font-black">→</span>}
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${chip}`}>
+            <span className={`text-[9px] ${num}`}>
+              {MODALITY_SYMBOLS[modality(f)] || MODALITY_SYMBOLS.text}
+            </span>
+            <span className="truncate max-w-[80px]">{label(f)}</span>
+          </span>
+        </span>
+      ))}
+      {fallbacks.length > 4 && (
+        <span className="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground border border-border/50">
+          +{fallbacks.length - 4}
+        </span>
+      )}
+    </div>
+  )
+}
+
+export function ModelTaskCard({
+  task, index = 0,
+  adminDraft, adminModels, isAdmin, adminDisabled, onAdminChange,
+  isEditing, onEditChain,
+  userSettings, userModels, hasOwnLlmKey, userDisabled,
+  onUserModel, onUserTimeout, onResetUser,
+  onUserFallback, onUserAddFallback, onUserRemoveFallback,
+  bounds = [30, 300],
+}) {
+  const m = TASK_META[task] ?? { label: task, desc: '', Icon: Robot, grad: 'from-border/10 to-transparent', accent: 'text-muted-foreground', iconBg: 'bg-muted border-border', badge: 'bg-muted text-muted-foreground border-border', chip: 'bg-muted text-muted-foreground border-border', num: 'text-muted-foreground' }
+  const fallbacks = adminDraft?.fallbacks ?? []
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -2, transition: { duration: 0.18, ease: 'easeOut' } }}
+      className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition-all duration-200"
+    >
+      {/* Colored header band */}
+      <div className={`bg-gradient-to-br ${m.grad} px-5 pt-4 pb-3.5 border-b border-border/40`}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`shrink-0 rounded-xl border p-2.5 shadow-sm ${m.iconBg}`}>
+              <m.Icon size={18} weight="duotone" className={m.accent} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground leading-tight">{m.label}</p>
+              <p className="text-[10px] text-muted-foreground/70 font-medium truncate">{m.desc}</p>
+            </div>
+          </div>
+          {fallbacks.length > 0 && (
+            <span className={`shrink-0 text-[10px] font-bold rounded-full px-2.5 py-0.5 border ${m.badge}`}>
+              {fallbacks.length} fb
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="px-5 py-4 space-y-4">
+        {(task === 'imagen' || task === 'video') ? (
+          <div className="flex flex-col items-center gap-3 py-5 text-center">
+            <div className={`rounded-full p-3 ${m.iconBg}`}>
+              <m.Icon size={22} weight="duotone" className={m.accent} />
+            </div>
+            <p className="text-xs font-semibold text-foreground">Sin {m.label.toLowerCase()} configurado</p>
+            <p className="text-[11px] text-muted-foreground max-w-[180px] leading-relaxed">
+              Agrega tu API key de generación de {m.label.toLowerCase()} en{' '}
+              <a href="/profile#config" className="font-bold text-primary hover:underline">Mi Perfil</a>
+              {' '}para activar este proveedor.
+            </p>
+          </div>
+        ) : (<>
+        <div className="space-y-2.5">
+          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50">Plataforma UPAO</p>
+          {isAdmin ? (
+            <>
+              <LlmModelSelect
+                models={adminModels}
+                provider={adminDraft?.default?.provider}
+                modelId={adminDraft?.default?.model_id}
+                onChange={(p, mm) => onAdminChange({ ...adminDraft, default: { provider: p, model_id: mm } })}
+                disabled={adminDisabled}
+                ariaLabel={`Plataforma primario ${task}`}
+              />
+              <Chips fallbacks={fallbacks} models={adminModels} chip={m.chip} num={m.num} />
+              <button
+                type="button"
+                onClick={onEditChain}
+                className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-semibold transition-all duration-150 ${isEditing ? `${m.accent} bg-current/5 ring-1 ring-current/20` : 'text-muted-foreground/50 hover:text-primary hover:bg-primary/5'}`}
+              >
+                <PencilSimple size={10} weight="bold" />
+                {isEditing ? 'Editando cadena ✓' : 'Editar cadena de fallback'}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="rounded-xl bg-muted/40 border border-border/40 px-3.5 py-2.5">
+                <p className="text-[11px] font-semibold text-muted-foreground">Administrado por la plataforma UPAO</p>
+              </div>
+              <Chips fallbacks={fallbacks} models={adminModels} chip={m.chip} num={m.num} />
+            </>
+          )}
+        </div>
+
+        {hasOwnLlmKey && !isAdmin && (
+          <UserOverrideSection
+            task={task} chip={m.chip} num={m.num}
+            userSettings={userSettings} userModels={userModels}
+            userDisabled={userDisabled} bounds={bounds}
+            onUserModel={onUserModel} onUserTimeout={onUserTimeout}
+            onResetUser={onResetUser}
+            onUserFallback={onUserFallback}
+            onUserAddFallback={onUserAddFallback}
+            onUserRemoveFallback={onUserRemoveFallback}
+          />
+        )}
+        </>
+        )}
+      </div>
+    </motion.div>
+  )
+}

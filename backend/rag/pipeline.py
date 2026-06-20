@@ -8,6 +8,7 @@ ONE embedding per file. Text formats (DOCX, PPTX) still go through
 parser→chunker→embed_batch path because Gemini Embedding 2 doesn't accept
 those MIME types directly.
 """
+
 from __future__ import annotations
 
 import logging

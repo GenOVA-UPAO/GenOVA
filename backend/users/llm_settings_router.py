@@ -10,14 +10,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
-from llm.catalog_refresh import (
+from core.database import get_db
+from core.rate_limit import limiter
+from llm.catalog.catalog_refresh import (
     get_catalog_entries,
     get_full_catalog_entries,
     get_provider_status,
     refresh_catalog,
 )
-from llm.model_catalog import (
+from llm.catalog.model_catalog import (
     DEFAULTS,
     TIMEOUT_MAX,
     TIMEOUT_MIN,
@@ -26,7 +27,6 @@ from llm.model_catalog import (
     sanitize_settings,
 )
 from models import Role, User, UserRole
-from rate_limit import limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

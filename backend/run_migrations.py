@@ -12,13 +12,14 @@ recorded, the squash is auto-marked applied without running.
 On lock contention or timeout, the failing migration is logged as a warning and
 startup continues. The migration retries on the next deployment.
 """
+
 import glob
 import logging
 import os
 
 from sqlalchemy import text
 
-from database import engine
+from core.database import engine
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +35,7 @@ _STMT_TIMEOUT = "30s"
 
 
 def _split_statements(sql: str) -> list[str]:
-    cleaned_lines = [
-        line for line in sql.splitlines() if not line.strip().startswith("--")
-    ]
+    cleaned_lines = [line for line in sql.splitlines() if not line.strip().startswith("--")]
     cleaned = "\n".join(cleaned_lines)
     return [q.strip() for q in cleaned.split(";") if q.strip()]
 
@@ -54,13 +53,15 @@ def _kill_zombies() -> None:
     """
     try:
         with engine.begin() as conn:
-            result = conn.execute(text(
-                "SELECT pg_terminate_backend(pid) FROM pg_stat_activity"
-                " WHERE datname = current_database()"
-                " AND pid <> pg_backend_pid()"
-                " AND state = 'idle in transaction'"
-                " AND state_change < NOW() - INTERVAL '30 seconds'"
-            ))
+            result = conn.execute(
+                text(
+                    "SELECT pg_terminate_backend(pid) FROM pg_stat_activity"
+                    " WHERE datname = current_database()"
+                    " AND pid <> pg_backend_pid()"
+                    " AND state = 'idle in transaction'"
+                    " AND state_change < NOW() - INTERVAL '30 seconds'"
+                )
+            )
             killed = sum(1 for (ok,) in result if ok)
             if killed:
                 logger.info("Terminated %d idle-in-transaction zombie connection(s).", killed)
@@ -114,7 +115,9 @@ def run_migrations() -> None:
         if name.startswith("000_") and has_incremental:
             _record_applied(name)
             applied_now += 1
-            logger.info("Squash migration %s auto-applied (incremental schema already present)", name)
+            logger.info(
+                "Squash migration %s auto-applied (incremental schema already present)", name
+            )
             continue
 
         with open(sql_file, encoding="utf-8") as f:
@@ -141,7 +144,9 @@ def run_migrations() -> None:
             else:
                 logger.warning(
                     "Migration %s failed (%s): %s — will retry on next startup.",
-                    name, type(exc).__name__, exc,
+                    name,
+                    type(exc).__name__,
+                    exc,
                 )
 
     logger.info(

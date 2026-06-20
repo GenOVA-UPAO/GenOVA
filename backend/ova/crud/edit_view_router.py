@@ -7,7 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
+from core.rate_limit import limiter
 from models import OvaVersion, User
 from ova.crud.edit_helpers import (
     _ensure_version_exists,
@@ -18,7 +19,6 @@ from ova.crud.edit_helpers import (
     _resolve_ova,
     _version_to_dict,
 )
-from rate_limit import limiter
 from storage import StorageError, is_configured, signed_url
 from users.admin.helpers import commit_or_500
 
@@ -102,9 +102,7 @@ def revert_to_version(
         )
 
     target = db.execute(
-        select(OvaVersion).where(
-            OvaVersion.id == version_id, OvaVersion.ova_id == ova_id
-        )
+        select(OvaVersion).where(OvaVersion.id == version_id, OvaVersion.ova_id == ova_id)
     ).scalar_one_or_none()
 
     if not target:
@@ -116,11 +114,7 @@ def revert_to_version(
             },
         )
 
-    all_versions = (
-        db.execute(select(OvaVersion).where(OvaVersion.ova_id == ova_id))
-        .scalars()
-        .all()
-    )
+    all_versions = db.execute(select(OvaVersion).where(OvaVersion.ova_id == ova_id)).scalars().all()
 
     # Deactivate all first to avoid violating uq_one_active_version_per_ova
     # (partial unique index WHERE is_active=TRUE) before activating the target.
@@ -192,9 +186,7 @@ def export_scorm(
 
     active_version = _get_active_version(ova_id, db)
     version_num = active_version.version_number if active_version else 1
-    safe_title = (
-        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
-    )
+    safe_title = "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
     filename = f"{safe_title}_v{version_num}.zip"
 
     if ova.storage_key and is_configured():
@@ -202,9 +194,7 @@ def export_scorm(
             url = signed_url(str(ova.storage_key), download_as=filename)
             return JSONResponse({"download_url": url, "filename": filename})
         except StorageError:
-            logger.exception(
-                "Signed URL failed for ova=%s; falling back to disk", ova_id
-            )
+            logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
 
     if not ova.file_path or not os.path.exists(ova.file_path):
         return JSONResponse(

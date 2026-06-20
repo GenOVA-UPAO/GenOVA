@@ -11,10 +11,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
-from llm.key_resolver import PROVIDERS, mask_key
+from core.database import get_db
+from core.rate_limit import limiter
+from llm.clients.key_resolver import PROVIDERS, mask_key
 from models import User
-from rate_limit import limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

@@ -14,12 +14,13 @@ Variables de entorno:
     EMAIL  (default: admin@genova.ai)
     PASS   (default: admin1234password)
 """
+
 import argparse
 import sys
 from pathlib import Path
 
 # ── Paths para imports de agents.* y tests/specs/* ────────────────────────────
-_TOOL_DIR    = Path(__file__).parent
+_TOOL_DIR = Path(__file__).parent
 _BACKEND_DIR = _TOOL_DIR.parent
 sys.path.insert(0, str(_BACKEND_DIR))
 sys.path.insert(0, str(_BACKEND_DIR / "tests"))
@@ -30,23 +31,29 @@ from tools.prompt_lab_helpers import RESOURCE_LABELS  # noqa: E402
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Prompt Lab — itera generación de recursos y guarda el mejor resultado"
     )
-    parser.add_argument("--phase",   required=True, choices=["engage", "explore"])
-    parser.add_argument("--type",    required=True, type=int, metavar="1-10")
+    parser.add_argument("--phase", required=True, choices=["engage", "explore"])
+    parser.add_argument("--type", required=True, type=int, metavar="1-10")
     parser.add_argument("--concept", required=True, help="Concepto educativo a generar")
     parser.add_argument(
-        "--n", type=int, default=3, metavar="1-5",
+        "--n",
+        type=int,
+        default=3,
+        metavar="1-5",
         help="Número de iteraciones (default: 3, max: 5)",
     )
     parser.add_argument(
-        "--dry-run", action="store_true",
+        "--dry-run",
+        action="store_true",
         help="Solo muestra el prompt que se enviaría, sin llamar a la API",
     )
     parser.add_argument(
-        "--no-open", action="store_true",
+        "--no-open",
+        action="store_true",
         help="No abrir los HTMLs en browser automáticamente",
     )
     args = parser.parse_args()

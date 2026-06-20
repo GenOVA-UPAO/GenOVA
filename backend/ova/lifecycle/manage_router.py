@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
 from models import Ova, User
 from ova.helpers import UpdateOvaMetadataRequest, _is_admin
 

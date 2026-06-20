@@ -1,5 +1,6 @@
 """Debug + health endpoints for the RAG subsystem. Ingestion happens via
 `/api/uploads/temp`; retrieval is invoked from the generation routers."""
+
 from __future__ import annotations
 
 import os
@@ -9,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
 from models import User
 from rag.embedder import vector_dim
 from rag.store import chunks_for_upload

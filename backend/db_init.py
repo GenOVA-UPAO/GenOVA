@@ -1,4 +1,4 @@
-from database import Base, SessionLocal, engine
+from core.database import Base, SessionLocal, engine
 from models import Role
 
 
