@@ -4,6 +4,7 @@ export function fetchLlmSettings(params = {}) {
   const searchParams = new URLSearchParams()
   if (params.search) searchParams.set('search', params.search)
   if (params.category) searchParams.set('category', params.category)
+  if (params.type) searchParams.set('type', params.type)
   if (params.page) searchParams.set('page', String(params.page))
   if (params.page_size) searchParams.set('page_size', String(params.page_size))
   const qs = searchParams.toString()

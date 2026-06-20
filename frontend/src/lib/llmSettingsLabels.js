@@ -5,6 +5,17 @@ export const TASK_LABELS = {
   razonamiento: 'Razonamiento',
 }
 
+export const TYPE_LABELS = {
+  all: 'Todos los tipos',
+  texto: 'Texto',
+  codigo: 'Código',
+  razonamiento: 'Razonamiento',
+  multimodal: 'Multimodal',
+  imagen: 'Imagen',
+  embedding: 'Embedding',
+  audio: 'Audio',
+}
+
 export const CATEGORY_LABELS = {
   all: 'Todos',
   recommended: 'Recomendados',

@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import {
-  fetchLlmSettings, saveLlmSettings, saveEnabledModels, refreshLlmCatalog,
-} from '../services/llmSettingsService.js'
-import { TASK_LABELS, CATEGORY_LABELS } from '../lib/llmSettingsLabels.js'
+import { fetchLlmSettings, saveLlmSettings, refreshLlmCatalog } from '../services/llmSettingsService.js'
+import { TASK_LABELS, CATEGORY_LABELS, TYPE_LABELS } from '../lib/llmSettingsLabels.js'
+import { useEnabledModels } from './useEnabledModels.js'
 
 const DEFAULT_TIMEOUT = 120
 
-/**
- * Per-user LLM settings (general config). One hook used by BOTH the workspace
- * modal and the profile page so they edit the same config. `enabled` gates the
- * initial load (e.g. only when a modal opens).
- */
 export function useLlmSettings(enabled = true) {
   const [settings, setSettings] = useState(null)
   const [catalog, setCatalog] = useState({})
@@ -21,6 +15,7 @@ export function useLlmSettings(enabled = true) {
   const [fullPage, setFullPage] = useState(1)
   const [fullHasMore, setFullHasMore] = useState(false)
   const [categories, setCategories] = useState([])
+  const [types, setTypes] = useState([])
   const [enabledModels, setEnabledModels] = useState([])
   const [defaults, setDefaults] = useState({})
   const [bounds, setBounds] = useState([30, 300])
@@ -28,23 +23,24 @@ export function useLlmSettings(enabled = true) {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [enabledSaving, setEnabledSaving] = useState(false)
   const [catalogStatus, setCatalogStatus] = useState(null)
   const [refreshingCatalog, setRefreshingCatalog] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
   const debounceRef = useRef(null)
 
   const load = useCallback(async (opts = {}) => {
-    const { append = false, page: reqPage = 1, search, category } = opts
+    const { append = false, page: reqPage = 1, search, category, type } = opts
     const s = search !== undefined ? search : searchQuery
     const c = category !== undefined ? category : categoryFilter
+    const t = type !== undefined ? type : typeFilter
     if (!append) setLoading(true)
     else setLoadingMore(true)
     setError('')
     try {
-      const data = await fetchLlmSettings({ search: s, category: c, page: reqPage, page_size: 50 })
+      const data = await fetchLlmSettings({ search: s, category: c, type: t, page: reqPage, page_size: 50 })
       setSettings(data.settings || {})
       setHasOwnLlmKey(data.has_own_llm_key ?? false)
       setCatalog(data.catalog || {})
@@ -59,6 +55,7 @@ export function useLlmSettings(enabled = true) {
       setFullPage(data.full_page || 1)
       setFullHasMore(data.full_has_more || false)
       if (Array.isArray(data.categories)) setCategories(data.categories)
+      if (Array.isArray(data.types)) setTypes(data.types)
       setCatalogStatus(data.catalog_status || null)
     } catch (err) {
       setError(err?.message || 'No se pudo cargar la configuración.')
@@ -66,11 +63,13 @@ export function useLlmSettings(enabled = true) {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [searchQuery, categoryFilter])
+  }, [searchQuery, categoryFilter, typeFilter]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (enabled) void load({ search: '', category: 'all', page: 1 })
-  }, [enabled])
+  }, [enabled]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const em = useEnabledModels({ enabledModels, setEnabledModels, defaults, onSaved: () => load({}) })
 
   const loadMore = useCallback(() => {
     if (loadingMore || !fullHasMore) return
@@ -80,73 +79,51 @@ export function useLlmSettings(enabled = true) {
   const handleSearch = useCallback((q) => {
     setSearchQuery(q)
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      void load({ page: 1 })
-    }, 300)
+    debounceRef.current = setTimeout(() => { void load({ page: 1 }) }, 300)
   }, [load])
 
-  const handleCategory = useCallback((cat) => {
-    setCategoryFilter(cat)
-    void load({ page: 1, category: cat })
-  }, [load])
+  const handleCategory = useCallback((cat) => { setCategoryFilter(cat); void load({ page: 1, category: cat }) }, [load])
+  const handleType = useCallback((t) => { setTypeFilter(t); void load({ page: 1, type: t }) }, [load])
 
   const retryRefresh = useCallback(async () => {
     setRefreshingCatalog(true)
-    try {
-      await refreshLlmCatalog()
-      await load({})
-    } catch {
-      toast.error('No se pudo actualizar el catálogo. Intenta de nuevo en unos segundos.')
-    } finally {
-      setRefreshingCatalog(false)
-    }
+    try { await refreshLlmCatalog(); await load({}) }
+    catch { toast.error('No se pudo actualizar el catálogo. Intenta de nuevo en unos segundos.') }
+    finally { setRefreshingCatalog(false) }
   }, [load])
 
-  const setModel = useCallback((tipo, provider, modelId) => {
-    setSettings((s) => ({ ...s, [tipo]: { ...s[tipo], provider, model_id: modelId } }))
-  }, [])
+  const setModel = useCallback((tipo, provider, modelId) =>
+    setSettings((s) => ({ ...s, [tipo]: { ...s[tipo], provider, model_id: modelId } })), [])
 
-  const setTipoTimeout = useCallback((tipo, timeoutS) => {
-    setSettings((s) => ({ ...s, [tipo]: { ...s[tipo], timeout_s: timeoutS } }))
-  }, [])
+  const setTipoTimeout = useCallback((tipo, timeoutS) =>
+    setSettings((s) => ({ ...s, [tipo]: { ...s[tipo], timeout_s: timeoutS } })), [])
 
   const setFallback = useCallback((tipo, index, provider, modelId) => {
     setSettings((s) => {
       const fbs = [...(s[tipo]?.fallbacks || [])]
-      if (index >= 0 && index < fbs.length) {
-        fbs[index] = { provider, model_id: modelId }
-      }
+      if (index >= 0 && index < fbs.length) fbs[index] = { provider, model_id: modelId }
       return { ...s, [tipo]: { ...s[tipo], fallbacks: fbs } }
     })
   }, [])
 
-  const addFallback = useCallback((tipo) => {
-    setSettings((s) => {
-      const fbs = [...(s[tipo]?.fallbacks || []), { provider: '', model_id: '' }]
-      return { ...s, [tipo]: { ...s[tipo], fallbacks: fbs } }
-    })
-  }, [])
+  const addFallback = useCallback((tipo) =>
+    setSettings((s) => ({ ...s, [tipo]: { ...s[tipo], fallbacks: [...(s[tipo]?.fallbacks || []), { provider: '', model_id: '' }] } })), [])
 
-  const removeFallback = useCallback((tipo, index) => {
-    setSettings((s) => {
-      const fbs = (s[tipo]?.fallbacks || []).filter((_, i) => i !== index)
-      return { ...s, [tipo]: { ...s[tipo], fallbacks: fbs } }
-    })
-  }, [])
+  const removeFallback = useCallback((tipo, index) =>
+    setSettings((s) => ({ ...s, [tipo]: { ...s[tipo], fallbacks: (s[tipo]?.fallbacks || []).filter((_, i) => i !== index) } })), [])
 
   const moveFallback = useCallback((tipo, index, dir) => {
     setSettings((s) => {
       const fbs = [...(s[tipo]?.fallbacks || [])]
-      const newIndex = index + dir
-      if (newIndex < 0 || newIndex >= fbs.length) return s
-      ;[fbs[index], fbs[newIndex]] = [fbs[newIndex], fbs[index]]
+      const ni = index + dir
+      if (ni < 0 || ni >= fbs.length) return s
+      ;[fbs[index], fbs[ni]] = [fbs[ni], fbs[index]]
       return { ...s, [tipo]: { ...s[tipo], fallbacks: fbs } }
     })
   }, [])
 
-  const resetTipo = useCallback((tipo) => {
-    setSettings((s) => ({ ...s, [tipo]: { ...defaults[tipo], timeout_s: DEFAULT_TIMEOUT } }))
-  }, [defaults])
+  const resetTipo = useCallback((tipo) =>
+    setSettings((s) => ({ ...s, [tipo]: { ...defaults[tipo], timeout_s: DEFAULT_TIMEOUT } })), [defaults])
 
   const save = useCallback(async () => {
     if (!settings) return false
@@ -159,67 +136,23 @@ export function useLlmSettings(enabled = true) {
     } catch (err) {
       toast.error(err?.message || 'No se pudo guardar la configuración.')
       return false
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }, [settings])
-
-  const isDefaultModel = useCallback((provider, modelId) => {
-    const d = defaults || {}
-    for (const _t of Object.values(d)) {
-      if (_t.provider === provider && _t.model_id === modelId) return true
-    }
-    return false
-  }, [defaults])
-
-  const isModelEnabled = useCallback((provider, modelId) => {
-    return (enabledModels || []).some(
-      (e) => e.provider === provider && e.model_id === modelId
-    )
-  }, [enabledModels])
-
-  const toggleModel = useCallback((provider, modelId) => {
-    setEnabledModels((prev) => {
-      const exists = (prev || []).some(
-        (e) => e.provider === provider && e.model_id === modelId
-      )
-      if (exists) {
-        return (prev || []).filter(
-          (e) => !(e.provider === provider && e.model_id === modelId)
-        )
-      }
-      return [...(prev || []), { provider, model_id: modelId }]
-    })
-  }, [])
-
-  const saveEnabled = useCallback(async () => {
-    setEnabledSaving(true)
-    try {
-      const data = await saveEnabledModels(enabledModels)
-      if (Array.isArray(data?.models)) setEnabledModels(data.models)
-      await load({})
-      toast.success('Modelos habilitados actualizados.')
-      return true
-    } catch (err) {
-      toast.error(err?.message || 'No se pudo guardar los modelos.')
-      return false
-    } finally {
-      setEnabledSaving(false)
-    }
-  }, [enabledModels, load])
 
   return {
     settings, catalog, catalogAll, catalogFull, fullTotal, fullPage, fullHasMore,
-    enabledModels, defaults, bounds, categories,
+    enabledModels, defaults, bounds, categories, types,
     hasOwnLlmKey,
-    loading, loadingMore, saving, enabledSaving, error,
+    loading, loadingMore, saving, enabledSaving: em.enabledSaving, error,
     catalogStatus, refreshingCatalog, retryRefresh,
-    searchQuery, categoryFilter,
-    load, loadMore, handleSearch, handleCategory,
+    searchQuery, categoryFilter, typeFilter,
+    load, loadMore, handleSearch, handleCategory, handleType,
     setModel, setTipoTimeout, resetTipo, save,
     setFallback, addFallback, removeFallback, moveFallback,
-    isDefaultModel, isModelEnabled, toggleModel, saveEnabled,
+    isDefaultModel: em.isDefaultModel, isModelEnabled: em.isModelEnabled,
+    toggleModel: em.toggleModel, saveEnabled: em.saveEnabled,
     taskLabels: TASK_LABELS,
     categoryLabels: CATEGORY_LABELS,
+    typeLabels: TYPE_LABELS,
   }
 }

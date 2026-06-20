@@ -4,14 +4,35 @@ import { Button } from '@/components/ui/button'
 import { groupByProvider, PROVIDER_LABELS } from '../../lib/llmCatalogUtils.js'
 import { ModelCatalogRow } from './ModelCatalogRow.jsx'
 
-/** Collapsible "Catálogo completo" browser: search, category chips, provider
- * groups with enable/disable checkboxes, infinite scroll and save. */
+function FilterChips({ options, active, onSelect, labelMap, className = '' }) {
+  return (
+    <div className={`flex flex-wrap gap-1 ${className}`}>
+      {(options || []).map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => onSelect(opt)}
+          className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors whitespace-nowrap
+            ${active === opt || (!active && opt === 'all')
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-accent'}`}
+        >
+          {labelMap?.[opt] || opt}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Collapsible full-catalog browser: search + inline provider/type filters,
+ *  interactive star toggle, provider groups, infinite scroll and save. */
 export function ModelCatalogBrowser({ hook }) {
   const {
-    catalogFull, fullTotal, fullHasMore, categories, loading, loadingMore,
-    searchQuery, categoryFilter, enabledSaving,
+    catalogFull, fullTotal, fullHasMore, categories, types, loading, loadingMore,
+    searchQuery, categoryFilter, typeFilter, enabledSaving,
     isDefaultModel, isModelEnabled, toggleModel, saveEnabled,
-    loadMore, handleSearch, handleCategory,
+    loadMore, handleSearch, handleCategory, handleType,
+    categoryLabels, typeLabels,
   } = hook
 
   const sentinelRef = useRef(null)
@@ -39,33 +60,36 @@ export function ModelCatalogBrowser({ hook }) {
         Catálogo completo ({fullTotal} modelos)
       </summary>
 
-      <div className="mt-3 space-y-3">
-        <div className="relative">
-          <MagnifyingGlass size={14} weight="duotone" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Buscar modelo..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary/50"
+      <div className="mt-3 space-y-2.5">
+        {/* Search + provider chips inline */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative min-w-[180px] flex-1">
+            <MagnifyingGlass size={14} weight="duotone" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar modelo..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary/50"
+            />
+          </div>
+          <FilterChips
+            options={categories}
+            active={categoryFilter}
+            onSelect={handleCategory}
+            labelMap={categoryLabels}
           />
         </div>
 
-        <div className="flex flex-wrap gap-1">
-          {(categories || []).map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => handleCategory(cat)}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors
-                ${categoryFilter === cat || (!categoryFilter && cat === 'all')
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-accent'}`}
-            >
-              {hook.categoryLabels?.[cat] || cat}
-            </button>
-          ))}
-        </div>
+        {/* Type chips row */}
+        {types && types.length > 1 && (
+          <FilterChips
+            options={types}
+            active={typeFilter}
+            onSelect={handleType}
+            labelMap={typeLabels}
+          />
+        )}
 
         {isEmpty ? (
           <div className="flex flex-col items-center gap-2 py-8 text-center">
@@ -87,22 +111,21 @@ export function ModelCatalogBrowser({ hook }) {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
                   {PROVIDER_LABELS[provider] || provider}
                   {provider === 'groq' && (
-                    <span className="ml-1 font-normal normal-case text-[10px] text-muted-foreground/70">
-                      (gratuito)
-                    </span>
+                    <span className="ml-1 font-normal normal-case text-[10px] text-muted-foreground/70">(gratuito)</span>
                   )}
                 </h3>
                 <div className="space-y-1.5">
                   {models.map((m) => {
                     const locked = isDefaultModel(m.provider, m.model_id)
+                    const enabled = isModelEnabled(m.provider, m.model_id) || locked
                     return (
                       <ModelCatalogRow
                         key={`${m.provider}:${m.model_id}`}
                         model={m}
                         locked={locked}
-                        enabled={isModelEnabled(m.provider, m.model_id) || locked}
+                        enabled={enabled}
                         saving={enabledSaving}
-                        categoryLabels={hook.categoryLabels}
+                        typeLabels={typeLabels}
                         onToggle={toggleModel}
                       />
                     )
