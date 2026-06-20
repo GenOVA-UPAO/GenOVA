@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CaretRight, CloudSlash, MagnifyingGlass, MagnifyingGlassMinus } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
 import { groupByProvider, PROVIDER_LABELS } from '../../lib/llmCatalogUtils.js'
 import { ModelCatalogRow } from './ModelCatalogRow.jsx'
 
@@ -29,11 +28,20 @@ function FilterChips({ options, active, onSelect, labelMap, className = '' }) {
 export function ModelCatalogBrowser({ hook }) {
   const {
     catalogFull, fullTotal, fullHasMore, categories, types, loading, loadingMore,
-    searchQuery, categoryFilter, typeFilter, enabledSaving,
-    isDefaultModel, isModelEnabled, toggleModel, saveEnabled,
+    searchQuery, categoryFilter, typeFilter,
+    isDefaultModel, isModelEnabled, toggleFavorite,
     loadMore, handleSearch, handleCategory, handleType,
     categoryLabels, typeLabels,
   } = hook
+
+  const [savingKey, setSavingKey] = useState(null)
+
+  const handleToggle = async (provider, modelId) => {
+    const key = `${provider}:${modelId}`
+    setSavingKey(key)
+    await toggleFavorite(provider, modelId)
+    setSavingKey(null)
+  }
 
   const sentinelRef = useRef(null)
 
@@ -116,17 +124,18 @@ export function ModelCatalogBrowser({ hook }) {
                 </h3>
                 <div className="space-y-1.5">
                   {models.map((m) => {
+                    const key = `${m.provider}:${m.model_id}`
                     const locked = isDefaultModel(m.provider, m.model_id)
                     const enabled = isModelEnabled(m.provider, m.model_id) || locked
                     return (
                       <ModelCatalogRow
-                        key={`${m.provider}:${m.model_id}`}
+                        key={key}
                         model={m}
                         locked={locked}
                         enabled={enabled}
-                        saving={enabledSaving}
+                        saving={savingKey === key}
                         typeLabels={typeLabels}
-                        onToggle={toggleModel}
+                        onToggle={handleToggle}
                       />
                     )
                   })}
@@ -142,11 +151,6 @@ export function ModelCatalogBrowser({ hook }) {
           </div>
         )}
 
-        <div className="flex justify-end">
-          <Button onClick={saveEnabled} disabled={enabledSaving || loading} size="sm" variant="outline">
-            {enabledSaving ? 'Guardando…' : 'Guardar modelos'}
-          </Button>
-        </div>
       </div>
     </details>
   )

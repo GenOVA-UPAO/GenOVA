@@ -69,7 +69,7 @@ export function useLlmSettings(enabled = true) {
     if (enabled) void load({ search: '', category: 'all', page: 1 })
   }, [enabled]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const em = useEnabledModels({ enabledModels, setEnabledModels, defaults, onSaved: () => load({}) })
+  const em = useEnabledModels({ enabledModels, setEnabledModels, defaults })
 
   const loadMore = useCallback(() => {
     if (loadingMore || !fullHasMore) return
@@ -143,14 +143,14 @@ export function useLlmSettings(enabled = true) {
     settings, catalog, catalogAll, catalogFull, fullTotal, fullPage, fullHasMore,
     enabledModels, defaults, bounds, categories, types,
     hasOwnLlmKey,
-    loading, loadingMore, saving, enabledSaving: em.enabledSaving, error,
+    loading, loadingMore, saving, error,
     catalogStatus, refreshingCatalog, retryRefresh,
     searchQuery, categoryFilter, typeFilter,
     load, loadMore, handleSearch, handleCategory, handleType,
     setModel, setTipoTimeout, resetTipo, save,
     setFallback, addFallback, removeFallback, moveFallback,
     isDefaultModel: em.isDefaultModel, isModelEnabled: em.isModelEnabled,
-    toggleModel: em.toggleModel, saveEnabled: em.saveEnabled,
+    toggleFavorite: em.toggleFavorite,
     taskLabels: TASK_LABELS,
     categoryLabels: CATEGORY_LABELS,
     typeLabels: TYPE_LABELS,

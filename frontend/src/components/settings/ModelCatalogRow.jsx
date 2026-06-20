@@ -1,4 +1,4 @@
-import { Lock, Star, Warning } from '@phosphor-icons/react'
+import { CircleNotch, Lock, Star, Warning } from '@phosphor-icons/react'
 import { formatContextLength, MODALITY_META } from '../../lib/llmCatalogUtils.js'
 
 const MODALITY_ICONS = {
@@ -20,18 +20,21 @@ export function ModelCatalogRow({ model, locked, enabled, saving, typeLabels, on
       className={`flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs transition-colors
         ${locked ? 'opacity-70' : 'hover:bg-muted'}`}
     >
-      {/* Interactive star = favorite/enabled toggle */}
+      {/* Interactive star = personal favorite. Auto-saves to Supabase. */}
       <button
         type="button"
         disabled={locked || saving}
-        onClick={() => !locked && onToggle(model.provider, model.model_id)}
-        className={`shrink-0 transition-colors rounded p-0.5
-          ${locked ? 'cursor-not-allowed text-accent-brand' : 'cursor-pointer hover:scale-110'}
+        onClick={() => !locked && !saving && onToggle(model.provider, model.model_id)}
+        className={`shrink-0 transition-all rounded p-0.5
+          ${locked ? 'cursor-not-allowed text-accent-brand' : saving ? 'cursor-wait opacity-60' : 'cursor-pointer hover:scale-110'}
           ${enabled ? 'text-accent-brand' : 'text-muted-foreground/30 hover:text-accent-brand/60'}`}
         aria-label={enabled ? 'Quitar de favoritos' : 'Añadir a favoritos'}
         title={locked ? 'Modelo base del sistema' : enabled ? 'Quitar de favoritos' : 'Añadir a favoritos'}
       >
-        <Star size={14} weight={enabled ? 'fill' : 'regular'} />
+        {saving
+          ? <CircleNotch size={14} className="animate-spin text-primary" />
+          : <Star size={14} weight={enabled ? 'fill' : 'regular'} />
+        }
       </button>
 
       {/* Model name + curated indicator */}
