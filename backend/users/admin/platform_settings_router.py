@@ -139,11 +139,16 @@ def get_nodes_config_endpoint(
     db: Session = Depends(get_db),
 ):
     """Return node definitions + current configurable flags (admin-only)."""
-    from prometheus.nodes_config import NODES, get_nodes_config
+    from prometheus.config.nodes_config import CAPABILITIES, NODES, get_nodes_config
 
     config = get_nodes_config()
     video_configured = bool(db.get(PlatformConfig, "video_api_key"))
-    return {"nodes": NODES, "config": config, "video_api_key_configured": video_configured}
+    return {
+        "nodes": NODES,
+        "capabilities": CAPABILITIES,
+        "config": config,
+        "video_api_key_configured": video_configured,
+    }
 
 
 @router.put("/nodes-config")
@@ -155,9 +160,9 @@ def put_nodes_config_endpoint(
     db: Session = Depends(get_db),
 ):
     """Save configurable node flags (admin-only)."""
-    from prometheus.nodes_config import NODES, save_nodes_config
+    from prometheus.config.nodes_config import CAPABILITIES, NODES, save_nodes_config
 
-    VALID_FLAGS = {"ova_images", "ova_refine", "ova_critic", "ova_editor"}
+    VALID_FLAGS = {"ova_refine", "ova_critic", "ova_editor"}
     VALID_BOOL = {"0", "1"}
     updates: dict = {}
     for k, v in payload.items():
@@ -193,4 +198,9 @@ def put_nodes_config_endpoint(
             detail="No se pudo guardar la configuración de nodos.",
         ) from None
     video_configured = bool(db.get(PlatformConfig, "video_api_key"))
-    return {"nodes": NODES, "config": config, "video_api_key_configured": video_configured}
+    return {
+        "nodes": NODES,
+        "capabilities": CAPABILITIES,
+        "config": config,
+        "video_api_key_configured": video_configured,
+    }

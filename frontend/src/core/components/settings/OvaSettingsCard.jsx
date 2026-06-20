@@ -94,12 +94,9 @@ export function OvaSettingsCard() {
                 </option>
               ))}
             </select>
-            {imageProvider !== 'huggingface' && (
-              <p className="text-xs text-accent-brand">
-                Para usar {PROVIDER_LABELS[imageProvider] ?? imageProvider} necesitas configurar
-                tu API key en la sección siguiente.
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              Requiere API key del proveedor configurada en la sección siguiente.
+            </p>
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}

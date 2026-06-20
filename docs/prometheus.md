@@ -4,16 +4,20 @@
 > sobre **LangGraph**. Descompone el prompt del usuario en recursos por fase 5E, los genera
 > con LLMs reales en paralelo y los ensambla en un paquete SCORM 1.2.
 >
-> **Diseño vs. runtime (léelo primero)**: hay **dos capas** y conviene no confundirlas.
-> 1. **Capa de diseño** — la metodología **Prometheus (AOSE)** de Padgham & Winikoff, elegida
->    para *diseñar* los agentes. Especifica el sistema en 3 fases y se modela con la triada
->    **BDI** (*Belief-Desire-Intention*). Ver [Diseño de agentes — metodología Prometheus](#diseño-de-agentes--metodología-prometheus-aose).
-> 2. **Capa de runtime** — ese diseño se **implementa** como un **pipeline orquestador-trabajadores**
->    determinista sobre LangGraph, con estado compartido tipado. Ver [Núcleo real](#núcleo-real-de-la-metodología).
+> **Diseño y runtime BDI**: la metodología **Prometheus (AOSE)** de Padgham & Winikoff
+> formaliza los agentes en 3 fases y modela el comportamiento con la triada
+> **BDI** (*Belief-Desire-Intention*). El runtime **implementa el ciclo BDI completo**:
 >
-> No hay un *motor* BDI ejecutándose (sin revisión de creencias ni deliberación dinámica de
-> deseos): eso es deliberado e innecesario para generación determinista de contenido. La capa
-> de diseño es legítima; el runtime simplemente la realiza de forma acotada.
+> | Componente BDI | Módulo | Descripción |
+> |---|---|---|
+> | `form_beliefs` | `prometheus/engine/bdi.py` | Forma creencias desde RAG, prompt y modelos |
+> | `generate_desires` | `prometheus/engine/bdi.py` | Genera deseos (recursos candidatos) |
+> | `deliberar` (liberador BDI) | `prometheus/engine/bdi.py` | Filtro deliberativo: convierte deseos en intenciones |
+> | `revise_beliefs` | `prometheus/engine/bdi.py` | Revisión de creencias tras cada fase |
+> | `OvaGenerationState.beliefs/desires/intentions` | `prometheus/engine/state.py` | Estado BDI tipado en el grafo |
+>
+> El ciclo corre en cada invocación: el `concierge_node` percibe, forma creencias, genera deseos,
+> delibera y compromete intenciones. El `runtime.run_phase` revisa creencias tras cada fase.
 
 | Archivo | Rol |
 |---|---|
@@ -299,19 +303,28 @@ diseño real de GenOVA a esas fases.
 | **Creencias / datos** | `OvaGenerationState` (TypedDict compartido) |
 | **Eventos** | `ResourceGenerated` / `PhaseComplete` / `GenerationFailed` — implícitos como transiciones de estado, no un bus de eventos explícito |
 
-### Mapeo BDI — qué se realiza y con qué alcance
+### Mapeo BDI — ciclo completo implementado
 
-| Concepto BDI | Artefacto de diseño | Realización en runtime | Alcance honesto |
+| Concepto BDI | Función | Módulo | Descripción |
 |---|---|---|---|
-| **Beliefs** (creencias) | `OvaGenerationState` | Estado compartido tipado | Sí, pero **sin lógica de revisión** de creencias |
-| **Desires** (deseos/metas) | Plan del concierge (recursos por fase) | `phases` + `phase_order` | Sí, pero plan **estático**, sin deliberación de deseos en conflicto |
-| **Intentions** (intenciones/planes) | Biblioteca de 3 planes | `_dispatch` por `resource_type` | Sí — **selección real de plan por disparador** (el aspecto BDI mejor realizado) |
+| **Beliefs** (creencias) | `form_beliefs()` | `engine/bdi.py` | RAG quality, topic complexity, model capability |
+| **Desires** (deseos) | `generate_desires()` | `engine/bdi.py` | Todos los recursos candidatos del plan |
+| **Deliberación** (liberador BDI) | `deliberar()` | `engine/bdi.py` | Filtro que compromete deseos como intenciones |
+| **Intentions** (intenciones) | campo `intentions` en estado | `engine/state.py` | Lista tipada con plan_type y viabilidad por intención |
+| **Belief revision** | `revise_beliefs()` | `engine/bdi.py` | Actualiza creencias con calidad real de cada fase |
+| **Plan selection** | `_dispatch` por `resource_type` | nodos de fase | Biblioteca de 3 planes: `two_step`, `lab_codigo`, `podcast` |
 
-**Resumen defendible para el informe**: *se eligió Prometheus como metodología de diseño AOSE; el
-sistema se especificó en sus 3 fases y se modeló con BDI; la implementación realiza ese diseño como
-un pipeline orquestador-trabajadores en LangGraph, materializando Beliefs/Desires/Intentions de
-forma acotada (sin revisión de creencias ni deliberación dinámica, innecesarias para una generación
-de contenido determinista y paralelizable).*
+**Ciclo por invocación**:
+1. `concierge_node` percibe (prompt, RAG, modelos) → `form_beliefs`
+2. LLM propone recursos → `generate_desires`
+3. **Liberador BDI**: `deliberar(desires, beliefs)` → `intentions` comprometidas con viabilidad y plan_type
+4. Intenciones → `phases` + `phase_order` (plan de ejecución)
+5. Tras cada fase: `revise_beliefs(beliefs, phase, results, errors)` → creencias actualizadas
+
+**Para el informe**: *La metodología Prometheus (Padgham & Winikoff) se implementa con el ciclo BDI
+completo de Rao & Georgeff: beliefs formados desde percepción, desires generados desde el catálogo de
+recursos, un liberador BDI (función `deliberar`) que filtra y compromete intenciones, y revisión de
+creencias posterior a cada fase.*
 
 ---
 
@@ -340,14 +353,15 @@ Sus cinco propiedades definitorias:
 |---|---|---|
 | **Orchestrator-Workers / Plan-Execute** (lo de aquí) | Un planificador fija subtareas; trabajadores las ejecutan en paralelo | **Sí** — es exactamente esto, con plan estático |
 | **ReAct / agente con tool-loop** | El agente razona y llama herramientas en un bucle hasta cumplir la meta | No — sin bucle de razonamiento ni decisión de herramientas en runtime |
-| **BDI** (*Belief-Desire-Intention*) | Creencias revisables, deseos en conflicto deliberados, intenciones de una biblioteca de planes | No — solo *inspiró* la nomenclatura; no hay revisión/deliberación. El plan es una tabla de despacho fija |
+| **BDI** (*Belief-Desire-Intention*) | Creencias revisables, deseos deliberados, intenciones de una biblioteca de planes | **Sí** — `bdi.py` implementa `form_beliefs`, `deliberar` (liberador BDI) y `revise_beliefs` con lógica real |
 | **Blackboard** | Agentes oportunistas escriben en una pizarra común y reaccionan a su estado | Parcial — hay estado compartido, pero el orden es un router fijo, no reacción oportunista |
 | **Supervisor jerárquico** (CrewAI / AutoGen) | Un supervisor delega y los agentes conversan multi-turno | No — sin conversación entre agentes ni delegación dinámica; topología fija |
 | **Map-Reduce** | Mapear subtareas en paralelo, reducir resultados | Sí en espíritu: `run_phase` = map por fase; `assemble` = reduce |
 
-**Mapeo BDI honesto** (analogía, no mecanismo): *Beliefs* ≈ el `state`; *Desires* ≈ el plan del
-concierge (los "deseos" que el usuario leyó); *Intentions* ≈ `phase_order` ejecutándose. Útil
-como modelo mental; no es un runtime BDI.
+**BDI en runtime** (`prometheus/engine/bdi.py`): *Beliefs* = dict tipado con `rag_quality`,
+`topic_complexity`, `model_capability`, actualizado por `revise_beliefs` tras cada fase;
+*Desires* = lista de recursos candidatos; *Intentions* = lista comprometida tras `deliberar`
+(el liberador BDI), cada una con `plan_type` y `viability`.
 
 ### Por qué LangGraph
 

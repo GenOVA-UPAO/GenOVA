@@ -67,7 +67,6 @@ class Settings(BaseSettings):
 
     # --- Generación OVA ---
     ova_gen_concurrency: int = 4
-    ova_images: str = "1"
     ova_refine: str = "1"
     ova_generation_duration_seconds: int = 14
     ova_output_dir: str = ""

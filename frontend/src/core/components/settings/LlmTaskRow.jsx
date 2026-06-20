@@ -5,7 +5,7 @@ import {
   moveFallback,
   removeFallback as removeFb,
   setFallback as setFb,
-} from '@/core/lib/llmConfigDraft.js'
+} from '@/core/lib/llm/llmConfigDraft.js'
 import { LlmModelSelect } from '@/core/components/settings/LlmModelSelect.jsx'
 
 const TASK_LABELS = {

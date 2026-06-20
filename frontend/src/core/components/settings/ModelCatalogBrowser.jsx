@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CloudSlash, MagnifyingGlass, MagnifyingGlassMinus, CaretDown } from '@phosphor-icons/react'
-import { groupByProvider, PROVIDER_LABELS } from '@/core/lib/llmCatalogUtils.js'
+import { groupByProvider, PROVIDER_LABELS } from '@/core/lib/llm/llmCatalogUtils.js'
 import { ModelCatalogRow } from '@/core/components/settings/ModelCatalogRow.jsx'
 
 const PROVIDER_ACCENT = {

@@ -1,5 +1,5 @@
 import { CircleNotch, Lock, Star, Warning } from '@phosphor-icons/react'
-import { formatContextLength, MODALITY_META } from '@/core/lib/llmCatalogUtils.js'
+import { formatContextLength, MODALITY_META } from '@/core/lib/llm/llmCatalogUtils.js'
 
 const MODALITY_ICONS = {
   text: 'Aa',

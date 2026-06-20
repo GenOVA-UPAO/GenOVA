@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from core.database import get_db
 from models import User
-from ova.uploads_service import (
+from ova.uploads.service import (
     ALLOWED_MIME_TYPES,
     count_user_uploads,
     create_temp_upload,
@@ -129,7 +129,7 @@ async def upload_temp_files(
         created_item["rag_status"] = rag_status
 
         # Save RAG status to registry so it persists during file listing
-        from ova.uploads_state import lock, registry
+        from ova.uploads.state import lock, registry
         with lock():
             if created_item["upload_id"] in registry():
                 registry()[created_item["upload_id"]]["rag_status"] = rag_status

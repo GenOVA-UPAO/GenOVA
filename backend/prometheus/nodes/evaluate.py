@@ -1,10 +1,10 @@
 """EVALUATE agent node — generates ALL evaluate resources in parallel (Fase 2)."""
 
+from prometheus.engine.runtime import run_phase
+from prometheus.engine.state import OvaGenerationState
 from prometheus.plans.direct_code import direct_code_gen
 from prometheus.plans.two_step import two_step_gen
 from prometheus.prompts.evaluate_prompts import RECURSOS_META
-from prometheus.runtime import run_phase
-from prometheus.state import OvaGenerationState
 
 EVALUATE_CODE_ONLY = {3, 5, 9}
 

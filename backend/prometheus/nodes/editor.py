@@ -11,7 +11,7 @@ import re
 
 from core.config import settings
 from llm.router import generar_texto
-from prometheus.state import OvaGenerationState
+from prometheus.engine.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ def editor_node(state: OvaGenerationState) -> dict:
     Noop cuando ova_editor != "1" (DB config o env). Best-effort: fallo →
     coherence_report={}. Parches aplicados in-place en results.
     """
-    from prometheus.nodes_config import get_nodes_config
+    from prometheus.config.nodes_config import get_nodes_config
 
     nc = get_nodes_config()
     if str(nc.get("ova_editor", settings.ova_editor)).strip() != "1":

@@ -4,17 +4,21 @@ import os
 
 from groq import Groq
 
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-
 _WHISPER_MODEL = "whisper-large-v3-turbo"
 _ORPHEUS_MODEL = "canopylabs/orpheus-v1-english"
 _ORPHEUS_VOICE = "autumn"
 
 
+def _client() -> Groq:
+    from llm.clients.key_resolver import resolve_key
+    key = resolve_key("groq", None) or os.getenv("GROQ_API_KEY", "")
+    return Groq(api_key=key or None)
+
+
 def transcribir_audio(file_path: str) -> str:
     """Whisper STT for uploaded audio files. Groq free tier limit: 25 MB."""
     with open(file_path, "rb") as f:
-        transcription = groq_client.audio.transcriptions.create(
+        transcription = _client().audio.transcriptions.create(
             file=f,
             model=_WHISPER_MODEL,
             response_format="verbose_json",
@@ -25,7 +29,7 @@ def transcribir_audio(file_path: str) -> str:
 
 def generar_audio_tts(text: str, voice: str = _ORPHEUS_VOICE) -> bytes:
     """Orpheus TTS — returns WAV bytes (Orpheus only supports the wav format)."""
-    response = groq_client.audio.speech.create(
+    response = _client().audio.speech.create(
         model=_ORPHEUS_MODEL,
         voice=voice,
         response_format="wav",

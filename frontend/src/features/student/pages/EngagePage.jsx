@@ -1,5 +1,5 @@
 import { PhasePage } from '@/features/ova_workspace/pages/PhasePage.jsx'
-import { fetchEngageRecursos, generateEngageResource } from '@/features/ova_workspace/services/engageService.js'
+import { fetchEngageRecursos, generateEngageResource } from '@/features/ova_workspace/services/phases/engageService.js'
 
 export function EngagePage() {
   return (

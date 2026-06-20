@@ -55,19 +55,14 @@ def two_step_gen(
         json_data = {"contenido": raw}
 
     # Image enrichment — only engage phase has prompt_imagen fields.
-    # Skipped when ova_images flag is "0" (admin config or env).
     img_replacements: dict[str, str] = {}
     if phase == "engage":
-        from prometheus.nodes_config import get_nodes_config
+        from llm.images.image_providers import enrich_with_images
 
-        _nc = get_nodes_config()
-        if str(_nc.get("ova_images", "1")).strip().lower() not in ("0", "false", "no"):
-            from llm.images.image_providers import enrich_with_images
-
-            img_replacements = enrich_with_images(
-                json_data if isinstance(json_data, list) else [json_data],
-                image_settings,
-            )
+        img_replacements = enrich_with_images(
+            json_data if isinstance(json_data, list) else [json_data],
+            image_settings,
+        )
 
     from llm.utils.themes import build_design_system
 
@@ -95,7 +90,7 @@ def two_step_gen(
         html = re.sub(r"__IMG_\d+__", IMG_PLACEHOLDER, html)
 
     from llm.utils.html_validator import validate_and_repair
-    from prometheus.refine import maybe_refine
+    from prometheus.engine.refine import maybe_refine
 
     html, _ = validate_and_repair(html, phase, n)
     return maybe_refine(html, phase, n, concept, llm_config, enabled_models, theme)

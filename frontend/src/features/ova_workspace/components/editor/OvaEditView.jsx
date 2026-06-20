@@ -9,7 +9,7 @@ import { WorkspaceChatPanel } from '@/features/ova_workspace/components/editor/W
 import { WorkspaceOvaPanel } from '@/features/ova_workspace/components/editor/WorkspaceOvaPanel.jsx'
 import { WorkspaceResizableDivider } from '@/features/ova_workspace/components/editor/WorkspaceResizableDivider.jsx'
 import { VersionHistoryPanel } from '@/features/ova_workspace/components/versioning/VersionHistoryPanel.jsx'
-import { getSavedRatio } from '@/core/lib/workspaceUtils.js'
+import { getSavedRatio } from '@/core/lib/ova/workspaceUtils.js'
 
 const topbarVariants = {
   hidden: { opacity: 0, y: -20 },

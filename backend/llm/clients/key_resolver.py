@@ -12,7 +12,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
-PROVIDERS = ("groq", "openrouter", "opencode", "siliconflow", "runware", "falai")
+PROVIDERS = ("groq", "openrouter", "opencode", "siliconflow", "runware", "falai", "huggingface")
 
 _ENV_VARS: dict[str, str] = {
     "groq": "GROQ_API_KEY",
@@ -21,6 +21,7 @@ _ENV_VARS: dict[str, str] = {
     "siliconflow": "SILICONFLOW_API_KEY",
     "runware": "RUNWARE_API_KEY",
     "falai": "FALAI_API_KEY",
+    "huggingface": "HF_TOKEN",
 }
 
 # DB key name format: "{provider}_api_key"

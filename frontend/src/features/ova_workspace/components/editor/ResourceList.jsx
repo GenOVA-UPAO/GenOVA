@@ -1,6 +1,6 @@
 import { Button } from '@/core/components/ui/button'
 import { Checkbox } from '@/core/components/ui/checkbox'
-import { groupByPhase } from '@/core/lib/ovaJobViewModel.js'
+import { groupByPhase } from '@/core/lib/ova/ovaJobViewModel.js'
 
 // Visual config per UI status (R5): check ✔ · X ✖ · generando … · pendiente ○.
 const MARK = {

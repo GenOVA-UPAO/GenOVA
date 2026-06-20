@@ -1,5 +1,5 @@
 import { PhasePage } from '@/features/ova_workspace/pages/PhasePage.jsx'
-import { fetchExploreRecursos, generateExploreResource } from '@/features/ova_workspace/services/exploreService.js'
+import { fetchExploreRecursos, generateExploreResource } from '@/features/ova_workspace/services/phases/exploreService.js'
 
 export function ExplorePage() {
   return (

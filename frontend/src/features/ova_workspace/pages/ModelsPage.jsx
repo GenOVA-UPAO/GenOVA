@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/core/components/ui/t
 import { useLlmSettings } from '@/core/hooks/useLlmSettings.js'
 import { useAdminLlmConfig } from '@/features/admin/hooks/useAdminLlmConfig.js'
 import { getCurrentUser } from '@/core/lib/me.js'
-import { toDraft, toPayload } from '@/core/lib/llmConfigDraft.js'
+import { toDraft, toPayload } from '@/core/lib/llm/llmConfigDraft.js'
 import { ModelAssignmentPanel } from '@/core/components/settings/ModelAssignmentPanel.jsx'
 import { ModelCatalogBrowser } from '@/core/components/settings/ModelCatalogBrowser.jsx'
 import { ApiKeysCard } from '@/core/components/settings/ApiKeysCard.jsx'

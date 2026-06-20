@@ -9,7 +9,7 @@ import base64
 import html
 import logging
 
-from llm.podcast.podcast.audio_helpers import generar_audio_tts
+from llm.podcast.audio_helpers import generar_audio_tts
 from llm.utils.utils import SCORM_JS
 
 logger = logging.getLogger(__name__)

@@ -5,7 +5,7 @@ import { Button } from '@/core/components/ui/button'
 import { ModelTaskCard } from '@/core/components/settings/ModelTaskCard.jsx'
 import { LlmTaskRow } from '@/core/components/settings/LlmTaskRow.jsx'
 import { CatalogStatusAlert } from '@/core/components/settings/CatalogStatusAlert.jsx'
-import { TASK_LABELS } from '@/core/lib/llmSettingsLabels.js'
+import { TASK_LABELS } from '@/core/lib/llm/llmSettingsLabels.js'
 
 export function ModelAssignmentPanel({ tasks, draft, setDraft, adminModels, adminHook, isAdmin, userHook }) {
   const [editTask, setEditTask] = useState(null)

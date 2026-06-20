@@ -24,7 +24,7 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import prometheus.nodes_config as nc_mod  # noqa: E402
+import prometheus.config.nodes_config as nc_mod  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
 from core.rate_limit import limiter  # noqa: E402
@@ -134,10 +134,6 @@ def test_put_invalid_flag():
     pass
 
 
-@scenario(FEATURE, "Toggle imágenes desactiva la generación")
-def test_toggle_images_off():
-    pass
-
 
 # ── Given ──────────────────────────────────────────────────────────────────────
 
@@ -151,10 +147,6 @@ def no_db_entry(ctx, key):
 def db_empty(ctx):
     ctx["box"]["data"] = {}
 
-
-@given('ova_images está en "0" vía nodes_config store')
-def images_off_in_store(ctx):
-    ctx["box"]["data"] = {"ova_images": "0"}
 
 
 # ── When ───────────────────────────────────────────────────────────────────────
@@ -198,10 +190,6 @@ def nodes_count(response, n):
     assert len(body["nodes"]) >= n, f"expected >= {n} nodes, got {len(body['nodes'])}"
 
 
-@then(parsers.parse('config.ova_images es "{val}"'))
-def config_images(response, val):
-    assert response.json()["config"]["ova_images"] == val
-
 
 @then(parsers.parse('config.ova_critic es "{val}"'))
 def config_critic(response, val):
@@ -224,6 +212,3 @@ def status_is(response, code):
     assert response.status_code == code, response.text
 
 
-@then(parsers.parse('ova_images es "{val}"'))
-def nc_images_val(nc_result, val):
-    assert nc_result["ova_images"] == val

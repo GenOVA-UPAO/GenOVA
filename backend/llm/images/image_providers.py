@@ -20,13 +20,14 @@ logger = logging.getLogger(__name__)
 
 _TIMEOUT = 30.0
 
-# 1x1 transparent SVG fallback.
+# Gray SVG fallback — base64-encoded for universal HTML/SCORM compatibility.
 IMG_PLACEHOLDER = (
-    "data:image/svg+xml;utf8,"
-    "<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'>"
-    "<rect fill='%23e2e8f0' width='100%25' height='100%25'/>"
-    "<text x='50%25' y='50%25' font-family='sans-serif' font-size='22' "
-    "text-anchor='middle' fill='%23475569'>Imagen no disponible</text></svg>"
+    "data:image/svg+xml;base64,"
+    "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdo"
+    "dD0iNTEyIj48cmVjdCBmaWxsPSIjZTJlOGYwIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIvPjx0"
+    "ZXh0IHg9IjI1NiIgeT0iMjY2IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIy"
+    "MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzQ3NTU2OSI+SW1hZ2VuIG5vIGRpc3Bvbmli"
+    "bGU8L3RleHQ+PC9zdmc+"
 )
 
 

@@ -1,15 +1,14 @@
 """EN-015 — BDD steps for the Crítico evaluator-optimizer loop.
 
-Calls run_phase directly with a stub dispatch (returns fixed HTML) and
-monkeypatches critique_resource so no real LLM calls happen.  No DB is needed:
-job_id=None makes _persist_done and _touch_job no-ops.
+Calls run_phase + critic_node in sequence (mirrors the LangGraph flow) with a
+stub dispatch and monkeypatched critique_resource so no real LLM calls happen.
+No DB is needed: job_id=None makes _persist_done and _touch_job no-ops.
 """
 
 import os
 import sys
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
-# Set a dummy GROQ key to avoid the Groq client validation error on import
 os.environ.setdefault("GROQ_API_KEY", "sk-test-dummy-key-for-unit-tests")
 os.environ.setdefault("JWT_SECRET", "test-jwt-secret-long-enough-for-validation")
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
@@ -20,9 +19,11 @@ from pytest_bdd import given, scenario, then, when  # noqa: E402
 
 from core.config import settings  # noqa: E402
 
-# Import runtime directly without going through prometheus.__init__
-_runtime_mod = importlib.import_module("prometheus.runtime")
+_runtime_mod = importlib.import_module("prometheus.engine.runtime")
 run_phase = _runtime_mod.run_phase
+
+_critic_mod = importlib.import_module("prometheus.nodes.critic")
+critic_node = _critic_mod.critic_node
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-015_critico.feature")
@@ -42,11 +43,24 @@ def _make_state():
         "image_settings": {},
         "job_id": None,
         "progress": 0,
+        "beliefs": {},
     }
 
 
 def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings):
     return _STUB_HTML
+
+
+def _run_phase_and_critic(ctx) -> dict:
+    """Simula el flujo LangGraph: run_phase genera HTML, critic_node evalúa."""
+    state = _make_state()
+    phase_out = run_phase(state, "engage", _dispatch, {1: {"tipo": "Cómic"}})
+    merged = {**state, **phase_out}
+    critic_out = critic_node(merged)
+    return {
+        "results": critic_out.get("results", []),
+        "errors": phase_out.get("current_phase_errors", []),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -67,7 +81,7 @@ def critic_off(monkeypatch):
 
 @when("se ejecuta run_phase con un recurso mock", target_fixture="phase_result")
 def run_phase_mock(ctx):
-    return run_phase(_make_state(), "engage", _dispatch, {1: {"tipo": "Cómic"}})
+    return _run_phase_and_critic(ctx)
 
 
 @then("el result dict no incluye score ni critic_issues distintos de cero")
@@ -99,7 +113,7 @@ def critic_on_rounds_1(monkeypatch):
 
 @given('el LLM del Crítico retorna veredicto "aceptar" con puntaje 85')
 def critic_returns_accept(ctx, monkeypatch):
-    import prometheus.critic as critic_mod
+    import prometheus.critic.critic as critic_mod
 
     monkeypatch.setattr(
         critic_mod,
@@ -137,8 +151,8 @@ def critic_returns_revisar(ctx, monkeypatch):
             return {"puntaje": 40, "problemas": ["falta interactividad"], "veredicto": "revisar"}
         return {"puntaje": 78, "problemas": [], "veredicto": "aceptar"}
 
-    import prometheus.critic as critic_mod
-    import prometheus.refine as refine_mod
+    import prometheus.critic.critic as critic_mod
+    import prometheus.engine.refine as refine_mod
 
     monkeypatch.setattr(critic_mod, "critique_resource", _critique)
     # apply_feedback must also be patched so no LLM call happens during re-generation
@@ -190,7 +204,7 @@ def critic_returns_revisar_50(ctx, monkeypatch):
         ctx["critique_calls"].append("call")
         return {"puntaje": 50, "problemas": ["algo falla"], "veredicto": "revisar"}
 
-    import prometheus.critic as critic_mod
+    import prometheus.critic.critic as critic_mod
 
     monkeypatch.setattr(critic_mod, "critique_resource", _critique)
 
@@ -222,7 +236,7 @@ def critic_on_only(monkeypatch):
 
 @given("el LLM del Crítico lanza excepción")
 def critic_raises(ctx, monkeypatch):
-    import prometheus.critic as critic_mod
+    import prometheus.critic.critic as critic_mod
 
     monkeypatch.setattr(
         critic_mod,

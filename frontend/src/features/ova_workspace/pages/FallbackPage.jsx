@@ -6,7 +6,7 @@ import { Button } from '@/core/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/core/components/ui/alert'
 import { getCurrentUser } from '@/core/lib/me.js'
 import { useAdminLlmConfig } from '@/features/admin/hooks/useAdminLlmConfig.js'
-import { toDraft, toPayload } from '@/core/lib/llmConfigDraft.js'
+import { toDraft, toPayload } from '@/core/lib/llm/llmConfigDraft.js'
 import { LlmTaskRow } from '@/core/components/settings/LlmTaskRow.jsx'
 
 export function FallbackPage() {

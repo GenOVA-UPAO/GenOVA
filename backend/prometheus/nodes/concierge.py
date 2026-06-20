@@ -1,15 +1,22 @@
-"""Concierge node — decomposes the user prompt into per-phase resource goals.
+"""Concierge node — BDI agent that decomposes the user prompt into intentions.
 
-Uses the LLM 'orquestador' task to analyze the prompt and select which of the
-50 available resource types to generate for each 5E phase. Falls back to a
-deterministic plan (4 resources per phase) on any LLM failure.
+Implements the full Prometheus/BDI cycle (Rao & Georgeff):
+  1. Perceive → read prompt, RAG context, model config
+  2. form_beliefs  → build belief base from perception
+  3. generate_desires → enumerate candidate resources
+  4. deliberar (liberador BDI) → filter desires into committed intentions
+  5. Convert intentions → execution plan (phases + phase_order)
+
+Falls back to a deterministic plan (4 resources per phase) on any LLM failure;
+the BDI cycle runs regardless so beliefs/desires/intentions are always populated.
 """
 
 import logging
 
 from llm.router import generar_texto
 from llm.utils.utils import parse_json
-from prometheus.state import OvaGenerationState
+from prometheus.engine.bdi import deliberar, form_beliefs, generate_desires
+from prometheus.engine.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)
 
@@ -32,23 +39,43 @@ Evaluate: 1=Quiz,2=RúbricaAutoeval,3=DesafíoContrarreloj,4=ExamenOpciónMúlti
 
 def concierge_node(state: OvaGenerationState) -> dict:
     prompt = state.get("prompt", "")
+    rag_context = state.get("rag_context", "")
+    enabled_models = state.get("enabled_models", [])
+    upload_ids = state.get("upload_ids", [])
+
+    # --- BDI: 1. Percibir → Creencias ---
+    beliefs = form_beliefs(prompt, rag_context, enabled_models, upload_ids)
+
     if state.get("phases") and state.get("phase_order"):
-        return {"current_phase_idx": state.get("current_phase_idx", 0), "current_resource_idx": 0}
+        # Client seeded the plan — run BDI over it for traceability
+        desires = generate_desires(state["phases"])
+        intentions = deliberar(desires, beliefs)
+        return {
+            "beliefs": beliefs,
+            "desires": desires,
+            "intentions": intentions,
+            "current_phase_idx": state.get("current_phase_idx", 0),
+            "current_resource_idx": 0,
+        }
 
-    plan = _llm_decompose(prompt) or _FALLBACK_PLAN
+    # --- BDI: 2. Deseos → Generar plan candidato ---
+    raw_plan = _llm_decompose(prompt) or _FALLBACK_PLAN
+    phases_data, phase_order, total = _plan_to_phases(raw_plan)
 
-    phase_order = [p for p in _PHASE_ORDER if p in plan and plan[p]]
-    phases_data = {}
-    total = 0
-    for p in phase_order:
-        items = []
-        for order, rt in enumerate(plan[p]):
-            items.append({"resource_type": rt, "resource_order": order})
-        phases_data[p] = items
-        total += len(items)
+    # --- BDI: 3. Generar deseos desde el plan ---
+    desires = generate_desires(phases_data)
 
-    logger.info("Concierge plan: %d resources across %d phases", total, len(phase_order))
+    # --- BDI: 4. Deliberar → Intenciones (liberador BDI) ---
+    intentions = deliberar(desires, beliefs)
+
+    # Reconstruct phases preserving original order (deliberation only scores, not reorders phases)
+    phases_data, phase_order, total = _intentions_to_phases(intentions)
+
+    logger.info("Concierge BDI: %d intentions across %d phases", total, len(phase_order))
     return {
+        "beliefs": beliefs,
+        "desires": desires,
+        "intentions": intentions,
         "phases": phases_data,
         "phase_order": phase_order,
         "current_phase_idx": 0,
@@ -58,6 +85,33 @@ def concierge_node(state: OvaGenerationState) -> dict:
         "results": [],
         "errors": [],
     }
+
+
+def _plan_to_phases(plan: dict) -> tuple[dict, list[str], int]:
+    phase_order = [p for p in _PHASE_ORDER if p in plan and plan[p]]
+    phases_data: dict = {}
+    total = 0
+    for p in phase_order:
+        items = [{"resource_type": rt, "resource_order": i} for i, rt in enumerate(plan[p])]
+        phases_data[p] = items
+        total += len(items)
+    return phases_data, phase_order, total
+
+
+def _intentions_to_phases(intentions: list[dict]) -> tuple[dict, list[str], int]:
+    """Rebuild phases dict from committed intentions, preserving 5E phase order."""
+    phases_data: dict = {}
+    for intent in intentions:
+        phase = intent["phase"]
+        phases_data.setdefault(phase, []).append(
+            {"resource_type": intent["resource_type"], "resource_order": intent["resource_order"]}
+        )
+    # Sort items within each phase by resource_order
+    for items in phases_data.values():
+        items.sort(key=lambda x: x["resource_order"])
+    phase_order = [p for p in _PHASE_ORDER if p in phases_data]
+    total = sum(len(v) for v in phases_data.values())
+    return phases_data, phase_order, total
 
 
 def _llm_decompose(prompt: str) -> dict | None:

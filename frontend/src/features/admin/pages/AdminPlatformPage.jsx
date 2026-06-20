@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { HardDrives, Cpu, Key, Robot } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/core/components/ui/tabs'
 import { PlatformApiKeysCard } from '@/core/components/settings/PlatformApiKeysCard.jsx'
+import { PlatformCapabilitiesCard } from '@/core/components/settings/PlatformCapabilitiesCard.jsx'
 import { PlatformLlmConfigCard } from '@/core/components/settings/PlatformLlmConfigCard.jsx'
 import { PlatformNodesCard } from '@/core/components/settings/PlatformNodesCard.jsx'
 
@@ -41,6 +42,7 @@ export function AdminPlatformPage() {
 
         <TabsContent value="modelos" className="mt-0 space-y-6">
           <PlatformLlmConfigCard />
+          <PlatformCapabilitiesCard />
         </TabsContent>
 
         <TabsContent value="apikeys" className="mt-0 space-y-6">

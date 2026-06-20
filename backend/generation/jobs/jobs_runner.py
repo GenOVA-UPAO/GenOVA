@@ -38,7 +38,7 @@ def _start_heartbeat(job_id: uuid.UUID) -> tuple[threading.Thread, threading.Eve
     """Lanza un hilo daemon que bombea OvaJob.updated_at cada HEARTBEAT_S hasta
     que se señala el stop. Si el proceso muere, el hilo muere con él y el sweep
     vuelve a detectar el job como interrumpido (comportamiento deseado)."""
-    from prometheus.runtime import _touch_job
+    from prometheus.engine.runtime import _touch_job
 
     stop = threading.Event()
 
@@ -119,7 +119,7 @@ def _generate(
     only_resource_ids: list[uuid.UUID] | None,
 ) -> tuple[list[dict], list[dict]]:
     try:
-        from prometheus.graph import invoke_ova_generation
+        from prometheus.engine.graph import invoke_ova_generation
 
         # Sembrar el plan desde los recursos que el cliente eligió, para que el
         # concierge NO re-planifique por LLM e ignore la selección (lo que

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { startJob, getJobStatus, resumeJob } from '../services/ovaCreationService.js'
-import { toResourceViewModel, pruneSelection, jobOutcome } from '../../../core/lib/ovaJobViewModel.js'
+import { toResourceViewModel, pruneSelection, jobOutcome } from '../../../core/lib/ova/ovaJobViewModel.js'
 
 const POLL_MS = Number(import.meta.env?.VITE_JOB_POLL_MS || 2000)
 const ALL_PHASES = ['engage', 'explore', 'explain', 'elaborate', 'evaluate']

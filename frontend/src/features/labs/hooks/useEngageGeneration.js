@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { generateEngageResource } from '../../ova_workspace/services/engageService.js'
+import { generateEngageResource } from '../../ova_workspace/services/phases/engageService.js'
 
 export function useEngageGeneration() {
   const [selectedResource, setSelectedResource] = useState(null)

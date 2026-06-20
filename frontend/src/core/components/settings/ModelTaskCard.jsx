@@ -2,7 +2,7 @@ import { motion } from 'motion/react'
 import { PencilSimple } from '@phosphor-icons/react'
 import { LlmModelSelect } from '@/core/components/settings/LlmModelSelect.jsx'
 import { UserOverrideSection } from '@/core/components/settings/UserOverrideSection.jsx'
-import { TASK_META } from '@/core/lib/taskMeta.js'
+import { TASK_META } from '@/core/lib/ova/taskMeta.js'
 
 function Chips({ fallbacks, models, chip, num }) {
   if (!fallbacks?.length) return (
