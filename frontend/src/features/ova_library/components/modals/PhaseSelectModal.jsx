@@ -10,30 +10,26 @@ import { isVideoResource } from '@/core/lib/llm/nodesConfigDraft.js'
 import { ResourceCard } from '@/features/student/components/engage/ResourceCard.jsx'
 import { PhaseTabNav } from './PhaseTabNav.jsx'
 import { ResourcePreviewPanel } from './ResourcePreviewPanel.jsx'
+import { Target, MagnifyingGlass, Lightbulb, Hammer, CheckCircle } from '@phosphor-icons/react'
 import { Dialog, DialogContent } from '@/core/components/ui/dialog'
 import { Button } from '@/core/components/ui/button'
 
 const PHASE_CFG = [
-  { key: 'engage',    emoji: '🎯', label: 'ENGAGE',    fetch: fetchEngageRecursos,
+  { key: 'engage',    Icon: Target,         label: 'ENGAGE',    fetch: fetchEngageRecursos,
     sub: 'Despierta curiosidad · activa saberes previos',
-    color: 'var(--primary)', bg: 'color-mix(in oklch, var(--primary) 8%, transparent)',
-    ring: 'ring-2 ring-primary border-primary/40 bg-primary/5', badge: 'bg-primary' },
-  { key: 'explore',   emoji: '🔍', label: 'EXPLORE',   fetch: fetchExploreRecursos,
+    color: '#EF4444', bg: 'color-mix(in oklch, #EF4444 8%, transparent)' },
+  { key: 'explore',   Icon: MagnifyingGlass, label: 'EXPLORE',   fetch: fetchExploreRecursos,
     sub: 'Descubre patrones · construye hipótesis',
-    color: 'var(--primary)', bg: 'color-mix(in oklch, var(--primary) 8%, transparent)',
-    ring: 'ring-2 ring-primary border-primary/40 bg-primary/5', badge: 'bg-primary' },
-  { key: 'explain',   emoji: '💡', label: 'EXPLAIN',   fetch: fetchExplainRecursos,
+    color: '#3B82F6', bg: 'color-mix(in oklch, #3B82F6 8%, transparent)' },
+  { key: 'explain',   Icon: Lightbulb,      label: 'EXPLAIN',   fetch: fetchExplainRecursos,
     sub: 'Formaliza conceptos · consolida la teoría',
-    color: 'var(--primary)', bg: 'color-mix(in oklch, var(--primary) 8%, transparent)',
-    ring: 'ring-2 ring-primary border-primary/40 bg-primary/5', badge: 'bg-primary' },
-  { key: 'elaborate', emoji: '🔧', label: 'ELABORATE', fetch: fetchElaborateRecursos,
+    color: '#F59E0B', bg: 'color-mix(in oklch, #F59E0B 8%, transparent)' },
+  { key: 'elaborate', Icon: Hammer,         label: 'ELABORATE', fetch: fetchElaborateRecursos,
     sub: 'Aplica · transfiere a problemas reales',
-    color: 'var(--accent-brand)', bg: 'color-mix(in oklch, var(--accent-brand) 8%, transparent)',
-    ring: 'ring-2 ring-accent-brand border-accent-brand/40 bg-accent-brand/5', badge: 'bg-accent-brand' },
-  { key: 'evaluate',  emoji: '✅', label: 'EVALUATE',  fetch: fetchEvaluateRecursos,
+    color: '#8B5CF6', bg: 'color-mix(in oklch, #8B5CF6 8%, transparent)' },
+  { key: 'evaluate',  Icon: CheckCircle,    label: 'EVALUATE',  fetch: fetchEvaluateRecursos,
     sub: 'Verifica aprendizajes · reflexiona el proceso',
-    color: 'var(--accent-brand)', bg: 'color-mix(in oklch, var(--accent-brand) 8%, transparent)',
-    ring: 'ring-2 ring-accent-brand border-accent-brand/40 bg-accent-brand/5', badge: 'bg-accent-brand' },
+    color: '#10B981', bg: 'color-mix(in oklch, #10B981 8%, transparent)' },
 ]
 
 const MAX_PER_PHASE = 4
@@ -144,8 +140,6 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
                         onHover={setHovered}
                         phaseKey={phase.key}
                         phaseColor={phase.color}
-                        selectedRingCls={phase.ring}
-                        selectedBadgeCls={phase.badge}
                         showVideoHint={isVideoResource(phase.key, r.id) && !videoKeyConfigured}
                       />
                     )

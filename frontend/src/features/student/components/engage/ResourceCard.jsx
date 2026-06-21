@@ -9,17 +9,20 @@ const INTERACTIVIDAD_COLOR = {
 
 export function ResourceCard({
   resource, selected, onClick, onHover,
-  phaseKey = '', phaseColor = 'var(--primary)',
+  phaseKey = '', phaseColor = '#3B82F6',
   selectionIndex = null, disabled = false,
-  selectedRingCls = 'ring-2 ring-primary border-primary/40 bg-primary/5',
-  selectedBadgeCls = 'bg-primary',
   showVideoHint = false,
 }) {
   const Icon = RESOURCE_ICONS[`${phaseKey}:${resource.id}`] ?? BookBookmark
 
-  let ring = 'border-border bg-card hover:border-primary/30 hover:shadow-md'
-  if (selected) ring = selectedRingCls
-  else if (disabled) ring = 'border-border bg-muted/40 opacity-50 cursor-not-allowed'
+  let baseClass = 'border-border bg-card hover:border-primary/30 hover:shadow-md'
+  if (disabled) baseClass = 'border-border bg-muted/40 opacity-50 cursor-not-allowed'
+
+  const selectedStyle = selected ? {
+    boxShadow: `0 0 0 2px ${phaseColor}`,
+    borderColor: `${phaseColor}50`,
+    backgroundColor: `${phaseColor}08`,
+  } : undefined
 
   return (
     <button
@@ -31,12 +34,13 @@ export function ResourceCard({
       onBlur={() => onHover?.(null)}
       aria-pressed={selected}
       disabled={disabled}
-      className={`text-left w-full rounded-xl border p-4 transition-all duration-150 cursor-pointer ${ring}`}
+      className={`text-left w-full rounded-xl border p-4 transition-all duration-150 cursor-pointer ${baseClass}`}
+      style={selectedStyle}
     >
       <div className="flex items-start gap-3">
         <div
           className="shrink-0 mt-0.5 p-1.5 rounded-lg"
-          style={{ backgroundColor: `color-mix(in oklch, ${phaseColor} 10%, transparent)` }}
+          style={{ backgroundColor: `${phaseColor}18` }}
         >
           <Icon size={20} weight="duotone" style={{ color: phaseColor }} />
         </div>
@@ -54,7 +58,10 @@ export function ResourceCard({
           )}
         </div>
         {selected && (
-          <span className={`flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full ${selectedBadgeCls} text-primary-foreground text-xs font-bold`}>
+          <span
+            className="flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full text-white text-xs font-bold"
+            style={{ backgroundColor: phaseColor }}
+          >
             {selectionIndex ?? '✓'}
           </span>
         )}
