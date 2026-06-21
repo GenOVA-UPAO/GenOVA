@@ -14,8 +14,11 @@ export function GameBoardWireframe() {
   return (
     <div className="flex flex-col gap-2 p-2">
       <div className="flex justify-between items-center bg-gray-100 rounded p-1.5">
-        <span className="text-[9px] text-gray-400">Score</span>
-        <div className="flex gap-1">{[1,2,3].map(i => <div key={i} className="h-2 w-2 rounded-full bg-gray-300/80" />)}</div>
+        <span className="text-[9px] text-gray-400">Puntos: —</span>
+        <div className="flex items-center gap-1 bg-gray-200/80 rounded px-1.5 py-0.5">
+          <div className="h-3 w-3 rounded-full border-2 border-gray-400/60" />
+          <div className="h-1.5 w-5 bg-gray-400/60 rounded-full" />
+        </div>
       </div>
       <div className="border border-dashed border-gray-300 rounded-md p-2 flex flex-col gap-1.5">
         <L /><L w="3/4" />

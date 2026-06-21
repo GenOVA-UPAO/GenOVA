@@ -63,18 +63,29 @@ export function VideoWireframe() {
 export function AnimatedDemoWireframe() {
   return (
     <div className="flex flex-col gap-2 p-2">
-      <div className="flex gap-1">
-        {[1,2,3,4].map((n) => (
-          <div key={n} className="flex-1 flex flex-col items-center gap-1">
-            <div className={`h-8 w-full rounded-md ${n === 2 ? 'bg-gray-400/60 ring-1 ring-gray-400' : 'bg-gray-200/80'} flex items-center justify-center`}>
-              <span className="text-[9px] text-gray-400">{n}</span>
-            </div>
-            <div className="h-0.5 w-3 bg-gray-300/80 rounded-full" />
-          </div>
+      <div className="h-10 bg-gray-200/80 rounded-md flex items-center justify-center relative">
+        <span className="text-[9px] text-gray-400">escena</span>
+        <div className="absolute bottom-1.5 left-2 right-2 h-1 bg-gray-300/60 rounded-full" />
+      </div>
+      <div className="flex items-center gap-1">
+        {[1,2,3,4,5].map((n) => (
+          <div key={n} className={`flex-1 h-1.5 rounded-full ${n <= 2 ? 'bg-gray-400/70' : 'bg-gray-200/60'}`} />
         ))}
       </div>
-      <L /><L w="3/4" />
-      <div className="flex gap-1 justify-end"><Btn /><Btn /></div>
+      <div className="text-[9px] text-gray-400 text-center">Paso 2 de 5</div>
+      <div className="flex gap-1.5 justify-center items-center">
+        <div className="h-6 w-6 bg-gray-200/80 rounded flex items-center justify-center gap-0.5">
+          <div className="h-3 w-0.5 bg-gray-500 rounded-full" />
+          <div className="w-0 h-0 border-t-[3px] border-b-[3px] border-r-[4px] border-t-transparent border-b-transparent border-r-gray-500" />
+        </div>
+        <div className="h-7 w-7 bg-gray-400/60 rounded-full flex items-center justify-center">
+          <div className="w-0 h-0 border-t-[4px] border-b-[4px] border-l-[6px] border-t-transparent border-b-transparent border-l-white ml-0.5" />
+        </div>
+        <div className="h-6 w-6 bg-gray-200/80 rounded flex items-center justify-center gap-0.5">
+          <div className="w-0 h-0 border-t-[3px] border-b-[3px] border-l-[4px] border-t-transparent border-b-transparent border-l-gray-500" />
+          <div className="h-3 w-0.5 bg-gray-500 rounded-full" />
+        </div>
+      </div>
     </div>
   )
 }

@@ -3,22 +3,31 @@ const L = ({ w = 'full', h = '1.5' }) => (
 )
 
 export function ComicWireframe() {
-  const panels = [
-    { speech: 'tr', lines: 2 },
-    { speech: 'tl', lines: 1 },
-    { speech: 'br', lines: 2 },
-    { speech: 'bl', lines: 1 },
-  ]
   return (
-    <div className="grid grid-cols-2 gap-1 p-2">
-      {panels.map((p, i) => (
-        <div key={i} className="flex flex-col gap-0.5">
-          <div className="h-10 bg-gray-200/80 rounded-md relative overflow-hidden">
-            <div className={`absolute ${p.speech.includes('r') ? 'right-1' : 'left-1'} ${p.speech.includes('t') ? 'top-1' : 'bottom-1'} h-4 w-8 bg-white rounded-md border border-gray-300/60`} />
-          </div>
-          <div className="flex flex-col gap-0.5">{Array.from({ length: p.lines }).map((_, j) => <L key={j} w={j === 0 ? 'full' : '3/4'} h="1" />)}</div>
+    <div className="flex flex-col gap-2 p-2">
+      <div className="h-14 bg-gray-200/80 rounded-md relative overflow-hidden">
+        <div className="absolute top-2 right-2 h-5 w-12 bg-white rounded-md border border-gray-300/60 flex items-center px-1">
+          <div className="h-1 w-full bg-gray-300/60 rounded-full" />
         </div>
-      ))}
+        <div className="absolute bottom-0 left-3 h-9 w-5 bg-gray-300/60 rounded-t-full" />
+        <div className="absolute top-1 left-1 h-3.5 w-3.5 rounded-full bg-gray-400/50 flex items-center justify-center">
+          <span className="text-[7px] text-gray-500 font-bold">2</span>
+        </div>
+      </div>
+      <div className="flex items-center justify-between px-1">
+        <div className="h-5 w-5 bg-gray-200/80 rounded-full" />
+        <div className="flex gap-1">
+          {[1,2,3,4,5].map((i) => (
+            <div key={i} className={`rounded-full ${i === 2 ? 'h-2 w-2 bg-gray-500' : 'h-1.5 w-1.5 bg-gray-300/80'}`} />
+          ))}
+        </div>
+        <div className="h-5 w-5 bg-gray-200/80 rounded-full" />
+      </div>
+      <div className="flex gap-1">
+        {[1,2,3,4,5].map((i) => (
+          <div key={i} className={`flex-1 h-5 rounded-sm ${i === 2 ? 'bg-gray-400/60 ring-1 ring-gray-400' : 'bg-gray-200/60'}`} />
+        ))}
+      </div>
     </div>
   )
 }
