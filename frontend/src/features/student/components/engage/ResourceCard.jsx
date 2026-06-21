@@ -1,4 +1,5 @@
 import { BookBookmark, Gear } from '@phosphor-icons/react'
+import { motion } from 'motion/react'
 import { RESOURCE_ICONS } from '@/features/ova_library/lib/resourceIcons.js'
 
 const INTERACTIVIDAD_COLOR = {
@@ -67,14 +68,17 @@ export function ResourceCard({
           </span>
         )}
         {hasConfig && (
-          <button
+          <motion.button
             type="button"
             onClick={(e) => { e.stopPropagation(); onConfigClick?.(resource) }}
-            className="flex-shrink-0 p-1 rounded-md hover:bg-muted/60 transition-colors"
+            className="flex-shrink-0 p-1.5 rounded-md hover:bg-muted/60 transition-colors"
             title="Configurar recurso"
+            whileHover={{ rotate: 90, scale: 1.2 }}
+            whileTap={{ scale: 0.85 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
           >
             <Gear size={14} weight="duotone" style={{ color: phaseColor }} />
-          </button>
+          </motion.button>
         )}
       </div>
     </button>

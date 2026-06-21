@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { BookBookmark } from '@phosphor-icons/react'
 import { RESOURCE_ICONS } from '@/features/ova_library/lib/resourceIcons.js'
 import { getSchema } from '@/features/ova_library/lib/resourceConfigSchema.js'
-import { Dialog, DialogContent } from '@/core/components/ui/dialog'
 import { Button } from '@/core/components/ui/button'
 
 export function ResourceConfigModal({
@@ -19,13 +18,21 @@ export function ResourceConfigModal({
     return init
   })
 
-  function set(key, val) {
-    setValues((prev) => ({ ...prev, [key]: val }))
+  function set(fieldKey, val) {
+    setValues((prev) => ({ ...prev, [fieldKey]: val }))
   }
 
   return (
-    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="sm:max-w-sm p-0 gap-0 flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      {/* backdrop — click closes only this modal */}
+      <div
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 bg-background rounded-2xl shadow-2xl w-full sm:max-w-sm flex flex-col overflow-hidden border border-border">
+        {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b border-border shrink-0">
           <div className="p-2 rounded-xl shrink-0" style={{ backgroundColor: `${phaseColor}18` }}>
             <Icon size={20} weight="duotone" style={{ color: phaseColor }} />
@@ -36,7 +43,8 @@ export function ResourceConfigModal({
           </div>
         </div>
 
-        <div className="p-4 flex flex-col gap-4 flex-1">
+        {/* Fields */}
+        <div className="p-4 flex flex-col gap-4 flex-1 overflow-y-auto max-h-[60vh]">
           {schema.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
               Este recurso no tiene opciones configurables.
@@ -47,7 +55,9 @@ export function ResourceConfigModal({
               return (
                 <div key={field.key} className={`flex flex-col gap-1.5 ${disabled ? 'opacity-50' : ''}`}>
                   <div className="flex justify-between items-center">
-                    <label htmlFor={field.key} className="text-sm font-medium text-foreground">{field.label}</label>
+                    <label htmlFor={field.key} className="text-sm font-medium text-foreground">
+                      {field.label}
+                    </label>
                     <span className="text-sm font-bold tabular-nums" style={{ color: phaseColor }}>
                       {values[field.key]}
                     </span>
@@ -80,14 +90,18 @@ export function ResourceConfigModal({
           )}
         </div>
 
+        {/* Footer */}
         <div className="flex justify-end gap-2 p-4 border-t border-border shrink-0">
           <Button variant="ghost" size="sm" onClick={onClose}>Cancelar</Button>
-          <Button size="sm" onClick={() => { onSave(phaseKey, resource, values); onClose() }}
-            style={{ backgroundColor: phaseColor, borderColor: phaseColor }}>
+          <Button
+            size="sm"
+            onClick={() => { onSave(phaseKey, resource, values); onClose() }}
+            style={{ backgroundColor: phaseColor, borderColor: phaseColor }}
+          >
             Aplicar
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   )
 }
