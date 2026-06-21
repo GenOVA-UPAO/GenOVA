@@ -1,28 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
-import { motion, AnimatePresence } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
+import { Button } from '@/core/components/ui/button'
 import { useOvaCreation } from '@/features/ova_workspace/hooks/useOvaCreation.js'
 import { PhaseSelectModal } from '@/features/ova_library/components/modals/PhaseSelectModal.jsx'
-import { CrearOvaChatPanel } from '@/features/ova_workspace/components/creation/CrearOvaChatPanel.jsx'
+import { OvaCreateFormCard } from '@/features/ova_workspace/components/creation/OvaCreateFormCard.jsx'
 import { CrearOvaPreviewPanel } from '@/features/ova_workspace/components/creation/CrearOvaPreviewPanel.jsx'
+import { ProgressPanel } from '@/features/ova_workspace/components/creation/ProgressPanel.jsx'
+import { TotalFailurePanel } from '@/features/ova_workspace/components/creation/TotalFailurePanel.jsx'
 
-const topbarVariants = {
-  hidden: { opacity: 0, y: -20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
-}
-
-const contentVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.4, delay: 0.1 } }
-}
-
-/**
- * Creation mode of the unified OVA workspace.
- * Left: CrearOvaChatPanel (prompt + resource config + live progress).
- * Right: CrearOvaPreviewPanel (resources preview as they generate).
- * On success it calls onCreated(ovaId); the parent shell swaps to edit mode
- * in place (no separate page), so create and edit are one surface.
- */
 export function OvaCreationView({ onCreated }) {
   const location = useLocation()
   const {
@@ -30,14 +16,13 @@ export function OvaCreationView({ onCreated }) {
     isModalOpen, openModal, closeModal, confirmSelections,
     selections, totalResources,
     theme, setTheme,
-    canConfigure, canGenerate, isGenerating,
+    canConfigure, canGenerate,
     generate, reset, restore, minChars,
     job,
     uploads, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
     isUploadingFiles, maxUploadFiles, uploadError,
   } = useOvaCreation()
 
-  // HU-023 R4 — resume an in-progress job navigated from Mis OVAs.
   useEffect(() => {
     const jobId = location.state?.resumeJobId
     if (jobId && job.phase === 'idle') restore(jobId)
@@ -45,16 +30,15 @@ export function OvaCreationView({ onCreated }) {
 
   const { jobId, job: jobData, viewModel, outcome, selectedFailedIds, error } = job
   const hasJob = job.phase !== 'idle'
+  const isGenerating = job.phase === 'starting' || job.phase === 'polling'
   const isTerminal = job.phase === 'terminal'
   const ovaId = jobData?.ova_id ?? null
 
-  // Hand off to edit mode once generation finishes with at least one resource.
   useEffect(() => {
     if (!isTerminal || !outcome.anyDone || !ovaId) return
     onCreated?.(ovaId)
   }, [isTerminal, outcome.anyDone, ovaId, onCreated])
 
-  // Pinned resource for right panel (user click or auto first-done).
   const [pinnedId, setPinnedId] = useState(null)
   const firstDoneId = viewModel.find((r) => r.status === 'check')?.id ?? null
   const pinnedIsDone = viewModel.some((r) => r.id === pinnedId && r.status === 'check')
@@ -66,75 +50,73 @@ export function OvaCreationView({ onCreated }) {
     disabled: false,
   }
 
+  const doneCount = viewModel.filter((r) => r.status === 'check').length
+  const total = viewModel.length || 1
+  const pct = Math.round((doneCount / total) * 100)
+
+  if (!hasJob) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0 bg-background text-foreground">
+        <OvaCreateFormCard
+          prompt={prompt} setPrompt={setPrompt} minChars={minChars}
+          canConfigure={canConfigure} canGenerate={canGenerate}
+          openModal={openModal} selections={selections} totalResources={totalResources}
+          theme={theme} setTheme={setTheme}
+          generate={generate} error={error}
+          uploadsProps={uploadsProps}
+        />
+        <AnimatePresence>
+          {isModalOpen && (
+            <PhaseSelectModal onClose={closeModal} onConfirm={confirmSelections} initialSelections={selections} />
+          )}
+        </AnimatePresence>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-background text-foreground">
-      {/* Topbar — same minimal style as edit mode */}
-      <motion.header 
-        variants={topbarVariants}
-        initial="hidden"
-        animate="show"
-        className="flex items-center gap-4 border-b border-border/50 px-5 py-3 bg-card/60 backdrop-blur-md shrink-0 z-10"
-      >
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-display font-semibold truncate text-foreground">Crear OVA</h1>
-          <p className="text-xs font-medium text-muted-foreground hidden sm:block mt-0.5">
-            Define el tema, configura los recursos y genera con IA.
-          </p>
-        </div>
-      </motion.header>
-
-      {/* Split panels */}
-      <motion.div 
-        variants={contentVariants}
-        initial="hidden"
-        animate="show"
-        className="flex flex-1 min-h-0 overflow-hidden"
-      >
-        {/* Left — creation chat panel (420px, always visible) */}
-        <div className="w-full sm:w-2/5 md:w-[380px] lg:w-[420px] sm:shrink-0 border-r border-border/50 bg-card/30 flex flex-col overflow-hidden">
-          <CrearOvaChatPanel
-            prompt={prompt} setPrompt={setPrompt} minChars={minChars}
-            canConfigure={canConfigure} canGenerate={canGenerate}
-            isGenerating={isGenerating} isDone={isTerminal}
-            openModal={openModal}
-            selections={selections}
-            totalResources={totalResources}
-            theme={theme} setTheme={setTheme}
-            generate={generate} reset={reset} error={error}
-            uploadsProps={uploadsProps}
-            hasJob={hasJob}
-            job={jobData}
-            viewModel={viewModel}
-            outcome={outcome}
-            selectedFailedIds={selectedFailedIds}
-            jobToggleFailed={job.toggleFailed}
-            jobRetryOne={job.retryOne}
-            jobSelectAllFailed={job.selectAllFailed}
-            jobRetrySelected={job.retrySelected}
-            onPreviewPin={setPinnedId}
-            activeId={activeId}
-          />
-        </div>
-
-        {/* Right — live resource preview (desktop only; mobile: left panel is full-width) */}
-        <div className="hidden sm:flex flex-col flex-1 min-h-0 overflow-hidden bg-muted/10">
-          <CrearOvaPreviewPanel
-            jobId={jobId}
-            viewModel={viewModel}
-            pinnedId={pinnedId}
-            onPin={setPinnedId}
-          />
-        </div>
-      </motion.div>
-
-      <AnimatePresence>
-        {isModalOpen && (
-          <PhaseSelectModal
-            onClose={closeModal} onConfirm={confirmSelections}
-            initialSelections={selections}
-          />
+      <header className="flex items-center gap-3 border-b border-border/50 px-5 py-3 bg-card/60 backdrop-blur-md shrink-0">
+        <h1 className="flex-1 text-base font-display font-semibold truncate">Generando OVA…</h1>
+        {isGenerating && (
+          <span className="shrink-0 flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary border border-primary/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            Generando…
+          </span>
         )}
-      </AnimatePresence>
+        {viewModel.length > 0 && (
+          <span className="text-sm font-bold text-primary tabular-nums shrink-0">{pct}%</span>
+        )}
+      </header>
+
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div className="w-full sm:w-[380px] lg:w-[420px] sm:shrink-0 border-r border-border/50 flex flex-col overflow-hidden bg-card/30">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {viewModel.length > 0 && (
+              <ProgressPanel
+                job={jobData} viewModel={viewModel}
+                selectedIds={selectedFailedIds} activeId={activeId}
+                onToggle={job.toggleFailed} onRetryOne={job.retryOne}
+                onPreview={setPinnedId}
+                onSelectAll={job.selectAllFailed} onRetrySelected={job.retrySelected}
+              />
+            )}
+            {isTerminal && outcome?.totalFail && (
+              <TotalFailurePanel viewModel={viewModel} onRetryAll={reset} />
+            )}
+            {isTerminal && !outcome?.totalFail && (
+              <Button type="button" variant="link" size="sm" className="p-0 h-auto text-xs" onClick={reset}>
+                ← Crear otro OVA
+              </Button>
+            )}
+            {error && <p className="text-xs text-destructive">{error}</p>}
+          </div>
+        </div>
+
+        <div className="hidden sm:flex flex-col flex-1 min-h-0 overflow-hidden bg-muted/10">
+          <CrearOvaPreviewPanel jobId={jobId} viewModel={viewModel} pinnedId={pinnedId} onPin={setPinnedId} />
+        </div>
+      </div>
     </div>
   )
 }
