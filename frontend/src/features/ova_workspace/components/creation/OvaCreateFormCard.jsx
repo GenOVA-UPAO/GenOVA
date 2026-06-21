@@ -8,7 +8,7 @@ import { OvaThemeModal } from '@/features/ova_workspace/components/modals/OvaThe
 
 export function OvaCreateFormCard({
   prompt, setPrompt, minChars,
-  canConfigure, canGenerate,
+  canGenerate,
   openModal, selections, totalResources,
   theme, setTheme,
   generate, error,
@@ -89,7 +89,7 @@ export function OvaCreateFormCard({
 
             <div className="flex items-center gap-0.5 border-t border-border/60 px-3 py-2.5 bg-muted/20">
               <Button type="button" variant="ghost" size="icon-sm" onClick={openModal}
-                disabled={!canConfigure} title="Configurar recursos 5E"
+                title="Configurar recursos 5E"
                 className={`rounded-lg ${totalResources > 0 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
                 <SlidersHorizontal size={19} weight={totalResources > 0 ? 'fill' : 'regular'} />
               </Button>

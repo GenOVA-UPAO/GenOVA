@@ -26,9 +26,9 @@ export function useOvaCreation() {
   const { phase, start, reset: resetJob, restore } = jobApi
 
   const totalResources = ALL_PHASES.reduce((s, p) => s + (selections[p]?.length ?? 0), 0)
-  const canConfigure = prompt.trim().length >= MIN_CHARS
+  const phasesWithResources = ALL_PHASES.filter((p) => (selections[p]?.length ?? 0) > 0).length
   const isGenerating = phase === 'starting' || phase === 'polling'
-  const canGenerate = canConfigure && ALL_PHASES.every((p) => (selections[p]?.length ?? 0) > 0) && !isGenerating
+  const canGenerate = prompt.trim().length >= MIN_CHARS && phasesWithResources >= 2 && !isGenerating
 
   const confirmSelections = useCallback((picks) => {
     setSelections({ ...EMPTY_SELECTIONS, ...picks })
@@ -54,7 +54,7 @@ export function useOvaCreation() {
     isModalOpen, openModal, closeModal, confirmSelections,
     selections, totalResources,
     theme, setTheme,
-    canConfigure, canGenerate, isGenerating,
+    canGenerate, isGenerating,
     generate, reset, restore, minChars: MIN_CHARS,
     // job orchestration (viewmodel, outcome, retry actions, jobId)
     job: jobApi,

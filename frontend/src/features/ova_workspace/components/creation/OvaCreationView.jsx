@@ -16,7 +16,7 @@ export function OvaCreationView({ onCreated }) {
     isModalOpen, openModal, closeModal, confirmSelections,
     selections, totalResources,
     theme, setTheme,
-    canConfigure, canGenerate,
+    canGenerate,
     generate, reset, restore, minChars,
     job,
     uploads, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
@@ -59,7 +59,7 @@ export function OvaCreationView({ onCreated }) {
       <div className="flex flex-col flex-1 min-h-0 bg-background text-foreground">
         <OvaCreateFormCard
           prompt={prompt} setPrompt={setPrompt} minChars={minChars}
-          canConfigure={canConfigure} canGenerate={canGenerate}
+          canGenerate={canGenerate}
           openModal={openModal} selections={selections} totalResources={totalResources}
           theme={theme} setTheme={setTheme}
           generate={generate} error={error}

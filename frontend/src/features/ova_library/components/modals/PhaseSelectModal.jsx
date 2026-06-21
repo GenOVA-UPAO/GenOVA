@@ -88,7 +88,8 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
   const currentPicks = picks[phase.key]
   const currentList = recursos[phase.key]
   const isLast = step === PHASE_CFG.length - 1
-  const canAdvance = currentPicks.length > 0
+  const totalPhasesSelected = PHASE_CFG.filter((p) => picks[p.key].length > 0).length
+  const canAdvance = isLast ? totalPhasesSelected >= 2 : true
   const limitReached = currentPicks.length >= MAX_PER_PHASE
 
   function selectResource(r) {
@@ -97,7 +98,7 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
 
   function handleNext() {
     if (!isLast) { setStep((s) => s + 1); return }
-    if (PHASE_CFG.every((p) => picks[p.key].length > 0)) onConfirm(picks)
+    if (totalPhasesSelected >= 2) onConfirm(picks)
   }
 
   const total = PHASE_CFG.reduce((s, p) => s + picks[p.key].length, 0)
@@ -182,14 +183,19 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
             {step === 0 ? 'Cancelar' : '← Atrás'}
           </Button>
           <div className="flex items-center gap-3">
-            {total > 0 && (
+            {isLast && totalPhasesSelected < 2 && (
               <span className="text-xs text-muted-foreground hidden sm:block">
-                {total} recurso{total !== 1 ? 's' : ''} total{total !== 1 ? 'es' : ''}
+                Selecciona recursos en al menos 2 fases
+              </span>
+            )}
+            {(isLast ? totalPhasesSelected >= 2 : total > 0) && (
+              <span className="text-xs text-muted-foreground hidden sm:block">
+                {total} recurso{total !== 1 ? 's' : ''} · {totalPhasesSelected} fase{totalPhasesSelected !== 1 ? 's' : ''}
               </span>
             )}
             <Button onClick={handleNext} disabled={!canAdvance}
               style={canAdvance ? { backgroundColor: phase.color, borderColor: phase.color } : undefined}>
-              {isLast ? `Confirmar (${total}) ✓` : 'Siguiente →'}
+              {isLast ? `Confirmar (${total}) ✓` : currentPicks.length === 0 ? 'Saltar →' : 'Siguiente →'}
             </Button>
           </div>
         </footer>

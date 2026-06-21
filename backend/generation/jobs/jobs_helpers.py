@@ -58,13 +58,12 @@ class StartJobRequest(BaseModel):
     theme: ThemeRequest = Field(default_factory=ThemeRequest)
 
     @model_validator(mode="after")
-    def require_all_phases(self) -> "StartJobRequest":
+    def require_at_least_two_phases(self) -> "StartJobRequest":
         if not self.resources:
             return self
         phases = {r.phase_type.strip().lower() for r in self.resources}
-        for required in ("engage", "explore", "explain", "elaborate", "evaluate"):
-            if required not in phases:
-                raise ValueError(f'Se requiere al menos un recurso de la fase "{required}".')
+        if len(phases) < 2:
+            raise ValueError("Se requieren recursos de al menos 2 fases 5E distintas.")
         return self
 
 
