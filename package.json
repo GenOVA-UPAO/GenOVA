@@ -3,11 +3,6 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@10.15.1",
-  "pnpm": {
-    "allowedDeprecatedVersions": {
-      "node-domexception": "1.0.0"
-    }
-  },
   "scripts": {
     "dev": "pnpm --filter frontend dev",
     "build": "pnpm --filter frontend build",
