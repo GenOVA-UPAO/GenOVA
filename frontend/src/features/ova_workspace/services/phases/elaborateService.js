@@ -1,4 +1,4 @@
-import { apiJson } from '../../../core/lib/http.js'
+import { apiJson } from '../../../../core/lib/http.js'
 
 export function fetchElaborateRecursos() {
   return apiJson('/api/agents/elaborate/recursos')

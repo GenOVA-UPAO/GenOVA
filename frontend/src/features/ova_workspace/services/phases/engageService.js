@@ -1,4 +1,4 @@
-import { apiJson } from '../../../core/lib/http.js'
+import { apiJson } from '../../../../core/lib/http.js'
 
 export function fetchEngageRecursos() {
   return apiJson('/api/agents/engage/recursos')
