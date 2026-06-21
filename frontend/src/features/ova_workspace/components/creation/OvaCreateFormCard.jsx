@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { GridFour, Paperclip, Palette, Lightning, X } from '@phosphor-icons/react'
+import { SlidersHorizontal, Paperclip, Swatches, Lightning, X } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
 import { Textarea } from '@/core/components/ui/textarea'
 import { FileChip } from '@/features/ova_workspace/components/shared/FileChip.jsx'
@@ -123,7 +123,7 @@ export function OvaCreateFormCard({
               <Button type="button" variant="ghost" size="icon-sm" onClick={openModal}
                 disabled={!canConfigure} title="Configurar recursos 5E"
                 className={`rounded-lg ${totalResources > 0 ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                <GridFour size={19} weight={totalResources > 0 ? 'fill' : 'regular'} />
+                <SlidersHorizontal size={19} weight={totalResources > 0 ? 'fill' : 'regular'} />
               </Button>
               <Button type="button" variant="ghost" size="icon-sm"
                 onClick={() => fileInputRef.current?.click()}
@@ -134,7 +134,7 @@ export function OvaCreateFormCard({
               <Button type="button" variant="ghost" size="icon-sm"
                 onClick={() => setShowTheme(true)} title="Tema visual del OVA"
                 className="rounded-lg text-muted-foreground hover:text-foreground">
-                <Palette size={19} />
+                <Swatches size={19} />
               </Button>
 
               <div className="flex-1" />
