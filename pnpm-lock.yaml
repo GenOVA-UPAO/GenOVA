@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  node-domexception: ^2.0.1
-
 importers:
 
   .: {}
@@ -2407,9 +2404,9 @@ packages:
     resolution: {integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==}
     engines: {node: '>= 0.6'}
 
-  node-domexception@2.0.2:
-    resolution: {integrity: sha512-Qf9vHK9c5MGgUXj8SnucCIS4oEPuUstjRaMplLGeZpbWMfNV1rvEcXuwoXfN51dUfD1b4muPHPQtCx/5Dj/QAA==}
-    engines: {node: '>=16'}
+  node-domexception@1.0.0:
+    resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
+    engines: {node: '>=10.5.0'}
     deprecated: Use your platform's native DOMException instead
 
   node-fetch@3.3.2:
@@ -4934,7 +4931,7 @@ snapshots:
 
   fetch-blob@3.2.0:
     dependencies:
-      node-domexception: 2.0.2
+      node-domexception: 1.0.0
       web-streams-polyfill: 3.3.3
 
   figures@6.1.0:
@@ -5344,7 +5341,7 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  node-domexception@2.0.2: {}
+  node-domexception@1.0.0: {}
 
   node-fetch@3.3.2:
     dependencies:

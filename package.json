@@ -4,11 +4,8 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.15.1",
   "pnpm": {
-    "overrides": {
-      "node-domexception": "^2.0.1"
-    },
     "allowedDeprecatedVersions": {
-      "node-domexception": "*"
+      "node-domexception": "1.0.0"
     }
   },
   "scripts": {
