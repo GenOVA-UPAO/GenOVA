@@ -68,6 +68,9 @@ export function ResourceConfigModal({
                     <span>{field.min}</span>
                     <span>{field.max}</span>
                   </div>
+                  {field.description && (
+                    <p className="text-[11px] text-muted-foreground leading-tight">{field.description}</p>
+                  )}
                   {disabled && (
                     <p className="text-[11px] text-amber-600">Sin API key de video configurada</p>
                   )}
