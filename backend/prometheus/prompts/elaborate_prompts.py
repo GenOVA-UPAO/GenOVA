@@ -24,7 +24,8 @@ CODE_ONLY = {4, 5, 7, 9}
 
 
 def prompt_codigo(
-    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None
+    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None,
+    config: dict | None = None,
 ) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
     ds = design_system or DESIGN_SYSTEM
@@ -70,15 +71,16 @@ def prompt_codigo(
     return base + contexto if base else ""
 
 
-def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     t = {
         1: f"""[ROL] Redactor de casos de estudio para ciencias de datos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Caso de estudio: narrativa 180 palabras (empresa ficticia, problema concreto, datos), 4 preguntas progresivas (observar->diagnosticar->proponer->evaluar), respuesta_modelo <=50 palabras cada una con razonamiento.
+[TAREA] Caso de estudio: narrativa 180 palabras (empresa ficticia, problema concreto, datos), {cfg.get('num_questions', 4)} preguntas progresivas (observar->diagnosticar->proponer->evaluar), respuesta_modelo <=50 palabras cada una con razonamiento.
 [RESTRICCIONES] Sector reconocible. Datos plausibles. Preguntas que guien razonamiento.
-[SALIDA] JSON puro con claves "narrativa","preguntas" (array de 4 con pregunta,respuesta_modelo).""",
+[SALIDA] JSON puro con claves "narrativa","preguntas" (array de {cfg.get('num_questions', 4)} con pregunta,respuesta_modelo).""",
         2: f"""[ROL] Instructor de ejercicios practicos de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
@@ -88,21 +90,21 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
         3: f"""[ROL] Diseniador de mini-proyectos de ML aplicado.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Mini-proyecto: objetivo 50 palabras, 3 entregables evaluables, dataset_sugerido 80 palabras (al menos 8 variables, 50 registros), rubrica con 4 criterios y 3 niveles cada uno (basico/competente/avanzado).
+[TAREA] Mini-proyecto: objetivo 50 palabras, {cfg.get('num_deliverables', 3)} entregables evaluables, dataset_sugerido 80 palabras (al menos 8 variables, 50 registros), rubrica con 4 criterios y 3 niveles cada uno (basico/competente/avanzado).
 [RESTRICCIONES] Entregables en 8-10 min. Dataset realista y descriptivo.
-[SALIDA] JSON puro con claves "objetivo","entregables" (array de 3),"dataset_sugerido","rubrica".""",
+[SALIDA] JSON puro con claves "objetivo","entregables" (array de {cfg.get('num_deliverables', 3)}),"dataset_sugerido","rubrica".""",
         6: f"""[ROL] Diseniador de escenarios de decision ramificados.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Escenario ramificado de 3 niveles aplicando "{concept}". Nivel 1: situacion 60 palabras + 2 opciones -> cada una lleva a nivel 2 con nueva situacion + 2 opciones mas. Cada rama final: desenlace 40 palabras + leccion_aprendida conectada con "{concept}".
+[TAREA] Escenario ramificado de {cfg.get('num_decisions', 3)} niveles aplicando "{concept}". Nivel 1: situacion 60 palabras + 2 opciones -> cada una lleva al siguiente nivel con nueva situacion + 2 opciones. Cada rama final: desenlace 40 palabras + leccion_aprendida conectada con "{concept}".
 [RESTRICCIONES] Decisiones no triviales. Todas las ramas pedagogicamente valiosas.
 [SALIDA] JSON puro con estructura de arbol: "nodo_raiz" con situacion,opciones (array de 2 con siguiente_nodo,desenlace,leccion_aprendida).""",
         8: f"""[ROL] Facilitador de resolucion de problemas de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Mapa de 4 problemas donde "{concept}" es la solucion. Cada uno: contexto 40 palabras (sector+situacion), 3 sintomas observables, diagnostico (por que "{concept}"), solucion_recomendada 50 palabras.
+[TAREA] Mapa de {cfg.get('num_problems', 4)} problemas donde "{concept}" es la solucion. Cada uno: contexto 40 palabras (sector+situacion), 3 sintomas observables, diagnostico (por que "{concept}"), solucion_recomendada 50 palabras.
 [RESTRICCIONES] Sectores diversos (salud, finanzas, retail, industria). Sintomas sin jerga experta.
-[SALIDA] JSON puro con clave "problemas": array de 4 con "contexto","sintomas" (array de 3),"diagnostico","solucion_recomendada".""",
+[SALIDA] JSON puro con clave "problemas": array de {cfg.get('num_problems', 4)} con "contexto","sintomas" (array de 3),"diagnostico","solucion_recomendada".""",
         10: f"""[ROL] Diseniador de retos de arquitectura de soluciones ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"

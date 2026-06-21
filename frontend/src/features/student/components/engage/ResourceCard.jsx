@@ -1,4 +1,4 @@
-import { BookBookmark } from '@phosphor-icons/react'
+import { BookBookmark, Gear } from '@phosphor-icons/react'
 import { RESOURCE_ICONS } from '@/features/ova_library/lib/resourceIcons.js'
 
 const INTERACTIVIDAD_COLOR = {
@@ -12,11 +12,12 @@ export function ResourceCard({
   phaseKey = '', phaseColor = '#3B82F6',
   selectionIndex = null, disabled = false,
   showVideoHint = false,
+  hasConfig = false, onConfigClick,
 }) {
   const Icon = RESOURCE_ICONS[`${phaseKey}:${resource.id}`] ?? BookBookmark
 
-  let baseClass = 'border-border bg-card hover:border-primary/30 hover:shadow-md'
-  if (disabled) baseClass = 'border-border bg-muted/40 opacity-50 cursor-not-allowed'
+  let baseClass = 'relative border-border bg-card hover:border-primary/30 hover:shadow-md'
+  if (disabled) baseClass = 'relative border-border bg-muted/40 opacity-50 cursor-not-allowed'
 
   const selectedStyle = selected ? {
     boxShadow: `0 0 0 2px ${phaseColor}`,
@@ -64,6 +65,16 @@ export function ResourceCard({
           >
             {selectionIndex ?? '✓'}
           </span>
+        )}
+        {hasConfig && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onConfigClick?.(resource) }}
+            className="flex-shrink-0 p-1 rounded-md hover:bg-muted/60 transition-colors"
+            title="Configurar recurso"
+          >
+            <Gear size={14} weight="duotone" style={{ color: phaseColor }} />
+          </button>
         )}
       </div>
     </button>

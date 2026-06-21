@@ -9,9 +9,9 @@ from prometheus.prompts.explore_prompts import RECURSOS_META
 EXPLORE_CODE_ONLY = {1, 6, 10}
 
 
-def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None):
+def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None, resource_config=None):
     gen = direct_code_gen if rt in EXPLORE_CODE_ONLY else two_step_gen
-    return gen("explore", rt, concept, llm_config, enabled_models, theme)
+    return gen("explore", rt, concept, llm_config, enabled_models, theme, resource_config=resource_config)
 
 
 def explore_node(state: OvaGenerationState) -> dict:

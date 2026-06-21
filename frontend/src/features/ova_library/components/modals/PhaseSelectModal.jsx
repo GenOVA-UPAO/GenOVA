@@ -13,6 +13,8 @@ import { ResourcePreviewPanel } from './ResourcePreviewPanel.jsx'
 import { Target, MagnifyingGlass, Lightbulb, Hammer, CheckCircle } from '@phosphor-icons/react'
 import { Dialog, DialogContent } from '@/core/components/ui/dialog'
 import { Button } from '@/core/components/ui/button'
+import { getSchema, getDefaultConfig } from '@/features/ova_library/lib/resourceConfigSchema.js'
+import { ResourceConfigModal } from './ResourceConfigModal.jsx'
 
 const PHASE_CFG = [
   { key: 'engage',    Icon: Target,         label: 'ENGAGE',    fetch: fetchEngageRecursos,
@@ -48,6 +50,8 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
   const [loading, setLoading] = useState(true)
   const [picks, setPicks] = useState(() => ({ ...EMPTY_PICKS(), ...(initialSelections ?? {}) }))
   const [hovered, setHovered] = useState(null)
+  const [resourceConfigs, setResourceConfigs] = useState({})
+  const [configTarget, setConfigTarget] = useState(null)
 
   const { data: nodesData } = useQuery({
     queryKey: ['admin', 'nodes-config'],
@@ -80,9 +84,14 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
     setPicks((prev) => ({ ...prev, [phase.key]: toggleSelection(prev[phase.key], r) }))
   }
 
+  function handleConfigSave(phaseKey, resource, values) {
+    setResourceConfigs((prev) => ({ ...prev, [`${phaseKey}:${resource.id}`]: values }))
+  }
+
   const previewResource = hovered ?? (currentPicks.length > 0 ? currentPicks[currentPicks.length - 1] : null)
 
   return (
+    <>
     <Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent className="top-auto bottom-0 left-0 right-0 w-full max-w-full translate-x-0 translate-y-0 rounded-t-2xl rounded-b-none sm:top-[50%] sm:bottom-auto sm:left-[50%] sm:right-auto sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-5xl sm:rounded-2xl max-h-[92vh] sm:max-h-[88vh] p-0 gap-0 flex flex-col overflow-hidden">
 
@@ -141,6 +150,8 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
                         phaseKey={phase.key}
                         phaseColor={phase.color}
                         showVideoHint={isVideoResource(phase.key, r.id) && !videoKeyConfigured}
+                        hasConfig={getSchema(phase.key, r.id).length > 0}
+                        onConfigClick={(r) => setConfigTarget({ resource: r, phaseKey: phase.key })}
                       />
                     )
                   })}
@@ -171,7 +182,7 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
                 {total} recurso{total !== 1 ? 's' : ''} · {totalPhasesSelected} fases
               </span>
             )}
-            <Button onClick={() => canConfirm && onConfirm(picks)} disabled={!canConfirm}
+            <Button onClick={() => canConfirm && onConfirm(picks, resourceConfigs)} disabled={!canConfirm}
               style={canConfirm ? { backgroundColor: phase.color, borderColor: phase.color } : undefined}>
               Confirmar ({total}) ✓
             </Button>
@@ -179,5 +190,19 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
         </footer>
       </DialogContent>
     </Dialog>
+
+    {configTarget && (
+      <ResourceConfigModal
+        resource={configTarget.resource}
+        phaseKey={configTarget.phaseKey}
+        phaseColor={PHASE_CFG.find((p) => p.key === configTarget.phaseKey)?.color ?? '#3B82F6'}
+        videoKeyConfigured={videoKeyConfigured}
+        config={resourceConfigs[`${configTarget.phaseKey}:${configTarget.resource.id}`]
+          ?? getDefaultConfig(configTarget.phaseKey, configTarget.resource.id)}
+        onSave={handleConfigSave}
+        onClose={() => setConfigTarget(null)}
+      />
+    )}
+    </>
   )
 }

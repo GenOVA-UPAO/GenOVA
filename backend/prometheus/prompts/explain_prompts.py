@@ -24,7 +24,8 @@ CODE_ONLY = {3, 5, 8, 10}
 
 
 def prompt_codigo(
-    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None
+    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None,
+    config: dict | None = None,
 ) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
     ds = design_system or DESIGN_SYSTEM
@@ -70,13 +71,14 @@ def prompt_codigo(
     return base + contexto if base else ""
 
 
-def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     t = {
         1: f"""[ROL] Guionista de videos educativos teoricos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Video teorico: guion_visual con 4 marcadores (cada 30 s) usando metaforas cotidianas; narracion_voz <=120 palabras tono divulgativo con pregunta reflexiva; prompt_video en ingles <=100 palabras para generador.
+[TAREA] Video teorico: guion_visual con {cfg.get('num_markers', 4)} marcadores (cada 30 s) usando metaforas cotidianas; narracion_voz <=120 palabras tono divulgativo con pregunta reflexiva; prompt_video en ingles <=100 palabras para generador.
 [RESTRICCIONES] Sin formulas ni jerga densa. Metaforas visuales potentes.
 [SALIDA] JSON puro con claves "guion_visual","narracion_voz","prompt_video".""",
         2: f"""[ROL] Redactor academico de lecturas guiadas.
@@ -88,27 +90,27 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
         4: f"""[ROL] Curador de contenido educativo interactivo.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] FAQ de 6 preguntas genuinas sobre "{concept}". Cada una: pregunta en lenguaje estudiantil, respuesta <=60 palabras con analogia, etiqueta (principiante/intermedio/avanzado), categoria.
+[TAREA] FAQ de {cfg.get('num_questions', 6)} preguntas genuinas sobre "{concept}". Cada una: pregunta en lenguaje estudiantil, respuesta <=60 palabras con analogia, etiqueta (principiante/intermedio/avanzado), categoria.
 [RESTRICCIONES] Preguntas genuinas no retoricas. Respuestas que iluminan sin clase magistral.
-[SALIDA] JSON puro con clave "faqs": array de 6 objetos con "pregunta","respuesta","etiqueta","categoria".""",
+[SALIDA] JSON puro con clave "faqs": array de {cfg.get('num_questions', 6)} objetos con "pregunta","respuesta","etiqueta","categoria".""",
         6: f"""[ROL] Lexicografo visual de conceptos de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Glosario de 8 terminos de "{concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras del mundo real.
+[TAREA] Glosario de {cfg.get('num_terms', 8)} terminos de "{concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras del mundo real.
 [RESTRICCIONES] Definiciones autocontenidas. Iconos distintos entre si.
-[SALIDA] JSON puro con clave "terminos": array de 8 objetos con "termino","definicion","icono_sugerido","ejemplo_concreto".""",
+[SALIDA] JSON puro con clave "terminos": array de {cfg.get('num_terms', 8)} objetos con "termino","definicion","icono_sugerido","ejemplo_concreto".""",
         7: f"""[ROL] Historiador de la ciencia de datos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Timeline de 5 hitos historicos reales de "{concept}". Cada hito: anio, titulo <=25 chars, descripcion 40 palabras tono cronica, dato_curioso, legado_actual 20 palabras.
+[TAREA] Timeline de {cfg.get('num_milestones', 5)} hitos historicos reales de "{concept}". Cada hito: anio, titulo <=25 chars, descripcion 40 palabras tono cronica, dato_curioso, legado_actual 20 palabras.
 [RESTRICCIONES] Hechos verificables, sin mitos. Conexion logica entre hitos.
-[SALIDA] JSON puro con clave "hitos": array de 5 objetos con "anio","titulo","descripcion","dato_curioso","legado_actual".""",
+[SALIDA] JSON puro con clave "hitos": array de {cfg.get('num_milestones', 5)} objetos con "anio","titulo","descripcion","dato_curioso","legado_actual".""",
         9: f"""[ROL] Analista comparativo de tecnologias de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Tabla comparativa de "{concept}" vs 3 conceptos relacionados. 4 dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.
+[TAREA] Tabla comparativa de "{concept}" vs 3 conceptos relacionados. {cfg.get('num_dimensions', 4)} dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.
 [RESTRICCIONES] Comparaciones objetivas y medibles. Sin sesgo. Dimensiones que diferencien.
-[SALIDA] JSON puro con claves "dimensiones" (array de 4) y "comparaciones" (array de 3 con concepto,valores,balance).""",
+[SALIDA] JSON puro con claves "dimensiones" (array de {cfg.get('num_dimensions', 4)}) y "comparaciones" (array de 3 con concepto,valores,balance).""",
     }
     base = t.get(n, "")
     return base + contexto if base else ""

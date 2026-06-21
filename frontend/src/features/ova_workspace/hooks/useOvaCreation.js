@@ -14,6 +14,7 @@ export function useOvaCreation() {
   const [prompt, setPrompt] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selections, setSelections] = useState(EMPTY_SELECTIONS)
+  const [resourceConfigs, setResourceConfigs] = useState({})
   // OVA content theme (color × design); default UPAO brand. Sent to the job.
   const [theme, setTheme] = useState({ color: 'upao', design: 'upao' })
 
@@ -30,8 +31,9 @@ export function useOvaCreation() {
   const isGenerating = phase === 'starting' || phase === 'polling'
   const canGenerate = prompt.trim().length >= MIN_CHARS && phasesWithResources >= 2 && !isGenerating
 
-  const confirmSelections = useCallback((picks) => {
+  const confirmSelections = useCallback((picks, configs = {}) => {
     setSelections({ ...EMPTY_SELECTIONS, ...picks })
+    setResourceConfigs(configs)
     setIsModalOpen(false)
   }, [])
 
@@ -43,8 +45,8 @@ export function useOvaCreation() {
 
   const generate = useCallback(() => {
     if (!canGenerate) return
-    start({ prompt: prompt.trim(), uploadIds, selections, theme })
-  }, [canGenerate, start, prompt, uploadIds, selections, theme])
+    start({ prompt: prompt.trim(), uploadIds, selections, theme, resourceConfigs })
+  }, [canGenerate, start, prompt, uploadIds, selections, theme, resourceConfigs])
 
   const openModal = useCallback(() => setIsModalOpen(true), [])
   const closeModal = useCallback(() => setIsModalOpen(false), [])

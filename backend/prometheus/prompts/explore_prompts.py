@@ -58,7 +58,8 @@ CODE_ONLY = {1, 6, 10}
 
 
 def prompt_codigo(
-    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None
+    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None,
+    config: dict | None = None,
 ) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
     ds = design_system or DESIGN_SYSTEM
@@ -95,27 +96,28 @@ def prompt_codigo(
     return base + contexto if base else ""
 
 
-def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     t = {
         2: f"""[ROL] Agente pedagógico socrático "DataGuide" — guías, nunca revelas la respuesta.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Sesión socrática de 6 turnos que lleva al estudiante a descubrir la idea central de "{concept}". Cada turno: dato_mostrado (un ejemplo, dato o situación concreta y relevante a "{concept}"), pregunta (≤28 palabras, abierta, guía al descubrimiento), respuesta_correcta (seguimiento si acierta), respuesta_incorrecta (pista adicional sin revelar).
+[TAREA] Sesión socrática de {cfg.get('num_turns', 6)} turnos que lleva al estudiante a descubrir la idea central de "{concept}". Cada turno: dato_mostrado (un ejemplo, dato o situación concreta y relevante a "{concept}"), pregunta (≤28 palabras, abierta, guía al descubrimiento), respuesta_correcta (seguimiento si acierta), respuesta_incorrecta (pista adicional sin revelar).
 [RESTRICCIONES] Nunca digas "la respuesta es". Tono de mentor curioso. Dificultad creciente entre turnos.
-[SALIDA] JSON puro con clave "turnos": array de 6 objetos con "turno","dato_mostrado","pregunta","respuesta_correcta","respuesta_incorrecta".""",
+[SALIDA] JSON puro con clave "turnos": array de {cfg.get('num_turns', 6)} objetos con "turno","dato_mostrado","pregunta","respuesta_correcta","respuesta_incorrecta".""",
         3: f"""[ROL] Diseñador de minijuegos de clasificación para ciencia de datos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Juego drag & drop de 6 rondas donde el estudiante clasifica items en 2 categorías propias de "{concept}" (elige las dos categorías más ilustrativas del tema). Define category_a y category_b. Cada ronda: item, contexto (1 línea), respuesta ("A" o "B"), feedback_correcto (≤16 palabras), feedback_incorrecto (≤16 palabras). Incluye al menos un caso ambiguo.
+[TAREA] Juego drag & drop de {cfg.get('num_rounds', 6)} rondas donde el estudiante clasifica items en 2 categorías propias de "{concept}" (elige las dos categorías más ilustrativas del tema). Define category_a y category_b. Cada ronda: item, contexto (1 línea), respuesta ("A" o "B"), feedback_correcto (≤16 palabras), feedback_incorrecto (≤16 palabras). Incluye al menos un caso ambiguo.
 [RESTRICCIONES] Sin repetir items. Dificultad creciente (de obvio a ambiguo).
-[SALIDA] JSON puro con claves "category_a","category_b" y "rondas": array de 6 objetos con "ronda","item","contexto","respuesta","feedback_correcto","feedback_incorrecto".""",
+[SALIDA] JSON puro con claves "category_a","category_b" y "rondas": array de {cfg.get('num_rounds', 6)} objetos con "ronda","item","contexto","respuesta","feedback_correcto","feedback_incorrecto".""",
         4: f"""[ROL] Guionista pedagógico de visualización de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Guion de video de 120 s sobre "{concept}" con marcadores de tiempo cada 30 s y metáforas cotidianas, más 3 preguntas de pausa activa (en los segundos 30, 75 y 110) que provoquen una predicción sin revelar la teoría.
+[TAREA] Guion de video de 120 s sobre "{concept}" con marcadores de tiempo cada 30 s y metáforas cotidianas, más {cfg.get('num_pauses', 3)} preguntas de pausa activa distribuidas a lo largo del video que provoquen una predicción sin revelar la teoría.
 [RESTRICCIONES] Sin fórmulas. Preguntas abiertas, no de opción múltiple.
-[SALIDA] JSON puro con claves "guion" (texto con marcadores de tiempo) y "pausas": array de 3 objetos con "segundo","pregunta".""",
+[SALIDA] JSON puro con claves "guion" (texto con marcadores de tiempo) y "pausas": array de {cfg.get('num_pauses', 3)} objetos con "segundo","pregunta".""",
         5: f"""[ROL] Redactor de materiales de análisis exploratorio.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
@@ -125,7 +127,7 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
         7: f"""[ROL] Instructor de análisis exploratorio de datos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Experimento guiado de 4 pasos para explorar "{concept}": descripcion_dataset (un conjunto de datos plausible y relevante al tema, descrito en texto), puntos para un gráfico (20-25 puntos con coordenadas x/y/grupo que formen una estructura visible coherente con "{concept}"), 3 preguntas de exploración progresivas, revelacion de 60 palabras que conecta lo observado con "{concept}".
+[TAREA] Experimento guiado de {cfg.get('num_steps', 4)} pasos para explorar "{concept}": descripcion_dataset (un conjunto de datos plausible y relevante al tema, descrito en texto), puntos para un gráfico (20-25 puntos con coordenadas x/y/grupo que formen una estructura visible coherente con "{concept}"), 3 preguntas de exploración progresivas, revelacion de 60 palabras que conecta lo observado con "{concept}".
 [RESTRICCIONES] Sin código visible. Las preguntas guían, no evalúan.
 [SALIDA] JSON puro con claves "descripcion_dataset","puntos" (array de objetos con x,y,grupo),"preguntas" (array de 3),"revelacion".""",
         8: f"""[ROL] Diseñador de aprendizaje basado en roles para científicos de datos junior.

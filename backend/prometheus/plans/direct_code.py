@@ -29,7 +29,8 @@ def _load_prompts(phase: str):
 
 
 def direct_code_gen(
-    phase: str, n: int, concept: str, llm_config=None, enabled_models=None, theme=None
+    phase: str, n: int, concept: str, llm_config=None, enabled_models=None, theme=None,
+    resource_config=None,
 ) -> str:
     mod = _load_prompts(phase)
 
@@ -40,7 +41,7 @@ def direct_code_gen(
 
     html = strip_markdown(
         generar_texto(
-            mod.prompt_codigo(n, concept, "", ds),
+            mod.prompt_codigo(n, concept, "", ds, resource_config or {}),
             "codigo",
             12000,
             llm_config,

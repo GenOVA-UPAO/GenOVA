@@ -56,6 +56,9 @@ class StartJobRequest(BaseModel):
     phases: list[str] = Field(default_factory=list, max_length=20)
     # OVA content theme (color × design). Defaults to UPAO brand when omitted.
     theme: ThemeRequest = Field(default_factory=ThemeRequest)
+    # Per-resource config overrides. Keys: "phase:resource_id" (e.g. "engage:1").
+    # Values: {param_key: int_value}. Missing keys use prompt defaults.
+    resource_configs: dict[str, dict] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def require_at_least_two_phases(self) -> "StartJobRequest":
@@ -141,6 +144,7 @@ def job_params(
         "llm_config": llm_config or {},
         "enabled_models": enabled_models or [],
         "image_settings": image_settings or {},
+        "resource_configs": dict(payload.resource_configs),
     }
 
 

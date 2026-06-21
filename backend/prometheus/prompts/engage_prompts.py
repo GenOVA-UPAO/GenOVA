@@ -55,15 +55,16 @@ RECURSOS_META = {
 }
 
 
-def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     t = {
         1: f"""[ROL] Guionista de cómics educativos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Guion de 5 viñetas con el robot "Max" que enganche al estudiante con "{concept}". Elige una analogía cotidiana concreta que capture fielmente la idea central de "{concept}" y construye una historia con progresión hacia un clímax que despierte curiosidad. Cada viñeta: descripcion_visual (≤25 palabras), dialogo (≤18 palabras), prompt_imagen (en inglés, estilo cartoon plano).
+[TAREA] Guion de {cfg.get('num_panels', 5)} viñetas con el robot "Max" que enganche al estudiante con "{concept}". Elige una analogía cotidiana concreta que capture fielmente la idea central de "{concept}" y construye una historia con progresión hacia un clímax que despierte curiosidad. Cada viñeta: descripcion_visual (≤25 palabras), dialogo (≤18 palabras), prompt_imagen (en inglés, estilo cartoon plano).
 [RESTRICCIONES] Sin jerga técnica en los diálogos. Humor empático. La analogía debe reflejar de verdad cómo funciona "{concept}".
-[SALIDA] JSON puro sin markdown: array de 5 objetos con claves "numero","descripcion_visual","dialogo","prompt_imagen".""",
+[SALIDA] JSON puro sin markdown: array de {cfg.get('num_panels', 5)} objetos con claves "numero","descripcion_visual","dialogo","prompt_imagen".""",
         2: f"""[ROL] Guionista audiovisual de EdTech.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
@@ -79,9 +80,9 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
         4: f"""[ROL] Diseñador de minijuegos educativos cronometrados.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Minijuego de 3 rondas (30 s c/u) que haga sentir la intuición central de "{concept}". Diseña una mecánica de "detectar o elegir" apropiada al tema: cada ronda muestra un caso concreto con varias opciones, una de las cuales es la correcta. Dificultad creciente. Cada ronda: enunciado, items (lista de 3-6 opciones), respuesta_correcta (el item correcto), feedback_correcto e feedback_incorrecto (≤14 palabras).
+[TAREA] Minijuego de {cfg.get('num_rounds', 3)} rondas (30 s c/u) que haga sentir la intuición central de "{concept}". Diseña una mecánica de "detectar o elegir" apropiada al tema: cada ronda muestra un caso concreto con varias opciones, una de las cuales es la correcta. Dificultad creciente. Cada ronda: enunciado, items (lista de 3-6 opciones), respuesta_correcta (el item correcto), feedback_correcto e feedback_incorrecto (≤14 palabras).
 [RESTRICCIONES] Sin jerga técnica. La mecánica debe conectar de forma genuina con "{concept}".
-[SALIDA] JSON puro con clave "rondas": array de 3 objetos con "ronda","enunciado","items","respuesta_correcta","feedback_correcto","feedback_incorrecto".""",
+[SALIDA] JSON puro con clave "rondas": array de {cfg.get('num_rounds', 3)} objetos con "ronda","enunciado","items","respuesta_correcta","feedback_correcto","feedback_incorrecto".""",
         5: f"""[ROL] Redactor de casos de ética en IA.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
@@ -103,15 +104,15 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
         8: f"""[ROL] Historiador de la tecnología.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Timeline de 4 hitos reales (o muy plausibles) que llevaron al desarrollo de "{concept}". Cada hito: año, nombre, descripcion de 45 palabras en tono de crónica, dato_sorprendente (1 línea), conexion_actual de 18 palabras con la vida del estudiante hoy.
+[TAREA] Timeline de {cfg.get('num_milestones', 4)} hitos reales (o muy plausibles) que llevaron al desarrollo de "{concept}". Cada hito: año, nombre, descripcion de 45 palabras en tono de crónica, dato_sorprendente (1 línea), conexion_actual de 18 palabras con la vida del estudiante hoy.
 [RESTRICCIONES] Hechos verídicos o altamente plausibles. Sin fórmulas. Cada hito ≤22 s de lectura.
-[SALIDA] JSON puro con clave "hitos": array de 4 objetos con "año","nombre","descripcion","dato_sorprendente","conexion_actual".""",
+[SALIDA] JSON puro con clave "hitos": array de {cfg.get('num_milestones', 4)} objetos con "año","nombre","descripcion","dato_sorprendente","conexion_actual".""",
         9: f"""[ROL] Diseñador de escape rooms educativas digitales.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] 3 acertijos lógicos encadenados cuya lógica refleje la intuición de "{concept}" SIN usar su terminología técnica. Cada acertijo: escenario de 55 palabras, opcion_A, opcion_B, respuesta_correcta ("A" o "B"), explicacion_conexion de 22 palabras que revela el paralelismo con "{concept}".
+[TAREA] {cfg.get('num_puzzles', 3)} acertijos lógicos encadenados cuya lógica refleje la intuición de "{concept}" SIN usar su terminología técnica. Cada acertijo: escenario de 55 palabras, opcion_A, opcion_B, respuesta_correcta ("A" o "B"), explicacion_conexion de 22 palabras que revela el paralelismo con "{concept}".
 [RESTRICCIONES] Respuestas deducibles por lógica cotidiana. Tono de urgencia narrativa.
-[SALIDA] JSON puro con clave "acertijos": array de 3 objetos con "numero","escenario","opcion_A","opcion_B","respuesta_correcta","explicacion_conexion".""",
+[SALIDA] JSON puro con clave "acertijos": array de {cfg.get('num_puzzles', 3)} objetos con "numero","escenario","opcion_A","opcion_B","respuesta_correcta","explicacion_conexion".""",
     }
     base = t.get(n, "")
     return base + contexto if base else ""
@@ -137,7 +138,8 @@ def prompt_simulador(
 
 
 def prompt_codigo(
-    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None
+    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None,
+    config: dict | None = None,
 ) -> str:
     # ENGAGE's only code-only resource is type 10 (Simulador Intuitivo). The
     # generic direct_code_gen plan calls prompt_codigo, so delegate to the
