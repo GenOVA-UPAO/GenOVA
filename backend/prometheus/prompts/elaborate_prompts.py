@@ -28,13 +28,14 @@ def prompt_codigo(
     config: dict | None = None,
 ) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     ds = design_system or DESIGN_SYSTEM
     t = {
         4: f"""[ROL] Desarrollador front-end de simulaciones aplicadas interactivas.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Simulacion HTML5 donde el estudiante aplique "{concept}" en un escenario realista.
-[TAREA] Entorno simulado con escenario empresarial concreto, 3-4 parametros ajustables, visualizacion SVG/canvas reactiva, metricas visibles y boton "Aplicar" que ejecuta "{concept}". Iterar al menos 3 veces para descubrir patrones.
+[TAREA] Entorno simulado con escenario empresarial concreto, {cfg.get('num_params', 3)}-{cfg.get('num_params', 3) + 1} parametros ajustables, visualizacion SVG/canvas reactiva, metricas visibles y boton "Aplicar" que ejecuta "{concept}". Iterar al menos 3 veces para descubrir patrones.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas. Visualizacion <100 ms.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() tras 3 iteraciones.
@@ -43,25 +44,25 @@ def prompt_codigo(
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Dashboard HTML5 donde el estudiante analice datos de "{concept}" y extraiga conclusiones.
-[TAREA] Dataset hardcodeado de 15-20 registros, tabla filtrable/ordenable, 2 graficos SVG (scatter/bar/line) que reaccionan a filtros, 3 preguntas con selector, boton "Revelar insight". Graficos SVG reales.
+[TAREA] Dataset hardcodeado de 15-20 registros, tabla filtrable/ordenable, 2 graficos SVG (scatter/bar/line) que reaccionan a filtros, {cfg.get('num_questions', 3)} preguntas con selector, boton "Revelar insight". Graficos SVG reales.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas.
 {ds}
-[SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al responder las 3 preguntas.
+[SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al responder las {cfg.get('num_questions', 3)} preguntas.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         7: f"""[ROL] Desarrollador front-end de laboratorios de codigo interactivo.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Lab de codigo HTML5 donde el estudiante experimente con "{concept}" escribiendo pseudocodigo.
-[TAREA] Editor simplificado (textarea), 3 ejercicios crecientes sobre "{concept}" con codigo inicial incompleto, boton "Ejecutar" que valida contra solucion esperada, feedback visual, "Ver solucion" tras 2 intentos. Validacion JS real.
+[TAREA] Editor simplificado (textarea), {cfg.get('num_exercises', 3)} ejercicios crecientes sobre "{concept}" con codigo inicial incompleto, boton "Ejecutar" que valida contra solucion esperada, feedback visual, "Ver solucion" tras 2 intentos. Validacion JS real.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas.
 {ds}
-[SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar los 3 ejercicios.
+[SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar los {cfg.get('num_exercises', 3)} ejercicios.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         9: f"""[ROL] Desarrollador front-end de juegos de estrategia educativos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Juego de estrategia HTML5 por turnos que modele la logica de "{concept}" como mecanica.
-[TAREA] Tablero/escenario con 5-7 turnos de decision, oponente automatico basado en "{concept}", puntuacion que refleje calidad de decisiones, pantalla final con analisis y consejos. IA oponente funcional.
+[TAREA] Tablero/escenario con {cfg.get('num_turns', 6)} turnos de decision, oponente automatico basado en "{concept}", puntuacion que refleje calidad de decisiones, pantalla final con analisis y consejos. IA oponente funcional.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al terminar la partida.
@@ -84,9 +85,9 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict 
         2: f"""[ROL] Instructor de ejercicios practicos de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Ejercicio guiado de 5 pasos para aplicar "{concept}". Cada paso: instruccion <=35 palabras, pista opcional, resultado_esperado, validacion de logro.
+[TAREA] Ejercicio guiado de {cfg.get('num_steps', 5)} pasos para aplicar "{concept}". Cada paso: instruccion <=35 palabras, pista opcional, resultado_esperado, validacion de logro.
 [RESTRICCIONES] Pasos incrementales, sin saltos logicos. Completables sin frustracion.
-[SALIDA] JSON puro con clave "pasos": array de 5 objetos con "numero","instruccion","pista","resultado_esperado","validacion".""",
+[SALIDA] JSON puro con clave "pasos": array de {cfg.get('num_steps', 5)} objetos con "numero","instruccion","pista","resultado_esperado","validacion".""",
         3: f"""[ROL] Diseniador de mini-proyectos de ML aplicado.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
@@ -108,9 +109,9 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict 
         10: f"""[ROL] Diseniador de retos de arquitectura de soluciones ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Reto de disenio: enunciado 80 palabras (cliente realista, problema, restricciones), 4 criterios de disenio, guia_evaluacion con 3 niveles, solucion_referencia 100 palabras.
+[TAREA] Reto de disenio: enunciado 80 palabras (cliente realista, problema, restricciones), {cfg.get('num_criteria', 4)} criterios de disenio, guia_evaluacion con 3 niveles, solucion_referencia 100 palabras.
 [RESTRICCIONES] Fuerza trade-offs reales de "{concept}". Sin respuesta unica obvia.
-[SALIDA] JSON puro con claves "enunciado","criterios" (array de 4),"guia_evaluacion","solucion_referencia".""",
+[SALIDA] JSON puro con claves "enunciado","criterios" (array de {cfg.get('num_criteria', 4)}),"guia_evaluacion","solucion_referencia".""",
     }
     base = t.get(n, "")
     return base + contexto if base else ""

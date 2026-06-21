@@ -68,13 +68,13 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict 
         2: f"""[ROL] Guionista audiovisual de EdTech.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Video de apertura de 40 s sobre "{concept}". Genera: guion_visual con marcadores de tiempo cada 10 s y metáforas cotidianas apropiadas al tema; narracion_voz ≤70 palabras que cierra con una pregunta abierta; prompt_video en inglés ≤90 palabras para un generador de video.
+[TAREA] Video de apertura de {cfg.get('duration_seconds', 40)} s sobre "{concept}". Genera: guion_visual con marcadores de tiempo cada 10 s y metáforas cotidianas apropiadas al tema; narracion_voz ≤70 palabras que cierra con una pregunta abierta; prompt_video en inglés ≤90 palabras para un generador de video.
 [RESTRICCIONES] Sin términos técnicos en guion ni narración. Tono cinematográfico.
 [SALIDA] JSON puro sin markdown con claves "guion_visual","narracion_voz","prompt_video".""",
         3: f"""[ROL] Productor de micro-podcasts educativos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Monólogo narrativo de 100-120 palabras donde el narrador ES "{concept}" hablando en primera persona. Estructura: situación → tensión → pregunta abierta final. Apóyate en una imagen mental concreta y fiel al tema.
+[TAREA] Monólogo narrativo de {cfg.get('word_count', 110)} palabras aproximadamente donde el narrador ES "{concept}" hablando en primera persona. Estructura: situación → tensión → pregunta abierta final. Apóyate en una imagen mental concreta y fiel al tema.
 [RESTRICCIONES] Sin matemática abstracta. Tono íntimo y reflexivo. Puntuación clara para pausas de lectura por voz.
 [SALIDA] Solo el texto del monólogo en español, sin etiquetas ni JSON.""",
         4: f"""[ROL] Diseñador de minijuegos educativos cronometrados.
@@ -86,19 +86,19 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict 
         5: f"""[ROL] Redactor de casos de ética en IA.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] caso_narrativo de 130 palabras sobre una empresa ficticia donde el uso de "{concept}" produce una consecuencia ética no intencionada y plausible; pregunta_posicion directa; opciones (array de 3 strings); reflexion_post_voto de 60 palabras que amplía el dilema sin dar una respuesta correcta.
+[TAREA] caso_narrativo de 130 palabras sobre una empresa ficticia donde el uso de "{concept}" produce una consecuencia ética no intencionada y plausible; pregunta_posicion directa; opciones (array de {cfg.get('num_options', 3)} strings); reflexion_post_voto de 60 palabras que amplía el dilema sin dar una respuesta correcta.
 [RESTRICCIONES] Empresa ficticia. Tono periodístico. La consecuencia debe derivarse de forma realista de cómo funciona "{concept}".
 [SALIDA] JSON puro con claves "caso_narrativo","pregunta_posicion","opciones","reflexion_post_voto".""",
         6: f"""[ROL] Periodista tecnológico especializado en IA.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Noticia ficticia plausible sobre un impacto real de "{concept}": titular ≤12 palabras; subtitulo ≤22 palabras; cuerpo_noticia de 90 palabras (organización ficticia, caso concreto); pregunta_cierre ≤12 palabras.
+[TAREA] Noticia ficticia plausible sobre un impacto real de "{concept}": titular ≤12 palabras; subtitulo ≤22 palabras; cuerpo_noticia de {cfg.get('body_words', 90)} palabras (organización ficticia, caso concreto); pregunta_cierre ≤12 palabras.
 [RESTRICCIONES] Sin términos ultra-técnicos. Tono de urgencia informativa. Genera admiración, no miedo.
 [SALIDA] JSON puro con claves "titular","subtitulo","cuerpo_noticia","pregunta_cierre".""",
         7: f"""[ROL] Diseñador de aprendizaje basado en roles.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] El estudiante es consultor de IA en su primer día. contexto_rol de 70 palabras (empresa de un sector concreto) donde "{concept}" resolvería un problema; pregunta_decision; opcion_A y opcion_B (cortas); feedback_A y feedback_B de 35 palabras (validan sin revelar la respuesta); pregunta_cierre ≤16 palabras.
+[TAREA] El estudiante es consultor de IA en su primer día. contexto_rol de {cfg.get('context_words', 70)} palabras (empresa de un sector concreto) donde "{concept}" resolvería un problema; pregunta_decision; opcion_A y opcion_B (cortas); feedback_A y feedback_B de 35 palabras (validan sin revelar la respuesta); pregunta_cierre ≤16 palabras.
 [RESTRICCIONES] No nombres explícitamente "{concept}" en el escenario. El feedback no revela la respuesta.
 [SALIDA] JSON puro con claves "contexto_rol","pregunta_decision","opcion_A","opcion_B","feedback_A","feedback_B","pregunta_cierre".""",
         8: f"""[ROL] Historiador de la tecnología.
@@ -119,16 +119,18 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict 
 
 
 def prompt_simulador(
-    concept: str, contexto_usuario: str = "", design_system: str | None = None
+    concept: str, contexto_usuario: str = "", design_system: str | None = None,
+    config: dict | None = None,
 ) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     ds = design_system or DESIGN_SYSTEM
     return (
         f"""[ROL] Desarrollador front-end de simuladores educativos interactivos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un simulador HTML5 autocontenido para la fase ENGAGE que provoque curiosidad: el estudiante manipula algo y ve el efecto, descubriendo la intuición central de "{concept}".
-[TAREA] Diseña la mecánica interactiva más apropiada para "{concept}" (slider, lienzo clicable, arrastre, botones...). Debe incluir: al menos un control manipulable, una visualización que reacciona en tiempo real (SVG o canvas), retroalimentación visual del estado, y un texto breve que interpreta lo que ocurre. Un botón de cierre ("¿Qué descubriste?") visible tras explorar.
+[TAREA] Diseña la mecánica interactiva más apropiada para "{concept}" (slider, lienzo clicable, arrastre, botones...). Debe incluir: {cfg.get('num_controls', 1)} control(es) manipulable(s), una visualización que reacciona en tiempo real (SVG o canvas), retroalimentación visual del estado, y un texto breve que interpreta lo que ocurre. Un botón de cierre ("¿Qué descubriste?") visible tras explorar.
 [REQUISITOS] HTML5 autocontenido con todo CSS y JS embebido. Mínimo 280 líneas de calidad sin secciones vacías. Paleta oscura elegante (educativa oscura). El control manipulable debe responder en <50ms a la interacción.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al pulsar el botón de cierre.
@@ -141,10 +143,7 @@ def prompt_codigo(
     n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None,
     config: dict | None = None,
 ) -> str:
-    # ENGAGE's only code-only resource is type 10 (Simulador Intuitivo). The
-    # generic direct_code_gen plan calls prompt_codigo, so delegate to the
-    # simulator prompt (n is unused — engage has a single code-only type).
-    return prompt_simulador(concept, contexto_usuario, design_system)
+    return prompt_simulador(concept, contexto_usuario, design_system, config)
 
 
 def prompt_html(

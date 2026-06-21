@@ -44,7 +44,7 @@ def prompt_codigo(
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Ejercicio HTML5 de completar espacios que evalue vocabulario de "{concept}".
-[TAREA] 8 oraciones sobre "{concept}" con espacio en blanco, validacion flexible (ignora mayusculas/acentos), feedback inmediato con correccion, barra de progreso, puntaje y boton "Reintentar". Validacion JS real.
+[TAREA] {cfg.get('num_sentences', 8)} oraciones sobre "{concept}" con espacio en blanco, validacion flexible (ignora mayusculas/acentos), feedback inmediato con correccion, barra de progreso, puntaje y boton "Reintentar". Validacion JS real.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 280 lineas.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje_final) al completar.
@@ -53,7 +53,7 @@ def prompt_codigo(
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Simulacion evaluativa HTML5 donde el estudiante demuestre dominio practico de "{concept}".
-[TAREA] Escenario profesional concreto, 3-4 decisiones evaluables mediante controles interactivos, evaluacion contra criterios objetivos de "{concept}", puntuacion con pesos, reporte final con fortalezas y areas de mejora.
+[TAREA] Escenario profesional concreto, {cfg.get('num_decisions', 3)}-{cfg.get('num_decisions', 3) + 1} decisiones evaluables mediante controles interactivos, evaluacion contra criterios objetivos de "{concept}", puntuacion con pesos, reporte final con fortalezas y areas de mejora.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas. Evaluacion real basada en criterios.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje_final) al finalizar.
@@ -106,9 +106,9 @@ def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict 
         10: f"""[ROL] Diseniador de diplomas y certificados educativos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Diploma de logro por "{concept}": titulo <=20 palabras, descripcion_logro <=50 palabras, 3 competencias_adquiridas, firma_simulada, diseno_sugerido (paleta, iconos, tipografia).
+[TAREA] Diploma de logro por "{concept}": titulo <=20 palabras, descripcion_logro <=50 palabras, {cfg.get('num_competencias', 3)} competencias_adquiridas, firma_simulada, diseno_sugerido (paleta, iconos, tipografia).
 [RESTRICCIONES] Tono celebratorio profesional. Competencias medibles y reales.
-[SALIDA] JSON puro con claves "titulo","descripcion_logro","competencias","firma","diseno_sugerido".""",
+[SALIDA] JSON puro con claves "titulo","descripcion_logro","competencias" (array de {cfg.get('num_competencias', 3)}),"firma","diseno_sugerido".""",
     }
     base = t.get(n, "")
     return base + contexto if base else ""
