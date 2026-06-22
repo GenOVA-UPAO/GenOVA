@@ -2,7 +2,8 @@ import { CircleNotch, CurrencyDollar, Lock } from '@phosphor-icons/react'
 
 /** Single row in ManageModelsModal: toggle switch + name + description + pricing tooltip. */
 export function ManageModelRow({ model, locked, enabled, saving, onToggle }) {
-  const isFree = !model.pricing_detail && model.provider === 'groq'
+  const isFree = model.pricing === 'Gratuito' || (!model.pricing && model.provider === 'groq')
+  const isVariable = model.pricing === 'Variable'
 
   return (
     <div className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${locked ? 'opacity-60' : 'hover:bg-muted/40'}`}>
@@ -44,6 +45,10 @@ export function ManageModelRow({ model, locked, enabled, saving, onToggle }) {
       {isFree ? (
         <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
           Gratis
+        </span>
+      ) : isVariable ? (
+        <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[9px] font-medium text-muted-foreground">
+          Variable
         </span>
       ) : model.pricing_detail ? (
         <div className="relative group/price shrink-0 flex items-center gap-1">

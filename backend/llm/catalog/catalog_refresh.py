@@ -13,47 +13,33 @@ from datetime import UTC, datetime
 from threading import Lock, RLock
 from time import monotonic
 
+from llm.catalog.catalog_builder import _build_full_catalog
 from llm.catalog.catalog_refresh_providers import (
-    _build_full_catalog,
     _fetch_groq,
+    _fetch_opencode,
     _fetch_openrouter,
     _load_cached,
     _merge_groq,
+    _merge_opencode,
     _merge_openrouter,
 )
 from llm.catalog.model_catalog import CATALOG_ENTRIES, _rebuild_catalog
 
 logger = logging.getLogger(__name__)
 
-# In-memory cache — built on startup, read by every request (no DB hit).
-# Thread-safe: written only by the refresh thread, guarded by _CL.
+# In-memory cache. Thread-safe: written only by refresh thread, guarded by _CL.
 _catalog: list[dict] = list(CATALOG_ENTRIES)
-_full_catalog: list[dict] = [
-    {
-        "provider": e["provider"],
-        "model_id": e["model_id"],
-        "label": e["label"],
-        "category": e.get("task") or "texto",
-        "pricing": e.get("pricing"),
-        "context_length": e.get("context_length"),
-        "curated": True,
-        "active": True,
-        "task": e.get("task"),
-    }
-    for e in CATALOG_ENTRIES
-]
+_full_catalog: list[dict] = []  # populated on first refresh_catalog call
 _CL = RLock()
 
-# Per-provider refresh health, exposed to the UI so a failed fetch is visible
-# instead of silently emptying the model dropdowns. source: api | cache | stale.
+# Per-provider health. source: api | cache | stale.
 _provider_status: dict[str, dict] = {
     "openrouter": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
     "groq": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
-    "opencode": {"ok": True, "checked_at": None, "last_success_at": None, "source": "static"},
+    "opencode": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
 }
 
-# Non-blocking guard: startup refresh and the user-facing retry endpoint may
-# race; the loser returns immediately instead of double-fetching.
+# Non-blocking guard against double-refresh on concurrent startup/retry.
 _refresh_lock = Lock()
 _last_full_success: float | None = None
 _FRESH_WINDOW_S = 60.0
@@ -107,25 +93,30 @@ def refresh_catalog(db=None) -> None:
             logger.info("Catalog refreshed <%.0fs ago — skipping", _FRESH_WINDOW_S)
             return
 
-        # Fetch both providers in parallel. None = fetch failed (vs empty data).
+        # Fetch all providers in parallel. None = fetch failed (vs empty data).
         or_data: dict | None = None
         groq_ids: set | None = None
-        with ThreadPoolExecutor(max_workers=2) as pool:
+        opencode_ids: set | None = None
+        with ThreadPoolExecutor(max_workers=3) as pool:
             f_or = pool.submit(_fetch_openrouter)
             f_groq = pool.submit(_fetch_groq)
+            f_oc = pool.submit(_fetch_opencode)
             try:
-                for future in as_completed([f_or, f_groq], timeout=_CATALOG_REFRESH_TIMEOUT + 5):
+                for future in as_completed([f_or, f_groq, f_oc], timeout=_CATALOG_REFRESH_TIMEOUT + 5):
                     if future is f_or:
                         or_data = future.result()
                     elif future is f_groq:
                         groq_ids = future.result()
+                    elif future is f_oc:
+                        opencode_ids = future.result()
             except TimeoutError:
                 logger.exception("Catalog provider fetch timed out")
 
         or_source = "api" if or_data is not None else None
         groq_source = "api" if groq_ids is not None else None
+        oc_source = "api" if opencode_ids is not None else None
 
-        # Fall back to the Supabase cache for whichever provider failed.
+        # Fall back to Supabase cache for any provider that failed.
         if or_data is None:
             cached = _load_cached(db, "openrouter")
             if cached is not None:
@@ -134,16 +125,21 @@ def refresh_catalog(db=None) -> None:
             cached = _load_cached(db, "groq")
             if cached is not None:
                 groq_ids, groq_source = cached, "cache"
+        if opencode_ids is None:
+            cached = _load_cached(db, "opencode")
+            if cached is not None:
+                opencode_ids, oc_source = cached, "cache"
 
-        # Merge only providers with usable data — a failed provider keeps its
-        # previous active flags instead of being wiped from the catalog.
+        # Merge only providers with usable data — failed provider keeps previous active flags.
         if or_data is not None:
             _merge_openrouter(or_data)
         if groq_ids is not None:
             _merge_groq(groq_ids)
+        if opencode_ids is not None:
+            _merge_opencode(opencode_ids)
         _rebuild_catalog()
 
-        full = _build_full_catalog(or_data or {}, groq_ids or set())
+        full = _build_full_catalog(or_data or {}, groq_ids or set(), opencode_ids)
         now = datetime.now(UTC).isoformat()
 
         with _CL:
@@ -154,8 +150,8 @@ def refresh_catalog(db=None) -> None:
                 full.extend(e for e in _full_catalog if e["provider"] == "openrouter")
             if groq_ids is None:
                 full.extend(e for e in _full_catalog if e["provider"] == "groq")
-            # Static providers are already included by _build_full_catalog —
-            # no extend needed (would create duplicates like a double opencode entry).
+            if opencode_ids is None:
+                full.extend(e for e in _full_catalog if e["provider"] == "opencode")
             seen_keys: set[tuple[str, str]] = set()
             deduped: list[dict] = []
             for e in full:
@@ -169,6 +165,7 @@ def refresh_catalog(db=None) -> None:
             for provider, source in (
                 ("openrouter", or_source),
                 ("groq", groq_source),
+                ("opencode", oc_source),
             ):
                 st = _provider_status[provider]
                 st["checked_at"] = now
@@ -185,7 +182,7 @@ def refresh_catalog(db=None) -> None:
         )
 
         # Persist raw API data to Supabase cache (never re-save cache reads).
-        if db is not None and (or_source == "api" or groq_source == "api"):
+        if db is not None and (or_source == "api" or groq_source == "api" or oc_source == "api"):
             try:
                 from llm.catalog.catalog_cache import save_to_cache
 
@@ -193,6 +190,8 @@ def refresh_catalog(db=None) -> None:
                     save_to_cache(db, "openrouter", {"models": or_data})
                 if groq_source == "api" and groq_ids:
                     save_to_cache(db, "groq", {"models": list(groq_ids)})
+                if oc_source == "api" and opencode_ids:
+                    save_to_cache(db, "opencode", {"models": list(opencode_ids)})
             except Exception:
                 logger.exception("Failed to save catalog cache to DB")
     finally:

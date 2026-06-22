@@ -6,7 +6,6 @@ import os
 
 import httpx
 
-from llm.catalog.catalog_categorize import categorize_model
 from llm.catalog.catalog_pricing import format_pricing, format_pricing_detail
 from llm.catalog.model_catalog import CATALOG_ENTRIES
 
@@ -93,72 +92,37 @@ def _merge_groq(available_ids: set[str]) -> None:
             entry["active"] = False
 
 
-def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[dict]:
-    curated_keys = {(e["provider"], e["model_id"]) for e in CATALOG_ENTRIES}
-    result: list[dict] = []
-
-    for model_id, raw in or_data.items():
-        curated = ("openrouter", model_id) in curated_keys
-        arch = raw.get("architecture") or {}
-        modality = arch.get("modality", "text") if isinstance(arch, dict) else "text"
-        pricing = raw.get("pricing")
-        result.append(
-            {
-                "provider": "openrouter",
-                "model_id": model_id,
-                "label": raw.get("name") or model_id,
-                "description": (raw.get("description") or "").strip()[:200],
-                "category": categorize_model(raw, "openrouter"),
-                "modality": modality,
-                "pricing": format_pricing(pricing),
-                "pricing_detail": format_pricing_detail(pricing),
-                "context_length": raw.get("context_length"),
-                "curated": curated,
-                "active": True,
-                "task": "codigo" if curated else None,
-            }
-        )
-
-    for model_id in groq_ids:
-        curated = ("groq", model_id) in curated_keys
-        result.append(
-            {
-                "provider": "groq",
-                "model_id": model_id,
-                "label": model_id,
-                "description": "",
-                "category": categorize_model(
-                    {"id": model_id, "architecture": {"modality": "text"}}, "groq"
-                ),
-                "modality": "text",
-                "pricing": None,
-                "pricing_detail": None,
-                "context_length": 128000,
-                "curated": curated,
-                "active": True,
-                "task": "texto" if curated else None,
-            }
-        )
-
+def _merge_opencode(available_ids: set[str]) -> None:
     for entry in CATALOG_ENTRIES:
-        if entry["provider"] not in ("openrouter", "groq") and entry["active"]:
-            result.append(
-                {
-                    "provider": entry["provider"],
-                    "model_id": entry["model_id"],
-                    "label": entry["label"],
-                    "category": entry.get("task") or "codigo",
-                    "modality": entry.get("modality", "text"),
-                    "pricing": entry.get("pricing"),
-                    "context_length": entry.get("context_length"),
-                    "curated": (entry["provider"], entry["model_id"]) in curated_keys,
-                    "active": True,
-                    "task": entry.get("task"),
-                }
-            )
+        if entry["provider"] != "opencode":
+            continue
+        entry["active"] = entry["model_id"] in available_ids
 
-    result.sort(key=lambda e: (not e["curated"], e["provider"], e["model_id"]))
-    return result
+
+def _fetch_opencode() -> set[str] | None:
+    """Fetch OpenCode model ids. Resolves key via platform_config → env var."""
+    from core.database import SessionLocal
+    from llm.clients.key_resolver import resolve_key
+
+    db = SessionLocal()
+    try:
+        api_key = resolve_key("opencode", None, db)
+    finally:
+        db.close()
+
+    if not api_key:
+        logger.info("OpenCode: no API key configured — skipping model list fetch")
+        return None
+    try:
+        from openai import OpenAI
+
+        resp = OpenAI(api_key=api_key, base_url="https://opencode.ai/zen/go/v1", max_retries=0, timeout=10.0).models.list()
+        ids = {m.id for m in resp.data if m.id}
+        logger.info("OpenCode returned %d models", len(ids))
+        return ids
+    except Exception:
+        logger.exception("OpenCode model list fetch failed")
+        return None
 
 
 def _load_cached(db, provider: str) -> dict | set | None:
