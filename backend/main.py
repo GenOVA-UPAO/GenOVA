@@ -38,6 +38,7 @@ from run_migrations import run_migrations
 from scorm.router import router as scorm_router
 from seed import seed_db
 from uploads.router import router as uploads_router
+from users.admin.nodes_config_router import router as nodes_config_router
 from users.admin.platform_settings_router import router as platform_settings_router
 from users.router import router as users_router
 
@@ -207,3 +208,4 @@ app.include_router(uploads_router, prefix="/api/uploads", tags=["RAG"])
 app.include_router(labs_router, prefix="/api/labs", tags=["Labs"])
 app.include_router(labs_gen_router, prefix="/api/labs", tags=["Labs"])
 app.include_router(platform_settings_router, prefix="/api/admin", tags=["Admin"])
+app.include_router(nodes_config_router, prefix="/api/admin", tags=["Admin"])

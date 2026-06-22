@@ -76,6 +76,7 @@ export function SidebarMenu({ onNavigate }) {
   const isAdmin = user?.role === 'administrador'
   const principal = navigationLinks.map((item) => ({ ...item, icon: ICONS[item.icon] }))
   const canLink = hasPermission(user, 'users:link') || hasPermission(user, 'users:link:admin')
+  const canModels = hasPermission(user, 'ai:models:self') || hasPermission(user, 'ai:models:platform')
 
   useEffect(() => {
     if (!isLoggedIn()) return
@@ -99,12 +100,14 @@ export function SidebarMenu({ onNavigate }) {
           {principal.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
           <NavItem item={{ to: '/papelera', label: 'Papelera', icon: Trash }} badge={trashCount} onNavigate={onNavigate} />
         </Section>
-        <Section title="Configuracion">
-          {CONFIG_LINKS.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
-          {canLink ? (
-            <NavItem item={{ to: '/vinculacion', label: 'Vincular', icon: LinkSimple }} onNavigate={onNavigate} />
-          ) : null}
-        </Section>
+        {(canModels || canLink) ? (
+          <Section title="Configuracion">
+            {canModels && CONFIG_LINKS.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
+            {canLink ? (
+              <NavItem item={{ to: '/vinculacion', label: 'Vincular', icon: LinkSimple }} onNavigate={onNavigate} />
+            ) : null}
+          </Section>
+        ) : null}
         {isAdmin ? (
           <Section title="Administracion">
             {ADMIN_LINKS.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Navigate } from 'react-router'
 import { ArrowsClockwise, Cpu, Robot, SlidersHorizontal } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { motion } from 'motion/react'
@@ -28,6 +29,7 @@ export function ModelsPage() {
   const userHook = useLlmSettings(true)
   const adminHook = useAdminLlmConfig()
   const isAdmin = user?.role === 'administrador'
+  const canModels = !user || isAdmin || (user?.permissions || []).includes('ai:models:self') || (user?.permissions || []).includes('ai:models:platform')
   const tasks = adminHook.config.data?.tasks ?? ['texto', 'codigo', 'orquestador', 'razonamiento', 'imagen', 'video']
   const adminModels = adminHook.catalog.data ?? []
 
@@ -45,6 +47,8 @@ export function ModelsPage() {
       onError: (e) => toast.error(e.message || 'No se pudo guardar.'),
     })
   }
+
+  if (!canModels) return <Navigate to="/dashboard" replace />
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className="mx-auto max-w-5xl space-y-8 pb-12">

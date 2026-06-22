@@ -27,7 +27,7 @@ from core.security import (
     verify_dummy,
     verify_password,
 )
-from models import Role, User, UserRole
+from models import PlatformConfig, Role, User, UserRole
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -153,6 +153,16 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
             content={"error": "email_exists", "message": "El correo ya está registrado."},
         )
     db.refresh(user)
+
+    # Assign default registration role (from PlatformConfig, default: 'usuarios_prueba')
+    _cfg = db.execute(
+        select(PlatformConfig).where(PlatformConfig.key == "default_registration_role")
+    ).scalar_one_or_none()
+    _role_name = (_cfg.value if _cfg else None) or "usuarios_prueba"
+    _role = db.execute(select(Role).where(Role.name == _role_name)).scalar_one_or_none()
+    if _role:
+        db.add(UserRole(user_id=user.id, role_id=_role.id))
+        db.commit()
 
     token = build_token(str(user.id), str(user.email))
     response = JSONResponse(
