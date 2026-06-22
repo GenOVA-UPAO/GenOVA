@@ -6,6 +6,7 @@ returned masked, and never logged.
 """
 
 import logging
+import threading
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
@@ -21,6 +22,19 @@ logger = logging.getLogger(__name__)
 
 _MIN_KEY_LEN = 8
 _DB_KEY = "{}_api_key".format
+_LLM_PROVIDERS = frozenset({"groq", "openrouter", "opencode"})
+
+
+def _bg_catalog_refresh() -> None:
+    """Re-fetch provider catalogs in background after a platform key change."""
+    from core.database import SessionLocal
+    from llm.catalog.catalog_refresh import refresh_catalog
+
+    db = SessionLocal()
+    try:
+        refresh_catalog(db)
+    finally:
+        db.close()
 
 
 def _load_platform_keys(db: Session) -> dict[str, str | None]:
@@ -88,6 +102,10 @@ def put_platform_config(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar la configuración de plataforma.",
         ) from None
+
+    if any(p in _LLM_PROVIDERS for p in updates):
+        threading.Thread(target=_bg_catalog_refresh, daemon=True).start()
+        logger.info("Catalog refresh triggered by platform key update: %s", list(updates))
 
     keys = _load_platform_keys(db)
     return {"platform_config": {p: mask_key(keys.get(p)) for p in PROVIDERS}}
