@@ -34,7 +34,7 @@ from ova.phases.history_router import router as ova_history_router
 from ova.phases.phase_version_router import router as ova_phase_version_router
 from ova.router import router as ova_router
 from rag.router import router as rag_router
-from rag.router import uploads_router
+from uploads.router import router as uploads_router
 from run_migrations import run_migrations
 from scorm.router import router as scorm_router
 from seed import seed_db
