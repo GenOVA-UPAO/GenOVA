@@ -20,6 +20,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
   const [connectOpen, setConnectOpen] = useState(false)
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const sentinelRef = useRef(null)
+  const scrollRef = useRef(null)
 
   useEffect(() => { setLocalSearch(searchQuery) }, [searchQuery])
 
@@ -28,7 +29,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
     if (!sentinel) return
     const obs = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting && fullHasMore && !loadingMore && !loading) loadMore() },
-      { rootMargin: '200px' },
+      { rootMargin: '200px', root: scrollRef.current },
     )
     obs.observe(sentinel)
     return () => obs.disconnect()
@@ -98,7 +99,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
           </div>
 
           {/* Body */}
-          <div className="max-h-[460px] overflow-y-auto">
+          <div ref={scrollRef} className="max-h-[460px] overflow-y-auto">
             {!hasOwnLlmKey ? (
               <div className="flex flex-col items-center gap-4 py-14 text-center px-8">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
