@@ -40,12 +40,23 @@ def _fetch_openrouter() -> dict[str, dict] | None:
 
 
 def _fetch_groq() -> set[str] | None:
-    """Fetch the available model ids from Groq. Returns a set of model_id strings,
-    or None when the fetch failed."""
-    try:
-        from llm.router import groq_client
+    """Fetch available Groq model ids. Resolves key via platform_config → env var."""
+    from core.database import SessionLocal
+    from llm.clients.key_resolver import resolve_key
 
-        resp = groq_client.models.list()
+    db = SessionLocal()
+    try:
+        api_key = resolve_key("groq", None, db)
+    finally:
+        db.close()
+
+    if not api_key:
+        logger.info("Groq: no API key configured — skipping model list fetch")
+        return None
+    try:
+        from groq import Groq
+
+        resp = Groq(api_key=api_key, max_retries=0).models.list()
         ids = {m.id for m in resp.data if m.id}
         logger.info("Groq returned %d models", len(ids))
         return ids
