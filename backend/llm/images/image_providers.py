@@ -2,12 +2,7 @@
 
 All providers return a base64 JPEG data URI so SCORM packages stay self-contained.
 Returns None on any failure; callers must handle the None case with a placeholder.
-
-Supported providers:
-  huggingface — default, uses HF Inference API (FLUX.1-schnell)
-  siliconflow — OpenAI-compatible images/generations endpoint
-  runware     — Runware REST inference API
-  falai       — fal.ai REST API (FLUX/Schnell)
+Supported: huggingface | siliconflow | runware | falai
 """
 
 import base64
@@ -51,11 +46,11 @@ def _hf(prompt: str, api_key: str | None, width: int, height: int) -> str | None
     return fetch_image_data_uri(prompt, width=width, height=height, api_key=api_key)
 
 
-def _siliconflow(prompt: str, api_key: str | None, width: int, height: int) -> str | None:
+def _siliconflow(prompt: str, api_key: str | None, width: int, height: int, model: str | None = None) -> str | None:
     if not api_key:
         logger.warning("SiliconFlow image generation skipped: no api_key")
         return None
-    model = os.getenv("SILICONFLOW_IMAGE_MODEL", "stabilityai/stable-diffusion-3-5-large")
+    model = model or os.getenv("SILICONFLOW_IMAGE_MODEL", "stabilityai/stable-diffusion-3-5-large")
     try:
         resp = httpx.post(
             "https://api.siliconflow.cn/v1/images/generations",
@@ -71,11 +66,11 @@ def _siliconflow(prompt: str, api_key: str | None, width: int, height: int) -> s
         return None
 
 
-def _runware(prompt: str, api_key: str | None, width: int, height: int) -> str | None:
+def _runware(prompt: str, api_key: str | None, width: int, height: int, model: str | None = None) -> str | None:
     if not api_key:
         logger.warning("Runware image generation skipped: no api_key")
         return None
-    model = os.getenv("RUNWARE_IMAGE_MODEL", "runware:100@1")
+    model = model or os.getenv("RUNWARE_IMAGE_MODEL", "runware:100@1")
     try:
         resp = httpx.post(
             "https://api.runware.ai/v1",
@@ -112,11 +107,11 @@ def _runware(prompt: str, api_key: str | None, width: int, height: int) -> str |
         return None
 
 
-def _falai(prompt: str, api_key: str | None, width: int, height: int) -> str | None:
+def _falai(prompt: str, api_key: str | None, width: int, height: int, model: str | None = None) -> str | None:
     if not api_key:
         logger.warning("fal.ai image generation skipped: no api_key")
         return None
-    model = os.getenv("FALAI_IMAGE_MODEL", "fal-ai/flux/schnell")
+    model = model or os.getenv("FALAI_IMAGE_MODEL", "fal-ai/flux/schnell")
     try:
         resp = httpx.post(
             f"https://fal.run/{model}",
@@ -148,6 +143,7 @@ def get_image_data_uri(
     api_key: str | None = None,
     width: int = 512,
     height: int = 512,
+    model: str | None = None,
 ) -> str | None:
     """Generate an image for `prompt` using the specified provider.
 
@@ -157,6 +153,8 @@ def get_image_data_uri(
     if not clean:
         return None
     fn = _PROVIDERS.get(provider, _hf)
+    if provider in ("siliconflow", "runware", "falai"):
+        return fn(clean, api_key, width, height, model)
     return fn(clean, api_key, width, height)
 
 
@@ -177,6 +175,7 @@ def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[st
     max_images = int(settings.get("max_images", default_max))
     provider = settings.get("provider", "huggingface")
     api_key = settings.get("api_key") or None
+    model = settings.get("image_model") or None
 
     if max_images <= 0:
         return {}
@@ -187,7 +186,7 @@ def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[st
     prompts = [(item.get("prompt_imagen") or "").strip() for item in targets]
 
     with ThreadPoolExecutor(max_workers=2) as pool:
-        uris = list(pool.map(lambda p: get_image_data_uri(p, provider, api_key), prompts))
+        uris = list(pool.map(lambda p: get_image_data_uri(p, provider, api_key, model=model), prompts))
 
     replacements: dict[str, str] = {}
     for i, (item, uri) in enumerate(zip(targets, uris, strict=True), start=1):

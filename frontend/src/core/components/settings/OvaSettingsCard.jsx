@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/core/components/ui/button'
 import { getOvaSettings, saveOvaSettings } from '@/features/ova_workspace/services/ovaSettingsService.js'
+import { apiJson } from '@/core/lib/http.js'
 
 const PROVIDER_LABELS = {
   huggingface: 'HuggingFace (predeterminado)',
@@ -9,10 +10,23 @@ const PROVIDER_LABELS = {
   falai: 'fal.ai',
 }
 
+async function fetchImageModels(provider) {
+  if (provider === 'huggingface') return []
+  try {
+    const data = await apiJson(`/api/users/me/image-models?provider=${provider}`)
+    return data.models ?? []
+  } catch {
+    return []
+  }
+}
+
 export function OvaSettingsCard() {
   const [maxImages, setMaxImages] = useState(2)
   const [imageProvider, setImageProvider] = useState('huggingface')
+  const [imageModel, setImageModel] = useState(null)
   const [providers, setProviders] = useState([])
+  const [models, setModels] = useState([])
+  const [loadingModels, setLoadingModels] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -23,18 +37,36 @@ export function OvaSettingsCard() {
       .then(({ settings, image_providers }) => {
         setMaxImages(settings.max_images ?? 2)
         setImageProvider(settings.image_provider ?? 'huggingface')
+        setImageModel(settings.image_model ?? null)
         setProviders(image_providers ?? [])
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    if (loading) return
+    setLoadingModels(true)
+    fetchImageModels(imageProvider)
+      .then((m) => {
+        setModels(m)
+        if (m.length > 0 && !m.find((x) => x.id === imageModel)) {
+          setImageModel(m[0].id)
+        }
+      })
+      .finally(() => setLoadingModels(false))
+  }, [imageProvider]) // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleSave() {
     setSaving(true)
     setError(null)
     setSuccess(false)
     try {
-      await saveOvaSettings({ max_images: maxImages, image_provider: imageProvider })
+      await saveOvaSettings({
+        max_images: maxImages,
+        image_provider: imageProvider,
+        image_model: imageModel,
+      })
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (e) {
@@ -85,7 +117,7 @@ export function OvaSettingsCard() {
             <select
               id="image-provider"
               value={imageProvider}
-              onChange={(e) => setImageProvider(e.target.value)}
+              onChange={(e) => { setImageProvider(e.target.value); setImageModel(null) }}
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
             >
               {providers.map((p) => (
@@ -98,6 +130,32 @@ export function OvaSettingsCard() {
               Requiere API key del proveedor configurada en la sección siguiente.
             </p>
           </div>
+
+          {imageProvider !== 'huggingface' && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground" htmlFor="image-model">
+                Modelo de imagen
+              </label>
+              {loadingModels ? (
+                <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+              ) : models.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Configura una API key de {PROVIDER_LABELS[imageProvider]} para ver modelos disponibles.
+                </p>
+              ) : (
+                <select
+                  id="image-model"
+                  value={imageModel ?? ''}
+                  onChange={(e) => setImageModel(e.target.value)}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                >
+                  {models.map((m) => (
+                    <option key={m.id} value={m.id}>{m.label}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}
           {success && <p className="text-sm text-primary">Configuración guardada.</p>}
