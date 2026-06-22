@@ -15,7 +15,6 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware
-from roles.router import router as roles_router
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
@@ -34,10 +33,11 @@ from ova.phases.history_router import router as ova_history_router
 from ova.phases.phase_version_router import router as ova_phase_version_router
 from ova.router import router as ova_router
 from rag.router import router as rag_router
-from uploads.router import router as uploads_router
+from roles.router import router as roles_router
 from run_migrations import run_migrations
 from scorm.router import router as scorm_router
 from seed import seed_db
+from uploads.router import router as uploads_router
 from users.admin.platform_settings_router import router as platform_settings_router
 from users.router import router as users_router
 

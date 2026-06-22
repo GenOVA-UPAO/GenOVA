@@ -6,83 +6,14 @@ import os
 
 import httpx
 
+from llm.catalog.catalog_categorize import categorize_model
+from llm.catalog.catalog_pricing import format_pricing, format_pricing_detail
 from llm.catalog.model_catalog import CATALOG_ENTRIES
 
 logger = logging.getLogger(__name__)
 
 _OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
 
-MODALITY_CATEGORY = {
-    "text": "texto",
-    "multimodal": "multimodal",
-    "image": "imagen",
-    "embedding": "embedding",
-    "audio": "audio",
-}
-
-_CODIGO_KEYWORDS = (
-    "coder",
-    "code",
-    "dev",
-    "programming",
-    "claude",
-    "gpt-4",
-    "deepseek",
-    "gemini-pro",
-    "gemini-flash",
-    "o1",
-    "o3",
-    "o4",
-)
-
-_RAZONAMIENTO_KEYWORDS = (
-    "r1",
-    "reasoning",
-    "think",
-    "gpt-oss",
-    "gpt-5",
-)
-
-
-def categorize_model(api_entry: dict, provider: str) -> str:
-    arch = api_entry.get("architecture") or {}
-    modality = arch.get("modality", "text") if isinstance(arch, dict) else str(arch)
-    category = MODALITY_CATEGORY.get(modality, "texto")
-    mid = (api_entry.get("id") or "").lower()
-    if category in ("texto", "multimodal"):
-        if any(kw in mid for kw in _CODIGO_KEYWORDS):
-            return "codigo"
-        if any(kw in mid for kw in _RAZONAMIENTO_KEYWORDS):
-            return "razonamiento"
-    return category
-
-
-def format_pricing(pricing: dict | None) -> str | None:
-    """OpenRouter pricing is USD per 1 token — convert to human-friendly $/1M tokens."""
-    if not pricing:
-        return None
-    prompt = pricing.get("prompt")
-    completion = pricing.get("completion")
-    if prompt is None and completion is None:
-        return None
-
-    def _per_m(val) -> float:
-        try:
-            v = float(val)
-        except (TypeError, ValueError):
-            return 0.0
-        return round(v * 1_000_000, 2)
-
-    pi = _per_m(prompt) if prompt else None
-    co = _per_m(completion) if completion else None
-
-    if pi is not None and co is not None:
-        if pi == 0 and co == 0:
-            return "Gratuito"
-        if pi == 0:
-            return f"Free in · ${co:.2f}/1M out"
-        return f"${pi:.2f}/${co:.2f} por 1M tokens"
-    return None
 
 
 def _fetch_openrouter() -> dict[str, dict] | None:
@@ -131,7 +62,9 @@ def _merge_openrouter(api_models: dict[str, dict]) -> None:
         if m:
             pricing = m.get("pricing")
             entry["pricing"] = format_pricing(pricing)
+            entry["pricing_detail"] = format_pricing_detail(pricing)
             entry["context_length"] = m.get("context_length")
+            entry["description"] = (m.get("description") or "").strip()[:200]
             entry["active"] = True
         else:
             logger.warning("OpenRouter model not found in API: %s", entry["model_id"])
@@ -157,14 +90,17 @@ def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[di
         curated = ("openrouter", model_id) in curated_keys
         arch = raw.get("architecture") or {}
         modality = arch.get("modality", "text") if isinstance(arch, dict) else "text"
+        pricing = raw.get("pricing")
         result.append(
             {
                 "provider": "openrouter",
                 "model_id": model_id,
                 "label": raw.get("name") or model_id,
+                "description": (raw.get("description") or "").strip()[:200],
                 "category": categorize_model(raw, "openrouter"),
                 "modality": modality,
-                "pricing": format_pricing(raw.get("pricing")),
+                "pricing": format_pricing(pricing),
+                "pricing_detail": format_pricing_detail(pricing),
                 "context_length": raw.get("context_length"),
                 "curated": curated,
                 "active": True,
@@ -179,11 +115,13 @@ def _build_full_catalog(or_data: dict[str, dict], groq_ids: set[str]) -> list[di
                 "provider": "groq",
                 "model_id": model_id,
                 "label": model_id,
+                "description": "",
                 "category": categorize_model(
                     {"id": model_id, "architecture": {"modality": "text"}}, "groq"
                 ),
                 "modality": "text",
                 "pricing": None,
+                "pricing_detail": None,
                 "context_length": 128000,
                 "curated": curated,
                 "active": True,
