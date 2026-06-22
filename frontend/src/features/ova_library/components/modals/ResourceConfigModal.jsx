@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { BookBookmark } from '@phosphor-icons/react'
 import { RESOURCE_ICONS } from '@/features/ova_library/lib/resourceIcons.js'
 import { getSchema } from '@/features/ova_library/lib/resourceConfigSchema.js'
@@ -22,7 +23,7 @@ export function ResourceConfigModal({
     setValues((prev) => ({ ...prev, [fieldKey]: val }))
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* backdrop — click closes only this modal */}
       <div
@@ -102,6 +103,7 @@ export function ResourceConfigModal({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
