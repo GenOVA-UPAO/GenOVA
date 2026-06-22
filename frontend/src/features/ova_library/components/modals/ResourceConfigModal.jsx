@@ -24,7 +24,11 @@ export function ResourceConfigModal({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ pointerEvents: 'auto' }}>
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      style={{ pointerEvents: 'auto' }}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       {/* backdrop — click closes only this modal */}
       <div
         className="absolute inset-0 bg-black/40"
