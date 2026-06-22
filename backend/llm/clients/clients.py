@@ -48,7 +48,7 @@ _LLM_TIMEOUT_S = settings.llm_timeout_s
 # multiplican la espera ante un proveedor lento/caído (3×timeout por intento +
 # la cadena externa) → la "carga indefinida". Un intento por modelo, y el control
 # de reintentos/backoff vive en generar_texto.
-groq_client = Groq(api_key=settings.groq_api_key, timeout=_LLM_TIMEOUT_S, max_retries=0)
+groq_client = Groq(api_key=settings.groq_api_key or "not-configured", timeout=_LLM_TIMEOUT_S, max_retries=0)
 
 # OpenRouter uses the OpenAI-compatible endpoint.
 # HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
