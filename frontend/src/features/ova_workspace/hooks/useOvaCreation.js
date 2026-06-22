@@ -23,7 +23,7 @@ export function useOvaCreation() {
   const { data: serverConfigs } = useQuery({
     queryKey: ['user', 'resource-configs'],
     queryFn: getResourceConfigs,
-    staleTime: 5 * 60 * 1000,
+    staleTime: Infinity,
     retry: false,
   })
   const resourceConfigs = localConfigs ?? serverConfigs?.configs ?? {}
