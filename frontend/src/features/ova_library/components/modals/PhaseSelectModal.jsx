@@ -44,13 +44,13 @@ function toggleSelection(list, resource) {
   return [...list, resource]
 }
 
-export function PhaseSelectModal({ onClose, onConfirm, initialSelections }) {
+export function PhaseSelectModal({ onClose, onConfirm, initialSelections, initialResourceConfigs }) {
   const [step, setStep] = useState(0)
   const [recursos, setRecursos] = useState(EMPTY_PICKS())
   const [loading, setLoading] = useState(true)
   const [picks, setPicks] = useState(() => ({ ...EMPTY_PICKS(), ...(initialSelections ?? {}) }))
   const [hovered, setHovered] = useState(null)
-  const [resourceConfigs, setResourceConfigs] = useState({})
+  const [resourceConfigs, setResourceConfigs] = useState(() => initialResourceConfigs ?? {})
   const [configTarget, setConfigTarget] = useState(null)
 
   const { data: nodesData } = useQuery({

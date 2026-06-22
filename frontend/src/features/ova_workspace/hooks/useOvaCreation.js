@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useOvaUploads } from './useOvaUploads.js'
 import { useOvaJob } from './useOvaJob.js'
+import { getResourceConfigs, putResourceConfigs } from '../services/resourceConfigsService.js'
 
 const MIN_CHARS = Number(import.meta.env.VITE_MIN_PROMPT_CHARS || 10)
 const ALL_PHASES = ['engage', 'explore', 'explain', 'elaborate', 'evaluate']
@@ -14,9 +16,17 @@ export function useOvaCreation() {
   const [prompt, setPrompt] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selections, setSelections] = useState(EMPTY_SELECTIONS)
-  const [resourceConfigs, setResourceConfigs] = useState({})
   // OVA content theme (color × design); default UPAO brand. Sent to the job.
   const [theme, setTheme] = useState({ color: 'upao', design: 'upao' })
+  const [localConfigs, setLocalConfigs] = useState(null)
+
+  const { data: serverConfigs } = useQuery({
+    queryKey: ['user', 'resource-configs'],
+    queryFn: getResourceConfigs,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  })
+  const resourceConfigs = localConfigs ?? serverConfigs?.configs ?? {}
 
   const {
     uploads, uploadIds, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
@@ -33,8 +43,9 @@ export function useOvaCreation() {
 
   const confirmSelections = useCallback((picks, configs = {}) => {
     setSelections({ ...EMPTY_SELECTIONS, ...picks })
-    setResourceConfigs(configs)
+    setLocalConfigs(configs)
     setIsModalOpen(false)
+    putResourceConfigs(configs).catch(() => {})
   }, [])
 
   const reset = useCallback(() => {
@@ -54,7 +65,7 @@ export function useOvaCreation() {
   return {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
-    selections, totalResources,
+    selections, totalResources, resourceConfigs,
     theme, setTheme,
     canGenerate, isGenerating,
     generate, reset, restore, minChars: MIN_CHARS,
