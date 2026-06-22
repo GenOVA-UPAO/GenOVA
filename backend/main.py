@@ -26,7 +26,7 @@ from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
 from labs.generation_routes import router as labs_gen_router
 from labs.router import router as labs_router
-from llm.router import router as agents_router
+from llm.catalog.catalog_router import router as agents_router
 from ova.crud.edit_router import router as ova_edit_router
 from ova.crud.subelement_router import router as ova_subelement_router
 from ova.phases.add_phase_router import router as ova_add_phase_router
