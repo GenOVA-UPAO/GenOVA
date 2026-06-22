@@ -15,7 +15,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware
-from users.roles_router import router as roles_router
+from roles.router import router as roles_router
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
