@@ -9,9 +9,9 @@ from prometheus.prompts.elaborate_prompts import RECURSOS_META
 ELABORATE_CODE_ONLY = {4, 5, 7, 9}
 
 
-def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None):
+def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None, resource_config=None):
     gen = direct_code_gen if rt in ELABORATE_CODE_ONLY else two_step_gen
-    return gen("elaborate", rt, concept, llm_config, enabled_models, theme)
+    return gen("elaborate", rt, concept, llm_config, enabled_models, theme, resource_config=resource_config)
 
 
 def elaborate_node(state: OvaGenerationState) -> dict:

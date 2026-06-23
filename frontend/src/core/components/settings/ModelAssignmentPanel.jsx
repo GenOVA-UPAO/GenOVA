@@ -1,38 +1,54 @@
 import { useState } from 'react'
-import { X } from '@phosphor-icons/react'
+import { SlidersHorizontal, X } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { ModelTaskCard } from '@/core/components/settings/ModelTaskCard.jsx'
+import { MediaTaskCard } from '@/core/components/settings/MediaTaskCard.jsx'
 import { LlmTaskRow } from '@/core/components/settings/LlmTaskRow.jsx'
 import { CatalogStatusAlert } from '@/core/components/settings/CatalogStatusAlert.jsx'
 import { TASK_LABELS } from '@/core/lib/llm/llmSettingsLabels.js'
 
-export function ModelAssignmentPanel({ tasks, draft, setDraft, adminModels, adminHook, isAdmin, userHook }) {
+export function ModelAssignmentPanel({ tasks, draft, setDraft, adminModels, adminHook, isAdmin, userHook, onOpenManageModels }) {
   const [editTask, setEditTask] = useState(null)
 
   return (
     <div className="space-y-5">
-      <CatalogStatusAlert catalogStatus={userHook.catalogStatus} refreshing={userHook.refreshingCatalog} onRetry={userHook.retryRefresh} />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <CatalogStatusAlert catalogStatus={userHook.catalogStatus} refreshing={userHook.refreshingCatalog} onRetry={userHook.retryRefresh} />
+        </div>
+        {onOpenManageModels && (
+          <Button
+            size="sm" variant="outline"
+            onClick={onOpenManageModels}
+            className="shrink-0 gap-1.5 text-xs font-bold mt-0.5"
+          >
+            <SlidersHorizontal size={12} weight="bold" /> Configurar modelos
+          </Button>
+        )}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {tasks.map((task, i) => (
-          <ModelTaskCard
-            key={task} task={task} index={i}
-            adminDraft={draft?.[task]} adminModels={adminModels}
-            isAdmin={isAdmin} adminDisabled={!isAdmin || adminHook.save.isPending}
-            onAdminChange={(next) => setDraft((d) => ({ ...d, [task]: next }))}
-            isEditing={editTask === task}
-            onEditChain={() => setEditTask((prev) => (prev === task ? null : task))}
-            userSettings={userHook.settings?.[task]} userModels={userHook.catalogFull}
-            hasOwnLlmKey={userHook.hasOwnLlmKey} userDisabled={userHook.saving}
-            onUserModel={(p, mm) => userHook.setModel(task, p, mm)}
-            onUserTimeout={(t) => userHook.setTipoTimeout(task, t)}
-            onResetUser={() => userHook.resetTipo(task)}
-            onUserFallback={(t, idx, p, m) => userHook.setFallback(t, idx, p, m)}
-            onUserAddFallback={(t) => userHook.addFallback(t)}
-            onUserRemoveFallback={(t, idx) => userHook.removeFallback(t, idx)}
-            bounds={userHook.bounds}
-          />
+          task === 'imagen' || task === 'video'
+            ? <MediaTaskCard key={task} task={task} index={i} />
+            : <ModelTaskCard
+                key={task} task={task} index={i}
+                adminDraft={draft?.[task]} adminModels={adminModels}
+                isAdmin={isAdmin} adminDisabled={!isAdmin || adminHook.save.isPending}
+                onAdminChange={(next) => setDraft((d) => ({ ...d, [task]: next }))}
+                isEditing={editTask === task}
+                onEditChain={() => setEditTask((prev) => (prev === task ? null : task))}
+                userSettings={userHook.settings?.[task]} userModels={userHook.catalogEnabled}
+                hasOwnLlmKey={userHook.hasOwnLlmKey} userDisabled={userHook.saving}
+                onUserModel={(p, mm) => userHook.setModel(task, p, mm)}
+                onUserTimeout={(t) => userHook.setTipoTimeout(task, t)}
+                onResetUser={() => userHook.resetTipo(task)}
+                onUserFallback={(t, idx, p, m) => userHook.setFallback(t, idx, p, m)}
+                onUserAddFallback={(t) => userHook.addFallback(t)}
+                onUserRemoveFallback={(t, idx) => userHook.removeFallback(t, idx)}
+                bounds={userHook.bounds}
+              />
         ))}
       </div>
 

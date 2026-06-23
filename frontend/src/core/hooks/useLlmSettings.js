@@ -40,7 +40,7 @@ export function useLlmSettings(enabled = true) {
     else setLoadingMore(true)
     setError('')
     try {
-      const data = await fetchLlmSettings({ search: s, category: c, type: t, page: reqPage, page_size: 50 })
+      const data = await fetchLlmSettings({ search: s, category: c, type: t, page: reqPage, page_size: 500 })
       setSettings(data.settings || {})
       setHasOwnLlmKey(data.has_own_llm_key ?? false)
       setCatalog(data.catalog || {})
@@ -141,6 +141,7 @@ export function useLlmSettings(enabled = true) {
 
   return {
     settings, catalog, catalogAll, catalogFull, fullTotal, fullPage, fullHasMore,
+    catalogEnabled: Object.values(catalog).flat(),
     enabledModels, defaults, bounds, categories, types,
     hasOwnLlmKey,
     loading, loadingMore, saving, error,

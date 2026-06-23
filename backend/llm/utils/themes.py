@@ -79,7 +79,7 @@ def _layout_block(design_mode: str) -> str:
     # UPAO (default): plantilla estructurada con firma de marca.
     return (
         "4) LAYOUT UPAO (plantilla estructurada, fírmala visualmente):\n"
-        "   - CABECERA: 'eyebrow' corto en MAYÚSCULAS color --accent (p.ej. 'ENGAGE · ML'),\n"
+        "   - CABECERA: 'eyebrow' corto en MAYÚSCULAS color --accent (p.ej. 'ML · REDES NEURONALES'),\n"
         "     debajo un <h1> en --primary, y debajo una KEYLINE de 3px en --accent (sello UPAO).\n"
         "   - SECCIONES: tarjetas con fondo --surface sobre --bg, border-radius var(--radius),\n"
         "     box-shadow var(--shadow); <h2> en --primary con un pequeño tick/marcador --accent a la izquierda.\n"

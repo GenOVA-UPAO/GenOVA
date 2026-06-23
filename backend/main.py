@@ -15,7 +15,6 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware
-from users.roles_router import router as roles_router
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
@@ -26,7 +25,7 @@ from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
 from labs.generation_routes import router as labs_gen_router
 from labs.router import router as labs_router
-from llm.router import router as agents_router
+from llm.catalog.catalog_router import router as agents_router
 from ova.crud.edit_router import router as ova_edit_router
 from ova.crud.subelement_router import router as ova_subelement_router
 from ova.phases.add_phase_router import router as ova_add_phase_router
@@ -34,10 +33,12 @@ from ova.phases.history_router import router as ova_history_router
 from ova.phases.phase_version_router import router as ova_phase_version_router
 from ova.router import router as ova_router
 from rag.router import router as rag_router
-from rag.router import uploads_router
+from roles.router import router as roles_router
 from run_migrations import run_migrations
 from scorm.router import router as scorm_router
 from seed import seed_db
+from uploads.router import router as uploads_router
+from users.admin.nodes_config_router import router as nodes_config_router
 from users.admin.platform_settings_router import router as platform_settings_router
 from users.router import router as users_router
 
@@ -207,3 +208,4 @@ app.include_router(uploads_router, prefix="/api/uploads", tags=["RAG"])
 app.include_router(labs_router, prefix="/api/labs", tags=["Labs"])
 app.include_router(labs_gen_router, prefix="/api/labs", tags=["Labs"])
 app.include_router(platform_settings_router, prefix="/api/admin", tags=["Admin"])
+app.include_router(nodes_config_router, prefix="/api/admin", tags=["Admin"])

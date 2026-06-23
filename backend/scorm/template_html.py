@@ -4,11 +4,11 @@ PHASE_LABELS = {
     "explicacion": "Explicación",
     "actividad": "Actividad",
     "evaluacion": "Evaluación",
-    "engage": "ENGAGE — Enganchar",
-    "explore": "EXPLORE — Explorar",
-    "explain": "EXPLAIN — Explicar",
-    "elaborate": "ELABORATE — Elaborar",
-    "evaluate": "EVALUATE — Evaluar",
+    "engage":    "Motivación",
+    "explore":   "Exploración",
+    "explain":   "Explicación",
+    "elaborate": "Elaboración",
+    "evaluate":  "Evaluación",
 }
 
 
