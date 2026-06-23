@@ -328,6 +328,191 @@ creencias posterior a cada fase.*
 
 ---
 
+## El liberador BDI — `deliberar` en detalle
+
+Esta sección describe con precisión técnica el ciclo BDI implementado en `backend/prometheus/engine/bdi.py`.
+El ciclo se ejecuta en cada invocación del `concierge_node` y sigue el modelo Rao & Georgeff / Padgham & Winikoff.
+
+### 1. Rol del liberador BDI en el ciclo
+
+En la arquitectura BDI canónica el *liberador* (también llamado *filtro deliberativo*) es la función
+que transforma el conjunto de deseos activos en intenciones comprometidas. No todos los deseos se
+convierten en intenciones: el liberador evalúa su viabilidad frente a las creencias del agente y
+decide cuáles vale la pena ejecutar y en qué orden.
+
+En GenOVA ese rol lo cumple `deliberar(desires, beliefs)` en `bdi.py`. Su salida — la lista de
+intenciones — es la que el `concierge_node` convierte en `phases` + `phase_order`, el plan real de
+ejecución del grafo.
+
+### 2. Formación de creencias — `form_beliefs`
+
+Las creencias representan lo que el agente sabe del entorno de generación *antes* de planificar.
+`form_beliefs` produce un diccionario tipado con tres scores continuos y campos de seguimiento:
+
+| Campo | Rango | Fórmula / lógica |
+|---|---|---|
+| `rag_quality` | 0–1 | Con texto RAG: `min(1.0, log1p(len) / log1p(5000))`; solo upload_ids sin texto: 0.7; sin nada: 0.0 |
+| `topic_complexity` | 0–1 | `min(1.0, palabras_en_prompt / 80)` — satura en prompts de 80 o más palabras |
+| `model_capability` | 0.6 / 1.0 | 1.0 si algún modelo habilitado contiene keyword premium (`70b`, `large`, `deepseek`, `gemini`, `claude`, `gpt-4`, `mixtral-8x22`); 0.6 en caso contrario |
+| `has_uploads` | bool | Verdadero si hay al menos un `upload_id` |
+| `completed_phases` | list | Inicialmente vacío; crece con `revise_beliefs` tras cada fase |
+| `accumulated_errors` | int | Contador de errores acumulados entre fases |
+| `last_phase_quality` | float \| None | Calidad de la última fase ejecutada; None al inicio |
+
+**Nota sobre `rag_quality`**: usa `log1p` para comprimir el rango de tamaño del contexto RAG
+(que puede variar de decenas a miles de caracteres) en una escala 0–1. Un contexto de 5000
+caracteres equivale aproximadamente a 1.0. La constante 5000 fue elegida como referencia de
+contexto "completo" (varios chunks RAG concatenados).
+
+**Nota sobre `model_capability`**: el valor 0.6 (no 0.5) para modelos base refleja que incluso
+un modelo de capacidad estándar puede generar el recurso — solo con menor confianza que un modelo
+premium.
+
+### 3. Generación de deseos — `generate_desires`
+
+Los deseos representan *todo lo que el agente quiere producir*, sin filtro de viabilidad todavía.
+`generate_desires` itera el plan de recursos (dict `{fase: [{resource_type, resource_order}]}`) y
+produce una lista plana de deseos, cada uno con `priority = 1.0`:
+
+```
+desires = [
+  {phase: "engage",   resource_type: 1, resource_order: 0, priority: 1.0},
+  {phase: "engage",   resource_type: 3, resource_order: 1, priority: 1.0},
+  {phase: "explore",  resource_type: 4, resource_order: 0, priority: 1.0},
+  ...
+]
+```
+
+La prioridad uniforme de 1.0 indica que, en esta versión, todos los recursos elegidos por el
+cliente tienen la misma importancia declarada. La diferenciación se produce en el paso siguiente,
+cuando `deliberar` calcula la viabilidad de cada uno.
+
+### 4. El algoritmo de viabilidad — `_score_viability`
+
+Es el corazón del liberador. Para cada deseo computa un score de viabilidad en [0.5, 1.0]:
+
+```
+viability = 1.0
+
+si resource_type ∈ {4, 7, 9, 10}  (tipos complejos)
+   y model_capability < 0.6:
+    viability *= 0.8               # descuento del 20 %
+
+si resource_type ∈ {2, 3, 5, 6, 8}  (tipos context-heavy)
+   y rag_quality < 0.2:
+    viability *= 0.85              # descuento del 15 %
+
+viability = max(0.5, viability)    # piso garantizado
+```
+
+**Tipos complejos** (`_COMPLEX_TYPES = {4, 7, 9, 10}`): recursos interactivos de alta carga
+computacional — simuladores, laboratorios de código, demos avanzadas. Con un modelo base
+(`model_capability = 0.6`) el agente cree que la generación será menos fiable, y reduce la
+viabilidad a 0.80.
+
+**Tipos context-heavy** (`_CONTEXT_HEAVY = {2, 3, 5, 6, 8}`): recursos pedagógicos que mejoran
+sensiblemente con contexto externo — artículos explicativos, podcasts, infografías, timelines,
+mapas conceptuales. Sin RAG (`rag_quality < 0.2`) el agente descuenta la viabilidad a 0.85.
+
+**Piso de 0.5**: garantiza que *todo recurso seleccionado por el cliente siempre se compromete
+como intención*. No existe filtro de rechazo: `viability > 0` es siempre verdadero (mínimo 0.5).
+El piso modela la política de negocio de que el usuario tiene autoridad sobre qué recursos generar;
+el agente puede penalizar la confianza pero no puede cancelar la intención.
+
+Los dos descuentos son independientes y acumulables: un recurso de tipo 4 (complejo) sin modelo
+premium *y* sin RAG sufriría `1.0 × 0.8 × 0.85 = 0.68`, que con el piso queda en `0.68` (por
+encima de 0.5, así que el piso no interviene).
+
+### 5. Selección de plan — `_select_plan_type`
+
+Una vez que un deseo se compromete como intención, recibe un `plan_type` que determina cuál de
+los tres planes de generación ejecutará `run_phase`:
+
+| Condición | `plan_type` | Plan |
+|---|---|---|
+| `resource_type == 3` (podcast ENGAGE) | `"podcast"` | Monólogo → TTS → HTML |
+| `phase == "elaborate"` y `resource_type == 7` | `"lab_codigo"` | Laboratorio de código interactivo |
+| Cualquier otro caso (~70 % de recursos) | `"two_step"` | Texto estructurado → HTML |
+
+La asignación es determinista y basada en identidad del recurso, no en las creencias. El `plan_type`
+queda registrado en cada intención de `OvaGenerationState.intentions` para trazabilidad.
+
+### 6. Ordenamiento de intenciones
+
+Tras calcular viabilidad y plan_type para todos los deseos, `deliberar` ordena la lista de
+intenciones en orden descendente por `priority × viability`:
+
+```python
+intentions.sort(key=lambda i: i["priority"] * i["viability"], reverse=True)
+```
+
+Con `priority = 1.0` uniforme, el orden queda determinado exclusivamente por `viability`. Los
+recursos de mayor viabilidad (mayor confianza del agente) se ejecutan primero dentro de una misma
+fase. En la práctica, los recursos más simples (tipos no complejos, sin necesidad de RAG) tienen
+viabilidad 1.0 y encabezan la lista; los degradados quedan al final pero igualmente comprometidos.
+
+### 7. Revisión de creencias — `revise_beliefs`
+
+Tras completar cada fase, el `runtime.run_phase` invoca `revise_beliefs` para que el agente
+actualice su modelo del entorno con evidencia real:
+
+```
+last_phase_quality = len(results) / max(1, len(results) + len(errors))
+```
+
+El campo `last_phase_quality` captura la tasa de éxito de la fase recién ejecutada (0.0 = todo
+falló, 1.0 = todo exitoso). Los campos `completed_phases` y `accumulated_errors` crecen con cada
+fase. Estas creencias actualizadas estarían disponibles para un ciclo BDI en una fase posterior —
+aunque en la implementación actual el liberador solo corre una vez (en el `concierge`), la
+estructura permite deliberación adaptativa si se extiende el sistema.
+
+### 8. Ejemplo de ciclo completo
+
+El siguiente ejemplo ilustra cómo fluye un request real con contexto RAG medio y modelos premium:
+
+```
+Entrada:
+  prompt       = "Redes neuronales convolucionales para clasificación de imágenes"
+                 (8 palabras)
+  rag_context  = "... 1200 caracteres de contexto RAG ..."
+  enabled_models = [{"id": "deepseek-v3"}, {"id": "llama-3.1-8b"}]
+  upload_ids   = ["doc-abc123"]
+  resources    = [{phase:engage, rt:1}, {phase:engage, rt:3}, {phase:explore, rt:7}]
+
+form_beliefs:
+  rag_quality      = min(1.0, log1p(1200) / log1p(5000)) ≈ 0.837
+  topic_complexity = min(1.0, 8/80) = 0.100
+  model_capability = 1.0  (deepseek → keyword "deepseek" detectado)
+  has_uploads      = True
+
+generate_desires:
+  D1 = {phase:engage,  rt:1, order:0, priority:1.0}
+  D2 = {phase:engage,  rt:3, order:1, priority:1.0}
+  D3 = {phase:explore, rt:7, order:0, priority:1.0}
+
+_score_viability:
+  D1 (rt=1): ni complejo ni context-heavy → viability = 1.0
+  D2 (rt=3): context-heavy, rag=0.837 ≥ 0.2 → sin descuento → viability = 1.0
+  D3 (rt=7): complejo, cap=1.0 ≥ 0.6 → sin descuento → viability = 1.0
+
+deliberar → intenciones (ordenadas por priority × viability):
+  I1 = {phase:engage,  rt:1, plan_type:"two_step", viability:1.0, committed:True}
+  I2 = {phase:engage,  rt:3, plan_type:"podcast",  viability:1.0, committed:True}
+  I3 = {phase:explore, rt:7, plan_type:"two_step", viability:1.0, committed:True}
+
+Ejecución engage (results=2, errors=0):
+  revise_beliefs → last_phase_quality=1.0, completed_phases=["engage"], accumulated_errors=0
+
+Ejecución explore (results=0, errors=1):
+  revise_beliefs → last_phase_quality=0.0, completed_phases=["engage","explore"], accumulated_errors=1
+```
+
+En el escenario de fallo de explore, las creencias reflejan la dificultad del recurso complejo
+(rt=7 falló), pero el ciclo ya está comprometido — no hay re-deliberación dentro del mismo job.
+La política de reintentos la maneja `jobs_runner` a nivel de `OvaJobResource`, fuera del ciclo BDI.
+
+---
+
 ## Núcleo real de la metodología
 
 Despojado del envoltorio BDI, el patrón que corre es:
