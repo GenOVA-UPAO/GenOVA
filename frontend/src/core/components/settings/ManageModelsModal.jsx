@@ -52,7 +52,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden" showCloseButton={false}>
+        <DialogContent className="w-[min(920px,calc(100vw-2rem))] sm:max-w-[920px] p-0 gap-0 overflow-hidden" showCloseButton={false}>
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/60 bg-muted/20">
             <DialogHeader className="gap-0.5">
