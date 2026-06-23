@@ -12,6 +12,7 @@ def _build_full_catalog(
     or_data: dict[str, dict],
     groq_ids: set[str],
     opencode_ids: set[str] | None = None,
+    hf_ids: set[str] | None = None,
 ) -> list[dict]:
     curated_keys = {(e["provider"], e["model_id"]) for e in CATALOG_ENTRIES}
     result: list[dict] = []
@@ -88,6 +89,24 @@ def _build_full_catalog(
                     "active": True,
                     "task": entry.get("task"),
                 })
+
+    if hf_ids:
+        curated_hf = {e["model_id"] for e in CATALOG_ENTRIES if e["provider"] == "huggingface"}
+        for model_id in hf_ids:
+            result.append({
+                "provider": "huggingface",
+                "model_id": model_id,
+                "label": model_id,
+                "description": "",
+                "category": "texto",
+                "modality": "text",
+                "pricing": "Gratuito",
+                "pricing_detail": None,
+                "context_length": None,
+                "curated": model_id in curated_hf,
+                "active": True,
+                "task": None,
+            })
 
     result.sort(key=lambda e: (not e["curated"], e["provider"], e["model_id"]))
     return result

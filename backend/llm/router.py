@@ -12,6 +12,7 @@ from llm.clients.clients import (
     _key_cache,
     _key_lock,
     groq_client,
+    huggingface_client,
     opencode_client,
     openrouter_client,
 )
@@ -51,6 +52,7 @@ __all__ = [
     "generar_texto_with_model",
     "generar_vision",
     "groq_client",
+    "huggingface_client",
     "opencode_client",
     "openrouter_client",
     "time",
@@ -90,6 +92,10 @@ def _chat(
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
+    elif provider == "huggingface":
+        opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
+        client = huggingface_client.with_options(**opts) if opts else huggingface_client
+        r = client.chat.completions.create(model=model_id, messages=msgs, max_tokens=max_tokens, **extra)
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = openrouter_client.with_options(**opts) if opts else openrouter_client

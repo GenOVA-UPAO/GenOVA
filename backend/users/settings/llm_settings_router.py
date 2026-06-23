@@ -32,7 +32,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-_LLM_PROVIDERS = ("groq", "openrouter", "opencode")
+_LLM_PROVIDERS = ("groq", "openrouter", "opencode", "huggingface")
 
 
 def _enabled_keys(user) -> set[tuple[str, str]]:

@@ -70,3 +70,11 @@ opencode_client = OpenAI(
     timeout=_LLM_TIMEOUT_S,
     max_retries=0,
 )
+
+# HuggingFace Serverless Inference — OpenAI-compatible text generation.
+huggingface_client = OpenAI(
+    api_key=settings.hf_token or "not-configured",
+    base_url="https://api-inference.huggingface.co/v1/",
+    timeout=_LLM_TIMEOUT_S,
+    max_retries=0,
+)

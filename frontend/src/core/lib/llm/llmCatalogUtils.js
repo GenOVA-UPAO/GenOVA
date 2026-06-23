@@ -1,4 +1,4 @@
-export const PROVIDER_LABELS = { groq: 'Groq', openrouter: 'OpenRouter', opencode: 'OpenCode' }
+export const PROVIDER_LABELS = { groq: 'Groq', openrouter: 'OpenRouter', opencode: 'OpenCode', huggingface: 'HuggingFace' }
 
 export const MODALITY_META = {
   text: { label: 'Texto', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800' },

@@ -177,7 +177,7 @@ def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[st
     api_key = settings.get("api_key") or None
     model = settings.get("image_model") or None
 
-    if max_images <= 0:
+    if max_images <= 0 or provider in (None, "", "none"):
         return {}
 
     from concurrent.futures import ThreadPoolExecutor

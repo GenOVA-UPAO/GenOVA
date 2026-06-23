@@ -30,7 +30,8 @@ export function ModelsPage() {
   const adminHook = useAdminLlmConfig()
   const isAdmin = user?.role === 'administrador'
   const canModels = !user || isAdmin || (user?.permissions || []).includes('ai:models:self') || (user?.permissions || []).includes('ai:models:platform')
-  const tasks = adminHook.config.data?.tasks ?? ['texto', 'codigo', 'orquestador', 'razonamiento', 'imagen', 'video']
+  const baseTasks = adminHook.config.data?.tasks ?? ['texto', 'codigo', 'orquestador', 'razonamiento']
+  const tasks = [...new Set([...baseTasks, 'imagen', 'video'])]
   const adminModels = adminHook.catalog.data ?? []
 
   useEffect(() => { getCurrentUser().then(setUser) }, [])

@@ -125,7 +125,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
                   <div key={provider} className="px-3 py-2">
                     <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/40 mb-1 px-2 flex items-center gap-1.5">
                       {PROVIDER_LABELS[provider] || provider}
-                      {provider === 'groq' && <span className="font-normal normal-case tracking-normal text-emerald-500">· gratuito</span>}
+                      {(provider === 'groq' || provider === 'huggingface') && <span className="font-normal normal-case tracking-normal text-emerald-500">· gratuito</span>}
                     </p>
                     {models.map((m) => {
                       const key = `${m.provider}:${m.model_id}`

@@ -125,6 +125,45 @@ def _fetch_opencode() -> set[str] | None:
         return None
 
 
+def _fetch_huggingface() -> set[str] | None:
+    """Fetch text-generation model IDs warm for HF Serverless Inference.
+    Returns None when no API key is configured."""
+    from core.database import SessionLocal
+    from llm.clients.key_resolver import resolve_key
+
+    db = SessionLocal()
+    try:
+        api_key = resolve_key("huggingface", None, db)
+    finally:
+        db.close()
+
+    if not api_key:
+        logger.info("HuggingFace: no API key — skipping text model fetch")
+        return None
+
+    try:
+        url = "https://huggingface.co/api/models"
+        resp = httpx.get(
+            url,
+            params={"inference": "warm", "pipeline_tag": "text-generation", "sort": "downloads", "limit": "100", "full": "false"},
+            timeout=10.0,
+        )
+        resp.raise_for_status()
+        ids = {m["id"] for m in resp.json() if m.get("id")}
+        logger.info("HuggingFace Hub returned %d warm text models", len(ids))
+        return ids
+    except Exception:
+        logger.exception("HuggingFace model list fetch failed")
+        return None
+
+
+def _merge_huggingface(available_ids: set[str]) -> None:
+    for entry in CATALOG_ENTRIES:
+        if entry["provider"] != "huggingface":
+            continue
+        entry["active"] = entry["model_id"] in available_ids
+
+
 def _load_cached(db, provider: str) -> dict | set | None:
     """Read a provider's raw data back from the Supabase cache. Defensive: a
     missing/expired row or an unexpected shape must never break the refresh."""
