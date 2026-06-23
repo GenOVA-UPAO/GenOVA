@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import { TASK_META } from '@/core/lib/ova/taskMeta.js'
+import { apiJson } from '@/core/lib/http.js'
 import { getOvaSettings, saveOvaSettings } from '@/features/ova_workspace/services/ovaSettingsService.js'
 
 const IMAGE_PROVIDERS = [
@@ -15,6 +16,9 @@ export function MediaTaskCard({ task, index = 0 }) {
   const m = TASK_META[task]
   const [enabled, setEnabled] = useState(true)
   const [provider, setProvider] = useState('huggingface')
+  const [imageModel, setImageModel] = useState(null)
+  const [models, setModels] = useState([])
+  const [loadingModels, setLoadingModels] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(task !== 'imagen')
 
@@ -25,15 +29,34 @@ export function MediaTaskCard({ task, index = 0 }) {
         const p = settings.image_provider ?? 'huggingface'
         setEnabled(p !== 'none')
         setProvider(p === 'none' ? 'huggingface' : p)
+        setImageModel(settings.image_model ?? null)
       })
       .catch(() => {})
       .finally(() => setLoaded(true))
   }, [task])
 
-  async function persist(nextEnabled, nextProvider) {
+  useEffect(() => {
+    if (!loaded || !enabled || task !== 'imagen') return
+    setLoadingModels(true)
+    apiJson(`/api/users/me/image-models?provider=${provider}`)
+      .then((data) => {
+        const list = data.models ?? []
+        setModels(list)
+        if (list.length > 0 && !list.find((x) => x.id === imageModel)) {
+          setImageModel(list[0].id)
+        }
+      })
+      .catch(() => setModels([]))
+      .finally(() => setLoadingModels(false))
+  }, [provider, loaded, enabled]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function persist(nextEnabled, nextProvider, nextModel) {
     setSaving(true)
     try {
-      await saveOvaSettings({ image_provider: nextEnabled ? nextProvider : 'none' })
+      await saveOvaSettings({
+        image_provider: nextEnabled ? nextProvider : 'none',
+        image_model: nextEnabled ? nextModel : null,
+      })
     } catch {
       toast.error('No se pudo guardar la configuración de imágenes')
     } finally {
@@ -44,12 +67,18 @@ export function MediaTaskCard({ task, index = 0 }) {
   function toggleEnabled() {
     const next = !enabled
     setEnabled(next)
-    persist(next, provider)
+    persist(next, provider, imageModel)
   }
 
   function changeProvider(p) {
     setProvider(p)
-    persist(true, p)
+    setImageModel(null)
+    persist(true, p, null)
+  }
+
+  function changeModel(mid) {
+    setImageModel(mid)
+    persist(true, provider, mid)
   }
 
   return (
@@ -99,19 +128,43 @@ export function MediaTaskCard({ task, index = 0 }) {
             </div>
           ) : enabled ? (
             <div className="space-y-2.5">
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50">Proveedor</p>
-              <select
-                value={provider}
-                onChange={(e) => changeProvider(e.target.value)}
-                disabled={saving}
-                className="w-full text-xs rounded-lg border border-border/60 bg-background px-3 py-2
-                  focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground
-                  disabled:opacity-50 cursor-pointer"
-              >
-                {IMAGE_PROVIDERS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50 mb-1.5">Proveedor</p>
+                <select
+                  value={provider}
+                  onChange={(e) => changeProvider(e.target.value)}
+                  disabled={saving}
+                  className="w-full text-xs rounded-lg border border-border/60 bg-background px-3 py-2
+                    focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground
+                    disabled:opacity-50 cursor-pointer"
+                >
+                  {IMAGE_PROVIDERS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              {loadingModels ? (
+                <div className="flex items-center gap-1.5 py-1">
+                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-muted border-t-primary" />
+                  <p className="text-[10px] text-muted-foreground">Cargando modelos...</p>
+                </div>
+              ) : models.length > 0 ? (
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50 mb-1.5">Modelo</p>
+                  <select
+                    value={imageModel ?? ''}
+                    onChange={(e) => changeModel(e.target.value)}
+                    disabled={saving}
+                    className="w-full text-xs rounded-lg border border-border/60 bg-background px-3 py-2
+                      focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground
+                      disabled:opacity-50 cursor-pointer"
+                  >
+                    {models.map((opt) => (
+                      <option key={opt.id} value={opt.id}>{opt.label || opt.id}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
             </div>
           ) : (
             <div className="flex items-center gap-2">

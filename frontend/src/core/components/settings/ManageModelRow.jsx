@@ -1,9 +1,17 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { CircleNotch, CurrencyDollar, Lock } from '@phosphor-icons/react'
 
-export const ManageModelRow = memo(function ManageModelRow({ model, locked, enabled, saving, onToggle }) {
-  const isFree = model.pricing === 'Gratuito' || (!model.pricing && model.provider === 'groq')
+export const ManageModelRow = memo(function ManageModelRow({ model, locked, enabled, onToggle }) {
+  const [saving, setSaving] = useState(false)
+  const isFree = model.pricing === 'Gratuito' || (!model.pricing && (model.provider === 'groq' || model.provider === 'huggingface'))
   const isVariable = model.pricing === 'Variable'
+
+  async function handleClick() {
+    if (locked || saving) return
+    setSaving(true)
+    try { await onToggle(model.provider, model.model_id) }
+    finally { setSaving(false) }
+  }
 
   return (
     <div className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${locked ? 'opacity-60' : 'hover:bg-muted/40'}`}>
@@ -13,7 +21,7 @@ export const ManageModelRow = memo(function ManageModelRow({ model, locked, enab
         role="switch"
         aria-checked={enabled}
         disabled={locked || saving}
-        onClick={() => !locked && !saving && onToggle(model.provider, model.model_id)}
+        onClick={handleClick}
         className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent
           transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50
           ${enabled ? 'bg-primary' : 'bg-input'}

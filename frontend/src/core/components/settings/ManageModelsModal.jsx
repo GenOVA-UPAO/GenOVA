@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from 'react'
 import { Key, MagnifyingGlass, Plus, SlidersHorizontal } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/core/components/ui/dialog'
@@ -16,7 +16,6 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
     hasOwnLlmKey,
   } = hook
 
-  const [savingKey, setSavingKey] = useState(null)
   const [connectOpen, setConnectOpen] = useState(false)
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const sentinelRef = useRef(null)
@@ -36,10 +35,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
   }, [fullHasMore, loadingMore, loading, loadMore])
 
   const handleToggle = useCallback(async (provider, modelId) => {
-    const key = `${provider}:${modelId}`
-    setSavingKey(key)
     await toggleFavorite(provider, modelId)
-    setSavingKey(null)
   }, [toggleFavorite])
 
   const handleConnectSelect = (provider) => {
@@ -88,7 +84,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
             </div>
             <select
               value={categoryFilter || 'all'}
-              onChange={(e) => handleCategory(e.target.value)}
+              onChange={(e) => startTransition(() => handleCategory(e.target.value))}
               className="text-xs rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1.5
                 focus:outline-none focus:ring-2 focus:ring-primary/20 text-muted-foreground transition-all cursor-pointer"
             >
@@ -136,7 +132,6 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
                           model={m}
                           locked={locked}
                           enabled={isModelEnabled(m.provider, m.model_id) || locked}
-                          saving={savingKey === key}
                           onToggle={handleToggle}
                         />
                       )

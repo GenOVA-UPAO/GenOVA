@@ -11,7 +11,6 @@ const PROVIDER_LABELS = {
 }
 
 async function fetchImageModels(provider) {
-  if (provider === 'huggingface') return []
   try {
     const data = await apiJson(`/api/users/me/image-models?provider=${provider}`)
     return data.models ?? []
