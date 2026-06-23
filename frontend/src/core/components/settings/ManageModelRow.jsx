@@ -1,7 +1,7 @@
+import { memo } from 'react'
 import { CircleNotch, CurrencyDollar, Lock } from '@phosphor-icons/react'
 
-/** Single row in ManageModelsModal: toggle switch + name + description + pricing tooltip. */
-export function ManageModelRow({ model, locked, enabled, saving, onToggle }) {
+export const ManageModelRow = memo(function ManageModelRow({ model, locked, enabled, saving, onToggle }) {
   const isFree = model.pricing === 'Gratuito' || (!model.pricing && model.provider === 'groq')
   const isVariable = model.pricing === 'Variable'
 
@@ -91,4 +91,4 @@ export function ManageModelRow({ model, locked, enabled, saving, onToggle }) {
       ) : null}
     </div>
   )
-}
+})

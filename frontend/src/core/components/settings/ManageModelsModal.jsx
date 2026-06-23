@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Key, MagnifyingGlass, Plus, SlidersHorizontal } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/core/components/ui/dialog'
@@ -35,12 +35,12 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
     return () => obs.disconnect()
   }, [fullHasMore, loadingMore, loading, loadMore])
 
-  const handleToggle = async (provider, modelId) => {
+  const handleToggle = useCallback(async (provider, modelId) => {
     const key = `${provider}:${modelId}`
     setSavingKey(key)
     await toggleFavorite(provider, modelId)
     setSavingKey(null)
-  }
+  }, [toggleFavorite])
 
   const handleConnectSelect = (provider) => {
     setConnectOpen(false)
