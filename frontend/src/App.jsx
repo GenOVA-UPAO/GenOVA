@@ -8,7 +8,7 @@ import { LoginPage } from '@/features/auth/pages/LoginPage.jsx'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage.jsx'
 import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage.jsx'
 import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage.jsx'
-import { DashboardPage } from '@/features/student/pages/DashboardPage.jsx'
+import { DashboardPage } from '@/features/ova_library/pages/DashboardPage.jsx'
 
 // Code-split heavier authenticated routes so the login bundle stays tiny.
 const AdminRolesPage = lazy(() => import('@/features/admin/pages/AdminRolesPage.jsx').then((m) => ({ default: m.AdminRolesPage })))
