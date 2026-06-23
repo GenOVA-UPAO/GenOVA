@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Ova, OvaPhase, OvaVersion, User
+from ova.helpers import _is_admin
 from storage import StorageError, is_configured, upload_zip
 
 logger = logging.getLogger(__name__)
@@ -113,7 +114,7 @@ def _version_to_dict(version: OvaVersion, include_phases: bool = False) -> dict:
 
 
 def _resolve_ova(ova_id: str, current_user: User, db: Session):
-    """Fetch a non-deleted OVA and verify the requesting user owns it.
+    """Fetch a non-deleted OVA and verify the requesting user owns it (or is admin).
 
     Returns ``(ova, None)`` on success, or ``(None, JSONResponse)`` on error.
     Callers should ``return err`` immediately when the second element is truthy.
@@ -126,7 +127,7 @@ def _resolve_ova(ova_id: str, current_user: User, db: Session):
             status_code=status.HTTP_404_NOT_FOUND,
             content={"error": "not_found", "message": "OVA no encontrado."},
         )
-    if not _is_ova_owner(ova, current_user):
+    if not _is_ova_owner(ova, current_user) and not _is_admin(current_user, db):
         return None, JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={"error": "forbidden", "message": "Sin permisos."},

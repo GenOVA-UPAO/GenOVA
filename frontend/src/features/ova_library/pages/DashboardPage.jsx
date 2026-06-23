@@ -120,7 +120,10 @@ export function DashboardPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-foreground group-hover:text-primary transition-colors">{ova.title}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{formatDate(ova.created_at || ova.updated_at)}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {formatDate(ova.created_at || ova.updated_at)}
+                    {isAdmin && ova.owner && <span className="ml-2 text-accent-brand">· {ova.owner.full_name}</span>}
+                  </p>
                 </div>
                 <span className={`shrink-0 rounded-full px-3 py-1 text-[10px] uppercase tracking-wider font-bold ${STATUS_STYLE[ova.status] || 'bg-muted text-muted-foreground'}`}>
                   {ova.status || 'borrador'}

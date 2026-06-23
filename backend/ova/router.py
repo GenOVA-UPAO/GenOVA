@@ -11,6 +11,7 @@ from auth.dependencies import get_current_user
 from core.database import get_db
 from models import Ova, OvaPhase, OvaVersion, User
 from ova.crud.llm_helpers import _enabled_llm_options, _ova_output_dir
+from ova.helpers import _is_admin
 from rag.store import tie_uploads_to_ova
 from scorm.service import build_scorm_zip_bytes
 from storage import StorageError, is_configured, signed_url, upload_zip
@@ -142,13 +143,11 @@ def download_ova_scorm(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    ova = db.execute(
-        select(Ova).where(
-            Ova.id == ova_id,
-            Ova.user_id == current_user.id,
-            Ova.deleted_at.is_(None),
-        )
-    ).scalar_one_or_none()
+    admin = _is_admin(current_user, db)
+    ova_query = select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
+    if not admin:
+        ova_query = ova_query.where(Ova.user_id == current_user.id)
+    ova = db.execute(ova_query).scalar_one_or_none()
     if not ova:
         raise HTTPException(status_code=404, detail="OVA no encontrado.")
 
