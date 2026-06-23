@@ -158,7 +158,7 @@ def prompt_html(
     estilos = {
         1: "galería deslizable tipo cómic: tarjetas grandes de colores, bocadillos CSS, navegación prev/next con indicador de progreso",
         2: "storyboard vertical con marcadores de tiempo, narración en bloque de cita, prompt de video en una caja copiable",
-        3: "reproductor de podcast oscuro con visualizador de onda CSS animado y el monólogo en texto grande",
+        3: "reproductor de podcast con paleta UPAO (fondo #F7F9FC, textos #0A3D91, acentos #F47A20), visualizador de onda CSS animado y el monólogo en texto grande",
         4: "minijuego con cronómetro visual, panel de items cliqueables, puntuación dinámica y pantalla de resultados",
         5: "tarjeta periodística: caso narrativo, 3 botones de votación, revelación animada de la reflexión post-voto",
         6: "periódico digital: titular bold, columna de noticia, pregunta de cierre resaltada, botón Continuar al final",
@@ -178,7 +178,7 @@ def prompt_html(
 - HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>.
 - Mínimo 280 líneas de calidad. Cada elemento debe ser funcional (navegación, botones, feedback, puntuación).
 - Paleta apropiada al tipo: cómic (clara vibrante), noticia (clara periodística), escape-room (oscura dramática),
-  podcast (oscura íntima), timeline (clara académica), juegos (clara con acentos).
+  podcast (UPAO: fondo claro #F7F9FC, primario #0A3D91, acento #F47A20), timeline (clara académica), juegos (clara con acentos).
 {ds}
 [IMAGENES] Si un item de los datos incluye un campo "image_placeholder" (por ejemplo "__IMG_1__"), úsalo literalmente como src del tag <img> correspondiente (por ejemplo: <img src="__IMG_1__" alt="...">). Si un item NO tiene "image_placeholder", NO inventes uno y NO incluyas <img> para ese item — renderiza solo texto. El servidor reemplaza los placeholders válidos por imágenes reales al renderizar.
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al completar la actividad principal.

@@ -49,6 +49,11 @@ def format_contexto_usuario(contexto: str | None) -> str:
 
 def strip_markdown(text: str) -> str:
     text = text.strip()
+    # Extract content from inside a code fence (handles preamble text before the fence)
+    m = re.search(r"```(?:json|html)?\s*\n([\s\S]*?)(?:\n\s*```\s*$|```\s*$)", text)
+    if m:
+        return m.group(1).strip()
+    # Fallback: bare leading/trailing fence markers
     text = re.sub(r"^```(?:json|html)?\s*", "", text)
     text = re.sub(r"\s*```\s*$", "", text)
     return text.strip()

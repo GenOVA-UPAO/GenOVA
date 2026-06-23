@@ -16,22 +16,14 @@ import { Button } from '@/core/components/ui/button'
 import { getSchema, getDefaultConfig } from '@/features/ova_library/lib/resourceConfigSchema.js'
 import { ResourceConfigModal } from './ResourceConfigModal.jsx'
 
+const mk = (key, Icon, label, sub, color, fetch) =>
+  ({ key, Icon, label, sub, color, fetch, bg: `color-mix(in oklch, ${color} 8%, transparent)` })
 const PHASE_CFG = [
-  { key: 'engage',    Icon: Target,         label: 'ENGAGE',    fetch: fetchEngageRecursos,
-    sub: 'Despierta curiosidad · activa saberes previos',
-    color: '#EF4444', bg: 'color-mix(in oklch, #EF4444 8%, transparent)' },
-  { key: 'explore',   Icon: MagnifyingGlass, label: 'EXPLORE',   fetch: fetchExploreRecursos,
-    sub: 'Descubre patrones · construye hipótesis',
-    color: '#3B82F6', bg: 'color-mix(in oklch, #3B82F6 8%, transparent)' },
-  { key: 'explain',   Icon: Lightbulb,      label: 'EXPLAIN',   fetch: fetchExplainRecursos,
-    sub: 'Formaliza conceptos · consolida la teoría',
-    color: '#F59E0B', bg: 'color-mix(in oklch, #F59E0B 8%, transparent)' },
-  { key: 'elaborate', Icon: Hammer,         label: 'ELABORATE', fetch: fetchElaborateRecursos,
-    sub: 'Aplica · transfiere a problemas reales',
-    color: '#8B5CF6', bg: 'color-mix(in oklch, #8B5CF6 8%, transparent)' },
-  { key: 'evaluate',  Icon: CheckCircle,    label: 'EVALUATE',  fetch: fetchEvaluateRecursos,
-    sub: 'Verifica aprendizajes · reflexiona el proceso',
-    color: '#10B981', bg: 'color-mix(in oklch, #10B981 8%, transparent)' },
+  mk('engage',    Target,         'ENGAGE',    'Despierta curiosidad · activa saberes previos',       '#EF4444', fetchEngageRecursos),
+  mk('explore',   MagnifyingGlass,'EXPLORE',   'Descubre patrones · construye hipótesis',             '#3B82F6', fetchExploreRecursos),
+  mk('explain',   Lightbulb,      'EXPLAIN',   'Formaliza conceptos · consolida la teoría',           '#F59E0B', fetchExplainRecursos),
+  mk('elaborate', Hammer,         'ELABORATE', 'Aplica · transfiere a problemas reales',              '#8B5CF6', fetchElaborateRecursos),
+  mk('evaluate',  CheckCircle,    'EVALUATE',  'Verifica aprendizajes · reflexiona el proceso',       '#10B981', fetchEvaluateRecursos),
 ]
 
 const MAX_PER_PHASE = 4
@@ -47,6 +39,8 @@ function toggleSelection(list, resource) {
 export function PhaseSelectModal({ onClose, onConfirm, initialSelections, initialResourceConfigs }) {
   const [step, setStep] = useState(0)
   const [recursos, setRecursos] = useState(EMPTY_PICKS())
+  const [failedPhases, setFailedPhases] = useState(() => Object.fromEntries(PHASE_CFG.map((p) => [p.key, false])))
+  const [retryTick, setRetryTick] = useState(0)
   const [loading, setLoading] = useState(true)
   const [picks, setPicks] = useState(() => ({ ...EMPTY_PICKS(), ...(initialSelections ?? {}) }))
   const [hovered, setHovered] = useState(null)
@@ -62,31 +56,32 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections, initia
   const videoKeyConfigured = nodesData?.video_api_key_configured ?? true
 
   useEffect(() => {
-    Promise.all(PHASE_CFG.map((p) => p.fetch()))
+    setLoading(true)
+    Promise.allSettled(PHASE_CFG.map((p) => p.fetch()))
       .then((results) => {
-        const next = {}
-        PHASE_CFG.forEach((p, i) => { next[p.key] = results[i].recursos ?? [] })
+        const next = {}, failed = {}
+        PHASE_CFG.forEach((p, i) => {
+          const r = results[i]
+          next[p.key] = r.status === 'fulfilled' ? (r.value.recursos ?? []) : []
+          failed[p.key] = r.status === 'rejected'
+        })
         setRecursos(next)
+        setFailedPhases(failed)
       })
-      .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [retryTick])
 
   const phase = PHASE_CFG[step]
   const currentPicks = picks[phase.key]
   const currentList = recursos[phase.key]
+  const currentFailed = failedPhases[phase.key]
   const limitReached = currentPicks.length >= MAX_PER_PHASE
   const totalPhasesSelected = PHASE_CFG.filter((p) => picks[p.key].length > 0).length
   const total = PHASE_CFG.reduce((s, p) => s + picks[p.key].length, 0)
   const canConfirm = totalPhasesSelected >= 2
 
-  function selectResource(r) {
-    setPicks((prev) => ({ ...prev, [phase.key]: toggleSelection(prev[phase.key], r) }))
-  }
-
-  function handleConfigSave(phaseKey, resource, values) {
-    setResourceConfigs((prev) => ({ ...prev, [`${phaseKey}:${resource.id}`]: values }))
-  }
+  const selectResource = (r) => setPicks((prev) => ({ ...prev, [phase.key]: toggleSelection(prev[phase.key], r) }))
+  const handleConfigSave = (phaseKey, resource, values) => setResourceConfigs((prev) => ({ ...prev, [`${phaseKey}:${resource.id}`]: values }))
 
   const previewResource = hovered ?? (currentPicks.length > 0 ? currentPicks[currentPicks.length - 1] : null)
 
@@ -122,9 +117,7 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections, initia
                       style={{ backgroundColor: i < currentPicks.length ? phase.color : '#E5E7EB',
                         transform: i < currentPicks.length ? 'scale(1.15)' : 'scale(1)' }} />
                   ))}
-                  <span className="text-[10px] font-semibold ml-1" style={{ color: limitReached ? '#D97706' : phase.color }}>
-                    {currentPicks.length}/{MAX_PER_PHASE}
-                  </span>
+                  <span className="text-[10px] font-semibold ml-1" style={{ color: limitReached ? '#D97706' : phase.color }}>{currentPicks.length}/{MAX_PER_PHASE}</span>
                 </div>
               </div>
             </header>
@@ -135,6 +128,11 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections, initia
                 <div className="flex items-center justify-center py-16">
                   <div className="h-6 w-6 animate-spin rounded-full border-2"
                     style={{ borderColor: `${phase.color}30`, borderTopColor: phase.color }} />
+                </div>
+              ) : currentFailed ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                  <p className="text-sm text-muted-foreground">No se pudieron cargar los recursos de esta fase.</p>
+                  <button type="button" className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-accent transition-colors" style={{ color: phase.color }} onClick={() => setRetryTick((t) => t + 1)}>Reintentar</button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -160,28 +158,18 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections, initia
             </div>
           </div>
 
-          {/* Right — preview panel (desktop only) */}
-          <ResourcePreviewPanel
-            resource={previewResource}
-            phaseKey={phase.key}
-            phaseColor={phase.color}
-            className="hidden sm:flex flex-col w-72 border-l border-border bg-muted/20 shrink-0 overflow-y-auto"
-          />
+          <ResourcePreviewPanel resource={previewResource} phaseKey={phase.key} phaseColor={phase.color}
+            className="hidden sm:flex flex-col w-72 border-l border-border bg-muted/20 shrink-0 overflow-y-auto" />
         </div>
 
         {/* Footer */}
         <footer className="flex justify-between items-center gap-3 p-4 sm:p-5 border-t border-border bg-background shrink-0">
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           <div className="flex items-center gap-3">
-            {!canConfirm ? (
-              <span className="text-xs text-muted-foreground hidden sm:block">
-                Selecciona al menos 2 fases
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground hidden sm:block">
-                {total} recurso{total !== 1 ? 's' : ''} · {totalPhasesSelected} fases
-              </span>
-            )}
+            {!canConfirm
+              ? <span className="text-xs text-muted-foreground hidden sm:block">Selecciona al menos 2 fases</span>
+              : <span className="text-xs text-muted-foreground hidden sm:block">{total} recurso{total !== 1 ? 's' : ''} · {totalPhasesSelected} fases</span>
+            }
             <Button onClick={() => canConfirm && onConfirm(picks, resourceConfigs)} disabled={!canConfirm}
               style={canConfirm ? { backgroundColor: phase.color, borderColor: phase.color } : undefined}>
               Confirmar ({total}) ✓
@@ -197,8 +185,7 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections, initia
         phaseKey={configTarget.phaseKey}
         phaseColor={PHASE_CFG.find((p) => p.key === configTarget.phaseKey)?.color ?? '#3B82F6'}
         videoKeyConfigured={videoKeyConfigured}
-        config={resourceConfigs[`${configTarget.phaseKey}:${configTarget.resource.id}`]
-          ?? getDefaultConfig(configTarget.phaseKey, configTarget.resource.id)}
+        config={resourceConfigs[`${configTarget.phaseKey}:${configTarget.resource.id}`] ?? getDefaultConfig(configTarget.phaseKey, configTarget.resource.id)}
         onSave={handleConfigSave}
         onClose={() => setConfigTarget(null)}
       />
