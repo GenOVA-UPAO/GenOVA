@@ -39,7 +39,7 @@ export function ModelAssignmentPanel({ tasks, draft, setDraft, adminModels, admi
                 onAdminChange={(next) => setDraft((d) => ({ ...d, [task]: next }))}
                 isEditing={editTask === task}
                 onEditChain={() => setEditTask((prev) => (prev === task ? null : task))}
-                userSettings={userHook.settings?.[task]} userModels={userHook.catalogFull}
+                userSettings={userHook.settings?.[task]} userModels={userHook.catalogEnabled}
                 hasOwnLlmKey={userHook.hasOwnLlmKey} userDisabled={userHook.saving}
                 onUserModel={(p, mm) => userHook.setModel(task, p, mm)}
                 onUserTimeout={(t) => userHook.setTipoTimeout(task, t)}

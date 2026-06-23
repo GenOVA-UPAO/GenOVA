@@ -141,6 +141,7 @@ export function useLlmSettings(enabled = true) {
 
   return {
     settings, catalog, catalogAll, catalogFull, fullTotal, fullPage, fullHasMore,
+    catalogEnabled: Object.values(catalog).flat(),
     enabledModels, defaults, bounds, categories, types,
     hasOwnLlmKey,
     loading, loadingMore, saving, error,
