@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Key, MagnifyingGlass, Plus, SlidersHorizontal } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/core/components/ui/dialog'
@@ -47,7 +47,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
     onGoToApiKeys(provider)
   }
 
-  const grouped = groupByProvider(catalogFull)
+  const grouped = useMemo(() => groupByProvider(catalogFull), [catalogFull])
 
   return (
     <>

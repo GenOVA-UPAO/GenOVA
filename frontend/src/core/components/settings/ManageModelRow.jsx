@@ -6,7 +6,10 @@ export const ManageModelRow = memo(function ManageModelRow({ model, locked, enab
   const isVariable = model.pricing === 'Variable'
 
   return (
-    <div className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${locked ? 'opacity-60' : 'hover:bg-muted/40'}`}>
+    <div
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '0 44px' }}
+      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${locked ? 'opacity-60' : 'hover:bg-muted/40'}`}
+    >
       {/* Toggle switch */}
       <button
         type="button"
