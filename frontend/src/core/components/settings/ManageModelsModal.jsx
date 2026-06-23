@@ -52,7 +52,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden" showCloseButton={false}>
+        <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden" showCloseButton={false}>
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/60 bg-muted/20">
             <DialogHeader className="gap-0.5">
@@ -99,7 +99,7 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
           </div>
 
           {/* Body */}
-          <div ref={scrollRef} className="max-h-[460px] overflow-y-auto">
+          <div ref={scrollRef} className="max-h-[560px] overflow-y-auto">
             {!hasOwnLlmKey ? (
               <div className="flex flex-col items-center gap-4 py-14 text-center px-8">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
@@ -144,11 +144,24 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
                   </div>
                 ))}
                 <div ref={sentinelRef} className="h-1" />
-                {loadingMore && (
+                {loadingMore ? (
                   <div className="flex justify-center py-4">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary" />
                   </div>
-                )}
+                ) : fullHasMore ? (
+                  <div className="flex flex-col items-center gap-1.5 py-5 border-t border-border/30">
+                    <p className="text-[11px] text-muted-foreground">
+                      Mostrando {catalogFull.length} modelos
+                    </p>
+                    <Button size="sm" variant="outline" onClick={loadMore} className="text-xs font-bold gap-1.5">
+                      Cargar más modelos
+                    </Button>
+                  </div>
+                ) : catalogFull.length > 0 ? (
+                  <p className="text-center text-[11px] text-muted-foreground/50 py-4">
+                    {catalogFull.length} modelos en total
+                  </p>
+                ) : null}
               </div>
             )}
           </div>
