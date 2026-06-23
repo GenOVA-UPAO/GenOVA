@@ -16,7 +16,6 @@ os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 import pytest  # noqa: E402
-from api.ova import history_router as ova_history_router  # noqa: E402
 from fastapi import FastAPI  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pytest_bdd import given, parsers, scenario, then, when  # noqa: E402
@@ -27,6 +26,7 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 import models  # noqa: E402, F401
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
+from ova.phases.history_router import router as ova_history_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_HISTORIAL = os.path.join(_FEATURES, "ova", "HU-006_historial.feature")

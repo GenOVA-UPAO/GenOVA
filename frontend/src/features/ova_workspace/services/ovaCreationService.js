@@ -5,10 +5,10 @@ import { apiFetch, apiJson } from '../../../core/lib/http.js'
 
 // POST /api/ova/jobs → 202 { job_id, status: "queued" }.
 // `resources` = [{ phase_type, resource_type }] (resource_type is the catalog id).
-export function startJob({ prompt, uploadIds = [], resources, theme }) {
+export function startJob({ prompt, uploadIds = [], resources, theme, resourceConfigs = {} }) {
   return apiJson('/api/ova/jobs', {
     method: 'POST',
-    body: JSON.stringify({ prompt, upload_ids: uploadIds, resources, theme }),
+    body: JSON.stringify({ prompt, upload_ids: uploadIds, resources, theme, resource_configs: resourceConfigs }),
   })
 }
 

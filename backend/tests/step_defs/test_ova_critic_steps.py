@@ -47,7 +47,7 @@ def _make_state():
     }
 
 
-def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings):
+def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings, per_config=None):
     return _STUB_HTML
 
 

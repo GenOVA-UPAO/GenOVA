@@ -13,12 +13,12 @@ from prometheus.plans.two_step import two_step_gen
 from prometheus.prompts.engage_prompts import RECURSOS_META
 
 
-def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None):
+def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None, resource_config=None):
     if rt == 3:
         return podcast_gen("engage", rt, concept, llm_config, enabled_models, theme)
     if rt == 10:
-        return direct_code_gen("engage", rt, concept, llm_config, enabled_models, theme)
-    return two_step_gen("engage", rt, concept, llm_config, enabled_models, theme, image_settings)
+        return direct_code_gen("engage", rt, concept, llm_config, enabled_models, theme, resource_config)
+    return two_step_gen("engage", rt, concept, llm_config, enabled_models, theme, image_settings, resource_config)
 
 
 def engage_node(state: OvaGenerationState) -> dict:

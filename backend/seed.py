@@ -49,6 +49,11 @@ def seed_db():
                 "description": "Rol base genérico (legado)",
                 "permissions": ["create_ova", "view_ova", "export_ova", "ai:models:self"],
             },
+            {
+                "name": "usuarios_prueba",
+                "description": "Rol para participantes de tesis — acceso a OVAs sin configuración de modelos",
+                "permissions": ["create_ova", "view_ova", "export_ova"],
+            },
         ]
 
         roles_map = {}

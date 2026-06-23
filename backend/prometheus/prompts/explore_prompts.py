@@ -58,25 +58,27 @@ CODE_ONLY = {1, 6, 10}
 
 
 def prompt_codigo(
-    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None
+    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None,
+    config: dict | None = None,
 ) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     ds = design_system or DESIGN_SYSTEM
     t = {
         1: f"""[ROL] Desarrollador front-end de laboratorios virtuales interactivos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un laboratorio virtual HTML5 donde el estudiante EXPLORA "{concept}" manipulando sus elementos y observando los resultados.
-[TAREA] Diseña la simulación más representativa de cómo funciona "{concept}": elige datos de ejemplo, controles y visualización (SVG o canvas) apropiados al tema. Debe permitir: (1) manipular entradas o parámetros, (2) ejecutar o iterar el proceso central de "{concept}", (3) ver el resultado actualizarse, (4) un botón que explica qué está ocurriendo.
+[TAREA] Diseña la simulación más representativa de cómo funciona "{concept}": elige datos de ejemplo, controles y visualización (SVG o canvas) apropiados al tema. Debe permitir: (1) manipular entradas o parámetros, (2) ejecutar o iterar el proceso central de "{concept}", (3) ver el resultado actualizarse, (4) un botón que explica qué está ocurriendo. El estudiante debe completar al menos {cfg.get('num_iterations', 3)} iteraciones para finalizar.
 [REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad. Datos de ejemplo hardcodeados como arrays JS.
 {ds}
-[SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() tras varias iteraciones o al pulsar el botón explicativo.
+[SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() tras {cfg.get('num_iterations', 3)} iteraciones o al pulsar el botón explicativo.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
         6: f"""[ROL] Desarrollador front-end de simuladores paramétricos educativos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un simulador HTML5 centrado en UN parámetro clave de "{concept}" para que el estudiante descubra su efecto.
-[TAREA] Identifica el parámetro o variable más ilustrativo de "{concept}" y construye: (1) un slider o control para ese parámetro con un rango sensato, (2) un gráfico SVG que se actualiza en tiempo real (<100 ms), (3) zonas o estados coloreados que indican el comportamiento (p. ej. correcto / límite / incorrecto), (4) un campo para la hipótesis del estudiante, (5) un botón "Revelar zona óptima".
+[TAREA] Identifica el parámetro o variable más ilustrativo de "{concept}" y construye: (1) un slider o control para ese parámetro con un rango sensato, (2) un gráfico SVG que se actualiza en tiempo real (<100 ms), (3) {cfg.get('num_zones', 3)} zonas o estados coloreados que indican el comportamiento (p. ej. correcto / límite / incorrecto), (4) un campo para la hipótesis del estudiante, (5) un botón "Revelar zona óptima".
 [REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al revelar.
@@ -85,61 +87,62 @@ def prompt_codigo(
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Un laboratorio HTML5 donde el estudiante formula una hipótesis sobre "{concept}", experimenta y la contrasta.
-[TAREA] Construye: (1) una visualización de datos relevante a "{concept}" (scatter, curva u otra; datos hardcodeados como array JS), (2) controles para probar configuraciones, (3) métricas o indicadores visibles que cambian con cada prueba, (4) un campo de hipótesis, (5) un botón "Revelar" que muestra la configuración óptima y nombra el concepto técnico correcto.
+[TAREA] Construye: (1) una visualización de datos relevante a "{concept}" (scatter, curva u otra; datos hardcodeados como array JS), (2) controles para probar configuraciones, (3) métricas o indicadores visibles que cambian con cada prueba, (4) un campo de hipótesis, (5) un botón "Revelar" que muestra la configuración óptima y nombra el concepto técnico correcto. El estudiante debe realizar al menos {cfg.get('num_trials', 3)} pruebas antes de revelar.
 [REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad.
 {ds}
-[SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al revelar.
+[SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al revelar tras {cfg.get('num_trials', 3)} pruebas.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.""",
     }
     base = t.get(n, "")
     return base + contexto if base else ""
 
 
-def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     t = {
         2: f"""[ROL] Agente pedagógico socrático "DataGuide" — guías, nunca revelas la respuesta.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Sesión socrática de 6 turnos que lleva al estudiante a descubrir la idea central de "{concept}". Cada turno: dato_mostrado (un ejemplo, dato o situación concreta y relevante a "{concept}"), pregunta (≤28 palabras, abierta, guía al descubrimiento), respuesta_correcta (seguimiento si acierta), respuesta_incorrecta (pista adicional sin revelar).
+[TAREA] Sesión socrática de {cfg.get('num_turns', 6)} turnos que lleva al estudiante a descubrir la idea central de "{concept}". Cada turno: dato_mostrado (un ejemplo, dato o situación concreta y relevante a "{concept}"), pregunta (≤28 palabras, abierta, guía al descubrimiento), respuesta_correcta (seguimiento si acierta), respuesta_incorrecta (pista adicional sin revelar).
 [RESTRICCIONES] Nunca digas "la respuesta es". Tono de mentor curioso. Dificultad creciente entre turnos.
-[SALIDA] JSON puro con clave "turnos": array de 6 objetos con "turno","dato_mostrado","pregunta","respuesta_correcta","respuesta_incorrecta".""",
+[SALIDA] JSON puro con clave "turnos": array de {cfg.get('num_turns', 6)} objetos con "turno","dato_mostrado","pregunta","respuesta_correcta","respuesta_incorrecta".""",
         3: f"""[ROL] Diseñador de minijuegos de clasificación para ciencia de datos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Juego drag & drop de 6 rondas donde el estudiante clasifica items en 2 categorías propias de "{concept}" (elige las dos categorías más ilustrativas del tema). Define category_a y category_b. Cada ronda: item, contexto (1 línea), respuesta ("A" o "B"), feedback_correcto (≤16 palabras), feedback_incorrecto (≤16 palabras). Incluye al menos un caso ambiguo.
+[TAREA] Juego drag & drop de {cfg.get('num_rounds', 6)} rondas donde el estudiante clasifica items en 2 categorías propias de "{concept}" (elige las dos categorías más ilustrativas del tema). Define category_a y category_b. Cada ronda: item, contexto (1 línea), respuesta ("A" o "B"), feedback_correcto (≤16 palabras), feedback_incorrecto (≤16 palabras). Incluye al menos un caso ambiguo.
 [RESTRICCIONES] Sin repetir items. Dificultad creciente (de obvio a ambiguo).
-[SALIDA] JSON puro con claves "category_a","category_b" y "rondas": array de 6 objetos con "ronda","item","contexto","respuesta","feedback_correcto","feedback_incorrecto".""",
+[SALIDA] JSON puro con claves "category_a","category_b" y "rondas": array de {cfg.get('num_rounds', 6)} objetos con "ronda","item","contexto","respuesta","feedback_correcto","feedback_incorrecto".""",
         4: f"""[ROL] Guionista pedagógico de visualización de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Guion de video de 120 s sobre "{concept}" con marcadores de tiempo cada 30 s y metáforas cotidianas, más 3 preguntas de pausa activa (en los segundos 30, 75 y 110) que provoquen una predicción sin revelar la teoría.
+[TAREA] Guion de video de 120 s sobre "{concept}" con marcadores de tiempo cada 30 s y metáforas cotidianas, más {cfg.get('num_pauses', 3)} preguntas de pausa activa distribuidas a lo largo del video que provoquen una predicción sin revelar la teoría.
 [RESTRICCIONES] Sin fórmulas. Preguntas abiertas, no de opción múltiple.
-[SALIDA] JSON puro con claves "guion" (texto con marcadores de tiempo) y "pausas": array de 3 objetos con "segundo","pregunta".""",
+[SALIDA] JSON puro con claves "guion" (texto con marcadores de tiempo) y "pausas": array de {cfg.get('num_pauses', 3)} objetos con "segundo","pregunta".""",
         5: f"""[ROL] Redactor de materiales de análisis exploratorio.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] lectura de 220 palabras (tono periodístico intrigante) que lleva al estudiante a observar un patrón relacionado con "{concept}"; un conjunto_datos ficticio pero plausible y relevante a "{concept}" (8-10 registros); pregunta de exploración; revelacion de 50 palabras que conecta el patrón con "{concept}".
+[TAREA] lectura de 220 palabras (tono periodístico intrigante) que lleva al estudiante a observar un patrón relacionado con "{concept}"; un conjunto_datos ficticio pero plausible y relevante a "{concept}" ({cfg.get('num_records', 8)}-{cfg.get('num_records', 8) + 2} registros); pregunta de exploración; revelacion de 50 palabras que conecta el patrón con "{concept}".
 [RESTRICCIONES] Sin la terminología técnica de "{concept}" en la lectura inicial. El patrón debe ser identificable a simple vista.
 [SALIDA] JSON puro con claves "lectura","conjunto_datos" (array de objetos),"pregunta","revelacion".""",
         7: f"""[ROL] Instructor de análisis exploratorio de datos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Experimento guiado de 4 pasos para explorar "{concept}": descripcion_dataset (un conjunto de datos plausible y relevante al tema, descrito en texto), puntos para un gráfico (20-25 puntos con coordenadas x/y/grupo que formen una estructura visible coherente con "{concept}"), 3 preguntas de exploración progresivas, revelacion de 60 palabras que conecta lo observado con "{concept}".
+[TAREA] Experimento guiado de {cfg.get('num_steps', 4)} pasos para explorar "{concept}": descripcion_dataset (un conjunto de datos plausible y relevante al tema, descrito en texto), puntos para un gráfico (20-25 puntos con coordenadas x/y/grupo que formen una estructura visible coherente con "{concept}"), 3 preguntas de exploración progresivas, revelacion de 60 palabras que conecta lo observado con "{concept}".
 [RESTRICCIONES] Sin código visible. Las preguntas guían, no evalúan.
 [SALIDA] JSON puro con claves "descripcion_dataset","puntos" (array de objetos con x,y,grupo),"preguntas" (array de 3),"revelacion".""",
         8: f"""[ROL] Diseñador de aprendizaje basado en roles para científicos de datos junior.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] 4 escenarios de negocio de sectores distintos donde aplicar "{concept}". Cada escenario: problema ≤45 palabras en lenguaje cotidiano, opcion_A, opcion_B, respuesta_correcta, feedback_A y feedback_B (≤25 palabras). Mensajes finales según el puntaje, con claves "0","1-2","3-4".
+[TAREA] {cfg.get('num_scenarios', 4)} escenarios de negocio de sectores distintos donde aplicar "{concept}". Cada escenario: problema ≤45 palabras en lenguaje cotidiano, opcion_A, opcion_B, respuesta_correcta, feedback_A y feedback_B (≤25 palabras). Mensajes finales según el puntaje.
 [RESTRICCIONES] Sin jerga técnica en los enunciados. Respuesta objetivamente correcta y justificable.
-[SALIDA] JSON puro con claves "escenarios" (array de 4 objetos con id,problema,opcion_A,opcion_B,respuesta_correcta,feedback_A,feedback_B) y "mensajes_finales" (objeto).""",
+[SALIDA] JSON puro con claves "escenarios" (array de {cfg.get('num_scenarios', 4)} objetos con id,problema,opcion_A,opcion_B,respuesta_correcta,feedback_A,feedback_B) y "mensajes_finales" (objeto).""",
         9: f"""[ROL] Facilitador de mapas mentales para el aprendizaje de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] 6 tarjetas que emparejan una pista_cotidiana con su nodo_tecnico real de "{concept}" (relación 1:1). Cada tarjeta: feedback_correcto (✓ y 1 línea de contexto), feedback_incorrecto (✗ y pista sin revelar). Una revelacion final de 90 palabras que integra los 6 nodos en el marco conceptual de "{concept}".
+[TAREA] {cfg.get('num_cards', 6)} tarjetas que emparejan una pista_cotidiana con su nodo_tecnico real de "{concept}" (relación 1:1). Cada tarjeta: feedback_correcto (✓ y 1 línea de contexto), feedback_incorrecto (✗ y pista sin revelar). Una revelacion final de 90 palabras que integra los nodos en el marco conceptual de "{concept}".
 [RESTRICCIONES] Las pistas se entienden sin conocimiento previo. Tono celebratorio en la revelación.
-[SALIDA] JSON puro con claves "tarjetas" (array de 6 objetos con id,pista_cotidiana,nodo_tecnico,feedback_correcto,feedback_incorrecto) y "revelacion".""",
+[SALIDA] JSON puro con claves "tarjetas" (array de {cfg.get('num_cards', 6)} objetos con id,pista_cotidiana,nodo_tecnico,feedback_correcto,feedback_incorrecto) y "revelacion".""",
     }
     base = t.get(n, "")
     return base + contexto if base else ""

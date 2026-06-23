@@ -46,6 +46,8 @@ class User(Base):
             '\'{"colorMode": "upao", "designMode": "upao", "palette": null}\'::jsonb'
         ),
     )
+    # Per-user resource generation config: {"phase:id": {"key": value}}.
+    resource_configs = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
     # Per-user provider API keys (never logged, returned masked):
     # {groq, openrouter, opencode, siliconflow, runware, falai}
     user_api_keys = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))

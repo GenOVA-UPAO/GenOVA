@@ -46,14 +46,16 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
     enabled_models = state.get("enabled_models", [])
     theme = state.get("theme", {})
     image_settings = state.get("image_settings", {})
+    resource_configs = state.get("resource_configs", {})
     job_id = state.get("job_id")
     _touch_job(job_id)  # heartbeat at phase entry (covers a slow first resource)
     workers = min(_concurrency(), len(resources))
 
     def _work(item: dict):
         rt = item["resource_type"]
+        per_config = resource_configs.get(f"{phase}:{rt}", {})
         try:
-            html = dispatch(rt, concept, llm_config, enabled_models, theme, image_settings)
+            html = dispatch(rt, concept, llm_config, enabled_models, theme, image_settings, per_config)
             return item, html, None
         except Exception as exc:  # noqa: BLE001 — isolate one resource's failure
             logger.exception("%s resource %s failed", phase, rt)

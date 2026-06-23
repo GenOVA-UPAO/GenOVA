@@ -101,11 +101,11 @@ def env_no_groq_key(request):
 
 @when('_get_provider_key is called for "groq"')  # noqa: F811 — duplicate step reuse
 def call_get_provider_key_no_row(request):
-    import llm.router as router
+    from llm.clients.clients import _get_provider_key
 
     session = request.node._db_session
-    with patch("database.SessionLocal", return_value=session):
-        request.node._result = router._get_provider_key("groq")
+    with patch("core.database.SessionLocal", return_value=session):
+        request.node._result = _get_provider_key("groq")
 
 
 @then("the returned key is None")
@@ -131,7 +131,7 @@ def db_with_cached_key(request):
 
 @when('_get_provider_key is called for "groq" twice within 30s')
 def call_twice(request):
-    import llm.router as router
+    from llm.clients.clients import _get_provider_key
 
     session = request.node._db_session
     counter = {"n": 0}
@@ -140,9 +140,9 @@ def call_twice(request):
         counter["n"] += 1
         return session
 
-    with patch("database.SessionLocal", side_effect=counting_session):
-        router._get_provider_key("groq")
-        router._get_provider_key("groq")
+    with patch("core.database.SessionLocal", side_effect=counting_session):
+        _get_provider_key("groq")
+        _get_provider_key("groq")
 
     request.node._db_call_count = counter["n"]
 
