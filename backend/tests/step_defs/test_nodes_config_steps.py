@@ -28,7 +28,7 @@ import prometheus.config.nodes_config as nc_mod  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
 from core.rate_limit import limiter  # noqa: E402
-from users.admin.platform_settings_router import router as admin_router  # noqa: E402
+from users.admin.nodes_config_router import router as admin_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-017_nodes-config.feature")

@@ -113,7 +113,7 @@ def db(Sess):
 
 def _stub_agent(monkeypatch, behavior):
     """Patch invoke_ova_generation to run behavior(phase_type, rtype_int, concept) per resource."""
-    from prometheus import graph as prom_graph
+    from prometheus.engine import graph as prom_graph
     from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
     from prometheus.prompts.explore_prompts import RECURSOS_META as EXPLORE_META
 

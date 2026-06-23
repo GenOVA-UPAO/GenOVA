@@ -197,3 +197,74 @@ las specs del editor avanzado de OVA y empezar la implementación.
 - **Verificación**: Compilación de producción Vite completada sin errores de dependencias y suite unitaria BDD 100% verde (63 escenarios, 268 pasos exitosos).
 
 **Estado:** DONE.
+
+---
+
+## 2026-06-20 → 2026-06-23 — Sprint 2 cierre: UX, config, modelos, Prometheus BDI, modo tesis
+
+**Agente:** opencode / Antigravity (inline)
+**Alcance:** ~45 commits no documentados desde la última entrada (post
+`d81a3e9`). Cierre funcional de Sprint 2 antes de su vencimiento (2026-06-21).
+
+**Completado (agrupado temáticamente):**
+
+- **UX / Wireframes crear OVA** (~12 commits, `46c3101`…`70dbd1a`):
+  centrado vertical de card crear OVA, íconos barra de acción, modales de
+  archivos y tema, mínimo 2 fases para generar, modales de recursos OVA con
+  colores vivos por fase, ajuste de wireframes a layout real del backend,
+  layout centrado rediseño crear OVA (wireframe 4-5).
+
+- **Config por recurso OVA** (~9 commits, `b338387`…`d94dbf1`):
+  config para los 50 recursos OVA (26 faltantes), descripción por campo en
+  `ResourceConfigModal`, fix cierre doble de modales, portal a body para
+  liberar `pointer-events` de Radix, `pointerdown` stopPropagation, persistencia
+  de config en Supabase por usuario, caché localStorage TTL-7d.
+
+- **Catálogo de modelos / LLM** (~10 commits, `3388aef`…`dfe9582`):
+  reemplazo de tab Catálogo por modal "Gestionar Modelos", fix catalog refresh
+  de Groq desde PlatformConfig, auto-refresh al guardar Keys Globales,
+  OpenCode dinámico + fix precios negativos, modelos de imagen dinámicos por
+  proveedor con selector en UI.
+
+- **Models modal perf** (~6 commits, `1896c8a`…`fbabb06`):
+  modal más ancho + load-more, memo + useCallback (fix INP 200ms), ancho
+  forzado 920px, content-visibility:auto + useMemo(grouped), luego removido
+  por romper tooltips, fix INP 216ms.
+
+- **Roles y modo tesis** (`cf12e91`):
+  migración 030 crea rol `usuarios_prueba` (create_ova/view_ova/export_ova),
+  `register()` asigna rol por defecto desde PlatformConfig
+  (`default_registration_role`), endpoints GET/PUT `/admin/registration-mode`,
+  toggle "Modo tesis" en AdminRolesPage, SidebarMenu gate por permisos.
+
+- **Backend import fixes** (`8f10c5f`, `2caaad1`, `b1313ff`):
+  corrigen imports rotos post-refactor (roles_router, agents_router →
+  `llm.catalog.catalog_router`, uploads_router).
+
+- **Catalog perf** (`ea6c774`): page_size 50→500 inicial, max 100→1000.
+
+- **Models cards** (`043641a`, `a01456c`, `caaea46`): cards Imagen/Video +
+  HuggingFace text models en catálogo, image model picker en card Imagen +
+  fix INP 216ms, model picker muestra solo modelos enabled.
+
+- **5E fix** (`21781a4`): removidos labels de fase 5E del output dirigido al
+  estudiante.
+
+- **Prometheus BDI** (`4c94736`): actualización de BDI con engine.
+
+- **Misc** (`9bd83bb`): update skills catalog. (`8684d04`): fix
+  IntersectionObserver root + test import path.
+
+**Cierre de features:**
+- **HU-036** (vinculación usuarios permisos granulares): implementación
+  completa ya existente desde `b22339b` (links_router.py, UserLink, permisos
+  `users:link`/`users:link:admin`, `/vinculacion`). Marcada `done` en esta
+  auditoría con `merge_commit: b22339b`. Tests/trazabilidad no verificados.
+
+**Sprint:**
+- Sprint 2 cerrado el 2026-06-21 (vencido). Sprint 3 iniciado 2026-06-23.
+- El usuario reporta errores de Sprint 2 por resolver en Sprint 3 (no
+  identificados concretamente aún).
+
+**Estado:** DONE (auditoría + limpieza). Carryovers pendientes en
+`current.md`.
