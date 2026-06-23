@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useOvaUploads } from './useOvaUploads.js'
 import { useOvaJob } from './useOvaJob.js'
+import { getResourceConfigs, putResourceConfigs } from '../services/resourceConfigsService.js'
 
 const MIN_CHARS = Number(import.meta.env.VITE_MIN_PROMPT_CHARS || 10)
 const ALL_PHASES = ['engage', 'explore', 'explain', 'elaborate', 'evaluate']
@@ -16,6 +18,15 @@ export function useOvaCreation() {
   const [selections, setSelections] = useState(EMPTY_SELECTIONS)
   // OVA content theme (color × design); default UPAO brand. Sent to the job.
   const [theme, setTheme] = useState({ color: 'upao', design: 'upao' })
+  const [localConfigs, setLocalConfigs] = useState(null)
+
+  const { data: serverConfigs } = useQuery({
+    queryKey: ['user', 'resource-configs'],
+    queryFn: getResourceConfigs,
+    staleTime: Infinity,
+    retry: false,
+  })
+  const resourceConfigs = localConfigs ?? serverConfigs?.configs ?? {}
 
   const {
     uploads, uploadIds, activeUploadsCount, handleFilesSelected, handleRemoveUpload,
@@ -30,9 +41,11 @@ export function useOvaCreation() {
   const isGenerating = phase === 'starting' || phase === 'polling'
   const canGenerate = prompt.trim().length >= MIN_CHARS && phasesWithResources >= 2 && !isGenerating
 
-  const confirmSelections = useCallback((picks) => {
+  const confirmSelections = useCallback((picks, configs = {}) => {
     setSelections({ ...EMPTY_SELECTIONS, ...picks })
+    setLocalConfigs(configs)
     setIsModalOpen(false)
+    putResourceConfigs(configs).catch(() => {})
   }, [])
 
   const reset = useCallback(() => {
@@ -43,8 +56,8 @@ export function useOvaCreation() {
 
   const generate = useCallback(() => {
     if (!canGenerate) return
-    start({ prompt: prompt.trim(), uploadIds, selections, theme })
-  }, [canGenerate, start, prompt, uploadIds, selections, theme])
+    start({ prompt: prompt.trim(), uploadIds, selections, theme, resourceConfigs })
+  }, [canGenerate, start, prompt, uploadIds, selections, theme, resourceConfigs])
 
   const openModal = useCallback(() => setIsModalOpen(true), [])
   const closeModal = useCallback(() => setIsModalOpen(false), [])
@@ -52,7 +65,7 @@ export function useOvaCreation() {
   return {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
-    selections, totalResources,
+    selections, totalResources, resourceConfigs,
     theme, setTheme,
     canGenerate, isGenerating,
     generate, reset, restore, minChars: MIN_CHARS,

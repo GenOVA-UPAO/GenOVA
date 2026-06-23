@@ -1,9 +1,61 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { useRoles } from '@/features/admin/hooks/useRoles.js'
 import { AVAILABLE_PERMISSIONS } from '@/core/lib/permissions.js'
 import { RoleFormModal } from '@/features/admin/components/RoleFormModal.jsx'
 import { DeleteRoleModal } from '@/features/admin/components/DeleteRoleModal.jsx'
 import { Button } from '@/core/components/ui/button'
+import { apiFetch } from '@/core/lib/http.js'
+
+function RegistrationModeCard() {
+  const [tesis, setTesis] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    apiFetch('/api/admin/registration-mode')
+      .then((r) => r.json())
+      .then((d) => setTesis((d.default_registration_role ?? 'usuarios_prueba') === 'usuarios_prueba'))
+      .catch(() => {})
+  }, [])
+
+  async function toggle() {
+    const next = !tesis
+    setSaving(true)
+    try {
+      await apiFetch('/api/admin/registration-mode', {
+        method: 'PUT',
+        body: JSON.stringify({ default_registration_role: next ? 'usuarios_prueba' : 'usuario' }),
+      })
+      setTesis(next)
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-background p-4 flex items-center justify-between gap-4">
+      <div>
+        <p className="text-sm font-semibold text-foreground">Modo tesis</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {tesis
+            ? 'Nuevos registros reciben el rol "Usuarios Prueba" automáticamente.'
+            : 'Nuevos registros reciben el rol "usuario" (acceso completo).'}
+        </p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={tesis}
+        disabled={saving}
+        onClick={toggle}
+        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent
+          transition-colors duration-200 focus-visible:outline-none
+          ${tesis ? 'bg-primary' : 'bg-input'} ${saving ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
+      >
+        <span className={`block h-5 w-5 rounded-full bg-white shadow-lg transition-transform duration-200
+          ${tesis ? 'translate-x-5' : 'translate-x-0'}`} />
+      </button>
+    </div>
+  )
+}
 
 export function AdminRolesPage() {
   const {
@@ -41,6 +93,8 @@ export function AdminRolesPage() {
           <span className="mr-2 text-lg leading-none">+</span> Nuevo rol
         </Button>
       </div>
+
+      <RegistrationModeCard />
 
       <div className="space-y-5">
         {loading ? (

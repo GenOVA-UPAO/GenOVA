@@ -47,8 +47,23 @@ CREATE TABLE users (
   llm_settings TEXT NOT NULL DEFAULT '{}', enabled_models TEXT NOT NULL DEFAULT '[]',
   ova_settings TEXT NOT NULL DEFAULT '{}',
   theme_settings TEXT NOT NULL DEFAULT '{}',
+  resource_configs TEXT NOT NULL DEFAULT '{}',
   user_api_keys TEXT NOT NULL DEFAULT '{}',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
+);
+CREATE TABLE platform_config (
+  key TEXT PRIMARY KEY, value TEXT NOT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE roles (
+  id TEXT PRIMARY KEY, name TEXT UNIQUE NOT NULL, description TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  permissions TEXT NOT NULL DEFAULT '[]'
+);
+CREATE TABLE user_roles (
+  user_id TEXT NOT NULL, role_id TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, role_id)
 );
 """
 

@@ -22,6 +22,7 @@ export const CATEGORY_LABELS = {
   groq: 'Groq',
   openrouter: 'OpenRouter',
   opencode: 'OpenCode',
+  huggingface: 'HuggingFace',
   texto: 'Texto',
   codigo: 'Código',
   razonamiento: 'Razonamiento',

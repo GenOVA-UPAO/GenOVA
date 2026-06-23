@@ -14,7 +14,7 @@ export function OvaCreationView({ onCreated }) {
   const {
     prompt, setPrompt,
     isModalOpen, openModal, closeModal, confirmSelections,
-    selections, totalResources,
+    selections, totalResources, resourceConfigs,
     theme, setTheme,
     canGenerate,
     generate, reset, restore, minChars,
@@ -67,7 +67,7 @@ export function OvaCreationView({ onCreated }) {
         />
         <AnimatePresence>
           {isModalOpen && (
-            <PhaseSelectModal onClose={closeModal} onConfirm={confirmSelections} initialSelections={selections} />
+            <PhaseSelectModal onClose={closeModal} onConfirm={confirmSelections} initialSelections={selections} initialResourceConfigs={resourceConfigs} />
           )}
         </AnimatePresence>
       </div>

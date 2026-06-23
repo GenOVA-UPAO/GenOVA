@@ -8,37 +8,38 @@ const UPAO_ACCENT = '#F47A20'
 const FREE_PRIMARY = '#6D28D9'
 const FREE_ACCENT = '#A78BFA'
 
-function MiniPreview({ color, design }) {
+function MiniPreview({ color }) {
   const primary = color === 'upao' ? UPAO_PRIMARY : FREE_PRIMARY
   const accent = color === 'upao' ? UPAO_ACCENT : FREE_ACCENT
-  const hasNav = design === 'upao'
-  const tabs = ['Engage', 'Explore', 'Explain', 'Evaluate']
 
   return (
     <div className="rounded-xl border border-border overflow-hidden shadow-md text-left">
       <div className="px-3 py-2.5" style={{ background: primary }}>
-        <p className="text-white font-bold text-[9px]">Fotosíntesis y el Ciclo</p>
-        <p className="text-white/60 text-[7px] mt-0.5">Biología · 2° año UPAO</p>
+        <p className="text-white font-bold text-[9px]">Introducción a Machine Learning</p>
       </div>
-      {hasNav && (
-        <div className="flex bg-muted/30 border-b border-border shrink-0">
-          {tabs.map((t, i) => (
-            <div key={t} className="px-2 py-1 text-[7px] font-semibold"
-              style={{ color: i === 0 ? accent : '#94a3b8', borderBottom: i === 0 ? `2px solid ${accent}` : '2px solid transparent' }}>
-              {t}
-            </div>
-          ))}
+      <div className="h-10 relative overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${primary}1A 0%, ${accent}26 100%)` }}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-5 w-5 rounded-full flex items-center justify-center"
+            style={{ background: `${accent}33`, border: `1.5px solid ${accent}66` }}>
+            <div style={{
+              width: 0, height: 0,
+              borderTop: '3px solid transparent',
+              borderBottom: '3px solid transparent',
+              borderLeft: `5px solid ${accent}`,
+              marginLeft: 1,
+            }} />
+          </div>
         </div>
-      )}
-      <div className="p-2.5 bg-background space-y-2">
-        <div className="h-2 rounded-full w-3/5 opacity-20" style={{ background: primary }} />
-        <div className="h-1.5 rounded-full w-full bg-muted" />
-        <div className="h-1.5 rounded-full w-5/6 bg-muted" />
-        <div className="grid grid-cols-2 gap-1.5 pt-0.5">
-          <div className="h-8 rounded-lg opacity-20" style={{ background: accent }} />
-          <div className="h-8 rounded-lg bg-muted/50" />
+      </div>
+      <div className="p-2.5 bg-background space-y-1.5">
+        <p className="text-[7px] font-bold leading-none" style={{ color: primary }}>¿Qué es una red neuronal?</p>
+        <div className="h-1 rounded-full w-full bg-muted/70" />
+        <div className="h-1 rounded-full w-5/6 bg-muted/70" />
+        <div className="h-1 rounded-full w-4/6 bg-muted/70" />
+        <div className="rounded-md py-1 mt-1 text-center" style={{ background: accent }}>
+          <p className="text-[6px] font-bold text-white">Continuar →</p>
         </div>
-        <div className="h-1.5 rounded-full w-4/6 bg-muted opacity-60" />
       </div>
     </div>
   )

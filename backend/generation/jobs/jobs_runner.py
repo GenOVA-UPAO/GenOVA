@@ -133,6 +133,7 @@ def _generate(
             "enabled_models": params.get("enabled_models") or [],
             "theme": params.get("theme") or {"color": "upao", "design": "upao"},
             "image_settings": params.get("image_settings") or {},
+            "resource_configs": params.get("resource_configs") or {},
             "job_id": str(job_id),
             "phases": phases_seed,
             "phase_order": phase_order_seed,

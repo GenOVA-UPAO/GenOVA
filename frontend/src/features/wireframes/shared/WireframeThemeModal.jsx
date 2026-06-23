@@ -38,42 +38,39 @@ function RadioOption({ label, desc, checked, onClick }) {
   )
 }
 
-function MiniPreview({ colorMode, designMode, palette }) {
+function MiniPreview({ colorMode, palette }) {
   const primary = colorMode === 'upao' ? '#0A3D91' : colorMode === 'custom' ? (palette?.p ?? '#0A3D91') : '#6D28D9'
   const accent = colorMode === 'upao' ? '#F47A20' : colorMode === 'custom' ? (palette?.a ?? '#38BDF8') : '#A78BFA'
-  const isTabbed = designMode !== 'ai'
 
   return (
     <div className="rounded-xl border border-border overflow-hidden shadow-md">
       <div style={{ background: primary }} className="px-3 py-2.5">
-        <div className="text-white font-bold text-[9px]">Fotosíntesis y el Ciclo</div>
-        <div className="text-white/60 text-[7px] mt-0.5">Biología — 2° año · UPAO 2026</div>
+        <div className="text-white font-bold text-[9px]">Introducción a Machine Learning</div>
       </div>
-      {isTabbed && (
-        <div className="flex bg-muted/30 border-b border-border">
-          {['Engage', 'Explore', 'Explain', 'Evaluate'].map((t, i) => (
-            <div key={t} className="px-2 py-1.5 text-[7px] font-semibold shrink-0"
-              style={{ color: i === 0 ? accent : '#94a3b8', borderBottom: i === 0 ? `2px solid ${accent}` : '2px solid transparent' }}>
-              {t}
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="p-2.5 space-y-2 bg-background">
-        <div className="h-2 rounded-full w-3/5 opacity-25" style={{ background: primary }} />
-        <div className="h-1.5 rounded-full w-full bg-muted" />
-        <div className="h-1.5 rounded-full w-5/6 bg-muted" />
-        <div className="h-1.5 rounded-full w-4/6 bg-muted" />
-        <div className="grid grid-cols-2 gap-1.5 pt-1">
-          <div className="h-8 rounded-lg opacity-20" style={{ background: accent }} />
-          <div className="h-8 rounded-lg bg-muted/50" />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="h-2 flex-1 rounded-full" style={{ background: accent, opacity: 0.4 }} />
-          <div className="h-2 w-8 rounded-full bg-muted" />
+      <div className="h-10 relative overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${primary}1A 0%, ${accent}26 100%)` }}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-5 w-5 rounded-full flex items-center justify-center"
+            style={{ background: `${accent}33`, border: `1.5px solid ${accent}66` }}>
+            <div style={{
+              width: 0, height: 0,
+              borderTop: '3px solid transparent',
+              borderBottom: '3px solid transparent',
+              borderLeft: `5px solid ${accent}`,
+              marginLeft: 1,
+            }} />
+          </div>
         </div>
       </div>
-      <div style={{ background: primary, opacity: 0.06 }} className="h-1" />
+      <div className="p-2.5 space-y-1.5 bg-background">
+        <p className="text-[7px] font-bold leading-none" style={{ color: primary }}>¿Qué es una red neuronal?</p>
+        <div className="h-1 rounded-full w-full bg-muted/70" />
+        <div className="h-1 rounded-full w-5/6 bg-muted/70" />
+        <div className="h-1 rounded-full w-4/6 bg-muted/70" />
+        <div className="rounded-md py-1 mt-1 text-center" style={{ background: accent }}>
+          <p className="text-[6px] font-bold text-white">Continuar →</p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -128,7 +125,7 @@ export function ThemeModalContent({ theme, setTheme, onClose }) {
         {/* Preview */}
         <div className="w-44 shrink-0 space-y-2">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Previsualización</p>
-          <MiniPreview colorMode={colorMode} designMode={designMode} palette={palette} />
+          <MiniPreview colorMode={colorMode} palette={palette} />
           <p className="text-[10px] text-muted-foreground text-center leading-snug">Estructura y colores aproximados</p>
         </div>
       </div>

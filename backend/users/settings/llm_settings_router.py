@@ -32,7 +32,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-_LLM_PROVIDERS = ("groq", "openrouter", "opencode")
+_LLM_PROVIDERS = ("groq", "openrouter", "opencode", "huggingface")
 
 
 def _enabled_keys(user) -> set[tuple[str, str]]:
@@ -120,7 +120,7 @@ def get_llm_settings(
         full = [e for e in full if e.get("category") == model_type]
 
     page = max(1, int(request.query_params.get("page") or 1))
-    page_size = min(int(request.query_params.get("page_size") or 50), 100)
+    page_size = min(int(request.query_params.get("page_size") or 50), 1000)
     offset = (page - 1) * page_size
     total = len(full)
     page_items = full[offset : offset + page_size]

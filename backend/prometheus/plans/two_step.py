@@ -38,11 +38,12 @@ def two_step_gen(
     enabled_models=None,
     theme=None,
     image_settings=None,
+    resource_config=None,
 ) -> str:
     mod = _load_prompts(phase)
 
     raw = generar_texto(
-        mod.prompt_texto(n, concept, ""),
+        mod.prompt_texto(n, concept, "", resource_config or {}),
         "texto",
         3000,
         llm_config,

@@ -56,7 +56,7 @@ export function useOvaJob() {
   else if (jobId && job && outcome.isTerminal) phase = 'terminal'
   else if (jobId) phase = 'polling'
 
-  const start = useCallback(async ({ prompt, uploadIds, selections: sel, theme }) => {
+  const start = useCallback(async ({ prompt, uploadIds, selections: sel, theme, resourceConfigs = {} }) => {
     setSelections(sel)
     setError('')
     setSelectedFailedIds([])
@@ -64,7 +64,7 @@ export function useOvaJob() {
     setJobId(null)
     try {
       const resources = toResourcesPayload(sel)
-      const { job_id } = await startJob({ prompt, uploadIds, resources, theme })
+      const { job_id } = await startJob({ prompt, uploadIds, resources, theme, resourceConfigs })
       setJobId(job_id)
     } catch (err) {
       setError(err?.message || 'No se pudo iniciar la generación.')
