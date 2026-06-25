@@ -198,6 +198,7 @@ class RevokedToken(Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
 
 
+
 class PlatformConfig(Base):
     """Admin-only key-value store for platform-level API keys and config."""
 

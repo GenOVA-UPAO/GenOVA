@@ -88,6 +88,7 @@ export function LoginPage() {
     )
   }
 
+
   return (
     <section className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4">
       <div className="w-full max-w-md rounded-2xl border border-border border-t-2 border-t-accent-brand bg-card p-7 shadow-lg">
