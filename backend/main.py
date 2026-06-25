@@ -50,6 +50,18 @@ logger = logging.getLogger(__name__)
 _LATENCY_THRESHOLD_MS = settings.latency_threshold_ms
 _LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save", "/api/labs/generate")
 
+# Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
+if settings.sentry_dsn:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.env,
+        traces_sample_rate=settings.sentry_traces_sample_rate,
+        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
+    )
+    logger.info("Sentry inicializado (environment=%s)", settings.env)
+
 
 class ProcessTimeMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):

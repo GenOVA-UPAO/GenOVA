@@ -19,6 +19,7 @@ dependencies = [
     "pydantic[email]==2.13.4",
     "pydantic-settings==2.14.2",
     "slowapi==0.1.10",
+    "sentry-sdk[fastapi]==2.45.0",
     "openai==2.43.0",
     "groq==1.4.0",
     "supabase==2.31.0",

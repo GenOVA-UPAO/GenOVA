@@ -5,7 +5,10 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { LazyMotion, MotionConfig } from 'motion/react'
 import App from '@/App.jsx'
 import { queryClient } from '@/core/lib/queryClient.js'
+import { initSentry } from '@/core/lib/sentry.js'
 import './index.css'
+
+initSentry()
 
 // Carga diferida de las features de animación (chunk async). Los componentes
 // usan el core ligero `m` (importado como `motion`); LazyMotion inyecta las
