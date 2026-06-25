@@ -11,7 +11,7 @@ pydantic[email]==2.13.4
 pydantic-settings==2.14.2
 slowapi==0.1.10
 # Observability
-sentry-sdk[fastapi]==2.45.0
+sentry-sdk[fastapi]==2.63.0
 prometheus-fastapi-instrumentator==8.0.2
 # AI SDKs
 openai==2.43.0
