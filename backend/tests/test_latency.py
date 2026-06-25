@@ -16,6 +16,7 @@ Variables de entorno:
     PASS   — contraseña de prueba  (default: admin1234password)
     SAMPLES — peticiones por endpoint (default: 10)
 """
+
 import os
 import statistics
 import sys
@@ -141,9 +142,7 @@ def main() -> None:
     if all(results):
         print(f"  ✓ PASA — {passed_count}/{total} endpoints bajo {THRESHOLD_MS:.0f}ms promedio")
     else:
-        failed = [
-            ENDPOINTS[i][1] for i, ok in enumerate(results) if not ok
-        ]
+        failed = [ENDPOINTS[i][1] for i, ok in enumerate(results) if not ok]
         print(f"  ✗ FALLA — {total - passed_count}/{total} endpoints sobre umbral:")
         for ep in failed:
             print(f"      • {ep}")

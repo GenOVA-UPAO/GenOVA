@@ -4,7 +4,7 @@ Each prompt fixes the resource FORMAT but adapts all content to whatever
 Machine Learning concept is passed in `concept` — no hardcoded ML subtopic.
 """
 
-from llm.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
+from llm.utils.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
 
 # fmt: off
 RECURSOS_META = {
@@ -23,15 +23,19 @@ RECURSOS_META = {
 CODE_ONLY = {3, 5, 8, 10}
 
 
-def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None) -> str:
+def prompt_codigo(
+    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None,
+    config: dict | None = None,
+) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     ds = design_system or DESIGN_SYSTEM
     t = {
         3: f"""[ROL] Desarrollador front-end de mapas conceptuales interactivos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Mapa conceptual HTML5 donde el estudiante explore visualmente subtemas y relaciones de "{concept}".
-[TAREA] Grafo SVG con 6-8 nodos clave de "{concept}", conexiones etiquetadas, nodos expandibles al clic con definicion breve, leyenda de colores y boton "Explorar todo". Nodos SVG reales con <text>.
+[TAREA] Grafo SVG con {cfg.get('num_nodes', 7)} nodos clave de "{concept}", conexiones etiquetadas, nodos expandibles al clic con definicion breve, leyenda de colores y boton "Explorar todo". Nodos SVG reales con <text>.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al explorar todos los nodos.
@@ -40,7 +44,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_syste
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Demo animada HTML5 que ilustre paso a paso el funcionamiento de "{concept}".
-[TAREA] Animacion SVG/canvas con escena inicial, controles play/pause/step, 4-5 pasos progresivos, texto explicativo por paso y boton "Repetir". requestAnimationFrame.
+[TAREA] Animacion SVG/canvas con escena inicial, controles play/pause/step, {cfg.get('num_steps', 5)} pasos progresivos, texto explicativo por paso y boton "Repetir". requestAnimationFrame.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() tras completar todos los pasos.
@@ -49,7 +53,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_syste
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Diagrama HTML5 que muestre la arquitectura o taxonomia de "{concept}" como framework visual.
-[TAREA] Diagrama SVG con bloques jerarquicos de "{concept}", flechas de flujo, tooltips al hover, zoom/reset y leyenda. SVG con viewBox + preserveAspectRatio.
+[TAREA] Diagrama SVG con {cfg.get('num_blocks', 5)} bloques jerarquicos de "{concept}", flechas de flujo, tooltips al hover, zoom/reset y leyenda. SVG con viewBox + preserveAspectRatio.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al explorar todos los tooltips.
@@ -58,7 +62,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_syste
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Infografia HTML5 que comunique la esencia y datos clave de "{concept}".
-[TAREA] 5-6 secciones reveladas progresivamente con iconos SVG, dato impactante por seccion, barra de progreso y boton "Ver resumen" final. Animaciones de entrada.
+[TAREA] {cfg.get('num_sections', 5)} secciones reveladas progresivamente con iconos SVG, dato impactante por seccion, barra de progreso y boton "Ver resumen" final. Animaciones de entrada.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete() al llegar a la seccion final.
@@ -68,45 +72,46 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_syste
     return base + contexto if base else ""
 
 
-def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     t = {
         1: f"""[ROL] Guionista de videos educativos teoricos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Video teorico: guion_visual con 4 marcadores (cada 30 s) usando metaforas cotidianas; narracion_voz <=120 palabras tono divulgativo con pregunta reflexiva; prompt_video en ingles <=100 palabras para generador.
+[TAREA] Video teorico: guion_visual con {cfg.get('num_markers', 4)} marcadores (cada 30 s) usando metaforas cotidianas; narracion_voz <=120 palabras tono divulgativo con pregunta reflexiva; prompt_video en ingles <=100 palabras para generador.
 [RESTRICCIONES] Sin formulas ni jerga densa. Metaforas visuales potentes.
 [SALIDA] JSON puro con claves "guion_visual","narracion_voz","prompt_video".""",
         2: f"""[ROL] Redactor academico de lecturas guiadas.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Lectura de 250 palabras: introduccion (caso real), desarrollo (3 ideas centrales de "{concept}" con ejemplo cada una), cierre (aplicaciones). 3 preguntas intercaladas con respuesta modelo.
+[TAREA] Lectura de 250 palabras: introduccion (caso real), desarrollo ({cfg.get('num_sections', 3)} ideas centrales de "{concept}" con ejemplo cada una), cierre (aplicaciones). {cfg.get('num_sections', 3)} preguntas intercaladas con respuesta modelo.
 [RESTRICCIONES] Lenguaje accesible sin formulas. Cada idea central <=70 palabras.
-[SALIDA] JSON puro con claves "introduccion","secciones" (array de 3 con idea,ejemplo,pregunta,respuesta),"cierre".""",
+[SALIDA] JSON puro con claves "introduccion","secciones" (array de {cfg.get('num_sections', 3)} con idea,ejemplo,pregunta,respuesta),"cierre".""",
         4: f"""[ROL] Curador de contenido educativo interactivo.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] FAQ de 6 preguntas genuinas sobre "{concept}". Cada una: pregunta en lenguaje estudiantil, respuesta <=60 palabras con analogia, etiqueta (principiante/intermedio/avanzado), categoria.
+[TAREA] FAQ de {cfg.get('num_questions', 6)} preguntas genuinas sobre "{concept}". Cada una: pregunta en lenguaje estudiantil, respuesta <=60 palabras con analogia, etiqueta (principiante/intermedio/avanzado), categoria.
 [RESTRICCIONES] Preguntas genuinas no retoricas. Respuestas que iluminan sin clase magistral.
-[SALIDA] JSON puro con clave "faqs": array de 6 objetos con "pregunta","respuesta","etiqueta","categoria".""",
+[SALIDA] JSON puro con clave "faqs": array de {cfg.get('num_questions', 6)} objetos con "pregunta","respuesta","etiqueta","categoria".""",
         6: f"""[ROL] Lexicografo visual de conceptos de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Glosario de 8 terminos de "{concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras del mundo real.
+[TAREA] Glosario de {cfg.get('num_terms', 8)} terminos de "{concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras del mundo real.
 [RESTRICCIONES] Definiciones autocontenidas. Iconos distintos entre si.
-[SALIDA] JSON puro con clave "terminos": array de 8 objetos con "termino","definicion","icono_sugerido","ejemplo_concreto".""",
+[SALIDA] JSON puro con clave "terminos": array de {cfg.get('num_terms', 8)} objetos con "termino","definicion","icono_sugerido","ejemplo_concreto".""",
         7: f"""[ROL] Historiador de la ciencia de datos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Timeline de 5 hitos historicos reales de "{concept}". Cada hito: anio, titulo <=25 chars, descripcion 40 palabras tono cronica, dato_curioso, legado_actual 20 palabras.
+[TAREA] Timeline de {cfg.get('num_milestones', 5)} hitos historicos reales de "{concept}". Cada hito: anio, titulo <=25 chars, descripcion 40 palabras tono cronica, dato_curioso, legado_actual 20 palabras.
 [RESTRICCIONES] Hechos verificables, sin mitos. Conexion logica entre hitos.
-[SALIDA] JSON puro con clave "hitos": array de 5 objetos con "anio","titulo","descripcion","dato_curioso","legado_actual".""",
+[SALIDA] JSON puro con clave "hitos": array de {cfg.get('num_milestones', 5)} objetos con "anio","titulo","descripcion","dato_curioso","legado_actual".""",
         9: f"""[ROL] Analista comparativo de tecnologias de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Tabla comparativa de "{concept}" vs 3 conceptos relacionados. 4 dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.
+[TAREA] Tabla comparativa de "{concept}" vs 3 conceptos relacionados. {cfg.get('num_dimensions', 4)} dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.
 [RESTRICCIONES] Comparaciones objetivas y medibles. Sin sesgo. Dimensiones que diferencien.
-[SALIDA] JSON puro con claves "dimensiones" (array de 4) y "comparaciones" (array de 3 con concepto,valores,balance).""",
+[SALIDA] JSON puro con claves "dimensiones" (array de {cfg.get('num_dimensions', 4)}) y "comparaciones" (array de 3 con concepto,valores,balance).""",
     }
     base = t.get(n, "")
     return base + contexto if base else ""

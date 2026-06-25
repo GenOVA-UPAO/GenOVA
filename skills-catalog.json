@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "trustedSources": ["vercel-labs", "anthropics", "composio", "upstash"],
+  "trustedSources": ["vercel-labs", "anthropics", "composio", "upstash", "JuliusBrussee", "obra", "safishamsi"],
   "catalog": {
     "find-docs": {
       "installed": true,
@@ -62,8 +62,91 @@
       "source": "vercel-labs/agent-skills",
       "securityAssessment": "Safe · 0 alerts (Socket) · Low Risk (Snyk)",
       "lastVerified": "2026-06-05"
+    },
+    "caveman": {
+      "installed": true,
+      "installedPath": ".agents/skills/caveman/SKILL.md",
+      "description": "Ultra-compressed output mode (~75% fewer tokens). Makes agent talk like caveman while keeping full technical accuracy. Levels: lite, full (default), ultra, wenyan.",
+      "triggers": [
+        "caveman", "pocos tokens", "menos tokens", "respuesta corta",
+        "sé breve", "be brief", "less tokens", "talk like caveman",
+        "modo caveman", "output verboso", "respuesta larga"
+      ],
+      "benefitsAgents": ["leader", "implementer", "reviewer", "spec_author"],
+      "source": "JuliusBrussee/caveman",
+      "securityAssessment": "Safe · JS utility skill · read-only output transformation",
+      "lastVerified": "2026-06-17"
+    },
+    "backprop": {
+      "installed": true,
+      "installedPath": ".agents/skills/backprop/SKILL.md",
+      "description": "Bug → spec protocol. When tests fail or bugs surface, traces root cause, adds §B entry to spec, promotes recurring patterns to §V invariants in CHECKPOINTS.md. Closes the fix-and-forget gap.",
+      "triggers": [
+        "test falla", "test fail", "bug recurrente", "recurring bug",
+        "auto-fix falla", "auto-fix failed", "post-mortem", "backprop",
+        "invariante", "raíz del bug", "root cause"
+      ],
+      "benefitsAgents": ["reviewer"],
+      "source": "JuliusBrussee/cavekit",
+      "securityAssessment": "Safe · pure spec-editing protocol · no external calls",
+      "lastVerified": "2026-06-17"
+    },
+    "sp-writing-plans": {
+      "installed": true,
+      "installedPath": ".agents/skills/sp-writing-plans/SKILL.md",
+      "description": "Genera plan de implementación detallado (TDD, bite-sized tasks, file structure, interfaces) a partir de un spec aprobado. Guardado en docs/superpowers/plans/. Invocar entre spec_ready aprobado y lanzar implementer.",
+      "triggers": [
+        "plan de implementación", "implementation plan", "antes de implementar",
+        "descomponer en tareas", "break into tasks", "planear implementación",
+        "spec aprobado", "spec approved"
+      ],
+      "benefitsAgents": ["leader", "implementer"],
+      "source": "obra/Superpowers",
+      "securityAssessment": "Safe · skill de planificación · sin llamadas externas",
+      "lastVerified": "2026-06-17"
+    },
+    "sp-subagent": {
+      "installed": true,
+      "installedPath": ".agents/skills/sp-subagent/SKILL.md",
+      "description": "Subagent-driven development: despacha un implementer subagente por tarea independiente, review tras cada uno, review final del branch. Usar para features con ≥3 tareas independientes.",
+      "triggers": [
+        "tareas paralelas", "parallel tasks", "subagente por tarea",
+        "subagent per task", "implementar en paralelo", "≥3 tareas independientes"
+      ],
+      "benefitsAgents": ["implementer"],
+      "source": "obra/Superpowers",
+      "securityAssessment": "Safe · skill de orquestación · sin llamadas externas",
+      "lastVerified": "2026-06-17"
+    },
+    "sp-verify": {
+      "installed": true,
+      "installedPath": ".agents/skills/sp-verify/SKILL.md",
+      "description": "Verificación antes de declarar completitud. Requiere evidencia fresca (./verify.ps1 output) antes de emitir APPROVED o cualquier claim de éxito. Evidence before assertions.",
+      "triggers": [
+        "verificar antes de completar", "verify before done",
+        "evidencia antes de claim", "antes de APPROVED",
+        "no afirmar sin verificar"
+      ],
+      "benefitsAgents": ["reviewer", "implementer"],
+      "source": "obra/Superpowers",
+      "securityAssessment": "Safe · skill de verificación · sin llamadas externas",
+      "lastVerified": "2026-06-17"
+    },
+    "graphify": {
+      "installed": true,
+      "installedPath": ".claude/skills/graphify/SKILL.md",
+      "description": "Convierte el codebase en un knowledge graph consultable (tree-sitter + GraphRAG). Genera graph.html (visual), GRAPH_REPORT.md (resumen) y graph.json (queryable). Callflow Mermaid con 'graphify export callflow-html'. Instalar con: uv tool install graphifyy && graphify install --project",
+      "triggers": [
+        "mapa del código", "relaciones entre archivos", "call graph",
+        "knowledge graph", "graphify", "navegar codebase",
+        "qué llama a qué", "dependencias entre módulos"
+      ],
+      "benefitsAgents": ["explorer", "implementer"],
+      "source": "safishamsi/graphify",
+      "securityAssessment": "Safe · 68k stars · YC S26 · local-only graph generation",
+      "installNote": "PyPI package is 'graphifyy' (double-y). CLI command remains 'graphify'. Run: uv tool install graphifyy && graphify install --project && graphify .",
+      "lastVerified": "2026-06-17"
     }
   },
   "pendingReview": []
 }
-

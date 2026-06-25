@@ -17,59 +17,41 @@ from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
-from api.auth import router as auth_router
-from api.labs import generation_router as labs_gen_router
-from api.labs import router as labs_router
-from api.llm import router as agents_router
-from api.ova import (
-    add_phase_router as ova_add_phase_router,
-)
-from api.ova import (
-    edit_router as ova_edit_router,
-)
-from api.ova import (
-    history_router as ova_history_router,
-)
-from api.ova import (
-    jobs_router as ova_jobs_router,
-)
-from api.ova import (
-    phase_version_router as ova_phase_version_router,
-)
-from api.ova import (
-    router as ova_router,
-)
-from api.ova import (
-    subelement_router as ova_subelement_router,
-)
-from api.rag import router as rag_router
-from api.rag import uploads_router
-from api.scorm import router as scorm_router
-from api.users import roles_router
-from api.users import router as users_router
 from auth.dependencies import require_admin
-from config import settings
-from database import Base, engine
-from rate_limit import limiter
+from auth.router import router as auth_router
+from core.config import settings
+from core.database import Base, engine
+from core.rate_limit import limiter
+from generation.jobs.jobs_router import router as ova_jobs_router
+from labs.generation_routes import router as labs_gen_router
+from labs.router import router as labs_router
+from llm.catalog.catalog_router import router as agents_router
+from ova.crud.edit_router import router as ova_edit_router
+from ova.crud.subelement_router import router as ova_subelement_router
+from ova.phases.add_phase_router import router as ova_add_phase_router
+from ova.phases.history_router import router as ova_history_router
+from ova.phases.phase_version_router import router as ova_phase_version_router
+from ova.router import router as ova_router
+from rag.router import router as rag_router
+from roles.router import router as roles_router
 from run_migrations import run_migrations
+from scorm.router import router as scorm_router
 from seed import seed_db
+from uploads.router import router as uploads_router
+from users.admin.nodes_config_router import router as nodes_config_router
 from users.admin.platform_settings_router import router as platform_settings_router
+from users.router import router as users_router
 
 logging.basicConfig(
     level=settings.log_level.upper(),
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-# OE1 latency target (ms) for non-LLM endpoints.
 _LATENCY_THRESHOLD_MS = settings.latency_threshold_ms
-# Paths excluded from slow-request warnings (LLM generation — inherently slow).
 _LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save", "/api/labs/generate")
 
 
 class ProcessTimeMiddleware(BaseHTTPMiddleware):
-    """Adds X-Process-Time-Ms header and warns on slow non-LLM requests."""
-
     async def dispatch(self, request, call_next):
         t0 = time.perf_counter()
         response = await call_next(request)
@@ -89,7 +71,6 @@ class ProcessTimeMiddleware(BaseHTTPMiddleware):
 
 
 def _background_rag_purge() -> None:
-    """Run purge in a worker thread so cold boot isn't blocked by a slow DB."""
     try:
         from sqlalchemy.orm import Session
 
@@ -104,11 +85,10 @@ def _background_rag_purge() -> None:
 
 
 def _background_catalog_refresh() -> None:
-    """Fetch model catalogs from OpenRouter + Groq and cache in Supabase."""
     try:
         from sqlalchemy.orm import Session
 
-        from llm.catalog_refresh import refresh_catalog
+        from llm.catalog.catalog_refresh import refresh_catalog
 
         with Session(engine) as session:
             refresh_catalog(session)
@@ -121,9 +101,7 @@ async def lifespan(_: FastAPI):
     run_migrations()
     Base.metadata.create_all(bind=engine)
     seed_db()
-    # Fire-and-forget cleanup; boot completes without waiting on the DB.
     asyncio.create_task(asyncio.to_thread(_background_rag_purge))
-    # Fire-and-forget catalog refresh from provider APIs.
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
     yield
 
@@ -153,13 +131,9 @@ else:
         *_extra,
     ]
 
-# ProcessTimeMiddleware must be innermost so BaseHTTPMiddleware does not wrap
-# CORSMiddleware — that combination causes 502 on OPTIONS preflight in Starlette.
-app.add_middleware(ProcessTimeMiddleware)
+app.add_middleware(ProcessTimeMiddleware)  # innermost: avoid 502 on OPTIONS preflight
 app.add_middleware(GZipMiddleware, minimum_size=1024)
-# CORSMiddleware must be outermost: it intercepts OPTIONS before any other
-# middleware runs, avoiding the BaseHTTPMiddleware / preflight incompatibility.
-app.add_middleware(
+app.add_middleware(  # outermost: intercept OPTIONS before other middleware
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
@@ -168,7 +142,6 @@ app.add_middleware(
     max_age=86400,
 )
 logger.info("CORS allowed origins: %s", allowed_origins)
-
 
 _HEALTH_CACHE = "public, max-age=10"
 
@@ -199,10 +172,9 @@ def admin_refresh_catalog(
     request: Request,
     _admin: None = Depends(require_admin),
 ):
-    """Force-refresh the LLM model catalog from provider APIs (admin-only)."""
     from sqlalchemy.orm import Session
 
-    from llm.catalog_refresh import get_catalog_entries, refresh_catalog
+    from llm.catalog.catalog_refresh import get_catalog_entries, refresh_catalog
 
     try:
         with Session(engine) as session:
@@ -236,3 +208,4 @@ app.include_router(uploads_router, prefix="/api/uploads", tags=["RAG"])
 app.include_router(labs_router, prefix="/api/labs", tags=["Labs"])
 app.include_router(labs_gen_router, prefix="/api/labs", tags=["Labs"])
 app.include_router(platform_settings_router, prefix="/api/admin", tags=["Admin"])
+app.include_router(nodes_config_router, prefix="/api/admin", tags=["Admin"])

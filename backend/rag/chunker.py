@@ -1,4 +1,5 @@
 """Sliding-window chunker. No external deps."""
+
 from __future__ import annotations
 
 import os

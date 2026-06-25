@@ -6,7 +6,7 @@ Phase-agnostic. Dispatch to the correct prompt module based on `phase`.
 import json
 
 from llm.router import generar_texto
-from llm.utils import parse_json, strip_markdown
+from llm.utils.utils import parse_json, strip_markdown
 
 _PROMPTS = {}
 
@@ -38,11 +38,12 @@ def two_step_gen(
     enabled_models=None,
     theme=None,
     image_settings=None,
+    resource_config=None,
 ) -> str:
     mod = _load_prompts(phase)
 
     raw = generar_texto(
-        mod.prompt_texto(n, concept, ""),
+        mod.prompt_texto(n, concept, "", resource_config or {}),
         "texto",
         3000,
         llm_config,
@@ -55,21 +56,16 @@ def two_step_gen(
         json_data = {"contenido": raw}
 
     # Image enrichment — only engage phase has prompt_imagen fields.
-    # Skipped when ova_images flag is "0" (admin config or env).
     img_replacements: dict[str, str] = {}
     if phase == "engage":
-        from prometheus.nodes_config import get_nodes_config
+        from llm.images.image_providers import enrich_with_images
 
-        _nc = get_nodes_config()
-        if str(_nc.get("ova_images", "1")).strip().lower() not in ("0", "false", "no"):
-            from llm.image_providers import enrich_with_images
+        img_replacements = enrich_with_images(
+            json_data if isinstance(json_data, list) else [json_data],
+            image_settings,
+        )
 
-            img_replacements = enrich_with_images(
-                json_data if isinstance(json_data, list) else [json_data],
-                image_settings,
-            )
-
-    from llm.themes import build_design_system
+    from llm.utils.themes import build_design_system
 
     theme = theme or {}
     ds = build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
@@ -88,14 +84,14 @@ def two_step_gen(
     if img_replacements:
         import re
 
-        from llm.image_providers import IMG_PLACEHOLDER
+        from llm.images.image_providers import IMG_PLACEHOLDER
 
         for placeholder, uri in img_replacements.items():
             html = html.replace(placeholder, uri)
         html = re.sub(r"__IMG_\d+__", IMG_PLACEHOLDER, html)
 
-    from llm.html_validator import validate_and_repair
-    from prometheus.refine import maybe_refine
+    from llm.utils.html_validator import validate_and_repair
+    from prometheus.engine.refine import maybe_refine
 
     html, _ = validate_and_repair(html, phase, n)
     return maybe_refine(html, phase, n, concept, llm_config, enabled_models, theme)

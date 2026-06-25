@@ -8,6 +8,7 @@ If `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` are missing, the module operates
 in a degraded "disabled" mode where `is_configured()` returns False and the OVA
 routers fall back to local-disk persistence (legacy behavior).
 """
+
 from __future__ import annotations
 
 import logging
@@ -122,9 +123,7 @@ def signed_url(
 
     # supabase-py returns {"signedURL": "..."} (some versions {"signedUrl": "..."}).
     url: str | None = (
-        result.get("signedURL")
-        or result.get("signedUrl")
-        or result.get("signed_url")
+        result.get("signedURL") or result.get("signedUrl") or result.get("signed_url")
         if isinstance(result, dict)
         else None
     )

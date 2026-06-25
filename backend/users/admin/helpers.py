@@ -4,6 +4,7 @@ Keeps the user-facing modules narrow and consistent. All HTTPExceptions emitted
 from here return generic, non-leaking messages — never echo raw SQLAlchemy
 errors to the caller.
 """
+
 import logging
 import os
 from uuid import UUID
@@ -31,9 +32,9 @@ def parse_uuid(raw: str) -> UUID:
 
 
 def is_admin_user(user_id: UUID, db: Session) -> bool:
-    role = db.execute(
-        select(Role).join(UserRole).where(UserRole.user_id == user_id)
-    ).scalars().first()
+    role = (
+        db.execute(select(Role).join(UserRole).where(UserRole.user_id == user_id)).scalars().first()
+    )
     return role is not None and role.name == "administrador"
 
 
@@ -49,9 +50,7 @@ def assert_can_touch_target(*, caller: User, target_id: UUID, db: Session) -> No
 def get_target_user(target_id: UUID, db: Session) -> User:
     user = db.execute(select(User).where(User.id == target_id)).scalar_one_or_none()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado.")
     return user
 
 

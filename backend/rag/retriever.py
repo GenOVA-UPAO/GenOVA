@@ -1,4 +1,5 @@
 """Top-k cosine retrieval over pgvector."""
+
 from __future__ import annotations
 
 import logging

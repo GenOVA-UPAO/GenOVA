@@ -5,6 +5,7 @@ Each parser receives a filesystem path and returns plain UTF-8 text (or raises
 image parsers reuse the existing Groq Whisper/vision helpers — they hit the
 network and should be timed out by the caller.
 """
+
 from __future__ import annotations
 
 import logging
@@ -82,7 +83,8 @@ def _parse_pptx(path: str) -> str:
 
 
 def _parse_audio(path: str) -> str:
-    from llm.audio_helpers import transcribir_audio
+    from llm.podcast.podcast.audio_helpers import transcribir_audio
+
     return transcribir_audio(path)
 
 

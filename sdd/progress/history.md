@@ -163,3 +163,108 @@ las specs del editor avanzado de OVA y empezar la implementación.
 **Verificación:** verify.ps1 PASA (ESLint + ruff + 52 BDD unit).
 
 **Estado:** DONE.
+
+---
+
+## 2026-06-16 — Completado lote de implementaciones y validaciones
+
+**Agente:** leader (orquesta: implementer)
+**Alcance:** Completar las especificaciones y características pendientes que estaban en estado spec_ready (principalmente Gherkin, Autenticación y métricas de rendimiento).
+
+**Completado:**
+- **EN-017** → done (ya implementado, commit 3ed88fa)
+- **EN-001** → done (features Gherkin ya existentes por dominio en tests/features/)
+- **EN-002** → done (step definitions y CI ya existentes en backend/tests/step_defs/ y verify.ps1)
+- **HU-009** → done (Recuperación de contraseña, commit 1fc42f1)
+- **HU-017** → done (Eliminar cuenta, commit a1de6dc)
+- **RN-002** → done (Tiempo de generación ≤ 180s, validado por RN-004)
+
+**Estado:** DONE.
+
+---
+
+## 2026-06-20 — Auditoría y Reestructuración de Carpetas (Screaming Architecture)
+
+**Agente:** Antigravity (inline)
+**Alcance:** Organizar archivos planos con alta densidad en el frontend (`ova_workspace/components`, `ova_library/components`) y backend (`llm`, `generation`) en subcarpetas lógicas, actualizando todos los imports y resolviendo colisiones.
+
+**Completado:**
+- **Frontend `ova_workspace/components`**: Creados subdirectorios `creation`, `editor`, `modals`, `versioning`, `shared` y distribuidos los 23 componentes planos.
+- **Frontend `ova_library/components`**: Creados subdirectorios `modals`, `cards`, `viewer` y distribuidos los 10 componentes planos.
+- **Backend `llm`**: Creados subdirectorios `catalog`, `podcast`, `images`, `clients`, `phases`, `utils` y distribuidos los 24 archivos planos.
+- **Backend `generation`**: Creados subdirectorios `jobs`, `errors`, `regen` y distribuidos los 14 archivos planos.
+- **Imports y Formato**: Corregidos imports en todo el backend y frontend mediante scripts automatizados de migración y auto-corrección de Ruff, eliminando problemas de imports duplicados y ordenándolos bajo la configuración del espacio de trabajo.
+- **Verificación**: Compilación de producción Vite completada sin errores de dependencias y suite unitaria BDD 100% verde (63 escenarios, 268 pasos exitosos).
+
+**Estado:** DONE.
+
+---
+
+## 2026-06-20 → 2026-06-23 — Sprint 2 cierre: UX, config, modelos, Prometheus BDI, modo tesis
+
+**Agente:** opencode / Antigravity (inline)
+**Alcance:** ~45 commits no documentados desde la última entrada (post
+`d81a3e9`). Cierre funcional de Sprint 2 antes de su vencimiento (2026-06-21).
+
+**Completado (agrupado temáticamente):**
+
+- **UX / Wireframes crear OVA** (~12 commits, `46c3101`…`70dbd1a`):
+  centrado vertical de card crear OVA, íconos barra de acción, modales de
+  archivos y tema, mínimo 2 fases para generar, modales de recursos OVA con
+  colores vivos por fase, ajuste de wireframes a layout real del backend,
+  layout centrado rediseño crear OVA (wireframe 4-5).
+
+- **Config por recurso OVA** (~9 commits, `b338387`…`d94dbf1`):
+  config para los 50 recursos OVA (26 faltantes), descripción por campo en
+  `ResourceConfigModal`, fix cierre doble de modales, portal a body para
+  liberar `pointer-events` de Radix, `pointerdown` stopPropagation, persistencia
+  de config en Supabase por usuario, caché localStorage TTL-7d.
+
+- **Catálogo de modelos / LLM** (~10 commits, `3388aef`…`dfe9582`):
+  reemplazo de tab Catálogo por modal "Gestionar Modelos", fix catalog refresh
+  de Groq desde PlatformConfig, auto-refresh al guardar Keys Globales,
+  OpenCode dinámico + fix precios negativos, modelos de imagen dinámicos por
+  proveedor con selector en UI.
+
+- **Models modal perf** (~6 commits, `1896c8a`…`fbabb06`):
+  modal más ancho + load-more, memo + useCallback (fix INP 200ms), ancho
+  forzado 920px, content-visibility:auto + useMemo(grouped), luego removido
+  por romper tooltips, fix INP 216ms.
+
+- **Roles y modo tesis** (`cf12e91`):
+  migración 030 crea rol `usuarios_prueba` (create_ova/view_ova/export_ova),
+  `register()` asigna rol por defecto desde PlatformConfig
+  (`default_registration_role`), endpoints GET/PUT `/admin/registration-mode`,
+  toggle "Modo tesis" en AdminRolesPage, SidebarMenu gate por permisos.
+
+- **Backend import fixes** (`8f10c5f`, `2caaad1`, `b1313ff`):
+  corrigen imports rotos post-refactor (roles_router, agents_router →
+  `llm.catalog.catalog_router`, uploads_router).
+
+- **Catalog perf** (`ea6c774`): page_size 50→500 inicial, max 100→1000.
+
+- **Models cards** (`043641a`, `a01456c`, `caaea46`): cards Imagen/Video +
+  HuggingFace text models en catálogo, image model picker en card Imagen +
+  fix INP 216ms, model picker muestra solo modelos enabled.
+
+- **5E fix** (`21781a4`): removidos labels de fase 5E del output dirigido al
+  estudiante.
+
+- **Prometheus BDI** (`4c94736`): actualización de BDI con engine.
+
+- **Misc** (`9bd83bb`): update skills catalog. (`8684d04`): fix
+  IntersectionObserver root + test import path.
+
+**Cierre de features:**
+- **HU-036** (vinculación usuarios permisos granulares): implementación
+  completa ya existente desde `b22339b` (links_router.py, UserLink, permisos
+  `users:link`/`users:link:admin`, `/vinculacion`). Marcada `done` en esta
+  auditoría con `merge_commit: b22339b`. Tests/trazabilidad no verificados.
+
+**Sprint:**
+- Sprint 2 cerrado el 2026-06-21 (vencido). Sprint 3 iniciado 2026-06-23.
+- El usuario reporta errores de Sprint 2 por resolver en Sprint 3 (no
+  identificados concretamente aún).
+
+**Estado:** DONE (auditoría + limpieza). Carryovers pendientes en
+`current.md`.

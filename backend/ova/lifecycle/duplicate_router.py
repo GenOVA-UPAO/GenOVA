@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
 from models import Ova, OvaPhase, OvaVersion, User
 
 router = APIRouter()
@@ -15,9 +15,7 @@ router = APIRouter()
 def _unique_copy_title(base_title: str, user_id, db: Session) -> str:
     candidate = f"{base_title} (copia)"
     exists = db.execute(
-        select(Ova).where(
-            Ova.user_id == user_id, Ova.title == candidate, Ova.deleted_at.is_(None)
-        )
+        select(Ova).where(Ova.user_id == user_id, Ova.title == candidate, Ova.deleted_at.is_(None))
     ).scalar_one_or_none()
     if not exists:
         return candidate
@@ -59,9 +57,7 @@ def duplicate_ova(
         )
 
     active_version = db.execute(
-        select(OvaVersion).where(
-            OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True)
-        )
+        select(OvaVersion).where(OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True))
     ).scalar_one_or_none()
 
     source_prompt = original.description or original.title or ""

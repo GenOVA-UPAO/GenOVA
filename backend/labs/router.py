@@ -1,4 +1,5 @@
 """Labs API router — admin-only model catalog and base-prompt lookup."""
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from auth.dependencies import require_admin

@@ -139,3 +139,4 @@ Para buscar/instalar/actualizar skills: pídeselo al `leader` ("busca una skill 
 
 Push/PR to `develop`/`main` triggers: `lint` + `backend-bdd` + `frontend-unit` (parallel) → `e2e`.
 Secrets needed: `TEST_DATABASE_URL`, `TEST_JWT_SECRET`.
+

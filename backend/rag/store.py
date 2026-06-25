@@ -4,6 +4,7 @@ We use raw SQL because SQLAlchemy doesn't ship a vector type out of the box.
 The `embedding` column is stored as a `vector(768)` literal — we serialize
 Python lists to the `[v1,v2,...]` syntax pgvector accepts.
 """
+
 from __future__ import annotations
 
 import logging

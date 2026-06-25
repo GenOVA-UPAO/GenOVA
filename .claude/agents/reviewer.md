@@ -155,13 +155,50 @@ o
 CHANGES_REQUESTED -> sdd/progress/review_<name>.md
 ```
 
+## Protocolo Backprop (skill: backprop)
+
+Cuando el auto-fix falla en el **intento 2** (tests siguen rojos), antes de emitir
+`CHANGES_REQUESTED`, invoca el skill `backprop` (`.agents/skills/backprop/SKILL.md`):
+
+1. **TRACE** — identifica `file:line` del comportamiento incorrecto; una línea de causa raíz.
+2. **ANALYZE** — ¿un nuevo §V invariante habría atrapado este bug? (la mayoría: sí)
+3. **PROPOSE** — redacta entrada §B en el spec de la feature:
+   ```
+   §B: B<N>|<fecha>|<causa raíz>|V<M>
+   §V: V<M>: <regla testeable que habría atrapado el bug>
+   ```
+   Añade la entrada §B al final del spec en `sdd/specs/<ID>_*.md`.
+   Si §V aplica → agrégalo a `CHECKPOINTS.md` como criterio nuevo.
+4. **LOG** — documenta en el veredicto:
+   ```
+   ### Backprop aplicado
+   - §B entry: B<N> — <causa raíz>
+   - §V entry: V<M> — <invariante> (agregado a CHECKPOINTS.md)
+   - Spec: sdd/specs/<ID>_*.md
+   ```
+
+> Aplica backprop también cuando el usuario reporta un bug post-merge que afecta
+> una feature ya `done`. En ese caso abre el spec y el BU correspondiente.
+
+## Protocolo de Verificación (skill: sp-verify)
+
+Antes de emitir `APPROVED`, verifica con evidencia fresca:
+
+```powershell
+./verify.ps1
+```
+
+Solo puedes emitir `APPROVED` si el output muestra `RESULTADO FINAL: PASA`.
+No claims sin evidencia. Nunca uses "debería pasar", "parece correcto", "luce bien".
+
 ## Reglas duras
 
 - ❌ Nunca apruebes con tests rojos (salvo que hayas auto-reparado y verify pase).
 - ❌ Nunca apruebes con lint/ruff en error.
 - ❌ Nunca apruebes si algún criterio de aceptación queda sin cobertura de test.
 - ❌ No modifiques los tests salvo bug evidente que contradice el spec.
-- ❌ Máximo 2 intentos de auto-fix; si sigue fallando → CHANGES_REQUESTED.
+- ❌ Máximo 2 intentos de auto-fix; si sigue fallando → backprop + CHANGES_REQUESTED.
 - ✅ Sé concreto: cita archivos y líneas. Nada de feedback genérico.
 - ✅ Si auto-actualizas un archivo de config, documéntalo siempre en el veredicto.
 - ✅ Si auto-reparas código de implementación, documéntalo en "Auto-fix de tests".
+- ✅ Si aplicas backprop, documéntalo en el veredicto (sección "Backprop aplicado").

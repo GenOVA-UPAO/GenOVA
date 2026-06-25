@@ -6,7 +6,7 @@ builder. This is the terminal node of the graph (edges to END).
 
 import logging
 
-from prometheus.state import OvaGenerationState
+from prometheus.engine.state import OvaGenerationState
 
 logger = logging.getLogger(__name__)
 

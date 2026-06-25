@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { Given, When, Then } from '@cucumber/cucumber'
-import { clampRatio } from '../../../frontend/src/lib/workspaceUtils.js'
+import { clampRatio } from '../../../frontend/src/core/lib/ova/workspaceUtils.js'
 
 // HU-025 unit coverage — split ratio clamping (importa el código real de
 // workspaceUtils, usado por WorkspaceResizableDivider; sin browser).

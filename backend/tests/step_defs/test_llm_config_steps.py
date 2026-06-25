@@ -27,9 +27,9 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401 — registra los modelos ORM
 from auth.dependencies import get_current_user  # noqa: E402
-from database import get_db  # noqa: E402
-from llm import llm_config_store  # noqa: E402
-from rate_limit import limiter  # noqa: E402
+from core.database import get_db  # noqa: E402
+from core.rate_limit import limiter  # noqa: E402
+from llm.utils import llm_config_store  # noqa: E402
 from users.admin.platform_settings_router import router as admin_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
@@ -100,7 +100,9 @@ def ctx(monkeypatch):
     # Persistencia del store en proceso: evita la SessionLocal global / Postgres.
     # sanitize_config sigue real → valida contra el catálogo.
     box = {"data": {}}
-    monkeypatch.setattr(llm_config_store, "save_stored", lambda clean: box.__setitem__("data", clean))
+    monkeypatch.setattr(
+        llm_config_store, "save_stored", lambda clean: box.__setitem__("data", clean)
+    )
     monkeypatch.setattr(llm_config_store, "stored_cached", lambda: box["data"])
 
     limiter.enabled = False  # SlowAPI tiene estado global → desactivar evita fugas.
@@ -125,6 +127,7 @@ _URL = "/api/admin/llm-config"
 
 
 # ── Scenarios ─────────────────────────────────────────────────────────────────
+
 
 @scenario(FEATURE, "Admin obtiene la configuración efectiva")
 def test_admin_get():
@@ -153,6 +156,7 @@ def test_user_put_forbidden():
 
 # ── Given ─────────────────────────────────────────────────────────────────────
 
+
 @given("que estoy autenticado como administrador")
 def auth_admin(ctx):
     ctx["active"]["id"] = ctx["admin_uid"]
@@ -164,6 +168,7 @@ def auth_user(ctx):
 
 
 # ── When ──────────────────────────────────────────────────────────────────────
+
 
 @when("solicito la configuración de modelos", target_fixture="response")
 def get_config(ctx):
@@ -183,6 +188,7 @@ def put_codigo_intento(ctx, spec):
 
 
 # ── Then ──────────────────────────────────────────────────────────────────────
+
 
 @then(parsers.parse("la respuesta es {code:d}"))
 def status_is(response, code):

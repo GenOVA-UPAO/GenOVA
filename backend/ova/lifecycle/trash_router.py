@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
 from models import Ova, User
 from ova.helpers import _delete_scorm_file, _is_admin, _ova_to_dict
 from ova.lifecycle.trash_batch_router import router as trash_batch_router
@@ -45,9 +45,7 @@ def list_trashed_ovas(
 
     ovas = (
         db.execute(
-            base_query.order_by(Ova.deleted_at.desc())
-            .offset((page - 1) * limit)
-            .limit(limit)
+            base_query.order_by(Ova.deleted_at.desc()).offset((page - 1) * limit).limit(limit)
         )
         .scalars()
         .all()

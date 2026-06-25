@@ -53,8 +53,13 @@ def write_profile(
 
     passed = sum(1 for c in checks if c["ok"] is True)
     total = sum(1 for c in checks if c["ok"] is not None)
-    return {"profile": profile.name, "checks": checks, "passed": passed, "total": total,
-            "report": report}
+    return {
+        "profile": profile.name,
+        "checks": checks,
+        "passed": passed,
+        "total": total,
+        "report": report,
+    }
 
 
 def _dump_phases(phases_dir: Path, editar: dict | None) -> int:

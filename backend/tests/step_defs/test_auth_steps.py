@@ -24,11 +24,11 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401
-from auth import router as auth_router_mod  # noqa: E402
 from auth.router import router as auth_router  # noqa: E402
-from database import get_db  # noqa: E402
-from rate_limit import limiter  # noqa: E402
-from security import hash_password  # noqa: E402
+from auth.throttle import _email_attempts  # noqa: E402
+from core.database import get_db  # noqa: E402
+from core.rate_limit import limiter  # noqa: E402
+from core.security import hash_password  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_LOGIN = os.path.join(_FEATURES, "auth", "HU-008_login.feature")
@@ -45,8 +45,25 @@ CREATE TABLE users (
   full_name TEXT, is_active BOOLEAN NOT NULL DEFAULT 1,
   university_id INTEGER, gender TEXT, phone_number TEXT,
   llm_settings TEXT NOT NULL DEFAULT '{}', enabled_models TEXT NOT NULL DEFAULT '[]',
-  ova_settings TEXT NOT NULL DEFAULT '{}', user_api_keys TEXT NOT NULL DEFAULT '{}',
+  ova_settings TEXT NOT NULL DEFAULT '{}',
+  theme_settings TEXT NOT NULL DEFAULT '{}',
+  resource_configs TEXT NOT NULL DEFAULT '{}',
+  user_api_keys TEXT NOT NULL DEFAULT '{}',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
+);
+CREATE TABLE platform_config (
+  key TEXT PRIMARY KEY, value TEXT NOT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE roles (
+  id TEXT PRIMARY KEY, name TEXT UNIQUE NOT NULL, description TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  permissions TEXT NOT NULL DEFAULT '[]'
+);
+CREATE TABLE user_roles (
+  user_id TEXT NOT NULL, role_id TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, role_id)
 );
 """
 
@@ -83,7 +100,7 @@ def client():
     # SlowAPI tiene estado global → desactivarlo evita fugas entre tests; el
     # throttle por-email se resetea aquí y es el que produce el 429 del bloqueo.
     limiter.enabled = False
-    auth_router_mod._email_attempts.clear()
+    _email_attempts.clear()
 
     app = FastAPI()
     app.state.limiter = limiter
@@ -93,6 +110,7 @@ def client():
 
 
 # ── HU-008: Login ────────────────────────────────────────────────────────────
+
 
 @scenario(FEATURE_LOGIN, "Login exitoso")
 def test_login_exitoso():
@@ -181,6 +199,7 @@ def mensaje_bloqueo(response):
 
 
 # ── HU-001: Registro ─────────────────────────────────────────────────────────
+
 
 @scenario(FEATURE_REGISTER, "Registro exitoso con credenciales válidas")
 def test_registro_exitoso():

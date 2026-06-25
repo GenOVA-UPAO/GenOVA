@@ -1,8 +1,8 @@
 from sqlalchemy import select
 
-from database import SessionLocal
+from core.database import SessionLocal
+from core.security import hash_password
 from models import Role, User, UserRole
-from security import hash_password
 
 
 def seed_db():
@@ -14,13 +14,46 @@ def seed_db():
             {
                 "name": "administrador",
                 "description": "Rol del sistema con acceso total",
-                "permissions": ["create_ova", "view_ova", "export_ova", "manage_users", "manage_roles"]
+                "permissions": [
+                    "create_ova",
+                    "view_ova",
+                    "export_ova",
+                    "manage_users",
+                    "manage_roles",
+                    "ai:models:self",
+                    "ai:fallback:self",
+                    "ai:models:platform",
+                    "users:link",
+                    "users:link:admin",
+                ],
+            },
+            {
+                "name": "profesor",
+                "description": "Docente que crea, edita y exporta OVAs",
+                "permissions": [
+                    "create_ova",
+                    "view_ova",
+                    "export_ova",
+                    "ai:models:self",
+                    "ai:fallback:self",
+                    "users:link",
+                ],
+            },
+            {
+                "name": "estudiante",
+                "description": "Estudiante que visualiza OVAs compartidos",
+                "permissions": ["view_ova"],
             },
             {
                 "name": "usuario",
-                "description": "Rol base para estudiantes y docentes",
-                "permissions": ["create_ova", "view_ova", "export_ova"]
-            }
+                "description": "Rol base genérico (legado)",
+                "permissions": ["create_ova", "view_ova", "export_ova", "ai:models:self"],
+            },
+            {
+                "name": "usuarios_prueba",
+                "description": "Rol para participantes de tesis — acceso a OVAs sin configuración de modelos",
+                "permissions": ["create_ova", "view_ova", "export_ova"],
+            },
         ]
 
         roles_map = {}
@@ -31,7 +64,7 @@ def seed_db():
                 role = Role(
                     name=r_data["name"],
                     description=r_data["description"],
-                    permissions=r_data["permissions"]
+                    permissions=r_data["permissions"],
                 )
                 db.add(role)
                 db.commit()
@@ -49,24 +82,38 @@ def seed_db():
                 "email": "admin@genova.ai",
                 "password": "admin1234password",  # Alfanumérico, >= 8 caracteres
                 "full_name": "Administrador GenOVA",
-                "role": "administrador"
+                "role": "administrador",
+            },
+            {
+                "email": "profesor@genova.ai",
+                "password": "profesor1234password",
+                "full_name": "Profesor de Prueba",
+                "role": "profesor",
+            },
+            {
+                "email": "estudiante@genova.ai",
+                "password": "estudiante1234password",
+                "full_name": "Estudiante de Prueba",
+                "role": "estudiante",
             },
             {
                 "email": "user@genova.ai",
                 "password": "user1234password",
                 "full_name": "Usuario de Prueba",
-                "role": "usuario"
-            }
+                "role": "usuario",
+            },
         ]
 
         for u_data in users_to_seed:
-            user = db.execute(select(User).where(User.email == u_data["email"])).scalar_one_or_none()
+            user = db.execute(
+                select(User).where(User.email == u_data["email"])
+            ).scalar_one_or_none()
             if not user:
                 print(f"Creando usuario: {u_data['email']}")
                 user = User(
                     email=u_data["email"],
                     password_hash=hash_password(u_data["password"]),
-                    full_name=u_data["full_name"]
+                    full_name=u_data["full_name"],
                 )
                 db.add(user)
                 db.commit()

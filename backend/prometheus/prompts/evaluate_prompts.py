@@ -4,7 +4,7 @@ Each prompt fixes the resource FORMAT but adapts all assessments, quizzes and
 rubrics to whatever Machine Learning concept is passed in `concept`.
 """
 
-from llm.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
+from llm.utils.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS, format_contexto_usuario
 
 # fmt: off
 RECURSOS_META = {
@@ -23,15 +23,19 @@ RECURSOS_META = {
 CODE_ONLY = {3, 5, 9}
 
 
-def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None) -> str:
+def prompt_codigo(
+    n: int, concept: str, contexto_usuario: str = "", design_system: str | None = None,
+    config: dict | None = None,
+) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     ds = design_system or DESIGN_SYSTEM
     t = {
         3: f"""[ROL] Desarrollador front-end de desafios cronometrados educativos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Desafio contrarreloj HTML5 que evalue dominio de "{concept}" bajo presion de tiempo.
-[TAREA] Cronometro regresivo 90 s visible, 8 preguntas secuenciales de opcion multiple sobre "{concept}", puntuacion con bonus por velocidad, barra de progreso, pantalla final con puntaje y feedback por pregunta. Cronometro real setInterval.
+[TAREA] Cronometro regresivo {cfg.get('time_seconds', 90)} s visible, {cfg.get('num_questions', 8)} preguntas secuenciales de opcion multiple sobre "{concept}", puntuacion con bonus por velocidad, barra de progreso, pantalla final con puntaje y feedback por pregunta. Cronometro real setInterval.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje_final) al terminar.
@@ -40,7 +44,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_syste
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Ejercicio HTML5 de completar espacios que evalue vocabulario de "{concept}".
-[TAREA] 8 oraciones sobre "{concept}" con espacio en blanco, validacion flexible (ignora mayusculas/acentos), feedback inmediato con correccion, barra de progreso, puntaje y boton "Reintentar". Validacion JS real.
+[TAREA] {cfg.get('num_sentences', 8)} oraciones sobre "{concept}" con espacio en blanco, validacion flexible (ignora mayusculas/acentos), feedback inmediato con correccion, barra de progreso, puntaje y boton "Reintentar". Validacion JS real.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 280 lineas.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje_final) al completar.
@@ -49,7 +53,7 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_syste
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
 [OBJETIVO] Simulacion evaluativa HTML5 donde el estudiante demuestre dominio practico de "{concept}".
-[TAREA] Escenario profesional concreto, 3-4 decisiones evaluables mediante controles interactivos, evaluacion contra criterios objetivos de "{concept}", puntuacion con pesos, reporte final con fortalezas y areas de mejora.
+[TAREA] Escenario profesional concreto, {cfg.get('num_decisions', 3)}-{cfg.get('num_decisions', 3) + 1} decisiones evaluables mediante controles interactivos, evaluacion contra criterios objetivos de "{concept}", puntuacion con pesos, reporte final con fortalezas y areas de mejora.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas. Evaluacion real basada en criterios.
 {ds}
 [SCORM] Al final del <script>: {SCORM_JS}. Llama _scormComplete(puntaje_final) al finalizar.
@@ -59,51 +63,52 @@ def prompt_codigo(n: int, concept: str, contexto_usuario: str = "", design_syste
     return base + contexto if base else ""
 
 
-def prompt_texto(n: int, concept: str, contexto_usuario: str = "") -> str:
+def prompt_texto(n: int, concept: str, contexto_usuario: str = "", config: dict | None = None) -> str:
     contexto = format_contexto_usuario(contexto_usuario)
+    cfg = config or {}
     t = {
         1: f"""[ROL] Diseniador de quizzes educativos de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Quiz de 6 preguntas sobre "{concept}": enunciado <=40 palabras, 4 opciones (A/B/C/D), respuesta_correcta, feedback_correcto e incorrecto <=20 palabras. Dificultad: 2 faciles, 2 medias, 2 dificiles.
+[TAREA] Quiz de {cfg.get('num_questions', 6)} preguntas sobre "{concept}": enunciado <=40 palabras, 4 opciones (A/B/C/D), respuesta_correcta, feedback_correcto e incorrecto <=20 palabras. Dificultad progresiva.
 [RESTRICCIONES] Opciones plausibles. Feedback que ensenie, no solo indique error.
-[SALIDA] JSON puro con clave "preguntas": array de 6 con "enunciado","opciones","correcta","feedback_correcto","feedback_incorrecto".""",
+[SALIDA] JSON puro con clave "preguntas": array de {cfg.get('num_questions', 6)} con "enunciado","opciones","correcta","feedback_correcto","feedback_incorrecto".""",
         2: f"""[ROL] Diseniador de rubricas de autoevaluacion para ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Rubrica con 5 criterios sobre "{concept}". Cada uno: descripcion <=25 palabras, 3 niveles (inicial/en desarrollo/logrado) con descriptor <=30 palabras. Puntuacion 1-3. Reflexion final segun rango de puntaje.
+[TAREA] Rubrica con {cfg.get('num_criteria', 5)} criterios sobre "{concept}". Cada uno: descripcion <=25 palabras, 3 niveles (inicial/en desarrollo/logrado) con descriptor <=30 palabras. Puntuacion 1-3. Reflexion final segun rango de puntaje.
 [RESTRICCIONES] Criterios auto-evaluables. Descriptores en primera persona ("Puedo...").
-[SALIDA] JSON puro con claves "criterios" (array de 5) y "reflexiones" (objeto con rangos).""",
+[SALIDA] JSON puro con claves "criterios" (array de {cfg.get('num_criteria', 5)}) y "reflexiones" (objeto con rangos).""",
         4: f"""[ROL] Examinador de conceptos de Machine Learning.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Examen de 8 preguntas opcion multiple sobre "{concept}": enunciado <=40 palabras, 4 opciones, justificacion <=30 palabras. 2 conceptuales, 2 aplicacion, 2 analisis, 2 relacion. Total 8 puntos.
+[TAREA] Examen de {cfg.get('num_questions', 8)} preguntas opcion multiple sobre "{concept}": enunciado <=40 palabras, 4 opciones, justificacion <=30 palabras. Distribucion balanceada entre conceptual, aplicacion, analisis y relacion.
 [RESTRICCIONES] Sin ambiguedades. Distractores verosimiles. Una sola correcta.
-[SALIDA] JSON puro con clave "examen": array de 8 con "numero","enunciado","opciones","correcta","justificacion","tipo".""",
+[SALIDA] JSON puro con clave "examen": array de {cfg.get('num_questions', 8)} con "numero","enunciado","opciones","correcta","justificacion","tipo".""",
         6: f"""[ROL] Diseniador de ejercicios de asociacion conceptual.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] 6 parejas: columna A (definiciones), columna B (terminos de "{concept}"). Relacion 1:1. Cada pareja: feedback_acierto <=20 palabras, feedback_error <=20 palabras (pista sin revelar).
+[TAREA] {cfg.get('num_pairs', 6)} parejas: columna A (definiciones), columna B (terminos de "{concept}"). Relacion 1:1. Cada pareja: feedback_acierto <=20 palabras, feedback_error <=20 palabras (pista sin revelar).
 [RESTRICCIONES] Sin ambiguedad. Terminos y definiciones precisos. Sin pistas en la redaccion.
-[SALIDA] JSON puro con claves "columna_a" (array de 6) y "parejas" (array de 6 con a_index,b_termino,feedback_acierto,feedback_error).""",
+[SALIDA] JSON puro con claves "columna_a" (array de {cfg.get('num_pairs', 6)}) y "parejas" (array de {cfg.get('num_pairs', 6)} con a_index,b_termino,feedback_acierto,feedback_error).""",
         7: f"""[ROL] Creador de crucigramas educativos de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Crucigrama de 8 terminos de "{concept}": numero, orientacion, longitud, pista <=25 palabras, respuesta. Cuadricula interconectada (>=4 cruces). Pistas ingeniosas pero justas.
+[TAREA] Crucigrama de {cfg.get('num_terms', 8)} terminos de "{concept}": numero, orientacion, longitud, pista <=25 palabras, respuesta. Cuadricula interconectada (>=4 cruces). Pistas ingeniosas pero justas.
 [RESTRICCIONES] Terminos reales. Sin abreviaturas.
-[SALIDA] JSON puro con clave "entradas": array de 8 con "numero","orientacion","longitud","pista","respuesta".""",
+[SALIDA] JSON puro con clave "entradas": array de {cfg.get('num_terms', 8)} con "numero","orientacion","longitud","pista","respuesta".""",
         8: f"""[ROL] Evaluador de comprension profunda de ML.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] 3 preguntas de desarrollo sobre "{concept}": enunciado <=50 palabras (abierto), 3-4 criterios de evaluacion observables, respuesta_modelo <=80 palabras.
+[TAREA] {cfg.get('num_questions', 3)} preguntas de desarrollo sobre "{concept}": enunciado <=50 palabras (abierto), 3-4 criterios de evaluacion observables, respuesta_modelo <=80 palabras.
 [RESTRICCIONES] No respondibles con si/no. Criterios evaluables objetivamente.
-[SALIDA] JSON puro con clave "preguntas": array de 3 con "enunciado","criterios","respuesta_modelo".""",
+[SALIDA] JSON puro con clave "preguntas": array de {cfg.get('num_questions', 3)} con "enunciado","criterios","respuesta_modelo".""",
         10: f"""[ROL] Diseniador de diplomas y certificados educativos.
 [CURSO] {CURSO_CONTEXTO}
 [CONCEPTO] "{concept}"
-[TAREA] Diploma de logro por "{concept}": titulo <=20 palabras, descripcion_logro <=50 palabras, 3 competencias_adquiridas, firma_simulada, diseno_sugerido (paleta, iconos, tipografia).
+[TAREA] Diploma de logro por "{concept}": titulo <=20 palabras, descripcion_logro <=50 palabras, {cfg.get('num_competencias', 3)} competencias_adquiridas, firma_simulada, diseno_sugerido (paleta, iconos, tipografia).
 [RESTRICCIONES] Tono celebratorio profesional. Competencias medibles y reales.
-[SALIDA] JSON puro con claves "titulo","descripcion_logro","competencias","firma","diseno_sugerido".""",
+[SALIDA] JSON puro con claves "titulo","descripcion_logro","competencias" (array de {cfg.get('num_competencias', 3)}),"firma","diseno_sugerido".""",
     }
     base = t.get(n, "")
     return base + contexto if base else ""

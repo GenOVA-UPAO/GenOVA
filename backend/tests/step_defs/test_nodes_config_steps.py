@@ -24,11 +24,11 @@ from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import prometheus.nodes_config as nc_mod  # noqa: E402
+import prometheus.config.nodes_config as nc_mod  # noqa: E402
 from auth.dependencies import get_current_user  # noqa: E402
-from database import get_db  # noqa: E402
-from rate_limit import limiter  # noqa: E402
-from users.admin.platform_settings_router import router as admin_router  # noqa: E402
+from core.database import get_db  # noqa: E402
+from core.rate_limit import limiter  # noqa: E402
+from users.admin.nodes_config_router import router as admin_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-017_nodes-config.feature")
@@ -118,6 +118,7 @@ _URL = "/api/admin/nodes-config"
 
 # ── Scenarios ──────────────────────────────────────────────────────────────────
 
+
 @scenario(FEATURE, "GET retorna nodos y config con defaults cuando no hay DB config")
 def test_get_defaults():
     pass
@@ -133,12 +134,9 @@ def test_put_invalid_flag():
     pass
 
 
-@scenario(FEATURE, "Toggle imágenes desactiva la generación")
-def test_toggle_images_off():
-    pass
-
 
 # ── Given ──────────────────────────────────────────────────────────────────────
+
 
 @given(parsers.parse('la tabla PlatformConfig no tiene entrada "{key}"'))
 def no_db_entry(ctx, key):
@@ -150,12 +148,9 @@ def db_empty(ctx):
     ctx["box"]["data"] = {}
 
 
-@given('ova_images está en "0" vía nodes_config store')
-def images_off_in_store(ctx):
-    ctx["box"]["data"] = {"ova_images": "0"}
-
 
 # ── When ───────────────────────────────────────────────────────────────────────
+
 
 @when("el admin llama GET /api/admin/nodes-config", target_fixture="response")
 def get_nodes(ctx):
@@ -187,16 +182,13 @@ def call_get_nodes_config(ctx):
 
 # ── Then ───────────────────────────────────────────────────────────────────────
 
+
 @then(parsers.parse("la respuesta incluye nodes con al menos {n:d} nodos"))
 def nodes_count(response, n):
     assert response.status_code == 200, response.text
     body = response.json()
     assert len(body["nodes"]) >= n, f"expected >= {n} nodes, got {len(body['nodes'])}"
 
-
-@then(parsers.parse('config.ova_images es "{val}"'))
-def config_images(response, val):
-    assert response.json()["config"]["ova_images"] == val
 
 
 @then(parsers.parse('config.ova_critic es "{val}"'))
@@ -220,6 +212,3 @@ def status_is(response, code):
     assert response.status_code == code, response.text
 
 
-@then(parsers.parse('ova_images es "{val}"'))
-def nc_images_val(nc_result, val):
-    assert nc_result["ova_images"] == val

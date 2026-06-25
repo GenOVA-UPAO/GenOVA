@@ -44,6 +44,7 @@ def _reset_key_cache():
 
 # ── Scenario 1: key from PlatformConfig ──────────────────────────────────────
 
+
 @scenario(FEATURE, "resolve key from PlatformConfig when DB row exists")
 def test_resolve_from_db():
     pass
@@ -72,6 +73,7 @@ def assert_key_is_gsk(request):
 
 # ── Scenario 2: no DB row + no env var → None ────────────────────────────────
 
+
 @scenario(FEATURE, "resolve key returns None when no DB row and no env var")
 def test_resolve_none():
     pass
@@ -88,16 +90,22 @@ def db_without_groq_key(request):
 def env_no_groq_key(request):
     prev = os.environ.get("GROQ_API_KEY")
     os.environ["GROQ_API_KEY"] = ""
-    request.addfinalizer(lambda: os.environ.update({"GROQ_API_KEY": prev}) if prev is not None else os.environ.pop("GROQ_API_KEY", None))
+    request.addfinalizer(
+        lambda: (
+            os.environ.update({"GROQ_API_KEY": prev})
+            if prev is not None
+            else os.environ.pop("GROQ_API_KEY", None)
+        )
+    )
 
 
 @when('_get_provider_key is called for "groq"')  # noqa: F811 — duplicate step reuse
 def call_get_provider_key_no_row(request):
-    import llm.router as router
+    from llm.clients.clients import _get_provider_key
 
     session = request.node._db_session
-    with patch("database.SessionLocal", return_value=session):
-        request.node._result = router._get_provider_key("groq")
+    with patch("core.database.SessionLocal", return_value=session):
+        request.node._result = _get_provider_key("groq")
 
 
 @then("the returned key is None")
@@ -106,6 +114,7 @@ def assert_key_is_none(request):
 
 
 # ── Scenario 3: cache TTL ─────────────────────────────────────────────────────
+
 
 @scenario(FEATURE, "cache TTL — second call within 30s skips DB query")
 def test_cache_ttl():
@@ -122,7 +131,7 @@ def db_with_cached_key(request):
 
 @when('_get_provider_key is called for "groq" twice within 30s')
 def call_twice(request):
-    import llm.router as router
+    from llm.clients.clients import _get_provider_key
 
     session = request.node._db_session
     counter = {"n": 0}
@@ -131,9 +140,9 @@ def call_twice(request):
         counter["n"] += 1
         return session
 
-    with patch("database.SessionLocal", side_effect=counting_session):
-        router._get_provider_key("groq")
-        router._get_provider_key("groq")
+    with patch("core.database.SessionLocal", side_effect=counting_session):
+        _get_provider_key("groq")
+        _get_provider_key("groq")
 
     request.node._db_call_count = counter["n"]
 

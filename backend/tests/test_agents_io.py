@@ -9,6 +9,7 @@ Uso:
     # Cambiar BASE si el backend corre en otro puerto:
     BASE=http://localhost:8000 python tests/test_agents_io.py
 """
+
 import os
 import sys
 import time
@@ -19,23 +20,23 @@ except ImportError:
     print("Falta 'requests'. Instala con: pip install requests")
     sys.exit(1)
 
-BASE  = os.getenv("BASE", "http://localhost:8000")
+BASE = os.getenv("BASE", "http://localhost:8000")
 EMAIL = os.getenv("EMAIL", "admin@genova.ai")
-PASS  = os.getenv("PASS", "admin1234password")
+PASS = os.getenv("PASS", "admin1234password")
 
 CONCEPT = "Árboles de decisión"
 
 # Todos los resource_type de cada fase (1–10)
-ENGAGE_TYPES  = list(range(1, 11))
+ENGAGE_TYPES = list(range(1, 11))
 EXPLORE_TYPES = list(range(1, 11))
 
-TEST_CASES = (
-    [("engage",  t, CONCEPT) for t in ENGAGE_TYPES] +
-    [("explore", t, CONCEPT) for t in EXPLORE_TYPES]
-)
+TEST_CASES = [("engage", t, CONCEPT) for t in ENGAGE_TYPES] + [
+    ("explore", t, CONCEPT) for t in EXPLORE_TYPES
+]
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
+
 
 def sep(title: str, char: str = "─") -> None:
     print(f"\n{char * 60}")
@@ -75,10 +76,15 @@ def generate(token: str, phase: str, resource_type: int, concept: str):
         timeout=180,
     )
     elapsed = time.time() - t0
-    return r.status_code, r.json() if r.headers.get("content-type", "").startswith("application/json") else r.text, elapsed
+    return (
+        r.status_code,
+        r.json() if r.headers.get("content-type", "").startswith("application/json") else r.text,
+        elapsed,
+    )
 
 
 # ── main ─────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     print(f"Backend : {BASE}")
@@ -98,7 +104,9 @@ def main() -> None:
         sep(f"Catálogo {phase.upper()}")
         recursos = list_recursos(token, phase)
         for r in recursos:
-            print(f"  [{r['id']:2d}] {r.get('emoji','')}{r['tipo']:<30} {r['duracion']:<12} {r['interactividad']}")
+            print(
+                f"  [{r['id']:2d}] {r.get('emoji', '')}{r['tipo']:<30} {r['duracion']:<12} {r['interactividad']}"
+            )
 
     # 3. Tests de generación agrupados por fase
     passed = failed = 0
@@ -129,8 +137,8 @@ def main() -> None:
             continue
 
         passed += 1
-        html    = result.get("html_content") or ""
-        raw     = result.get("raw_json")
+        html = result.get("html_content") or ""
+        raw = result.get("raw_json")
         html_ok = "✓" if html.strip() else "✗ VACÍO"
 
         print(f"  SALIDA  ← ✓ HTTP 200  ({elapsed:.1f}s)")
@@ -148,7 +156,9 @@ def main() -> None:
         elif isinstance(raw, list):
             print(f"    raw_json      : list de {len(raw)} items")
             if raw:
-                print(f"      [0] keys: {list(raw[0].keys()) if isinstance(raw[0], dict) else type(raw[0]).__name__}")
+                print(
+                    f"      [0] keys: {list(raw[0].keys()) if isinstance(raw[0], dict) else type(raw[0]).__name__}"
+                )
         else:
             print(f"    raw_json      : {type(raw).__name__} = {str(raw)[:80]}")
 

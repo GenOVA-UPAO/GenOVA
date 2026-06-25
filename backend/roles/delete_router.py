@@ -6,23 +6,11 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_admin
-from database import get_db
+from core.database import commit_or_500, get_db
 from models import Role, UserRole
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-
-def _commit_or_500(db: Session, op: str) -> None:
-    try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("Roles DB write failed during %s", op)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo completar la operación. Intenta de nuevo.",
-        ) from None
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -43,9 +31,7 @@ def delete_role(
     # 1. Look up role
     role = db.execute(select(Role).where(Role.id == role_uuid)).scalar_one_or_none()
     if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Rol no encontrado."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rol no encontrado.")
 
     # 2. Block system roles deletion
     if role.name in ["administrador", "usuario"]:
@@ -85,9 +71,7 @@ def delete_role(
             )
 
         # Look up target role
-        target_role = db.execute(
-            select(Role).where(Role.id == target_uuid)
-        ).scalar_one_or_none()
+        target_role = db.execute(select(Role).where(Role.id == target_uuid)).scalar_one_or_none()
         if not target_role:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -96,16 +80,18 @@ def delete_role(
 
         try:
             relations = (
-                db.execute(select(UserRole).where(UserRole.role_id == role_uuid))
-                .scalars()
-                .all()
+                db.execute(select(UserRole).where(UserRole.role_id == role_uuid)).scalars().all()
             )
             for rel in relations:
-                has_target = db.execute(
-                    select(UserRole).where(
-                        UserRole.user_id == rel.user_id, UserRole.role_id == target_uuid
+                has_target = (
+                    db.execute(
+                        select(UserRole).where(
+                            UserRole.user_id == rel.user_id, UserRole.role_id == target_uuid
+                        )
                     )
-                ).scalars().first()
+                    .scalars()
+                    .first()
+                )
                 if has_target:
                     db.delete(rel)
                 else:
@@ -123,5 +109,5 @@ def delete_role(
             ) from None
 
     db.delete(role)
-    _commit_or_500(db, "delete_role")
+    commit_or_500(db, "delete_role")
     return

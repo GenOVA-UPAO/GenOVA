@@ -13,6 +13,6 @@ estos documentos cubren el detalle. La genera/actualiza el agente `doc_author`.
 | [labs.md](labs.md) | Sandbox de iteración de prompts (admin) | — | 2026-06-03 |
 | [workspace.md](workspace.md) | Workspace unificado crear/editar OVA | HU-025, HU-030, EN-013 | 2026-06-09 |
 | [catalogo-modelos.md](catalogo-modelos.md) | Catálogo de modelos LLM (curado + APIs + enable/disable + asignación por tarea) | HU-034 | 2026-06-09 |
-| [prometheus.md](prometheus.md) | Motor multi-agente Prometheus (orquestador-trabajadores) + LangGraph | EP-5 | 2026-06-15 |
+| [prometheus.md](prometheus.md) | Motor multi-agente Prometheus (orquestador-trabajadores) + LangGraph | EP-5 | 2026-06-22 |
 | [metodologia-gaia.md](metodologia-gaia.md) | Propuesta: GAIA (AOSE) como metodología de diseño + patrón orchestrator-workers (y evolución a map-reduce) | EP-5 | 2026-06-15 |
 | [arquitectura-equipo-editorial.md](arquitectura-equipo-editorial.md) | Diseño de arquitectura objetivo: equipo editorial pedagógico (Generador-Crítico + Editor 5E) | EP-5 | 2026-06-15 |

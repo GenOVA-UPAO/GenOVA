@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from auth.dependencies import get_current_user
-from database import get_db
+from core.database import get_db
 from models import Ova, User
 from ova.helpers import VALID_STATUSES, _is_admin, _ova_to_dict
 from storage import StorageError, is_configured, signed_url
@@ -52,9 +52,7 @@ def list_ovas(
 
     ovas = (
         db.execute(
-            base_query.order_by(Ova.created_at.desc())
-            .offset((page - 1) * limit)
-            .limit(limit)
+            base_query.order_by(Ova.created_at.desc()).offset((page - 1) * limit).limit(limit)
         )
         .unique()
         .scalars()
@@ -105,9 +103,7 @@ def download_ova(
             },
         )
 
-    safe_title = (
-        "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
-    )
+    safe_title = "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
 
     # Prefer Supabase Storage signed URL (production path).
     if ova.storage_key and is_configured():

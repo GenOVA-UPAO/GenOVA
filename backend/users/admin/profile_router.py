@@ -1,4 +1,5 @@
 """Admin endpoints: edit profile + change role."""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_permission
-from database import get_db
+from core.database import get_db
 from models import Role, User, UserRole
 from users.admin.helpers import (
     assert_can_touch_target,
@@ -34,22 +35,34 @@ class UserProfileAdminUpdate(BaseModel):
     phone_number: str | None = Field(default=None, max_length=20)
 
 
-def _check_duplicates(db: Session, *, target_uuid: UUID, email: str, phone: str | None, univ_id: int | None) -> None:
-    if db.execute(
-        select(User.id).where(User.email == email, User.id != target_uuid)
-    ).first():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="El correo electrónico ya está registrado por otro usuario.")
-    if phone and db.execute(
-        select(User.id).where(User.phone_number == phone, User.id != target_uuid)
-    ).first():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="El número de teléfono ya está registrado por otro usuario.")
-    if univ_id and db.execute(
-        select(User.id).where(User.university_id == univ_id, User.id != target_uuid)
-    ).first():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="El código universitario ya está registrado por otro usuario.")
+def _check_duplicates(
+    db: Session, *, target_uuid: UUID, email: str, phone: str | None, univ_id: int | None
+) -> None:
+    if db.execute(select(User.id).where(User.email == email, User.id != target_uuid)).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo electrónico ya está registrado por otro usuario.",
+        )
+    if (
+        phone
+        and db.execute(
+            select(User.id).where(User.phone_number == phone, User.id != target_uuid)
+        ).first()
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El número de teléfono ya está registrado por otro usuario.",
+        )
+    if (
+        univ_id
+        and db.execute(
+            select(User.id).where(User.university_id == univ_id, User.id != target_uuid)
+        ).first()
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El código universitario ya está registrado por otro usuario.",
+        )
 
 
 @router.patch("/{user_id}")
@@ -68,7 +81,9 @@ def update_user_profile(
     gender = normalize_gender(payload.gender)
     phone = normalize_phone(payload.phone_number)
 
-    _check_duplicates(db, target_uuid=target_uuid, email=email, phone=phone, univ_id=payload.university_id)
+    _check_duplicates(
+        db, target_uuid=target_uuid, email=email, phone=phone, univ_id=payload.university_id
+    )
 
     target_user.full_name = full_name
     target_user.email = email
@@ -91,8 +106,9 @@ def update_user_role(
     try:
         role_uuid = UUID(payload.role_id)
     except (ValueError, TypeError) as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="El ID de rol especificado es inválido.") from exc
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="El ID de rol especificado es inválido."
+        ) from exc
 
     if target_uuid == current_user.id:
         raise HTTPException(
@@ -105,8 +121,9 @@ def update_user_role(
 
     target_role = db.execute(select(Role).where(Role.id == role_uuid)).scalar_one_or_none()
     if not target_role:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="El rol especificado no existe.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="El rol especificado no existe."
+        )
 
     if target_role.name == "administrador" and not is_admin_user(current_user.id, db):
         raise HTTPException(

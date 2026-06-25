@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { Given, When, Then } from '@cucumber/cucumber'
-import { checkHtmlQuality } from '../../../frontend/src/lib/labQuality.js'
+import { checkHtmlQuality } from '../../../frontend/src/core/lib/labQuality.js'
 
 // Covers EN-010 "Regla estricta de modularidad por líneas" at unit level —
 // the E2E @lint scenario covers the ESLint enforcement; this covers the

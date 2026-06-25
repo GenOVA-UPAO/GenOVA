@@ -8,8 +8,8 @@ guardada. ``sanitize_config`` valida contra el catálogo en memoria (curado).
 
 import pytest
 
-from llm import llm_config_store as store
 from llm import router
+from llm.utils import llm_config_store as store
 
 
 def test_sanitize_drops_invalid_keeps_valid():

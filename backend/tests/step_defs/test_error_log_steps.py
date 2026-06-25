@@ -5,6 +5,7 @@ These run against an in-memory SQLite session (no live backend, no Supabase):
 service → model boundary directly. `DATABASE_URL` is set to SQLite *before*
 importing `database`/`models` so the app modules bind to the throwaway engine.
 """
+
 import os
 import sys
 import uuid
@@ -18,8 +19,8 @@ from pytest_bdd import given, parsers, scenario, then, when  # noqa: E402
 from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 
-from generation.error_log_model import OvaErrorLog  # noqa: E402
-from generation.error_log_service import _sanitize, log_generation_error  # noqa: E402
+from generation.errors.error_log_model import OvaErrorLog  # noqa: E402
+from generation.errors.error_log_service import _sanitize, log_generation_error  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE = os.path.join(_FEATURES, "setup", "EN-012_error-log.feature")

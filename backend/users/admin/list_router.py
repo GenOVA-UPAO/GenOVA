@@ -1,10 +1,11 @@
 """Admin endpoint: paginated user listing."""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from auth.dependencies import require_permission
-from database import get_db
+from core.database import get_db
 from models import Role, User, UserRole
 
 router = APIRouter()

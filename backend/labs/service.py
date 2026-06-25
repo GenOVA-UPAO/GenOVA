@@ -2,6 +2,7 @@
 
 Import from this module to avoid coupling to the internal file layout.
 """
+
 # ruff: noqa: F401
 from labs.catalog import AVAILABLE_MODELS, quality_check_html
 from labs.generation import get_job_results, start_lab_job

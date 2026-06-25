@@ -26,7 +26,7 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401 — registra los modelos ORM
 from auth.dependencies import get_current_user  # noqa: E402
-from database import get_db  # noqa: E402
+from core.database import get_db  # noqa: E402
 from roles.router import router as roles_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
@@ -140,9 +140,12 @@ def _seed_role(ctx, name, *, users=0):
 
 # ── Given comunes ─────────────────────────────────────────────────────────────
 
+
 @given(parsers.parse('que estoy autenticado como usuario con rol "{role}"'))
 def autenticado_como(app_ctx, role):
-    app_ctx["active"]["id"] = app_ctx["admin_uid"] if role == "administrador" else app_ctx["user_uid"]
+    app_ctx["active"]["id"] = (
+        app_ctx["admin_uid"] if role == "administrador" else app_ctx["user_uid"]
+    )
 
 
 @given('que los roles del sistema "administrador" y "usuario" ya existen en la base de datos')
@@ -151,6 +154,7 @@ def roles_sistema_existen():
 
 
 # ── HU-018: Crear Rol ─────────────────────────────────────────────────────────
+
 
 @scenario(FEATURE_CREAR, "Ver lista de roles existentes")
 def test_listar_roles():
@@ -250,6 +254,7 @@ def no_duplicado(app_ctx):
 
 # ── HU-019: Editar Rol ────────────────────────────────────────────────────────
 
+
 @scenario(FEATURE_EDITAR, "Modificación exitosa del rol")
 def test_editar_rol():
     pass
@@ -299,7 +304,11 @@ def modal_cerrado():
     pass
 
 
-@then(parsers.parse('el rol "{nombre}" con sus nuevos permisos debe listarse inmediatamente en la tabla'))
+@then(
+    parsers.parse(
+        'el rol "{nombre}" con sus nuevos permisos debe listarse inmediatamente en la tabla'
+    )
+)
 def rol_listado(nombre):
     pass
 
@@ -337,6 +346,7 @@ def modal_abierto():
 
 
 # ── HU-020: Eliminar Rol ──────────────────────────────────────────────────────
+
 
 @scenario(FEATURE_ELIMINAR, "Eliminar un rol sin usuarios asignados")
 def test_eliminar_rol_sin_usuarios():

@@ -15,6 +15,7 @@ needed.
 Set `RAG_EMBEDDER=local` to use sentence-transformers (only if Render RAM
 allows — ~120 MB extra footprint).
 """
+
 from __future__ import annotations
 
 import logging
@@ -57,9 +58,7 @@ class _GeminiEmbedderBase(Embedder):
             from google import genai  # type: ignore
             from google.genai import types  # type: ignore
         except ImportError as exc:
-            raise EmbedderError(
-                "google-genai is not installed (pip install google-genai)"
-            ) from exc
+            raise EmbedderError("google-genai is not installed (pip install google-genai)") from exc
         self._client = genai.Client(api_key=api_key)
         self._types = types
 
@@ -88,7 +87,7 @@ class _GeminiEmbedderBase(Embedder):
                     out.extend(self._call(batch, "RETRIEVAL_DOCUMENT"))
                     break
                 except Exception as exc:
-                    delay = 2 ** attempt
+                    delay = 2**attempt
                     logger.warning(
                         "Gemini embedding retry %s/4 in %ss: %s",
                         attempt + 1,

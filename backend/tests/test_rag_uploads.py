@@ -5,6 +5,7 @@ Test integration script for temporary uploads and RAG status.
 Usage:
     python tests/test_rag_uploads.py
 """
+
 import io
 import os
 import sys
@@ -56,9 +57,7 @@ def main() -> None:
     dummy_file_name = "test_rag_doc.png"
     dummy_file_bytes = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc` \x00\x00\x00\x02\x00\x01e\x81\n\x18\x00\x00\x00\x00IEND\xaeB`\x82"
 
-    files = {
-        "files": (dummy_file_name, io.BytesIO(dummy_file_bytes), "image/png")
-    }
+    files = {"files": (dummy_file_name, io.BytesIO(dummy_file_bytes), "image/png")}
 
     print(f"Subiendo archivo de prueba '{dummy_file_name}'...")
     r_upload = requests.post(f"{BASE}/api/uploads/temp", headers=headers, files=files, timeout=15)

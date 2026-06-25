@@ -17,7 +17,7 @@ import json  # noqa: E402
 from pytest_bdd import given, scenario, then, when  # noqa: E402
 
 import prometheus.nodes.editor as editor_mod  # noqa: E402
-from config import settings  # noqa: E402
+from core.config import settings  # noqa: E402
 from prometheus.nodes.editor import editor_node  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
@@ -40,6 +40,7 @@ def _make_state(results=None, phase_order=None):
 # Scenario 1 — Editor apagado — noop
 # ---------------------------------------------------------------------------
 
+
 @scenario(FEATURE, "Editor apagado — noop")
 def test_editor_apagado():
     pass
@@ -53,10 +54,22 @@ def editor_off(monkeypatch):
 
 @given("el state tiene 2 recursos generados", target_fixture="state")
 def state_2_recursos(ctx):
-    return _make_state(results=[
-        {"phase": "engage", "html": "<p>recurso engage</p>", "title": "Engage 1", "resource_type": 1},
-        {"phase": "explore", "html": "<p>recurso explore</p>", "title": "Explore 1", "resource_type": 2},
-    ])
+    return _make_state(
+        results=[
+            {
+                "phase": "engage",
+                "html": "<p>recurso engage</p>",
+                "title": "Engage 1",
+                "resource_type": 1,
+            },
+            {
+                "phase": "explore",
+                "html": "<p>recurso explore</p>",
+                "title": "Explore 1",
+                "resource_type": 2,
+            },
+        ]
+    )
 
 
 @when("se ejecuta editor_node", target_fixture="result")
@@ -74,6 +87,7 @@ def no_coherence_report(result):
 # Scenario 2 — Editor detecta inconsistencia y aplica parche
 # ---------------------------------------------------------------------------
 
+
 @scenario(FEATURE, "Editor detecta inconsistencia y aplica parche")
 def test_editor_aplica_parche():
     pass
@@ -87,10 +101,22 @@ def editor_on(monkeypatch):
 
 @given('el state tiene resultados con texto "término X" en fase "explore"', target_fixture="state")
 def state_con_termino_x(ctx):
-    return _make_state(results=[
-        {"phase": "engage", "html": "<p>hook inicial del OVA</p>", "title": "Engage 1", "resource_type": 1},
-        {"phase": "explore", "html": "<p>explorar término X con ejemplos</p>", "title": "Explore 1", "resource_type": 2},
-    ])
+    return _make_state(
+        results=[
+            {
+                "phase": "engage",
+                "html": "<p>hook inicial del OVA</p>",
+                "title": "Engage 1",
+                "resource_type": 1,
+            },
+            {
+                "phase": "explore",
+                "html": "<p>explorar término X con ejemplos</p>",
+                "title": "Explore 1",
+                "resource_type": 2,
+            },
+        ]
+    )
 
 
 @given('el LLM mock retorna hallazgos y parches con reemplazo de "término X" por "término Y"')
@@ -129,6 +155,7 @@ def explore_no_term_x(state):
 # Scenario 3 — Editor falla — continúa sin crash
 # ---------------------------------------------------------------------------
 
+
 @scenario(FEATURE, "Editor falla — continúa sin crash")
 def test_editor_falla():
     pass
@@ -148,9 +175,16 @@ def llm_raises(ctx, monkeypatch):
 
 @given("el state tiene 1 recurso generado", target_fixture="state")
 def state_1_recurso(ctx):
-    return _make_state(results=[
-        {"phase": "engage", "html": "<p>recurso engage</p>", "title": "Engage 1", "resource_type": 1},
-    ])
+    return _make_state(
+        results=[
+            {
+                "phase": "engage",
+                "html": "<p>recurso engage</p>",
+                "title": "Engage 1",
+                "resource_type": 1,
+            },
+        ]
+    )
 
 
 @then("retorna coherence_report vacío sin error")

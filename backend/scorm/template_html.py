@@ -4,11 +4,11 @@ PHASE_LABELS = {
     "explicacion": "Explicación",
     "actividad": "Actividad",
     "evaluacion": "Evaluación",
-    "engage": "ENGAGE — Enganchar",
-    "explore": "EXPLORE — Explorar",
-    "explain": "EXPLAIN — Explicar",
-    "elaborate": "ELABORATE — Elaborar",
-    "evaluate": "EVALUATE — Evaluar",
+    "engage":    "Motivación",
+    "explore":   "Exploración",
+    "explain":   "Explicación",
+    "elaborate": "Elaboración",
+    "evaluate":  "Evaluación",
 }
 
 
@@ -102,7 +102,7 @@ def build_index_html(course_title: str, resources: list[dict]) -> str:
     """SCO shell: side nav of resources + iframe. One SCO for the whole OVA."""
     nav_buttons = "\n".join(
         f'        <button type="button" class="res-link" data-src="{r["file"]}">'
-        f'{r["label"]}</button>'
+        f"{r['label']}</button>"
         for r in resources
     )
     first_src = resources[0]["file"] if resources else ""
