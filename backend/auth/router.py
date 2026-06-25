@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import jwt
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
@@ -14,8 +14,11 @@ from sqlalchemy.orm import Session
 
 from auth.cookies import clear_auth_cookie, set_auth_cookie
 from auth.dependencies import get_current_user
+from auth.email_normalize import normalize_email
 from auth.reset_router import router as reset_router
 from auth.throttle import email_throttled
+from auth.verify_router import issue_verification
+from auth.verify_router import router as verify_router
 from core.database import get_db
 from core.rate_limit import limiter
 from core.security import (
@@ -74,7 +77,7 @@ def _invalid_credentials() -> JSONResponse:
 @router.post("/login")
 @limiter.limit("10/minute")
 def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
-    email = payload.email.strip().lower()
+    email = normalize_email(payload.email)
 
     if email_throttled(email):
         return JSONResponse(
@@ -112,6 +115,15 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
         db.commit()
         return _invalid_credentials()
 
+    if not user.email_verified:
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={
+                "error": "email_not_verified",
+                "message": "Verifica tu correo para iniciar sesión. Revisa tu bandeja o solicita un nuevo enlace.",
+            },
+        )
+
     user.failed_login_attempts = 0  # type: ignore[assignment]
     user.locked_until = None  # type: ignore[assignment]
     db.commit()
@@ -131,8 +143,13 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
 
 @router.post("/register")
 @limiter.limit("5/minute")
-def register(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)):
-    email = payload.email.strip().lower()
+def register(
+    request: Request,
+    payload: RegisterRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    email = normalize_email(payload.email)
     if not password_complexity_ok(payload.password):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -173,13 +190,17 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
         db.add(UserRole(user_id=user.id, role_id=_role.id))
         db.commit()
 
-    token = build_token(str(user.id), str(user.email))
-    response = JSONResponse(
+    # Verificación obligatoria: no se inicia sesión hasta confirmar el correo.
+    issue_verification(user, db, background_tasks)
+    db.commit()
+
+    return JSONResponse(
         status_code=status.HTTP_201_CREATED,
-        content={"access_token": token, "token_type": "bearer"},
+        content={
+            "email_verification_required": True,
+            "message": "Cuenta creada. Te enviamos un enlace de verificación a tu correo.",
+        },
     )
-    set_auth_cookie(response, token)
-    return response
 
 
 @router.post("/logout")
@@ -218,3 +239,4 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
 
 
 router.include_router(reset_router)
+router.include_router(verify_router)

@@ -114,6 +114,7 @@ def seed_db():
                     email=u_data["email"],
                     password_hash=hash_password(u_data["password"]),
                     full_name=u_data["full_name"],
+                    email_verified=True,
                 )
                 db.add(user)
                 db.commit()

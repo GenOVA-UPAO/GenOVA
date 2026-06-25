@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.email import send_reset_email
+from auth.email_normalize import normalize_email
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
@@ -52,7 +53,7 @@ def forgot_password(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
-    email = payload.email.strip().lower()
+    email = normalize_email(payload.email)
     user = db.execute(select(User).where(User.email == email, User.is_active)).scalar_one_or_none()
 
     response = {

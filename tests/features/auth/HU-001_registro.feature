@@ -8,10 +8,10 @@ Feature: Registro de cuenta de usuario
     Given que estoy en la página de registro
     When ingreso un correo válido y una contraseña alfanumérica de mínimo 8 caracteres
     And envío el formulario
-    Then el sistema debe crear la cuenta
+    Then el sistema debe crear la cuenta sin verificar
     And los campos university_id, gender y phone_number deben crearse como NULL
-    And debo ser redirigido al dashboard
-    And debo recibir un JWT
+    And debo ver un aviso para verificar mi correo
+    And no debo iniciar sesión hasta verificar el correo
 
   Scenario: Registro fallido por email duplicado
     Given que el correo "estudiante@upao.edu" ya está registrado

@@ -30,11 +30,13 @@ Incluye:
 - Validación en tiempo real de email y contraseña.
 - Endpoint de registro en backend (`POST /auth/register` y `POST /api/auth/register`).
 - Almacenamiento de contraseña encriptada con bcrypt.
-- Redirección al dashboard tras registro exitoso.
+- Verificación de correo obligatoria: tras registrarse se envía un enlace y la
+  cuenta no puede iniciar sesión hasta confirmarlo.
+- Normalización del correo (minúsculas, sin `+tag`; en Gmail sin puntos) para
+  evitar cuentas duplicadas.
 - Inicialización de campos de perfil extendidos (`university_id`, `gender`, `phone_number`) como vacíos o nulos en la base de datos (no son obligatorios en este paso).
 
 No incluye:
-- Verificación por correo electrónico.
 - Recuperación de contraseña.
 - Autenticación social (OAuth).
 
@@ -44,8 +46,10 @@ No incluye:
 3. La contraseña se almacena encriptada con bcrypt (nunca en texto plano).
 4. Se muestra un mensaje de error claro si el correo ya está registrado.
 5. Los campos adicionales de perfil (ID Universitario, Sexo, Teléfono) quedan sin asignar (`null`) para que sean configurados posteriormente por el usuario en su perfil o por el administrador.
-6. Tras el registro exitoso el usuario es redirigido automáticamente al dashboard.
-7. El endpoint `POST /auth/register` retorna 201 con JWT o 400 con mensaje de error descriptivo.
+6. Tras el registro exitoso se muestra un aviso para verificar el correo; el usuario NO inicia sesión hasta confirmarlo.
+7. El endpoint `POST /auth/register` retorna 201 (sin JWT, con `email_verification_required`) o 400 con mensaje de error descriptivo.
+8. El correo se normaliza antes de comparar/guardar para evitar duplicados por alias (`+tag`) o puntos en Gmail.
+9. El enlace de verificación (`POST /auth/verify-email`) es de un solo uso, expira en 24h y, al confirmarse, inicia sesión automáticamente. Existe reenvío (`POST /auth/resend-verification`).
 
 ## Datos de entrada/salida
 Entradas:
@@ -54,7 +58,7 @@ Entradas:
 - `full_name` (string, opcional).
 
 Salidas:
-- 201: `{ access_token, token_type }`.
+- 201: `{ email_verification_required: true, message }` (sin JWT; sesión solo tras verificar).
 - 400: `{ error, message }`.
 
 ## Flujos alternativos
@@ -73,10 +77,10 @@ Feature: Registro de cuenta de usuario
     Given que estoy en la página de registro
     When ingreso un correo válido y una contraseña alfanumérica de mínimo 8 caracteres
     And envío el formulario
-    Then el sistema debe crear la cuenta
+    Then el sistema debe crear la cuenta sin verificar
     And los campos university_id, gender y phone_number deben crearse como NULL
-    And debo ser redirigido al dashboard
-    And debo recibir un JWT
+    And debo ver un aviso para verificar mi correo
+    And no debo iniciar sesión hasta verificar el correo
 
   Scenario: Registro fallido por email duplicado
     Given que el correo "estudiante@upao.edu" ya está registrado

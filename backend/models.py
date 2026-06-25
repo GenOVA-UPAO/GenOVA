@@ -25,6 +25,9 @@ class User(Base):
     locked_until = Column(DateTime(timezone=True))
     full_name = Column(String(255))
     is_active = Column(Boolean, nullable=False, default=True)
+    email_verified = Column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
     university_id = Column(Integer, unique=True, index=True)
     gender = Column(String(20))
     phone_number = Column(String(20), unique=True, index=True)
@@ -162,6 +165,18 @@ class PasswordResetToken(Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
 
     user = relationship("User", backref="password_reset_tokens")
+
+
+class EmailVerificationToken(Base):
+    __tablename__ = "email_verification_tokens"
+
+    id = _pk_column()
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    token = Column(String(255), unique=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+
+    user = relationship("User", backref="email_verification_tokens")
 
 
 class PlatformConfig(Base):
