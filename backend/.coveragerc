@@ -1,0 +1,23 @@
+# Coverage config. `parallel = true` lets us merge data from two processes:
+# the pytest runner (in-process unit tests) and the uvicorn backend launched
+# under `coverage run` (exercised over HTTP by the BDD suite). `coverage
+# combine` merges the .coverage.* files before reporting.
+[run]
+parallel = true
+source = .
+omit =
+    tests/*
+    scripts/*
+    tools/*
+    migrations/*
+    seed.py
+    */__pycache__/*
+    .venv/*
+    venv/*
+
+[report]
+show_missing = true
+skip_covered = true
+# Floor only — ratchet upward as the suite grows. Combined BDD+unit coverage of
+# the app code sits comfortably above this; the gate catches catastrophic drops.
+fail_under = 30
