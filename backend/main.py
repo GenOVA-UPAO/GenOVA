@@ -70,6 +70,30 @@ class ProcessTimeMiddleware(BaseHTTPMiddleware):
         return response
 
 
+_IS_PROD = settings.env.lower() == "production"
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Cabeceras de seguridad en todas las respuestas (OWASP). CSP/HSTS solo en
+    producción: la API sirve JSON (default-src 'none' es seguro) y HSTS requiere
+    HTTPS. En dev se omiten para no romper Swagger /docs."""
+
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+        if _IS_PROD:
+            response.headers.setdefault(
+                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+            )
+            response.headers.setdefault(
+                "Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'"
+            )
+        return response
+
+
 def _background_rag_purge() -> None:
     try:
         from sqlalchemy.orm import Session
@@ -106,7 +130,15 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="GENOVA Backend API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title="GENOVA Backend API",
+    version="0.1.0",
+    lifespan=lifespan,
+    # Swagger/OpenAPI expone el mapa completo de la API: deshabilitado en prod.
+    docs_url=None if _IS_PROD else "/docs",
+    redoc_url=None if _IS_PROD else "/redoc",
+    openapi_url=None if _IS_PROD else "/openapi.json",
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -133,6 +165,7 @@ else:
 
 app.add_middleware(ProcessTimeMiddleware)  # innermost: avoid 502 on OPTIONS preflight
 app.add_middleware(GZipMiddleware, minimum_size=1024)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(  # outermost: intercept OPTIONS before other middleware
     CORSMiddleware,
     allow_origins=allowed_origins,
