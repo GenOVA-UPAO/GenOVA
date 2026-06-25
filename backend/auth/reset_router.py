@@ -19,7 +19,7 @@ from auth.email import send_reset_email
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
-from core.security import hash_password
+from core.security import hash_password, password_complexity_ok
 from models import PasswordResetToken, User
 
 router = APIRouter()
@@ -87,7 +87,7 @@ def reset_password(request: Request, payload: ResetPasswordSubmit, db: Session =
     token_str = payload.token.strip()
     new_pass = payload.new_password
 
-    if not (any(c.isalpha() for c in new_pass) and any(c.isdigit() for c in new_pass)):
+    if not password_complexity_ok(new_pass):
         return _err(
             "weak_password",
             "La nueva contraseña debe tener al menos 8 caracteres y contener letras y números.",

@@ -24,6 +24,7 @@ from core.security import (
     JWT_SECRET,
     PASSWORD_MAX_LENGTH,
     hash_password,
+    password_complexity_ok,
     verify_dummy,
     verify_password,
 )
@@ -132,6 +133,14 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
 @limiter.limit("5/minute")
 def register(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)):
     email = payload.email.strip().lower()
+    if not password_complexity_ok(payload.password):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "weak_password",
+                "message": "La contraseña debe tener al menos 8 caracteres con letras y números.",
+            },
+        )
     if db.execute(select(User).where(User.email == email)).scalar_one_or_none():
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
