@@ -75,7 +75,7 @@ jobs:
           exit 1
 
       - name: Run BDD step defs + unit
-        run: pytest tests/step_defs/ tests/test_llm_config_store.py -v --tb=short
+        run: pytest tests/step_defs/ tests/test_llm_config_store.py -v --tb=short --cov=. --cov-report=term-missing:skip-covered
         working-directory: backend
 
   frontend-unit:
