@@ -3,9 +3,10 @@ def build_styles_css() -> str:
   --bg: #f8fafc;
   --surface: #ffffff;
   --text: #0f172a;
-  --muted: #475569;
-  --primary: #1d4ed8;
-  --border: #cbd5e1;
+  --muted: #3f4d63;        /* >=7:1 sobre --bg (WCAG AA texto normal) */
+  --primary: #1746c0;      /* >=4.5:1 como texto y >=4.5:1 como fondo con #fff */
+  --border: #94a3b8;
+  --focus: #0b3bbd;
 }
 
 * {
@@ -17,6 +18,42 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   background: var(--bg);
   color: var(--text);
+}
+
+/* Visible para usuarios de teclado al tabular; oculto el resto del tiempo. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--primary);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 0 0 8px 0;
+  font-weight: 700;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* Texto solo para lectores de pantalla. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Foco visible en cualquier elemento interactivo (WCAG 2.4.7 / 2.4.11). */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .container {
@@ -57,9 +94,12 @@ body {
   color: var(--primary);
   border: 1px solid var(--border);
   font-weight: 700;
+  /* WCAG 2.5.8 (AA): objetivo táctil >= 24x24 CSS px. */
+  min-height: 44px;
+  min-width: 44px;
 }
 
-.res-link.active {
+.res-link[aria-selected="true"] {
   background: var(--primary);
   color: #fff;
 }
@@ -82,10 +122,12 @@ iframe {
 button {
   border: none;
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 12px 16px;
+  min-height: 44px;
   background: var(--primary);
   color: #fff;
   cursor: pointer;
+  font-weight: 700;
 }
 
 button:hover {
@@ -94,5 +136,13 @@ button:hover {
 
 #scorm-status {
   color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 """

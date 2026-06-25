@@ -85,17 +85,31 @@ def build_app_js() -> str:
   const statusNode = document.getElementById('scorm-status')
   const completeButton = document.getElementById('complete-btn')
   const frame = document.getElementById('res-frame')
-  const links = Array.prototype.slice.call(document.querySelectorAll('.res-link'))
+  const tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'))
   const visited = {}
 
-  function setActive(btn) {
-    links.forEach(function (l) { l.classList.remove('active') })
-    if (btn) { btn.classList.add('active') }
+  const initialized = window.GenovaScorm && window.GenovaScorm.initialize()
+  const xapi = window.GenovaXapi || null
+
+  function selectTab(btn, focus) {
+    tabs.forEach(function (t) {
+      const isSel = t === btn
+      t.setAttribute('aria-selected', isSel ? 'true' : 'false')
+      t.tabIndex = isSel ? 0 : -1
+    })
+    if (btn) {
+      frame.src = btn.getAttribute('data-src')
+      frame.setAttribute('aria-label', 'Contenido: ' + btn.textContent.trim())
+      const src = btn.getAttribute('data-src')
+      visited[src] = true
+      if (xapi) { xapi.experienced(btn.textContent.trim()) }
+      if (focus) { btn.focus() }
+      maybeComplete()
+    }
   }
 
-  const initialized = window.GenovaScorm && window.GenovaScorm.initialize()
-
   function markComplete() {
+    if (xapi) { xapi.completed() }
     if (!initialized) {
       statusNode.textContent = 'OVA completado (modo vista previa).'
       return
@@ -103,29 +117,36 @@ def build_app_js() -> str:
     window.GenovaScorm.setValue('cmi.core.lesson_status', 'completed')
     window.GenovaScorm.setValue('cmi.core.score.raw', '100')
     window.GenovaScorm.commit()
-    statusNode.textContent = 'Estado LMS: completed (guardado)'
+    statusNode.textContent = 'Estado LMS: completado y guardado.'
   }
 
   function maybeComplete() {
-    if (links.length && Object.keys(visited).length >= links.length) {
+    if (tabs.length && Object.keys(visited).length >= tabs.length) {
       markComplete()
     }
   }
 
-  function openResource(btn) {
-    frame.src = btn.getAttribute('data-src')
-    setActive(btn)
-    visited[btn.getAttribute('data-src')] = true
-    maybeComplete()
+  // Patrón ARIA Tabs: flechas mueven el foco, Home/End a extremos.
+  function onKeydown(e) {
+    const idx = tabs.indexOf(e.currentTarget)
+    if (idx < 0) { return }
+    let next = -1
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next = (idx + 1) % tabs.length }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { next = (idx - 1 + tabs.length) % tabs.length }
+    else if (e.key === 'Home') { next = 0 }
+    else if (e.key === 'End') { next = tabs.length - 1 }
+    if (next >= 0) {
+      e.preventDefault()
+      selectTab(tabs[next], true)
+    }
   }
 
-  links.forEach(function (btn) {
-    btn.addEventListener('click', function () { openResource(btn) })
+  tabs.forEach(function (btn) {
+    btn.addEventListener('click', function () { selectTab(btn, false) })
+    btn.addEventListener('keydown', onKeydown)
   })
-  if (links.length) {
-    setActive(links[0])
-    visited[links[0].getAttribute('data-src')] = true
-  }
+
+  if (tabs.length) { selectTab(tabs[0], false) }
 
   if (!initialized) {
     statusNode.textContent =
@@ -135,15 +156,16 @@ def build_app_js() -> str:
     if (!currentStatus || currentStatus === 'not attempted') {
       window.GenovaScorm.setValue('cmi.core.lesson_status', 'incomplete')
       window.GenovaScorm.commit()
-      statusNode.textContent = 'Estado LMS: incomplete'
+      statusNode.textContent = 'Progreso: en curso.'
     } else {
-      statusNode.textContent = 'Estado LMS actual: ' + currentStatus
+      statusNode.textContent = 'Progreso actual: ' + currentStatus
     }
   }
 
   completeButton.addEventListener('click', markComplete)
 
   window.addEventListener('beforeunload', function () {
+    if (xapi) { xapi.terminated() }
     if (initialized) {
       window.GenovaScorm.commit()
       window.GenovaScorm.finish()
