@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     sentry_dsn: str = ""
     sentry_traces_sample_rate: float = 0.0
+    metrics_enabled: bool = False
     latency_threshold_ms: float = 278.0
     app_url: str = "https://genova.ai"
     frontend_url: str = "http://localhost:5173"

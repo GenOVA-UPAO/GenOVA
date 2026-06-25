@@ -12,6 +12,7 @@ pydantic-settings==2.14.2
 slowapi==0.1.10
 # Observability
 sentry-sdk[fastapi]==2.45.0
+prometheus-fastapi-instrumentator==8.0.2
 # AI SDKs
 openai==2.43.0
 groq==1.4.0

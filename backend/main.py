@@ -188,6 +188,14 @@ app.add_middleware(  # outermost: intercept OPTIONS before other middleware
 )
 logger.info("CORS allowed origins: %s", allowed_origins)
 
+# Métricas Prometheus opcionales (opt-in). /metrics se expone solo si se habilita
+# explícitamente para no filtrar patrones de tráfico en una URL pública.
+if settings.metrics_enabled:
+    from prometheus_fastapi_instrumentator import Instrumentator
+
+    Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
+    logger.info("Prometheus /metrics habilitado")
+
 _HEALTH_CACHE = "public, max-age=10"
 
 
