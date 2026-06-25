@@ -14,8 +14,8 @@ function UserChip({ f, i, models, chip, num, onRemove }) {
           {MODALITY_SYMBOLS[modality] || MODALITY_SYMBOLS.text}
         </span>
         <span className="truncate max-w-[70px]">{label}</span>
-        <button type="button" onClick={onRemove} className="ml-0.5 rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors">
-          <X size={10} weight="bold" />
+        <button type="button" onClick={onRemove} aria-label={`Quitar ${label}`} className="ml-0.5 rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors">
+          <X size={10} weight="bold" aria-hidden="true" />
         </button>
       </span>
     </span>
@@ -105,9 +105,10 @@ export function UserOverrideSection({
               type="button"
               onClick={() => onUserRemoveFallback(task, i)}
               disabled={userDisabled}
+              aria-label={`Quitar respaldo #${i + 1}`}
               className="p-1 rounded text-muted-foreground hover:text-destructive"
             >
-              <Trash size={12} weight="duotone" />
+              <Trash size={12} weight="duotone" aria-hidden="true" />
             </button>
           </div>
         )
@@ -118,7 +119,7 @@ export function UserOverrideSection({
         disabled={userDisabled}
         className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground/50 hover:text-primary transition-colors"
       >
-        <Plus size={10} weight="bold" />
+        <Plus size={10} weight="bold" aria-hidden="true" />
         Añadir respaldo
       </button>
     </div>

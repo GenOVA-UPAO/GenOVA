@@ -59,7 +59,7 @@ export function PhaseVersionHistory({ open, onOpenChange, ovaId, phaseId, onReve
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-primary">v.{mv.minor_number}</span>
                   <span className="text-[10px] text-muted-foreground">
-                    {mv.created_at ? new Date(mv.created_at).toLocaleString() : '—'}
+                    {mv.created_at ? new Date(mv.created_at).toLocaleString('es-PE') : '—'}
                   </span>
                   <Button
                     type="button" size="sm" variant="outline"

@@ -24,7 +24,7 @@ export function SharedOvaCard({ ova }) {
       <div className="mt-auto flex items-center gap-2 text-[10px] text-muted-foreground">
         <span>Por: {ova?.owner_name || 'Profesor'}</span>
         {ova?.created_at && (
-          <span>· {new Date(ova.created_at).toLocaleDateString()}</span>
+          <span>· {new Date(ova.created_at).toLocaleDateString('es-PE')}</span>
         )}
       </div>
     </div>

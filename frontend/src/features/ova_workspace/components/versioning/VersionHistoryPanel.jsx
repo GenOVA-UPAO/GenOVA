@@ -55,7 +55,7 @@ export function VersionHistoryPanel({ open, onOpenChange, versions, currentVersi
                   v{v.version_number}
                 </Badge>
                 <span className="flex-1 text-xs text-muted-foreground truncate">
-                  {v.created_at ? new Date(v.created_at).toLocaleString() : '—'}
+                  {v.created_at ? new Date(v.created_at).toLocaleString('es-PE') : '—'}
                 </span>
                 {!isCurrent ? (
                   <Button

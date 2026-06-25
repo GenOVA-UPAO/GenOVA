@@ -122,8 +122,8 @@ export function ThemeModal({ initialTheme, onClose, onSaved }) {
       <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-lg font-display font-semibold">Configuración de Diseño y Tema</h2>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent cursor-pointer">
-            <X size={20} />
+          <button type="button" onClick={onClose} aria-label="Cerrar" className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent cursor-pointer">
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
