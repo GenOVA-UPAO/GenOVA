@@ -19,7 +19,11 @@ class User(Base):
     __tablename__ = "users"
 
     id = _pk_column()
+    # `email` conserva el correo como lo escribió el usuario (display/envío).
+    # `email_normalized` es la llave canónica (minúsculas, sin +tag, sin puntos
+    # en Gmail) usada para dedup y login.
     email = Column(String(255), unique=True, nullable=False, index=True)
+    email_normalized = Column(String(255), unique=True, index=True)
     password_hash = Column(String(255), nullable=False)
     failed_login_attempts = Column(Integer, nullable=False, default=0)
     locked_until = Column(DateTime(timezone=True))

@@ -88,7 +88,9 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
             },
         )
 
-    user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    user = db.execute(
+        select(User).where(User.email_normalized == email)
+    ).scalar_one_or_none()
 
     if not user:
         verify_dummy()
@@ -149,7 +151,8 @@ def register(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
-    email = normalize_email(payload.email)
+    email_display = payload.email.strip().lower()
+    email_key = normalize_email(payload.email)
     if not password_complexity_ok(payload.password):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -167,14 +170,17 @@ def register(
                 "message": "El nombre debe contener al menos una letra.",
             },
         )
-    if db.execute(select(User).where(User.email == email)).scalar_one_or_none():
+    if db.execute(
+        select(User).where(User.email_normalized == email_key)
+    ).scalar_one_or_none():
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"error": "email_exists", "message": "El correo ya está registrado."},
         )
 
     user = User(
-        email=email,
+        email=email_display,
+        email_normalized=email_key,
         password_hash=hash_password(payload.password),
         full_name=full_name or None,
     )

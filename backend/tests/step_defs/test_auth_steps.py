@@ -41,6 +41,7 @@ _SEED_PASS = "user1234password"
 _DDL = """
 CREATE TABLE users (
   id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
+  email_normalized TEXT UNIQUE,
   failed_login_attempts INTEGER NOT NULL DEFAULT 0, locked_until TIMESTAMP,
   full_name TEXT, is_active BOOLEAN NOT NULL DEFAULT 1,
   email_verified BOOLEAN NOT NULL DEFAULT 0,
@@ -87,10 +88,15 @@ def client():
                 conn.execute(text(stmt))
         conn.execute(
             text(
-                "INSERT INTO users (id, email, password_hash, full_name, email_verified) "
-                "VALUES (:i, :e, :p, 'Seed User', 1)"
+                "INSERT INTO users (id, email, email_normalized, password_hash, full_name, "
+                "email_verified) VALUES (:i, :e, :n, :p, 'Seed User', 1)"
             ),
-            {"i": uuid.uuid4().hex, "e": _SEED_EMAIL, "p": hash_password(_SEED_PASS)},
+            {
+                "i": uuid.uuid4().hex,
+                "e": _SEED_EMAIL,
+                "n": _SEED_EMAIL,
+                "p": hash_password(_SEED_PASS),
+            },
         )
 
     Session = sessionmaker(bind=eng, autoflush=False, autocommit=False, future=True)

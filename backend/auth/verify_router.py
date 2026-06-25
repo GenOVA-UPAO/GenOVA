@@ -133,7 +133,9 @@ def resend_verification(
         "message": "Si el correo está registrado y pendiente de verificar, te enviamos un nuevo enlace."
     }
     email = normalize_email(payload.email)
-    user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    user = db.execute(
+        select(User).where(User.email_normalized == email)
+    ).scalar_one_or_none()
     if user and not user.email_verified:
         issue_verification(user, db, background_tasks)
         db.commit()

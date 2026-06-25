@@ -1,5 +1,6 @@
 from sqlalchemy import select
 
+from auth.email_normalize import normalize_email
 from core.database import SessionLocal
 from core.security import hash_password
 from models import Role, User, UserRole
@@ -112,6 +113,7 @@ def seed_db():
                 print(f"Creando usuario: {u_data['email']}")
                 user = User(
                     email=u_data["email"],
+                    email_normalized=normalize_email(u_data["email"]),
                     password_hash=hash_password(u_data["password"]),
                     full_name=u_data["full_name"],
                     email_verified=True,
