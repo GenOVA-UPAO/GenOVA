@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { useRoles } from '@/features/admin/hooks/useRoles.js'
 import { AVAILABLE_PERMISSIONS } from '@/core/lib/permissions.js'
 import { RoleFormModal } from '@/features/admin/components/RoleFormModal.jsx'

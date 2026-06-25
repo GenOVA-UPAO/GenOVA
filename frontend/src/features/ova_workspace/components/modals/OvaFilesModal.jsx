@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { CloudArrowUp, X } from '@phosphor-icons/react'
 import { FileChip } from '@/features/ova_workspace/components/shared/FileChip.jsx'
 

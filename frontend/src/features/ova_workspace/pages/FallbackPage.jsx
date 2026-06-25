@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowsClockwise, Lock, Warning, ListDashes } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { motion, AnimatePresence } from 'motion/react'
+import { m as motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/core/components/ui/alert'
 import { getCurrentUser } from '@/core/lib/me.js'

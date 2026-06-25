@@ -1,5 +1,5 @@
 import { BookBookmark, Gear } from '@phosphor-icons/react'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { RESOURCE_ICONS } from '@/features/ova_library/lib/resourceIcons.js'
 
 const INTERACTIVIDAD_COLOR = {
