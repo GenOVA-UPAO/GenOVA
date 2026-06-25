@@ -7,6 +7,7 @@ import { PasswordChangeForm } from '@/features/profile/components/PasswordChange
 import { ApiKeysCard } from '@/core/components/settings/ApiKeysCard.jsx'
 import { ProfileSkeleton } from '@/features/profile/components/ProfileSkeleton.jsx'
 import { DeleteAccountForm } from '@/features/profile/components/DeleteAccountForm.jsx'
+import { TotpSetupCard } from '@/features/profile/components/TotpSetupCard.jsx'
 
 export function ProfilePage() {
   const { profile, role, createdAt, loading, saveProfile, getInitials, formatDate } = useProfile()
@@ -89,6 +90,7 @@ export function ProfilePage() {
           </TabsContent>
 
           <TabsContent value="security" className="mt-0 space-y-5">
+            <TotpSetupCard totpEnabled={!!profile?.totp_enabled} />
             <PasswordChangeForm />
             <DeleteAccountForm />
           </TabsContent>
