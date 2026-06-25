@@ -4,16 +4,19 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { markLoggedIn } from '@/features/auth/services/auth.js'
 import { apiFetch } from '@/core/lib/http.js'
+import { resendVerification } from '@/features/auth/services/verification.js'
 import { loginSchema } from '@/features/auth/schemas/auth.js'
 import { Button } from '@/core/components/ui/button'
 import { Input } from '@/core/components/ui/input'
 import { PasswordInput } from '@/core/components/ui/password-input'
 import { Label } from '@/core/components/ui/label'
 import { Alert, AlertDescription } from '@/core/components/ui/alert'
+import { VerifyEmailNotice } from '@/features/auth/components/VerifyEmailNotice.jsx'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const [serverError, setServerError] = useState('')
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null)
   const {
     register,
     handleSubmit,
@@ -38,6 +41,11 @@ export function LoginPage() {
         return
       }
 
+      if (response.status === 403 && data?.error === 'email_not_verified') {
+        setUnverifiedEmail(email)
+        return
+      }
+
       if (response.status === 403 && data?.retry_after_minutes) {
         setServerError(
           `Cuenta bloqueada. Intenta de nuevo en ${data.retry_after_minutes} minuto${data.retry_after_minutes !== 1 ? 's' : ''}.`
@@ -49,6 +57,15 @@ export function LoginPage() {
     } catch {
       setServerError('No se pudo conectar con el servidor. Intenta de nuevo.')
     }
+  }
+
+  if (unverifiedEmail) {
+    return (
+      <VerifyEmailNotice
+        email={unverifiedEmail}
+        onResend={() => resendVerification(unverifiedEmail)}
+      />
+    )
   }
 
   return (
@@ -68,6 +85,8 @@ export function LoginPage() {
               type="email"
               autoComplete="email"
               inputMode="email"
+              spellCheck={false}
+              autoCapitalize="none"
               placeholder="estudiante@genova.ai"
               aria-invalid={!!errors.email}
               {...register('email')}
@@ -111,7 +130,7 @@ export function LoginPage() {
             {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
             ) : null}
-            {isSubmitting ? 'Ingresando...' : 'Entrar'}
+            {isSubmitting ? 'Ingresando…' : 'Entrar'}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">

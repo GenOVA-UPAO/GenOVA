@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Flask, FolderOpen, Plus, ShieldCheck, Users, Clock, CaretRight } from '@phosphor-icons/react'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { getCurrentUser } from '@/core/lib/me.js'
 import { fetchOvas } from '@/features/ova_library/services/ovaHistoryService.js'
@@ -36,7 +36,7 @@ function formatDate(value) {
 
 function StatCard({ label, value, sub, tone }) {
   return (
-    <motion.div variants={itemVariants} whileHover={{ y: -4 }} className="glass-card rounded-2xl p-6 transition-all">
+    <motion.div variants={itemVariants} whileHover={{ y: -4 }} className="glass-card rounded-2xl p-6 transition">
       <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
       <p className={`mt-3 text-5xl font-display font-semibold tracking-tight ${tone}`}>{value}</p>
       <p className="mt-2 text-xs font-medium text-muted-foreground">{sub}</p>
@@ -114,7 +114,7 @@ export function DashboardPage() {
         <div className="space-y-3">
           {ovas.length > 0 ? (
             ovas.slice(0, 4).map((ova) => (
-              <motion.div key={ova.id} whileHover={{ scale: 1.01 }} className="group flex items-center gap-4 rounded-2xl glass-card px-5 py-4 transition-all hover:border-primary/30">
+              <motion.div key={ova.id} whileHover={{ scale: 1.01 }} className="group flex items-center gap-4 rounded-2xl glass-card px-5 py-4 transition hover:border-primary/30">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <FolderOpen size={20} weight="duotone" />
                 </div>
@@ -155,7 +155,7 @@ export function DashboardPage() {
           <h2 className="font-display text-xl font-semibold px-1">Panel de administración</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-3">
             {ADMIN_CARDS.map(({ to, icon: Icon, title, desc }) => (
-              <Link key={to} to={to} className="group rounded-xl border border-border/50 bg-background/50 p-5 transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-md">
+              <Link key={to} to={to} className="group rounded-xl border border-border/50 bg-background/50 p-5 transition hover:border-primary/50 hover:bg-primary/5 hover:shadow-md">
                 <div className="mb-4 inline-flex rounded-lg bg-muted p-2.5 text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon size={20} weight="duotone" />
                 </div>

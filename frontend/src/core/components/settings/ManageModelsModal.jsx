@@ -79,14 +79,14 @@ export function ManageModelsModal({ open, onClose, hook, onGoToApiKeys }) {
                 onChange={(e) => { setLocalSearch(e.target.value); handleSearch(e.target.value) }}
                 className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-border/60 bg-muted/30
                   focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40
-                  placeholder:text-muted-foreground/40 transition-all"
+                  placeholder:text-muted-foreground/40 transition"
               />
             </div>
             <select
               value={categoryFilter || 'all'}
               onChange={(e) => startTransition(() => handleCategory(e.target.value))}
               className="text-xs rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1.5
-                focus:outline-none focus:ring-2 focus:ring-primary/20 text-muted-foreground transition-all cursor-pointer"
+                focus:outline-none focus:ring-2 focus:ring-primary/20 text-muted-foreground transition cursor-pointer"
             >
               {(categories || []).map((cat) => (
                 <option key={cat} value={cat}>{CATEGORY_LABELS[cat] || cat}</option>

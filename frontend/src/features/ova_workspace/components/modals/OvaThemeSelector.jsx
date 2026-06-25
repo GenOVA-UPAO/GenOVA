@@ -35,7 +35,7 @@ function Segment({ active, onClick, disabled, icon: Icon, label, children }) {
       disabled={disabled}
       className={[
         'flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5',
-        'text-xs font-medium transition-all focus-visible:outline-none',
+        'text-xs font-medium transition focus-visible:outline-none',
         'focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50',
         active
           ? 'bg-background text-foreground shadow-sm ring-1 ring-primary/30'

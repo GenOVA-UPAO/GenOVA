@@ -4,6 +4,7 @@ import { BookBookmark } from '@phosphor-icons/react'
 import { RESOURCE_ICONS } from '@/features/ova_library/lib/resourceIcons.js'
 import { getSchema } from '@/features/ova_library/lib/resourceConfigSchema.js'
 import { Button } from '@/core/components/ui/button'
+import { useModalDismiss } from '@/core/hooks/useModalDismiss.js'
 
 export function ResourceConfigModal({
   resource, phaseKey, phaseColor,
@@ -12,6 +13,7 @@ export function ResourceConfigModal({
   const key = `${phaseKey}:${resource.id}`
   const schema = getSchema(phaseKey, resource.id)
   const Icon = RESOURCE_ICONS[key] ?? BookBookmark
+  useModalDismiss(onClose)
 
   const [values, setValues] = useState(() => {
     const init = {}

@@ -9,7 +9,7 @@ export function TrashedOvaCard({ ova, isSelected, onToggleSelect, onRestore, onP
   }
 
   return (
-    <div className={`rounded-xl border bg-white p-5 shadow-sm transition-all ${isSelected ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border'}`}>
+    <div className={`rounded-xl border bg-white p-5 shadow-sm transition ${isSelected ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border'}`}>
       <div className="flex items-start gap-3">
         <Checkbox
           checked={isSelected}

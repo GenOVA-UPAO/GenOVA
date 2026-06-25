@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { CloudArrowUp, X } from '@phosphor-icons/react'
 import { FileChip } from '@/features/ova_workspace/components/shared/FileChip.jsx'
+import { useModalDismiss } from '@/core/hooks/useModalDismiss.js'
 
 const ACCEPTED_LABEL = 'PDF, DOCX, PPTX · MP3, WAV, M4A · JPG, PNG, WEBP'
 const ACCEPTED_ATTR = '.pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.webp'
@@ -9,6 +10,7 @@ const ACCEPTED_ATTR = '.pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.web
 export function OvaFilesModal({ uploads, activeUploadsCount, maxUploadFiles, onFilesSelected, onRemove, onClose }) {
   const inputRef = useRef(null)
   const [dragging, setDragging] = useState(false)
+  useModalDismiss(onClose)
   const canAdd = activeUploadsCount < maxUploadFiles
   const hasFiles = uploads.length > 0
 
@@ -52,7 +54,7 @@ export function OvaFilesModal({ uploads, activeUploadsCount, maxUploadFiles, onF
               onDrop={handleDrop}
               onClick={() => canAdd && inputRef.current?.click()}
               className={[
-                'rounded-xl border-2 border-dashed transition-all duration-200 py-9 px-6',
+                'rounded-xl border-2 border-dashed transition duration-200 py-9 px-6',
                 'flex flex-col items-center gap-2.5 text-center select-none',
                 dragging
                   ? 'border-primary bg-primary/5 scale-[1.01]'

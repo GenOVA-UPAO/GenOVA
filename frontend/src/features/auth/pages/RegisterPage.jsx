@@ -1,19 +1,20 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { markLoggedIn } from '@/features/auth/services/auth.js'
 import { apiFetch } from '@/core/lib/http.js'
+import { resendVerification } from '@/features/auth/services/verification.js'
 import { registerSchema } from '@/features/auth/schemas/auth.js'
 import { Button } from '@/core/components/ui/button'
 import { Input } from '@/core/components/ui/input'
 import { PasswordInput } from '@/core/components/ui/password-input'
 import { Label } from '@/core/components/ui/label'
 import { Alert, AlertDescription } from '@/core/components/ui/alert'
+import { VerifyEmailNotice } from '@/features/auth/components/VerifyEmailNotice.jsx'
 
 export function RegisterPage() {
-  const navigate = useNavigate()
   const [serverError, setServerError] = useState('')
+  const [registeredEmail, setRegisteredEmail] = useState(null)
   const {
     register,
     handleSubmit,
@@ -33,8 +34,7 @@ export function RegisterPage() {
       const data = await response.json()
 
       if (response.status === 201) {
-        markLoggedIn()
-        navigate('/dashboard')
+        setRegisteredEmail(email)
         return
       }
 
@@ -42,6 +42,15 @@ export function RegisterPage() {
     } catch {
       setServerError('No se pudo conectar con el servidor. Intenta de nuevo.')
     }
+  }
+
+  if (registeredEmail) {
+    return (
+      <VerifyEmailNotice
+        email={registeredEmail}
+        onResend={() => resendVerification(registeredEmail)}
+      />
+    )
   }
 
   return (
@@ -75,6 +84,8 @@ export function RegisterPage() {
               type="email"
               autoComplete="email"
               inputMode="email"
+              spellCheck={false}
+              autoCapitalize="none"
               placeholder="estudiante@upao.edu"
               aria-invalid={!!errors.email}
               {...register('email')}
@@ -114,7 +125,7 @@ export function RegisterPage() {
             {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
             ) : null}
-            {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
+            {isSubmitting ? 'Creando cuenta…' : 'Crear cuenta'}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">

@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { Link } from 'react-router'
-import { motion, AnimatePresence } from 'motion/react'
+import { m as motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/core/components/ui/tabs'
 import { useOvaWorkspace } from '@/features/ova_workspace/hooks/useOvaWorkspace.js'

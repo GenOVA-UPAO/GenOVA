@@ -9,7 +9,7 @@ export function UserStatusBadge({ user }) {
     return (
       <StateBadge
         status="error"
-        title={`Bloqueado hasta ${new Date(user.locked_until).toLocaleString()}`}
+        title={`Bloqueado hasta ${new Date(user.locked_until).toLocaleString('es-PE')}`}
       >
         🔒 Bloqueado
       </StateBadge>

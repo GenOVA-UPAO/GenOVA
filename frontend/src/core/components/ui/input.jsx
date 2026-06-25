@@ -1,12 +1,12 @@
-
-import { forwardRef } from 'react'
 import { cn } from "@/core/lib/utils.js"
 
+// React 19: `ref` es un prop normal, ya no hace falta forwardRef.
 function Input({
   className,
   type,
+  ref,
   ...props
-}, ref) {
+}) {
   return (
     <input
       ref={ref}
@@ -20,6 +20,4 @@ function Input({
   );
 }
 
-const ForwardedInput = forwardRef(Input)
-
-export { ForwardedInput as Input }
+export { Input }

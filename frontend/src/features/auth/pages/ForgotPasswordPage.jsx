@@ -78,6 +78,8 @@ export function ForgotPasswordPage() {
                 type="email"
                 autoComplete="email"
                 inputMode="email"
+                spellCheck={false}
+                autoCapitalize="none"
                 placeholder="estudiante@genova.ai"
                 aria-invalid={!!errors.email}
                 {...register('email')}
@@ -101,7 +103,7 @@ export function ForgotPasswordPage() {
               {status === 'submitting' ? (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
               ) : null}
-              {status === 'submitting' ? 'Enviando...' : 'Enviar enlace'}
+              {status === 'submitting' ? 'Enviando…' : 'Enviar enlace'}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">

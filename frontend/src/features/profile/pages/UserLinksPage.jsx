@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { LinkSimple, PaperPlaneTilt, UsersThree } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { Input } from '@/core/components/ui/input'
 import LinkRow from '@/features/ova_library/components/cards/LinkRow.jsx'

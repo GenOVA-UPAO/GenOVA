@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { useRoles } from '@/features/admin/hooks/useRoles.js'
 import { AVAILABLE_PERMISSIONS } from '@/core/lib/permissions.js'
 import { RoleFormModal } from '@/features/admin/components/RoleFormModal.jsx'
@@ -114,7 +114,7 @@ export function AdminRolesPage() {
         ) : (
           <div className="grid gap-5">
             {roles.map((role) => (
-              <div key={role.id} className="rounded-3xl border-2 border-border/40 bg-card p-6 glass-card shadow-sm hover:border-primary/20 transition-all">
+              <div key={role.id} className="rounded-3xl border-2 border-border/40 bg-card p-6 glass-card shadow-sm hover:border-primary/20 transition">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
                   <div className="flex items-center gap-4">
                     <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 border ${getRoleColor(role.name)}`}>

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { PaintBrush, List, SignOut, UserCircle, X, Plus } from '@phosphor-icons/react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m as motion } from 'motion/react'
 import { NavbarBrand } from '@/core/layouts/components/NavbarBrand.jsx'
 import { SidebarMenu } from '@/core/layouts/components/SidebarMenu.jsx'
 import { ThemeModal } from '@/features/ova_library/components/modals/ThemeModal.jsx'
@@ -69,7 +69,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setAvatarOpen((open) => !open)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90 active:scale-95"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90 active:scale-95"
             aria-label="Menu de usuario"
           >
             {initials(user)}

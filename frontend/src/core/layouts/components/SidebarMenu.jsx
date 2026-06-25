@@ -26,7 +26,7 @@ function linkClasses({ isActive }) {
     : `${base} text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`
 }
 
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 
 function NavItem({ item, badge, onNavigate }) {
   const Icon = item.icon

@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { Lock, SlidersHorizontal, User } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/core/components/ui/tabs'
 import { useProfile } from '@/features/profile/hooks/useProfile.js'
@@ -54,19 +54,19 @@ export function ProfilePage() {
           <TabsList className="bg-card border border-border/60 shadow-sm h-auto p-1 gap-0.5 rounded-xl w-fit">
             <TabsTrigger
               value="info"
-              className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all"
+              className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition"
             >
               <User size={12} weight="bold" /> Información
             </TabsTrigger>
             <TabsTrigger
               value="config"
-              className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all"
+              className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition"
             >
               <SlidersHorizontal size={12} weight="bold" /> Configuración
             </TabsTrigger>
             <TabsTrigger
               value="security"
-              className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all"
+              className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition"
             >
               <Lock size={12} weight="bold" /> Seguridad
             </TabsTrigger>

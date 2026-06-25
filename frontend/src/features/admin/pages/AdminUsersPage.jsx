@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { Users, MagnifyingGlass } from '@phosphor-icons/react'
 import { useUsersAdmin } from '@/features/admin/hooks/useUsersAdmin.js'
 import { EditUserModal } from '@/features/admin/components/users/EditUserModal.jsx'
@@ -69,7 +69,7 @@ export function AdminUsersPage() {
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
             placeholder="Buscar por nombre o email..." 
-            className="w-full rounded-2xl border border-border/50 bg-card/50 backdrop-blur-md pl-10 pr-4 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" 
+            className="w-full rounded-2xl border border-border/50 bg-card/50 backdrop-blur-md pl-10 pr-4 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition" 
           />
         </div>
         <select 

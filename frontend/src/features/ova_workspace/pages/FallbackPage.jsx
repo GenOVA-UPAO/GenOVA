@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowsClockwise, Lock, Warning, ListDashes } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { motion, AnimatePresence } from 'motion/react'
+import { m as motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/core/components/ui/alert'
 import { getCurrentUser } from '@/core/lib/me.js'
@@ -48,7 +48,7 @@ export function FallbackPage() {
           </p>
         </div>
         {isAdmin ? (
-          <Button onClick={handleSave} disabled={!draft || save.isPending} className="self-start gap-2 shadow-md hover:shadow-lg transition-all">
+          <Button onClick={handleSave} disabled={!draft || save.isPending} className="self-start gap-2 shadow-md hover:shadow-lg transition">
             <ArrowsClockwise size={18} weight="bold" className={save.isPending ? "animate-spin" : ""} />
             {save.isPending ? 'Guardando cambios...' : 'Guardar configuración'}
           </Button>

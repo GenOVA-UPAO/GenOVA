@@ -14,11 +14,13 @@ from ova.uploads.service import (
     delete_user_upload,
     get_upload_storage_path,
     list_user_uploads,
+    magic_bytes_ok,
     max_file_size_bytes,
     max_file_size_mb,
     max_files_per_request,
 )
-from rag.pipeline import ingest_upload, is_enabled as rag_enabled
+from rag.pipeline import ingest_upload
+from rag.pipeline import is_enabled as rag_enabled
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -100,6 +102,16 @@ async def upload_temp_files(
                     "filename": file_name,
                     "error": "file_too_large",
                     "message": f"El archivo supera el tamaño máximo permitido de {max_mb}MB.",
+                }
+            )
+            continue
+
+        if not magic_bytes_ok(file_type, content):
+            errors.append(
+                {
+                    "filename": file_name,
+                    "error": "content_mismatch",
+                    "message": "El contenido del archivo no coincide con su tipo declarado.",
                 }
             )
             continue

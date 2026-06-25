@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { HardDrives, Cpu, Key, Robot } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/core/components/ui/tabs'
 import { PlatformApiKeysCard } from '@/core/components/settings/PlatformApiKeysCard.jsx'
