@@ -113,7 +113,7 @@ export function PhaseSelectModal({ onClose, onConfirm, initialSelections, initia
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   {Array.from({ length: MAX_PER_PHASE }, (_, i) => (
-                    <span key={i} className="inline-block w-2 h-2 rounded-full transition-all duration-200"
+                    <span key={i} className="inline-block w-2 h-2 rounded-full transition duration-200"
                       style={{ backgroundColor: i < currentPicks.length ? phase.color : '#E5E7EB',
                         transform: i < currentPicks.length ? 'scale(1.15)' : 'scale(1)' }} />
                   ))}

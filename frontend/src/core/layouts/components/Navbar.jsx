@@ -69,7 +69,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setAvatarOpen((open) => !open)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90 active:scale-95"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90 active:scale-95"
             aria-label="Menu de usuario"
           >
             {initials(user)}

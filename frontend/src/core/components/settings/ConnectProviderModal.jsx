@@ -37,11 +37,11 @@ function ProviderCard({ provider, onSelect }) {
       onClick={() => onSelect(provider.id)}
       className="w-full flex items-start gap-3.5 rounded-xl px-4 py-3.5 text-left
         border border-border/50 hover:border-primary/40 hover:bg-primary/[.025]
-        transition-all duration-150 group"
+        transition duration-150 group"
     >
       <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg
         border border-border/60 bg-muted/50 text-base font-bold text-muted-foreground
-        group-hover:border-primary/30 group-hover:bg-primary/5 group-hover:text-primary transition-all">
+        group-hover:border-primary/30 group-hover:bg-primary/5 group-hover:text-primary transition">
         {provider.icon}
       </span>
       <div className="flex-1 min-w-0">

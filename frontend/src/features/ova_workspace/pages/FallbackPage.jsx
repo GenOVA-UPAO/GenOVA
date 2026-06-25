@@ -48,7 +48,7 @@ export function FallbackPage() {
           </p>
         </div>
         {isAdmin ? (
-          <Button onClick={handleSave} disabled={!draft || save.isPending} className="self-start gap-2 shadow-md hover:shadow-lg transition-all">
+          <Button onClick={handleSave} disabled={!draft || save.isPending} className="self-start gap-2 shadow-md hover:shadow-lg transition">
             <ArrowsClockwise size={18} weight="bold" className={save.isPending ? "animate-spin" : ""} />
             {save.isPending ? 'Guardando cambios...' : 'Guardar configuración'}
           </Button>

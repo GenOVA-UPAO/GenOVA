@@ -40,7 +40,7 @@ function ResourceGrid({ resources, phase, selectedPhase, selectedType, onSelect 
             key={r.id}
             type="button"
             onClick={() => onSelect(phase, r.id)}
-            className={`rounded-lg border p-3 text-left transition-all ${
+            className={`rounded-lg border p-3 text-left transition ${
               active
                 ? 'border-primary bg-primary/5 ring-1 ring-primary'
                 : 'border-border bg-card hover:border-primary/30 hover:bg-muted/50'

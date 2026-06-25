@@ -42,7 +42,7 @@ export function PromptPanel({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`flex-1 flex flex-col rounded-lg border transition-all duration-200 ${
+          className={`flex-1 flex flex-col rounded-lg border transition duration-200 ${
             isDragOver ? 'border-dashed border-primary bg-primary/5' : 'border-border'
           }`}
         >

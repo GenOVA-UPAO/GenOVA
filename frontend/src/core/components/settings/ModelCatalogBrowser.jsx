@@ -16,7 +16,7 @@ function Chip({ value, label, active, onClick, accent }) {
       type="button"
       data-active={active}
       onClick={() => onClick(value)}
-      className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all duration-150 whitespace-nowrap
+      className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium border transition duration-150 whitespace-nowrap
         ${active
           ? 'border-primary bg-primary/8 text-primary font-semibold'
           : `border-border/50 bg-transparent text-muted-foreground/70 ${accent || 'hover:border-primary/40 hover:text-primary hover:bg-primary/4'}`
@@ -113,7 +113,7 @@ export function ModelCatalogBrowser({ hook }) {
                 placeholder="Buscar modelo..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-8.5 pr-4 py-2 text-xs rounded-lg border border-border/60 bg-background/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 placeholder:text-muted-foreground/40 transition-all"
+                className="w-full pl-8.5 pr-4 py-2 text-xs rounded-lg border border-border/60 bg-background/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 placeholder:text-muted-foreground/40 transition"
               />
             </div>
 

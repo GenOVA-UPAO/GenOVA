@@ -14,7 +14,7 @@ export function PhaseTabNav({ phases, step, picks, onStepChange }) {
             onClick={() => onStepChange(i)}
             className={[
               'flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-xs font-semibold whitespace-nowrap',
-              'transition-all border-b-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset',
+              'transition border-b-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset',
               isActive
                 ? 'border-current bg-background'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40',

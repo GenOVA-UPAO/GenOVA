@@ -82,7 +82,7 @@ export function MediaTaskCard({ task, index = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -2, transition: { duration: 0.18, ease: 'easeOut' } }}
-      className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition-all duration-200"
+      className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition duration-200"
     >
       {/* Header */}
       <div className={`bg-gradient-to-br ${m.grad} px-5 pt-4 pb-3.5 border-b border-border/40`}>

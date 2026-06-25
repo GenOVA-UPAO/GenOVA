@@ -52,7 +52,7 @@ function OvaCardImpl({
 
   return (
     <div
-      className={`rounded-xl border bg-card p-5 shadow-sm hover:shadow-md transition-all ${isSelected ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border'}`}
+      className={`rounded-xl border bg-card p-5 shadow-sm hover:shadow-md transition ${isSelected ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border'}`}
     >
       <div className="flex items-start gap-3">
         <Checkbox

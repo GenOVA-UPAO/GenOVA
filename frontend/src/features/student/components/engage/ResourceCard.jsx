@@ -36,7 +36,7 @@ export function ResourceCard({
       onBlur={() => onHover?.(null)}
       aria-pressed={selected}
       disabled={disabled}
-      className={`text-left w-full rounded-xl border p-4 transition-all duration-150 cursor-pointer ${baseClass}`}
+      className={`text-left w-full rounded-xl border p-4 transition duration-150 cursor-pointer ${baseClass}`}
       style={selectedStyle}
     >
       <div className="flex items-start gap-3">

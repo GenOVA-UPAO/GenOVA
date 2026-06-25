@@ -56,7 +56,7 @@ export function LlmTaskRow({ task, value, models, disabled, onChange }) {
   const move = (i, dir) => onChange({ ...value, fallbacks: moveFallback(fallbacks, i, dir) })
 
   return (
-    <div className="rounded-3xl border border-border bg-card overflow-hidden glass-card shadow-sm hover:border-primary/20 transition-all">
+    <div className="rounded-3xl border border-border bg-card overflow-hidden glass-card shadow-sm hover:border-primary/20 transition">
       <div className="px-6 py-5 border-b border-border/50 bg-muted/20">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>
@@ -99,7 +99,7 @@ export function LlmTaskRow({ task, value, models, disabled, onChange }) {
             const modality = fbModel?.modality || 'text'
             const MODALITY_SYMBOLS = { text: 'Aa', multimodal: '◆', image: '◇', audio: '♪' }
             return (
-            <div key={i} className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl border ${disabled ? 'border-border/50 bg-muted/20' : 'border-border bg-card/50 hover:bg-accent/30'} transition-all shadow-sm`}>
+            <div key={i} className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl border ${disabled ? 'border-border/50 bg-muted/20' : 'border-border bg-card/50 hover:bg-accent/30'} transition shadow-sm`}>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-[10px] font-bold text-muted-foreground/60 bg-muted px-2 py-1 rounded-md border border-border">#{i + 1}</span>
                 {modality !== 'text' && (
@@ -145,7 +145,7 @@ export function LlmTaskRow({ task, value, models, disabled, onChange }) {
             )
           })}
           <div className="pt-2">
-            <Button size="sm" variant="outline" onClick={addFallback} disabled={disabled} className="w-full text-xs font-bold shadow-sm border-dashed rounded-xl py-5 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all">
+            <Button size="sm" variant="outline" onClick={addFallback} disabled={disabled} className="w-full text-xs font-bold shadow-sm border-dashed rounded-xl py-5 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition">
               <Plus size={16} weight="bold" className="mr-2" /> Añadir modelo de respaldo
             </Button>
           </div>

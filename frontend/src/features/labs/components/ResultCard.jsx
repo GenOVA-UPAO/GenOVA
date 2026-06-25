@@ -25,7 +25,7 @@ export function ResultCard({ result, isWinner, onSelectWinner, onExportScorm }) 
 
   return (
     <div
-      className={`flex flex-col rounded-xl border-2 transition-all ${
+      className={`flex flex-col rounded-xl border-2 transition ${
         isWinner ? 'border-primary shadow-lg' : 'border-border'
       }`}
     >

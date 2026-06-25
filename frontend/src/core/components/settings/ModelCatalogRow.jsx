@@ -25,7 +25,7 @@ export function ModelCatalogRow({ model, locked, enabled, saving, typeLabels, on
         type="button"
         disabled={locked || saving}
         onClick={() => !locked && !saving && onToggle(model.provider, model.model_id)}
-        className={`shrink-0 transition-all rounded p-0.5
+        className={`shrink-0 transition rounded p-0.5
           ${locked ? 'cursor-not-allowed text-accent-brand' : saving ? 'cursor-wait opacity-60' : 'cursor-pointer hover:scale-110'}
           ${enabled ? 'text-accent-brand' : 'text-muted-foreground/30 hover:text-accent-brand/60'}`}
         aria-label={enabled ? 'Quitar de favoritos' : 'Añadir a favoritos'}

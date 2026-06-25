@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X } from '@phosphor-icons/react'
 import { apiFetch } from '@/core/lib/http.js'
+import { useModalDismiss } from '@/core/hooks/useModalDismiss.js'
 
 const COLOR_MODES = [
   { key: 'ai', label: 'IA elige', desc: 'La IA selecciona colores según el contenido del OVA' },
@@ -28,7 +29,7 @@ const PALETTES = [
 function RadioOption({ label, desc, checked, onClick }) {
   return (
     <button type="button" onClick={onClick}
-      className={`flex items-start gap-2.5 w-full rounded-xl border p-2.5 text-left cursor-pointer transition-all ${checked ? 'border-primary bg-primary/5' : 'border-border hover:bg-accent'}`}>
+      className={`flex items-start gap-2.5 w-full rounded-xl border p-2.5 text-left cursor-pointer transition ${checked ? 'border-primary bg-primary/5' : 'border-border hover:bg-accent'}`}>
       <div className={`mt-0.5 h-4 w-4 rounded-full border-2 shrink-0 flex items-center justify-center ${checked ? 'border-primary' : 'border-muted-foreground/40'}`}>
         {checked && <div className="h-2 w-2 rounded-full bg-primary" />}
       </div>
@@ -83,6 +84,7 @@ function MiniPreview({ colorMode, designMode, palette }) {
 export function ThemeModal({ initialTheme, onClose, onSaved }) {
   const [theme, setTheme] = useState(initialTheme || { colorMode: 'upao', designMode: 'upao', palette: null })
   const [saving, setSaving] = useState(false)
+  useModalDismiss(onClose)
   const [saveError, setSaveError] = useState('')
 
   const { colorMode, designMode, palette } = theme
@@ -137,7 +139,7 @@ export function ThemeModal({ initialTheme, onClose, onSaved }) {
                   <div className="flex flex-wrap gap-1.5 pt-1 pl-1">
                     {PALETTES.map((pal) => (
                       <button key={pal.name} type="button" onClick={() => set('palette', pal)} title={pal.name}
-                        className={`flex gap-px rounded-lg p-0.5 border-2 cursor-pointer transition-all ${palette?.name === pal.name ? 'border-primary scale-105' : 'border-transparent hover:border-border'}`}>
+                        className={`flex gap-px rounded-lg p-0.5 border-2 cursor-pointer transition ${palette?.name === pal.name ? 'border-primary scale-105' : 'border-transparent hover:border-border'}`}>
                         <div className="h-5 w-5 rounded-l" style={{ background: pal.p }} />
                         <div className="h-5 w-5 rounded-r" style={{ background: pal.a }} />
                       </button>
