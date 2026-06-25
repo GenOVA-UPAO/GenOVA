@@ -16,7 +16,8 @@ export const registerSchema = z.object({
     .string()
     .trim()
     .min(3, 'El nombre completo debe tener al menos 3 caracteres y máximo 100.')
-    .max(100, 'El nombre completo debe tener al menos 3 caracteres y máximo 100.'),
+    .max(100, 'El nombre completo debe tener al menos 3 caracteres y máximo 100.')
+    .regex(/\p{L}/u, 'El nombre debe contener al menos una letra.'),
   email,
   password: z
     .string()

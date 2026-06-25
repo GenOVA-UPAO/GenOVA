@@ -158,6 +158,15 @@ def register(
                 "message": "La contraseña debe tener al menos 8 caracteres con letras y números.",
             },
         )
+    full_name = (payload.full_name or "").strip()
+    if full_name and not any(c.isalpha() for c in full_name):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "invalid_name",
+                "message": "El nombre debe contener al menos una letra.",
+            },
+        )
     if db.execute(select(User).where(User.email == email)).scalar_one_or_none():
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -167,7 +176,7 @@ def register(
     user = User(
         email=email,
         password_hash=hash_password(payload.password),
-        full_name=(payload.full_name or "").strip() or None,
+        full_name=full_name or None,
     )
     db.add(user)
     try:
