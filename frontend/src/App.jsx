@@ -19,6 +19,7 @@ const PapeleraPage = lazy(() => import('@/features/ova_library/pages/PapeleraPag
 const ProfilePage = lazy(() => import('@/features/profile/pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
 const ModelsPage = lazy(() => import('@/features/ova_workspace/pages/ModelsPage.jsx').then((m) => ({ default: m.ModelsPage })))
 const UserLinksPage = lazy(() => import('@/features/profile/pages/UserLinksPage.jsx').then((m) => ({ default: m.UserLinksPage })))
+const AnalyticsPage = lazy(() => import('@/features/analytics/pages/AnalyticsPage.jsx').then((m) => ({ default: m.AnalyticsPage })))
 const EngagePage = lazy(() => import('@/features/student/pages/EngagePage.jsx').then((m) => ({ default: m.EngagePage })))
 const ExplorePage = lazy(() => import('@/features/student/pages/ExplorePage.jsx').then((m) => ({ default: m.ExplorePage })))
 const NotFoundPage = lazy(() => import('@/core/components/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
@@ -127,6 +128,7 @@ function App() {
             <Route path="/modelos" element={<ModelsPage />} />
             <Route path="/fallback" element={<Navigate to="/modelos" replace />} />
             <Route path="/vinculacion" element={<UserLinksPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/metodologia/engage" element={<EngagePage />} />
             <Route path="/metodologia/explore" element={<ExplorePage />} />
 

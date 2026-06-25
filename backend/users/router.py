@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from users.admin.router import router as admin_router
+from users.analytics.analytics_router import router as analytics_router
 from users.settings.api_keys_router import router as api_keys_router
 from users.settings.enabled_models_router import router as enabled_models_router
 from users.settings.links_router import router as links_router
@@ -18,4 +19,5 @@ router.include_router(ova_settings_router)
 router.include_router(api_keys_router)
 router.include_router(links_router)
 router.include_router(resource_configs_router)
+router.include_router(analytics_router)
 router.include_router(admin_router)
