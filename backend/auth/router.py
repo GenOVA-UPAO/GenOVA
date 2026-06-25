@@ -2,7 +2,6 @@
 
 import logging
 from datetime import UTC, datetime, timedelta
-from uuid import uuid4
 
 import jwt
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
@@ -18,6 +17,7 @@ from auth.dependencies import get_current_user
 from auth.email_normalize import normalize_email
 from auth.reset_router import router as reset_router
 from auth.throttle import email_throttled
+from auth.token_utils import build_token
 from auth.totp_router import _issue_ticket
 from auth.totp_router import router as totp_router
 from auth.verify_router import issue_verification
@@ -52,19 +52,6 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=PASSWORD_MAX_LENGTH)
     full_name: str | None = Field(default=None, max_length=100)
-
-
-def build_token(user_id: str, email: str) -> str:
-    now = datetime.now(UTC)
-    payload = {
-        "sub": user_id,
-        "email": email,
-        "iat": now,
-        "exp": now + timedelta(minutes=JWT_EXPIRES_MINUTES),
-        "iss": "genova",
-        "jti": str(uuid4()),
-    }
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
 def _is_locked(user: User) -> bool:
@@ -254,7 +241,7 @@ def logout(
                     db.add(RevokedToken(jti=jti, user_id=user_id, expires_at=expires_at))
                     db.commit()
         except jwt.PyJWTError:
-            pass
+            pass  # token malformed/expired — revocation skipped, cookie cleared below
     response = JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
     clear_auth_cookie(response)
     return response

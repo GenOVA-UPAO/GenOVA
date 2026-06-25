@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from auth.cookies import set_auth_cookie
 from auth.dependencies import get_current_user, require_admin
-from auth.router import build_token
+from auth.token_utils import build_token
 from core.database import get_db
 from core.rate_limit import limiter
 from core.security import hash_password, verify_password
