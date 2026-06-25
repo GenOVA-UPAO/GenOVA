@@ -43,15 +43,18 @@ def wrap_resource_html(content: str, title: str) -> str:
         padding: 24px;
         font-family: Arial, Helvetica, sans-serif;
         color: #0f172a;
-        background: #f8fafc;
+        background: #ffffff;
         line-height: 1.6;
       }}
-      h2 {{ color: #1d4ed8; }}
+      h1 {{ color: #1746c0; font-size: 1.5rem; }}
+      :focus-visible {{ outline: 3px solid #1746c0; outline-offset: 2px; }}
     </style>
   </head>
   <body>
-    <h2>{title}</h2>
-    <p>{body}</p>
+    <main>
+      <h1>{title}</h1>
+      <p>{body}</p>
+    </main>
   </body>
 </html>
 """
@@ -99,9 +102,16 @@ def build_manifest(course_title: str, module_title: str, resource_files: list[st
 
 
 def build_index_html(course_title: str, resources: list[dict]) -> str:
-    """SCO shell: side nav of resources + iframe. One SCO for the whole OVA."""
+    """SCO shell: tablist of resources + iframe panel. One SCO for the whole OVA.
+
+    Accessibility (WCAG 2.2 AA): skip link, semantic landmarks, an ARIA tablist
+    with roving tabindex + arrow-key navigation (wired in app.js), an
+    aria-live status region, and accessible names on the iframe panel.
+    """
     nav_buttons = "\n".join(
-        f'        <button type="button" class="res-link" data-src="{r["file"]}">'
+        f'          <button type="button" role="tab" class="res-link" '
+        f'id="tab-{r["order"]}" data-src="{r["file"]}" '
+        f'aria-controls="res-frame" aria-selected="false" tabindex="-1">'
         f"{r['label']}</button>"
         for r in resources
     )
@@ -115,25 +125,38 @@ def build_index_html(course_title: str, resources: list[dict]) -> str:
     <link rel="stylesheet" href="resources/styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#res-frame">Saltar al contenido</a>
     <main class="container">
       <header>
         <h1>{course_title}</h1>
         <p>Objeto Virtual de Aprendizaje · GenOVA · SCORM 1.2</p>
       </header>
 
-      <nav class="res-nav">
+      <nav class="res-nav" aria-label="Recursos del OVA">
+        <div role="tablist" aria-label="Secciones del OVA" aria-orientation="horizontal">
 {nav_buttons}
+        </div>
       </nav>
 
-      <iframe id="res-frame" title="Recurso del OVA" src="{first_src}"></iframe>
+      <iframe
+        id="res-frame"
+        role="tabpanel"
+        title="Contenido del recurso seleccionado"
+        aria-label="Contenido del recurso seleccionado"
+        src="{first_src}"
+      ></iframe>
 
-      <section class="card">
-        <p id="scorm-status">Pendiente de inicialización...</p>
+      <section class="card" aria-labelledby="estado-titulo">
+        <h2 id="estado-titulo" class="visually-hidden">Estado de progreso</h2>
+        <p id="scorm-status" role="status" aria-live="polite">
+          Pendiente de inicialización...
+        </p>
         <button id="complete-btn" type="button">Marcar OVA como completado</button>
       </section>
     </main>
 
     <script src="resources/scorm.js"></script>
+    <script src="resources/xapi.js"></script>
     <script src="resources/app.js"></script>
   </body>
 </html>

@@ -2,11 +2,11 @@
 
 import logging
 from datetime import UTC, datetime, timedelta
-from uuid import uuid4
 
 import jwt
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -17,6 +17,9 @@ from auth.dependencies import get_current_user
 from auth.email_normalize import normalize_email
 from auth.reset_router import router as reset_router
 from auth.throttle import email_throttled
+from auth.token_utils import build_token
+from auth.totp_router import _issue_ticket
+from auth.totp_router import router as totp_router
 from auth.verify_router import issue_verification
 from auth.verify_router import router as verify_router
 from core.database import get_db
@@ -31,7 +34,10 @@ from core.security import (
     verify_dummy,
     verify_password,
 )
-from models import PlatformConfig, Role, User, UserRole
+from models import PlatformConfig, RevokedToken, Role, User, UserRole
+
+_security_scheme = HTTPBearer(auto_error=False)
+_COOKIE_NAME = "genova_token"
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -46,19 +52,6 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=PASSWORD_MAX_LENGTH)
     full_name: str | None = Field(default=None, max_length=100)
-
-
-def build_token(user_id: str, email: str) -> str:
-    now = datetime.now(UTC)
-    payload = {
-        "sub": user_id,
-        "email": email,
-        "iat": now,
-        "exp": now + timedelta(minutes=JWT_EXPIRES_MINUTES),
-        "iss": "genova",
-        "jti": str(uuid4()),
-    }
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
 def _is_locked(user: User) -> bool:
@@ -129,6 +122,13 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
     user.failed_login_attempts = 0  # type: ignore[assignment]
     user.locked_until = None  # type: ignore[assignment]
     db.commit()
+
+    if user.totp_enabled:
+        ticket = _issue_ticket(str(user.id))
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"totp_required": True, "ticket": ticket},
+        )
 
     token = build_token(str(user.id), str(user.email))
     response = JSONResponse(
@@ -219,7 +219,29 @@ def register(
 
 
 @router.post("/logout")
-def logout() -> JSONResponse:
+def logout(
+    request: Request,
+    creds: HTTPAuthorizationCredentials | None = Depends(_security_scheme),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    token = request.cookies.get(_COOKIE_NAME)
+    if not token and creds:
+        token = creds.credentials
+    if token:
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            jti = payload.get("jti")
+            exp = payload.get("exp")
+            user_id = payload.get("sub")
+            if jti and exp:
+                expires_at = datetime.fromtimestamp(exp, tz=UTC)
+                if not db.execute(
+                    select(RevokedToken).where(RevokedToken.jti == jti)
+                ).scalar_one_or_none():
+                    db.add(RevokedToken(jti=jti, user_id=user_id, expires_at=expires_at))
+                    db.commit()
+        except jwt.PyJWTError:
+            pass  # token malformed/expired — revocation skipped, cookie cleared below
     response = JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
     clear_auth_cookie(response)
     return response
@@ -250,8 +272,10 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
         "role": role.name if role else "usuario",
         "permissions": permissions,
         "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        "totp_enabled": bool(current_user.totp_enabled),
     }
 
 
 router.include_router(reset_router)
 router.include_router(verify_router)
+router.include_router(totp_router)

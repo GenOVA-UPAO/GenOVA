@@ -59,8 +59,10 @@ jobs:
         run: uv pip install --system -r requirements-dev.txt
         working-directory: backend
 
-      - name: Start backend
-        run: uvicorn main:app --port 8000 > /tmp/backend.log 2>&1 &
+      - name: Start backend (under coverage)
+        run: |
+          coverage run --parallel-mode -m uvicorn main:app --port 8000 > /tmp/backend.log 2>&1 &
+          echo $! > /tmp/backend.pid
         working-directory: backend
 
       - name: Wait for backend
@@ -74,8 +76,21 @@ jobs:
           cat /tmp/backend.log
           exit 1
 
-      - name: Run BDD step defs + unit
-        run: pytest tests/step_defs/ tests/test_llm_config_store.py -v --tb=short
+      - name: Run BDD step defs + unit (under coverage)
+        run: coverage run --parallel-mode -m pytest tests/step_defs/ tests/test_llm_config_store.py tests/test_rag_injection.py tests/test_scorm_package.py -v --tb=short
+        working-directory: backend
+
+      - name: Stop backend (flush coverage)
+        run: |
+          kill -INT "$(cat /tmp/backend.pid)" 2>/dev/null || true
+          sleep 4
+        working-directory: backend
+
+      - name: Coverage report + gate
+        run: |
+          coverage combine
+          coverage report
+          coverage xml
         working-directory: backend
 
   frontend-unit:

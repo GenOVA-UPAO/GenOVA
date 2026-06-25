@@ -120,6 +120,20 @@ def _background_rag_purge() -> None:
         logger.exception("RAG startup cleanup failed (continuing).")
 
 
+def _background_auth_purge() -> None:
+    try:
+        from sqlalchemy.orm import Session
+
+        from auth.cleanup import purge_expired_auth
+
+        with Session(engine) as session:
+            removed = purge_expired_auth(session)
+            if removed:
+                logger.info("Purged %d expired auth tokens on startup", removed)
+    except Exception:
+        logger.exception("Auth startup cleanup failed (continuing).")
+
+
 def _background_catalog_refresh() -> None:
     try:
         from sqlalchemy.orm import Session
@@ -138,6 +152,7 @@ async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
     seed_db()
     asyncio.create_task(asyncio.to_thread(_background_rag_purge))
+    asyncio.create_task(asyncio.to_thread(_background_auth_purge))
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
     yield
 

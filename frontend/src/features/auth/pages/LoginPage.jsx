@@ -12,11 +12,13 @@ import { PasswordInput } from '@/core/components/ui/password-input'
 import { Label } from '@/core/components/ui/label'
 import { Alert, AlertDescription } from '@/core/components/ui/alert'
 import { VerifyEmailNotice } from '@/features/auth/components/VerifyEmailNotice.jsx'
+import { TotpLoginStep } from '@/features/auth/components/TotpLoginStep.jsx'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const [serverError, setServerError] = useState('')
   const [unverifiedEmail, setUnverifiedEmail] = useState(null)
+  const [totpTicket, setTotpTicket] = useState(null)
   const {
     register,
     handleSubmit,
@@ -34,6 +36,11 @@ export function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
       const data = await response.json()
+
+      if (response.status === 200 && data?.totp_required) {
+        setTotpTicket(data.ticket)
+        return
+      }
 
       if (response.status === 200) {
         markLoggedIn()
@@ -67,6 +74,20 @@ export function LoginPage() {
       />
     )
   }
+
+  if (totpTicket) {
+    return (
+      <TotpLoginStep
+        ticket={totpTicket}
+        onSuccess={() => {
+          markLoggedIn()
+          navigate('/dashboard')
+        }}
+        onCancel={() => setTotpTicket(null)}
+      />
+    )
+  }
+
 
   return (
     <section className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4">
