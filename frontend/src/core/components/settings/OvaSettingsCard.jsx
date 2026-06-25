@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/core/components/ui/button'
 import { getOvaSettings, saveOvaSettings } from '@/features/ova_workspace/services/ovaSettingsService.js'
-import { apiJson } from '@/core/lib/http.js'
+import { useImageModels } from '@/features/ova_workspace/hooks/useImageModels.js'
 
 const PROVIDER_LABELS = {
   huggingface: 'HuggingFace (predeterminado)',
@@ -10,26 +10,17 @@ const PROVIDER_LABELS = {
   falai: 'fal.ai',
 }
 
-async function fetchImageModels(provider) {
-  try {
-    const data = await apiJson(`/api/users/me/image-models?provider=${provider}`)
-    return data.models ?? []
-  } catch {
-    return []
-  }
-}
-
 export function OvaSettingsCard() {
   const [maxImages, setMaxImages] = useState(2)
   const [imageProvider, setImageProvider] = useState('huggingface')
   const [imageModel, setImageModel] = useState(null)
   const [providers, setProviders] = useState([])
-  const [models, setModels] = useState([])
-  const [loadingModels, setLoadingModels] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
+
+  const { data: models = [], isFetching: loadingModels } = useImageModels(imageProvider, !loading)
 
   useEffect(() => {
     getOvaSettings()
@@ -43,18 +34,12 @@ export function OvaSettingsCard() {
       .finally(() => setLoading(false))
   }, [])
 
+  // Auto-selecciona el primer modelo si el actual no está en la lista del proveedor.
   useEffect(() => {
-    if (loading) return
-    setLoadingModels(true)
-    fetchImageModels(imageProvider)
-      .then((m) => {
-        setModels(m)
-        if (m.length > 0 && !m.find((x) => x.id === imageModel)) {
-          setImageModel(m[0].id)
-        }
-      })
-      .finally(() => setLoadingModels(false))
-  }, [imageProvider]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (models.length > 0 && !models.find((x) => x.id === imageModel)) {
+      setImageModel(models[0].id)
+    }
+  }, [models]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSave() {
     setSaving(true)

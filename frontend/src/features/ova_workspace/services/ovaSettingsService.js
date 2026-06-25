@@ -18,6 +18,13 @@ export async function saveOvaSettings(data) {
   return res.json()
 }
 
+export async function getImageModels(provider) {
+  const res = await apiFetch(`/api/users/me/image-models?provider=${provider}`)
+  if (!res.ok) throw new Error('No se pudo cargar los modelos de imagen.')
+  const data = await res.json()
+  return data.models ?? []
+}
+
 export async function getApiKeys() {
   const res = await apiFetch('/api/users/me/api-keys')
   if (!res.ok) throw new Error('No se pudo cargar las API keys.')
