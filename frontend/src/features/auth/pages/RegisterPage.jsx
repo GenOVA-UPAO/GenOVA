@@ -75,6 +75,8 @@ export function RegisterPage() {
               type="email"
               autoComplete="email"
               inputMode="email"
+              spellCheck={false}
+              autoCapitalize="none"
               placeholder="estudiante@upao.edu"
               aria-invalid={!!errors.email}
               {...register('email')}
@@ -114,7 +116,7 @@ export function RegisterPage() {
             {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
             ) : null}
-            {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
+            {isSubmitting ? 'Creando cuenta…' : 'Crear cuenta'}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">

@@ -38,7 +38,7 @@ function PasswordInput({
           title={showPassword ? hideLabel : revealLabel}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
         >
-          {showPassword ? <EyeSlash size={18} weight="duotone" /> : <Eye size={18} weight="duotone" />}
+          {showPassword ? <EyeSlash size={18} weight="duotone" aria-hidden="true" /> : <Eye size={18} weight="duotone" aria-hidden="true" />}
         </button>
       )}
     </div>

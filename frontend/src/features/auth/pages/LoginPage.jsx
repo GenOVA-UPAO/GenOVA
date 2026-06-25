@@ -68,6 +68,8 @@ export function LoginPage() {
               type="email"
               autoComplete="email"
               inputMode="email"
+              spellCheck={false}
+              autoCapitalize="none"
               placeholder="estudiante@genova.ai"
               aria-invalid={!!errors.email}
               {...register('email')}
@@ -111,7 +113,7 @@ export function LoginPage() {
             {isSubmitting ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
             ) : null}
-            {isSubmitting ? 'Ingresando...' : 'Entrar'}
+            {isSubmitting ? 'Ingresando…' : 'Entrar'}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
