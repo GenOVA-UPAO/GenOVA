@@ -1,18 +1,25 @@
-import { ChartBar, Users, GraduationCap, Stack } from '@phosphor-icons/react'
+import { ChartBar, GraduationCap, type Icon, Stack, Users } from '@phosphor-icons/react'
+import type { AnalyticsTotals } from '../lib/types'
 
-const STATUS_META = {
+const STATUS_META: Record<string, { label: string; color: string }> = {
   listo: { label: 'Listos', color: 'bg-emerald-500' },
   generando: { label: 'Generando', color: 'bg-amber-500' },
   borrador: { label: 'Borradores', color: 'bg-slate-400' },
   error: { label: 'Con error', color: 'bg-red-500' },
 }
 
-export function StatCard({ icon: Icon, label, value }) {
+interface StatCardProps {
+  icon: Icon
+  label: string
+  value: string | number
+}
+
+export function StatCard({ icon: IconCmp, label, value }: StatCardProps) {
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Icon size={20} weight="duotone" />
+          <IconCmp size={20} weight="duotone" />
         </div>
         <div>
           <p className="text-2xl font-bold tabular-nums">{value}</p>
@@ -23,12 +30,17 @@ export function StatCard({ icon: Icon, label, value }) {
   )
 }
 
-export function StatCards({ totals, scope }) {
+interface StatCardsProps {
+  totals: AnalyticsTotals
+  scope?: string
+}
+
+export function StatCards({ totals, scope }: StatCardsProps) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
       <StatCard icon={Stack} label="OVAs totales" value={totals.ovas} />
       {scope === 'platform' ? (
-        <StatCard icon={Users} label="Usuarios" value={totals.users} />
+        <StatCard icon={Users} label="Usuarios" value={totals.users ?? 0} />
       ) : (
         <StatCard icon={GraduationCap} label="Alumnos vinculados" value={totals.students ?? 0} />
       )}
@@ -37,7 +49,11 @@ export function StatCards({ totals, scope }) {
   )
 }
 
-export function StatusBreakdown({ byStatus }) {
+interface StatusBreakdownProps {
+  byStatus: Record<string, number>
+}
+
+export function StatusBreakdown({ byStatus }: StatusBreakdownProps) {
   const total = Object.values(byStatus).reduce((a, b) => a + b, 0) || 1
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
@@ -50,7 +66,9 @@ export function StatusBreakdown({ byStatus }) {
             <div key={key}>
               <div className="mb-1 flex items-center justify-between text-xs">
                 <span className="font-medium text-foreground">{meta.label}</span>
-                <span className="tabular-nums text-muted-foreground">{n} · {pct}%</span>
+                <span className="tabular-nums text-muted-foreground">
+                  {n} · {pct}%
+                </span>
               </div>
               <div
                 className="h-2 w-full overflow-hidden rounded-full bg-muted"

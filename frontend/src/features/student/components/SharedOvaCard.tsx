@@ -1,9 +1,10 @@
 import { Badge } from '@/core/components/ui/badge'
+import type { SharedOva } from '../lib/types'
 
 /**
  * Tarjeta para mostrar un OVA compartido con el estudiante (vista de solo lectura).
  */
-export function SharedOvaCard({ ova }) {
+export function SharedOvaCard({ ova }: { ova?: SharedOva }) {
   return (
     <div className="group relative flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm transition hover:shadow-md">
       <div className="flex items-start justify-between gap-2">
@@ -16,9 +17,7 @@ export function SharedOvaCard({ ova }) {
       </div>
 
       {ova?.description && (
-        <p className="text-xs text-muted-foreground line-clamp-3">
-          {ova.description}
-        </p>
+        <p className="text-xs text-muted-foreground line-clamp-3">{ova.description}</p>
       )}
 
       <div className="mt-auto flex items-center gap-2 text-[10px] text-muted-foreground">

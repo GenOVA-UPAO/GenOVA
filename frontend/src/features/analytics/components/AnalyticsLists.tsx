@@ -1,11 +1,13 @@
-const STATUS_BADGE = {
+import type { Creator, RecentOva } from '../lib/types'
+
+const STATUS_BADGE: Record<string, string> = {
   listo: 'bg-emerald-500/15 text-emerald-600',
   generando: 'bg-amber-500/15 text-amber-600',
   borrador: 'bg-slate-400/15 text-slate-500',
   error: 'bg-red-500/15 text-red-600',
 }
 
-export function TopCreators({ creators }) {
+export function TopCreators({ creators }: { creators: Creator[] }) {
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
       <h2 className="mb-4 text-sm font-semibold">Mayores creadores</h2>
@@ -31,7 +33,7 @@ export function TopCreators({ creators }) {
   )
 }
 
-function fmtDate(iso) {
+function fmtDate(iso?: string): string {
   if (!iso) return '—'
   try {
     return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })
@@ -40,7 +42,7 @@ function fmtDate(iso) {
   }
 }
 
-export function RecentOvas({ ovas }) {
+export function RecentOvas({ ovas }: { ovas: RecentOva[] }) {
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
       <h2 className="mb-4 text-sm font-semibold">Actividad reciente</h2>

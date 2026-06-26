@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/core/components/ui/button'
+import type { PreviewResult } from '../../lib/types'
 
 // iframe stays in DOM via CSS hidden — never unmounted — so the blob URL is
 // never revoked while toggling views (StrictMode-safe).
-export function HtmlPreview({ result }) {
-  const [view, setView] = useState('preview')
-  const iframeRef = useRef(null)
+export function HtmlPreview({ result }: { result?: PreviewResult }) {
+  const [view, setView] = useState<'preview' | 'code'>('preview')
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
 
   useEffect(() => {
     const html = result?.html_content
@@ -16,10 +17,11 @@ export function HtmlPreview({ result }) {
   }, [result?.html_content])
 
   function downloadHtml() {
+    if (!result?.html_content) return
     const blob = new Blob([result.html_content], { type: 'text/html' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `engage-${result.resource_type}-${result.concepto.replace(/\s+/g, '_')}.html`
+    a.download = `engage-${result.resource_type}-${result.concepto?.replace(/\s+/g, '_')}.html`
     a.click()
   }
 
@@ -56,9 +58,7 @@ export function HtmlPreview({ result }) {
               Código
             </Button>
           </div>
-          <Button onClick={downloadHtml}>
-            Descargar HTML
-          </Button>
+          <Button onClick={downloadHtml}>Descargar HTML</Button>
         </div>
       </div>
 

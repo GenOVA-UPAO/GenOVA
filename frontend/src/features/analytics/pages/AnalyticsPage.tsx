@@ -1,8 +1,8 @@
 import { m as motion } from 'motion/react'
 import { Navigate } from 'react-router'
 import { useAnalytics } from '@/features/analytics/hooks/useAnalytics'
-import { StatCards, StatusBreakdown } from '@/features/analytics/components/AnalyticsCards.jsx'
-import { TopCreators, RecentOvas } from '@/features/analytics/components/AnalyticsLists.jsx'
+import { StatCards, StatusBreakdown } from '@/features/analytics/components/AnalyticsCards'
+import { RecentOvas, TopCreators } from '@/features/analytics/components/AnalyticsLists'
 
 function LoadingState() {
   return (
@@ -18,7 +18,7 @@ export function AnalyticsPage() {
   const { data, isLoading, error } = useAnalytics()
 
   // Sin permiso: el backend devuelve 403 → redirige al dashboard.
-  if (error?.code === 'forbidden') {
+  if ((error as { code?: string } | null)?.code === 'forbidden') {
     return <Navigate to="/dashboard" replace />
   }
 

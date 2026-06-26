@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { usePhaseGeneration } from '@/features/ova_workspace/hooks/usePhaseGeneration.js'
-import { ResourceCard } from '@/features/student/components/engage/ResourceCard.jsx'
-import { HtmlPreview } from '@/features/student/components/engage/HtmlPreview.jsx'
+import { ResourceCard } from '@/features/student/components/engage/ResourceCard'
+import { HtmlPreview } from '@/features/student/components/engage/HtmlPreview'
 import { Input } from '@/core/components/ui/input'
 import { Button } from '@/core/components/ui/button'
 

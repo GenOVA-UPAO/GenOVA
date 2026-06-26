@@ -1,4 +1,4 @@
-import { PhasePage } from '@/features/ova_workspace/pages/PhasePage.jsx'
+import { PhasePage } from '@/features/ova_workspace/pages/PhasePage'
 import {
   fetchPhaseRecursos,
   generatePhaseResource,
@@ -11,7 +11,7 @@ export function ExplorePage() {
       emoji="🔍"
       description="Interactúa con simuladores y laboratorios para construir tus propias hipótesis antes de ver la teoría formal."
       fetchRecursos={() => fetchPhaseRecursos('explore')}
-      generateResource={(resourceType, concept, uploadIds) =>
+      generateResource={(resourceType: string | number, concept: string, uploadIds?: string[]) =>
         generatePhaseResource('explore', resourceType, concept, uploadIds)
       }
     />
