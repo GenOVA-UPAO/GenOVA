@@ -21,13 +21,17 @@ Tests manuales ejecutados con `playwright-cli` contra producción o develop.
 | `admin@genova.ai` | `admin1234password` | administrador |
 | `user@genova.ai` | `user1234password` | usuario |
 
-## Bug conocido: rol admin en direct URL reload
+## Bug rol admin en direct URL reload — CORREGIDO (2026-06-26)
 
-**Síntoma confirmado en prod (2026-06-26):** Al hacer `playwright-cli goto <URL>` (reload completo
-de página) mientras se está logueado como admin, el sidebar muestra "U / Usuario GenOVA / Usuario"
-en vez de "AG / Administrador GenOVA / Admin". El API `/api/auth/me` sigue devolviendo
-`role: "administrador"` correctamente — el bug es solo de estado UI en rehidratación.
-Con in-app navigation (click en sidebar desde /dashboard) el rol se muestra correctamente.
+**Síntoma:** Al hacer reload completo de página (direct URL) logueado como admin, el sidebar
+mostraba brevemente "U / Usuario GenOVA / Usuario" y ocultaba la sección Administracion hasta
+que `/api/auth/me` resolvía; intermitentemente se quedaba pegado en rol "Usuario" (promesa
+compartida envenenada por fallo transitorio) y AdminRoute podía redirigir a un admin a /dashboard.
+
+**Fix (commit cdb0bc9):** cache SWR persistente en `me.js` (sessionStorage). `getCachedUser()`
+siembra el estado inicial sincrónicamente (sin flash, rol correcto) y `getCurrentUser()`
+revalida en background con fallback al user cacheado en fallo transitorio. SidebarMenu/Navbar/
+AdminRoute siembran desde cache y nunca sobrescriben con null. El bloque V verifica la regresión.
 
 ---
 
@@ -686,35 +690,40 @@ U-4   La configuración persiste entre recargas (guardada vía /api/auth/me o lo
 
 ---
 
-## Bloque V — Bug: Rol admin en reload directo
+## Bloque V — Regresión: Rol admin en reload directo (ya corregido, commit cdb0bc9)
 
-**Objetivo:** documentar y reproducir el bug confirmado de estado UI.
+**Objetivo:** anti-regresión del bug de rol en reloads duros. Debe PASAR tras el fix SWR.
 
 ```
 V-1   Login como admin@genova.ai → /dashboard → sidebar: "AG / Admin / admin@genova.ai"
       → PASS (in-app initial load)
 
 V-2   playwright-cli goto /mis-ovas (hard reload)
-      → sidebar muestra "U / Usuario GenOVA / Usuario" (BUG confirmado)
-      → playwright-cli requests → GET /api/auth/me → 200, body.role = "administrador"
-      → FAIL: UI no refleja el rol correcto del API
-
-V-3   Desde /mis-ovas (con bug activo): click en "Dashboard" (sidebar)
-      → sidebar se actualiza a "AG / Admin" (fix vía in-app nav)
-      → PASS: in-app SPA nav corrige el estado
-
-V-4   playwright-cli goto /admin/users (hard reload estando logueado como admin)
-      → sidebar puede mostrar "U / Usuario" (bug)
-      → pero la página /admin/users SÍ carga (auth cookie válida)
+      → sidebar muestra "Administrador GenOVA / Admin" sin flash a "Usuario"
+      → sección Administracion visible
       → requests → GET /api/auth/me → 200, role=administrador
+      → PASS: cache SWR siembra el rol correcto al montar
+
+V-3   Repetir goto /mis-ovas y /dashboard 6+ veces seguidas (forzar la race)
+      → en TODAS, sidebar = "Admin", sección Administracion presente
+      → nunca queda pegado en "Usuario"
+
+V-4   playwright-cli goto /admin/users (hard reload como admin)
+      → NO muestra spinner "Verificando acceso..." prolongado
+      → NO redirige a /dashboard; la tabla de usuarios carga
+      → sidebar "Admin"
 
 V-5   playwright-cli goto /dashboard (hard reload)
-      → sidebar muestra "AG / Admin" correctamente en /dashboard (no tiene bug)
+      → sidebar "AG / Admin" correcto
+
+V-6   Simular fallo transitorio: route /api/auth/me → status 500 una vez,
+      luego goto /mis-ovas → sidebar mantiene "Admin" (fallback a cache), no regresa a "Usuario"
 ```
 
-**Criterio:** Este bloque documenta el bug — se espera FAIL en V-2 hasta que sea corregido.
-La corrección requiere que el contexto de auth sea inicializado desde el cookie al montar en cualquier ruta,
-no solo al navegar desde /dashboard.
+**PASS si:** V-2..V-5 siempre muestran rol "Admin" sin flash ni redirect; V-6 no regresa el rol.
+Verificación rápida por consola tras cada reload:
+`fetch('/api/auth/me',{credentials:'include'}).then(r=>r.json()).then(u=>u.role)` → "administrador",
+y el sidebar debe coincidir (sección Administracion visible).
 
 ---
 
