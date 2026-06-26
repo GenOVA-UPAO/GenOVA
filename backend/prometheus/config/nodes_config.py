@@ -20,7 +20,7 @@ NODES = [
         "name": "Concierge",
         "role": "Planificador",
         "always_on": True,
-        "description": "Descompone el prompt en plan de recursos 5E (Planner GAIA)",
+        "description": "Descompone el prompt en plan de recursos 5E (Planner)",
     },
     {
         "id": "engage",

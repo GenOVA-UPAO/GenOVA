@@ -23,6 +23,7 @@ from core.config import settings
 from core.database import Base, engine
 from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
+from generation.jobs.jobs_stream import router as ova_jobs_stream_router
 from labs.generation_routes import router as labs_gen_router
 from labs.router import router as labs_router
 from llm.catalog.catalog_router import router as agents_router
@@ -46,6 +47,11 @@ logging.basicConfig(
     level=settings.log_level.upper(),
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
+# R8: red de seguridad — enmascara PII/secretos en cualquier log antes de emitir.
+from core.log_redaction import RedactingFilter
+
+for _handler in logging.getLogger().handlers:
+    _handler.addFilter(RedactingFilter())
 logger = logging.getLogger(__name__)
 _LATENCY_THRESHOLD_MS = settings.latency_threshold_ms
 _LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save", "/api/labs/generate")
@@ -211,6 +217,11 @@ if settings.metrics_enabled:
     Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
     logger.info("Prometheus /metrics habilitado")
 
+# Logfire opcional (opt-in): tracing + token/cost tracking de LLM si hay token.
+from core.observability import init_logfire
+
+init_logfire(app, engine)
+
 _HEALTH_CACHE = "public, max-age=10"
 
 
@@ -265,6 +276,7 @@ app.include_router(roles_router, prefix="/roles", tags=["Roles"])
 app.include_router(scorm_router, prefix="/api/scorm", tags=["SCORM"])
 app.include_router(ova_router, prefix="/api/ova", tags=["OVA"])
 app.include_router(ova_jobs_router, prefix="/api/ova/jobs", tags=["Generation"])
+app.include_router(ova_jobs_stream_router, prefix="/api/ova/jobs", tags=["Generation"])
 app.include_router(ova_history_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(ova_edit_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(ova_phase_version_router, prefix="/api/ovas", tags=["OVA"])

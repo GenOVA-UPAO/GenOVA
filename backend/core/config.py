@@ -30,11 +30,22 @@ class Settings(BaseSettings):
     db_max_overflow: int = 10
     db_connect_timeout: int = 10
 
+    # --- Cola de jobs / cache (B2/B3) ---
+    # REDIS_URL opcional: si está, la generación de OVA se encola en arq (worker
+    # separado, durable) y el rate-limit pasa a estar respaldado en Redis. Sin él,
+    # se cae al runner inline en thread y al rate-limit en memoria (dev/single-box).
+    redis_url: str = ""
+    # Concurrencia del worker arq (cuántos jobs en paralelo procesa un worker).
+    arq_max_jobs: int = 4
+
     # --- Observabilidad / app ---
     log_level: str = "INFO"
     sentry_dsn: str = ""
     sentry_traces_sample_rate: float = 0.0
     metrics_enabled: bool = False
+    # B4 — Pydantic Logfire (tracing distribuido + token/cost tracking de LLM).
+    # Opt-in: sin token no se instrumenta nada. `console=False` evita ruido en logs.
+    logfire_token: str = ""
     latency_threshold_ms: float = 278.0
     app_url: str = "https://genova.ai"
     frontend_url: str = "http://localhost:5173"

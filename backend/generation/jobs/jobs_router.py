@@ -7,6 +7,7 @@ All four endpoints require auth (cookie JWT) and the mutating one is rate-limite
 `str(e)` or tokens.
 """
 
+import logging
 import threading
 import uuid
 
@@ -15,6 +16,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
+from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
 from generation.jobs import jobs_service
@@ -29,10 +31,21 @@ from generation.jobs.jobs_runner import run_job
 from models import User
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 def _launch(job_id: uuid.UUID, only: list[uuid.UUID] | None = None) -> None:
-    """Spawn the background runner in a daemon thread (its own Session)."""
+    """Start a generation run. With REDIS_URL set, enqueue on arq (durable, runs in
+    the worker process); otherwise — or if enqueue fails — run inline in a daemon
+    thread so local dev and a Redis outage still work (B2/B3)."""
+    if settings.redis_url:
+        try:
+            from generation.jobs.queue import enqueue_generation
+
+            enqueue_generation(job_id, only)
+            return
+        except Exception:
+            logger.exception("arq enqueue failed for job %s; running inline", job_id)
     threading.Thread(target=run_job, args=(job_id, only), daemon=True).start()
 
 
