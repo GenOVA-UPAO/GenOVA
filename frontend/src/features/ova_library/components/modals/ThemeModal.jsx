@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { X } from '@phosphor-icons/react'
 import { apiFetch } from '@/core/lib/http/client'
-import { useModalDismiss } from '@/core/hooks/useModalDismiss.js'
+import { useModalDismiss } from '@/core/hooks/useModalDismiss'
 
 const COLOR_MODES = [
   { key: 'ai', label: 'IA elige', desc: 'La IA selecciona colores según el contenido del OVA' },

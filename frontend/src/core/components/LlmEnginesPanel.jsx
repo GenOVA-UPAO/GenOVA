@@ -1,4 +1,4 @@
-import { useLlmSettings } from '@/core/hooks/useLlmSettings.js'
+import { useLlmSettings } from '@/core/hooks/useLlmSettings'
 
 const PROVIDER_LABELS = { groq: 'Groq', openrouter: 'OpenRouter' }
 const PROVIDER_BADGE = {

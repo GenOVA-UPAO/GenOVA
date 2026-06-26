@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Robot } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
-import { useAdminLlmConfig } from '@/features/admin/hooks/useAdminLlmConfig.js'
+import { useAdminLlmConfig } from '@/features/admin/hooks/useAdminLlmConfig'
 import { toDraft, toPayload } from '@/core/lib/llm/llmConfigDraft'
 import { LlmTaskRow } from '@/core/components/settings/LlmTaskRow.jsx'
 

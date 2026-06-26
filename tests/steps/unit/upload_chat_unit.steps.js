@@ -4,7 +4,7 @@ import {
   validateFileAdd,
   chipStatusLabel,
   toChipEntry,
-} from '../../../frontend/src/core/lib/uploads/uploadChipViewModel'
+} from '../../../frontend/src/features/ova_workspace/lib/uploadChipViewModel'
 
 // HU-024 unit coverage — pure upload chip viewmodel logic. No browser, no backend.
 

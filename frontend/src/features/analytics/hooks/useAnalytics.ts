@@ -6,6 +6,6 @@ export function useAnalytics() {
     queryKey: ['analytics'],
     queryFn: getAnalytics,
     staleTime: 60_000,
-    retry: (count, error) => error?.code !== 'forbidden' && count < 2,
+    retry: (count, error) => (error as { code?: string })?.code !== 'forbidden' && count < 2,
   })
 }

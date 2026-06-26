@@ -11,10 +11,10 @@ import { useEffect } from 'react'
  * Usa la fase de captura para no chocar con otros listeners de Escape (p. ej.
  * selects abiertos) y se limpia al desmontar.
  */
-export function useModalDismiss(onClose) {
+export function useModalDismiss(onClose?: () => void): void {
   useEffect(() => {
     if (!onClose) return
-    const onKeyDown = (e) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKeyDown)

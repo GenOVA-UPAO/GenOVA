@@ -1,4 +1,4 @@
-import { formatSize } from '@/core/lib/uploads/uploadFormatters'
+import { formatSize } from '@/features/ova_workspace/lib/uploadFormatters'
 
 export function FileChip({ file, onRemove, disabled }) {
   const extension = file.filename.split('.').pop().toLowerCase()

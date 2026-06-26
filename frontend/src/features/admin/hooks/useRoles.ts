@@ -1,18 +1,19 @@
-import { useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { apiFetch } from '../../../core/lib/http/client'
-import { useRoleDelete } from './useRoleDelete.js'
+import type { Role } from '../lib/types'
+import { useRoleDelete } from './useRoleDelete'
 
 export function useRoles() {
-  const [roles, setRoles] = useState([])
+  const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingRole, setEditingRole] = useState(null)
+  const [editingRole, setEditingRole] = useState<Role | null>(null)
 
   const [roleName, setRoleName] = useState('')
   const [roleDescription, setRoleDescription] = useState('')
-  const [selectedPermissions, setSelectedPermissions] = useState([])
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   const [formError, setFormError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -24,7 +25,7 @@ export function useRoles() {
     try {
       const response = await apiFetch('/api/roles')
       if (response.status === 200) {
-        setRoles(await response.json())
+        setRoles((await response.json()) as Role[])
       } else {
         setError('No se pudo cargar la lista de roles.')
       }
@@ -39,9 +40,9 @@ export function useRoles() {
     fetchRoles()
   }, [])
 
-  const handlePermissionToggle = (permId) => {
+  const handlePermissionToggle = (permId: string) => {
     setSelectedPermissions((prev) =>
-      prev.includes(permId) ? prev.filter((id) => id !== permId) : [...prev, permId]
+      prev.includes(permId) ? prev.filter((id) => id !== permId) : [...prev, permId],
     )
   }
 
@@ -54,10 +55,10 @@ export function useRoles() {
     setIsModalOpen(true)
   }
 
-  const handleEditClick = (role) => {
+  const handleEditClick = (role: Role) => {
     setEditingRole(role)
-    setRoleName(role.name)
-    setRoleDescription(role.description || '')
+    setRoleName(role.name ?? '')
+    setRoleDescription((role.description as string) || '')
     setSelectedPermissions(role.permissions || [])
     setFormError('')
     setIsModalOpen(true)
@@ -67,7 +68,7 @@ export function useRoles() {
     if (!isSubmitting) setIsModalOpen(false)
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const name = roleName.trim()
     if (!name) {
@@ -83,24 +84,20 @@ export function useRoles() {
     setFormError('')
 
     const isEdit = !!editingRole
-    const path = isEdit ? `/api/roles/${editingRole.id}` : '/api/roles'
+    const path = isEdit ? `/api/roles/${editingRole?.id}` : '/api/roles'
     const method = isEdit ? 'PATCH' : 'POST'
 
     try {
       const response = await apiFetch(path, {
         method,
-        body: JSON.stringify({
-          name,
-          description: roleDescription,
-          permissions: selectedPermissions,
-        }),
+        body: JSON.stringify({ name, description: roleDescription, permissions: selectedPermissions }),
       })
 
-      const data = await response.json()
+      const data = (await response.json()) as Role & { detail?: string }
 
       if (response.status === 200 || response.status === 201) {
         if (isEdit) {
-          setRoles((prev) => prev.map((r) => (r.id === editingRole.id ? data : r)))
+          setRoles((prev) => prev.map((r) => (r.id === editingRole?.id ? data : r)))
           toast.success('Rol actualizado con éxito')
         } else {
           setRoles((prev) => [...prev, data])
@@ -111,7 +108,7 @@ export function useRoles() {
         setFormError('Ya existe un rol con ese nombre.')
       } else {
         setFormError(
-          data.detail || `Ocurrió un error inesperado al ${isEdit ? 'actualizar' : 'crear'} el rol.`
+          data.detail || `Ocurrió un error inesperado al ${isEdit ? 'actualizar' : 'crear'} el rol.`,
         )
       }
     } catch {
@@ -141,16 +138,6 @@ export function useRoles() {
     handleEditClick,
     handleCloseModal,
     handleSubmit,
-    // delete
-    deletingRole: del.deletingRole,
-    isDeleteModalOpen: del.isDeleteModalOpen,
-    reassignRoleId: del.reassignRoleId,
-    deleteError: del.deleteError,
-    isDeleting: del.isDeleting,
-    setIsDeleteModalOpen: del.setIsDeleteModalOpen,
-    setReassignRoleId: del.setReassignRoleId,
-    setDeleteError: del.setDeleteError,
-    handleDeleteClick: del.handleDeleteClick,
-    handleConfirmDelete: del.handleConfirmDelete,
+    ...del,
   }
 }

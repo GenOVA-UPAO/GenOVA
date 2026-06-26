@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { DotsSixVertical } from '@phosphor-icons/react'
-import { SPLIT_MIN, SPLIT_MAX, clampRatio, saveSplitRatio } from '@/core/lib/ova/workspaceUtils'
+import { SPLIT_MIN, SPLIT_MAX, clampRatio, saveSplitRatio } from '@/features/ova_workspace/lib/workspaceUtils'
 
 /**
  * HU-025 — drag handle between workspace panels.

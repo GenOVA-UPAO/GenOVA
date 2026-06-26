@@ -4,7 +4,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/core/components/ui/dialog'
 import { Badge } from '@/core/components/ui/badge'
-import { sortVersionsDesc } from '@/core/lib/ova/ovaVersioning'
+import { sortVersionsDesc } from '@/features/ova_workspace/lib/ovaVersioning'
 
 /**
  * HU-028 — Version history dialog.

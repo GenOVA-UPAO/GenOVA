@@ -9,7 +9,7 @@ import {
   toResourceViewModel,
   pruneSelection,
   jobOutcome,
-} from '../../../core/lib/ova/ovaJobViewModel'
+} from '../../../features/ova_workspace/lib/ovaJobViewModel'
 import { useJobStream } from './useJobStream.js'
 
 const POLL_MS = Number(import.meta.env?.VITE_JOB_POLL_MS || 2000)

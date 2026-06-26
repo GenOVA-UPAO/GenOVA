@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { m as motion } from 'motion/react'
 import { CloudArrowUp, X } from '@phosphor-icons/react'
 import { FileChip } from '@/features/ova_workspace/components/shared/FileChip.jsx'
-import { useModalDismiss } from '@/core/hooks/useModalDismiss.js'
+import { useModalDismiss } from '@/core/hooks/useModalDismiss'
 
 const ACCEPTED_LABEL = 'PDF, DOCX, PPTX · MP3, WAV, M4A · JPG, PNG, WEBP'
 const ACCEPTED_ATTR = '.pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.webp'

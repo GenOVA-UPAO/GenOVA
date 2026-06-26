@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Button } from '@/core/components/ui/button'
-import { applyReorder } from '@/core/lib/ova/resourceReorder'
+import { applyReorder } from '@/features/ova_workspace/lib/resourceReorder'
 import { WorkspacePhaseItem } from '@/features/ova_workspace/components/editor/WorkspacePhaseItem.jsx'
 import { AddResourceModal } from '@/features/ova_workspace/components/modals/AddResourceModal.jsx'
 

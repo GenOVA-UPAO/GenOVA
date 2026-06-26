@@ -1,6 +1,6 @@
 import { m as motion } from 'motion/react'
 import { Navigate } from 'react-router'
-import { useAnalytics } from '@/features/analytics/hooks/useAnalytics.js'
+import { useAnalytics } from '@/features/analytics/hooks/useAnalytics'
 import { StatCards, StatusBreakdown } from '@/features/analytics/components/AnalyticsCards.jsx'
 import { TopCreators, RecentOvas } from '@/features/analytics/components/AnalyticsLists.jsx'
 

@@ -5,7 +5,7 @@ import { Input } from '@/core/components/ui/input'
 import { Textarea } from '@/core/components/ui/textarea'
 import { Label } from '@/core/components/ui/label'
 import { Button } from '@/core/components/ui/button'
-import { metadataSchema } from '@/core/lib/schemas/ova'
+import { metadataSchema } from '@/features/ova_library/lib/metadataSchema'
 
 export function EditMetadataModal({ initial, onSave, onCancel, isLoading }) {
   const {

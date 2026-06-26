@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { getRoleColorClasses } from '../../../core/lib/auth/roleUtils'
+import { getRoleColorClasses } from '../../../features/admin/lib/roleUtils'
 import {
   fetchCurrentUser,
   fetchRoles,
@@ -13,11 +13,19 @@ import {
   updateUserRole,
   updateUserStatus,
 } from '../services/adminUsersService'
+import type { AdminUser, Role } from '../lib/types'
 
 const FAILURE_MSG = 'Error de conexión con el servidor.'
 
-function detail(body, fallback) {
-  return (body && (body.detail || body.message)) || fallback
+interface UsersPage {
+  users?: AdminUser[]
+  total_pages?: number
+  total_items?: number
+}
+
+function detail(body: unknown, fallback: string): string {
+  const b = body as { detail?: string; message?: string } | null
+  return (b && (b.detail || b.message)) || fallback
 }
 
 export function useUsersAdmin() {
@@ -28,24 +36,24 @@ export function useUsersAdmin() {
 
   const usersQuery = useQuery({
     queryKey: ['adminUsers', currentPage],
-    queryFn: async () => {
+    queryFn: async (): Promise<UsersPage> => {
       const { ok, body } = await fetchUsersPage(currentPage)
       if (!ok) throw new Error('No se pudo cargar la lista de usuarios.')
-      return body
+      return body as UsersPage
     },
   })
   const rolesQuery = useQuery({
     queryKey: ['adminRoles'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Role[]> => {
       const { ok, body } = await fetchRoles()
-      return ok ? body : []
+      return ok ? (body as Role[]) : []
     },
   })
   const currentUserQuery = useQuery({
     queryKey: ['me'],
-    queryFn: async () => {
+    queryFn: async (): Promise<AdminUser | null> => {
       const { ok, body } = await fetchCurrentUser()
-      return ok ? body : null
+      return ok ? (body as AdminUser) : null
     },
   })
 
@@ -61,7 +69,7 @@ export function useUsersAdmin() {
     [currentPage, qc],
   )
 
-  async function withUpdating(userId, fn) {
+  async function withUpdating<T>(userId: string, fn: () => Promise<T>): Promise<T | null> {
     setUpdatingUserId(userId)
     try {
       return await fn()
@@ -75,7 +83,7 @@ export function useUsersAdmin() {
 
   const refreshUsers = () => qc.invalidateQueries({ queryKey: ['adminUsers'] })
 
-  async function handleRoleChange(userId, roleId) {
+  async function handleRoleChange(userId: string, roleId: string) {
     await withUpdating(userId, async () => {
       const { ok, body } = await updateUserRole(userId, roleId)
       if (!ok) return toast.error(detail(body, 'Error al actualizar el rol.'))
@@ -84,7 +92,7 @@ export function useUsersAdmin() {
     })
   }
 
-  async function handleEditUser(userId, fields) {
+  async function handleEditUser(userId: string, fields: Record<string, unknown>) {
     return withUpdating(userId, async () => {
       const { ok, body } = await updateUserProfile(userId, fields)
       if (!ok) {
@@ -97,7 +105,7 @@ export function useUsersAdmin() {
     })
   }
 
-  async function handleToggleStatus(userId, isActive) {
+  async function handleToggleStatus(userId: string, isActive: boolean) {
     await withUpdating(userId, async () => {
       const { ok, body } = await updateUserStatus(userId, isActive)
       if (!ok) return toast.error(detail(body, 'Error al actualizar el estado.'))
@@ -106,7 +114,7 @@ export function useUsersAdmin() {
     })
   }
 
-  async function handleUnlockUser(userId) {
+  async function handleUnlockUser(userId: string) {
     await withUpdating(userId, async () => {
       const { ok, body } = await unlockUser(userId)
       if (!ok) return toast.error(detail(body, 'Error al desbloquear al usuario.'))
@@ -115,7 +123,7 @@ export function useUsersAdmin() {
     })
   }
 
-  async function handleSendResetEmail(userId) {
+  async function handleSendResetEmail(userId: string) {
     await withUpdating(userId, async () => {
       const { ok, body } = await sendResetEmail(userId)
       if (!ok) return toast.error(detail(body, 'Error al enviar el correo.'))
@@ -123,7 +131,7 @@ export function useUsersAdmin() {
     })
   }
 
-  async function handleGenerateResetWhatsApp(userId) {
+  async function handleGenerateResetWhatsApp(userId: string) {
     return withUpdating(userId, async () => {
       const { ok, body } = await generateResetWhatsApp(userId)
       if (!ok) {
@@ -135,7 +143,7 @@ export function useUsersAdmin() {
     })
   }
 
-  function handlePageChange(newPage) {
+  function handlePageChange(newPage: number) {
     if (newPage >= 1 && newPage <= totalPages) setCurrentPage(newPage)
   }
 
@@ -151,8 +159,12 @@ export function useUsersAdmin() {
     totalPages,
     totalItems,
     fetchUsers: loadUsers,
-    handleRoleChange, handleEditUser, handleToggleStatus, handleUnlockUser,
-    handleSendResetEmail, handleGenerateResetWhatsApp,
+    handleRoleChange,
+    handleEditUser,
+    handleToggleStatus,
+    handleUnlockUser,
+    handleSendResetEmail,
+    handleGenerateResetWhatsApp,
     handlePageChange,
     getRoleColorClasses,
     setUpdateError,

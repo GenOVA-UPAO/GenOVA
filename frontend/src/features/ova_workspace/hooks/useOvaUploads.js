@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { validateFileAdd } from '@/core/lib/uploads/uploadChipViewModel'
+import { validateFileAdd } from '@/features/ova_workspace/lib/uploadChipViewModel'
 import { deleteTempFile, listTempFiles, uploadTempFiles } from '../services/uploadService'
 
 const MAX_UPLOAD_FILES = Number(import.meta.env.VITE_UPLOAD_MAX_FILES || 5)

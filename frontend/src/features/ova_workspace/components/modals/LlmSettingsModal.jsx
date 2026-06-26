@@ -3,7 +3,7 @@ import { Button } from '@/core/components/ui/button'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/core/components/ui/dialog'
-import { useLlmSettings } from '@/core/hooks/useLlmSettings.js'
+import { useLlmSettings } from '@/core/hooks/useLlmSettings'
 import { LlmSettingsForm } from '@/core/components/settings/LlmSettingsForm.jsx'
 
 /**

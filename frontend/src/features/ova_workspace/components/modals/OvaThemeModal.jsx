@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { m as motion } from 'motion/react'
 import { X } from '@phosphor-icons/react'
 import { OvaThemeSelector } from '@/features/ova_workspace/components/modals/OvaThemeSelector.jsx'
-import { useModalDismiss } from '@/core/hooks/useModalDismiss.js'
+import { useModalDismiss } from '@/core/hooks/useModalDismiss'
 
 const UPAO_PRIMARY = '#0A3D91'
 const UPAO_ACCENT = '#F47A20'

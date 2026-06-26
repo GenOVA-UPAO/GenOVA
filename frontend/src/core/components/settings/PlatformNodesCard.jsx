@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/core/components/ui/button'
-import { useAdminNodesConfig } from '@/features/admin/hooks/useAdminNodesConfig.js'
+import { useAdminNodesConfig } from '@/features/admin/hooks/useAdminNodesConfig'
 import { criticRoundsVisible, hasUnsavedChanges } from '@/core/lib/llm/nodesConfigDraft'
 
 function Toggle({ checked, onChange, disabled }) {
