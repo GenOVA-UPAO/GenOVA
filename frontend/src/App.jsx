@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, Outlet } from 'react-router'
 import { isLoggedIn } from '@/features/auth/services/auth.js'
-import { getCurrentUser } from '@/core/lib/me.js'
+import { getCachedUser, getCurrentUser } from '@/core/lib/me.js'
 import { AppLayout } from '@/core/layouts/shells/AppLayout.jsx'
 import { WorkspaceLayout } from '@/core/layouts/shells/WorkspaceLayout.jsx'
 import { LoginPage } from '@/features/auth/pages/LoginPage.jsx'
@@ -50,8 +50,11 @@ function RouteFallback() {
 }
 
 export function AdminRoute() {
-  const [loading, setLoading] = useState(() => isLoggedIn())
-  const [isAdmin, setIsAdmin] = useState(false)
+  const cached = getCachedUser()
+  // Seed from the cached user so a returning admin isn't flashed the spinner or,
+  // worse, redirected to /dashboard if the revalidation /api/auth/me races/fails.
+  const [loading, setLoading] = useState(() => isLoggedIn() && !cached)
+  const [isAdmin, setIsAdmin] = useState(() => cached?.role === 'administrador')
 
   useEffect(() => {
     if (!isLoggedIn()) return
@@ -60,7 +63,7 @@ export function AdminRoute() {
     const checkAdmin = async () => {
       const user = await getCurrentUser()
       if (cancelled) return
-      setIsAdmin(user?.role === 'administrador')
+      if (user) setIsAdmin(user.role === 'administrador')
       setLoading(false)
     }
 

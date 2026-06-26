@@ -6,7 +6,7 @@ import {
 } from '@phosphor-icons/react'
 import { navigationLinks } from '@/core/layouts/navigation/navLinks.js'
 import { isLoggedIn } from '@/features/auth/services/auth.js'
-import { getCurrentUser } from '@/core/lib/me.js'
+import { getCachedUser, getCurrentUser } from '@/core/lib/me.js'
 import { fetchTrashCount } from '@/features/ova_library/services/ovaHistoryService.js'
 
 const ICONS = { House, FolderOpen, PlusSquare }
@@ -70,7 +70,7 @@ function hasPermission(user, permission) {
 }
 
 export function SidebarMenu({ onNavigate }) {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(getCachedUser)
   const [trashCount, setTrashCount] = useState(0)
   const location = useLocation()
   const isAdmin = user?.role === 'administrador'
@@ -82,13 +82,15 @@ export function SidebarMenu({ onNavigate }) {
   useEffect(() => {
     if (!isLoggedIn()) return
     let cancelled = false
+    // Revalidate per navigation; the cached seed keeps the role stable (and the
+    // Administración section visible) even if a single revalidation races/fails.
     getCurrentUser().then((current) => {
-      if (!cancelled) setUser(current)
+      if (!cancelled && current) setUser(current)
     })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [location.pathname])
 
   useEffect(() => {
     fetchTrashCount().then((data) => setTrashCount(data.count || 0)).catch(() => {})
