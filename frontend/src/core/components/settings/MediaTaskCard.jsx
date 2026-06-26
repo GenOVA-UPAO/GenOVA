@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { toast } from 'sonner'
 import { TASK_META } from '@/core/lib/ova/taskMeta.js'
-import { apiJson } from '@/core/lib/http.js'
 import { getOvaSettings, saveOvaSettings } from '@/features/ova_workspace/services/ovaSettingsService.js'
+import { useImageModels } from '@/features/ova_workspace/hooks/useImageModels.js'
 
 const IMAGE_PROVIDERS = [
   { value: 'huggingface', label: 'HuggingFace (gratis)' },
@@ -17,10 +17,13 @@ export function MediaTaskCard({ task, index = 0 }) {
   const [enabled, setEnabled] = useState(true)
   const [provider, setProvider] = useState('huggingface')
   const [imageModel, setImageModel] = useState(null)
-  const [models, setModels] = useState([])
-  const [loadingModels, setLoadingModels] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loaded, setLoaded] = useState(task !== 'imagen')
+
+  const { data: models = [], isFetching: loadingModels } = useImageModels(
+    provider,
+    loaded && enabled && task === 'imagen'
+  )
 
   useEffect(() => {
     if (task !== 'imagen') return
@@ -35,20 +38,12 @@ export function MediaTaskCard({ task, index = 0 }) {
       .finally(() => setLoaded(true))
   }, [task])
 
+  // Auto-selecciona el primer modelo si el actual no está en la lista del proveedor.
   useEffect(() => {
-    if (!loaded || !enabled || task !== 'imagen') return
-    setLoadingModels(true)
-    apiJson(`/api/users/me/image-models?provider=${provider}`)
-      .then((data) => {
-        const list = data.models ?? []
-        setModels(list)
-        if (list.length > 0 && !list.find((x) => x.id === imageModel)) {
-          setImageModel(list[0].id)
-        }
-      })
-      .catch(() => setModels([]))
-      .finally(() => setLoadingModels(false))
-  }, [provider, loaded, enabled]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (models.length > 0 && !models.find((x) => x.id === imageModel)) {
+      setImageModel(models[0].id)
+    }
+  }, [models]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function persist(nextEnabled, nextProvider, nextModel) {
     setSaving(true)
@@ -87,7 +82,7 @@ export function MediaTaskCard({ task, index = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -2, transition: { duration: 0.18, ease: 'easeOut' } }}
-      className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition-all duration-200"
+      className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition duration-200"
     >
       {/* Header */}
       <div className={`bg-gradient-to-br ${m.grad} px-5 pt-4 pb-3.5 border-b border-border/40`}>

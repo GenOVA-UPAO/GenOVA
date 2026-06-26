@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from core.config import settings
 from core.database import get_db
 from core.security import JWT_ALGORITHM, JWT_SECRET
-from models import Role, User, UserRole
+from models import RevokedToken, Role, User, UserRole
 
 _COOKIE_NAME = "genova_token"
 # Set AUTH_ACCEPT_BEARER=0 in production once all clients use cookies.
@@ -47,6 +47,13 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token de autenticación inválido o expirado.",
         ) from exc
+
+    jti = payload.get("jti")
+    if jti and db.execute(select(RevokedToken).where(RevokedToken.jti == jti)).scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token revocado. Inicia sesión nuevamente.",
+        )
 
     user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
     if not user:

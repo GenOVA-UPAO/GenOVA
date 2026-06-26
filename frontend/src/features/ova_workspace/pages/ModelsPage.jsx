@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router'
 import { ArrowsClockwise, Cpu, Robot, SlidersHorizontal } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/core/components/ui/tabs'
 import { useLlmSettings } from '@/core/hooks/useLlmSettings.js'
@@ -78,19 +78,19 @@ export function ModelsPage() {
 
       <Tabs value={tabValue} onValueChange={setTabValue} className="space-y-5">
         <TabsList className="bg-card border border-border/60 shadow-sm h-auto p-1 gap-0.5 rounded-xl w-fit flex-wrap">
-          <TabsTrigger value="tasks" className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="tasks" className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition">
             <SlidersHorizontal size={12} weight="bold" /> Asignación de Modelos
           </TabsTrigger>
-          <TabsTrigger value="apikeys" className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+          <TabsTrigger value="apikeys" className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition">
             API Keys
           </TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="prometheus" className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+            <TabsTrigger value="prometheus" className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition">
               <Cpu size={12} weight="bold" /> Prometheus <AdminBadge />
             </TabsTrigger>
           )}
           {isAdmin && (
-            <TabsTrigger value="platform-keys" className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+            <TabsTrigger value="platform-keys" className="rounded-lg px-4 py-2 text-xs font-bold gap-1.5 text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition">
               <Robot size={12} weight="bold" /> Keys Globales <AdminBadge />
             </TabsTrigger>
           )}

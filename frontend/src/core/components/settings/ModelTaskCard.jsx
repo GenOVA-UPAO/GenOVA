@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { PencilSimple } from '@phosphor-icons/react'
 import { LlmModelSelect } from '@/core/components/settings/LlmModelSelect.jsx'
 import { UserOverrideSection } from '@/core/components/settings/UserOverrideSection.jsx'
@@ -54,7 +54,7 @@ export function ModelTaskCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -2, transition: { duration: 0.18, ease: 'easeOut' } }}
-      className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition-all duration-200"
+      className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition duration-200"
     >
       {/* Colored header band */}
       <div className={`bg-gradient-to-br ${m.grad} px-5 pt-4 pb-3.5 border-b border-border/40`}>
@@ -107,7 +107,7 @@ export function ModelTaskCard({
               <button
                 type="button"
                 onClick={onEditChain}
-                className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-semibold transition-all duration-150 ${isEditing ? `${m.accent} bg-current/5 ring-1 ring-current/20` : 'text-muted-foreground/50 hover:text-primary hover:bg-primary/5'}`}
+                className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-semibold transition duration-150 ${isEditing ? `${m.accent} bg-current/5 ring-1 ring-current/20` : 'text-muted-foreground/50 hover:text-primary hover:bg-primary/5'}`}
               >
                 <PencilSimple size={10} weight="bold" />
                 {isEditing ? 'Editando cadena ✓' : 'Editar cadena de fallback'}

@@ -77,6 +77,7 @@ def resolve_key(provider: str, user_api_keys: dict | None, db=None, user_id=None
             if row and row.value.strip():
                 return row.value.strip()
         except Exception:
+            # DB unavailable/misconfigured → fall back to the env var below.
             pass
     return os.getenv(_ENV_VARS.get(provider, ""), "").strip() or None
 

@@ -135,7 +135,7 @@ export function ResetPasswordPage() {
               {status === 'submitting' ? (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
               ) : null}
-              {status === 'submitting' ? 'Guardando...' : 'Guardar contraseña'}
+              {status === 'submitting' ? 'Guardando…' : 'Guardar contraseña'}
             </Button>
           </form>
         )}

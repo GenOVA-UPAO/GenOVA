@@ -50,6 +50,18 @@ logger = logging.getLogger(__name__)
 _LATENCY_THRESHOLD_MS = settings.latency_threshold_ms
 _LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save", "/api/labs/generate")
 
+# Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
+if settings.sentry_dsn:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.env,
+        traces_sample_rate=settings.sentry_traces_sample_rate,
+        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
+    )
+    logger.info("Sentry inicializado (environment=%s)", settings.env)
+
 
 class ProcessTimeMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -70,6 +82,30 @@ class ProcessTimeMiddleware(BaseHTTPMiddleware):
         return response
 
 
+_IS_PROD = settings.env.lower() == "production"
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Cabeceras de seguridad en todas las respuestas (OWASP). CSP/HSTS solo en
+    producción: la API sirve JSON (default-src 'none' es seguro) y HSTS requiere
+    HTTPS. En dev se omiten para no romper Swagger /docs."""
+
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+        if _IS_PROD:
+            response.headers.setdefault(
+                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+            )
+            response.headers.setdefault(
+                "Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'"
+            )
+        return response
+
+
 def _background_rag_purge() -> None:
     try:
         from sqlalchemy.orm import Session
@@ -82,6 +118,20 @@ def _background_rag_purge() -> None:
                 logger.info("Purged %d expired RAG chunks on startup", removed)
     except Exception:
         logger.exception("RAG startup cleanup failed (continuing).")
+
+
+def _background_auth_purge() -> None:
+    try:
+        from sqlalchemy.orm import Session
+
+        from auth.cleanup import purge_expired_auth
+
+        with Session(engine) as session:
+            removed = purge_expired_auth(session)
+            if removed:
+                logger.info("Purged %d expired auth tokens on startup", removed)
+    except Exception:
+        logger.exception("Auth startup cleanup failed (continuing).")
 
 
 def _background_catalog_refresh() -> None:
@@ -102,11 +152,20 @@ async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
     seed_db()
     asyncio.create_task(asyncio.to_thread(_background_rag_purge))
+    asyncio.create_task(asyncio.to_thread(_background_auth_purge))
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
     yield
 
 
-app = FastAPI(title="GENOVA Backend API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title="GENOVA Backend API",
+    version="0.1.0",
+    lifespan=lifespan,
+    # Swagger/OpenAPI expone el mapa completo de la API: deshabilitado en prod.
+    docs_url=None if _IS_PROD else "/docs",
+    redoc_url=None if _IS_PROD else "/redoc",
+    openapi_url=None if _IS_PROD else "/openapi.json",
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -133,6 +192,7 @@ else:
 
 app.add_middleware(ProcessTimeMiddleware)  # innermost: avoid 502 on OPTIONS preflight
 app.add_middleware(GZipMiddleware, minimum_size=1024)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(  # outermost: intercept OPTIONS before other middleware
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -142,6 +202,14 @@ app.add_middleware(  # outermost: intercept OPTIONS before other middleware
     max_age=86400,
 )
 logger.info("CORS allowed origins: %s", allowed_origins)
+
+# Métricas Prometheus opcionales (opt-in). /metrics se expone solo si se habilita
+# explícitamente para no filtrar patrones de tráfico en una URL pública.
+if settings.metrics_enabled:
+    from prometheus_fastapi_instrumentator import Instrumentator
+
+    Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
+    logger.info("Prometheus /metrics habilitado")
 
 _HEALTH_CACHE = "public, max-age=10"
 

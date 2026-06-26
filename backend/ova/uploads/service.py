@@ -4,6 +4,8 @@ import time
 import uuid
 from pathlib import Path
 
+import filetype
+
 from ova.uploads.state import (
     lock,
     max_file_size_bytes,
@@ -37,8 +39,36 @@ ALLOWED_MIME_TYPES = {
     "image/webp",
 }
 
+# Office (docx/pptx) son contenedores ZIP; m4a/webm-audio se reportan como video/*.
+_OFFICE_ZIP_MIMES = {
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+}
+_AUDIO_CONTAINER_MIMES = {"video/mp4", "video/webm"}
+
+
+def magic_bytes_ok(declared_mime: str, content: bytes) -> bool:
+    """Defense-in-depth: el content_type lo envía el cliente y es falsificable.
+    Confirmamos la firma real (magic bytes) para bloquear archivos disfrazados
+    (p. ej. un ejecutable con content_type application/pdf)."""
+    kind = filetype.guess(content)
+    sniffed = kind.mime if kind else None
+    if declared_mime in _OFFICE_ZIP_MIMES:
+        return sniffed == "application/zip"
+    if declared_mime == "application/pdf":
+        return sniffed == "application/pdf"
+    if declared_mime.startswith("image/"):
+        return sniffed is not None and sniffed.startswith("image/")
+    if declared_mime.startswith("audio/"):
+        return sniffed is not None and (
+            sniffed.startswith("audio/") or sniffed in _AUDIO_CONTAINER_MIMES
+        )
+    return False
+
+
 __all__ = [
     "ALLOWED_MIME_TYPES",
+    "magic_bytes_ok",
     "claim_user_uploads",
     "count_user_uploads",
     "create_temp_upload",

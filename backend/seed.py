@@ -1,5 +1,6 @@
 from sqlalchemy import select
 
+from auth.email_normalize import normalize_email
 from core.database import SessionLocal
 from core.security import hash_password
 from models import Role, User, UserRole
@@ -20,6 +21,7 @@ def seed_db():
                     "export_ova",
                     "manage_users",
                     "manage_roles",
+                    "view_analytics",
                     "ai:models:self",
                     "ai:fallback:self",
                     "ai:models:platform",
@@ -34,6 +36,7 @@ def seed_db():
                     "create_ova",
                     "view_ova",
                     "export_ova",
+                    "view_analytics",
                     "ai:models:self",
                     "ai:fallback:self",
                     "users:link",
@@ -112,8 +115,10 @@ def seed_db():
                 print(f"Creando usuario: {u_data['email']}")
                 user = User(
                     email=u_data["email"],
+                    email_normalized=normalize_email(u_data["email"]),
                     password_hash=hash_password(u_data["password"]),
                     full_name=u_data["full_name"],
+                    email_verified=True,
                 )
                 db.add(user)
                 db.commit()

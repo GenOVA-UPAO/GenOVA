@@ -50,7 +50,7 @@ export function FileChip({ file, onRemove, disabled }) {
 
   return (
     <div
-      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md ${colorClass}`}
+      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium shadow-sm transition duration-200 hover:shadow-md ${colorClass}`}
     >
       <span className="text-sm select-none">{icon}</span>
       <div className="flex flex-col min-w-0">

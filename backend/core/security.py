@@ -33,3 +33,11 @@ def verify_password(password: str, hashed: str) -> bool:
 def verify_dummy() -> None:
     """Consume bcrypt time without revealing whether a user exists."""
     bcrypt.checkpw(b"dummy-password-for-timing", _DUMMY_HASH.encode("utf-8"))
+
+
+def password_complexity_ok(password: str) -> bool:
+    """At least 8 chars with letters and digits. Shared by register/reset so the
+    policy is enforced consistently (registro antes solo validaba longitud)."""
+    return len(password) >= 8 and any(c.isalpha() for c in password) and any(
+        c.isdigit() for c in password
+    )

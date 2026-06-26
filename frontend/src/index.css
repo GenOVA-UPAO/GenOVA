@@ -192,3 +192,22 @@ body {
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
+
+/* Honor prefers-reduced-motion para animaciones CSS/Tailwind (transitions,
+   animate-spin, animate-fade-in, etc.). Las animaciones de motion ya se
+   atenúan vía <MotionConfig reducedMotion="user">. Spinners siguen visibles
+   (el texto "Cargando…" comunica el estado). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    /* biome-ignore lint/complexity/noImportantStyles: el reset a11y debe vencer la especificidad de las utilidades de Tailwind */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: idem */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: idem */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: idem */
+    scroll-behavior: auto !important;
+  }
+}

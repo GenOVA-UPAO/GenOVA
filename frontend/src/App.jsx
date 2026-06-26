@@ -1,13 +1,14 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, Outlet } from 'react-router'
 import { isLoggedIn } from '@/features/auth/services/auth.js'
-import { getCurrentUser } from '@/core/lib/me.js'
+import { getCachedUser, getCurrentUser } from '@/core/lib/me.js'
 import { AppLayout } from '@/core/layouts/shells/AppLayout.jsx'
 import { WorkspaceLayout } from '@/core/layouts/shells/WorkspaceLayout.jsx'
 import { LoginPage } from '@/features/auth/pages/LoginPage.jsx'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage.jsx'
 import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage.jsx'
 import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage.jsx'
+import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage.jsx'
 import { DashboardPage } from '@/features/ova_library/pages/DashboardPage.jsx'
 
 // Code-split heavier authenticated routes so the login bundle stays tiny.
@@ -18,6 +19,7 @@ const PapeleraPage = lazy(() => import('@/features/ova_library/pages/PapeleraPag
 const ProfilePage = lazy(() => import('@/features/profile/pages/ProfilePage.jsx').then((m) => ({ default: m.ProfilePage })))
 const ModelsPage = lazy(() => import('@/features/ova_workspace/pages/ModelsPage.jsx').then((m) => ({ default: m.ModelsPage })))
 const UserLinksPage = lazy(() => import('@/features/profile/pages/UserLinksPage.jsx').then((m) => ({ default: m.UserLinksPage })))
+const AnalyticsPage = lazy(() => import('@/features/analytics/pages/AnalyticsPage.jsx').then((m) => ({ default: m.AnalyticsPage })))
 const EngagePage = lazy(() => import('@/features/student/pages/EngagePage.jsx').then((m) => ({ default: m.EngagePage })))
 const ExplorePage = lazy(() => import('@/features/student/pages/ExplorePage.jsx').then((m) => ({ default: m.ExplorePage })))
 const NotFoundPage = lazy(() => import('@/core/components/NotFoundPage.jsx').then((m) => ({ default: m.NotFoundPage })))
@@ -48,8 +50,11 @@ function RouteFallback() {
 }
 
 export function AdminRoute() {
-  const [loading, setLoading] = useState(() => isLoggedIn())
-  const [isAdmin, setIsAdmin] = useState(false)
+  const cached = getCachedUser()
+  // Seed from the cached user so a returning admin isn't flashed the spinner or,
+  // worse, redirected to /dashboard if the revalidation /api/auth/me races/fails.
+  const [loading, setLoading] = useState(() => isLoggedIn() && !cached)
+  const [isAdmin, setIsAdmin] = useState(() => cached?.role === 'administrador')
 
   useEffect(() => {
     if (!isLoggedIn()) return
@@ -58,7 +63,7 @@ export function AdminRoute() {
     const checkAdmin = async () => {
       const user = await getCurrentUser()
       if (cancelled) return
-      setIsAdmin(user?.role === 'administrador')
+      if (user) setIsAdmin(user.role === 'administrador')
       setLoading(false)
     }
 
@@ -117,6 +122,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verificar-correo" element={<VerifyEmailPage />} />
           <Route element={<ProtectedLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/mis-ovas" element={<MisOvasPage />} />
@@ -125,6 +131,7 @@ function App() {
             <Route path="/modelos" element={<ModelsPage />} />
             <Route path="/fallback" element={<Navigate to="/modelos" replace />} />
             <Route path="/vinculacion" element={<UserLinksPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/metodologia/engage" element={<EngagePage />} />
             <Route path="/metodologia/explore" element={<ExplorePage />} />
 

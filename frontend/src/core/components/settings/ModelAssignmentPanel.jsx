@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { SlidersHorizontal, X } from '@phosphor-icons/react'
-import { motion, AnimatePresence } from 'motion/react'
+import { m as motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { ModelTaskCard } from '@/core/components/settings/ModelTaskCard.jsx'
 import { MediaTaskCard } from '@/core/components/settings/MediaTaskCard.jsx'

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import {
-  Flask, FolderOpen, Gear, House, LinkSimple, PlusSquare,
+  ChartBar, Flask, FolderOpen, Gear, House, LinkSimple, PlusSquare,
   ShieldCheck, Trash, Users,
 } from '@phosphor-icons/react'
 import { navigationLinks } from '@/core/layouts/navigation/navLinks.js'
 import { isLoggedIn } from '@/features/auth/services/auth.js'
-import { getCurrentUser } from '@/core/lib/me.js'
+import { getCachedUser, getCurrentUser } from '@/core/lib/me.js'
 import { fetchTrashCount } from '@/features/ova_library/services/ovaHistoryService.js'
 
 const ICONS = { House, FolderOpen, PlusSquare }
@@ -26,7 +26,7 @@ function linkClasses({ isActive }) {
     : `${base} text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`
 }
 
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 
 function NavItem({ item, badge, onNavigate }) {
   const Icon = item.icon
@@ -70,24 +70,27 @@ function hasPermission(user, permission) {
 }
 
 export function SidebarMenu({ onNavigate }) {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(getCachedUser)
   const [trashCount, setTrashCount] = useState(0)
   const location = useLocation()
   const isAdmin = user?.role === 'administrador'
   const principal = navigationLinks.map((item) => ({ ...item, icon: ICONS[item.icon] }))
   const canLink = hasPermission(user, 'users:link') || hasPermission(user, 'users:link:admin')
   const canModels = hasPermission(user, 'ai:models:self') || hasPermission(user, 'ai:models:platform')
+  const canAnalytics = hasPermission(user, 'view_analytics')
 
   useEffect(() => {
     if (!isLoggedIn()) return
     let cancelled = false
+    // Revalidate per navigation; the cached seed keeps the role stable (and the
+    // Administración section visible) even if a single revalidation races/fails.
     getCurrentUser().then((current) => {
-      if (!cancelled) setUser(current)
+      if (!cancelled && current) setUser(current)
     })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [location.pathname])
 
   useEffect(() => {
     fetchTrashCount().then((data) => setTrashCount(data.count || 0)).catch(() => {})
@@ -98,6 +101,9 @@ export function SidebarMenu({ onNavigate }) {
       <nav aria-label="Navegacion principal" className="flex-1 overflow-y-auto px-2 pb-3">
         <Section title="Principal">
           {principal.map((item) => <NavItem key={item.to} item={item} onNavigate={onNavigate} />)}
+          {canAnalytics ? (
+            <NavItem item={{ to: '/analytics', label: 'Analítica', icon: ChartBar }} onNavigate={onNavigate} />
+          ) : null}
           <NavItem item={{ to: '/papelera', label: 'Papelera', icon: Trash }} badge={trashCount} onNavigate={onNavigate} />
         </Section>
         {(canModels || canLink) ? (

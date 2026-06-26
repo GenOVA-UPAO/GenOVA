@@ -37,20 +37,23 @@ When('ingreso un correo válido y una contraseña alfanumérica de mínimo 8 car
   this.state.password = 'newpass99'
 })
 
-Then('el sistema debe crear la cuenta', function () {
-  // Unit scope: simulate token saved after successful registration
-  const token = makeToken(this.state.email || 'test@upao.edu')
-  authLib.saveToken(token)
-  assert.ok(authLib.getToken(), 'token should be saved after account creation')
+Then('el sistema debe crear la cuenta sin verificar', function () {
+  // Verificación obligatoria: el registro NO emite JWT ni sesión; la cuenta
+  // queda creada en backend pendiente de verificar. Sin token en el cliente.
+  assert.equal(authLib.getToken(), null, 'no token should be issued at registration')
 })
 
 Then('los campos university_id, gender y phone_number deben crearse como NULL', function () {
   // API contract — not testable at lib level, verified by backend step defs
 })
 
-Then('debo recibir un JWT', function () {
-  assert.ok(authLib.getToken(), 'token should be present')
-  assert.equal(authLib.isTokenExpired(authLib.getToken()), false, 'token should be valid')
+Then('debo ver un aviso para verificar mi correo', function () {
+  // UI notice — verified at component/e2e level; no client token expected here.
+  assert.equal(authLib.getToken(), null, 'registration must not log the user in')
+})
+
+Then('no debo iniciar sesión hasta verificar el correo', function () {
+  assert.equal(authLib.getToken(), null, 'session must not start before email verification')
 })
 
 Given('que el correo {string} ya está registrado', function (email) {

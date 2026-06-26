@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { PaintBrush, List, SignOut, UserCircle, X, Plus } from '@phosphor-icons/react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m as motion } from 'motion/react'
 import { NavbarBrand } from '@/core/layouts/components/NavbarBrand.jsx'
 import { SidebarMenu } from '@/core/layouts/components/SidebarMenu.jsx'
 import { ThemeModal } from '@/features/ova_library/components/modals/ThemeModal.jsx'
 import { clearSession } from '@/features/auth/services/auth.js'
-import { getCurrentUser } from '@/core/lib/me.js'
+import { getCachedUser, getCurrentUser } from '@/core/lib/me.js'
 
 function initials(user) {
   const name = user?.full_name || user?.email || 'Usuario'
@@ -18,13 +18,13 @@ export function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
   const [themeModalOpen, setThemeModalOpen] = useState(false)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(getCachedUser)
   const dropdownRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
     getCurrentUser().then((current) => {
-      if (!cancelled) setUser(current)
+      if (!cancelled && current) setUser(current)
     })
     return () => {
       cancelled = true
@@ -69,7 +69,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setAvatarOpen((open) => !open)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90 active:scale-95"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90 active:scale-95"
             aria-label="Menu de usuario"
           >
             {initials(user)}

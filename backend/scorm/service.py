@@ -9,6 +9,7 @@ from scorm.template_html import (
 )
 from scorm.template_scripts import build_app_js, build_scorm_js
 from scorm.template_style import build_styles_css
+from scorm.template_xapi import build_cmi5_xml, build_xapi_js
 
 DEFAULT_PHASES = [
     {"type": "engage", "order": 1, "content": "Recurso de la fase ENGAGE no disponible."},
@@ -43,6 +44,10 @@ def build_scorm_zip_bytes(
         zip_file.writestr("index.html", build_index_html(course_title, resources))
         zip_file.writestr("resources/styles.css", build_styles_css())
         zip_file.writestr("resources/scorm.js", build_scorm_js())
+        zip_file.writestr("resources/xapi.js", build_xapi_js())
         zip_file.writestr("resources/app.js", build_app_js())
+        # cmi5 course structure so the same package imports into xAPI/cmi5 LMSs.
+        # The xapi.js runtime is a no-op unless launched with cmi5 parameters.
+        zip_file.writestr("cmi5.xml", build_cmi5_xml(course_title, module_title))
 
     return zip_buffer.getvalue()

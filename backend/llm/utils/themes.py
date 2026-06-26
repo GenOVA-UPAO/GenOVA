@@ -132,11 +132,16 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
    - Estados de carga, completado y error VISUALMENTE distintos (color + icono/emoji).
    - Animaciones de entrada en elementos clave: opacity 0→1, translateY 8px→0, 300ms ease-out.
 
-6) ACCESIBILIDAD
-   - Contraste texto/fondo >= 4.5:1 (cuerpo) y >= 3:1 (títulos grandes).
-   - Focus visible en TODO elemento interactivo.
-   - aria-label en botones-icono. role="button" en divs clicables.
-   - Respeta @media (prefers-reduced-motion: reduce) → animation: none.
+6) ACCESIBILIDAD (WCAG 2.2 AA — OBLIGATORIO)
+   - Contraste texto/fondo >= 4.5:1 (cuerpo) y >= 3:1 (títulos grandes y bordes de UI).
+   - Focus visible en TODO elemento interactivo (:focus-visible outline 3px, offset 2px). Nunca outline:none sin reemplazo.
+   - Estructura semántica: un único <h1>, luego <h2>/<h3> en orden sin saltos; usa <main>, <nav>, <section>, <button>, <ul>/<ol>.
+   - IMÁGENES: todo <img> con alt descriptivo y específico (qué muestra y por qué importa); alt="" SOLO si es puramente decorativa. Nunca alt genérico tipo "imagen".
+   - TECLADO: todo widget interactivo es operable con teclado. Si usas <div>/<span> clicable: tabindex="0", role apropiado (button/tab/checkbox) y handler keydown para Enter y Space (e.preventDefault). Preferir <button> nativo siempre que se pueda.
+   - No transmitas información SOLO por color (añade texto, icono o forma): correcto/incorrecto, seleccionado, etc.
+   - Inputs/controles con <label> asociado (for/id) o aria-label. Mensajes de estado dinámicos en un contenedor con aria-live="polite".
+   - Objetivos táctiles >= 24x24 CSS px (WCAG 2.5.8) con espacio entre ellos.
+   - Respeta @media (prefers-reduced-motion: reduce) → animation:none; transition:none; scroll-behavior:auto.
 
 7) CALIDAD
    - Mínimo lo indicado por la tarea, sin sections vacías ni texto lorem.

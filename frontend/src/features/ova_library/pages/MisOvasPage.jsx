@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import { FolderOpen, MagnifyingGlass, MagnifyingGlassMinus, Plus } from '@phosphor-icons/react'
-import { motion, AnimatePresence } from 'motion/react'
+import { m as motion, AnimatePresence } from 'motion/react'
 import { useOvaList } from '@/features/ova_workspace/hooks/useOvaList.js'
 import { useGeneratingJobs } from '@/features/ova_workspace/hooks/useGeneratingJobs.js'
 import { OvaCard } from '@/features/ova_library/components/cards/OvaCard.jsx'

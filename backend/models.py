@@ -19,12 +19,19 @@ class User(Base):
     __tablename__ = "users"
 
     id = _pk_column()
+    # `email` conserva el correo como lo escribió el usuario (display/envío).
+    # `email_normalized` es la llave canónica (minúsculas, sin +tag, sin puntos
+    # en Gmail) usada para dedup y login.
     email = Column(String(255), unique=True, nullable=False, index=True)
+    email_normalized = Column(String(255), unique=True, index=True)
     password_hash = Column(String(255), nullable=False)
     failed_login_attempts = Column(Integer, nullable=False, default=0)
     locked_until = Column(DateTime(timezone=True))
     full_name = Column(String(255))
     is_active = Column(Boolean, nullable=False, default=True)
+    email_verified = Column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
     university_id = Column(Integer, unique=True, index=True)
     gender = Column(String(20))
     phone_number = Column(String(20), unique=True, index=True)
@@ -51,6 +58,9 @@ class User(Base):
     # Per-user provider API keys (never logged, returned masked):
     # {groq, openrouter, opencode, siliconflow, runware, falai}
     user_api_keys = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    totp_secret = Column(String(64))
+    totp_enabled = Column(Boolean, nullable=False, default=False, server_default=text("false"))
+    totp_backup_codes = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -162,6 +172,31 @@ class PasswordResetToken(Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
 
     user = relationship("User", backref="password_reset_tokens")
+
+
+class EmailVerificationToken(Base):
+    __tablename__ = "email_verification_tokens"
+
+    id = _pk_column()
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    token = Column(String(255), unique=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+
+    user = relationship("User", backref="email_verification_tokens")
+
+
+class RevokedToken(Base):
+    """JWT blocklist — stores jti of revoked tokens until their natural expiry."""
+
+    __tablename__ = "jwt_blocklist"
+    __table_args__ = (Index("idx_jwt_blocklist_expires_at", "expires_at"),)
+
+    jti = Column(String(128), primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
+    revoked_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+
 
 
 class PlatformConfig(Base):

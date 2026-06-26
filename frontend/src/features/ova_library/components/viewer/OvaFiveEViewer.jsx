@@ -55,7 +55,7 @@ function PhaseSection({ section }) {
   if (section.type === 'image') {
     return (
       <figure className="mt-3">
-        <img src={section.src} alt={section.alt ?? ''} className="max-w-full rounded-lg border border-border" />
+        <img src={section.src} alt={section.alt ?? ''} loading="lazy" className="max-w-full rounded-lg border border-border" />
         {section.alt ? (
           <figcaption className="mt-1 text-center text-xs text-muted-foreground">{section.alt}</figcaption>
         ) : null}

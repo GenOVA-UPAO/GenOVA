@@ -41,15 +41,23 @@ _SEED_PASS = "user1234password"
 _DDL = """
 CREATE TABLE users (
   id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL,
+  email_normalized TEXT UNIQUE,
   failed_login_attempts INTEGER NOT NULL DEFAULT 0, locked_until TIMESTAMP,
   full_name TEXT, is_active BOOLEAN NOT NULL DEFAULT 1,
+  email_verified BOOLEAN NOT NULL DEFAULT 0,
   university_id INTEGER, gender TEXT, phone_number TEXT,
   llm_settings TEXT NOT NULL DEFAULT '{}', enabled_models TEXT NOT NULL DEFAULT '[]',
   ova_settings TEXT NOT NULL DEFAULT '{}',
   theme_settings TEXT NOT NULL DEFAULT '{}',
   resource_configs TEXT NOT NULL DEFAULT '{}',
   user_api_keys TEXT NOT NULL DEFAULT '{}',
+  totp_secret TEXT, totp_enabled BOOLEAN NOT NULL DEFAULT 0,
+  totp_backup_codes TEXT NOT NULL DEFAULT '[]',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
+);
+CREATE TABLE email_verification_tokens (
+  id TEXT PRIMARY KEY, user_id TEXT NOT NULL, token TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, expires_at TIMESTAMP NOT NULL
 );
 CREATE TABLE platform_config (
   key TEXT PRIMARY KEY, value TEXT NOT NULL,
@@ -82,10 +90,15 @@ def client():
                 conn.execute(text(stmt))
         conn.execute(
             text(
-                "INSERT INTO users (id, email, password_hash, full_name) "
-                "VALUES (:i, :e, :p, 'Seed User')"
+                "INSERT INTO users (id, email, email_normalized, password_hash, full_name, "
+                "email_verified) VALUES (:i, :e, :n, :p, 'Seed User', 1)"
             ),
-            {"i": uuid.uuid4().hex, "e": _SEED_EMAIL, "p": hash_password(_SEED_PASS)},
+            {
+                "i": uuid.uuid4().hex,
+                "e": _SEED_EMAIL,
+                "n": _SEED_EMAIL,
+                "p": hash_password(_SEED_PASS),
+            },
         )
 
     Session = sessionmaker(bind=eng, autoflush=False, autocommit=False, future=True)
@@ -228,9 +241,10 @@ def registro_valido(client):
     )
 
 
-@then("el sistema debe crear la cuenta")
-def cuenta_creada(response):
+@then("el sistema debe crear la cuenta sin verificar")
+def cuenta_creada_sin_verificar(response):
     assert response.status_code == 201
+    assert response.json().get("email_verification_required") is True
 
 
 @then("los campos university_id, gender y phone_number deben crearse como NULL")
@@ -238,9 +252,16 @@ def campos_null():
     pass
 
 
-@then("debo recibir un JWT")
-def jwt_presente(response):
-    assert response.json().get("access_token")
+@then("debo ver un aviso para verificar mi correo")
+def aviso_verificar(response):
+    assert response.json().get("message")
+
+
+@then("no debo iniciar sesión hasta verificar el correo")
+def sin_sesion_hasta_verificar(response):
+    # El registro no emite JWT ni cookie de sesión.
+    assert response.json().get("access_token") is None
+    assert "genova_token" not in response.cookies
 
 
 @given(parsers.parse('que el correo "{email}" ya está registrado'))

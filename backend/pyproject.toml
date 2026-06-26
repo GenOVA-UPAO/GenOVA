@@ -19,6 +19,8 @@ dependencies = [
     "pydantic[email]==2.13.4",
     "pydantic-settings==2.14.2",
     "slowapi==0.1.10",
+    "sentry-sdk[fastapi]==2.63.0",
+    "prometheus-fastapi-instrumentator==8.0.2",
     "openai==2.43.0",
     "groq==1.4.0",
     "supabase==2.31.0",
@@ -26,8 +28,10 @@ dependencies = [
     "pypdf==6.13.3",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
+    "filetype==1.2.0",
     "langgraph==1.2.6",
     "langgraph-checkpoint-postgres==3.1.0",
+    "pyotp==2.10.0",
 ]
 
 [project.optional-dependencies]
