@@ -142,6 +142,7 @@ Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` 
 ```
 
 Estrategia de pruebas completa (BDD unit/backend/e2e + CI) en [docs/testing.md](docs/testing.md).
+Smoke tests manuales (playwright-cli, 6 bloques A–F): [`tests/playwright-smoke/SMOKE_TESTS.md`](tests/playwright-smoke/SMOKE_TESTS.md).
 
 ### Skills
 
@@ -199,6 +200,7 @@ Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para resincronizar ag
 | `feature_list.json` | Registro de todas las features y su estado |
 | `CHECKPOINTS.md` | Criterios objetivos de calidad (actualizable por reviewer) |
 | `verify.ps1` | Orquestador de verificación (lint + tests) |
+| `tests/playwright-smoke/SMOKE_TESTS.md` | Smoke tests manuales playwright-cli (6 bloques A–F: auth, rol, mutaciones, logout, registro, prod) |
 | `sdd/progress/current.md` | Estado de la sesión activa |
 | `sdd/progress/history.md` | Bitácora append-only de sesiones anteriores |
 | `sdd/specs/HU-*.md`, `EN-*.md` | Especificaciones de historias y enablers |
