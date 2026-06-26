@@ -84,6 +84,11 @@
     { "id": "EN-015", "name": "critico-evaluator-optimizer", "title": "Crítico evaluator-optimizer pedagógico por recurso", "spec": "sdd/specs/EN-015_critico-evaluator-optimizer.md", "status": "done" },
     { "id": "EN-016", "name": "editor-coherencia-5e", "title": "Editor de Coherencia 5E", "spec": "sdd/specs/EN-016_editor-coherencia-5e.md", "status": "done" },
     { "id": "EN-017", "name": "panel-nodos-prometheus", "title": "Panel de Nodos/Agentes Prometheus + Nodo Video + Nodo Imágenes", "spec": "sdd/specs/EN-017_panel-nodos-prometheus.md", "status": "done", "merge_commit": "3ed88fa36f38a7748bcfccb023eb841a39e89385" },
+    { "id": "EN-018", "name": "sse-progreso-generacion", "title": "Progreso de generación en vivo (SSE)", "spec": "sdd/specs/EN-018_sse-progreso-generacion.md", "status": "done" },
+    { "id": "EN-019", "name": "cola-arq-redis", "title": "Cola de jobs durable (arq + Redis) y rate-limit distribuido", "spec": "sdd/specs/EN-019_cola-arq-redis.md", "status": "done" },
+    { "id": "EN-020", "name": "observabilidad-logfire", "title": "Observabilidad con Pydantic Logfire", "spec": "sdd/specs/EN-020_observabilidad-logfire.md", "status": "done" },
+    { "id": "EN-021", "name": "error-boundaries-redaccion-pii", "title": "Error boundaries (frontend) y redacción de PII en logs (backend)", "spec": "sdd/specs/EN-021_error-boundaries-redaccion-pii.md", "status": "done" },
+    { "id": "EN-022", "name": "vitest-typescript", "title": "Tests de componente (Vitest) y adopción de TypeScript", "spec": "sdd/specs/EN-022_vitest-typescript.md", "status": "in_progress" },
 
     { "id": "RN-001", "name": "latencia_278ms", "title": "Latencia ≤ 278 ms", "spec": "", "status": "pending" },
     { "id": "RN-002", "name": "tiempo_generacion", "title": "Tiempo de generación ≤ 180 segundos", "spec": "sdd/specs/RN-002_tiempo-generacion-180s.md", "status": "done" },

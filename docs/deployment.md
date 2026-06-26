@@ -52,6 +52,21 @@
 - Usa el **Transaction pooler** de Supabase (puerto 6543) en free tier; `pool_pre_ping` y
   `pool_recycle=300` sobreviven la evicción de pgbouncer.
 
+### Worker de generación (arq) — opcional pero recomendado en prod
+
+Con `REDIS_URL` configurado, la generación de OVA se **encola** (arq) en vez de correr en un
+thread dentro del proceso web, de modo que un redeploy/crash no pierde generaciones en curso.
+Requiere un **segundo servicio** que comparta la misma env que la API:
+
+```bash
+arq worker.WorkerSettings        # start command del servicio worker
+```
+
+- Mismo repo/imagen que el backend; mismas variables (`DATABASE_URL`, `REDIS_URL`, claves LLM).
+- Si `REDIS_URL` no está, o el enqueue falla, el endpoint cae automáticamente al **runner
+  inline en thread** (dev y resiliencia ante caída de Redis siguen funcionando).
+- Concurrencia por worker: `ARQ_MAX_JOBS` (default 4).
+
 ## Supabase
 
 - **PostgreSQL + pgvector**: la extensión se crea por migración; no requiere setup manual.
@@ -126,6 +141,9 @@ cp frontend/.env.example frontend/.env
 | `SMTP_USER` | — | | Cuenta de envío (si falta → `EmailNotConfigured`) |
 | `SMTP_PASSWORD` | — | | App Password de Gmail (sin espacios) |
 | `LABS_MAX_WORKERS` | 4 | | Workers concurrentes para jobs de Labs |
+| `REDIS_URL` | — | | Cola **arq** (jobs de generación durables) + **rate-limit distribuido** + storage de slowapi. Sin él: runner inline en thread + rate-limit en memoria. Soporta `rediss://` (Upstash) |
+| `ARQ_MAX_JOBS` | 4 | | Jobs de generación en paralelo que procesa un worker arq |
+| `LOGFIRE_TOKEN` | — | | Activa **Pydantic Logfire** (tracing distribuido + token/cost de LLM). Sin él: no-op (como Sentry) |
 
 ### Frontend (`frontend/.env`)
 

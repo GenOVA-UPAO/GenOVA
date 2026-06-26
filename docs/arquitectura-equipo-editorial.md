@@ -3,8 +3,7 @@
 > **Propuesta de arquitectura multiagente** para la generación de OVAs. Evoluciona el motor actual
 > (orchestrator-workers plano; ver [prometheus.md](prometheus.md)) hacia un **equipo editorial** con
 > roles que **colaboran vía crítica**, donde el multi-agente aporta valor real: **calidad
-> pedagógica** y **coherencia del arco 5E**. Metodología de diseño: **GAIA** (extiende el modelo de
-> roles de [metodologia-gaia.md](metodologia-gaia.md)). Framework: **LangGraph**.
+> pedagógica** y **coherencia del arco 5E**. Framework: **LangGraph**.
 >
 > Estado: **diseño** (no implementado). Sección [Rollout](#rollout-por-fases) define cómo prototipar.
 
@@ -40,7 +39,7 @@ Assembler → SCORM
 ```
 
 **Roles nuevos**: `Crítico` y `Editor`. Los demás (Concierge, ResourceGenerator, Assembler,
-Orchestrator) se mantienen del diseño GAIA actual. La pizarra es el `OvaGenerationState`.
+Orchestrator) se mantienen del diseño actual (Prometheus). La pizarra es el `OvaGenerationState`.
 
 Mecanismos LangGraph usados: **subgrafo** por recurso (Generador-Crítico), **aristas condicionales
 con contador de rondas** (reflexión acotada), **reduce/join** antes del Editor, **supervisor**
@@ -131,9 +130,9 @@ Coste cuando activos (con concurrencia, en paralelo): Crítico +1 LLM/recurso; r
 
 ---
 
-## Mapeo a metodología y patrones
+## Mapeo a patrones
 
-- **GAIA** (diseño): dos roles nuevos (`Crítico`, `Editor`) con sus responsabilidades, permisos y
+- **Diseño de roles**: dos roles nuevos (`Crítico`, `Editor`) con sus responsabilidades, permisos y
   protocolos; siguen la topología en estrella (colaboran vía la pizarra, no entre sí). Nueva regla
   organizacional: *"ningún recurso se ensambla sin pasar por el Crítico (si está activo)"*.
 - **Patrones de runtime**: orchestrator-workers (Concierge) + **evaluator-optimizer**
@@ -156,7 +155,7 @@ Para defender que el multi-agente aporta, medir antes/después:
 1. **Crítico** (subgrafo Generador-Crítico, `OVA_REFLECTION_ROUNDS=1`) — mayor valor/calidad, riesgo
    bajo si el bucle queda acotado. Reusa la infraestructura de `refine.py`.
 2. **Editor 5E** (modo reporte primero; parches después) — coherencia del arco.
-3. **Map-reduce plano** (opcional, ver [metodologia-gaia.md](metodologia-gaia.md)) — velocidad.
+3. **Map-reduce plano** (opcional) — velocidad.
 
 Cada fase detrás de su flag, con tests BDD nuevos y verificación con `verify.ps1`. Sería una
 feature SDD (spec → implementer → reviewer).
@@ -165,7 +164,6 @@ feature SDD (spec → implementer → reviewer).
 
 ## Referencias
 
-- [metodologia-gaia.md](metodologia-gaia.md) — Metodología de diseño (roles/interacciones)
 - [prometheus.md](prometheus.md) — Motor de runtime actual
 - [fases-5e.md](fases-5e.md) — Catálogo de recursos + prompts
 - Anthropic, *Building Effective Agents* — evaluator-optimizer, orchestrator-workers

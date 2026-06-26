@@ -14,5 +14,5 @@ estos documentos cubren el detalle. La genera/actualiza el agente `doc_author`.
 | [workspace.md](workspace.md) | Workspace unificado crear/editar OVA | HU-025, HU-030, EN-013 | 2026-06-09 |
 | [catalogo-modelos.md](catalogo-modelos.md) | Catálogo de modelos LLM (curado + APIs + enable/disable + asignación por tarea) | HU-034 | 2026-06-09 |
 | [prometheus.md](prometheus.md) | Motor multi-agente Prometheus (orquestador-trabajadores) + LangGraph | EP-5 | 2026-06-22 |
-| [metodologia-gaia.md](metodologia-gaia.md) | Propuesta: GAIA (AOSE) como metodología de diseño + patrón orchestrator-workers (y evolución a map-reduce) | EP-5 | 2026-06-15 |
 | [arquitectura-equipo-editorial.md](arquitectura-equipo-editorial.md) | Diseño de arquitectura objetivo: equipo editorial pedagógico (Generador-Crítico + Editor 5E) | EP-5 | 2026-06-15 |
+| [mejoras-infra-2026-06.md](mejoras-infra-2026-06.md) | Mejoras transversales: error boundaries, SSE, arq/Redis, Logfire, redacción PII, Vitest, TypeScript | EN-018…022 | 2026-06-26 |

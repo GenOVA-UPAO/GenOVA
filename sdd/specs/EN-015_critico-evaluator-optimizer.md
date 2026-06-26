@@ -36,7 +36,6 @@ ese mecanismo hacia evaluación de contenido, usando la misma infraestructura de
 el mismo patrón best-effort (nunca bloquea un recurso).
 
 Diseño de referencia: `docs/arquitectura-equipo-editorial.md` § "Rol nuevo 1 — Crítico".
-Metodología: GAIA (`docs/metodologia-gaia.md`).
 
 ## Alcance
 
