@@ -11,11 +11,11 @@ export function useLabPrompt() {
   const [promptText, setPromptText] = useState('')
   const [loadingPrompts, setLoadingPrompts] = useState(false)
 
-  const loadPrompts = useCallback(async (phase, type) => {
+  const loadPrompts = useCallback(async (phase: string, type: string) => {
     if (!phase || !type) return
     setLoadingPrompts(true)
     try {
-      const data = await fetchPrompts(phase, type)
+      const data = (await fetchPrompts(phase, type)) as { base_prompt?: string }
       setBasePrompt(data.base_prompt || '')
       setPromptText(data.base_prompt || '')
     } catch {

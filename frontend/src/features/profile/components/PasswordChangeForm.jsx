@@ -4,7 +4,7 @@ import { Button } from '@/core/components/ui/button'
 import { PasswordInput } from '@/core/components/ui/password-input'
 import { Label } from '@/core/components/ui/label'
 import { changePasswordSchema } from '@/features/profile/schemas/user.js'
-import { useChangePassword } from '@/features/profile/hooks/useChangePassword.js'
+import { useChangePassword } from '@/features/profile/hooks/useChangePassword'
 
 const LABEL = 'text-xs font-bold uppercase tracking-wide text-muted-foreground'
 

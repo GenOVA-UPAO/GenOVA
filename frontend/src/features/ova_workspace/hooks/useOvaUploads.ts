@@ -4,15 +4,33 @@ import { deleteTempFile, listTempFiles, uploadTempFiles } from '../services/uplo
 
 const MAX_UPLOAD_FILES = Number(import.meta.env.VITE_UPLOAD_MAX_FILES || 5)
 
-function generateClientId() {
+interface UploadItem {
+  clientId: string
+  uploadId: string
+  filename: string
+  contentType: string
+  sizeBytes: number
+  status: 'uploading' | 'success' | 'error'
+  message: string
+  ragStatus?: unknown
+}
+
+interface ServerItem {
+  upload_id: string
+  filename: string
+  content_type: string
+  size_bytes?: number
+  rag_status?: unknown
+}
+
+function generateClientId(): string {
   if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
     return window.crypto.randomUUID()
   }
-
   return `upload-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-function fromServerItem(serverItem) {
+function fromServerItem(serverItem: ServerItem): UploadItem {
   return {
     clientId: generateClientId(),
     uploadId: serverItem.upload_id,
@@ -25,7 +43,7 @@ function fromServerItem(serverItem) {
   }
 }
 
-function toUploadingItem(file) {
+function toUploadingItem(file: File): UploadItem {
   return {
     clientId: generateClientId(),
     uploadId: '',
@@ -38,41 +56,36 @@ function toUploadingItem(file) {
 }
 
 export function useOvaUploads() {
-  const [uploads, setUploads] = useState([])
+  const [uploads, setUploads] = useState<UploadItem[]>([])
   const [uploadError, setUploadError] = useState('')
   const [isUploadingFiles, setIsUploadingFiles] = useState(false)
 
   useEffect(() => {
     async function loadTempUploads() {
       try {
-        const data = await listTempFiles()
+        const data = (await listTempFiles()) as { items?: ServerItem[] }
         const items = Array.isArray(data?.items) ? data.items : []
         setUploads(items.map(fromServerItem))
       } catch {
         setUploads([])
       }
     }
-
     loadTempUploads()
   }, [])
 
-  const uploadIds = useMemo(() => {
-    return uploads
-      .filter((item) => item.status === 'success' && item.uploadId)
-      .map((item) => item.uploadId)
-  }, [uploads])
+  const uploadIds = useMemo(
+    () => uploads.filter((item) => item.status === 'success' && item.uploadId).map((i) => i.uploadId),
+    [uploads],
+  )
 
   const activeUploadsCount = uploads.length
 
   const handleFilesSelected = useCallback(
-    async (fileList) => {
+    async (fileList: FileList | File[]) => {
       const selectedFiles = Array.from(fileList || [])
-      if (selectedFiles.length === 0) {
-        return
-      }
+      if (selectedFiles.length === 0) return
 
       setUploadError('')
-
       const limitError = validateFileAdd(activeUploadsCount, selectedFiles.length, MAX_UPLOAD_FILES)
       if (limitError) {
         setUploadError(limitError)
@@ -88,7 +101,10 @@ export function useOvaUploads() {
       await Promise.all(
         filePairs.map(async ({ item, file }) => {
           try {
-            const result = await uploadTempFiles([file])
+            const result = (await uploadTempFiles([file])) as {
+              items?: ServerItem[]
+              errors?: { message?: string }[]
+            }
             const saved = result?.items?.[0]
             const failure = result?.errors?.[0]
 
@@ -106,8 +122,8 @@ export function useOvaUploads() {
                         message: 'Carga exitosa',
                         ragStatus: saved.rag_status,
                       }
-                    : current
-                )
+                    : current,
+                ),
               )
               return
             }
@@ -117,46 +133,41 @@ export function useOvaUploads() {
               previous.map((current) =>
                 current.clientId === item.clientId
                   ? { ...current, status: 'error', message: failureMessage }
-                  : current
-              )
+                  : current,
+              ),
             )
           } catch (error) {
             setUploads((previous) =>
               previous.map((current) =>
                 current.clientId === item.clientId
-                  ? {
-                      ...current,
-                      status: 'error',
-                      message: error?.message || 'Error al subir archivo.',
-                    }
-                  : current
-              )
+                  ? { ...current, status: 'error', message: (error as Error)?.message || 'Error al subir archivo.' }
+                  : current,
+              ),
             )
           }
-        })
+        }),
       )
 
       setIsUploadingFiles(false)
     },
-    [activeUploadsCount]
+    [activeUploadsCount],
   )
 
-  const handleRemoveUpload = useCallback(async (clientId) => {
-    const target = uploads.find((item) => item.clientId === clientId)
-    if (!target) {
-      return
-    }
-
-    if (target.uploadId) {
-      try {
-        await deleteTempFile(target.uploadId)
-      } catch {
-        // Si expiró en backend, permitimos limpiar la UI local.
+  const handleRemoveUpload = useCallback(
+    async (clientId: string) => {
+      const target = uploads.find((item) => item.clientId === clientId)
+      if (!target) return
+      if (target.uploadId) {
+        try {
+          await deleteTempFile(target.uploadId)
+        } catch {
+          // Si expiró en backend, permitimos limpiar la UI local.
+        }
       }
-    }
-
-    setUploads((previous) => previous.filter((item) => item.clientId !== clientId))
-  }, [uploads])
+      setUploads((previous) => previous.filter((item) => item.clientId !== clientId))
+    },
+    [uploads],
+  )
 
   return {
     activeUploadsCount,

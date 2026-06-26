@@ -1,10 +1,16 @@
 import { toast } from 'sonner'
 import { apiFetch } from '../../../core/lib/http/client'
 
+interface ChangePasswordValues {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}
+
 // Sólo la llamada a la API; el form + validación viven en PasswordChangeForm
 // (React Hook Form + Zod). Devuelve true en éxito para que el form se resetee.
 export function useChangePassword() {
-  const changePassword = async (values) => {
+  const changePassword = async (values: ChangePasswordValues): Promise<boolean> => {
     try {
       const response = await apiFetch('/api/users/me/change-password', {
         method: 'POST',
@@ -18,7 +24,7 @@ export function useChangePassword() {
         toast.success('¡Contraseña actualizada con éxito!')
         return true
       }
-      const data = await response.json().catch(() => ({}))
+      const data = (await response.json().catch(() => ({}))) as { detail?: string }
       toast.error(data.detail || 'Error al actualizar la contraseña.')
       return false
     } catch {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/core/components/ui/badge'
-import { useResourceContent } from '@/features/ova_workspace/hooks/useResourceContent.js'
+import { useResourceContent } from '@/features/ova_workspace/hooks/useResourceContent'
 
 /**
  * Right-panel preview for creation workspace.

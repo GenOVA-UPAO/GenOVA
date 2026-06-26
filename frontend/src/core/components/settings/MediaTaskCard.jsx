@@ -3,7 +3,7 @@ import { m as motion } from 'motion/react'
 import { toast } from 'sonner'
 import { TASK_META } from '@/core/lib/llm/taskMeta'
 import { getOvaSettings, saveOvaSettings } from '@/features/ova_workspace/services/ovaSettingsService'
-import { useImageModels } from '@/features/ova_workspace/hooks/useImageModels.js'
+import { useImageModels } from '@/features/ova_workspace/hooks/useImageModels'
 
 const IMAGE_PROVIDERS = [
   { value: 'huggingface', label: 'HuggingFace (gratis)' },

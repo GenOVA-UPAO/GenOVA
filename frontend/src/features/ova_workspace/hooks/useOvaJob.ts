@@ -1,27 +1,40 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { getJobStatus, resumeJob, startJob } from '../services/ovaCreationService'
 import {
-  startJob,
-  getJobStatus,
-  resumeJob,
-} from '../services/ovaCreationService'
-import {
-  toResourceViewModel,
-  pruneSelection,
+  type BackendResource,
   jobOutcome,
-} from '../../../features/ova_workspace/lib/ovaJobViewModel'
-import { useJobStream } from './useJobStream.js'
+  pruneSelection,
+  type Selections,
+  toResourceViewModel,
+} from '../lib/ovaJobViewModel'
+import { useJobStream } from './useJobStream'
 
 const POLL_MS = Number(import.meta.env?.VITE_JOB_POLL_MS || 2000)
 // Heartbeat lento cuando el SSE empuja en vivo: red de seguridad por si un proxy
 // bufferea el stream y el progreso se congela, sin volver al poll agresivo.
 const STREAM_HEARTBEAT_MS = 15000
 const ALL_PHASES = ['engage', 'explore', 'explain', 'elaborate', 'evaluate']
-const EMPTY_SELECTIONS = Object.fromEntries(ALL_PHASES.map((p) => [p, []]))
+const EMPTY_SELECTIONS = Object.fromEntries(ALL_PHASES.map((p) => [p, []])) as Selections
+
+interface JobSnapshot {
+  job_id?: string
+  ova_id?: string | null
+  status?: string
+  resources?: BackendResource[]
+}
+
+interface StartArgs {
+  prompt: string
+  uploadIds: string[]
+  selections: Selections
+  theme?: unknown
+  resourceConfigs?: Record<string, unknown>
+}
 
 // Traduce la selección del modal a `resources:[{phase_type, resource_type}]` (B1).
-function toResourcesPayload(selections) {
-  const out = []
+function toResourcesPayload(selections: Selections) {
+  const out: { phase_type: string; resource_type: string }[] = []
   for (const phase of ALL_PHASES) {
     for (const r of selections[phase] || []) {
       out.push({ phase_type: phase, resource_type: String(r.id) })
@@ -30,22 +43,19 @@ function toResourcesPayload(selections) {
   return out
 }
 
-// Orquesta un job de generación server-side vía TanStack Query: start (imperativo)
-// → poll (useQuery con refetchInterval hasta terminal) → viewmodel + reintentos.
+// Orquesta un job de generación server-side vía TanStack Query.
 export function useOvaJob() {
   const qc = useQueryClient()
-  const [jobId, setJobId] = useState(null)
-  const [selections, setSelections] = useState(EMPTY_SELECTIONS)
+  const [jobId, setJobId] = useState<string | null>(null)
+  const [selections, setSelections] = useState<Selections>(EMPTY_SELECTIONS)
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState('')
-  const [selectedFailedIds, setSelectedFailedIds] = useState([])
-  // `streaming` se actualiza tras consultar el job; el closure de refetchInterval
-  // lo lee vía ref para no recrearse en cada cambio de estado del stream.
+  const [selectedFailedIds, setSelectedFailedIds] = useState<string[]>([])
   const streamingRef = useRef(false)
 
   const { data: job } = useQuery({
     queryKey: ['ovaJob', jobId],
-    queryFn: () => getJobStatus(jobId),
+    queryFn: () => getJobStatus(jobId as string) as Promise<JobSnapshot>,
     enabled: !!jobId,
     staleTime: 0,
     refetchInterval: (query) => {
@@ -62,8 +72,6 @@ export function useOvaJob() {
     [job, selections],
   )
   const outcome = useMemo(() => jobOutcome(job, viewModel), [job, viewModel])
-  // Abre el SSE mientras haya job activo y no terminal; vuelca snapshots en la
-  // cache de la query. `streamingRef` alimenta la decisión de poll de arriba.
   const streaming = useJobStream(jobId, !!jobId && !outcome.isTerminal)
   streamingRef.current = streaming
   const cleanSelection = useMemo(
@@ -77,13 +85,7 @@ export function useOvaJob() {
   else if (jobId) phase = 'polling'
 
   const start = useCallback(
-    async ({
-      prompt,
-      uploadIds,
-      selections: sel,
-      theme,
-      resourceConfigs = {},
-    }) => {
+    async ({ prompt, uploadIds, selections: sel, theme, resourceConfigs = {} }: StartArgs) => {
       setSelections(sel)
       setError('')
       setSelectedFailedIds([])
@@ -91,16 +93,10 @@ export function useOvaJob() {
       setJobId(null)
       try {
         const resources = toResourcesPayload(sel)
-        const { job_id } = await startJob({
-          prompt,
-          uploadIds,
-          resources,
-          theme,
-          resourceConfigs,
-        })
+        const { job_id } = await startJob({ prompt, uploadIds, resources, theme, resourceConfigs })
         setJobId(job_id)
       } catch (err) {
-        setError(err?.message || 'No se pudo iniciar la generación.')
+        setError((err as Error)?.message || 'No se pudo iniciar la generación.')
       } finally {
         setStarting(false)
       }
@@ -116,41 +112,36 @@ export function useOvaJob() {
     setStarting(false)
   }, [])
 
-  const restore = useCallback((existingJobId) => {
+  const restore = useCallback((existingJobId: string) => {
     setError('')
     setSelectedFailedIds([])
     setJobId(existingJobId)
   }, [])
 
   const resumeAndPoll = useCallback(
-    async (ids) => {
+    async (ids: string[]) => {
       if (!jobId) return
       setError('')
       try {
         await resumeJob(jobId, ids)
         qc.invalidateQueries({ queryKey: ['ovaJob', jobId] })
       } catch (err) {
-        setError(err?.message || 'No se pudo reintentar la generación.')
+        setError((err as Error)?.message || 'No se pudo reintentar la generación.')
       }
     },
     [jobId, qc],
   )
 
-  const retryOne = useCallback(
-    (resourceId) => resumeAndPoll([resourceId]),
-    [resumeAndPoll],
-  )
+  const retryOne = useCallback((resourceId: string) => resumeAndPoll([resourceId]), [resumeAndPoll])
   const retrySelected = useCallback(
     () => resumeAndPoll(cleanSelection),
     [resumeAndPoll, cleanSelection],
   )
   const retryAll = useCallback(() => resumeAndPoll([]), [resumeAndPoll])
 
-  const toggleFailed = useCallback((resourceId) => {
+  const toggleFailed = useCallback((resourceId: string) => {
     setSelectedFailedIds((curr) =>
-      curr.includes(resourceId)
-        ? curr.filter((x) => x !== resourceId)
-        : [...curr, resourceId],
+      curr.includes(resourceId) ? curr.filter((x) => x !== resourceId) : [...curr, resourceId],
     )
   }, [])
 

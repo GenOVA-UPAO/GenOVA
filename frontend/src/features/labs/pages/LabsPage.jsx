@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useLabGeneration } from '@/features/labs/hooks/useLabGeneration.js'
+import { useLabGeneration } from '@/features/labs/hooks/useLabGeneration'
 import { PhaseResourceSelector } from '@/features/labs/components/PhaseResourceSelector.jsx'
 import { PromptEditor } from '@/features/labs/components/PromptEditor.jsx'
 import { ModelSelector } from '@/features/labs/components/ModelSelector.jsx'

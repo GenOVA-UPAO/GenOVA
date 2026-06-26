@@ -7,44 +7,50 @@ import {
   pollResults,
   startGeneration,
 } from '../services/labsService'
-import { useLabPrompt } from './useLabPrompt.js'
+import { useLabPrompt } from './useLabPrompt'
 
 // Cut from 2s → 5s. Generation latency dwarfs the polling interval; this
 // reduces Render free-tier request load by ~60% without changing UX.
 const POLL_MS = 5000
+
+interface Model {
+  id: string
+  provider: string
+  [key: string]: unknown
+}
+
+interface ImprovedPrompt {
+  improved_prompt?: string
+  explanation?: string
+}
 
 /**
  * Central hook for the Labs page (experimentation sandbox).
  * Composes useLabPrompt + generation + model state.
  */
 export function useLabGeneration() {
-  // Resource selection
-  const [selectedPhase, setSelectedPhase] = useState(null)
-  const [selectedType, setSelectedType] = useState(null)
+  const [selectedPhase, setSelectedPhase] = useState<string | null>(null)
+  const [selectedType, setSelectedType] = useState<string | null>(null)
 
-  // Editable prompt (delegated hook)
   const prompt = useLabPrompt()
 
-  // Models
-  const [models, setModels] = useState([])
-  const [modelA, setModelA] = useState(null)
-  const [modelB, setModelB] = useState(null)
+  const [models, setModels] = useState<Model[]>([])
+  const [modelA, setModelA] = useState<Model | null>(null)
+  const [modelB, setModelB] = useState<Model | null>(null)
 
-  // Generation
   const [concept, setConcept] = useState('')
   const [generating, setGenerating] = useState(false)
-  const [results, setResults] = useState([])
-  const [jobError, setJobError] = useState(null)
-  const pollRef = useRef(null)
+  const [results, setResults] = useState<unknown[]>([])
+  const [jobError, setJobError] = useState<string | null>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Winner + improvement
-  const [winnerId, setWinnerId] = useState(null)
+  const [winnerId, setWinnerId] = useState<string | null>(null)
   const [improving, setImproving] = useState(false)
-  const [improvedPrompt, setImprovedPrompt] = useState(null)
+  const [improvedPrompt, setImprovedPrompt] = useState<ImprovedPrompt | null>(null)
 
   const loadModels = useCallback(async () => {
     try {
-      const data = await fetchModels()
+      const data = (await fetchModels()) as { models?: Model[] }
       setModels(data.models || [])
     } catch {
       setModels([])
@@ -52,7 +58,7 @@ export function useLabGeneration() {
   }, [])
 
   const selectResource = useCallback(
-    (phase, type) => {
+    (phase: string, type: string) => {
       setSelectedPhase(phase)
       setSelectedType(type)
       setResults([])
@@ -70,7 +76,6 @@ export function useLabGeneration() {
     }
   }, [])
 
-  // Cleanup on unmount
   useEffect(() => _stopPoll, [_stopPoll])
 
   const generate = useCallback(async () => {
@@ -84,18 +89,20 @@ export function useLabGeneration() {
     const configs = [
       { model_id: modelA.id, provider: modelA.provider, prompt_text: prompt.promptText },
     ]
-    if (modelB) configs.push({ model_id: modelB.id, provider: modelB.provider, prompt_text: prompt.promptText })
+    if (modelB) {
+      configs.push({ model_id: modelB.id, provider: modelB.provider, prompt_text: prompt.promptText })
+    }
 
     try {
-      const { job_id } = await startGeneration({
+      const { job_id } = (await startGeneration({
         phase: selectedPhase,
         resource_type: selectedType,
         concept: concept.trim(),
         model_configs: configs,
-      })
+      })) as { job_id: string }
       pollRef.current = setInterval(async () => {
         try {
-          const data = await pollResults(job_id)
+          const data = (await pollResults(job_id)) as { results?: unknown[]; finished?: boolean }
           setResults(data.results || [])
           if (data.finished) {
             _stopPoll()
@@ -104,34 +111,38 @@ export function useLabGeneration() {
         } catch (err) {
           _stopPoll()
           setGenerating(false)
-          setJobError(err.message)
+          setJobError((err as Error).message)
         }
       }, POLL_MS)
     } catch (err) {
       setGenerating(false)
-      setJobError(err.message)
+      setJobError((err as Error).message)
     }
   }, [selectedPhase, selectedType, concept, modelA, modelB, prompt.promptText, _stopPoll])
 
-  const selectWinner = useCallback(async (resultId) => {
+  const selectWinner = useCallback(async (resultId: string) => {
     setWinnerId(resultId)
-    try { await markSelected(resultId) } catch { /* non-critical */ }
+    try {
+      await markSelected(resultId)
+    } catch {
+      /* non-critical */
+    }
   }, [])
 
   const handleImprovePrompt = useCallback(async () => {
     if (!winnerId || !selectedPhase || !selectedType) return
     setImproving(true)
     try {
-      const data = await improvePrompt({
+      const data = (await improvePrompt({
         current_prompt: prompt.promptText,
         result_id: winnerId,
         concept: concept.trim(),
         phase: selectedPhase,
         resource_type: selectedType,
-      })
+      })) as ImprovedPrompt
       setImprovedPrompt(data)
     } catch (err) {
-      setImprovedPrompt({ improved_prompt: '', explanation: err.message })
+      setImprovedPrompt({ improved_prompt: '', explanation: (err as Error).message })
     } finally {
       setImproving(false)
     }
@@ -141,16 +152,31 @@ export function useLabGeneration() {
     if (improvedPrompt?.improved_prompt) prompt.setPromptText(improvedPrompt.improved_prompt)
   }, [improvedPrompt, prompt])
 
-  const handleExportScorm = useCallback((resultId) => downloadScorm(resultId), [])
+  const handleExportScorm = useCallback((resultId: string) => downloadScorm(resultId), [])
 
   return {
-    selectedPhase, selectedType, selectResource,
+    selectedPhase,
+    selectedType,
+    selectResource,
     ...prompt,
-    models, loadModels, modelA, setModelA, modelB, setModelB,
-    concept, setConcept,
-    generating, generate, results, jobError,
-    winnerId, selectWinner,
-    improving, improvedPrompt, handleImprovePrompt, applyImprovedPrompt,
+    models,
+    loadModels,
+    modelA,
+    setModelA,
+    modelB,
+    setModelB,
+    concept,
+    setConcept,
+    generating,
+    generate,
+    results,
+    jobError,
+    winnerId,
+    selectWinner,
+    improving,
+    improvedPrompt,
+    handleImprovePrompt,
+    applyImprovedPrompt,
     handleExportScorm,
   }
 }

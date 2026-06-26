@@ -8,7 +8,7 @@ import { API_BASE } from '@/core/lib/http/client'
 // vivo. Devuelve `streaming`: useOvaJob lo usa para ralentizar el poll mientras
 // el stream está sano y caer de nuevo a polling rápido si la conexión falla
 // (algunos proxies bufferean SSE, por eso el poll sigue como red de seguridad).
-export function useJobStream(jobId, enabled) {
+export function useJobStream(jobId: string | null, enabled: boolean): boolean {
   const qc = useQueryClient()
   const [streaming, setStreaming] = useState(false)
 

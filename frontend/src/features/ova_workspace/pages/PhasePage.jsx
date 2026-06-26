@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { usePhaseGeneration } from '@/features/labs/hooks/usePhaseGeneration.js'
+import { usePhaseGeneration } from '@/features/ova_workspace/hooks/usePhaseGeneration.js'
 import { ResourceCard } from '@/features/student/components/engage/ResourceCard.jsx'
 import { HtmlPreview } from '@/features/student/components/engage/HtmlPreview.jsx'
 import { Input } from '@/core/components/ui/input'

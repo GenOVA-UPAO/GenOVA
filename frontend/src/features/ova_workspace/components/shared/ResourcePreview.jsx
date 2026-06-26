@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { HtmlPreview } from '@/features/student/components/engage/HtmlPreview.jsx'
-import { useResourceContent } from '@/features/ova_workspace/hooks/useResourceContent.js'
+import { useResourceContent } from '@/features/ova_workspace/hooks/useResourceContent'
 
 // Previews a single `done` resource by loading its HTML on demand (B3) and
 // reusing the existing HtmlPreview. Done resources stay previewable even when

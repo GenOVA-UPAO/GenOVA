@@ -1,7 +1,7 @@
 import { m as motion } from 'motion/react'
 import { Lock, SlidersHorizontal, User } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/core/components/ui/tabs'
-import { useProfile } from '@/features/profile/hooks/useProfile.js'
+import { useProfile } from '@/features/profile/hooks/useProfile'
 import { ProfileForm } from '@/features/profile/components/ProfileForm.jsx'
 import { PasswordChangeForm } from '@/features/profile/components/PasswordChangeForm.jsx'
 import { ApiKeysCard } from '@/core/components/settings/ApiKeysCard.jsx'
