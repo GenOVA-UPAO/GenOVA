@@ -1,17 +1,26 @@
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
-import { updateOvaMetadata } from '../../ova_library/services/ovaHistoryService'
+import { updateOvaMetadata } from '../services/ovaHistoryService'
+import type { OvaListItem } from '../lib/types'
+
+interface MetadataValues {
+  title: string
+  description?: string
+}
 
 // El form vive en EditMetadataModal (React Hook Form). Este hook sólo maneja
 // apertura/cierre del modal, los valores iniciales y la llamada a la API.
-export function useOvaMetadata(onSaved) {
+export function useOvaMetadata(onSaved?: () => void) {
   const [metadataModalOpen, setMetadataModalOpen] = useState(false)
   const [metadataTargetId, setMetadataTargetId] = useState('')
-  const [metadataInitial, setMetadataInitial] = useState({ title: '', description: '' })
+  const [metadataInitial, setMetadataInitial] = useState<MetadataValues>({
+    title: '',
+    description: '',
+  })
   const [metadataSaving, setMetadataSaving] = useState(false)
 
   // Stable so it can be passed to the memoized OvaCard without busting memo.
-  const openMetadataModal = useCallback((ova) => {
+  const openMetadataModal = useCallback((ova: OvaListItem) => {
     setMetadataTargetId(ova.id)
     setMetadataInitial({ title: ova.title || '', description: ova.description || '' })
     setMetadataModalOpen(true)
@@ -23,20 +32,20 @@ export function useOvaMetadata(onSaved) {
   }, [])
 
   const saveMetadata = useCallback(
-    async (values) => {
+    async (values: MetadataValues): Promise<boolean> => {
       setMetadataSaving(true)
       try {
-        const response = await updateOvaMetadata(metadataTargetId, {
+        const response = (await updateOvaMetadata(metadataTargetId, {
           title: values.title,
           description: values.description || '',
-        })
+        })) as { message?: string }
         onSaved?.()
         toast.success(response.message || 'Metadatos actualizados correctamente.')
         setMetadataModalOpen(false)
         setMetadataTargetId('')
         return true
       } catch (err) {
-        toast.error(err.message || 'No se pudieron guardar los metadatos.')
+        toast.error((err as Error).message || 'No se pudieron guardar los metadatos.')
         return false
       } finally {
         setMetadataSaving(false)

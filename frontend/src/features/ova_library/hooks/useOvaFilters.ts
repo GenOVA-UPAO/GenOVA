@@ -1,22 +1,26 @@
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
 
-export function useOvaFilters(onFilterChange) {
+interface ValueEvent {
+  target: { value: string }
+}
+
+export function useOvaFilters(onFilterChange?: () => void) {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const searchDebounceRef = useRef(null)
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: ValueEvent) => {
     const value = e.target.value
     setSearchInput(value)
-    clearTimeout(searchDebounceRef.current)
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
     searchDebounceRef.current = setTimeout(() => {
       setSearch(value)
       if (onFilterChange) onFilterChange()
     }, 400)
   }
 
-  const handleStatusChange = (e) => {
+  const handleStatusChange = (e: ValueEvent) => {
     setStatusFilter(e.target.value)
     if (onFilterChange) onFilterChange()
   }

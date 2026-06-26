@@ -1,4 +1,4 @@
-import { useTrashList } from '@/features/ova_workspace/hooks/useTrashList.js'
+import { useTrashList } from '@/features/ova_library/hooks/useTrashList.js'
 import { ConfirmModal } from '@/core/components/ConfirmModal.jsx'
 import { TrashedOvaCard } from '@/features/ova_library/components/cards/TrashedOvaCard.jsx'
 import { Button } from '@/core/components/ui/button'

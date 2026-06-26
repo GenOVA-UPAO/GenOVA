@@ -8,14 +8,21 @@ import {
   downloadOvaFile,
   duplicateOva,
   fetchOvas,
-} from '../../ova_library/services/ovaHistoryService'
-import { useOvaMetadata } from './useOvaMetadata.js'
-import { useOvaSelection } from './useOvaSelection.js'
-import { useOvaFilters } from './useOvaFilters.js'
+} from '../services/ovaHistoryService'
+import type { OvaListItem } from '../lib/types'
+import { useOvaMetadata } from './useOvaMetadata'
+import { useOvaSelection } from './useOvaSelection'
+import { useOvaFilters } from './useOvaFilters'
+
+interface OvaListPage {
+  ovas?: OvaListItem[]
+  total_pages?: number
+  total_items?: number
+}
 
 // Recalcula la página destino tras quitar N elementos: si la página actual queda
 // fuera de rango, retrocede a la última con contenido.
-function pageAfterRemoval(currentPage, totalItems, removed) {
+function pageAfterRemoval(currentPage: number, totalItems: number, removed: number): number {
   const newTotalPages = Math.max(1, Math.ceil((totalItems - removed) / 10))
   return currentPage > newTotalPages ? newTotalPages : currentPage
 }
@@ -24,23 +31,17 @@ export function useOvaList() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
-
-  const [ovaToTrash, setOvaToTrash] = useState(null)
+  const [ovaToTrash, setOvaToTrash] = useState<OvaListItem | null>(null)
   const [showBulkModal, setShowBulkModal] = useState(false)
   const [downloadingId, setDownloadingId] = useState('')
 
-  const {
-    searchInput,
-    search,
-    statusFilter,
-    handleSearchChange,
-    handleStatusChange,
-  } = useOvaFilters(() => setCurrentPage(1))
+  const { searchInput, search, statusFilter, handleSearchChange, handleStatusChange } =
+    useOvaFilters(() => setCurrentPage(1))
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['ovaList', currentPage, search, statusFilter],
     queryFn: () =>
-      fetchOvas({ page: currentPage, limit: 10, search, status: statusFilter }),
+      fetchOvas({ page: currentPage, limit: 10, search, status: statusFilter }) as Promise<OvaListPage>,
   })
   const ovas = data?.ovas || []
   const totalPages = data?.total_pages || 1
@@ -68,76 +69,67 @@ export function useOvaList() {
     selection.clearSelection()
   }, [search, statusFilter])
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage)
       selection.clearSelection()
     }
   }
 
-  // Stable identities for props handed to the memoized OvaCard.
-  const handleMoveToTrashRequest = useCallback((ova) => setOvaToTrash(ova), [])
+  const handleMoveToTrashRequest = useCallback((ova: OvaListItem) => setOvaToTrash(ova), [])
   const handleTrashCancel = () => setOvaToTrash(null)
 
-  // F5: las tres acciones que mutan el servidor pasan por useMutation, así el
-  // estado pending y la invalidación de la lista quedan estandarizados (los flags
-  // movingId/bulkLoading/duplicatingId se derivan de la mutación, no de useState).
+  // F5: las acciones que mutan el servidor pasan por useMutation, con invalidación
+  // estandarizada y flags de pending derivados de la mutación.
   const trashMutation = useMutation({
-    mutationFn: (ovaId) => deleteOva(ovaId),
+    mutationFn: (ovaId: string) => deleteOva(ovaId),
     onSuccess: () => {
       toast.success('OVA movido a la papelera.')
       setOvaToTrash(null)
       loadOvas(pageAfterRemoval(currentPage, totalItems, 1))
     },
-    onError: (err) =>
-      toast.error(err.message || 'Error al mover el OVA a la papelera.'),
+    onError: (err: Error) => toast.error(err.message || 'Error al mover el OVA a la papelera.'),
   })
 
   const bulkTrashMutation = useMutation({
-    mutationFn: (ids) => batchMoveToTrash(ids),
+    mutationFn: (ids: string[]) => batchMoveToTrash(ids),
     onSuccess: (res) => {
-      const moved = res.moved?.length || 0
-      toast.success(res.message || `${moved} OVAs movidos a la papelera.`)
+      const r = res as { moved?: unknown[]; message?: string }
+      const moved = r.moved?.length || 0
+      toast.success(r.message || `${moved} OVAs movidos a la papelera.`)
       selection.clearSelection()
       setShowBulkModal(false)
       loadOvas(pageAfterRemoval(currentPage, totalItems, moved))
     },
-    onError: (err) => toast.error(err.message || 'Error al mover los OVAs.'),
+    onError: (err: Error) => toast.error(err.message || 'Error al mover los OVAs.'),
   })
 
   const duplicateMutation = useMutation({
-    mutationFn: (ovaId) => duplicateOva(ovaId),
+    mutationFn: (ovaId: string) => duplicateOva(ovaId),
     onSuccess: (res) => {
-      toast.success(res.message || 'OVA duplicado correctamente.')
-      navigate(res.edit_url)
+      const r = res as { message?: string; edit_url: string }
+      toast.success(r.message || 'OVA duplicado correctamente.')
+      navigate(r.edit_url)
     },
-    onError: (err) => toast.error(err.message || 'Error al duplicar el OVA.'),
+    onError: (err: Error) => toast.error(err.message || 'Error al duplicar el OVA.'),
   })
 
-  // `.mutate` es estable entre renders; derivarlo mantiene handleDuplicate con
-  // identidad estable para no romper el memo de OvaCard.
   const { mutate: mutateDuplicate } = duplicateMutation
   const handleTrashConfirm = () => {
     if (ovaToTrash) trashMutation.mutate(ovaToTrash.id)
   }
-  const handleBulkTrashConfirm = () =>
-    bulkTrashMutation.mutate([...selection.selectedIds])
-  const handleDuplicate = useCallback(
-    (ovaId) => mutateDuplicate(ovaId),
-    [mutateDuplicate],
-  )
+  const handleBulkTrashConfirm = () => bulkTrashMutation.mutate([...selection.selectedIds])
+  const handleDuplicate = useCallback((ovaId: string) => mutateDuplicate(ovaId), [mutateDuplicate])
 
   const movingId = trashMutation.isPending ? trashMutation.variables : ''
-  const duplicatingId = duplicateMutation.isPending
-    ? duplicateMutation.variables
-    : ''
+  const duplicatingId = duplicateMutation.isPending ? duplicateMutation.variables : ''
 
-  const handleDownload = useCallback(async (ovaId, title) => {
+  const handleDownload = useCallback(async (ovaId: string, title: string) => {
     setDownloadingId(ovaId)
     try {
       await downloadOvaFile(ovaId, title)
     } catch (err) {
-      toast.error(err.message || 'No se pudo descargar el archivo.')
+      toast.error((err as Error).message || 'No se pudo descargar el archivo.')
     } finally {
       setDownloadingId('')
     }
@@ -172,18 +164,7 @@ export function useOvaList() {
     handleDuplicate,
     handleDownload,
     setShowBulkModal,
-    // selection
-    selectedIds: selection.selectedIds,
-    setSelectedIds: selection.setSelectedIds,
-    allSelected: selection.allSelected,
-    handleToggleSelect: selection.handleToggleSelect,
-    handleSelectAll: selection.handleSelectAll,
-    // metadata
-    metadataModalOpen: metadata.metadataModalOpen,
-    metadataInitial: metadata.metadataInitial,
-    metadataSaving: metadata.metadataSaving,
-    openMetadataModal: metadata.openMetadataModal,
-    closeMetadataModal: metadata.closeMetadataModal,
-    saveMetadata: metadata.saveMetadata,
+    ...selection,
+    ...metadata,
   }
 }
