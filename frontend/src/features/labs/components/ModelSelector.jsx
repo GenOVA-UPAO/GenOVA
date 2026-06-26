@@ -1,5 +1,5 @@
 import { Label } from '@/core/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel, SelectSeparator } from '@/core/components/ui/select.jsx'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel, SelectSeparator } from '@/core/components/ui/select'
 
 const EMPTY_VALUE = '__none__'
 

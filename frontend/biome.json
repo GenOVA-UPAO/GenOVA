@@ -64,7 +64,7 @@
       }
     },
     {
-      "includes": ["**/components/ui/*.{js,jsx}"],
+      "includes": ["**/components/ui/*.{js,jsx,ts,tsx}"],
       "linter": {
         "rules": {
           "correctness": {
@@ -79,7 +79,7 @@
       }
     },
     {
-      "includes": ["**/*.test.{js,jsx}"],
+      "includes": ["**/*.test.{js,jsx,ts,tsx}"],
       "linter": {
         "rules": {
           "style": {

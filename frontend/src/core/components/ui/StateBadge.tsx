@@ -1,9 +1,8 @@
-import { cva } from 'class-variance-authority'
-
+import { type VariantProps, cva } from 'class-variance-authority'
+import type { ComponentProps } from 'react'
 import { cn } from '@/core/lib/utils'
 
 // Pill de estado semántico, anclado a los tokens UPAO (nada de colores crudos).
-// success = azul UPAO, warning = naranja UPAO, error = destructive, neutral = muted.
 const stateBadgeVariants = cva(
   'inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold whitespace-nowrap',
   {
@@ -20,7 +19,9 @@ const stateBadgeVariants = cva(
   },
 )
 
-export function StateBadge({ status = 'neutral', className, ...props }) {
+type StateBadgeProps = ComponentProps<'span'> & VariantProps<typeof stateBadgeVariants>
+
+export function StateBadge({ status = 'neutral', className, ...props }: StateBadgeProps) {
   return (
     <span
       data-slot="state-badge"

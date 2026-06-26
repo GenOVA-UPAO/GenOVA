@@ -4,7 +4,7 @@ import { Badge } from '@/core/components/ui/badge'
 import { Button } from '@/core/components/ui/button'
 import { Input } from '@/core/components/ui/input'
 import { Label } from '@/core/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/components/ui/select.jsx'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/components/ui/select'
 import { profileSchema } from '@/features/profile/schemas/user.js'
 
 const LABEL = 'text-xs font-bold uppercase tracking-wide text-muted-foreground'

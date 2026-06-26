@@ -1,7 +1,7 @@
 import { Button } from '@/core/components/ui/button'
 import { Label } from '@/core/components/ui/label'
 import { Alert, AlertDescription } from '@/core/components/ui/alert'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/components/ui/select.jsx'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/core/components/ui/dialog'
 
 export function DeleteRoleModal({

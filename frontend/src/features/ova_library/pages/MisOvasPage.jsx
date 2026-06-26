@@ -12,7 +12,7 @@ import { EditMetadataModal } from '@/features/ova_library/components/modals/Edit
 import { Button } from '@/core/components/ui/button'
 import { Input } from '@/core/components/ui/input'
 import { Checkbox } from '@/core/components/ui/checkbox'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/components/ui/select.jsx'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/core/components/ui/select'
 
 const containerVariants = {
   hidden: { opacity: 0 },

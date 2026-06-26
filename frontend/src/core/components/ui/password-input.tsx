@@ -1,7 +1,14 @@
-import { useState } from 'react'
 import { Eye, EyeSlash } from '@phosphor-icons/react'
-import { cn } from '@/core/lib/utils'
+import type { ComponentProps } from 'react'
+import { useState } from 'react'
 import { Input } from '@/core/components/ui/input'
+import { cn } from '@/core/lib/utils'
+
+interface PasswordInputProps extends ComponentProps<'input'> {
+  revealable?: boolean
+  revealLabel?: string
+  hideLabel?: string
+}
 
 // React 19: `ref` es un prop normal, ya no hace falta forwardRef.
 function PasswordInput({
@@ -14,7 +21,7 @@ function PasswordInput({
   disabled,
   ref,
   ...props
-}) {
+}: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false)
   const isPassword = type === 'password'
   const visible = isPassword && showPassword
@@ -38,7 +45,11 @@ function PasswordInput({
           title={showPassword ? hideLabel : revealLabel}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
         >
-          {showPassword ? <EyeSlash size={18} weight="duotone" aria-hidden="true" /> : <Eye size={18} weight="duotone" aria-hidden="true" />}
+          {showPassword ? (
+            <EyeSlash size={18} weight="duotone" aria-hidden="true" />
+          ) : (
+            <Eye size={18} weight="duotone" aria-hidden="true" />
+          )}
         </button>
       )}
     </div>

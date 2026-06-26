@@ -2,7 +2,7 @@ import { Article, Brain, Code, Lock, Robot } from '@phosphor-icons/react'
 import { Input } from '@/core/components/ui/input'
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
-} from '@/core/components/ui/select.jsx'
+} from '@/core/components/ui/select'
 import { formatContextLength, PROVIDER_LABELS } from '@/core/lib/llm/llmCatalogUtils'
 
 /**
