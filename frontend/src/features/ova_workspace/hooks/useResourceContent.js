@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getResourceContent } from '../services/ovaCreationService.js'
+import { getResourceContent } from '../services/ovaCreationService'
 
 // Carga el HTML de un recurso `done` para vista previa (B3) vía TanStack Query:
 // caché/dedup (el mismo recurso se pide una vez) y el contenido es inmutable una

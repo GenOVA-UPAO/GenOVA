@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { generateEngageResource } from '../../ova_workspace/services/phases/engageService.js'
+import { generatePhaseResource } from '../../ova_workspace/services/phases/phaseService'
 
 export function useEngageGeneration() {
   const [selectedResource, setSelectedResource] = useState(null)
@@ -14,7 +14,7 @@ export function useEngageGeneration() {
     setError(null)
     setResult(null)
     try {
-      const data = await generateEngageResource(selectedResource.id, concept.trim())
+      const data = await generatePhaseResource('engage', selectedResource.id, concept.trim())
       setResult(data)
     } catch (e) {
       setError(e.message)

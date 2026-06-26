@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/core/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/core/components/ui/dialog'
-import { fetchPhaseVersions, revertPhaseVersion } from '@/features/ova_workspace/services/ovaEditService.js'
+import { fetchPhaseVersions, revertPhaseVersion } from '@/features/ova_workspace/services/ovaEditService'
 
 /**
  * HU-029 — Micro-version history for a single phase.

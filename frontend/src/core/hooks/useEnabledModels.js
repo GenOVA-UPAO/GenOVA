@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { toast } from 'sonner'
-import { saveEnabledModels } from '../services/llmSettingsService.js'
+import { saveEnabledModels } from '../services/llmSettingsService'
 
 export function useEnabledModels({ enabledModels, setEnabledModels, defaults = {} }) {
   const isDefaultModel = useCallback((provider, modelId) => {

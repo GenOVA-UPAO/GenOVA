@@ -1,3 +1,5 @@
+import { formatSize } from '@/core/lib/uploads/uploadFormatters'
+
 export function FileChip({ file, onRemove, disabled }) {
   const extension = file.filename.split('.').pop().toLowerCase()
   // El emoji ya distingue el tipo; el chip usa un único estilo on-brand (tokens).
@@ -7,12 +9,6 @@ export function FileChip({ file, onRemove, disabled }) {
   else if (['docx', 'pptx'].includes(extension)) icon = '📘'
   else if (['mp3', 'wav', 'm4a', 'aac', 'ogg', 'webm'].includes(extension)) icon = '🎵'
   else if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extension)) icon = '🖼️'
-
-  const formatSize = (bytes) => {
-    if (!bytes) return ''
-    if (bytes > 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
-    return `${(bytes / 1024).toFixed(0)} KB`
-  }
 
   let ragBadge = null
   if (file.status === 'uploading') {
@@ -57,7 +53,9 @@ export function FileChip({ file, onRemove, disabled }) {
         <span className="max-w-[130px] truncate font-semibold" title={file.filename}>
           {file.filename}
         </span>
-        <span className="text-[9px] opacity-75">{formatSize(file.sizeBytes)}</span>
+        <span className="text-[9px] opacity-75">
+          {file.sizeBytes ? formatSize(file.sizeBytes) : ''}
+        </span>
       </div>
       <div className="ml-1 flex items-center gap-1">
         {ragBadge}

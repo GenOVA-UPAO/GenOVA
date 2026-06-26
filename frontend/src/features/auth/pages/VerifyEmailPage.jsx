@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react'
-import { markLoggedIn } from '@/features/auth/services/auth.js'
-import { verifyEmail } from '@/features/auth/services/verification.js'
+import { markLoggedIn } from '@/features/auth/services/auth'
+import { verifyEmail } from '@/features/auth/services/verification'
 import { Button } from '@/core/components/ui/button'
 
 export function VerifyEmailPage() {

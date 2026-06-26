@@ -3,8 +3,8 @@ import { Link } from 'react-router'
 import { Flask, FolderOpen, Plus, ShieldCheck, Users, Clock, CaretRight } from '@phosphor-icons/react'
 import { m as motion } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
-import { getCurrentUser } from '@/core/lib/me.js'
-import { fetchOvas } from '@/features/ova_library/services/ovaHistoryService.js'
+import { getCurrentUser } from '@/core/lib/auth/me'
+import { fetchOvas } from '@/features/ova_library/services/ovaHistoryService'
 
 const ADMIN_CARDS = [
   { to: '/admin/roles', icon: ShieldCheck, title: 'Roles', desc: 'Permisos y perfiles del sistema.' },

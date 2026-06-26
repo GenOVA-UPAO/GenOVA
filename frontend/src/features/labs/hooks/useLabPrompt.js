@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { fetchPrompts } from '../services/labsService.js'
+import { fetchPrompts } from '../services/labsService'
 
 /**
  * Loads the base prompt for a (phase, resource_type) and holds the editable

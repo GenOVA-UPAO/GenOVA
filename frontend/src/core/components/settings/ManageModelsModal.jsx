@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, startTransition } fr
 import { Key, MagnifyingGlass, Plus, SlidersHorizontal } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/core/components/ui/dialog'
-import { groupByProvider, PROVIDER_LABELS } from '@/core/lib/llm/llmCatalogUtils.js'
-import { CATEGORY_LABELS } from '@/core/lib/llm/llmSettingsLabels.js'
+import { groupByProvider, PROVIDER_LABELS } from '@/core/lib/llm/llmCatalogUtils'
+import { CATEGORY_LABELS } from '@/core/lib/llm/llmSettingsLabels'
 import { ManageModelRow } from './ManageModelRow.jsx'
 import { ConnectProviderModal } from './ConnectProviderModal.jsx'
 

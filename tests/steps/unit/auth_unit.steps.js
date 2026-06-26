@@ -8,7 +8,7 @@ Before(async function () {
   global.localStorage = win.localStorage
   global.atob = (s) => Buffer.from(s, 'base64').toString('binary')
   if (!authLib) {
-    authLib = await import('../../../frontend/src/features/auth/services/auth.js')
+    authLib = await import('../../../frontend/src/features/auth/services/auth')
   }
   authLib.clearToken()
   this.state = {}

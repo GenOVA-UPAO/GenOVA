@@ -4,7 +4,7 @@ import {
   validateFileAdd,
   chipStatusLabel,
   toChipEntry,
-} from '../../../frontend/src/core/lib/uploads/uploadChipViewModel.js'
+} from '../../../frontend/src/core/lib/uploads/uploadChipViewModel'
 
 // HU-024 unit coverage — pure upload chip viewmodel logic. No browser, no backend.
 

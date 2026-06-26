@@ -1,6 +1,6 @@
 import { Select as SelectPrimitive } from "radix-ui"
 
-import { cn } from "@/core/lib/utils.js"
+import { cn } from "@/core/lib/utils"
 import { CaretDown, Check, CaretUp } from "@phosphor-icons/react"
 
 function Select({

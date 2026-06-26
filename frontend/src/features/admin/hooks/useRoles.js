@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { apiFetch } from '../../../core/lib/http.js'
+import { apiFetch } from '../../../core/lib/http/client'
 import { useRoleDelete } from './useRoleDelete.js'
 
 export function useRoles() {

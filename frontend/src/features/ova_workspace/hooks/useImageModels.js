@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getImageModels } from '../services/ovaSettingsService.js'
+import { getImageModels } from '../services/ovaSettingsService'
 
 /**
  * Modelos de imagen disponibles para un proveedor.

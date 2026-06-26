@@ -1,6 +1,6 @@
 import { Dialog as DialogPrimitive } from "radix-ui"
 
-import { cn } from "@/core/lib/utils.js"
+import { cn } from "@/core/lib/utils"
 import { Button } from "@/core/components/ui/button"
 import { X } from "@phosphor-icons/react"
 

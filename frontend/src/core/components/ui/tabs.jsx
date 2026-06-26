@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 import { Tabs as TabsPrimitive } from "radix-ui"
 
-import { cn } from "@/core/lib/utils.js"
+import { cn } from "@/core/lib/utils"
 
 function Tabs({
   className,

@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router'
-import { isLoggedIn } from '@/features/auth/services/auth.js'
+import { isLoggedIn } from '@/features/auth/services/auth'
 import { Navbar } from '@/core/layouts/components/Navbar.jsx'
 import { Sidebar } from '@/core/layouts/components/Sidebar.jsx'
 

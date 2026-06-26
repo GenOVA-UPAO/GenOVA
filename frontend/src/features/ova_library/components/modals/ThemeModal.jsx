@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X } from '@phosphor-icons/react'
-import { apiFetch } from '@/core/lib/http.js'
+import { apiFetch } from '@/core/lib/http/client'
 import { useModalDismiss } from '@/core/hooks/useModalDismiss.js'
 
 const COLOR_MODES = [

@@ -5,7 +5,7 @@ import { m as motion } from 'motion/react'
 import { Button } from '@/core/components/ui/button'
 import { Input } from '@/core/components/ui/input'
 import LinkRow from '@/features/ova_library/components/cards/LinkRow.jsx'
-import { getCurrentUser } from '@/core/lib/me.js'
+import { getCurrentUser } from '@/core/lib/auth/me'
 import {
   acceptLink,
   createLinkCode,
@@ -15,7 +15,7 @@ import {
   fetchMyLinks,
   inviteLink,
   resendLink,
-} from '@/features/profile/services/userLinksService.js'
+} from '@/features/profile/services/userLinksService'
 
 function can(user, permission) {
   return user?.role === 'administrador' || (user?.permissions || []).includes(permission)

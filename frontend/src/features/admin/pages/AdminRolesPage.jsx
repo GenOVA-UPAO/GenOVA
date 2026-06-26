@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { m as motion } from 'motion/react'
 import { useRoles } from '@/features/admin/hooks/useRoles.js'
-import { AVAILABLE_PERMISSIONS } from '@/core/lib/permissions.js'
+import { AVAILABLE_PERMISSIONS } from '@/core/lib/auth/permissions'
 import { RoleFormModal } from '@/features/admin/components/RoleFormModal.jsx'
 import { DeleteRoleModal } from '@/features/admin/components/DeleteRoleModal.jsx'
 import { Button } from '@/core/components/ui/button'
-import { apiFetch } from '@/core/lib/http.js'
+import { apiFetch } from '@/core/lib/http/client'
 
 function RegistrationModeCard() {
   const [tesis, setTesis] = useState(true)

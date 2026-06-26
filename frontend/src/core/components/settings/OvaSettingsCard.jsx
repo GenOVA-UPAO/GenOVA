@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/core/components/ui/button'
-import { getOvaSettings, saveOvaSettings } from '@/features/ova_workspace/services/ovaSettingsService.js'
+import { getOvaSettings, saveOvaSettings } from '@/features/ova_workspace/services/ovaSettingsService'
 import { useImageModels } from '@/features/ova_workspace/hooks/useImageModels.js'
 
 const PROVIDER_LABELS = {

@@ -1,7 +1,7 @@
 import { ArrowsClockwise, Warning } from '@phosphor-icons/react'
 import { Alert, AlertDescription, AlertTitle } from '@/core/components/ui/alert'
 import { Button } from '@/core/components/ui/button'
-import { PROVIDER_LABELS } from '@/core/lib/llm/llmCatalogUtils.js'
+import { PROVIDER_LABELS } from '@/core/lib/llm/llmCatalogUtils'
 
 function _formatTimestamp(iso) {
   if (!iso) return null

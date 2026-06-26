@@ -5,8 +5,8 @@ import { AnimatePresence, m as motion } from 'motion/react'
 import { NavbarBrand } from '@/core/layouts/components/NavbarBrand.jsx'
 import { SidebarMenu } from '@/core/layouts/components/SidebarMenu.jsx'
 import { ThemeModal } from '@/features/ova_library/components/modals/ThemeModal.jsx'
-import { clearSession } from '@/features/auth/services/auth.js'
-import { getCachedUser, getCurrentUser } from '@/core/lib/me.js'
+import { clearSession } from '@/features/auth/services/auth'
+import { getCachedUser, getCurrentUser } from '@/core/lib/auth/me'
 
 function initials(user) {
   const name = user?.full_name || user?.email || 'Usuario'

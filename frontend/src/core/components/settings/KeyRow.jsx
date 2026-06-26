@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Eye, EyeSlash, Trash } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
-import { saveApiKey } from '@/features/ova_workspace/services/ovaSettingsService.js'
+import { saveApiKey } from '@/features/ova_workspace/services/ovaSettingsService'
 
 const PROVIDER_META = {
   groq: { label: 'Groq', placeholder: 'gsk_...', href: 'https://console.groq.com/keys' },

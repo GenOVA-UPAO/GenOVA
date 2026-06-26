@@ -3,7 +3,7 @@ import { Input } from '@/core/components/ui/input'
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from '@/core/components/ui/select.jsx'
-import { formatContextLength, PROVIDER_LABELS } from '@/core/lib/llm/llmCatalogUtils.js'
+import { formatContextLength, PROVIDER_LABELS } from '@/core/lib/llm/llmCatalogUtils'
 
 /**
  * Task-type → model assignment. Each card is colour-coded by role so the user

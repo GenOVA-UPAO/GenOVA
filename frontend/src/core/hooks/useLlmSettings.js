@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { fetchLlmSettings, saveLlmSettings, refreshLlmCatalog } from '../services/llmSettingsService.js'
-import { TASK_LABELS, CATEGORY_LABELS, TYPE_LABELS } from '../lib/llm/llmSettingsLabels.js'
+import { fetchLlmSettings, saveLlmSettings, refreshLlmCatalog } from '../services/llmSettingsService'
+import { TASK_LABELS, CATEGORY_LABELS, TYPE_LABELS } from '../lib/llm/llmSettingsLabels'
 import { useEnabledModels } from './useEnabledModels.js'
 
 const DEFAULT_TIMEOUT = 120

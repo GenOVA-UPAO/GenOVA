@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { apiFetch } from '../../../core/lib/http.js'
+import { apiFetch } from '../../../core/lib/http/client'
 
 export function useRoleDelete(setRoles) {
   const [deletingRole, setDeletingRole] = useState(null)

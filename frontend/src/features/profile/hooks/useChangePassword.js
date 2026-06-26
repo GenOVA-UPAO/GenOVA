@@ -1,5 +1,5 @@
 import { toast } from 'sonner'
-import { apiFetch } from '../../../core/lib/http.js'
+import { apiFetch } from '../../../core/lib/http/client'
 
 // Sólo la llamada a la API; el form + validación viven en PasswordChangeForm
 // (React Hook Form + Zod). Devuelve true en éxito para que el form se resetee.

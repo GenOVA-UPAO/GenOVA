@@ -7,7 +7,7 @@ import {
   reorderPhases,
   revertToVersion,
   savePhaseContent,
-} from '../services/ovaEditService.js'
+} from '../services/ovaEditService'
 
 /**
  * Phase action handlers extracted from useOvaWorkspace for line-count compliance.

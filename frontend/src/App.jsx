@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, Outlet } from 'react-router'
-import { isLoggedIn } from '@/features/auth/services/auth.js'
-import { getCachedUser, getCurrentUser } from '@/core/lib/me.js'
+import { isLoggedIn } from '@/features/auth/services/auth'
+import { getCachedUser, getCurrentUser } from '@/core/lib/auth/me'
 import { AppLayout } from '@/core/layouts/shells/AppLayout.jsx'
 import { WorkspaceLayout } from '@/core/layouts/shells/WorkspaceLayout.jsx'
 import { LoginPage } from '@/features/auth/pages/LoginPage.jsx'
@@ -40,6 +40,7 @@ const WireframeVinculacionPage = lazy(() => import('@/features/wireframes/profil
 
 import { Toaster } from 'sonner'
 import { SpeedInsights } from '@vercel/speed-insights/react'
+import { RootErrorBoundary } from '@/core/components/RootErrorBoundary.jsx'
 
 function RouteFallback() {
   return (
@@ -103,6 +104,7 @@ function App() {
     <>
       <Toaster position="top-right" richColors closeButton />
       <SpeedInsights />
+      <RootErrorBoundary>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/wireframe1" element={<WireframeNavbarPage />} />
@@ -153,6 +155,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
+      </RootErrorBoundary>
     </>
   )
 }

@@ -1,4 +1,4 @@
-import { AVAILABLE_PERMISSIONS } from '@/core/lib/permissions.js'
+import { AVAILABLE_PERMISSIONS } from '@/core/lib/auth/permissions'
 import { Button } from '@/core/components/ui/button'
 import { Input } from '@/core/components/ui/input'
 import { Label } from '@/core/components/ui/label'

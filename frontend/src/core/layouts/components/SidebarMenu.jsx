@@ -5,9 +5,9 @@ import {
   ShieldCheck, Trash, Users,
 } from '@phosphor-icons/react'
 import { navigationLinks } from '@/core/layouts/navigation/navLinks.js'
-import { isLoggedIn } from '@/features/auth/services/auth.js'
-import { getCachedUser, getCurrentUser } from '@/core/lib/me.js'
-import { fetchTrashCount } from '@/features/ova_library/services/ovaHistoryService.js'
+import { isLoggedIn } from '@/features/auth/services/auth'
+import { getCachedUser, getCurrentUser } from '@/core/lib/auth/me'
+import { fetchTrashCount } from '@/features/ova_library/services/ovaHistoryService'
 
 const ICONS = { House, FolderOpen, PlusSquare }
 const ADMIN_LINKS = [

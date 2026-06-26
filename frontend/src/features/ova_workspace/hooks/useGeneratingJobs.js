@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
-import { getJobByOvaId, resumeJob } from '../services/ovaCreationService.js'
+import { getJobByOvaId, resumeJob } from '../services/ovaCreationService'
 
 const POLL_MS = 4000
 const TERMINAL = new Set(['done', 'error', 'interrupted'])

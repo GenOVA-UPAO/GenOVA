@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { getRoleColorClasses } from '../../../core/lib/roleUtils.js'
+import { getRoleColorClasses } from '../../../core/lib/auth/roleUtils'
 import {
   fetchCurrentUser,
   fetchRoles,
@@ -12,7 +12,7 @@ import {
   updateUserProfile,
   updateUserRole,
   updateUserStatus,
-} from '../services/adminUsersService.js'
+} from '../services/adminUsersService'
 
 const FAILURE_MSG = 'Error de conexión con el servidor.'
 

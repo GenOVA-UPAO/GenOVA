@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getApiKeys } from '@/features/ova_workspace/services/ovaSettingsService.js'
-import { fetchLlmSettings } from '@/core/services/llmSettingsService.js'
+import { getApiKeys } from '@/features/ova_workspace/services/ovaSettingsService'
+import { fetchLlmSettings } from '@/core/services/llmSettingsService'
 import { KeyRow } from '@/core/components/settings/KeyRow.jsx'
 import { ProviderModelsPanel } from '@/core/components/settings/ProviderModelsPanel.jsx'
 

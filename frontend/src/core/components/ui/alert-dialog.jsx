@@ -1,6 +1,6 @@
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
-import { cn } from "@/core/lib/utils.js"
+import { cn } from "@/core/lib/utils"
 import { Button } from "@/core/components/ui/button"
 
 function AlertDialog({

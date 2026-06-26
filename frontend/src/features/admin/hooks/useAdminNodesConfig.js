@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getAdminNodesConfig,
   saveAdminNodesConfig,
-} from '../../ova_workspace/services/ovaSettingsService.js'
+} from '../../ova_workspace/services/ovaSettingsService'
 
 const NODES_KEY = ['admin', 'nodes-config']
 

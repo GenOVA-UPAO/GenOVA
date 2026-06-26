@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { deleteTempFile, listTempFiles, uploadTempFiles } from '../services/uploadService.js'
+import { validateFileAdd } from '@/core/lib/uploads/uploadChipViewModel'
+import { deleteTempFile, listTempFiles, uploadTempFiles } from '../services/uploadService'
 
 const MAX_UPLOAD_FILES = Number(import.meta.env.VITE_UPLOAD_MAX_FILES || 5)
 
@@ -72,8 +73,9 @@ export function useOvaUploads() {
 
       setUploadError('')
 
-      if (activeUploadsCount + selectedFiles.length > MAX_UPLOAD_FILES) {
-        setUploadError(`Solo se permiten hasta ${MAX_UPLOAD_FILES} archivos en total.`)
+      const limitError = validateFileAdd(activeUploadsCount, selectedFiles.length, MAX_UPLOAD_FILES)
+      if (limitError) {
+        setUploadError(limitError)
         return
       }
 

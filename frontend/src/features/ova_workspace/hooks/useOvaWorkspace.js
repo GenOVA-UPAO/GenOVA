@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { fetchOvaEditorData, downloadEditedScorm, triggerRegen, pollRegenProgress } from '../services/ovaEditService.js'
+import { fetchOvaEditorData, downloadEditedScorm, triggerRegen, pollRegenProgress } from '../services/ovaEditService'
 import { useOvaUploads } from './useOvaUploads.js'
 import { useOvaPhaseActions } from './useOvaPhaseActions.js'
 

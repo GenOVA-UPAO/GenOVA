@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOvaUploads } from './useOvaUploads.js'
 import { useOvaJob } from './useOvaJob.js'
-import { getResourceConfigs, putResourceConfigs } from '../services/resourceConfigsService.js'
+import { getResourceConfigs, putResourceConfigs } from '../services/resourceConfigsService'
 
 const MIN_CHARS = Number(import.meta.env.VITE_MIN_PROMPT_CHARS || 10)
 const ALL_PHASES = ['engage', 'explore', 'explain', 'elaborate', 'evaluate']

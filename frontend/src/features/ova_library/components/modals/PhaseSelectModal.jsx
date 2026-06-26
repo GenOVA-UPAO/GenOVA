@@ -1,12 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { fetchEngageRecursos } from '@/features/ova_workspace/services/phases/engageService.js'
-import { fetchExploreRecursos } from '@/features/ova_workspace/services/phases/exploreService.js'
-import { fetchExplainRecursos } from '@/features/ova_workspace/services/phases/explainService.js'
-import { fetchElaborateRecursos } from '@/features/ova_workspace/services/phases/elaborateService.js'
-import { fetchEvaluateRecursos } from '@/features/ova_workspace/services/phases/evaluateService.js'
-import { getAdminNodesConfig } from '@/features/ova_workspace/services/ovaSettingsService.js'
-import { isVideoResource } from '@/core/lib/llm/nodesConfigDraft.js'
+import { fetchPhaseRecursos } from '@/features/ova_workspace/services/phases/phaseService'
+import { getAdminNodesConfig } from '@/features/ova_workspace/services/ovaSettingsService'
+import { isVideoResource } from '@/core/lib/llm/nodesConfigDraft'
 import { ResourceCard } from '@/features/student/components/engage/ResourceCard.jsx'
 import { PhaseTabNav } from './PhaseTabNav.jsx'
 import { ResourcePreviewPanel } from './ResourcePreviewPanel.jsx'
@@ -16,14 +12,22 @@ import { Button } from '@/core/components/ui/button'
 import { getSchema, getDefaultConfig } from '@/features/ova_library/lib/resourceConfigSchema.js'
 import { ResourceConfigModal } from './ResourceConfigModal.jsx'
 
-const mk = (key, Icon, label, sub, color, fetch) =>
-  ({ key, Icon, label, sub, color, fetch, bg: `color-mix(in oklch, ${color} 8%, transparent)` })
+// `fetch` se deriva del propio `key` (la fase) → un único phaseService genérico.
+const mk = (key, Icon, label, sub, color) => ({
+  key,
+  Icon,
+  label,
+  sub,
+  color,
+  fetch: () => fetchPhaseRecursos(key),
+  bg: `color-mix(in oklch, ${color} 8%, transparent)`,
+})
 const PHASE_CFG = [
-  mk('engage',    Target,         'ENGAGE',    'Despierta curiosidad · activa saberes previos',       '#EF4444', fetchEngageRecursos),
-  mk('explore',   MagnifyingGlass,'EXPLORE',   'Descubre patrones · construye hipótesis',             '#3B82F6', fetchExploreRecursos),
-  mk('explain',   Lightbulb,      'EXPLAIN',   'Formaliza conceptos · consolida la teoría',           '#F59E0B', fetchExplainRecursos),
-  mk('elaborate', Hammer,         'ELABORATE', 'Aplica · transfiere a problemas reales',              '#8B5CF6', fetchElaborateRecursos),
-  mk('evaluate',  CheckCircle,    'EVALUATE',  'Verifica aprendizajes · reflexiona el proceso',       '#10B981', fetchEvaluateRecursos),
+  mk('engage',    Target,         'ENGAGE',    'Despierta curiosidad · activa saberes previos',       '#EF4444'),
+  mk('explore',   MagnifyingGlass,'EXPLORE',   'Descubre patrones · construye hipótesis',             '#3B82F6'),
+  mk('explain',   Lightbulb,      'EXPLAIN',   'Formaliza conceptos · consolida la teoría',           '#F59E0B'),
+  mk('elaborate', Hammer,         'ELABORATE', 'Aplica · transfiere a problemas reales',              '#8B5CF6'),
+  mk('evaluate',  CheckCircle,    'EVALUATE',  'Verifica aprendizajes · reflexiona el proceso',       '#10B981'),
 ]
 
 const MAX_PER_PHASE = 4

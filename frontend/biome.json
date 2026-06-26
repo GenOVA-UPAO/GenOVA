@@ -77,6 +77,17 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/*.test.{js,jsx}"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off",
+            "useComponentExportOnlyModules": "off"
+          }
+        }
+      }
     }
   ],
   "assist": {

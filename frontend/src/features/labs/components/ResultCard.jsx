@@ -1,6 +1,6 @@
 import { Button } from '@/core/components/ui/button'
 import { StateBadge } from '@/core/components/ui/StateBadge'
-import { checkHtmlQuality } from '@/core/lib/labQuality.js'
+import { checkHtmlQuality } from '@/features/labs/lib/labQuality'
 
 function QualityBadge({ ok, label }) {
   return (

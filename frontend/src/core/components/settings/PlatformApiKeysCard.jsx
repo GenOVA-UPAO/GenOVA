@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Eye, EyeSlash, Trash, Plugs } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
-import { getPlatformConfig, savePlatformConfigKey } from '@/features/ova_workspace/services/ovaSettingsService.js'
+import { getPlatformConfig, savePlatformConfigKey } from '@/features/ova_workspace/services/ovaSettingsService'
 
 const PROVIDER_META = {
   groq: { label: 'Groq', placeholder: 'gsk_...', desc: 'LLM principal — Llama 3', compat: true },

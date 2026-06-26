@@ -4,14 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test:unit": "cucumber-js --config cucumber.unit.config.mjs",
+    "test:unit": "cross-env NODE_OPTIONS=--import=tsx cucumber-js --config cucumber.unit.config.mjs",
     "test:e2e": "bddgen --config playwright.config.js && playwright test --config playwright.config.js",
     "test:e2e:ui": "bddgen --config playwright.config.js && playwright test --config playwright.config.js --ui"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^13.0.0",
     "@playwright/test": "^1.61.0",
+    "cross-env": "^10.1.0",
     "happy-dom": "^20.10.6",
-    "playwright-bdd": "^9.2.0"
+    "playwright-bdd": "^9.2.0",
+    "tsx": "^4.22.4"
   }
 }

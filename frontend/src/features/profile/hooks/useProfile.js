@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { apiFetch } from '../../../core/lib/http.js'
+import { apiFetch } from '../../../core/lib/http/client'
 
 function getInitials(fullName) {
   if (!fullName) return 'U'

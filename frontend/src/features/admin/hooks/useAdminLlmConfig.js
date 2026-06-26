@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getAdminLlmConfig,
   saveAdminLlmConfig,
-} from '../../ova_workspace/services/ovaSettingsService.js'
-import { fetchLlmSettings } from '../../../core/services/llmSettingsService.js'
+} from '../../ova_workspace/services/ovaSettingsService'
+import { fetchLlmSettings } from '../../../core/services/llmSettingsService'
 
 const CONFIG_KEY = ['admin', 'llm-config']
 const CATALOG_KEY = ['admin', 'llm-catalog']

@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority'
 
-import { cn } from '@/core/lib/utils.js'
+import { cn } from '@/core/lib/utils'
 
 // Pill de estado semántico, anclado a los tokens UPAO (nada de colores crudos).
 // success = azul UPAO, warning = naranja UPAO, error = destructive, neutral = muted.

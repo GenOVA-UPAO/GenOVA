@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
-import { updateOvaMetadata } from '../../ova_library/services/ovaHistoryService.js'
+import { updateOvaMetadata } from '../../ova_library/services/ovaHistoryService'
 
 // El form vive en EditMetadataModal (React Hook Form). Este hook sólo maneja
 // apertura/cierre del modal, los valores iniciales y la llamada a la API.

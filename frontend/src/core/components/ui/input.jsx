@@ -1,4 +1,4 @@
-import { cn } from "@/core/lib/utils.js"
+import { cn } from "@/core/lib/utils"
 
 // React 19: `ref` es un prop normal, ya no hace falta forwardRef.
 function Input({

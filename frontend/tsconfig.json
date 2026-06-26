@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "paths": { "@/*": ["./src/*"] },
+    "types": ["vite/client", "node"],
+
+    // F3 — adopción incremental de TypeScript. Vite/esbuild ya transpila .ts/.tsx
+    // sin config extra; aquí solo añadimos el chequeo de tipos. `allowJs` deja
+    // convivir el JS existente; `checkJs:false` no type-chequea .js (migración
+    // archivo por archivo: renombrar .jsx→.tsx y actualizar sus imports .js→.ts).
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
