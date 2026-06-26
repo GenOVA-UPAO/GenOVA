@@ -222,4 +222,6 @@ def _mark_ova_error(db: Session, ova_id: str) -> None:
             ova.status = "error"
             db.commit()
     except Exception:
+        # Best-effort status update; the regen failure is already surfaced to
+        # the caller, so failing to mark it here is non-fatal and swallowed.
         pass

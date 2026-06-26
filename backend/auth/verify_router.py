@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from auth.cookies import set_auth_cookie
 from auth.email import send_verification_email
 from auth.email_normalize import normalize_email
+from auth.token_utils import build_token
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
@@ -66,9 +67,6 @@ def issue_verification(
 
 
 def _build_login_response(user: User) -> JSONResponse:
-    # Local import avoids a circular import with auth.router.
-    from auth.router import build_token
-
     token = build_token(str(user.id), str(user.email))
     response = JSONResponse(
         status_code=status.HTTP_200_OK,

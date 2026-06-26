@@ -26,6 +26,7 @@ def format_pricing(pricing: dict | None) -> str | None:
         if float(prompt or 0) < 0 or float(completion or 0) < 0:
             return "Variable"
     except (TypeError, ValueError):
+        # Non-numeric price → not variable; fall through to the normal format.
         pass
     pi = _per_m(prompt)
     co = _per_m(completion)
@@ -47,6 +48,7 @@ def format_pricing_detail(pricing: dict | None) -> dict | None:
         if float(pricing.get("prompt") or 0) < 0:
             return None
     except (TypeError, ValueError):
+        # Non-numeric price → not variable; fall through to the detail breakdown.
         pass
     result = {
         "input":       _per_m(pricing.get("prompt")),
