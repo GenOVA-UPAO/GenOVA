@@ -222,8 +222,8 @@ Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para resincronizar ag
 
 | Capa | Tecnología |
 |------|-----------|
-| Frontend | React 19 + Vite 8 + Tailwind CSS 4 + React Router 7 + Sonner |
-| Backend | FastAPI 0.122 + SQLAlchemy 2 + Uvicorn + SlowAPI |
+| Frontend | React 19 + Vite 8 + Tailwind CSS 4 + React Router 8 + TanStack Query 5 + react-hook-form + Zod + Motion + shadcn/Radix + Sonner. **TypeScript** en adopción incremental (Vitest + Testing Library para componentes) |
+| Backend | FastAPI + SQLAlchemy 2 + Uvicorn + SlowAPI. SSE (`sse-starlette`) para progreso; cola durable **arq + Redis** (opcional) con worker separado; observabilidad **Logfire** (opt-in) + Sentry |
 | Base de datos | Supabase (PostgreSQL + pgvector) vía `psycopg` |
 | Storage | Supabase Storage (`scorm-packages`) — fallback automático a disco local |
 | RAG | pgvector + Gemini `gemini-embedding-2-preview` (multimodal: texto + PDF + imagen + audio + video) |
@@ -387,6 +387,9 @@ setear en cada plataforma y la referencia completa de env vars están en
 | `pnpm preview` | Previsualiza el build (`http://localhost:4173`) |
 | `pnpm lint` | Biome lint sobre el frontend (`noExcessiveLinesPerFile: 200`, error) |
 | `pnpm format` | Biome format sobre el frontend |
+| `pnpm test:unit` | BDD unit (cucumber-js, sin browser/backend; corre TS vía `tsx`) |
+| `pnpm --filter frontend test` | Tests de componente (Vitest + Testing Library) |
+| `pnpm --filter frontend typecheck` | Chequeo de tipos TypeScript (`tsc --noEmit`) |
 | `pnpm dev:docker` | Levanta todo con Docker (dev) |
 | `pnpm prod:docker` | Levanta todo con Docker (prod) |
 
