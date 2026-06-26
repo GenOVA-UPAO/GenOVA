@@ -51,6 +51,8 @@ CREATE TABLE users (
   theme_settings TEXT NOT NULL DEFAULT '{}',
   resource_configs TEXT NOT NULL DEFAULT '{}',
   user_api_keys TEXT NOT NULL DEFAULT '{}',
+  totp_secret TEXT, totp_enabled BOOLEAN NOT NULL DEFAULT 0,
+  totp_backup_codes TEXT NOT NULL DEFAULT '[]',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
 );
 CREATE TABLE email_verification_tokens (
