@@ -11,9 +11,11 @@ export function ExplorePage() {
       emoji="🔍"
       description="Interactúa con simuladores y laboratorios para construir tus propias hipótesis antes de ver la teoría formal."
       fetchRecursos={() => fetchPhaseRecursos('explore')}
-      generateResource={(resourceType: string | number, concept: string, uploadIds?: string[]) =>
-        generatePhaseResource('explore', resourceType, concept, uploadIds)
-      }
+      generateResource={(
+        resourceType: string | number,
+        concept: string,
+        uploadIds?: string[],
+      ) => generatePhaseResource('explore', resourceType, concept, uploadIds)}
     />
   )
 }

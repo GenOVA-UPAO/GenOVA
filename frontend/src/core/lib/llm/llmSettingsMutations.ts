@@ -1,5 +1,6 @@
 // Transformaciones puras del mapa de settings LLM por tarea (sin React). Extraídas
 // de useLlmSettings para mantener el hook <200 líneas y poder testearlas aisladas.
+import { addEmpty, moveIn, removeAt, setAt } from './fallbackArray'
 
 export interface ModelEntry {
   provider: string
@@ -15,6 +16,21 @@ export interface TaskSetting {
 }
 
 export type SettingsMap = Record<string, TaskSetting>
+
+const emptyModelEntry = (): ModelEntry => ({ provider: '', model_id: '' })
+
+function getFallbacks(s: SettingsMap | null, tipo: string): ModelEntry[] {
+  return s?.[tipo]?.fallbacks ?? []
+}
+
+function withFallbacks(
+  s: SettingsMap | null,
+  tipo: string,
+  fbs: ModelEntry[],
+): SettingsMap {
+  const base = s ?? {}
+  return { ...base, [tipo]: { ...base[tipo], fallbacks: fbs } }
+}
 
 export function setModelIn(
   s: SettingsMap | null,
@@ -42,20 +58,16 @@ export function setFallbackIn(
   provider: string,
   modelId: string,
 ): SettingsMap {
-  const base = s ?? {}
-  const fbs = [...(base[tipo]?.fallbacks || [])]
-  if (index >= 0 && index < fbs.length)
-    fbs[index] = { provider, model_id: modelId }
-  return { ...base, [tipo]: { ...base[tipo], fallbacks: fbs } }
+  const fbs = setAt(getFallbacks(s, tipo), index, { provider, model_id: modelId })
+  return withFallbacks(s, tipo, fbs)
 }
 
 export function addFallbackIn(
   s: SettingsMap | null,
   tipo: string,
 ): SettingsMap {
-  const base = s ?? {}
-  const fbs = [...(base[tipo]?.fallbacks || []), { provider: '', model_id: '' }]
-  return { ...base, [tipo]: { ...base[tipo], fallbacks: fbs } }
+  const fbs = addEmpty(getFallbacks(s, tipo), emptyModelEntry)
+  return withFallbacks(s, tipo, fbs)
 }
 
 export function removeFallbackIn(
@@ -63,9 +75,8 @@ export function removeFallbackIn(
   tipo: string,
   index: number,
 ): SettingsMap {
-  const base = s ?? {}
-  const fbs = (base[tipo]?.fallbacks || []).filter((_, i) => i !== index)
-  return { ...base, [tipo]: { ...base[tipo], fallbacks: fbs } }
+  const fbs = removeAt(getFallbacks(s, tipo), index)
+  return withFallbacks(s, tipo, fbs)
 }
 
 export function moveFallbackIn(
@@ -74,12 +85,10 @@ export function moveFallbackIn(
   index: number,
   dir: number,
 ): SettingsMap {
-  const base = s ?? {}
-  const fbs = [...(base[tipo]?.fallbacks || [])]
-  const ni = index + dir
-  if (ni < 0 || ni >= fbs.length) return base
-  ;[fbs[index], fbs[ni]] = [fbs[ni], fbs[index]]
-  return { ...base, [tipo]: { ...base[tipo], fallbacks: fbs } }
+  const fbs = moveIn(getFallbacks(s, tipo), index, dir)
+  // moveIn ya devuelve copia; si no cambió rango, devuelve igual
+  if (fbs === getFallbacks(s, tipo)) return s ?? {}
+  return withFallbacks(s, tipo, fbs)
 }
 
 export function resetTipoIn(

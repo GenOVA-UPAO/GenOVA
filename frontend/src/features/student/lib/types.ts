@@ -1,6 +1,7 @@
 export interface Resource {
   id: string | number
   tipo?: string
+  emoji?: string
   interactividad?: string
   [key: string]: unknown
 }

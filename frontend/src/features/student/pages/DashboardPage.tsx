@@ -7,14 +7,16 @@ export function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Mi Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Bienvenido. Aquí puedes ver los OVAs que tus profesores han compartido contigo.
+          Bienvenido. Aquí puedes ver los OVAs que tus profesores han compartido
+          contigo.
         </p>
       </div>
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">OVAs Compartidos</h2>
         <div className="rounded-xl border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-          Aún no tienes OVAs compartidos. Cuando un profesor te vincule, sus OVAs aparecerán aquí.
+          Aún no tienes OVAs compartidos. Cuando un profesor te vincule, sus
+          OVAs aparecerán aquí.
         </div>
       </section>
 

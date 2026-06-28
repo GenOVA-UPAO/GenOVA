@@ -1,4 +1,10 @@
-import { ChartBar, GraduationCap, type Icon, Stack, Users } from '@phosphor-icons/react'
+import {
+  ChartBar,
+  GraduationCap,
+  type Icon,
+  Stack,
+  Users,
+} from '@phosphor-icons/react'
 import type { AnalyticsTotals } from '../lib/types'
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -42,9 +48,17 @@ export function StatCards({ totals, scope }: StatCardsProps) {
       {scope === 'platform' ? (
         <StatCard icon={Users} label="Usuarios" value={totals.users ?? 0} />
       ) : (
-        <StatCard icon={GraduationCap} label="Alumnos vinculados" value={totals.students ?? 0} />
+        <StatCard
+          icon={GraduationCap}
+          label="Alumnos vinculados"
+          value={totals.students ?? 0}
+        />
       )}
-      <StatCard icon={ChartBar} label="Alcance" value={scope === 'platform' ? 'Global' : 'Cohorte'} />
+      <StatCard
+        icon={ChartBar}
+        label="Alcance"
+        value={scope === 'platform' ? 'Global' : 'Cohorte'}
+      />
     </div>
   )
 }
@@ -65,7 +79,9 @@ export function StatusBreakdown({ byStatus }: StatusBreakdownProps) {
           return (
             <div key={key}>
               <div className="mb-1 flex items-center justify-between text-xs">
-                <span className="font-medium text-foreground">{meta.label}</span>
+                <span className="font-medium text-foreground">
+                  {meta.label}
+                </span>
                 <span className="tabular-nums text-muted-foreground">
                   {n} · {pct}%
                 </span>
@@ -78,7 +94,10 @@ export function StatusBreakdown({ byStatus }: StatusBreakdownProps) {
                 aria-valuemax={100}
                 aria-label={`${meta.label}: ${pct}%`}
               >
-                <div className={`h-full ${meta.color}`} style={{ width: `${pct}%` }} />
+                <div
+                  className={`h-full ${meta.color}`}
+                  style={{ width: `${pct}%` }}
+                />
               </div>
             </div>
           )

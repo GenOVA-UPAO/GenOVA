@@ -1,8 +1,14 @@
 import { m as motion } from 'motion/react'
 import { Navigate } from 'react-router'
+import {
+  StatCards,
+  StatusBreakdown,
+} from '@/features/analytics/components/AnalyticsCards'
+import {
+  RecentOvas,
+  TopCreators,
+} from '@/features/analytics/components/AnalyticsLists'
 import { useAnalytics } from '@/features/analytics/hooks/useAnalytics'
-import { StatCards, StatusBreakdown } from '@/features/analytics/components/AnalyticsCards'
-import { RecentOvas, TopCreators } from '@/features/analytics/components/AnalyticsLists'
 
 function LoadingState() {
   return (
@@ -22,7 +28,8 @@ export function AnalyticsPage() {
     return <Navigate to="/dashboard" replace />
   }
 
-  const scopeLabel = data?.scope === 'platform' ? 'toda la plataforma' : 'tus alumnos vinculados'
+  const scopeLabel =
+    data?.scope === 'platform' ? 'toda la plataforma' : 'tus alumnos vinculados'
 
   return (
     <motion.div
@@ -32,7 +39,9 @@ export function AnalyticsPage() {
       className="mx-auto max-w-4xl space-y-6 pb-12"
     >
       <header className="space-y-1">
-        <h1 className="font-display text-2xl font-bold">Analítica de aprendizaje</h1>
+        <h1 className="font-display text-2xl font-bold">
+          Analítica de aprendizaje
+        </h1>
         <p className="text-sm text-muted-foreground">
           {isLoading ? 'Cargando métricas…' : `Métricas de ${scopeLabel}.`}
         </p>

@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import type { OvaData, PhaseWithContent } from '../lib/types'
 import {
   downloadEditedScorm,
   fetchOvaEditorData,
   pollRegenProgress,
   triggerRegen,
 } from '../services/ovaEditService'
-import type { OvaData } from '../lib/types'
 import { useOvaPhaseActions } from './useOvaPhaseActions'
+import { useOvaPhaseSelection } from './useOvaPhaseSelection'
 import { useOvaUploads } from './useOvaUploads'
 
 const POLL_MS = 3000
@@ -32,16 +33,28 @@ export function useOvaWorkspace(ovaId: string) {
   const [error, setError] = useState('')
   const [prompt, setPrompt] = useState('')
   const [isRegenerating, setIsRegenerating] = useState(false)
-  const [regenProgress, setRegenProgress] = useState<RegenProgress>({ percentage: 0, stage: '' })
-  const [selectionMode, setSelectionMode] = useState(false)
-  const [selectedPhaseIds, setSelectedPhaseIds] = useState<string[]>([])
-
+  const [regenProgress, setRegenProgress] = useState<RegenProgress>({
+    percentage: 0,
+    stage: '',
+  })
   const regenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pollRegenRef = useRef<((jobId: string) => void) | null>(null)
   const loadRef = useRef<(() => void) | null>(null)
   const loadRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const mountedRef = useRef(true)
   const uploads = useOvaUploads()
+
+  const phases = useMemo(
+    () => (ova?.current_version?.phases ?? []) as PhaseWithContent[],
+    [ova],
+  )
+  const {
+    selectionMode,
+    selectedPhaseIds,
+    toggleSelectionMode,
+    togglePhaseSelection,
+    toggleSelectAll,
+  } = useOvaPhaseSelection(phases)
 
   const load = useCallback(async () => {
     if (!ovaId) return
@@ -77,14 +90,20 @@ export function useOvaWorkspace(ovaId: string) {
           status?: string
         }
         if (!mountedRef.current) return
-        setRegenProgress({ percentage: progress.percentage ?? 0, stage: progress.stage ?? '' })
+        setRegenProgress({
+          percentage: progress.percentage ?? 0,
+          stage: progress.stage ?? '',
+        })
         if (progress.status === 'success' || progress.status === 'error') {
           setIsRegenerating(false)
           void load()
           if (progress.status === 'success') toast.success('OVA regenerado.')
           else toast.error('La regeneración falló.')
         } else {
-          regenTimerRef.current = setTimeout(() => pollRegenRef.current?.(jobId), POLL_MS)
+          regenTimerRef.current = setTimeout(
+            () => pollRegenRef.current?.(jobId),
+            POLL_MS,
+          )
         }
       } catch {
         if (mountedRef.current) {
@@ -106,12 +125,19 @@ export function useOvaWorkspace(ovaId: string) {
       setIsRegenerating(true)
       setRegenProgress({ percentage: 0, stage: '' })
       try {
-        const { job_id } = (await triggerRegen(ovaId, body)) as { job_id: string }
-        regenTimerRef.current = setTimeout(() => pollRegenRef.current?.(job_id), POLL_MS)
+        const { job_id } = (await triggerRegen(ovaId, body)) as {
+          job_id: string
+        }
+        regenTimerRef.current = setTimeout(
+          () => pollRegenRef.current?.(job_id),
+          POLL_MS,
+        )
         return true
       } catch (err) {
         setIsRegenerating(false)
-        toast.error((err as Error)?.message || 'No se pudo iniciar la regeneración.')
+        toast.error(
+          (err as Error)?.message || 'No se pudo iniciar la regeneración.',
+        )
         return false
       }
     },
@@ -133,20 +159,10 @@ export function useOvaWorkspace(ovaId: string) {
     }
   }, [ovaId])
 
-  const toggleSelectionMode = useCallback(() => {
-    setSelectionMode((m) => !m)
-    setSelectedPhaseIds([])
-  }, [])
-
-  const togglePhaseSelection = useCallback((phaseId: string) => {
-    setSelectedPhaseIds((ids) =>
-      ids.includes(phaseId) ? ids.filter((id) => id !== phaseId) : [...ids, phaseId],
-    )
-  }, [])
-
   const submitPrompt = useCallback(async () => {
     if (!prompt.trim() || isRegenerating) return
-    const faseIds = selectionMode && selectedPhaseIds.length > 0 ? selectedPhaseIds : []
+    const faseIds =
+      selectionMode && selectedPhaseIds.length > 0 ? selectedPhaseIds : []
     if (await runRegen({ prompt: prompt.trim(), faseIds })) setPrompt('')
   }, [prompt, isRegenerating, selectionMode, selectedPhaseIds, runRegen])
 
@@ -158,15 +174,17 @@ export function useOvaWorkspace(ovaId: string) {
     }
   }, [ovaId])
 
-  const phaseActions = useOvaPhaseActions({ ovaId, load, runRegen, isRegenerating, ova, setOva })
+  const phaseActions = useOvaPhaseActions({
+    ovaId,
+    load,
+    runRegen,
+    isRegenerating,
+    ova,
+    setOva,
+  })
 
-  const phases = useMemo(() => ova?.current_version?.phases ?? [], [ova])
   const versionNumber = ova?.current_version?.version_number ?? null
   const isReady = ova?.status === 'listo'
-
-  const toggleSelectAll = useCallback(() => {
-    setSelectedPhaseIds((ids) => (ids.length === phases.length ? [] : phases.map((p) => p.id)))
-  }, [phases])
 
   return {
     ova,

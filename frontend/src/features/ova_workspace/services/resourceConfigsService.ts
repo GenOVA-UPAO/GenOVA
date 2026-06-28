@@ -32,7 +32,8 @@ export async function getResourceConfigs(): Promise<unknown> {
   const cached = _read()
   if (cached) return cached
   const res = await apiFetch('/api/users/me/resource-configs')
-  if (!res.ok) throw new Error('No se pudo cargar la configuración de recursos.')
+  if (!res.ok)
+    throw new Error('No se pudo cargar la configuración de recursos.')
   const data = await res.json()
   _write(data)
   return data
@@ -46,7 +47,9 @@ export async function putResourceConfigs(configs: unknown): Promise<unknown> {
   })
   if (!res.ok) {
     const body = (await res.json().catch(() => ({}))) as { detail?: string }
-    throw new Error(body.detail || 'No se pudo guardar la configuración de recursos.')
+    throw new Error(
+      body.detail || 'No se pudo guardar la configuración de recursos.',
+    )
   }
   return res.json()
 }

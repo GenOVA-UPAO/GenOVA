@@ -1,19 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { validateFileAdd } from '@/features/ova_workspace/lib/uploadChipViewModel'
-import { deleteTempFile, listTempFiles, uploadTempFiles } from '../services/uploadService'
+import type { RagStatus, UploadItem } from '@/features/ova_workspace/lib/uploadTypes'
+import {
+  deleteTempFile,
+  listTempFiles,
+  uploadTempFiles,
+} from '../services/uploadService'
 
 const MAX_UPLOAD_FILES = Number(import.meta.env.VITE_UPLOAD_MAX_FILES || 5)
-
-interface UploadItem {
-  clientId: string
-  uploadId: string
-  filename: string
-  contentType: string
-  sizeBytes: number
-  status: 'uploading' | 'success' | 'error'
-  message: string
-  ragStatus?: unknown
-}
 
 interface ServerItem {
   upload_id: string
@@ -39,7 +33,7 @@ function fromServerItem(serverItem: ServerItem): UploadItem {
     sizeBytes: Number(serverItem.size_bytes || 0),
     status: 'success',
     message: 'Carga exitosa',
-    ragStatus: serverItem.rag_status,
+    ragStatus: (serverItem.rag_status ?? null) as RagStatus | null,
   }
 }
 
@@ -74,7 +68,10 @@ export function useOvaUploads() {
   }, [])
 
   const uploadIds = useMemo(
-    () => uploads.filter((item) => item.status === 'success' && item.uploadId).map((i) => i.uploadId),
+    () =>
+      uploads
+        .filter((item) => item.status === 'success' && item.uploadId)
+        .map((i) => i.uploadId),
     [uploads],
   )
 
@@ -86,14 +83,21 @@ export function useOvaUploads() {
       if (selectedFiles.length === 0) return
 
       setUploadError('')
-      const limitError = validateFileAdd(activeUploadsCount, selectedFiles.length, MAX_UPLOAD_FILES)
+      const limitError = validateFileAdd(
+        activeUploadsCount,
+        selectedFiles.length,
+        MAX_UPLOAD_FILES,
+      )
       if (limitError) {
         setUploadError(limitError)
         return
       }
 
       const uploadingItems = selectedFiles.map(toUploadingItem)
-      const filePairs = uploadingItems.map((item, index) => ({ item, file: selectedFiles[index] }))
+      const filePairs = uploadingItems.map((item, index) => ({
+        item,
+        file: selectedFiles[index],
+      }))
 
       setUploads((previous) => [...previous, ...uploadingItems])
       setIsUploadingFiles(true)
@@ -117,10 +121,12 @@ export function useOvaUploads() {
                         uploadId: saved.upload_id,
                         filename: saved.filename,
                         contentType: saved.content_type,
-                        sizeBytes: Number(saved.size_bytes || current.sizeBytes),
-                        status: 'success',
+                        sizeBytes: Number(
+                          saved.size_bytes || current.sizeBytes,
+                        ),
+                        status: 'success' as const,
                         message: 'Carga exitosa',
-                        ragStatus: saved.rag_status,
+                        ragStatus: (saved.rag_status ?? null) as RagStatus | null,
                       }
                     : current,
                 ),
@@ -128,7 +134,8 @@ export function useOvaUploads() {
               return
             }
 
-            const failureMessage = failure?.message || 'No se pudo cargar el archivo.'
+            const failureMessage =
+              failure?.message || 'No se pudo cargar el archivo.'
             setUploads((previous) =>
               previous.map((current) =>
                 current.clientId === item.clientId
@@ -140,7 +147,12 @@ export function useOvaUploads() {
             setUploads((previous) =>
               previous.map((current) =>
                 current.clientId === item.clientId
-                  ? { ...current, status: 'error', message: (error as Error)?.message || 'Error al subir archivo.' }
+                  ? {
+                      ...current,
+                      status: 'error',
+                      message:
+                        (error as Error)?.message || 'Error al subir archivo.',
+                    }
                   : current,
               ),
             )
@@ -164,7 +176,9 @@ export function useOvaUploads() {
           // Si expiró en backend, permitimos limpiar la UI local.
         }
       }
-      setUploads((previous) => previous.filter((item) => item.clientId !== clientId))
+      setUploads((previous) =>
+        previous.filter((item) => item.clientId !== clientId),
+      )
     },
     [uploads],
   )

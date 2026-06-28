@@ -47,13 +47,20 @@ export function getJobByOvaId(ovaId: string): Promise<unknown> {
 }
 
 // GET /api/ova/jobs/{job_id}/resources/{resource_id}/content → resource HTML.
-export function getResourceContent(jobId: string, resourceId: string): Promise<unknown> {
+export function getResourceContent(
+  jobId: string,
+  resourceId: string,
+): Promise<unknown> {
   return apiJson(`/api/ova/jobs/${jobId}/resources/${resourceId}/content`)
 }
 
 // POST /api/ova/jobs/{job_id}/resume → 202 { job_id, status, resumed }.
-export function resumeJob(jobId: string, resourceIds?: string[]): Promise<unknown> {
-  const body = resourceIds && resourceIds.length > 0 ? { resource_ids: resourceIds } : {}
+export function resumeJob(
+  jobId: string,
+  resourceIds?: string[],
+): Promise<unknown> {
+  const body =
+    resourceIds && resourceIds.length > 0 ? { resource_ids: resourceIds } : {}
   return apiJson(`/api/ova/jobs/${jobId}/resume`, {
     method: 'POST',
     body: JSON.stringify(body),

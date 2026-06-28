@@ -1,6 +1,10 @@
-import { type Dispatch, type SetStateAction, useCallback, useState } from 'react'
+import {
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useState,
+} from 'react'
 import { toast } from 'sonner'
-import { saveLlmSettings } from '../services/llmSettingsService'
 import {
   addFallbackIn,
   moveFallbackIn,
@@ -9,9 +13,10 @@ import {
   type SettingsMap,
   setFallbackIn,
   setModelIn,
-  type TaskSetting,
   setTimeoutIn,
+  type TaskSetting,
 } from '../lib/llm/llmSettingsMutations'
+import { saveLlmSettings } from '../services/llmSettingsService'
 
 const DEFAULT_TIMEOUT = 120
 
@@ -49,7 +54,8 @@ export function useLlmSettingsEditor(
     [setSettings],
   )
   const removeFallback = useCallback(
-    (tipo: string, index: number) => setSettings((s) => removeFallbackIn(s, tipo, index)),
+    (tipo: string, index: number) =>
+      setSettings((s) => removeFallbackIn(s, tipo, index)),
     [setSettings],
   )
   const moveFallback = useCallback(
@@ -58,7 +64,8 @@ export function useLlmSettingsEditor(
     [setSettings],
   )
   const resetTipo = useCallback(
-    (tipo: string) => setSettings((s) => resetTipoIn(s, tipo, defaults, DEFAULT_TIMEOUT)),
+    (tipo: string) =>
+      setSettings((s) => resetTipoIn(s, tipo, defaults, DEFAULT_TIMEOUT)),
     [setSettings, defaults],
   )
 
@@ -66,12 +73,16 @@ export function useLlmSettingsEditor(
     if (!settings) return false
     setSaving(true)
     try {
-      const data = (await saveLlmSettings(settings)) as { settings?: SettingsMap }
+      const data = (await saveLlmSettings(settings)) as {
+        settings?: SettingsMap
+      }
       if (data?.settings) setSettings(data.settings)
       toast.success('Configuración de IA guardada.')
       return true
     } catch (err) {
-      toast.error((err as Error)?.message || 'No se pudo guardar la configuración.')
+      toast.error(
+        (err as Error)?.message || 'No se pudo guardar la configuración.',
+      )
       return false
     } finally {
       setSaving(false)

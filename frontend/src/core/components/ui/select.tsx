@@ -7,9 +7,16 @@ function Select(props: ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 
-function SelectGroup({ className, ...props }: ComponentProps<typeof SelectPrimitive.Group>) {
+function SelectGroup({
+  className,
+  ...props
+}: ComponentProps<typeof SelectPrimitive.Group>) {
   return (
-    <SelectPrimitive.Group data-slot="select-group" className={cn('scroll-my-1 p-1', className)} {...props} />
+    <SelectPrimitive.Group
+      data-slot="select-group"
+      className={cn('scroll-my-1 p-1', className)}
+      {...props}
+    />
   )
 }
 
@@ -35,7 +42,11 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <CaretDown size={16} weight="bold" className="pointer-events-none text-muted-foreground" />
+        <CaretDown
+          size={16}
+          weight="bold"
+          className="pointer-events-none text-muted-foreground"
+        />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -78,7 +89,10 @@ function SelectContent({
   )
 }
 
-function SelectLabel({ className, ...props }: ComponentProps<typeof SelectPrimitive.Label>) {
+function SelectLabel({
+  className,
+  ...props
+}: ComponentProps<typeof SelectPrimitive.Label>) {
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
@@ -88,7 +102,11 @@ function SelectLabel({ className, ...props }: ComponentProps<typeof SelectPrimit
   )
 }
 
-function SelectItem({ className, children, ...props }: ComponentProps<typeof SelectPrimitive.Item>) {
+function SelectItem({
+  className,
+  children,
+  ...props
+}: ComponentProps<typeof SelectPrimitive.Item>) {
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
@@ -108,7 +126,10 @@ function SelectItem({ className, children, ...props }: ComponentProps<typeof Sel
   )
 }
 
-function SelectSeparator({ className, ...props }: ComponentProps<typeof SelectPrimitive.Separator>) {
+function SelectSeparator({
+  className,
+  ...props
+}: ComponentProps<typeof SelectPrimitive.Separator>) {
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"

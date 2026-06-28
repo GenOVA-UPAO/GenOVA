@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { fetchTrashedOvas } from '../services/ovaHistoryService'
+import { useCallback, useState } from 'react'
 import type { OvaListItem } from '../lib/types'
+import { fetchTrashedOvas } from '../services/ovaHistoryService'
 import { useTrashActions } from './useTrashActions'
 
 interface TrashPage {
@@ -17,7 +17,8 @@ export function useTrashList() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['trashList', currentPage],
-    queryFn: () => fetchTrashedOvas({ page: currentPage, limit: 10 }) as Promise<TrashPage>,
+    queryFn: () =>
+      fetchTrashedOvas({ page: currentPage, limit: 10 }) as Promise<TrashPage>,
   })
 
   const ovas = data?.ovas || []
@@ -45,7 +46,8 @@ export function useTrashList() {
     })
   }
 
-  const allSelected = ovas.length > 0 && ovas.every((o) => selectedIds.has(o.id))
+  const allSelected =
+    ovas.length > 0 && ovas.every((o) => selectedIds.has(o.id))
 
   const handleSelectAll = () => {
     setSelectedIds(allSelected ? new Set() : new Set(ovas.map((o) => o.id)))
@@ -58,7 +60,13 @@ export function useTrashList() {
     }
   }
 
-  const actions = useTrashActions(currentPage, totalItems, selectedIds, loadTrash, clearSelection)
+  const actions = useTrashActions(
+    currentPage,
+    totalItems,
+    selectedIds,
+    loadTrash,
+    clearSelection,
+  )
 
   const isEmpty = !isLoading && !isError && ovas.length === 0
 

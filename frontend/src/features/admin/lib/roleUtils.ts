@@ -1,4 +1,6 @@
-export function getRoleColorClasses(roleName: string | null | undefined): string {
+export function getRoleColorClasses(
+  roleName: string | null | undefined,
+): string {
   if (!roleName) return 'bg-muted text-muted-foreground border-border'
 
   const normalizedRole = roleName.toLowerCase().trim()

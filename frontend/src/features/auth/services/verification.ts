@@ -26,5 +26,8 @@ export async function resendVerification(email: string): Promise<string> {
     body: JSON.stringify({ email }),
   })
   const data: VerifyResponse = await res.json().catch(() => ({}))
-  return data?.message || 'Si el correo está pendiente de verificar, te enviamos un nuevo enlace.'
+  return (
+    data?.message ||
+    'Si el correo está pendiente de verificar, te enviamos un nuevo enlace.'
+  )
 }

@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { getRoleColorClasses } from '../../../features/admin/lib/roleUtils'
+import type { AdminUser, Role } from '../lib/types'
 import {
   fetchCurrentUser,
   fetchRoles,
@@ -13,7 +14,6 @@ import {
   updateUserRole,
   updateUserStatus,
 } from '../services/adminUsersService'
-import type { AdminUser, Role } from '../lib/types'
 
 const FAILURE_MSG = 'Error de conexión con el servidor.'
 
@@ -69,7 +69,10 @@ export function useUsersAdmin() {
     [currentPage, qc],
   )
 
-  async function withUpdating<T>(userId: string, fn: () => Promise<T>): Promise<T | null> {
+  async function withUpdating<T>(
+    userId: string,
+    fn: () => Promise<T>,
+  ): Promise<T | null> {
     setUpdatingUserId(userId)
     try {
       return await fn()
@@ -92,7 +95,10 @@ export function useUsersAdmin() {
     })
   }
 
-  async function handleEditUser(userId: string, fields: Record<string, unknown>) {
+  async function handleEditUser(
+    userId: string,
+    fields: Record<string, unknown>,
+  ) {
     return withUpdating(userId, async () => {
       const { ok, body } = await updateUserProfile(userId, fields)
       if (!ok) {
@@ -108,7 +114,8 @@ export function useUsersAdmin() {
   async function handleToggleStatus(userId: string, isActive: boolean) {
     await withUpdating(userId, async () => {
       const { ok, body } = await updateUserStatus(userId, isActive)
-      if (!ok) return toast.error(detail(body, 'Error al actualizar el estado.'))
+      if (!ok)
+        return toast.error(detail(body, 'Error al actualizar el estado.'))
       refreshUsers()
       toast.success(isActive ? 'Usuario activado.' : 'Usuario desactivado.')
     })
@@ -117,7 +124,8 @@ export function useUsersAdmin() {
   async function handleUnlockUser(userId: string) {
     await withUpdating(userId, async () => {
       const { ok, body } = await unlockUser(userId)
-      if (!ok) return toast.error(detail(body, 'Error al desbloquear al usuario.'))
+      if (!ok)
+        return toast.error(detail(body, 'Error al desbloquear al usuario.'))
       refreshUsers()
       toast.success('Usuario desbloqueado.')
     })

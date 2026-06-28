@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { fetchLlmSettings, refreshLlmCatalog } from '../services/llmSettingsService'
-import { CATEGORY_LABELS, TASK_LABELS, TYPE_LABELS } from '../lib/llm/llmSettingsLabels'
+import {
+  CATEGORY_LABELS,
+  TASK_LABELS,
+  TYPE_LABELS,
+} from '../lib/llm/llmSettingsLabels'
 import type { SettingsMap } from '../lib/llm/llmSettingsMutations'
+import {
+  fetchLlmSettings,
+  refreshLlmCatalog,
+} from '../services/llmSettingsService'
 import { type EnabledModel, useEnabledModels } from './useEnabledModels'
-import { useLlmSettingsEditor } from './useLlmSettingsEditor'
 import type { LlmSettingsResponse, LoadOpts } from './useLlmSettings.types'
+import { useLlmSettingsEditor } from './useLlmSettingsEditor'
 
 export function useLlmSettings(enabled = true) {
   const [settings, setSettings] = useState<SettingsMap | null>(null)
@@ -23,7 +30,10 @@ export function useLlmSettings(enabled = true) {
   const [hasOwnLlmKey, setHasOwnLlmKey] = useState(false)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [catalogStatus, setCatalogStatus] = useState<unknown>(null)
+  const [catalogStatus, setCatalogStatus] = useState<Record<
+    string,
+    { ok: boolean; last_success_at?: string }
+  > | null>(null)
   const [refreshingCatalog, setRefreshingCatalog] = useState(false)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -52,7 +62,9 @@ export function useLlmSettings(enabled = true) {
         setHasOwnLlmKey(data.has_own_llm_key ?? false)
         setCatalog(data.catalog || {})
         setCatalogAll(Array.isArray(data.catalog_all) ? data.catalog_all : [])
-        setEnabledModels(Array.isArray(data.enabled_models) ? data.enabled_models : [])
+        setEnabledModels(
+          Array.isArray(data.enabled_models) ? data.enabled_models : [],
+        )
         setDefaults(data.defaults || {})
         if (Array.isArray(data.timeout_bounds)) setBounds(data.timeout_bounds)
         if (Array.isArray(data.catalog_full)) {
@@ -64,9 +76,16 @@ export function useLlmSettings(enabled = true) {
         setFullHasMore(data.full_has_more || false)
         if (Array.isArray(data.categories)) setCategories(data.categories)
         if (Array.isArray(data.types)) setTypes(data.types)
-        setCatalogStatus(data.catalog_status || null)
+        setCatalogStatus(
+          (data.catalog_status as Record<
+            string,
+            { ok: boolean; last_success_at?: string }
+          > | null) || null,
+        )
       } catch (err) {
-        setError((err as Error)?.message || 'No se pudo cargar la configuración.')
+        setError(
+          (err as Error)?.message || 'No se pudo cargar la configuración.',
+        )
       } finally {
         setLoading(false)
         setLoadingMore(false)
@@ -117,7 +136,9 @@ export function useLlmSettings(enabled = true) {
       await refreshLlmCatalog()
       await load({})
     } catch {
-      toast.error('No se pudo actualizar el catálogo. Intenta de nuevo en unos segundos.')
+      toast.error(
+        'No se pudo actualizar el catálogo. Intenta de nuevo en unos segundos.',
+      )
     } finally {
       setRefreshingCatalog(false)
     }

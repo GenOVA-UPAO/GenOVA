@@ -1,20 +1,36 @@
-import { CaretRight as ChevronRightIcon, Check as CheckIcon } from '@phosphor-icons/react'
+import {
+  Check as CheckIcon,
+  CaretRight as ChevronRightIcon,
+} from '@phosphor-icons/react'
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
 import { cn } from '@/core/lib/utils'
 
 type Inset = { inset?: boolean }
 
-function DropdownMenu(props: ComponentProps<typeof DropdownMenuPrimitive.Root>) {
+function DropdownMenu(
+  props: ComponentProps<typeof DropdownMenuPrimitive.Root>,
+) {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
 }
 
-function DropdownMenuPortal(props: ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
-  return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
+function DropdownMenuPortal(
+  props: ComponentProps<typeof DropdownMenuPrimitive.Portal>,
+) {
+  return (
+    <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
+  )
 }
 
-function DropdownMenuTrigger(props: ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
-  return <DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
+function DropdownMenuTrigger(
+  props: ComponentProps<typeof DropdownMenuPrimitive.Trigger>,
+) {
+  return (
+    <DropdownMenuPrimitive.Trigger
+      data-slot="dropdown-menu-trigger"
+      {...props}
+    />
+  )
 }
 
 function DropdownMenuContent({
@@ -39,8 +55,12 @@ function DropdownMenuContent({
   )
 }
 
-function DropdownMenuGroup(props: ComponentProps<typeof DropdownMenuPrimitive.Group>) {
-  return <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />
+function DropdownMenuGroup(
+  props: ComponentProps<typeof DropdownMenuPrimitive.Group>,
+) {
+  return (
+    <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />
+  )
 }
 
 function DropdownMenuItem({
@@ -48,7 +68,8 @@ function DropdownMenuItem({
   inset,
   variant = 'default',
   ...props
-}: ComponentProps<typeof DropdownMenuPrimitive.Item> & Inset & { variant?: 'default' | 'destructive' }) {
+}: ComponentProps<typeof DropdownMenuPrimitive.Item> &
+  Inset & { variant?: 'default' | 'destructive' }) {
   return (
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
@@ -94,8 +115,15 @@ function DropdownMenuCheckboxItem({
   )
 }
 
-function DropdownMenuRadioGroup(props: ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>) {
-  return <DropdownMenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} />
+function DropdownMenuRadioGroup(
+  props: ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>,
+) {
+  return (
+    <DropdownMenuPrimitive.RadioGroup
+      data-slot="dropdown-menu-radio-group"
+      {...props}
+    />
+  )
 }
 
 function DropdownMenuRadioItem({
@@ -136,7 +164,10 @@ function DropdownMenuLabel({
     <DropdownMenuPrimitive.Label
       data-slot="dropdown-menu-label"
       data-inset={inset}
-      className={cn('px-1.5 py-1 text-xs font-medium text-muted-foreground data-inset:pl-7', className)}
+      className={cn(
+        'px-1.5 py-1 text-xs font-medium text-muted-foreground data-inset:pl-7',
+        className,
+      )}
       {...props}
     />
   )
@@ -168,7 +199,9 @@ function DropdownMenuShortcut({ className, ...props }: ComponentProps<'span'>) {
   )
 }
 
-function DropdownMenuSub(props: ComponentProps<typeof DropdownMenuPrimitive.Sub>) {
+function DropdownMenuSub(
+  props: ComponentProps<typeof DropdownMenuPrimitive.Sub>,
+) {
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />
 }
 
@@ -212,18 +245,18 @@ function DropdownMenuSubContent({
 
 export {
   DropdownMenu,
-  DropdownMenuPortal,
-  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuLabel,
   DropdownMenuItem,
-  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 }

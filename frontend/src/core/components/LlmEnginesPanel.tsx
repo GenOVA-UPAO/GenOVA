@@ -1,0 +1,86 @@
+import { useLlmSettings } from '@/core/hooks/useLlmSettings'
+import {
+  pricingLabel,
+  PROVIDER_LABELS,
+} from '@/core/lib/llm/llmCatalogUtils'
+
+const PROVIDER_BADGE: Record<string, string> = {
+  groq: 'bg-accent-brand/10 text-accent-brand border-accent-brand/25',
+  openrouter: 'bg-primary/10 text-primary border-primary/20',
+}
+
+export function LlmEnginesPanel() {
+  const { catalogAll, loading, error, isModelEnabled, isDefaultModel } =
+    useLlmSettings(true)
+
+  if (loading) {
+    return (
+      <p className="text-xs text-muted-foreground">Cargando motores de IA…</p>
+    )
+  }
+  if (error) {
+    return <p className="text-xs text-destructive">{error}</p>
+  }
+
+  const active = (
+    (catalogAll as Array<{
+      active: boolean
+      provider: string
+      model_id: string
+      label?: string
+      pricing?: string
+      context_length?: number
+      task?: string
+    }>) || []
+  ).filter((e) => {
+    if (!e.active) return false
+    if (isDefaultModel(e.provider, e.model_id)) return true
+    return isModelEnabled(e.provider, e.model_id)
+  })
+
+  if (active.length === 0) return null
+
+  return (
+    <details className="group">
+      <summary className="cursor-pointer text-sm font-medium text-foreground flex items-center gap-2 list-none select-none">
+        <span className="text-muted-foreground group-open:rotate-90 transition-transform inline-block">
+          ▶
+        </span>
+        Motores de IA activos · {active.length}
+      </summary>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        {active.map((m) => (
+          <li
+            key={`${m.provider}:${m.model_id}`}
+            className="rounded-lg border border-border bg-muted/50 px-3 py-1.5 text-xs"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-semibold text-foreground truncate">
+                {m.label || m.model_id}
+              </span>
+              <span
+                className={`shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${
+                  PROVIDER_BADGE[m.provider] ||
+                  'bg-muted text-muted-foreground border-border'
+                }`}
+              >
+                {PROVIDER_LABELS[m.provider] || m.provider}
+              </span>
+            </div>
+            <p className="mt-0.5 text-muted-foreground flex items-center gap-2">
+              <span className="font-mono">{m.task}</span>
+              {(m.pricing || m.context_length) && (
+                <span className="text-[10px] text-muted-foreground/70">
+                  {pricingLabel(m.pricing)}
+                  {m.context_length
+                    ? ` · ${(m.context_length / 1000).toFixed(0)}k ctx`
+                    : ''}
+                </span>
+              )}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}

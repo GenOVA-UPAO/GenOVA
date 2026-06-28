@@ -13,7 +13,10 @@ export function fetchOvas({
   search = '',
   status = '',
 }: OvaListParams = {}): Promise<unknown> {
-  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  })
   if (search.trim()) params.set('search', search.trim())
   if (status.trim()) params.set('status', status.trim())
   return apiJson(`/api/ovas?${params}`)
@@ -23,8 +26,14 @@ export function deleteOva(ovaId: string): Promise<unknown> {
   return apiJson(`/api/ovas/${ovaId}`, { method: 'DELETE' })
 }
 
-export function fetchTrashedOvas({ page = 1, limit = 10 }: OvaListParams = {}): Promise<unknown> {
-  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+export function fetchTrashedOvas({
+  page = 1,
+  limit = 10,
+}: OvaListParams = {}): Promise<unknown> {
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  })
   return apiJson(`/api/ovas/papelera?${params}`)
 }
 
@@ -75,11 +84,19 @@ export function batchPermanentDelete(ovaIds: string[]): Promise<unknown> {
   })
 }
 
-export async function downloadOvaFile(ovaId: string, title = 'ova'): Promise<void> {
+export async function downloadOvaFile(
+  ovaId: string,
+  title = 'ova',
+): Promise<void> {
   const res = await apiFetch(`/api/ovas/${ovaId}/download`)
   if (!res.ok) {
-    const data = (await res.json().catch(() => ({}))) as { message?: string; error?: string }
-    const error = new Error(data?.message || 'No se pudo descargar el archivo.') as Error & {
+    const data = (await res.json().catch(() => ({}))) as {
+      message?: string
+      error?: string
+    }
+    const error = new Error(
+      data?.message || 'No se pudo descargar el archivo.',
+    ) as Error & {
       code?: string
       status?: number
     }
@@ -89,7 +106,10 @@ export async function downloadOvaFile(ovaId: string, title = 'ova'): Promise<voi
   }
   const contentType = res.headers.get('content-type') || ''
   if (contentType.includes('application/json')) {
-    const data = (await res.json()) as { download_url: string; filename?: string }
+    const data = (await res.json()) as {
+      download_url: string
+      filename?: string
+    }
     const a = document.createElement('a')
     a.href = data.download_url
     if (data.filename) a.download = data.filename

@@ -42,7 +42,9 @@ export function useRoles() {
 
   const handlePermissionToggle = (permId: string) => {
     setSelectedPermissions((prev) =>
-      prev.includes(permId) ? prev.filter((id) => id !== permId) : [...prev, permId],
+      prev.includes(permId)
+        ? prev.filter((id) => id !== permId)
+        : [...prev, permId],
     )
   }
 
@@ -90,14 +92,20 @@ export function useRoles() {
     try {
       const response = await apiFetch(path, {
         method,
-        body: JSON.stringify({ name, description: roleDescription, permissions: selectedPermissions }),
+        body: JSON.stringify({
+          name,
+          description: roleDescription,
+          permissions: selectedPermissions,
+        }),
       })
 
       const data = (await response.json()) as Role & { detail?: string }
 
       if (response.status === 200 || response.status === 201) {
         if (isEdit) {
-          setRoles((prev) => prev.map((r) => (r.id === editingRole?.id ? data : r)))
+          setRoles((prev) =>
+            prev.map((r) => (r.id === editingRole?.id ? data : r)),
+          )
           toast.success('Rol actualizado con éxito')
         } else {
           setRoles((prev) => [...prev, data])
@@ -108,7 +116,8 @@ export function useRoles() {
         setFormError('Ya existe un rol con ese nombre.')
       } else {
         setFormError(
-          data.detail || `Ocurrió un error inesperado al ${isEdit ? 'actualizar' : 'crear'} el rol.`,
+          data.detail ||
+            `Ocurrió un error inesperado al ${isEdit ? 'actualizar' : 'crear'} el rol.`,
         )
       }
     } catch {

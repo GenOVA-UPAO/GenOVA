@@ -1,19 +1,27 @@
 import type { VariantProps } from 'class-variance-authority'
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui'
 import type { ComponentProps } from 'react'
-import { Button, buttonVariants } from '@/core/components/ui/button'
+import { Button, type buttonVariants } from '@/core/components/ui/button'
 import { cn } from '@/core/lib/utils'
 
 function AlertDialog(props: ComponentProps<typeof AlertDialogPrimitive.Root>) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
 }
 
-function AlertDialogTrigger(props: ComponentProps<typeof AlertDialogPrimitive.Trigger>) {
-  return <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
+function AlertDialogTrigger(
+  props: ComponentProps<typeof AlertDialogPrimitive.Trigger>,
+) {
+  return (
+    <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
+  )
 }
 
-function AlertDialogPortal(props: ComponentProps<typeof AlertDialogPrimitive.Portal>) {
-  return <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
+function AlertDialogPortal(
+  props: ComponentProps<typeof AlertDialogPrimitive.Portal>,
+) {
+  return (
+    <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
+  )
 }
 
 function AlertDialogOverlay({
@@ -129,7 +137,8 @@ function AlertDialogAction({
   variant = 'default',
   size = 'default',
   ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Action> & VariantProps<typeof buttonVariants>) {
+}: ComponentProps<typeof AlertDialogPrimitive.Action> &
+  VariantProps<typeof buttonVariants>) {
   return (
     <Button variant={variant} size={size} asChild>
       <AlertDialogPrimitive.Action
@@ -146,7 +155,8 @@ function AlertDialogCancel({
   variant = 'outline',
   size = 'default',
   ...props
-}: ComponentProps<typeof AlertDialogPrimitive.Cancel> & VariantProps<typeof buttonVariants>) {
+}: ComponentProps<typeof AlertDialogPrimitive.Cancel> &
+  VariantProps<typeof buttonVariants>) {
   return (
     <Button variant={variant} size={size} asChild>
       <AlertDialogPrimitive.Cancel

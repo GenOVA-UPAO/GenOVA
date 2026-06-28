@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
-import { updateOvaMetadata } from '../services/ovaHistoryService'
 import type { OvaListItem } from '../lib/types'
+import { updateOvaMetadata } from '../services/ovaHistoryService'
 
 interface MetadataValues {
   title: string
@@ -22,7 +22,10 @@ export function useOvaMetadata(onSaved?: () => void) {
   // Stable so it can be passed to the memoized OvaCard without busting memo.
   const openMetadataModal = useCallback((ova: OvaListItem) => {
     setMetadataTargetId(ova.id)
-    setMetadataInitial({ title: ova.title || '', description: ova.description || '' })
+    setMetadataInitial({
+      title: ova.title || '',
+      description: ova.description || '',
+    })
     setMetadataModalOpen(true)
   }, [])
 
@@ -40,12 +43,16 @@ export function useOvaMetadata(onSaved?: () => void) {
           description: values.description || '',
         })) as { message?: string }
         onSaved?.()
-        toast.success(response.message || 'Metadatos actualizados correctamente.')
+        toast.success(
+          response.message || 'Metadatos actualizados correctamente.',
+        )
         setMetadataModalOpen(false)
         setMetadataTargetId('')
         return true
       } catch (err) {
-        toast.error((err as Error).message || 'No se pudieron guardar los metadatos.')
+        toast.error(
+          (err as Error).message || 'No se pudieron guardar los metadatos.',
+        )
         return false
       } finally {
         setMetadataSaving(false)

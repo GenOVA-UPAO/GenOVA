@@ -7,6 +7,7 @@ import {
   pollResults,
   startGeneration,
 } from '../services/labsService'
+import type { LabResult } from '../components/ResultsPanel'
 import { useLabPrompt } from './useLabPrompt'
 
 // Cut from 2s → 5s. Generation latency dwarfs the polling interval; this
@@ -30,7 +31,7 @@ interface ImprovedPrompt {
  */
 export function useLabGeneration() {
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null)
-  const [selectedType, setSelectedType] = useState<string | null>(null)
+  const [selectedType, setSelectedType] = useState<number | null>(null)
 
   const prompt = useLabPrompt()
 
@@ -40,13 +41,15 @@ export function useLabGeneration() {
 
   const [concept, setConcept] = useState('')
   const [generating, setGenerating] = useState(false)
-  const [results, setResults] = useState<unknown[]>([])
+  const [results, setResults] = useState<LabResult[]>([])
   const [jobError, setJobError] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const [winnerId, setWinnerId] = useState<string | null>(null)
   const [improving, setImproving] = useState(false)
-  const [improvedPrompt, setImprovedPrompt] = useState<ImprovedPrompt | null>(null)
+  const [improvedPrompt, setImprovedPrompt] = useState<ImprovedPrompt | null>(
+    null,
+  )
 
   const loadModels = useCallback(async () => {
     try {
@@ -58,7 +61,7 @@ export function useLabGeneration() {
   }, [])
 
   const selectResource = useCallback(
-    (phase: string, type: string) => {
+    (phase: string, type: number) => {
       setSelectedPhase(phase)
       setSelectedType(type)
       setResults([])
@@ -87,10 +90,18 @@ export function useLabGeneration() {
     setImprovedPrompt(null)
 
     const configs = [
-      { model_id: modelA.id, provider: modelA.provider, prompt_text: prompt.promptText },
+      {
+        model_id: modelA.id,
+        provider: modelA.provider,
+        prompt_text: prompt.promptText,
+      },
     ]
     if (modelB) {
-      configs.push({ model_id: modelB.id, provider: modelB.provider, prompt_text: prompt.promptText })
+      configs.push({
+        model_id: modelB.id,
+        provider: modelB.provider,
+        prompt_text: prompt.promptText,
+      })
     }
 
     try {
@@ -102,7 +113,10 @@ export function useLabGeneration() {
       })) as { job_id: string }
       pollRef.current = setInterval(async () => {
         try {
-          const data = (await pollResults(job_id)) as { results?: unknown[]; finished?: boolean }
+          const data = (await pollResults(job_id)) as {
+            results?: LabResult[]
+            finished?: boolean
+          }
           setResults(data.results || [])
           if (data.finished) {
             _stopPoll()
@@ -118,7 +132,15 @@ export function useLabGeneration() {
       setGenerating(false)
       setJobError((err as Error).message)
     }
-  }, [selectedPhase, selectedType, concept, modelA, modelB, prompt.promptText, _stopPoll])
+  }, [
+    selectedPhase,
+    selectedType,
+    concept,
+    modelA,
+    modelB,
+    prompt.promptText,
+    _stopPoll,
+  ])
 
   const selectWinner = useCallback(async (resultId: string) => {
     setWinnerId(resultId)
@@ -142,17 +164,24 @@ export function useLabGeneration() {
       })) as ImprovedPrompt
       setImprovedPrompt(data)
     } catch (err) {
-      setImprovedPrompt({ improved_prompt: '', explanation: (err as Error).message })
+      setImprovedPrompt({
+        improved_prompt: '',
+        explanation: (err as Error).message,
+      })
     } finally {
       setImproving(false)
     }
   }, [winnerId, selectedPhase, selectedType, prompt.promptText, concept])
 
   const applyImprovedPrompt = useCallback(() => {
-    if (improvedPrompt?.improved_prompt) prompt.setPromptText(improvedPrompt.improved_prompt)
+    if (improvedPrompt?.improved_prompt)
+      prompt.setPromptText(improvedPrompt.improved_prompt)
   }, [improvedPrompt, prompt])
 
-  const handleExportScorm = useCallback((resultId: string) => downloadScorm(resultId), [])
+  const handleExportScorm = useCallback(
+    (resultId: string) => downloadScorm(resultId),
+    [],
+  )
 
   return {
     selectedPhase,

@@ -18,7 +18,13 @@ export interface HtmlQuality {
 
 /** Run client-side quality checks on generated HTML. */
 export function checkHtmlQuality(html: string): HtmlQuality {
-  if (!html) return { cdn_ok: false, scorm_ok: false, min_length_ok: false, char_count: 0 }
+  if (!html)
+    return {
+      cdn_ok: false,
+      scorm_ok: false,
+      min_length_ok: false,
+      char_count: 0,
+    }
   const low = html.toLowerCase()
   return {
     cdn_ok: !FORBIDDEN_CDN.some((pat) => low.includes(pat)),

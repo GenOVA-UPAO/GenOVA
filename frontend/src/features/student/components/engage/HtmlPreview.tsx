@@ -1,20 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/core/components/ui/button'
+import { HtmlPreviewFrame } from '@/core/components/HtmlPreviewFrame'
 import type { PreviewResult } from '../../lib/types'
 
-// iframe stays in DOM via CSS hidden — never unmounted — so the blob URL is
-// never revoked while toggling views (StrictMode-safe).
+// El iframe permanece en DOM via CSS hidden — nunca se desmonta —
+// así el blob URL no se revoca al alternar vistas (StrictMode-safe).
 export function HtmlPreview({ result }: { result?: PreviewResult }) {
   const [view, setView] = useState<'preview' | 'code'>('preview')
-  const iframeRef = useRef<HTMLIFrameElement | null>(null)
-
-  useEffect(() => {
-    const html = result?.html_content
-    if (!html) return
-    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
-    if (iframeRef.current) iframeRef.current.src = url
-    return () => URL.revokeObjectURL(url)
-  }, [result?.html_content])
 
   function downloadHtml() {
     if (!result?.html_content) return
@@ -63,11 +55,10 @@ export function HtmlPreview({ result }: { result?: PreviewResult }) {
       </div>
 
       <div className="rounded-xl border border-border overflow-hidden shadow-sm">
-        <iframe
-          ref={iframeRef}
-          title="Vista previa del recurso"
+        <HtmlPreviewFrame
+          html={result.html_content ?? ''}
           className={`w-full h-[60vh] min-h-[240px] max-h-[640px] border-0 block${view === 'preview' ? '' : ' hidden'}`}
-          sandbox="allow-scripts allow-same-origin"
+          height=""
         />
         <div className={view === 'code' ? '' : 'hidden'}>
           <div className="flex items-center justify-between bg-slate-800 px-3 py-2">

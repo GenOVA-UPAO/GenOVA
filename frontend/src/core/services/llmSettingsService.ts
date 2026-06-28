@@ -8,7 +8,9 @@ export interface LlmSettingsParams {
   page_size?: number
 }
 
-export function fetchLlmSettings(params: LlmSettingsParams = {}): Promise<unknown> {
+export function fetchLlmSettings(
+  params: LlmSettingsParams = {},
+): Promise<unknown> {
   const searchParams = new URLSearchParams()
   if (params.search) searchParams.set('search', params.search)
   if (params.category) searchParams.set('category', params.category)
@@ -27,7 +29,9 @@ export function saveLlmSettings(settings: unknown): Promise<unknown> {
 }
 
 export function refreshLlmCatalog(): Promise<unknown> {
-  return apiJson('/api/users/me/llm-settings/refresh-catalog', { method: 'POST' })
+  return apiJson('/api/users/me/llm-settings/refresh-catalog', {
+    method: 'POST',
+  })
 }
 
 export function saveEnabledModels(models: unknown): Promise<unknown> {

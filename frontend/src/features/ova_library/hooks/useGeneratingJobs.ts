@@ -1,6 +1,10 @@
-import { useCallback } from 'react'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
-import { getJobByOvaId, resumeJob } from '../../ova_workspace/services/ovaCreationService'
+import { useCallback } from 'react'
+import {
+  getJobByOvaId,
+  resumeJob,
+} from '../../ova_workspace/services/ovaCreationService'
+import type { JobInfo } from '../components/cards/OvaCard'
 import type { OvaListItem } from '../lib/types'
 
 const POLL_MS = 4000
@@ -12,7 +16,9 @@ interface JobData {
   resources?: { status: string }[]
 }
 
-function computeProgress(job: JobData | null): { done: number; total: number } | null {
+function computeProgress(
+  job: JobData | null,
+): { done: number; total: number } | null {
   if (!job?.resources?.length) return null
   const total = job.resources.length
   const done = job.resources.filter((r) => r.status === 'done').length
@@ -49,7 +55,7 @@ export function useGeneratingJobs(ovas: OvaListItem[]) {
     })),
   })
 
-  const jobs: Record<string, unknown> = {}
+  const jobs: Record<string, JobInfo> = {}
   ids.forEach((ovaId, i) => {
     const data = results[i]?.data as JobData | undefined
     if (!data) return

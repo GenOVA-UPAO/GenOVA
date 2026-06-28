@@ -1,4 +1,9 @@
-import { apiFetch } from '../../../core/lib/http/client'
+/**
+ * Service de gestión de usuarios para el panel admin.
+ * Retorna { ok, status, body } en vez de lanzar para permitir manejo
+ * granular de errores en useUsersAdmin (distintos mensajes por operación).
+ */
+import { apiFetch } from '@/core/lib/http/client'
 
 type UserId = string | number
 
@@ -19,50 +24,47 @@ async function send(path: string, init: RequestInit = {}): Promise<SendResult> {
   return { ok: res.ok, status: res.status, body: body ?? {} }
 }
 
-export function fetchCurrentUser(): Promise<SendResult> {
-  return send('/api/auth/me')
-}
+export const fetchCurrentUser = (): Promise<SendResult> =>
+  send('/api/auth/me')
 
-export function fetchRoles(): Promise<SendResult> {
-  return send('/api/roles')
-}
+export const fetchRoles = (): Promise<SendResult> =>
+  send('/api/roles')
 
-export function fetchUsersPage(page = 1): Promise<SendResult> {
-  return send(`/api/users/?page=${page}&limit=10`)
-}
+export const fetchUsersPage = (page = 1): Promise<SendResult> =>
+  send(`/api/users/?page=${page}&limit=10`)
 
-export function updateUserRole(userId: UserId, roleId: UserId): Promise<SendResult> {
-  return send(`/api/users/${userId}/role`, {
+export const updateUserRole = (
+  userId: UserId,
+  roleId: UserId,
+): Promise<SendResult> =>
+  send(`/api/users/${userId}/role`, {
     method: 'PATCH',
     body: JSON.stringify({ role_id: roleId }),
   })
-}
 
-export function updateUserProfile(
+export const updateUserProfile = (
   userId: UserId,
   updatedFields: Record<string, unknown>,
-): Promise<SendResult> {
-  return send(`/api/users/${userId}`, {
+): Promise<SendResult> =>
+  send(`/api/users/${userId}`, {
     method: 'PATCH',
     body: JSON.stringify(updatedFields),
   })
-}
 
-export function updateUserStatus(userId: UserId, isActive: boolean): Promise<SendResult> {
-  return send(`/api/users/${userId}/status`, {
+export const updateUserStatus = (
+  userId: UserId,
+  isActive: boolean,
+): Promise<SendResult> =>
+  send(`/api/users/${userId}/status`, {
     method: 'PATCH',
     body: JSON.stringify({ is_active: isActive }),
   })
-}
 
-export function unlockUser(userId: UserId): Promise<SendResult> {
-  return send(`/api/users/${userId}/unlock`, { method: 'POST' })
-}
+export const unlockUser = (userId: UserId): Promise<SendResult> =>
+  send(`/api/users/${userId}/unlock`, { method: 'POST' })
 
-export function sendResetEmail(userId: UserId): Promise<SendResult> {
-  return send(`/api/users/${userId}/reset-password-email`, { method: 'POST' })
-}
+export const sendResetEmail = (userId: UserId): Promise<SendResult> =>
+  send(`/api/users/${userId}/reset-password-email`, { method: 'POST' })
 
-export function generateResetWhatsApp(userId: UserId): Promise<SendResult> {
-  return send(`/api/users/${userId}/reset-password-whatsapp`, { method: 'POST' })
-}
+export const generateResetWhatsApp = (userId: UserId): Promise<SendResult> =>
+  send(`/api/users/${userId}/reset-password-whatsapp`, { method: 'POST' })

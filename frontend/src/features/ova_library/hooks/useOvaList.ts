@@ -1,7 +1,8 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import type { OvaListItem } from '../lib/types'
 import {
   batchMoveToTrash,
   deleteOva,
@@ -9,10 +10,9 @@ import {
   duplicateOva,
   fetchOvas,
 } from '../services/ovaHistoryService'
-import type { OvaListItem } from '../lib/types'
+import { useOvaFilters } from './useOvaFilters'
 import { useOvaMetadata } from './useOvaMetadata'
 import { useOvaSelection } from './useOvaSelection'
-import { useOvaFilters } from './useOvaFilters'
 
 interface OvaListPage {
   ovas?: OvaListItem[]
@@ -22,7 +22,11 @@ interface OvaListPage {
 
 // Recalcula la página destino tras quitar N elementos: si la página actual queda
 // fuera de rango, retrocede a la última con contenido.
-function pageAfterRemoval(currentPage: number, totalItems: number, removed: number): number {
+function pageAfterRemoval(
+  currentPage: number,
+  totalItems: number,
+  removed: number,
+): number {
   const newTotalPages = Math.max(1, Math.ceil((totalItems - removed) / 10))
   return currentPage > newTotalPages ? newTotalPages : currentPage
 }
@@ -35,13 +39,23 @@ export function useOvaList() {
   const [showBulkModal, setShowBulkModal] = useState(false)
   const [downloadingId, setDownloadingId] = useState('')
 
-  const { searchInput, search, statusFilter, handleSearchChange, handleStatusChange } =
-    useOvaFilters(() => setCurrentPage(1))
+  const {
+    searchInput,
+    search,
+    statusFilter,
+    handleSearchChange,
+    handleStatusChange,
+  } = useOvaFilters(() => setCurrentPage(1))
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['ovaList', currentPage, search, statusFilter],
     queryFn: () =>
-      fetchOvas({ page: currentPage, limit: 10, search, status: statusFilter }) as Promise<OvaListPage>,
+      fetchOvas({
+        page: currentPage,
+        limit: 10,
+        search,
+        status: statusFilter,
+      }) as Promise<OvaListPage>,
   })
   const ovas = data?.ovas || []
   const totalPages = data?.total_pages || 1
@@ -76,7 +90,10 @@ export function useOvaList() {
     }
   }
 
-  const handleMoveToTrashRequest = useCallback((ova: OvaListItem) => setOvaToTrash(ova), [])
+  const handleMoveToTrashRequest = useCallback(
+    (ova: OvaListItem) => setOvaToTrash(ova),
+    [],
+  )
   const handleTrashCancel = () => setOvaToTrash(null)
 
   // F5: las acciones que mutan el servidor pasan por useMutation, con invalidación
@@ -88,7 +105,8 @@ export function useOvaList() {
       setOvaToTrash(null)
       loadOvas(pageAfterRemoval(currentPage, totalItems, 1))
     },
-    onError: (err: Error) => toast.error(err.message || 'Error al mover el OVA a la papelera.'),
+    onError: (err: Error) =>
+      toast.error(err.message || 'Error al mover el OVA a la papelera.'),
   })
 
   const bulkTrashMutation = useMutation({
@@ -101,7 +119,8 @@ export function useOvaList() {
       setShowBulkModal(false)
       loadOvas(pageAfterRemoval(currentPage, totalItems, moved))
     },
-    onError: (err: Error) => toast.error(err.message || 'Error al mover los OVAs.'),
+    onError: (err: Error) =>
+      toast.error(err.message || 'Error al mover los OVAs.'),
   })
 
   const duplicateMutation = useMutation({
@@ -111,18 +130,25 @@ export function useOvaList() {
       toast.success(r.message || 'OVA duplicado correctamente.')
       navigate(r.edit_url)
     },
-    onError: (err: Error) => toast.error(err.message || 'Error al duplicar el OVA.'),
+    onError: (err: Error) =>
+      toast.error(err.message || 'Error al duplicar el OVA.'),
   })
 
   const { mutate: mutateDuplicate } = duplicateMutation
   const handleTrashConfirm = () => {
     if (ovaToTrash) trashMutation.mutate(ovaToTrash.id)
   }
-  const handleBulkTrashConfirm = () => bulkTrashMutation.mutate([...selection.selectedIds])
-  const handleDuplicate = useCallback((ovaId: string) => mutateDuplicate(ovaId), [mutateDuplicate])
+  const handleBulkTrashConfirm = () =>
+    bulkTrashMutation.mutate([...selection.selectedIds])
+  const handleDuplicate = useCallback(
+    (ovaId: string) => mutateDuplicate(ovaId),
+    [mutateDuplicate],
+  )
 
   const movingId = trashMutation.isPending ? trashMutation.variables : ''
-  const duplicatingId = duplicateMutation.isPending ? duplicateMutation.variables : ''
+  const duplicatingId = duplicateMutation.isPending
+    ? duplicateMutation.variables
+    : ''
 
   const handleDownload = useCallback(async (ovaId: string, title: string) => {
     setDownloadingId(ovaId)

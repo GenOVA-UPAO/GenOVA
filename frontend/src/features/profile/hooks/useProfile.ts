@@ -10,6 +10,7 @@ interface ProfileData {
   phone_number?: string
   role?: string
   created_at?: string
+  totp_enabled?: boolean
 }
 
 interface ProfileFormValues {
@@ -42,7 +43,8 @@ export function useProfile() {
     queryKey: ['me-profile'],
     queryFn: async (): Promise<ProfileData> => {
       const response = await apiFetch('/api/auth/me')
-      if (response.status !== 200) throw new Error('No se pudo cargar la información de perfil.')
+      if (response.status !== 200)
+        throw new Error('No se pudo cargar la información de perfil.')
       return response.json()
     },
   })
@@ -53,6 +55,7 @@ export function useProfile() {
     university_id: data?.university_id ? String(data.university_id) : '',
     gender: data?.gender || 'otro',
     phone_number: data?.phone_number || '',
+    totp_enabled: data?.totp_enabled ?? false,
   }
 
   const saveProfile = async (values: ProfileFormValues): Promise<boolean> => {
@@ -62,7 +65,9 @@ export function useProfile() {
         body: JSON.stringify({
           full_name: values.full_name.trim(),
           email: values.email.trim().toLowerCase(),
-          university_id: values.university_id ? Number.parseInt(values.university_id, 10) : null,
+          university_id: values.university_id
+            ? Number.parseInt(values.university_id, 10)
+            : null,
           gender: values.gender || null,
           phone_number: values.phone_number?.trim() || null,
         }),
@@ -72,7 +77,9 @@ export function useProfile() {
         toast.success('¡Perfil actualizado con éxito!')
         return true
       }
-      const data2 = (await response.json().catch(() => ({}))) as { detail?: string }
+      const data2 = (await response.json().catch(() => ({}))) as {
+        detail?: string
+      }
       toast.error(data2.detail || 'Error al actualizar el perfil.')
       return false
     } catch {

@@ -17,7 +17,10 @@ export function savePhaseContent(
 
 export function triggerRegen(
   ovaId: string,
-  { prompt = null, faseIds = [] }: { prompt?: string | null; faseIds?: string[] } = {},
+  {
+    prompt = null,
+    faseIds = [],
+  }: { prompt?: string | null; faseIds?: string[] } = {},
 ): Promise<unknown> {
   return apiJson(`/api/ovas/${ovaId}/regenerar`, {
     method: 'POST',
@@ -25,7 +28,10 @@ export function triggerRegen(
   })
 }
 
-export function pollRegenProgress(ovaId: string, jobId: string): Promise<unknown> {
+export function pollRegenProgress(
+  ovaId: string,
+  jobId: string,
+): Promise<unknown> {
   return apiJson(`/api/ovas/${ovaId}/regenerar/${jobId}/progress`)
 }
 
@@ -33,8 +39,13 @@ export function fetchOvaVersions(ovaId: string): Promise<unknown> {
   return apiJson(`/api/ovas/${ovaId}/versiones`)
 }
 
-export function revertToVersion(ovaId: string, versionId: string): Promise<unknown> {
-  return apiJson(`/api/ovas/${ovaId}/versiones/${versionId}/revert`, { method: 'POST' })
+export function revertToVersion(
+  ovaId: string,
+  versionId: string,
+): Promise<unknown> {
+  return apiJson(`/api/ovas/${ovaId}/versiones/${versionId}/revert`, {
+    method: 'POST',
+  })
 }
 
 export function fetchVersionDiff(
@@ -45,14 +56,21 @@ export function fetchVersionDiff(
   return apiJson(`/api/ovas/${ovaId}/versiones/diff?v1=${v1}&v2=${v2}`)
 }
 
-export function addPhase(ovaId: string, phaseType: string, prompt: string): Promise<unknown> {
+export function addPhase(
+  ovaId: string,
+  phaseType: string,
+  prompt: string,
+): Promise<unknown> {
   return apiJson(`/api/ovas/${ovaId}/fases`, {
     method: 'POST',
     body: JSON.stringify({ phase_type: phaseType, prompt }),
   })
 }
 
-export function fetchPhaseVersions(ovaId: string, phaseId: string): Promise<unknown> {
+export function fetchPhaseVersions(
+  ovaId: string,
+  phaseId: string,
+): Promise<unknown> {
   return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}/versiones`)
 }
 
@@ -61,16 +79,22 @@ export function revertPhaseVersion(
   phaseId: string,
   mvId: string,
 ): Promise<unknown> {
-  return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}/versiones/${mvId}/revert`, {
-    method: 'POST',
-  })
+  return apiJson(
+    `/api/ovas/${ovaId}/fases/${phaseId}/versiones/${mvId}/revert`,
+    {
+      method: 'POST',
+    },
+  )
 }
 
 export function deletePhase(ovaId: string, phaseId: string): Promise<unknown> {
   return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}`, { method: 'DELETE' })
 }
 
-export function reorderPhases(ovaId: string, reorders: unknown): Promise<unknown> {
+export function reorderPhases(
+  ovaId: string,
+  reorders: unknown,
+): Promise<unknown> {
   return apiJson(`/api/ovas/${ovaId}/fases/reorder`, {
     method: 'PATCH',
     body: JSON.stringify({ reorders }),
@@ -85,7 +109,10 @@ export async function downloadEditedScorm(ovaId: string): Promise<void> {
   }
   const contentType = res.headers.get('content-type') || ''
   if (contentType.includes('application/json')) {
-    const data = (await res.json()) as { download_url: string; filename?: string }
+    const data = (await res.json()) as {
+      download_url: string
+      filename?: string
+    }
     const a = document.createElement('a')
     a.href = data.download_url
     if (data.filename) a.download = data.filename

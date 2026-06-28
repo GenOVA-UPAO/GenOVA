@@ -1,5 +1,12 @@
-import { Article, Brain, Code, FilmReel, Image, Robot } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
+import {
+  Article,
+  Brain,
+  Code,
+  FilmReel,
+  Image,
+  Robot,
+} from '@phosphor-icons/react'
 
 export type TaskType =
   | 'texto'

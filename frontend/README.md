@@ -184,10 +184,28 @@ pnpm test:e2e       # Playwright BDD (requires frontend + backend running)
 
 ## Code-splitting
 
-Heavy routes are already code-split via `React.lazy()` in `App.jsx`:
+Heavy routes are already code-split via `React.lazy()` in `App.tsx`:
 `CrearOvaPage`, `EditarOvaPage`, `MisOvasPage`, `PapeleraPage`,
 `ProfilePage`, `EngagePage`, `ExplorePage`, `AdminRolesPage`,
 `AdminUsersPage`, `LabsPage`.
 
 Auth pages (`LoginPage`, `RegisterPage`) and `DashboardPage` are eagerly loaded
 so first-paint on the login screen is fast.
+
+## Technical Debt
+
+> See [`docs/arquitectura-frontend-deuda.md`](../docs/arquitectura-frontend-deuda.md)
+> for the full inventory and migration plan.
+
+### Known architectural violations (marked, not fixed)
+
+| Location | Issue | Future destination |
+|----------|-------|-------------------|
+| `core/lib/llm/` | 6 LLM domain files in infrastructure layer | `features/llm/lib/` |
+| `core/hooks/` | 4 LLM hooks in infrastructure layer | `features/llm/hooks/` |
+| `core/services/` | `llmSettingsService.ts` is domain logic | `features/llm/services/` |
+| `core/components/` | `LlmEnginesPanel.tsx` is domain UI | `features/llm/components/` |
+
+These files are **intentionally not moved** in Sprint 3 to avoid churn.
+Migration is planned as `TA-008` in a future sprint.
+

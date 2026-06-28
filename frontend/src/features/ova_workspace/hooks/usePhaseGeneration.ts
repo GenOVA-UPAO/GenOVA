@@ -1,19 +1,17 @@
 import { useState } from 'react'
-
-interface Resource {
-  id: string
-  [key: string]: unknown
-}
+import type { PreviewResult, Resource } from '@/features/student/lib/types'
 
 type GenerateFn = (resourceId: string, concept: string) => Promise<unknown>
 
 // Estado de generación de un recurso de fase (selección + concepto + resultado).
 // `generateFn` lo inyecta la página (PhasePage) ya ligada a su fase 5E.
 export function usePhaseGeneration(generateFn: GenerateFn) {
-  const [selectedResource, setSelectedResource] = useState<Resource | null>(null)
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(
+    null,
+  )
   const [concept, setConcept] = useState('')
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<unknown>(null)
+  const [result, setResult] = useState<PreviewResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function generate() {
@@ -22,8 +20,8 @@ export function usePhaseGeneration(generateFn: GenerateFn) {
     setError(null)
     setResult(null)
     try {
-      const data = await generateFn(selectedResource.id, concept.trim())
-      setResult(data)
+      const data = await generateFn(String(selectedResource.id), concept.trim())
+      setResult(data as PreviewResult)
     } catch (e) {
       setError((e as Error).message)
     } finally {

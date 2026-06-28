@@ -1,4 +1,4 @@
-import { type VariantProps, cva } from 'class-variance-authority'
+import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 import { cn } from '@/core/lib/utils'
 
@@ -19,9 +19,14 @@ const stateBadgeVariants = cva(
   },
 )
 
-type StateBadgeProps = ComponentProps<'span'> & VariantProps<typeof stateBadgeVariants>
+type StateBadgeProps = ComponentProps<'span'> &
+  VariantProps<typeof stateBadgeVariants>
 
-export function StateBadge({ status = 'neutral', className, ...props }: StateBadgeProps) {
+export function StateBadge({
+  status = 'neutral',
+  className,
+  ...props
+}: StateBadgeProps) {
   return (
     <span
       data-slot="state-badge"

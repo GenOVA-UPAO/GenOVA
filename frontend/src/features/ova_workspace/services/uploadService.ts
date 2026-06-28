@@ -30,5 +30,7 @@ export async function listTempFiles(): Promise<unknown> {
 }
 
 export async function deleteTempFile(uploadId: string): Promise<unknown> {
-  return parseResponse(await apiFetch(`${UPLOADS_TEMP}/${uploadId}`, { method: 'DELETE' }))
+  return parseResponse(
+    await apiFetch(`${UPLOADS_TEMP}/${uploadId}`, { method: 'DELETE' }),
+  )
 }

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { fetchEventSource } from '@microsoft/fetch-event-source'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { API_BASE } from '@/core/lib/http/client'
 
 // F2: consume el stream SSE de progreso del job y vuelca cada snapshot en la

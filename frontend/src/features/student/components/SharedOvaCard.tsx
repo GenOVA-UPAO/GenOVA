@@ -17,7 +17,9 @@ export function SharedOvaCard({ ova }: { ova?: SharedOva }) {
       </div>
 
       {ova?.description && (
-        <p className="text-xs text-muted-foreground line-clamp-3">{ova.description}</p>
+        <p className="text-xs text-muted-foreground line-clamp-3">
+          {ova.description}
+        </p>
       )}
 
       <div className="mt-auto flex items-center gap-2 text-[10px] text-muted-foreground">

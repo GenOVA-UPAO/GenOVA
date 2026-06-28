@@ -28,7 +28,9 @@ export function useRoleDelete(setRoles: Dispatch<SetStateAction<Role[]>>) {
     setIsDeleting(true)
     setDeleteError('')
     const basePath = `/api/roles/${deletingRole.id}`
-    const path = isReassign ? `${basePath}?reassign_to_id=${reassignRoleId}` : basePath
+    const path = isReassign
+      ? `${basePath}?reassign_to_id=${reassignRoleId}`
+      : basePath
     try {
       const response = await apiFetch(path, { method: 'DELETE' })
       if (response.status === 204) {
@@ -48,8 +50,12 @@ export function useRoleDelete(setRoles: Dispatch<SetStateAction<Role[]>>) {
         setIsDeleteModalOpen(false)
         toast.success('Rol eliminado con éxito')
       } else {
-        const data = (await response.json().catch(() => ({}))) as { detail?: string }
-        setDeleteError(data.detail || 'Ocurrió un error inesperado al eliminar el rol.')
+        const data = (await response.json().catch(() => ({}))) as {
+          detail?: string
+        }
+        setDeleteError(
+          data.detail || 'Ocurrió un error inesperado al eliminar el rol.',
+        )
       }
     } catch {
       setDeleteError('No se pudo conectar con el servidor. Intenta de nuevo.')

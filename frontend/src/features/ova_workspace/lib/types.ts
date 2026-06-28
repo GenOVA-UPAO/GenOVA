@@ -5,6 +5,18 @@ export interface Phase {
   [key: string]: unknown
 }
 
+/**
+ * Fase de un OVA ya generada (con su contenido HTML). Las fases del backend
+ * siempre traen `phase_type`; `content`/`title` están presentes tras generar.
+ * Tipo compartido por el editor (panel, preview, item, lista de recursos).
+ */
+export interface PhaseWithContent extends Phase {
+  phase_type: string
+  content?: string
+  title?: string
+  regenerated?: boolean
+}
+
 export interface OvaData {
   status?: string
   current_version?: {

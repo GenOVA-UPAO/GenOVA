@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import type { OvaListItem } from '../lib/types'
 import {
   batchPermanentDelete,
   batchRestore,
   permanentDeleteOva,
   restoreOva,
 } from '../services/ovaHistoryService'
-import type { OvaListItem } from '../lib/types'
 
 export interface ConfirmModal {
   title: string
@@ -22,7 +22,11 @@ interface BulkResult {
   deleted?: unknown[]
 }
 
-function nextPageAfterDrop(currentPage: number, totalItems: number, dropped: number): number {
+function nextPageAfterDrop(
+  currentPage: number,
+  totalItems: number,
+  dropped: number,
+): number {
   const newTotalPages = Math.max(1, Math.ceil((totalItems - dropped) / 10))
   return currentPage > newTotalPages ? newTotalPages : currentPage
 }
@@ -73,7 +77,9 @@ export function useTrashActions(
       const res = (await action([...selectedIds])) as BulkResult
       toast.success(successMsgFn(res))
       clearSelection()
-      loadTrash(nextPageAfterDrop(currentPage, totalItems, res[countKey]?.length || 0))
+      loadTrash(
+        nextPageAfterDrop(currentPage, totalItems, res[countKey]?.length || 0),
+      )
     } catch (err) {
       toast.error((err as Error).message || errorMsg)
     } finally {
@@ -142,7 +148,9 @@ export function useTrashActions(
       onConfirm: () =>
         runBulkAction(
           batchPermanentDelete,
-          (res) => res.message || `${res.deleted?.length} OVAs eliminados permanentemente.`,
+          (res) =>
+            res.message ||
+            `${res.deleted?.length} OVAs eliminados permanentemente.`,
           'Error al eliminar los OVAs.',
           'deleted',
         ),

@@ -1,7 +1,11 @@
 // Lógica pura de reordenamiento de recursos (HU-033). Sin React/red.
 
 /** Mueve el item de fromIdx a toIdx (devuelve nueva lista; no-op si iguales). */
-export function applyReorder<T>(items: T[], fromIdx: number, toIdx: number): T[] {
+export function applyReorder<T>(
+  items: T[],
+  fromIdx: number,
+  toIdx: number,
+): T[] {
   if (fromIdx === toIdx) return items
   const updated = [...items]
   const [moved] = updated.splice(fromIdx, 1)

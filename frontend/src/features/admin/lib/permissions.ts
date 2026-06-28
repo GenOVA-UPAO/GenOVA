@@ -1,6 +1,7 @@
 export interface Permission {
   id: string
   label: string
+  desc?: string
 }
 
 export const AVAILABLE_PERMISSIONS: Permission[] = [

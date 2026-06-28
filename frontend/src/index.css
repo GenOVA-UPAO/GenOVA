@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
@@ -9,19 +9,19 @@
 :root {
   /* Editorial Académico UPAO — lienzo papel cálido, azul UPAO primary,
      naranja como acento puntual. Brand chrome ≠ paleta de contenido OVA. */
-  --background: oklch(0.985 0.006 85);      /* warm paper, not cold slate */
-  --foreground: oklch(0.23 0.028 264);      /* near-navy ink */
+  --background: oklch(0.985 0.006 85); /* warm paper, not cold slate */
+  --foreground: oklch(0.23 0.028 264); /* near-navy ink */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.23 0.028 264);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.23 0.028 264);
-  --primary: oklch(0.4 0.15 264);           /* UPAO azul #0A3D91 */
+  --primary: oklch(0.4 0.15 264); /* UPAO azul #0A3D91 */
   --primary-foreground: oklch(0.99 0.005 85);
-  --secondary: oklch(0.96 0.008 85);        /* warm neutral */
+  --secondary: oklch(0.96 0.008 85); /* warm neutral */
   --secondary-foreground: oklch(0.3 0.03 264);
   --muted: oklch(0.965 0.007 85);
   --muted-foreground: oklch(0.52 0.02 264);
-  --accent: oklch(0.95 0.012 85);           /* subtle hover bg (kept neutral) */
+  --accent: oklch(0.95 0.012 85); /* subtle hover bg (kept neutral) */
   --accent-foreground: oklch(0.3 0.03 264);
   /* Brand accent — UPAO naranja #F47A20. Use intentionally (keylines, highlights). */
   --accent-brand: oklch(0.72 0.17 52);
@@ -60,10 +60,11 @@ body {
 
 @theme inline {
   --font-heading: var(--font-display);
-  --font-sans: 'Geist Variable', sans-serif;
+  --font-sans: "Geist Variable", sans-serif;
   /* Editorial display serif — self-hosted (Fraunces variable) para carácter
      consistente en todas las plataformas; Georgia como fallback. */
-  --font-display: 'Fraunces Variable', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-display:
+    "Fraunces Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --color-accent-brand: var(--accent-brand);
   --color-accent-brand-foreground: var(--accent-brand-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -113,7 +114,7 @@ body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.7 0.13 264);           /* lighter UPAO blue on dark */
+  --primary: oklch(0.7 0.13 264); /* lighter UPAO blue on dark */
   --primary-foreground: oklch(0.18 0.03 264);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -156,7 +157,8 @@ body {
     @apply font-sans;
   }
   /* Page titles get the editorial display serif; smaller headings stay sans. */
-  h1, .font-display {
+  h1,
+  .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.015em;
     font-weight: 600;
@@ -184,13 +186,23 @@ body {
 }
 
 @keyframes slideUp {
-  0% { transform: translateY(20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* Honor prefers-reduced-motion para animaciones CSS/Tailwind (transitions,

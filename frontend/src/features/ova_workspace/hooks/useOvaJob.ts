@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getJobStatus, resumeJob, startJob } from '../services/ovaCreationService'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
   type BackendResource,
   jobOutcome,
@@ -8,6 +7,11 @@ import {
   type Selections,
   toResourceViewModel,
 } from '../lib/ovaJobViewModel'
+import {
+  getJobStatus,
+  resumeJob,
+  startJob,
+} from '../services/ovaCreationService'
 import { useJobStream } from './useJobStream'
 
 const POLL_MS = Number(import.meta.env?.VITE_JOB_POLL_MS || 2000)
@@ -15,7 +19,9 @@ const POLL_MS = Number(import.meta.env?.VITE_JOB_POLL_MS || 2000)
 // bufferea el stream y el progreso se congela, sin volver al poll agresivo.
 const STREAM_HEARTBEAT_MS = 15000
 const ALL_PHASES = ['engage', 'explore', 'explain', 'elaborate', 'evaluate']
-const EMPTY_SELECTIONS = Object.fromEntries(ALL_PHASES.map((p) => [p, []])) as Selections
+const EMPTY_SELECTIONS = Object.fromEntries(
+  ALL_PHASES.map((p) => [p, []]),
+) as Selections
 
 interface JobSnapshot {
   job_id?: string
@@ -85,7 +91,13 @@ export function useOvaJob() {
   else if (jobId) phase = 'polling'
 
   const start = useCallback(
-    async ({ prompt, uploadIds, selections: sel, theme, resourceConfigs = {} }: StartArgs) => {
+    async ({
+      prompt,
+      uploadIds,
+      selections: sel,
+      theme,
+      resourceConfigs = {},
+    }: StartArgs) => {
       setSelections(sel)
       setError('')
       setSelectedFailedIds([])
@@ -93,7 +105,13 @@ export function useOvaJob() {
       setJobId(null)
       try {
         const resources = toResourcesPayload(sel)
-        const { job_id } = await startJob({ prompt, uploadIds, resources, theme, resourceConfigs })
+        const { job_id } = await startJob({
+          prompt,
+          uploadIds,
+          resources,
+          theme,
+          resourceConfigs,
+        })
         setJobId(job_id)
       } catch (err) {
         setError((err as Error)?.message || 'No se pudo iniciar la generación.')
@@ -126,13 +144,18 @@ export function useOvaJob() {
         await resumeJob(jobId, ids)
         qc.invalidateQueries({ queryKey: ['ovaJob', jobId] })
       } catch (err) {
-        setError((err as Error)?.message || 'No se pudo reintentar la generación.')
+        setError(
+          (err as Error)?.message || 'No se pudo reintentar la generación.',
+        )
       }
     },
     [jobId, qc],
   )
 
-  const retryOne = useCallback((resourceId: string) => resumeAndPoll([resourceId]), [resumeAndPoll])
+  const retryOne = useCallback(
+    (resourceId: string) => resumeAndPoll([resourceId]),
+    [resumeAndPoll],
+  )
   const retrySelected = useCallback(
     () => resumeAndPoll(cleanSelection),
     [resumeAndPoll, cleanSelection],
@@ -141,7 +164,9 @@ export function useOvaJob() {
 
   const toggleFailed = useCallback((resourceId: string) => {
     setSelectedFailedIds((curr) =>
-      curr.includes(resourceId) ? curr.filter((x) => x !== resourceId) : [...curr, resourceId],
+      curr.includes(resourceId)
+        ? curr.filter((x) => x !== resourceId)
+        : [...curr, resourceId],
     )
   }, [])
 

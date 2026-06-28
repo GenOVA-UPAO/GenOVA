@@ -1,5 +1,6 @@
 import { type Dispatch, type SetStateAction, useCallback } from 'react'
 import { toast } from 'sonner'
+import type { OvaData, Phase } from '../lib/types'
 import {
   addPhase,
   deletePhase,
@@ -8,7 +9,6 @@ import {
   revertToVersion,
   savePhaseContent,
 } from '../services/ovaEditService'
-import type { OvaData, Phase } from '../lib/types'
 
 interface RegenBody {
   prompt: string | null
@@ -43,7 +43,9 @@ export function useOvaPhaseActions({
         toast.success('Recurso eliminado.')
         void load()
       } catch (err) {
-        toast.error((err as Error)?.message || 'No se pudo eliminar el recurso.')
+        toast.error(
+          (err as Error)?.message || 'No se pudo eliminar el recurso.',
+        )
       }
     },
     [ovaId, load],
@@ -63,7 +65,8 @@ export function useOvaPhaseActions({
   )
 
   const regenPhase = useCallback(
-    (phaseId: string, prompt?: string) => runRegen({ prompt: prompt || null, faseIds: [phaseId] }),
+    (phaseId: string, prompt?: string) =>
+      runRegen({ prompt: prompt || null, faseIds: [phaseId] }),
     [runRegen],
   )
 
@@ -98,7 +101,8 @@ export function useOvaPhaseActions({
   )
 
   const getDiff = useCallback(
-    (v1: string | number, v2: string | number) => fetchVersionDiff(ovaId, v1, v2),
+    (v1: string | number, v2: string | number) =>
+      fetchVersionDiff(ovaId, v1, v2),
     [ovaId],
   )
 
@@ -106,9 +110,17 @@ export function useOvaPhaseActions({
     async (updatedPhases: Phase[]) => {
       const prev = ova
       setOva((o) =>
-        o ? { ...o, current_version: { ...o.current_version, phases: updatedPhases } } : o,
+        o
+          ? {
+              ...o,
+              current_version: { ...o.current_version, phases: updatedPhases },
+            }
+          : o,
       )
-      const reorders = updatedPhases.map((p, i) => ({ phase_id: p.id, new_order: i + 1 }))
+      const reorders = updatedPhases.map((p, i) => ({
+        phase_id: p.id,
+        new_order: i + 1,
+      }))
       try {
         await reorderPhases(ovaId, reorders)
       } catch (err) {

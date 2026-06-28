@@ -19,7 +19,9 @@ export function useResourceContent(
   const content = (data as { content?: string } | undefined)?.content ?? null
   return {
     content: active ? content : null,
-    error: error ? (error as Error).message || 'No se pudo cargar la vista previa.' : '',
+    error: error
+      ? (error as Error).message || 'No se pudo cargar la vista previa.'
+      : '',
     loading: active && isLoading,
   }
 }

@@ -26,7 +26,10 @@ export function hasUnsavedChanges(
   const serverRounds = serverConfig.ova_reflection_rounds ?? 1
   if (rounds !== serverRounds) return true
   for (const key of Object.keys(draft)) {
-    if (String(draft[key]) !== String(serverConfig[key] ?? NODE_FLAG_DEFAULTS[key] ?? '')) {
+    if (
+      String(draft[key]) !==
+      String(serverConfig[key] ?? NODE_FLAG_DEFAULTS[key] ?? '')
+    ) {
       return true
     }
   }
@@ -37,7 +40,9 @@ export function hasUnsavedChanges(
  * Return true when the critic node param (rondas) should be visible:
  * only when the critic flag is '1'.
  */
-export function criticRoundsVisible(draft: { ova_critic?: string } | null | undefined): boolean {
+export function criticRoundsVisible(
+  draft: { ova_critic?: string } | null | undefined,
+): boolean {
   return draft?.ova_critic === '1'
 }
 
@@ -51,6 +56,9 @@ export const VIDEO_RESOURCE_TYPES: Record<string, number[]> = {
 /**
  * Return true when a resource id is a video resource for the given phase.
  */
-export function isVideoResource(phase: string, resourceId: string | number): boolean {
+export function isVideoResource(
+  phase: string,
+  resourceId: string | number,
+): boolean {
   return (VIDEO_RESOURCE_TYPES[phase] ?? []).includes(Number(resourceId))
 }

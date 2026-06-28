@@ -40,8 +40,11 @@ export function ResourceCard({
 }: ResourceCardProps) {
   const IconCmp = ICON_MAP[`${phaseKey}:${resource.id}`] ?? BookBookmark
 
-  let baseClass = 'relative border-border bg-card hover:border-primary/30 hover:shadow-md'
-  if (disabled) baseClass = 'relative border-border bg-muted/40 opacity-50 cursor-not-allowed'
+  let baseClass =
+    'relative border-border bg-card hover:border-primary/30 hover:shadow-md'
+  if (disabled)
+    baseClass =
+      'relative border-border bg-muted/40 opacity-50 cursor-not-allowed'
 
   const selectedStyle = selected
     ? {
@@ -75,7 +78,9 @@ export function ResourceCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-foreground text-sm">{resource.tipo}</span>
+            <span className="font-semibold text-foreground text-sm">
+              {resource.tipo}
+            </span>
             <span
               className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${INTERACTIVIDAD_COLOR[resource.interactividad ?? ''] || INTERACTIVIDAD_COLOR.Baja}`}
             >

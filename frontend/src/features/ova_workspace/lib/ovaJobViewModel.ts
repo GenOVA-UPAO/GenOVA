@@ -72,7 +72,9 @@ export function mapResourceStatus(backendStatus: string): UiStatus {
 
 // Build a label index keyed by `${phase}:${resource_type}` from the modal
 // selections so the viewmodel can show a friendly name + emoji per resource.
-function buildLabelIndex(selections: Selections): Map<string, Partial<SelectionItem>> {
+function buildLabelIndex(
+  selections: Selections,
+): Map<string, Partial<SelectionItem>> {
   const index = new Map<string, Partial<SelectionItem>>()
   for (const phase of Object.keys(PHASE_LABEL)) {
     for (const r of selections[phase] || []) {
@@ -91,7 +93,10 @@ export function toResourceViewModel(
   const labels = buildLabelIndex(selections)
   return resources
     .slice()
-    .sort((a, b) => a.phase_order - b.phase_order || a.resource_order - b.resource_order)
+    .sort(
+      (a, b) =>
+        a.phase_order - b.phase_order || a.resource_order - b.resource_order,
+    )
     .map((r) => {
       const phase = r.phase_type
       const meta = labels.get(`${phase}:${String(r.resource_type)}`) || {}
@@ -116,7 +121,10 @@ export function failedResourceIds(viewModel: ResourceVM[] = []): string[] {
 
 // Keep a selection in sync with the failed set: drop ids that are no longer
 // failed (e.g. they succeeded after a retry). Returns a new array.
-export function pruneSelection(selectedIds: string[] = [], viewModel: ResourceVM[] = []): string[] {
+export function pruneSelection(
+  selectedIds: string[] = [],
+  viewModel: ResourceVM[] = [],
+): string[] {
   const failed = new Set(failedResourceIds(viewModel))
   return selectedIds.filter((id) => failed.has(id))
 }
@@ -126,7 +134,11 @@ export function groupByPhase(viewModel: ResourceVM[] = []): PhaseGroup[] {
   const groups = new Map<string, PhaseGroup>()
   for (const r of viewModel) {
     if (!groups.has(r.phase)) {
-      groups.set(r.phase, { phase: r.phase, phaseLabel: r.phaseLabel, items: [] })
+      groups.set(r.phase, {
+        phase: r.phase,
+        phaseLabel: r.phaseLabel,
+        items: [],
+      })
     }
     groups.get(r.phase)?.items.push(r)
   }
@@ -136,7 +148,10 @@ export function groupByPhase(viewModel: ResourceVM[] = []): PhaseGroup[] {
 // Overall outcome derived from the job + its resources (no React).
 const TERMINAL = new Set(['done', 'error', 'interrupted', 'canceled'])
 
-export function jobOutcome(job: JobLike | null | undefined, viewModel: ResourceVM[] = []): JobOutcome {
+export function jobOutcome(
+  job: JobLike | null | undefined,
+  viewModel: ResourceVM[] = [],
+): JobOutcome {
   const status = job?.status || 'queued'
   const anyDone = viewModel.some((r) => r.status === 'check')
   return {

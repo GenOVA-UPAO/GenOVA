@@ -21,10 +21,16 @@ export function TopCreators({ creators }: { creators: Creator[] }) {
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{c.name || c.email}</p>
-                <p className="truncate text-xs text-muted-foreground">{c.email}</p>
+                <p className="truncate text-sm font-medium">
+                  {c.name || c.email}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {c.email}
+                </p>
               </div>
-              <span className="shrink-0 text-sm font-bold tabular-nums">{c.ova_count}</span>
+              <span className="shrink-0 text-sm font-bold tabular-nums">
+                {c.ova_count}
+              </span>
             </li>
           ))}
         </ul>
@@ -36,7 +42,10 @@ export function TopCreators({ creators }: { creators: Creator[] }) {
 function fmtDate(iso?: string): string {
   if (!iso) return '—'
   try {
-    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })
+    return new Date(iso).toLocaleDateString('es-PE', {
+      day: '2-digit',
+      month: 'short',
+    })
   } catch {
     return '—'
   }
@@ -53,8 +62,12 @@ export function RecentOvas({ ovas }: { ovas: RecentOva[] }) {
           {ovas.map((o) => (
             <li key={o.id} className="flex items-center gap-3 py-2">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{o.title || 'Sin título'}</p>
-                <p className="truncate text-xs text-muted-foreground">{o.owner_name}</p>
+                <p className="truncate text-sm font-medium">
+                  {o.title || 'Sin título'}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {o.owner_name}
+                </p>
               </div>
               <span
                 className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${STATUS_BADGE[o.status] || 'bg-muted text-muted-foreground'}`}
