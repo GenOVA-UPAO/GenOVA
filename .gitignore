@@ -276,6 +276,9 @@ frontend/src/wireframes/
 # Graphify knowledge graph — versionar archivos utiles, excluir backups y binarios grandes
 graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 
-# Playwright CLI cache + production screenshots (artefactos locales, no se versionan)
+# Playwright CLI cache + screenshots locales (artefactos, no se versionan)
 .playwright-cli/
 production-*.png
+# Capturas sueltas en la raíz (debug local); assets reales viven en frontend/src/assets/
+/*.png
+

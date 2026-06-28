@@ -6,6 +6,14 @@ allowed-tools: Bash(playwright-cli:*) Bash(npx:*) Bash(npm:*)
 
 # Browser Automation with playwright-cli
 
+## Output convention (mandatory)
+
+Any saved artifact (`--filename`, `--path`, `screenshot`, `pdf`, `state-save`)
+MUST go under `.playwright-cli/shots/` — never the repo root. That dir is
+gitignored, so captures never pollute `git status`. Create it once per session:
+`mkdir -p .playwright-cli/shots`. Pass explicit paths, e.g.
+`--filename=.playwright-cli/shots/home.png`.
+
 ## Quick start
 
 ```bash
@@ -17,8 +25,8 @@ playwright-cli goto https://playwright.dev
 playwright-cli click e15
 playwright-cli type "page.click"
 playwright-cli press Enter
-# take a screenshot (rarely used, as snapshot is more common)
-playwright-cli screenshot
+# take a screenshot (rarely used, as snapshot is more common) — save under .playwright-cli/shots/
+playwright-cli screenshot --filename=.playwright-cli/shots/page.png
 # close the browser
 playwright-cli close
 ```
@@ -90,10 +98,9 @@ playwright-cli mousewheel 0 100
 ### Save as
 
 ```bash
-playwright-cli screenshot
-playwright-cli screenshot e5
-playwright-cli screenshot --filename=page.png
-playwright-cli pdf --filename=page.pdf
+playwright-cli screenshot --filename=.playwright-cli/shots/page.png
+playwright-cli screenshot e5 --filename=.playwright-cli/shots/e5.png
+playwright-cli pdf --filename=.playwright-cli/shots/page.pdf
 ```
 
 ### Tabs
@@ -110,9 +117,8 @@ playwright-cli tab-select 0
 ### Storage
 
 ```bash
-playwright-cli state-save
-playwright-cli state-save auth.json
-playwright-cli state-load auth.json
+playwright-cli state-save .playwright-cli/shots/auth.json
+playwright-cli state-load .playwright-cli/shots/auth.json
 
 # Cookies
 playwright-cli cookie-list
