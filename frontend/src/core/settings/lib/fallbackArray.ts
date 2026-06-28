@@ -3,8 +3,8 @@
  * Sin dependencias de React ni de dominio — testeable en aislamiento.
  *
  * Compartido por:
- *   - core/lib/llm/llmConfigDraft.ts   (panel admin de modelos)
- *   - core/lib/llm/llmSettingsMutations.ts  (settings de usuario por tarea)
+ *   - core/settings/lib/llmConfigDraft.ts   (panel admin de modelos)
+ *   - core/settings/lib/llmSettingsMutations.ts  (settings de usuario por tarea)
  */
 
 /** Intercambia el elemento `i` con el adyacente en dirección `dir` (-1 arriba, +1 abajo).

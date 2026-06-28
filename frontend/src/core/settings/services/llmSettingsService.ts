@@ -1,4 +1,4 @@
-import { apiJson } from '../lib/http/client'
+import { apiJson } from '@/core/lib/http/client'
 
 export interface LlmSettingsParams {
   search?: string

@@ -1,9 +1,9 @@
 import { Cpu, HardDrives, Key, Robot } from '@phosphor-icons/react'
 import { m as motion } from 'motion/react'
-import { PlatformApiKeysCard } from '@/core/components/settings/PlatformApiKeysCard'
-import { PlatformCapabilitiesCard } from '@/core/components/settings/PlatformCapabilitiesCard'
-import { PlatformLlmConfigCard } from '@/core/components/settings/PlatformLlmConfigCard'
-import { PlatformNodesCard } from '@/core/components/settings/PlatformNodesCard'
+import { PlatformApiKeysCard } from '@/core/settings/components/PlatformApiKeysCard'
+import { PlatformCapabilitiesCard } from '@/core/settings/components/PlatformCapabilitiesCard'
+import { PlatformLlmConfigCard } from '@/core/settings/components/PlatformLlmConfigCard'
+import { PlatformNodesCard } from '@/core/settings/components/PlatformNodesCard'
 import {
   Tabs,
   TabsContent,

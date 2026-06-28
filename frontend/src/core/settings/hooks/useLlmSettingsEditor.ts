@@ -15,7 +15,7 @@ import {
   setModelIn,
   setTimeoutIn,
   type TaskSetting,
-} from '../lib/llm/llmSettingsMutations'
+} from '../lib/llmSettingsMutations'
 import { saveLlmSettings } from '../services/llmSettingsService'
 
 const DEFAULT_TIMEOUT = 120

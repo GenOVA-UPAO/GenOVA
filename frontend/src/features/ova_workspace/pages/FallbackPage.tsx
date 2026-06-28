@@ -7,12 +7,12 @@ import {
 import { AnimatePresence, m as motion } from 'motion/react'
 import { type JSX, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import type { AdminModel } from '@/core/components/settings/ModelAssignmentPanel'
-import { LlmTaskRow } from '@/core/components/settings/LlmTaskRow'
+import type { AdminModel } from '@/core/settings/components/ModelAssignmentPanel'
+import { LlmTaskRow } from '@/core/settings/components/LlmTaskRow'
 import { Alert, AlertDescription, AlertTitle } from '@/core/components/ui/alert'
 import { Button } from '@/core/components/ui/button'
 import { getCurrentUser } from '@/core/lib/auth/me'
-import { type Draft, toDraft, toPayload } from '@/core/lib/llm/llmConfigDraft'
+import { type Draft, toDraft, toPayload } from '@/core/settings/lib/llmConfigDraft'
 import { useAdminLlmConfig } from '@/features/admin/hooks/useAdminLlmConfig'
 
 interface FallbackUser {

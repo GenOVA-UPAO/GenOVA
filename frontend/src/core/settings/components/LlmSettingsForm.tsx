@@ -12,8 +12,8 @@ import {
 import {
   formatContextLength,
   PROVIDER_LABELS,
-} from '@/core/lib/llm/llmCatalogUtils'
-import type { useLlmSettings } from '@/core/hooks/useLlmSettings'
+} from '@/core/settings/lib/llmCatalogUtils'
+import type { useLlmSettings } from '@/core/settings/hooks/useLlmSettings'
 
 interface LlmSettingsFormProps {
   hook: ReturnType<typeof useLlmSettings>

@@ -2,7 +2,7 @@
 // Extraído de ManageModelsModal para mantener archivos ≤200 líneas.
 import { MagnifyingGlass } from '@phosphor-icons/react'
 import { startTransition } from 'react'
-import { CATEGORY_LABELS } from '@/core/lib/llm/llmSettingsLabels'
+import { CATEGORY_LABELS } from '@/core/settings/lib/llmSettingsLabels'
 
 interface ManageModelsToolbarProps {
   localSearch: string

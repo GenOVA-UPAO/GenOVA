@@ -8,14 +8,14 @@ import { m as motion } from 'motion/react'
 import { type JSX, useEffect, useState } from 'react'
 import { Navigate } from 'react-router'
 import { toast } from 'sonner'
-import { ApiKeysCard } from '@/core/components/settings/ApiKeysCard'
-import { ManageModelsModal } from '@/core/components/settings/ManageModelsModal'
+import { ApiKeysCard } from '@/core/settings/components/ApiKeysCard'
+import { ManageModelsModal } from '@/core/settings/components/ManageModelsModal'
 import {
   type AdminModel,
   ModelAssignmentPanel,
-} from '@/core/components/settings/ModelAssignmentPanel'
-import { PlatformApiKeysCard } from '@/core/components/settings/PlatformApiKeysCard'
-import { PlatformNodesCard } from '@/core/components/settings/PlatformNodesCard'
+} from '@/core/settings/components/ModelAssignmentPanel'
+import { PlatformApiKeysCard } from '@/core/settings/components/PlatformApiKeysCard'
+import { PlatformNodesCard } from '@/core/settings/components/PlatformNodesCard'
 import { Button } from '@/core/components/ui/button'
 import {
   Tabs,
@@ -23,9 +23,9 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/core/components/ui/tabs'
-import { useLlmSettings } from '@/core/hooks/useLlmSettings'
+import { useLlmSettings } from '@/core/settings/hooks/useLlmSettings'
 import { getCurrentUser } from '@/core/lib/auth/me'
-import { type Draft, toDraft, toPayload } from '@/core/lib/llm/llmConfigDraft'
+import { type Draft, toDraft, toPayload } from '@/core/settings/lib/llmConfigDraft'
 import { useAdminLlmConfig } from '@/features/admin/hooks/useAdminLlmConfig'
 
 interface ModelsPageUser {

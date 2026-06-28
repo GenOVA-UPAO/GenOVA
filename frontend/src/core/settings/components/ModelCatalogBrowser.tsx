@@ -5,12 +5,12 @@ import {
   MagnifyingGlassMinus,
 } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
-import { ModelCatalogRow } from '@/core/components/settings/ModelCatalogRow.tsx'
-import { FilterRow } from '@/core/components/settings/ModelCatalogFilters.tsx'
+import { ModelCatalogRow } from '@/core/settings/components/ModelCatalogRow.tsx'
+import { FilterRow } from '@/core/settings/components/ModelCatalogFilters.tsx'
 import {
   groupByProvider,
   PROVIDER_LABELS,
-} from '@/core/lib/llm/llmCatalogUtils'
+} from '@/core/settings/lib/llmCatalogUtils'
 
 interface ModelCatalogBrowserProps {
   hook: {

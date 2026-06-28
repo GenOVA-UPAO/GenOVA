@@ -1,8 +1,8 @@
-import { useLlmSettings } from '@/core/hooks/useLlmSettings'
+import { useLlmSettings } from '@/core/settings/hooks/useLlmSettings'
 import {
   pricingLabel,
   PROVIDER_LABELS,
-} from '@/core/lib/llm/llmCatalogUtils'
+} from '@/core/settings/lib/llmCatalogUtils'
 
 const PROVIDER_BADGE: Record<string, string> = {
   groq: 'bg-accent-brand/10 text-accent-brand border-accent-brand/25',

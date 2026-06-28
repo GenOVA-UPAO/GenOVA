@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { KeyRow } from '@/core/components/settings/KeyRow.tsx'
-import { ProviderModelsPanel } from '@/core/components/settings/ProviderModelsPanel.tsx'
-import { fetchLlmSettings } from '@/core/services/llmSettingsService'
+import { KeyRow } from '@/core/settings/components/KeyRow.tsx'
+import { ProviderModelsPanel } from '@/core/settings/components/ProviderModelsPanel.tsx'
+import { fetchLlmSettings } from '@/core/settings/services/llmSettingsService'
 import { getApiKeys } from '@/features/ova_workspace/services/userLlmSettingsService'
 
 const LLM_PROVIDERS = ['groq', 'openrouter', 'opencode']

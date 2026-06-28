@@ -1,10 +1,10 @@
 import { Robot } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { LlmTaskRow } from '@/core/components/settings/LlmTaskRow.tsx'
+import { LlmTaskRow } from '@/core/settings/components/LlmTaskRow.tsx'
 import { Button } from '@/core/components/ui/button'
-import type { Draft, EffectiveConfig } from '@/core/lib/llm/llmConfigDraft'
-import { toDraft, toPayload } from '@/core/lib/llm/llmConfigDraft'
+import type { Draft, EffectiveConfig } from '@/core/settings/lib/llmConfigDraft'
+import { toDraft, toPayload } from '@/core/settings/lib/llmConfigDraft'
 import { useAdminLlmConfig } from '@/features/admin/hooks/useAdminLlmConfig'
 
 export function PlatformLlmConfigCard() {

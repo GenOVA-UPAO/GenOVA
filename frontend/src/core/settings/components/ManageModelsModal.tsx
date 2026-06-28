@@ -10,7 +10,7 @@ import {
 import {
   groupByProvider,
   PROVIDER_LABELS,
-} from '@/core/lib/llm/llmCatalogUtils'
+} from '@/core/settings/lib/llmCatalogUtils'
 import { ConnectProviderModal } from './ConnectProviderModal.tsx'
 import { ManageModelRow } from './ManageModelRow.tsx'
 import { ManageModelsToolbar } from './ManageModelsToolbar.tsx'

@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from core.database import Base
-from models_base import _pk_column
+from core.models_base import _pk_column
 
 
 class Ova(Base):

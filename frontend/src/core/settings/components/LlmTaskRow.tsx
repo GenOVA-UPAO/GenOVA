@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Plus, Trash } from '@phosphor-icons/react'
-import { LlmModelSelect } from '@/core/components/settings/LlmModelSelect.tsx'
+import { LlmModelSelect } from '@/core/settings/components/LlmModelSelect.tsx'
 import { Button } from '@/core/components/ui/button'
 import {
   addFallback as addFb,
@@ -7,7 +7,7 @@ import {
   moveFallback,
   removeFallback as removeFb,
   setFallback as setFb,
-} from '@/core/lib/llm/llmConfigDraft'
+} from '@/core/settings/lib/llmConfigDraft'
 
 interface LlmTaskRowProps {
   task: string

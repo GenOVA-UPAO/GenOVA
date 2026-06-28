@@ -1,7 +1,7 @@
 import { m as motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { TASK_META, type TaskType } from '@/core/lib/llm/taskMeta'
+import { TASK_META, type TaskType } from '@/core/settings/lib/taskMeta'
 import { useImageModels } from '@/features/ova_workspace/hooks/useImageModels'
 import {
   getOvaSettings,

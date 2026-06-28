@@ -1,4 +1,4 @@
-import type { SettingsMap } from '../lib/llm/llmSettingsMutations'
+import type { SettingsMap } from '../lib/llmSettingsMutations'
 import type { EnabledModel } from './useEnabledModels'
 
 export interface LlmSettingsResponse {

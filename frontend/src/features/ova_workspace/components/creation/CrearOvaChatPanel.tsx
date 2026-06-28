@@ -1,7 +1,7 @@
 import { Brain, GridFour, Palette } from '@phosphor-icons/react'
 import { useState } from 'react'
-import { LlmEnginesPanel } from '@/core/components/LlmEnginesPanel'
-import { GearButton } from '@/core/components/settings/GearButton'
+import { LlmEnginesPanel } from '@/core/settings/components/LlmEnginesPanel'
+import { GearButton } from '@/core/settings/components/GearButton'
 import { Button } from '@/core/components/ui/button'
 import { CrearOvaInputBar } from '@/features/ova_workspace/components/creation/CrearOvaInputBar'
 import {

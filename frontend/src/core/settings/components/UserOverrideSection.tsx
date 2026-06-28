@@ -1,5 +1,5 @@
 import { Plus, Trash, X } from '@phosphor-icons/react'
-import { LlmModelSelect } from '@/core/components/settings/LlmModelSelect.tsx'
+import { LlmModelSelect } from '@/core/settings/components/LlmModelSelect.tsx'
 import { Input } from '@/core/components/ui/input'
 
 interface UserOverrideSectionProps {

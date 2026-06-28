@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { LlmEnginesPanel } from '@/core/components/LlmEnginesPanel'
+import { LlmEnginesPanel } from '@/core/settings/components/LlmEnginesPanel'
 import { Button } from '@/core/components/ui/button'
 import { Textarea } from '@/core/components/ui/textarea'
 import { FileChip } from '@/features/ova_workspace/components/shared/FileChip'

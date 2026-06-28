@@ -1,7 +1,7 @@
 import { Plugs } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
-import { PlatformKeyRow } from '@/core/components/settings/PlatformKeyRow.tsx'
-import { PROVIDER_META } from '@/core/components/settings/platformKeyMeta'
+import { PlatformKeyRow } from '@/core/settings/components/PlatformKeyRow.tsx'
+import { PROVIDER_META } from '@/core/settings/components/platformKeyMeta'
 import { getPlatformConfig } from '@/features/admin/services/adminSettingsService'
 
 export function PlatformApiKeysCard() {

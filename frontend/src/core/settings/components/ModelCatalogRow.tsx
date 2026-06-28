@@ -2,7 +2,7 @@ import { CircleNotch, Lock, Star, Warning } from '@phosphor-icons/react'
 import {
   formatContextLength,
   MODALITY_META,
-} from '@/core/lib/llm/llmCatalogUtils'
+} from '@/core/settings/lib/llmCatalogUtils'
 
 interface ModelCatalogRowProps {
   model: {

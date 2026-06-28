@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GearButton } from '@/core/components/settings/GearButton'
+import { GearButton } from '@/core/settings/components/GearButton'
 import { Badge } from '@/core/components/ui/badge'
 import { Button } from '@/core/components/ui/button'
 import { WorkspaceHtmlPreview } from '@/features/ova_workspace/components/editor/WorkspaceHtmlPreview'

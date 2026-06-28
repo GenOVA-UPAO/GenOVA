@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { LlmSettingsForm } from '@/core/components/settings/LlmSettingsForm'
+import { LlmSettingsForm } from '@/core/settings/components/LlmSettingsForm'
 import { Button } from '@/core/components/ui/button'
 import {
   Dialog,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/core/components/ui/dialog'
-import { useLlmSettings } from '@/core/hooks/useLlmSettings'
+import { useLlmSettings } from '@/core/settings/hooks/useLlmSettings'
 
 interface LlmSettingsModalProps {
   open: boolean

@@ -1,9 +1,9 @@
 import { PencilSimple } from '@phosphor-icons/react'
 import { m as motion } from 'motion/react'
-import { LlmModelSelect } from '@/core/components/settings/LlmModelSelect.tsx'
-import { Chips } from '@/core/components/settings/ModelTaskCardChips.tsx'
-import { UserOverrideSection } from '@/core/components/settings/UserOverrideSection.tsx'
-import { TASK_META, type TaskType } from '@/core/lib/llm/taskMeta'
+import { LlmModelSelect } from '@/core/settings/components/LlmModelSelect.tsx'
+import { Chips } from '@/core/settings/components/ModelTaskCardChips.tsx'
+import { UserOverrideSection } from '@/core/settings/components/UserOverrideSection.tsx'
+import { TASK_META, type TaskType } from '@/core/settings/lib/taskMeta'
 
 interface ModelTaskCardProps {
   task: string

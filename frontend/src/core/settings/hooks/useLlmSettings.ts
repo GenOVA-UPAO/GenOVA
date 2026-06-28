@@ -4,8 +4,8 @@ import {
   CATEGORY_LABELS,
   TASK_LABELS,
   TYPE_LABELS,
-} from '../lib/llm/llmSettingsLabels'
-import type { SettingsMap } from '../lib/llm/llmSettingsMutations'
+} from '../lib/llmSettingsLabels'
+import type { SettingsMap } from '../lib/llmSettingsMutations'
 import {
   fetchLlmSettings,
   refreshLlmCatalog,

@@ -2,7 +2,7 @@
 // proveedores. Extraído de PlatformApiKeysCard para mantener archivos ≤200 líneas.
 import { Eye, EyeSlash, Trash } from '@phosphor-icons/react'
 import { useRef, useState } from 'react'
-import { PROVIDER_META } from '@/core/components/settings/platformKeyMeta'
+import { PROVIDER_META } from '@/core/settings/components/platformKeyMeta'
 import { Button } from '@/core/components/ui/button'
 import { savePlatformConfigKey } from '@/features/admin/services/adminSettingsService'
 

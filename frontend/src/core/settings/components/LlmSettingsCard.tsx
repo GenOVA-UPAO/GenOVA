@@ -4,9 +4,9 @@ import {
   SlidersHorizontal,
   Warning,
 } from '@phosphor-icons/react'
-import { CatalogStatusAlert } from '@/core/components/settings/CatalogStatusAlert.tsx'
-import { LlmSettingsForm } from '@/core/components/settings/LlmSettingsForm.tsx'
-import { ModelCatalogBrowser } from '@/core/components/settings/ModelCatalogBrowser.tsx'
+import { CatalogStatusAlert } from '@/core/settings/components/CatalogStatusAlert.tsx'
+import { LlmSettingsForm } from '@/core/settings/components/LlmSettingsForm.tsx'
+import { ModelCatalogBrowser } from '@/core/settings/components/ModelCatalogBrowser.tsx'
 import { Alert, AlertDescription, AlertTitle } from '@/core/components/ui/alert'
 import { Button } from '@/core/components/ui/button'
 import { Skeleton } from '@/core/components/ui/skeleton'
@@ -16,7 +16,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/core/components/ui/tabs'
-import { useLlmSettings } from '@/core/hooks/useLlmSettings'
+import { useLlmSettings } from '@/core/settings/hooks/useLlmSettings'
 
 function CatalogSkeleton() {
   return (

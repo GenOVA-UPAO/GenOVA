@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchLlmSettings } from '@/core/services/llmSettingsService'
+import { fetchLlmSettings } from '@/core/settings/services/llmSettingsService'
 import {
   getAdminLlmConfig,
   saveAdminLlmConfig,

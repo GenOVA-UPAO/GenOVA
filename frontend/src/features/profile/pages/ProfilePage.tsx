@@ -1,6 +1,6 @@
 import { Lock, SlidersHorizontal, User } from '@phosphor-icons/react'
 import { m as motion } from 'motion/react'
-import { ApiKeysCard } from '@/core/components/settings/ApiKeysCard'
+import { ApiKeysCard } from '@/core/settings/components/ApiKeysCard'
 import {
   Tabs,
   TabsContent,

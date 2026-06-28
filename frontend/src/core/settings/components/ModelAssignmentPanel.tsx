@@ -1,14 +1,14 @@
 import { SlidersHorizontal, X } from '@phosphor-icons/react'
 import { AnimatePresence, m as motion } from 'motion/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
-import { CatalogStatusAlert } from '@/core/components/settings/CatalogStatusAlert.tsx'
-import { LlmTaskRow } from '@/core/components/settings/LlmTaskRow.tsx'
-import { MediaTaskCard } from '@/core/components/settings/MediaTaskCard.tsx'
-import { ModelTaskCard } from '@/core/components/settings/ModelTaskCard.tsx'
+import { CatalogStatusAlert } from '@/core/settings/components/CatalogStatusAlert.tsx'
+import { LlmTaskRow } from '@/core/settings/components/LlmTaskRow.tsx'
+import { MediaTaskCard } from '@/core/settings/components/MediaTaskCard.tsx'
+import { ModelTaskCard } from '@/core/settings/components/ModelTaskCard.tsx'
 import { Button } from '@/core/components/ui/button'
-import type { useLlmSettings } from '@/core/hooks/useLlmSettings'
-import type { Draft } from '@/core/lib/llm/llmConfigDraft'
-import { TASK_LABELS } from '@/core/lib/llm/llmSettingsLabels'
+import type { useLlmSettings } from '@/core/settings/hooks/useLlmSettings'
+import type { Draft } from '@/core/settings/lib/llmConfigDraft'
+import { TASK_LABELS } from '@/core/settings/lib/llmSettingsLabels'
 
 export interface AdminModel {
   provider: string

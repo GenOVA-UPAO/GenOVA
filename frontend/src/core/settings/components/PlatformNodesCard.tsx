@@ -4,7 +4,7 @@ import { Button } from '@/core/components/ui/button'
 import {
   criticRoundsVisible,
   hasUnsavedChanges,
-} from '@/core/lib/llm/nodesConfigDraft'
+} from '@/core/settings/lib/nodesConfigDraft'
 import { useAdminNodesConfig } from '@/features/admin/hooks/useAdminNodesConfig'
 
 function Toggle({

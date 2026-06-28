@@ -1,6 +1,6 @@
 // Columna central del PhaseSelectModal: cabecera de la fase + grilla de
 // recursos. Extraído del modal para mantener archivos ≤200 líneas.
-import { isVideoResource } from '@/core/lib/llm/nodesConfigDraft'
+import { isVideoResource } from '@/core/settings/lib/nodesConfigDraft'
 import { getSchema } from '@/features/ova_library/lib/resourceConfigSchema'
 import { ResourceCard } from '@/features/student/components/engage/ResourceCard'
 import type { Resource } from '@/features/student/lib/types'
