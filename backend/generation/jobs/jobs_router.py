@@ -25,6 +25,7 @@ from generation.jobs.jobs_helpers import (
     job_to_dict,
 )
 from generation.jobs.jobs_router_helpers import (
+    _cancel_or_409,
     _launch,
     _not_found,
     _parse_uuid,
@@ -143,6 +144,21 @@ def get_resource_content(
         "resource_type": resource.resource_type,
         "content": resource.content,
     }
+
+
+@router.post("/{job_id}/cancel")
+@limiter.limit("10/minute")
+def cancel_job(
+    request: Request,
+    job_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Abort a queued or running job. Returns 409 if already terminal."""
+    parsed = _parse_uuid(job_id)
+    if parsed is None:
+        return _not_found("job_not_found", "Job no encontrado.")
+    return _cancel_or_409(db, parsed, current_user.id)
 
 
 @router.post("/{job_id}/resume")

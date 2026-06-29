@@ -18,11 +18,10 @@ from auth.dependencies import get_current_user
 from core.database import SessionLocal
 from generation.jobs import jobs_service
 from generation.jobs.jobs_helpers import job_to_dict
+from generation.jobs.jobs_model import JOB_STREAM_TERMINAL
 from models import User
 
 router = APIRouter()
-
-_TERMINAL = {"done", "error", "canceled"}
 _POLL_SECONDS = 1.5
 _MAX_TICKS = 1200  # ~30 min safety cap (1200 * 1.5s) so a stuck job can't hold a conn forever
 
@@ -70,7 +69,7 @@ async def stream_job(
             if payload != last:
                 yield {"event": "progress", "data": payload}
                 last = payload
-            if snapshot["status"] in _TERMINAL:
+            if snapshot["status"] in JOB_STREAM_TERMINAL:
                 yield {"event": "done", "data": payload}
                 return
             await asyncio.sleep(_POLL_SECONDS)

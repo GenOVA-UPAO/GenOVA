@@ -153,6 +153,7 @@ export function OvaCreationView({ onCreated }: OvaCreationViewProps) {
                 onPreview={setPinnedId}
                 onSelectAll={job.selectAllFailed}
                 onRetrySelected={job.retrySelected}
+                onCancel={isGenerating ? job.cancel : undefined}
               />
             )}
             {isTerminal && outcome?.totalFail && (

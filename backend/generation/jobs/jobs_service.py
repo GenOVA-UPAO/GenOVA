@@ -155,6 +155,14 @@ def mark_job_resuming(db: Session, job: OvaJob) -> None:
     commit_or_500(db, op="mark_job_resuming")
 
 
+def cancel_job(db: Session, job: OvaJob) -> None:
+    """Mark a queued/running job as canceled. The background thread checks status
+    in _finalize and skips persisting results if it finds 'canceled' (R1)."""
+    job.status = "canceled"
+    job.finished_at = _now()
+    commit_or_500(db, op="cancel_job")
+
+
 def _sweep_if_stale(db: Session, job: OvaJob) -> None:
     """Mark a "running" job whose progress went stale as "interrupted" (R7)."""
     if job.status != "running":

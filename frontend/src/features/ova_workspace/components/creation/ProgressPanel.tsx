@@ -1,3 +1,4 @@
+import { XCircle } from '@phosphor-icons/react'
 import { Button } from '@/core/components/ui/button'
 import { ResourceList } from '@/features/ova_workspace/components/editor/ResourceList'
 import type {
@@ -56,7 +57,10 @@ interface ProgressPanelProps {
   onPreview: (id: string) => void
   onSelectAll: () => void
   onRetrySelected: () => void
+  onCancel?: () => void
 }
+
+const _TERMINAL = new Set(['done', 'error', 'canceled', 'interrupted'])
 
 export function ProgressPanel({
   job,
@@ -68,8 +72,10 @@ export function ProgressPanel({
   onPreview,
   onSelectAll,
   onRetrySelected,
+  onCancel,
 }: ProgressPanelProps) {
   const status = (job?.status as string) || 'queued'
+  const isTerminal = _TERMINAL.has(status)
   const failedCount = viewModel.filter((r) => r.status === 'X').length
   const doneCount = viewModel.filter((r) => r.status === 'check').length
   const total = viewModel.length || 1
@@ -82,9 +88,23 @@ export function ProgressPanel({
           <span className="font-medium text-foreground">
             {STATUS_LABEL[status] || status}
           </span>
-          <span className="text-xs font-semibold text-muted-foreground">
-            {doneCount}/{viewModel.length} listos
-          </span>
+          <div className="flex items-center gap-2">
+            {!isTerminal && onCancel && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onCancel}
+                className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
+              >
+                <XCircle className="size-3.5 mr-1" />
+                Cancelar
+              </Button>
+            )}
+            <span className="text-xs font-semibold text-muted-foreground">
+              {doneCount}/{viewModel.length} listos
+            </span>
+          </div>
         </div>
         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
           <div

@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from core.config import settings
 from generation.jobs import jobs_service
 from generation.jobs.jobs_helpers import ResumeRequest
+from generation.jobs.jobs_model import JOB_TERMINAL
 from generation.jobs.jobs_runner import run_job
 
 logger = logging.getLogger(__name__)
@@ -66,3 +67,17 @@ def _resolve_resume_targets(
         return [], _not_found("resource_not_found", "Recurso no encontrado.")
     # R6/R7: drop ids already `done` so relaunching a done resource is inert.
     return jobs_service.resumable_subset(db, job_id, parsed), None
+
+
+def _cancel_or_409(db: Session, job_id: uuid.UUID, user_id: uuid.UUID) -> JSONResponse:
+    """Cancel a job owned by user_id. Returns the new state or a 404/409 response."""
+    job = jobs_service.get_job(db, job_id, user_id)
+    if job is None:
+        return _not_found("job_not_found", "Job no encontrado.")
+    if job.status in JOB_TERMINAL:
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={"error": "job_not_running", "message": "El job ya no está en curso."},
+        )
+    jobs_service.cancel_job(db, job)
+    return JSONResponse(content={"job_id": str(job.id), "status": "canceled"})

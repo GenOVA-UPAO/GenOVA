@@ -23,6 +23,10 @@ from core.database import Base
 # share a single source of truth.
 JOB_STATUSES = ("queued", "running", "done", "error", "interrupted", "canceled")
 RESOURCE_STATUSES = ("pending", "running", "done", "error")
+# Jobs in these states cannot be canceled or produce new results.
+JOB_TERMINAL = frozenset({"done", "error", "canceled", "interrupted"})
+# SSE stream closes when job reaches one of these (interrupted stays open until timeout).
+JOB_STREAM_TERMINAL = frozenset({"done", "error", "canceled"})
 
 
 def _job_pk() -> Column:

@@ -1,7 +1,8 @@
 # Deuda Técnica — Arquitectura Frontend (Screaming Architecture)
 
 > Creado: 2026-06-27 — Sesión de auditoría SA Sprint 3
-> Estado: **SOLO DOCUMENTACIÓN** — No se mueven archivos en esta fase.
+> Actualizado: 2026-06-29 — Refactor ejecutado (commit 878542b)
+> Estado: **COMPLETADO** — Archivos movidos a `core/settings/` (ver abajo).
 
 ---
 
@@ -98,26 +99,21 @@ features/
 
 ---
 
-## Plan de migración (futura — fuera de scope Sprint 3)
+## Estado actual (post-refactor 878542b)
 
-1. Crear `features/llm/` con la estructura objetivo.
-2. Mover cada archivo (renombrando el directorio import).
-3. Actualizar todos los imports en los consumidores:
-   - `features/admin/pages/AdminLlmPage.tsx`
-   - `features/admin/hooks/useAdminLlmConfig.ts`
-   - `features/ova_workspace/pages/ModelsPage.tsx`
-   - `src/App.tsx` (si hay lazy imports directos)
-4. Verificar con `pnpm build` y `pnpm lint`.
-5. Eliminar los archivos de `core/`.
+Los archivos fueron movidos de `core/lib/llm/`, `core/hooks/` y `core/services/` a
+`core/settings/` como sub-dominio de configuración transversal (sirve tanto a admin
+como al usuario). La estructura final:
 
-> **Riesgo**: Medio. Afecta ~8-12 archivos con imports cruzados. Requiere sesión
-> dedicada (TA nuevo o SP-010).
+```
+core/settings/
+  components/   LlmEnginesPanel, ModelAssignmentPanel, y panel de settings completo
+  hooks/        useLlmSettings, useLlmSettingsEditor, useEnabledModels
+  lib/          llmCatalogUtils, llmConfigDraft, llmSettingsLabels, llmSettingsMutations,
+                nodesConfigDraft, taskMeta, fallbackArray
+  services/     llmSettingsService
+```
 
----
-
-## Restricción de Sprint 3
-
-La decisión del usuario en Sprint 3 fue **solo marcar deuda técnica, no mover
-archivos**. Este documento cumple esa restricción.
-
-La migración queda propuesta como tarea futura con ID sugerido: `TA-008`.
+`core/settings/` agrupa toda la configuración UI (LLM, API keys, plataforma, OVA settings)
+que es cross-feature. Cumple el principio de que `core/` contenga infra transversal, ya
+que Settings no pertenece a un único dominio de negocio.

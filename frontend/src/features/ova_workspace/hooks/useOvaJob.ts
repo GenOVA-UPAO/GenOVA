@@ -8,9 +8,11 @@ import {
   toResourceViewModel,
 } from '../lib/ovaJobViewModel'
 import {
+  cancelJob,
   getJobStatus,
   resumeJob,
   startJob,
+  toResourcesPayload,
 } from '../services/ovaCreationService'
 import { useJobStream } from './useJobStream'
 
@@ -36,17 +38,6 @@ interface StartArgs {
   selections: Selections
   theme?: unknown
   resourceConfigs?: Record<string, unknown>
-}
-
-// Traduce la selección del modal a `resources:[{phase_type, resource_type}]` (B1).
-function toResourcesPayload(selections: Selections) {
-  const out: { phase_type: string; resource_type: string }[] = []
-  for (const phase of ALL_PHASES) {
-    for (const r of selections[phase] || []) {
-      out.push({ phase_type: phase, resource_type: String(r.id) })
-    }
-  }
-  return out
 }
 
 // Orquesta un job de generación server-side vía TanStack Query.
@@ -174,6 +165,17 @@ export function useOvaJob() {
     setSelectedFailedIds(viewModel.filter((r) => r.selectable).map((r) => r.id))
   }, [viewModel])
 
+  const cancel = useCallback(async () => {
+    if (!jobId) return
+    setError('')
+    try {
+      await cancelJob(jobId)
+      qc.invalidateQueries({ queryKey: ['ovaJob', jobId] })
+    } catch (err) {
+      setError((err as Error)?.message || 'No se pudo cancelar la generación.')
+    }
+  }, [jobId, qc])
+
   return {
     jobId,
     job: job ?? null,
@@ -190,5 +192,6 @@ export function useOvaJob() {
     retryAll,
     toggleFailed,
     selectAllFailed,
+    cancel,
   }
 }

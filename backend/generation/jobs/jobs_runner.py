@@ -156,6 +156,8 @@ def _finalize(job_id: uuid.UUID, results: list[dict], errors: list[dict]) -> Non
         job = db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one_or_none()
         if job is None:
             return
+        if job.status == "canceled":
+            return
         _persist_results(db, job, results, errors)
         any_done = _has_done_resource(db, job.id)
         _finish_job(db, job, any_done)

@@ -8,12 +8,6 @@
     "paths": { "@/*": ["./src/*"] },
     "types": ["vite/client", "node"],
 
-    // F3 — adopción incremental de TypeScript. Vite/esbuild ya transpila .ts/.tsx
-    // sin config extra; aquí solo añadimos el chequeo de tipos. `allowJs` deja
-    // convivir el JS existente; `checkJs:false` no type-chequea .js (migración
-    // archivo por archivo: renombrar .jsx→.tsx y actualizar sus imports .js→.ts).
-    "allowJs": true,
-    "checkJs": false,
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
