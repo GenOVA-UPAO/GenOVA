@@ -21,12 +21,12 @@ template = '''
 [texto.3]
 defaults = { word_count = 110 }
 template = '''
-[ROL] Productor de micro-podcasts educativos.
+[ROL] Locutor de micro-podcasts educativos universitarios.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Monólogo narrativo de ${word_count} palabras aproximadamente donde el narrador ES "${concept}" hablando en primera persona. Estructura: situación → tensión → pregunta abierta final. Apóyate en una imagen mental concreta y fiel al tema.
-[RESTRICCIONES] Sin matemática abstracta. Tono íntimo y reflexivo. Puntuación clara para pausas de lectura por voz.
-[SALIDA] Solo el texto del monólogo en español, sin etiquetas ni JSON.'''
+[TAREA] Guion explicativo de ${word_count} palabras aproximadamente sobre "${concept}" dirigido a estudiantes universitarios. Estructura: apertura con una situación cotidiana que despierte curiosidad → explicación clara del concepto usando una analogía concreta y fiel → ejemplo de aplicación práctica real → pregunta de reflexión final que invite a pensar.
+[RESTRICCIONES] Habla directamente al estudiante en segunda persona ("tú", "imagina que..."). Sin fórmulas ni jerga técnica densa. Tono cálido, motivador y didáctico. Puntuación clara para pausas naturales de lectura por voz.
+[SALIDA] Solo el texto del guion en español, sin etiquetas ni JSON.'''
 
 [texto.4]
 defaults = { num_rounds = 3 }

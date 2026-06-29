@@ -187,6 +187,10 @@ function App() {
             <Route element={<AppLayout fullBleed />}>
               <Route path="/crear-ova" element={<OvaWorkspacePage />} />
               <Route
+                path="/ova/job/:jobId/workspace"
+                element={<OvaWorkspacePage />}
+              />
+              <Route
                 path="/ova/:ovaId/workspace"
                 element={<OvaWorkspacePage />}
               />

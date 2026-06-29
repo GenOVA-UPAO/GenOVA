@@ -67,7 +67,7 @@ def get_image_models(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"provider debe ser uno de: {', '.join(IMAGE_PROVIDERS)}",
         )
-    api_key = resolve_key(provider, current_user.api_keys, db)
+    api_key = resolve_key(provider, current_user.user_api_keys, db)
     models = _get_models(provider, api_key)
     return {"provider": provider, "models": models}
 

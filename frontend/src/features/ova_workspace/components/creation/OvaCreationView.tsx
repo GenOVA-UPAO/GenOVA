@@ -1,6 +1,6 @@
 import { AnimatePresence } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { Button } from '@/core/components/ui/button'
 import { PhaseSelectModal } from '@/features/ova_library/components/modals/PhaseSelectModal'
 import { CrearOvaPreviewPanel } from '@/features/ova_workspace/components/creation/CrearOvaPreviewPanel'
@@ -12,10 +12,12 @@ import type { UploadsProps } from '@/features/ova_workspace/lib/uploadTypes'
 
 interface OvaCreationViewProps {
   onCreated?: (ovaId: string) => void
+  initialJobId?: string
 }
 
-export function OvaCreationView({ onCreated }: OvaCreationViewProps) {
+export function OvaCreationView({ onCreated, initialJobId }: OvaCreationViewProps) {
   const location = useLocation()
+  const navigate = useNavigate()
   const {
     prompt,
     setPrompt,
@@ -44,10 +46,17 @@ export function OvaCreationView({ onCreated }: OvaCreationViewProps) {
   } = useOvaCreation()
 
   useEffect(() => {
-    const state = location.state as { resumeJobId?: string } | null
-    const jobId = state?.resumeJobId
-    if (jobId && job.phase === 'idle') restore(jobId)
-  }, [location.state, job.phase, restore])
+    const stateJobId = (location.state as { resumeJobId?: string } | null)?.resumeJobId
+    const idToRestore = stateJobId || initialJobId
+    if (idToRestore && job.phase === 'idle') restore(idToRestore)
+  }, [location.state, job.phase, restore, initialJobId])
+
+  const { jobId: currentJobId } = job
+  useEffect(() => {
+    if (currentJobId && !initialJobId) {
+      navigate(`/ova/job/${currentJobId}/workspace`, { replace: true })
+    }
+  }, [currentJobId, initialJobId, navigate])
 
   const {
     jobId,
@@ -85,10 +94,6 @@ export function OvaCreationView({ onCreated }: OvaCreationViewProps) {
     disabled: false,
   }
 
-  const doneCount = viewModel.filter((r) => r.status === 'check').length
-  const total = viewModel.length || 1
-  const pct = Math.round((doneCount / total) * 100)
-
   if (!hasJob) {
     return (
       <div className="flex flex-col flex-1 min-h-0 bg-background text-foreground">
@@ -122,23 +127,6 @@ export function OvaCreationView({ onCreated }: OvaCreationViewProps) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-background text-foreground">
-      <header className="flex items-center gap-3 border-b border-border/50 px-5 py-3 bg-card/60 backdrop-blur-md shrink-0">
-        <h1 className="flex-1 text-base font-display font-semibold truncate">
-          Generando OVA…
-        </h1>
-        {isGenerating && (
-          <span className="shrink-0 flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary border border-primary/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            Generando…
-          </span>
-        )}
-        {viewModel.length > 0 && (
-          <span className="text-sm font-bold text-primary tabular-nums shrink-0">
-            {pct}%
-          </span>
-        )}
-      </header>
-
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="w-full sm:w-[380px] lg:w-[420px] sm:shrink-0 border-r border-border/50 flex flex-col overflow-hidden bg-card/30">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">

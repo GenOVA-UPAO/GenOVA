@@ -4,7 +4,7 @@ import { OvaCreationView } from '@/features/ova_workspace/components/creation/Ov
 import { OvaEditView } from '@/features/ova_workspace/components/editor/OvaEditView'
 
 export function OvaWorkspacePage() {
-  const { ovaId } = useParams<{ ovaId?: string }>()
+  const { ovaId, jobId } = useParams<{ ovaId?: string; jobId?: string }>()
   const navigate = useNavigate()
 
   const handleCreated = useCallback(
@@ -14,5 +14,5 @@ export function OvaWorkspacePage() {
 
   if (ovaId) return <OvaEditView ovaId={ovaId} />
 
-  return <OvaCreationView onCreated={handleCreated} />
+  return <OvaCreationView onCreated={handleCreated} initialJobId={jobId} />
 }
