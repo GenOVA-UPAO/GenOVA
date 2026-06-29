@@ -76,20 +76,26 @@ def _layout_block(design_mode: str) -> str:
             "     espaciado coherente (escala 8/12/16/24/32/48px) y lectura mobile-first.\n"
             "   - Contenedor legible (máx ~880px en texto), grid/flex con gap, sin overflow horizontal."
         )
-    # UPAO (default): plantilla estructurada con firma de marca.
+    # UPAO (default): plantilla estructurada con firma de marca + componentes.
     return (
-        "4) LAYOUT UPAO (plantilla estructurada, fírmala visualmente):\n"
-        "   - CABECERA: 'eyebrow' corto en MAYÚSCULAS color --accent (p.ej. 'ML · REDES NEURONALES'),\n"
-        "     debajo un <h1> en --primary, y debajo una KEYLINE de 3px en --accent (sello UPAO).\n"
-        "   - SECCIONES: tarjetas con fondo --surface sobre --bg, border-radius var(--radius),\n"
-        "     box-shadow var(--shadow); <h2> en --primary con un pequeño tick/marcador --accent a la izquierda.\n"
-        "   - SEPARADORES: regla de 2px en --accent (3px para cortes mayores). El naranja es el separador por defecto.\n"
-        "   - CALLOUTS/INTERACTIVOS: fondo --surface-tint con borde-izquierdo 4px --primary; estados de clave/acierto en --accent.\n"
-        "   - BOTONES: primario relleno --accent texto blanco (hover --accent-hover + translateY(-1px));\n"
-        "     secundario outline --primary. Focus-visible outline 3px --primary.\n"
-        "   - PROGRESO/SCORE: track --surface-tint, relleno --accent.\n"
-        "   - Mobile-first, contenedor centrado máx 880px con padding lateral 20px,\n"
-        "     espaciado 8/12/16/24/32/48px, grid/flex con gap (sin márgenes arbitrarios)."
+        "4) LAYOUT UPAO — USA LOS COMPONENTES UPAO DISPONIBLES:\n"
+        "   El script upao_components.js YA está inyectado en el HTML. Usa estos Custom Elements:\n"
+        "   <upao-card eyebrow='FASE' title='Título' icon='🧠'>contenido</upao-card>\n"
+        "   <upao-node number='1' title='Hito' label='Año'>detalle expandible</upao-node>\n"
+        "   <upao-choice value='A' correct='true' feedback='¡Correcto!' group='q1'>texto</upao-choice>\n"
+        "   <upao-reveal label='Ver respuesta'>contenido oculto</upao-reveal>\n"
+        "   <upao-progress id='p' current='0' total='N' show-fraction></upao-progress>\n"
+        "   <upao-timer id='t' seconds='30'></upao-timer>  → start: document.getElementById('t').start()\n"
+        "   <upao-score id='s' current='0' max='100'></upao-score>  → add: getElementById('s').add(10)\n"
+        "   <upao-nav id='n' total='N' current='1'></upao-nav>  → evento upao-nav-change { index }\n"
+        "   <upao-comic-panel number='1' character='Max' img-src='__IMG_1__'>diálogo</upao-comic-panel>\n"
+        "   <upao-podcast src='data:audio/wav;base64,...' concept='X' transcript='texto'></upao-podcast>\n"
+        "   <upao-drag-item item-id='id' category='cat'>texto</upao-drag-item>\n"
+        "   <upao-drop-zone zone-id='z1' accepts='cat' label='Zona'></upao-drop-zone>\n"
+        "   <upao-complete label='Continuar →' locked require-progress='N'></upao-complete>\n"
+        "   ÚSALOS para construir el recurso. Complementa con HTML/CSS/JS propio cuando sea necesario.\n"
+        "   Paleta fija UPAO: --primary #0A3D91 · --accent #F47A20 · --bg #F7F9FC · --surface #FFFFFF.\n"
+        "   Mobile-first, contenedor máx 880px, espaciado escala 8/12/16/24/32/48px."
     )
 
 

@@ -49,8 +49,11 @@ def direct_code_gen(
         )
     )
 
+    from llm.ova_components import inject_components
     from llm.utils.html_validator import validate_and_repair
     from prometheus.engine.refine import maybe_refine
 
     html, _ = validate_and_repair(html, phase, n)
+    if theme.get("design", "upao") == "upao":
+        html = inject_components(html)
     return maybe_refine(html, phase, n, concept, llm_config, enabled_models, theme)
