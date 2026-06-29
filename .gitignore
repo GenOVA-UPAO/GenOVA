@@ -282,3 +282,5 @@ production-*.png
 # Capturas sueltas en la raíz (debug local); assets reales viven en frontend/src/assets/
 /*.png
 
+
+.vercel
