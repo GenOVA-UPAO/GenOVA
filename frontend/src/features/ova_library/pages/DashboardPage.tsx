@@ -36,6 +36,8 @@ export function DashboardPage() {
 
   useEffect(() => {
     let cancelled = false
+    // TODO BU-002: migrar a useCurrentUser() para consolidar el patrón
+    // duplicado de useState(getCachedUser()) + useEffect(getCurrentUser()).
     getCurrentUser().then((current) => {
       if (!cancelled) setUser(current as UserData)
     })

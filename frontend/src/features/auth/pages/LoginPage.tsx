@@ -1,12 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/core/components/ui/alert'
 import { Button } from '@/core/components/ui/button'
 import { Input } from '@/core/components/ui/input'
 import { Label } from '@/core/components/ui/label'
 import { PasswordInput } from '@/core/components/ui/password-input'
+import { consumeSessionExpiredFlag } from '@/core/lib/auth/sessionExpiredFlag'
 import { apiFetch } from '@/core/lib/http/client'
 import { TotpLoginStep } from '@/features/auth/components/TotpLoginStep'
 import { VerifyEmailNotice } from '@/features/auth/components/VerifyEmailNotice'
@@ -24,6 +26,15 @@ export function LoginPage() {
   const [serverError, setServerError] = useState('')
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null)
   const [totpTicket, setTotpTicket] = useState<string | null>(null)
+  // BU-001 AC#1: AuthGate deja la flag en sessionStorage al redirigir aquí;
+  // la consumimos y mostramos el toast. La flag se borra en el primer read.
+  useEffect(() => {
+    if (consumeSessionExpiredFlag()) {
+      toast.info('Tu sesión ha expirado. Vuelve a iniciar sesión.', {
+        duration: 6000,
+      })
+    }
+  }, [])
   const {
     register,
     handleSubmit,

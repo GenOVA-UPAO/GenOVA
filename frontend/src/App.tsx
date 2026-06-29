@@ -1,13 +1,11 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense } from 'react'
 import { Navigate, Outlet, Route, Routes } from 'react-router'
 import { AppLayout } from '@/core/layouts/shells/AppLayout.tsx'
-import { getCachedUser, getCurrentUser } from '@/core/lib/auth/me'
 import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage.tsx'
 import { LoginPage } from '@/features/auth/pages/LoginPage.tsx'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage.tsx'
 import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage.tsx'
 import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage.tsx'
-import { isLoggedIn } from '@/features/auth/services/auth'
 import { DashboardPage } from '@/features/ova_library/pages/DashboardPage.tsx'
 
 const AdminRolesPage = lazy(() =>
@@ -73,44 +71,20 @@ const OvaWorkspacePage = lazy(() =>
 
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Toaster } from 'sonner'
+import { AuthGate } from '@/features/auth/components/AuthGate'
+import { AuthGateLoader } from '@/features/auth/components/AuthGateLoader'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { RootErrorBoundary } from '@/core/components/RootErrorBoundary.tsx'
 
-interface UserData {
-  role?: string
-  full_name?: string
-  email?: string
-}
-
 function RouteFallback() {
-  return (
-    <div className="flex min-h-[400px] items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-    </div>
-  )
+  return <AuthGateLoader />
 }
 
 export function AdminRoute() {
-  const cached = getCachedUser() as UserData | null
-  const [loading, setLoading] = useState(() => isLoggedIn() && !cached)
-  const [isAdmin, setIsAdmin] = useState(() => cached?.role === 'administrador')
-
-  useEffect(() => {
-    if (!isLoggedIn()) return
-
-    let cancelled = false
-    const checkAdmin = async () => {
-      const user = (await getCurrentUser()) as UserData | null
-      if (cancelled) return
-      if (user) setIsAdmin(user.role === 'administrador')
-      setLoading(false)
-    }
-
-    checkAdmin()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
+  // BU-001: migrate from `useState(getCachedUser()) + useEffect(getCurrentUser())`
+  // to the shared `useCurrentUser()` hook. TODO BU-002: migrate Navbar,
+  // SidebarMenu, and DashboardPage to the same hook.
+  const { loading, isAdmin } = useCurrentUser()
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
@@ -123,19 +97,26 @@ export function AdminRoute() {
       </div>
     )
   }
-
   if (!isAdmin) {
     return <Navigate to="/dashboard" replace />
   }
-
   return <Outlet />
 }
 
 function ProtectedLayout() {
-  if (!isLoggedIn()) {
-    return <Navigate to="/login" replace />
-  }
-  return <AppLayout />
+  return (
+    <AuthGate>
+      <AppLayout />
+    </AuthGate>
+  )
+}
+
+function FullBleedProtectedLayout() {
+  return (
+    <AuthGate>
+      <AppLayout fullBleed />
+    </AuthGate>
+  )
 }
 
 function App() {
@@ -178,7 +159,7 @@ function App() {
                 />
               </Route>
             </Route>
-            <Route element={<AppLayout fullBleed />}>
+            <Route element={<FullBleedProtectedLayout />}>
               <Route path="/crear-ova" element={<OvaWorkspacePage />} />
               <Route
                 path="/ova/job/:jobId/workspace"

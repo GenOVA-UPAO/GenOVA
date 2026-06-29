@@ -13,6 +13,7 @@ const RAW_BASE =
 export const API_BASE = RAW_BASE.replace(/\/$/, '')
 
 const DEFAULT_TIMEOUT_MS = 15000
+const AUTH_PATHS = new Set(['/api/auth/me', '/auth/login', '/auth/register'])
 
 interface HttpErrorOptions {
   status?: number
@@ -43,6 +44,20 @@ export class HttpError extends Error {
   }
 }
 
+function isAuthEndpoint(path: string): boolean {
+  return AUTH_PATHS.has(path) || path.startsWith('/api/auth/') || path.startsWith('/auth/')
+}
+
+async function notifyAuthExpired(path: string): Promise<void> {
+  try {
+    const { clearCurrentUser } = await import('../auth/me')
+    clearCurrentUser('me')
+  } catch {
+    /* me.ts unavailable (raw Node tests) — no-op */
+  }
+  void path
+}
+
 export async function apiFetch(
   path: string,
   init: RequestInit = {},
@@ -62,12 +77,18 @@ export async function apiFetch(
   const headers = { ...baseHeaders, ...initHeaders }
   const url = /^https?:/i.test(path) ? path : `${API_BASE}${path}`
   try {
-    return await fetch(url, {
+    const res = await fetch(url, {
       ...init,
       headers,
       credentials: 'include',
       signal: ctrl.signal,
     })
+    // BU-001 AC#3: any 401 from a protected endpoint means the JWT is gone;
+    // clear the cache and let the AuthGate (the single listener) redirect.
+    if (res.status === 401 && !isAuthEndpoint(path)) {
+      void notifyAuthExpired(path)
+    }
+    return res
   } finally {
     clearTimeout(t)
   }

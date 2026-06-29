@@ -1,37 +1,34 @@
 # Sesión actual
 
 **Fecha:** 2026-06-29
-**Agente:** opencode (leader)
+**Agente:** opencode (implementer — re-aplicado por hallazgos del reviewer)
 **Sprint:** 3
+**Feature:** BU-001 — Sesión expirada no redirige a pantalla de inicio de sesión
 
 ## Resumen
 
-Deprecación completa del módulo **Labs** (sandbox de iteración de prompts) — eliminada por motivos de seguridad y para reducir superficie de ataque. Decisión del usuario con aprobación explícita de saltarse la fase de spec (regla dura "no saltar spec" sustituida por aprobación humana explícita del usuario).
+Re-aplicación tras CHANGES_REQUESTED del reviewer. Cierra los 4 hallazgos:
 
-## Hecho en esta sesión
+- #1 (ALTA) LoginPage ahora consume `consumeSessionExpiredFlag` y muestra
+  toast.info (sonner). El flag ya no es código muerto.
+- #2 (MEDIA) Nuevo escenario BDD que verifica el contrato end-to-end de la
+  flag (AuthGate → sessionStorage → LoginPage) + import estático de
+  `consumeSessionExpiredFlag` en LoginPage.
+- #3 (MEDIA) Doble `<AuthGate>` eliminado. AppLayout ya no envuelve en
+  AuthGate; gating centralizado en `ProtectedLayout` y `FullBleedProtectedLayout`
+  en App.tsx. Rutas `fullBleed` siguen cubiertas.
+- #4 (BAJA) Plan de split de `SidebarMenu.tsx` documentado en
+  `impl_BU-001_sesion-expirada.md` § Pendientes.
 
-### Alcance de la eliminación
-- **Backend Python**: borrada carpeta `backend/labs/` (9 archivos)
-- **Backend CLI**: borrada carpeta `backend/tools/` (4 archivos + `winners/`, `__pycache__/`, `__init__.py`)
-- **Frontend React**: borrada carpeta `frontend/src/features/labs/` (11 archivos)
-- **BD**: creada migration `033_drop_lab_results.sql` (DROP POLICY + DROP TABLE CASCADE)
-- **Routers**: quitados de `main.py` líneas 27-28, 57 (exclusion latency), 288-289
-- **Models registry**: quitado `LabResult` de `backend/models.py:22, 33`
-- **App.tsx**: quitado lazy import `LabsPage` (líneas 68-72) y ruta `/admin/labs` (línea 184)
-- **Tests**: editado `tests/steps/unit/quality_unit.steps.js` — quitado import y scenarios de `checkHtmlQuality` (mantenido ESLint scenario independiente)
-- **Docs**: borrado `docs/labs.md`, editados `docs/api.md`, `docs/database.md`, `docs/catalogo-modelos.md`, `docs/mejoras-infra-2026-06.md`, `README.md`, `tests/playwright-smoke/SMOKE_TESTS.md`, `CHECKPOINTS.md`
-- **Histórico preservado**: NO se tocan `000_schema_complete.sql`, `008_labs.sql`, `009_drop_prompt_versions.sql`, `018_enable_rls.sql`, `028_rls_policies.sql` (decisiones del pasado quedan como están; el comentario "lab_results is kept" de `009` queda como testimonio histórico)
-- **`feature_list.json`**: nuevo item `EN-023` (deprecación Labs) marcado `done`
+## Archivos EDIT (re-aplicación)
 
-### Decisiones SDD explícitas
-- El usuario pidió saltarse la fase de spec para esta eliminación. Se documenta esta excepción (puerta humana explícita).
-- Se conserva el flujo de implementación + verify (lint, ruff, BDD unit) sin saltar esos gates.
+- `frontend/src/features/auth/pages/LoginPage.tsx` (187→198) — consume flag + toast.
+- `frontend/src/core/layouts/shells/AppLayout.tsx` (31→31) — AuthGate removido.
+- `frontend/src/App.tsx` (174→182) — `FullBleedProtectedLayout` añadido; rutas fullBleed reagrupadas.
+- `tests/features/auth/BU-001_sesion-expirada.feature` (30→40) — nuevo escenario end-to-end.
+- `tests/steps/unit/sesion_expirada_unit.steps.js` (122→215) — stepdefs del nuevo escenario.
+- `sdd/progress/implementados/impl_BU-001_sesion-expirada.md` — sección "Pendientes / Trabajo futuro".
 
-## Próximo paso
-1. `verify.ps1 -Quick` — confirmar verde tras borrados
-2. Commit + push
-3. Continuar con resto del plan de seguridad (rotación API keys, eliminación de Labs var en Railway, etc.)
+## Pendiente (BU-002)
 
-## Pendiente del plan seguridad original
-- Revisar `LABS_MAX_WORKERS` en Railway (variables del servicio)
-- Continuar con la siguiente capa de "reforzar seguridad" (rotación de claves, etc.)
+Sin cambios respecto a sesión anterior.

@@ -44,6 +44,8 @@ export function Navbar() {
   const [user, setUser] = useState<UserData | null>(getCachedUser())
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  // TODO BU-002: migrar a useCurrentUser() para consolidar el patrón
+  // duplicado de useState(getCachedUser()) + useEffect(getCurrentUser()).
   useEffect(() => {
     let cancelled = false
     getCurrentUser().then((current: UserData | null) => {

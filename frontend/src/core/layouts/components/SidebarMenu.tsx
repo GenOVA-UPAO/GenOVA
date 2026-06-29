@@ -127,6 +127,8 @@ export function SidebarMenu({ onNavigate }: SidebarMenuProps) {
 
   useEffect(() => {
     if (!isLoggedIn()) return
+    // TODO BU-002: migrar a useCurrentUser() para consolidar el patrón
+    // duplicado de useState(getCachedUser()) + useEffect(getCurrentUser()).
     let cancelled = false
     getCurrentUser().then((current: UserData | null) => {
       if (!cancelled && current) setUser(current)

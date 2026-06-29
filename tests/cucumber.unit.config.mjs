@@ -21,6 +21,7 @@ export default {
     join(__dir, 'features/ova/HU-031_edicion-granular.feature'),
     join(__dir, 'features/admin/llm-config-unit.feature'),
     join(__dir, 'features/admin/nodes-config-unit.feature'),
+    join(__dir, 'features/auth/BU-001_sesion-expirada.feature'),
   ],
   require: [join(__dir, 'steps/unit/**/*.js')],
   worldParameters: {},

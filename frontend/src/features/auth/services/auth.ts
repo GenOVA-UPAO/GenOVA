@@ -5,7 +5,7 @@
 // `genova_session` flag (plus the legacy JWT for backwards-compat with the
 // cucumber unit suite) to drive client-side routing decisions.
 
-import { clearCurrentUser } from '../../../core/lib/auth/me'
+import { clearCurrentUser, clearLocalCache } from '../../../core/lib/auth/me'
 
 const SESSION_KEY = 'genova_session'
 const TOKEN_KEY = 'genova_token' // legacy — kept for unit tests; do NOT send as Bearer
@@ -26,6 +26,10 @@ function safeLocalStorage(): Storage | null {
 export function markLoggedIn(): void {
   const ls = safeLocalStorage()
   if (ls) ls.setItem(SESSION_KEY, '1')
+  // BU-001: drop any stale cached profile so the AuthGate revalidates against
+  // /api/auth/me with the fresh session — avoids showing the previous account
+  // for a frame after a switch-user login.
+  clearLocalCache()
 }
 
 export function clearSession(): Promise<void> {
@@ -34,7 +38,8 @@ export function clearSession(): Promise<void> {
     ls.removeItem(SESSION_KEY)
     ls.removeItem(TOKEN_KEY)
   }
-  clearCurrentUser()
+  // Use the broadcast variant so the AuthGate redirects to /login.
+  clearCurrentUser('logout')
   // Best-effort cookie clear. http client imported lazily so tests that only
   // exercise the localStorage shim don't pull its network code at module load.
   return import('../../../core/lib/http/client')
@@ -44,6 +49,8 @@ export function clearSession(): Promise<void> {
     .catch(() => {})
 }
 
+// Optimistic gate. BU-001 AC#4: stays a fast local check for hot paths; the
+// real protection is `AuthGate` (which validates against /api/auth/me).
 export function isLoggedIn(): boolean {
   const ls = safeLocalStorage()
   if (!ls) return false
@@ -53,7 +60,10 @@ export function isLoggedIn(): boolean {
   return false
 }
 
-// ── Legacy API (still used by unit tests + a few hooks during transition). ──
+// ── Legacy API (still used by unit tests for HU-001/HU-008). NOT consumed by
+//    any production code. Removal is out of scope for BU-001 — see spec §
+//    "Solución propuesta": "Su retirada del barrel queda pendiente para una
+//    futura pasada anti-dead-code (no es alcance de este bug)". ──
 
 export function saveToken(token: string | null): void {
   const ls = safeLocalStorage()

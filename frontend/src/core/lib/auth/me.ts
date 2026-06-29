@@ -4,6 +4,12 @@
 // state synchronously from sessionStorage (no flash, correct role immediately),
 // then revalidate in the background. A transient failure falls back to the last
 // known user instead of null, so the role never regresses mid-session.
+//
+// BU-001: `clearCurrentUser()` also dispatches a `auth:expired` window event
+// so the single AuthGate listener can redirect to /login without each
+// consumer needing to subscribe individually. The lightweight
+// `clearLocalCache()` is exported separately for `markLoggedIn()` flows that
+// only want to drop stale cache, not broadcast a logout.
 
 import { apiFetch } from '../http/client'
 
@@ -31,6 +37,14 @@ function writeCache(user: MeUser): void {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(user))
   } catch {
     /* storage unavailable — in-memory fetch still works */
+  }
+}
+
+function safeRemoveItem(): void {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY)
+  } catch {
+    /* ignore */
   }
 }
 
@@ -66,11 +80,28 @@ export function getCurrentUser(): Promise<MeUser | null> {
   return inflight
 }
 
-export function clearCurrentUser(): void {
+// Drop the local cache + broadcast `auth:expired` so the AuthGate redirects.
+// Source: 'me' for the /api/auth/me 401 path; 'logout' for explicit logout.
+export function clearCurrentUser(source: 'me' | 'logout' = 'me'): void {
   inflight = null
+  safeRemoveItem()
+  dispatchExpired(source)
+}
+
+// Same effect without broadcasting — used by `markLoggedIn()` to avoid
+// showing a previous user's data after a fresh login.
+export function clearLocalCache(): void {
+  inflight = null
+  safeRemoveItem()
+}
+
+function dispatchExpired(source: 'me' | 'logout'): void {
+  if (typeof window === 'undefined') return
   try {
-    sessionStorage.removeItem(STORAGE_KEY)
+    window.dispatchEvent(
+      new CustomEvent('auth:expired', { detail: { source } }),
+    )
   } catch {
-    /* ignore */
+    /* window unavailable (e.g. unit tests without happy-dom) */
   }
 }
