@@ -26,13 +26,11 @@ from llm.catalog.model_catalog import (
     merge_with_defaults,
     sanitize_settings,
 )
+from llm.providers import TEXT_PROVIDERS
 from models import Role, User, UserRole
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-
-_LLM_PROVIDERS = ("groq", "openrouter", "opencode", "huggingface")
 
 
 def _enabled_keys(user) -> set[tuple[str, str]]:
@@ -44,7 +42,7 @@ def _enabled_keys(user) -> set[tuple[str, str]]:
 def _has_own_llm_key(user, db: Session) -> bool:
     """True when user has a personal LLM API key, or holds the admin role."""
     own = user.user_api_keys or {}
-    if any(own.get(p) for p in _LLM_PROVIDERS):
+    if any(own.get(p) for p in TEXT_PROVIDERS):
         return True
     return (
         db.execute(

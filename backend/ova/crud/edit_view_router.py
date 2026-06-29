@@ -1,8 +1,7 @@
 import logging
-import os
 
 from fastapi import APIRouter, Depends, Request, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -19,12 +18,14 @@ from ova.crud.edit_helpers import (
     _resolve_ova,
     _version_to_dict,
 )
-from storage import StorageError, is_configured, signed_url
+from ova.crud.export_router import router as export_router
 from users.admin.helpers import commit_or_500
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+# SCORM export endpoint lives in export_router; included here to keep its path.
+router.include_router(export_router)
 
 
 @router.get("/{ova_id}/editar")
@@ -163,50 +164,3 @@ def get_version_diff(
         )
 
     return {"v1": left, "v2": right}
-
-
-@router.get("/{ova_id}/export-scorm")
-def export_scorm(
-    ova_id: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    ova, err = _resolve_ova(ova_id, current_user, db)
-    if err:
-        return err
-
-    if ova.status != "listo":
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={
-                "error": "ova_not_ready",
-                "message": "El OVA no está listo.",
-            },
-        )
-
-    active_version = _get_active_version(ova_id, db)
-    version_num = active_version.version_number if active_version else 1
-    safe_title = "".join(c for c in ova.title if c.isalnum() or c in " _-").strip() or "ova"
-    filename = f"{safe_title}_v{version_num}.zip"
-
-    if ova.storage_key and is_configured():
-        try:
-            url = signed_url(str(ova.storage_key), download_as=filename)
-            return JSONResponse({"download_url": url, "filename": filename})
-        except StorageError:
-            logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
-
-    if not ova.file_path or not os.path.exists(ova.file_path):
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={
-                "error": "file_not_found",
-                "message": "Archivo SCORM no disponible.",
-            },
-        )
-
-    return FileResponse(
-        path=ova.file_path,
-        filename=filename,
-        media_type="application/zip",
-    )

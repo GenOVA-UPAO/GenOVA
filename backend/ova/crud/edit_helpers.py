@@ -12,31 +12,6 @@ from storage import StorageError, is_configured, upload_zip
 
 logger = logging.getLogger(__name__)
 
-REGEN_DURATION_SECONDS = int(os.getenv("OVA_GENERATION_DURATION_SECONDS", "14"))
-
-SIMULATED_REGEN_CONTENT = {
-    "motivacion": "Descubre por qué el aprendizaje automático está revolucionando múltiples industrias y cómo puedes aplicarlo en tu campo de estudio.",
-    "contenido": "Explora los fundamentos teóricos y prácticos del tema. Analiza casos reales, datasets representativos y metodologías validadas en la industria.",
-    "explicacion": "Comprende en profundidad los algoritmos clave, sus supuestos matemáticos y cuándo aplicar cada enfoque según el problema a resolver.",
-    "actividad": "Diseña y ejecuta un mini-proyecto aplicando lo aprendido. Trabaja con datos reales y documenta tus decisiones de modelado.",
-    "evaluacion": "Evalúa tu comprensión respondiendo preguntas sobre conceptos clave, selección de modelos y análisis de resultados obtenidos.",
-}
-
-PROGRESS_STAGES = [
-    (10, "Iniciando regeneración"),
-    (35, "Procesando contenido"),
-    (65, "Generando fases seleccionadas"),
-    (90, "Reconstruyendo paquete SCORM"),
-    (100, "Finalizando"),
-]
-
-
-def _resolve_regen_stage(pct: int) -> str:
-    for threshold, label in PROGRESS_STAGES:
-        if pct <= threshold:
-            return label
-    return PROGRESS_STAGES[-1][1]
-
 
 def _ova_output_dir() -> str:
     default = os.path.join(os.path.dirname(__file__), "..", "scorm_output")

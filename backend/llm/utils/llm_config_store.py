@@ -18,11 +18,11 @@ from threading import RLock
 from core.database import SessionLocal
 from llm.catalog.catalog_refresh import get_full_catalog_entries
 from llm.catalog.model_catalog import TASKS, is_valid_model
+from llm.providers import TEXT_PROVIDERS
 from models import PlatformConfig
 
 logger = logging.getLogger(__name__)
 
-PROVIDERS = ("groq", "openrouter", "opencode")
 PLATFORM_KEY = "llm_model_config"
 _TTL_S = 30.0
 
@@ -36,7 +36,7 @@ def _full_keys() -> set[tuple[str, str]]:
 
 
 def _valid(provider, model_id, full_keys) -> bool:
-    if provider not in PROVIDERS or not model_id:
+    if provider not in TEXT_PROVIDERS or not model_id:
         return False
     return is_valid_model(provider, model_id) or (provider, model_id) in full_keys
 

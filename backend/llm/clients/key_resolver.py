@@ -10,19 +10,9 @@ Priority chain for every provider:
 import logging
 import os
 
+from llm.providers import ENV_VARS
+
 logger = logging.getLogger(__name__)
-
-PROVIDERS = ("groq", "openrouter", "opencode", "siliconflow", "runware", "falai", "huggingface")
-
-_ENV_VARS: dict[str, str] = {
-    "groq": "GROQ_API_KEY",
-    "openrouter": "OPENROUTER_API_KEY",
-    "opencode": "OPENCODE_API_KEY",
-    "siliconflow": "SILICONFLOW_API_KEY",
-    "runware": "RUNWARE_API_KEY",
-    "falai": "FALAI_API_KEY",
-    "huggingface": "HF_TOKEN",
-}
 
 # DB key name format: "{provider}_api_key"
 _DB_KEY = "{}_api_key".format
@@ -79,7 +69,7 @@ def resolve_key(provider: str, user_api_keys: dict | None, db=None, user_id=None
         except Exception:
             # DB unavailable/misconfigured → fall back to the env var below.
             pass
-    return os.getenv(_ENV_VARS.get(provider, ""), "").strip() or None
+    return os.getenv(ENV_VARS.get(provider, ""), "").strip() or None
 
 
 def mask_key(key: str | None) -> str | None:

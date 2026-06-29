@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 _OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
 
 
-
 def _fetch_openrouter() -> dict[str, dict] | None:
     """Fetch the full model list from OpenRouter. Returns {model_id: raw_entry},
     or None when the fetch failed (so the caller can fall back instead of

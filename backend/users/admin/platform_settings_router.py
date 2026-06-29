@@ -14,7 +14,8 @@ from sqlalchemy.orm import Session
 from auth.dependencies import require_admin
 from core.database import get_db
 from core.rate_limit import limiter
-from llm.clients.key_resolver import PROVIDERS, mask_key
+from llm.clients.key_resolver import mask_key
+from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS
 from models import PlatformConfig
 
 router = APIRouter()
@@ -22,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 _MIN_KEY_LEN = 8
 _DB_KEY = "{}_api_key".format
-_LLM_PROVIDERS = frozenset({"groq", "openrouter", "opencode"})
 
 
 def _bg_catalog_refresh() -> None:
@@ -39,7 +39,7 @@ def _bg_catalog_refresh() -> None:
 
 def _load_platform_keys(db: Session) -> dict[str, str | None]:
     rows = {r.key: r.value for r in db.query(PlatformConfig).all()}
-    return {p: rows.get(_DB_KEY(p)) for p in PROVIDERS}
+    return {p: rows.get(_DB_KEY(p)) for p in ALL_PROVIDERS}
 
 
 @router.get("/platform-config")
@@ -50,8 +50,8 @@ def get_platform_config(
     """Return masked platform API key status for all providers (admin-only)."""
     keys = _load_platform_keys(db)
     return {
-        "platform_config": {p: mask_key(keys.get(p)) for p in PROVIDERS},
-        "providers": list(PROVIDERS),
+        "platform_config": {p: mask_key(keys.get(p)) for p in ALL_PROVIDERS},
+        "providers": list(ALL_PROVIDERS),
     }
 
 
@@ -67,11 +67,11 @@ def put_platform_config(
 
     Pass `{provider: "key"}` to set, `{provider: ""}` to remove.
     """
-    updates = {k: v for k, v in payload.items() if k in PROVIDERS and isinstance(v, str)}
+    updates = {k: v for k, v in payload.items() if k in ALL_PROVIDERS and isinstance(v, str)}
     if not updates:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Payload must contain at least one key from: {', '.join(PROVIDERS)}",
+            detail=f"Payload must contain at least one key from: {', '.join(ALL_PROVIDERS)}",
         )
 
     for provider, value in updates.items():
@@ -103,12 +103,12 @@ def put_platform_config(
             detail="No se pudo guardar la configuración de plataforma.",
         ) from None
 
-    if any(p in _LLM_PROVIDERS for p in updates):
+    if any(p in TEXT_PROVIDERS for p in updates):
         threading.Thread(target=_bg_catalog_refresh, daemon=True).start()
         logger.info("Catalog refresh triggered by platform key update: %s", list(updates))
 
     keys = _load_platform_keys(db)
-    return {"platform_config": {p: mask_key(keys.get(p)) for p in PROVIDERS}}
+    return {"platform_config": {p: mask_key(keys.get(p)) for p in ALL_PROVIDERS}}
 
 
 @router.get("/llm-config")
@@ -116,12 +116,11 @@ def get_llm_config(_admin: None = Depends(require_admin)):
     """Modelos por tarea + cadena de fallback efectivos (semilla ⊕ admin)."""
     from llm.catalog.model_catalog import TASKS
     from llm.router import effective_llm_config
-    from llm.utils import llm_config_store
 
     return {
         "config": effective_llm_config(),
         "tasks": list(TASKS),
-        "providers": list(llm_config_store.PROVIDERS),
+        "providers": list(TEXT_PROVIDERS),
     }
 
 

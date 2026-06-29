@@ -1,7 +1,5 @@
 """User linking endpoints controlled by granular role permissions."""
 
-import secrets
-import string
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -15,6 +13,8 @@ from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from core.security import hash_password, verify_password
 from models import User, UserLink
+from users.settings.links_admin_router import router as admin_router
+from users.settings.links_helpers import _new_code, _serialize
 
 router = APIRouter()
 
@@ -25,25 +25,6 @@ class InviteRequest(BaseModel):
 
 class AcceptRequest(BaseModel):
     code: str
-
-
-def _new_code() -> str:
-    raw = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-    return f"{raw[:3]}-{raw[3:]}"
-
-
-def _serialize(link: UserLink, owner: User | None = None, linked: User | None = None) -> dict:
-    return {
-        "id": str(link.id),
-        "owner_user_id": str(link.owner_user_id),
-        "linked_user_id": str(link.linked_user_id) if link.linked_user_id else None,
-        "invite_email": link.invite_email,
-        "status": link.status,
-        "expires_at": link.expires_at.isoformat() if link.expires_at else None,
-        "created_at": link.created_at.isoformat() if link.created_at else None,
-        "owner": {"email": owner.email, "full_name": owner.full_name} if owner else None,
-        "linked": {"email": linked.email, "full_name": linked.full_name} if linked else None,
-    }
 
 
 @router.get("/me/links")
@@ -190,43 +171,6 @@ def resend_link(
     return {"link": _serialize(link, owner=current_user), "code": code}
 
 
-@router.get("/links/admin")
-def list_all_links(
-    current_user: User = Depends(require_permission("users:link:admin")),
-    db: Session = Depends(get_db),
-):
-    del current_user
-    links = db.execute(select(UserLink).order_by(UserLink.created_at.desc())).scalars().all()
-    user_ids = {lnk.owner_user_id for lnk in links} | {
-        lnk.linked_user_id for lnk in links if lnk.linked_user_id
-    }
-    users_map = (
-        {u.id: u for u in db.execute(select(User).where(User.id.in_(user_ids))).scalars().all()}
-        if user_ids
-        else {}
-    )
-    return {
-        "links": [
-            _serialize(
-                link,
-                owner=users_map.get(link.owner_user_id),
-                linked=users_map.get(link.linked_user_id) if link.linked_user_id else None,
-            )
-            for link in links
-        ]
-    }
-
-
-@router.delete("/links/admin/{link_id}")
-def delete_any_link(
-    link_id: UUID,
-    current_user: User = Depends(require_permission("users:link:admin")),
-    db: Session = Depends(get_db),
-):
-    del current_user
-    link = db.get(UserLink, link_id)
-    if not link:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vinculo no encontrado.")
-    db.delete(link)
-    commit_or_500(db, "la desvinculacion")
-    return {"status": "ok"}
+# Admin link-management endpoints live in links_admin_router; included here so
+# they keep the same path prefix without touching the users-router wiring.
+router.include_router(admin_router)
