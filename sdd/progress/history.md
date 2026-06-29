@@ -305,3 +305,22 @@ las specs del editor avanzado de OVA y empezar la implementación.
 Los 11 reportes (`impl_*.md` × 8 + `review_*.md` × 3) que residían directamente en `sdd/progress/` se mueven a `sdd/progress/implementados/` para mejorar la legibilidad del directorio raíz (que conserva solo `current.md`, `history.md`, `sprint.md`). El patrón por feature se mantiene: cada `impl_<name>.md` documenta los criterios, archivos tocados y notas de diseño; cada `review_<name>.md` contiene el veredicto (APPROVED / CHANGES_REQUESTED) y la trazabilidad R→test. CHECKPOINTS.md C1/C3/C5, los specs `RN-005` y `EN-017`, y los 5 agents críticos (`.claude/agents/{leader,implementer,reviewer,doc_author,spec-sync}.md` + sus transformaciones en `.opencode/agents/` y `.codex/agents/`) ahora apuntan a `sdd/progress/implementados/<name>.md`. CHECKPOINTS.md C8 (Wireframe gate) eliminado (los wireframes fueron retirados del repo en otra sesión).
 
 **Estado:** DONE. Trazabilidad preservada en `git log`, `feature_list.json`, esta entrada de `history.md` y los archivos `sdd/progress/implementados/`.
+
+---
+
+## 2026-06-29 — BU-001 Sesión expirada redirige a /login (Sprint 3)
+
+**Agente:** opencode (leader orquesta: spec_author, implementer, reviewer)
+**Alcance:** Bug crítico donde tras 24h la sesión frontend no respetaba expiración del JWT. Implementado `useCurrentUser()` hook + `AuthGate` component + interceptor 401 + cierre del círculo del mensaje en `LoginPage`.
+
+**Completado:**
+- Backend: sin cambios (backend ya rechazaba JWT expirado correctamente).
+- Frontend: 7 NEW archivos + 13 EDIT. `verify.ps1 -Quick` PASA (68 BDD scenarios, 433 steps).
+- Hallazgos del primer review resueltos en auto-fix:
+  - AC1 cerrado: `LoginPage.tsx` consume `consumeSessionExpiredFlag` + toast.
+  - Test BDD añadido cubriendo el flujo end-to-end (5 escenarios BU-001).
+  - Doble `<AuthGate>` wrapping eliminado (`ProtectedLayout` + `FullBleedProtectedLayout`).
+  - Plan de split de `SidebarMenu.tsx` (227 líneas pre-existente) documentado como deuda técnica.
+- **Merge commit:** 947612f
+
+**Estado:** DONE.
