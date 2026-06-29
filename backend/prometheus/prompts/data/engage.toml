@@ -1,0 +1,132 @@
+[texto.1]
+defaults = { num_panels = 5 }
+template = '''
+[ROL] Guionista de cómics educativos.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Guion de ${num_panels} viñetas con el robot "Max" que enganche al estudiante con "${concept}". Elige una analogía cotidiana concreta que capture fielmente la idea central de "${concept}" y construye una historia con progresión hacia un clímax que despierte curiosidad. Cada viñeta: descripcion_visual (≤25 palabras), dialogo (≤18 palabras), prompt_imagen (en inglés, estilo cartoon plano).
+[RESTRICCIONES] Sin jerga técnica en los diálogos. Humor empático. La analogía debe reflejar de verdad cómo funciona "${concept}".
+[SALIDA] JSON puro sin markdown: array de ${num_panels} objetos con claves "numero","descripcion_visual","dialogo","prompt_imagen".'''
+
+[texto.2]
+defaults = { duration_seconds = 40 }
+template = '''
+[ROL] Guionista audiovisual de EdTech.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Video de apertura de ${duration_seconds} s sobre "${concept}". Genera: guion_visual con marcadores de tiempo cada 10 s y metáforas cotidianas apropiadas al tema; narracion_voz ≤70 palabras que cierra con una pregunta abierta; prompt_video en inglés ≤90 palabras para un generador de video.
+[RESTRICCIONES] Sin términos técnicos en guion ni narración. Tono cinematográfico.
+[SALIDA] JSON puro sin markdown con claves "guion_visual","narracion_voz","prompt_video".'''
+
+[texto.3]
+defaults = { word_count = 110 }
+template = '''
+[ROL] Productor de micro-podcasts educativos.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Monólogo narrativo de ${word_count} palabras aproximadamente donde el narrador ES "${concept}" hablando en primera persona. Estructura: situación → tensión → pregunta abierta final. Apóyate en una imagen mental concreta y fiel al tema.
+[RESTRICCIONES] Sin matemática abstracta. Tono íntimo y reflexivo. Puntuación clara para pausas de lectura por voz.
+[SALIDA] Solo el texto del monólogo en español, sin etiquetas ni JSON.'''
+
+[texto.4]
+defaults = { num_rounds = 3 }
+template = '''
+[ROL] Diseñador de minijuegos educativos cronometrados.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Minijuego de ${num_rounds} rondas (30 s c/u) que haga sentir la intuición central de "${concept}". Diseña una mecánica de "detectar o elegir" apropiada al tema: cada ronda muestra un caso concreto con varias opciones, una de las cuales es la correcta. Dificultad creciente. Cada ronda: enunciado, items (lista de 3-6 opciones), respuesta_correcta (el item correcto), feedback_correcto e feedback_incorrecto (≤14 palabras).
+[RESTRICCIONES] Sin jerga técnica. La mecánica debe conectar de forma genuina con "${concept}".
+[SALIDA] JSON puro con clave "rondas": array de ${num_rounds} objetos con "ronda","enunciado","items","respuesta_correcta","feedback_correcto","feedback_incorrecto".'''
+
+[texto.5]
+defaults = { num_options = 3 }
+template = '''
+[ROL] Redactor de casos de ética en IA.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] caso_narrativo de 130 palabras sobre una empresa ficticia donde el uso de "${concept}" produce una consecuencia ética no intencionada y plausible; pregunta_posicion directa; opciones (array de ${num_options} strings); reflexion_post_voto de 60 palabras que amplía el dilema sin dar una respuesta correcta.
+[RESTRICCIONES] Empresa ficticia. Tono periodístico. La consecuencia debe derivarse de forma realista de cómo funciona "${concept}".
+[SALIDA] JSON puro con claves "caso_narrativo","pregunta_posicion","opciones","reflexion_post_voto".'''
+
+[texto.6]
+defaults = { body_words = 90 }
+template = '''
+[ROL] Periodista tecnológico especializado en IA.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Noticia ficticia plausible sobre un impacto real de "${concept}": titular ≤12 palabras; subtitulo ≤22 palabras; cuerpo_noticia de ${body_words} palabras (organización ficticia, caso concreto); pregunta_cierre ≤12 palabras.
+[RESTRICCIONES] Sin términos ultra-técnicos. Tono de urgencia informativa. Genera admiración, no miedo.
+[SALIDA] JSON puro con claves "titular","subtitulo","cuerpo_noticia","pregunta_cierre".'''
+
+[texto.7]
+defaults = { context_words = 70 }
+template = '''
+[ROL] Diseñador de aprendizaje basado en roles.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] El estudiante es consultor de IA en su primer día. contexto_rol de ${context_words} palabras (empresa de un sector concreto) donde "${concept}" resolvería un problema; pregunta_decision; opcion_A y opcion_B (cortas); feedback_A y feedback_B de 35 palabras (validan sin revelar la respuesta); pregunta_cierre ≤16 palabras.
+[RESTRICCIONES] No nombres explícitamente "${concept}" en el escenario. El feedback no revela la respuesta.
+[SALIDA] JSON puro con claves "contexto_rol","pregunta_decision","opcion_A","opcion_B","feedback_A","feedback_B","pregunta_cierre".'''
+
+[texto.8]
+defaults = { num_milestones = 4 }
+template = '''
+[ROL] Historiador de la tecnología.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Timeline de ${num_milestones} hitos reales (o muy plausibles) que llevaron al desarrollo de "${concept}". Cada hito: año, nombre, descripcion de 45 palabras en tono de crónica, dato_sorprendente (1 línea), conexion_actual de 18 palabras con la vida del estudiante hoy.
+[RESTRICCIONES] Hechos verídicos o altamente plausibles. Sin fórmulas. Cada hito ≤22 s de lectura.
+[SALIDA] JSON puro con clave "hitos": array de ${num_milestones} objetos con "año","nombre","descripcion","dato_sorprendente","conexion_actual".'''
+
+[texto.9]
+defaults = { num_puzzles = 3 }
+template = '''
+[ROL] Diseñador de escape rooms educativas digitales.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] ${num_puzzles} acertijos lógicos encadenados cuya lógica refleje la intuición de "${concept}" SIN usar su terminología técnica. Cada acertijo: escenario de 55 palabras, opcion_A, opcion_B, respuesta_correcta ("A" o "B"), explicacion_conexion de 22 palabras que revela el paralelismo con "${concept}".
+[RESTRICCIONES] Respuestas deducibles por lógica cotidiana. Tono de urgencia narrativa.
+[SALIDA] JSON puro con clave "acertijos": array de ${num_puzzles} objetos con "numero","escenario","opcion_A","opcion_B","respuesta_correcta","explicacion_conexion".'''
+
+[simulador]
+defaults = { num_controls = 1 }
+template = '''
+[ROL] Desarrollador front-end de simuladores educativos interactivos.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Un simulador HTML5 autocontenido para la fase ENGAGE que provoque curiosidad: el estudiante manipula algo y ve el efecto, descubriendo la intuición central de "${concept}".
+[TAREA] Diseña la mecánica interactiva más apropiada para "${concept}" (slider, lienzo clicable, arrastre, botones...). Debe incluir: ${num_controls} control(es) manipulable(s), una visualización que reacciona en tiempo real (SVG o canvas), retroalimentación visual del estado, y un texto breve que interpreta lo que ocurre. Un botón de cierre ("¿Qué descubriste?") visible tras explorar.
+[REQUISITOS] HTML5 autocontenido con todo CSS y JS embebido. Mínimo 280 líneas de calidad sin secciones vacías. Paleta oscura elegante (educativa oscura). El control manipulable debe responder en <50ms a la interacción.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al pulsar el botón de cierre.
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
+
+[html]
+estilo_default = 'página educativa moderna e interactiva'
+template = '''
+[ROL] Desarrollador front-end experto en recursos educativos interactivos.
+[CURSO] ${curso}
+[OBJETIVO] Construir un recurso HTML5 interactivo de la fase ENGAGE sobre "${concept}" que enganche al estudiante.
+[DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
+${data_json}
+[FORMATO] ${estilo}
+[REQUISITOS]
+- HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>.
+- Mínimo 280 líneas de calidad. Cada elemento debe ser funcional (navegación, botones, feedback, puntuación).
+- Paleta apropiada al tipo: cómic (clara vibrante), noticia (clara periodística), escape-room (oscura dramática),
+  podcast (UPAO: fondo claro #F7F9FC, primario #0A3D91, acento #F47A20), timeline (clara académica), juegos (clara con acentos).
+${ds}
+[IMAGENES] Si un item de los datos incluye un campo "image_placeholder" (por ejemplo "__IMG_1__"), úsalo literalmente como src del tag <img> correspondiente (por ejemplo: <img src="__IMG_1__" alt="...">). Si un item NO tiene "image_placeholder", NO inventes uno y NO incluyas <img> para ese item — renderiza solo texto. El servidor reemplaza los placeholders válidos por imágenes reales al renderizar.
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la actividad principal.
+[SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
+
+[html.estilos]
+1 = 'galería deslizable tipo cómic: tarjetas grandes de colores, bocadillos CSS, navegación prev/next con indicador de progreso'
+2 = 'storyboard vertical con marcadores de tiempo, narración en bloque de cita, prompt de video en una caja copiable'
+3 = 'reproductor de podcast con paleta UPAO (fondo #F7F9FC, textos #0A3D91, acentos #F47A20), visualizador de onda CSS animado y el monólogo en texto grande'
+4 = 'minijuego con cronómetro visual, panel de items cliqueables, puntuación dinámica y pantalla de resultados'
+5 = 'tarjeta periodística: caso narrativo, 3 botones de votación, revelación animada de la reflexión post-voto'
+6 = 'periódico digital: titular bold, columna de noticia, pregunta de cierre resaltada, botón Continuar al final'
+7 = 'interfaz ejecutiva oscura: escenario narrativo, 2 botones de decisión, revelación animada del feedback'
+8 = 'timeline horizontal con 4 nodos clicables que expanden su información; se completa al abrir los 4'
+9 = 'escape room: fondo oscuro, 3 candados SVG que se abren progresivamente, un escenario por pantalla, botones A/B'

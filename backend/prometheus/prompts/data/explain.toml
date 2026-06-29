@@ -1,0 +1,133 @@
+[texto.1]
+defaults = { num_markers = 4 }
+template = '''
+[ROL] Guionista de videos educativos teoricos.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Video teorico: guion_visual con ${num_markers} marcadores (cada 30 s) usando metaforas cotidianas; narracion_voz <=120 palabras tono divulgativo con pregunta reflexiva; prompt_video en ingles <=100 palabras para generador.
+[RESTRICCIONES] Sin formulas ni jerga densa. Metaforas visuales potentes.
+[SALIDA] JSON puro con claves "guion_visual","narracion_voz","prompt_video".'''
+
+[texto.2]
+defaults = { num_sections = 3 }
+template = '''
+[ROL] Redactor academico de lecturas guiadas.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Lectura de 250 palabras: introduccion (caso real), desarrollo (${num_sections} ideas centrales de "${concept}" con ejemplo cada una), cierre (aplicaciones). ${num_sections} preguntas intercaladas con respuesta modelo.
+[RESTRICCIONES] Lenguaje accesible sin formulas. Cada idea central <=70 palabras.
+[SALIDA] JSON puro con claves "introduccion","secciones" (array de ${num_sections} con idea,ejemplo,pregunta,respuesta),"cierre".'''
+
+[texto.4]
+defaults = { num_questions = 6 }
+template = '''
+[ROL] Curador de contenido educativo interactivo.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] FAQ de ${num_questions} preguntas genuinas sobre "${concept}". Cada una: pregunta en lenguaje estudiantil, respuesta <=60 palabras con analogia, etiqueta (principiante/intermedio/avanzado), categoria.
+[RESTRICCIONES] Preguntas genuinas no retoricas. Respuestas que iluminan sin clase magistral.
+[SALIDA] JSON puro con clave "faqs": array de ${num_questions} objetos con "pregunta","respuesta","etiqueta","categoria".'''
+
+[texto.6]
+defaults = { num_terms = 8 }
+template = '''
+[ROL] Lexicografo visual de conceptos de ML.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Glosario de ${num_terms} terminos de "${concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras del mundo real.
+[RESTRICCIONES] Definiciones autocontenidas. Iconos distintos entre si.
+[SALIDA] JSON puro con clave "terminos": array de ${num_terms} objetos con "termino","definicion","icono_sugerido","ejemplo_concreto".'''
+
+[texto.7]
+defaults = { num_milestones = 5 }
+template = '''
+[ROL] Historiador de la ciencia de datos.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Timeline de ${num_milestones} hitos historicos reales de "${concept}". Cada hito: anio, titulo <=25 chars, descripcion 40 palabras tono cronica, dato_curioso, legado_actual 20 palabras.
+[RESTRICCIONES] Hechos verificables, sin mitos. Conexion logica entre hitos.
+[SALIDA] JSON puro con clave "hitos": array de ${num_milestones} objetos con "anio","titulo","descripcion","dato_curioso","legado_actual".'''
+
+[texto.9]
+defaults = { num_dimensions = 4 }
+template = '''
+[ROL] Analista comparativo de tecnologias de ML.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[TAREA] Tabla comparativa de "${concept}" vs 3 conceptos relacionados. ${num_dimensions} dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.
+[RESTRICCIONES] Comparaciones objetivas y medibles. Sin sesgo. Dimensiones que diferencien.
+[SALIDA] JSON puro con claves "dimensiones" (array de ${num_dimensions}) y "comparaciones" (array de 3 con concepto,valores,balance).'''
+
+[codigo.3]
+defaults = { num_nodes = 7 }
+template = '''
+[ROL] Desarrollador front-end de mapas conceptuales interactivos.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Mapa conceptual HTML5 donde el estudiante explore visualmente subtemas y relaciones de "${concept}".
+[TAREA] Grafo SVG con ${num_nodes} nodos clave de "${concept}", conexiones etiquetadas, nodos expandibles al clic con definicion breve, leyenda de colores y boton "Explorar todo". Nodos SVG reales con <text>.
+[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al explorar todos los nodos.
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
+
+[codigo.5]
+defaults = { num_steps = 5 }
+template = '''
+[ROL] Desarrollador front-end de demostraciones animadas educativas.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Demo animada HTML5 que ilustre paso a paso el funcionamiento de "${concept}".
+[TAREA] Animacion SVG/canvas con escena inicial, controles play/pause/step, ${num_steps} pasos progresivos, texto explicativo por paso y boton "Repetir". requestAnimationFrame.
+[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() tras completar todos los pasos.
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
+
+[codigo.8]
+defaults = { num_blocks = 5 }
+template = '''
+[ROL] Desarrollador front-end de diagramas de framework educativo.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Diagrama HTML5 que muestre la arquitectura o taxonomia de "${concept}" como framework visual.
+[TAREA] Diagrama SVG con ${num_blocks} bloques jerarquicos de "${concept}", flechas de flujo, tooltips al hover, zoom/reset y leyenda. SVG con viewBox + preserveAspectRatio.
+[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al explorar todos los tooltips.
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
+
+[codigo.10]
+defaults = { num_sections = 5 }
+template = '''
+[ROL] Desarrollador front-end de infografias interactivas.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Infografia HTML5 que comunique la esencia y datos clave de "${concept}".
+[TAREA] ${num_sections} secciones reveladas progresivamente con iconos SVG, dato impactante por seccion, barra de progreso y boton "Ver resumen" final. Animaciones de entrada.
+[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al llegar a la seccion final.
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
+
+[html]
+estilo_default = 'pagina educativa interactiva moderna'
+template = '''
+[ROL] Desarrollador front-end experto en recursos educativos interactivos.
+[CURSO] ${curso}
+[OBJETIVO] Construir un recurso HTML5 de la fase EXPLAIN sobre "${concept}" que explique con claridad.
+[DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
+${data_json}
+[FORMATO] ${estilo}
+[REQUISITOS] HTML5 autocontenido: CSS en <style>, JS en <script>. Minimo 300 lineas de calidad. Navegacion, filtros, feedback y animaciones funcionales. Paleta educativa clara.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la exploracion.
+[SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
+
+[html.estilos]
+1 = 'storyboard de video: guion visual con bloques temporales, narracion estilizada, prompt video en caja copiable'
+2 = 'lectura guiada: texto con secciones expandibles, preguntas con toggle de respuesta, disenio articulo academico'
+4 = 'FAQ interactivo: acordeon con tags de categoria, barra de filtro, contador de preguntas exploradas'
+6 = 'glosario visual: grid de tarjetas con emoji grande, definicion y ejemplo, filtro por categoria, expandir/colapsar'
+7 = 'timeline horizontal: 5 nodos conectados, clic expande descripcion, barra de progreso, navegacion prev/next'
+9 = 'tabla comparativa: columnas responsivas, iconos ventaja/desventaja, tooltips, toggle de dimensiones'
