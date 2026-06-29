@@ -82,15 +82,8 @@ def _chat(
     elif provider == "opencode":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = opencode_client.with_options(**opts) if opts else opencode_client
-        call_extra = dict(extra)
-        # Los modelos DeepSeek "thinking" (p.ej. deepseek-v4-pro) gastan el
-        # presupuesto de tokens en reasoning y devuelven `content` vacío en
-        # prompts largos (código) → EmptyContentError. Desactivar el thinking
-        # salvo override explícito hace que emitan la respuesta en `content`.
-        if "deepseek" in model_id and "extra_body" not in call_extra:
-            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
         )
     elif provider == "huggingface":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
@@ -99,17 +92,18 @@ def _chat(
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = openrouter_client.with_options(**opts) if opts else openrouter_client
-        call_extra = dict(extra)
-        if "deepseek" in model_id and "extra_body" not in call_extra:
-            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
         )
-    content = r.choices[0].message.content if r.choices else None
+    msg = r.choices[0].message if r.choices else None
+    content = (msg.content if msg else None) or None
     if not content or not content.strip():
-        # Some reasoning models return reasoning_content separately and leave
-        # `content` empty; treat that as a recoverable failure so the fallback
-        # chain advances to the next model.
+        # Thinking/reasoning models (e.g. deepseek-v4-flash) may return the
+        # final answer in reasoning_content and leave content empty. Use it as
+        # fallback so thinking stays enabled and quality is preserved.
+        reasoning = getattr(msg, "reasoning_content", None) if msg else None
+        content = reasoning if reasoning and reasoning.strip() else None
+    if not content:
         raise EmptyContentError(f"Empty content from {provider}/{model_id}")
     return content
 
