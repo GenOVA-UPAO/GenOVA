@@ -95,7 +95,7 @@ CATALOG_ENTRIES = [
         "task": "texto",
         "pricing": None,
         "context_length": None,
-        "active": False,
+        "active": True,
         "modality": "text",
     },
     {

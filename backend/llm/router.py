@@ -99,8 +99,11 @@ def _chat(
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = openrouter_client.with_options(**opts) if opts else openrouter_client
+        call_extra = dict(extra)
+        if "deepseek" in model_id and "extra_body" not in call_extra:
+            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
     content = r.choices[0].message.content if r.choices else None
     if not content or not content.strip():
