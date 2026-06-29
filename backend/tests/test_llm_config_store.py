@@ -111,11 +111,13 @@ class _FakeClient:
         return type("R", (), {"choices": [choice]})()
 
 
-def test_opencode_deepseek_injects_thinking_disabled(monkeypatch):
+def test_opencode_deepseek_thinking_not_disabled(monkeypatch):
+    # Thinking must stay ENABLED on deepseek — quality depends on it.
+    # reasoning_content fallback in router handles empty content responses.
     sink = {}
     monkeypatch.setattr(router, "opencode_client", _FakeClient(sink))
     router._chat("opencode", "deepseek-v4-pro", "hola", 100, {}, None)
-    assert sink["extra_body"] == {"thinking": {"type": "disabled"}}
+    assert "extra_body" not in sink
 
 
 def test_opencode_non_deepseek_no_injection(monkeypatch):
