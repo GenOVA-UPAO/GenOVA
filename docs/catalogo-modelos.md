@@ -312,4 +312,3 @@ POST /api/admin/refresh-catalog
 - [Workspace de edición de OVA](workspace.md) — donde se usan los modelos asignados
 - [Pipeline de generación 5E](generacion-5e.md) — cómo se invocan los modelos en cada fase
 - [API reference](api.md) — todos los endpoints REST
-- [Labs — Iteración de prompts](labs.md) — interfaz de prueba de modelos y prompts

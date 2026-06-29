@@ -104,12 +104,12 @@ De paso se eliminó duplicación (modularidad): `FileChip` y `useOvaUploads` aho
 
 **Reorganización por concern** (los módulos sueltos de `core/lib/` se agruparon en carpetas):
 `core/lib/http/` (`client`, `queryClient`), `core/lib/auth/` (`me`, `permissions`, `roleUtils`),
-`core/lib/observability/` (`sentry`), `core/lib/motion/` (`motionFeatures`). `labQuality` se movió
-a `features/labs/lib/` (es dominio de Labs, no infra transversal). `utils.ts` (helper `cn`) se
-mantiene en la raíz de `core/lib` por convención de shadcn. `components.json` alineado a `@/core/*`.
+`core/lib/observability/` (`sentry`), `core/lib/motion/` (`motionFeatures`). `utils.ts` (helper
+`cn`) se mantiene en la raíz de `core/lib` por convención de shadcn. `components.json` alineado a
+`@/core/*`.
 
-**Capa `services/` migrada a TypeScript** (18 servicios: auth, verification, llmSettings, adminUsers,
-analytics, labs, userLinks, ovaHistory, ovaCreation, ovaEdit, ovaSettings, resourceConfigs, upload,
+**Capa `services/` migrada a TypeScript** (17 servicios: auth, verification, llmSettings, adminUsers,
+analytics, userLinks, ovaHistory, ovaCreation, ovaEdit, ovaSettings, resourceConfigs, upload,
 phaseService). Más dedup de modularidad: los **5 phase services idénticos** (`engageService`…
 `evaluateService`) se colapsaron en un único `phaseService.ts` genérico parametrizado por fase; y
 `ovaSettingsService` extrajo el patrón repetido a helpers `getJson`/`putJson`.

@@ -89,6 +89,7 @@
     { "id": "EN-020", "name": "observabilidad-logfire", "title": "Observabilidad con Pydantic Logfire", "spec": "sdd/specs/EN-020_observabilidad-logfire.md", "status": "done" },
     { "id": "EN-021", "name": "error-boundaries-redaccion-pii", "title": "Error boundaries (frontend) y redacción de PII en logs (backend)", "spec": "sdd/specs/EN-021_error-boundaries-redaccion-pii.md", "status": "done" },
     { "id": "EN-022", "name": "vitest-typescript", "title": "Tests de componente (Vitest) y adopción de TypeScript", "spec": "sdd/specs/EN-022_vitest-typescript.md", "status": "in_progress" },
+    { "id": "EN-023", "name": "deprecacion_labs", "title": "Deprecación completa del módulo Labs (sandbox de prompts)", "spec": "", "status": "done" },
 
     { "id": "RN-001", "name": "latencia_278ms", "title": "Latencia ≤ 278 ms", "spec": "", "status": "pending" },
     { "id": "RN-002", "name": "tiempo_generacion", "title": "Tiempo de generación ≤ 180 segundos", "spec": "sdd/specs/RN-002_tiempo-generacion-180s.md", "status": "done" },

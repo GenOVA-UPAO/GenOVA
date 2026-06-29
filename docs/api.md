@@ -88,21 +88,6 @@ Backend FastAPI de GenOVA. Todos los endpoints cuelgan de la base configurada en
 > Detalle del pipeline, tipos de recurso y cadena de fallback LLM en
 > [generacion-5e.md](generacion-5e.md).
 
-## Labs — sandbox de prompts (`/api/labs`, solo admin)
-
-| Método | Ruta | Propósito | Auth | Rate-limit |
-|---|---|---|---|---|
-| GET | `/api/labs/models` | Modelos LLM disponibles para experimentos | admin | — |
-| GET | `/api/labs/prompts/{phase}/{resource_type}` | Plantilla base de prompt de un recurso | admin | — |
-| POST | `/api/labs/generate` | Lanza job multi-modelo (1–3 configs) | admin | 5/min |
-| GET | `/api/labs/generate/{job_id}/results` | Poll de resultados del job | admin | — |
-| POST | `/api/labs/improve-prompt` | Mejora el prompt ganador vía LLM orquestador | admin | 10/min |
-| GET | `/api/labs/results` | Resultados recientes (filtrables por fase/tipo) | admin | — |
-| PATCH | `/api/labs/results/{result_id}/select` | Marca un resultado como ganador | admin | — |
-| GET | `/api/labs/results/{result_id}/scorm` | Exporta un resultado como SCORM | admin | — |
-
-> Doc funcional de Labs: [labs.md](labs.md).
-
 ## RAG (`/api/rag`)
 
 | Método | Ruta | Propósito | Auth | Rate-limit |

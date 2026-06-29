@@ -65,11 +65,6 @@ const NotFoundPage = lazy(() =>
     default: m.NotFoundPage,
   })),
 )
-const LabsPage = lazy(() =>
-  import('@/features/labs/pages/LabsPage.tsx').then((m) => ({
-    default: m.LabsPage,
-  })),
-)
 const OvaWorkspacePage = lazy(() =>
   import('@/features/ova_workspace/pages/OvaWorkspacePage.tsx').then((m) => ({
     default: m.OvaWorkspacePage,
@@ -181,7 +176,6 @@ function App() {
                   path="/admin/platform"
                   element={<Navigate to="/modelos" replace />}
                 />
-                <Route path="/admin/labs" element={<LabsPage />} />
               </Route>
             </Route>
             <Route element={<AppLayout fullBleed />}>

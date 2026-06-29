@@ -1,6 +1,6 @@
 // Datos estáticos, variantes de animación y tarjetas del Dashboard.
 // Extraído de DashboardPage para mantener archivos ≤200 líneas.
-import { Flask, ShieldCheck, Users } from '@phosphor-icons/react'
+import { ShieldCheck, Users } from '@phosphor-icons/react'
 import type { Variants } from 'motion/react'
 
 export interface AdminCard {
@@ -17,17 +17,12 @@ export const ADMIN_CARDS: AdminCard[] = [
     title: 'Roles',
     desc: 'Permisos y perfiles del sistema.',
   },
+  
   {
     to: '/admin/users',
     icon: Users,
     title: 'Usuarios',
     desc: 'Cuentas, estado y rol activo.',
-  },
-  {
-    to: '/admin/labs',
-    icon: Flask,
-    title: 'Labs',
-    desc: 'Comparacion de modelos y prompts.',
   },
 ]
 

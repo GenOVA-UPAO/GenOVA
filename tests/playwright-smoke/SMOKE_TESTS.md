@@ -55,12 +55,12 @@ A-3   playwright-cli cookie-list
 A-4   playwright-cli requests → buscar GET /api/auth/me → status 200
       playwright-cli response-body <N> → body.role === "administrador"
 
-A-5   Sidebar: sección "Administracion" visible con links Roles / Usuarios / Labs
+A-5   Sidebar: sección "Administracion" visible con links Roles / Usuarios
       Sidebar: profile card muestra "AG", "Administrador GenOVA", "Admin", "admin@genova.ai"
 
 A-6   Dashboard: stats "OVAs Creadas: 26", "En Progreso: 0", "Listas: 6"
       Actividad reciente: al menos 4 OVAs listados con link "Editar"
-      Panel de administración: tarjetas Roles / Usuarios / Labs visibles
+      Panel de administración: tarjetas Roles / Usuarios visibles
 ```
 
 **PASS si:** A-2 llega a /dashboard, A-3 cookie presente, A-4 role=administrador, A-5 sidebar admin.
@@ -78,11 +78,10 @@ B-1   playwright-cli fill <correo> "user@genova.ai"
       → URL /dashboard, heading "Bienvenido, Usuario"
 
 B-2   Sidebar: "U", "Usuario GenOVA", "usuario" en card perfil
-      Sidebar: sin sección "Administracion" (ni Roles ni Usuarios ni Labs)
+      Sidebar: sin sección "Administracion" (ni Roles ni Usuarios)
 
 B-3   playwright-cli goto /admin/users → redirige a /dashboard (403/redirect)
       playwright-cli goto /admin/roles → redirige a /dashboard
-      playwright-cli goto /admin/labs  → redirige a /dashboard
 ```
 
 **PASS si:** B-2 sin sección admin, B-3 todos redirigen.
@@ -166,7 +165,6 @@ E-4   Sidebar: "TS", "Test Smoke User", "usuarios_prueba" (rol auto-asignado)
 
 E-5   playwright-cli goto /admin/users → redirige a /dashboard
       playwright-cli goto /admin/roles → redirige a /dashboard
-      playwright-cli goto /admin/labs  → redirige a /dashboard
 
 E-6   playwright-cli goto /crear-ova → accesible (status 200, formulario visible)
       playwright-cli goto /mis-ovas   → accesible (Biblioteca de OVAs)
@@ -223,7 +221,7 @@ G-3   Actividad reciente: lista ≥ 1 OVA con título, fecha, autor, badge estad
 
 G-4   Cada OVA en actividad reciente tiene link "Editar" → /ova/:id/workspace
 
-G-5   Panel de administración (solo admin): tarjetas Roles, Usuarios, Labs
+G-5   Panel de administración (solo admin): tarjetas Roles, Usuarios
       Click en tarjeta "Usuarios" → navega a /admin/users
 
 G-6   Botón "Crear OVA" en header → /crear-ova
@@ -626,48 +624,6 @@ S-8   Cambiar rol de un usuario no-admin via tabla → PATCH → 200 → tabla a
 
 ---
 
-## Bloque T — Admin: Labs de iteración de prompts
-
-**Objetivo:** el sandbox de prompts permite comparar modelos.
-
-```
-T-1   playwright-cli goto /admin/labs
-      heading "🧪 Labs — Iteración de Prompts"
-      Sección "Selección de Recurso" con dos sub-grupos: Fase ENGAGE y Fase EXPLORE
-
-T-2   Fase ENGAGE (10 recursos): Cómic Interactivo, Video Opening, Micro-Podcast,
-      Juego de Gamificación, Dilema Ético, Noticia de Impacto, Juego de Roles,
-      Timeline Interactivo, Escape Room Virtual, Simulador Intuitivo
-      Fase EXPLORE (10 recursos): igual que en Crear OVA
-
-T-3   Click en recurso → sección "Configuración de prueba" aparece:
-      textbox concepto (ej: "Redes Neuronales")
-      combobox Modelo 1, combobox Modelo 2
-      botón "▶ Generar" (disabled hasta concept + ≥1 modelo)
-
-T-4   Modelos disponibles (Modelo 1):
-      Llama 3.3 70B Versatile, Llama 3.1 8B Instant, Gemma 2 9B, Qwen QwQ 32B,
-      GPT-OSS 120B, Qwen3 Coder (free), Gemma 3 27B (free),
-      Llama 3.3 70B OR (free), DeepSeek R1 (free)
-      (Modelo 2 puede ser el mismo u otro para comparación paralela)
-
-T-5   Sección "Editor del Prompt": textbox con prompt base pre-cargado
-      Template incluye [ROL], [CURSO], [CONCEPTO], {concept}, instrucciones detalladas
-      Editable antes de generar
-
-T-6   Llenar concept + seleccionar ≥1 modelo → botón "▶ Generar" habilitado
-      Click Generar → POST endpoint → response streamed o polling
-      Sección "Resultados de la Comparación" muestra output
-
-T-7   Con dos modelos seleccionados: resultados en columnas lado a lado
-      Botón para marcar ganador + copiar HTML generado
-      Botón "Exportar como SCORM" en resultado ganador
-```
-
-**PASS si:** T-2 recursos listados, T-4 modelos disponibles, T-5 prompt editable, T-6 generar habilitado.
-
----
-
 ## Bloque U — Apariencia / Tema
 
 **Objetivo:** el selector de apariencia funciona y persiste.
@@ -741,7 +697,6 @@ W-5   Sidebar click "Modelos"     → badge "AG / Admin" persiste
 W-6   Sidebar click "Vincular"    → badge "AG / Admin" persiste
 W-7   Sidebar click "Roles"       → badge "AG / Admin" persiste
 W-8   Sidebar click "Usuarios"    → badge "AG / Admin" persiste
-W-9   Sidebar click "Labs"        → badge "AG / Admin" persiste
 W-10  Sidebar click link perfil   → heading "Administrador GenOVA" visible
 W-11  Sidebar click "Dashboard"   → badge "AG / Admin" persiste
 W-12  En workspace /ova/:id/workspace (via Editar) → badge "AG / Admin" persiste
@@ -801,13 +756,12 @@ X-7   Acceso /dashboard sin sesión → redirige a /login
 | Q | Vincular cuentas | 5 | P2 |
 | R | Admin Roles | 6 | P1 |
 | S | Admin Usuarios | 8 | P1 |
-| T | Admin Labs | 7 | P1 |
 | U | Apariencia | 4 | P2 |
 | V | Bug rol en reload | 5 | P0 (regresión) |
-| W | Navegación anti-regresión | 12 | P0 |
+| W | Navegación anti-regresión | 11 | P0 |
 | X | Producción post-merge | 7 | P0 |
 
-**Total: 155 tests documentados.**
+**Total: 148 tests documentados.**
 
 ---
 
@@ -858,7 +812,6 @@ tests/playwright-smoke/screenshots/
 ├── L-recurso-selector.png     # Modal selección recursos con 10 opciones
 ├── R-roles-list.png           # Lista de roles admin
 ├── S-users-table.png          # Tabla usuarios con fila TÚ protegida
-├── T-labs-comparison.png      # Labs con dos modelos y resultados
 ├── V-bug-rol-reload.png       # Bug: sidebar "U" tras goto directo como admin
 └── X-prod-health.png          # Health check backend prod
 ```

@@ -81,21 +81,6 @@ El modelo ORM (SQLAlchemy 2) vive en `backend/models.py`.
 - `token` VARCHAR(255) **único**
 - `created_at` / `expires_at` TIMESTAMPTZ
 
-### `lab_results`
-- `id` UUID **PK**
-- `phase` VARCHAR(20) — `engage` / `explore`
-- `resource_type` INTEGER — 1–10
-- `concept` VARCHAR(500)
-- `prompt_text` TEXT
-- `model_id` VARCHAR(100) · `provider` VARCHAR(50) (`groq`/`openrouter`)
-- `html_content` TEXT, nullable
-- `raw_json` **JSONB**, nullable
-- `quality_checks` **JSONB**, nullable
-- `was_selected` BOOLEAN (default false)
-- `generation_ms` INTEGER, nullable · `error_message` TEXT, nullable
-- `created_at` TIMESTAMPTZ · `created_by` UUID **FK→users.id**, nullable
-- **Índice**: `idx_lab_results_lookup (phase, resource_type, created_at DESC)`
-
 ### `rag_chunks`
 - `id` UUID **PK**
 - `user_id` UUID **FK→users.id** ON DELETE CASCADE, indexado

@@ -24,8 +24,6 @@ from core.database import Base, engine
 from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
-from labs.generation_routes import router as labs_gen_router
-from labs.router import router as labs_router
 from llm.catalog.catalog_router import router as agents_router
 from ova.crud.edit_router import router as ova_edit_router
 from ova.crud.subelement_router import router as ova_subelement_router
@@ -54,7 +52,7 @@ for _handler in logging.getLogger().handlers:
     _handler.addFilter(RedactingFilter())
 logger = logging.getLogger(__name__)
 _LATENCY_THRESHOLD_MS = settings.latency_threshold_ms
-_LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save", "/api/labs/generate")
+_LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save")
 
 # Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
 if settings.sentry_dsn:
@@ -285,7 +283,5 @@ app.include_router(ova_subelement_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(users_router, prefix="/api/users", tags=["Users"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["RAG"])
-app.include_router(labs_router, prefix="/api/labs", tags=["Labs"])
-app.include_router(labs_gen_router, prefix="/api/labs", tags=["Labs"])
 app.include_router(platform_settings_router, prefix="/api/admin", tags=["Admin"])
 app.include_router(nodes_config_router, prefix="/api/admin", tags=["Admin"])

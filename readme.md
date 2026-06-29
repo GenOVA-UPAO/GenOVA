@@ -34,7 +34,6 @@ genera/actualiza el agente `doc_author`):
 | [docs/generacion-5e.md](docs/generacion-5e.md) | Pipeline 5E, 10 tipos de recurso, fallback LLM, validador HTML |
 | [docs/deployment.md](docs/deployment.md) | Deploy cloud (Vercel/Render/Supabase) + **referencia completa de env vars** |
 | [docs/testing.md](docs/testing.md) | Estrategia BDD (unit/backend/e2e) + CI |
-| [docs/labs.md](docs/labs.md) | Sandbox de iteración de prompts (admin) |
 
 ## Harness Engineering + SDD
 
@@ -449,7 +448,6 @@ GenOVA/
 │   ├── auth/                # Login, registro, JWT, reset-password + SMTP
 │   ├── ova/                 # Save, listado, edición, regeneración, papelera, duplicar
 │   ├── agents/              # 5E: ENGAGE + EXPLORE + LLM router + audio helpers + HF images + podcast
-│   ├── labs/                # Sandbox de iteración de prompts (admin)
 │   ├── rag/                 # Ingesta + retrieval pgvector (multimodal Gemini)
 │   ├── roles/               # CRUD de roles y permisos (JSONB)
 │   ├── users/               # Perfil propio + administración de usuarios
@@ -460,11 +458,10 @@ GenOVA/
 │   ├── rate_limit.py        # SlowAPI shared limiter
 │   ├── security.py          # bcrypt + JWT + dummy-hash timing defense
 │   ├── main.py              # Entry point (CORS, logging, lifespan, registro de routers)
-│   ├── seed.py              # Roles + usuarios de prueba
-│   └── tools/prompt_lab.py  # Utilidad CLI para probar prompts (fuera de la API)
+│   └── seed.py              # Roles + usuarios de prueba
 ├── scorm-template/          # Plantilla base SCORM
 ├── deploy/                  # Nginx para producción
-├── docs/                    # Referencia profunda (api, database, generacion-5e, deployment, testing, labs)
+├── docs/                    # Referencia profunda (api, database, generacion-5e, deployment, testing)
 │   └── README.md            # Índice de docs (mantenido por doc_author)
 ├── CLAUDE.md                # Guía para Claude Code (contexto detallado del repo)
 ├── .editorconfig            # Estilo universal (LF, UTF-8, 2/4 spaces)
@@ -473,7 +470,7 @@ GenOVA/
 
 ## Convenciones de código
 
-- **Máx 200 líneas por archivo** (frontend Biome hard error, backend convención). Única excepción: `backend/tools/prompt_lab.py` (CLI manual, fuera de la API).
+- **Máx 200 líneas por archivo** (frontend Biome hard error, backend convención).
 - **Capa de servicios separada de hooks y páginas**: `services/*.js` hace `fetch`, `hooks/*.js` mantiene estado, `pages/*.jsx` solo orquesta layout.
 - **Mobile-first**: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
 
@@ -486,7 +483,6 @@ GenOVA/
 - **Administración (solo `administrador`)**:
   - `/admin/roles` — CRUD de roles y sus permisos (JSONB), con flujo de "eliminar y reasignar".
   - `/admin/users` — listado de usuarios y asignación de roles.
-  - `/admin/labs` — sandbox de prompts: edita, ejecuta contra 1–2 modelos en paralelo, compara, marca ganadores, exporta como SCORM, pide al LLM una versión mejorada del prompt.
 
 ## Cómo funciona la generación (5E)
 
@@ -516,7 +512,6 @@ rol `administrador` (verificado contra `/api/auth/me`).
 | `/metodologia/engage`, `/metodologia/explore` | Vistas 5E | Protegido |
 | `/admin/roles` | CRUD de roles y permisos | Admin |
 | `/admin/users` | Gestión de usuarios | Admin |
-| `/admin/labs` | Sandbox de prompts | Admin |
 
 ## Endurecimiento de seguridad
 

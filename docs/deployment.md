@@ -140,7 +140,6 @@ cp frontend/.env.example frontend/.env
 | `SMTP_PORT` | 465 | | Puerto SMTP |
 | `SMTP_USER` | — | | Cuenta de envío (si falta → `EmailNotConfigured`) |
 | `SMTP_PASSWORD` | — | | App Password de Gmail (sin espacios) |
-| `LABS_MAX_WORKERS` | 4 | | Workers concurrentes para jobs de Labs |
 | `REDIS_URL` | — | | Cola **arq** (jobs de generación durables) + **rate-limit distribuido** + storage de slowapi. Sin él: runner inline en thread + rate-limit en memoria. Soporta `rediss://` (Upstash) |
 | `ARQ_MAX_JOBS` | 4 | | Jobs de generación en paralelo que procesa un worker arq |
 | `LOGFIRE_TOKEN` | — | | Activa **Pydantic Logfire** (tracing distribuido + token/cost de LLM). Sin él: no-op (como Sentry) |

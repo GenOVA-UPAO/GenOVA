@@ -14,7 +14,7 @@
 
 ## C3 — Límite de líneas respetado (NO aplica a archivos de test)
 - [ ] Ningún archivo en `frontend/src/` supera 200 líneas
-- [ ] Ningún archivo en `backend/` supera 200 líneas (excepción: `backend/tools/prompt_lab.py`)
+- [ ] Ningún archivo en `backend/` supera 200 líneas
 - [ ] **Exentos del límite**: archivos de test (`backend/tests/**`, `tests/**`, `test_*.py`, `*_test.py`, `*.test.*`, `*.steps.*`)
 
 ## C4 — Seguridad básica

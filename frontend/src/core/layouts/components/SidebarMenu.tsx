@@ -1,6 +1,5 @@
 import {
   ChartBar,
-  Flask,
   FolderOpen,
   Gear,
   House,
@@ -42,7 +41,6 @@ const ICONS: Record<string, Icon> = { House, FolderOpen, PlusSquare }
 const ADMIN_LINKS = [
   { to: '/admin/roles', label: 'Roles', icon: ShieldCheck },
   { to: '/admin/users', label: 'Usuarios', icon: Users },
-  { to: '/admin/labs', label: 'Labs', icon: Flask },
 ]
 const CONFIG_LINKS = [{ to: '/modelos', label: 'Modelos', icon: Gear }]
 
