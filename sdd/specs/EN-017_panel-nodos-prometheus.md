@@ -1,7 +1,7 @@
 # EN-017 — Panel de Nodos/Agentes Prometheus + Nodo Video + Nodo Imágenes
 
 > Spec completo entregado inline en el prompt de implementación (EN-017).
-> Detalle de implementación y trazabilidad en `sdd/progress/impl_panel-nodos-prometheus.md`.
+> Detalle de implementación y trazabilidad en `sdd/progress/implementados/impl_panel-nodos-prometheus.md`.
 
 ## Resumen
 

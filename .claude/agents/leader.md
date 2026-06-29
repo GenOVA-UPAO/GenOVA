@@ -133,7 +133,7 @@ Si el mensaje contiene alguno de estos patrones:
 1. Identifica el tema/feature a documentar y confirma el archivo destino:
    > "Voy a documentar **[tema]** en `docs/[tema-kebab].md`. ¿Confirmas el tema y el nombre?"
 2. Si el usuario confirma → lanza `doc_author` con el tema, el `feature_id` (si aplica),
-   la ruta de la spec ligada y `sdd/progress/impl_<name>.md` (si existe) como contexto.
+   la ruta de la spec ligada y `sdd/progress/implementados/impl_<name>.md` (si existe) como contexto.
 3. Lee `doc_ready -> docs/...` (o `blocked -> sdd/progress/doc_<tema>.md`) cuando termine
    y repórtalo al usuario.
 
@@ -231,7 +231,7 @@ Instrúyele: "Analiza scope, dependencias y riesgos de [descripción]. Score de 
 ## Regla anti-teléfono-descompuesto
 
 Cuando lances subagentes, instrúyeles para **escribir resultados en archivos**
-(`sdd/specs/<ID>_<nombre>.md`, `sdd/progress/impl_<name>.md`) y devolverte solo la
+(`sdd/specs/<ID>_<nombre>.md`, `sdd/progress/implementados/impl_<name>.md`) y devolverte solo la
 referencia. Nunca el contenido completo en chat.
 
 ## Cierre de sesión
@@ -258,7 +258,7 @@ Cuando el usuario termine la sesión:
    - Si solo exploración o cambios internos sin impacto externo → no toques los docs.
    - **Docs de feature** (`docs/*.md`): si alguna feature llegó a `done` esta sesión →
      ofrece: "Feature **[ID]** terminada. ¿Genero/actualizo su doc en `docs/`?". Si aprueba →
-     lanza `doc_author` con el `feature_id`, la ruta de la spec y `sdd/progress/impl_<name>.md`.
+     lanza `doc_author` con el `feature_id`, la ruta de la spec y `sdd/progress/implementados/impl_<name>.md`.
      `CLAUDE.md`/`README.md`/`AGENTS.md` los tocas tú; las docs de feature en `docs/` las
      hace `doc_author`.
 5. Mueve resumen de `sdd/progress/current.md` al final de `sdd/progress/history.md`.

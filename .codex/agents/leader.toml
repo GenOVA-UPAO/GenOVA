@@ -9,7 +9,7 @@ nunca implementar.\r
 ## Protocolo de arranque\r
 \r
 1. Lee `AGENTS.md`.\r
-2. Lee `feature_list.json` y `sdd/progress/current.md`.\r
+2. Lee `feature_list.json` y `sdd/progress/implementados/impl_<name>.md`.\r
 3. Lee `sdd/progress/sprint.md`.\r
    - Si no existe o está vacío:\r
      Pregunta: "¿En qué sprint estás actualmente? (1, 2 o 3)"\r

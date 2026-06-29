@@ -268,3 +268,40 @@ las specs del editor avanzado de OVA y empezar la implementación.
 
 **Estado:** DONE (auditoría + limpieza). Carryovers pendientes en
 `current.md`.
+
+---
+
+## 2026-06-04/06 — Lote infrastructure EN-012/013/015/016/017 + HU-022 (B+F) + RN-005 (consolidado de `impl_*`/`review_*` archivados)
+
+**Agente:** leader (orquesta: implementer, reviewer)
+**Alcance:** Cierre del sprint de infrastructure (enablers + recuperador de recursos parciales + checklist responsive).
+
+**Tabla resumen** (detalle por feature en `git log` + `feature_list.json`; los `impl_*.md` / `review_*.md` ya no existen — quedan aquí los hallazgos accionables):
+
+| ID | Título | Merge commit | Veredicto review |
+|---|---|---|---|
+| EN-012 | Observabilidad de errores en Supabase | `a3201ca` | APPROVED (4 tests EN-012) |
+| EN-013 | Persistencia del estado de generación (jobs) | `c4f6d07` | APPROVED (7 tests EN-013 + 4 EN-012) |
+| EN-015 | Crítico evaluator-optimizer pedagógico | (en `9fa8211`) | APPROVED (5 tests) |
+| EN-016 | Editor de Coherencia 5E | (en `9fa8211`) | APPROVED (3 tests) |
+| EN-017 | Panel de Nodos Prometheus | `3ed88fa` | APPROVED (4 BDD + 6 unit) |
+| HU-022 (B) | Recuperación de recursos parciales — backend B1–B4 | `0ff7465` | CHANGES_REQUESTED → APPROVED (2 fixes) |
+| HU-022 (F) | Recuperación de recursos parciales — frontend F1–F4 | (en `0ff7465`) | APPROVED |
+| RN-005 | Frontend responsive (checklist) | `b62e216` | APPROVED (verificación estática de clases Tailwind) |
+
+**Hallazgos relevantes:**
+
+- **HU-022 backend review (CHANGES_REQUESTED)** — 2 findings resueltos antes de aprobar:
+  1. `backend/ova/jobs_router.py:137` — `resume_job` era endpoint mutante con input externo (`resource_ids`) sin `@limiter.limit`. Resuelto con `@limiter.limit("10/minute")` + `request: Request` (paridad con `start_job`).
+  2. `backend/ova/jobs_runner.py:71-72` — subset de resume regeneraba recursos ya `done` (violaba R6/R7). Resuelto con `.where(OvaJobResource.status != "done")` aplicado siempre en `_select_resources`; nuevo test `test_resume_done_en_subset` añadido a `tests/features/setup/EN-013_jobs.feature`.
+
+- **EN-016 R3 — propagación in-place de parches**: el `editor_node` muta `results` in-place y retorna solo `{"coherence_report": ...}`. Confirmado empíricamente que LangGraph pasa el objeto mutable entre nodos en la misma `invoke()` antes de checkpointing, así que `assemble_node` recibe `results` correctamente modificado. Con `PostgresSaver` (opt-in deshabilitado por defecto, `OVA_PG_CHECKPOINT`) los parches se perderían entre reanudaciones — fuera de alcance de esta fase.
+
+- **EN-015 desviación del spec**: crítico usa `html[:2000]` (extracto, no HTML completo) y `max_tokens=512` (no 8000) para no saturar contexto. Ningún AC del spec lo exige explícitamente.
+
+- **EN-016 EN-018 EN-019 cobertura**: junto con EN-018 (SSE) y EN-019 (arq/Redis) los enablers cubren el pipeline completo de jobs.
+
+**Reorganización (esta sesión):**
+Los 11 reportes (`impl_*.md` × 8 + `review_*.md` × 3) que residían directamente en `sdd/progress/` se mueven a `sdd/progress/implementados/` para mejorar la legibilidad del directorio raíz (que conserva solo `current.md`, `history.md`, `sprint.md`). El patrón por feature se mantiene: cada `impl_<name>.md` documenta los criterios, archivos tocados y notas de diseño; cada `review_<name>.md` contiene el veredicto (APPROVED / CHANGES_REQUESTED) y la trazabilidad R→test. CHECKPOINTS.md C1/C3/C5, los specs `RN-005` y `EN-017`, y los 5 agents críticos (`.claude/agents/{leader,implementer,reviewer,doc_author,spec-sync}.md` + sus transformaciones en `.opencode/agents/` y `.codex/agents/`) ahora apuntan a `sdd/progress/implementados/<name>.md`. CHECKPOINTS.md C8 (Wireframe gate) eliminado (los wireframes fueron retirados del repo en otra sesión).
+
+**Estado:** DONE. Trazabilidad preservada en `git log`, `feature_list.json`, esta entrada de `history.md` y los archivos `sdd/progress/implementados/`.

@@ -14,6 +14,7 @@ permission:
   webfetch: deny
 ---
 
+
 # Agente Explorer (Discovery pre-spec)
 
 Eres el explorador del codebase. Tu único trabajo es **mapear lo que existe**
@@ -87,3 +88,4 @@ Justificación breve.
 - **No abres PRs, no haces commits, no modificas `feature_list.json`.**
 - Si no puedes localizar algún archivo mencionado, dilo explícito; no inventes.
 - El reporte cabe en menos de 200 líneas. Si es más largo, comprime.
+

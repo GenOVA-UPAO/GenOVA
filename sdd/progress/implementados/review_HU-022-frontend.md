@@ -70,7 +70,7 @@ No aplicó: verify -Quick verde en la primera ejecución.
   useResourceContent 31 · ovaJobViewModel 82 · ResourceList 89 · ProgressPanel 75 ·
   ResourcePreview 33 · TotalFailurePanel 29 · CrearOvaPage 75 — todos < 200
 - C4 (seguridad): [x] sin tokens/str(e)/attempts crudos en UI; backend ya validado
-- C5 (trazabilidad): [x] mapa R<n>→test en `impl_HU-022-frontend.md` y arriba
+- C5 (trazabilidad): [x] mapa R<n>→test en `sdd/progress/implementados/impl_HU-022-frontend.md` y arriba
 - C6 (repo limpio): [x] verify -Quick PASA, sin debug/TODO huérfanos
 - C7 (arquitectura): [x] services→hooks→pages sin fetch en hooks/pages
 - C8 (wireframe gate): [~] sin aprobación de wireframe documentada para esta fase, PERO no queda

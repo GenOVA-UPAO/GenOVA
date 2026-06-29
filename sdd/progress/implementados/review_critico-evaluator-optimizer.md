@@ -45,7 +45,7 @@ No aplica — todos los tests pasaron sin intervención.
 - C2: [x] `pnpm lint` exit 0. `ruff check .` exit 0.
 - C3: [x] `critic.py` 80 líneas, `critic_loop.py` 65, `editor.py` 107, `graph.py` 74, `runtime.py` 172, `refine.py` 107. Todos ≤200. Los de test están exentos.
 - C4: [x] Sin tokens/OTPs en respuestas. Sin `str(e)` en nuevos archivos. `str(exc)` en `runtime.py:67` existente va a lista interna de errores (LangGraph state), nunca a HTTP. Sin rate-limit nuevo porque no hay endpoints nuevos.
-- C5: [x] Mapa R→test documentado en `sdd/progress/impl_critico-evaluator-optimizer.md` y `sdd/progress/impl_editor-coherencia-5e.md`.
+- C5: [x] Mapa R→test documentado en `sdd/progress/implementados/impl_critico-evaluator-optimizer.md` y `sdd/progress/implementados/impl_editor-coherencia-5e.md`.
 - C6: [x] `verify.ps1 -Quick` PASA. Sin print() de debug en archivos nuevos.
 - C7: [x] Backend sigue patrón: `graph.py` (routing) → `nodes/editor.py` (lógica) → `state.py` (ORM-libre). `refine.py` extraído correctamente como helper. Sin lógica de negocio en router HTTP.
 - C8: N/A — features sin `## Mockup ASCII` en specs.

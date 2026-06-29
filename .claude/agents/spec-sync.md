@@ -24,7 +24,7 @@ NO rastrear: variables internas, funciones privadas, comentarios, clases CSS.
 
 ### PASO 1 — Extrae cambios rastreables
 
-Lee `sdd/progress/impl_<name>.md` y ejecuta:
+Lee `sdd/progress/implementados/impl_<name>.md` y ejecuta:
 ```bash
 git diff HEAD -- backend/routers/ backend/services/ frontend/src/services/ frontend/src/hooks/ backend/models.py
 ```

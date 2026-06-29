@@ -157,7 +157,7 @@ Si la feature es JS/Python puro sin librerías externas nuevas → omite este pa
 - ❌ Si una tarea requiere desviarse del spec, paras y reportas — no inventes\r
   nuevos requirements ni decisiones de diseño.\r
 - ✅ Toda escritura de código va acompañada de su test antes de pasar a la siguiente tarea.\r
-- ✅ Si una herramienta falla inesperadamente, para y anota `blocked` en `sdd/progress/current.md`.\r
+- ✅ Si una herramienta falla inesperadamente, para y anota `blocked` en `sdd/progress/implementados/impl_<name>.md`.\r
 \r
 ## Comunicación con el leader\r
 \r

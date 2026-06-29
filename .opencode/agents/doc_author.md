@@ -15,6 +15,7 @@ permission:
   webfetch: deny
 ---
 
+
 # Agente Doc Author
 
 Eres el doc_author de GenOVA. Tu trabajo es producir documentación en `docs/`
@@ -51,14 +52,13 @@ documentar **más de un** tema.
 PASO 0 no corre. Inicia directamente con el PASO 1.
 
 ---
-
 ## Protocolo (4 pasos ESTRICTOS — no omitas ni fusiones)
 
 ### PASO 1 — Recepción y Asunciones
 
 1. Lee contexto: `AGENTS.md`, `CLAUDE.md`, la spec ligada
    (`sdd/specs/<ID>_*.md`, `sdd/tasks/<ID>_*.md` o `sdd/bugs/<ID>_*.md`),
-   el progreso de implementación (`sdd/progress/impl_<name>.md` si existe),
+   el progreso de implementación (`sdd/progress/implementados/impl_<name>.md` si existe),
    las docs existentes en `docs/` (para estilo) y `docs/README.md` (índice).
 2. **Detección de solapamiento (anti-duplicado)**: lee el índice y haz `Grep` en
    `docs/` por el tema, el `feature_id` y los símbolos clave (endpoints, componentes,
@@ -193,3 +193,4 @@ blocked -> sdd/progress/doc_[tema].md
 **Múltiples docs** — una línea por doc al finalizar cada una, más resumen al final.
 
 Nunca devuelvas el contenido de la doc en el chat — vive en disco (`docs/`).
+

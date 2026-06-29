@@ -15,6 +15,7 @@ permission:
   webfetch: deny
 ---
 
+
 # Agente Spec-Sync
 
 Eres un agente de servicio. Recibes una feature recién implementada, extraes los cambios de interfaz pública rastreables, y buscas qué otros specs los mencionan para proponer actualizaciones de consistencia. Nunca modificas specs sin aprobación humana explícita — solo produces propuestas.
@@ -35,7 +36,7 @@ NO rastrear: variables internas, funciones privadas, comentarios, clases CSS.
 
 ### PASO 1 — Extrae cambios rastreables
 
-Lee `sdd/progress/impl_<name>.md` y ejecuta:
+Lee `sdd/progress/implementados/impl_<name>.md` y ejecuta:
 ```bash
 git diff HEAD -- backend/routers/ backend/services/ frontend/src/services/ frontend/src/hooks/ backend/models.py
 ```
@@ -105,3 +106,4 @@ Si el leader confirma "aplica todos" o "aplica solo critical":
 - ❌ Modificar `feature_list.json`
 - ❌ Aplicar cambios sin confirmación explícita del humano
 - ❌ Rastrear cambios en variables internas o implementación privada
+

@@ -53,7 +53,7 @@ añade UI propia: fija el estándar responsive y cómo se verifica.
 2. **R2** — Los componentes del **layout** y del **workspace** mantienen usabilidad en pantallas pequeñas (el split del workspace colapsa a pestañas/stack).
 3. **R3** — Se usan **breakpoints de Tailwind** y contenedores fluidos; **sin** librería nueva.
 4. **R4** — Cada HU de UI cumple su criterio responsive; **RN-005 es el paraguas** y aporta el checklist de verificación.
-5. **R5** — La **verificación** se hace por vista en los tres anchos de referencia (DevTools/Lighthouse) y queda documentada (checklist en `sdd/progress/impl_*.md`).
+5. **R5** — La **verificación** se hace por vista en los tres anchos de referencia (DevTools/Lighthouse) y queda documentada (checklist en `sdd/progress/implementados/impl_RN-005.md`).
 6. **R6** — Se respeta < 200 líneas/archivo y el patrón services → hooks → pages.
 
 ## Criterios de aceptación

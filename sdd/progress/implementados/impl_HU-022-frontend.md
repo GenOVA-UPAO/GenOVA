@@ -126,4 +126,3 @@ ResourcePreview 37 · TotalFailurePanel 30. Todos < 200.
   sesión desde "Mis OVAs".
 - `resource_type` se envía como id numérico string ("1".."10") del catálogo, consistente con el
   modal y lo que el backend echo-ea en `GET /jobs/{id}`.
-```

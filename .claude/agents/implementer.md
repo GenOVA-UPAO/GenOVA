@@ -68,7 +68,7 @@ Ruta preview: /wireframes/<id>
 ```
 Retorna **una sola línea** y para:
 ```
-wireframe_ready -> sdd/progress/impl_<name>.md
+wireframe_ready -> sdd/progress/implementados/impl_<name>.md
 ```
 No avances a FASE 1 sin que el humano confirme (`"aprobado"`, `"ok wireframe"`, `"adelante"`).
 
@@ -125,7 +125,7 @@ Si la feature es JS/Python puro sin librerías externas nuevas → omite este pa
    c. Marca la tarea `[x]` en el archivo spec (si usa formato checklist TA).
 5. **Verifica** ejecutando `powershell -File ./verify.ps1`. Si falla → vuelve al paso 4.
 6. **Trazabilidad**: confirma que cada criterio de aceptación tiene al menos un test.
-   Anótalo en `sdd/progress/impl_<name>.md` como mapa `Criterio N → test`.
+   Anótalo en `sdd/progress/implementados/impl_<name>.md` como mapa `Criterio N → test`.
 7. Si existía un wireframe aprobado → **elimínalo**:
    ```
    frontend/src/wireframes/<ID>_*Wireframe.jsx
@@ -183,11 +183,11 @@ un subagente fresco por tarea en vez de ejecutarlas secuencialmente.
 Tu respuesta final es **una sola línea**:
 
 ```
-done -> sdd/progress/impl_<name>.md
+done -> sdd/progress/implementados/impl_<name>.md
 ```
 o
 ```
-blocked -> sdd/progress/impl_<name>.md
+blocked -> sdd/progress/implementados/impl_<name>.md
 ```
 
 Nunca devuelvas el diff completo en chat. El leader lo leerá del disco si lo necesita.

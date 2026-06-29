@@ -6,7 +6,7 @@
 ## C1 — Tests verdes
 - [ ] `pnpm test:unit` pasa al 100% (cucumber-js)
 - [ ] `pytest tests/step_defs/ -v --tb=short` pasa al 100%
-- [ ] No hay tests en `[ ]` sin justificación documentada en `sdd/progress/impl_*.md`
+- [ ] No hay tests en `[ ]` sin justificación documentada en `sdd/progress/implementados/impl_*.md`
 
 ## C2 — Lint limpio
 - [ ] `pnpm lint` sale con exit 0 (Biome noExcessiveLinesPerFile: 200, sin errores)
@@ -15,7 +15,7 @@
 ## C3 — Límite de líneas respetado (NO aplica a archivos de test ni migraciones SQL)
 - [ ] Ningún archivo en `frontend/src/` supera 200 líneas
 - [ ] Ningún archivo en `backend/` supera 200 líneas
-- [ ] Si un archivo está >200 sin exención, hay plan de split documentado en `sdd/progress/impl_*.md`
+- [ ] Si un archivo está >200 sin exención, hay plan de split documentado en `sdd/progress/implementados/impl_*.md`
 - [ ] **Patrón de split frontend**: extraer `<Page>Header.tsx`, `<Page>List.tsx`, `<Page>Empty.tsx`, etc., o custom hook `use<Entity>List`
 - [ ] **Patrón de split backend**: extraer routers a `<dominio>/<recurso>_router.py`, helpers a `<dominio>/lib/`
 - [ ] **Exentos del límite**: archivos de test (`backend/tests/**`, `tests/**`, `test_*.py`, `*_test.py`, `*.test.*`, `*.steps.*`) y migraciones SQL (`backend/migrations/*.sql`)
@@ -28,7 +28,7 @@
 
 ## C5 — Trazabilidad specs ↔ tests
 - [ ] Cada `R<n>` del spec de la feature tiene al menos un test concreto
-- [ ] El mapa `R<n> → test` está documentado en `sdd/progress/impl_<name>.md`
+- [ ] El mapa `R<n> → test` está documentado en `sdd/specs/<ID>_*.md` (§ Trazabilidad) **o** en `sdd/progress/implementados/impl_<name>.md` para features implementadas
 
 ## C6 — Estado del repo limpio
 - [ ] `verify.ps1` termina sin errores (PASA en todas las secciones)
@@ -43,11 +43,6 @@
 - [ ] **Capas en frontend**: services (HTTP) → hooks (estado) → pages (orquestan layout). Pages NO hacen `fetch`; hooks NO hacen `fetch`; services NO tienen estado de React
 - [ ] **Capas en backend**: router (endpoint FastAPI) → service (lógica de negocio) → model (ORM). Routers NO contienen SQL ni reglas; services NO exponen HTTP
 - [ ] Features con `"sdd": true` en `feature_list.json` pasan por flujo SDD completo (spec → review → impl → verify)
-
-## C8 — Wireframe gate (solo features con `## Mockup ASCII` en el spec)
-- [ ] `frontend/src/wireframes/<ID>_*Wireframe.jsx` existió y fue aprobado por el humano antes de FASE 1
-- [ ] Aprobación del wireframe documentada en `sdd/progress/current.md` o `sdd/progress/impl_<name>.md`
-- [ ] El archivo wireframe fue eliminado al completar la implementación real (no queda en el repo)
 
 ## C9 — Anti-spaghetti: dependencias unidireccionales
 - [ ] Sin ciclos de import (verificable con `madge --circular frontend/src backend/` o inspección visual)
