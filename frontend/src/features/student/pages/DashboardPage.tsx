@@ -6,7 +6,7 @@ import { FolderOpen, Plus } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Button } from '@/core/components/ui/button'
-import { getCachedUser, getCurrentUser } from '@/core/lib/auth/me'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { fetchOvas } from '@/features/ova_library/services/ovaHistoryService'
 import { fetchMyLinks } from '@/features/profile/services/userLinksService'
 
@@ -40,23 +40,24 @@ function fmtDate(v?: string) {
 }
 
 export function DashboardPage() {
-  const [role, setRole]           = useState<string | null>(() => getCachedUser()?.role ?? null)
-  const [name, setName]           = useState<string>('')
-  const [ovas, setOvas]           = useState<OvaItem[]>([])
-  const [links, setLinks]         = useState<LinkItem[]>([])
-  const [loading, setLoading]     = useState(true)
+  // BU-002 AC#11: el rol viene del hook compartido. Antes había un estado
+  // local duplicado que se desincronizaba del SidebarMenu/Navbar; aquí
+  // ya no existe: una sola fuente de verdad.
+  const { user } = useCurrentUser()
+  const role = user?.role ?? null
+  const name = user?.full_name?.split(' ')[0] ?? 'Usuario'
+  const [ovas, setOvas] = useState<OvaItem[]>([])
+  const [links, setLinks] = useState<LinkItem[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
     Promise.all([
-      getCurrentUser(),
       fetchOvas({ page: 1, limit: 5 }),
       fetchMyLinks(),
     ])
-      .then(([user, ovaData, linksRes]) => {
+      .then(([ovaData, linksRes]) => {
         if (cancelled) return
-        setRole((user?.role as string) ?? null)
-        setName((user as { full_name?: string })?.full_name?.split(' ')[0] ?? 'Usuario')
         const items =
           (ovaData as { items?: OvaItem[] }).items ??
           (ovaData as { ovas?: OvaItem[] }).ovas ?? []

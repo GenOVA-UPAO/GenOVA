@@ -107,7 +107,7 @@
     { "id": "TA-007", "name": "despliegue_frontend_vercel", "title": "Configuración y Despliegue del Frontend en Vercel", "spec": "", "status": "done" },
 
     { "id": "BU-001", "name": "sesion_expirada_no_redirige", "title": "Sesión expirada no redirige a pantalla de inicio de sesión", "spec": "sdd/bugs/BU-001_sesion-expirada-no-redirige.md", "status": "done", "merge_commit": "947612f" },
-    { "id": "BU-002", "name": "cuenta_rol_cambia_navegacion", "title": "Cambio de rol o cuenta no actualiza la navegación del usuario", "spec": "sdd/bugs/BU-002_cuenta-rol-cambia-navegacion.md", "status": "spec_ready" },
+    { "id": "BU-002", "name": "cuenta_rol_cambia_navegacion", "title": "Cambio de rol o cuenta no actualiza la navegación del usuario", "spec": "sdd/bugs/BU-002_cuenta-rol-cambia-navegacion.md", "status": "in_progress" },
 
     { "id": "SP-001", "name": "comparativa_apis", "title": "Comparativa APIs multimodales", "spec": "", "status": "done" },
     { "id": "SP-002", "name": "metodologia_5e", "title": "Metodología 5E y Estructura OVA", "spec": "", "status": "done" },

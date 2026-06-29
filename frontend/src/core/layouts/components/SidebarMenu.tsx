@@ -12,10 +12,9 @@ import {
 } from '@phosphor-icons/react'
 import { m as motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation } from 'react-router'
+import { NavLink } from 'react-router'
 import { navigationLinks } from '@/core/layouts/navigation/navLinks'
-import { getCachedUser, getCurrentUser } from '@/core/lib/auth/me'
-import { isLoggedIn } from '@/features/auth/services/auth'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { fetchTrashCount } from '@/features/ova_library/services/ovaHistoryService'
 
 interface NavItemProps {
@@ -27,14 +26,6 @@ interface NavItemProps {
 interface SectionProps {
   title: string
   children: React.ReactNode
-}
-
-interface UserData {
-  full_name?: string
-  email?: string
-  role?: string
-  permissions?: string[]
-  theme_settings?: unknown
 }
 
 const ICONS: Record<string, Icon> = { House, FolderOpen, PlusSquare }
@@ -87,7 +78,7 @@ function Section({ title, children }: SectionProps) {
   )
 }
 
-function initials(user: UserData | null): string {
+function initials(user: { full_name?: string; email?: string } | null): string {
   const name = user?.full_name || user?.email || 'Usuario'
   return name
     .split(/\s|@/)
@@ -98,7 +89,10 @@ function initials(user: UserData | null): string {
     .toUpperCase()
 }
 
-function hasPermission(user: UserData | null, permission: string): boolean {
+function hasPermission(
+  user: { role?: string; permissions?: string[] } | null,
+  permission: string,
+): boolean {
   return (
     user?.role === 'administrador' ||
     (user?.permissions || []).includes(permission)
@@ -110,9 +104,13 @@ interface SidebarMenuProps {
 }
 
 export function SidebarMenu({ onNavigate }: SidebarMenuProps) {
-  const [user, setUser] = useState<UserData | null>(getCachedUser())
+  // BU-002 AC#10/#11: consumir el hook compartido como única fuente de verdad.
+  // Antes había un useEffect local con dep `[location.pathname]` que re-disparaba
+  // getCurrentUser() en cada navegación, re-sobrescribiendo el state con datos
+  // potencialmente stale (causa raíz del bug). El hook gestiona su propio ciclo
+  // de vida — la sidebar solo lee.
+  const { user } = useCurrentUser()
   const [trashCount, setTrashCount] = useState(0)
-  const location = useLocation()
   const isAdmin = user?.role === 'administrador'
   const principal = navigationLinks.map((item) => ({
     ...item,
@@ -126,23 +124,10 @@ export function SidebarMenu({ onNavigate }: SidebarMenuProps) {
   const canAnalytics = hasPermission(user, 'view_analytics')
 
   useEffect(() => {
-    if (!isLoggedIn()) return
-    // TODO BU-002: migrar a useCurrentUser() para consolidar el patrón
-    // duplicado de useState(getCachedUser()) + useEffect(getCurrentUser()).
-    let cancelled = false
-    getCurrentUser().then((current: UserData | null) => {
-      if (!cancelled && current) setUser(current)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [location.pathname])
-
-  useEffect(() => {
     fetchTrashCount()
       .then((data) => setTrashCount((data as { count?: number }).count || 0))
       .catch(() => {})
-  }, [location.pathname])
+  }, [])
 
   return (
     <>

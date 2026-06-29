@@ -10,6 +10,16 @@
 // consumer needing to subscribe individually. The lightweight
 // `clearLocalCache()` is exported separately for `markLoggedIn()` flows that
 // only want to drop stale cache, not broadcast a logout.
+//
+// BU-002: network/abort failures now let the exception propagate to the caller
+// instead of silently swallowing it into `readCache()`. Consumers (notably
+// `useCurrentUser`) explicitly distinguish three cases:
+//   - 200 → fresh user → writeCache + return
+//   - 401 → clearCurrentUser + return null (BU-001 broadcast)
+//   - network/abort → re-throw, caller decides whether to fall back to cache
+// This kills the "stale snapshot from a previous user wins" symptom observed
+// in BU-002: a hook now sees a hard failure and can choose to ignore the
+// cached snapshot for that user instead of trusting it blindly.
 
 import { apiFetch } from '../http/client'
 
@@ -17,6 +27,7 @@ export interface MeUser {
   id?: string | number
   role?: string
   email?: string
+  full_name?: string
   [key: string]: unknown
 }
 
@@ -54,9 +65,11 @@ export function getCachedUser(): MeUser | null {
 }
 
 // Revalidate against the server. Dedupes concurrent callers via a shared
-// in-flight promise. On success the cache is refreshed; on a transient failure
-// the last known user is returned so consumers never regress to null.
-export function getCurrentUser(): Promise<MeUser | null> {
+// in-flight promise. On success the cache is refreshed; on 401 the cache is
+// cleared (BU-001 broadcast). Network/abort errors RE-THROW so the caller
+// can decide what to do (BU-002: previously this code path silently returned
+// `readCache()` — see commit message for rationale).
+export async function getCurrentUser(): Promise<MeUser | null> {
   if (inflight) return inflight
   inflight = (async () => {
     try {
@@ -70,12 +83,11 @@ export function getCurrentUser(): Promise<MeUser | null> {
         clearCurrentUser()
         return null
       }
-    } catch {
-      /* network/abort — fall through to cached value */
+      // Any other HTTP error is treated as transient — let the caller decide.
+      throw new Error(`me: unexpected status ${res.status}`)
     } finally {
       inflight = null
     }
-    return readCache()
   })()
   return inflight
 }

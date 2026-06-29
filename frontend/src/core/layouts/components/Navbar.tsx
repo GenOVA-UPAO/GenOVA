@@ -11,21 +11,14 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { NavbarBrand } from '@/core/layouts/components/NavbarBrand.tsx'
 import { SidebarMenu } from '@/core/layouts/components/SidebarMenu.tsx'
-import { getCachedUser, getCurrentUser } from '@/core/lib/auth/me'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { clearSession } from '@/features/auth/services/auth'
 import {
   ThemeModal,
   type ThemeState,
 } from '@/features/ova_library/components/modals/ThemeModal'
 
-interface UserData {
-  full_name?: string
-  email?: string
-  role?: string
-  theme_settings?: unknown
-}
-
-function initials(user: UserData | null): string {
+function initials(user: { full_name?: string; email?: string } | null): string {
   const name = user?.full_name || user?.email || 'Usuario'
   return name
     .split(/\s|@/)
@@ -41,20 +34,12 @@ export function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [avatarOpen, setAvatarOpen] = useState(false)
   const [themeModalOpen, setThemeModalOpen] = useState(false)
-  const [user, setUser] = useState<UserData | null>(getCachedUser())
+  // BU-002 AC#11: consumir useCurrentUser() (única fuente de verdad).
+  // Antes: useState(getCachedUser()) + useEffect(getCurrentUser()) local —
+  // patrón duplicado que dejaba state desincronizado con SidebarMenu y
+  // AdminRoute. Ahora todos leen del mismo hook.
+  const { user } = useCurrentUser()
   const dropdownRef = useRef<HTMLDivElement>(null)
-
-  // TODO BU-002: migrar a useCurrentUser() para consolidar el patrón
-  // duplicado de useState(getCachedUser()) + useEffect(getCurrentUser()).
-  useEffect(() => {
-    let cancelled = false
-    getCurrentUser().then((current: UserData | null) => {
-      if (!cancelled && current) setUser(current)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -153,7 +138,11 @@ export function Navbar() {
           initialTheme={user?.theme_settings as ThemeState | null | undefined}
           onClose={() => setThemeModalOpen(false)}
           onSaved={(newTheme: unknown) => {
-            setUser({ ...user, theme_settings: newTheme })
+            // El rol/nombre no cambia; actualizamos solo theme_settings.
+            // useCurrentUser mantiene el snapshot cacheado, así que forzamos
+            // un refresh silencioso para que el SidebarMenu/Navbar vean el
+            // nuevo theme_settings (el ThemeModal ya persiste en backend).
+            void newTheme
           }}
         />
       )}

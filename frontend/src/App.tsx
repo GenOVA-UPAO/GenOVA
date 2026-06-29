@@ -81,9 +81,9 @@ function RouteFallback() {
 }
 
 export function AdminRoute() {
-  // BU-001: migrate from `useState(getCachedUser()) + useEffect(getCurrentUser())`
-  // to the shared `useCurrentUser()` hook. TODO BU-002: migrate Navbar,
-  // SidebarMenu, and DashboardPage to the same hook.
+  // BU-001: migrado al hook compartido. BU-002: Navbar, SidebarMenu y
+  // DashboardPage (features/student) consumen ahora el mismo hook — el TODO
+  // del AdminRoute queda cerrado porque este es el 4º consumidor.
   const { loading, isAdmin } = useCurrentUser()
   if (loading) {
     return (

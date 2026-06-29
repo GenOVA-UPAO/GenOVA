@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from auth.email_normalize import normalize_email
 from core.database import SessionLocal
@@ -132,16 +132,31 @@ def seed_db():
                 print(f"Rol '{u_data['role']}' asignado a {u_data['email']}")
             else:
                 print(f"El usuario {u_data['email']} ya existe.")
-                # Asegurar que tenga el rol asignado
+                # BU-002 AC#7: el seed debe ser idempotente entre runs.
+                # Antes: solo se añadía la fila si la combinación (user_id, role_id)
+                # no existía → con el tiempo el usuario acumulaba roles duplicados
+                # por cambios de permisos/nombres del seed. Ahora: borrar TODAS las
+                # user_roles previas y re-asignar exactamente las del seed actual.
+                deleted = db.execute(
+                    delete(UserRole).where(UserRole.user_id == user.id)
+                )
+                db.commit()
+                if deleted.rowcount:
+                    print(
+                        f"Limpiadas {deleted.rowcount} filas previas de "
+                        f"user_roles para {u_data['email']}"
+                    )
                 role = roles_map[u_data["role"]]
-                existing_ur = db.execute(
-                    select(UserRole).where(UserRole.user_id == user.id, UserRole.role_id == role.id)
-                ).scalar_one_or_none()
-                if not existing_ur:
-                    user_role = UserRole(user_id=user.id, role_id=role.id)
-                    db.add(user_role)
-                    db.commit()
-                    print(f"Rol '{u_data['role']}' re-asignado a {u_data['email']}")
+                user_role = UserRole(
+                    user_id=user.id,
+                    role_id=role.id,
+                    # is_primary se resuelve después por la migración 034
+                    # (o por una corrida previa del seed). No lo fijamos aquí
+                    # para no asumir un orden de aplicación.
+                )
+                db.add(user_role)
+                db.commit()
+                print(f"Rol '{u_data['role']}' re-asignado a {u_data['email']}")
 
         print("Siembra completada exitosamente. ¡Listo para probar!")
 
