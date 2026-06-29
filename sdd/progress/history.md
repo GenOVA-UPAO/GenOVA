@@ -324,3 +324,21 @@ Los 11 reportes (`impl_*.md` × 8 + `review_*.md` × 3) que residían directamen
 - **Merge commit:** 947612f
 
 **Estado:** DONE.
+
+---
+
+## 2026-06-29 — BU-002 Cuenta y rol cambian al navegar entre páginas (Sprint 3)
+
+**Agente:** opencode (leader orquesta: spec_author, implementer, reviewer)
+**Alcance:** Bug donde al navegar la UI mostraba un rol distinto al real (a veces "administrador", a veces "usuarios_prueba"). Causa raíz combinaba lectura sincrónica de sessionStorage en 4 componentes + useEffect de SidebarMenu con `[location.pathname]` que re-disparaba fetch en cada navegación + endpoint `/api/auth/me` que devolvía `roles[0]` alfabético + `seed.py` que acumulaba roles.
+
+**Completado:**
+- Backend: nueva migración 034 (columna `user_roles.is_primary` + índice único parcial + backfill determinista); `UserRole` ORM declarado; `session_router.py` con lógica primario→fallback→null; `seed.py` idempotente.
+- Frontend: `getCurrentUser` propaga errores; `useCurrentUser` con `fetchOrFallback`; `markLoggedIn` purga caché; `SidebarMenu` sin `[location.pathname]`; 4 consumidores al hook compartido.
+- Auto-fixes del líder: `UserRole.is_primary` en `models.py`; `MeUser.full_name` para tapar errores TS del index signature.
+- Tests: 6 escenarios BDD unit. Cobertura backend AC1-7 por inspección (gap TA-008 documentado).
+- `verify.ps1 -Quick` PASA (74 BDD scenarios, 546 steps). `pnpm typecheck` PASA.
+
+**Merge commit:** 999b036
+
+**Estado:** DONE.
