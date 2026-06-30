@@ -52,6 +52,7 @@ CREATE TABLE ova_versions (
 CREATE TABLE roles (id TEXT PRIMARY KEY, name TEXT, permissions TEXT DEFAULT '[]');
 CREATE TABLE user_roles (
   user_id TEXT, role_id TEXT,
+  is_primary BOOLEAN NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id, role_id)
 );

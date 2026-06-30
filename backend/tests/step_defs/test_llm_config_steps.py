@@ -42,6 +42,7 @@ CREATE TABLE roles (
 );
 CREATE TABLE user_roles (
   user_id TEXT NOT NULL, role_id TEXT NOT NULL,
+  is_primary BOOLEAN NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id, role_id)
 );
