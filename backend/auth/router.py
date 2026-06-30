@@ -22,6 +22,7 @@ from auth.totp_router import _issue_ticket
 from auth.totp_router import router as totp_router
 from auth.verify_router import issue_verification
 from auth.verify_router import router as verify_router
+from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
 from core.security import (
@@ -110,7 +111,7 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
         db.commit()
         return _invalid_credentials()
 
-    if not user.email_verified:
+    if settings.email_verification_enabled and not user.email_verified:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={
@@ -205,17 +206,35 @@ def register(
         db.add(UserRole(user_id=user.id, role_id=_role.id))
         db.commit()
 
-    # Verificación obligatoria: no se inicia sesión hasta confirmar el correo.
-    issue_verification(user, db, background_tasks)
-    db.commit()
+    if settings.email_verification_enabled:
+        # Verificación obligatoria: no se inicia sesión hasta confirmar el correo.
+        issue_verification(user, db, background_tasks)
+        db.commit()
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "email_verification_required": True,
+                "message": "Cuenta creada. Te enviamos un enlace de verificación a tu correo.",
+            },
+        )
 
-    return JSONResponse(
-        status_code=status.HTTP_201_CREATED,
+    # Verificación deshabilitada (EMAIL_VERIFICATION_ENABLED=0): la cuenta queda
+    # activa al instante y se inicia sesión directamente.
+    user.email_verified = True  # type: ignore[assignment]
+    db.commit()
+    token = build_token(str(user.id), str(user.email))
+    response = JSONResponse(
+        status_code=status.HTTP_200_OK,
         content={
-            "email_verification_required": True,
-            "message": "Cuenta creada. Te enviamos un enlace de verificación a tu correo.",
+            "email_verification_required": False,
+            "access_token": token,
+            "token_type": "bearer",
+            "expires_in": JWT_EXPIRES_MINUTES * 60,
+            "message": "Cuenta creada.",
         },
     )
+    set_auth_cookie(response, token)
+    return response
 
 
 @router.post("/logout")

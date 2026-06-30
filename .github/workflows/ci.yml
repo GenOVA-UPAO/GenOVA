@@ -46,6 +46,9 @@ jobs:
       BASE: http://localhost:8000
       GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
       OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
+      # Los escenarios de HU-001 validan el flujo de verificación, que está
+      # desactivado por defecto en producción. Se fuerza aquí para probarlo.
+      EMAIL_VERIFICATION_ENABLED: 1
     steps:
       - uses: actions/checkout@v7
 
