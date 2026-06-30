@@ -13,6 +13,7 @@ ALL_PROVIDERS = (
     "runware",
     "falai",
     "huggingface",
+    "cloudflare",
 )
 
 # Providers usable for text generation / per-task LLM config.
@@ -27,4 +28,7 @@ ENV_VARS: dict[str, str] = {
     "runware": "RUNWARE_API_KEY",
     "falai": "FALAI_API_KEY",
     "huggingface": "HF_TOKEN",
+    # Cloudflare Workers AI — free tier image generation.
+    # CF_ACCOUNT_ID is read separately inside _cloudflare(); this maps the token.
+    "cloudflare": "CF_AI_API_KEY",
 }

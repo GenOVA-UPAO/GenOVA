@@ -15,13 +15,14 @@ from models import User
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-_DEFAULTS = {"max_images": 2, "image_provider": "huggingface", "image_model": None}
+_DEFAULTS = {"max_images": 2, "image_provider": "cloudflare", "image_model": None}
 _MAX_IMAGES_MAX = 10
 
 _PROVIDER_DEFAULT_MODEL = {
     "siliconflow": "stabilityai/stable-diffusion-3-5-large",
     "runware": "runware:100@1",
     "falai": "fal-ai/flux/schnell",
+    "cloudflare": "@cf/black-forest-labs/flux-1-schnell",
 }
 
 

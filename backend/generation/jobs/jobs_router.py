@@ -49,7 +49,7 @@ def start_job(
     from llm.clients.key_resolver import resolve_key
 
     ova_settings = current_user.ova_settings or {}
-    image_provider = ova_settings.get("image_provider", "huggingface")
+    image_provider = ova_settings.get("image_provider", "cloudflare")
     resolved_image_settings = {
         "max_images": ova_settings.get("max_images", 2),
         "provider": image_provider,

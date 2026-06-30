@@ -127,14 +127,57 @@ def _falai(prompt: str, api_key: str | None, width: int, height: int, model: str
         return None
 
 
+def _cloudflare(prompt: str, api_key: str | None, width: int, height: int, model: str | None = None) -> str | None:
+    """Cloudflare Workers AI — free tier 10k neurons/day (~1k images).
+
+    Required env vars: CF_ACCOUNT_ID, CF_AI_API_KEY (or api_key arg).
+    Default model: @cf/black-forest-labs/flux-1-schnell (~10 neurons/image).
+    """
+    account_id = os.getenv("CF_ACCOUNT_ID", "").strip()
+    if not account_id:
+        logger.warning("Cloudflare image generation skipped: CF_ACCOUNT_ID not set")
+        return None
+    token = api_key or os.getenv("CF_AI_API_KEY", "").strip()
+    if not token:
+        logger.warning("Cloudflare image generation skipped: no api_key / CF_AI_API_KEY")
+        return None
+    cf_model = model or os.getenv("CF_IMAGE_MODEL", "@cf/black-forest-labs/flux-1-schnell")
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{cf_model}"
+    try:
+        resp = httpx.post(
+            url,
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"prompt": prompt, "num_steps": 4},
+            timeout=60.0,
+        )
+        resp.raise_for_status()
+        # Cloudflare returns raw image bytes (PNG) when successful, or JSON on error.
+        ct = resp.headers.get("content-type", "")
+        if "image" in ct:
+            return "data:image/png;base64," + base64.b64encode(resp.content).decode("ascii")
+        data = resp.json()
+        if data.get("success") and isinstance(data.get("result"), dict):
+            img_bytes = data["result"].get("image")
+            if img_bytes:
+                return "data:image/png;base64," + img_bytes
+        logger.warning("Cloudflare image generation returned unexpected response: %s", str(data)[:200])
+        return None
+    except Exception as exc:
+        logger.warning("Cloudflare image generation failed: %s", exc)
+        return None
+
+
 _PROVIDERS = {
     "huggingface": _hf,
     "siliconflow": _siliconflow,
     "runware": _runware,
     "falai": _falai,
+    "cloudflare": _cloudflare,
 }
 
 IMAGE_PROVIDERS = tuple(_PROVIDERS.keys())
+
+_MODEL_PROVIDERS = {"siliconflow", "runware", "falai", "cloudflare"}
 
 
 def get_image_data_uri(
@@ -153,7 +196,7 @@ def get_image_data_uri(
     if not clean:
         return None
     fn = _PROVIDERS.get(provider, _hf)
-    if provider in ("siliconflow", "runware", "falai"):
+    if provider in _MODEL_PROVIDERS:
         return fn(clean, api_key, width, height, model)
     return fn(clean, api_key, width, height)
 
@@ -173,7 +216,7 @@ def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[st
     settings = image_settings or {}
     default_max = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
     max_images = int(settings.get("max_images", default_max))
-    provider = settings.get("provider", "huggingface")
+    provider = settings.get("provider", "cloudflare")
     api_key = settings.get("api_key") or None
     model = settings.get("image_model") or None
 

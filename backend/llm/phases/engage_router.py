@@ -139,7 +139,7 @@ def generate_engage_resource(
         from llm.clients.key_resolver import resolve_key
 
         ova_settings = current_user.ova_settings or {}
-        _img_provider = ova_settings.get("image_provider", "huggingface")
+        _img_provider = ova_settings.get("image_provider", "cloudflare")
         image_settings = {
             "max_images": ova_settings.get("max_images", _MAX_GENERATED_IMAGES),
             "provider": _img_provider,
