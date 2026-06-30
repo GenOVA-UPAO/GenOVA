@@ -82,8 +82,14 @@ def _chat(
     elif provider == "opencode":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = opencode_client.with_options(**opts) if opts else opencode_client
+        # DeepSeek thinking models spend token budget on reasoning and return
+        # empty content on long prompts → EmptyContentError. Disable unless the
+        # caller already set extra_body explicitly.
+        call_extra = dict(extra)
+        if "deepseek" in model_id and "extra_body" not in call_extra:
+            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
     elif provider == "huggingface":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
@@ -92,18 +98,15 @@ def _chat(
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = openrouter_client.with_options(**opts) if opts else openrouter_client
+        call_extra = dict(extra)
+        if "deepseek" in model_id and "extra_body" not in call_extra:
+            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
     msg = r.choices[0].message if r.choices else None
     content = (msg.content if msg else None) or None
     if not content or not content.strip():
-        # Thinking/reasoning models (e.g. deepseek-v4-flash) may return the
-        # final answer in reasoning_content and leave content empty. Use it as
-        # fallback so thinking stays enabled and quality is preserved.
-        reasoning = getattr(msg, "reasoning_content", None) if msg else None
-        content = reasoning if reasoning and reasoning.strip() else None
-    if not content:
         raise EmptyContentError(f"Empty content from {provider}/{model_id}")
     return content
 

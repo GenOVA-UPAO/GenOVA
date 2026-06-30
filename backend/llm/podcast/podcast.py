@@ -87,6 +87,8 @@ document.getElementById('status').textContent='✓ Completado';_scormComplete();
 
 def build_podcast_html(concept: str, monologue: str, audio_b64: str | None) -> str:
     safe_concept = html.escape(concept)
+    # Truncate long concept descriptions so the <h2> stays readable.
+    display_title = safe_concept[:90] + ("…" if len(safe_concept) > 90 else "")
     safe_monologue = html.escape(monologue).replace("\n", "<br>")
     if audio_b64:
         media = (
@@ -116,7 +118,7 @@ def build_podcast_html(concept: str, monologue: str, audio_b64: str | None) -> s
         + '</head>\n<body><div class="card">'
         '<p class="tag">🎙️ Micro-Podcast · Fase ENGAGE</p>'
         "<h2>"
-        + safe_concept
+        + display_title
         + "</h2>"
         + _WAVE
         + media
