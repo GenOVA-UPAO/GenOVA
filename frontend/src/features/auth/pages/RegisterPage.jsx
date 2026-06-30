@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { markLoggedIn } from '@/features/auth/services/auth.js'
 import { apiFetch } from '@/core/lib/http.js'
 import { resendVerification } from '@/features/auth/services/verification.js'
 import { registerSchema } from '@/features/auth/schemas/auth.js'
@@ -13,6 +14,7 @@ import { Alert, AlertDescription } from '@/core/components/ui/alert'
 import { VerifyEmailNotice } from '@/features/auth/components/VerifyEmailNotice.jsx'
 
 export function RegisterPage() {
+  const navigate = useNavigate()
   const [serverError, setServerError] = useState('')
   const [registeredEmail, setRegisteredEmail] = useState(null)
   const {
@@ -32,6 +34,13 @@ export function RegisterPage() {
         body: JSON.stringify({ full_name: full_name.trim(), email, password }),
       })
       const data = await response.json()
+
+      // Verificación deshabilitada: el backend crea la sesión y responde 200.
+      if (response.status === 200) {
+        markLoggedIn()
+        navigate('/dashboard')
+        return
+      }
 
       if (response.status === 201) {
         setRegisteredEmail(email)
