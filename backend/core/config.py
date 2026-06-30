@@ -22,10 +22,10 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expires_minutes: int = 1440
     auth_accept_bearer: bool = True
-    # Exige verificar el correo antes de iniciar sesión. Ponlo en 0/false para
-    # permitir el registro y login sin verificación (p. ej. si el envío de
-    # correos no está disponible).
-    email_verification_enabled: bool = True
+    # Exige verificar el correo antes de iniciar sesión. Desactivado por ahora
+    # (el envío de correos no está disponible): el registro y el login funcionan
+    # sin verificación. Pon EMAIL_VERIFICATION_ENABLED=1 para reactivarlo.
+    email_verification_enabled: bool = False
     cors_origins: str = ""
 
     # --- Base de datos ---
