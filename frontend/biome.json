@@ -1,97 +1,52 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "includes": ["**", "!**/dist", "!**/public"] },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/.angular", "!**/*.html"]
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 80
+    "lineWidth": 100
   },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "single",
-      "jsxQuoteStyle": "double",
-      "semicolons": "asNeeded"
-    }
-  },
-  "css": { "parser": { "tailwindDirectives": true } },
   "linter": {
     "enabled": true,
     "rules": {
       "preset": "recommended",
-      "a11y": "warn",
       "style": {
         "noExcessiveLinesPerFile": {
           "level": "error",
-          "options": { "maxLines": 200, "skipBlankLines": true }
+          "options": { "maxLines": 250, "skipBlankLines": true }
         },
-        "useComponentExportOnlyModules": {
-          "level": "warn",
-          "options": { "allowConstantExport": true }
-        }
+        "noNonNullAssertion": "off"
       },
       "correctness": {
-        "useExhaustiveDependencies": "off",
-        "useHookAtTopLevel": "error"
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
       },
       "suspicious": {
-        "noArrayIndexKey": "off"
+        "noExplicitAny": "off",
+        "useIterableCallbackReturn": "off"
       }
     }
   },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "overrides": [
     {
-      "includes": ["**/*.{js,jsx}"],
-      "linter": {
-        "rules": {
-          "a11y": {
-            "noLabelWithoutControl": {
-              "level": "warn",
-              "options": {
-                "inputComponents": [
-                  "Checkbox",
-                  "Input",
-                  "Select",
-                  "Textarea",
-                  "Switch",
-                  "LlmModelSelect"
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["**/components/ui/*.{js,jsx,ts,tsx}"],
-      "linter": {
-        "rules": {
-          "correctness": {
-            "noUnusedVariables": "off",
-            "noUnusedImports": "off"
-          },
-          "style": {
-            "noExcessiveLinesPerFile": "off",
-            "useComponentExportOnlyModules": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": ["**/*.test.{js,jsx,ts,tsx}"],
+      "includes": ["**/app/app.html"],
       "linter": {
         "rules": {
           "style": {
-            "noExcessiveLinesPerFile": "off",
-            "useComponentExportOnlyModules": "off"
+            "noExcessiveLinesPerFile": "off"
           }
         }
       }
     }
-  ],
-  "assist": {
-    "enabled": true,
-    "actions": { "source": { "organizeImports": "on" } }
-  }
+  ]
 }

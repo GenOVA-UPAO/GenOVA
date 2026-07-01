@@ -2,3 +2,15 @@ packages:
   - "frontend"
   - "backend"
   - "tests"
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true
+minimumReleaseAgeExclude:
+  - '@angular-devkit/architect@0.2200.5'
+  - '@angular-devkit/core@22.0.5'
+  - '@angular-devkit/schematics@22.0.5'
+  - '@angular/build@22.0.5'
+  - '@angular/cli@22.0.5'
+  - '@schematics/angular@22.0.5'

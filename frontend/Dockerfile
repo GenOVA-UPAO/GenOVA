@@ -1,14 +1,20 @@
-FROM node:24-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-RUN corepack enable
+# Instalar pnpm
+RUN npm install -g pnpm@11.9.0
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install
+# Copiar configuración de dependencias
+COPY package.json pnpm-lock.yaml* ./
 
+# Instalar dependencias (solo para capa cacheada)
+RUN pnpm install --no-frozen-lockfile
+
+# El resto del código se monta en tiempo de ejecución (desarrollo) o se copia (producción)
 COPY . .
 
-EXPOSE 5173
+EXPOSE 4200
 
-CMD ["pnpm", "dev", "--host", "0.0.0.0", "--port", "5173"]
+# En desarrollo este CMD será sobrescrito por docker-compose
+CMD ["pnpm", "dev", "--host", "0.0.0.0", "--port", "4200"]

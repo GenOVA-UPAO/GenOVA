@@ -27,9 +27,9 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    command: sh -c "pnpm install --no-frozen-lockfile && pnpm dev --host 0.0.0.0 --port 5173"
+    command: sh -c "pnpm install --no-frozen-lockfile && pnpm dev --host 0.0.0.0 --port 4200"
     ports:
-      - '5173:5173'
+      - '4200:4200'
     environment:
       - CI=true
       - VITE_API_BASE_URL=http://localhost:8000
@@ -37,7 +37,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     healthcheck:
-      test: ['CMD', 'wget', '--spider', '-q', 'http://127.0.0.1:5173']
+      test: ['CMD', 'wget', '--spider', '-q', 'http://127.0.0.1:4200']
       interval: 15s
       timeout: 5s
       retries: 5

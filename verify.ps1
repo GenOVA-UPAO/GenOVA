@@ -68,9 +68,9 @@ Run-Step "Backend deps parity (sync_deps.py --check)" {
     $global:LASTEXITCODE = $finalExit
 }
 
-# [3] Frontend unit tests (cucumber-js, no backend)
-Run-Step "Frontend unit BDD (pnpm test:unit)" {
-    pnpm test:unit
+# [3] Frontend unit tests (Vitest + Angular)
+Run-Step "Frontend unit BDD (pnpm --filter frontend test)" {
+    pnpm --filter frontend test --watch=false
 }
 
 # Helper: probe puerto con reintentos progresivos (3s -> 6s -> 9s).

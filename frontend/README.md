@@ -1,211 +1,59 @@
-# GenOVA — Frontend
+# FrontendNg
 
-React 19 SPA for AI-assisted generation of Virtual Learning Objects (OVA) with SCORM 1.2 export.
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.5.
 
-## Stack
+## Development server
 
-| Layer | Technology |
-|---|---|
-| Framework | React 19 (JSX transform — no `import React` needed) |
-| Build | Vite 8 |
-| Styling | Tailwind CSS v4 (CSS variables, oklch color space) |
-| UI Components | shadcn/ui v4 — Nova/Radix/Geist preset |
-| Typography | Geist variable font (via Nova preset) |
-| Routing | React Router 7 |
-| Toasts | Sonner |
-| Testing | cucumber-js (unit) · Playwright-BDD (e2e) |
-
-## Project structure
-
-```
-src/
-├── pages/          Pages mapped to routes (max 200 lines each)
-├── components/     Shared components
-│   ├── ui/         shadcn/ui primitives — do NOT edit manually
-│   ├── admin/      Admin-specific components
-│   ├── crear/      OVA creation flow
-│   ├── engage/     Engage-phase viewer
-│   └── labs/       AI labs components
-├── hooks/          State logic (no UI)
-├── services/       fetch() wrappers for API calls
-├── lib/            Utilities: cn(), auth, permissions, http
-└── layouts/        App shell (AppLayout) + Admin shell (AdminLayout)
-```
-
-## shadcn/ui components installed
-
-| Component | File | Used for |
-|---|---|---|
-| `Button` | `ui/button` | All interactive actions |
-| `Badge` | `ui/badge` | Status labels, version numbers, permissions |
-| `Checkbox` | `ui/checkbox` | Multi-select; uses `onCheckedChange(bool)` |
-| `Input` | `ui/input` | Text inputs |
-| `Textarea` | `ui/textarea` | Multi-line inputs |
-| `Select` | `ui/select` | Dropdowns; uses `onValueChange(value)` |
-| `Label` | `ui/label` | Form field labels |
-| `Dialog` | `ui/dialog` | Modals (replaces fixed-overlay divs) |
-| `Alert` | `ui/alert` | Error / warning messages |
-| `AlertDialog` | `ui/alert-dialog` | Destructive confirmations |
-| `Table` | `ui/table` | Data tables (roles, users) |
-| `Separator` | `ui/separator` | Visual dividers |
-| `Tabs` | `ui/tabs` | Workspace mobile view toggle, tab panels |
-
-## Adding a shadcn component
+To start a local development server, run:
 
 ```bash
-cd frontend
-pnpm dlx shadcn@latest add <name>
-# Then remove the generated "import * as React from 'react'" (React 19 doesn't need it)
+ng serve
 ```
 
-## Conventions
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-### Imports — always direct, never barrel
+## Code scaffolding
 
-```js
-// correct
-import { Button } from '@/components/ui/button'
-import { Input }  from '@/components/ui/input'
-
-// never create ui/index.js barrel
-import { Button, Input } from '@/components/ui'
-```
-
-### Color — CSS variables, not hard-coded Tailwind colors
-
-```jsx
-// correct — uses --primary (indigo-600)
-<Button>Save</Button>
-<div className="border-primary/30 bg-primary/5">...</div>
-
-// avoid
-<button className="bg-indigo-600 hover:bg-indigo-700">Save</button>
-```
-
-`--primary` is mapped to `oklch(0.51 0.24 264)` (≈ indigo-600) in `index.css`.
-`variant="default"` on Button/Badge renders in primary color automatically.
-
-### Checkbox API
-
-```jsx
-// Radix Checkbox fires onCheckedChange(bool), not onChange(event)
-<Checkbox checked={selected} onCheckedChange={() => toggle(id)} />
-```
-
-### Select API (compound)
-
-```jsx
-<Select value={val} onValueChange={(v) => setVal(v)}>
-  <SelectTrigger><SelectValue /></SelectTrigger>
-  <SelectContent>
-    <SelectItem value="a">Option A</SelectItem>
-  </SelectContent>
-</Select>
-```
-
-When a hook expects a legacy `onChange(event)`, use an adapter:
-```jsx
-onValueChange={(val) => handler({ target: { value: val } })}
-```
-
-### Modals — Dialog, not fixed overlays
-
-```jsx
-// correct
-<Dialog open={true} onOpenChange={(open) => { if (!open) onClose() }}>
-  <DialogContent className="max-w-sm">
-    <DialogHeader><DialogTitle>Title</DialogTitle></DialogHeader>
-    {/* body */}
-    <DialogFooter>...</DialogFooter>
-  </DialogContent>
-</Dialog>
-
-// avoid
-<div className="fixed inset-0 z-50 bg-black/40">...</div>
-```
-
-### Conditional rendering — ternary, not &&
-
-```jsx
-// correct
-{error ? <Alert variant="destructive">{error}</Alert> : null}
-
-// avoid
-{error && <Alert variant="destructive">{error}</Alert>}
-```
-
-### No inline component definitions
-
-```jsx
-// correct — extract to module level
-function Field({ label, children }) { ... }
-export function MyForm() { return <Field label="Name">...</Field> }
-
-// avoid — defines inside another component (new ref each render)
-export function MyForm() {
-  const Field = ({ label }) => <div>...</div>
-}
-```
-
-## Line limit
-
-Biome enforces **max 200 lines** per file via `style/noExcessiveLinesPerFile`
-(`skipBlankLines: true`; comments DO count — Biome has no `skipComments`).
-Exemptions (in `biome.json` overrides): `components/ui/*`, `AdminUsersPage.jsx`,
-`useUsersAdmin.js`, `wireframes/**`.
-
-If a migration would push a file over 200, extract a sub-component.
-
-## Color system
-
-```css
-/* index.css — light theme */
---primary:            oklch(0.51 0.24 264);   /* indigo-600 */
---primary-foreground: oklch(1 0 0);           /* white */
---background:         oklch(1 0 0);
---foreground:         oklch(0.145 0 0);
---muted:              oklch(0.97 0 0);
---muted-foreground:   oklch(0.556 0 0);
---border:             oklch(0.922 0 0);
---destructive:        oklch(0.577 0.245 27.325); /* red-600 */
-```
-
-## Dev commands
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
 ```bash
-pnpm install        # install dependencies
-pnpm dev            # Vite dev server -> http://localhost:5173
-pnpm build          # production build
-pnpm lint           # Biome lint (must be 0 errors)
-pnpm format         # Biome format check
-pnpm test:unit      # cucumber-js unit tests (no browser, no backend)
-pnpm test:e2e       # Playwright BDD (requires frontend + backend running)
+ng generate component component-name
 ```
 
-## Code-splitting
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
-Heavy routes are already code-split via `React.lazy()` in `App.tsx`:
-`CrearOvaPage`, `EditarOvaPage`, `MisOvasPage`, `PapeleraPage`,
-`ProfilePage`, `EngagePage`, `ExplorePage`, `AdminRolesPage`,
-`AdminUsersPage`, `LabsPage`.
+```bash
+ng generate --help
+```
 
-Auth pages (`LoginPage`, `RegisterPage`) and `DashboardPage` are eagerly loaded
-so first-paint on the login screen is fast.
+## Building
 
-## Technical Debt
+To build the project run:
 
-> See [`docs/arquitectura-frontend-deuda.md`](../docs/arquitectura-frontend-deuda.md)
-> for the full inventory and migration plan.
+```bash
+ng build
+```
 
-### Known architectural violations (marked, not fixed)
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-| Location | Issue | Future destination |
-|----------|-------|-------------------|
-| `core/lib/llm/` | 6 LLM domain files in infrastructure layer | `features/llm/lib/` |
-| `core/hooks/` | 4 LLM hooks in infrastructure layer | `features/llm/hooks/` |
-| `core/services/` | `llmSettingsService.ts` is domain logic | `features/llm/services/` |
-| `core/components/` | `LlmEnginesPanel.tsx` is domain UI | `features/llm/components/` |
+## Running unit tests
 
-These files are **intentionally not moved** in Sprint 3 to avoid churn.
-Migration is planned as `TA-008` in a future sprint.
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
 
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
