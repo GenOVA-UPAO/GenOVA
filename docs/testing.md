@@ -8,7 +8,7 @@ spec ↔ test.
 |---|---|:--:|:--:|---|
 | **unit** | cucumber-js | No | No | ~seg |
 | **backend-bdd** | pytest-bdd | No | **Sí** (`:8000`) | ~seg–min |
-| **e2e** | playwright-bdd | **Sí** (Chromium) | **Sí** (`:8000` + `:5173`) | ~min |
+| **e2e** | playwright-bdd | **Sí** (Chromium) | **Sí** (`:8000` + `:4200`) | ~min |
 
 ---
 

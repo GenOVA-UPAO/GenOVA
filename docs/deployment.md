@@ -18,7 +18,7 @@
 
 | Componente | Host | Artefacto |
 |---|---|---|
-| Frontend | **Vercel** | `vite build` → estático (`frontend/vercel.json`) |
+| Frontend | **Vercel** | `ng build` → estático (`dist/frontend/browser`; Vercel autodetecta Angular) |
 | Backend | **Render** | `backend/Dockerfile.prod` (uvicorn) |
 | Base de datos | **Supabase** | PostgreSQL + pgvector (Transaction pooler, puerto 6543) |
 | Storage SCORM | **Supabase Storage** | bucket privado `scorm-packages` (signed URLs) |
@@ -29,14 +29,12 @@
 
 ## Frontend en Vercel
 
-- **Build**: `vite build` → `dist/` (definido en `frontend/vercel.json`).
-- **Rewrites**: `/(.*) → /index.html` (SPA).
-- **Headers**: assets con cache de 1 año `immutable`; raíz `no-cache`; `X-Content-Type-Options`,
-  `Referrer-Policy`.
-- **Env a setear en Vercel**:
-  - `VITE_API_BASE_URL` → origen del backend (ej. `https://genova-api.onrender.com`).
-- **Patrones `source`**: usan **path-to-regexp**, no RegExp. Sin grupos no-capturadores
-  `(?:...)`; usar grupos capturadores `(...)`. (Causa típica de "Invalid route source pattern".)
+- **Build**: `ng build` → `dist/frontend/browser/` (Angular CLI/esbuild). Vercel autodetecta
+  el framework Angular; ya no hay `frontend/vercel.json` (el legacy React vive en
+  `archive/frontend-react-legacy/`).
+- **Rewrites**: `/(.*) → /index.html` (SPA), provistos por el preset de Angular en Vercel.
+- **Origen del backend**: resuelto en tiempo de ejecución por `frontend/src/core/lib/http.ts`
+  (constante `API_BASE_PROD` + override `window.__GENOVA_API_BASE__`), no vía env `VITE_*`.
 
 > El check **"Supabase Preview"** que aparece en GitHub es la integración de *Branching*:
 > se **salta** (`skipped`) si la rama no tiene un PR/branch Supabase asociado. Es normal,
@@ -79,7 +77,7 @@ arq worker.WorkerSettings        # start command del servicio worker
 ## Alternativa: Docker (gateway Nginx)
 
 ```bash
-pnpm dev:docker    # dev: frontend :5173 + backend :8000 (hot-reload)
+pnpm dev:docker    # dev: frontend :4200 + backend :8000 (hot-reload)
 pnpm prod:docker   # prod: Nginx :80 → /api/* al backend, /* al frontend
 ```
 

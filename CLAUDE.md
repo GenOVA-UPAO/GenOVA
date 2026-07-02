@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project
 
 GenOVA — web platform for AI-assisted generation of Virtual Learning Objects (OVA) with SCORM 1.2 export.
-Built as a pnpm monorepo (React 19 + FastAPI). Backend supports both `pip` and `uv`.
+Built as a pnpm monorepo (Angular 22 + FastAPI). Backend supports both `pip` and `uv`.
 
 ## Commands
 
@@ -16,9 +16,9 @@ Built as a pnpm monorepo (React 19 + FastAPI). Backend supports both `pip` and `
 
 ```bash
 pnpm install          # deps
-pnpm dev              # Vite dev → http://localhost:5173
-pnpm build            # prod build
-pnpm lint             # Biome lint (noExcessiveLinesPerFile: 200, hard error)
+pnpm dev              # ng serve → http://localhost:4200
+pnpm build            # ng build (prod)
+pnpm lint             # Biome lint (noExcessiveLinesPerFile: maxLines=250, skipBlankLines; .html excluded; hard error)
 pnpm format           # Biome format check
 pnpm test:unit        # cucumber-js unit (no browser, no backend)
 pnpm test:e2e         # playwright-bdd (requires frontend + backend)
@@ -55,7 +55,7 @@ pytest                                    # all tests/test_*.py
 ### Docker
 
 ```bash
-pnpm dev:docker    # hot-reload, ports 5173 + 8000
+pnpm dev:docker    # hot-reload, ports 4200 + 8000
 pnpm prod:docker   # Nginx on port 80
 ```
 
@@ -63,7 +63,7 @@ pnpm prod:docker   # Nginx on port 80
 
 | Layer | Tech |
 |---|---|
-| Frontend | React 19, React Router 7, Tailwind CSS 4, Vite 8 |
+| Frontend | Angular 22, Angular Router, Tailwind CSS 4, Angular CLI/esbuild |
 | Backend | FastAPI, SQLAlchemy 2, Uvicorn, SlowAPI |
 | DB | Supabase PostgreSQL + pgvector |
 | Auth | JWT HS256 + bcrypt + lockout |
@@ -71,7 +71,7 @@ pnpm prod:docker   # Nginx on port 80
 | RAG | pgvector + Gemini gemini-embedding-2-preview (768-d) |
 | SCORM | Supabase Storage (302 redirect) or local disk fallback |
 
-**Frontend pattern**: `services/*.js` (fetch) → `hooks/use*.js` (state) → `pages/*.jsx` (layout). Max 200 lines/file.  
+**Frontend pattern**: `services/*.ts` (fetch, signals for state) → `*.component.ts` pages/components (layout). Standalone components, no NgModules, no React hooks. Max 250 lines/file (`.html` templates excluded).  
 **Backend pattern**: `router.py` (HTTP) → `service.py` (logic) → `models.py` (ORM). Max 200 lines/file.
 
 ## Migrations
@@ -96,7 +96,7 @@ psycopg3 server-side prepared statements are disabled (`prepare_threshold=None`)
 JWT is issued by the backend and delivered as an httpOnly `Set-Cookie:
 genova_token=...; Secure; SameSite=Strict; HttpOnly` on `/login` and
 `/register`. The frontend never reads it directly; cookies travel automatically
-via `credentials: 'include'` in `frontend/src/lib/http.js`. Set
+via `credentials: 'include'` in `frontend/src/core/lib/http.ts`. Set
 `AUTH_ACCEPT_BEARER=0` in production env to reject the legacy `Authorization:
 Bearer` fallback once all clients are on cookies.
 

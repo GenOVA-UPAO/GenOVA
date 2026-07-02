@@ -328,7 +328,7 @@ SMTP_PASSWORD=<app-password sin espacios>
 pnpm dev:docker
 ```
 
-Levanta frontend (`http://localhost:5173`) y backend (`http://localhost:8000`) en contenedores con hot-reload.
+Levanta frontend (`http://localhost:4200`) y backend (`http://localhost:8000`) en contenedores con hot-reload.
 
 ### Sin Docker — Backend con `pip`
 

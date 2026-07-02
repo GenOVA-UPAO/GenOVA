@@ -95,7 +95,7 @@ Feature: Habilitación de backend FastAPI y orquestación Docker
     \__ /* -> [Frontend build :80]
 
 (local)
-[Browser :5173] <-> [Frontend Vite container]
+[Browser :4200] <-> [Frontend Angular container]
        |
        +---------> [FastAPI container :8000]
 ```
