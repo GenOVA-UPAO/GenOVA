@@ -1,0 +1,27 @@
+<gn-dialog [open]="open()" (openChange)="onOpenChange.emit($event)">
+  <gn-dialog-content class="gap-0">
+    <gn-dialog-header class="px-6 pt-6 pb-2">
+      <gn-dialog-title>Configuración de IA</gn-dialog-title>
+      <gn-dialog-description>
+        Modelos y tiempos de espera para generar OVAs. También editable en
+        <a routerLink="/profile" class="text-primary hover:underline" (click)="close()">Mi Perfil</a
+        >.
+      </gn-dialog-description>
+    </gn-dialog-header>
+
+    <div class="px-6 max-h-[60vh] overflow-y-auto">
+      <gn-llm-settings-form [readOnly]="!store.hasOwnLlmKey"></gn-llm-settings-form>
+    </div>
+
+    <gn-dialog-footer class="px-6 pb-6 pt-4 gap-2 flex justify-end">
+      <gn-button variant="ghost" (click)="close()" [disabled]="store.saving">
+        {{ store.hasOwnLlmKey ? 'Cancelar' : 'Cerrar' }}
+      </gn-button>
+      @if (store.hasOwnLlmKey) {
+        <gn-button (click)="handleSave()" [disabled]="store.saving || store.loading">
+          {{ store.saving ? 'Guardando…' : 'Guardar' }}
+        </gn-button>
+      }
+    </gn-dialog-footer>
+  </gn-dialog-content>
+</gn-dialog>

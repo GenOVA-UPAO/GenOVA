@@ -1,0 +1,83 @@
+<div
+  class="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition duration-200"
+>
+  <div class="bg-gradient-to-br px-5 pt-4 pb-3.5 border-b border-border/40" [ngClass]="meta.grad">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="shrink-0 rounded-xl border p-2.5 shadow-sm" [ngClass]="meta.iconBg">
+          <span class="text-lg" [ngClass]="meta.accent">{{ meta.icon }}</span>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-bold text-foreground leading-tight">{{ meta.label }}</p>
+          <p class="text-[10px] text-muted-foreground/70 font-medium truncate">{{ meta.desc }}</p>
+        </div>
+      </div>
+      @if (fallbacks.length > 0) {
+        <span
+          class="shrink-0 text-[10px] font-bold rounded-full px-2.5 py-0.5 border"
+          [ngClass]="meta.badge"
+        >
+          {{ fallbacks.length }} fb
+        </span>
+      }
+    </div>
+  </div>
+
+  <div class="px-5 py-4 space-y-4">
+    <div class="space-y-2.5">
+      <p class="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50">
+        Plataforma UPAO
+      </p>
+      @if (isAdmin()) {
+        <gn-llm-model-select
+          [models]="adminModels()"
+          [provider]="adminDraft()?.default?.provider"
+          [modelId]="adminDraft()?.default?.model_id"
+          [disabled]="adminDisabled()"
+          [ariaLabel]="'Plataforma primario ' + task()"
+          (onChange)="onAdminModelChange($event)"
+        ></gn-llm-model-select>
+        <gn-model-task-card-chips
+          [fallbacks]="fallbacks"
+          [models]="adminModels()"
+          [chip]="meta.chip"
+          [num]="meta.num"
+        ></gn-model-task-card-chips>
+        <button
+          type="button"
+          (click)="editChain.emit()"
+          class="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-semibold transition duration-150"
+          [ngClass]="
+            isEditing()
+              ? meta.accent + ' bg-current/5 ring-1 ring-current/20'
+              : 'text-muted-foreground/50 hover:text-primary hover:bg-primary/5'
+          "
+        >
+          ✎ {{ isEditing() ? 'Editando cadena ✓' : 'Editar cadena de fallback' }}
+        </button>
+      } @else {
+        <div class="rounded-xl bg-muted/40 border border-border/40 px-3.5 py-2.5">
+          <p class="text-[11px] font-semibold text-muted-foreground">
+            Administrado por la plataforma UPAO
+          </p>
+        </div>
+        <gn-model-task-card-chips
+          [fallbacks]="fallbacks"
+          [models]="adminModels()"
+          [chip]="meta.chip"
+          [num]="meta.num"
+        ></gn-model-task-card-chips>
+      }
+    </div>
+
+    @if (hasOwnLlmKey() && !isAdmin()) {
+      <gn-user-override-section
+        [task]="task()"
+        [chip]="meta.chip"
+        [num]="meta.num"
+        [userDisabled]="userDisabled()"
+        [bounds]="bounds()"
+      ></gn-user-override-section>
+    }
+  </div>
+</div>

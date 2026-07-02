@@ -1,0 +1,143 @@
+@if (open()) {
+  <div
+    role="presentation"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/40"
+    (click)="onClose.emit()"
+    [gnModalDismiss]="dismissModal"
+  >
+    <div
+      role="presentation"
+      class="relative w-[min(920px,calc(100vw-2rem))] max-h-[90vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl overflow-hidden"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex items-center justify-between px-5 py-4 border-b border-border/60 bg-muted/20 shrink-0"
+      >
+        <div class="gap-0.5">
+          <h2 class="text-base font-bold flex items-center gap-2 text-foreground">
+            <span class="text-primary">⚙</span> Gestionar modelos
+          </h2>
+          <p class="text-[11px] text-muted-foreground">
+            Activa los modelos que quieres usar en Asignación.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0 ml-4">
+          <gn-button
+            size="sm"
+            variant="outline"
+            (onClick)="connectOpen = true"
+            class="gap-1.5 text-xs font-bold"
+          >
+            + Conectar proveedor
+          </gn-button>
+          <gn-button
+            size="sm"
+            variant="ghost"
+            (onClick)="onClose.emit()"
+            class="text-xs text-muted-foreground"
+          >
+            Cerrar
+          </gn-button>
+        </div>
+      </div>
+
+      <gn-manage-models-toolbar
+        [localSearch]="localSearch"
+        [categoryFilter]="store.categoryFilter"
+        [categories]="store.categories"
+        (onSearch)="onSearchChange($event)"
+        (onCategory)="store.handleCategory($event)"
+      />
+
+      <div #scrollRoot class="flex-1 overflow-y-auto min-h-0 max-h-[560px]">
+        @if (!store.hasOwnLlmKey) {
+          <div class="flex flex-col items-center gap-4 py-14 text-center px-8">
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-card shadow-sm text-xl"
+            >
+              🔑
+            </div>
+            <div class="max-w-xs space-y-1.5">
+              <p class="text-sm font-bold text-foreground font-display">
+                Sin API keys configuradas
+              </p>
+              <p class="text-xs text-muted-foreground leading-relaxed">
+                Añade una API key para ver y activar modelos.
+              </p>
+            </div>
+            <gn-button
+              size="sm"
+              (onClick)="onGoToApiKeys.emit(undefined)"
+              class="gap-1.5 text-xs font-bold"
+            >
+              🔑 Añadir API Key
+            </gn-button>
+          </div>
+        } @else if (store.loading) {
+          <div class="flex justify-center items-center py-12">
+            <div
+              class="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary"
+            ></div>
+          </div>
+        } @else {
+          <div class="divide-y divide-border/30">
+            @for (entry of grouped() | keyvalue; track entry.key) {
+              <div class="px-3 py-2">
+                <p
+                  class="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/40 mb-1 px-2 flex items-center gap-1.5"
+                >
+                  {{ providerLabels[entry.key] || entry.key }}
+                  @if (entry.key === 'groq' || entry.key === 'huggingface') {
+                    <span class="font-normal normal-case tracking-normal text-emerald-500"
+                      >· gratuito</span
+                    >
+                  }
+                </p>
+                @for (m of entry.value; track m.provider + ':' + m.model_id) {
+                  @let locked = store.isDefaultModel(m.provider, m.model_id);
+                  <gn-manage-model-row
+                    [model]="m"
+                    [locked]="locked"
+                    [enabled]="store.isModelEnabled(m.provider, m.model_id) || locked"
+                    (onToggle)="handleToggle($event.provider, $event.modelId)"
+                  />
+                }
+              </div>
+            }
+            <div #sentinel class="h-1"></div>
+            @if (store.loadingMore) {
+              <div class="flex justify-center py-4">
+                <div
+                  class="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"
+                ></div>
+              </div>
+            } @else if (store.fullHasMore) {
+              <div class="flex flex-col items-center gap-1.5 py-5 border-t border-border/30">
+                <p class="text-[11px] text-muted-foreground">
+                  Mostrando {{ store.catalogFull.length }} modelos
+                </p>
+                <gn-button
+                  size="sm"
+                  variant="outline"
+                  (onClick)="store.loadMore()"
+                  class="text-xs font-bold"
+                  >Cargar más modelos</gn-button
+                >
+              </div>
+            } @else if (store.catalogFull.length > 0) {
+              <p class="text-center text-[11px] text-muted-foreground/50 py-4">
+                {{ store.catalogFull.length }} modelos en total
+              </p>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<gn-connect-provider-modal
+  [open]="connectOpen"
+  (onClose)="connectOpen = false"
+  (onSelectProvider)="handleConnectSelect($event)"
+/>

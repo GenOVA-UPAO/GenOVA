@@ -1,28 +1,21 @@
-import { CommonModule } from "@angular/common";
 import { Component, inject } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-
-// import { OvaCreationViewComponent } from '../components/creation/ova-creation-view.component';
+import { OvaCreationViewComponent } from "../components/creation/ova-creation-view.component";
 import { OvaEditViewComponent } from "../components/editor/ova-edit-view.component";
 
 @Component({
   selector: "gn-ova-workspace-page",
   standalone: true,
-  imports: [CommonModule, OvaEditViewComponent], // OvaCreationViewComponent
+  imports: [OvaEditViewComponent, OvaCreationViewComponent],
   template: `
-    <ng-container *ngIf="ovaId; else creationView">
+    @if (ovaId) {
       <gn-ova-edit-view [ovaId]="ovaId"></gn-ova-edit-view>
-    </ng-container>
-    
-    <ng-template #creationView>
-      <!-- <gn-ova-creation-view 
-        [initialJobId]="jobId"
+    } @else {
+      <gn-ova-creation-view
+        [initialJobId]="jobId ?? undefined"
         (onCreated)="handleCreated($event)"
-      ></gn-ova-creation-view> -->
-      <div class="p-8 text-center text-muted-foreground">
-        Vista de creación (Placeholder)
-      </div>
-    </ng-template>
+      ></gn-ova-creation-view>
+    }
   `,
 })
 export class OvaWorkspacePageComponent {
@@ -30,7 +23,7 @@ export class OvaWorkspacePageComponent {
   router = inject(Router);
 
   get ovaId() {
-    return this.route.snapshot.paramMap.get("ovaId");
+    return this.route.snapshot.paramMap.get("id");
   }
 
   get jobId() {
@@ -38,6 +31,6 @@ export class OvaWorkspacePageComponent {
   }
 
   handleCreated(id: string) {
-    this.router.navigate(["/ova", id, "workspace"], { replaceUrl: true });
+    this.router.navigate(["/workspace", id], { replaceUrl: true });
   }
 }

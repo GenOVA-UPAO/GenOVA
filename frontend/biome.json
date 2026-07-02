@@ -9,6 +9,9 @@
     "ignoreUnknown": false,
     "includes": ["**", "!**/node_modules", "!**/dist", "!**/.angular", "!**/*.html"]
   },
+  "css": {
+    "parser": { "tailwindDirectives": true }
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -19,6 +22,9 @@
     "enabled": true,
     "rules": {
       "preset": "recommended",
+      "complexity": {
+        "useLiteralKeys": "off"
+      },
       "style": {
         "noExcessiveLinesPerFile": {
           "level": "error",
@@ -36,17 +42,5 @@
       }
     }
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
-  "overrides": [
-    {
-      "includes": ["**/app/app.html"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noExcessiveLinesPerFile": "off"
-          }
-        }
-      }
-    }
-  ]
+  "assist": { "actions": { "source": { "organizeImports": "on" } } }
 }

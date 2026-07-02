@@ -1,7 +1,8 @@
 import { Injectable, signal } from "@angular/core";
-import { toast } from "sonner";
+import { toast } from "@/core/lib/toast";
 import { apiFetch } from "../../../core/lib/http";
 import type { Role } from "../lib/types";
+import { deleteRoleRequest, submitRoleForm } from "./admin-roles-api.helpers";
 
 @Injectable({ providedIn: "root" })
 export class AdminRolesService {
@@ -9,7 +10,6 @@ export class AdminRolesService {
   private _loading = signal(true);
   private _error = signal("");
 
-  // Editing state
   private _isModalOpen = signal(false);
   private _editingRole = signal<Role | null>(null);
   private _roleName = signal("");
@@ -18,7 +18,6 @@ export class AdminRolesService {
   private _formError = signal("");
   private _isSubmitting = signal(false);
 
-  // Deleting state
   private _deletingRole = signal<Role | null>(null);
   private _isDeleteModalOpen = signal(false);
   private _reassignRoleId = signal("");
@@ -28,7 +27,6 @@ export class AdminRolesService {
   readonly roles = this._roles.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
-
   readonly isModalOpen = this._isModalOpen.asReadonly();
   readonly editingRole = this._editingRole.asReadonly();
   readonly roleName = this._roleName.asReadonly();
@@ -36,7 +34,6 @@ export class AdminRolesService {
   readonly selectedPermissions = this._selectedPermissions.asReadonly();
   readonly formError = this._formError.asReadonly();
   readonly isSubmitting = this._isSubmitting.asReadonly();
-
   readonly deletingRole = this._deletingRole.asReadonly();
   readonly isDeleteModalOpen = this._isDeleteModalOpen.asReadonly();
   readonly reassignRoleId = this._reassignRoleId.asReadonly();
@@ -65,7 +62,6 @@ export class AdminRolesService {
     }
   }
 
-  // Edit / Create Actions
   setRoleName(name: string) {
     this._roleName.set(name);
   }
@@ -122,42 +118,28 @@ export class AdminRolesService {
 
     this._isSubmitting.set(true);
     this._formError.set("");
-
     const currentEditingRole = this._editingRole();
-    const isEdit = !!currentEditingRole;
-    const path = isEdit ? `/api/roles/${currentEditingRole.id}` : "/api/roles";
-    const method = isEdit ? "PATCH" : "POST";
 
     try {
-      const response = await apiFetch(path, {
-        method,
-        body: JSON.stringify({
-          name,
-          description: this._roleDescription(),
-          permissions: this._selectedPermissions(),
-        }),
+      const result = await submitRoleForm(currentEditingRole, {
+        name,
+        description: this._roleDescription(),
+        permissions: this._selectedPermissions(),
       });
 
-      const data = await response.json();
-
-      if (response.status === 200 || response.status === 201) {
-        if (isEdit) {
+      if (result.ok) {
+        if (result.isEdit && currentEditingRole) {
           this._roles.update((prev) =>
-            prev.map((r) => (r.id === currentEditingRole.id ? (data as Role) : r)),
+            prev.map((r) => (r.id === currentEditingRole.id ? result.data : r)),
           );
           toast.success("Rol actualizado con éxito");
         } else {
-          this._roles.update((prev) => [...prev, data as Role]);
+          this._roles.update((prev) => [...prev, result.data]);
           toast.success("Rol creado con éxito");
         }
         this._isModalOpen.set(false);
-      } else if (response.status === 409) {
-        this._formError.set("Ya existe un rol con ese nombre.");
       } else {
-        this._formError.set(
-          data.detail ||
-            `Ocurrió un error inesperado al ${isEdit ? "actualizar" : "crear"} el rol.`,
-        );
+        this._formError.set(result.message);
       }
     } catch {
       this._formError.set("No se pudo conectar con el servidor. Intenta de nuevo.");
@@ -166,7 +148,6 @@ export class AdminRolesService {
     }
   }
 
-  // Delete Actions
   setReassignRoleId(id: string) {
     this._reassignRoleId.set(id);
   }
@@ -197,12 +178,12 @@ export class AdminRolesService {
     this._isDeleting.set(true);
     this._deleteError.set("");
 
-    const basePath = `/api/roles/${currentDeletingRole.id}`;
-    const path = isReassign ? `${basePath}?reassign_to_id=${reassignId}` : basePath;
-
     try {
-      const response = await apiFetch(path, { method: "DELETE" });
-      if (response.status === 204) {
+      const result = await deleteRoleRequest(
+        currentDeletingRole.id,
+        isReassign ? reassignId : undefined,
+      );
+      if (result.ok) {
         if (isReassign) {
           this._roles.update((prev) =>
             prev
@@ -217,11 +198,7 @@ export class AdminRolesService {
         this._isDeleteModalOpen.set(false);
         toast.success("Rol eliminado con éxito");
       } else {
-        let data: any = {};
-        try {
-          data = await response.json();
-        } catch {}
-        this._deleteError.set(data.detail || "Ocurrió un error inesperado al eliminar el rol.");
+        this._deleteError.set(result.message);
       }
     } catch {
       this._deleteError.set("No se pudo conectar con el servidor. Intenta de nuevo.");

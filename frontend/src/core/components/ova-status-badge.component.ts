@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { Component, input } from "@angular/core";
 
 @Component({
   selector: "gn-ova-status-badge",
@@ -15,10 +15,10 @@ import { Component, Input } from "@angular/core";
   `,
 })
 export class OvaStatusBadgeComponent {
-  @Input() status?: string;
+  readonly status = input<string | undefined>(undefined);
 
   get badgeClass(): string {
-    switch (this.status) {
+    switch (this.status()) {
       case "generando":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
       case "error":
@@ -31,7 +31,8 @@ export class OvaStatusBadgeComponent {
   }
 
   get label(): string {
-    if (!this.status) return "Borrador";
-    return this.status.charAt(0).toUpperCase() + this.status.slice(1);
+    const status = this.status();
+    if (!status) return "Borrador";
+    return status.charAt(0).toUpperCase() + status.slice(1);
   }
 }

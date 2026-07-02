@@ -1,28 +1,32 @@
 import { computed, Injectable, inject, type OnDestroy, signal } from "@angular/core";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { API_BASE } from "@/core/lib/http";
 import {
-  JobSnapshot,
+  type JobSnapshot,
   jobOutcome,
   pruneSelection,
   type Selections,
   toResourceViewModel,
 } from "../lib/ova-job-view-model";
-import { OvaCreationService, type StartJobArgs } from "./ova-creation.service";
+import { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
+import { OvaCreationService, toResourcesPayload } from "./ova-creation.service";
+import { OvaJobSyncRunner } from "./ova-job-sync";
 
-const POLL_MS = 2000;
-const STREAM_HEARTBEAT_MS = 15000;
+export interface StartJobArgs {
+  prompt: string;
+  uploadIds?: string[];
+  selections: Selections;
+  theme?: unknown;
+  resourceConfigs?: Record<string, unknown>;
+}
 
 const ALL_PHASES = ["engage", "explore", "explain", "elaborate", "evaluate"];
 const EMPTY_SELECTIONS = Object.fromEntries(ALL_PHASES.map((p) => [p, []])) as Selections;
 
-@Injectable({
-  providedIn: "root",
-})
+@Injectable({ providedIn: "root" })
 export class OvaJobService implements OnDestroy {
   private creationService = inject(OvaCreationService);
+  private jobsApi = inject(OvaJobsApiService);
+  private syncRunner: OvaJobSyncRunner;
 
-  // State
   private jobIdState = signal<string | null>(null);
   private selectionsState = signal<Selections>(EMPTY_SELECTIONS);
   private startingState = signal(false);
@@ -31,11 +35,6 @@ export class OvaJobService implements OnDestroy {
   private jobSnapshot = signal<JobSnapshot | null>(null);
   private streamingState = signal(false);
 
-  // Polling / SSE internals
-  private pollTimer: any = null;
-  private sseCtrl: AbortController | null = null;
-
-  // Public accessors
   jobId = this.jobIdState.asReadonly();
   job = this.jobSnapshot.asReadonly();
   error = this.errorState.asReadonly();
@@ -57,18 +56,33 @@ export class OvaJobService implements OnDestroy {
     return "idle";
   });
 
-  // Flow Actions
+  constructor() {
+    this.syncRunner = new OvaJobSyncRunner({
+      jobsApi: this.jobsApi,
+      onSnapshot: (snapshot) => this.jobSnapshot.set(snapshot),
+      onTerminal: () => this.syncRunner.stop(),
+      getViewModel: () => this.viewModel(),
+      isStreaming: () => this.streamingState(),
+      setStreaming: (value) => this.streamingState.set(value),
+    });
+  }
+
   async start(args: StartJobArgs) {
-    this.selectionsState.set(args.resources as any); // Simplification for port
+    this.selectionsState.set(args.selections);
     this.errorState.set("");
     this.selectedFailedIdsState.set([]);
     this.startingState.set(true);
     this.jobIdState.set(null);
-    this.stopPolling();
-    this.stopSse();
+    this.syncRunner.stop();
 
     try {
-      const { job_id } = await this.creationService.startJob(args);
+      const { job_id } = await this.creationService.startJob({
+        prompt: args.prompt,
+        uploadIds: args.uploadIds,
+        resources: toResourcesPayload(args.selections),
+        theme: args.theme,
+        resourceConfigs: args.resourceConfigs,
+      });
       this.jobIdState.set(job_id);
       this.startSyncFlow();
     } catch (err: any) {
@@ -79,8 +93,7 @@ export class OvaJobService implements OnDestroy {
   }
 
   reset() {
-    this.stopPolling();
-    this.stopSse();
+    this.syncRunner.stop();
     this.jobIdState.set(null);
     this.selectionsState.set(EMPTY_SELECTIONS);
     this.errorState.set("");
@@ -101,8 +114,8 @@ export class OvaJobService implements OnDestroy {
     if (!id) return;
     this.errorState.set("");
     try {
-      await this.creationService.resumeJob(id, ids);
-      this.triggerManualPoll();
+      await this.jobsApi.resumeJob(id, ids);
+      this.syncRunner.pollNow(id);
     } catch (err: any) {
       this.errorState.set(err.message || "No se pudo reintentar la generación.");
     }
@@ -142,8 +155,8 @@ export class OvaJobService implements OnDestroy {
     if (!id) return;
     this.errorState.set("");
     try {
-      await this.creationService.cancelJob(id);
-      this.triggerManualPoll();
+      await this.jobsApi.cancelJob(id);
+      this.syncRunner.pollNow(id);
     } catch (err: any) {
       this.errorState.set(err.message || "No se pudo cancelar la generación.");
     }
@@ -153,100 +166,10 @@ export class OvaJobService implements OnDestroy {
     this.reset();
   }
 
-  // --- Internals for SSE & Polling ---
-
   private startSyncFlow() {
-    this.stopSse();
-    this.stopPolling();
-
     if (this.outcome().isTerminal) return;
-
     const id = this.jobIdState();
     if (!id) return;
-
-    this.startSse(id);
-    this.triggerManualPoll(); // Fetch once immediately
-  }
-
-  private startSse(jobId: string) {
-    this.sseCtrl = new AbortController();
-
-    fetchEventSource(`${API_BASE}/api/ova/jobs/${jobId}/stream`, {
-      credentials: "include",
-      headers: { "X-Requested-With": "XMLHttpRequest" },
-      signal: this.sseCtrl.signal,
-      openWhenHidden: true,
-      onopen: async (res) => {
-        this.streamingState.set(res.ok);
-      },
-      onmessage: (ev) => {
-        if (ev.event !== "progress" && ev.event !== "done") return;
-        try {
-          const snapshot = JSON.parse(ev.data);
-          this.jobSnapshot.set(snapshot);
-          if (jobOutcome(snapshot, this.viewModel()).isTerminal) {
-            this.stopSyncFlow();
-          }
-        } catch {
-          // malformed frame, polling will fix
-        }
-      },
-      onerror: () => {
-        this.streamingState.set(false);
-        throw new Error("sse-stream-failed");
-      },
-      onclose: () => {
-        this.streamingState.set(false);
-      },
-    }).catch(() => {
-      this.streamingState.set(false);
-    });
-  }
-
-  private stopSse() {
-    if (this.sseCtrl) {
-      this.sseCtrl.abort();
-      this.sseCtrl = null;
-    }
-    this.streamingState.set(false);
-  }
-
-  private stopPolling() {
-    if (this.pollTimer) {
-      clearTimeout(this.pollTimer);
-      this.pollTimer = null;
-    }
-  }
-
-  private stopSyncFlow() {
-    this.stopSse();
-    this.stopPolling();
-  }
-
-  private triggerManualPoll() {
-    const id = this.jobIdState();
-    if (!id) return;
-
-    this.stopPolling();
-
-    this.creationService
-      .getJobStatus(id)
-      .then((snapshot: any) => {
-        this.jobSnapshot.set(snapshot);
-        if (jobOutcome(snapshot, this.viewModel()).isTerminal) {
-          this.stopSyncFlow();
-        } else {
-          // Schedule next poll
-          const delay = this.streamingState() ? STREAM_HEARTBEAT_MS : POLL_MS;
-          this.pollTimer = setTimeout(() => this.triggerManualPoll(), delay);
-        }
-      })
-      .catch(() => {
-        // Retry in normal interval
-        const delay = this.streamingState() ? STREAM_HEARTBEAT_MS : POLL_MS;
-        this.pollTimer = setTimeout(() => this.triggerManualPoll(), delay);
-      });
+    this.syncRunner.start(id);
   }
 }
-
-export { JobSnapshot };

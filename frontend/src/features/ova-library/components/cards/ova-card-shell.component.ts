@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { Component, Input, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { CheckboxModule } from "primeng/checkbox";
 import { OvaStatusBadgeComponent } from "@/core/components/ova-status-badge.component";
@@ -10,13 +10,13 @@ import type { OvaListItem } from "@/features/ova-library/lib/types";
   standalone: true,
   imports: [CommonModule, CheckboxModule, FormsModule, OvaStatusBadgeComponent],
   template: `
-    <div [ngClass]="rootClassName || defaultRootClass">
+    <div [ngClass]="rootClassName() || defaultRootClass">
       <div class="flex items-start gap-3">
         <p-checkbox
           [binary]="true"
-          [ngModel]="isSelected"
+          [ngModel]="isSelected()"
           (ngModelChange)="onToggleSelect.emit(ova.id)"
-          [disabled]="checkboxDisabled"
+          [disabled]="checkboxDisabled()"
           styleClass="mt-0.5"
         ></p-checkbox>
         <div class="min-w-0 flex-1">
@@ -27,15 +27,21 @@ import type { OvaListItem } from "@/features/ova-library/lib/types";
             <gn-ova-status-badge [status]="ova.status"></gn-ova-status-badge>
             <ng-content select="[extraBadges]"></ng-content>
           </div>
-          <p *ngIf="ova.description" class="text-xs text-muted-foreground line-clamp-2 mt-1">
-            {{ ova.description }}
-          </p>
-          <p *ngIf="ova['owner']" class="mt-1.5 text-xs text-muted-foreground">
-            Por: <span class="font-medium text-foreground">{{ getOwnerName() }}</span>
-          </p>
-          <p *ngIf="dateValue" class="mt-1.5 text-xs" [ngClass]="dateClassName">
-            {{ dateLabel ? dateLabel + ' ' : '' }}{{ dateValue }}
-          </p>
+          @if (ova.description) {
+            <p class="text-xs text-muted-foreground line-clamp-2 mt-1">
+              {{ ova.description }}
+            </p>
+          }
+          @if (ova['owner']) {
+            <p class="mt-1.5 text-xs text-muted-foreground">
+              Por: <span class="font-medium text-foreground">{{ getOwnerName() }}</span>
+            </p>
+          }
+          @if (dateValue) {
+            <p class="mt-1.5 text-xs" [ngClass]="dateClassName()">
+              {{ dateLabel ? dateLabel + ' ' : '' }}{{ dateValue }}
+            </p>
+          }
         </div>
       </div>
       <div class="mt-4 flex flex-col gap-1.5 border-t border-border pt-3">
@@ -46,23 +52,23 @@ import type { OvaListItem } from "@/features/ova-library/lib/types";
 })
 export class OvaCardShellComponent {
   @Input({ required: true }) ova!: OvaListItem;
-  @Input() isSelected = false;
-  @Input() checkboxDisabled = false;
+  readonly isSelected = input(false);
+  readonly checkboxDisabled = input(false);
   @Input() dateLabel?: string;
   @Input() dateValue?: string;
-  @Input() dateClassName = "text-muted-foreground";
-  @Input() rootClassName?: string;
+  readonly dateClassName = input("text-muted-foreground");
+  readonly rootClassName = input<string | undefined>(undefined);
 
-  @Output() onToggleSelect = new EventEmitter<string>();
+  readonly onToggleSelect = output<string>();
 
   get defaultRootClass(): string {
     return `rounded-xl border bg-card p-5 shadow-sm hover:shadow-md transition ${
-      this.isSelected ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
+      this.isSelected() ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
     }`;
   }
 
   getOwnerName(): string {
-    const owner = this.ova.owner as { full_name?: string } | undefined;
+    const owner = this.ova["owner"] as { full_name?: string } | undefined;
     return owner?.full_name || "";
   }
 }

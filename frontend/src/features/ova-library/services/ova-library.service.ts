@@ -23,21 +23,21 @@ export class OvaLibraryService {
   statusFilter = signal("");
 
   // Resource for Active OVAs
-  activeOvas = resource({
-    request: () => ({
+  activeOvas = resource<OvaListPage, { page: number; search: string; status: string }>({
+    params: () => ({
       page: this.currentPage(),
       search: this.searchQuery(),
       status: this.statusFilter(),
     }),
-    loader: async ({ request }) => {
-      const params = new URLSearchParams({
-        page: String(request.page),
+    loader: async ({ params }) => {
+      const paramsQs = new URLSearchParams({
+        page: String(params.page),
         limit: "10",
       });
-      if (request.search.trim()) params.set("search", request.search.trim());
-      if (request.status.trim()) params.set("status", request.status.trim());
+      if (params.search.trim()) paramsQs.set("search", params.search.trim());
+      if (params.status.trim()) paramsQs.set("status", params.status.trim());
 
-      return apiJson(`/api/ovas?${params.toString()}`) as Promise<OvaListPage>;
+      return apiJson(`/api/ovas?${paramsQs.toString()}`) as Promise<OvaListPage>;
     },
   });
 
@@ -45,16 +45,16 @@ export class OvaLibraryService {
   trashCurrentPage = signal(1);
 
   // Resource for Trashed OVAs
-  trashedOvas = resource({
-    request: () => ({
+  trashedOvas = resource<OvaListPage, { page: number }>({
+    params: () => ({
       page: this.trashCurrentPage(),
     }),
-    loader: async ({ request }) => {
-      const params = new URLSearchParams({
-        page: String(request.page),
+    loader: async ({ params }) => {
+      const paramsQs = new URLSearchParams({
+        page: String(params.page),
         limit: "10",
       });
-      return apiJson(`/api/ovas/papelera?${params.toString()}`) as Promise<OvaListPage>;
+      return apiJson(`/api/ovas/papelera?${paramsQs.toString()}`) as Promise<OvaListPage>;
     },
   });
 

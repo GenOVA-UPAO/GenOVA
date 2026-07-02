@@ -1,0 +1,188 @@
+<gn-version-history-panel
+  [open]="historyOpen"
+  (openChange)="historyOpen = $event"
+  [ovaId]="ovaId()"
+  [versions]="versionRows"
+  [currentVersionId]="currentVersionId"
+  (onReverted)="ws.load()"
+></gn-version-history-panel>
+<div
+  class="flex flex-col flex-1 min-h-0 bg-background text-foreground animate-in fade-in duration-300"
+>
+  <header
+    class="flex items-center gap-4 border-b border-border/50 px-4 py-3 bg-card/60 backdrop-blur-md shrink-0 z-10"
+  >
+    <gn-button
+      variant="ghost"
+      size="sm"
+      class="gap-2 text-muted-foreground hover:bg-muted/50 rounded-lg"
+      routerLink="/mis-ovas"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        viewBox="0 0 256 256"
+      >
+        <path
+          d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"
+        ></path>
+      </svg>
+      Mis OVAs
+    </gn-button>
+    <div class="flex-1 min-w-0">
+      <h1 class="text-base font-display font-semibold truncate text-foreground">
+        {{ title }}
+      </h1>
+    </div>
+    @if (!ws.loading() && !ws.generating()) {
+      <div class="hidden sm:flex items-center gap-3 shrink-0">
+        @if (ws.versionNumber()) {
+          <span
+            class="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20 shadow-sm"
+          >
+            v{{ ws.versionNumber() }}
+          </span>
+        }
+      </div>
+    }
+  </header>
+
+  @if (ws.generating()) {
+    <div
+      class="flex flex-1 items-center justify-center p-8 glass-card m-6 rounded-2xl border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300"
+    >
+      <div class="flex flex-col items-center gap-4 text-center">
+        <div
+          class="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary shadow-sm"
+        ></div>
+        <div class="space-y-1.5">
+          <p class="text-lg font-display font-semibold text-primary">Generando tu OVA…</p>
+          <p class="text-sm text-muted-foreground font-medium">
+            El workspace se abrirá automáticamente al terminar.
+          </p>
+        </div>
+      </div>
+    </div>
+  } @else {
+    @if (ws.error()) {
+      <div class="flex flex-1 items-center justify-center p-8 animate-in fade-in duration-300">
+        <div
+          class="space-y-4 text-center glass-card p-8 rounded-2xl border-destructive/20 bg-destructive/5"
+        >
+          <p class="text-sm font-semibold text-destructive">
+            {{ ws.error() }}
+          </p>
+          <gn-button
+            variant="outline"
+            size="sm"
+            (click)="ws.load()"
+            class="border-destructive/30 hover:bg-destructive/10 text-destructive"
+          >
+            Reintentar
+          </gn-button>
+        </div>
+      </div>
+    } @else {
+      <div
+        class="flex-1 flex overflow-hidden animate-in fade-in duration-500 delay-100 fill-mode-both"
+      >
+        <div class="sm:hidden flex-1 overflow-hidden flex flex-col">
+          <div class="mx-3 mt-3 w-auto self-start bg-muted/50 p-1 rounded-xl flex">
+            <button
+              type="button"
+              [class.bg-background]="mobileTab === 'chat'"
+              [class.shadow-sm]="mobileTab === 'chat'"
+              class="rounded-lg text-xs font-semibold px-3 py-1.5 transition-all"
+              (click)="mobileTab = 'chat'"
+            >
+              Chat
+            </button>
+            <button
+              type="button"
+              [class.bg-background]="mobileTab === 'preview'"
+              [class.shadow-sm]="mobileTab === 'preview'"
+              class="rounded-lg text-xs font-semibold px-3 py-1.5 transition-all"
+              (click)="mobileTab = 'preview'"
+            >
+              Preview / Code
+            </button>
+          </div>
+          <div class="flex-1 overflow-hidden mt-2 relative">
+            @if (mobileTab === 'chat') {
+              <div class="absolute inset-0">
+                <!-- Chat properties bound below -->
+                <gn-workspace-chat-panel
+                  [prompt]="ws.prompt()"
+                  (promptChange)="ws.setPrompt($event)"
+                  [isRegenerating]="ws.isRegenerating()"
+                  [regenProgress]="ws.regenProgress()"
+                  (onSubmit)="ws.submitPrompt()"
+                  [uploads]="uploadsProps"
+                  (onFilesSelected)="onUploadFiles($event)"
+                  (onRemoveFile)="onRemoveUpload($event)"
+                  [phases]="ws.phases()"
+                  [selectionMode]="false"
+                  [selectedPhaseIds]="[]"
+                ></gn-workspace-chat-panel>
+              </div>
+            }
+            @if (mobileTab === 'preview') {
+              <div class="absolute inset-0">
+                <gn-workspace-ova-panel
+                  [phases]="ws.phases()"
+                  [versionNumber]="ws.versionNumber()"
+                  [isReady]="ws.isReady()"
+                  [isLoading]="ws.loading()"
+                  [ovaId]="ovaId()"
+                  (onDownload)="ws.downloadScorm()"
+                  (onHistoryOpen)="historyOpen = true"
+                  (onPhaseReverted)="ws.load()"
+                ></gn-workspace-ova-panel>
+              </div>
+            }
+          </div>
+        </div>
+        <div #container class="hidden sm:flex flex-1 overflow-hidden bg-background">
+          <div
+            class="overflow-hidden border-r border-border/50 bg-card/30"
+            [style.width]="ratio * 100 + '%'"
+            style="min-width: 300px"
+          >
+            <gn-workspace-chat-panel
+              [prompt]="ws.prompt()"
+              (promptChange)="ws.setPrompt($event)"
+              [isRegenerating]="ws.isRegenerating()"
+              [regenProgress]="ws.regenProgress()"
+              (onSubmit)="ws.submitPrompt()"
+              [uploads]="uploadsProps"
+              (onFilesSelected)="onUploadFiles($event)"
+              (onRemoveFile)="onRemoveUpload($event)"
+              [phases]="ws.phases()"
+              [selectionMode]="false"
+              [selectedPhaseIds]="[]"
+            ></gn-workspace-chat-panel>
+          </div>
+          <gn-workspace-resizable-divider
+            [ratio]="ratio"
+            (ratioChange)="ratio = $event"
+            [containerRef]="containerRef"
+          ></gn-workspace-resizable-divider>
+          <div class="flex-1 overflow-hidden bg-muted/10">
+            <gn-workspace-ova-panel
+              [phases]="ws.phases()"
+              [versionNumber]="ws.versionNumber()"
+              [isReady]="ws.isReady()"
+              [isLoading]="ws.loading()"
+              [ovaId]="ovaId()"
+              (onDownload)="ws.downloadScorm()"
+              (onHistoryOpen)="historyOpen = true"
+              (onPhaseReverted)="ws.load()"
+            ></gn-workspace-ova-panel>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

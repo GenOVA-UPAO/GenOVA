@@ -1,5 +1,5 @@
 import { Injectable, signal } from "@angular/core";
-import { toast } from "sonner";
+import { toast } from "@/core/lib/toast";
 import { apiFetch } from "../../../core/lib/http";
 import type { AdminUser, Role } from "../lib/types";
 

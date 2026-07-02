@@ -1,0 +1,109 @@
+<div
+  class="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm hover:shadow-md hover:border-border transition duration-200"
+>
+  <div class="bg-gradient-to-br px-5 pt-4 pb-3.5 border-b border-border/40" [ngClass]="meta.grad">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="shrink-0 rounded-xl border p-2.5 shadow-sm" [ngClass]="meta.iconBg">
+          <span class="text-lg" [ngClass]="meta.accent">{{ meta.icon }}</span>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-bold text-foreground leading-tight">{{ meta.label }}</p>
+          <p class="text-[10px] text-muted-foreground/70 font-medium truncate">{{ meta.desc }}</p>
+        </div>
+      </div>
+      @if (task() === 'imagen' && loaded) {
+        <button
+          type="button"
+          role="switch"
+          [attr.aria-checked]="enabled"
+          [disabled]="saving"
+          (click)="toggleEnabled()"
+          class="relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none"
+          [ngClass]="enabled ? 'bg-primary' : 'bg-input'"
+        >
+          <span
+            class="block h-4 w-4 rounded-full bg-white shadow-lg transition-transform duration-200"
+            [ngClass]="enabled ? 'translate-x-4' : 'translate-x-0'"
+          ></span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="px-5 py-4 min-h-[88px] flex flex-col justify-center">
+    @if (task() === 'imagen') {
+      @if (!loaded) {
+        <div class="flex items-center gap-2">
+          <div
+            class="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"
+          ></div>
+          <p class="text-xs text-muted-foreground">Cargando...</p>
+        </div>
+      } @else if (enabled) {
+        <div class="space-y-2.5">
+          <div>
+            <p
+              class="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50 mb-1.5"
+            >
+              Proveedor
+            </p>
+            <select
+              [value]="provider"
+              (change)="changeProvider($any($event.target).value)"
+              [disabled]="saving"
+              class="w-full text-xs rounded-lg border border-border/60 bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 cursor-pointer"
+            >
+              @for (opt of providers; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+          @if (loadingModels) {
+            <div class="flex items-center gap-1.5 py-1">
+              <div
+                class="h-3 w-3 animate-spin rounded-full border-2 border-muted border-t-primary"
+              ></div>
+              <p class="text-[10px] text-muted-foreground">Cargando modelos...</p>
+            </div>
+          } @else if (models.length > 0) {
+            <div>
+              <p
+                class="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50 mb-1.5"
+              >
+                Modelo
+              </p>
+              <select
+                [value]="imageModel ?? ''"
+                (change)="changeModel($any($event.target).value)"
+                [disabled]="saving"
+                class="w-full text-xs rounded-lg border border-border/60 bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 cursor-pointer"
+              >
+                @for (opt of models; track opt.id) {
+                  <option [value]="opt.id">{{ opt.label || opt.id }}</option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex items-center gap-2">
+          <div class="h-1.5 w-1.5 rounded-full bg-muted-foreground/30"></div>
+          <p class="text-xs text-muted-foreground">Sin imágenes AI en OVA</p>
+        </div>
+      }
+    } @else {
+      <div class="space-y-2">
+        <span
+          class="inline-block rounded-full px-2.5 py-0.5 text-[9px] font-bold border"
+          [ngClass]="meta.badge"
+        >
+          Sin modelo IA
+        </span>
+        <p class="text-[10px] text-muted-foreground/60 leading-relaxed">
+          Los videos se integran mediante búsqueda de contenido embebido. No requiere generación IA.
+        </p>
+      </div>
+    }
+  </div>
+</div>

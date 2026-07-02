@@ -1,22 +1,18 @@
-import { CommonModule } from "@angular/common";
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { Component, Input, input, output } from "@angular/core";
 import { formatSize } from "../../lib/uploadFormatters";
 import type { UploadItem } from "../../lib/uploadTypes";
 
 @Component({
   selector: "gn-file-chip",
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div
       class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium shadow-sm transition duration-200 hover:shadow-md bg-muted text-foreground border-border"
     >
       <span class="text-sm select-none">{{ icon }}</span>
       <div class="flex flex-col min-w-0">
-        <span
-          class="max-w-[130px] truncate font-semibold"
-          [title]="file.filename"
-        >
+        <span class="max-w-[130px] truncate font-semibold" [title]="file.filename">
           {{ file.filename }}
         </span>
         <span class="text-[9px] opacity-75">
@@ -24,52 +20,46 @@ import type { UploadItem } from "../../lib/uploadTypes";
         </span>
       </div>
       <div class="ml-1 flex items-center gap-1">
-        
-        <ng-container *ngIf="file.status === 'uploading'">
-          <span class="text-[10px] text-primary animate-pulse font-medium">
-            Subiendo...
-          </span>
-        </ng-container>
-        
-        <ng-container *ngIf="file.status === 'error'">
-          <span
-            class="text-[10px] text-destructive font-semibold"
-            [title]="file.message"
-          >
+        @if (file.status === 'uploading') {
+          <span class="text-[10px] text-primary animate-pulse font-medium"> Subiendo... </span>
+        }
+
+        @if (file.status === 'error') {
+          <span class="text-[10px] text-destructive font-semibold" [title]="file.message">
             Error
           </span>
-        </ng-container>
-        
-        <ng-container *ngIf="file.status === 'success' && file.ragStatus">
-          <ng-container *ngIf="file.ragStatus.status === 'success'">
+        }
+
+        @if (file.status === 'success' && file.ragStatus) {
+          @if (file.ragStatus.status === 'success') {
             <span
               class="text-[10px] text-primary font-bold bg-primary/10 px-1 rounded-sm"
               [title]="'Ingestado en RAG: ' + (file.ragStatus.chunks || 0) + ' fragmentos'"
             >
               RAG ({{ file.ragStatus.chunks || 0 }})
             </span>
-          </ng-container>
-          <ng-container *ngIf="file.ragStatus.status === 'error'">
+          }
+          @if (file.ragStatus.status === 'error') {
             <span
               class="text-[10px] text-destructive font-medium"
               [title]="file.ragStatus.message || 'Error RAG'"
             >
               Fallo RAG
             </span>
-          </ng-container>
-          <ng-container *ngIf="file.ragStatus.status !== 'success' && file.ragStatus.status !== 'error'">
+          }
+          @if (file.ragStatus.status !== 'success' && file.ragStatus.status !== 'error') {
             <span class="text-[10px] text-muted-foreground">Listo</span>
-          </ng-container>
-        </ng-container>
+          }
+        }
 
-        <ng-container *ngIf="file.status === 'success' && !file.ragStatus">
+        @if (file.status === 'success' && !file.ragStatus) {
           <span class="text-[10px] text-primary font-medium">Listo</span>
-        </ng-container>
+        }
 
         <button
           type="button"
           (click)="onRemove.emit(file.clientId)"
-          [disabled]="disabled"
+          [disabled]="disabled()"
           class="p-0.5 rounded-full hover:bg-foreground/5 text-current/60 hover:text-current cursor-pointer transition-colors"
           title="Quitar"
         >
@@ -94,8 +84,8 @@ import type { UploadItem } from "../../lib/uploadTypes";
 })
 export class FileChipComponent {
   @Input() file!: UploadItem;
-  @Input() disabled = false;
-  @Output() onRemove = new EventEmitter<string>();
+  readonly disabled = input(false);
+  readonly onRemove = output<string>();
 
   get extension() {
     return this.file.filename.split(".").pop()?.toLowerCase() ?? "";

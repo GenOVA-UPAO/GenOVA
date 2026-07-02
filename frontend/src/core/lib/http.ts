@@ -2,13 +2,23 @@ import { Injectable, inject } from "@angular/core";
 import { Router } from "@angular/router";
 
 // Angular uses environment.ts for env vars, not import.meta.env
-const API_BASE_DEV = "http://localhost:8000";
 const API_BASE_PROD = "https://genova-backend-production.up.railway.app";
 
-export const API_BASE =
-  (typeof window !== "undefined" &&
-    ((window as unknown as Record<string, unknown>).__GENOVA_API_BASE__ as string)) ||
-  (location.hostname === "localhost" ? API_BASE_DEV : API_BASE_PROD);
+function resolveApiBase(): string {
+  if (typeof window === "undefined") return API_BASE_PROD;
+
+  const override = (window as unknown as Record<string, unknown>)["__GENOVA_API_BASE__"];
+  if (typeof override === "string" && override.length > 0) return override;
+
+  // Local dev: ng serve + proxy.conf.json → same-origin requests to Railway backend.
+  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    return location.origin;
+  }
+
+  return API_BASE_PROD;
+}
+
+export const API_BASE = resolveApiBase();
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 const AUTH_PATHS = new Set(["/api/auth/me", "/auth/login", "/auth/register"]);
@@ -99,6 +109,37 @@ export async function apiJson<T = unknown>(
   }
 
   return (body ?? {}) as T;
+}
+
+/**
+ * GET que resuelve a JSON; en error usa `detail` del backend o el mensaje dado.
+ */
+export async function apiGetJson(path: string, fallbackMsg: string): Promise<unknown> {
+  const res = await apiFetch(path);
+  if (!res.ok) throw new Error(await extractDetail(res, fallbackMsg));
+  return res.json();
+}
+
+/**
+ * PUT JSON que resuelve a JSON; en error usa `detail` del backend o el mensaje dado.
+ */
+export async function apiPutJson(
+  path: string,
+  body: unknown,
+  fallbackMsg: string,
+): Promise<unknown> {
+  const res = await apiFetch(path, { method: "PUT", body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(await extractDetail(res, fallbackMsg));
+  return res.json();
+}
+
+async function extractDetail(res: Response, fallbackMsg: string): Promise<string> {
+  try {
+    const b = (await res.json()) as { detail?: string; message?: string };
+    return b.detail || b.message || fallbackMsg;
+  } catch {
+    return fallbackMsg;
+  }
 }
 
 /**

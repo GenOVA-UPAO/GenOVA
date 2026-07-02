@@ -1,15 +1,22 @@
 import type { Routes } from "@angular/router";
-import { authGuard } from "../auth/services/auth.guard";
+import { adminGuard, authGuard } from "@/core/auth/auth.guard";
 
 export const adminRoutes: Routes = [
   {
     path: "",
-    canActivate: [authGuard],
-    loadComponent: () => import("./pages/admin-users-page").then((m) => m.AdminUsersPage),
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () =>
+      import("./pages/admin-users-page.component").then((m) => m.AdminUsersPageComponent),
   },
   {
     path: "roles",
-    canActivate: [authGuard],
-    loadComponent: () => import("./pages/admin-roles-page").then((m) => m.AdminRolesPage),
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () =>
+      import("./pages/admin-roles-page.component").then((m) => m.AdminRolesPageComponent),
+  },
+  {
+    path: "platform",
+    redirectTo: "/models",
+    pathMatch: "full",
   },
 ];

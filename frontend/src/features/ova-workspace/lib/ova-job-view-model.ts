@@ -45,6 +45,10 @@ export interface JobLike {
   status?: string;
 }
 
+export interface JobSnapshot extends JobLike {
+  resources?: BackendResource[];
+}
+
 export interface JobOutcome {
   isTerminal: boolean;
   anyDone: boolean;

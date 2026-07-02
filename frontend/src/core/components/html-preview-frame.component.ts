@@ -1,4 +1,3 @@
-import { CommonModule } from "@angular/common";
 import {
   Component,
   type ElementRef,
@@ -7,19 +6,20 @@ import {
   type OnChanges,
   type OnDestroy,
   type SimpleChanges,
-  ViewChild,
+  input,
+  viewChild,
 } from "@angular/core";
 import { DomSanitizer, type SafeResourceUrl } from "@angular/platform-browser";
 
 @Component({
   selector: "gn-html-preview-frame",
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <iframe
       #iframe
-      [title]="title"
-      [class]="className"
+      [title]="title()"
+      [class]="className()"
       [style.height]="height ? height : null"
       sandbox="allow-scripts allow-same-origin"
       [src]="safeUrl"
@@ -27,12 +27,12 @@ import { DomSanitizer, type SafeResourceUrl } from "@angular/platform-browser";
   `,
 })
 export class HtmlPreviewFrameComponent implements OnChanges, OnDestroy {
-  @Input() html = "";
+  readonly html = input("");
   @Input() height = "60vh";
-  @Input() className = "w-full border-0 block";
-  @Input() title = "Vista previa del recurso";
+  readonly className = input("w-full border-0 block");
+  readonly title = input("Vista previa del recurso");
 
-  @ViewChild("iframe") iframeRef!: ElementRef<HTMLIFrameElement>;
+  readonly iframeRef = viewChild.required<ElementRef<HTMLIFrameElement>>("iframe");
 
   private sanitizer = inject(DomSanitizer);
 
@@ -40,7 +40,7 @@ export class HtmlPreviewFrameComponent implements OnChanges, OnDestroy {
   private currentBlobUrl: string | null = null;
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.html) {
+    if (changes["html"]) {
       this.updateUrl();
     }
   }
@@ -51,12 +51,13 @@ export class HtmlPreviewFrameComponent implements OnChanges, OnDestroy {
 
   private updateUrl() {
     this.revokeCurrentUrl();
-    if (!this.html) {
+    const html = this.html();
+    if (!html) {
       this.safeUrl = null;
       return;
     }
 
-    const blob = new Blob([this.html], { type: "text/html" });
+    const blob = new Blob([html], { type: "text/html" });
     this.currentBlobUrl = URL.createObjectURL(blob);
 
     this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.currentBlobUrl);

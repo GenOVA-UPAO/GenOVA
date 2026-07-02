@@ -108,17 +108,18 @@ export class ProfileService {
     throw new Error(data.detail || "Error al actualizar la contraseña.");
   }
 
-  async deleteAccount(): Promise<boolean> {
+  async deleteAccount(password: string): Promise<void> {
     const response = await apiFetch("/api/users/me", {
       method: "DELETE",
+      body: JSON.stringify({ password }),
     });
-    if (response.status === 200) {
-      return true;
-    }
-    let data: any = {};
+    if (response.status === 200) return;
+    let data: { detail?: string; message?: string } = {};
     try {
       data = await response.json();
-    } catch {}
-    throw new Error(data.detail || "Error al eliminar la cuenta.");
+    } catch {
+      /* ignore */
+    }
+    throw new Error(data.detail || data.message || "Error al eliminar la cuenta.");
   }
 }

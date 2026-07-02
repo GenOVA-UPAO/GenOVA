@@ -1,0 +1,79 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="true"
+  (onHide)="onClose.emit()"
+  [style]="{ width: '24rem', 'max-width': '100%' }"
+  [header]="resource().tipo || 'Recurso'"
+  contentStyleClass="p-0 bg-card"
+>
+  <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
+    <div
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg"
+      [style.backgroundColor]="phaseColor() + '18'"
+    >
+      {{ resource().emoji || '📦' }}
+    </div>
+    <div class="min-w-0">
+      <p class="font-semibold text-sm text-foreground leading-tight truncate">
+        {{ resource().tipo }}
+      </p>
+      <p class="text-[11px] text-muted-foreground">Configurar recurso</p>
+    </div>
+  </div>
+
+  <div class="p-4 flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
+    @if (schema.length === 0) {
+      <p class="text-sm text-muted-foreground text-center py-4">
+        Este recurso no tiene opciones configurables.
+      </p>
+    } @else {
+      @for (field of schema; track field.key) {
+        <div class="flex flex-col gap-1.5" [class.opacity-50]="isDisabled(field)">
+          <div class="flex justify-between items-center">
+            <label [for]="field.key" class="text-sm font-medium text-foreground">
+              {{ field.label }}
+            </label>
+            <span class="text-sm font-bold tabular-nums" [style.color]="phaseColor()">
+              {{ values[field.key] }}
+            </span>
+          </div>
+          <input
+            [id]="field.key"
+            type="range"
+            [min]="field.min"
+            [max]="field.max"
+            step="1"
+            [value]="values[field.key]"
+            [disabled]="isDisabled(field)"
+            (input)="setField(field.key, +$any($event.target).value)"
+            class="w-full"
+            [style.accentColor]="phaseColor()"
+          />
+          <div class="flex justify-between text-[10px] text-muted-foreground">
+            <span>{{ field.min }}</span>
+            <span>{{ field.max }}</span>
+          </div>
+          @if (field.description) {
+            <p class="text-[11px] text-muted-foreground leading-tight">{{ field.description }}</p>
+          }
+          @if (isDisabled(field)) {
+            <p class="text-[11px] text-amber-600">Sin API key de video configurada</p>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <div class="flex justify-end gap-2 p-4 border-t border-border">
+    <gn-button variant="ghost" size="sm" (onClick)="onClose.emit()">Cancelar</gn-button>
+    <gn-button
+      size="sm"
+      (onClick)="apply()"
+      [style.backgroundColor]="phaseColor()"
+      [style.borderColor]="phaseColor()"
+    >
+      Aplicar
+    </gn-button>
+  </div>
+</p-dialog>

@@ -1,4 +1,4 @@
-import { Component, Input } from "@angular/core";
+import { Component, input } from "@angular/core";
 
 @Component({
   selector: "gn-alert",
@@ -6,7 +6,7 @@ import { Component, Input } from "@angular/core";
   template: `<ng-content></ng-content>`,
 })
 export class AlertComponent {
-  @Input() variant: string = "default";
+  readonly variant = input<string>("default");
 }
 
 @Component({

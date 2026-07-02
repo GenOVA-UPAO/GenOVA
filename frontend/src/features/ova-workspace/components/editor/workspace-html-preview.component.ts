@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, EventEmitter, Input, Output, signal } from "@angular/core";
+import { Component, Input, signal, output } from "@angular/core";
 import { HtmlPreviewFrameComponent } from "@/core/components/html-preview-frame.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import type { PhaseWithContent } from "../../lib/types";
@@ -47,55 +47,59 @@ function getMeta(phase_type: string) {
   standalone: true,
   imports: [CommonModule, BadgeComponent, HtmlPreviewFrameComponent],
   template: `
-    <section class="flex flex-col h-full" (click)="onResourceClick.emit($event)">
-      <nav
-        *ngIf="phases.length"
-        aria-label="Recursos del OVA"
-        class="flex flex-wrap gap-1 border-b border-border bg-muted/20 px-3 py-2 shrink-0"
-      >
-        <button
-          *ngFor="let p of phases"
-          type="button"
-          (click)="$event.stopPropagation(); setActiveId(p.id)"
-          class="rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          [ngClass]="getTabClass(p)"
+    <section role="presentation" class="flex flex-col h-full" (click)="onResourceClick.emit($event)">
+      @if (phases.length) {
+        <nav
+          aria-label="Recursos del OVA"
+          class="flex flex-wrap gap-1 border-b border-border bg-muted/20 px-3 py-2 shrink-0"
         >
-          {{ getLabel(p) }}
-        </button>
-      </nav>
+          @for (p of phases; track p) {
+            <button
+              type="button"
+              (click)="$event.stopPropagation(); setActiveId(p.id)"
+              class="rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              [ngClass]="getTabClass(p)"
+            >
+              {{ getLabel(p) }}
+            </button>
+          }
+        </nav>
+      }
 
-      <div class="flex-1 overflow-hidden" *ngIf="phases.length">
-        <gn-html-preview-frame
-          [html]="activePhase()?.content ?? ''"
-          class="w-full h-full border-0 block"
-          height=""
-          [title]="activePhase()?.title ?? 'Vista previa del recurso'"
-        ></gn-html-preview-frame>
-      </div>
+      @if (phases.length) {
+        <div class="flex-1 overflow-hidden">
+          <gn-html-preview-frame
+            [html]="activePhase()?.content ?? ''"
+            class="w-full h-full border-0 block"
+            height=""
+            [title]="activePhase()?.title ?? 'Vista previa del recurso'"
+          ></gn-html-preview-frame>
+        </div>
+      }
 
-      <div *ngIf="activePhase()" class="shrink-0 border-t border-border px-3 py-1 bg-muted/20 flex items-center gap-2 min-w-0">
-        <gn-badge
-          variant="outline"
-          class="text-[10px] shrink-0"
-          [ngClass]="activeMeta().badge"
+      @if (activePhase()) {
+        <div
+          class="shrink-0 border-t border-border px-3 py-1 bg-muted/20 flex items-center gap-2 min-w-0"
         >
-          {{ activeMeta().label ?? activePhase()!.phase_type }}
-        </gn-badge>
-        
-        <span *ngIf="activePhase()!.title" class="text-xs text-muted-foreground truncate">
-          {{ activePhase()!.title }}
-        </span>
-        
-        <span *ngIf="activePhase()!.regenerated" class="ml-auto text-[10px] text-muted-foreground shrink-0">
-          ✦ regenerado
-        </span>
-      </div>
+          <gn-badge variant="outline" class="text-[10px] shrink-0" [ngClass]="activeMeta().badge">
+            {{ activeMeta().label ?? activePhase()!.phase_type }}
+          </gn-badge>
+          @if (activePhase()!.title) {
+            <span class="text-xs text-muted-foreground truncate">
+              {{ activePhase()!.title }}
+            </span>
+          }
+          @if (activePhase()!.regenerated) {
+            <span class="ml-auto text-[10px] text-muted-foreground shrink-0"> ✦ regenerado </span>
+          }
+        </div>
+      }
     </section>
   `,
 })
 export class WorkspaceHtmlPreviewComponent {
   @Input() phases: PhaseWithContent[] = [];
-  @Output() onResourceClick = new EventEmitter<MouseEvent>();
+  readonly onResourceClick = output<MouseEvent>();
 
   activeId = signal<string | null>(null);
 
@@ -112,7 +116,7 @@ export class WorkspaceHtmlPreviewComponent {
 
   get activeMeta() {
     return () => {
-      const p = this.activePhase()();
+      const p = this.activePhase();
       return p ? getMeta(p.phase_type) : DEFAULT_META;
     };
   }
@@ -122,7 +126,7 @@ export class WorkspaceHtmlPreviewComponent {
   }
 
   getTabClass(p: PhaseWithContent): string {
-    const isActive = p.id === this.activePhase()()?.id;
+    const isActive = p.id === this.activePhase()?.id;
     const meta = getMeta(p.phase_type);
     if (isActive) return meta.tab;
     return "bg-background text-muted-foreground border border-border hover:bg-muted/60";

@@ -1,6 +1,5 @@
-import { CommonModule } from "@angular/common";
-import { Component, EventEmitter, Input, type OnInit, Output } from "@angular/core";
-import { type FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import { inject, Component, type OnInit, input, output } from "@angular/core";
+import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { DialogModule } from "primeng/dialog";
 import { InputTextModule } from "primeng/inputtext";
 import { ButtonComponent } from "@/core/components/ui/button.component";
@@ -9,14 +8,14 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
 @Component({
   selector: "gn-edit-metadata-modal",
   standalone: true,
-  imports: [CommonModule, DialogModule, ReactiveFormsModule, ButtonComponent, InputTextModule],
+  imports: [DialogModule, ReactiveFormsModule, ButtonComponent, InputTextModule],
   template: `
-    <p-dialog 
-      [visible]="true" 
-      [modal]="true" 
-      [closable]="!isLoading"
+    <p-dialog
+      [visible]="true"
+      [modal]="true"
+      [closable]="!isLoading()"
       (onHide)="onCancel.emit()"
-      [style]="{width: '32rem', 'max-width': '100%'}"
+      [style]="{ width: '32rem', 'max-width': '100%' }"
       [showHeader]="false"
       contentStyleClass="p-0 bg-card rounded-xl border border-border shadow-lg"
     >
@@ -28,10 +27,13 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
           <div class="space-y-1.5">
-            <label for="metadata-title" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label
+              for="metadata-title"
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
               Título *
             </label>
-            <input 
+            <input
               id="metadata-title"
               type="text"
               pInputText
@@ -40,16 +42,21 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
               placeholder="Ej. Regresión lineal aplicada"
               formControlName="title"
             />
-            <p class="text-[11px] text-muted-foreground">
-              {{ titleLength }}/100
-            </p>
-            <p *ngIf="form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)" class="text-xs font-medium text-destructive">
-              El título es obligatorio y no puede superar 100 caracteres.
-            </p>
+            <p class="text-[11px] text-muted-foreground">{{ titleLength }}/100</p>
+            @if (
+              form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)
+            ) {
+              <p class="text-xs font-medium text-destructive">
+                El título es obligatorio y no puede superar 100 caracteres.
+              </p>
+            }
           </div>
 
           <div class="space-y-1.5">
-            <label for="metadata-description" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label
+              for="metadata-description"
+              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
               Descripción
             </label>
             <textarea
@@ -62,23 +69,25 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
             ></textarea>
           </div>
 
-          <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border mt-4">
-            <gn-button 
-              type="button" 
-              variant="outline" 
-              class="flex-1 block" 
-              (onClick)="onCancel.emit()" 
-              [disabled]="isLoading"
+          <div
+            class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border mt-4"
+          >
+            <gn-button
+              type="button"
+              variant="outline"
+              class="flex-1 block"
+              (onClick)="onCancel.emit()"
+              [disabled]="isLoading()"
             >
               Cancelar
             </gn-button>
-            <gn-button 
-              type="submit" 
-              class="flex-1 block" 
-              [disabled]="isLoading || form.invalid"
-              [loading]="isLoading"
+            <gn-button
+              type="submit"
+              class="flex-1 block"
+              [disabled]="isLoading() || form.invalid"
+              [loading]="isLoading()"
             >
-              {{ isLoading ? 'Guardando...' : 'Guardar' }}
+              {{ isLoading() ? 'Guardando...' : 'Guardar' }}
             </gn-button>
           </div>
         </form>
@@ -87,20 +96,23 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
   `,
 })
 export class EditMetadataModalComponent implements OnInit {
-  @Input() initial!: { title: string; description?: string };
-  @Input() isLoading = false;
+  readonly initial = input.required<{
+    title: string;
+    description?: string;
+  }>();
+  readonly isLoading = input(false);
 
-  @Output() onSave = new EventEmitter<MetadataInput>();
-  @Output() onCancel = new EventEmitter<void>();
+  readonly onSave = output<MetadataInput>();
+  readonly onCancel = output<void>();
 
   form!: FormGroup;
 
-  constructor(private fb: FormBuilder) {}
+  private fb = inject(FormBuilder);
 
   ngOnInit() {
     this.form = this.fb.group({
-      title: [this.initial?.title || "", [Validators.required, Validators.maxLength(100)]],
-      description: [this.initial?.description || "", [Validators.maxLength(2000)]],
+      title: [this.initial()?.title || "", [Validators.required, Validators.maxLength(100)]],
+      description: [this.initial()?.description || "", [Validators.maxLength(2000)]],
     });
   }
 

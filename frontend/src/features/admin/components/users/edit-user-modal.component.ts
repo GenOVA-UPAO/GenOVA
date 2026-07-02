@@ -1,23 +1,21 @@
-import { CommonModule } from "@angular/common";
-import { Component, EventEmitter, Input, inject, type OnInit, Output } from "@angular/core";
+import { Component, inject, type OnInit, input, output } from "@angular/core";
 import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
-import { ButtonDirective } from "../../../../core/components/ui/button.directive";
+import { ButtonDirective } from "@/core/components/ui/button.directive";
 import {
   DialogComponent,
   DialogContentComponent,
   DialogFooterComponent,
   DialogHeaderComponent,
   DialogTitleComponent,
-} from "../../../../core/components/ui/dialog.component";
-import { InputDirective } from "../../../../core/components/ui/input.directive";
-import { LabelDirective } from "../../../../core/components/ui/label.directive";
+} from "@/core/components/ui/dialog.component";
+import { InputDirective } from "@/core/components/ui/input.directive";
+import { LabelDirective } from "@/core/components/ui/label.directive";
 import type { AdminUser } from "../../lib/types";
 
 @Component({
   selector: "gn-edit-user-modal",
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     DialogComponent,
     DialogContentComponent,
@@ -32,35 +30,80 @@ import type { AdminUser } from "../../lib/types";
     <gn-dialog [open]="true" (openChange)="handleOpenChange($event)">
       <gn-dialog-content class="max-w-md max-h-[85vh] overflow-y-auto">
         <gn-dialog-header>
-          <gn-dialog-title>Editar Perfil: {{ user.full_name || user.email }}</gn-dialog-title>
+          <gn-dialog-title>Editar Perfil: {{ user().full_name || user().email }}</gn-dialog-title>
         </gn-dialog-header>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
           <!-- Nombre Completo -->
           <div class="space-y-1.5">
-            <label gnLabel for="edit-full-name" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nombre Completo</label>
-            <input gnInput id="edit-full-name" type="text" placeholder="Ej: Juan Pérez" formControlName="full_name" />
-            <p *ngIf="form.get('full_name')?.errors?.['required'] && form.get('full_name')?.touched" class="text-xs text-destructive">El nombre es requerido.</p>
+            <label
+              gnLabel
+              for="edit-full-name"
+              class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+              >Nombre Completo</label
+            >
+            <input
+              gnInput
+              id="edit-full-name"
+              type="text"
+              placeholder="Ej: Juan Pérez"
+              formControlName="full_name"
+            />
+            @if (form.get('full_name')?.errors?.['required'] && form.get('full_name')?.touched) {
+              <p class="text-xs text-destructive">El nombre es requerido.</p>
+            }
           </div>
 
           <!-- Email -->
           <div class="space-y-1.5">
-            <label gnLabel for="edit-email" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Correo Electrónico</label>
-            <input gnInput id="edit-email" type="email" placeholder="ejemplo@correo.com" formControlName="email" />
-            <p *ngIf="form.get('email')?.errors?.['email'] && form.get('email')?.touched" class="text-xs text-destructive">Correo inválido.</p>
+            <label
+              gnLabel
+              for="edit-email"
+              class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+              >Correo Electrónico</label
+            >
+            <input
+              gnInput
+              id="edit-email"
+              type="email"
+              placeholder="ejemplo@correo.com"
+              formControlName="email"
+            />
+            @if (form.get('email')?.errors?.['email'] && form.get('email')?.touched) {
+              <p class="text-xs text-destructive">Correo inválido.</p>
+            }
           </div>
 
           <!-- Código Universitario -->
           <div class="space-y-1.5">
-            <label gnLabel for="edit-uni-id" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Código Universitario (UPAO)</label>
-            <input gnInput id="edit-uni-id" type="number" min="1" placeholder="Ej: 257022" formControlName="university_id" />
-            <p class="text-[10px] text-muted-foreground mt-0.5">Se autocompletará con ceros a la izquierda a 9 dígitos.</p>
+            <label
+              gnLabel
+              for="edit-uni-id"
+              class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+              >Código Universitario (UPAO)</label
+            >
+            <input
+              gnInput
+              id="edit-uni-id"
+              type="number"
+              min="1"
+              placeholder="Ej: 257022"
+              formControlName="university_id"
+            />
+            <p class="text-[10px] text-muted-foreground mt-0.5">
+              Se autocompletará con ceros a la izquierda a 9 dígitos.
+            </p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Sexo -->
             <div class="space-y-1.5">
-              <label gnLabel for="edit-gender" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Sexo / Género</label>
+              <label
+                gnLabel
+                for="edit-gender"
+                class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                >Sexo / Género</label
+              >
               <select
                 id="edit-gender"
                 formControlName="gender"
@@ -74,13 +117,26 @@ import type { AdminUser } from "../../lib/types";
 
             <!-- Teléfono -->
             <div class="space-y-1.5">
-              <label gnLabel for="edit-phone" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Teléfono</label>
-              <input gnInput id="edit-phone" type="text" placeholder="Ej: +51987285992" formControlName="phone_number" />
+              <label
+                gnLabel
+                for="edit-phone"
+                class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                >Teléfono</label
+              >
+              <input
+                gnInput
+                id="edit-phone"
+                type="text"
+                placeholder="Ej: +51987285992"
+                formControlName="phone_number"
+              />
             </div>
           </div>
 
           <gn-dialog-footer class="pt-4 border-t border-border mt-4">
-            <button type="button" gnButton variant="outline" (click)="onClose.emit()">Cancelar</button>
+            <button type="button" gnButton variant="outline" (click)="onClose.emit()">
+              Cancelar
+            </button>
             <button type="submit" gnButton [disabled]="isSubmitting">Guardar Cambios</button>
           </gn-dialog-footer>
         </form>
@@ -89,22 +145,23 @@ import type { AdminUser } from "../../lib/types";
   `,
 })
 export class EditUserModalComponent implements OnInit {
-  @Input({ required: true }) user!: AdminUser;
+  readonly user = input.required<AdminUser>();
 
-  @Output() onClose = new EventEmitter<void>();
-  @Output() onSave = new EventEmitter<Record<string, unknown>>();
+  readonly onClose = output<void>();
+  readonly onSave = output<Record<string, unknown>>();
 
   fb = inject(FormBuilder);
   form!: FormGroup;
   isSubmitting = false;
 
   ngOnInit() {
+    const user = this.user();
     this.form = this.fb.group({
-      full_name: [this.user.full_name || "", Validators.required],
-      email: [this.user.email || "", [Validators.required, Validators.email]],
-      university_id: [this.user.university_id ? String(this.user.university_id) : ""],
-      gender: [this.user.gender || "otro"],
-      phone_number: [this.user.phone_number || ""],
+      full_name: [this.user().full_name || "", Validators.required],
+      email: [this.user().email || "", [Validators.required, Validators.email]],
+      university_id: [user.university_id ? String(user.university_id) : ""],
+      gender: [this.user().gender || "otro"],
+      phone_number: [this.user().phone_number || ""],
     });
   }
 

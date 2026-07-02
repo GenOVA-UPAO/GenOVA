@@ -1,0 +1,111 @@
+<section class="space-y-6 animate-in fade-in duration-300">
+  <header class="space-y-1">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">{{ emoji() }}</span>
+      <h1 class="text-2xl font-semibold text-foreground">Fase {{ phase() }}</h1>
+    </div>
+    <p class="text-muted-foreground text-sm">{{ description() }}</p>
+  </header>
+
+  <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
+    <div class="space-y-6">
+      <div class="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+        <h2 class="text-base font-semibold text-foreground">1. Elige el tipo de recurso</h2>
+        @if (loadingRecursos) {
+          <div class="text-sm text-muted-foreground">Cargando recursos...</div>
+        } @else {
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            @for (r of recursos; track r.id) {
+              <gn-resource-card
+                [resource]="r"
+                [selected]="selectedResource?.id === r.id"
+                [phaseKey]="phaseKey"
+                [phaseColor]="phaseColor"
+                [hasConfig]="hasConfig(r)"
+                (onClick)="handleSelect($event)"
+                (onHover)="hovered = $event"
+                (onConfigClick)="openConfig($event)"
+              ></gn-resource-card>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+        <h2 class="text-base font-semibold text-foreground">2. Define el concepto</h2>
+        <div class="flex gap-3 flex-wrap">
+          <input
+            type="text"
+            [(ngModel)]="concept"
+            (ngModelChange)="reset()"
+            placeholder="Ej: K-Means, Regresión Lineal, Redes Neuronales..."
+            class="flex h-10 w-full sm:w-auto sm:min-w-[16rem] flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="loading"
+          />
+          <button
+            type="button"
+            (click)="generate()"
+            [disabled]="!canGenerate"
+            class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 w-full sm:w-auto px-5"
+          >
+            {{ loading ? 'Generando con IA...' : 'Generar recurso' }}
+          </button>
+        </div>
+
+        @if (selectedResource) {
+          <p class="text-xs text-muted-foreground">
+            Recurso:
+            <span class="font-medium text-primary"
+              >{{ selectedResource.emoji }} {{ selectedResource.tipo }}</span
+            >
+          </p>
+        }
+
+        @if (loading) {
+          <div class="flex items-center gap-3 text-sm text-muted-foreground">
+            <div
+              class="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary"
+            ></div>
+            <span>Llamando a Groq + OpenRouter... esto puede tomar 20-60 segundos.</span>
+          </div>
+        }
+
+        @if (error) {
+          <div
+            class="rounded-lg bg-destructive/10 border border-destructive/30 p-3 text-sm text-destructive"
+          >
+            {{ error }}
+          </div>
+        }
+      </div>
+
+      @if (result) {
+        <div class="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+          <h2 class="text-base font-semibold text-foreground">3. Vista previa</h2>
+          <gn-html-preview [result]="result"></gn-html-preview>
+        </div>
+      }
+    </div>
+
+    <div class="space-y-4 hidden lg:block">
+      <gn-resource-preview-panel
+        [resource]="previewResource"
+        [phaseKey]="phaseKey"
+        [phaseColor]="phaseColor"
+        className="flex flex-col rounded-xl border border-border bg-card shadow-sm min-h-[220px] overflow-hidden"
+      ></gn-resource-preview-panel>
+      <gn-ova-five-e-viewer [content]="demoContent"></gn-ova-five-e-viewer>
+    </div>
+  </div>
+</section>
+
+@if (configTarget) {
+  <gn-resource-config-modal
+    [resource]="configTarget.resource"
+    [phaseKey]="configTarget.phaseKey"
+    [phaseColor]="configTarget.phaseColor"
+    [config]="configForTarget()"
+    (onSave)="saveConfig($event)"
+    (onClose)="configTarget = null"
+  ></gn-resource-config-modal>
+}

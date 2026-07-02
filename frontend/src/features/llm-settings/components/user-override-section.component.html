@@ -1,0 +1,111 @@
+<div class="space-y-2.5 pt-3 border-t border-dashed border-border/50">
+  <div class="flex items-center justify-between">
+    <p class="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/50">
+      Tu modelo
+    </p>
+    <button
+      type="button"
+      (click)="store.resetTipo(task())"
+      [disabled]="userDisabled()"
+      class="text-[9px] font-semibold text-muted-foreground/40 hover:text-destructive transition-colors disabled:opacity-30"
+    >
+      Restaurar
+    </button>
+  </div>
+  <div class="flex items-center gap-2">
+    <div class="flex-1 min-w-0">
+      <gn-llm-model-select
+        [models]="userModels"
+        [provider]="userSettings?.provider"
+        [modelId]="userSettings?.model_id"
+        [disabled]="userDisabled()"
+        [ariaLabel]="'Mi modelo ' + task()"
+        (onChange)="onUserModel($event)"
+      ></gn-llm-model-select>
+    </div>
+    <div class="flex items-center gap-1 shrink-0">
+      <input
+        type="number"
+        [min]="bounds()[0]"
+        [max]="bounds()[1]"
+        [value]="userSettings?.timeout_s ?? ''"
+        [disabled]="userDisabled()"
+        (change)="onUserTimeout($event)"
+        class="h-8 w-14 text-center text-xs border border-border/50 bg-background/60 rounded-md"
+        [title]="'Timeout: ' + bounds()[0] + '–' + bounds()[1] + ' s'"
+      />
+      <span class="text-[10px] text-muted-foreground/40">s</span>
+    </div>
+  </div>
+
+  @if (userFallbacks.length > 0) {
+    <div class="flex flex-wrap items-center gap-0.5">
+      @for (f of userFallbacks.slice(0, 4); track $index; let i = $index) {
+        <span class="inline-flex items-center gap-1">
+          @if (i > 0) {
+            <span class="text-[8px] text-muted-foreground/30 font-black">→</span>
+          }
+          <span
+            class="inline-flex items-center gap-1 rounded-full pl-2 pr-1 py-0.5 text-[10px] font-semibold border"
+            [ngClass]="chip()"
+          >
+            <span class="text-[9px]" [ngClass]="num()">{{ modalitySymbol(f) }}</span>
+            <span class="truncate max-w-[70px]">{{ label(f) }}</span>
+            <button
+              type="button"
+              (click)="store.removeFallback(task(), i)"
+              [attr.aria-label]="'Quitar ' + label(f)"
+              class="ml-0.5 rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors"
+            >
+              ×
+            </button>
+          </span>
+        </span>
+      }
+      @if (userFallbacks.length > 4) {
+        <span
+          class="inline-flex items-center rounded-full bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground border border-border/50"
+        >
+          +{{ userFallbacks.length - 4 }}
+        </span>
+      }
+    </div>
+  } @else {
+    <div class="text-[10px] italic text-muted-foreground/40">Sin cadena de respaldo personal</div>
+  }
+
+  @for (f of userFallbacks; track $index; let i = $index) {
+    @if (!f.provider || !f.model_id) {
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-bold text-muted-foreground/50">#{{ i + 1 }}</span>
+        <div class="flex-1">
+          <gn-llm-model-select
+            [models]="userModels"
+            [provider]="f.provider || undefined"
+            [modelId]="f.model_id || undefined"
+            [disabled]="userDisabled()"
+            [ariaLabel]="'Mi fallback ' + (i + 1) + ' ' + task()"
+            (onChange)="onUserFallback(i, $event)"
+          ></gn-llm-model-select>
+        </div>
+        <button
+          type="button"
+          (click)="store.removeFallback(task(), i)"
+          [disabled]="userDisabled()"
+          class="p-1 rounded text-muted-foreground hover:text-destructive"
+        >
+          🗑
+        </button>
+      </div>
+    }
+  }
+
+  <button
+    type="button"
+    (click)="store.addFallback(task())"
+    [disabled]="userDisabled()"
+    class="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground/50 hover:text-primary transition-colors"
+  >
+    + Añadir respaldo
+  </button>
+</div>

@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { Component, EventEmitter, Input, Output, signal } from "@angular/core";
+import { Component, Input, inject, signal, output } from "@angular/core";
 import { DialogModule } from "primeng/dialog";
-import { apiFetch } from "@/core/lib/http";
+import { ThemeSettingsService } from "../../services/theme-settings.service";
 import {
   type Palette,
   ThemeMiniPreviewComponent,
@@ -47,7 +47,7 @@ const PALETTES: Palette[] = [
       [modal]="true"
       [closable]="false"
       (onHide)="onClose.emit()"
-      [style]="{width: '42rem', 'max-width': '100%'}"
+      [style]="{ width: '42rem', 'max-width': '100%' }"
       [showHeader]="false"
       contentStyleClass="p-0 bg-card rounded-2xl border border-border shadow-2xl overflow-hidden"
     >
@@ -60,7 +60,17 @@ const PALETTES: Palette[] = [
           class="rounded-lg p-1.5 text-muted-foreground hover:bg-accent cursor-pointer"
         >
           <!-- <X size={20} /> -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            fill="currentColor"
+            viewBox="0 0 256 256"
+          >
+            <path
+              d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"
+            ></path>
+          </svg>
         </button>
       </div>
 
@@ -68,60 +78,76 @@ const PALETTES: Palette[] = [
         <div class="flex gap-4 p-5">
           <div class="flex-1 space-y-5 min-w-0">
             <div class="space-y-1.5">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Paleta de colores</p>
-              
-              <gn-theme-radio-option
-                *ngFor="let m of colorModes"
-                [label]="m.label"
-                [desc]="m.desc"
-                [checked]="theme().colorMode === m.key"
-                (onClick)="set('colorMode', m.key)"
-              ></gn-theme-radio-option>
-              
-              <div *ngIf="theme().colorMode === 'custom'" class="flex flex-wrap gap-1.5 pt-1 pl-1">
-                <button
-                  *ngFor="let pal of palettes"
-                  type="button"
-                  (click)="set('palette', pal)"
-                  [title]="pal.name"
-                  [ngClass]="{
-                    'border-primary scale-105': theme().palette?.name === pal.name,
-                    'border-transparent hover:border-border': theme().palette?.name !== pal.name
-                  }"
-                  class="flex gap-px rounded-lg p-0.5 border-2 cursor-pointer transition"
-                >
-                  <div class="h-5 w-5 rounded-l" [style.background]="pal.p"></div>
-                  <div class="h-5 w-5 rounded-r" [style.background]="pal.a"></div>
-                </button>
-              </div>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Paleta de colores
+              </p>
+
+              @for (m of colorModes; track m) {
+                <gn-theme-radio-option
+                  [label]="m.label"
+                  [desc]="m.desc"
+                  [checked]="theme().colorMode === m.key"
+                  (onClick)="set('colorMode', m.key)"
+                ></gn-theme-radio-option>
+              }
+
+              @if (theme().colorMode === 'custom') {
+                <div class="flex flex-wrap gap-1.5 pt-1 pl-1">
+                  @for (pal of palettes; track pal) {
+                    <button
+                      type="button"
+                      (click)="set('palette', pal)"
+                      [title]="pal.name"
+                      [ngClass]="{
+                        'border-primary scale-105': theme().palette?.name === pal.name,
+                        'border-transparent hover:border-border':
+                          theme().palette?.name !== pal.name,
+                      }"
+                      class="flex gap-px rounded-lg p-0.5 border-2 cursor-pointer transition"
+                    >
+                      <div class="h-5 w-5 rounded-l" [style.background]="pal.p"></div>
+                      <div class="h-5 w-5 rounded-r" [style.background]="pal.a"></div>
+                    </button>
+                  }
+                </div>
+              }
             </div>
 
             <div class="space-y-1.5">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Diseño / Plantilla</p>
-              
-              <gn-theme-radio-option
-                *ngFor="let m of designModes"
-                [label]="m.label"
-                [desc]="m.desc"
-                [checked]="theme().designMode === m.key"
-                (onClick)="set('designMode', m.key)"
-              ></gn-theme-radio-option>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Diseño / Plantilla
+              </p>
+
+              @for (m of designModes; track m) {
+                <gn-theme-radio-option
+                  [label]="m.label"
+                  [desc]="m.desc"
+                  [checked]="theme().designMode === m.key"
+                  (onClick)="set('designMode', m.key)"
+                ></gn-theme-radio-option>
+              }
             </div>
           </div>
 
           <div class="w-44 shrink-0 space-y-2">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Previsualización</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Previsualización
+            </p>
             <gn-theme-mini-preview
               [colorMode]="theme().colorMode"
               [designMode]="theme().designMode"
               [palette]="theme().palette"
             ></gn-theme-mini-preview>
-            <p class="text-[10px] text-muted-foreground text-center leading-snug">Estructura y colores aproximados</p>
+            <p class="text-[10px] text-muted-foreground text-center leading-snug">
+              Estructura y colores aproximados
+            </p>
           </div>
         </div>
 
         <div class="border-t border-border px-5 py-4 space-y-2">
-          <p *ngIf="saveError()" class="text-xs text-destructive text-center">{{ saveError() }}</p>
+          @if (saveError()) {
+            <p class="text-xs text-destructive text-center">{{ saveError() }}</p>
+          }
           <button
             type="button"
             (click)="handleSave()"
@@ -136,12 +162,14 @@ const PALETTES: Palette[] = [
   `,
 })
 export class ThemeModalComponent {
+  private themeSettings = inject(ThemeSettingsService);
+
   @Input() set initialTheme(val: ThemeState | null | undefined) {
     if (val) this.theme.set(val);
   }
 
-  @Output() onClose = new EventEmitter<void>();
-  @Output() onSaved = new EventEmitter<ThemeState>();
+  readonly onClose = output<void>();
+  readonly onSaved = output<ThemeState>();
 
   theme = signal<ThemeState>({ colorMode: "upao", designMode: "upao", palette: null });
   saving = signal(false);
@@ -160,20 +188,11 @@ export class ThemeModalComponent {
     this.saveError.set("");
 
     try {
-      const res = await apiFetch("/api/users/me/theme", {
-        method: "PATCH",
-        body: JSON.stringify(this.theme()),
-      });
-
-      if (res.ok) {
-        this.onSaved.emit(this.theme());
-        this.onClose.emit();
-      } else {
-        const data = (await res.json().catch(() => ({}))) as { detail?: string; message?: string };
-        this.saveError.set(data?.detail || data?.message || "No se pudo guardar el tema.");
-      }
-    } catch {
-      this.saveError.set("No se pudo conectar con el servidor.");
+      await this.themeSettings.saveTheme(this.theme());
+      this.onSaved.emit(this.theme());
+      this.onClose.emit();
+    } catch (e: unknown) {
+      this.saveError.set(e instanceof Error ? e.message : "No se pudo conectar con el servidor.");
     } finally {
       this.saving.set(false);
     }

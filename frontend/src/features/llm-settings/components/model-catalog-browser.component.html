@@ -1,0 +1,90 @@
+<div class="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
+  <button
+    type="button"
+    (click)="open = !open"
+    class="w-full flex items-center justify-between px-5 py-3.5 hover:bg-muted/30 transition-colors group"
+  >
+    <div class="flex items-center gap-2.5">
+      <span class="text-sm font-semibold text-foreground">Catálogo completo</span>
+      <span class="rounded-full bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 tabular-nums">
+        {{ store.fullTotal }}
+      </span>
+    </div>
+    <span class="text-muted-foreground transition-transform duration-200" [class.rotate-180]="open">▼</span>
+  </button>
+
+  @if (open) {
+    <div class="border-t border-border/50">
+      <div class="px-5 py-4 space-y-3 bg-muted/20 border-b border-border/40">
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 text-xs">🔍</span>
+          <input
+            type="text"
+            placeholder="Buscar modelo..."
+            [value]="store.searchQuery"
+            (input)="store.handleSearch($any($event.target).value)"
+            class="w-full pl-8 pr-4 py-2 text-xs rounded-lg border border-border/60 bg-background/80 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+        <div class="space-y-2">
+          <gn-model-catalog-filter-row
+            label="Proveedor"
+            [options]="store.categories"
+            [active]="store.categoryFilter"
+            [labelMap]="store.categoryLabels"
+            (onSelect)="store.handleCategory($event)"
+          />
+          <gn-model-catalog-filter-row
+            label="Tipo"
+            [options]="store.types"
+            [active]="store.typeFilter"
+            [labelMap]="store.typeLabels"
+            (onSelect)="store.handleType($event)"
+          />
+        </div>
+      </div>
+
+      @if (isEmpty()) {
+        <div class="flex flex-col items-center gap-2 py-12 text-center">
+          <span class="text-2xl text-muted-foreground/40">{{ store.searchQuery ? "🔍" : "☁" }}</span>
+          <p class="text-xs text-muted-foreground/60">
+            {{ store.searchQuery ? "Sin coincidencias." : "Catálogo no disponible." }}
+          </p>
+        </div>
+      } @else {
+        <div class="max-h-[460px] overflow-y-auto divide-y divide-border/40">
+          @for (entry of grouped() | keyvalue; track entry.key) {
+            <div class="px-5 py-3">
+              <p class="text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground/50 mb-2 flex items-center gap-1.5">
+                {{ providerLabels[entry.key] || entry.key }}
+                @if (entry.key === 'groq') {
+                  <span class="font-normal normal-case tracking-normal text-muted-foreground/40">· gratuito</span>
+                }
+              </p>
+              <div class="space-y-0.5">
+                @for (m of entry.value; track m.provider + ':' + m.model_id) {
+                  @let key = m.provider + ':' + m.model_id;
+                  @let locked = store.isDefaultModel(m.provider, m.model_id);
+                  <gn-model-catalog-row
+                    [model]="m"
+                    [locked]="locked"
+                    [enabled]="store.isModelEnabled(m.provider, m.model_id) || locked"
+                    [saving]="savingKey === key"
+                    [typeLabels]="store.typeLabels"
+                    (onToggle)="handleToggle($event.provider, $event.modelId)"
+                  />
+                }
+              </div>
+            </div>
+          }
+          <div #sentinel class="h-1"></div>
+          @if (store.loadingMore) {
+            <div class="flex justify-center py-4">
+              <div class="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

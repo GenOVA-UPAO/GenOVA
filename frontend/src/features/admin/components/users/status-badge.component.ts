@@ -1,5 +1,4 @@
-import { CommonModule } from "@angular/common";
-import { Component, Input } from "@angular/core";
+import { Component, input } from "@angular/core";
 
 import type { AdminUser } from "../../lib/types";
 import { isLockedOut } from "./statusHelpers";
@@ -7,40 +6,44 @@ import { isLockedOut } from "./statusHelpers";
 @Component({
   selector: "gn-user-status-badge",
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
-    <span
-      *ngIf="!user.is_active"
-      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm bg-muted text-muted-foreground border-border"
-    >
-      Inactivo
-    </span>
-    
-    <span
-      *ngIf="user.is_active && isLocked"
-      [title]="lockedTitle"
-      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm bg-destructive/10 text-destructive border-destructive/20"
-    >
-      🔒 Bloqueado
-    </span>
+    @if (!user().is_active) {
+      <span
+        class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm bg-muted text-muted-foreground border-border"
+      >
+        Inactivo
+      </span>
+    }
 
-    <span
-      *ngIf="user.is_active && !isLocked"
-      class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-    >
-      Activo
-    </span>
+    @if (user().is_active && isLocked) {
+      <span
+        [title]="lockedTitle"
+        class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm bg-destructive/10 text-destructive border-destructive/20"
+      >
+        🔒 Bloqueado
+      </span>
+    }
+
+    @if (user().is_active && !isLocked) {
+      <span
+        class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+      >
+        Activo
+      </span>
+    }
   `,
 })
 export class UserStatusBadgeComponent {
-  @Input({ required: true }) user!: AdminUser;
+  readonly user = input.required<AdminUser>();
 
   get isLocked(): boolean {
-    return isLockedOut(this.user);
+    return isLockedOut(this.user());
   }
 
   get lockedTitle(): string {
-    if (!this.user.locked_until) return "";
-    return `Bloqueado hasta ${new Date(this.user.locked_until).toLocaleString("es-PE")}`;
+    const user = this.user();
+    if (!user.locked_until) return "";
+    return `Bloqueado hasta ${new Date(user.locked_until).toLocaleString("es-PE")}`;
   }
 }

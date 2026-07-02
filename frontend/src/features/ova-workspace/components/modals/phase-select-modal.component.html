@@ -1,0 +1,113 @@
+<div role="presentation" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" (click)="onClose.emit()" [gnModalDismiss]="dismissModal">
+  <div
+    role="presentation"
+    class="w-full sm:max-w-5xl max-h-[92vh] sm:max-h-[88vh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-border bg-card shadow-2xl overflow-hidden"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="border-b border-border px-4 py-3 shrink-0">
+      <div class="flex gap-1 flex-wrap">
+        @for (p of PHASES; track p.key; let i = $index) {
+          <button
+            type="button"
+            (click)="step = i"
+            class="rounded-lg px-2.5 py-1 text-xs font-medium border transition-colors"
+            [style.borderColor]="step === i ? p.color : undefined"
+            [style.backgroundColor]="step === i ? p.color : undefined"
+            [class.text-primary-foreground]="step === i"
+            [class.border-border]="step !== i"
+          >
+            {{ p.emoji }} {{ p.label }}
+            @if (picks[p.key].length) {
+              <span> ({{ picks[p.key].length }})</span>
+            }
+          </button>
+        }
+      </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden min-h-0">
+      <div class="flex flex-col flex-1 overflow-hidden">
+        <div
+          class="relative overflow-hidden px-5 pt-4 pb-4 border-b border-black/5 shrink-0"
+          [style.backgroundColor]="currentPhase.bg"
+          [style.borderLeft]="'4px solid ' + currentPhase.color"
+        >
+          <p class="text-[10px] font-bold uppercase tracking-widest mb-0.5" [style.color]="currentPhase.color">
+            {{ currentPhase.label }} · hasta {{ MAX_PER_PHASE }} recursos
+          </p>
+          <h2 class="font-heading text-xl font-semibold text-foreground leading-tight">{{ currentPhase.sub }}</h2>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-5">
+          @if (loading) {
+            <div class="flex items-center justify-center py-16 text-sm text-muted-foreground">Cargando recursos…</div>
+          } @else if (currentFailed) {
+            <div class="flex flex-col items-center justify-center py-16 gap-3 text-center">
+              <p class="text-sm text-muted-foreground">No se pudieron cargar los recursos de esta fase.</p>
+              <button type="button" class="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-accent" (click)="retryLoad()">
+                Reintentar
+              </button>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @for (r of currentList; track r.id) {
+                <gn-resource-card
+                  [resource]="r"
+                  [selected]="isSelected(r)"
+                  [selectionIndex]="selectionIndex(r)"
+                  [disabled]="!isSelected(r) && limitReached"
+                  [phaseKey]="currentPhase.key"
+                  [phaseColor]="currentPhase.color"
+                  [showVideoHint]="showVideoHint(r)"
+                  [hasConfig]="hasConfig(r)"
+                  (onClick)="toggleResource($event)"
+                  (onHover)="setHovered($event)"
+                  (onConfigClick)="openConfig($event)"
+                ></gn-resource-card>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <gn-resource-preview-panel
+        [resource]="previewResource"
+        [phaseKey]="currentPhase.key"
+        [phaseColor]="currentPhase.color"
+      ></gn-resource-preview-panel>
+    </div>
+
+    <footer class="border-t border-border px-4 py-4 flex items-center justify-between gap-3 shrink-0">
+      <gn-button variant="ghost" (onClick)="onClose.emit()">Cancelar</gn-button>
+      <div class="flex items-center gap-3">
+        @if (!canConfirm) {
+          <span class="text-xs text-muted-foreground hidden sm:block">Selecciona al menos 2 fases</span>
+        } @else {
+          <span class="text-xs text-muted-foreground hidden sm:block">
+            {{ total }} recurso{{ total !== 1 ? "s" : "" }} · {{ phasesSelected }} fases
+          </span>
+        }
+        <gn-button
+          [disabled]="!canConfirm"
+          (onClick)="confirm()"
+          [style.backgroundColor]="canConfirm ? currentPhase.color : undefined"
+          [style.borderColor]="canConfirm ? currentPhase.color : undefined"
+        >
+          Confirmar ({{ total }}) ✓
+        </gn-button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+@if (configTarget) {
+  <gn-resource-config-modal
+    [resource]="configTarget.resource"
+    [phaseKey]="configTarget.phaseKey"
+    [phaseColor]="configTarget.phaseColor"
+    [videoKeyConfigured]="videoKeyConfigured"
+    [config]="configForTarget()"
+    (onSave)="saveConfig($event)"
+    (onClose)="configTarget = null"
+  ></gn-resource-config-modal>
+}

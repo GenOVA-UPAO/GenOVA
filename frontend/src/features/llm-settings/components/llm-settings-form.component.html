@@ -1,0 +1,90 @@
+@if (store.loading || !store.settings) {
+  <div class="flex items-center justify-center py-8">
+    <div class="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
+  </div>
+} @else {
+  <div class="space-y-2">
+    @if (readOnly()) {
+      <div class="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+        <span class="text-muted-foreground text-xs">🔒</span>
+        <p class="text-xs text-muted-foreground">
+          Configurado por el administrador.
+          <span class="font-semibold text-foreground">Añade una API key</span>
+          en Mi Perfil → API Keys para personalizar.
+        </p>
+      </div>
+    }
+
+    @for (tipo of taskKeys(); track tipo) {
+      @let cur = store.settings![tipo] || {};
+      @let vis = visual(tipo);
+      <div
+        class="relative overflow-hidden rounded-xl border border-border/70 transition-shadow hover:shadow-sm"
+        [ngClass]="vis.tint"
+      >
+        <div class="absolute inset-y-0 left-0 w-[3px] rounded-l-xl" [ngClass]="vis.bar"></div>
+        <div class="pl-5 pr-4 py-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-muted-foreground">{{ vis.icon }}</span>
+              <span class="text-[10px] font-bold uppercase tracking-[.09em] text-muted-foreground">
+                {{ store.taskLabels[tipo] }}
+              </span>
+            </div>
+            @if (!readOnly()) {
+              <button
+                type="button"
+                (click)="store.resetTipo(tipo)"
+                [disabled]="store.saving"
+                class="text-[10px] text-muted-foreground/50 hover:text-primary transition-colors disabled:opacity-30"
+              >
+                Restaurar
+              </button>
+            }
+          </div>
+          <div class="flex items-center gap-2">
+            <select
+              [value]="currentValue(tipo)"
+              (change)="onModelChange(tipo, $any($event.target).value)"
+              [disabled]="locked"
+              class="h-8 flex-1 min-w-0 text-xs rounded-md border border-border/50 bg-background/70 px-2"
+            >
+              <option value="">Elige un modelo</option>
+              @for (provider of catalogProviders(); track provider) {
+                <optgroup
+                  [label]="
+                    providerLabels[provider] ||
+                    provider + (isProviderDown(provider) ? ' · no disponible' : '')
+                  "
+                >
+                  @for (m of catalogModels(provider); track m.model_id) {
+                    <option [value]="provider + '::' + m.model_id">
+                      {{ modelLabel(m) }}{{ modelMeta(m) ? ' — ' + modelMeta(m) : '' }}
+                    </option>
+                  }
+                </optgroup>
+              }
+            </select>
+            <div class="flex shrink-0 items-center gap-1">
+              <input
+                type="number"
+                [min]="store.bounds[0]"
+                [max]="store.bounds[1]"
+                [value]="cur.timeout_s ?? ''"
+                [disabled]="locked"
+                (change)="store.setTipoTimeout(tipo, +$any($event.target).value)"
+                class="h-8 w-14 text-center text-xs rounded-md border border-border/50 bg-background/70"
+                [title]="'Timeout: ' + store.bounds[0] + '–' + store.bounds[1] + ' s'"
+              />
+              <span class="text-[10px] text-muted-foreground/40">s</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <p class="text-[10px] text-muted-foreground/50 px-0.5">
+      Timeout: {{ store.bounds[0] }}–{{ store.bounds[1] }} s · aplica a todos tus OVAs
+    </p>
+  </div>
+}

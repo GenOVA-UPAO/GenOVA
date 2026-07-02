@@ -1,4 +1,4 @@
-import type { AdminUser } from "../lib/types";
+import type { AdminUser } from "../../lib/types";
 
 export function isLockedOut(user: AdminUser): boolean {
   if (!user.locked_until) return false;
