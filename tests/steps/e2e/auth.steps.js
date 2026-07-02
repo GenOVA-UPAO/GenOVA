@@ -2,8 +2,12 @@ import { createBdd } from 'playwright-bdd'
 
 const { Given, When, Then } = createBdd()
 
+const emailField = (page) => page.locator('#email, input[type=email]').first()
+const passwordField = (page) => page.locator('#password input, input[type=password]').first()
+
 Given('que estoy en la página de login', async ({ page }) => {
-  await page.goto('/login')
+  await page.goto('/login', { waitUntil: 'domcontentloaded' })
+  await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ state: 'visible', timeout: 30000 })
 })
 
 Given('que estoy en la página de registro', async ({ page }) => {
@@ -11,11 +15,17 @@ Given('que estoy en la página de registro', async ({ page }) => {
 })
 
 When('ingreso un correo registrado y contraseña válida', async ({ page }) => {
-  await page.fill('[name=email], input[type=email]', 'user@genova.ai')
-  await page.fill('[name=password], input[type=password]', 'user1234password')
+  await emailField(page).fill('user@genova.ai')
+  await passwordField(page).fill('user1234password')
 })
 
 When('envío el formulario', async ({ page }) => {
+  // Angular login uses gn-button/p-button ("Entrar"), not native type=submit
+  const entrar = page.getByRole('button', { name: 'Entrar' })
+  if (await entrar.count()) {
+    await entrar.click({ force: true })
+    return
+  }
   // force:true skips the "element must be enabled" check so disabled submit buttons
   // (e.g. empty role name) don't block indefinitely — no actual form submission fires
   // when the button is disabled regardless of the click
@@ -59,18 +69,12 @@ Given(
   async ({ page }, role) => {
     const email = role === 'administrador' ? 'admin@genova.ai' : 'user@genova.ai'
     const pass = role === 'administrador' ? 'admin1234password' : 'user1234password'
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
-    const resp = await page.request.post(`${backendUrl}/api/auth/login`, {
-      data: { email, password: pass },
-    })
-    if (!resp.ok()) throw new Error(`Login API failed: ${resp.status()} — ${await resp.text()}`)
-    const { access_token } = await resp.json()
-    // Only navigate to /login on the very first call per test (page starts at about:blank).
-    // Subsequent calls in the same test reuse the existing page — no extra page.goto needed.
-    if (!page.url().includes(':5173')) {
-      await page.goto('/login')
-    }
-    await page.evaluate((t) => localStorage.setItem('genova_token', t), access_token)
+    await page.goto('/login', { waitUntil: 'domcontentloaded' })
+    await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ state: 'visible', timeout: 30000 })
+    await emailField(page).fill(email)
+    await passwordField(page).fill(pass)
+    await page.getByRole('button', { name: 'Entrar' }).click()
+    await page.waitForURL(/dashboard|mis-ovas|admin/, { timeout: 20000 })
   }
 )
 

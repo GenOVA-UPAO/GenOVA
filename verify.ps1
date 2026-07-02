@@ -4,7 +4,7 @@
 
 param(
     [switch]$Quick,  # Solo pasos 1-3 (sin pytest backend)
-    [switch]$E2E     # Incluye playwright E2E (requiere :5173 y :8000 activos)
+    [switch]$E2E     # Incluye playwright E2E (requiere :4200 y :8000 activos)
 )
 
 $root = $PSScriptRoot
@@ -107,7 +107,7 @@ if (-not $Quick) {
 
 # [5] E2E - solo si -E2E y ambos servers activos
 if ($E2E) {
-    $frontendUp = Test-Endpoint "http://localhost:5173"
+    $frontendUp = Test-Endpoint "http://localhost:4200"
     $backendUp = Test-Endpoint "http://localhost:8000/health"
 
     if ($frontendUp -and $backendUp) {
@@ -117,7 +117,7 @@ if ($E2E) {
     } else {
         Write-Host ""
         Write-Host "--- E2E Playwright ---" -ForegroundColor Cyan
-        Write-Host "SKIP: frontend (:5173=$frontendUp) o backend (:8000=$backendUp) no estan corriendo" -ForegroundColor Yellow
+        Write-Host "SKIP: frontend (:4200=$frontendUp) o backend (:8000=$backendUp) no estan corriendo" -ForegroundColor Yellow
         $passed += "E2E Playwright (SKIP - servers offline)"
     }
 }

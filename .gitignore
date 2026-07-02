@@ -284,3 +284,4 @@ production-*.png
 
 .temp/
 .vercel
+tests/test-results/

@@ -8,8 +8,8 @@ When(
   'ingreso un correo válido y una contraseña alfanumérica de mínimo {int} caracteres',
   async ({ page }, _minLen) => {
     const uid = Date.now()
-    await page.fill('[name=email], input[type=email]', `test_${uid}@test.com`)
-    await page.fill('[name=password], input[type=password]', 'newpass99x')
+  await page.locator('#email, input[type=email]').first().fill(`test_${uid}@test.com`)
+  await page.locator('#password input, input[type=password]').first().fill('newpass99x')
   }
 )
 
@@ -23,8 +23,8 @@ Then('debo recibir un JWT', async ({ page }) => {
 Given('que el correo {string} ya está registrado', async () => {})
 
 When('intento registrarme con ese correo', async ({ page }) => {
-  await page.fill('[name=email], input[type=email]', 'user@genova.ai')
-  await page.fill('[name=password], input[type=password]', 'somepassword123')
+  await page.locator('#email, input[type=email]').first().fill('user@genova.ai')
+  await page.locator('#password input, input[type=password]').first().fill('somepassword123')
 })
 
 Then('debo ver un mensaje indicando que el correo ya existe', async ({ page }) => {
@@ -43,8 +43,8 @@ Then('no debo ser redirigido al dashboard', async ({ page }) => {
 // ── Auth HU-008: Login ────────────────────────────────────────────────────────
 
 When('ingreso un correo o contraseña inválidos', async ({ page }) => {
-  await page.fill('[name=email], input[type=email]', 'noexiste@test.com')
-  await page.fill('[name=password], input[type=password]', 'wrongpass')
+  await page.locator('#email, input[type=email]').first().fill('noexiste@test.com')
+  await page.locator('#password input, input[type=password]').first().fill('wrongpass')
 })
 
 Then('debo recibir un error descriptivo', async ({ page }) => {
@@ -70,10 +70,15 @@ Given('que realizo 5 intentos fallidos consecutivos', async ({ page }) => {
 })
 
 When('intento iniciar sesión nuevamente', async ({ page }) => {
-  const emailInput = page.locator('[name=email], input[type=email]').first()
-  const passInput = page.locator('[name=password], input[type=password]').first()
+  const emailInput = page.locator('#email, input[type=email]').first()
+  const passInput = page.locator('#password input, input[type=password]').first()
   await emailInput.fill('lockout@test.com')
   await passInput.fill('wrongpass')
+  const entrar = page.getByRole('button', { name: 'Entrar' })
+  if (await entrar.count()) {
+    await entrar.click()
+    return
+  }
   await page.click('button[type=submit]')
 })
 
@@ -146,9 +151,10 @@ Then('el formulario no debe enviarse al backend', async () => {})
 Given('el usuario {string} está autenticado con rol {string}', async ({ page }, email, role) => {
   const pass = role === 'administrador' ? 'admin1234password' : 'user1234password'
   await page.goto('/login')
-  await page.fill('[name=email], input[type=email]', email)
-  await page.fill('[name=password], input[type=password]', pass)
-  await page.click('button[type=submit]')
+  await page.locator('#email, input[type=email]').first().waitFor({ state: 'visible', timeout: 15000 })
+  await page.locator('#email, input[type=email]').first().fill(email)
+  await page.locator('#password input, input[type=password]').first().fill(pass)
+  await page.getByRole('button', { name: 'Entrar' }).click()
   await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
 })
 
@@ -256,9 +262,10 @@ Then('debo ser redirigido automáticamente al login', async ({ page }) => {
 
 Given('que tengo una sesión activa', async ({ page }) => {
   await page.goto('/login')
-  await page.fill('[name=email], input[type=email]', 'user@genova.ai')
-  await page.fill('[name=password], input[type=password]', 'user1234password')
-  await page.click('button[type=submit]')
+  await page.locator('#email, input[type=email]').first().waitFor({ state: 'visible', timeout: 15000 })
+  await page.locator('#email, input[type=email]').first().fill('user@genova.ai')
+  await page.locator('#password input, input[type=password]').first().fill('user1234password')
+  await page.getByRole('button', { name: 'Entrar' }).click()
   await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
 })
 
