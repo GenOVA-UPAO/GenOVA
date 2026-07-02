@@ -17,7 +17,7 @@ from models import Role, User, UserRole
 
 logger = logging.getLogger(__name__)
 
-APP_URL = os.getenv("APP_URL", "http://localhost:5173")
+APP_URL = os.getenv("APP_URL", "http://localhost:4200")
 GENDER_CHOICES = {"masculino", "femenino", "otro"}
 
 

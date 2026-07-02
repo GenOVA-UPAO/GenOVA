@@ -5,13 +5,13 @@
       "name": "docker",
       "runtimeExecutable": "node",
       "runtimeArgs": ["-e", "setInterval(()=>{},9999999)"],
-      "port": 5173
+      "port": 4200
     },
     {
       "name": "frontend",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["dev"],
-      "port": 5173,
+      "port": 4200,
       "autoPort": false
     },
     {
