@@ -9,13 +9,13 @@
 - [ ] No hay tests en `[ ]` sin justificación documentada en `sdd/progress/implementados/impl_*.md`
 
 ## C2 — Lint limpio
-- [ ] `pnpm lint` sale con exit 0 (Biome noExcessiveLinesPerFile: 200, sin errores)
+- [ ] `pnpm lint` sale con exit 0 (ESLint, max-lines: 250, sin errores)
 - [ ] `ruff check backend/` sale con exit 0 (E, F, W, I, B, UP, S, SIM)
 
 ## C3 — Límite de líneas respetado (NO aplica a archivos de test ni migraciones SQL)
-- [ ] Ningún archivo `.ts` en `frontend/src/` supera 200 líneas (plantillas `.html` exentas)
+- [ ] Ningún archivo `.ts` en `frontend/src/` supera 250 líneas (plantillas `.html` exentas)
 - [ ] Ningún archivo en `backend/` supera 200 líneas
-- [ ] Si un archivo está >200 sin exención, hay plan de split documentado en `sdd/progress/implementados/impl_*.md`
+- [ ] Si un archivo está por encima del límite sin exención, hay plan de split documentado en `sdd/progress/implementados/impl_*.md`
 - [ ] **Patrón de split frontend**: extraer subcomponentes, helpers o servicios; plantillas en `.html` separado del `.ts`
 - [ ] **Patrón de split backend**: extraer routers a `<dominio>/<recurso>_router.py`, helpers a `<dominio>/lib/`
 - [ ] **Exentos del límite**: archivos de test (`backend/tests/**`, `tests/**`, `test_*.py`, `*_test.py`, `*.test.*`, `*.steps.*`), migraciones SQL (`backend/migrations/*.sql`) y plantillas Angular (`*.html`)

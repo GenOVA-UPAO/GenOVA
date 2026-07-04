@@ -34,7 +34,7 @@ no te invoca. No te ofendas.
    - Endpoints públicos sin rate-limit.
    - Llamadas a LLMs sin timeout / fallback.
    - Patrones de soft-delete que la feature debe respetar.
-   - Files cercanos al límite de 200 líneas (Biome/ruff).
+   - Files cercanos al límite de líneas (250 frontend/ESLint, 200 backend/ruff).
 4. Calcula un **score de complejidad 1-5** con justificación:
    - 1 — un archivo, sin migración.
    - 2 — 2-3 archivos en una capa.

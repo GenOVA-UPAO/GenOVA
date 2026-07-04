@@ -66,7 +66,7 @@ Reglas del wireframe:
 - Usa Tailwind para layout y espaciado
 - Reproduce fielmente la estructura del ASCII mockup del spec
 - `export default function <ID>Wireframe()` — sin props requeridas
-- Max 200 líneas (regla del proyecto)
+- Max 250 líneas (regla del proyecto)
 
 Agrega ruta de preview temporal en el router de la app:
 ```
@@ -147,7 +147,7 @@ Si la feature es JS/Python puro sin librerías externas nuevas → omite este pa
 
 ## Arquitectura GenOVA que debes respetar
 
-### Frontend (max 200 líneas/archivo, Biome hard error)
+### Frontend (max 250 líneas/archivo, ESLint hard error)
 - `services/*.js` → solo `fetch` + auth headers. No estado.
 - `hooks/use*.js` → solo estado + toasts. No fetch directo.
 - `pages/*.jsx` → solo layout y orquestación. Sin lógica de negocio.

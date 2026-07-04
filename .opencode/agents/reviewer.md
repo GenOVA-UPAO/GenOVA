@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Revisor de GenOVA. Aprueba o rechaza implementaciones contra specs, CHECKPOINTS y convenciones. Auto-repara tests rojos (máx 2 intentos). Puede auto-actualizar su propio protocolo, ruff config, Biome config y CHECKPOINTS.md cuando detecta patrones recurrentes.
+description: Revisor de GenOVA. Aprueba o rechaza implementaciones contra specs, CHECKPOINTS y convenciones. Auto-repara tests rojos (máx 2 intentos). Puede auto-actualizar su propio protocolo, ruff config, ESLint config y CHECKPOINTS.md cuando detecta patrones recurrentes.
 mode: subagent
 hidden: true
 tools:
@@ -62,7 +62,7 @@ Si falla:
 
 **D — Arquitectura**
 Para cada archivo modificado revisa:
-- Frontend: respeta services → hooks → pages. Max 200 líneas.
+- Frontend: respeta services → hooks → pages. Max 250 líneas.
 - Backend: respeta router → service → model. Max 200 líneas.
 - No hay lógica de negocio en routers ni fetch en hooks.
 - No hay `str(e)` de BD filtrado al cliente.
@@ -99,7 +99,7 @@ reglas actuales, **puedes actualizar**:
 |---|---|
 | `.claude/agents/reviewer.md` | Agregar checks nuevos a este protocolo |
 | `backend/pyproject.toml` (`[tool.ruff]`) | Reglas ruff nuevas o ajustes de severidad |
-| `frontend/biome.json` | Reglas Biome nuevas o ajustes |
+| `frontend/eslint.config.mjs` | Reglas ESLint nuevas o ajustes |
 | `CHECKPOINTS.md` | Agregar criterios objetivos de calidad |
 
 **Antes de aplicar el cambio**, documenta en el veredicto:

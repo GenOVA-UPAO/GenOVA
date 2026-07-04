@@ -64,7 +64,7 @@ Reviewer checks: spec compliance, code quality, no regressions.
 ## GenOVA-specific constraints for subagents
 
 - Architecture: services→hooks→pages (frontend), router→service→model (backend)
-- Max 200 lines/file (Biome hard error in frontend)
+- Max 250 lines/file in frontend (ESLint hard error), 200 in backend
 - Security: no `str(e)` to client, no tokens in HTTP responses
 - Verification: `./verify.ps1 -Quick` must pass before each commit
 - No skipping the spec — implement exactly what the HU/TA/BU spec says
