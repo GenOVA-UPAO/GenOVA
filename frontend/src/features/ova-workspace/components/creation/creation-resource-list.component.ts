@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import { groupByPhase, type ResourceVM } from "../../lib/ova-job-view-model";
 
 const MARK: Record<string, { icon: string; cls: string }> = {
@@ -13,8 +15,8 @@ const MARK: Record<string, { icon: string; cls: string }> = {
 const PHASE_EMOJI: Record<string, string> = { engage: "🎯", explore: "🔍" };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-creation-resource-list",
-  standalone: true,
   imports: [CommonModule, ButtonComponent],
   template: `
     <div class="space-y-4">
@@ -27,7 +29,7 @@ const PHASE_EMOJI: Record<string, string> = { engage: "🎯", explore: "🔍" };
             @for (r of g.items; track r) {
               <li class="rounded-lg border border-border bg-background px-3 py-2">
                 <div class="flex items-center gap-2.5">
-                  @if (r.status === 'X') {
+                  @if (r.status === "X") {
                     <input
                       type="checkbox"
                       [checked]="selectedSet.has(r.id)"
@@ -54,7 +56,7 @@ const PHASE_EMOJI: Record<string, string> = { engage: "🎯", explore: "🔍" };
                   >
                     {{ r.emoji }} {{ r.label }}
                   </button>
-                  @if (r.status === 'X') {
+                  @if (r.status === "X") {
                     <gn-button
                       variant="outline"
                       size="sm"
@@ -65,7 +67,7 @@ const PHASE_EMOJI: Record<string, string> = { engage: "🎯", explore: "🔍" };
                     </gn-button>
                   }
                 </div>
-                @if (r.status === 'X') {
+                @if (r.status === "X") {
                   <p class="mt-1.5 pl-8 text-xs text-destructive">
                     Lo sentimos, hubo un error generando el recurso.
                     @if (r.error_id) {

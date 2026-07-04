@@ -1,10 +1,11 @@
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
+
 import { formatSize } from "../../lib/uploadFormatters";
 import type { UploadItem } from "../../lib/uploadTypes";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-file-chip",
-  standalone: true,
   imports: [],
   template: `
     <div
@@ -20,18 +21,18 @@ import type { UploadItem } from "../../lib/uploadTypes";
         </span>
       </div>
       <div class="ml-1 flex items-center gap-1">
-        @if (file.status === 'uploading') {
+        @if (file.status === "uploading") {
           <span class="text-[10px] text-primary animate-pulse font-medium"> Subiendo... </span>
         }
 
-        @if (file.status === 'error') {
+        @if (file.status === "error") {
           <span class="text-[10px] text-destructive font-semibold" [title]="file.message">
             Error
           </span>
         }
 
-        @if (file.status === 'success' && file.ragStatus) {
-          @if (file.ragStatus.status === 'success') {
+        @if (file.status === "success" && file.ragStatus) {
+          @if (file.ragStatus.status === "success") {
             <span
               class="text-[10px] text-primary font-bold bg-primary/10 px-1 rounded-sm"
               [title]="'Ingestado en RAG: ' + (file.ragStatus.chunks || 0) + ' fragmentos'"
@@ -39,7 +40,7 @@ import type { UploadItem } from "../../lib/uploadTypes";
               RAG ({{ file.ragStatus.chunks || 0 }})
             </span>
           }
-          @if (file.ragStatus.status === 'error') {
+          @if (file.ragStatus.status === "error") {
             <span
               class="text-[10px] text-destructive font-medium"
               [title]="file.ragStatus.message || 'Error RAG'"
@@ -47,12 +48,12 @@ import type { UploadItem } from "../../lib/uploadTypes";
               Fallo RAG
             </span>
           }
-          @if (file.ragStatus.status !== 'success' && file.ragStatus.status !== 'error') {
+          @if (file.ragStatus.status !== "success" && file.ragStatus.status !== "error") {
             <span class="text-[10px] text-muted-foreground">Listo</span>
           }
         }
 
-        @if (file.status === 'success' && !file.ragStatus) {
+        @if (file.status === "success" && !file.ragStatus) {
           <span class="text-[10px] text-primary font-medium">Listo</span>
         }
 
@@ -62,6 +63,7 @@ import type { UploadItem } from "../../lib/uploadTypes";
           [disabled]="disabled()"
           class="p-0.5 rounded-full hover:bg-foreground/5 text-current/60 hover:text-current cursor-pointer transition-colors"
           title="Quitar"
+          aria-label="Quitar"
         >
           <svg
             aria-hidden="true"

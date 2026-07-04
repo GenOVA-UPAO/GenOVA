@@ -1,6 +1,7 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import { applyReorder } from "../../lib/resource-reorder";
 import type { PhaseWithContent } from "../../lib/types";
 import { AddResourceModalComponent } from "../modals/add-resource-modal.component";
@@ -9,8 +10,8 @@ import { WorkspacePhaseItemComponent } from "./workspace-phase-item.component";
 const MAX_PHASES_PER_TYPE = 4;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-resource-list",
-  standalone: true,
   imports: [ButtonComponent, WorkspacePhaseItemComponent, AddResourceModalComponent],
   template: `
     <gn-add-resource-modal
@@ -78,7 +79,7 @@ export class WorkspaceResourceListComponent {
     prompt?: string;
   }>();
   readonly onDelete = output<string>();
-  readonly onReverted = output<void>();
+  readonly onReverted = output();
   readonly onAdd = output<{
     phaseType: string;
     prompt: string;

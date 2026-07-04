@@ -1,5 +1,3 @@
-type ToastFn = (message: string) => void;
-
 function show(message: string, kind: "info" | "success" | "error"): void {
   if (typeof globalThis.document === "undefined") return;
 
@@ -17,7 +15,9 @@ function show(message: string, kind: "info" | "success" | "error"): void {
   globalThis.setTimeout(() => {
     el.style.opacity = "0";
     el.style.transform = "translateY(0.5rem)";
-    globalThis.setTimeout(() => el.remove(), 200);
+    globalThis.setTimeout(() => {
+      el.remove();
+    }, 200);
   }, 3200);
 }
 
@@ -33,7 +33,16 @@ function cnToast(kind: "info" | "success" | "error"): string {
   return `${base} border-border bg-card text-foreground`;
 }
 
-export const toast = Object.assign((message: string) => show(message, "info"), {
-  success: ((message: string) => show(message, "success")) as ToastFn,
-  error: ((message: string) => show(message, "error")) as ToastFn,
-});
+export const toast = Object.assign(
+  (message: string) => {
+    show(message, "info");
+  },
+  {
+    success: (message: string) => {
+      show(message, "success");
+    },
+    error: (message: string) => {
+      show(message, "error");
+    },
+  },
+);

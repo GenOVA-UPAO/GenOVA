@@ -1,7 +1,16 @@
-import { Component, type ElementRef, inject, type OnInit, input, viewChild } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  type ElementRef,
+  inject,
+  input,
+  type OnInit,
+  viewChild,
+} from "@angular/core";
 import { RouterModule } from "@angular/router";
 
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import { buildUploadsPropBag } from "../../lib/upload-chip-view-model";
 import type { OvaVersionRow } from "../../lib/version-history.types";
 import { getSavedRatio } from "../../lib/workspace-utils";
@@ -13,8 +22,8 @@ import { WorkspaceOvaPanelComponent } from "./workspace-ova-panel.component";
 import { WorkspaceResizableDividerComponent } from "./workspace-resizable-divider.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-edit-view",
-  standalone: true,
   imports: [
     RouterModule,
     ButtonComponent,

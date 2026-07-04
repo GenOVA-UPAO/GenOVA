@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   type ComponentRef,
   effect,
@@ -9,6 +10,7 @@ import {
   type OutputRefSubscription,
   ViewContainerRef,
 } from "@angular/core";
+
 import {
   LLM_SETTINGS_MODAL,
   type LlmSettingsModalContract,
@@ -19,8 +21,8 @@ import {
  * (feature llm-settings) vía LLM_SETTINGS_MODAL la primera vez que se abre.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-llm-settings-modal-outlet",
-  standalone: true,
   template: "",
 })
 export class LlmSettingsModalOutletComponent implements OnDestroy {
@@ -52,7 +54,9 @@ export class LlmSettingsModalOutletComponent implements OnDestroy {
   private async attach(): Promise<void> {
     const type = await this.loadModal();
     this.ref = this.vcr.createComponent(type);
-    this.sub = this.ref.instance.onOpenChange.subscribe((v) => this.onOpenChange.emit(v));
+    this.sub = this.ref.instance.onOpenChange.subscribe((v) => {
+      this.onOpenChange.emit(v);
+    });
     this.ref.setInput("open", this.open());
     this.loading = false;
   }

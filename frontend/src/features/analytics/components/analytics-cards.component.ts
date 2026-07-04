@@ -1,4 +1,5 @@
-import { Component, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
+
 import type { AnalyticsTotals } from "../lib/types";
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -9,8 +10,8 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-stat-card",
-  standalone: true,
   imports: [],
   template: `
     <div class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
@@ -19,7 +20,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
           class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
         >
           @switch (icon()) {
-            @case ('stack') {
+            @case ("stack") {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -36,7 +37,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
                 ></path>
               </svg>
             }
-            @case ('users') {
+            @case ("users") {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -53,7 +54,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
                 ></path>
               </svg>
             }
-            @case ('graduation-cap') {
+            @case ("graduation-cap") {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -70,7 +71,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
                 ></path>
               </svg>
             }
-            @case ('chart-bar') {
+            @case ("chart-bar") {
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -104,17 +105,17 @@ export class StatCardComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-stat-cards",
-  standalone: true,
   imports: [StatCardComponent],
   template: `
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
       <gn-stat-card icon="stack" label="OVAs totales" [value]="totals().ovas"></gn-stat-card>
 
-      @if (scope() === 'platform') {
+      @if (scope() === "platform") {
         <gn-stat-card icon="users" label="Usuarios" [value]="totals().users || 0"></gn-stat-card>
       }
-      @if (scope() !== 'platform') {
+      @if (scope() !== "platform") {
         <gn-stat-card
           icon="graduation-cap"
           label="Alumnos vinculados"
@@ -136,8 +137,8 @@ export class StatCardsComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-status-breakdown",
-  standalone: true,
   imports: [],
   template: `
     <div class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">

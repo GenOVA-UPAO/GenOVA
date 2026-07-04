@@ -1,11 +1,21 @@
-import { Component, computed, effect, inject, signal } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  linkedSignal,
+  signal,
+} from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { CheckboxModule } from "primeng/checkbox";
-import { InputTextModule } from "primeng/inputtext";
-import { SelectModule } from "primeng/select";
+import { HlmInput } from "@spartan-ng/helm/input";
+import { HlmSelectImports } from "@spartan-ng/helm/select";
+
 import { OvaGridSkeletonComponent } from "@/core/components/ova-grid-skeleton.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
+import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
+
 import { OvaCardComponent } from "../components/cards/ova-card.component";
 import { OvaListPaginationComponent } from "../components/cards/ova-list-pagination.component";
 import { BulkTrashModalComponent } from "../components/modals/bulk-trash-modal.component";
@@ -13,21 +23,21 @@ import { EditMetadataModalComponent } from "../components/modals/edit-metadata-m
 import { TrashModalComponent } from "../components/modals/trash-modal.component";
 import type { MetadataInput } from "../lib/metadataSchema";
 import type { OvaListItem } from "../lib/types";
-import { OvaLibraryService } from "../services/ova-library.service";
 import { GeneratingJobsService } from "../services/generating-jobs.service";
+import { OvaLibraryService } from "../services/ova-library.service";
 import { STATUS_OPTIONS } from "./mis-ovas-page.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-mis-ovas-page",
-  standalone: true,
   imports: [
     RouterLink,
     FormsModule,
     OvaGridSkeletonComponent,
     ButtonComponent,
-    CheckboxModule,
-    InputTextModule,
-    SelectModule,
+    CheckboxComponent,
+    HlmInput,
+    HlmSelectImports,
     OvaCardComponent,
     OvaListPaginationComponent,
     TrashModalComponent,
@@ -54,7 +64,12 @@ export class MisOvasPage {
   totalPages = computed(() => this.service.activeOvas.value()?.total_pages || 1);
   isEmpty = computed(() => !this.loading() && !this.error() && this.ovas().length === 0);
 
-  selectedIds = signal<Set<string>>(new Set());
+  // Resets to empty whenever the underlying list changes (filter/page/refetch
+  // after a mutation) — still writable for individual toggle/select-all.
+  selectedIds = linkedSignal<OvaListItem[], Set<string>>({
+    source: this.ovas,
+    computation: () => new Set<string>(),
+  });
   ovaToTrash = signal<OvaListItem | null>(null);
   showBulkModal = signal(false);
   movingId = signal<string | null>(null);
@@ -73,9 +88,11 @@ export class MisOvasPage {
     return list.every((o) => this.selectedIds().has(o.id));
   });
 
-  handleStatusChange(val: string) {
-    this.service.setStatus(val === "all" ? "" : val);
-    this.clearSelection();
+  handleStatusChange(val: string | null | undefined) {
+    const next = val ?? "all";
+    // selectedIds resets automatically once ovas() reflects the new filter
+    // (linkedSignal sourced from ovas()).
+    this.service.setStatus(next === "all" ? "" : next);
   }
 
   handleToggleSelect(id: string) {
@@ -103,7 +120,6 @@ export class MisOvasPage {
     try {
       await this.service.deleteOva(target.id);
       this.ovaToTrash.set(null);
-      this.clearSelection();
     } catch {
       // Error handled by interceptor/toast
     } finally {
@@ -116,7 +132,6 @@ export class MisOvasPage {
     try {
       await this.service.batchMoveToTrash(Array.from(this.selectedIds()));
       this.showBulkModal.set(false);
-      this.clearSelection();
     } catch {
       // Handle error
     } finally {

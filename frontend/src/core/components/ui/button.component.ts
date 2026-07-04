@@ -1,60 +1,44 @@
-import { booleanAttribute, Component, input, output } from "@angular/core";
-import { ButtonModule } from "primeng/button";
-import { cn } from "@/core/lib/cn";
+import { booleanAttribute, ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+import { HlmButton } from "@spartan-ng/helm/button";
+import { HlmSpinner } from "@spartan-ng/helm/spinner";
 
 export type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 export type ButtonSize = "default" | "sm" | "lg" | "icon";
 
+/**
+ * gn-button — facade over the Spartan `hlmBtn` directive. Keeps the shadcn-style
+ * variant/size API and a `loading` flag (Spartan buttons have no native loading
+ * state, so we compose an hlm-spinner). Forwards `type` to the inner native
+ * button so `type="submit"` inside a form actually submits.
+ */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-button",
-  standalone: true,
-  imports: [ButtonModule],
+  imports: [HlmButton, HlmSpinner],
   template: `
-    <p-button
-      [severity]="getSeverity()"
-      [text]="variant() === 'ghost' || variant() === 'link'"
-      [outlined]="variant() === 'outline'"
-      [disabled]="disabled()"
-      [loading]="loading()"
-      [icon]="icon()"
-      [styleClass]="computedClass()"
-      (onClick)="onClick.emit($event)"
+    <button
+      hlmBtn
+      [attr.type]="type()"
+      [variant]="variant()"
+      [size]="size()"
+      [disabled]="disabled() || loading()"
+      [class]="class()"
+      (click)="onClick.emit($event)"
     >
+      @if (loading()) {
+        <hlm-spinner class="mr-2 !text-[length:1rem]" />
+      }
       <ng-content></ng-content>
-    </p-button>
+    </button>
   `,
 })
 export class ButtonComponent {
   readonly variant = input<ButtonVariant>("default");
   readonly size = input<ButtonSize>("default");
+  readonly type = input<"button" | "submit" | "reset">("button");
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly loading = input(false, { transform: booleanAttribute });
-  readonly icon = input<string | undefined>(undefined);
   readonly class = input("");
 
   readonly onClick = output<MouseEvent>();
-
-  getSeverity() {
-    switch (this.variant()) {
-      case "destructive":
-        return "danger";
-      case "secondary":
-        return "secondary";
-      case "outline":
-        return "secondary";
-      default:
-        return "primary";
-    }
-  }
-
-  computedClass() {
-    return cn(
-      "w-full", // allow block-level if needed, PrimeNG button defaults to inline-flex
-      this.size() === "sm" ? "px-3 py-1.5 text-sm" : "",
-      this.size() === "lg" ? "px-8 py-3 text-lg" : "",
-      this.size() === "icon" ? "p-2 w-10 h-10" : "",
-      this.variant() === "link" ? "underline-offset-4 hover:underline" : "",
-      this.class(),
-    );
-  }
 }

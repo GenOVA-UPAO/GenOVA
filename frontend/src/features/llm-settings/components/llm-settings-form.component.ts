@@ -1,12 +1,13 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, input } from "@angular/core";
-import { PROVIDER_LABELS, formatContextLength } from "../lib/llm-catalog.utils";
+import { ChangeDetectionStrategy, Component, inject, input } from "@angular/core";
+
+import { formatContextLength, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import { TASK_VISUAL } from "../lib/llm-settings-labels";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-llm-settings-form",
-  standalone: true,
   imports: [CommonModule],
   templateUrl: "./llm-settings-form.component.html",
 })
@@ -40,7 +41,7 @@ export class LlmSettingsFormComponent {
 
   catalogModels(
     provider: string,
-  ): Array<{ model_id: string; label?: string; pricing?: string; context_length?: number }> {
+  ): { model_id: string; label?: string; pricing?: string; context_length?: number }[] {
     const models = this.store.catalog[provider];
     return Array.isArray(models) ? models : [];
   }

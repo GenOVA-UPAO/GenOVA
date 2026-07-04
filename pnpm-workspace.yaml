@@ -5,8 +5,10 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
+  less: false
   lmdb: true
   msgpackr-extract: true
+  nx: false
 minimumReleaseAgeExclude:
   - '@angular-devkit/architect@0.2200.5'
   - '@angular-devkit/core@22.0.5'

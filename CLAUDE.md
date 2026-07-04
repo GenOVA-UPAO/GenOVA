@@ -18,8 +18,11 @@ Built as a pnpm monorepo (Angular 22 + FastAPI). Backend supports both `pip` and
 pnpm install          # deps
 pnpm dev              # ng serve → http://localhost:4200
 pnpm build            # ng build (prod)
-pnpm lint             # Biome lint (noExcessiveLinesPerFile: maxLines=250, skipBlankLines; .html excluded; hard error)
-pnpm format           # Biome format check
+pnpm lint             # eslint (strict typescript-eslint + angular-eslint; max-lines: 250, tests excluded; hard error)
+pnpm lint:fix         # eslint --fix
+pnpm format           # prettier --write . (TS/HTML/CSS)
+pnpm format:check     # prettier --check .
+pnpm typecheck        # ngc (Angular AOT compiler, --noEmit) — checks templates too, not just tsc
 pnpm test:unit        # cucumber-js unit (no browser, no backend)
 pnpm test:e2e         # playwright-bdd (requires frontend + backend)
 ```

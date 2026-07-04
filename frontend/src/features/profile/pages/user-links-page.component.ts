@@ -1,13 +1,15 @@
-import { Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { LinkRowComponent } from "@/core/components/cards/link-row.component";
+
 import { AuthService, type MeUser } from "@/core/auth/auth.service";
+import { LinkRowComponent } from "@/core/components/cards/link-row.component";
+
 import { type UserLink, UserLinksService } from "../services/user-links.service";
 import { canLink } from "./user-links-page.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-links-page",
-  standalone: true,
   imports: [FormsModule, LinkRowComponent],
   templateUrl: "./user-links-page.component.html",
 })
@@ -33,7 +35,7 @@ export class UserLinksPageComponent implements OnInit {
   async ngOnInit() {
     this.user = (await this.authService.revalidate()) ?? this.authService.user();
     if (this.hasUserLinks || this.hasAdminLinks) {
-      this.load();
+      void this.load();
     } else {
       this.loading = false;
     }
@@ -59,7 +61,7 @@ export class UserLinksPageComponent implements OnInit {
       const data = await this.userLinksService.createLinkCode();
       this.generatedCode = data.code;
       await this.load();
-    } catch (_e) {}
+    } catch {}
   }
 
   async handleInvite() {
@@ -68,7 +70,7 @@ export class UserLinksPageComponent implements OnInit {
       this.generatedCode = data.code;
       this.email = "";
       await this.load();
-    } catch (_e) {}
+    } catch {}
   }
 
   async handleAccept() {
@@ -97,6 +99,6 @@ export class UserLinksPageComponent implements OnInit {
       if (this.hasAdminLinks) await this.userLinksService.deleteAnyLink(id);
       else await this.userLinksService.deleteMyLink(id);
       await this.load();
-    } catch (_e) {}
+    } catch {}
   }
 }

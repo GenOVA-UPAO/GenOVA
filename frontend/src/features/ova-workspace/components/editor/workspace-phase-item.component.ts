@@ -1,12 +1,14 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import type { PhaseWithContent } from "../../lib/types";
 import { PhaseVersionHistoryComponent } from "../versioning/phase-version-history.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-phase-item",
-  standalone: true,
   imports: [FormsModule, ButtonComponent, PhaseVersionHistoryComponent],
   template: `
     <gn-phase-version-history
@@ -32,7 +34,7 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
         <pre
           class="flex-1 text-xs overflow-auto max-h-28 whitespace-pre-wrap text-foreground/80 font-sans"
         >
-          {{ phase().content || '(sin contenido)' }}
+          {{ phase().content || "(sin contenido)" }}
         </pre>
         <div
           class="flex flex-col gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -83,7 +85,7 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
       @if (mode) {
         <div class="border-t border-border p-2 space-y-1.5">
           <p class="text-[10px] text-muted-foreground font-medium">
-            {{ mode === 'edit' ? 'Editar contenido directamente:' : 'Prompt para regenerar:' }}
+            {{ mode === "edit" ? "Editar contenido directamente:" : "Prompt para regenerar:" }}
           </p>
           <textarea
             class="w-full rounded border border-border bg-background px-2 py-1.5 text-xs resize-y min-h-[60px] focus:outline-none focus:ring-1 focus:ring-ring"
@@ -125,7 +127,7 @@ export class WorkspacePhaseItemComponent {
     prompt?: string;
   }>();
   readonly onDelete = output<string>();
-  readonly onReverted = output<void>();
+  readonly onReverted = output();
 
   historyOpen = false;
   mode: "edit" | "regen" | null = null;

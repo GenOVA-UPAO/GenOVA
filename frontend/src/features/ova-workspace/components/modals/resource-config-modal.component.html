@@ -1,18 +1,10 @@
-<p-dialog
-  [visible]="visible()"
-  [modal]="true"
-  [closable]="true"
-  (onHide)="onClose.emit()"
-  [style]="{ width: '24rem', 'max-width': '100%' }"
-  [header]="resource().tipo || 'Recurso'"
-  contentStyleClass="p-0 bg-card"
->
+<gn-dialog [open]="visible()" width="24rem" (openChange)="$event || onClose.emit()">
   <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
     <div
       class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg"
       [style.backgroundColor]="phaseColor() + '18'"
     >
-      {{ resource().emoji || '📦' }}
+      {{ resource().emoji || "📦" }}
     </div>
     <div class="min-w-0">
       <p class="font-semibold text-sm text-foreground leading-tight truncate">
@@ -76,4 +68,4 @@
       Aplicar
     </gn-button>
   </div>
-</p-dialog>
+</gn-dialog>

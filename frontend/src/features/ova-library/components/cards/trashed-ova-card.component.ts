@@ -1,11 +1,13 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import type { OvaListItem } from "@/features/ova-library/lib/types";
+
 import { OvaCardShellComponent } from "./ova-card-shell.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-trashed-ova-card",
-  standalone: true,
   imports: [OvaCardShellComponent, ButtonComponent],
   template: `
     <gn-ova-card-shell
@@ -26,7 +28,7 @@ import { OvaCardShellComponent } from "./ova-card-shell.component";
           (onClick)="onRestore.emit(ova().id)"
         >
           <!-- ↩ -->
-          {{ isRestoring() ? 'Restaurando...' : 'Restaurar' }}
+          {{ isRestoring() ? "Restaurando..." : "Restaurar" }}
         </gn-button>
         <gn-button
           variant="outline"
@@ -36,7 +38,7 @@ import { OvaCardShellComponent } from "./ova-card-shell.component";
           (onClick)="onPermanentDelete.emit(ova())"
         >
           <!-- 🗑 -->
-          {{ isDeleting() ? 'Eliminando...' : 'Borrar definitivamente' }}
+          {{ isDeleting() ? "Eliminando..." : "Borrar definitivamente" }}
         </gn-button>
       </div>
     </gn-ova-card-shell>

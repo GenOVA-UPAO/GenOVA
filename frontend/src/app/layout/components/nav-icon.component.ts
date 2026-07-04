@@ -1,4 +1,4 @@
-import { Component, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
 const ICON_CLASS: Record<string, string> = {
   house: "ph ph-house",
@@ -13,8 +13,8 @@ const ICON_CLASS: Record<string, string> = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-nav-icon",
-  standalone: true,
   template: `
     <i
       [class]="iconClass"

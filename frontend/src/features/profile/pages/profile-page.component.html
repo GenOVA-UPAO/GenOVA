@@ -27,7 +27,7 @@
         @if (!loading) {
           <div class="flex flex-wrap items-center gap-2">
             <h1 class="font-display text-xl font-bold text-foreground">
-              {{ profile?.full_name || 'Usuario' }}
+              {{ profile?.full_name || "Usuario" }}
             </h1>
             <span
               class="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border"
@@ -42,7 +42,7 @@
           </div>
         }
         <p class="text-sm text-muted-foreground font-medium">
-          {{ profile?.email || '—' }}
+          {{ profile?.email || "—" }}
         </p>
         <p class="text-xs text-muted-foreground/60">
           Miembro desde {{ profileService.formatDate(profile?.created_at) }}
@@ -132,7 +132,7 @@
         </button>
       </div>
       <!-- Tabs Content -->
-      @if (activeTab === 'info') {
+      @if (activeTab === "info") {
         <div>
           <gn-profile-form
             [profile]="profile"
@@ -146,12 +146,12 @@
           ></gn-profile-form>
         </div>
       }
-      @if (activeTab === 'config') {
+      @if (activeTab === "config") {
         <div class="space-y-5">
           <gn-platform-api-keys-card [userOwned]="true"></gn-platform-api-keys-card>
         </div>
       }
-      @if (activeTab === 'security') {
+      @if (activeTab === "security") {
         <div class="space-y-5">
           <gn-totp-setup-card [totpEnabled]="!!profile?.totp_enabled"></gn-totp-setup-card>
           <gn-password-change-form

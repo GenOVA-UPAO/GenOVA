@@ -1,13 +1,14 @@
-import { Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from "@angular/router";
 import { filter } from "rxjs/operators";
+
 import { MainContainerComponent } from "../components/main-container.component";
 import { NavbarComponent } from "../components/navbar.component";
 import { SidebarComponent } from "../components/sidebar.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-app-layout",
-  standalone: true,
   imports: [RouterOutlet, MainContainerComponent, NavbarComponent, SidebarComponent],
   template: `
     <div class="flex h-screen flex-col bg-background text-foreground">

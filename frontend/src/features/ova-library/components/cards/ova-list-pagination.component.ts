@@ -1,9 +1,10 @@
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-list-pagination",
-  standalone: true,
   imports: [ButtonComponent],
   template: `
     @if (totalPages > 1) {

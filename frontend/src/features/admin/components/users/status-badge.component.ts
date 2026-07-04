@@ -1,11 +1,11 @@
-import { Component, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
 import type { AdminUser } from "../../lib/types";
 import { isLockedOut } from "./statusHelpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-status-badge",
-  standalone: true,
   imports: [],
   template: `
     @if (!user().is_active) {

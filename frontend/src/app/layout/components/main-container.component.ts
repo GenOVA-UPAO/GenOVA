@@ -1,9 +1,9 @@
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-main-container",
-  standalone: true,
   imports: [RouterOutlet],
   template: `
     <main class="flex-1 min-w-0 overflow-auto bg-muted/20">

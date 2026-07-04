@@ -1,17 +1,18 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, input } from "@angular/core";
-import { LlmModelSelectComponent } from "./llm-model-select.component";
-import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
+import { ChangeDetectionStrategy, Component, inject, input } from "@angular/core";
+
 import {
   chipLabel,
   chipModality,
-  lookupModalitySymbol,
   type ChipModel,
+  lookupModalitySymbol,
 } from "../lib/model-task-card.helpers";
+import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
+import { LlmModelSelectComponent } from "./llm-model-select.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-override-section",
-  standalone: true,
   imports: [CommonModule, LlmModelSelectComponent],
   templateUrl: "./user-override-section.component.html",
 })

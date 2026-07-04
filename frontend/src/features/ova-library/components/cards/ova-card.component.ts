@@ -1,16 +1,18 @@
-import { Component, Input, inject, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, Input, input, output } from "@angular/core";
 import { Router } from "@angular/router";
+
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
-import type { OvaListItem } from "@/features/ova-library/lib/types";
 import type { OvaJobInfo } from "@/features/ova-library/lib/job-types";
+import type { OvaListItem } from "@/features/ova-library/lib/types";
+
 import { OvaCardShellComponent } from "./ova-card-shell.component";
 
 export type { OvaJobInfo };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-card",
-  standalone: true,
   imports: [OvaCardShellComponent, ButtonComponent, BadgeComponent],
   template: `
     <gn-ova-card-shell
@@ -21,9 +23,9 @@ export type { OvaJobInfo };
       [dateValue]="formatDate(ova['created_at'])"
     >
       <div extraBadges class="flex gap-1 items-center">
-        @if (ova['version_number']) {
+        @if (ova["version_number"]) {
           <gn-badge variant="outline" class="text-[10px] text-muted-foreground">
-            v{{ ova['version_number'] }}
+            v{{ ova["version_number"] }}
           </gn-badge>
         }
         @if (isGenerating && job?.progress) {
@@ -95,7 +97,7 @@ export type { OvaJobInfo };
             (onClick)="onDuplicate.emit(ova.id)"
           >
             <!-- <Copy /> -->
-            {{ isDuplicating() ? 'Duplicando...' : 'Duplicar' }}
+            {{ isDuplicating() ? "Duplicando..." : "Duplicar" }}
           </gn-button>
           <gn-button
             variant="outline"
@@ -105,7 +107,7 @@ export type { OvaJobInfo };
             (onClick)="onDownload.emit({ id: ova.id, title: ova.title || '' })"
           >
             <!-- <DownloadSimple /> -->
-            {{ isDownloading() ? 'Descargando...' : 'Descargar' }}
+            {{ isDownloading() ? "Descargando..." : "Descargar" }}
           </gn-button>
           <gn-button
             variant="outline"
@@ -115,7 +117,7 @@ export type { OvaJobInfo };
             (onClick)="onMoveToTrash.emit(ova)"
           >
             <!-- <Trash /> -->
-            {{ isMoving() ? 'Moviendo...' : 'Papelera' }}
+            {{ isMoving() ? "Moviendo..." : "Papelera" }}
           </gn-button>
         </div>
       </div>
@@ -156,14 +158,14 @@ export class OvaCardComponent {
   }
 
   handleResume() {
-    this.router.navigate(["/crear"], { state: { resumeJobId: this.job?.jobId } });
+    void this.router.navigate(["/crear"], { state: { resumeJobId: this.job?.jobId } });
   }
 
-  async handleContinue() {
+  handleContinue() {
     this.onResume.emit(this.ova.id);
   }
 
   goToWorkspace() {
-    this.router.navigate([`/workspace/${this.ova.id}`]);
+    void this.router.navigate([`/workspace/${this.ova.id}`]);
   }
 }

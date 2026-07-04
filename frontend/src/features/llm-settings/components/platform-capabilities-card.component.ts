@@ -1,11 +1,13 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+
 import { toast } from "@/core/lib/toast";
+
 import { PlatformSettingsService } from "../services/platform-settings.service";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-platform-capabilities-card",
-  standalone: true,
   imports: [CommonModule],
   template: `
     <section class="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
@@ -21,7 +23,7 @@ import { PlatformSettingsService } from "../services/platform-settings.service";
           [disabled]="!hasChanges || saving"
           class="inline-flex items-center justify-center rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 font-bold shadow-md"
         >
-          {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+          {{ saving ? "Guardando..." : "Guardar cambios" }}
         </button>
       </div>
 
@@ -63,7 +65,7 @@ import { PlatformSettingsService } from "../services/platform-settings.service";
                         >{{ cap.role }}</span
                       >
                     }
-                    @if (cap.id === 'video' && videoWarning) {
+                    @if (cap.id === "video" && videoWarning) {
                       <span
                         class="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-widest border border-amber-200"
                       >
@@ -89,7 +91,7 @@ import { PlatformSettingsService } from "../services/platform-settings.service";
                     class="text-[10px] font-bold tracking-widest uppercase"
                     [ngClass]="isCapActive(cap.flag) ? 'text-emerald-600' : 'text-muted-foreground'"
                   >
-                    {{ isCapActive(cap.flag) ? 'Activo' : 'Pausado' }}
+                    {{ isCapActive(cap.flag) ? "Activo" : "Pausado" }}
                   </span>
                   <button
                     type="button"

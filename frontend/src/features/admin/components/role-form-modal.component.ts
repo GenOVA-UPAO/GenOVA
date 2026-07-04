@@ -1,4 +1,5 @@
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
+
 import { ButtonDirective } from "@/core/components/ui/button.directive";
 import {
   DialogComponent,
@@ -10,12 +11,13 @@ import {
 } from "@/core/components/ui/dialog.component";
 import { InputDirective } from "@/core/components/ui/input.directive";
 import { LabelDirective } from "@/core/components/ui/label.directive";
+
 import { AVAILABLE_PERMISSIONS } from "../lib/permissions";
 import type { Role } from "../lib/types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-role-form-modal",
-  standalone: true,
   imports: [
     DialogComponent,
     DialogContentComponent,
@@ -32,13 +34,13 @@ import type { Role } from "../lib/types";
       <gn-dialog-content class="max-w-lg max-h-[92vh] overflow-y-auto">
         <gn-dialog-header>
           <gn-dialog-title>
-            {{ editingRole ? 'Editar rol: ' + editingRole.name : 'Crear nuevo rol' }}
+            {{ editingRole ? "Editar rol: " + editingRole.name : "Crear nuevo rol" }}
           </gn-dialog-title>
           <gn-dialog-description>
             {{
               editingRole
-                ? 'Ajusta el nombre y la selección de permisos para este perfil del sistema.'
-                : 'Elige un nombre único y asigna los permisos necesarios para este perfil.'
+                ? "Ajusta el nombre y la selección de permisos para este perfil del sistema."
+                : "Elige un nombre único y asigna los permisos necesarios para este perfil."
             }}
           </gn-dialog-description>
         </gn-dialog-header>
@@ -143,11 +145,11 @@ import type { Role } from "../lib/types";
               {{
                 isSubmitting()
                   ? editingRole
-                    ? 'Guardando...'
-                    : 'Creando...'
+                    ? "Guardando..."
+                    : "Creando..."
                   : editingRole
-                    ? 'Guardar cambios'
-                    : 'Crear rol'
+                    ? "Guardar cambios"
+                    : "Crear rol"
               }}
             </button>
           </gn-dialog-footer>
@@ -168,7 +170,7 @@ export class RoleFormModalComponent {
   readonly onRoleDescriptionChange = output<Event>();
   readonly onPermissionToggle = output<string>();
   readonly onSubmit = output<Event>();
-  readonly onClose = output<void>();
+  readonly onClose = output();
 
   availablePermissions = AVAILABLE_PERMISSIONS;
 

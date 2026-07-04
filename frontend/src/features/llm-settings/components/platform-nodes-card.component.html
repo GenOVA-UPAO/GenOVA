@@ -11,7 +11,7 @@
       [disabled]="!hasChanges || saving"
       class="inline-flex items-center justify-center rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 font-bold shadow-md"
     >
-      {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+      {{ saving ? "Guardando..." : "Guardar cambios" }}
     </button>
   </div>
 
@@ -96,7 +96,7 @@
                       isNodeActive(node.flag) ? 'text-emerald-600' : 'text-muted-foreground'
                     "
                   >
-                    {{ isNodeActive(node.flag) ? 'Activo' : 'Pausado' }}
+                    {{ isNodeActive(node.flag) ? "Activo" : "Pausado" }}
                   </span>
                   <button
                     type="button"
@@ -142,7 +142,7 @@
                   {{ n.name }}
                 </p>
                 <p class="text-[11px] font-medium text-muted-foreground mt-0.5">
-                  {{ n.description || 'Nodo base del sistema.' }}
+                  {{ n.description || "Nodo base del sistema." }}
                 </p>
               </div>
               <span
@@ -174,7 +174,7 @@
                   }
                 </p>
                 <p class="text-[11px] font-medium text-muted-foreground mt-0.5">
-                  {{ videoNode.description || 'Nodo base del sistema.' }}
+                  {{ videoNode.description || "Nodo base del sistema." }}
                 </p>
               </div>
               <span

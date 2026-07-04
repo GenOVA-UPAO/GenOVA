@@ -1,4 +1,5 @@
 import { apiFetch } from "@/core/lib/http";
+
 import type { Role } from "../lib/types";
 
 export interface RoleFormPayload {
@@ -14,7 +15,7 @@ export async function submitRoleForm(
   { ok: true; data: Role; isEdit: boolean } | { ok: false; status: number; message: string }
 > {
   const isEdit = !!editingRole;
-  const path = isEdit ? `/api/roles/${editingRole!.id}` : "/api/roles";
+  const path = isEdit ? `/api/roles/${editingRole.id}` : "/api/roles";
   const method = isEdit ? "PATCH" : "POST";
 
   const response = await apiFetch(path, { method, body: JSON.stringify(payload) });

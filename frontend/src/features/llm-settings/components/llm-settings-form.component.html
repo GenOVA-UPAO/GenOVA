@@ -59,7 +59,7 @@
                 >
                   @for (m of catalogModels(provider); track m.model_id) {
                     <option [value]="provider + '::' + m.model_id">
-                      {{ modelLabel(m) }}{{ modelMeta(m) ? ' — ' + modelMeta(m) : '' }}
+                      {{ modelLabel(m) }}{{ modelMeta(m) ? " — " + modelMeta(m) : "" }}
                     </option>
                   }
                 </optgroup>

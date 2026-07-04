@@ -1,5 +1,5 @@
 <div class="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+  <form (submit)="onSubmit(); $event.preventDefault()" class="space-y-6">
     @if (!hideHeader()) {
       <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-border/50">
         <div
@@ -9,7 +9,7 @@
         </div>
         <div class="text-center sm:text-left space-y-1">
           <h2 class="text-lg font-bold capitalize font-display">
-            {{ profile().full_name || 'Usuario' }}
+            {{ profile().full_name || "Usuario" }}
           </h2>
           <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
             <div
@@ -38,15 +38,12 @@
           type="text"
           autocomplete="name"
           placeholder="Ej: Juan Pérez"
-          formControlName="full_name"
+          [formField]="profileForm.full_name"
           class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         />
-        @if (form.get('full_name')?.errors?.['required'] && form.get('full_name')?.touched) {
-          <p class="text-xs text-destructive font-medium">El nombre completo es requerido.</p>
-        }
-        @if (form.get('full_name')?.errors?.['minlength'] && form.get('full_name')?.touched) {
+        @if (profileForm.full_name().touched() && profileForm.full_name().errors().length) {
           <p class="text-xs text-destructive font-medium">
-            El nombre debe tener al menos 3 caracteres.
+            {{ profileForm.full_name().errors()[0].message }}
           </p>
         }
       </div>
@@ -60,14 +57,13 @@
           type="email"
           autocomplete="email"
           placeholder="usuario@correo.com"
-          formControlName="email"
+          [formField]="profileForm.email"
           class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         />
-        @if (form.get('email')?.errors?.['required'] && form.get('email')?.touched) {
-          <p class="text-xs text-destructive font-medium">El correo electrónico es requerido.</p>
-        }
-        @if (form.get('email')?.errors?.['email'] && form.get('email')?.touched) {
-          <p class="text-xs text-destructive font-medium">Ingresa un correo electrónico válido.</p>
+        @if (profileForm.email().touched() && profileForm.email().errors().length) {
+          <p class="text-xs text-destructive font-medium">
+            {{ profileForm.email().errors()[0].message }}
+          </p>
         }
       </div>
 
@@ -80,11 +76,10 @@
         </label>
         <input
           id="universityId"
-          type="number"
+          type="text"
           inputmode="numeric"
           placeholder="Ej: 257022"
-          min="1"
-          formControlName="university_id"
+          [formField]="profileForm.university_id"
           class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         />
         <p class="text-[10px] text-muted-foreground">
@@ -102,7 +97,7 @@
           </label>
           <select
             id="gender"
-            formControlName="gender"
+            [formField]="profileForm.gender"
             class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="masculino">Masculino</option>
@@ -123,12 +118,12 @@
             type="tel"
             autocomplete="tel"
             placeholder="Ej: +51987285992"
-            formControlName="phone_number"
+            [formField]="profileForm.phone_number"
             class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           />
-          @if (form.get('phone_number')?.errors?.['pattern'] && form.get('phone_number')?.touched) {
+          @if (profileForm.phone_number().touched() && profileForm.phone_number().errors().length) {
             <p class="text-xs text-destructive font-medium">
-              El teléfono solo debe contener dígitos y el signo +.
+              {{ profileForm.phone_number().errors()[0].message }}
             </p>
           }
         </div>
@@ -146,7 +141,7 @@
       </button>
       <button
         type="submit"
-        [disabled]="isSubmitting() || form.invalid"
+        [disabled]="isSubmitting() || profileForm().invalid()"
         class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 gap-2"
       >
         @if (isSubmitting()) {

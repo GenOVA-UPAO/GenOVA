@@ -1,17 +1,19 @@
-import { Component, Input, inject, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, Input, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
+import { TASK_LABELS } from "../lib/llm-settings-labels";
+import type { Draft } from "../lib/llmConfigDraft";
+import type { ChipModel } from "../lib/model-task-card.helpers";
+import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 import { CatalogStatusAlertComponent } from "./catalog-status-alert.component";
 import { LlmTaskRowComponent } from "./llm-task-row.component";
 import { MediaTaskCardComponent } from "./media-task-card.component";
-import { ModelTaskCardComponent, type AdminTaskDraft } from "./model-task-card.component";
-import type { Draft } from "../lib/llmConfigDraft";
-import { TASK_LABELS } from "../lib/llm-settings-labels";
-import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
-import type { ChipModel } from "../lib/model-task-card.helpers";
+import { type AdminTaskDraft, ModelTaskCardComponent } from "./model-task-card.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-model-assignment-panel",
-  standalone: true,
   imports: [
     ButtonComponent,
     CatalogStatusAlertComponent,
@@ -29,7 +31,7 @@ export class ModelAssignmentPanelComponent {
   readonly adminSaving = input(false);
 
   readonly draftChange = output<Draft>();
-  readonly openManageModels = output<void>();
+  readonly openManageModels = output();
 
   store = inject(UserLlmSettingsStore);
   editTask: string | null = null;

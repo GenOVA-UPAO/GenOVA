@@ -32,8 +32,8 @@ function Run-Step {
     }
 }
 
-# [1] Frontend lint (Biome)
-Run-Step "Frontend lint (Biome, pnpm lint)" {
+# [1] Frontend lint (ESLint)
+Run-Step "Frontend lint (ESLint, pnpm lint)" {
     pnpm lint
 }
 

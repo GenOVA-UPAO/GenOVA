@@ -1,5 +1,7 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import type { JobLike, ResourceVM } from "../../lib/ova-job-view-model";
 import { CreationResourceListComponent } from "./creation-resource-list.component";
 
@@ -15,8 +17,8 @@ const STATUS_LABEL: Record<string, string> = {
 const TERMINAL = new Set(["done", "error", "canceled", "interrupted"]);
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-progress-panel",
-  standalone: true,
   imports: [ButtonComponent, CreationResourceListComponent],
   template: `
     <div class="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-sm space-y-4">
@@ -85,12 +87,12 @@ export class ProgressPanelComponent {
   readonly onToggle = output<string>();
   readonly onRetryOne = output<string>();
   readonly onPreview = output<string>();
-  readonly onSelectAll = output<void>();
-  readonly onRetrySelected = output<void>();
-  readonly onCancel = output<void>();
+  readonly onSelectAll = output();
+  readonly onRetrySelected = output();
+  readonly onCancel = output();
 
   get status() {
-    return (this.job()?.status as string) || "queued";
+    return this.job()?.status || "queued";
   }
 
   get isTerminal() {

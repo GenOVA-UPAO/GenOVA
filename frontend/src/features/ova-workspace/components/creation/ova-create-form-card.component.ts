@@ -1,14 +1,24 @@
-import { Component, type ElementRef, Input, input, output, viewChild } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  type ElementRef,
+  Input,
+  input,
+  output,
+  viewChild,
+} from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
+import type { OvaTheme } from "../../lib/types";
+import type { UploadsProps } from "../../lib/uploadTypes";
 import { OvaFilesModalComponent } from "../modals/ova-files-modal.component";
 import { OvaThemeModalComponent } from "../modals/ova-theme-modal.component";
 import { FileChipComponent } from "../shared/file-chip.component";
-import type { OvaTheme } from "../../lib/types";
-import type { UploadsProps } from "../../lib/uploadTypes";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-create-form-card",
-  standalone: true,
   imports: [ButtonComponent, FileChipComponent, OvaFilesModalComponent, OvaThemeModalComponent],
   templateUrl: "./ova-create-form-card.component.html",
 })
@@ -25,8 +35,8 @@ export class OvaCreateFormCardComponent {
   @Input() uploadsProps!: UploadsProps;
 
   readonly promptChange = output<string>();
-  readonly openModal = output<void>();
-  readonly generate = output<void>();
+  readonly openModal = output();
+  readonly generate = output();
   readonly themeChange = output<OvaTheme>();
 
   showFiles = false;
@@ -41,8 +51,8 @@ export class OvaCreateFormCardComponent {
   get resourceSummary() {
     if (this.totalResources <= 0) return null;
     return Object.entries(this.selections())
-      .filter(([, v]) => (v as unknown[]).length > 0)
-      .map(([k, v]) => `${k} (${(v as unknown[]).length})`)
+      .filter(([, v]) => v.length > 0)
+      .map(([k, v]) => `${k} (${v.length})`)
       .join(" · ");
   }
 
@@ -52,12 +62,12 @@ export class OvaCreateFormCardComponent {
 
   handleDrop(e: DragEvent) {
     e.preventDefault();
-    if (e.dataTransfer?.files?.length) void this.uploadsProps.onFilesSelected(e.dataTransfer.files);
+    if (e.dataTransfer?.files?.length) this.uploadsProps.onFilesSelected(e.dataTransfer.files);
   }
 
   handleFileChange(e: Event) {
     const input = e.target as HTMLInputElement;
-    if (input.files) void this.uploadsProps.onFilesSelected(input.files);
+    if (input.files) this.uploadsProps.onFilesSelected(input.files);
     input.value = "";
   }
 }

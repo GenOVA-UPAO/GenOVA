@@ -1,16 +1,18 @@
-import { Component, inject, type OnInit, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, type OnInit } from "@angular/core";
+
 import { AuthService } from "@/core/auth/auth.service";
 import { OvaLibraryService } from "@/features/ova-library/services/ova-library.service";
-import { adminNavLinks, configNavLinks, navigationLinks } from "../navigation/nav-links";
+
 import { hasPermission } from "../lib/layout-helpers";
+import { adminNavLinks, configNavLinks, navigationLinks } from "../navigation/nav-links";
 import { NavIconComponent } from "./nav-icon.component";
 import { SidebarNavItemComponent } from "./sidebar-nav-item.component";
 import { SidebarProfileFooterComponent } from "./sidebar-profile-footer.component";
 import { SidebarSectionComponent } from "./sidebar-section.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-sidebar-menu",
-  standalone: true,
   imports: [
     NavIconComponent,
     SidebarNavItemComponent,

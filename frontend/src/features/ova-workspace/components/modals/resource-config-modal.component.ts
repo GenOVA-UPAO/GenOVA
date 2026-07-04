@@ -1,14 +1,16 @@
-import { Component, type OnInit, input, output } from "@angular/core";
-import { DialogModule } from "primeng/dialog";
+import { ChangeDetectionStrategy, Component, input, type OnInit, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
-import { getSchema } from "../../lib/resource-config";
-import type { ConfigField } from "../../lib/resource-config";
+import { DialogComponent } from "@/core/components/ui/dialog.component";
 import type { Resource } from "@/core/lib/ova-types";
 
+import type { ConfigField } from "../../lib/resource-config";
+import { getSchema } from "../../lib/resource-config";
+
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-resource-config-modal",
-  standalone: true,
-  imports: [DialogModule, ButtonComponent],
+  imports: [DialogComponent, ButtonComponent],
   templateUrl: "./resource-config-modal.component.html",
 })
 export class ResourceConfigModalComponent implements OnInit {
@@ -19,7 +21,7 @@ export class ResourceConfigModalComponent implements OnInit {
   readonly videoKeyConfigured = input(true);
   readonly visible = input(true);
 
-  readonly onClose = output<void>();
+  readonly onClose = output();
   readonly onSave = output<{
     phaseKey: string;
     resource: Resource;

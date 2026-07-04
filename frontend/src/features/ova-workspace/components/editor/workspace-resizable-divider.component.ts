@@ -1,9 +1,17 @@
-import { Component, HostListener, type OnDestroy, type OnInit, input, output } from "@angular/core";
-import { clampRatio, SPLIT_MAX, SPLIT_MIN, saveSplitRatio } from "../../lib/workspace-utils";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  input,
+  type OnDestroy,
+  output,
+} from "@angular/core";
+
+import { clampRatio, saveSplitRatio, SPLIT_MAX, SPLIT_MIN } from "../../lib/workspace-utils";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-resizable-divider",
-  standalone: true,
   imports: [],
   template: `
     <div
@@ -38,7 +46,7 @@ import { clampRatio, SPLIT_MAX, SPLIT_MIN, saveSplitRatio } from "../../lib/work
     </div>
   `,
 })
-export class WorkspaceResizableDividerComponent implements OnInit, OnDestroy {
+export class WorkspaceResizableDividerComponent implements OnDestroy {
   readonly ratio = input(0.38);
   readonly containerRef = input.required<HTMLElement | null>();
   readonly ratioChange = output<number>();
@@ -85,7 +93,9 @@ export class WorkspaceResizableDividerComponent implements OnInit, OnDestroy {
     if (!this.dragging) return;
     this.pendingX = e.clientX;
     if (!this.rafId) {
-      this.rafId = globalThis.requestAnimationFrame(() => this.flush());
+      this.rafId = globalThis.requestAnimationFrame(() => {
+        this.flush();
+      });
     }
   }
 
@@ -112,8 +122,6 @@ export class WorkspaceResizableDividerComponent implements OnInit, OnDestroy {
     this.lastRatio = clampRatio((this.pendingX - rect.left) / rect.width);
     this.ratioChange.emit(this.lastRatio);
   }
-
-  ngOnInit() {}
 
   ngOnDestroy() {
     if (this.rafId) {

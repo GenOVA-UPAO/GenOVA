@@ -1,25 +1,27 @@
-import { Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
 import { Router } from "@angular/router";
+
+import { AuthService } from "@/core/auth/auth.service";
+import { ButtonComponent } from "@/core/components/ui/button.component";
 import {
   TabsComponent,
   TabsContentComponent,
   TabsListComponent,
   TabsTriggerComponent,
 } from "@/core/components/ui/tabs.component";
-import { ButtonComponent } from "@/core/components/ui/button.component";
 import { toast } from "@/core/lib/toast";
-import { ModelAssignmentPanelComponent } from "../components/model-assignment-panel.component";
+
 import { ManageModelsModalComponent } from "../components/manage-models-modal.component";
+import { ModelAssignmentPanelComponent } from "../components/model-assignment-panel.component";
 import { ModelCatalogBrowserComponent } from "../components/model-catalog-browser.component";
 import { PlatformApiKeysCardComponent } from "../components/platform-api-keys-card.component";
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
 import { PlatformNodesCardComponent } from "../components/platform-nodes-card.component";
 import { UserApiKeysCardComponent } from "../components/user-api-keys-card.component";
 import { type Draft, toDraft, toPayload } from "../lib/llmConfigDraft";
-import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
-import { PlatformSettingsService } from "../services/platform-settings.service";
-import { AuthService } from "@/core/auth/auth.service";
 import type { ChipModel } from "../lib/model-task-card.helpers";
+import { PlatformSettingsService } from "../services/platform-settings.service";
+import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 
 function canAccessModels(user: ReturnType<AuthService["user"]>): boolean {
   if (!user) return true;
@@ -29,8 +31,8 @@ function canAccessModels(user: ReturnType<AuthService["user"]>): boolean {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-models-page",
-  standalone: true,
   imports: [
     ButtonComponent,
     ModelAssignmentPanelComponent,
@@ -96,7 +98,7 @@ export class ModelsPageComponent implements OnInit {
     if (!this.isAdmin) {
       this.adminModels = (this.store.catalogFull ?? []).filter(
         (m) => (m as { active?: boolean }).active !== false,
-      ) as ChipModel[];
+      );
       this.adminDraft = this.buildDraftFromStoreDefaults();
       this.adminLoading = false;
       return;
@@ -112,7 +114,7 @@ export class ModelsPageComponent implements OnInit {
       this.adminTasks = [...new Set([...tasks, "imagen", "video"])];
       this.adminModels = (
         data?.catalog?.length ? data.catalog : (this.store.catalogFull ?? [])
-      ).filter((m) => (m as { active?: boolean }).active !== false) as ChipModel[];
+      ).filter((m) => (m as { active?: boolean }).active !== false);
       this.adminDraft = toDraft(data?.config, this.adminTasks);
     } catch {
       this.adminTasks = ["texto", "codigo", "orquestador", "razonamiento", "imagen", "video"];

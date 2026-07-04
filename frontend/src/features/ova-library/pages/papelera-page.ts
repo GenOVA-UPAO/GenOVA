@@ -1,22 +1,24 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { CheckboxModule } from "primeng/checkbox";
+
 import { ConfirmModalComponent } from "@/core/components/confirm-modal.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
+import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
+
 import { OvaListPaginationComponent } from "../components/cards/ova-list-pagination.component";
 import { TrashedOvaCardComponent } from "../components/cards/trashed-ova-card.component";
 import type { OvaListItem } from "../lib/types";
 import { OvaLibraryService } from "../services/ova-library.service";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-papelera-page",
-  standalone: true,
   imports: [
     FormsModule,
     ButtonComponent,
     BadgeComponent,
-    CheckboxModule,
+    CheckboxComponent,
     ConfirmModalComponent,
     TrashedOvaCardComponent,
     OvaListPaginationComponent,
@@ -43,7 +45,7 @@ export class PapeleraPage {
     message: string;
     confirmLabel: string;
     danger: boolean;
-    onConfirm: () => void;
+    onConfirm: () => void | Promise<void>;
   } | null>(null);
 
   allSelected = computed(() => {
@@ -113,10 +115,14 @@ export class PapeleraPage {
 
   handleBulkRestore() {
     this.bulkLoading.set(true);
-    this.service
+    void this.service
       .batchRestore(Array.from(this.selectedIds()))
-      .then(() => this.clearSelection())
-      .finally(() => this.bulkLoading.set(false));
+      .then(() => {
+        this.clearSelection();
+      })
+      .finally(() => {
+        this.bulkLoading.set(false);
+      });
   }
 
   handleBulkPermanentDelete() {

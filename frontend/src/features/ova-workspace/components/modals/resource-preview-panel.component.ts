@@ -1,10 +1,12 @@
-import { Component, input } from "@angular/core";
-import { getResourcePreview } from "../../lib/resource-previews";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
+
 import type { Resource } from "@/core/lib/ova-types";
 
+import { getResourcePreview } from "../../lib/resource-previews";
+
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-resource-preview-panel",
-  standalone: true,
   imports: [],
   template: `
     <aside [class]="className()">
@@ -26,7 +28,7 @@ import type { Resource } from "@/core/lib/ova-types";
               class="p-2 rounded-xl shrink-0 text-lg"
               [style.backgroundColor]="phaseColor() + '18'"
             >
-              {{ resource()?.emoji || '📦' }}
+              {{ resource()?.emoji || "📦" }}
             </div>
             <div class="min-w-0">
               <p class="font-semibold text-sm text-foreground leading-tight">

@@ -1,18 +1,29 @@
-import { Component, type OnInit, effect, inject, signal, input, output } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  type OnInit,
+  output,
+  signal,
+} from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
-import { PhaseSelectModalComponent } from "../modals/phase-select-modal.component";
+
+import { buildUploadsProps } from "../../lib/upload-chip-view-model";
 import { OvaCreationFlowService } from "../../services/ova-creation-flow.service";
 import { OvaJobService } from "../../services/ova-job.service";
 import { OvaUploadsService } from "../../services/ova-uploads.service";
-import { buildUploadsProps } from "../../lib/upload-chip-view-model";
+import { PhaseSelectModalComponent } from "../modals/phase-select-modal.component";
 import { CrearOvaPreviewPanelComponent } from "./crear-ova-preview-panel.component";
 import { OvaCreateFormCardComponent } from "./ova-create-form-card.component";
 import { ProgressPanelComponent } from "./progress-panel.component";
 import { TotalFailurePanelComponent } from "./total-failure-panel.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-creation-view",
-  standalone: true,
   imports: [
     ButtonComponent,
     OvaCreateFormCardComponent,

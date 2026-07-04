@@ -1,15 +1,16 @@
 import { CommonModule } from "@angular/common";
-import { Component, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
+
 import {
   chipLabel,
   chipModality,
-  lookupModalitySymbol,
   type ChipModel,
+  lookupModalitySymbol,
 } from "../lib/model-task-card.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-model-task-card-chips",
-  standalone: true,
   imports: [CommonModule],
   template: `
     @if (!fallbacks()?.length) {
@@ -47,13 +48,12 @@ import {
   `,
 })
 export class ModelTaskCardChipsComponent {
-  readonly fallbacks =
-    input.required<
-      Array<{
-        provider: string;
-        model_id: string;
-      }>
-    >();
+  readonly fallbacks = input.required<
+    {
+      provider: string;
+      model_id: string;
+    }[]
+  >();
   readonly models = input.required<ChipModel[]>();
   readonly chip = input.required<string>();
   readonly num = input.required<string>();

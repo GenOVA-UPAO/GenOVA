@@ -1,5 +1,6 @@
-import { getDefaultConfig } from "./resource-config";
 import type { Resource } from "@/core/lib/ova-types";
+
+import { getDefaultConfig } from "./resource-config";
 
 export type ResourceConfigs = Record<string, Record<string, number>>;
 

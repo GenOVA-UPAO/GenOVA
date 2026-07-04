@@ -1,21 +1,24 @@
 import {
+  ChangeDetectionStrategy,
   Component,
-  type OnChanges,
-  type SimpleChanges,
   inject,
-  signal,
   input,
+  type OnChanges,
   output,
+  signal,
+  type SimpleChanges,
 } from "@angular/core";
-import { DialogModule } from "primeng/dialog";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+import { DialogComponent } from "@/core/components/ui/dialog.component";
+
 import type { PhaseMicroVersion } from "../../lib/version-history.types";
 import { VersionHistoryService } from "../../services/version-history.service";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-phase-version-history",
-  standalone: true,
-  imports: [DialogModule, ButtonComponent],
+  imports: [DialogComponent, ButtonComponent],
   templateUrl: "./phase-version-history.component.html",
 })
 export class PhaseVersionHistoryComponent implements OnChanges {
@@ -26,7 +29,7 @@ export class PhaseVersionHistoryComponent implements OnChanges {
   readonly phaseId = input("");
 
   readonly openChange = output<boolean>();
-  readonly onReverted = output<void>();
+  readonly onReverted = output();
 
   microVersions = signal<PhaseMicroVersion[]>([]);
   loading = signal(false);

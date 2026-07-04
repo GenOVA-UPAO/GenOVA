@@ -1,19 +1,20 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   type ElementRef,
-  Input,
   inject,
+  Input,
+  input,
   type OnChanges,
   type OnDestroy,
   type SimpleChanges,
-  input,
   viewChild,
 } from "@angular/core";
 import { DomSanitizer, type SafeResourceUrl } from "@angular/platform-browser";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-html-preview-frame",
-  standalone: true,
   imports: [],
   template: `
     <iframe

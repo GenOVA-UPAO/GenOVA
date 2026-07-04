@@ -1,4 +1,5 @@
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
+
 import { ButtonDirective } from "@/core/components/ui/button.directive";
 import {
   DialogComponent,
@@ -8,11 +9,12 @@ import {
   DialogTitleComponent,
 } from "@/core/components/ui/dialog.component";
 import { LabelDirective } from "@/core/components/ui/label.directive";
+
 import type { Role } from "../lib/types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-delete-role-modal",
-  standalone: true,
   imports: [
     DialogComponent,
     DialogContentComponent,
@@ -109,10 +111,10 @@ import type { Role } from "../lib/types";
           >
             {{
               isDeleting()
-                ? 'Eliminando...'
+                ? "Eliminando..."
                 : deletingRole.user_count
-                  ? 'Reasignar y eliminar'
-                  : 'Eliminar rol'
+                  ? "Reasignar y eliminar"
+                  : "Eliminar rol"
             }}
           </button>
         </gn-dialog-footer>
@@ -128,8 +130,8 @@ export class DeleteRoleModalComponent {
   readonly isDeleting = input(false);
 
   readonly onReassignRoleChange = output<Event>();
-  readonly onConfirm = output<void>();
-  readonly onCancel = output<void>();
+  readonly onConfirm = output();
+  readonly onCancel = output();
 
   handleOpenChange(open: boolean) {
     if (!open && !this.isDeleting()) {

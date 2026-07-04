@@ -1,9 +1,10 @@
-import { Component, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
+
 import { SkeletonComponent } from "@/core/components/ui/skeleton.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-grid-skeleton",
-  standalone: true,
   imports: [SkeletonComponent],
   template: `
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

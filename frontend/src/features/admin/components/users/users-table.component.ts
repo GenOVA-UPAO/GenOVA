@@ -1,10 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input, input } from "@angular/core";
-import {
-  DropdownMenuComponent,
-  DropdownMenuContentComponent,
-  DropdownMenuTriggerComponent,
-} from "../../../../core/components/ui/dropdown-menu.component";
+import { ChangeDetectionStrategy, Component, Input, input } from "@angular/core";
+import { HlmDropdownMenu, HlmDropdownMenuTrigger } from "@spartan-ng/helm/dropdown-menu";
+
 import { getRoleColorClasses } from "../../lib/roleUtils";
 import type { AdminUser, Role } from "../../lib/types";
 import { UserStatusBadgeComponent } from "./status-badge.component";
@@ -20,15 +17,14 @@ export interface Handlers {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-users-table",
-  standalone: true,
   imports: [
     CommonModule,
     UserStatusBadgeComponent,
     UserActionMenuComponent,
-    DropdownMenuComponent,
-    DropdownMenuTriggerComponent,
-    DropdownMenuContentComponent,
+    HlmDropdownMenu,
+    HlmDropdownMenuTrigger,
   ],
   templateUrl: "./users-table.component.html",
 })

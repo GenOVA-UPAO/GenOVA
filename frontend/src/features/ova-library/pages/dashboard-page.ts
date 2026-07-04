@@ -1,16 +1,17 @@
-import { Component, computed, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
-import { ButtonComponent } from "@/core/components/ui/button.component";
 import { AuthService } from "@/core/auth/auth.service";
-import { OvaLibraryService } from "../services/ova-library.service";
+import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import type { OvaListItem } from "../lib/types";
+import { OvaLibraryService } from "../services/ova-library.service";
 import { ADMIN_CARDS, formatDate, STATUS_STYLE } from "./dashboard-page.helpers";
 import { DashboardStatCardComponent } from "./dashboard-stat-card.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dashboard-page",
-  standalone: true,
   imports: [RouterLink, ButtonComponent, DashboardStatCardComponent],
   templateUrl: "./dashboard-page.html",
 })

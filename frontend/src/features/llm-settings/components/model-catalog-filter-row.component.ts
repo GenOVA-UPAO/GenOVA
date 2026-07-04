@@ -1,8 +1,8 @@
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-model-catalog-filter-row",
-  standalone: true,
   imports: [],
   template: `
     @if (options.length > 1) {

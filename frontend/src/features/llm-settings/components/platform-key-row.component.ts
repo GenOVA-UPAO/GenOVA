@@ -1,12 +1,22 @@
 import { CommonModule } from "@angular/common";
-import { Component, type ElementRef, Input, inject, input, output, viewChild } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  type ElementRef,
+  inject,
+  Input,
+  input,
+  output,
+  viewChild,
+} from "@angular/core";
 import { FormsModule } from "@angular/forms";
+
 import { PlatformSettingsService } from "../services/platform-settings.service";
 import { PROVIDER_META } from "./platformKeyMeta";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-platform-key-row",
-  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: "./platform-key-row.component.html",
 })
@@ -52,7 +62,9 @@ export class PlatformKeyRowComponent {
     this.value = "";
     this.editing = true;
     this.rowError = null;
-    setTimeout(() => this.inputEl()?.nativeElement?.focus(), 50);
+    setTimeout(() => {
+      this.inputEl()?.nativeElement?.focus();
+    }, 50);
   }
 
   cancelEdit() {

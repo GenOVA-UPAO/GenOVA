@@ -1,15 +1,18 @@
 import { CommonModule } from "@angular/common";
 import {
-  Component,
-  inject,
   type AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
   type ElementRef,
+  inject,
   input,
   output,
   viewChild,
 } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { ModalDismissDirective } from "@/core/directives/modal-dismiss.directive";
+
 import { groupByProvider, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
@@ -18,8 +21,8 @@ import { ManageModelRowComponent } from "./manage-model-row.component";
 import { ManageModelsToolbarComponent } from "./manage-models-toolbar.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-manage-models-modal",
-  standalone: true,
   imports: [
     CommonModule,
     ButtonComponent,
@@ -32,7 +35,7 @@ import { ManageModelsToolbarComponent } from "./manage-models-toolbar.component"
 })
 export class ManageModelsModalComponent implements AfterViewInit {
   readonly open = input(false);
-  readonly onClose = output<void>();
+  readonly onClose = output();
   readonly onGoToApiKeys = output<string | undefined>();
 
   store = inject(UserLlmSettingsStore);

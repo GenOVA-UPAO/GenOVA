@@ -9,7 +9,11 @@
       }
     </header>
 
-    <div role="tablist" aria-label="Fases del modelo 5E" class="flex flex-wrap gap-1 border-b border-border px-5 py-3">
+    <div
+      role="tablist"
+      aria-label="Fases del modelo 5E"
+      class="flex flex-wrap gap-1 border-b border-border px-5 py-3"
+    >
       @for (phase of phases; track phase.id; let i = $index) {
         <button
           type="button"
@@ -19,7 +23,11 @@
           [id]="'tab-' + phase.id"
           (click)="selectTab(i)"
           class="rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          [class]="i === activeIndex ? colors(phase.id).tab : 'bg-muted text-muted-foreground hover:bg-muted/80'"
+          [class]="
+            i === activeIndex
+              ? colors(phase.id).tab
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          "
         >
           {{ phase.label }}
         </button>

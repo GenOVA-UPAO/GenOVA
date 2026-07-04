@@ -1,22 +1,24 @@
-import { Component, Input, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input } from "@angular/core";
+
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import type { OvaContent, Phase, PhaseSection } from "./ova-five-e-viewer.helpers";
 import { phaseColor } from "./ova-five-e-viewer.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-phase-section",
-  standalone: true,
   imports: [],
   template: `
     @switch (section.type) {
-      @case ('heading') {
+      @case ("heading") {
         <h3 class="mt-5 text-base font-semibold first:mt-0">{{ section.content }}</h3>
       }
-      @case ('paragraph') {
+      @case ("paragraph") {
         <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{{ section.content }}</p>
       }
-      @case ('list') {
+      @case ("list") {
         @if (section.ordered) {
           <ol class="mt-3 space-y-1.5 pl-5 text-sm text-muted-foreground list-decimal">
             @for (item of section.items ?? []; track $index) {
@@ -31,7 +33,7 @@ import { phaseColor } from "./ova-five-e-viewer.helpers";
           </ul>
         }
       }
-      @case ('code') {
+      @case ("code") {
         <div class="mt-3 overflow-hidden rounded-lg border border-border">
           @if (section.language) {
             <div
@@ -45,7 +47,7 @@ import { phaseColor } from "./ova-five-e-viewer.helpers";
           ><code>{{ section.content }}</code></pre>
         </div>
       }
-      @case ('image') {
+      @case ("image") {
         <figure class="mt-3">
           <img
             [src]="section.src"
@@ -68,8 +70,8 @@ export class OvaPhaseSectionComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-phase-panel",
-  standalone: true,
   imports: [BadgeComponent, ButtonComponent, OvaPhaseSectionComponent],
   template: `
     <div>
@@ -105,8 +107,8 @@ export class OvaPhasePanelComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-five-e-viewer",
-  standalone: true,
   imports: [OvaPhasePanelComponent],
   templateUrl: "./ova-five-e-viewer.component.html",
 })

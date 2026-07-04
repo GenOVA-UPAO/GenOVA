@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+
 import { apiFetch } from "@/core/lib/http";
 
 async function getJson(path: string, errMsg: string): Promise<unknown> {

@@ -54,7 +54,7 @@
       </svg>
       <input
         type="text"
-        pInputText
+        hlmInput
         placeholder="Buscar por título de la OVA..."
         [ngModel]="service.searchQuery()"
         (ngModelChange)="service.setSearch($event)"
@@ -62,27 +62,27 @@
       />
     </div>
 
-    <p-select
-      [options]="statusOptions"
-      optionLabel="label"
-      optionValue="value"
-      [ngModel]="service.statusFilter() || 'all'"
-      (ngModelChange)="handleStatusChange($event)"
-      placeholder="Todos los estados"
-      styleClass="w-full sm:w-48 h-10 border-muted bg-background/50 font-medium"
-    ></p-select>
+    <hlm-select
+      class="w-full sm:w-48"
+      [value]="service.statusFilter() || 'all'"
+      (valueChange)="handleStatusChange($event)"
+    >
+      <hlm-select-trigger class="w-full sm:w-48 h-10 border-muted bg-background/50 font-medium">
+        <hlm-select-value placeholder="Todos los estados" />
+      </hlm-select-trigger>
+      <hlm-select-content>
+        @for (opt of statusOptions; track opt.value) {
+        <hlm-select-item [value]="opt.value">{{ opt.label }}</hlm-select-item>
+        }
+      </hlm-select-content>
+    </hlm-select>
   </div>
 
   @if (!loading() && !error() && ovas().length > 0) {
   <label
     class="flex items-center gap-2 cursor-pointer select-none text-xs text-muted-foreground font-semibold px-2 hover:text-foreground transition-colors w-fit"
   >
-    <p-checkbox
-      [binary]="true"
-      [ngModel]="allSelected()"
-      (ngModelChange)="handleSelectAll($event)"
-      styleClass="rounded-sm"
-    ></p-checkbox>
+    <gn-checkbox [checked]="allSelected()" (checkedChange)="handleSelectAll($event)"></gn-checkbox>
     Seleccionar todos en esta página
   </label>
   } @if (selectedIds().size > 0) {

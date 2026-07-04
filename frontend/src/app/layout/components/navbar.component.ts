@@ -1,17 +1,27 @@
-import { Component, type ElementRef, HostListener, inject, signal, viewChild } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  type ElementRef,
+  HostListener,
+  inject,
+  signal,
+  viewChild,
+} from "@angular/core";
 import { RouterLink } from "@angular/router";
+
 import { AuthService } from "@/core/auth/auth.service";
 import {
   ThemeModalComponent,
   type ThemeState,
 } from "@/features/ova-library/components/modals/theme-modal.component";
+
 import { userInitials } from "../lib/layout-helpers";
 import { NavbarBrandComponent } from "./navbar-brand.component";
 import { SidebarMenuComponent } from "./sidebar-menu.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-navbar",
-  standalone: true,
   imports: [RouterLink, NavbarBrandComponent, SidebarMenuComponent, ThemeModalComponent],
   templateUrl: "./navbar.component.html",
 })

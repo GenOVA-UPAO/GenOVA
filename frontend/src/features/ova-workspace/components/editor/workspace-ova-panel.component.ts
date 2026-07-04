@@ -1,16 +1,17 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import type { PhaseWithContent } from "../../lib/types";
 import { LlmSettingsModalOutletComponent } from "../modals/llm-settings-modal-outlet.component";
 import { WorkspaceHtmlPreviewComponent } from "./workspace-html-preview.component";
 import { WorkspaceResourceListComponent } from "./workspace-resource-list.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-ova-panel",
-  standalone: true,
   imports: [
     CommonModule,
     BadgeComponent,
@@ -73,6 +74,7 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
             (click)="settingsOpen = true"
             class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             title="Ajustes de Modelo IA"
+            aria-label="Ajustes de Modelo IA"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -116,13 +118,13 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
         }
 
         @if (!isLoading() && hasPhases) {
-          @if (tab === 'preview') {
+          @if (tab === "preview") {
             <gn-workspace-html-preview
               [phases]="phases()"
               (onResourceClick)="onResourceClick.emit($event)"
             ></gn-workspace-html-preview>
           }
-          @if (tab === 'code') {
+          @if (tab === "code") {
             <div class="p-4 space-y-4">
               @for (kv of grouped | keyvalue; track kv) {
                 <gn-workspace-resource-list
@@ -151,7 +153,7 @@ export class WorkspaceOvaPanelComponent {
   readonly isLoading = input(false);
   readonly ovaId = input.required<string>();
 
-  readonly onDownload = output<void>();
+  readonly onDownload = output();
   readonly onReorder = output<PhaseWithContent[]>();
   readonly onEditPhase = output<{
     phaseId: string;
@@ -162,13 +164,13 @@ export class WorkspaceOvaPanelComponent {
     prompt?: string;
   }>();
   readonly onDeletePhase = output<string>();
-  readonly onPhaseReverted = output<void>();
+  readonly onPhaseReverted = output();
   readonly onAddPhase = output<{
     phaseType: string;
     prompt: string;
   }>();
   readonly onResourceClick = output<MouseEvent>();
-  readonly onHistoryOpen = output<void>();
+  readonly onHistoryOpen = output();
 
   tab: "preview" | "code" = "preview";
   settingsOpen = false;
@@ -180,14 +182,11 @@ export class WorkspaceOvaPanelComponent {
 
   get grouped() {
     if (!this.hasPhases) return {};
-    return this.phases().reduce(
-      (acc, p) => {
-        if (!acc[p.phase_type]) acc[p.phase_type] = [];
-        acc[p.phase_type].push(p);
-        return acc;
-      },
-      {} as Record<string, PhaseWithContent[]>,
-    );
+    return this.phases().reduce<Record<string, PhaseWithContent[]>>((acc, p) => {
+      if (!acc[p.phase_type]) acc[p.phase_type] = [];
+      acc[p.phase_type].push(p);
+      return acc;
+    }, {});
   }
 
   handleGroupReorder(phaseType: string, updatedGroup: PhaseWithContent[]) {

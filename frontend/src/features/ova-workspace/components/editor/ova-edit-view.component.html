@@ -110,7 +110,7 @@
             </button>
           </div>
           <div class="flex-1 overflow-hidden mt-2 relative">
-            @if (mobileTab === 'chat') {
+            @if (mobileTab === "chat") {
               <div class="absolute inset-0">
                 <!-- Chat properties bound below -->
                 <gn-workspace-chat-panel
@@ -128,7 +128,7 @@
                 ></gn-workspace-chat-panel>
               </div>
             }
-            @if (mobileTab === 'preview') {
+            @if (mobileTab === "preview") {
               <div class="absolute inset-0">
                 <gn-workspace-ova-panel
                   [phases]="ws.phases()"

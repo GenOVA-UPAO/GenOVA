@@ -1,31 +1,37 @@
-import { inject, Component, type OnInit, input, output } from "@angular/core";
-import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
-import { DialogModule } from "primeng/dialog";
-import { InputTextModule } from "primeng/inputtext";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  type OnInit,
+  output,
+  signal,
+} from "@angular/core";
+import { form, FormField, maxLength, required } from "@angular/forms/signals";
+import { HlmInput } from "@spartan-ng/helm/input";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+import { DialogComponent } from "@/core/components/ui/dialog.component";
 import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-edit-metadata-modal",
-  standalone: true,
-  imports: [DialogModule, ReactiveFormsModule, ButtonComponent, InputTextModule],
+  imports: [DialogComponent, FormField, ButtonComponent, HlmInput],
   template: `
-    <p-dialog
-      [visible]="true"
-      [modal]="true"
-      [closable]="!isLoading()"
-      (onHide)="onCancel.emit()"
-      [style]="{ width: '32rem', 'max-width': '100%' }"
-      [showHeader]="false"
-      contentStyleClass="p-0 bg-card rounded-xl border border-border shadow-lg"
+    <gn-dialog
+      [open]="true"
+      width="32rem"
+      [disableClose]="isLoading()"
+      (openChange)="$event || onCancel.emit()"
     >
-      <div class="p-6">
+      <div class="p-6 bg-card">
         <h2 class="text-lg font-semibold tracking-tight">Editar metadatos</h2>
         <p class="text-xs text-muted-foreground mt-1 mb-4">
           Actualiza el título y descripción del OVA.
         </p>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+        <form (submit)="onSubmit(); $event.preventDefault()" class="space-y-4">
           <div class="space-y-1.5">
             <label
               for="metadata-title"
@@ -36,16 +42,13 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
             <input
               id="metadata-title"
               type="text"
-              pInputText
-              class="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              maxlength="100"
+              hlmInput
+              class="w-full"
               placeholder="Ej. Regresión lineal aplicada"
-              formControlName="title"
+              [formField]="metadataForm.title"
             />
-            <p class="text-[11px] text-muted-foreground">{{ titleLength }}/100</p>
-            @if (
-              form.get('title')?.invalid && (form.get('title')?.dirty || form.get('title')?.touched)
-            ) {
+            <p class="text-[11px] text-muted-foreground">{{ titleLength() }}/100</p>
+            @if (metadataForm.title().touched() && metadataForm.title().errors().length) {
               <p class="text-xs font-medium text-destructive">
                 El título es obligatorio y no puede superar 100 caracteres.
               </p>
@@ -64,8 +67,7 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
               rows="4"
               class="w-full flex min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               placeholder="Opcional"
-              maxlength="2000"
-              formControlName="description"
+              [formField]="metadataForm.description"
             ></textarea>
           </div>
 
@@ -84,15 +86,15 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
             <gn-button
               type="submit"
               class="flex-1 block"
-              [disabled]="isLoading() || form.invalid"
+              [disabled]="isLoading() || metadataForm().invalid()"
               [loading]="isLoading()"
             >
-              {{ isLoading() ? 'Guardando...' : 'Guardar' }}
+              {{ isLoading() ? "Guardando..." : "Guardar" }}
             </gn-button>
           </div>
         </form>
       </div>
-    </p-dialog>
+    </gn-dialog>
   `,
 })
 export class EditMetadataModalComponent implements OnInit {
@@ -103,26 +105,27 @@ export class EditMetadataModalComponent implements OnInit {
   readonly isLoading = input(false);
 
   readonly onSave = output<MetadataInput>();
-  readonly onCancel = output<void>();
+  readonly onCancel = output();
 
-  form!: FormGroup;
+  protected readonly metadataModel = signal({ title: "", description: "" });
+  protected readonly metadataForm = form(this.metadataModel, (p) => {
+    required(p.title, { message: "El título es obligatorio." });
+    maxLength(p.title, 100, { message: "El título no puede superar 100 caracteres." });
+    maxLength(p.description, 2000, { message: "La descripción no puede superar 2000 caracteres." });
+  });
 
-  private fb = inject(FormBuilder);
+  protected readonly titleLength = computed(() => this.metadataModel().title.length);
 
   ngOnInit() {
-    this.form = this.fb.group({
-      title: [this.initial()?.title || "", [Validators.required, Validators.maxLength(100)]],
-      description: [this.initial()?.description || "", [Validators.maxLength(2000)]],
+    this.metadataModel.set({
+      title: this.initial()?.title || "",
+      description: this.initial()?.description || "",
     });
   }
 
-  get titleLength(): number {
-    return this.form.get("title")?.value?.length || 0;
-  }
-
   onSubmit() {
-    if (this.form.valid) {
-      this.onSave.emit(this.form.value);
+    if (this.metadataForm().valid()) {
+      this.onSave.emit(this.metadataModel());
     }
   }
 }

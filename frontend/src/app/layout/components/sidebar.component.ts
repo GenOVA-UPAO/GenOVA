@@ -1,9 +1,10 @@
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
+
 import { SidebarMenuComponent } from "./sidebar-menu.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-sidebar",
-  standalone: true,
   imports: [SidebarMenuComponent],
   template: `
     <aside

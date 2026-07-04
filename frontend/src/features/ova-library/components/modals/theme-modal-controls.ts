@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
 export interface Palette {
   name: string;
@@ -8,8 +8,8 @@ export interface Palette {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-theme-radio-option",
-  standalone: true,
   imports: [CommonModule],
   template: `
     <button
@@ -43,12 +43,12 @@ export class ThemeRadioOptionComponent {
   readonly label = input.required<string>();
   readonly desc = input.required<string>();
   readonly checked = input(false);
-  readonly onClick = output<void>();
+  readonly onClick = output();
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-theme-mini-preview",
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="rounded-xl border border-border overflow-hidden shadow-md">

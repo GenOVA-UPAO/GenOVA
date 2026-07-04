@@ -1,5 +1,7 @@
 import { Injectable } from "@angular/core";
+
 import { apiFetch } from "@/core/lib/http";
+
 import type {
   EnabledModel,
   LlmSettingsResponse,
@@ -93,12 +95,12 @@ export class UserLlmSettingsService {
     ) as Promise<{ api_keys: Record<string, string> }>;
   }
 
-  getImageModels(provider: string): Promise<Array<{ id: string; label?: string }>> {
+  getImageModels(provider: string): Promise<{ id: string; label?: string }[]> {
     return getJson(
       `/api/users/me/image-models?provider=${encodeURIComponent(provider)}`,
       "No se pudo cargar los modelos de imagen.",
     ).then((data) => {
-      const models = (data as { models?: Array<{ id: string; label?: string }> }).models;
+      const models = (data as { models?: { id: string; label?: string }[] }).models;
       return models ?? [];
     });
   }

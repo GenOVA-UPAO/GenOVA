@@ -1,5 +1,13 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, type AfterViewInit, type ElementRef, viewChild } from "@angular/core";
+import {
+  type AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  type ElementRef,
+  inject,
+  viewChild,
+} from "@angular/core";
+
 import { groupByProvider, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
@@ -7,8 +15,8 @@ import { ModelCatalogFilterRowComponent } from "./model-catalog-filter-row.compo
 import { ModelCatalogRowComponent } from "./model-catalog-row.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-model-catalog-browser",
-  standalone: true,
   imports: [CommonModule, ModelCatalogFilterRowComponent, ModelCatalogRowComponent],
   templateUrl: "./model-catalog-browser.component.html",
 })

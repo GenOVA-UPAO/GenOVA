@@ -1,75 +1,84 @@
-import { Component, input, output } from "@angular/core";
-import { DialogModule } from "primeng/dialog";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+import type { BrnDialogState } from "@spartan-ng/brain/dialog";
+import { HlmDialog, HlmDialogContent, HlmDialogPortal } from "@spartan-ng/helm/dialog";
 
 /**
- * gn-dialog — real modal backed by PrimeNG Dialog. It now owns the overlay,
- * backdrop, focus trap, Esc/mask dismissal and animation, so call sites no
- * longer need a hand-rolled `fixed inset-0` overlay wrapper.
+ * gn-dialog — real modal backed by Spartan's Brain/Helm dialog (CDK overlay). It
+ * owns the overlay, backdrop, focus trap, Esc/mask dismissal and animation, so
+ * call sites no longer need a hand-rolled `fixed inset-0` overlay wrapper.
  *
- * Header is hidden (showHeader=false) because the gn-dialog-header/title/footer
- * sub-components below provide the shadcn-style header/footer inside the body.
+ * The close button is hidden (showCloseButton=false) because the
+ * gn-dialog-header/title/footer sub-components below provide the shadcn-style
+ * header/footer inside the body. Padding is neutralised (`p-0`) so nested
+ * gn-dialog-content controls its own spacing, matching the old `!p-0` layout.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dialog",
-  standalone: true,
-  imports: [DialogModule],
+  imports: [HlmDialog, HlmDialogContent, HlmDialogPortal],
   template: `
-    <p-dialog
-      [visible]="open()"
-      (visibleChange)="openChange.emit($event)"
-      [modal]="true"
-      [showHeader]="false"
-      [dismissableMask]="true"
-      [draggable]="false"
-      [resizable]="false"
-      [style]="{ width: width() }"
-      contentStyleClass="!p-0 !rounded-2xl overflow-hidden"
+    <hlm-dialog
+      [state]="open() ? 'open' : 'closed'"
+      [disableClose]="disableClose()"
+      (stateChanged)="onStateChanged($event)"
     >
-      <ng-content></ng-content>
-    </p-dialog>
+      <hlm-dialog-content
+        *hlmDialogPortal
+        [showCloseButton]="false"
+        class="p-0 sm:max-w-none rounded-2xl overflow-hidden"
+        [style.width]="width()"
+      >
+        <ng-content></ng-content>
+      </hlm-dialog-content>
+    </hlm-dialog>
   `,
 })
 export class DialogComponent {
   readonly open = input(false);
   readonly width = input("32rem");
+  readonly disableClose = input(false);
   readonly openChange = output<boolean>();
+
+  onStateChanged(state: BrnDialogState): void {
+    this.openChange.emit(state === "open");
+  }
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dialog-content",
-  standalone: true,
   host: { class: "flex flex-col" },
   template: `<ng-content></ng-content>`,
 })
 export class DialogContentComponent {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dialog-header",
-  standalone: true,
   host: { class: "flex flex-col gap-1.5" },
   template: `<ng-content></ng-content>`,
 })
 export class DialogHeaderComponent {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dialog-title",
-  standalone: true,
   host: { class: "font-display text-lg font-semibold leading-tight text-foreground" },
   template: `<ng-content></ng-content>`,
 })
 export class DialogTitleComponent {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dialog-description",
-  standalone: true,
   host: { class: "text-sm text-muted-foreground" },
   template: `<ng-content></ng-content>`,
 })
 export class DialogDescriptionComponent {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dialog-footer",
-  standalone: true,
   host: { class: "flex items-center" },
   template: `<ng-content></ng-content>`,
 })

@@ -1,14 +1,16 @@
-import { Component, inject, type OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
-import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import { AuthService } from "@/core/auth/auth.service";
+import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import { verifyEmail } from "../services/verification";
 
 type Status = "verifying" | "success" | "error";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-verify-email-page",
-  standalone: true,
   imports: [RouterLink, ButtonComponent],
   template: `
     <section
@@ -17,14 +19,14 @@ type Status = "verifying" | "success" | "error";
       <div
         class="w-full max-w-md rounded-2xl border border-border bg-card p-7 text-center shadow-sm"
       >
-        @if (status() === 'verifying') {
+        @if (status() === "verifying") {
           <div
             class="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"
           ></div>
           <p class="text-sm text-muted-foreground">Verificando tu correo...</p>
         }
 
-        @if (status() === 'success') {
+        @if (status() === "success") {
           <div
             class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
           >
@@ -49,7 +51,7 @@ type Status = "verifying" | "success" | "error";
           </gn-button>
         }
 
-        @if (status() === 'error') {
+        @if (status() === "error") {
           <div
             class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10"
           >
@@ -107,14 +109,14 @@ export class VerifyEmailPage implements OnInit {
           await this.authService.revalidate();
           this.status.set("success");
         })
-        .catch((e: Error) => {
+        .catch((e: unknown) => {
           this.status.set("error");
-          this.message.set(e.message);
+          this.message.set(e instanceof Error ? e.message : "Ocurrió un error inesperado.");
         });
     });
   }
 
   goToDashboard() {
-    this.router.navigate(["/dashboard"]);
+    void this.router.navigate(["/dashboard"]);
   }
 }

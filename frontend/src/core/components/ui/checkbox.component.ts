@@ -1,26 +1,19 @@
-import { Component, forwardRef, Input, output } from "@angular/core";
-import { type ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
-import { CheckboxModule } from "primeng/checkbox";
+import { ChangeDetectionStrategy, Component, forwardRef, Input, output } from "@angular/core";
+import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { HlmCheckbox } from "@spartan-ng/helm/checkbox";
 
 /**
- * gn-checkbox — facade over PrimeNG Checkbox (binary mode).
+ * gn-checkbox — facade over Spartan's `hlm-checkbox`.
  *
  * Preserves the existing [checked] / (checkedChange) API used by call sites and
- * additionally supports ControlValueAccessor. The previous stub never emitted
- * (checkedChange), so bound checkboxes silently did nothing — this fixes that.
+ * additionally supports ControlValueAccessor for reactive/template forms.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-checkbox",
-  standalone: true,
-  imports: [CheckboxModule, FormsModule],
+  imports: [HlmCheckbox],
   template: `
-    <p-checkbox
-      [binary]="true"
-      [disabled]="disabled"
-      [ngModel]="checked"
-      (ngModelChange)="onModel($event)"
-      (onBlur)="onTouched()"
-    />
+    <hlm-checkbox [checked]="checked" [disabled]="disabled" (checkedChange)="onModel($event)" />
   `,
   providers: [
     { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => CheckboxComponent), multi: true },
@@ -38,10 +31,11 @@ export class CheckboxComponent implements ControlValueAccessor {
     this.checked = value;
     this.checkedChange.emit(value);
     this.onChange(value);
+    this.onTouched();
   }
 
   writeValue(value: boolean): void {
-    this.checked = !!value;
+    this.checked = value;
   }
   registerOnChange(fn: (value: boolean) => void): void {
     this.onChange = fn;

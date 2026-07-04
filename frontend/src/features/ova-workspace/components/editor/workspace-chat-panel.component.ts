@@ -1,15 +1,16 @@
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
+
 import type { Phase } from "../../lib/types";
 import { FileChipComponent } from "../shared/file-chip.component";
 import type { RegenProgress, UploadsPropBag } from "./workspace-chat-panel.types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-chat-panel",
-  standalone: true,
   imports: [FormsModule, ButtonComponent, CheckboxComponent, FileChipComponent],
   templateUrl: "./workspace-chat-panel.component.html",
 })
@@ -26,11 +27,11 @@ export class WorkspaceChatPanelComponent {
   readonly canSelectAll = input(false);
 
   readonly promptChange = output<string>();
-  readonly onSubmit = output<void>();
-  readonly onRegenAll = output<void>();
-  readonly onToggleSelectionMode = output<void>();
+  readonly onSubmit = output();
+  readonly onRegenAll = output();
+  readonly onToggleSelectionMode = output();
   readonly onTogglePhaseSelection = output<string>();
-  readonly onSelectAll = output<void>();
+  readonly onSelectAll = output();
 
   readonly onFilesSelected = output<FileList>();
   readonly onRemoveFile = output<string>();

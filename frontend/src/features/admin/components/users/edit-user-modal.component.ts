@@ -1,5 +1,13 @@
-import { Component, inject, type OnInit, input, output } from "@angular/core";
-import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  type OnInit,
+  output,
+  signal,
+} from "@angular/core";
+import { email, form, FormField, required } from "@angular/forms/signals";
+
 import { ButtonDirective } from "@/core/components/ui/button.directive";
 import {
   DialogComponent,
@@ -10,13 +18,14 @@ import {
 } from "@/core/components/ui/dialog.component";
 import { InputDirective } from "@/core/components/ui/input.directive";
 import { LabelDirective } from "@/core/components/ui/label.directive";
+
 import type { AdminUser } from "../../lib/types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-edit-user-modal",
-  standalone: true,
   imports: [
-    ReactiveFormsModule,
+    FormField,
     DialogComponent,
     DialogContentComponent,
     DialogHeaderComponent,
@@ -33,7 +42,7 @@ import type { AdminUser } from "../../lib/types";
           <gn-dialog-title>Editar Perfil: {{ user().full_name || user().email }}</gn-dialog-title>
         </gn-dialog-header>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+        <form (submit)="onSubmit(); $event.preventDefault()" class="space-y-4">
           <!-- Nombre Completo -->
           <div class="space-y-1.5">
             <label
@@ -47,9 +56,9 @@ import type { AdminUser } from "../../lib/types";
               id="edit-full-name"
               type="text"
               placeholder="Ej: Juan Pérez"
-              formControlName="full_name"
+              [formField]="editForm.full_name"
             />
-            @if (form.get('full_name')?.errors?.['required'] && form.get('full_name')?.touched) {
+            @if (editForm.full_name().touched() && editForm.full_name().errors().length) {
               <p class="text-xs text-destructive">El nombre es requerido.</p>
             }
           </div>
@@ -67,9 +76,9 @@ import type { AdminUser } from "../../lib/types";
               id="edit-email"
               type="email"
               placeholder="ejemplo@correo.com"
-              formControlName="email"
+              [formField]="editForm.email"
             />
-            @if (form.get('email')?.errors?.['email'] && form.get('email')?.touched) {
+            @if (editForm.email().touched() && editForm.email().errors().length) {
               <p class="text-xs text-destructive">Correo inválido.</p>
             }
           </div>
@@ -85,10 +94,10 @@ import type { AdminUser } from "../../lib/types";
             <input
               gnInput
               id="edit-uni-id"
-              type="number"
-              min="1"
+              type="text"
+              inputmode="numeric"
               placeholder="Ej: 257022"
-              formControlName="university_id"
+              [formField]="editForm.university_id"
             />
             <p class="text-[10px] text-muted-foreground mt-0.5">
               Se autocompletará con ceros a la izquierda a 9 dígitos.
@@ -106,7 +115,7 @@ import type { AdminUser } from "../../lib/types";
               >
               <select
                 id="edit-gender"
-                formControlName="gender"
+                [formField]="editForm.gender"
                 class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="masculino">Masculino</option>
@@ -128,7 +137,7 @@ import type { AdminUser } from "../../lib/types";
                 id="edit-phone"
                 type="text"
                 placeholder="Ej: +51987285992"
-                formControlName="phone_number"
+                [formField]="editForm.phone_number"
               />
             </div>
           </div>
@@ -147,21 +156,33 @@ import type { AdminUser } from "../../lib/types";
 export class EditUserModalComponent implements OnInit {
   readonly user = input.required<AdminUser>();
 
-  readonly onClose = output<void>();
+  readonly onClose = output();
   readonly onSave = output<Record<string, unknown>>();
 
-  fb = inject(FormBuilder);
-  form!: FormGroup;
   isSubmitting = false;
+
+  protected readonly editModel = signal({
+    full_name: "",
+    email: "",
+    university_id: "",
+    gender: "otro",
+    phone_number: "",
+  });
+
+  protected readonly editForm = form(this.editModel, (p) => {
+    required(p.full_name, { message: "El nombre es requerido." });
+    required(p.email, { message: "El correo es requerido." });
+    email(p.email, { message: "Correo inválido." });
+  });
 
   ngOnInit() {
     const user = this.user();
-    this.form = this.fb.group({
-      full_name: [this.user().full_name || "", Validators.required],
-      email: [this.user().email || "", [Validators.required, Validators.email]],
-      university_id: [user.university_id ? String(user.university_id) : ""],
-      gender: [this.user().gender || "otro"],
-      phone_number: [this.user().phone_number || ""],
+    this.editModel.set({
+      full_name: user.full_name || "",
+      email: user.email || "",
+      university_id: user.university_id ? String(user.university_id) : "",
+      gender: user.gender || "otro",
+      phone_number: user.phone_number || "",
     });
   }
 
@@ -170,13 +191,10 @@ export class EditUserModalComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+    if (this.editForm().invalid()) return;
 
     this.isSubmitting = true;
-    const value = this.form.value;
+    const value = this.editModel();
     const payload = {
       full_name: value.full_name.trim(),
       email: value.email.trim(),

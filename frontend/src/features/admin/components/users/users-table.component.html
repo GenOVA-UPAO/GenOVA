@@ -24,7 +24,7 @@
         class="flex-1 flex items-center justify-center p-12 text-center text-sm font-medium text-muted-foreground"
       >
         {{
-          searchQuery ? 'Sin resultados para "' + searchQuery + '"' : 'No hay usuarios para mostrar'
+          searchQuery ? 'Sin resultados para "' + searchQuery + '"' : "No hay usuarios para mostrar"
         }}
       </div>
     }
@@ -100,7 +100,7 @@
               class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider capitalize shadow-sm"
               [ngClass]="getRoleColorClassesLocal(user.role?.name)"
             >
-              {{ (user.role?.name || 'administrador').toLowerCase() }}
+              {{ (user.role?.name || "administrador").toLowerCase() }}
             </span>
           }
           @if (!isMe(user)) {
@@ -113,7 +113,7 @@
                 [ngClass]="getRoleColorClassesLocal(user.role?.name)"
               >
                 @for (r of roles(); track r) {
-                  @if (r.name !== 'administrador' || isCurrentUserAdmin) {
+                  @if (r.name !== "administrador" || isCurrentUserAdmin) {
                     <option
                       [value]="r.id"
                       class="bg-popover text-foreground font-medium normal-case"
@@ -145,15 +145,15 @@
             </span>
           }
           @if (!isMe(user) && !isActionsDisabled(user)) {
-            <gn-dropdown-menu>
-              <gn-dropdown-menu-trigger>
-                <button
-                  class="inline-flex items-center justify-center h-8 px-3 text-xs font-medium bg-transparent border border-border/60 rounded-xl shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                >
-                  Acción ▾
-                </button>
-              </gn-dropdown-menu-trigger>
-              <gn-dropdown-menu-content align="end" class="w-52 rounded-xl">
+            <button
+              [hlmDropdownMenuTrigger]="userMenu"
+              align="end"
+              class="inline-flex items-center justify-center h-8 px-3 text-xs font-medium bg-transparent border border-border/60 rounded-xl shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            >
+              Acción ▾
+            </button>
+            <ng-template #userMenu>
+              <div hlmDropdownMenu class="w-52">
                 <gn-user-action-menu
                   [user]="user"
                   (onEdit)="handlers().openEdit(user)"
@@ -162,8 +162,8 @@
                   (onSendResetEmail)="handlers().handleSendResetEmail(user.id)"
                   (onSendResetWhatsApp)="handlers().runWhatsAppReset(user.id)"
                 ></gn-user-action-menu>
-              </gn-dropdown-menu-content>
-            </gn-dropdown-menu>
+              </div>
+            </ng-template>
           }
         </div>
       </div>

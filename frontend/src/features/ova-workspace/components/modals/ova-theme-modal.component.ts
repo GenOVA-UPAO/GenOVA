@@ -1,10 +1,11 @@
-import { Component, type OnInit, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, type OnInit, output } from "@angular/core";
+
 import type { OvaTheme } from "../../lib/types";
 import { OvaThemeSelectorComponent } from "./ova-theme-selector.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-theme-modal",
-  standalone: true,
   imports: [OvaThemeSelectorComponent],
   template: `
     @if (open()) {
@@ -115,7 +116,7 @@ export class OvaThemeModalComponent implements OnInit {
   readonly open = input(false);
   readonly theme = input<OvaTheme>({ color: "upao", design: "upao" });
   readonly themeChange = output<OvaTheme>();
-  readonly onClose = output<void>();
+  readonly onClose = output();
 
   draft: OvaTheme = { color: "upao", design: "upao" };
 

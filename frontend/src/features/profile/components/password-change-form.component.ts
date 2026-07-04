@@ -1,18 +1,12 @@
-import { inject, Component, input, output } from "@angular/core";
-import {
-  type AbstractControl,
-  FormBuilder,
-  type FormGroup,
-  ReactiveFormsModule,
-  type ValidationErrors,
-  Validators,
-} from "@angular/forms";
+import { ChangeDetectionStrategy, Component, input, output, signal } from "@angular/core";
+import { form, FormField, minLength, pattern, required, validate } from "@angular/forms/signals";
+
 import type { ChangePasswordValues } from "../services/profile.service";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-password-change-form",
-  standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [FormField],
   templateUrl: "./password-change-form.component.html",
 })
 export class PasswordChangeFormComponent {
@@ -22,49 +16,40 @@ export class PasswordChangeFormComponent {
     reset: () => void;
   }>();
 
-  form: FormGroup;
   showCurrent = false;
   showNew = false;
   showConfirm = false;
 
-  private fb = inject(FormBuilder);
+  protected readonly passwordModel = signal({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
-  constructor() {
-    this.form = this.fb.group(
-      {
-        currentPassword: ["", Validators.required],
-        newPassword: [
-          "",
-          [
-            Validators.required,
-            Validators.minLength(8),
-            Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)/),
-          ],
-        ],
-        confirmPassword: ["", Validators.required],
-      },
-      { validators: this.passwordMatchValidator },
-    );
-  }
+  protected readonly passwordForm = form(this.passwordModel, (p) => {
+    required(p.currentPassword, { message: "La contraseña actual es requerida." });
 
-  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const newPass = control.get("newPassword")?.value;
-    const confirmPass = control.get("confirmPassword")?.value;
-    if (newPass !== confirmPass) {
-      return { mismatch: true };
-    }
-    return null;
-  }
+    required(p.newPassword, { message: "La nueva contraseña es requerida." });
+    minLength(p.newPassword, 8, { message: "Debe tener al menos 8 caracteres." });
+    pattern(p.newPassword, /^(?=.*[A-Za-z])(?=.*\d)/, {
+      message: "Debe contener letras y números.",
+    });
+
+    required(p.confirmPassword, { message: "Confirma tu nueva contraseña." });
+    validate(p.confirmPassword, (ctx) => {
+      if (ctx.value() !== ctx.valueOf(p.newPassword)) {
+        return { kind: "mismatch", message: "Las contraseñas no coinciden." };
+      }
+      return undefined;
+    });
+  });
 
   onSubmit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+    if (this.passwordForm().invalid()) return;
     this.onSave.emit({
-      values: this.form.value as ChangePasswordValues,
+      values: this.passwordModel(),
       reset: () => {
-        this.form.reset();
+        this.passwordForm().reset();
       },
     });
   }

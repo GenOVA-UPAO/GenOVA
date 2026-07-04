@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import type { Resource } from "@/core/lib/ova-types";
 
 const INTERACTIVIDAD_COLOR: Record<string, string> = {
@@ -9,8 +10,8 @@ const INTERACTIVIDAD_COLOR: Record<string, string> = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-resource-card",
-  standalone: true,
   imports: [CommonModule],
   template: `
     <button
@@ -71,7 +72,7 @@ const INTERACTIVIDAD_COLOR: Record<string, string> = {
             class="flex-shrink-0 inline-flex h-7 w-7 items-center justify-center rounded-full text-white text-xs font-bold"
             [style.backgroundColor]="phaseColor()"
           >
-            {{ selectionIndex() ?? '✓' }}
+            {{ selectionIndex() ?? "✓" }}
           </span>
         }
         @if (hasConfig()) {
@@ -80,6 +81,7 @@ const INTERACTIVIDAD_COLOR: Record<string, string> = {
             (click)="handleConfigClick($event)"
             class="flex-shrink-0 p-1.5 rounded-md hover:bg-muted/60 transition-colors"
             title="Configurar recurso"
+            aria-label="Configurar recurso"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

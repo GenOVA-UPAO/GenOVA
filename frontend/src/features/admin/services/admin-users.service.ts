@@ -1,5 +1,7 @@
 import { Injectable, signal } from "@angular/core";
+
 import { toast } from "@/core/lib/toast";
+
 import { apiFetch } from "../../../core/lib/http";
 import type { AdminUser, Role } from "../lib/types";
 
@@ -61,8 +63,8 @@ export class AdminUsersService {
   readonly totalItems = this._totalItems.asReadonly();
 
   constructor() {
-    this.loadRoles();
-    this.loadCurrentUser();
+    void this.loadRoles();
+    void this.loadCurrentUser();
   }
 
   async fetchUsers(page = this._currentPage()) {
@@ -116,7 +118,10 @@ export class AdminUsersService {
         method: "PATCH",
         body: JSON.stringify({ role_id: roleId }),
       });
-      if (!ok) return toast.error(detail(body, "Error al actualizar el rol."));
+      if (!ok) {
+        toast.error(detail(body, "Error al actualizar el rol."));
+        return;
+      }
       await this.fetchUsers();
       toast.success("Rol del usuario actualizado.");
     });
@@ -144,7 +149,10 @@ export class AdminUsersService {
         method: "PATCH",
         body: JSON.stringify({ is_active: isActive }),
       });
-      if (!ok) return toast.error(detail(body, "Error al actualizar el estado."));
+      if (!ok) {
+        toast.error(detail(body, "Error al actualizar el estado."));
+        return;
+      }
       await this.fetchUsers();
       toast.success(isActive ? "Usuario activado." : "Usuario desactivado.");
     });
@@ -153,7 +161,10 @@ export class AdminUsersService {
   async handleUnlockUser(userId: string) {
     await this.withUpdating(userId, async () => {
       const { ok, body } = await send(`/api/users/${userId}/unlock`, { method: "POST" });
-      if (!ok) return toast.error(detail(body, "Error al desbloquear al usuario."));
+      if (!ok) {
+        toast.error(detail(body, "Error al desbloquear al usuario."));
+        return;
+      }
       await this.fetchUsers();
       toast.success("Usuario desbloqueado.");
     });
@@ -164,7 +175,10 @@ export class AdminUsersService {
       const { ok, body } = await send(`/api/users/${userId}/reset-password-email`, {
         method: "POST",
       });
-      if (!ok) return toast.error(detail(body, "Error al enviar el correo."));
+      if (!ok) {
+        toast.error(detail(body, "Error al enviar el correo."));
+        return;
+      }
       toast.success("Correo de restablecimiento enviado.");
     });
   }
@@ -185,7 +199,7 @@ export class AdminUsersService {
 
   handlePageChange(newPage: number) {
     if (newPage >= 1 && newPage <= this._totalPages()) {
-      this.fetchUsers(newPage);
+      void this.fetchUsers(newPage);
     }
   }
 }

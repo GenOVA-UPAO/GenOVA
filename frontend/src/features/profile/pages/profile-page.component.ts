@@ -1,7 +1,9 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, type OnInit } from "@angular/core";
-import { PlatformApiKeysCardComponent } from "../../llm-settings/components/platform-api-keys-card.component";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+
 import { AuthService } from "@/core/auth/auth.service";
+
+import { PlatformApiKeysCardComponent } from "../../llm-settings/components/platform-api-keys-card.component";
 import { DeleteAccountFormComponent } from "../components/delete-account-form.component";
 import { PasswordChangeFormComponent } from "../components/password-change-form.component";
 import { ProfileFormComponent } from "../components/profile-form.component";
@@ -13,8 +15,8 @@ import {
 } from "../services/profile.service";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-profile-page",
-  standalone: true,
   imports: [
     CommonModule,
     ProfileFormComponent,
@@ -56,7 +58,7 @@ export class ProfilePageComponent implements OnInit {
   private authService = inject(AuthService);
 
   ngOnInit() {
-    this.profileService.loadProfile();
+    void this.profileService.loadProfile();
   }
 
   async handleSaveProfile(event: { values: ProfileFormValues; reset: () => void }) {

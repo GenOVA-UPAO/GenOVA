@@ -1,8 +1,8 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-llm-model-select",
-  standalone: true,
   imports: [],
   template: `
     <select
@@ -15,23 +15,22 @@ import { Component, input, output } from "@angular/core";
       <option value="">— elegir modelo —</option>
       @for (m of models(); track m) {
         <option [value]="m.provider + '::' + m.model_id">
-          {{ (m.label || m.model_id) + ' · ' + m.provider }}
+          {{ (m.label || m.model_id) + " · " + m.provider }}
         </option>
       }
     </select>
   `,
 })
 export class LlmModelSelectComponent {
-  readonly models =
-    input.required<
-      Array<{
-        provider: string;
-        model_id: string;
-        label?: string;
-        context_length?: number;
-        pricing?: string;
-      }>
-    >();
+  readonly models = input.required<
+    {
+      provider: string;
+      model_id: string;
+      label?: string;
+      context_length?: number;
+      pricing?: string;
+    }[]
+  >();
   readonly provider = input<string | undefined>(undefined);
   readonly modelId = input<string | undefined>(undefined);
   readonly disabled = input(false);

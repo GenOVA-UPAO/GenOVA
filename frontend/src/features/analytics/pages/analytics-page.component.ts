@@ -1,5 +1,6 @@
-import { Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
 import { Router } from "@angular/router";
+
 import {
   StatCardsComponent,
   StatusBreakdownComponent,
@@ -9,8 +10,8 @@ import type { AnalyticsData } from "../lib/types";
 import { AnalyticsService } from "../services/analytics.service";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-analytics-page",
-  standalone: true,
   imports: [
     StatCardsComponent,
     StatusBreakdownComponent,
@@ -22,7 +23,7 @@ import { AnalyticsService } from "../services/analytics.service";
       <header class="space-y-1">
         <h1 class="font-display text-2xl font-bold">Analítica de aprendizaje</h1>
         <p class="text-sm text-muted-foreground">
-          {{ isLoading ? 'Cargando métricas…' : 'Métricas de ' + scopeLabel + '.' }}
+          {{ isLoading ? "Cargando métricas…" : "Métricas de " + scopeLabel + "." }}
         </p>
       </header>
 
@@ -70,7 +71,7 @@ export class AnalyticsPageComponent implements OnInit {
       this.data = await this.analyticsService.getAnalytics();
     } catch (err: any) {
       if (err.code === "forbidden") {
-        this.router.navigate(["/dashboard"], { replaceUrl: true });
+        void this.router.navigate(["/dashboard"], { replaceUrl: true });
         return;
       }
       this.error = err;

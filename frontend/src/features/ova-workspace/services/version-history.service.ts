@@ -1,6 +1,7 @@
-import { Injectable, inject } from "@angular/core";
-import { OvaEditService } from "./ova-edit.service";
+import { inject, Injectable } from "@angular/core";
+
 import type { PhaseMicroVersion, VersionDiffData } from "../lib/version-history.types";
+import { OvaEditService } from "./ova-edit.service";
 
 @Injectable({ providedIn: "root" })
 export class VersionHistoryService {

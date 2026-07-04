@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
 import {
   DialogComponent,
@@ -8,6 +8,7 @@ import {
   DialogHeaderComponent,
   DialogTitleComponent,
 } from "@/core/components/ui/dialog.component";
+
 import type { UploadItem } from "../../lib/uploadTypes";
 import { FileChipComponent } from "../shared/file-chip.component";
 
@@ -15,8 +16,8 @@ const ACCEPTED_LABEL = "PDF, DOCX, PPTX · MP3, WAV, M4A · JPG, PNG, WEBP";
 const ACCEPTED_ATTR = ".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.webp";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-files-modal",
-  standalone: true,
   imports: [
     CommonModule,
     DialogComponent,
@@ -83,7 +84,7 @@ const ACCEPTED_ATTR = ".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.web
             </div>
             <div>
               <p class="text-sm font-semibold">
-                {{ dragging ? 'Suelta aquí' : canAdd ? 'Arrastra archivos' : 'Límite alcanzado' }}
+                {{ dragging ? "Suelta aquí" : canAdd ? "Arrastra archivos" : "Límite alcanzado" }}
               </p>
               @if (canAdd) {
                 <p class="text-xs text-muted-foreground mt-0.5">o haz clic para seleccionar</p>

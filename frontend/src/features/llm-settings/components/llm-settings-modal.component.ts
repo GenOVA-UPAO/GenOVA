@@ -1,12 +1,14 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
-  type OnChanges,
-  type SimpleChanges,
   input,
+  type OnChanges,
   output,
+  type SimpleChanges,
 } from "@angular/core";
 import { RouterLink } from "@angular/router";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import {
   DialogComponent,
@@ -16,12 +18,13 @@ import {
   DialogHeaderComponent,
   DialogTitleComponent,
 } from "@/core/components/ui/dialog.component";
-import { LlmSettingsFormComponent } from "./llm-settings-form.component";
+
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
+import { LlmSettingsFormComponent } from "./llm-settings-form.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-llm-settings-modal",
-  standalone: true,
   imports: [
     RouterLink,
     DialogComponent,

@@ -1,13 +1,15 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+
 import { toast } from "@/core/lib/toast";
-import { PlatformSettingsService } from "../services/platform-settings.service";
+
 import { criticRoundsVisible, hasUnsavedChanges } from "../lib/nodesConfigDraft";
+import { PlatformSettingsService } from "../services/platform-settings.service";
 import { getNodeBadgeColor, getNodeInitials } from "./platform-nodes-card.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-platform-nodes-card",
-  standalone: true,
   imports: [CommonModule],
   templateUrl: "./platform-nodes-card.component.html",
 })

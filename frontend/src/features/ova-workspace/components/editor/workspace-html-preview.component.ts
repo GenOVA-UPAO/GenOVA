@@ -1,7 +1,9 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input, signal, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, output, signal } from "@angular/core";
+
 import { HtmlPreviewFrameComponent } from "@/core/components/html-preview-frame.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
+
 import type { PhaseWithContent } from "../../lib/types";
 
 const PHASE_META: Record<string, { label: string; tab: string; badge: string }> = {
@@ -43,11 +45,15 @@ function getMeta(phase_type: string) {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-html-preview",
-  standalone: true,
   imports: [CommonModule, BadgeComponent, HtmlPreviewFrameComponent],
   template: `
-    <section role="presentation" class="flex flex-col h-full" (click)="onResourceClick.emit($event)">
+    <section
+      role="presentation"
+      class="flex flex-col h-full"
+      (click)="onResourceClick.emit($event)"
+    >
       @if (phases.length) {
         <nav
           aria-label="Recursos del OVA"

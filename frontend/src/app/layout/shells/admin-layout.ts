@@ -1,9 +1,9 @@
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-admin-layout",
-  standalone: true,
   imports: [RouterOutlet],
   template: `
     <div class="flex h-screen flex-col bg-background text-foreground">

@@ -1,12 +1,14 @@
-import { computed, Injectable, inject, type OnDestroy, signal } from "@angular/core";
+import { computed, inject, Injectable, type OnDestroy, signal } from "@angular/core";
+
+import { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
+
 import {
-  type JobSnapshot,
   jobOutcome,
+  type JobSnapshot,
   pruneSelection,
   type Selections,
   toResourceViewModel,
 } from "../lib/ova-job-view-model";
-import { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
 import { OvaCreationService, toResourcesPayload } from "./ova-creation.service";
 import { OvaJobSyncRunner } from "./ova-job-sync";
 
@@ -59,11 +61,17 @@ export class OvaJobService implements OnDestroy {
   constructor() {
     this.syncRunner = new OvaJobSyncRunner({
       jobsApi: this.jobsApi,
-      onSnapshot: (snapshot) => this.jobSnapshot.set(snapshot),
-      onTerminal: () => this.syncRunner.stop(),
+      onSnapshot: (snapshot) => {
+        this.jobSnapshot.set(snapshot);
+      },
+      onTerminal: () => {
+        this.syncRunner.stop();
+      },
       getViewModel: () => this.viewModel(),
       isStreaming: () => this.streamingState(),
-      setStreaming: (value) => this.streamingState.set(value),
+      setStreaming: (value) => {
+        this.streamingState.set(value);
+      },
     });
   }
 

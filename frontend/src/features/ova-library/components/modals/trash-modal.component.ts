@@ -1,23 +1,21 @@
-import { Component, input, output } from "@angular/core";
-import { DialogModule } from "primeng/dialog";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+import { DialogComponent } from "@/core/components/ui/dialog.component";
 import type { OvaListItem } from "@/features/ova-library/lib/types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-trash-modal",
-  standalone: true,
-  imports: [DialogModule, ButtonComponent],
+  imports: [DialogComponent, ButtonComponent],
   template: `
-    <p-dialog
-      [visible]="true"
-      [modal]="true"
-      [closable]="!isLoading()"
-      (onHide)="onCancel.emit()"
-      [style]="{ width: '24rem', 'max-width': '100%' }"
-      [showHeader]="false"
-      contentStyleClass="p-0 bg-card rounded-xl border border-border shadow-lg"
+    <gn-dialog
+      [open]="true"
+      width="24rem"
+      [disableClose]="isLoading()"
+      (openChange)="$event || onCancel.emit()"
     >
-      <div class="p-6">
+      <div class="p-6 bg-card">
         <h2 class="text-lg font-semibold tracking-tight">Mover a la papelera</h2>
         <div class="mt-4 space-y-1">
           <p class="text-sm text-muted-foreground">
@@ -44,17 +42,17 @@ import type { OvaListItem } from "@/features/ova-library/lib/types";
             [disabled]="isLoading()"
             [loading]="isLoading()"
           >
-            {{ isLoading() ? 'Moviendo...' : 'Mover' }}
+            {{ isLoading() ? "Moviendo..." : "Mover" }}
           </gn-button>
         </div>
       </div>
-    </p-dialog>
+    </gn-dialog>
   `,
 })
 export class TrashModalComponent {
   readonly ova = input.required<OvaListItem>();
   readonly isLoading = input(false);
 
-  readonly onConfirm = output<void>();
-  readonly onCancel = output<void>();
+  readonly onConfirm = output();
+  readonly onCancel = output();
 }

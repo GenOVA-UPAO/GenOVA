@@ -1,15 +1,17 @@
-import { Component, inject, signal, input, output } from "@angular/core";
-import { DialogModule } from "primeng/dialog";
+import { ChangeDetectionStrategy, Component, inject, input, output, signal } from "@angular/core";
+
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
+import { DialogComponent } from "@/core/components/ui/dialog.component";
+
 import { sortVersionsDesc } from "../../lib/ova-versioning";
 import type { OvaVersionRow, VersionDiffData } from "../../lib/version-history.types";
 import { VersionHistoryService } from "../../services/version-history.service";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-version-history-panel",
-  standalone: true,
-  imports: [DialogModule, BadgeComponent, ButtonComponent],
+  imports: [DialogComponent, BadgeComponent, ButtonComponent],
   templateUrl: "./version-history-panel.component.html",
 })
 export class VersionHistoryPanelComponent {
@@ -21,7 +23,7 @@ export class VersionHistoryPanelComponent {
   readonly currentVersionId = input<string | undefined>(undefined);
 
   readonly openChange = output<boolean>();
-  readonly onReverted = output<void>();
+  readonly onReverted = output();
 
   diffLeft = signal<string | null>(null);
   diffRight = signal<string | null>(null);

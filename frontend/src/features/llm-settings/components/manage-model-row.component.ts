@@ -1,9 +1,10 @@
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
+
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-manage-model-row",
-  standalone: true,
   imports: [],
   template: `
     <div
@@ -101,7 +102,7 @@ export class ManageModelRowComponent {
     return this.model.pricing?.replace(" por 1M tokens", "") ?? "—";
   }
 
-  async handleClick(): Promise<void> {
+  handleClick(): void {
     if (this.locked() || this.saving) return;
     this.saving = true;
     try {

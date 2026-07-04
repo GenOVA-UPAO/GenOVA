@@ -1,7 +1,6 @@
 import { Injectable } from "@angular/core";
 
 import { apiJson } from "@/core/lib/http";
-
 import type { Resource } from "@/core/lib/ova-types";
 
 import { PHASE_SELECT_CFG, type PhaseResourceMap } from "../lib/phase-select.config";

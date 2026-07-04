@@ -1,86 +1,82 @@
-<p-dialog
-  [visible]="open()"
-  [modal]="true"
-  [closable]="true"
-  (onHide)="close()"
-  [style]="{ width: '42rem', 'max-width': '100%' }"
-  header="Historial de versiones"
->
-  <p class="text-sm text-muted-foreground mb-3">
-    Compara o revierte a una versión anterior del OVA.
-  </p>
+<gn-dialog [open]="open()" width="42rem" (openChange)="$event || close()">
+  <div class="p-5 bg-card">
+    <h2 class="text-lg font-display font-semibold mb-3">Historial de versiones</h2>
+    <p class="text-sm text-muted-foreground mb-3">
+      Compara o revierte a una versión anterior del OVA.
+    </p>
 
-  <div class="space-y-2">
-    @for (v of sortedVersions; track v) {
-      <div class="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
-        <gn-badge [variant]="isCurrent(v) ? 'default' : 'outline'" class="shrink-0">
-          v{{ v.version_number }}
-        </gn-badge>
-        <span class="flex-1 text-xs text-muted-foreground truncate">
-          {{ formatDate(v.created_at) }}
-        </span>
-        @if (!isCurrent(v)) {
-          <gn-button
-            type="button"
-            size="sm"
-            variant="outline"
-            class="h-6 text-xs px-2 shrink-0"
-            (onClick)="handleRevert(v)"
-          >
-            Revertir
-          </gn-button>
-        }
-        @if (isCurrent(v)) {
-          <span class="text-[10px] text-muted-foreground">actual</span>
-        }
-        <input
-          type="checkbox"
-          class="h-3 w-3 shrink-0"
-          title="Seleccionar para comparar"
-          [checked]="isDiffSelected(v)"
-          (change)="toggleDiffSelect(v, $any($event.target).checked)"
-        />
+    <div class="space-y-2">
+      @for (v of sortedVersions; track v) {
+        <div class="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+          <gn-badge [variant]="isCurrent(v) ? 'default' : 'outline'" class="shrink-0">
+            v{{ v.version_number }}
+          </gn-badge>
+          <span class="flex-1 text-xs text-muted-foreground truncate">
+            {{ formatDate(v.created_at) }}
+          </span>
+          @if (!isCurrent(v)) {
+            <gn-button
+              type="button"
+              size="sm"
+              variant="outline"
+              class="h-6 text-xs px-2 shrink-0"
+              (onClick)="handleRevert(v)"
+            >
+              Revertir
+            </gn-button>
+          }
+          @if (isCurrent(v)) {
+            <span class="text-[10px] text-muted-foreground">actual</span>
+          }
+          <input
+            type="checkbox"
+            class="h-3 w-3 shrink-0"
+            title="Seleccionar para comparar"
+            [checked]="isDiffSelected(v)"
+            (change)="toggleDiffSelect(v, $any($event.target).checked)"
+          />
+        </div>
+      }
+    </div>
+
+    @if (diffLeft() && diffRight()) {
+      <gn-button
+        type="button"
+        size="sm"
+        variant="secondary"
+        class="mt-2 w-full text-xs"
+        (onClick)="handleDiff()"
+        [disabled]="diffLoading()"
+      >
+        {{ diffLoading() ? "Cargando diff…" : "Ver comparación" }}
+      </gn-button>
+    }
+
+    @if (diffData(); as diff) {
+      <div class="mt-3 grid grid-cols-2 gap-2 text-[10px] font-mono">
+        <div>
+          <p class="font-semibold mb-1">v{{ diff.v1?.version?.version_number }}</p>
+          @for (p of diff.v1?.phases ?? []; track p) {
+            <div class="mb-2 rounded bg-muted/40 p-1.5">
+              <span class="font-semibold text-muted-foreground">{{ p.phase_type }}</span>
+              <pre class="mt-0.5 whitespace-pre-wrap max-h-24 overflow-auto">{{
+                p.content || "—"
+              }}</pre>
+            </div>
+          }
+        </div>
+        <div>
+          <p class="font-semibold mb-1">v{{ diff.v2?.version?.version_number }}</p>
+          @for (p of diff.v2?.phases ?? []; track p) {
+            <div class="mb-2 rounded bg-muted/40 p-1.5">
+              <span class="font-semibold text-muted-foreground">{{ p.phase_type }}</span>
+              <pre class="mt-0.5 whitespace-pre-wrap max-h-24 overflow-auto">{{
+                p.content || "—"
+              }}</pre>
+            </div>
+          }
+        </div>
       </div>
     }
   </div>
-
-  @if (diffLeft() && diffRight()) {
-    <gn-button
-      type="button"
-      size="sm"
-      variant="secondary"
-      class="mt-2 w-full text-xs"
-      (onClick)="handleDiff()"
-      [disabled]="diffLoading()"
-    >
-      {{ diffLoading() ? 'Cargando diff…' : 'Ver comparación' }}
-    </gn-button>
-  }
-
-  @if (diffData(); as diff) {
-    <div class="mt-3 grid grid-cols-2 gap-2 text-[10px] font-mono">
-      <div>
-        <p class="font-semibold mb-1">v{{ diff.v1?.version?.version_number }}</p>
-        @for (p of diff.v1?.phases ?? []; track p) {
-          <div class="mb-2 rounded bg-muted/40 p-1.5">
-            <span class="font-semibold text-muted-foreground">{{ p.phase_type }}</span>
-            <pre class="mt-0.5 whitespace-pre-wrap max-h-24 overflow-auto">{{
-              p.content || '—'
-            }}</pre>
-          </div>
-        }
-      </div>
-      <div>
-        <p class="font-semibold mb-1">v{{ diff.v2?.version?.version_number }}</p>
-        @for (p of diff.v2?.phases ?? []; track p) {
-          <div class="mb-2 rounded bg-muted/40 p-1.5">
-            <span class="font-semibold text-muted-foreground">{{ p.phase_type }}</span>
-            <pre class="mt-0.5 whitespace-pre-wrap max-h-24 overflow-auto">{{
-              p.content || '—'
-            }}</pre>
-          </div>
-        }
-      </div>
-    </div>
-  }
-</p-dialog>
+</gn-dialog>

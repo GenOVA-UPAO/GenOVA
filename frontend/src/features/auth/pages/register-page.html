@@ -1,129 +1,90 @@
-    @if (registeredEmail()) {
-      <gn-verify-email-notice
-        [email]="registeredEmail()!"
-        [onResend]="resendVerificationCallback"
-      ></gn-verify-email-notice>
-    } @else {
-      <section
-        class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4"
+@if (registeredEmail()) {
+<gn-verify-email-notice
+  [email]="registeredEmail()!"
+  [onResend]="resendVerificationCallback"
+></gn-verify-email-notice>
+} @else {
+<section
+  class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4"
+>
+  <div class="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-sm">
+    <h1 class="text-2xl font-semibold tracking-tight">Crear cuenta</h1>
+    <p class="mt-2 text-sm text-muted-foreground">Regístrate para guardar y acceder a tus OVAs.</p>
+    <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
+      <div class="space-y-1.5 flex flex-col">
+        <label for="fullName" class="text-sm font-medium leading-none">Nombre completo</label>
+        <input
+          hlmInput
+          id="fullName"
+          type="text"
+          [formField]="registerForm.full_name"
+          autocomplete="name"
+          placeholder="Ejemplo: Solange"
+          class="w-full"
+        />
+        @if (registerForm.full_name().touched() && registerForm.full_name().errors().length) {
+        <p class="text-xs text-destructive">{{ registerForm.full_name().errors()[0].message }}</p>
+        }
+      </div>
+      <div class="space-y-1.5 flex flex-col">
+        <label for="email" class="text-sm font-medium leading-none">Correo</label>
+        <input
+          hlmInput
+          id="email"
+          type="email"
+          [formField]="registerForm.email"
+          autocomplete="email"
+          inputmode="email"
+          spellcheck="false"
+          autocapitalize="none"
+          placeholder="estudiante@upao.edu"
+          class="w-full"
+        />
+        @if (registerForm.email().touched() && registerForm.email().errors().length) {
+        <p class="text-xs text-destructive">Ingresa un correo con formato válido.</p>
+        }
+      </div>
+      <div class="space-y-1.5 flex flex-col">
+        <label for="password" class="text-sm font-medium leading-none">Contraseña</label>
+        <input
+          hlmInput
+          id="password"
+          type="password"
+          [formField]="registerForm.password"
+          class="w-full"
+          placeholder="••••••••"
+          autocomplete="new-password"
+        />
+        <p class="text-xs text-muted-foreground">
+          @if (registerForm.password().touched() && registerForm.password().errors().length) {
+          <span class="text-destructive"> Mínimo 8 caracteres con letras y números. </span>
+          } @else {
+          <span> Usa al menos 8 caracteres con letras y números. </span>
+          }
+        </p>
+      </div>
+      @if (serverError()) {
+      <div
+        class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
       >
-        <div class="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-sm">
-          <h1 class="text-2xl font-semibold tracking-tight">Crear cuenta</h1>
-          <p class="mt-2 text-sm text-muted-foreground">
-            Regístrate para guardar y acceder a tus OVAs.
-          </p>
-          <form
-            class="mt-6 space-y-4"
-            [formGroup]="registerForm"
-            (ngSubmit)="onSubmit()"
-            novalidate
-          >
-            <div class="space-y-1.5 flex flex-col">
-              <label for="fullName" class="text-sm font-medium leading-none">Nombre completo</label>
-              <input
-                pInputText
-                id="fullName"
-                type="text"
-                formControlName="full_name"
-                autocomplete="name"
-                placeholder="Ejemplo: Solange"
-                class="w-full"
-                [class.ng-invalid]="
-                  registerForm.get('full_name')?.invalid && registerForm.get('full_name')?.touched
-                "
-                [class.ng-dirty]="registerForm.get('full_name')?.touched"
-              />
-              @if (
-                registerForm.get('full_name')?.hasError('required') &&
-                registerForm.get('full_name')?.touched
-              ) {
-                <p class="text-xs text-destructive">El nombre completo es requerido.</p>
-              }
-              @if (
-                (registerForm.get('full_name')?.hasError('minlength') ||
-                  registerForm.get('full_name')?.hasError('maxlength')) &&
-                registerForm.get('full_name')?.touched
-              ) {
-                <p class="text-xs text-destructive">
-                  El nombre completo debe tener al menos 3 caracteres y máximo 100.
-                </p>
-              }
-              @if (
-                registerForm.get('full_name')?.hasError('pattern') &&
-                registerForm.get('full_name')?.touched
-              ) {
-                <p class="text-xs text-destructive">El nombre debe contener al menos una letra.</p>
-              }
-            </div>
-            <div class="space-y-1.5 flex flex-col">
-              <label for="email" class="text-sm font-medium leading-none">Correo</label>
-              <input
-                pInputText
-                id="email"
-                type="email"
-                formControlName="email"
-                autocomplete="email"
-                inputmode="email"
-                spellcheck="false"
-                autocapitalize="none"
-                placeholder="estudiante@upao.edu"
-                class="w-full"
-                [class.ng-invalid]="
-                  registerForm.get('email')?.invalid && registerForm.get('email')?.touched
-                "
-                [class.ng-dirty]="registerForm.get('email')?.touched"
-              />
-              @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
-                <p class="text-xs text-destructive">Ingresa un correo con formato válido.</p>
-              }
-            </div>
-            <div class="space-y-1.5 flex flex-col">
-              <label for="password" class="text-sm font-medium leading-none">Contraseña</label>
-              <p-password
-                id="password"
-                formControlName="password"
-                [toggleMask]="true"
-                [feedback]="false"
-                styleClass="w-full"
-                inputStyleClass="w-full"
-                placeholder="••••••••"
-                autocomplete="new-password"
-              ></p-password>
-              <p class="text-xs text-muted-foreground">
-                @if (
-                  registerForm.get('password')?.invalid && registerForm.get('password')?.touched
-                ) {
-                  <span class="text-destructive"> Mínimo 8 caracteres con letras y números. </span>
-                }
-                @if (
-                  !(registerForm.get('password')?.invalid && registerForm.get('password')?.touched)
-                ) {
-                  <span> Usa al menos 8 caracteres con letras y números. </span>
-                }
-              </p>
-            </div>
-            @if (serverError()) {
-              <div
-                class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-              >
-                {{ serverError() }}
-              </div>
-            }
-            <gn-button
-              type="submit"
-              [loading]="isSubmitting()"
-              [disabled]="registerForm.invalid || isSubmitting()"
-              class="w-full block"
-            >
-              {{ isSubmitting() ? 'Creando cuenta...' : 'Crear cuenta' }}
-            </gn-button>
-            <p class="text-center text-sm text-muted-foreground mt-4">
-              ¿Ya tienes cuenta?
-              <a routerLink="/login" class="font-medium text-foreground hover:underline"
-                >Iniciar sesión</a
-              >
-            </p>
-          </form>
-        </div>
-      </section>
-    }
+        {{ serverError() }}
+      </div>
+      }
+      <gn-button
+        type="submit"
+        [loading]="isSubmitting()"
+        [disabled]="registerForm().invalid() || isSubmitting()"
+        class="w-full block"
+      >
+        {{ isSubmitting() ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </gn-button>
+      <p class="text-center text-sm text-muted-foreground mt-4">
+        ¿Ya tienes cuenta?
+        <a routerLink="/login" class="font-medium text-foreground hover:underline"
+          >Iniciar sesión</a
+        >
+      </p>
+    </form>
+  </div>
+</section>
+}

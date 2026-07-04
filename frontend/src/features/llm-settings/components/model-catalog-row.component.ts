@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
-import { MODALITY_META, formatContextLength } from "../lib/llm-catalog.utils";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
+import { formatContextLength, MODALITY_META } from "../lib/llm-catalog.utils";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 
 const MODALITY_ICONS: Record<string, string> = {
@@ -12,8 +13,8 @@ const MODALITY_ICONS: Record<string, string> = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-model-catalog-row",
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div
@@ -35,7 +36,7 @@ const MODALITY_ICONS: Record<string, string> = {
             class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-muted border-t-primary"
           ></span>
         } @else {
-          {{ enabled() ? '★' : '☆' }}
+          {{ enabled() ? "★" : "☆" }}
         }
       </button>
       <span class="flex-1 truncate text-foreground inline-flex items-center gap-1 min-w-0">

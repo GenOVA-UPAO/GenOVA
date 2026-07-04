@@ -1,6 +1,7 @@
-import { computed, Injectable, inject, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { Router } from "@angular/router";
-import { AuthExpiredBus, apiFetch } from "@/core/lib/http";
+
+import { apiFetch, AuthExpiredBus } from "@/core/lib/http";
 
 export interface MeUser {
   id?: string | number;
@@ -76,7 +77,9 @@ export class AuthService {
 
   constructor() {
     // Subscribe to 401 expiry bus from http.ts
-    AuthExpiredBus.subscribe(() => this.handleExpired());
+    AuthExpiredBus.subscribe(() => {
+      this.handleExpired();
+    });
   }
 
   /**
@@ -187,13 +190,13 @@ export class AuthService {
     clearCache();
     this._user.set(null);
     this._inflight = null;
-    this.router.navigate(["/login"]);
+    void this.router.navigate(["/login"]);
   }
 
   private handleExpired(): void {
     clearCache();
     this._user.set(null);
     this._inflight = null;
-    this.router.navigate(["/login"], { queryParams: { expired: "1" } });
+    void this.router.navigate(["/login"], { queryParams: { expired: "1" } });
   }
 }

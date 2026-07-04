@@ -12,7 +12,7 @@ export function userInitials(user: MeUser | null): string {
 }
 
 export function hasPermission(user: MeUser | null, permission: string): boolean {
-  const permissions = (user?.permissions as string[] | undefined) ?? [];
+  const permissions = user?.permissions ?? [];
   return user?.role === "administrador" || permissions.includes(permission);
 }
 

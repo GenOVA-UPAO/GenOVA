@@ -1,20 +1,22 @@
-import { Component, input } from "@angular/core";
-import { SkeletonModule } from "primeng/skeleton";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
+import { HlmSkeleton } from "@spartan-ng/helm/skeleton";
 
 /**
- * gn-skeleton — facade over PrimeNG Skeleton. Optional inputs are backward
- * compatible: existing `<gn-skeleton>` call sites keep working with defaults.
+ * gn-skeleton — facade over the Spartan `hlmSkeleton` directive. Sizing inputs
+ * stay backward compatible: existing `<gn-skeleton>` call sites keep working
+ * with defaults.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-skeleton",
-  standalone: true,
-  imports: [SkeletonModule],
-  template: `<p-skeleton
-    [width]="width()"
-    [height]="height()"
-    [borderRadius]="radius()"
-    [styleClass]="class()"
-  />`,
+  imports: [HlmSkeleton],
+  template: `<div
+    hlmSkeleton
+    [style.width]="width()"
+    [style.height]="height()"
+    [style.borderRadius]="radius()"
+    [class]="class()"
+  ></div>`,
 })
 export class SkeletonComponent {
   readonly width = input("100%");

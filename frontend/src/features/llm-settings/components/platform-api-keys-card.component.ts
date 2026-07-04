@@ -1,11 +1,12 @@
-import { Component, inject, type OnInit, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, type OnInit } from "@angular/core";
+
 import { PlatformSettingsService } from "../services/platform-settings.service";
 import { PlatformKeyRowComponent } from "./platform-key-row.component";
 import { PROVIDER_META } from "./platformKeyMeta";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-platform-api-keys-card",
-  standalone: true,
   imports: [PlatformKeyRowComponent],
   template: `
     <section class="glass-card rounded-3xl p-6 sm:p-8 space-y-6">

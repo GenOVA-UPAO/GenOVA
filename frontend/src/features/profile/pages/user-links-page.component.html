@@ -79,6 +79,7 @@
               <button
                 (click)="handleInvite()"
                 [disabled]="!email.trim()"
+                aria-label="Invitar"
                 class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 w-9 shrink-0"
               >
                 <svg
@@ -138,7 +139,7 @@
           <p
             class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between"
           >
-            <span>{{ hasAdminLinks ? 'Todos los vinculos' : 'Estudiantes vinculados' }}</span>
+            <span>{{ hasAdminLinks ? "Todos los vinculos" : "Estudiantes vinculados" }}</span>
             <span
               class="bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20"
             >

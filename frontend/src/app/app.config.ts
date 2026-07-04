@@ -1,10 +1,10 @@
-import { provideHttpClient, withFetch } from "@angular/common/http";
+import { provideHttpClient } from "@angular/common/http";
 import {
   type ApplicationConfig,
   ErrorHandler,
   provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection,
 } from "@angular/core";
-import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import {
   PreloadAllModules,
   provideRouter,
@@ -12,35 +12,10 @@ import {
   withPreloading,
   withViewTransitions,
 } from "@angular/router";
-import Aura from "@primeuix/themes/aura";
-import { definePreset } from "@primeuix/themes";
-import { providePrimeNG } from "primeng/config";
+import { provideTanStackQuery, QueryClient } from "@tanstack/angular-query-experimental";
 
-/**
- * Aura ships an emerald `primary` palette. Override it with the UPAO blue ramp
- * (#0A3D91 as the base 500) so PrimeNG components — p-button-primary, etc. —
- * match the Editorial Académico UPAO chrome instead of rendering green.
- */
-const GenovaPreset = definePreset(Aura, {
-  semantic: {
-    primary: {
-      50: "#e8eefb",
-      100: "#c6d5f4",
-      200: "#93aee8",
-      300: "#5f86db",
-      400: "#2f60cc",
-      500: "#0a3d91",
-      600: "#093581",
-      700: "#082c6b",
-      800: "#062250",
-      900: "#041637",
-      950: "#020b1c",
-    },
-  },
-});
-
-import { captureException, isSentryEnabled } from "../core/lib/observability/sentry";
 import { LLM_SETTINGS_MODAL } from "../core/lib/llm-settings-modal.token";
+import { captureException, isSentryEnabled } from "../core/lib/observability/sentry";
 import { routes } from "./app.routes";
 
 /**
@@ -63,6 +38,9 @@ export const appConfig: ApplicationConfig = {
   providers: [
     ...sentryProviders,
     provideBrowserGlobalErrorListeners(),
+    // Explicit zoneless CD — zone.js was never a dep; this makes the implicit
+    // behavior an intentional, documented API contract.
+    provideZonelessChangeDetection(),
     provideRouter(
       routes,
       withComponentInputBinding(),
@@ -73,8 +51,20 @@ export const appConfig: ApplicationConfig = {
     ),
     // Angular HttpClient (used by Sentry and Angular-specific integrations).
     // Our own API calls go through core/lib/http.ts (fetch-based).
-    provideHttpClient(withFetch()),
-    provideAnimationsAsync(),
+    provideHttpClient(),
+    // TanStack Query — server-state cache/dedup/retry for the fetch-based API layer.
+    // Tuned defaults; individual queries override as needed.
+    provideTanStackQuery(
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 30_000,
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+    ),
     // Composición app→features: ova-workspace consume el modal de ajustes LLM
     // vía token de core; la implementación vive en la feature llm-settings.
     {
@@ -84,13 +74,5 @@ export const appConfig: ApplicationConfig = {
           (m) => m.LlmSettingsModalComponent,
         ),
     },
-    providePrimeNG({
-      theme: {
-        preset: GenovaPreset,
-        options: {
-          darkModeSelector: ".dark",
-        },
-      },
-    }),
   ],
 };

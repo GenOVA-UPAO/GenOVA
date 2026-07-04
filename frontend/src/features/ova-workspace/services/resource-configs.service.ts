@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+
 import { apiFetch } from "@/core/lib/http";
 
 const CACHE_KEY = "genova_rc";
@@ -37,7 +38,7 @@ export interface ResourceConfigsResponse {
 export class ResourceConfigsService {
   async getResourceConfigs(): Promise<ResourceConfigsResponse> {
     const cached = readCache();
-    if (cached) return cached as ResourceConfigsResponse;
+    if (cached) return cached;
     const res = await apiFetch("/api/users/me/resource-configs");
     if (!res.ok) throw new Error("No se pudo cargar la configuración de recursos.");
     const data = (await res.json()) as ResourceConfigsResponse;

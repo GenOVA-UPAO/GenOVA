@@ -1,26 +1,22 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
+  input,
   type OnChanges,
   type OnInit,
+  signal,
   type SimpleChanges,
-  input,
 } from "@angular/core";
-import {
-  FormBuilder,
-  type FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from "@angular/forms";
+import { form, FormField, maxLength, minLength, required } from "@angular/forms/signals";
 
-import type { SetupData, TotpPhase } from "./totp-setup-card.types";
 import { TotpService } from "../services/totp.service";
+import type { SetupData, TotpPhase } from "./totp-setup-card.types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-totp-setup-card",
-  standalone: true,
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [FormField],
   templateUrl: "./totp-setup-card.component.html",
 })
 export class TotpSetupCardComponent implements OnInit, OnChanges {
@@ -30,23 +26,21 @@ export class TotpSetupCardComponent implements OnInit, OnChanges {
   setupData: SetupData | null = null;
   backupCodes: string[] | null = null;
   serverError = "";
-  disableCode = "";
+  disableCode = signal("");
   disableError = "";
   disabling = false;
   isSubmitting = false;
-  form: FormGroup;
   copiedUri = false;
   copiedSecret = false;
 
   private totpService = inject(TotpService);
 
-  private fb = inject(FormBuilder);
-
-  constructor() {
-    this.form = this.fb.group({
-      code: ["", [Validators.required, Validators.minLength(6), Validators.maxLength(8)]],
-    });
-  }
+  protected readonly confirmModel = signal({ code: "" });
+  protected readonly confirmForm = form(this.confirmModel, (p) => {
+    required(p.code, { message: "Ingresa el código de 6 dígitos." });
+    minLength(p.code, 6, { message: "Ingresa el código de 6 dígitos." });
+    maxLength(p.code, 8, { message: "Ingresa el código de 6 dígitos." });
+  });
 
   ngOnInit() {
     this.phase = this.totpEnabled() ? "enabled" : "idle";
@@ -71,12 +65,12 @@ export class TotpSetupCardComponent implements OnInit, OnChanges {
   }
 
   async confirmSetup() {
-    if (this.form.invalid) return;
+    if (this.confirmForm().invalid()) return;
     this.isSubmitting = true;
     this.serverError = "";
     try {
-      await this.totpService.confirmSetup(this.form.value.code);
-      this.form.reset();
+      await this.totpService.confirmSetup(this.confirmModel().code);
+      this.confirmForm().reset();
       this.phase = "enabled";
       this.setupData = null;
     } catch (e: unknown) {
@@ -89,16 +83,16 @@ export class TotpSetupCardComponent implements OnInit, OnChanges {
   cancelSetup() {
     this.phase = "idle";
     this.setupData = null;
-    this.form.reset();
+    this.confirmForm().reset();
   }
 
   async disable2fa() {
     this.disableError = "";
     this.disabling = true;
     try {
-      await this.totpService.disable(this.disableCode);
+      await this.totpService.disable(this.disableCode());
       this.phase = "idle";
-      this.disableCode = "";
+      this.disableCode.set("");
     } catch (e: unknown) {
       this.disableError = e instanceof Error ? e.message : "No se pudo conectar con el servidor.";
     } finally {
@@ -107,7 +101,7 @@ export class TotpSetupCardComponent implements OnInit, OnChanges {
   }
 
   copyToClipboard(text: string, type: "uri" | "secret") {
-    navigator.clipboard.writeText(text).then(() => {
+    void navigator.clipboard.writeText(text).then(() => {
       if (type === "uri") {
         this.copiedUri = true;
         setTimeout(() => (this.copiedUri = false), 2000);

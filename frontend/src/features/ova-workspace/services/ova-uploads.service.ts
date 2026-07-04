@@ -1,6 +1,7 @@
 import { computed, Injectable, signal } from "@angular/core";
-import { validateFileAdd, UPLOAD_MAX_FILES } from "../lib/upload-chip-view-model";
-import type { RagStatus, UploadItem } from "../lib/uploadTypes";
+
+import { UPLOAD_MAX_FILES, validateFileAdd } from "../lib/upload-chip-view-model";
+import type { UploadItem } from "../lib/uploadTypes";
 import { deleteTempFile, listTempFiles, type ServerItem, uploadTempFiles } from "./upload.service";
 
 function generateClientId(): string {
@@ -14,10 +15,10 @@ function fromServerItem(item: ServerItem): UploadItem {
     uploadId: item.upload_id,
     filename: item.filename,
     contentType: item.content_type,
-    sizeBytes: Number(item.size_bytes || 0),
+    sizeBytes: item.size_bytes || 0,
     status: "success",
     message: "Carga exitosa",
-    ragStatus: (item.rag_status ?? null) as RagStatus | null,
+    ragStatus: item.rag_status ?? null,
   };
 }
 
@@ -27,7 +28,7 @@ function toUploadingItem(file: File): UploadItem {
     uploadId: "",
     filename: file.name,
     contentType: file.type || "",
-    sizeBytes: Number(file.size || 0),
+    sizeBytes: file.size || 0,
     status: "uploading",
     message: "Subiendo...",
   };
@@ -100,10 +101,10 @@ export class OvaUploadsService {
                       uploadId: saved.upload_id,
                       filename: saved.filename,
                       contentType: saved.content_type,
-                      sizeBytes: Number(saved.size_bytes || cur.sizeBytes),
+                      sizeBytes: saved.size_bytes || cur.sizeBytes,
                       status: "success" as const,
                       message: "Carga exitosa",
-                      ragStatus: (saved.rag_status ?? null) as RagStatus | null,
+                      ragStatus: saved.rag_status ?? null,
                     }
                   : cur,
               ),

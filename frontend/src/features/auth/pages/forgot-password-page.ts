@@ -1,16 +1,17 @@
-import { Component, inject, signal } from "@angular/core";
-import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
+import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
+import { email, form, FormField, required, submit } from "@angular/forms/signals";
 import { RouterLink } from "@angular/router";
-import { InputTextModule } from "primeng/inputtext";
-import { ButtonComponent } from "@/core/components/ui/button.component";
+import { HlmInput } from "@spartan-ng/helm/input";
+
 import { AuthService } from "@/core/auth/auth.service";
+import { ButtonComponent } from "@/core/components/ui/button.component";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-forgot-password-page",
-  standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ButtonComponent, InputTextModule],
+  imports: [FormField, RouterLink, ButtonComponent, HlmInput],
   template: `
     <section
       class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4"
@@ -26,7 +27,7 @@ type Status = "idle" | "submitting" | "success" | "error";
           Ingresa tu correo y te enviaremos un enlace para restablecer tu acceso.
         </p>
 
-        @if (status() === 'success') {
+        @if (status() === "success") {
           <div class="mt-6 space-y-4">
             <div
               class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-900 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-200"
@@ -38,30 +39,26 @@ type Status = "idle" | "submitting" | "success" | "error";
             </gn-button>
           </div>
         } @else {
-          <form class="mt-6 space-y-4" [formGroup]="forgotForm" (ngSubmit)="onSubmit()" novalidate>
+          <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
             <div class="space-y-1.5 flex flex-col">
               <label for="email" class="text-sm font-medium leading-none">Correo</label>
               <input
-                pInputText
+                hlmInput
                 id="email"
                 type="email"
-                formControlName="email"
+                [formField]="forgotForm.email"
                 autocomplete="email"
                 inputmode="email"
                 spellcheck="false"
                 autocapitalize="none"
                 placeholder="estudiante@genova.ai"
                 class="w-full"
-                [class.ng-invalid]="
-                  forgotForm.get('email')?.invalid && forgotForm.get('email')?.touched
-                "
-                [class.ng-dirty]="forgotForm.get('email')?.touched"
               />
-              @if (forgotForm.get('email')?.invalid && forgotForm.get('email')?.touched) {
+              @if (forgotForm.email().touched() && forgotForm.email().errors().length) {
                 <p class="text-xs text-destructive">Ingresa un correo electrónico válido.</p>
               }
             </div>
-            @if (status() === 'error' && message()) {
+            @if (status() === "error" && message()) {
               <div
                 class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
               >
@@ -71,10 +68,10 @@ type Status = "idle" | "submitting" | "success" | "error";
             <gn-button
               type="submit"
               [loading]="status() === 'submitting'"
-              [disabled]="forgotForm.invalid || status() === 'submitting'"
+              [disabled]="forgotForm().invalid() || status() === 'submitting'"
               class="w-full block"
             >
-              {{ status() === 'submitting' ? 'Enviando...' : 'Enviar enlace' }}
+              {{ status() === "submitting" ? "Enviando..." : "Enviar enlace" }}
             </gn-button>
             <p class="text-center text-sm text-muted-foreground mt-4">
               ¿Recordaste tu contraseña?
@@ -89,39 +86,37 @@ type Status = "idle" | "submitting" | "success" | "error";
   `,
 })
 export class ForgotPasswordPage {
-  private fb = inject(FormBuilder);
   private authService = inject(AuthService);
 
-  forgotForm = this.fb.nonNullable.group({
-    email: ["", [Validators.required, Validators.email]],
+  protected readonly forgotModel = signal({ email: "" });
+  protected readonly forgotForm = form(this.forgotModel, (p) => {
+    required(p.email, { message: "El correo es obligatorio." });
+    email(p.email, { message: "Ingresa un correo electrónico válido." });
   });
 
   status = signal<Status>("idle");
   message = signal("");
 
   async onSubmit() {
-    if (this.forgotForm.invalid) {
-      this.forgotForm.markAllAsTouched();
-      return;
-    }
+    await submit(this.forgotForm, async () => {
+      this.status.set("submitting");
+      this.message.set("");
 
-    this.status.set("submitting");
-    this.message.set("");
+      try {
+        const { email } = this.forgotModel();
+        const { ok, data } = await this.authService.forgotPassword(email);
 
-    try {
-      const { email } = this.forgotForm.getRawValue();
-      const { ok, data } = await this.authService.forgotPassword(email);
-
-      if (ok) {
-        this.status.set("success");
-        this.message.set(data.message || "Revisa tu correo para continuar.");
-      } else {
+        if (ok) {
+          this.status.set("success");
+          this.message.set(data.message || "Revisa tu correo para continuar.");
+        } else {
+          this.status.set("error");
+          this.message.set(data.message || "No se pudo solicitar la recuperación.");
+        }
+      } catch {
         this.status.set("error");
-        this.message.set(data.message || "No se pudo solicitar la recuperación.");
+        this.message.set("No se pudo conectar con el servidor. Intenta de nuevo.");
       }
-    } catch {
-      this.status.set("error");
-      this.message.set("No se pudo conectar con el servidor. Intenta de nuevo.");
-    }
+    });
   }
 }

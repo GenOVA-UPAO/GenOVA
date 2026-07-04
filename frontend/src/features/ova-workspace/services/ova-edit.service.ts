@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+
 import { apiFetch, apiJson } from "@/core/lib/http";
 
 export interface RegenBody {
@@ -93,7 +94,7 @@ export class OvaEditService {
     }
     // disk fallback: stream binary
     const disposition = res.headers.get("Content-Disposition") || "";
-    const match = disposition.match(/filename="?([^"]+)"?/);
+    const match = /filename="?([^"]+)"?/.exec(disposition);
     const filename = match ? match[1] : "ova.zip";
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);

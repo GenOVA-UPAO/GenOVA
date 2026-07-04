@@ -1,5 +1,6 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import {
   DialogComponent,
@@ -13,8 +14,8 @@ import {
 const MAX_PHASES_PER_TYPE = 4;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-add-resource-modal",
-  standalone: true,
   imports: [
     FormsModule,
     DialogComponent,
@@ -69,7 +70,7 @@ const MAX_PHASES_PER_TYPE = 4;
               [disabled]="!prompt.trim() || loading"
               (click)="handleSubmit()"
             >
-              {{ loading ? 'Añadiendo…' : 'Añadir recurso' }}
+              {{ loading ? "Añadiendo…" : "Añadir recurso" }}
             </gn-button>
           }
         </gn-dialog-footer>
@@ -102,7 +103,7 @@ export class AddResourceModalComponent {
     }
   }
 
-  async handleSubmit() {
+  handleSubmit() {
     if (!this.prompt.trim() || this.loading || this.isFull) return;
     this.loading = true;
     try {

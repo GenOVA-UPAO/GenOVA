@@ -1,7 +1,9 @@
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+
 import { API_BASE } from "@/core/lib/http";
-import { type JobSnapshot, jobOutcome } from "../lib/ova-job-view-model";
 import type { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
+
+import { jobOutcome, type JobSnapshot } from "../lib/ova-job-view-model";
 
 export const POLL_MS = 2000;
 export const STREAM_HEARTBEAT_MS = 15000;
@@ -45,8 +47,9 @@ export class OvaJobSyncRunner {
       headers: { "X-Requested-With": "XMLHttpRequest" },
       signal: this.sseCtrl.signal,
       openWhenHidden: true,
-      onopen: async (res) => {
+      onopen: (res) => {
         this.deps.setStreaming(res.ok);
+        return Promise.resolve();
       },
       onmessage: (ev) => {
         if (ev.event !== "progress" && ev.event !== "done") return;
@@ -97,12 +100,16 @@ export class OvaJobSyncRunner {
           this.stop();
         } else {
           const delay = this.deps.isStreaming() ? STREAM_HEARTBEAT_MS : POLL_MS;
-          this.pollTimer = setTimeout(() => this.triggerPoll(jobId), delay);
+          this.pollTimer = setTimeout(() => {
+            this.triggerPoll(jobId);
+          }, delay);
         }
       })
       .catch(() => {
         const delay = this.deps.isStreaming() ? STREAM_HEARTBEAT_MS : POLL_MS;
-        this.pollTimer = setTimeout(() => this.triggerPoll(jobId), delay);
+        this.pollTimer = setTimeout(() => {
+          this.triggerPoll(jobId);
+        }, delay);
       });
   }
 }

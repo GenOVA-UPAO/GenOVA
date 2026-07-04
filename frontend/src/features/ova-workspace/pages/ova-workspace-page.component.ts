@@ -1,11 +1,12 @@
-import { Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
+
 import { OvaCreationViewComponent } from "../components/creation/ova-creation-view.component";
 import { OvaEditViewComponent } from "../components/editor/ova-edit-view.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-workspace-page",
-  standalone: true,
   imports: [OvaEditViewComponent, OvaCreationViewComponent],
   template: `
     @if (ovaId) {
@@ -31,6 +32,6 @@ export class OvaWorkspacePageComponent {
   }
 
   handleCreated(id: string) {
-    this.router.navigate(["/workspace", id], { replaceUrl: true });
+    void this.router.navigate(["/workspace", id], { replaceUrl: true });
   }
 }

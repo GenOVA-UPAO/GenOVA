@@ -1,9 +1,9 @@
 import { CommonModule } from "@angular/common";
-import { Component, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dashboard-stat-card",
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div

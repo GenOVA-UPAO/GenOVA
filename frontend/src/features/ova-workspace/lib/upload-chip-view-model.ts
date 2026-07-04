@@ -1,5 +1,5 @@
-import type { UploadsProps } from "./uploadTypes";
 import type { UploadsPropBag } from "../components/editor/workspace-chat-panel.types";
+import type { UploadsProps } from "./uploadTypes";
 
 export const UPLOAD_MAX_FILES = 5;
 

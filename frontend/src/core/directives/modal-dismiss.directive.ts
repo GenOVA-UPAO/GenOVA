@@ -1,10 +1,9 @@
-import { Directive, type OnDestroy, type OnInit, inject, input } from "@angular/core";
 import { DOCUMENT } from "@angular/common";
+import { Directive, inject, input, type OnDestroy, type OnInit } from "@angular/core";
 
 /** Document-level Escape handler for custom backdrop modals (parity with React useModalDismiss). */
 @Directive({
   selector: "[gnModalDismiss]",
-  standalone: true,
 })
 export class ModalDismissDirective implements OnInit, OnDestroy {
   private doc = inject(DOCUMENT);

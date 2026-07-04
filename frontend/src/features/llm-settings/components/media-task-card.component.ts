@@ -1,14 +1,16 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, type OnInit, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, type OnInit } from "@angular/core";
+
 import { toast } from "@/core/lib/toast";
+
+import { taskMeta } from "../lib/task-meta";
 import { OvaSettingsService } from "../services/ova-settings.service";
 import { UserLlmSettingsService } from "../services/user-llm-settings.service";
-import { taskMeta } from "../lib/task-meta";
 import { IMAGE_PROVIDERS } from "./media-task-card.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-media-task-card",
-  standalone: true,
   imports: [CommonModule],
   templateUrl: "./media-task-card.component.html",
 })
@@ -24,7 +26,7 @@ export class MediaTaskCardComponent implements OnInit {
   enabled = true;
   provider = "huggingface";
   imageModel: string | null = null;
-  models: Array<{ id: string; label?: string }> = [];
+  models: { id: string; label?: string }[] = [];
   saving = false;
   loaded = false;
   loadingModels = false;

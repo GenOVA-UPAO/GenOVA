@@ -2,13 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  inject,
   Injectable,
   InjectionToken,
   Input,
-  Output,
-  inject,
-  signal,
   input,
+  Output,
+  signal,
 } from "@angular/core";
 
 export interface TabsApi {
@@ -45,7 +45,6 @@ class TabsState implements TabsApi {
 
 @Component({
   selector: "gn-tabs",
-  standalone: true,
   template: `<ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TabsState, { provide: TABS_API, useExisting: TabsState }],
@@ -68,7 +67,6 @@ export class TabsComponent {
 
 @Component({
   selector: "gn-tabs-list",
-  standalone: true,
   template: `<ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -76,7 +74,6 @@ export class TabsListComponent {}
 
 @Component({
   selector: "gn-tabs-trigger",
-  standalone: true,
   template: `<ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -94,7 +91,6 @@ export class TabsTriggerComponent {
 
 @Component({
   selector: "gn-tabs-content",
-  standalone: true,
   template: `@if (tabs.isActive(value())) {
     <ng-content></ng-content>
   }`,

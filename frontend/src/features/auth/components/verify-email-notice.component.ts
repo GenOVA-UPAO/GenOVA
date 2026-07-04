@@ -1,12 +1,13 @@
-import { Component, signal, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 type Status = "idle" | "sending" | "sent";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-verify-email-notice",
-  standalone: true,
   imports: [RouterLink, ButtonComponent],
   template: `
     <section
@@ -52,7 +53,7 @@ type Status = "idle" | "sending" | "sent";
           [disabled]="status() === 'sending'"
           [loading]="status() === 'sending'"
         >
-          {{ status() === 'sending' ? 'Reenviando...' : 'Reenviar enlace' }}
+          {{ status() === "sending" ? "Reenviando..." : "Reenviar enlace" }}
         </gn-button>
 
         <p class="mt-5 text-sm text-muted-foreground">

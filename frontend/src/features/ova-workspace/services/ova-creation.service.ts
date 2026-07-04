@@ -1,10 +1,11 @@
 import { Injectable } from "@angular/core";
+
 import { apiJson } from "@/core/lib/http";
 
 export interface StartJobArgs {
   prompt: string;
   uploadIds?: string[];
-  resources: Array<{ phase_type: string; resource_type: string }>;
+  resources: { phase_type: string; resource_type: string }[];
   theme?: unknown;
   resourceConfigs?: Record<string, unknown>;
 }

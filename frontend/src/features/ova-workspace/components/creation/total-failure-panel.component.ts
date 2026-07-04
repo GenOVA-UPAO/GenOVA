@@ -1,10 +1,12 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import type { ResourceVM } from "../../lib/ova-job-view-model";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-total-failure-panel",
-  standalone: true,
   imports: [ButtonComponent],
   template: `
     <div class="space-y-3">
@@ -28,7 +30,7 @@ import type { ResourceVM } from "../../lib/ova-job-view-model";
 })
 export class TotalFailurePanelComponent {
   readonly viewModel = input<ResourceVM[]>([]);
-  readonly onRetryAll = output<void>();
+  readonly onRetryAll = output();
 
   get errorId() {
     return this.viewModel().find((r) => r.error_id)?.error_id;

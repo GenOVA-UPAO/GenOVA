@@ -1,5 +1,7 @@
 import { Injectable, signal } from "@angular/core";
+
 import { toast } from "@/core/lib/toast";
+
 import { apiFetch } from "../../../core/lib/http";
 import type { Role } from "../lib/types";
 import { deleteRoleRequest, submitRoleForm } from "./admin-roles-api.helpers";
@@ -41,7 +43,7 @@ export class AdminRolesService {
   readonly isDeleting = this._isDeleting.asReadonly();
 
   constructor() {
-    this.fetchRoles();
+    void this.fetchRoles();
   }
 
   async fetchRoles() {
@@ -93,7 +95,7 @@ export class AdminRolesService {
   handleEditClick(role: Role) {
     this._editingRole.set(role);
     this._roleName.set(role.name ?? "");
-    this._roleDescription.set((role.description as string) || "");
+    this._roleDescription.set(role.description! || "");
     this._selectedPermissions.set(role.permissions || []);
     this._formError.set("");
     this._isModalOpen.set(true);

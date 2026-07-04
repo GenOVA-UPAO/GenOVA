@@ -1,21 +1,23 @@
-import { Component, inject, type OnInit, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, type OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ResourceConfigModalComponent } from "../modals/resource-config-modal.component";
-import { ResourcePreviewPanelComponent } from "../modals/resource-preview-panel.component";
-import { OvaFiveEViewerComponent, type OvaContent } from "../viewer/ova-five-e-viewer.component";
-import { buildPhaseDemoContent } from "../viewer/ova-five-e-viewer.helpers";
+
+import type { PreviewResult, Resource } from "@/core/lib/ova-types";
+
 import { phaseCfg } from "../../lib/phase-select.config";
+import { getSchema } from "../../lib/resource-config";
 import {
   getConfigForResource,
   mergeConfigSave,
   type ResourceConfigs,
 } from "../../lib/resource-config.helpers";
-import { getSchema } from "../../lib/resource-config";
+import { PhaseGenerationService } from "../../services/phase-generation.service";
 import { PhaseSelectService } from "../../services/phase-select.service";
+import { ResourceConfigModalComponent } from "../modals/resource-config-modal.component";
+import { ResourcePreviewPanelComponent } from "../modals/resource-preview-panel.component";
+import { type OvaContent, OvaFiveEViewerComponent } from "../viewer/ova-five-e-viewer.component";
+import { buildPhaseDemoContent } from "../viewer/ova-five-e-viewer.helpers";
 import { HtmlPreviewComponent } from "./html-preview.component";
 import { ResourceCardComponent } from "./resource-card.component";
-import type { PreviewResult, Resource } from "@/core/lib/ova-types";
-import { PhaseGenerationService } from "../../services/phase-generation.service";
 
 interface ConfigTarget {
   resource: Resource;
@@ -24,8 +26,8 @@ interface ConfigTarget {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-phase-page",
-  standalone: true,
   imports: [
     FormsModule,
     ResourceCardComponent,

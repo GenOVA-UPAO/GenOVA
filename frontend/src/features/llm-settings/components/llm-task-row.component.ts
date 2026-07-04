@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import {
   addFallback,
   type Entry,
@@ -7,12 +8,12 @@ import {
   removeFallback,
   setFallback,
 } from "../lib/llmConfigDraft";
-import { getModalitySymbol, TASK_DESCS, TASK_LABELS } from "./llm-task-row.helpers";
 import { LlmModelSelectComponent } from "./llm-model-select.component";
+import { getModalitySymbol, TASK_DESCS, TASK_LABELS } from "./llm-task-row.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-llm-task-row",
-  standalone: true,
   imports: [CommonModule, LlmModelSelectComponent],
   templateUrl: "./llm-task-row.component.html",
 })
@@ -22,17 +23,16 @@ export class LlmTaskRowComponent {
     default?: Entry;
     fallbacks?: Entry[];
   }>();
-  readonly models =
-    input.required<
-      Array<{
-        provider: string;
-        model_id: string;
-        label?: string;
-        modality?: string;
-        context_length?: number;
-        pricing?: string;
-      }>
-    >();
+  readonly models = input.required<
+    {
+      provider: string;
+      model_id: string;
+      label?: string;
+      modality?: string;
+      context_length?: number;
+      pricing?: string;
+    }[]
+  >();
   readonly disabled = input(false);
 
   readonly onChange = output<{

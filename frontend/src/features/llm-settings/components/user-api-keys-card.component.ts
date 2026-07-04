@@ -1,4 +1,5 @@
-import { Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+
 import { UserLlmSettingsService } from "../services/user-llm-settings.service";
 import { PROVIDER_META } from "./platformKeyMeta";
 import { UserKeyRowComponent } from "./user-key-row.component";
@@ -7,8 +8,8 @@ const LLM_PROVIDERS = ["groq", "openrouter", "opencode"];
 const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-api-keys-card",
-  standalone: true,
   imports: [UserKeyRowComponent],
   template: `
     <section class="rounded-xl border border-border bg-background p-6 shadow-sm space-y-6">

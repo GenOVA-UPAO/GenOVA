@@ -29,12 +29,7 @@
   <label
     class="flex items-center gap-2 cursor-pointer select-none text-xs text-muted-foreground font-medium w-fit hover:text-foreground transition-colors"
   >
-    <p-checkbox
-      [binary]="true"
-      [ngModel]="allSelected()"
-      (ngModelChange)="handleSelectAll($event)"
-      styleClass="rounded-sm"
-    ></p-checkbox>
+    <gn-checkbox [checked]="allSelected()" (checkedChange)="handleSelectAll($event)"></gn-checkbox>
     Seleccionar todos en esta página
   </label>
   } @if (selectedIds().size > 0) {

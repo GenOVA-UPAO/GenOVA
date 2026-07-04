@@ -8,7 +8,7 @@
       <div class="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1.5">
         <div class="flex items-center justify-between text-xs">
           <span class="font-medium text-primary truncate">
-            {{ regenProgress().stage || 'Regenerando…' }}
+            {{ regenProgress().stage || "Regenerando…" }}
           </span>
           <span class="font-bold text-primary tabular-nums">
             {{ regenProgress().percentage }}%
@@ -68,12 +68,12 @@
       </svg>
       {{
         selectionMode()
-          ? 'Seleccionando recursos (' +
+          ? "Seleccionando recursos (" +
             selectedCount +
-            ' elegido' +
-            (selectedCount !== 1 ? 's' : '') +
-            ')'
-          : 'Seleccionar recursos'
+            " elegido" +
+            (selectedCount !== 1 ? "s" : "") +
+            ")"
+          : "Seleccionar recursos"
       }}
     </gn-button>
 
@@ -89,7 +89,7 @@
               (click)="onSelectAll.emit()"
               class="text-[10px] font-medium text-primary hover:underline"
             >
-              {{ allSelected ? 'Deseleccionar todas' : 'Seleccionar todas' }}
+              {{ allSelected ? "Deseleccionar todas" : "Seleccionar todas" }}
             </button>
           }
         </div>
@@ -102,10 +102,10 @@
               (checkedChange)="onTogglePhaseSelection.emit(phase.id)"
             ></gn-checkbox>
             <span class="capitalize">
-              {{ phase['phase_type'] }}
+              {{ phase["phase_type"] }}
             </span>
-            @if (phase['title']) {
-              <span class="text-muted-foreground truncate"> — {{ phase['title'] }} </span>
+            @if (phase["title"]) {
+              <span class="text-muted-foreground truncate"> — {{ phase["title"] }} </span>
             }
           </label>
         }
@@ -187,7 +187,7 @@
         size="sm"
         class="shrink-0 self-end"
       >
-        {{ isRegenerating() ? 'Generando…' : 'Aplicar' }}
+        {{ isRegenerating() ? "Generando…" : "Aplicar" }}
       </gn-button>
     </div>
     <p class="text-[10px] text-muted-foreground">Ctrl+Enter para enviar</p>

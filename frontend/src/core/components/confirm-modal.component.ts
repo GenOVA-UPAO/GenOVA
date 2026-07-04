@@ -1,22 +1,20 @@
-import { Component, input, output } from "@angular/core";
-import { DialogModule } from "primeng/dialog";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
+import { DialogComponent } from "@/core/components/ui/dialog.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-confirm-modal",
-  standalone: true,
-  imports: [DialogModule, ButtonComponent],
+  imports: [DialogComponent, ButtonComponent],
   template: `
-    <p-dialog
-      [visible]="true"
-      [modal]="true"
-      [closable]="!isLoading()"
-      (onHide)="onCancel.emit()"
-      [style]="{ width: '24rem', 'max-width': '100%' }"
-      [showHeader]="false"
-      contentStyleClass="p-0 bg-card rounded-xl border border-border shadow-lg"
+    <gn-dialog
+      [open]="true"
+      width="24rem"
+      [disableClose]="isLoading()"
+      (openChange)="$event || onCancel.emit()"
     >
-      <div class="p-6">
+      <div class="p-6 bg-card">
         <h2 class="text-lg font-semibold tracking-tight">{{ title() }}</h2>
         <p class="text-sm text-muted-foreground whitespace-pre-line mt-2">
           {{ message() }}
@@ -37,11 +35,11 @@ import { ButtonComponent } from "@/core/components/ui/button.component";
             [disabled]="isLoading()"
             [loading]="isLoading()"
           >
-            {{ isLoading() ? 'Procesando...' : confirmLabel() }}
+            {{ isLoading() ? "Procesando..." : confirmLabel() }}
           </gn-button>
         </div>
       </div>
-    </p-dialog>
+    </gn-dialog>
   `,
 })
 export class ConfirmModalComponent {
@@ -51,6 +49,6 @@ export class ConfirmModalComponent {
   readonly isLoading = input(false);
   readonly danger = input(true);
 
-  readonly onConfirm = output<void>();
-  readonly onCancel = output<void>();
+  readonly onConfirm = output();
+  readonly onCancel = output();
 }

@@ -1,9 +1,10 @@
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
+
 import { PhasePageComponent } from "../components/phase/phase-page.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-explore-page",
-  standalone: true,
   imports: [PhasePageComponent],
   template: `
     <gn-phase-page

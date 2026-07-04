@@ -1,5 +1,8 @@
-import { Injectable, inject } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+
 import { toast } from "@/core/lib/toast";
+
+import { CATEGORY_LABELS, TASK_LABELS, TYPE_LABELS } from "../lib/llm-settings-labels";
 import {
   addFallbackIn,
   removeFallbackIn,
@@ -9,7 +12,6 @@ import {
   setTimeoutIn,
   type SettingsMap,
 } from "../lib/llm-settings-mutations";
-import { CATEGORY_LABELS, TASK_LABELS, TYPE_LABELS } from "../lib/llm-settings-labels";
 import type { CatalogModel, EnabledModel, LoadOpts } from "../lib/user-llm-settings.types";
 import { UserLlmSettingsService } from "./user-llm-settings.service";
 

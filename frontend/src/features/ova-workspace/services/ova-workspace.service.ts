@@ -1,5 +1,6 @@
-import { computed, Injectable, inject, type OnDestroy, signal } from "@angular/core";
-import { MessageService } from "primeng/api";
+import { computed, inject, Injectable, type OnDestroy, signal } from "@angular/core";
+import { toast } from "ngx-sonner";
+
 import type { OvaData, PhaseWithContent } from "../lib/types";
 import { OvaEditService, type RegenBody } from "./ova-edit.service";
 
@@ -10,7 +11,6 @@ const POLL_MS = 3000;
 })
 export class OvaWorkspaceService implements OnDestroy {
   private editService = inject(OvaEditService);
-  private messageService = inject(MessageService, { optional: true });
 
   // State
   private ovaState = signal<OvaData | null>(null);
@@ -49,7 +49,7 @@ export class OvaWorkspaceService implements OnDestroy {
   init(ovaId: string) {
     this.ovaId = ovaId;
     this.mounted = true;
-    this.load();
+    void this.load();
   }
 
   setPrompt(value: string) {
@@ -130,7 +130,7 @@ export class OvaWorkspaceService implements OnDestroy {
 
       if (progress.status === "success" || progress.status === "error") {
         this.isRegeneratingState.set(false);
-        this.load();
+        void this.load();
         if (progress.status === "success") {
           this.toastSuccess("OVA regenerado.");
         } else {
@@ -148,19 +148,11 @@ export class OvaWorkspaceService implements OnDestroy {
   }
 
   private toastSuccess(detail: string) {
-    if (this.messageService) {
-      this.messageService.add({ severity: "success", summary: "Éxito", detail });
-    } else {
-      console.log("SUCCESS:", detail);
-    }
+    toast.success("Éxito", { description: detail });
   }
 
   private toastError(detail: string) {
-    if (this.messageService) {
-      this.messageService.add({ severity: "error", summary: "Error", detail });
-    } else {
-      console.error("ERROR:", detail);
-    }
+    toast.error("Error", { description: detail });
   }
 
   ngOnDestroy() {

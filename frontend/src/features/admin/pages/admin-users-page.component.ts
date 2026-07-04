@@ -1,5 +1,6 @@
-import { Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+
 import { EditUserModalComponent } from "../components/users/edit-user-modal.component";
 import { type Handlers, UsersTableComponent } from "../components/users/users-table.component";
 import type { AdminUser } from "../lib/types";
@@ -12,23 +13,35 @@ function buildWhatsAppHref(payload: any): string | null {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-admin-users-page",
-  standalone: true,
   imports: [FormsModule, UsersTableComponent, EditUserModalComponent],
   templateUrl: "./admin-users-page.component.html",
 })
 export class AdminUsersPageComponent {
   service = inject(AdminUsersService);
 
+  constructor() {
+    void this.service.fetchUsers();
+  }
+
   search = "";
   roleFilter = "all";
   editingUser: AdminUser | null = null;
 
   handlers: Handlers = {
-    handleRoleChange: (uid, rid) => this.service.handleRoleChange(uid, rid),
-    handleToggleStatus: (uid, active) => this.service.handleToggleStatus(uid, active),
-    handleUnlockUser: (uid) => this.service.handleUnlockUser(uid),
-    handleSendResetEmail: (uid) => this.service.handleSendResetEmail(uid),
+    handleRoleChange: (uid, rid) => {
+      void this.service.handleRoleChange(uid, rid);
+    },
+    handleToggleStatus: (uid, active) => {
+      void this.service.handleToggleStatus(uid, active);
+    },
+    handleUnlockUser: (uid) => {
+      void this.service.handleUnlockUser(uid);
+    },
+    handleSendResetEmail: (uid) => {
+      void this.service.handleSendResetEmail(uid);
+    },
     runWhatsAppReset: async (uid) => {
       const payload = await this.service.handleGenerateResetWhatsApp(uid);
       const href = buildWhatsAppHref(payload);

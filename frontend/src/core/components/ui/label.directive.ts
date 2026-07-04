@@ -1,9 +1,9 @@
-import { Directive, ElementRef, type OnChanges, inject, input } from "@angular/core";
+import { Directive, ElementRef, inject, input, type OnChanges } from "@angular/core";
+
 import { cn } from "@/core/lib/cn";
 
 @Directive({
   selector: "label[gnLabel]",
-  standalone: true,
 })
 export class LabelDirective implements OnChanges {
   private el = inject(ElementRef<HTMLLabelElement>);

@@ -1,19 +1,20 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
+import type { ChipModel } from "../lib/model-task-card.helpers";
+import { taskMeta } from "../lib/task-meta";
 import { LlmModelSelectComponent } from "./llm-model-select.component";
 import { ModelTaskCardChipsComponent } from "./model-task-card-chips.component";
 import { UserOverrideSectionComponent } from "./user-override-section.component";
-import { taskMeta } from "../lib/task-meta";
-import type { ChipModel } from "../lib/model-task-card.helpers";
 
 export interface AdminTaskDraft {
   default?: { provider: string; model_id: string };
-  fallbacks?: Array<{ provider: string; model_id: string }>;
+  fallbacks?: { provider: string; model_id: string }[];
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-model-task-card",
-  standalone: true,
   imports: [
     CommonModule,
     LlmModelSelectComponent,
@@ -35,7 +36,7 @@ export class ModelTaskCardComponent {
   readonly bounds = input<number[]>([30, 300]);
 
   readonly adminChange = output<AdminTaskDraft>();
-  readonly editChain = output<void>();
+  readonly editChain = output();
 
   get meta() {
     return taskMeta(this.task());

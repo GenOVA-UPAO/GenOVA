@@ -1,5 +1,7 @@
 import { Injectable } from "@angular/core";
+
 import { apiFetch } from "@/core/lib/http";
+
 import type { SetupData } from "../components/totp-setup-card.types";
 
 @Injectable({ providedIn: "root" })

@@ -5,12 +5,12 @@ export const MODALITY_SYMBOLS: Record<string, string> = {
   audio: "♪",
 };
 
-export type ChipModel = {
+export interface ChipModel {
   provider: string;
   model_id: string;
   label?: string;
   modality?: string;
-};
+}
 
 export function chipLabel(f: { provider: string; model_id: string }, models: ChipModel[]): string {
   return (

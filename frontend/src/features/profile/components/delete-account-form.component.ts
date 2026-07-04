@@ -1,10 +1,10 @@
-import { inject, Component, Input, input, output } from "@angular/core";
-import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import { ChangeDetectionStrategy, Component, Input, input, output, signal } from "@angular/core";
+import { form, FormField, required } from "@angular/forms/signals";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-delete-account-form",
-  standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [FormField],
   template: `
     <div class="glass-card rounded-3xl border-destructive/20 bg-destructive/5 p-6 sm:p-8">
       <div class="flex flex-col gap-2 mb-4 text-destructive">
@@ -57,7 +57,7 @@ import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@a
                 personales. Tus OVAs generados se mantendrán en el sistema pero perderán tu autoría.
               </p>
             </div>
-            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4 pt-4" novalidate>
+            <form (submit)="onSubmit(); $event.preventDefault()" class="space-y-4 pt-4" novalidate>
               <div class="space-y-1.5 relative">
                 <label
                   for="delete-password"
@@ -71,7 +71,7 @@ import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@a
                     [type]="showPassword ? 'text' : 'password'"
                     placeholder="Ingresa tu contraseña para confirmar"
                     autocomplete="current-password"
-                    formControlName="password"
+                    [formField]="deleteForm.password"
                     class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 pr-10"
                   />
                   <button
@@ -79,6 +79,7 @@ import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@a
                     (click)="showPassword = !showPassword"
                     class="absolute right-0 top-0 h-9 px-3 text-muted-foreground hover:text-foreground"
                     tabindex="-1"
+                    [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                   >
                     @if (showPassword) {
                       <svg
@@ -108,7 +109,7 @@ import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@a
                     }
                   </button>
                 </div>
-                @if (form.get('password')?.errors?.['required'] && form.get('password')?.touched) {
+                @if (deleteForm.password().touched() && deleteForm.password().errors().length) {
                   <p class="text-xs text-destructive">La contraseña es requerida para confirmar</p>
                 }
               </div>
@@ -131,15 +132,16 @@ import { FormBuilder, type FormGroup, ReactiveFormsModule, Validators } from "@a
                 </button>
                 <button
                   type="submit"
-                  [disabled]="isSubmitting() || form.invalid"
+                  [disabled]="isSubmitting() || deleteForm().invalid()"
                   class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 h-9 px-4 py-2"
                 >
-                  {{ isSubmitting() ? 'Eliminando...' : 'Sí, eliminar cuenta' }}
+                  {{ isSubmitting() ? "Eliminando..." : "Sí, eliminar cuenta" }}
                 </button>
               </div>
             </form>
             <button
               (click)="handleOpenChange(false)"
+              aria-label="Cerrar"
               class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
             >
               <svg
@@ -167,32 +169,25 @@ export class DeleteAccountFormComponent {
 
   readonly onDelete = output<string>();
 
-  form: FormGroup;
+  protected readonly deleteModel = signal({ password: "" });
+  protected readonly deleteForm = form(this.deleteModel, (p) => {
+    required(p.password, { message: "La contraseña es requerida para confirmar" });
+  });
+
   open = false;
   showPassword = false;
-
-  private fb = inject(FormBuilder);
-
-  constructor() {
-    this.form = this.fb.group({
-      password: ["", Validators.required],
-    });
-  }
 
   handleOpenChange(newOpen: boolean) {
     this.open = newOpen;
     if (!newOpen) {
-      this.form.reset();
+      this.deleteForm().reset();
       this.serverError = "";
     }
   }
 
   onSubmit() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+    if (this.deleteForm().invalid()) return;
     this.serverError = "";
-    this.onDelete.emit(this.form.value.password);
+    this.onDelete.emit(this.deleteModel().password);
   }
 }

@@ -1,31 +1,25 @@
-import { Component, inject, type OnInit, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import {
-  type AbstractControl,
-  FormBuilder,
-  ReactiveFormsModule,
-  type ValidationErrors,
-  Validators,
-} from "@angular/forms";
+  form,
+  FormField,
+  minLength,
+  pattern,
+  required,
+  submit,
+  validate,
+} from "@angular/forms/signals";
 import { ActivatedRoute, RouterLink } from "@angular/router";
-import { PasswordModule } from "primeng/password";
-import { ButtonComponent } from "@/core/components/ui/button.component";
+import { HlmInput } from "@spartan-ng/helm/input";
+
 import { AuthService } from "@/core/auth/auth.service";
+import { ButtonComponent } from "@/core/components/ui/button.component";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-function matchPasswordValidator(control: AbstractControl): ValidationErrors | null {
-  const newPassword = control.get("new_password")?.value;
-  const confirmPassword = control.get("confirm_password")?.value;
-  if (newPassword !== confirmPassword) {
-    return { passwordMismatch: true };
-  }
-  return null;
-}
-
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-reset-password-page",
-  standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ButtonComponent, PasswordModule],
+  imports: [FormField, RouterLink, ButtonComponent, HlmInput],
   template: `
     <section
       class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4"
@@ -39,7 +33,7 @@ function matchPasswordValidator(control: AbstractControl): ValidationErrors | nu
         <h1 class="mt-2 text-3xl font-semibold tracking-tight">Nueva contraseña</h1>
         <p class="mt-2 text-sm text-muted-foreground">Ingresa y confirma tu nueva contraseña.</p>
 
-        @if (status() === 'success') {
+        @if (status() === "success") {
           <div class="mt-6 space-y-4">
             <div
               class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-900 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-200"
@@ -51,34 +45,23 @@ function matchPasswordValidator(control: AbstractControl): ValidationErrors | nu
             </gn-button>
           </div>
         } @else {
-          <form class="mt-6 space-y-4" [formGroup]="resetForm" (ngSubmit)="onSubmit()" novalidate>
+          <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
             <div class="space-y-1.5 flex flex-col">
               <label for="new_password" class="text-sm font-medium leading-none"
                 >Nueva contraseña</label
               >
-              <p-password
+              <input
+                hlmInput
                 id="new_password"
-                formControlName="new_password"
-                [toggleMask]="true"
-                [feedback]="false"
-                styleClass="w-full"
-                inputStyleClass="w-full"
+                type="password"
+                [formField]="resetForm.new_password"
+                class="w-full"
                 placeholder="••••••••"
                 autocomplete="new-password"
-              ></p-password>
-              @if (
-                resetForm.get('new_password')?.invalid && resetForm.get('new_password')?.touched
-              ) {
+              />
+              @if (resetForm.new_password().touched() && resetForm.new_password().errors().length) {
                 <p class="text-xs text-destructive">
-                  @if (
-                    resetForm.get('new_password')?.hasError('required') ||
-                    resetForm.get('new_password')?.hasError('minlength')
-                  ) {
-                    <span> La contraseña debe tener al menos 8 caracteres </span>
-                  }
-                  @if (resetForm.get('new_password')?.hasError('pattern')) {
-                    <span> Debe contener letras y números </span>
-                  }
+                  {{ resetForm.new_password().errors()[0].message }}
                 </p>
               }
             </div>
@@ -86,30 +69,32 @@ function matchPasswordValidator(control: AbstractControl): ValidationErrors | nu
               <label for="confirm_password" class="text-sm font-medium leading-none"
                 >Confirmar contraseña</label
               >
-              <p-password
+              <input
+                hlmInput
                 id="confirm_password"
-                formControlName="confirm_password"
-                [toggleMask]="true"
-                [feedback]="false"
-                styleClass="w-full"
-                inputStyleClass="w-full"
+                type="password"
+                [formField]="resetForm.confirm_password"
+                class="w-full"
                 placeholder="••••••••"
                 autocomplete="new-password"
-              ></p-password>
+              />
               @if (
-                resetForm.hasError('passwordMismatch') && resetForm.get('confirm_password')?.touched
+                resetForm.confirm_password().touched() &&
+                resetForm.confirm_password().errors().length
               ) {
-                <p class="text-xs text-destructive">Las contraseñas no coinciden</p>
+                <p class="text-xs text-destructive">
+                  {{ resetForm.confirm_password().errors()[0].message }}
+                </p>
               }
             </div>
-            @if (status() === 'error' && message()) {
+            @if (status() === "error" && message()) {
               <div
                 class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
               >
                 {{ message() }}
               </div>
             }
-            @if (!token() && status() !== 'error') {
+            @if (!token() && status() !== "error") {
               <div
                 class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
               >
@@ -119,10 +104,10 @@ function matchPasswordValidator(control: AbstractControl): ValidationErrors | nu
             <gn-button
               type="submit"
               [loading]="status() === 'submitting'"
-              [disabled]="resetForm.invalid || status() === 'submitting' || !token()"
+              [disabled]="resetForm().invalid() || status() === 'submitting' || !token()"
               class="w-full block"
             >
-              {{ status() === 'submitting' ? 'Guardando...' : 'Guardar contraseña' }}
+              {{ status() === "submitting" ? "Guardando..." : "Guardar contraseña" }}
             </gn-button>
           </form>
         }
@@ -131,24 +116,25 @@ function matchPasswordValidator(control: AbstractControl): ValidationErrors | nu
   `,
 })
 export class ResetPasswordPage implements OnInit {
-  private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
 
-  resetForm = this.fb.nonNullable.group(
-    {
-      new_password: [
-        "",
-        [
-          Validators.required,
-          Validators.minLength(8),
-          Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/),
-        ],
-      ],
-      confirm_password: ["", [Validators.required]],
-    },
-    { validators: matchPasswordValidator },
-  );
+  protected readonly resetModel = signal({ new_password: "", confirm_password: "" });
+  protected readonly resetForm = form(this.resetModel, (p) => {
+    required(p.new_password, { message: "La contraseña debe tener al menos 8 caracteres" });
+    minLength(p.new_password, 8, { message: "La contraseña debe tener al menos 8 caracteres" });
+    pattern(p.new_password, /^(?=.*[A-Za-z])(?=.*\d).+$/, {
+      message: "Debe contener letras y números",
+    });
+
+    required(p.confirm_password, { message: "Confirma tu nueva contraseña" });
+    validate(p.confirm_password, (ctx) => {
+      if (ctx.value() !== ctx.valueOf(p.new_password)) {
+        return { kind: "passwordMismatch", message: "Las contraseñas no coinciden" };
+      }
+      return undefined;
+    });
+  });
 
   status = signal<Status>("idle");
   message = signal("");
@@ -161,11 +147,6 @@ export class ResetPasswordPage implements OnInit {
   }
 
   async onSubmit() {
-    if (this.resetForm.invalid) {
-      this.resetForm.markAllAsTouched();
-      return;
-    }
-
     const currentToken = this.token();
     if (!currentToken) {
       this.status.set("error");
@@ -173,23 +154,25 @@ export class ResetPasswordPage implements OnInit {
       return;
     }
 
-    this.status.set("submitting");
-    this.message.set("");
+    await submit(this.resetForm, async () => {
+      this.status.set("submitting");
+      this.message.set("");
 
-    try {
-      const { new_password } = this.resetForm.getRawValue();
-      const { ok, data } = await this.authService.resetPassword(currentToken, new_password);
+      try {
+        const { new_password } = this.resetModel();
+        const { ok, data } = await this.authService.resetPassword(currentToken, new_password);
 
-      if (ok) {
-        this.status.set("success");
-        this.message.set(data.message || "Contraseña restablecida con éxito.");
-      } else {
+        if (ok) {
+          this.status.set("success");
+          this.message.set(data.message || "Contraseña restablecida con éxito.");
+        } else {
+          this.status.set("error");
+          this.message.set(data.message || "No se pudo restablecer la contraseña.");
+        }
+      } catch {
         this.status.set("error");
-        this.message.set(data.message || "No se pudo restablecer la contraseña.");
+        this.message.set("No se pudo conectar con el servidor. Intenta de nuevo.");
       }
-    } catch {
-      this.status.set("error");
-      this.message.set("No se pudo conectar con el servidor. Intenta de nuevo.");
-    }
+    });
   }
 }

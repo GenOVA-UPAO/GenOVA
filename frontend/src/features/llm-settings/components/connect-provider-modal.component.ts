@@ -1,18 +1,20 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { ModalDismissDirective } from "@/core/directives/modal-dismiss.directive";
-import { PROVIDERS, type ProviderOption } from "./connect-provider-modal.helpers";
+
+import { type ProviderOption, PROVIDERS } from "./connect-provider-modal.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-connect-provider-modal",
-  standalone: true,
   imports: [CommonModule, ButtonComponent, ModalDismissDirective],
   templateUrl: "./connect-provider-modal.component.html",
 })
 export class ConnectProviderModalComponent {
   readonly open = input(false);
-  readonly onClose = output<void>();
+  readonly onClose = output();
   readonly onSelectProvider = output<string>();
 
   providers: ProviderOption[] = PROVIDERS;

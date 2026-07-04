@@ -1,43 +1,41 @@
-<p-dialog
-  [visible]="open()"
-  [modal]="true"
-  [closable]="true"
-  (onHide)="close()"
-  [style]="{ width: '28rem', 'max-width': '100%' }"
-  header="Historial del recurso"
->
-  @if (loading()) {
-    <p class="text-xs text-muted-foreground py-4 text-center">Cargando…</p>
-  }
+<gn-dialog [open]="open()" width="28rem" (openChange)="$event || close()">
+  <div class="p-5 bg-card">
+    <h2 class="text-lg font-display font-semibold mb-3">Historial del recurso</h2>
+    @if (loading()) {
+      <p class="text-xs text-muted-foreground py-4 text-center">Cargando…</p>
+    }
 
-  @if (!loading() && microVersions().length === 0) {
-    <p class="text-xs text-muted-foreground py-4 text-center">
-      Sin micro-versiones registradas aún.
-    </p>
-  }
+    @if (!loading() && microVersions().length === 0) {
+      <p class="text-xs text-muted-foreground py-4 text-center">
+        Sin micro-versiones registradas aún.
+      </p>
+    }
 
-  @if (!loading() && microVersions().length > 0) {
-    <div class="space-y-2 mt-2">
-      @for (mv of microVersions(); track mv) {
-        <div class="rounded-md border border-border px-3 py-2 space-y-1.5">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold text-primary">v.{{ mv.minor_number }}</span>
-            <span class="text-[10px] text-muted-foreground">{{ formatDate(mv.created_at) }}</span>
-            <gn-button
-              type="button"
-              size="sm"
-              variant="outline"
-              class="ml-auto h-5 text-[10px] px-1.5 shrink-0"
-              (onClick)="handleRevert(mv)"
+    @if (!loading() && microVersions().length > 0) {
+      <div class="space-y-2 mt-2">
+        @for (mv of microVersions(); track mv) {
+          <div class="rounded-md border border-border px-3 py-2 space-y-1.5">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-primary">v.{{ mv.minor_number }}</span>
+              <span class="text-[10px] text-muted-foreground">{{ formatDate(mv.created_at) }}</span>
+              <gn-button
+                type="button"
+                size="sm"
+                variant="outline"
+                class="ml-auto h-5 text-[10px] px-1.5 shrink-0"
+                (onClick)="handleRevert(mv)"
+              >
+                Revertir
+              </gn-button>
+            </div>
+            <pre
+              class="text-[10px] text-muted-foreground max-h-16 overflow-auto whitespace-pre-wrap"
             >
-              Revertir
-            </gn-button>
-          </div>
-          <pre class="text-[10px] text-muted-foreground max-h-16 overflow-auto whitespace-pre-wrap">
-            {{ mv.content || '—' }}
+            {{ mv.content || "—" }}
           </pre>
-        </div>
-      }
-    </div>
-  }
-</p-dialog>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</gn-dialog>

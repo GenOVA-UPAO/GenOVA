@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
 export interface LinkData {
   id: string;
@@ -10,8 +10,8 @@ export interface LinkData {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-link-row",
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div
@@ -62,7 +62,7 @@ export interface LinkData {
         (click)="onDelete.emit(link.id)"
         class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive shadow-sm"
       >
-        {{ isPending ? 'Cancelar' : 'Desvincular' }}
+        {{ isPending ? "Cancelar" : "Desvincular" }}
       </button>
     </div>
   `,

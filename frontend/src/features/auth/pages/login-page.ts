@@ -1,23 +1,23 @@
-import { Component, inject, signal } from "@angular/core";
-import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
+import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
+import { email, form, FormField, required, submit } from "@angular/forms/signals";
 import { Router, RouterLink } from "@angular/router";
-import { InputTextModule } from "primeng/inputtext";
-import { PasswordModule } from "primeng/password";
+import { HlmInput } from "@spartan-ng/helm/input";
+
+import { AuthService } from "@/core/auth/auth.service";
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import { TotpLoginStepComponent } from "../components/totp-login-step.component";
 import { VerifyEmailNoticeComponent } from "../components/verify-email-notice.component";
-import { AuthService } from "@/core/auth/auth.service";
 import { resendVerification } from "../services/verification";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-login-page",
-  standalone: true,
   imports: [
-    ReactiveFormsModule,
+    FormField,
     RouterLink,
     ButtonComponent,
-    InputTextModule,
-    PasswordModule,
+    HlmInput,
     TotpLoginStepComponent,
     VerifyEmailNoticeComponent,
   ],
@@ -46,39 +46,34 @@ import { resendVerification } from "../services/verification";
             </p>
             <h1 class="mt-2 text-3xl font-semibold tracking-tight">Iniciar sesión</h1>
             <p class="mt-2 text-sm text-muted-foreground">Accede para continuar al curso de ML.</p>
-            <form class="mt-6 space-y-4" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+            <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
               <div class="space-y-1.5 flex flex-col">
                 <label for="email" class="text-sm font-medium leading-none">Correo</label>
                 <input
-                  pInputText
+                  hlmInput
                   id="email"
                   type="email"
-                  formControlName="email"
+                  [formField]="loginForm.email"
                   autocomplete="email"
                   placeholder="estudiante@genova.ai"
                   class="w-full"
-                  [class.ng-invalid]="
-                    loginForm.get('email')?.invalid && loginForm.get('email')?.touched
-                  "
-                  [class.ng-dirty]="loginForm.get('email')?.touched"
                 />
-                @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+                @if (loginForm.email().touched() && loginForm.email().errors().length) {
                   <p class="text-xs text-destructive">Ingresa un correo con formato válido.</p>
                 }
               </div>
               <div class="space-y-1.5 flex flex-col">
                 <label for="password" class="text-sm font-medium leading-none">Contraseña</label>
-                <p-password
+                <input
+                  hlmInput
                   id="password"
-                  formControlName="password"
-                  [toggleMask]="true"
-                  [feedback]="false"
-                  styleClass="w-full"
-                  inputStyleClass="w-full"
+                  type="password"
+                  [formField]="loginForm.password"
+                  class="w-full"
                   placeholder="••••••••"
                   autocomplete="current-password"
-                ></p-password>
-                @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                />
+                @if (loginForm.password().touched() && loginForm.password().errors().length) {
                   <p class="text-xs text-destructive">La contraseña es requerida.</p>
                 }
               </div>
@@ -100,10 +95,10 @@ import { resendVerification } from "../services/verification";
               <gn-button
                 type="submit"
                 [loading]="isSubmitting()"
-                [disabled]="loginForm.invalid || isSubmitting()"
+                [disabled]="loginForm().invalid() || isSubmitting()"
                 class="w-full block"
               >
-                {{ isSubmitting() ? 'Ingresando...' : 'Entrar' }}
+                {{ isSubmitting() ? "Ingresando..." : "Entrar" }}
               </gn-button>
               <p class="text-center text-sm text-muted-foreground mt-4">
                 ¿No tienes cuenta?
@@ -119,13 +114,14 @@ import { resendVerification } from "../services/verification";
   `,
 })
 export class LoginPage {
-  private fb = inject(FormBuilder);
   private router = inject(Router);
   private authService = inject(AuthService);
 
-  loginForm = this.fb.nonNullable.group({
-    email: ["", [Validators.required, Validators.email]],
-    password: ["", [Validators.required]],
+  protected readonly loginModel = signal({ email: "", password: "" });
+  protected readonly loginForm = form(this.loginModel, (p) => {
+    required(p.email, { message: "El correo es obligatorio." });
+    email(p.email, { message: "Ingresa un correo con formato válido." });
+    required(p.password, { message: "La contraseña es requerida." });
   });
 
   serverError = signal("");
@@ -138,50 +134,47 @@ export class LoginPage {
 
   async onTotpSuccess() {
     await this.authService.revalidate();
-    this.router.navigate(["/dashboard"]);
+    void this.router.navigate(["/dashboard"]);
   }
 
   async onSubmit() {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
-    }
+    await submit(this.loginForm, async () => {
+      this.serverError.set("");
+      this.isSubmitting.set(true);
 
-    this.serverError.set("");
-    this.isSubmitting.set(true);
+      try {
+        const { email, password } = this.loginModel();
+        const { status, data } = await this.authService.login(email, password);
 
-    try {
-      const { email, password } = this.loginForm.getRawValue();
-      const { status, data } = await this.authService.login(email, password);
+        if (status === 200 && data.totp_required) {
+          this.totpTicket.set(data.ticket ?? null);
+          return;
+        }
 
-      if (status === 200 && data.totp_required) {
-        this.totpTicket.set(data.ticket ?? null);
-        return;
+        if (status === 200) {
+          await this.authService.revalidate();
+          void this.router.navigate(["/dashboard"]);
+          return;
+        }
+
+        if (status === 403 && data.error === "email_not_verified") {
+          this.unverifiedEmail.set(email);
+          return;
+        }
+
+        if (status === 403 && data.retry_after_minutes) {
+          this.serverError.set(
+            `Cuenta bloqueada. Intenta de nuevo en ${data.retry_after_minutes} minuto(s).`,
+          );
+          return;
+        }
+
+        this.serverError.set(data.message || "No se pudo iniciar sesión.");
+      } catch {
+        this.serverError.set("No se pudo conectar con el servidor. Intenta de nuevo.");
+      } finally {
+        this.isSubmitting.set(false);
       }
-
-      if (status === 200) {
-        await this.authService.revalidate();
-        this.router.navigate(["/dashboard"]);
-        return;
-      }
-
-      if (status === 403 && data.error === "email_not_verified") {
-        this.unverifiedEmail.set(email);
-        return;
-      }
-
-      if (status === 403 && data.retry_after_minutes) {
-        this.serverError.set(
-          `Cuenta bloqueada. Intenta de nuevo en ${data.retry_after_minutes} minuto(s).`,
-        );
-        return;
-      }
-
-      this.serverError.set(data.message || "No se pudo iniciar sesión.");
-    } catch {
-      this.serverError.set("No se pudo conectar con el servidor. Intenta de nuevo.");
-    } finally {
-      this.isSubmitting.set(false);
-    }
+    });
   }
 }

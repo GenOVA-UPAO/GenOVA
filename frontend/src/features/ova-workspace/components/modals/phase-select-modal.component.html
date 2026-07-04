@@ -1,4 +1,9 @@
-<div role="presentation" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm" (click)="onClose.emit()" [gnModalDismiss]="dismissModal">
+<div
+  role="presentation"
+  class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/20 backdrop-blur-sm"
+  (click)="onClose.emit()"
+  [gnModalDismiss]="dismissModal"
+>
   <div
     role="presentation"
     class="w-full sm:max-w-5xl max-h-[92vh] sm:max-h-[88vh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-border bg-card shadow-2xl overflow-hidden"
@@ -32,19 +37,32 @@
           [style.backgroundColor]="currentPhase.bg"
           [style.borderLeft]="'4px solid ' + currentPhase.color"
         >
-          <p class="text-[10px] font-bold uppercase tracking-widest mb-0.5" [style.color]="currentPhase.color">
+          <p
+            class="text-[10px] font-bold uppercase tracking-widest mb-0.5"
+            [style.color]="currentPhase.color"
+          >
             {{ currentPhase.label }} · hasta {{ MAX_PER_PHASE }} recursos
           </p>
-          <h2 class="font-heading text-xl font-semibold text-foreground leading-tight">{{ currentPhase.sub }}</h2>
+          <h2 class="font-heading text-xl font-semibold text-foreground leading-tight">
+            {{ currentPhase.sub }}
+          </h2>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 sm:p-5">
           @if (loading) {
-            <div class="flex items-center justify-center py-16 text-sm text-muted-foreground">Cargando recursos…</div>
+            <div class="flex items-center justify-center py-16 text-sm text-muted-foreground">
+              Cargando recursos…
+            </div>
           } @else if (currentFailed) {
             <div class="flex flex-col items-center justify-center py-16 gap-3 text-center">
-              <p class="text-sm text-muted-foreground">No se pudieron cargar los recursos de esta fase.</p>
-              <button type="button" class="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-accent" (click)="retryLoad()">
+              <p class="text-sm text-muted-foreground">
+                No se pudieron cargar los recursos de esta fase.
+              </p>
+              <button
+                type="button"
+                class="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-accent"
+                (click)="retryLoad()"
+              >
                 Reintentar
               </button>
             </div>
@@ -77,11 +95,15 @@
       ></gn-resource-preview-panel>
     </div>
 
-    <footer class="border-t border-border px-4 py-4 flex items-center justify-between gap-3 shrink-0">
+    <footer
+      class="border-t border-border px-4 py-4 flex items-center justify-between gap-3 shrink-0"
+    >
       <gn-button variant="ghost" (onClick)="onClose.emit()">Cancelar</gn-button>
       <div class="flex items-center gap-3">
         @if (!canConfirm) {
-          <span class="text-xs text-muted-foreground hidden sm:block">Selecciona al menos 2 fases</span>
+          <span class="text-xs text-muted-foreground hidden sm:block"
+            >Selecciona al menos 2 fases</span
+          >
         } @else {
           <span class="text-xs text-muted-foreground hidden sm:block">
             {{ total }} recurso{{ total !== 1 ? "s" : "" }} · {{ phasesSelected }} fases

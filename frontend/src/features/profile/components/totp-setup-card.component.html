@@ -1,4 +1,4 @@
-@if (phase === 'idle') {
+@if (phase === "idle") {
   <div class="rounded-xl border border-border bg-card p-5 space-y-3">
     <div class="flex items-center gap-2">
       <svg
@@ -35,7 +35,7 @@
   </div>
 }
 
-@if (phase === 'setup' && setupData) {
+@if (phase === "setup" && setupData) {
   <div class="rounded-xl border border-border bg-card p-5 space-y-4">
     <div class="flex items-center gap-2">
       <svg
@@ -68,6 +68,7 @@
           (click)="copyToClipboard(setupData.provisioning_uri, 'uri')"
           class="ml-2 text-muted-foreground hover:text-foreground transition-colors"
           title="Copiar URI"
+          aria-label="Copiar URI"
         >
           @if (!copiedUri) {
             <svg
@@ -107,6 +108,7 @@
           (click)="copyToClipboard(setupData.secret, 'secret')"
           class="ml-2 text-muted-foreground hover:text-foreground transition-colors"
           title="Copiar clave"
+          aria-label="Copiar clave"
         >
           @if (!copiedSecret) {
             <svg
@@ -152,7 +154,7 @@
         </div>
       </div>
     }
-    <form [formGroup]="form" (ngSubmit)="confirmSetup()" class="space-y-3">
+    <form (submit)="confirmSetup(); $event.preventDefault()" class="space-y-3">
       <div class="space-y-1.5">
         <label for="code" class="text-sm font-medium leading-none">Código de verificación</label>
         <input
@@ -161,12 +163,11 @@
           inputmode="numeric"
           autocomplete="one-time-code"
           placeholder="123456"
-          maxlength="6"
-          formControlName="code"
+          [formField]="confirmForm.code"
           class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
-        @if (form.get('code')?.errors?.['minlength'] && form.get('code')?.touched) {
-          <p class="text-xs text-destructive">Ingresa el código de 6 dígitos.</p>
+        @if (confirmForm.code().touched() && confirmForm.code().errors().length) {
+          <p class="text-xs text-destructive">{{ confirmForm.code().errors()[0].message }}</p>
         }
       </div>
       @if (serverError) {
@@ -177,10 +178,10 @@
       <div class="flex gap-2">
         <button
           type="submit"
-          [disabled]="isSubmitting || form.invalid"
+          [disabled]="isSubmitting || confirmForm().invalid()"
           class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground shadow hover:bg-primary/90 h-8 px-3 disabled:opacity-50"
         >
-          {{ isSubmitting ? 'Verificando...' : 'Confirmar y activar' }}
+          {{ isSubmitting ? "Verificando..." : "Confirmar y activar" }}
         </button>
         <button
           type="button"
@@ -194,7 +195,7 @@
   </div>
 }
 
-@if (phase === 'enabled') {
+@if (phase === "enabled") {
   <div class="rounded-xl border border-green-500/30 bg-card p-5 space-y-3">
     <div class="flex items-center gap-2">
       <svg
@@ -223,17 +224,18 @@
           inputmode="numeric"
           placeholder="123456"
           maxlength="6"
-          [(ngModel)]="disableCode"
+          [value]="disableCode()"
+          (input)="disableCode.set($any($event.target).value)"
           class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
       </div>
       <button
         type="button"
         (click)="disable2fa()"
-        [disabled]="disabling || disableCode.length < 6"
+        [disabled]="disabling || disableCode().length < 6"
         class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 h-9 px-3 disabled:opacity-50"
       >
-        {{ disabling ? 'Desactivando...' : 'Desactivar 2FA' }}
+        {{ disabling ? "Desactivando..." : "Desactivar 2FA" }}
       </button>
     </div>
     @if (disableError) {

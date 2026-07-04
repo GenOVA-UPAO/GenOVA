@@ -1,19 +1,22 @@
 import {
+  ChangeDetectionStrategy,
   Component,
-  type OnChanges,
-  type SimpleChanges,
   inject,
-  signal,
   input,
+  type OnChanges,
   output,
+  signal,
+  type SimpleChanges,
 } from "@angular/core";
+
 import { HtmlPreviewFrameComponent } from "@/core/components/html-preview-frame.component";
-import type { ResourceVM } from "../../lib/ova-job-view-model";
 import { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
 
+import type { ResourceVM } from "../../lib/ova-job-view-model";
+
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-crear-ova-preview-panel",
-  standalone: true,
   imports: [HtmlPreviewFrameComponent],
   template: `
     <section class="flex flex-col h-full">
@@ -150,7 +153,7 @@ export class CrearOvaPreviewPanelComponent implements OnChanges {
         html?: string;
         content?: string;
       };
-      this.html.set(data.html || data.content || String(data));
+      this.html.set(data.html || data.content || JSON.stringify(data));
     } catch {
       this.html.set("");
     } finally {

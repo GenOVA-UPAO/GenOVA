@@ -1,4 +1,4 @@
-import { Injectable, inject } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 
 // Angular uses environment.ts for env vars, not import.meta.env
@@ -63,7 +63,9 @@ export async function apiFetch(
   { timeoutMs = DEFAULT_TIMEOUT_MS }: { timeoutMs?: number } = {},
 ): Promise<Response> {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  const t = setTimeout(() => {
+    ctrl.abort();
+  }, timeoutMs);
   const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
   const initHeaders = (init.headers as Record<string, string>) || {};
   const baseHeaders: Record<string, string> = { "X-Requested-With": "XMLHttpRequest" };
@@ -149,7 +151,9 @@ async function extractDetail(res: Response, fallbackMsg: string): Promise<string
 export const AuthExpiredBus = {
   _listeners: new Set<() => void>(),
   notify() {
-    this._listeners.forEach((fn) => fn());
+    this._listeners.forEach((fn) => {
+      fn();
+    });
   },
   subscribe(fn: () => void) {
     this._listeners.add(fn);
@@ -166,7 +170,7 @@ export class HttpClient {
 
   constructor() {
     AuthExpiredBus.subscribe(() => {
-      this.router.navigate(["/login"], { queryParams: { expired: "1" } });
+      void this.router.navigate(["/login"], { queryParams: { expired: "1" } });
     });
   }
 

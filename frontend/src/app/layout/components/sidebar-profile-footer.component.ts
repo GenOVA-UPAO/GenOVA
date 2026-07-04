@@ -1,11 +1,13 @@
-import { Component, inject, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input } from "@angular/core";
 import { RouterLink, RouterLinkActive } from "@angular/router";
+
 import { AuthService } from "@/core/auth/auth.service";
+
 import { profileLinkClasses, userInitials } from "../lib/layout-helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-sidebar-profile-footer",
-  standalone: true,
   imports: [RouterLink, RouterLinkActive],
   template: `
     <div class="border-t border-sidebar-border p-3">
@@ -23,15 +25,15 @@ import { profileLinkClasses, userInitials } from "../lib/layout-helpers";
         </div>
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-1.5">
-            <p class="truncate text-sm font-medium">{{ user()?.full_name || 'Usuario GenOVA' }}</p>
+            <p class="truncate text-sm font-medium">{{ user()?.full_name || "Usuario GenOVA" }}</p>
             <span
               class="shrink-0 rounded-full bg-accent-brand/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-accent-brand"
             >
-              {{ isAdmin ? 'Admin' : user()?.role || 'Usuario' }}
+              {{ isAdmin ? "Admin" : user()?.role || "Usuario" }}
             </span>
           </div>
           <p class="truncate text-xs text-muted-foreground">
-            {{ user()?.email || 'sesion activa' }}
+            {{ user()?.email || "sesion activa" }}
           </p>
         </div>
       </a>

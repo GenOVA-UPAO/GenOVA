@@ -1,11 +1,13 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input } from "@angular/core";
-import { HtmlPreviewFrameComponent } from "../../../../core/components/html-preview-frame.component";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+
 import type { PreviewResult } from "@/core/lib/ova-types";
 
+import { HtmlPreviewFrameComponent } from "../../../../core/components/html-preview-frame.component";
+
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-html-preview",
-  standalone: true,
   imports: [CommonModule, HtmlPreviewFrameComponent],
   template: `
     @if (result) {

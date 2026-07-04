@@ -1,5 +1,7 @@
 import { Injectable, resource, signal } from "@angular/core";
+
 import { apiFetch, apiJson } from "@/core/lib/http";
+
 import type { OvaListItem } from "../lib/types";
 
 export interface OvaListParams {
@@ -37,7 +39,7 @@ export class OvaLibraryService {
       if (params.search.trim()) paramsQs.set("search", params.search.trim());
       if (params.status.trim()) paramsQs.set("status", params.status.trim());
 
-      return apiJson(`/api/ovas?${paramsQs.toString()}`) as Promise<OvaListPage>;
+      return apiJson(`/api/ovas?${paramsQs.toString()}`);
     },
   });
 
@@ -54,7 +56,7 @@ export class OvaLibraryService {
         page: String(params.page),
         limit: "10",
       });
-      return apiJson(`/api/ovas/papelera?${paramsQs.toString()}`) as Promise<OvaListPage>;
+      return apiJson(`/api/ovas/papelera?${paramsQs.toString()}`);
     },
   });
 
@@ -83,7 +85,7 @@ export class OvaLibraryService {
   }
 
   async fetchTrashCount(): Promise<{ count: number }> {
-    return apiJson("/api/ovas/papelera/count") as Promise<{ count: number }>;
+    return apiJson("/api/ovas/papelera/count");
   }
 
   async restoreOva(ovaId: string) {

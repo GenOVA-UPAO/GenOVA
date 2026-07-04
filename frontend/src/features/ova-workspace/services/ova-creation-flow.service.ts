@@ -1,10 +1,11 @@
-import { computed, Injectable, inject, signal } from "@angular/core";
-import type { Selections as JobSelections } from "../lib/ova-job-view-model";
-import type { OvaTheme } from "../lib/types";
+import { computed, inject, Injectable, signal } from "@angular/core";
+
 import type { Resource } from "@/core/lib/ova-types";
-import { ResourceConfigsService } from "./resource-configs.service";
+
+import type { OvaTheme } from "../lib/types";
 import { OvaJobService } from "./ova-job.service";
 import { OvaUploadsService } from "./ova-uploads.service";
+import { ResourceConfigsService } from "./resource-configs.service";
 
 const MIN_CHARS = 10;
 const ALL_PHASES = ["engage", "explore", "explain", "elaborate", "evaluate"];
@@ -87,7 +88,7 @@ export class OvaCreationFlowService {
     void this.job.start({
       prompt: this.prompt().trim(),
       uploadIds: this.uploads.uploadIds(),
-      selections: this.selections() as JobSelections,
+      selections: this.selections(),
       theme: this.theme(),
       resourceConfigs: this.resourceConfigs(),
     });

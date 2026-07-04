@@ -1,9 +1,9 @@
-import { Directive, ElementRef, type OnChanges, inject, input } from "@angular/core";
+import { Directive, ElementRef, inject, input, type OnChanges } from "@angular/core";
+
 import { cn } from "@/core/lib/cn";
 
 @Directive({
   selector: "input[gnInput]",
-  standalone: true,
 })
 export class InputDirective implements OnChanges {
   private el = inject(ElementRef<HTMLInputElement>);

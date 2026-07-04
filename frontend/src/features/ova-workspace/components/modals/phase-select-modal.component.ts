@@ -1,23 +1,32 @@
-import { Component, inject, type OnInit, input, output } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  type OnInit,
+  output,
+} from "@angular/core";
+
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { ModalDismissDirective } from "@/core/directives/modal-dismiss.directive";
-import { isVideoResource } from "../../lib/phase-select.config";
-import { ResourceCardComponent } from "../phase/resource-card.component";
 import type { Resource } from "@/core/lib/ova-types";
+
+import { isVideoResource } from "../../lib/phase-select.config";
+import {
+  emptyPicks,
+  MAX_PER_PHASE,
+  PHASE_SELECT_CFG,
+  type PhaseResourceMap,
+  toggleSelection,
+} from "../../lib/phase-select.config";
 import { getSchema } from "../../lib/resource-config";
 import {
   getConfigForResource,
   mergeConfigSave,
   type ResourceConfigs,
 } from "../../lib/resource-config.helpers";
-import {
-  MAX_PER_PHASE,
-  PHASE_SELECT_CFG,
-  emptyPicks,
-  toggleSelection,
-  type PhaseResourceMap,
-} from "../../lib/phase-select.config";
 import { PhaseSelectService } from "../../services/phase-select.service";
+import { ResourceCardComponent } from "../phase/resource-card.component";
 import { ResourceConfigModalComponent } from "./resource-config-modal.component";
 import { ResourcePreviewPanelComponent } from "./resource-preview-panel.component";
 
@@ -28,8 +37,8 @@ interface ConfigTarget {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-phase-select-modal",
-  standalone: true,
   imports: [
     ButtonComponent,
     ModalDismissDirective,
@@ -45,7 +54,7 @@ export class PhaseSelectModalComponent implements OnInit {
   readonly initialSelections = input<PhaseResourceMap | undefined>(undefined);
   readonly initialResourceConfigs = input<ResourceConfigs | undefined>(undefined);
 
-  readonly onClose = output<void>();
+  readonly onClose = output();
   readonly onConfirm = output<{
     picks: PhaseResourceMap;
     configs: ResourceConfigs;

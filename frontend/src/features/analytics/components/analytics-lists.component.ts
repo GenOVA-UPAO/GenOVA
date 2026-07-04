@@ -1,4 +1,5 @@
-import { Component, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+
 import type { Creator, RecentOva } from "../lib/types";
 
 const STATUS_BADGE: Record<string, string> = {
@@ -9,8 +10,8 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-top-creators",
-  standalone: true,
   imports: [],
   template: `
     <div class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
@@ -52,8 +53,8 @@ export class TopCreatorsComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-recent-ovas",
-  standalone: true,
   imports: [],
   template: `
     <div class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
@@ -69,7 +70,7 @@ export class TopCreatorsComponent {
             <li class="flex items-center gap-3 py-2">
               <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-medium">
-                  {{ o.title || 'Sin título' }}
+                  {{ o.title || "Sin título" }}
                 </p>
                 <p class="truncate text-xs text-muted-foreground">
                   {{ o.owner_name }}

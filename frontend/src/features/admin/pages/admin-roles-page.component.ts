@@ -1,15 +1,16 @@
 import { CommonModule } from "@angular/common";
-import { Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+
 import { DeleteRoleModalComponent } from "../components/delete-role-modal.component";
 import { RoleFormModalComponent } from "../components/role-form-modal.component";
 import { AVAILABLE_PERMISSIONS } from "../lib/permissions";
-import { getRoleColor, isSystemRole } from "./admin-roles-page.helpers";
 import { AdminRolesService } from "../services/admin-roles.service";
 import { AdminSettingsService } from "../services/admin-settings.service";
+import { getRoleColor, isSystemRole } from "./admin-roles-page.helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-admin-roles-page",
-  standalone: true,
   imports: [CommonModule, RoleFormModalComponent, DeleteRoleModalComponent],
   templateUrl: "./admin-roles-page.component.html",
 })
@@ -61,7 +62,7 @@ export class AdminRolesPageComponent implements OnInit {
 
   handleFormSubmit(e: Event) {
     e.preventDefault();
-    this.service.handleSubmit();
+    void this.service.handleSubmit();
   }
 
   handleReassignChange(e: Event) {

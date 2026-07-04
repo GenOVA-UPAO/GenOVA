@@ -1,13 +1,14 @@
-import { Component, inject, signal, input, output } from "@angular/core";
-import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { InputTextModule } from "primeng/inputtext";
-import { ButtonComponent } from "@/core/components/ui/button.component";
+import { ChangeDetectionStrategy, Component, inject, input, output, signal } from "@angular/core";
+import { form, FormField, pattern, required, submit } from "@angular/forms/signals";
+import { HlmInput } from "@spartan-ng/helm/input";
+
 import { AuthService } from "@/core/auth/auth.service";
+import { ButtonComponent } from "@/core/components/ui/button.component";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-totp-login-step",
-  standalone: true,
-  imports: [ReactiveFormsModule, ButtonComponent, InputTextModule],
+  imports: [FormField, ButtonComponent, HlmInput],
   template: `
     <section
       class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4"
@@ -24,34 +25,21 @@ import { AuthService } from "@/core/auth/auth.service";
           código de respaldo.
         </p>
 
-        <form class="mt-6 space-y-4" [formGroup]="totpForm" (ngSubmit)="onSubmit()" novalidate>
+        <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
           <div class="space-y-1.5 flex flex-col">
             <label for="code" class="text-sm font-medium leading-none">Código</label>
             <input
-              pInputText
+              hlmInput
               id="code"
               type="text"
               inputmode="numeric"
               autocomplete="one-time-code"
-              maxlength="8"
               placeholder="123456"
-              formControlName="code"
+              [formField]="totpForm.code"
               class="w-full"
-              [class.ng-invalid]="totpForm.get('code')?.invalid && totpForm.get('code')?.touched"
-              [class.ng-dirty]="totpForm.get('code')?.touched"
             />
-            @if (totpForm.get('code')?.invalid && totpForm.get('code')?.touched) {
-              <p class="text-xs text-destructive">
-                @if (totpForm.get('code')?.hasError('required')) {
-                  <span>Ingresa el código.</span>
-                }
-                @if (
-                  totpForm.get('code')?.hasError('pattern') &&
-                  !totpForm.get('code')?.hasError('required')
-                ) {
-                  <span>Código inválido.</span>
-                }
-              </p>
+            @if (totpForm.code().touched() && totpForm.code().errors().length) {
+              <p class="text-xs text-destructive">{{ totpForm.code().errors()[0].message }}</p>
             }
           </div>
 
@@ -66,10 +54,10 @@ import { AuthService } from "@/core/auth/auth.service";
           <gn-button
             type="submit"
             [loading]="isSubmitting()"
-            [disabled]="totpForm.invalid || isSubmitting()"
+            [disabled]="totpForm().invalid() || isSubmitting()"
             class="w-full block"
           >
-            {{ isSubmitting() ? 'Verificando...' : 'Verificar' }}
+            {{ isSubmitting() ? "Verificando..." : "Verificar" }}
           </gn-button>
 
           <button
@@ -86,42 +74,40 @@ import { AuthService } from "@/core/auth/auth.service";
 })
 export class TotpLoginStepComponent {
   readonly ticket = input.required<string>();
-  readonly onSuccess = output<void>();
-  readonly onCancel = output<void>();
+  readonly onSuccess = output();
+  readonly onCancel = output();
 
-  private fb = inject(FormBuilder);
   private authService = inject(AuthService);
 
-  totpForm = this.fb.nonNullable.group({
-    code: ["", [Validators.required, Validators.pattern(/^[\dA-Fa-f\s]{4,8}$/)]],
+  protected readonly totpModel = signal({ code: "" });
+  protected readonly totpForm = form(this.totpModel, (p) => {
+    required(p.code, { message: "Ingresa el código." });
+    pattern(p.code, /^[\dA-Fa-f\s]{4,8}$/, { message: "Código inválido." });
   });
 
   serverError = signal("");
   isSubmitting = signal(false);
 
   async onSubmit() {
-    if (this.totpForm.invalid) {
-      this.totpForm.markAllAsTouched();
-      return;
-    }
+    await submit(this.totpForm, async () => {
+      this.serverError.set("");
+      this.isSubmitting.set(true);
 
-    this.serverError.set("");
-    this.isSubmitting.set(true);
+      try {
+        const { code } = this.totpModel();
+        const { ok, data } = await this.authService.verifyTotpLogin(this.ticket(), code);
 
-    try {
-      const { code } = this.totpForm.getRawValue();
-      const { ok, data } = await this.authService.verifyTotpLogin(this.ticket(), code);
+        if (ok) {
+          this.onSuccess.emit();
+          return;
+        }
 
-      if (ok) {
-        this.onSuccess.emit();
-        return;
+        this.serverError.set(data.message || "Código incorrecto.");
+      } catch {
+        this.serverError.set("No se pudo conectar con el servidor.");
+      } finally {
+        this.isSubmitting.set(false);
       }
-
-      this.serverError.set(data.message || "Código incorrecto.");
-    } catch {
-      this.serverError.set("No se pudo conectar con el servidor.");
-    } finally {
-      this.isSubmitting.set(false);
-    }
+    });
   }
 }

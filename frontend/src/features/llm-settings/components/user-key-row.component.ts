@@ -1,12 +1,22 @@
 import { CommonModule } from "@angular/common";
-import { Component, type ElementRef, Input, inject, input, output, viewChild } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  type ElementRef,
+  inject,
+  Input,
+  input,
+  output,
+  viewChild,
+} from "@angular/core";
 import { FormsModule } from "@angular/forms";
+
 import { UserLlmSettingsService } from "../services/user-llm-settings.service";
 import { PROVIDER_META } from "./platformKeyMeta";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-key-row",
-  standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="rounded-xl border border-border bg-background p-4 space-y-3 shadow-sm">
@@ -23,7 +33,7 @@ import { PROVIDER_META } from "./platformKeyMeta";
               : 'bg-muted text-muted-foreground'
           "
         >
-          {{ isConfigured ? 'Conectado' : 'Sin configurar' }}
+          {{ isConfigured ? "Conectado" : "Sin configurar" }}
         </span>
       </div>
       <div class="flex flex-col sm:flex-row gap-2">
@@ -44,7 +54,7 @@ import { PROVIDER_META } from "./platformKeyMeta";
               [disabled]="saving || !value.trim()"
               class="h-9 px-3 rounded-md bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50"
             >
-              {{ saving ? '...' : 'Guardar' }}
+              {{ saving ? "..." : "Guardar" }}
             </button>
             <button type="button" (click)="cancelEdit()" class="h-9 px-3 rounded-md border text-xs">
               Cancelar
@@ -56,7 +66,7 @@ import { PROVIDER_META } from "./platformKeyMeta";
               class="h-9 px-3 rounded-md text-xs font-bold"
               [ngClass]="isConfigured ? 'border' : 'bg-primary text-primary-foreground'"
             >
-              {{ isConfigured ? 'Cambiar' : 'Configurar' }}
+              {{ isConfigured ? "Cambiar" : "Configurar" }}
             </button>
           }
         </div>
@@ -109,7 +119,9 @@ export class UserKeyRowComponent {
     this.value = "";
     this.editing = true;
     this.rowError = null;
-    setTimeout(() => this.inputEl()?.nativeElement?.focus(), 50);
+    setTimeout(() => {
+      this.inputEl()?.nativeElement?.focus();
+    }, 50);
   }
 
   cancelEdit() {

@@ -12,7 +12,7 @@
           <p class="text-[10px] text-muted-foreground/70 font-medium truncate">{{ meta.desc }}</p>
         </div>
       </div>
-      @if (task() === 'imagen' && loaded) {
+      @if (task() === "imagen" && loaded) {
         <button
           type="button"
           role="switch"
@@ -32,7 +32,7 @@
   </div>
 
   <div class="px-5 py-4 min-h-[88px] flex flex-col justify-center">
-    @if (task() === 'imagen') {
+    @if (task() === "imagen") {
       @if (!loaded) {
         <div class="flex items-center gap-2">
           <div

@@ -1,15 +1,17 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import {
   AlertComponent,
   AlertDescriptionComponent,
   AlertTitleComponent,
 } from "@/core/components/ui/alert.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
+
 import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-catalog-status-alert",
-  standalone: true,
   imports: [AlertComponent, AlertTitleComponent, AlertDescriptionComponent, ButtonComponent],
   template: `
     @if (downProviders.length > 0) {
@@ -26,7 +28,7 @@ import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
         <div class="mt-2">
           <gn-button size="sm" variant="outline" (onClick)="retry.emit()" [disabled]="refreshing()">
             <span [class.animate-spin]="refreshing()">↻</span>
-            {{ refreshing() ? 'Reintentando…' : 'Reintentar' }}
+            {{ refreshing() ? "Reintentando…" : "Reintentar" }}
           </gn-button>
         </div>
       </gn-alert>
@@ -42,10 +44,10 @@ export class CatalogStatusAlertComponent {
     }
   > | null>(null);
   readonly refreshing = input(false);
-  readonly retry = output<void>();
+  readonly retry = output();
 
-  get downProviders(): Array<[string, { ok: boolean; last_success_at?: string }]> {
-    return Object.entries(this.catalogStatus() || {}).filter(([, st]) => st && st.ok === false);
+  get downProviders(): [string, { ok: boolean; last_success_at?: string }][] {
+    return Object.entries(this.catalogStatus() || {}).filter(([, st]) => st && !st.ok);
   }
 
   get providerNames(): string {

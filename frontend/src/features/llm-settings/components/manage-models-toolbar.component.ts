@@ -1,9 +1,10 @@
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+
 import { CATEGORY_LABELS } from "../lib/llm-settings-labels";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-manage-models-toolbar",
-  standalone: true,
   imports: [],
   template: `
     <div class="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-background">

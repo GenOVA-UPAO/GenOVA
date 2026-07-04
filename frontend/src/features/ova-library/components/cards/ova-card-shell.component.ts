@@ -1,24 +1,23 @@
 import { CommonModule } from "@angular/common";
-import { Component, Input, input, output } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { CheckboxModule } from "primeng/checkbox";
+import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
+
 import { OvaStatusBadgeComponent } from "@/core/components/ova-status-badge.component";
+import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
 import type { OvaListItem } from "@/features/ova-library/lib/types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-card-shell",
-  standalone: true,
-  imports: [CommonModule, CheckboxModule, FormsModule, OvaStatusBadgeComponent],
+  imports: [CommonModule, CheckboxComponent, OvaStatusBadgeComponent],
   template: `
     <div [ngClass]="rootClassName() || defaultRootClass">
       <div class="flex items-start gap-3">
-        <p-checkbox
-          [binary]="true"
-          [ngModel]="isSelected()"
-          (ngModelChange)="onToggleSelect.emit(ova.id)"
+        <gn-checkbox
+          class="mt-0.5"
+          [checked]="isSelected()"
+          (checkedChange)="onToggleSelect.emit(ova.id)"
           [disabled]="checkboxDisabled()"
-          styleClass="mt-0.5"
-        ></p-checkbox>
+        ></gn-checkbox>
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap mb-1">
             <h3 class="text-sm font-semibold text-foreground truncate">
@@ -32,14 +31,14 @@ import type { OvaListItem } from "@/features/ova-library/lib/types";
               {{ ova.description }}
             </p>
           }
-          @if (ova['owner']) {
+          @if (ova["owner"]) {
             <p class="mt-1.5 text-xs text-muted-foreground">
               Por: <span class="font-medium text-foreground">{{ getOwnerName() }}</span>
             </p>
           }
           @if (dateValue) {
             <p class="mt-1.5 text-xs" [ngClass]="dateClassName()">
-              {{ dateLabel ? dateLabel + ' ' : '' }}{{ dateValue }}
+              {{ dateLabel ? dateLabel + " " : "" }}{{ dateValue }}
             </p>
           }
         </div>

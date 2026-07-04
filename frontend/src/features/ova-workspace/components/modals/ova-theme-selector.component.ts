@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
 import type { OvaTheme } from "../../lib/types";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-theme-selector",
-  standalone: true,
   imports: [CommonModule],
   template: `
     <section class="space-y-2.5 rounded-lg border border-border bg-card p-3">
@@ -162,10 +162,10 @@ import type { OvaTheme } from "../../lib/types";
             d="M227.32,74.34l-51.66-51.65a16,16,0,0,0-22.63,0L28.68,147a16,16,0,0,0,0,22.62l51.66,51.66a16,16,0,0,0,22.63,0L227.32,97A16,16,0,0,0,227.32,74.34ZM91.65,210,40,158.34,104,94.34,155.65,146ZM167,134.69,115.31,83,164.34,34l51.66,51.65ZM240,136v8a8,8,0,0,1-16,0v-8h-8a8,8,0,0,1,0-16h8v-8a8,8,0,0,1,16,0v8h8A8,8,0,0,1,240,136ZM88,48a8,8,0,0,1-8,8H72v8a8,8,0,0,1-16,0V56H48a8,8,0,0,1,0-16h8V32a8,8,0,0,1,16,0v8h8A8,8,0,0,1,88,48ZM208,176h-8v-8a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0v-8h8A8,8,0,0,0,208,176Z"
           ></path>
         </svg>
-        @if (theme().color === 'free' || theme().design === 'free') {
+        @if (theme().color === "free" || theme().design === "free") {
           La IA decidirá lo marcado como «Libre».
         }
-        @if (theme().color !== 'free' && theme().design !== 'free') {
+        @if (theme().color !== "free" && theme().design !== "free") {
           Marca institucional UPAO: azul, naranja y blanco.
         }
       </p>

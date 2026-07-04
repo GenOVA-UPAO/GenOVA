@@ -1,10 +1,11 @@
-import { Component, Input, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, input } from "@angular/core";
 import { RouterLink, RouterLinkActive } from "@angular/router";
+
 import { navLinkClasses } from "../lib/layout-helpers";
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-sidebar-nav-item",
-  standalone: true,
   imports: [RouterLink, RouterLinkActive],
   template: `
     <li>
