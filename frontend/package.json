@@ -14,7 +14,8 @@
     "format:check": "prettier --check .",
     "typecheck": "ngc -p tsconfig.app.json --noEmit && ngc -p tsconfig.spec.json --noEmit",
     "storybook": "ng run frontend-ng:storybook",
-    "build-storybook": "ng run frontend-ng:build-storybook"
+    "build-storybook": "ng run frontend-ng:build-storybook",
+    "test-storybook": "test-storybook"
   },
   "private": true,
   "packageManager": "pnpm@11.9.0",
@@ -56,7 +57,9 @@
     "@spartan-ng/cli": "^1.0.4",
     "@storybook/addon-a11y": "^10.4.6",
     "@storybook/addon-docs": "^10.4.6",
+    "@storybook/addon-themes": "^10.4.6",
     "@storybook/angular": "^10.4.6",
+    "@storybook/test-runner": "^0.24.4",
     "@tailwindcss/postcss": "^4.1.12",
     "@testing-library/angular": "19.4.1",
     "@testing-library/dom": "10.4.1",
@@ -69,6 +72,8 @@
     "eslint-plugin-storybook": "^10.4.6",
     "eslint-plugin-unused-imports": "4.4.1",
     "jsdom": "^28.0.0",
+    "msw": "^2.14.6",
+    "msw-storybook-addon": "^2.0.7",
     "postcss": "^8.5.3",
     "prettier": "^3.8.1",
     "storybook": "^10.4.6",

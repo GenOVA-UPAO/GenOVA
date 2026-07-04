@@ -4,11 +4,14 @@ packages:
   - "tests"
 allowBuilds:
   '@parcel/watcher': true
+  '@swc/core': true
   esbuild: true
   less: false
   lmdb: true
   msgpackr-extract: true
+  msw: true
   nx: false
+  unrs-resolver: true
 minimumReleaseAgeExclude:
   - '@angular-devkit/architect@0.2200.5'
   - '@angular-devkit/core@22.0.5'

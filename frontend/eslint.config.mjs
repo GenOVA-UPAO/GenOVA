@@ -24,6 +24,7 @@ export default tseslint.config(
       "coverage/**",
       "libs/ui/**",
       "storybook-static/**",
+      ".storybook/public/**",
     ],
   },
   {
