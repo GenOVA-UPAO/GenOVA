@@ -46,6 +46,12 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "storybook": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "styles": [".storybook/preview-styles.css"]
             }
           },
           "defaultConfiguration": "production"
@@ -67,6 +73,28 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        },
+        "storybook": {
+          "builder": "@storybook/angular:start-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "browserTarget": "frontend-ng:build:storybook",
+            "compodoc": true,
+            "compodocArgs": ["-e", "json", "-d", "."],
+            "port": 6006,
+            "experimentalZoneless": true
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular:build-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "browserTarget": "frontend-ng:build:storybook",
+            "compodoc": true,
+            "compodocArgs": ["-e", "json", "-d", "."],
+            "outputDir": "storybook-static",
+            "experimentalZoneless": true
+          }
         }
       }
     }

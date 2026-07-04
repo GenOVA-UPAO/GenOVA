@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 // @ts-check
 import js from "@eslint/js";
 import angular from "angular-eslint";
@@ -14,7 +17,14 @@ import tseslint from "typescript-eslint";
  */
 export default tseslint.config(
   {
-    ignores: ["dist/**", ".angular/**", "node_modules/**", "coverage/**", "libs/ui/**"],
+    ignores: [
+      "dist/**",
+      ".angular/**",
+      "node_modules/**",
+      "coverage/**",
+      "libs/ui/**",
+      "storybook-static/**",
+    ],
   },
   {
     files: ["src/**/*.ts"],
@@ -117,6 +127,19 @@ export default tseslint.config(
     },
   },
   {
+    // Storybook tooling config — its own tsconfig (not part of the app build),
+    // so it needs a separate type-aware project reference or the TS-syntax
+    // parser fails on `import type`.
+    files: [".storybook/**/*.ts"],
+    extends: [...tseslint.configs.recommended],
+    languageOptions: {
+      parserOptions: {
+        project: ["./.storybook/tsconfig.json", "./.storybook/tsconfig.eslint.json"],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
     files: ["src/**/*.html"],
     ignores: ["src/index.html"],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
@@ -130,4 +153,5 @@ export default tseslint.config(
       ],
     },
   },
+  storybook.configs["flat/recommended"],
 );
