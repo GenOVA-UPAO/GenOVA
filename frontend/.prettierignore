@@ -3,3 +3,5 @@ dist
 node_modules
 coverage
 libs/ui
+.storybook/public
+storybook-static
