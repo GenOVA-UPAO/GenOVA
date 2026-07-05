@@ -4,14 +4,11 @@ packages:
   - "tests"
 allowBuilds:
   '@parcel/watcher': true
-  '@swc/core': true
   esbuild: true
   less: false
   lmdb: true
   msgpackr-extract: true
-  msw: true
   nx: false
-  unrs-resolver: true
 minimumReleaseAgeExclude:
   - '@angular-devkit/architect@0.2200.5'
   - '@angular-devkit/core@22.0.5'
@@ -19,15 +16,3 @@ minimumReleaseAgeExclude:
   - '@angular/build@22.0.5'
   - '@angular/cli@22.0.5'
   - '@schematics/angular@22.0.5'
-overrides:
-  # @angular-devkit/build-angular and @storybook/builder-webpack5 each pull
-  # their own webpack via slightly different peer ranges (postcss/esbuild),
-  # so pnpm installs 2-3 separate instances. Storybook's dev server then
-  # crashes cross-instance ("compilation argument must be an instance of
-  # Compilation") when a plugin from one instance runs against a Compilation
-  # from another. Force a single resolved webpack everywhere. Also pin
-  # postcss (a webpack peer) — differing postcss patch versions were
-  # enough on their own to keep pnpm resolving two separate webpack
-  # instances despite the pin above.
-  webpack: 5.106.2
-  postcss: 8.5.15

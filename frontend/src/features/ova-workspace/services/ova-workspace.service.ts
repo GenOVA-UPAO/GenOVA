@@ -69,7 +69,7 @@ export class OvaWorkspaceService implements OnDestroy {
       if (!this.mounted) return;
       if (err?.status === 409 || err?.code === "ova_generating") {
         this.generatingState.set(true);
-        this.loadRetryTimer = setTimeout(() => void this.load(), 3000);
+        this.loadRetryTimer = setTimeout(() => this.load(), 3000);
       } else {
         this.errorState.set(err?.message || "No se pudo cargar el OVA.");
       }
@@ -86,7 +86,7 @@ export class OvaWorkspaceService implements OnDestroy {
       const { job_id } = (await this.editService.triggerRegen(this.ovaId, body)) as {
         job_id: string;
       };
-      this.regenTimer = setTimeout(() => void this.pollRegen(job_id), POLL_MS);
+      this.regenTimer = setTimeout(() => this.pollRegen(job_id), POLL_MS);
       return true;
     } catch (err: any) {
       this.isRegeneratingState.set(false);
@@ -137,7 +137,7 @@ export class OvaWorkspaceService implements OnDestroy {
           this.toastError("La regeneración falló.");
         }
       } else {
-        this.regenTimer = setTimeout(() => void this.pollRegen(jobId), POLL_MS);
+        this.regenTimer = setTimeout(() => this.pollRegen(jobId), POLL_MS);
       }
     } catch {
       if (this.mounted) {

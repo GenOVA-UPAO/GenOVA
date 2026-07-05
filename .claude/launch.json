@@ -19,12 +19,6 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8090", "--directory", ".audit"],
       "port": 8090
-    },
-    {
-      "name": "storybook",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["run", "storybook"],
-      "port": 6006
     }
   ]
 }

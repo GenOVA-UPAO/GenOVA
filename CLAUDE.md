@@ -25,8 +25,6 @@ pnpm format:check     # prettier --check .
 pnpm typecheck        # ngc (Angular AOT compiler, --noEmit) — checks templates too, not just tsc
 pnpm test:unit        # cucumber-js unit (no browser, no backend)
 pnpm test:e2e         # playwright-bdd (requires frontend + backend)
-pnpm storybook        # component workbench → http://localhost:6006 (frontend/src/**/*.stories.ts)
-pnpm --filter frontend test-storybook  # Playwright-based story smoke tests (needs `pnpm storybook` running)
 ```
 
 ### Backend (from `backend/`)
