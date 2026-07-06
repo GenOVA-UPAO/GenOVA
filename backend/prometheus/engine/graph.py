@@ -6,7 +6,7 @@ and advances `current_phase_idx`. The Critic node always follows each phase;
 when ova_critic=0 it is a passthrough (zero LLM calls). Routing after the
 Critic walks phase_order until hitting editor.
 
-Flow:  concierge → engage → critic → explore → critic → … → editor → assemble
+Flow:  concierge → engage → critic → explore → critic → … → repair → editor → assemble
 """
 
 import logging
@@ -23,6 +23,7 @@ from prometheus.nodes.engage import engage_node
 from prometheus.nodes.evaluate import evaluate_node
 from prometheus.nodes.explain import explain_node
 from prometheus.nodes.explore import explore_node
+from prometheus.nodes.repair import repair_node
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,8 @@ def _route_next_phase(state: OvaGenerationState) -> str:
     idx = state.get("current_phase_idx", 0)
     if idx < len(phases):
         return phases[idx]
-    return "editor"
+    # Todas las fases corridas → pass de reparación antes del editor (F1.1).
+    return "repair"
 
 
 def build_ova_graph():
@@ -47,20 +49,22 @@ def build_ova_graph():
     graph.add_node("elaborate", elaborate_node)
     graph.add_node("evaluate", evaluate_node)
     graph.add_node("critic", critic_node)
+    graph.add_node("repair", repair_node)
     graph.add_node("editor", editor_node)
     graph.add_node("assemble", assemble_node)
 
     graph.add_edge(START, "concierge")
 
-    route_map = {**{p: p for p in _PHASES}, "editor": "editor"}
-    # Concierge routes to the first phase (or editor if plan is empty).
+    route_map = {**{p: p for p in _PHASES}, "repair": "repair"}
+    # Concierge routes to the first phase (or repair→editor if plan is empty).
     graph.add_conditional_edges("concierge", _route_next_phase, route_map)
     # Every phase node goes to critic (fixed — critic is a passthrough when disabled).
     for phase in _PHASES:
         graph.add_edge(phase, "critic")
-    # Critic routes to the next phase or editor after evaluating/refining.
+    # Critic routes to the next phase, or to repair once all phases ran.
     graph.add_conditional_edges("critic", _route_next_phase, route_map)
 
+    graph.add_edge("repair", "editor")
     graph.add_edge("editor", "assemble")
     graph.add_edge("assemble", END)
 

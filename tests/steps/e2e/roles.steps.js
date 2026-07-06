@@ -49,8 +49,8 @@ When('ingreso el nombre {string}', async ({ page }, name) => {
 })
 
 When('selecciono los permisos {string} y {string}', async ({ page }, _p1, _p2) => {
-  // shadcn Checkbox renders <button role="checkbox"> — the hidden input is aria-hidden
-  const checkboxes = page.locator('button[role=checkbox]')
+  // El modal actual usa <input type="checkbox"> nativos (role-form-modal.component)
+  const checkboxes = page.locator('input[type=checkbox]')
   await checkboxes.nth(0).click()
   await checkboxes.nth(1).click()
 })
