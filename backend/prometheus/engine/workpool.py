@@ -82,6 +82,19 @@ def resource_worker(payload: dict) -> dict:
         logger.exception("workpool: %s:%s failed", phase, rt)
         return {"errors": [{"phase": phase, "resource_type": rt, "error": str(exc)}]}
 
+    # F2.3 — evaluator-optimizer: checklist estructural + feedback dirigido.
+    from prometheus.engine.validate import validate_and_improve
+
+    html, remaining = validate_and_improve(
+        html,
+        phase,
+        rt,
+        payload.get("prompt", ""),
+        payload.get("llm_config", {}),
+        payload.get("enabled_models", []),
+        payload.get("theme", {}),
+    )
+
     title = (meta.get(rt) or {}).get("tipo", "")
     _persist_done(job_id, phase, rt, html)
     _touch_job(job_id)

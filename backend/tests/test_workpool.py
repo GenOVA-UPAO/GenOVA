@@ -50,6 +50,9 @@ def test_fan_out_empty_plan_goes_to_collect():
 
 
 def test_worker_success_and_config(monkeypatch):
+    import prometheus.engine.validate as val
+
+    monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))
     seen = {}
 
     def fake_dispatch(rt, concept, llm_config, enabled_models, theme, image_settings, per_config):
