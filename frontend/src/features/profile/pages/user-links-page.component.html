@@ -49,7 +49,7 @@
           />
           <button
             (click)="handleAccept()"
-            [disabled]="!code.trim()"
+            [disabled]="!code().trim()"
             class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 shrink-0"
           >
             Aceptar
@@ -78,7 +78,7 @@
               />
               <button
                 (click)="handleInvite()"
-                [disabled]="!email.trim()"
+                [disabled]="!email().trim()"
                 aria-label="Invitar"
                 class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 w-9 shrink-0"
               >
@@ -121,11 +121,11 @@
                 </svg>
                 Generar codigo
               </button>
-              @if (generatedCode) {
+              @if (generatedCode()) {
                 <code
                   class="flex-1 text-center rounded-xl bg-primary/10 border border-primary/20 px-3 py-2 text-sm font-bold text-primary tracking-widest"
                 >
-                  {{ generatedCode }}
+                  {{ generatedCode() }}
                 </code>
               }
             </div>
@@ -143,28 +143,28 @@
             <span
               class="bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20"
             >
-              {{ links.length }}
+              {{ links().length }}
             </span>
           </p>
         </div>
         <div class="flex-1 overflow-y-auto">
-          @if (loading) {
+          @if (loading()) {
             <div class="p-10 text-center text-sm font-medium text-muted-foreground animate-pulse">
               Cargando...
             </div>
           }
-          @if (!loading && links.length > 0) {
-            @for (link of links; track link) {
+          @if (!loading() && links().length > 0) {
+            @for (link of links(); track link) {
               <gn-link-row
                 [link]="link"
                 [admin]="hasAdminLinks"
-                [isOwner]="user?.id === link.owner_user_id"
+                [isOwner]="user()?.id === link.owner_user_id"
                 (onDelete)="handleDelete($event)"
                 (onResend)="handleResend($event)"
               ></gn-link-row>
             }
           }
-          @if (!loading && links.length === 0) {
+          @if (!loading() && links().length === 0) {
             <div class="flex flex-col items-center justify-center p-12 text-center h-full">
               <div class="rounded-full bg-muted/30 p-4 mb-4">
                 <svg

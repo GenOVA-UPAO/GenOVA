@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
 
 import { AuthService } from "@/core/auth/auth.service";
@@ -55,14 +55,14 @@ export class ModelsPageComponent implements OnInit {
   private adminSettings = inject(PlatformSettingsService);
   store = inject(UserLlmSettingsStore);
 
-  isAdmin = false;
-  manageOpen = false;
-  activeTab = "tasks";
-  adminDraft: Draft | null = null;
-  adminTasks: string[] = [];
-  adminModels: ChipModel[] = [];
-  adminSaving = false;
-  adminLoading = true;
+  readonly isAdmin = signal(false);
+  readonly manageOpen = signal(false);
+  readonly activeTab = signal("tasks");
+  readonly adminDraft = signal<Draft | null>(null);
+  readonly adminTasks = signal<string[]>([]);
+  readonly adminModels = signal<ChipModel[]>([]);
+  readonly adminSaving = signal(false);
+  readonly adminLoading = signal(true);
 
   async ngOnInit() {
     const user = (await this.auth.revalidate()) ?? this.auth.user();
@@ -70,14 +70,14 @@ export class ModelsPageComponent implements OnInit {
       void this.router.navigate(["/dashboard"], { replaceUrl: true });
       return;
     }
-    this.isAdmin = user?.role === "administrador";
+    this.isAdmin.set(user?.role === "administrador");
     await this.store.load({ search: "", category: "all", page: 1 });
     await this.loadAdminConfig();
   }
 
   private buildDraftFromStoreDefaults(): Draft {
     const draft: Draft = {};
-    for (const t of this.adminTasks) {
+    for (const t of this.adminTasks()) {
       if (t === "imagen" || t === "video") continue;
       const d = this.store.defaults[t];
       draft[t] = {
@@ -91,16 +91,16 @@ export class ModelsPageComponent implements OnInit {
   }
 
   private async loadAdminConfig() {
-    this.adminLoading = true;
+    this.adminLoading.set(true);
     const baseTasks = ["texto", "codigo", "orquestador", "razonamiento"];
-    this.adminTasks = [...new Set([...baseTasks, "imagen", "video"])];
+    this.adminTasks.set([...new Set([...baseTasks, "imagen", "video"])]);
 
-    if (!this.isAdmin) {
-      this.adminModels = (this.store.catalogFull ?? []).filter(
-        (m) => (m as { active?: boolean }).active !== false,
+    if (!this.isAdmin()) {
+      this.adminModels.set(
+        (this.store.catalogFull ?? []).filter((m) => (m as { active?: boolean }).active !== false),
       );
-      this.adminDraft = this.buildDraftFromStoreDefaults();
-      this.adminLoading = false;
+      this.adminDraft.set(this.buildDraftFromStoreDefaults());
+      this.adminLoading.set(false);
       return;
     }
 
@@ -111,43 +111,46 @@ export class ModelsPageComponent implements OnInit {
         config?: Parameters<typeof toDraft>[0];
       };
       const tasks = data?.tasks ?? baseTasks;
-      this.adminTasks = [...new Set([...tasks, "imagen", "video"])];
-      this.adminModels = (
-        data?.catalog?.length ? data.catalog : (this.store.catalogFull ?? [])
-      ).filter((m) => (m as { active?: boolean }).active !== false);
-      this.adminDraft = toDraft(data?.config, this.adminTasks);
+      this.adminTasks.set([...new Set([...tasks, "imagen", "video"])]);
+      this.adminModels.set(
+        (data?.catalog?.length ? data.catalog : (this.store.catalogFull ?? [])).filter(
+          (m) => (m as { active?: boolean }).active !== false,
+        ),
+      );
+      this.adminDraft.set(toDraft(data?.config, this.adminTasks()));
     } catch {
-      this.adminTasks = ["texto", "codigo", "orquestador", "razonamiento", "imagen", "video"];
-      this.adminModels = [];
-      this.adminDraft = null;
+      this.adminTasks.set(["texto", "codigo", "orquestador", "razonamiento", "imagen", "video"]);
+      this.adminModels.set([]);
+      this.adminDraft.set(null);
     } finally {
-      this.adminLoading = false;
+      this.adminLoading.set(false);
     }
   }
 
   onDraftChange(next: Draft) {
-    this.adminDraft = next;
+    this.adminDraft.set(next);
   }
 
   async saveAdminPlatform() {
-    if (!this.adminDraft) return;
-    this.adminSaving = true;
+    const draft = this.adminDraft();
+    if (!draft) return;
+    this.adminSaving.set(true);
     try {
-      await this.adminSettings.saveAdminLlmConfig(toPayload(this.adminDraft, this.adminTasks));
+      await this.adminSettings.saveAdminLlmConfig(toPayload(draft, this.adminTasks()));
       toast.success("Configuración de plataforma guardada.");
     } catch (e) {
       toast.error((e as Error)?.message || "No se pudo guardar.");
     } finally {
-      this.adminSaving = false;
+      this.adminSaving.set(false);
     }
   }
 
   openManageModels(): void {
-    this.manageOpen = true;
+    this.manageOpen.set(true);
   }
 
   goToApiKeys(_provider?: string): void {
-    this.manageOpen = false;
-    this.activeTab = "apikeys";
+    this.manageOpen.set(false);
+    this.activeTab.set("apikeys");
   }
 }

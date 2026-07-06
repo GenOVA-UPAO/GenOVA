@@ -11,11 +11,11 @@
     <div class="space-y-6">
       <div class="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
         <h2 class="text-base font-semibold text-foreground">1. Elige el tipo de recurso</h2>
-        @if (loadingRecursos) {
+        @if (loadingRecursos()) {
           <div class="text-sm text-muted-foreground">Cargando recursos...</div>
         } @else {
           <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            @for (r of recursos; track r.id) {
+            @for (r of recursos(); track r.id) {
               <gn-resource-card
                 [resource]="r"
                 [selected]="selectedResource?.id === r.id"
@@ -40,7 +40,7 @@
             (ngModelChange)="reset()"
             placeholder="Ej: K-Means, Regresión Lineal, Redes Neuronales..."
             class="flex h-10 w-full sm:w-auto sm:min-w-[16rem] flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            [disabled]="loading"
+            [disabled]="loading()"
           />
           <button
             type="button"
@@ -48,7 +48,7 @@
             [disabled]="!canGenerate"
             class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 w-full sm:w-auto px-5"
           >
-            {{ loading ? "Generando con IA..." : "Generar recurso" }}
+            {{ loading() ? "Generando con IA..." : "Generar recurso" }}
           </button>
         </div>
 
@@ -61,7 +61,7 @@
           </p>
         }
 
-        @if (loading) {
+        @if (loading()) {
           <div class="flex items-center gap-3 text-sm text-muted-foreground">
             <div
               class="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary"
@@ -70,19 +70,19 @@
           </div>
         }
 
-        @if (error) {
+        @if (error()) {
           <div
             class="rounded-lg bg-destructive/10 border border-destructive/30 p-3 text-sm text-destructive"
           >
-            {{ error }}
+            {{ error() }}
           </div>
         }
       </div>
 
-      @if (result) {
+      @if (result(); as r) {
         <div class="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
           <h2 class="text-base font-semibold text-foreground">3. Vista previa</h2>
-          <gn-html-preview [result]="result"></gn-html-preview>
+          <gn-html-preview [result]="r"></gn-html-preview>
         </div>
       }
     </div>

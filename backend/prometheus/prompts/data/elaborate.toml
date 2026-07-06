@@ -128,6 +128,6 @@ ${ds}
 1 = 'estudio de caso: narrativa destacada, preguntas secuenciales con campo de respuesta y toggle de modelo, barra de progreso, disenio periodistico'
 2 = 'ejercicio guiado: pasos numerados, cada uno expandible con pista y validacion, indicador de paso actual, boton siguiente'
 3 = 'mini-proyecto: panel de objetivo, tarjetas de entregables con checklist, dataset colapsable, rubrica interactiva con niveles desplegables'
-6 = 'escenario ramificado: tarjeta de situacion con 2 botones, transicion animada entre niveles, desenlace con leccion destacada'
-8 = 'mapa de problemas: grid de 4 tarjetas por sector, expandibles con sintomas+diagnostico+solucion, iconos coloreados'
+6 = 'escenario ramificado: tarjeta de situacion con un botón por cada opción del JSON, transicion animada entre niveles, desenlace con leccion destacada'
+8 = 'mapa de problemas: grid con una tarjeta por cada problema del JSON, expandibles con sintomas+diagnostico+solucion, iconos coloreados'
 10 = 'reto de disenio: enunciado en panel, criterios en checklist, rubrica en acordeon, solucion oculta tras boton con delay'

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input, type OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  type OnInit,
+  signal,
+} from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
 import type { PreviewResult, Resource } from "@/core/lib/ova-types";
@@ -46,17 +53,17 @@ export class PhasePageComponent implements OnInit {
   private phaseService = inject(PhaseGenerationService);
   private phaseSelectService = inject(PhaseSelectService);
 
-  recursos: Resource[] = [];
-  loadingRecursos = true;
+  readonly recursos = signal<Resource[]>([]);
+  readonly loadingRecursos = signal(true);
   selectedResource: Resource | null = null;
   hovered: Resource | null = null;
   concept = "";
-  loading = false;
-  result: PreviewResult | null = null;
-  error = "";
+  readonly loading = signal(false);
+  readonly result = signal<PreviewResult | null>(null);
+  readonly error = signal("");
   configTarget: ConfigTarget | null = null;
   resourceConfigs: ResourceConfigs = {};
-  videoKeyConfigured = true;
+  readonly videoKeyConfigured = signal(true);
 
   get phaseKey() {
     return this.phase().toLowerCase();
@@ -71,7 +78,7 @@ export class PhasePageComponent implements OnInit {
   }
 
   get canGenerate() {
-    return this.selectedResource && this.concept.trim().length >= 3 && !this.loading;
+    return this.selectedResource && this.concept.trim().length >= 3 && !this.loading();
   }
 
   get previewResource(): Resource | null {
@@ -80,9 +87,9 @@ export class PhasePageComponent implements OnInit {
 
   ngOnInit() {
     void this.loadResources();
-    void this.phaseSelectService
-      .fetchVideoKeyConfigured()
-      .then((v) => (this.videoKeyConfigured = v));
+    void this.phaseSelectService.fetchVideoKeyConfigured().then((v) => {
+      this.videoKeyConfigured.set(v);
+    });
   }
 
   handleSelect(r: Resource) {
@@ -91,8 +98,8 @@ export class PhasePageComponent implements OnInit {
   }
 
   reset() {
-    this.result = null;
-    this.error = "";
+    this.result.set(null);
+    this.error.set("");
   }
 
   hasConfig(r: Resource) {
@@ -124,28 +131,30 @@ export class PhasePageComponent implements OnInit {
 
   async generate() {
     if (!this.canGenerate) return;
-    this.loading = true;
+    this.loading.set(true);
     this.reset();
     try {
-      this.result = await this.phaseService.generateResource(
-        this.phase(),
-        this.selectedResource?.id,
-        this.concept,
+      this.result.set(
+        await this.phaseService.generateResource(
+          this.phase(),
+          this.selectedResource?.id,
+          this.concept,
+        ),
       );
     } catch (e: unknown) {
-      this.error = e instanceof Error ? e.message : "Error al generar recurso";
+      this.error.set(e instanceof Error ? e.message : "Error al generar recurso");
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 
   private async loadResources() {
     try {
-      this.recursos = await this.phaseService.fetchResources(this.phase());
+      this.recursos.set(await this.phaseService.fetchResources(this.phase()));
     } catch {
-      this.recursos = [];
+      this.recursos.set([]);
     } finally {
-      this.loadingRecursos = false;
+      this.loadingRecursos.set(false);
     }
   }
 }

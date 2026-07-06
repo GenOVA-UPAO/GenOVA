@@ -27,6 +27,17 @@ export function toResourcesPayload(selections: Record<string, { id: string | num
   return out;
 }
 
+/** Solo configs de recursos seleccionados — el estado del form arrastra configs
+ * de generaciones anteriores (audit 2026-07-06). */
+function pickSelectedConfigs(
+  configs: Record<string, unknown> | undefined,
+  resources: { phase_type: string; resource_type: string }[],
+): Record<string, unknown> {
+  if (!configs) return {};
+  const selected = new Set(resources.map((r) => `${r.phase_type}:${r.resource_type}`));
+  return Object.fromEntries(Object.entries(configs).filter(([key]) => selected.has(key)));
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -39,7 +50,7 @@ export class OvaCreationService {
         upload_ids: args.uploadIds || [],
         resources: args.resources,
         theme: args.theme,
-        resource_configs: args.resourceConfigs || {},
+        resource_configs: pickSelectedConfigs(args.resourceConfigs, args.resources),
       }),
     });
   }

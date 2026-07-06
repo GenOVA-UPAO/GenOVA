@@ -127,9 +127,9 @@ ${ds}
 
 [html.estilos]
 2 = 'chat educativo: burbujas de DataGuide, campo de texto del estudiante, feedback revelado por turno, barra de progreso'
-3 = 'juego drag & drop: items arrastrables, 2 zonas destino etiquetadas, animación de arrastre, feedback inmediato, puntuación'
+3 = 'juego drag & drop: items arrastrables, zonas destino etiquetadas según las categorías del JSON, animación de arrastre, feedback inmediato, puntuación'
 4 = 'storyboard interactivo: guion por secciones, reproductor simulado con barra de progreso, overlay de pregunta de pausa'
 5 = "lectura interactiva: texto periodístico y tabla del conjunto de datos, pregunta destacada, botón 'Revelar patrón' animado"
-7 = "laboratorio EDA: tabla del dataset, gráfico scatter SVG, 3 preguntas secuenciales, botón 'Revelar' que colorea los grupos"
-8 = 'escenarios ejecutivos secuenciales: 2 botones de decisión, feedback animado, pantalla final con puntaje y mensaje'
-9 = 'mapa mental drag & drop: 6 pistas y 6 nodos técnicos, conexión por arrastre, feedback por par, revelación al completar'
+7 = "laboratorio EDA: tabla del dataset, gráfico scatter SVG, las preguntas secuenciales del JSON, botón 'Revelar' que colorea los grupos"
+8 = 'escenarios ejecutivos secuenciales: un botón por cada decisión del JSON, feedback animado, pantalla final con puntaje y mensaje'
+9 = 'mapa mental drag & drop: una pista y un nodo técnico por cada tarjeta del JSON, conexión por arrastre, feedback por par, revelación al completar'

@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 
 import { toast } from "@/core/lib/toast";
 
@@ -20,29 +20,29 @@ import { PlatformSettingsService } from "../services/platform-settings.service";
         </div>
         <button
           (click)="handleSave()"
-          [disabled]="!hasChanges || saving"
+          [disabled]="!hasChanges || saving()"
           class="inline-flex items-center justify-center rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 font-bold shadow-md"
         >
-          {{ saving ? "Guardando..." : "Guardar cambios" }}
+          {{ saving() ? "Guardando..." : "Guardar cambios" }}
         </button>
       </div>
 
-      @if (loading || !draft) {
+      @if (loading() || !draft()) {
         <div class="space-y-3">
           <div class="h-16 animate-pulse rounded-2xl bg-muted"></div>
           <div class="h-16 animate-pulse rounded-2xl bg-muted"></div>
         </div>
       }
 
-      @if (!loading && error) {
+      @if (!loading() && error()) {
         <p
           class="text-sm font-bold text-destructive bg-destructive/5 border border-destructive/20 rounded-xl p-4"
         >
-          {{ error }}
+          {{ error() }}
         </p>
       }
 
-      @if (!loading && !error && draft) {
+      @if (!loading() && !error() && draft()) {
         <div class="rounded-3xl border border-border bg-card shadow-sm overflow-hidden glass-card">
           @for (cap of capabilities; track cap) {
             <div
@@ -97,8 +97,8 @@ import { PlatformSettingsService } from "../services/platform-settings.service";
                     type="button"
                     role="switch"
                     [attr.aria-checked]="isCapActive(cap.flag)"
-                    (click)="!saving && toggleCap(cap.flag)"
-                    [disabled]="saving"
+                    (click)="!saving() && toggleCap(cap.flag)"
+                    [disabled]="saving()"
                     class="relative h-6 w-11 rounded-full transition-colors cursor-pointer shrink-0 disabled:cursor-not-allowed disabled:opacity-50"
                     [ngClass]="isCapActive(cap.flag) ? 'bg-primary' : 'bg-muted-foreground/30'"
                   >
@@ -119,29 +119,30 @@ import { PlatformSettingsService } from "../services/platform-settings.service";
 export class PlatformCapabilitiesCardComponent implements OnInit {
   service = inject(PlatformSettingsService);
 
-  loading = true;
-  error = "";
-  saving = false;
+  readonly loading = signal(true);
+  readonly error = signal("");
+  readonly saving = signal(false);
 
-  data: any = null;
-  draft: Record<string, string> | null = null;
+  readonly data = signal<any>(null);
+  readonly draft = signal<Record<string, string> | null>(null);
 
   async ngOnInit() {
-    this.loading = true;
+    this.loading.set(true);
     try {
-      this.data = await this.service.getAdminNodesConfig();
-      if (this.data?.config) {
-        this.draft = { ...this.data.config };
+      this.data.set(await this.service.getAdminNodesConfig());
+      const config = this.data()?.config;
+      if (config) {
+        this.draft.set({ ...config });
       }
     } catch (e: any) {
-      this.error = e.message || "No se pudo cargar la configuración.";
+      this.error.set(e.message || "No se pudo cargar la configuración.");
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 
   get capabilities(): any[] {
-    return this.data?.capabilities ?? [];
+    return this.data()?.capabilities ?? [];
   }
 
   get configurableCaps(): any[] {
@@ -149,44 +150,42 @@ export class PlatformCapabilitiesCardComponent implements OnInit {
   }
 
   get videoWarning(): boolean {
-    return this.data ? !this.data.video_api_key_configured : false;
+    const d = this.data();
+    return d ? !d.video_api_key_configured : false;
   }
 
   get hasChanges(): boolean {
-    if (!this.draft) return false;
+    const draft = this.draft();
+    if (!draft) return false;
     return this.configurableCaps.some(
       (c) =>
-        String(this.draft?.[c.flag] ?? c.default) !==
-        String(this.data?.config?.[c.flag] ?? c.default),
+        (draft[c.flag] ?? String(c.default)) !== String(this.data()?.config?.[c.flag] ?? c.default),
     );
   }
 
   async handleSave() {
-    this.saving = true;
+    this.saving.set(true);
     try {
       const updates: Record<string, string> = {};
       for (const c of this.configurableCaps) {
-        updates[c.flag] = this.draft?.[c.flag] ?? c.default ?? "0";
+        updates[c.flag] = this.draft()?.[c.flag] ?? c.default ?? "0";
       }
       await this.service.saveAdminNodesConfig(updates);
-      if (this.data) this.data.config = { ...this.data.config, ...updates };
+      this.data.update((d: any) => (d ? { ...d, config: { ...d.config, ...updates } } : d));
       toast.success("Capacidades guardadas.");
     } catch (e: any) {
       toast.error(e.message || "No se pudo guardar.");
     } finally {
-      this.saving = false;
+      this.saving.set(false);
     }
   }
 
   isCapActive(flag: string): boolean {
-    if (!this.draft) return false;
-    return this.draft[flag] === "1";
+    return this.draft()?.[flag] === "1";
   }
 
   toggleCap(flag: string) {
-    if (this.draft) {
-      this.draft[flag] = this.draft[flag] === "1" ? "0" : "1";
-    }
+    this.draft.update((d) => (d ? { ...d, [flag]: d[flag] === "1" ? "0" : "1" } : d));
   }
 
   getInitials(name: string): string {

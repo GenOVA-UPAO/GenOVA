@@ -3,6 +3,7 @@ import { Router } from "@angular/router";
 
 // Angular uses environment.ts for env vars, not import.meta.env
 const API_BASE_PROD = "https://genova-backend-production.up.railway.app";
+const API_BASE_DEVELOP = "https://genova-backend-develop.up.railway.app";
 
 function resolveApiBase(): string {
   if (typeof window === "undefined") return API_BASE_PROD;
@@ -13,6 +14,12 @@ function resolveApiBase(): string {
   // Local dev: ng serve + proxy.conf.json → same-origin requests to Railway backend.
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
     return location.origin;
+  }
+
+  // Vercel previews de develop → backend del entorno develop de Railway
+  // (audit 2026-07-06 #1: apuntaban a producción y CORS rompía la app).
+  if (location.hostname.includes("-git-develop-")) {
+    return API_BASE_DEVELOP;
   }
 
   return API_BASE_PROD;

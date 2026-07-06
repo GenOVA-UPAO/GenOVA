@@ -5,6 +5,7 @@ import {
   input,
   type OnInit,
   output,
+  signal,
 } from "@angular/core";
 
 import { ButtonComponent } from "@/core/components/ui/button.component";
@@ -65,15 +66,15 @@ export class PhaseSelectModalComponent implements OnInit {
 
   step = 0;
   picks: PhaseResourceMap = emptyPicks();
-  recursos: PhaseResourceMap = emptyPicks();
-  failedPhases: Record<string, boolean> = Object.fromEntries(
-    PHASE_SELECT_CFG.map((p) => [p.key, false]),
+  readonly recursos = signal<PhaseResourceMap>(emptyPicks());
+  readonly failedPhases = signal<Record<string, boolean>>(
+    Object.fromEntries(PHASE_SELECT_CFG.map((p) => [p.key, false])),
   );
-  loading = true;
+  readonly loading = signal(true);
   resourceConfigs: ResourceConfigs = {};
   configTarget: ConfigTarget | null = null;
   hovered: Resource | null = null;
-  videoKeyConfigured = true;
+  readonly videoKeyConfigured = signal(true);
 
   ngOnInit() {
     const initialSelections = this.initialSelections();
@@ -81,9 +82,9 @@ export class PhaseSelectModalComponent implements OnInit {
     const initialResourceConfigs = this.initialResourceConfigs();
     if (initialResourceConfigs) this.resourceConfigs = { ...initialResourceConfigs };
     void this.loadAll();
-    void this.phaseSelectService
-      .fetchVideoKeyConfigured()
-      .then((v) => (this.videoKeyConfigured = v));
+    void this.phaseSelectService.fetchVideoKeyConfigured().then((v) => {
+      this.videoKeyConfigured.set(v);
+    });
   }
 
   get currentPhase() {
@@ -91,11 +92,11 @@ export class PhaseSelectModalComponent implements OnInit {
   }
 
   get currentList() {
-    return this.recursos[this.currentPhase.key] || [];
+    return this.recursos()[this.currentPhase.key] || [];
   }
 
   get currentFailed() {
-    return this.failedPhases[this.currentPhase.key];
+    return this.failedPhases()[this.currentPhase.key];
   }
 
   get limitReached() {
@@ -138,7 +139,7 @@ export class PhaseSelectModalComponent implements OnInit {
   }
 
   showVideoHint(r: Resource) {
-    return isVideoResource(this.currentPhase.key, r.id) && !this.videoKeyConfigured;
+    return isVideoResource(this.currentPhase.key, r.id) && !this.videoKeyConfigured();
   }
 
   hasConfig(r: Resource) {
@@ -182,7 +183,7 @@ export class PhaseSelectModalComponent implements OnInit {
   }
 
   private async loadAll() {
-    this.loading = true;
+    this.loading.set(true);
     const results = await Promise.allSettled(
       PHASE_SELECT_CFG.map((p) =>
         this.phaseSelectService
@@ -197,9 +198,9 @@ export class PhaseSelectModalComponent implements OnInit {
       if (r.status === "fulfilled") next[key] = r.value.recursos;
       else failed[key] = true;
     });
-    this.recursos = next;
-    this.failedPhases = failed;
-    this.loading = false;
+    this.recursos.set(next);
+    this.failedPhases.set(failed);
+    this.loading.set(false);
   }
 
   dismissModal = (): void => {

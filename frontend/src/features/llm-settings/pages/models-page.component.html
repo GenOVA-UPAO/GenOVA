@@ -23,16 +23,16 @@
         </p>
       </div>
 
-      @if (isAdmin) {
+      @if (isAdmin()) {
         <gn-button
           size="sm"
           (onClick)="saveAdminPlatform()"
-          [disabled]="!adminDraft || adminSaving || adminLoading"
+          [disabled]="!adminDraft() || adminSaving() || adminLoading()"
           class="gap-1.5 shadow-md text-xs font-bold shrink-0"
         >
-          <span [class.animate-spin]="adminSaving">↻</span>
+          <span [class.animate-spin]="adminSaving()">↻</span>
 
-          {{ adminSaving ? "Guardando..." : "Guardar plataforma" }}
+          {{ adminSaving() ? "Guardando..." : "Guardar plataforma" }}
         </gn-button>
       }
     </div>
@@ -54,7 +54,7 @@
         API Keys
       </gn-tabs-trigger>
 
-      @if (isAdmin) {
+      @if (isAdmin()) {
         <gn-tabs-trigger value="prometheus" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
           <i class="ph ph-cpu"></i> Prometheus
 
@@ -79,7 +79,7 @@
     </gn-tabs-list>
 
     <gn-tabs-content value="tasks" class="mt-0 space-y-6 block">
-      @if (adminLoading) {
+      @if (adminLoading()) {
         <div class="grid gap-4 sm:grid-cols-2">
           @for (i of [1, 2, 3, 4]; track i) {
             <div class="h-44 animate-pulse rounded-2xl bg-muted"></div>
@@ -87,16 +87,16 @@
         </div>
       } @else {
         <gn-model-assignment-panel
-          [tasks]="adminTasks"
-          [draft]="adminDraft"
-          [adminModels]="adminModels"
-          [isAdmin]="isAdmin"
-          [adminSaving]="adminSaving"
+          [tasks]="adminTasks()"
+          [draft]="adminDraft()"
+          [adminModels]="adminModels()"
+          [isAdmin]="isAdmin()"
+          [adminSaving]="adminSaving()"
           (draftChange)="onDraftChange($event)"
           (openManageModels)="openManageModels()"
         ></gn-model-assignment-panel>
 
-        @if (isAdmin) {
+        @if (isAdmin()) {
           <gn-platform-capabilities-card></gn-platform-capabilities-card>
         }
       }
@@ -110,7 +110,7 @@
       <gn-user-api-keys-card></gn-user-api-keys-card>
     </gn-tabs-content>
 
-    @if (isAdmin) {
+    @if (isAdmin()) {
       <gn-tabs-content value="prometheus" class="mt-0 block">
         <gn-platform-nodes-card></gn-platform-nodes-card>
       </gn-tabs-content>
@@ -122,8 +122,8 @@
   </gn-tabs>
 
   <gn-manage-models-modal
-    [open]="manageOpen"
-    (onClose)="manageOpen = false"
+    [open]="manageOpen()"
+    (onClose)="manageOpen.set(false)"
     (onGoToApiKeys)="goToApiKeys($event)"
   ></gn-manage-models-modal>
 </div>

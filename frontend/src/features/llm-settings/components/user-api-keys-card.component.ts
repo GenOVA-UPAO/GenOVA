@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 
 import { UserLlmSettingsService } from "../services/user-llm-settings.service";
 import { PROVIDER_META } from "./platformKeyMeta";
@@ -21,14 +21,14 @@ const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
         </p>
       </div>
 
-      @if (loading) {
+      @if (loading()) {
         <div class="space-y-3">
           @for (i of [0, 1, 2]; track i) {
             <div class="h-10 animate-pulse rounded-lg bg-muted"></div>
           }
         </div>
-      } @else if (error) {
-        <p class="text-sm text-destructive">{{ error }}</p>
+      } @else if (error()) {
+        <p class="text-sm text-destructive">{{ error() }}</p>
       } @else {
         <div class="space-y-6">
           <div class="space-y-3">
@@ -36,7 +36,7 @@ const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
             @for (p of llmProviders; track p) {
               <gn-user-key-row
                 [provider]="p"
-                [maskedValue]="apiKeys[p]"
+                [maskedValue]="apiKeys()[p]"
                 (onSaved)="handleSaved($event)"
               />
             }
@@ -48,7 +48,7 @@ const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
             @for (p of imgProviders; track p) {
               <gn-user-key-row
                 [provider]="p"
-                [maskedValue]="apiKeys[p]"
+                [maskedValue]="apiKeys()[p]"
                 (onSaved)="handleSaved($event)"
               />
             }
@@ -61,9 +61,9 @@ const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
 export class UserApiKeysCardComponent implements OnInit {
   private service = inject(UserLlmSettingsService);
 
-  apiKeys: Record<string, string> = {};
-  loading = true;
-  error: string | null = null;
+  readonly apiKeys = signal<Record<string, string>>({});
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   llmProviders = LLM_PROVIDERS.filter((p) => PROVIDER_META[p]);
   imgProviders = IMG_PROVIDERS.filter((p) => PROVIDER_META[p]);
@@ -71,15 +71,15 @@ export class UserApiKeysCardComponent implements OnInit {
   async ngOnInit() {
     try {
       const result = await this.service.getApiKeys();
-      this.apiKeys = result.api_keys ?? {};
+      this.apiKeys.set(result.api_keys ?? {});
     } catch (e: unknown) {
-      this.error = e instanceof Error ? e.message : "No se pudo cargar.";
+      this.error.set(e instanceof Error ? e.message : "No se pudo cargar.");
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 
   handleSaved(updated: Record<string, string>) {
-    this.apiKeys = updated;
+    this.apiKeys.set(updated);
   }
 }

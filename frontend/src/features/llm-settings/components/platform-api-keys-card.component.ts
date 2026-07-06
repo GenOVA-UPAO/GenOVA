@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, input, type OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  type OnInit,
+  signal,
+} from "@angular/core";
 
 import { PlatformSettingsService } from "../services/platform-settings.service";
 import { PlatformKeyRowComponent } from "./platform-key-row.component";
@@ -33,7 +40,7 @@ import { PROVIDER_META } from "./platformKeyMeta";
         </div>
       </div>
 
-      @if (loading) {
+      @if (loading()) {
         <div class="space-y-4">
           <div class="h-28 animate-pulse rounded-3xl bg-muted"></div>
           <div class="h-28 animate-pulse rounded-3xl bg-muted"></div>
@@ -41,20 +48,20 @@ import { PROVIDER_META } from "./platformKeyMeta";
         </div>
       }
 
-      @if (!loading && error) {
+      @if (!loading() && error()) {
         <p
           class="text-sm font-bold text-destructive bg-destructive/5 border border-destructive/20 rounded-xl p-4"
         >
-          {{ error }}
+          {{ error() }}
         </p>
       }
 
-      @if (!loading && !error) {
+      @if (!loading() && !error()) {
         <div class="space-y-4">
-          @for (p of providers; track p) {
+          @for (p of providers(); track p) {
             <gn-platform-key-row
               [provider]="p"
-              [maskedValue]="platformConfig[p]"
+              [maskedValue]="platformConfig()[p]"
               (onSaved)="handleSaved($event)"
             ></gn-platform-key-row>
           }
@@ -68,25 +75,25 @@ export class PlatformApiKeysCardComponent implements OnInit {
 
   service = inject(PlatformSettingsService);
 
-  platformConfig: Record<string, string> = {};
-  providers: string[] = [];
-  loading = true;
-  error: string | null = null;
+  readonly platformConfig = signal<Record<string, string>>({});
+  readonly providers = signal<string[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   async ngOnInit() {
-    this.loading = true;
+    this.loading.set(true);
     try {
       const result: any = await this.service.getPlatformConfig();
-      this.platformConfig = result.platform_config ?? {};
-      this.providers = result.providers ?? Object.keys(PROVIDER_META);
+      this.platformConfig.set(result.platform_config ?? {});
+      this.providers.set(result.providers ?? Object.keys(PROVIDER_META));
     } catch (e: any) {
-      this.error = e.message;
+      this.error.set(e.message);
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 
   handleSaved(updated: Record<string, string>) {
-    this.platformConfig = updated;
+    this.platformConfig.set(updated);
   }
 }

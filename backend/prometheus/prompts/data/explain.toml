@@ -129,5 +129,5 @@ ${ds}
 2 = 'lectura guiada: texto con secciones expandibles, preguntas con toggle de respuesta, disenio articulo academico'
 4 = 'FAQ interactivo: acordeon con tags de categoria, barra de filtro, contador de preguntas exploradas'
 6 = 'glosario visual: grid de tarjetas con emoji grande, definicion y ejemplo, filtro por categoria, expandir/colapsar'
-7 = 'timeline horizontal: 5 nodos conectados, clic expande descripcion, barra de progreso, navegacion prev/next'
+7 = 'timeline horizontal: un nodo conectado por cada hito del JSON, clic expande descripcion, barra de progreso, navegacion prev/next'
 9 = 'tabla comparativa: columnas responsivas, iconos ventaja/desventaja, tooltips, toggle de dimensiones'

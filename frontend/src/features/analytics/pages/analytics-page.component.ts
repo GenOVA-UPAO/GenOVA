@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
 
 import {
@@ -23,11 +23,11 @@ import { AnalyticsService } from "../services/analytics.service";
       <header class="space-y-1">
         <h1 class="font-display text-2xl font-bold">Analítica de aprendizaje</h1>
         <p class="text-sm text-muted-foreground">
-          {{ isLoading ? "Cargando métricas…" : "Métricas de " + scopeLabel + "." }}
+          {{ isLoading() ? "Cargando métricas…" : "Métricas de " + scopeLabel + "." }}
         </p>
       </header>
 
-      @if (isLoading) {
+      @if (isLoading()) {
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
           @for (i of [0, 1, 2]; track i) {
             <div class="h-24 animate-pulse rounded-2xl bg-muted/50"></div>
@@ -35,7 +35,7 @@ import { AnalyticsService } from "../services/analytics.service";
         </div>
       }
 
-      @if (!isLoading && error) {
+      @if (!isLoading() && error()) {
         <div
           class="rounded-2xl border border-destructive/40 bg-destructive/5 p-5 text-sm text-destructive"
         >
@@ -43,40 +43,40 @@ import { AnalyticsService } from "../services/analytics.service";
         </div>
       }
 
-      @if (!isLoading && !error && data) {
-        <gn-stat-cards [totals]="data.totals" [scope]="data.scope"></gn-stat-cards>
+      @if (!isLoading() && !error() && data(); as d) {
+        <gn-stat-cards [totals]="d.totals" [scope]="d.scope"></gn-stat-cards>
         <div class="grid gap-4 md:grid-cols-2">
-          <gn-status-breakdown [byStatus]="data.ova_by_status"></gn-status-breakdown>
-          <gn-top-creators [creators]="data.top_creators"></gn-top-creators>
+          <gn-status-breakdown [byStatus]="d.ova_by_status"></gn-status-breakdown>
+          <gn-top-creators [creators]="d.top_creators"></gn-top-creators>
         </div>
-        <gn-recent-ovas [ovas]="data.recent_ovas"></gn-recent-ovas>
+        <gn-recent-ovas [ovas]="d.recent_ovas"></gn-recent-ovas>
       }
     </div>
   `,
 })
 export class AnalyticsPageComponent implements OnInit {
-  data: AnalyticsData | null = null;
-  isLoading = true;
-  error: any = null;
+  readonly data = signal<AnalyticsData | null>(null);
+  readonly isLoading = signal(true);
+  readonly error = signal<unknown>(null);
 
   private analyticsService = inject(AnalyticsService);
   private router = inject(Router);
 
   get scopeLabel() {
-    return this.data?.scope === "platform" ? "toda la plataforma" : "tus alumnos vinculados";
+    return this.data()?.scope === "platform" ? "toda la plataforma" : "tus alumnos vinculados";
   }
 
   async ngOnInit() {
     try {
-      this.data = await this.analyticsService.getAnalytics();
+      this.data.set(await this.analyticsService.getAnalytics());
     } catch (err: any) {
       if (err.code === "forbidden") {
         void this.router.navigate(["/dashboard"], { replaceUrl: true });
         return;
       }
-      this.error = err;
+      this.error.set(err);
     } finally {
-      this.isLoading = false;
+      this.isLoading.set(false);
     }
   }
 }

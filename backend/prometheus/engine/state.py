@@ -18,6 +18,9 @@ class OvaGenerationState(TypedDict, total=False):
     enabled_models: list[dict]
     theme: dict  # {"color": "upao"|"free", "design": "upao"|"free"}
     image_settings: dict  # {max_images, provider, api_key}
+    # {"{phase}:{resource_type}": {param: value}} — per-resource user config.
+    # MUST be declared here: LangGraph drops state keys missing from the schema.
+    resource_configs: dict
     job_id: str  # used by Fase 2 for incremental per-resource persistence
 
     phases: dict  # {phase_type: [{"resource_type": int, "resource_order": int}, ...]}

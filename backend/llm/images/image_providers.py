@@ -197,8 +197,33 @@ def get_image_data_uri(
         return None
     fn = _PROVIDERS.get(provider, _hf)
     if provider in _MODEL_PROVIDERS:
-        return fn(clean, api_key, width, height, model)
-    return fn(clean, api_key, width, height)
+        result = fn(clean, api_key, width, height, model)
+    else:
+        result = fn(clean, api_key, width, height)
+    if result is None and provider != "huggingface":
+        # Fallback (audit 2026-07-06 #5): el provider elegido no está configurado
+        # o falló (p.ej. cloudflare sin CF_ACCOUNT_ID) → intentar huggingface con
+        # la key de plataforma antes de degradar a placeholder.
+        result = _hf(clean, _platform_hf_key(), width, height)
+        if result:
+            logger.info("Image provider %s failed; huggingface fallback succeeded", provider)
+    return result
+
+
+def _platform_hf_key() -> str | None:
+    """Resolve the huggingface key from platform config (DB) or env."""
+    from core.database import SessionLocal
+    from llm.clients.key_resolver import resolve_key
+
+    db = None
+    try:
+        db = SessionLocal()
+        return resolve_key("huggingface", None, db)
+    except Exception:
+        return resolve_key("huggingface", None)
+    finally:
+        if db is not None:
+            db.close()
 
 
 def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[str, str]:

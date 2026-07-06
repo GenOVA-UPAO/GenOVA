@@ -6,7 +6,7 @@ import type { PreviewResult, Resource } from "@/core/lib/ova-types";
 @Injectable({ providedIn: "root" })
 export class PhaseGenerationService {
   async fetchResources(phase: string): Promise<Resource[]> {
-    const res = await apiFetch(`/api/ova-workspace/resources/${phase.toLowerCase()}`);
+    const res = await apiFetch(`/api/agents/${phase.toLowerCase()}/recursos`);
     const data = await res.json();
     return data.recursos || [];
   }
@@ -16,10 +16,10 @@ export class PhaseGenerationService {
     resource_id: string | number | undefined,
     concept: string,
   ): Promise<PreviewResult> {
-    const res = await apiFetch(`/api/ova-workspace/generate/${phase.toLowerCase()}`, {
+    const res = await apiFetch(`/api/agents/${phase.toLowerCase()}/generate`, {
       method: "POST",
       body: JSON.stringify({
-        resource_id: resource_id != null ? String(resource_id) : undefined,
+        resource_type: resource_id != null ? Number(resource_id) : undefined,
         concept,
       }),
     });

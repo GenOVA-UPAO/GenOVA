@@ -131,13 +131,21 @@ async def upload_temp_files(
                 created_item["upload_id"], str(current_user.id)
             )
             if storage_path:
-                rag_status = ingest_upload(
-                    db,
-                    user_id=str(current_user.id),
-                    upload_id=created_item["upload_id"],
-                    storage_path=storage_path,
-                    filename=created_item["filename"],
-                )
+                try:
+                    rag_status = ingest_upload(
+                        db,
+                        user_id=str(current_user.id),
+                        upload_id=created_item["upload_id"],
+                        storage_path=storage_path,
+                        filename=created_item["filename"],
+                    )
+                except Exception:  # noqa: BLE001 — RAG nunca bloquea el upload
+                    logger.exception("RAG ingestion failed for %s", file_name)
+                    rag_status = {
+                        "status": "error",
+                        "chunks": 0,
+                        "message": "El archivo se subió pero no pudo indexarse para RAG.",
+                    }
         created_item["rag_status"] = rag_status
 
         # Save RAG status to registry so it persists during file listing
