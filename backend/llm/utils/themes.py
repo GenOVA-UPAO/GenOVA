@@ -185,7 +185,7 @@ _GOLDEN_SKELETON = """9) ESQUELETO DORADO (estructura de referencia — adapta e
 
 def _output_contract() -> str:
     """Contrato de salida (F4.3) — espejo del checklist del validador F2.3."""
-    from prometheus.engine.validate import output_contract
+    from llm.utils.output_contract import output_contract
 
     return output_contract()
 
