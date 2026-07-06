@@ -16,6 +16,7 @@ startup continues. The migration retries on the next deployment.
 import glob
 import logging
 import os
+import re
 
 from sqlalchemy import text
 
@@ -35,9 +36,40 @@ _STMT_TIMEOUT = "30s"
 
 
 def _split_statements(sql: str) -> list[str]:
+    """Split on top-level `;` only — a `;` inside a $$…$$ (o $tag$…$tag$) block
+    pertenece al cuerpo del DO/función y no debe cortar la sentencia."""
     cleaned_lines = [line for line in sql.splitlines() if not line.strip().startswith("--")]
     cleaned = "\n".join(cleaned_lines)
-    return [q.strip() for q in cleaned.split(";") if q.strip()]
+    statements: list[str] = []
+    buf: list[str] = []
+    tag: str | None = None
+    i = 0
+    while i < len(cleaned):
+        if tag is None:
+            m = re.match(r"\$[A-Za-z_]*\$", cleaned[i:])
+            if m:
+                tag = m.group(0)
+                buf.append(tag)
+                i += len(tag)
+                continue
+            if cleaned[i] == ";":
+                stmt = "".join(buf).strip()
+                if stmt:
+                    statements.append(stmt)
+                buf = []
+                i += 1
+                continue
+        elif cleaned.startswith(tag, i):
+            buf.append(tag)
+            i += len(tag)
+            tag = None
+            continue
+        buf.append(cleaned[i])
+        i += 1
+    stmt = "".join(buf).strip()
+    if stmt:
+        statements.append(stmt)
+    return statements
 
 
 def _applied_set(conn) -> set[str]:
