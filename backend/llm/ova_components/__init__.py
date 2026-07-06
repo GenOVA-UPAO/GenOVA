@@ -19,7 +19,12 @@ def inject_components(html: str) -> str:
 
     Safe to call multiple times — won't double-inject if already present.
     """
-    if "upao-card" in html or "customElements.define" in html:
+    # Solo la firma del script oficial cuenta como "ya inyectado": el LLM usa
+    # tags <upao-*> en el markup (y a veces define los suyos) sin incluir la
+    # librería — con el check anterior esos documentos quedaban sin registrar.
+    # El script oficial guarda cada define con customElements.get(), así que
+    # inyectarlo junto a definiciones ajenas es seguro.
+    if "UPAO Components v" in html:
         return html
     script = get_component_script()
     lower = html.lower()

@@ -54,10 +54,13 @@ def _palette_block(color_mode: str) -> str:
             "   - Educativa oscura: bg #0f172a, surface #1e293b, primary #818cf8, text #f1f5f9, muted #94a3b8.\n"
             "   - Adapta acentos al tipo de recurso, pero contraste WCAG AA mínimo."
         )
-    # UPAO (default): paleta FIJA institucional.
+    # UPAO (default): paleta FIJA institucional — las variables YA están inyectadas.
     return (
         "2) PALETA UPAO OBLIGATORIA (no uses otros colores de marca):\n"
-        f"   - Define EXACTAMENTE estas variables CSS en :root:\n     {_upao_root_vars()}\n"
+        "   - Las variables :root YA existen (inyectadas): --bg --surface --surface-tint\n"
+        "     --primary --primary-hover --accent --accent-hover --accent-tint --text\n"
+        "     --text-muted --border --success --danger --radius --shadow --space-1..6.\n"
+        "     ÚSALAS con var(); NO las redefinas ni uses hex de marca hardcodeados.\n"
         "   - BLANCO (--surface/--bg) = superficie dominante: la mayor parte del recurso.\n"
         "   - AZUL (--primary) = títulos (h1/h2), barras de cabecera, bordes de estructura,\n"
         "     iconos primarios y el track de barras de progreso.\n"
@@ -99,44 +102,87 @@ def _layout_block(design_mode: str) -> str:
     )
 
 
+def _base_block(color_mode: str) -> str:
+    if color_mode == "free":
+        return (
+            "1) BASE TÉCNICA\n"
+            "   - <!DOCTYPE html>, lang=\"es\", viewport meta para responsive.\n"
+            "   - Reset CSS al inicio: *{box-sizing:border-box;margin:0;padding:0}\n"
+            "   - Font stack del sistema: system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif.\n"
+            "   - Define variables CSS en :root (--bg, --surface, --primary, --primary-hover,\n"
+            "     --text, --text-muted, --border, --success, --danger, --radius, --shadow, --space).\n"
+            "   - SIN dependencias externas: nada de CDN, fonts.google, jsdelivr, unpkg, jquery, bootstrap."
+        )
+    # UPAO (default): la hoja base se inyecta server-side (F1.2) — el LLM no la escribe.
+    return (
+        "1) BASE TÉCNICA — HOJA BASE YA INYECTADA, NO LA REESCRIBAS\n"
+        "   - <!DOCTYPE html>, lang=\"es\", viewport meta para responsive.\n"
+        "   - El documento YA incluye (inyectado automáticamente): reset CSS, variables\n"
+        "     :root UPAO, tipografía responsive (h1-h3 y body con clamp), focus-visible y\n"
+        "     estas clases listas para usar:\n"
+        "     .ova-container .ova-card .ova-btn .ova-btn--ghost .ova-input .ova-option\n"
+        "     (.is-selected/.is-correct/.is-wrong) .ova-feedback--ok/--bad\n"
+        "     .ova-progress>span .ova-badge .ova-grid .ova-muted .ova-divider\n"
+        "   - PROHIBIDO reescribir reset, :root, estilos de body/h1/h2/h3 o clases .ova-*.\n"
+        "   - Tu <style> propio: SOLO lo específico de este recurso, máximo ~80 líneas.\n"
+        "   - SIN dependencias externas: nada de CDN, fonts.google, jsdelivr, unpkg, jquery, bootstrap."
+    )
+
+
+def _interaction_block(color_mode: str) -> str:
+    if color_mode == "free":
+        return (
+            "5) INTERACCIÓN\n"
+            "   - Botones: padding 12px 20px, font-weight 600, transition all 200ms ease,\n"
+            "     :hover transform translateY(-1px) + shadow elevada, :active translateY(0),\n"
+            "     :focus-visible outline 3px solid color primario con offset 2px.\n"
+            "   - Inputs/selectables: borde 2px, focus-visible cambia borde a primary.\n"
+            "   - Estados de carga, completado y error VISUALMENTE distintos (color + icono/emoji).\n"
+            "   - Animaciones de entrada en elementos clave: opacity 0→1, translateY 8px→0, 300ms ease-out."
+        )
+    return (
+        "5) INTERACCIÓN\n"
+        "   - Botones: usa .ova-btn (primario) y .ova-btn--ghost (secundario); NO redefinas su CSS.\n"
+        "   - Opciones seleccionables: .ova-option + toggle de .is-selected/.is-correct/.is-wrong desde JS.\n"
+        "   - Feedback: .ova-feedback--ok / .ova-feedback--bad (color + icono/emoji + texto).\n"
+        "   - Progreso: <div class=\"ova-progress\"><span style=\"width:0%\"></span></div> y anima el width.\n"
+        "   - Animaciones de entrada en elementos clave: opacity 0→1, translateY 8px→0, 300ms ease-out."
+    )
+
+
 def build_design_system(color_mode: str = "upao", design_mode: str = "upao") -> str:
     """Build the [SISTEMA_DE_DISEÑO_OBLIGATORIO] block injected into HTML prompts.
 
     Technical / accessibility / SCORM / quality rules are NON-negotiable and
-    constant; only the PALETA (color_mode) and LAYOUT (design_mode) sections vary.
+    constant; PALETA/BASE/INTERACCIÓN (color_mode) and LAYOUT (design_mode) vary.
+    En modo upao la hoja base va inyectada server-side (llm/utils/base_css.py) y
+    el prompt referencia sus clases en vez de pedir el CSS — menos tokens de salida.
     """
     color_mode = color_mode if color_mode in ("upao", "free") else "upao"
     design_mode = design_mode if design_mode in ("upao", "free") else "upao"
-    return f"""
-[SISTEMA_DE_DISEÑO_OBLIGATORIO]
-APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
-
-1) BASE TÉCNICA
-   - <!DOCTYPE html>, lang="es", viewport meta para responsive.
-   - Reset CSS al inicio: *{{box-sizing:border-box;margin:0;padding:0}}
-   - Font stack del sistema: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif.
-   - Define variables CSS en :root (--bg, --surface, --primary, --primary-hover,
-     --text, --text-muted, --border, --success, --danger, --radius, --shadow, --space).
-   - SIN dependencias externas: nada de CDN, fonts.google, jsdelivr, unpkg, jquery, bootstrap.
-
-{_palette_block(color_mode)}
-
+    tipografia = (
+        ""
+        if color_mode == "upao"
+        else """
 3) TIPOGRAFÍA
    - Tamaños con clamp() para responsive sin media queries:
      h1: clamp(1.6rem, 4vw, 2.2rem); h2: clamp(1.3rem, 3vw, 1.6rem);
      body: clamp(0.95rem, 2vw, 1.05rem).
    - line-height >= 1.5 en cuerpo, 1.2 en headings.
    - font-weight: 700 para títulos, 600 para subtítulos, 400 normal.
+"""
+    )
+    return f"""
+[SISTEMA_DE_DISEÑO_OBLIGATORIO]
+APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
 
+{_base_block(color_mode)}
+
+{_palette_block(color_mode)}
+{tipografia}
 {_layout_block(design_mode)}
 
-5) INTERACCIÓN
-   - Botones: padding 12px 20px, font-weight 600, transition all 200ms ease,
-     :hover transform translateY(-1px) + shadow elevada, :active translateY(0),
-     :focus-visible outline 3px solid color primario con offset 2px.
-   - Inputs/selectables: borde 2px, focus-visible cambia borde a primary.
-   - Estados de carga, completado y error VISUALMENTE distintos (color + icono/emoji).
-   - Animaciones de entrada en elementos clave: opacity 0→1, translateY 8px→0, 300ms ease-out.
+{_interaction_block(color_mode)}
 
 6) ACCESIBILIDAD (WCAG 2.2 AA — OBLIGATORIO)
    - Contraste texto/fondo >= 4.5:1 (cuerpo) y >= 3:1 (títulos grandes y bordes de UI).
