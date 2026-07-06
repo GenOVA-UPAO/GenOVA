@@ -156,6 +156,31 @@ Fase 0 (0.1 primero — 1 línea, desbloquea probar configs)
 
 Sugerencia de sprint: Fase 0 completa + 1.1/1.2 = primer sprint; medir; luego F2.
 
+## Estado de implementación (2026-07-06, fin de sesión)
+
+| Fase | Estado | Evidencia |
+|---|---|---|
+| F0 fixes auditoría | ✅ 10/10 + BU-004/BU-005 extra | verify PASA; configs verificadas en deploy (desafío 5 preguntas/45s exactos) |
+| F1 velocidad | ✅ 5/5 (F1.5 groq gpt-oss-120b revertido: APIStatusError) | benchmark 20 recursos: **7:53** vs ~30 min pre-F1 |
+| F2 work-pool | ✅ 5/5 | `OVA_ENGINE=workpool` en develop; benchmark v3 **6:21**, 20/20, validate activo |
+| F3 deliberación BDI | ✅ 4/4 | plan_map fuente única, dispatch por intención, señales→beliefs, repair deliberado; docs actualizados |
+| F4 calidad | ✅ 4/4 | base css inyectada, esqueleto dorado, contrato de salida, critic ON (rounds=1) |
+| F5 infra durable | ✅ 3/3 | Redis + worker arq "GenOVA Worker Develop" (Dockerfile.worker) + resume_orphans; benchmark v3 corrió por la vía durable |
+
+Benchmark (20 recursos, mismos tipos):
+- Pre-plan (motor phases, conc 4, two-step total): **~30 min** (OVA-A auditoría)
+- Post-F1 (single-step + conc 8 + inyección css): **7:53**
+- Post-F2/F5 (workpool + validate + cola arq): **6:21**, 0 fallos, 0 defectos bloqueantes
+
+Pendientes menores anotados:
+- Falso positivo del check "contenido escaso" en recursos JS-driven (cómic) — solo warning.
+- `GEMINI_API_KEY` y `CF_*` deben reponerse en el servicio recreado (incidente Railway,
+  ver memoria genova-railway-develop-gotchas).
+- Réplicas del worker: subir numReplicas desde dashboard cuando haga falta (arq es
+  multi-worker safe).
+- Few-shot POR FAMILIA (F4.2 se implementó como esqueleto dorado común) — iterar con
+  el critic activo.
+
 ## Métricas a trackear (antes/después de cada fase)
 
 - Wall-clock por OVA de 20 recursos (hoy: ~30 min)

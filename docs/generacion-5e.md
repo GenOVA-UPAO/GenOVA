@@ -17,20 +17,39 @@ El formato de cada recurso está fijo en el prompt, pero **todo el contenido se 
 
 ## Cómo se genera (resumen)
 
-La generación corre **en background** como un job (`POST /api/ova/jobs` → `run_job` en un thread;
-ver [api.md](api.md) y [workspace.md](workspace.md)), no en una llamada síncrona. El motor
-Prometheus (`backend/prometheus/`, sobre LangGraph) ejecuta un grafo de **7 nodos**: `concierge`
-(plan) → 5 nodos de fase → `assemble`. Cada nodo de fase genera **todos** sus recursos en
-**paralelo acotado** (`OVA_GEN_CONCURRENCY`, default 4) y persiste cada uno a su fila
-`OvaJobResource` al terminar, de modo que el progreso del front es real.
+La generación corre **en background** como un job (`POST /api/ova/jobs`). Con `REDIS_URL`
+configurado el job se encola en **arq** (cola durable en Redis) y lo procesa un **worker
+separado** (`backend/worker.py`, servicio propio en Railway con `Dockerfile.worker`); el worker
+re-encola al arrancar los jobs huérfanos regenerando solo los recursos sin persistir. Sin Redis,
+el job corre inline en un thread (dev local).
+
+El motor Prometheus (`backend/prometheus/`, sobre LangGraph) tiene **dos modos**
+(`OVA_ENGINE`, default `phases`):
+
+- **workpool** (recomendado, activo en develop): `concierge` → un `resource_worker` **por
+  recurso** vía Send API (fan-out sin barreras de fase, concurrencia `OVA_GEN_CONCURRENCY`)
+  → `collect` (agrega señales de workers a beliefs) → `critic` (pass global único) →
+  `repair` (reintento de fallidos, con plan degradado si existe) → `editor` → `assemble`.
+  Wall-clock ≈ recurso más lento, no suma de fases (~30 min → ~6 min con 20 recursos).
+- **phases** (legacy): `concierge` → 5 nodos de fase secuenciales (paralelo acotado dentro
+  de cada fase) → critic entre fases → `repair` → `editor` → `assemble`.
+
+En ambos, cada recurso persiste a su fila `OvaJobResource` al terminar (progreso real en el
+front). El plan de ejecución por recurso (`podcast`/`direct_code`/`two_step`) vive en
+`prometheus/plans/plan_map.py` y viaja como **intention** del ciclo BDI del concierge: el
+worker despacha por `intention.plan_type` y las señales de ejecución (duración, fallos por
+modelo) revisan las **beliefs** del job, que el nodo `repair` usa para deliberar el reintento.
 
 Cada recurso usa uno de **tres planes** (`backend/prometheus/plans/`):
 - **two_step** (~70%): LLM `texto` → JSON estructurado → LLM `codigo` → HTML.
 - **direct_code**: una sola llamada LLM `codigo` → HTML (simuladores, diagramas, demos).
 - **podcast** (ENGAGE recurso 3): monólogo → TTS de Groq (`backend/llm/podcast.py`) → reproductor HTML.
 
-Tras generar, cada recurso pasa por `validate_and_repair` (determinista) y `maybe_refine`
-(crítico LLM opcional de una pasada). Detalle en [prometheus.md](prometheus.md).
+Tras generar, cada recurso pasa por `validate_and_repair` (determinista), `maybe_refine`
+(refinador estructural) y — en el motor workpool — el **validate** evaluator-optimizer
+(`prometheus/engine/validate.py`): checklist estructural (completitud SCORM, interactividad,
+sin placeholders, contenido no esquelético) espejado como CONTRATO_DE_SALIDA en cada prompt;
+si falla, hasta 2 rondas de feedback dirigido. Detalle en [prometheus.md](prometheus.md).
 
 ---
 

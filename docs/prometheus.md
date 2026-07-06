@@ -1,5 +1,14 @@
 # Prometheus — Motor multi-agente de generación de OVAs
 
+> **Actualización 2026-07-06 (plan maestro F2/F3)**: además del grafo por fases descrito
+> abajo, existe el motor **work-pool** (`prometheus/engine/workpool.py`, `OVA_ENGINE=workpool`,
+> activo en develop): fan-out de un worker por recurso vía Send API sin barreras de fase,
+> critic como pass global único, nodo `repair` con reintento deliberado y `validate`
+> evaluator-optimizer por recurso. El ciclo BDI dejó de ser decorativo: las intentions del
+> concierge (plan por recurso, `plans/plan_map.py`) dirigen el dispatch de los workers y sus
+> señales de ejecución revisan las beliefs del job. Resumen en
+> [generacion-5e.md](generacion-5e.md); este doc describe el motor legacy `phases` en detalle.
+
 > **Prometheus** es el nombre interno del motor de generación de OVAs de GenOVA, construido
 > sobre **LangGraph**. Descompone el prompt del usuario en recursos por fase 5E, los genera
 > con LLMs reales en paralelo y los ensambla en un paquete SCORM 1.2.
