@@ -6,7 +6,8 @@ from prometheus.plans.direct_code import direct_code_gen
 from prometheus.plans.two_step import two_step_gen
 from prometheus.prompts.explain_prompts import RECURSOS_META
 
-EXPLAIN_CODE_ONLY = {3, 5, 8, 10}
+# F1.3: lectura guiada (2) single-step directo a HTML.
+EXPLAIN_CODE_ONLY = {2, 3, 5, 8, 10}
 
 
 def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None, resource_config=None):

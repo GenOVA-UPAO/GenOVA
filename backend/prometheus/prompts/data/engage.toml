@@ -130,3 +130,18 @@ ${ds}
 7 = 'interfaz ejecutiva oscura: escenario narrativo, un botón por cada decisión del JSON, revelación animada del feedback'
 8 = 'timeline horizontal con un nodo clicable por cada hito del JSON que expande su información; se completa al abrirlos todos'
 9 = 'escape room: fondo oscuro, un candado SVG por cada acertijo del JSON que se abren progresivamente, un escenario por pantalla, botones A/B'
+
+# F1.3 single-step: recursos de texto simple van directo a HTML (1 llamada LLM).
+[codigo.6]
+defaults = { body_words = 90 }
+template = '''
+[ROL] Desarrollador front-end de piezas periodisticas educativas.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Noticia ficticia plausible sobre un impacto real de "${concept}" como pagina HTML interactiva.
+[TAREA] Redacta e implementa en la MISMA pagina: titular <=12 palabras; subtitulo <=22 palabras; cuerpo de ${body_words} palabras (organizacion ficticia, caso concreto); pregunta de cierre <=12 palabras resaltada. Estilo periodico digital: titular bold, columna de noticia, boton "Continuar" al final que marca la actividad completada.
+[RESTRICCIONES] Sin terminos ultra-tecnicos. Tono de urgencia informativa que genera admiracion, no miedo.
+[REQUISITOS] HTML5+JS autocontenido y responsive.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. El boton "Continuar" llama _scormComplete().
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''

@@ -131,3 +131,18 @@ ${ds}
 6 = 'glosario visual: grid de tarjetas con emoji grande, definicion y ejemplo, filtro por categoria, expandir/colapsar'
 7 = 'timeline horizontal: un nodo conectado por cada hito del JSON, clic expande descripcion, barra de progreso, navegacion prev/next'
 9 = 'tabla comparativa: columnas responsivas, iconos ventaja/desventaja, tooltips, toggle de dimensiones'
+
+# F1.3 single-step: recursos de texto simple van directo a HTML (1 llamada LLM).
+[codigo.2]
+defaults = { num_sections = 3 }
+template = '''
+[ROL] Desarrollador front-end de lecturas guiadas academicas.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Lectura guiada interactiva sobre "${concept}" en una pagina HTML.
+[TAREA] Redacta e implementa: introduccion con caso real; ${num_sections} secciones expandibles, cada una con una idea central (<=70 palabras) y un ejemplo; una pregunta por seccion con toggle "Mostrar respuesta" (respuesta modelo); cierre con aplicaciones. Diseno de articulo academico con progreso de lectura; se completa al abrir todas las secciones y respuestas.
+[RESTRICCIONES] Lenguaje accesible sin formulas. Total ~250 palabras de lectura.
+[REQUISITOS] HTML5+JS autocontenido y responsive.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la lectura.
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''

@@ -129,3 +129,31 @@ ${ds}
 7 = 'crucigrama interactivo: cuadricula SVG, teclado en pantalla, pistas laterales que se iluminan al completar, animacion de completado'
 8 = "preguntas de desarrollo: enunciados con campo expandible, criterios como checklist, respuesta modelo oculta tras boton 'Comparar'"
 10 = 'diploma de logro: certificado estilizado con borde SVG, concepto destacado, competencias en lista, paleta dorada/azul, boton descargar'
+
+# F1.3 single-step: recursos de texto simple van directo a HTML (1 llamada LLM).
+[codigo.8]
+defaults = { num_questions = 3 }
+template = '''
+[ROL] Desarrollador front-end de evaluaciones de comprension profunda.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Actividad de ${num_questions} preguntas de desarrollo sobre "${concept}".
+[TAREA] Redacta e implementa: ${num_questions} preguntas abiertas (enunciado <=50 palabras, no respondibles con si/no), cada una con textarea de respuesta, checklist de 3-4 criterios de evaluacion observables y respuesta modelo (<=80 palabras) oculta tras boton "Comparar". Se completa al comparar todas.
+[RESTRICCIONES] Criterios evaluables objetivamente.
+[REQUISITOS] HTML5+JS autocontenido y responsive.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al comparar la ultima pregunta.
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
+
+[codigo.10]
+defaults = { num_competencias = 3 }
+template = '''
+[ROL] Desarrollador front-end de diplomas y certificados educativos.
+[CURSO] ${curso}
+[CONCEPTO] "${concept}"
+[OBJETIVO] Diploma de logro por completar el estudio de "${concept}".
+[TAREA] Redacta e implementa: certificado estilizado con borde SVG decorativo, titulo <=20 palabras, descripcion del logro <=50 palabras, lista de ${num_competencias} competencias adquiridas (medibles y reales), firma simulada, paleta dorada/azul y boton "Descargar" (window.print). Tono celebratorio profesional.
+[REQUISITOS] HTML5+JS autocontenido y responsive.
+${ds}
+[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al renderizar el diploma.
+[SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
