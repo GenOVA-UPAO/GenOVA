@@ -72,11 +72,22 @@ def build_ova_graph():
 
 
 def invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None):
+    from core.config import settings
     from prometheus.engine.checkpointer import get_checkpointer
 
-    graph = build_ova_graph()
+    if settings.ova_engine.strip().lower() == "workpool":
+        from prometheus.engine.workpool import build_workpool_graph
+
+        graph = build_workpool_graph()
+    else:
+        graph = build_ova_graph()
     cp = checkpointer or get_checkpointer()
     compiled = graph.compile(checkpointer=cp)
 
-    config = {"configurable": {"thread_id": thread_id}}
+    config = {
+        "configurable": {"thread_id": thread_id},
+        # Limita los resource_workers paralelos del fan-out (F2.1); el motor
+        # legacy ya se auto-limita con su ThreadPool interno.
+        "max_concurrency": max(1, settings.ova_gen_concurrency),
+    }
     return compiled.invoke(initial_state, config)

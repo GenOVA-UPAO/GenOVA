@@ -81,6 +81,9 @@ class Settings(BaseSettings):
 
     # --- Generación OVA ---
     ova_gen_concurrency: int = 4
+    # Motor de generación: "phases" (legacy, secuencial por fase) o "workpool"
+    # (F2.1 — fan-out por recurso). Rollback rápido vía env OVA_ENGINE.
+    ova_engine: str = "phases"
     ova_refine: str = "1"
     ova_generation_duration_seconds: int = 14
     ova_output_dir: str = ""

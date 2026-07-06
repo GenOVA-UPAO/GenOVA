@@ -35,6 +35,10 @@ class OvaGenerationState(TypedDict, total=False):
 
     results: Annotated[list[dict], operator.add]  # [{phase, html, resource_type, ..}]
     errors: Annotated[list[dict], operator.add]  # [{phase, resource_type, error}]
+    # Motor work-pool (F2.1): cada resource_worker aporta aquí; `collect` los
+    # vuelca a current_phase_results para el pass global del critic (que es
+    # quien los commitea a `results` — evita duplicarlos).
+    pool_results: Annotated[list[dict], operator.add]
 
     # Phase → Critic handoff (overwritten each phase; not accumulated)
     current_phase_results: list[dict]  # raw HTML from last phase, read by critic_node
