@@ -63,6 +63,6 @@ export class NavbarComponent {
 
   handleLogout(): void {
     this.avatarOpen.set(false);
-    this.auth.logout();
+    void this.auth.logout();
   }
 }

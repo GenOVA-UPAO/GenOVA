@@ -45,7 +45,10 @@ import type { Role } from "../lib/types";
           </gn-dialog-description>
         </gn-dialog-header>
 
-        <form (ngSubmit)="onSubmit.emit($event)" class="space-y-5">
+        <!-- (submit) nativo — (ngSubmit) requiere FormsModule/NgForm, que este
+             componente no importa; sin la directiva el evento jamás se emitía y
+             el submit nativo recargaba la página (BU-005). -->
+        <form (submit)="onSubmit.emit($event)" class="space-y-5">
           <div class="space-y-1.5">
             <label
               gnLabel

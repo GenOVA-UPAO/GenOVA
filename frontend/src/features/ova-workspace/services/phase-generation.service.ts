@@ -16,13 +16,19 @@ export class PhaseGenerationService {
     resource_id: string | number | undefined,
     concept: string,
   ): Promise<PreviewResult> {
-    const res = await apiFetch(`/api/agents/${phase.toLowerCase()}/generate`, {
-      method: "POST",
-      body: JSON.stringify({
-        resource_type: resource_id != null ? Number(resource_id) : undefined,
-        concept,
-      }),
-    });
+    const res = await apiFetch(
+      `/api/agents/${phase.toLowerCase()}/generate`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          resource_type: resource_id != null ? Number(resource_id) : undefined,
+          concept,
+        }),
+      },
+      // La generación LLM de un recurso tarda 30-90 s; el timeout default de
+      // 15 s abortaba la request (ERR_ABORTED, audit 2026-07-06).
+      { timeoutMs: 120_000 },
+    );
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data.message || data.detail || "Error al generar recurso");

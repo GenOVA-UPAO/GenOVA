@@ -30,13 +30,16 @@ export const authGuard: CanActivateFn = async (_route, state) => {
  */
 export const guestGuard: CanActivateFn = async () => {
   const auth = inject(AuthService);
+  // BU-004: inject() tras un await está fuera del contexto de inyección (NG0203)
+  // — capturar el Router ANTES de la primera espera.
+  const router = inject(Router);
 
   if (!auth.isAuthenticated()) {
     await auth.revalidate();
   }
 
   if (auth.isAuthenticated()) {
-    return inject(Router).createUrlTree(["/dashboard"]);
+    return router.createUrlTree(["/dashboard"]);
   }
 
   return true;

@@ -91,7 +91,7 @@ export class ProfilePageComponent implements OnInit {
     this.deleteAccountError = "";
     try {
       await this.profileService.deleteAccount(password);
-      this.authService.logout();
+      void this.authService.logout();
     } catch (e: unknown) {
       this.deleteAccountError = e instanceof Error ? e.message : "Error al eliminar la cuenta.";
     } finally {

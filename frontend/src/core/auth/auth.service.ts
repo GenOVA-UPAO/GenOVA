@@ -184,9 +184,18 @@ export class AuthService {
   }
 
   /**
-   * Clears session state and redirects to /login.
+   * Revokes the server session (httpOnly cookie), clears local state and
+   * redirects to /login.
+   *
+   * BU-004: sin la llamada al backend la cookie seguía viva y el guestGuard
+   * revalidaba la sesión, rebotando al usuario de vuelta a /dashboard.
    */
-  logout(): void {
+  async logout(): Promise<void> {
+    try {
+      await apiFetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // best-effort: aún sin red limpiamos el estado local y salimos
+    }
     clearCache();
     this._user.set(null);
     this._inflight = null;
