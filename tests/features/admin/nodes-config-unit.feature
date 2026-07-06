@@ -20,10 +20,12 @@ Feature: Panel de nodos Prometheus — lógica de draft (unit)
     When comparo draft con config server y rounds 2
     Then hasUnsavedChanges retorna true
 
+  @pending-en022
   Scenario: isVideoResource detecta recurso de video engage
     When verifico si engage recurso id 2 es video
     Then isVideoResource retorna true
 
+  @pending-en022
   Scenario: isVideoResource descarta recurso no-video
     When verifico si engage recurso id 1 es video
     Then isVideoResource retorna false

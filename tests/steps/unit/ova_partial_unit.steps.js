@@ -5,7 +5,7 @@ import {
   failedResourceIds,
   pruneSelection,
   jobOutcome,
-} from '../../../frontend/src/features/ova_workspace/lib/ovaJobViewModel'
+} from '../../../frontend/src/features/ova-workspace/lib/ova-job-view-model'
 
 // HU-022 unit coverage for the pure job→viewmodel mapping + failed selection
 // (frontend/src/lib/ovaJobViewModel.js). No browser, no backend.

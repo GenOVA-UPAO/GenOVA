@@ -3,7 +3,7 @@ import { Given, When, Then } from '@cucumber/cucumber'
 import {
   findActiveVersion as findActive,
   sortVersionsDesc as sortDesc,
-} from '../../../frontend/src/features/ova_workspace/lib/ovaVersioning'
+} from '../../../frontend/src/features/ova-workspace/lib/ova-versioning'
 
 // HU-028 unit coverage — importa la lógica real de ovaVersioning (usada por
 // VersionHistoryPanel). Sin browser/backend.

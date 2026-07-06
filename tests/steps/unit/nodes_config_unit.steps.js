@@ -4,7 +4,7 @@ import {
   criticRoundsVisible,
   hasUnsavedChanges,
   isVideoResource,
-} from '../../../frontend/src/core/settings/lib/nodesConfigDraft'
+} from '../../../frontend/src/features/llm-settings/lib/nodesConfigDraft'
 
 // Draft state helpers for PlatformNodesCard (no browser/backend).
 
