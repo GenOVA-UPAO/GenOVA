@@ -26,8 +26,65 @@ async def run_generation(ctx, job_id: str, only: list[str] | None = None) -> Non
     await asyncio.to_thread(run_job, uuid.UUID(job_id), only_uuids)
 
 
+async def resume_orphans(ctx) -> None:
+    """F5.2 — al arrancar el worker, re-encolar jobs que quedaron 'running'
+    huérfanos (el proceso murió a mitad de generación). Solo se regeneran los
+    recursos NO persistidos: los done incrementales se conservan.
+    """
+
+    def _find_and_requeue() -> list[tuple[uuid.UUID, list[uuid.UUID]]]:
+        from datetime import UTC, datetime, timedelta
+
+        from sqlalchemy import select
+
+        from core.database import SessionLocal
+        from models import OvaJob, OvaJobResource
+
+        stale_cutoff = datetime.now(UTC) - timedelta(seconds=180)
+        out: list[tuple[uuid.UUID, list[uuid.UUID]]] = []
+        db = SessionLocal()
+        try:
+            orphans = (
+                db.execute(select(OvaJob).where(OvaJob.status == "running"))
+                .scalars()
+                .all()
+            )
+            for job in orphans:
+                updated = job.updated_at
+                if updated is not None and updated.tzinfo is None:
+                    updated = updated.replace(tzinfo=UTC)
+                if updated is not None and updated > stale_cutoff:
+                    continue  # otro worker lo tiene vivo (heartbeat reciente)
+                pending = [
+                    r.id
+                    for r in db.execute(
+                        select(OvaJobResource).where(OvaJobResource.job_id == job.id)
+                    ).scalars()
+                    if r.status != "done"
+                ]
+                out.append((job.id, pending))
+            return out
+        finally:
+            db.close()
+
+    try:
+        orphans = await asyncio.to_thread(_find_and_requeue)
+    except Exception:  # noqa: BLE001 — el resume nunca impide arrancar el worker
+        import logging
+
+        logging.getLogger(__name__).exception("resume_orphans failed")
+        return
+    for job_id, pending in orphans:
+        if not pending:
+            # Todo persistido: no hay nada que regenerar — lo cierra el sweep lazy.
+            continue
+        await ctx["redis"].enqueue_job("run_generation", str(job_id), [str(x) for x in pending])
+        print(f"[worker] resume: job {job_id} re-encolado ({len(pending)} recursos pendientes)")
+
+
 class WorkerSettings:
     functions = [run_generation]
+    on_startup = resume_orphans
     # Default RedisSettings() keeps the module import-safe when REDIS_URL is unset
     # (e.g. tooling/CI); the worker is only ever launched with REDIS_URL configured.
     redis_settings: RedisSettings = redis_settings() if settings.redis_url else RedisSettings()
