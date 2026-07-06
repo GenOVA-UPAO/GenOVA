@@ -1,0 +1,23 @@
+FROM python:3.12-slim
+
+# uv: instalador de dependencias ~10x más rápido que pip (binario oficial).
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV UV_LINK_MODE=copy
+
+# Railway builds from repo root with dockerfilePath=/backend/Dockerfile.worker,
+# so COPY paths must include the backend/ prefix.
+COPY backend/requirements.txt ./
+RUN uv pip install --system -r requirements.txt
+
+COPY backend/ .
+
+# Worker arq (F5.1): consume la cola de generación (queue.py) fuera del proceso
+# web. Mismo código que el backend; solo cambia el entrypoint. El override de
+# startCommand vía `railway environment edit` resultó no-op, así que el comando
+# vive aquí.
+CMD ["arq", "worker.WorkerSettings"]
