@@ -51,7 +51,6 @@ def test_fan_out_empty_plan_goes_to_collect():
 
 def test_worker_success_and_config(monkeypatch):
     import prometheus.engine.validate as val
-
     import prometheus.plans.plan_map as pm
 
     monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))

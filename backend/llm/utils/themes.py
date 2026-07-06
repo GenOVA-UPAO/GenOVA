@@ -150,6 +150,39 @@ def _interaction_block(color_mode: str) -> str:
     )
 
 
+_GOLDEN_SKELETON = """9) ESQUELETO DORADO (estructura de referencia — adapta el contenido, no el patrón):
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>[Tipo de recurso] · [Concepto]</title>
+  <style>/* SOLO CSS específico del recurso, <=80 líneas */</style>
+</head>
+<body>
+  <main class="ova-container">
+    <span class="ova-badge">FASE · TIPO DE RECURSO</span>
+    <h1>[Título con el concepto]</h1>
+    <hr class="ova-divider">
+    <section class="ova-card"><!-- contenido/actividad principal --></section>
+    <div class="ova-progress" aria-hidden="true"><span style="width:0%"></span></div>
+    <p id="estado" aria-live="polite" class="ova-muted"></p>
+    <button class="ova-btn" id="finalizar" disabled>Finalizar actividad</button>
+  </main>
+  <script>
+    (function(){
+      // estado + handlers con addEventListener; sin variables globales sueltas
+      const fin = document.getElementById('finalizar');
+      // ... lógica del recurso: habilita `fin` al completar la actividad ...
+      fin.addEventListener('click', () => {
+        document.getElementById('estado').textContent = '✓ Actividad completada';
+        _scormComplete();
+      });
+    })();
+  </script>
+</body>
+</html>"""
+
+
 def _output_contract() -> str:
     """Contrato de salida (F4.3) — espejo del checklist del validador F2.3."""
     from prometheus.engine.validate import output_contract
@@ -226,6 +259,8 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
    - position:fixed que tape contenido en móvil.
 
 {_output_contract()}
+
+{_GOLDEN_SKELETON}
 [/SISTEMA_DE_DISEÑO_OBLIGATORIO]
 """
 
