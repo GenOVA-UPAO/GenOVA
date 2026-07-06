@@ -13,10 +13,10 @@ ENV UV_LINK_MODE=copy
 # so COPY paths must include the backend/ prefix.
 COPY backend/requirements.txt ./
 # Railway Metal builder requires id=s/<service-id>-<target> for cache mounts.
-# The service ID (e131728c-...) is the Railway service ID for GenOVA Backend.
+# The service ID (bf19669a-...) is the Railway service ID for GenOVA Backend Develop.
 # If you recreate the service, update this ID from the Railway dashboard URL.
 # requirements.txt sigue siendo la fuente (paridad pip/uv); --system = sin venv.
-RUN --mount=type=cache,id=s/e131728c-6c18-47b5-832c-81f733254bea-/root/.cache/uv,target=/root/.cache/uv \
+RUN --mount=type=cache,id=s/bf19669a-041a-49dd-aedb-fe187cae437b-/root/.cache/uv,target=/root/.cache/uv \
     uv pip install --system -r requirements.txt
 
 COPY backend/ .
