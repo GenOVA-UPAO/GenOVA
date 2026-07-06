@@ -43,15 +43,24 @@ def _dispatch_for(phase: str):
 
 
 def fan_out(state: OvaGenerationState) -> list[Send]:
-    """Un Send por recurso del plan. Lista vacía → directo a collect."""
+    """Un Send por recurso del plan, con el plan_type de su intention (F3.3)."""
+    from prometheus.plans.plan_map import plan_for
+
     ctx = {k: state.get(k) for k in _CTX_KEYS}
+    plan_by_key = {
+        f"{i.get('phase')}:{i.get('resource_type')}": i.get("plan_type")
+        for i in state.get("intentions", [])
+        if i.get("committed", True)
+    }
     sends = []
     for phase in state.get("phase_order", []):
         for item in state.get("phases", {}).get(phase, []):
+            rt = item["resource_type"]
+            plan = plan_by_key.get(f"{phase}:{rt}") or plan_for(phase, rt)
             sends.append(
                 Send(
                     "resource_worker",
-                    {**ctx, "work_item": {"phase": phase, **item}},
+                    {**ctx, "work_item": {"phase": phase, **item, "plan_type": plan}},
                 )
             )
     if not sends:
@@ -61,15 +70,23 @@ def fan_out(state: OvaGenerationState) -> list[Send]:
 
 
 def resource_worker(payload: dict) -> dict:
-    """Genera UN recurso. Éxito → pool_results (+persistencia incremental);
-    fallo → errors (el nodo repair reintenta después del join)."""
+    """Genera UN recurso según su intention.plan_type (F3.3). Éxito →
+    pool_results (+persistencia incremental); fallo → errors (repair reintenta
+    tras el join). Emite worker_signals para la revisión de creencias (F3.1)."""
+    import time
+
+    from prometheus.plans.plan_map import dispatch_by_plan, plan_for
+
     item = payload["work_item"]
     phase, rt = item["phase"], item["resource_type"]
-    dispatch, meta = _dispatch_for(phase)
+    plan = item.get("plan_type") or plan_for(phase, rt)
     per_config = (payload.get("resource_configs") or {}).get(f"{phase}:{rt}", {})
     job_id = payload.get("job_id")
+    started = time.monotonic()
     try:
-        html = dispatch(
+        html = dispatch_by_plan(
+            plan,
+            phase,
             rt,
             payload.get("prompt", ""),
             payload.get("llm_config", {}),
@@ -80,7 +97,19 @@ def resource_worker(payload: dict) -> dict:
         )
     except Exception as exc:  # noqa: BLE001 — aislar el fallo de un recurso
         logger.exception("workpool: %s:%s failed", phase, rt)
-        return {"errors": [{"phase": phase, "resource_type": rt, "error": str(exc)}]}
+        return {
+            "errors": [{"phase": phase, "resource_type": rt, "error": str(exc), "plan": plan}],
+            "worker_signals": [
+                {
+                    "phase": phase,
+                    "resource_type": rt,
+                    "ok": False,
+                    "plan": plan,
+                    "seconds": round(time.monotonic() - started, 1),
+                    "error_class": type(exc).__name__,
+                }
+            ],
+        }
 
     # F2.3 — evaluator-optimizer: checklist estructural + feedback dirigido.
     from prometheus.engine.validate import validate_and_improve
@@ -95,21 +124,51 @@ def resource_worker(payload: dict) -> dict:
         payload.get("theme", {}),
     )
 
+    _, meta = _dispatch_for(phase)
     title = (meta.get(rt) or {}).get("tipo", "")
     _persist_done(job_id, phase, rt, html)
     _touch_job(job_id)
     return {
         "pool_results": [
             {"phase": phase, "html": html, "resource_type": rt, "title": title}
-        ]
+        ],
+        "worker_signals": [
+            {
+                "phase": phase,
+                "resource_type": rt,
+                "ok": True,
+                "plan": plan,
+                "seconds": round(time.monotonic() - started, 1),
+            }
+        ],
     }
 
 
 def collect_node(state: OvaGenerationState) -> dict:
-    """Join del fan-out: expone lo generado como current_phase_results para que
-    el critic (pass global) refine/commitee a `results` sin duplicar."""
+    """Join del fan-out: expone lo generado para el pass global del critic y
+    agrega las señales de los workers a las creencias del job (F3.1)."""
     pool = state.get("pool_results", [])
+    signals = state.get("worker_signals", [])
+    durations = [s["seconds"] for s in signals if s.get("ok")]
+    failures = [s for s in signals if not s.get("ok")]
+    error_classes: dict[str, int] = {}
+    for s in failures:
+        key = s.get("error_class", "?")
+        error_classes[key] = error_classes.get(key, 0) + 1
+    beliefs = {
+        **state.get("beliefs", {}),
+        "avg_resource_seconds": (
+            round(sum(durations) / len(durations), 1) if durations else None
+        ),
+        "failed_resources": [
+            {"phase": s["phase"], "resource_type": s["resource_type"], "plan": s.get("plan")}
+            for s in failures
+        ],
+        "failures_by_error": error_classes,
+        "accumulated_errors": len(failures),
+    }
     return {
+        "beliefs": beliefs,
         "current_phase_results": pool,
         "current_phase_errors": state.get("errors", []),
         "last_phase": "all",

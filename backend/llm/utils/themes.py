@@ -150,6 +150,12 @@ def _interaction_block(color_mode: str) -> str:
     )
 
 
+def _output_contract() -> str:
+    """Contrato de salida (F4.3) — espejo del checklist del validador F2.3."""
+    from prometheus.engine.validate import output_contract
+
+    return output_contract()
+
 def build_design_system(color_mode: str = "upao", design_mode: str = "upao") -> str:
     """Build the [SISTEMA_DE_DISEÑO_OBLIGATORIO] block injected into HTML prompts.
 
@@ -218,6 +224,8 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
    - Comentarios > 30 caracteres en código de salida (mantén HTML compacto).
    - Múltiples <h1> en el mismo documento.
    - position:fixed que tape contenido en móvil.
+
+{_output_contract()}
 [/SISTEMA_DE_DISEÑO_OBLIGATORIO]
 """
 

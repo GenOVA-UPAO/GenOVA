@@ -52,14 +52,18 @@ def test_fan_out_empty_plan_goes_to_collect():
 def test_worker_success_and_config(monkeypatch):
     import prometheus.engine.validate as val
 
+    import prometheus.plans.plan_map as pm
+
     monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))
     seen = {}
 
-    def fake_dispatch(rt, concept, llm_config, enabled_models, theme, image_settings, per_config):
-        seen["config"] = per_config
+    def fake_dispatch(plan, phase, rt, concept, llm_config=None, enabled_models=None, theme=None,
+                      image_settings=None, resource_config=None):
+        seen["config"] = resource_config
         return "<html>ok</html>"
 
-    monkeypatch.setattr(wp, "_dispatch_for", lambda phase: (fake_dispatch, {3: {"tipo": "Desafío"}}))
+    monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
+    monkeypatch.setattr(wp, "_dispatch_for", lambda phase: (None, {3: {"tipo": "Desafío"}}))
     sends = fan_out(_state())
     payload = next(s.arg for s in sends if s.arg["work_item"]["resource_type"] == 3)
     out = resource_worker(payload)
@@ -69,13 +73,16 @@ def test_worker_success_and_config(monkeypatch):
 
 
 def test_worker_failure_isolated(monkeypatch):
+    import prometheus.plans.plan_map as pm
+
     def boom(*a, **k):
         raise RuntimeError("kaput")
 
-    monkeypatch.setattr(wp, "_dispatch_for", lambda phase: (boom, {}))
+    monkeypatch.setattr(pm, "dispatch_by_plan", boom)
     payload = fan_out(_state())[0].arg
     out = resource_worker(payload)
     assert out["errors"][0]["error"] == "kaput"
+    assert out["worker_signals"][0]["ok"] is False
     assert "pool_results" not in out
 
 
@@ -97,11 +104,16 @@ def test_workpool_end_to_end_with_fake_dispatch(monkeypatch):
     """Invoke completo del grafo (sin checkpointer) con dispatch falso."""
     calls = []
 
-    def fake_dispatch(rt, concept, llm_config, enabled_models, theme, image_settings, per_config):
+    import prometheus.engine.validate as val
+    import prometheus.plans.plan_map as pm
+
+    def fake_dispatch(plan, phase, rt, *a, **k):
         calls.append(rt)
         return f"<html>{rt}</html>"
 
-    monkeypatch.setattr(wp, "_dispatch_for", lambda phase: (fake_dispatch, {}))
+    monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
+    monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))
+    monkeypatch.setattr(wp, "_dispatch_for", lambda phase: (None, {}))
     # concierge/editor/assemble reales harían RAG/LLM/zip — reemplazos mínimos
     import prometheus.nodes.assemble as asm
     import prometheus.nodes.concierge as con

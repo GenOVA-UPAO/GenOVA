@@ -3,11 +3,11 @@
 from prometheus.engine.runtime import run_phase
 from prometheus.engine.state import OvaGenerationState
 from prometheus.plans.direct_code import direct_code_gen
+from prometheus.plans.plan_map import CODE_ONLY
 from prometheus.plans.two_step import two_step_gen
 from prometheus.prompts.evaluate_prompts import RECURSOS_META
 
-# F1.3: preguntas de desarrollo (8) y diploma (10) single-step directo a HTML.
-EVALUATE_CODE_ONLY = {3, 5, 8, 9, 10}
+EVALUATE_CODE_ONLY = CODE_ONLY["evaluate"]  # fuente única (F3.3)
 
 
 def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None, resource_config=None):

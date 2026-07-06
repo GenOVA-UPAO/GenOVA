@@ -39,6 +39,9 @@ class OvaGenerationState(TypedDict, total=False):
     # vuelca a current_phase_results para el pass global del critic (que es
     # quien los commitea a `results` — evita duplicarlos).
     pool_results: Annotated[list[dict], operator.add]
+    # F3.1 — señales por worker ({phase, resource_type, ok, plan, seconds,
+    # error_class}); `collect` las agrega a beliefs para la deliberación.
+    worker_signals: Annotated[list[dict], operator.add]
 
     # Phase → Critic handoff (overwritten each phase; not accumulated)
     current_phase_results: list[dict]  # raw HTML from last phase, read by critic_node

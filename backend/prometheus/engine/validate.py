@@ -71,6 +71,23 @@ def structural_defects(html: str) -> list[str]:
     return defects
 
 
+def output_contract() -> str:
+    """Contrato de salida para prompts HTML (F4.3) — espejo exacto del checklist
+    de structural_defects(); si cambias un check, cambia también su línea aquí."""
+    return (
+        "[CONTRATO_DE_SALIDA — el sistema VERIFICA esto automáticamente y te hará "
+        "corregirlo si falla]\n"
+        "1. Existe al menos una llamada real a _scormComplete() alcanzable al "
+        "completar la actividad.\n"
+        "2. Hay al menos un elemento interactivo funcional (button/input/handler).\n"
+        "3. Cero texto placeholder (nada de 'Contenido del card', lorem ipsum ni "
+        "similares) — todo contenido es pedagógico, real y específico del concepto.\n"
+        "4. El contenido está completamente desarrollado (no esqueleto): cada "
+        "sección/pregunta/paso que pide la tarea existe con su contenido.\n"
+        "5. Si la tarea especifica un número N de elementos, genera EXACTAMENTE N.\n"
+    )
+
+
 def validate_and_improve(
     html: str,
     phase: str,

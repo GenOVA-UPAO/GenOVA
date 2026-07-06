@@ -61,11 +61,21 @@ def repair_node(state: OvaGenerationState) -> dict:
 
     def _retry(err: dict):
         phase, rt = err["phase"], err["resource_type"]
-        dispatch, meta = _dispatch_for(phase)
         per_config = resource_configs.get(f"{phase}:{rt}", {})
+        # F3.2 — deliberación del reintento: si el intento original usó
+        # two_step (2 llamadas LLM, más exposición a fallos), degradar a
+        # direct_code cuando existe plantilla; si no hay degradación, mismo
+        # plan (la cadena de fallback de modelos ya rota providers por dentro).
+        from prometheus.plans.plan_map import degraded_plan, dispatch_by_plan, plan_for
+
+        original = err.get("plan") or plan_for(phase, rt)
+        plan = degraded_plan(phase, rt, original) or original
+        if plan != original:
+            logger.info("repair: %s:%s deliberación → plan degradado %s", phase, rt, plan)
         try:
-            html = dispatch(
-                rt, concept, llm_config, enabled_models, theme, image_settings, per_config
+            html = dispatch_by_plan(
+                plan, phase, rt, concept, llm_config, enabled_models, theme,
+                image_settings, per_config,
             )
             return err, html
         except Exception as exc:  # noqa: BLE001 — aislar cada reintento

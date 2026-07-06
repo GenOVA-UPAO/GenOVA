@@ -30,14 +30,18 @@ def test_pending_failures_skips_done_and_exhausted():
 
 
 def test_repair_recovers_resource(monkeypatch):
+    import prometheus.plans.plan_map as pm
+
     calls = {}
 
-    def fake_dispatch(rt, concept, llm_config, enabled_models, theme, image_settings, per_config):
-        calls["config"] = per_config
+    def fake_dispatch(plan, phase, rt, concept, llm_config=None, enabled_models=None, theme=None,
+                      image_settings=None, resource_config=None):
+        calls["config"] = resource_config
         return "<html>reparado</html>"
 
+    monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
     monkeypatch.setattr(
-        repair_mod, "_dispatch_for", lambda phase: (fake_dispatch, {1: {"tipo": "Cómic"}})
+        repair_mod, "_dispatch_for", lambda phase: (None, {1: {"tipo": "Cómic"}})
     )
     out = repair_node(_state([{"phase": "engage", "resource_type": 1, "error": "boom"}]))
     assert out["results"][0]["html"] == "<html>reparado</html>"
@@ -46,12 +50,12 @@ def test_repair_recovers_resource(monkeypatch):
 
 
 def test_repair_marks_exhausted_on_second_failure(monkeypatch):
+    import prometheus.plans.plan_map as pm
+
     def failing_dispatch(*args, **kwargs):
         raise RuntimeError("boom otra vez")
 
-    monkeypatch.setattr(
-        repair_mod, "_dispatch_for", lambda phase: (failing_dispatch, {1: {"tipo": "Cómic"}})
-    )
+    monkeypatch.setattr(pm, "dispatch_by_plan", failing_dispatch)
     out = repair_node(_state([{"phase": "engage", "resource_type": 1, "error": "boom"}]))
     assert out["results"] == []
     assert out["errors"][0]["exhausted"] is True

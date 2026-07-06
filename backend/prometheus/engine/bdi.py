@@ -22,8 +22,7 @@ _COMPLEX_TYPES = frozenset({4, 7, 9, 10})
 # Resource types that benefit greatly from uploaded RAG context
 _CONTEXT_HEAVY = frozenset({2, 3, 5, 6, 8})
 
-# Resource types with a specific plan (not the default two-step)
-_PLAN_TYPE_MAP = {3: "podcast"}
+# El plan por recurso vive en prometheus.plans.plan_map (fuente única, F3.3).
 
 
 def form_beliefs(
@@ -165,10 +164,7 @@ def _score_viability(desire: dict, beliefs: dict) -> float:
 
 
 def _select_plan_type(desire: dict) -> str:
-    """Assign an execution plan type to a desire for intention traceability."""
-    rt = desire.get("resource_type", 0)
-    if rt in _PLAN_TYPE_MAP:
-        return _PLAN_TYPE_MAP[rt]
-    if desire.get("phase") == "elaborate" and rt == 7:
-        return "lab_codigo"
-    return "two_step"
+    """Plan de ejecución REAL del recurso (F3.3) — el worker despacha por esto."""
+    from prometheus.plans.plan_map import plan_for
+
+    return plan_for(desire.get("phase", ""), desire.get("resource_type", 0))

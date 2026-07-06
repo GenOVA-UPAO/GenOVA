@@ -8,15 +8,18 @@ podcast (3), direct simulator (10), else two-step (text→HTML).
 from prometheus.engine.runtime import run_phase
 from prometheus.engine.state import OvaGenerationState
 from prometheus.plans.direct_code import direct_code_gen
+from prometheus.plans.plan_map import CODE_ONLY
 from prometheus.plans.podcast import podcast_gen
 from prometheus.plans.two_step import two_step_gen
 from prometheus.prompts.engage_prompts import RECURSOS_META
+
+ENGAGE_CODE_ONLY = CODE_ONLY["engage"]  # fuente única (F3.3); incluye noticia (F1.3)
 
 
 def _dispatch(rt, concept, llm_config, enabled_models, theme, image_settings=None, resource_config=None):
     if rt == 3:
         return podcast_gen("engage", rt, concept, llm_config, enabled_models, theme)
-    if rt == 10:
+    if rt in ENGAGE_CODE_ONLY:
         return direct_code_gen("engage", rt, concept, llm_config, enabled_models, theme, resource_config)
     return two_step_gen("engage", rt, concept, llm_config, enabled_models, theme, image_settings, resource_config)
 
