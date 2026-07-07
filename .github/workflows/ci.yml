@@ -145,6 +145,10 @@ jobs:
       BASE_URL: http://localhost:4200
       GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
       OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
+      # La suite e2e ampliada genera OVAs reales: LLM_FAKE los completa en segundos
+      # sin proveedores, y el rate limit apagado evita 429 con ~20 logins seguidos.
+      LLM_FAKE: '1'
+      RATE_LIMIT_ENABLED: '0'
     steps:
       - uses: actions/checkout@v7
 
@@ -201,8 +205,10 @@ jobs:
             -d '{"email":"admin@genova.ai","password":"admin1234password"}' \
             2>&1 || true
 
+      # El reporte HTML (con screenshots, traces y video de los fallos) se sube
+      # SIEMPRE: es el sustituto gratuito de TestSprite para revisar los tests.
       - uses: actions/upload-artifact@v7
-        if: failure()
+        if: always()
         with:
           name: playwright-report
           path: tests/playwright-report
