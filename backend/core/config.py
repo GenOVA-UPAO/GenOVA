@@ -42,6 +42,12 @@ class Settings(BaseSettings):
     # Concurrencia del worker arq (cuántos jobs en paralelo procesa un worker).
     arq_max_jobs: int = 4
 
+    # --- Palancas de test (solo CI/carga; NUNCA activar en producción) ---
+    # RATE_LIMIT_ENABLED=0 apaga SlowAPI globalmente (pruebas de carga, e2e masivos).
+    rate_limit_enabled: bool = True
+    # LLM_FAKE=1 sustituye la generación LLM por HTML determinista sin proveedores.
+    llm_fake: bool = False
+
     # --- Observabilidad / app ---
     log_level: str = "INFO"
     sentry_dsn: str = ""
