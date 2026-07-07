@@ -1,7 +1,6 @@
 """Audio helpers for transcribing and generating audio via Groq APIs."""
 
 import logging
-import os
 
 from groq import Groq
 
@@ -18,8 +17,10 @@ _PLAYAI_VOICE = "Celeste-PlayAI"
 
 
 def _client() -> Groq:
-    from llm.clients.key_resolver import resolve_key
-    key = resolve_key("groq", None) or os.getenv("GROQ_API_KEY", "")
+    # resolve_key("groq", None) with no db skips the platform-key DB tier
+    # entirely — always use the DB-backed resolver the rest of the app uses.
+    from llm.clients.clients import _get_provider_key
+    key = _get_provider_key("groq")
     return Groq(api_key=key or None)
 
 

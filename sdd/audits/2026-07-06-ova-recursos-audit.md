@@ -245,6 +245,58 @@ inyectar contexto en el prompt. Igual de práctico y sin costo de entrenamiento:
 4. Mantener estos .md versionados en `backend/prometheus/prompts/data/` junto a los
    TOML — mismos beneficios que las skills de agentes: revisables, diffeables.
 
+## Re-auditoría 2026-07-07 (post plan maestro, deploy develop real)
+
+Mismo entorno (Vercel preview develop bypasseado con `x-vercel-protection-bypass` de
+`vercel curl`/proyecto + backend Railway "GenOVA Backend Develop" real), playwright-cli
+puro contra la app desplegada (no local). 4 OVAs generados vía UI real (login
+admin@genova.ai, selector de fases, sliders de config, "Generar OVA"):
+
+| OVA | Recursos | Job | Resultado |
+|---|---|---|---|
+| Muestra (5 fases, incl. los 3 recursos con bug previo) | 11 | `81745a45` | ✅ 11/11 done |
+| OVA-A (1–4 por fase) | 20 | `ae5abd1d` | ✅ 20/20 done |
+| OVA-B (5–8 por fase) | 20 | `a1a3b7c1` | ✅ 20/20 done |
+| OVA-C (9–10 por fase) | 10 | `8fcb46df` | ✅ 10/10 done |
+
+**61/61 recursos generados, 0 fallos**, corridos en paralelo (4 jobs concurrentes vía
+arq + "GenOVA Worker Develop") en ~22 min totales. 60/61 con `_scormComplete()`
+alcanzable; solo Micro-Podcast degrada (ver abajo).
+
+Confirmado en esta corrida:
+- **Bug #8 (resource_configs descartadas) sigue arreglado** — configs no-default
+  aplicadas (sliders movidos vía teclado antes de generar).
+- **Bug #10a (Noticia de Impacto sin completar) arreglado**: `engage:6` en OVA-B →
+  62 KB, `_scormComplete()` presente.
+- **Bug #10b (Lab de Código esqueleto) arreglado**: `elaborate:7` en OVA-B → 61 KB
+  (antes 3.9 KB), contenido completo.
+- **Imágenes AI ahora se generan** (bug #5 ya no bloquea todo): `engage:1 Cómic
+  Interactivo` trae 3 imágenes base64 reales (~320 KB el recurso) — Cloudflare sigue
+  sin `CF_ACCOUNT_ID` pero el fallback a HuggingFace (key de plataforma) las resuelve.
+- **Export SCORM** (OVA-A, 20 recursos): zip 449 KB íntegro (`unzip -t` sin errores),
+  20 `resources/recurso_N.html` + manifest + player + `scorm.js`/`xapi.js`/`app.js`.
+- **Fallback LLM robusto bajo estrés real**: con 4 OVAs concurrentes, la cadena
+  `codigo` se agotó una vez completa (opencode timeout → qwen3 rate-limit → llama
+  bad-request → groq context_length_exceeded) durante un refine de `apply_feedback`;
+  el diseño ya contempla este caso — degrada al HTML original sin marcar el recurso
+  como fallido (comportamiento correcto, no requiere fix).
+
+**Bug nuevo/reconfirmado — BU-006**: Micro-Podcast (`engage:3`) sigue degradando a
+solo-texto en las 4 corridas (3.8 KB vs ~60 KB con audio). Causa raíz real
+encontrada (no era el modelo Orpheus ni la red, como se creía en el audit original):
+`audio_helpers._client()` resolvía la key Groq con `resolve_key("groq", None)` **sin
+pasar `db`**, saltándose siempre el tier de keys de plataforma — solo funciona si
+`GROQ_API_KEY` existe como env var cruda (no existe en develop). Fix aplicado en este
+mismo commit (usa `llm.clients.clients._get_provider_key`, el mismo resolver que usa
+el resto del stack) + test de regresión — pendiente de próximo deploy para verificar
+en vivo. Ver [BU-006](../bugs/BU-006_podcast-tts-ignora-groq-key-de-plataforma.md).
+
+**Vercel Deployment Protection**: el preview develop (`genova-git-develop-…vercel.app`)
+ahora exige `x-vercel-protection-bypass` (SSO wall) incluso para la URL directa del
+deployment. Para automatizar contra él: cabecera scopeada SOLO al host de Vercel (no
+propagarla a llamadas cross-origin al backend Railway — rompe el preflight CORS, ya
+que ese header no está en `Access-Control-Allow-Headers` del backend).
+
 ## Errores encontrados (plan de corrección)
 
 1. **[ALTA] Preview develop de Vercel apunta al backend de producción.**
