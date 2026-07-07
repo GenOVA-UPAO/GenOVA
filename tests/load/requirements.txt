@@ -1,0 +1,3 @@
+# Deps de las pruebas de capacidad (independientes del backend para no romper
+# la paridad pyproject<->requirements que valida scripts/sync_deps.py).
+locust>=2.32
