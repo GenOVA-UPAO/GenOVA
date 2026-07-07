@@ -13,9 +13,8 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth.cookies import set_auth_cookie
 from auth.dependencies import get_current_user, require_admin
-from auth.token_utils import build_token
+from auth.token_utils import issue_session_response
 from auth.totp_helpers import _consume_ticket, _verify_backup
 from core.database import get_db
 from core.rate_limit import limiter
@@ -55,17 +54,7 @@ def totp_verify(
     # Try TOTP first
     totp = pyotp.TOTP(str(user.totp_secret))
     if totp.verify(code, valid_window=1):
-        token = build_token(str(user.id), str(user.email))
-        response = JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content={
-                "access_token": token,
-                "token_type": "bearer",
-                "expires_in": 60 * 60,
-            },
-        )
-        set_auth_cookie(response, token)
-        return response
+        return issue_session_response(str(user.id), str(user.email))
 
     # Try backup codes
     codes: list[dict] = list(user.totp_backup_codes or [])
@@ -74,18 +63,9 @@ def totp_verify(
             entry["used"] = True
             user.totp_backup_codes = codes  # type: ignore[assignment]
             db.commit()
-            token = build_token(str(user.id), str(user.email))
-            response = JSONResponse(
-                status_code=status.HTTP_200_OK,
-                content={
-                    "access_token": token,
-                    "token_type": "bearer",
-                    "expires_in": 60 * 60,
-                    "backup_code_used": True,
-                },
+            return issue_session_response(
+                str(user.id), str(user.email), extra_content={"backup_code_used": True}
             )
-            set_auth_cookie(response, token)
-            return response
 
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,

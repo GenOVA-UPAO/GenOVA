@@ -5,7 +5,6 @@ Lookup is by exact token match. Tokens are issued elsewhere
 force is infeasible — we still rate-limit by IP to throttle scripted attempts.
 """
 
-import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 
@@ -15,7 +14,7 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth.email import send_reset_email
+from auth.email import dispatch_or_log, send_reset_email
 from auth.email_normalize import normalize_email
 from core.config import settings
 from core.database import get_db
@@ -24,7 +23,6 @@ from core.security import hash_password, password_complexity_ok
 from models import PasswordResetToken, User
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
 
 FRONTEND_URL = settings.frontend_url.rstrip("/")
 
@@ -75,11 +73,9 @@ def forgot_password(
     db.commit()
 
     reset_link = f"{FRONTEND_URL}/reset-password?token={token_str}"
-
-    if settings.smtp_user and settings.smtp_password:
-        background_tasks.add_task(send_reset_email, email, reset_link, user.full_name)
-    else:
-        logger.warning("SMTP not configured — reset link could not be emailed to %s", email)
+    dispatch_or_log(
+        background_tasks, send_reset_email, email, reset_link, user.full_name, "enlace de restablecimiento"
+    )
 
     return response
 

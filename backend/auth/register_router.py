@@ -9,19 +9,13 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from auth.cookies import set_auth_cookie
 from auth.email_normalize import normalize_email
-from auth.token_utils import build_token
+from auth.token_utils import issue_session_response
 from auth.verify_router import issue_verification
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
-from core.security import (
-    JWT_EXPIRES_MINUTES,
-    PASSWORD_MAX_LENGTH,
-    hash_password,
-    password_complexity_ok,
-)
+from core.security import PASSWORD_MAX_LENGTH, hash_password, password_complexity_ok
 from models import PlatformConfig, Role, User, UserRole
 
 router = APIRouter()
@@ -109,16 +103,8 @@ def register(
     # activa al instante y se inicia sesión directamente.
     user.email_verified = True  # type: ignore[assignment]
     db.commit()
-    token = build_token(str(user.id), str(user.email))
-    response = JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "email_verification_required": False,
-            "access_token": token,
-            "token_type": "bearer",
-            "expires_in": JWT_EXPIRES_MINUTES * 60,
-            "message": "Cuenta creada.",
-        },
+    return issue_session_response(
+        str(user.id),
+        str(user.email),
+        extra_content={"email_verification_required": False, "message": "Cuenta creada."},
     )
-    set_auth_cookie(response, token)
-    return response

@@ -14,10 +14,9 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth.cookies import set_auth_cookie
-from auth.email import send_verification_email
+from auth.email import dispatch_or_log, send_verification_email
 from auth.email_normalize import normalize_email
-from auth.token_utils import build_token
+from auth.token_utils import issue_session_response
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
@@ -64,32 +63,22 @@ def issue_verification(
     )
 
     verify_link = f"{FRONTEND_URL}/verificar-correo?token={token_str}"
-    if settings.smtp_user and settings.smtp_password:
-        background_tasks.add_task(
-            send_verification_email, str(user.email), verify_link, user.full_name
-        )
-    else:
-        # SMTP sin configurar: el correo no puede salir. Registramos el enlace en los
-        # logs del servidor para no dejar la cuenta sin vía de verificación. Los logs
-        # no son una respuesta HTTP, así que el token no se filtra al cliente.
-        # En producción se eleva a ERROR porque es una configuración incorrecta.
-        level = logging.ERROR if settings.env == "production" else logging.WARNING
-        logger.log(
-            level,
-            "SMTP no configurado — enlace de verificación no enviado a %s. Enlace manual: %s",
-            user.email,
-            verify_link,
-        )
+    dispatch_or_log(
+        background_tasks,
+        send_verification_email,
+        str(user.email),
+        verify_link,
+        user.full_name,
+        "enlace de verificación",
+    )
 
 
 def _build_login_response(user: User) -> JSONResponse:
-    token = build_token(str(user.id), str(user.email))
-    response = JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={"message": "Correo verificado con éxito."},
+    return issue_session_response(
+        str(user.id),
+        str(user.email),
+        extra_content={"message": "Correo verificado con éxito."},
     )
-    set_auth_cookie(response, token)
-    return response
 
 
 @router.post("/verify-email")

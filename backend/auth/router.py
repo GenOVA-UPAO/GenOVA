@@ -10,13 +10,12 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth.cookies import set_auth_cookie
 from auth.email_normalize import normalize_email
 from auth.register_router import router as register_router
 from auth.reset_router import router as reset_router
 from auth.session_router import router as session_router
 from auth.throttle import email_throttled
-from auth.token_utils import build_token
+from auth.token_utils import issue_session_response
 from auth.totp_helpers import _issue_ticket
 from auth.totp_login_router import router as totp_login_router
 from auth.totp_router import router as totp_router
@@ -24,12 +23,7 @@ from auth.verify_router import router as verify_router
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
-from core.security import (
-    JWT_EXPIRES_MINUTES,
-    PASSWORD_MAX_LENGTH,
-    verify_dummy,
-    verify_password,
-)
+from core.security import PASSWORD_MAX_LENGTH, verify_dummy, verify_password
 from models import User
 
 router = APIRouter()
@@ -117,17 +111,7 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
             content={"totp_required": True, "ticket": ticket},
         )
 
-    token = build_token(str(user.id), str(user.email))
-    response = JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "access_token": token,
-            "token_type": "bearer",
-            "expires_in": JWT_EXPIRES_MINUTES * 60,
-        },
-    )
-    set_auth_cookie(response, token)
-    return response
+    return issue_session_response(str(user.id), str(user.email))
 
 
 router.include_router(register_router)

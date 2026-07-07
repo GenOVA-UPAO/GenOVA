@@ -1,7 +1,10 @@
 import logging
 import smtplib
+from collections.abc import Callable
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+from fastapi import BackgroundTasks
 
 from core.config import settings
 
@@ -99,4 +102,35 @@ def send_verification_email(to_email: str, verify_link: str, full_name: str | No
         "Verifica tu correo en GenOVA",
         _verify_html_body(verify_link, greeting),
         "verification email",
+    )
+
+
+def is_smtp_configured() -> bool:
+    return bool(SMTP_USER and SMTP_PASSWORD)
+
+
+def dispatch_or_log(
+    background_tasks: BackgroundTasks,
+    send_fn: Callable[[str, str, str | None], None],
+    to_email: str,
+    link: str,
+    full_name: str | None,
+    log_label: str,
+) -> None:
+    """Queue `send_fn` (send_reset_email/send_verification_email) as a
+    background task when SMTP is configured; otherwise log the link so the
+    flow isn't dead-ended when creds are missing (dev, or misconfigured prod).
+    Escalates to ERROR in production since it means the account has no
+    working delivery path. Shared by reset_router and verify_router — do not
+    duplicate this check inline in either."""
+    if is_smtp_configured():
+        background_tasks.add_task(send_fn, to_email, link, full_name)
+        return
+    level = logging.ERROR if settings.env == "production" else logging.WARNING
+    logger.log(
+        level,
+        "SMTP no configurado — %s no enviado a %s. Enlace manual: %s",
+        log_label,
+        to_email,
+        link,
     )
