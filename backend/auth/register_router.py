@@ -1,5 +1,6 @@
 """Registration endpoint — creates a user, assigns the default role, and sends
-the mandatory email-verification link. Included into the auth router."""
+the email-verification link when EMAIL_VERIFICATION_ENABLED=1 (otherwise logs
+the user in immediately). Included into the auth router."""
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from fastapi.responses import JSONResponse
@@ -8,11 +9,19 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from auth.cookies import set_auth_cookie
 from auth.email_normalize import normalize_email
+from auth.token_utils import build_token
 from auth.verify_router import issue_verification
+from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
-from core.security import PASSWORD_MAX_LENGTH, hash_password, password_complexity_ok
+from core.security import (
+    JWT_EXPIRES_MINUTES,
+    PASSWORD_MAX_LENGTH,
+    hash_password,
+    password_complexity_ok,
+)
 from models import PlatformConfig, Role, User, UserRole
 
 router = APIRouter()
@@ -84,14 +93,32 @@ def register(
         db.add(UserRole(user_id=user.id, role_id=_role.id))
         db.commit()
 
-    # Verificación obligatoria: no se inicia sesión hasta confirmar el correo.
-    issue_verification(user, db, background_tasks)
-    db.commit()
+    if settings.email_verification_enabled:
+        # Verificación obligatoria: no se inicia sesión hasta confirmar el correo.
+        issue_verification(user, db, background_tasks)
+        db.commit()
+        return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
+            content={
+                "email_verification_required": True,
+                "message": "Cuenta creada. Te enviamos un enlace de verificación a tu correo.",
+            },
+        )
 
-    return JSONResponse(
-        status_code=status.HTTP_201_CREATED,
+    # Verificación deshabilitada (EMAIL_VERIFICATION_ENABLED=0): la cuenta queda
+    # activa al instante y se inicia sesión directamente.
+    user.email_verified = True  # type: ignore[assignment]
+    db.commit()
+    token = build_token(str(user.id), str(user.email))
+    response = JSONResponse(
+        status_code=status.HTTP_200_OK,
         content={
-            "email_verification_required": True,
-            "message": "Cuenta creada. Te enviamos un enlace de verificación a tu correo.",
+            "email_verification_required": False,
+            "access_token": token,
+            "token_type": "bearer",
+            "expires_in": JWT_EXPIRES_MINUTES * 60,
+            "message": "Cuenta creada.",
         },
     )
+    set_auth_cookie(response, token)
+    return response

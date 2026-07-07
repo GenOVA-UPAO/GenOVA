@@ -66,6 +66,18 @@ if settings.sentry_dsn:
     )
     logger.info("Sentry inicializado (environment=%s)", settings.env)
 
+# Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
+if settings.sentry_dsn:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.env,
+        traces_sample_rate=settings.sentry_traces_sample_rate,
+        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
+    )
+    logger.info("Sentry inicializado (environment=%s)", settings.env)
+
 
 class ProcessTimeMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):

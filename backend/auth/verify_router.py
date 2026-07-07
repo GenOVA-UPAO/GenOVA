@@ -29,6 +29,12 @@ logger = logging.getLogger(__name__)
 FRONTEND_URL = settings.frontend_url.rstrip("/")
 _TOKEN_TTL_HOURS = 24
 
+if settings.env == "production" and "localhost" in FRONTEND_URL:
+    logger.warning(
+        "FRONTEND_URL apunta a localhost en producción — los enlaces de verificación "
+        "no funcionarán. Define FRONTEND_URL con el origen del frontend desplegado."
+    )
+
 
 class VerifyEmailSubmit(BaseModel):
     token: str = Field(..., min_length=8, max_length=512)
@@ -63,7 +69,17 @@ def issue_verification(
             send_verification_email, str(user.email), verify_link, user.full_name
         )
     else:
-        logger.warning("SMTP not configured — verification link not emailed to %s", user.email)
+        # SMTP sin configurar: el correo no puede salir. Registramos el enlace en los
+        # logs del servidor para no dejar la cuenta sin vía de verificación. Los logs
+        # no son una respuesta HTTP, así que el token no se filtra al cliente.
+        # En producción se eleva a ERROR porque es una configuración incorrecta.
+        level = logging.ERROR if settings.env == "production" else logging.WARNING
+        logger.log(
+            level,
+            "SMTP no configurado — enlace de verificación no enviado a %s. Enlace manual: %s",
+            user.email,
+            verify_link,
+        )
 
 
 def _build_login_response(user: User) -> JSONResponse:

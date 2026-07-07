@@ -21,6 +21,7 @@ from auth.totp_helpers import _issue_ticket
 from auth.totp_login_router import router as totp_login_router
 from auth.totp_router import router as totp_router
 from auth.verify_router import router as verify_router
+from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter
 from core.security import (
@@ -96,7 +97,7 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
         db.commit()
         return _invalid_credentials()
 
-    if not user.email_verified:
+    if settings.email_verification_enabled and not user.email_verified:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={
