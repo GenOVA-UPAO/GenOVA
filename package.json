@@ -12,6 +12,7 @@
     "prod:docker": "docker compose -f docker-compose.prod.yml up --build",
     "test:unit": "pnpm --filter genova-tests test:unit",
     "test:e2e": "pnpm --filter genova-tests test:e2e",
-    "test:e2e:ui": "pnpm --filter genova-tests test:e2e:ui"
+    "test:e2e:ui": "pnpm --filter genova-tests test:e2e:ui",
+    "test:a11y": "pnpm --filter genova-tests test:a11y"
   }
 }

@@ -252,6 +252,7 @@ nul
 # playwright-bdd generated test files
 tests/.features-gen/
 tests/playwright-report/
+tests/playwright-report-a11y/
 
 *.zip
 

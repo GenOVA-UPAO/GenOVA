@@ -6,9 +6,11 @@
   "scripts": {
     "test:unit": "cross-env NODE_OPTIONS=--import=tsx cucumber-js --config cucumber.unit.config.mjs",
     "test:e2e": "bddgen --config playwright.config.js && playwright test --config playwright.config.js",
-    "test:e2e:ui": "bddgen --config playwright.config.js && playwright test --config playwright.config.js --ui"
+    "test:e2e:ui": "bddgen --config playwright.config.js && playwright test --config playwright.config.js --ui",
+    "test:a11y": "playwright test --config playwright.a11y.config.js"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@cucumber/cucumber": "^13.0.0",
     "@playwright/test": "^1.61.0",
     "cross-env": "^10.1.0",
