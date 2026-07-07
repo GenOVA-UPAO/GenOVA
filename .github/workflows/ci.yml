@@ -96,6 +96,73 @@ jobs:
           coverage xml
         working-directory: backend
 
+  # Caja negra automatizada: Schemathesis genera cientos de casos desde el
+  # OpenAPI que expone FastAPI y verifica contratos (códigos, schemas, 500s).
+  # TODO: retirar continue-on-error cuando la primera pasada quede estable.
+  api-contract:
+    name: API contract (Schemathesis)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      GROQ_API_KEY: dummy-ci-key-not-used-by-contract-tests
+      OPENROUTER_API_KEY: dummy-ci-key-not-used-by-contract-tests
+      LLM_FAKE: '1'
+      RATE_LIMIT_ENABLED: '0'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with: { python-version: '3.11' }
+
+      - uses: astral-sh/setup-uv@v8.2.0
+        with: { enable-cache: true }
+
+      - name: Install backend deps
+        run: uv pip install --system -r requirements-dev.txt
+        working-directory: backend
+
+      - name: Start backend
+        run: uvicorn main:app --port 8000 > /tmp/backend.log 2>&1 &
+        working-directory: backend
+
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 40); do
+            curl -sf http://localhost:8000/health && echo "backend ready" && exit 0
+            echo "waiting... ($i/40)"
+            sleep 5
+          done
+          cat /tmp/backend.log
+          exit 1
+
+      - name: Get bearer token (seed admin)
+        id: auth
+        run: |
+          TOKEN=$(curl -sf -X POST http://localhost:8000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"admin@genova.ai","password":"admin1234password"}' | jq -r .access_token)
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Run Schemathesis
+        run: |
+          uvx --from 'schemathesis>=4,<5' schemathesis run \
+            http://localhost:8000/openapi.json \
+            --header "Authorization: Bearer ${{ steps.auth.outputs.token }}" \
+            --max-examples 20 \
+            --exclude-path-regex '^/api/ova/jobs' \
+            --report junit --report-junit-path schemathesis-report.xml \
+            | tee schemathesis-output.txt
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: schemathesis-report
+          path: |
+            schemathesis-report.xml
+            schemathesis-output.txt
+
   frontend-unit:
     name: Frontend Unit BDD (cucumber-js)
     runs-on: ubuntu-latest
