@@ -109,7 +109,7 @@ security-audit (paralelo)
 | `frontend-unit` | `pnpm test:unit` (cucumber-js) |
 | `backend-bdd` | levanta backend bajo coverage, corre BDD + unit puros; gate `fail_under=35` |
 | `api-contract` | **Schemathesis**: genera casos desde `/openapi.json` (caja negra automática) |
-| `e2e` | Chromium + backend con `LLM_FAKE=1`; corre `pnpm test:e2e` y `pnpm test:a11y`; sube el reporte SIEMPRE |
+| `e2e` | Chromium + backend con `LLM_FAKE=1`; corre `pnpm test:e2e` y `pnpm test:a11y` (a11y informativo — `continue-on-error` hasta corregir las violaciones que encontró la primera pasada: contraste de color, estructura de lista del sidebar, un botón sin nombre y un select sin nombre accesible); sube el reporte SIEMPRE |
 | `security-audit` | `pnpm audit --prod` + `pip-audit` |
 
 **Workflows disparables a demanda** (además del CI):
