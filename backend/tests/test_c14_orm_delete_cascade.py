@@ -25,8 +25,8 @@ from sqlalchemy import create_engine, event, text  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-import models  # noqa: E402, F401 — registra todos los mappers (Ova referencia a User)
-from ova.models import Ova, OvaPhase, OvaVersion  # noqa: E402
+# Importar desde el agregador registra TODOS los mappers (Ova referencia a User).
+from models import Ova, OvaPhase, OvaVersion  # noqa: E402
 
 _DDL = """
 CREATE TABLE ovas (
