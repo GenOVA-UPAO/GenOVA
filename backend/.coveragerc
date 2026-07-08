@@ -20,4 +20,5 @@ show_missing = true
 skip_covered = true
 # Floor only — ratchet upward as the suite grows. Combined BDD+unit coverage of
 # the app code sits comfortably above this; the gate catches catastrophic drops.
-fail_under = 30
+# 2026-07: 30 → 35 tras sumar test_auth_validation/test_auth_throttle al job.
+fail_under = 35

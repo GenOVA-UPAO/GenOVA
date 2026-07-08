@@ -1,6 +1,12 @@
 import { inject, Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 
+import { AuthExpiredBus } from "./auth-expired-bus";
+
+// Re-export: los consumidores históricos (AuthService, guards) importan el bus
+// desde http.ts; el módulo puro existe para los tests unit sin Angular.
+export { AuthExpiredBus };
+
 // Angular uses environment.ts for env vars, not import.meta.env
 const API_BASE_PROD = "https://genova-backend-production.up.railway.app";
 const API_BASE_DEVELOP = "https://genova-backend-develop.up.railway.app";
@@ -150,23 +156,6 @@ async function extractDetail(res: Response, fallbackMsg: string): Promise<string
     return fallbackMsg;
   }
 }
-
-/**
- * Simple event bus for 401 session-expired notifications.
- * AuthService subscribes; avoids circular DI.
- */
-export const AuthExpiredBus = {
-  _listeners: new Set<() => void>(),
-  notify() {
-    this._listeners.forEach((fn) => {
-      fn();
-    });
-  },
-  subscribe(fn: () => void) {
-    this._listeners.add(fn);
-    return () => this._listeners.delete(fn);
-  },
-};
 
 /**
  * Injectable wrapper for use in Angular services via DI.

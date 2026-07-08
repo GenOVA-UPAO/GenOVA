@@ -16,6 +16,12 @@ import { AuthService } from "@/core/auth/auth.service";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { VerifyEmailNoticeComponent } from "../components/verify-email-notice.component";
+import {
+  FULL_NAME_LETTER_RE,
+  FULL_NAME_MAX,
+  FULL_NAME_MIN,
+  PASSWORD_RE,
+} from "../lib/auth-validators";
 import { resendVerification } from "../services/verification";
 
 @Component({
@@ -30,13 +36,13 @@ export class RegisterPage {
   protected readonly registerModel = signal({ full_name: "", email: "", password: "" });
   protected readonly registerForm = form(this.registerModel, (p) => {
     required(p.full_name, { message: "El nombre completo es requerido." });
-    minLength(p.full_name, 3, {
+    minLength(p.full_name, FULL_NAME_MIN, {
       message: "El nombre completo debe tener al menos 3 caracteres y máximo 100.",
     });
-    maxLength(p.full_name, 100, {
+    maxLength(p.full_name, FULL_NAME_MAX, {
       message: "El nombre completo debe tener al menos 3 caracteres y máximo 100.",
     });
-    pattern(p.full_name, /\p{L}/u, {
+    pattern(p.full_name, FULL_NAME_LETTER_RE, {
       message: "El nombre debe contener al menos una letra.",
     });
 
@@ -44,7 +50,7 @@ export class RegisterPage {
     email(p.email, { message: "Ingresa un correo con formato válido." });
 
     required(p.password, { message: "La contraseña es requerida." });
-    pattern(p.password, /^(?=.*[A-Za-z])(?=.*\d).{8,}$/, {
+    pattern(p.password, PASSWORD_RE, {
       message: "Mínimo 8 caracteres con letras y números.",
     });
   });

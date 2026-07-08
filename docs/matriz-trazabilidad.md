@@ -1,13 +1,13 @@
 # Matriz de trazabilidad requisito ↔ test
 
-> Generado por `scripts/gen_traceability.py` el 2026-07-07 — **no editar a mano**.
+> Generado por `scripts/gen_traceability.py` el 2026-07-08 — **no editar a mano**.
 > Capas: **unit** (cucumber-js), **backend** (pytest-bdd), **e2e** (playwright-bdd).
 > Los `.feature` verbatim de specs cuentan escenarios aunque su capa ejecutable sea otra.
 
 | ID | Título | Status | Escenarios | Unit | Backend | E2E | Notas |
 |---|---|---|---:|:-:|:-:|:-:|---|
-| BU-001 | Sesión expirada no redirige a pantalla de inicio de sesión | done | 6 | — | — | ✅ |  |
-| BU-002 | Cambio de rol o cuenta no actualiza la navegación del usuario | done | 6 | — | — | — | ⚠️ sin cobertura |
+| BU-001 | Sesión expirada no redirige a pantalla de inicio de sesión | done | 9 | ✅ | — | ✅ |  |
+| BU-002 | Cambio de rol o cuenta no actualiza la navegación del usuario | done | 7 | — | — | ✅ |  |
 | DO-001 | Documentación técnica completa | pending | — | — | — | — | N/A — documentación |
 | DO-002 | Videos demostrativos del funcionamiento | pending | — | — | — | — | N/A — documentación |
 | DO-003 | Reporte comparativo de agentes LLM | pending | — | — | — | — | N/A — documentación |
@@ -44,7 +44,7 @@
 | EP-7 | Despliegue e Infraestructura Cloud | pending | — | — | — | — | N/A — épica (agrupa HUs) |
 | EP-8 | Validación Técnica y de Calidad | pending | — | — | — | — | N/A — épica (agrupa HUs) |
 | EP-9 | Evaluación de Usabilidad y UX | pending | — | — | — | — | N/A — épica (agrupa HUs) |
-| HU-001 | Registro de Cuenta de Usuario | done | 6 | — | ✅ | ✅ |  |
+| HU-001 | Registro de Cuenta de Usuario | done | 13 | ✅ | ✅ | ✅ |  |
 | HU-002 | Crear nuevo OVA desde prompt | done | 6 | — | — | ✅ |  |
 | HU-003 | Visualizar completa 5E | done | 6 | — | — | — | ⚠️ sin cobertura |
 | HU-004 | Exportar OVA como paquete SCORM | done | 6 | — | — | ✅ |  |
@@ -105,13 +105,12 @@
 
 ## Resumen
 
-- Requisitos testeables: **74** · con cobertura en ≥1 capa: **36**
-- Escenarios Gherkin totales: **225** en 55 archivos `.feature`
-- Capa unit: 12 IDs · backend: 14 IDs · e2e: 15 IDs
+- Requisitos testeables: **74** · con cobertura en ≥1 capa: **37**
+- Escenarios Gherkin totales: **236** en 58 archivos `.feature`
+- Capa unit: 14 IDs · backend: 14 IDs · e2e: 16 IDs
 
 ## ⚠️ Requisitos `done` sin cobertura de test
 
-- BU-002
 - EN-001
 - EN-002
 - EN-003
