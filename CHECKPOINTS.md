@@ -111,3 +111,8 @@
 - [ ] Sin tamaños fijos en `px` para layout (usar tokens Tailwind `p-4`, `gap-2`, etc.)
 - [ ] Diálogos y dropdowns se posicionan correctamente en viewports pequeños (no overflow horizontal)
 - [ ] Tipografía: clases `text-xs/sm/base/lg/xl` para escalar; no `text-[10px]` arbitrario salvo badges
+
+## C14 — ORM alineado con el DDL en deletes (relaciones con FK ON DELETE)
+- [ ] Toda `relationship()` padre→hijo cuyo FK declara `ON DELETE CASCADE` en `backend/migrations/` lleva `cascade="all, delete-orphan"` + `passive_deletes=True` (si el DDL usa `ON DELETE SET NULL`, el FK del modelo debe ser nullable y sin delete-orphan)
+- [ ] Regla verificable: `db.delete(padre)` con hijos existentes nunca emite `UPDATE hijo SET fk=NULL` (test de referencia: `backend/tests/test_c14_orm_delete_cascade.py`)
+- [ ] Origen: B1 de HU-012 — `DELETE /api/ovas/{id}/permanente` devolvía 500 (`NotNullViolation` en `ova_versions.ova_id`) para todo OVA con versiones

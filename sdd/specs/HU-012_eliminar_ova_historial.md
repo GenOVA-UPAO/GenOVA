@@ -543,3 +543,11 @@ Feature: HU-012 — Eliminar OVA del Historial con Papelera
 - El badge de conteo en el menú lateral requiere un endpoint ligero `GET /api/ovas/papelera/count` → `{ "count": N }` o incluir el conteo en el response del listado.
 - Los checkboxes deben resetearse automáticamente tras cada acción en lote exitosa.
 - El botón "seleccionar todos" aplica solo a la página actual, no a todas las páginas.
+
+---
+
+## §B — Bugs registrados (backprop)
+
+| # | Fecha | Causa raíz | Invariante |
+|---|---|---|---|
+| B1 | 2026-07-08 | `DELETE /api/ovas/{id}/permanente` devolvía 500: `Ova.versions` sin `cascade`/`passive_deletes` hacía que SQLAlchemy emitiera `UPDATE ova_versions SET ova_id=NULL` en el flush del delete (viola NOT NULL), en vez de delegar en el `ON DELETE CASCADE` del DDL. Detectado por el e2e `HU-012 — Borrar definitivamente` (PR #90). | C14 (`CHECKPOINTS.md`) + `backend/tests/test_c14_orm_delete_cascade.py` |
