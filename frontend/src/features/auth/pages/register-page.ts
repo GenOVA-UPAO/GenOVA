@@ -9,7 +9,7 @@ import {
   required,
   submit,
 } from "@angular/forms/signals";
-import { RouterLink } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { HlmInput } from "@spartan-ng/helm/input";
 
 import { AuthService } from "@/core/auth/auth.service";
@@ -32,6 +32,7 @@ import { resendVerification } from "../services/verification";
 })
 export class RegisterPage {
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   protected readonly registerModel = signal({ full_name: "", email: "", password: "" });
   protected readonly registerForm = form(this.registerModel, (p) => {
@@ -70,8 +71,17 @@ export class RegisterPage {
         const { full_name, email, password } = this.registerModel();
         const { status, data } = await this.authService.register(full_name, email, password);
 
-        if (status === 201) {
-          this.registeredEmail.set(email);
+        // Verificación habilitada → 201 + aviso "Verifica tu correo".
+        // Deshabilitada (default) → 200 con la cookie de sesión ya puesta:
+        // el usuario queda autenticado y va directo al dashboard. Antes solo
+        // se manejaba 201 y el registro exitoso se pintaba como error.
+        if (status === 200 || status === 201) {
+          if (data.email_verification_required) {
+            this.registeredEmail.set(email);
+            return;
+          }
+          await this.authService.revalidate();
+          await this.router.navigate(["/dashboard"]);
           return;
         }
 

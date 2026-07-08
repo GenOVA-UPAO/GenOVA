@@ -27,8 +27,13 @@ When(
   }
 )
 
-Then('debo ver el aviso de verificación de correo', async ({ page }) => {
-  await expect(page.getByText('Verifica tu correo')).toBeVisible({ timeout: 15000 })
+Then('el registro se completa con aviso de verificación o sesión iniciada', async ({ page }) => {
+  // EMAIL_VERIFICATION_ENABLED=1 → aviso "Verifica tu correo" (201).
+  // Deshabilitada (default) → cookie de sesión directa y redirect al dashboard (200).
+  await Promise.any([
+    page.getByText('Verifica tu correo').waitFor({ state: 'visible', timeout: 20000 }),
+    page.waitForURL(/dashboard|mis-ovas/, { timeout: 20000 }),
+  ])
 })
 
 Then('debo ver el error de registro {string}', async ({ page }, msg) => {

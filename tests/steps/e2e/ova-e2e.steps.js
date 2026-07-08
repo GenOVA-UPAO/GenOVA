@@ -19,7 +19,8 @@ Given('que estoy autenticado con una cuenta recién creada', async ({ page }) =>
   const res = await page.request.post('/api/auth/register', {
     data: { full_name: 'Cuenta E2E', email, password },
   })
-  if (res.status() !== 201) {
+  // 200 = verificación deshabilitada (cookie de sesión directa); 201 = habilitada.
+  if (res.status() !== 200 && res.status() !== 201) {
     throw new Error(`Registro API falló: ${res.status()} ${await res.text()}`)
   }
   await page.context().clearCookies()

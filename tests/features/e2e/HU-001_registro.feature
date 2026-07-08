@@ -4,11 +4,13 @@
 # Los escenarios @smoke no crean datos (solo validaciones) y son seguros contra develop.
 Feature: HU-001 e2e — Registro de cuenta en el navegador
 
-  Scenario: Registro exitoso muestra el aviso de verificación de correo
+  Scenario: Registro exitoso completa el alta de la cuenta
     Given que estoy en la página de registro
     When completo el registro con nombre "Estudiante Prueba", correo único y contraseña "clave1234"
     And envío el formulario
-    Then debo ver el aviso de verificación de correo
+    # Con verificación de correo habilitada muestra el aviso; deshabilitada
+    # (default) inicia sesión y redirige al dashboard. Ambos son éxito.
+    Then el registro se completa con aviso de verificación o sesión iniciada
 
   @smoke
   Scenario: Nombre sin letras es rechazado por la validación
