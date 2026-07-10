@@ -47,7 +47,7 @@ Este repositorio usa **Harness Engineering** combinado con **Spec-Driven Develop
 2. **Conectar los hooks** en tu plataforma de agentes (ver tabla de hooks abajo):
    - `SessionStart` → `.claude/hooks/session-start.ps1`
    - `PostToolUse (Edit|Write)` → `.claude/hooks/post-edit.ps1`
-   - `Stop` → `.claude/hooks/on-stop.ps1`
+   - `PreToolUse (Bash, if: git commit*)` → `.claude/hooks/pre-commit-check.ps1`
    - Status bar → `.claude/hooks/status-line.ps1`
 3. **Registrar los agentes** desde `.claude/agents/` como instrucciones de sistema en tu plataforma
 4. El agente `leader` es el punto de entrada — cualquier mensaje pasa primero por él
@@ -129,7 +129,7 @@ Estados de una feature: `pending` → `spec_ready` → `in_progress` → `done` 
 |---|---|---|
 | `session-start.ps1` | SessionStart | Corre `verify.ps1 -Quick`, marca timestamp en `sdd/progress/current.md`, avisa si una feature lleva >72 h en progreso |
 | `post-edit.ps1` | PostToolUse (Edit\|Write) | Lint inmediato — `pnpm lint` (frontend) o `ruff check` (backend); muestra primeras 20 líneas de error. **Debounce 30 s**: no relinta el mismo área dos veces seguidas |
-| `on-stop.ps1` | Stop | `verify.ps1` completo + escaneo de 9 patrones de secretos (bloquea salida si encuentra) + aviso de **wireframes huérfanos** (FASE 0 sin completar) |
+| `pre-commit-check.ps1` | PreToolUse (Bash, if: `git commit*`) | `verify.ps1` completo + escaneo de 9 patrones de secretos (bloquea el commit si encuentra) + aviso de **wireframes huérfanos** (FASE 0 sin completar) |
 | `status-line.ps1` | Status bar | Muestra `GENOVA <branch> \| <feature_id_o_idle>` en tiempo real |
 
 ### Verificación rápida
@@ -422,7 +422,7 @@ Override env para los tests manuales: `BASE`, `EMAIL`, `PASS`, `PHASE`, `TYPE`, 
 GenOVA/
 ├── .claude/
 │   ├── agents/              # 8 agentes: leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync, doc_author
-│   ├── hooks/               # session-start, post-edit, on-stop, status-line (PowerShell)
+│   ├── hooks/               # session-start, post-edit, pre-commit-check, status-line (PowerShell)
 │   └── settings.json        # hooks + permisos
 ├── .agents/skills/          # store canónico de skills (find-skills, find-docs)
 ├── .opencode/               # opencode.json + agents (junction → .claude/agents)

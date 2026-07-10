@@ -1,29 +1,27 @@
-# on-stop.ps1 - Hook Stop
-# Ejecuta verify.ps1 completo antes de cerrar la sesion.
-# BLOQUEA cierre si detecta secretos en archivos modificados.
+# pre-commit-check.ps1 - Hook PreToolUse (Bash, filtrado a "git commit*" via "if")
+# Corre verify.ps1 completo + scan de secretos SOLO antes de un git commit.
+# Bloquea el commit (permissionDecision=deny) si detecta secretos.
 
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $root
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  [harness] Verificacion de cierre de sesion" -ForegroundColor Cyan
+Write-Host "  [harness] Verificacion pre-commit" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
-# 1) verify.ps1 completo
+# 1) verify.ps1 completo (no bloquea el commit por fallo de tests, solo avisa)
 & "$root\verify.ps1"
 $verifyExit = $LASTEXITCODE
 
 Write-Host ""
 
 if ($verifyExit -ne 0) {
-    Write-Host "[harness] verify.ps1 FALLO - revisa los errores antes de cerrar." -ForegroundColor Red
-    Write-Host "          No se propone commit hasta que el repo este en verde." -ForegroundColor Yellow
-    exit 0  # No bloquear stop por fallo de tests; secret gate si bloquea
+    Write-Host "[harness] verify.ps1 FALLO - revisa los errores antes de confirmar el commit." -ForegroundColor Red
 }
 
-# 2) Scan de secretos en archivos modificados
+# 2) Scan de secretos en archivos staged (fallback: working tree)
 $secretPatterns = @(
     'GROQ_API_KEY\s*=\s*gsk_[A-Za-z0-9]{16,}',
     'OPENROUTER_API_KEY\s*=\s*sk-or-[A-Za-z0-9-]{16,}',
@@ -35,8 +33,8 @@ $secretPatterns = @(
     'password\s*=\s*[\x22\x27][^\x22\x27]{4,}[\x22\x27]',
     'secret\s*=\s*[\x22\x27][^\x22\x27]{4,}[\x22\x27]'
 )
-$changedFiles = (git diff --name-only HEAD 2>$null)
-if (-not $changedFiles) { $changedFiles = (git diff --cached --name-only 2>$null) }
+$changedFiles = (git diff --cached --name-only 2>$null)
+if (-not $changedFiles) { $changedFiles = (git diff --name-only HEAD 2>$null) }
 $secretsFound = @()
 foreach ($file in $changedFiles) {
     if (Test-Path $file) {
@@ -50,13 +48,22 @@ foreach ($file in $changedFiles) {
         }
     }
 }
+
 if ($secretsFound.Count -gt 0) {
     Write-Host ""
-    Write-Host "[harness] BLOQUEADO - Posibles secretos en archivos modificados:" -ForegroundColor Red
+    Write-Host "[harness] BLOQUEADO - Posibles secretos en archivos a commitear:" -ForegroundColor Red
     $secretsFound | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
     Write-Host ""
-    Write-Host "          NO se propondra commit. Revisa y limpia antes de cerrar." -ForegroundColor Red
-    exit 1
+    $reason = "Posibles secretos detectados: " + ($secretsFound -join "; ")
+    $output = @{
+        hookSpecificOutput = @{
+            hookEventName = "PreToolUse"
+            permissionDecision = "deny"
+            permissionDecisionReason = $reason
+        }
+    }
+    $output | ConvertTo-Json -Depth 5 -Compress
+    exit 0
 }
 
 # 3) Wireframes huerfanos (implementer FASE 0 sin completar implementacion real)
@@ -70,14 +77,5 @@ if (Test-Path $wireframeDir) {
     }
 }
 
-# 4) Estado git
-$gitStatus = git status --porcelain 2>$null
-if ($gitStatus) {
-    Write-Host "[harness] Hay cambios no commiteados en el repo." -ForegroundColor Yellow
-    Write-Host "          El agente leader propondra un mensaje de commit." -ForegroundColor Yellow
-    Write-Host "          Aprueba o rechaza explicitamente antes de ejecutar git commit." -ForegroundColor Yellow
-} else {
-    Write-Host "[harness] Repo limpio. Sin cambios pendientes." -ForegroundColor Green
-}
-
+Write-Host "[harness] Pre-commit OK. Continuando con el commit." -ForegroundColor Green
 Write-Host ""

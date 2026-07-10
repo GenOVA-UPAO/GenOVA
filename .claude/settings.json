@@ -23,13 +23,15 @@
         ]
       }
     ],
-    "Stop": [
+    "PreToolUse": [
       {
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -Command \"& (Join-Path (git rev-parse --show-toplevel) '.claude/hooks/on-stop.ps1')\"",
-            "description": "Antes de cerrar: verify.ps1 completo + bloqueo si detecta secretos."
+            "command": "powershell -ExecutionPolicy Bypass -File ./.claude/hooks/pre-commit-check.ps1",
+            "if": "Bash(git commit*)",
+            "description": "Antes de git commit: verify.ps1 completo + bloqueo si detecta secretos."
           }
         ]
       }
