@@ -15,6 +15,20 @@
       "autoPort": false
     },
     {
+      "name": "backend",
+      "runtimeExecutable": "backend/.venv/Scripts/uvicorn.exe",
+      "runtimeArgs": ["main:app", "--reload", "--port", "8000", "--app-dir", "backend"],
+      "port": 8000,
+      "autoPort": false
+    },
+    {
+      "name": "deployed-proxy",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/preview-proxy.js"],
+      "port": 4200,
+      "autoPort": false
+    },
+    {
       "name": "audit",
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "8090", "--directory", ".audit"],
