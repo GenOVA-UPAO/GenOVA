@@ -9,13 +9,19 @@ import {
   required,
   submit,
 } from "@angular/forms/signals";
-import { RouterLink } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { HlmInput } from "@spartan-ng/helm/input";
 
 import { AuthService } from "@/core/auth/auth.service";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { VerifyEmailNoticeComponent } from "../components/verify-email-notice.component";
+import {
+  FULL_NAME_LETTER_RE,
+  FULL_NAME_MAX,
+  FULL_NAME_MIN,
+  PASSWORD_RE,
+} from "../lib/auth-validators";
 import { resendVerification } from "../services/verification";
 
 @Component({
@@ -26,17 +32,18 @@ import { resendVerification } from "../services/verification";
 })
 export class RegisterPage {
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   protected readonly registerModel = signal({ full_name: "", email: "", password: "" });
   protected readonly registerForm = form(this.registerModel, (p) => {
     required(p.full_name, { message: "El nombre completo es requerido." });
-    minLength(p.full_name, 3, {
+    minLength(p.full_name, FULL_NAME_MIN, {
       message: "El nombre completo debe tener al menos 3 caracteres y máximo 100.",
     });
-    maxLength(p.full_name, 100, {
+    maxLength(p.full_name, FULL_NAME_MAX, {
       message: "El nombre completo debe tener al menos 3 caracteres y máximo 100.",
     });
-    pattern(p.full_name, /\p{L}/u, {
+    pattern(p.full_name, FULL_NAME_LETTER_RE, {
       message: "El nombre debe contener al menos una letra.",
     });
 
@@ -44,7 +51,7 @@ export class RegisterPage {
     email(p.email, { message: "Ingresa un correo con formato válido." });
 
     required(p.password, { message: "La contraseña es requerida." });
-    pattern(p.password, /^(?=.*[A-Za-z])(?=.*\d).{8,}$/, {
+    pattern(p.password, PASSWORD_RE, {
       message: "Mínimo 8 caracteres con letras y números.",
     });
   });
@@ -64,8 +71,17 @@ export class RegisterPage {
         const { full_name, email, password } = this.registerModel();
         const { status, data } = await this.authService.register(full_name, email, password);
 
-        if (status === 201) {
-          this.registeredEmail.set(email);
+        // Verificación habilitada → 201 + aviso "Verifica tu correo".
+        // Deshabilitada (default) → 200 con la cookie de sesión ya puesta:
+        // el usuario queda autenticado y va directo al dashboard. Antes solo
+        // se manejaba 201 y el registro exitoso se pintaba como error.
+        if (status === 200 || status === 201) {
+          if (data.email_verification_required) {
+            this.registeredEmail.set(email);
+            return;
+          }
+          await this.authService.revalidate();
+          await this.router.navigate(["/dashboard"]);
           return;
         }
 

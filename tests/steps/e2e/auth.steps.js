@@ -69,7 +69,12 @@ Given(
   async ({ page }, role) => {
     const email = role === 'administrador' ? 'admin@genova.ai' : 'user@genova.ai'
     const pass = role === 'administrador' ? 'admin1234password' : 'user1234password'
+    // Sesión limpia SIEMPRE: si el escenario ya venía logueado con otro rol
+    // (p.ej. admin en el Background y luego "usuario"), /login redirige o el
+    // cache de sessionStorage envenena el rol y AdminRoute se cuelga en CI.
+    await page.context().clearCookies()
     await page.goto('/login', { waitUntil: 'domcontentloaded' })
+    await page.evaluate(() => window.sessionStorage.clear())
     await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ state: 'visible', timeout: 30000 })
     await emailField(page).fill(email)
     await passwordField(page).fill(pass)

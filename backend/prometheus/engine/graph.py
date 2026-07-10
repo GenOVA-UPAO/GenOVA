@@ -75,6 +75,11 @@ def invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None
     from core.config import settings
     from prometheus.engine.checkpointer import get_checkpointer
 
+    if settings.llm_fake:
+        from prometheus.engine.fake_invoke import fake_invoke_ova_generation
+
+        return fake_invoke_ova_generation(initial_state, thread_id, checkpointer)
+
     if settings.ova_engine.strip().lower() == "workpool":
         from prometheus.engine.workpool import build_workpool_graph
 

@@ -53,7 +53,9 @@ def _invalid_credentials() -> JSONResponse:
 def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     email = normalize_email(payload.email)
 
-    if email_throttled(email):
+    # El throttle por-email también es un rate limit: respeta RATE_LIMIT_ENABLED=0
+    # (CI/e2e/carga hacen decenas de logins seguidos con las cuentas seed).
+    if settings.rate_limit_enabled and email_throttled(email):
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             content={

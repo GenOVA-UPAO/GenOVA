@@ -1,0 +1,76 @@
+# E2E contra el deploy real de develop (Vercel + Railway), disparable desde el
+# CLI de GitHub:
+#
+#   gh workflow run e2e-develop.yml
+#   gh workflow run e2e-develop.yml -f base_url=https://... -f tags=@smoke
+#   gh run watch                    # seguir el run en vivo
+#   gh run download -n playwright-report-develop   # bajar reporte HTML + videos
+#
+# Requiere el secret VERCEL_AUTOMATION_BYPASS_SECRET (Vercel → Project →
+# Deployment Protection → Protection Bypass for Automation) para atravesar la
+# protección de los previews. Sin él, el run falla en la pantalla de Vercel.
+#
+# No levanta servidores: el frontend de develop resuelve su backend de Railway
+# por hostname (frontend/src/core/lib/http.ts). Solo corren los escenarios
+# @smoke por defecto (no ensucian la DB de develop con OVAs/roles de prueba).
+
+name: E2E develop
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'URL del frontend a testear'
+        required: false
+        default: 'https://gen-ova-frontend-git-develop-gen-ova-s-projects.vercel.app'
+      tags:
+        description: 'Tags Gherkin a ejecutar (expresión de cucumber)'
+        required: false
+        default: '@smoke'
+  schedule:
+    # Smoke diario contra develop (07:00 UTC) para detectar regresiones del deploy.
+    - cron: '0 7 * * *'
+
+jobs:
+  e2e-develop:
+    name: Playwright @smoke vs develop
+    runs-on: ubuntu-latest
+    env:
+      E2E_EXTERNAL: '1'
+      BASE_URL: ${{ inputs.base_url || 'https://gen-ova-frontend-git-develop-gen-ova-s-projects.vercel.app' }}
+      BDD_TAGS: ${{ inputs.tags || '@smoke' }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with: { node-version: 22, cache: pnpm }
+
+      - run: pnpm install
+
+      - uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ hashFiles('tests/package.json') }}
+          restore-keys: playwright-chromium-
+
+      - run: pnpm --filter genova-tests exec playwright install --with-deps chromium
+
+      - name: Run e2e vs develop
+        run: pnpm test:e2e
+
+      - name: Resumen
+        if: always()
+        run: |
+          echo "## E2E develop" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Frontend: $BASE_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tags: $BDD_TAGS" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Reporte: artifact \`playwright-report-develop\` (HTML + traces + video)" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: playwright-report-develop
+          path: tests/playwright-report

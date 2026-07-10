@@ -1,0 +1,115 @@
+# Pruebas de capacidad con Locust (RN-001/RN-004 → TA-003), disparables desde
+# el CLI de GitHub:
+#
+#   gh workflow run load-test.yml
+#   gh workflow run load-test.yml -f users=50 -f duration=3m
+#   gh workflow run load-test.yml -f target=develop      # solo reporte, sin gate
+#   gh run watch && gh run download -n locust-report
+#
+# Modo local (default): levanta el backend en el runner con RATE_LIMIT_ENABLED=0
+# y LLM_FAKE=1 (el encolado de generación no llama a proveedores LLM) y aplica el
+# gate P90 <= 278 ms (RN-001) sobre los endpoints no-LLM.
+# Modo develop: apunta al backend real de Railway SOLO como reporte informativo
+# (free tier + rate limit activo distorsionan; no aplica gate).
+
+name: Load test (Locust)
+
+on:
+  workflow_dispatch:
+    inputs:
+      users:
+        description: 'Usuarios concurrentes'
+        required: false
+        default: '25'
+      duration:
+        description: 'Duración (formato locust, ej. 2m, 90s)'
+        required: false
+        default: '2m'
+      target:
+        description: 'local (backend en el runner, con gate) | develop (Railway, solo reporte)'
+        required: false
+        default: 'local'
+        type: choice
+        options: [local, develop]
+
+jobs:
+  locust:
+    name: Locust ${{ inputs.target }}
+    runs-on: ubuntu-latest
+    env:
+      USERS: ${{ inputs.users || '25' }}
+      DURATION: ${{ inputs.duration || '2m' }}
+      TARGET: ${{ inputs.target || 'local' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with: { python-version: '3.11' }
+
+      - uses: astral-sh/setup-uv@v8.2.0
+        with: { enable-cache: true }
+
+      - name: Install backend deps
+        if: env.TARGET == 'local'
+        run: uv pip install --system -r requirements-dev.txt
+        working-directory: backend
+
+      - name: Start backend (LLM_FAKE, sin rate limit)
+        if: env.TARGET == 'local'
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          GROQ_API_KEY: dummy-ci-key-not-used-by-load-tests
+          OPENROUTER_API_KEY: dummy-ci-key-not-used-by-load-tests
+          LLM_FAKE: '1'
+          RATE_LIMIT_ENABLED: '0'
+        run: uvicorn main:app --port 8000 > /tmp/backend.log 2>&1 &
+        working-directory: backend
+
+      - name: Wait for backend
+        if: env.TARGET == 'local'
+        run: |
+          for i in $(seq 1 40); do
+            curl -sf http://localhost:8000/health && echo "backend ready" && exit 0
+            echo "waiting... ($i/40)"
+            sleep 5
+          done
+          echo "=== Backend failed to start ==="
+          cat /tmp/backend.log
+          exit 1
+
+      - name: Install Locust
+        run: uv pip install --system -r tests/load/requirements.txt
+
+      - name: Run Locust
+        env:
+          # Contra develop NO se encolan generaciones (LLM real, quema cuota).
+          LOAD_GENERATION: ${{ env.TARGET == 'local' && '1' || '0' }}
+        run: |
+          HOST=http://localhost:8000
+          if [ "$TARGET" = "develop" ]; then
+            HOST=https://genova-backend-develop.up.railway.app
+          fi
+          locust -f tests/load/locustfile.py --headless \
+            -u "$USERS" -r 5 -t "$DURATION" --host "$HOST" \
+            --csv tests/load/report --html tests/load/report.html \
+            --exit-code-on-error 0
+
+      - name: Gate RN-001 (P90 <= 278 ms, solo modo local)
+        if: env.TARGET == 'local'
+        run: python tests/load/check_thresholds.py tests/load/report_stats.csv | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Resumen (develop, informativo)
+        if: env.TARGET == 'develop'
+        run: |
+          echo "## Load test vs develop (informativo, sin gate)" >> "$GITHUB_STEP_SUMMARY"
+          python tests/load/check_thresholds.py tests/load/report_stats.csv >> "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: locust-report
+          path: |
+            tests/load/report.html
+            tests/load/report_stats.csv
+            tests/load/report_failures.csv

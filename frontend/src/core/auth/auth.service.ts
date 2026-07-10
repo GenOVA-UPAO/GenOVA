@@ -19,6 +19,7 @@ export interface AuthMessageData {
   totp_required?: boolean;
   ticket?: string;
   retry_after_minutes?: number;
+  email_verification_required?: boolean;
 }
 
 const STORAGE_KEY = "genova_me";

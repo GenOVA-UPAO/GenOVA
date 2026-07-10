@@ -32,11 +32,16 @@ class Ova(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     owner = relationship("User", back_populates="ovas")
+    # C14: el DDL declara ON DELETE CASCADE; sin cascade/passive_deletes el ORM
+    # emite UPDATE ova_versions SET ova_id=NULL al borrar el padre → NotNullViolation
+    # (500 en DELETE /api/ovas/{id}/permanente para todo OVA con versiones).
     versions = relationship(
         "OvaVersion",
         back_populates="ova",
         foreign_keys="OvaVersion.ova_id",
         order_by="OvaVersion.version_number",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
 
@@ -61,11 +66,13 @@ class OvaVersion(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     ova = relationship("Ova", back_populates="versions", foreign_keys=[ova_id])
+    # C14: ova_phases.version_id tiene ON DELETE CASCADE en el DDL.
     phases = relationship(
         "OvaPhase",
         back_populates="version",
         order_by="OvaPhase.phase_order",
         cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
 
