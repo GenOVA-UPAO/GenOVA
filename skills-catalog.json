@@ -38,7 +38,7 @@
     "frontend-design": {
       "installed": true,
       "installedPath": ".agents/skills/frontend-design/SKILL.md",
-      "description": "Crea interfaces frontend distintivas y de calidad de producción (componentes, páginas, dashboards Angular/HTML/CSS); evita la estética genérica de IA",
+      "description": "Creates distinctive, production-quality frontend interfaces (Angular/HTML/CSS components, pages, dashboards); avoids generic AI aesthetics",
       "triggers": [
         "frontend", "ui", "ux", "diseño", "design", "componente",
         "página", "page", "dashboard", "landing", "estilizar", "beautify",
@@ -80,7 +80,7 @@
     "sp-writing-plans": {
       "installed": true,
       "installedPath": ".agents/skills/sp-writing-plans/SKILL.md",
-      "description": "Genera plan de implementación detallado (TDD, bite-sized tasks, file structure, interfaces) a partir de un spec aprobado. Guardado en docs/superpowers/plans/. Invocar entre spec_ready aprobado y lanzar implementer.",
+      "description": "Generates a detailed implementation plan (TDD, bite-sized tasks, file structure, interfaces) from an approved spec. Saved to docs/superpowers/plans/. Invoke between an approved spec_ready and launching implementer.",
       "triggers": [
         "plan de implementación", "implementation plan", "antes de implementar",
         "descomponer en tareas", "break into tasks", "planear implementación",
@@ -88,26 +88,26 @@
       ],
       "benefitsAgents": ["leader", "implementer"],
       "source": "obra/Superpowers",
-      "securityAssessment": "Safe · skill de planificación · sin llamadas externas",
+      "securityAssessment": "Safe · planning skill · no external calls",
       "lastVerified": "2026-06-17"
     },
     "sp-subagent": {
       "installed": true,
       "installedPath": ".agents/skills/sp-subagent/SKILL.md",
-      "description": "Subagent-driven development: despacha un implementer subagente por tarea independiente, review tras cada uno, review final del branch. Usar para features con ≥3 tareas independientes.",
+      "description": "Subagent-driven development: dispatches one implementer subagent per independent task, review after each one, final review of the branch. Use for features with ≥3 independent tasks.",
       "triggers": [
         "tareas paralelas", "parallel tasks", "subagente por tarea",
         "subagent per task", "implementar en paralelo", "≥3 tareas independientes"
       ],
       "benefitsAgents": ["implementer"],
       "source": "obra/Superpowers",
-      "securityAssessment": "Safe · skill de orquestación · sin llamadas externas",
+      "securityAssessment": "Safe · orchestration skill · no external calls",
       "lastVerified": "2026-06-17"
     },
     "sp-verify": {
       "installed": true,
       "installedPath": ".agents/skills/sp-verify/SKILL.md",
-      "description": "Verificación antes de declarar completitud. Requiere evidencia fresca (./verify.ps1 output) antes de emitir APPROVED o cualquier claim de éxito. Evidence before assertions.",
+      "description": "Verification before declaring completeness. Requires fresh evidence (./verify.ps1 output) before issuing APPROVED or any success claim. Evidence before assertions.",
       "triggers": [
         "verificar antes de completar", "verify before done",
         "evidencia antes de claim", "antes de APPROVED",
@@ -115,7 +115,7 @@
       ],
       "benefitsAgents": ["reviewer", "implementer"],
       "source": "obra/Superpowers",
-      "securityAssessment": "Safe · skill de verificación · sin llamadas externas",
+      "securityAssessment": "Safe · verification skill · no external calls",
       "lastVerified": "2026-06-17"
     },
     "graphify": {
@@ -132,6 +132,62 @@
       "securityAssessment": "Safe · 68k stars · YC S26 · local-only graph generation",
       "installNote": "PyPI package is 'graphifyy' (double-y). CLI command remains 'graphify'. Run: uv tool install graphifyy && graphify install --project && graphify .",
       "lastVerified": "2026-06-17"
+    },
+    "genova-dev": {
+      "installed": true,
+      "installedPath": ".claude/skills/genova-dev/SKILL.md",
+      "description": "GenOVA master dev workflow: sizes the task, activates plan mode for large work, generates a plan-ledger .md with subtasks and an assigned model (haiku/sonnet/opus), dispatches subagents with their own memory, and applies the project's commit rules (no Co-Authored-By)",
+      "triggers": [
+        "implementa", "implement", "nueva feature", "new feature",
+        "refactor", "desarrolla", "develop", "task grande", "big task",
+        "plan de desarrollo", "orquesta subagentes", "modo plan"
+      ],
+      "benefitsAgents": ["leader", "implementer"],
+      "source": "local/genova",
+      "securityAssessment": "Safe · skill de orquestación local · sin llamadas externas",
+      "lastVerified": "2026-07-12"
+    },
+    "genova-angular": {
+      "installed": true,
+      "installedPath": ".claude/skills/genova-angular/SKILL.md",
+      "description": "GenOVA's own Angular frontend conventions: screaming architecture (features/<domain> vs core/), standalone+OnPush+zoneless+inject(), Signal Forms, SpartanUI (libs/ui + gn-* wrappers) and quality gates (250 lines, strict ESLint, responsive). Complements the official angular-developer skill",
+      "triggers": [
+        "componente angular", "angular component", "signal", "servicio angular",
+        "angular service", "página", "page", "feature frontend",
+        "screaming architecture", "spartan", "signal forms"
+      ],
+      "benefitsAgents": ["implementer", "reviewer"],
+      "source": "local/genova",
+      "securityAssessment": "Safe · local code conventions · no external calls",
+      "lastVerified": "2026-07-12"
+    },
+    "genova-fastapi": {
+      "installed": true,
+      "installedPath": ".claude/skills/genova-fastapi/SKILL.md",
+      "description": "GenOVA's own FastAPI backend conventions: router.py->service.py->models.py per domain, hard security (commit_or_500, @limiter.limit, never log secrets), ruff/200-line limit, migrations and ORM cascades (checkpoint C14)",
+      "triggers": [
+        "endpoint", "router fastapi", "fastapi router", "backend endpoint",
+        "pydantic", "migración", "migration", "sqlalchemy", "servicio backend",
+        "commit_or_500", "rate limit"
+      ],
+      "benefitsAgents": ["implementer", "reviewer"],
+      "source": "local/genova",
+      "securityAssessment": "Safe · local code conventions · no external calls",
+      "lastVerified": "2026-07-12"
+    },
+    "genova-audit": {
+      "installed": true,
+      "installedPath": ".claude/skills/genova-audit/SKILL.md",
+      "description": "Full, harsh audit of the GenOVA repo against CHECKPOINTS.md (C1-C14), screaming architecture, dead code, and security, with a thermo-nuclear-style 'code judo' lens. Produces a severity-ranked report with file:line in sdd/audits/. Manual invocation (disable-model-invocation)",
+      "triggers": [
+        "auditoría completa", "full audit", "audita el repo", "audit the repo",
+        "revisión durísima", "code judo", "genova-audit"
+      ],
+      "benefitsAgents": ["reviewer", "leader"],
+      "source": "local/genova",
+      "securityAssessment": "Safe · read-only audit + reporting skill · no external calls",
+      "installNote": "Manual invocation only (/genova-audit) - does not auto-trigger from conversation triggers.",
+      "lastVerified": "2026-07-12"
     }
   },
   "pendingReview": []
