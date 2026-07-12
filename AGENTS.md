@@ -1,147 +1,178 @@
-# AGENTS.md — Mapa de navegación para agentes de IA
+# AGENTS.md — Navigation map for AI agents
 
-> Punto de entrada para cualquier agente que trabaje en este repositorio.
-> Es un **mapa**, no una biblia. Lee solo lo que necesites cuando lo necesites.
+> Entry point for any agent working in this repository.
+> It's a **map**, not a bible. Read only what you need, when you need it.
 
 ---
 
-## 1. Antes de empezar (obligatorio)
+## 0. Language policy (canonical)
 
-1. Lee `sdd/progress/current.md` — entiende en qué estado quedó la última sesión.
-2. Lee `feature_list.json` — identifica features pendientes y su estado.
-3. Lee `sdd/progress/sprint.md` — identifica sprint actual y ejecuta Sprint Check.
-4. Ejecuta `./verify.ps1` — verifica que el entorno está verde antes de tocar código.
-5. Lee `CLAUDE.md` y `docs/<tema>.md` si aplica (ver índice en `docs/README.md`).
+Three-level language model used across every agent/skill in this repo:
 
-## 2. Mapa del repositorio
+- **Level A — Instructions / reasoning → ENGLISH.** Agent bodies, skill bodies,
+  `references/*.md`, this file's prose, hook diagnostic messages.
+- **Level B — Functional literals → PRESERVED VERBATIM (never translated).**
+  Match tokens like `RESULTADO FINAL: PASA` (emitted by `verify.ps1`); receipts/verdicts
+  parsed by `leader` (`done ->`, `blocked ->`, `spec_ready ->`, `doc_ready ->`,
+  `APPROVED ->`, `CHANGES_REQUESTED ->`, `wireframe_ready ->`, `found_installed`,
+  `found_external`, `not_found`, `updates_available`, `all_current`,
+  `proposals_ready`, `no_refs_found`); status enums (`pending`, `spec_ready`,
+  `in_progress`, `done`, `blocked`, `aborted`, `amended`); spec-type codes
+  (`HU/EN/TA/BU/RN/EP/SP/DO`); checkpoint IDs `C1`–`C14`; backprop markers `§B`/`§V`;
+  every agent/skill `name:` in frontmatter; all file paths; `skills-catalog.json`
+  bilingual triggers.
+- **Level C — User-facing output / product → SPANISH.** Chat replies to the user,
+  specs (`sdd/specs/`), docs (`docs/`), progress notes (`sdd/progress/`), backlog,
+  audit reports (`sdd/audits/`), and commit messages.
 
-| Archivo / carpeta | Qué contiene | Cuándo leerlo |
+Every agent/skill should state its language policy in one line and link back here.
+This section is the single source of truth — don't restate the model differently
+elsewhere.
+
+## 1. Before starting (mandatory)
+
+1. Read `sdd/progress/current.md` — understand the state the last session left.
+2. Read `feature_list.json` — identify pending features and their state.
+3. Read `sdd/progress/sprint.md` — identify the current sprint and run Sprint Check.
+4. Run `./verify.ps1` — verify the environment is green before touching code.
+5. Read `CLAUDE.md` and `docs/<topic>.md` if applicable (see index in `docs/README.md`).
+
+## 2. Repository map
+
+| File / folder | What it contains | When to read it |
 |---|---|---|
-| `feature_list.json` | Lista de features con estado (`pending/spec_ready/in_progress/done/blocked`) | Siempre, al empezar |
-| `skills-catalog.json` | Registro de skills instaladas (triggers, sources, security) | Al buscar o recomendar skills |
-| `skills-lock.json` | Lock de versiones de skills instaladas | Al instalar/actualizar skills |
-| `sdd/progress/current.md` | Estado de la sesión activa | Siempre, al empezar |
-| `sdd/progress/sprint.md` | Sprint actual + fechas (persiste entre sesiones) | Al arrancar sesión; actualizar solo con Caso J |
-| `sdd/progress/history.md` | Bitácora append-only de sesiones anteriores | Si necesitas contexto histórico |
-| `sdd/specs/<CODIGO>_<nombre>.md` | Specs de HU, EP, EN, RN | Antes de implementar |
-| `sdd/tasks/<CODIGO>_<nombre>.md` | Specs de TA (tareas técnicas) | Antes de implementar TA |
-| `sdd/bugs/<CODIGO>_<nombre>.md` | Specs de BU (defectos) | Antes de corregir bugs |
-| `CLAUDE.md` | Comandos de arranque, contexto de arquitectura | Contexto general al inicio |
-| `CHECKPOINTS.md` | Criterios objetivos de "estado final correcto" | Antes de declarar `done` |
-| `docs/<tema>.md` | Documentación funcional/técnica por tema (la genera `doc_author`) | Al usar/entender una feature |
-| `docs/README.md` | Índice de documentación (doc · tema · feature · fecha) | Para navegar las docs |
-| `.claude/agents/` | Definiciones de subagentes (leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync, doc_author) | Si orquestas trabajo |
-| `frontend/src/` | React 19 + Vite + Tailwind CSS + shadcn/ui | Para implementar frontend |
-| `frontend/README.md` | Stack frontend, convenciones shadcn/ui, comandos dev | Antes de implementar frontend |
-| `backend/` | FastAPI + SQLAlchemy | Para implementar backend |
-| `tests/` | BDD (cucumber-js E2E, pytest-bdd backend) | Para verificar |
+| `feature_list.json` | Feature list with state (`pending/spec_ready/in_progress/done/blocked`) | Always, at start |
+| `skills-catalog.json` | Registry of installed skills (triggers, sources, security) | When searching for or recommending skills |
+| `skills-lock.json` | Version lock for installed skills | When installing/updating skills |
+| `sdd/progress/current.md` | Active session state | Always, at start |
+| `sdd/progress/sprint.md` | Current sprint + dates (persists across sessions) | On session start; update only via Case J |
+| `sdd/progress/history.md` | Append-only log of past sessions | If you need historical context |
+| `sdd/specs/<CODE>_<name>.md` | HU, EP, EN, RN specs | Before implementing |
+| `sdd/tasks/<CODE>_<name>.md` | TA specs (technical tasks) | Before implementing a TA |
+| `sdd/bugs/<CODE>_<name>.md` | BU specs (defects) | Before fixing bugs |
+| `CLAUDE.md` | Startup commands, architecture context | General context at start |
+| `CHECKPOINTS.md` | Objective "correct final state" criteria | Before declaring `done` |
+| `docs/<topic>.md` | Functional/technical docs per topic (generated by `doc_author`) | When using/understanding a feature |
+| `docs/README.md` | Docs index (doc · topic · feature · date) | To navigate the docs |
+| `.claude/agents/` | Subagent definitions (leader, explorer, spec_author, implementer, reviewer, skill-advisor, spec-sync, doc_author) | If orchestrating work |
+| `frontend/src/` | Angular 22 + Angular Router + Tailwind CSS 4 + SpartanUI (`libs/ui`) | To implement frontend |
+| `frontend/README.md` | Angular CLI scaffolding commands, dev server | Before implementing frontend |
+| `backend/` | FastAPI + SQLAlchemy | To implement backend |
+| `tests/` | BDD (cucumber-js E2E, pytest-bdd backend) | To verify |
 
-## 3. Reglas duras (no negociables)
+> The legacy React/Vite frontend was archived on 2026-07-01 to
+> `archive/frontend-react-legacy/`. The active runtime is Angular (`frontend/`).
 
-- **Una sola feature a la vez** (ejecución secuencial): no mezcles diffs de varias features en el mismo paso. En **modo batch** (ver `leader.md` Caso I) se implementan varias `spec_ready` de corrido, pero igual **una tras otra** (implementer → reviewer → verify por feature), nunca en paralelo ni en un diff mezclado.
-- **No declares `done` sin tests verdes.** Ejecuta `./verify.ps1` antes de cerrar (también por cada feature del lote).
-- **No saltes la fase de spec.** Toda feature `"sdd": true` pasa por `spec_author` con aprobación humana antes de tocar código.
-- **Backlog mínimo**: no crees items nuevos para refactorizaciones internas. Antes de proponer un nuevo ID, busca un item `done` relacionado y márcalo `amended` (Caso K), o un item `pending`/`spec_ready` que cubra el mismo scope. Solo se crean items nuevos para funcionalidad percibida por el usuario.
-- **Títulos agnósticos de tecnología**: títulos de HU/EN/TA/RN describen QUÉ hace el sistema, nunca mencionan tecnologías, librerías ni patrones de implementación.
-- **SP y DO no siguen flujo SDD**: los Spikes (`SP-N`) se rastrean solo en `feature_list.json` sin spec; se marcan `done` cuando terminas la investigación. Las tareas de documentación (`DO-N`) las gestiona `doc_author` directamente → `docs/`. Ninguno pasa por `spec_author`.
-- **No saltes la puerta humana.** El leader para en `spec_ready` y espera confirmación. En modo batch la puerta es **única al inicio del lote** (aprobación del plan ordenado); el `reviewer` y `verify.ps1` por feature siguen siendo obligatorios.
-- **Documenta en tiempo real** en `sdd/progress/current.md`, no al final.
-- **Si no sabes algo, busca en `CLAUDE.md`** antes de inventarlo.
-- **Arquitectura GenOVA**: services → hooks → pages (frontend) · router → service → model (backend). No saltarse capas.
+## 3. Hard rules (non-negotiable)
 
-## 4. Flujo de trabajo (SDD)
+- **One feature at a time** (sequential execution): don't mix diffs from several features in the same step. In **batch mode** (see `leader.md` Case I) several `spec_ready` items are implemented in a row, but still **one after another** (implementer → reviewer → verify per feature), never in parallel or in a mixed diff.
+- **Don't declare `done` without green tests.** Run `./verify.ps1` before closing (also per feature in a batch).
+- **Don't skip the spec phase.** Every feature with `"sdd": true` goes through `spec_author` with human approval before touching code.
+- **Minimal backlog**: don't create new items for internal refactors. Before proposing a new ID, look for a related `done` item and mark it `amended` (Case K), or a `pending`/`spec_ready` item that already covers the same scope. New items are only created for user-perceivable functionality.
+- **Technology-agnostic titles**: HU/EN/TA/RN titles describe WHAT the system does, never mention technologies, libraries, or implementation patterns.
+- **SP and DO don't follow the SDD flow**: Spikes (`SP-N`) are tracked only in `feature_list.json` with no spec; mark them `done` when the investigation is finished. Documentation tasks (`DO-N`) are handled directly by `doc_author` → `docs/`. Neither goes through `spec_author`.
+- **Don't skip the human gate.** The leader stops at `spec_ready` and waits for confirmation. In batch mode the gate is **single, at the start of the batch** (approval of the ordered plan); `reviewer` and `verify.ps1` per feature are still mandatory.
+- **Document in real time** in `sdd/progress/current.md`, not at the end.
+- **If you don't know something, look in `CLAUDE.md`** before making it up.
+- **GenOVA architecture**: services → hooks → pages (frontend) · router → service → model (backend). Don't skip layers.
+
+## 4. Workflow (SDD)
 
 ```
-[MENSAJE USUARIO]
+[USER MESSAGE]
        │
        ▼
-  leader detecta tipo
+  leader detects type
        │
-       ├─ Task con ID (HU-XXX, TA-XXX…) ─→ pregunta confirmación → spec_author
-       ├─ Task sin ID ──────────────────→ sugiere TIPO-N → usuario confirma → spec_author
-       ├─ Error/bug crítico ─────────────→ sugiere BU-N → usuario confirma → spec_author
-       ├─ Skill request ────────────────→ skill-advisor → presenta resultado → [instala si humano aprueba]
-       └─ Pregunta conceptual ───────────→ responde leader directamente
+       ├─ Task with ID (HU-XXX, TA-XXX…) ─→ asks for confirmation → spec_author
+       ├─ Task without ID ──────────────→ suggests TYPE-N → user confirms → spec_author
+       ├─ Critical error/bug ────────────→ suggests BU-N → user confirms → spec_author
+       ├─ Skill request ────────────────→ skill-advisor → presents result → [installs if human approves]
+       └─ Conceptual question ──────────→ leader answers directly
 
 [SPEC]
-  pending → [spec_author] → spec_ready → ⏸ HUMANO → in_progress
-         → [implementer T1..Tn] → [reviewer] → done → ⏸ HUMANO → [doc_author] → docs/
+  pending → [spec_author] → spec_ready → ⏸ HUMAN → in_progress
+         → [implementer T1..Tn] → [reviewer] → done → ⏸ HUMAN → [doc_author] → docs/
 ```
 
-### Flujo interno de spec_author (4 pasos estrictos)
-1. **Asunciones** — lista todas las asunciones, pregunta cuáles rechazar
-2. **Refinamiento** — una pregunta a la vez por asunción rechazada (barra de progreso)
-3. **Confirmación** — espera "Ok" o "Adelante" antes de escribir
-4. **Generación** — escribe el archivo en disco
+### spec_author's internal flow (4 strict steps)
+1. **Assumptions** — list every assumption, ask which ones to reject
+2. **Refinement** — one question at a time per rejected assumption (progress bar)
+3. **Confirmation** — wait for "Ok" or "Go ahead" before writing
+4. **Generation** — write the file to disk
 
-## 5. Escalado de esfuerzo
+## 5. Effort scaling
 
-| Complejidad | Subagentes |
+| Complexity | Subagents |
 |---|---|
-| Trivial (1 archivo) | 1 spec_author → ⏸ → 1 implementer |
-| Media (2-3 archivos) | 1 spec_author → ⏸ → 1 implementer → 1 reviewer |
-| Compleja (refactor) | explorer → 1 spec_author → ⏸ → 1 implementer → 1 reviewer |
-| Muy compleja | Divide en sub-features y aplica la tabla de nuevo |
+| Trivial (1 file) | 1 spec_author → ⏸ → 1 implementer |
+| Medium (2-3 files) | 1 spec_author → ⏸ → 1 implementer → 1 reviewer |
+| Complex (refactor) | explorer → 1 spec_author → ⏸ → 1 implementer → 1 reviewer |
+| Very complex | Split into sub-features and apply the table again |
 
-**Lanza `explorer` automáticamente** cuando la feature cumpla ≥1 de:
-- Toca más de 2 dominios (ej. auth + ova + scorm)
-- Menciona refactor, migración, pipeline o cambio de arquitectura
-- Involucra un servicio externo nuevo (LLM, storage, email)
-- Descripción ambigua en scope o el usuario expresa incertidumbre
-- Complejidad estimada ≥ 3 según criterios de `explorer.md`
+**Launch `explorer` automatically** when the feature meets ≥1 of:
+- Touches more than 2 domains (e.g. auth + ova + scorm)
+- Mentions refactor, migration, pipeline, or architecture change
+- Involves a new external service (LLM, storage, email)
+- Ambiguous scope description or the user expresses uncertainty
+- Estimated complexity ≥ 3 per `explorer.md` criteria
 
-## 6. Cierre de sesión
+## 6. Session close-out
 
-Antes de terminar:
+Before finishing:
 
-1. Ejecuta `./verify.ps1` — todo verde.
-2. Si la feature acabó: cambia `status: "done"` en `feature_list.json` y añade `"merge_commit": "<sha>"` con el hash del commit de cierre (trazabilidad git ↔ feature).
-3. Si una feature llegó a `done`: ofrece generar/actualizar su doc en `docs/` con `doc_author` (no fuerza, pregunta). Si cambió interfaz pública ya documentada, `doc_author` actualiza la doc en vez de duplicar.
-4. Mueve el resumen de `sdd/progress/current.md` al final de `sdd/progress/history.md`.
-5. Vacía `sdd/progress/current.md` dejando solo la plantilla.
-6. Propone commit al humano (conventional commits). Espera aprobación explícita.
-7. No dejes `print()` de debug, archivos temporales ni TODOs sin contexto.
+1. Run `./verify.ps1` — everything green.
+2. If the feature is finished: change `status: "done"` in `feature_list.json` and add `"merge_commit": "<sha>"` with the closing commit hash (git ↔ feature traceability).
+3. If a feature reached `done`: offer to generate/update its doc in `docs/` with `doc_author` (don't force it, ask). If it changed an already-documented public interface, `doc_author` updates the doc instead of duplicating it.
+4. Move the summary from `sdd/progress/current.md` to the end of `sdd/progress/history.md`.
+5. Clear `sdd/progress/current.md`, leaving only the template.
+6. Propose a commit to the human (Conventional Commits). Wait for explicit approval.
+7. Don't leave debug `print()`, temp files, or contextless TODOs.
 
-## 7. Skills instaladas y su propósito
+## 7. Installed skills and their purpose
 
-| Skill | Path | Cuándo usarla |
+| Skill | Path | When to use it |
 |---|---|---|
-| `find-docs` | `.agents/skills/find-docs/` | Antes de usar lib/framework nuevo → docs actualizadas via ctx7 |
-| `find-skills` | `.agents/skills/find-skills/` | Buscar/instalar skills externas |
-| `frontend-design` | `.agents/skills/frontend-design/` | Componentes React, UI/UX, diseño de pantallas |
-| `vercel-react-best-practices` | `.agents/skills/vercel-react-best-practices/` | Optimización React (memo, re-renders, bundles) |
-| `caveman` | `.agents/skills/caveman/` | Comprimir output ~75% tokens. Niveles: lite/full/ultra/wenyan |
-| `backprop` | `.agents/skills/backprop/` | Auto-fix falla intento 2 → §B entry en spec + §V en CHECKPOINTS.md |
-| `sp-writing-plans` | `.agents/skills/sp-writing-plans/` | Spec aprobado → plan TDD detallado en `docs/superpowers/plans/` |
-| `sp-subagent` | `.agents/skills/sp-subagent/` | Plan con ≥3 tareas independientes → subagente fresco por tarea |
-| `sp-verify` | `.agents/skills/sp-verify/` | Antes de APPROVED → evidencia fresca de `verify.ps1` |
-| `graphify` | `.claude/skills/graphify/` | Knowledge graph del codebase. Instalar: `uv tool install graphifyy && graphify install --project && graphify .` |
+| `find-docs` | `.agents/skills/find-docs/` | Before using a new lib/framework → up-to-date docs via ctx7 |
+| `find-skills` | `.agents/skills/find-skills/` | Search/install external skills |
+| `frontend-design` | `.agents/skills/frontend-design/` | Angular components, UI/UX, screen design |
+| `angular-developer` | `.agents/skills/angular-developer/` | Angular API guidance (signals, forms, DI, routing, SSR, testing, CLI) |
+| `caveman` | `.agents/skills/caveman/` | Compress output ~75% tokens. Levels: lite/full/ultra/wenyan |
+| `backprop` | `.agents/skills/backprop/` | Auto-fix fails attempt 2 → §B entry in spec + §V in CHECKPOINTS.md |
+| `sp-writing-plans` | `.agents/skills/sp-writing-plans/` | Approved spec → detailed TDD plan in `docs/superpowers/plans/` |
+| `sp-subagent` | `.agents/skills/sp-subagent/` | Plan with ≥3 independent tasks → fresh subagent per task |
+| `sp-verify` | `.agents/skills/sp-verify/` | Before APPROVED → fresh evidence from `verify.ps1` |
+| `graphify` | `.claude/skills/graphify/` | Codebase knowledge graph. Install: `uv tool install graphifyy && graphify install --project && graphify .` |
+| `genova-dev` | `.claude/skills/genova-dev/` | Dev workflow orchestration, plan mode, model-tiered subagents |
+| `genova-angular` | `.claude/skills/genova-angular/` | GenOVA-specific Angular frontend conventions |
+| `genova-fastapi` | `.claude/skills/genova-fastapi/` | GenOVA-specific FastAPI backend conventions |
+| `genova-audit` | `.claude/skills/genova-audit/` | Full repo audit against CHECKPOINTS.md (manual, `/genova-audit`) |
 
-**Consulta `skills-catalog.json`** para triggers, fuentes y evaluación de seguridad de cada skill.
+**Check `skills-catalog.json`** for triggers, sources, and the security assessment of each skill.
 
-## 8. Si te bloqueas
+## 8. If you get stuck
 
-- Relee la sección relevante de `CLAUDE.md`.
-- Si una herramienta falla inesperadamente, **no improvises workaround**: documenta en `sdd/progress/current.md` con estado `blocked` y termina la sesión.
+- Re-read the relevant section of `CLAUDE.md`.
+- If a tool fails unexpectedly, **don't improvise a workaround**: document it in `sdd/progress/current.md` with state `blocked` and end the session.
 
-## 8. Compatibilidad multi-herramienta
+## 9. Multi-tool compatibility
 
-Este repositorio soporta múltiples AI coding tools. `AGENTS.md` es la fuente de reglas compartida.
+This repository supports multiple AI coding tools. `AGENTS.md` is the shared rule source.
 
-| Tool | Lee rules | Lee agents | Config |
+| Tool | Reads rules from | Reads agents from | Config |
 |---|---|---|---|
-| Claude Code | `CLAUDE.md` + `AGENTS.md` | `.claude/agents/` | Herramienta primaria |
-| Codex CLI | `AGENTS.md` | — | Nativo |
-| Opencode | `AGENTS.md` | `.opencode/agents/` (copias transformadas desde `.claude/agents/`) | `.opencode/opencode.json` |
+| Claude Code | `CLAUDE.md` + `AGENTS.md` | `.claude/agents/` | Primary tool |
+| Codex CLI | `AGENTS.md` | — | Native |
+| Opencode | `AGENTS.md` | `.opencode/agents/` (transformed copies from `.claude/agents/`) | `.opencode/opencode.json` |
 | GitHub Copilot | `AGENTS.md` + `.github/copilot-instructions.md` | `.github/agents/sdd-leader.agent.md` | Workspace instructions |
 | Antigravity | `GEMINI.md` → `AGENTS.md` | — | `GEMINI.md` |
 
 ### Symlink map
 
-| Symlink | Apunta a | Creado por |
+| Symlink | Points to | Created by |
 |---|---|---|
-| `.claude/skills/<name>/` | `.agents/skills/<name>/` | `npx skills add` o `cmd mklink /J` |
-| `.opencode/agents/*.md` | Copia transformada desde `.claude/agents/*.md` (mode/hidden/permission para Opencode) | `scripts/setup-harness.ps1` |
+| `.claude/skills/<name>/` | `.agents/skills/<name>/` | `npx skills add` or `cmd mklink /J` |
+| `.opencode/agents/*.md` | Transformed copy from `.claude/agents/*.md` (mode/hidden/permission for Opencode) | `scripts/setup-harness.ps1` |
 
-**Post-clone en Windows**: ejecuta `scripts/setup-harness.ps1` para recrear symlinks y resincronizar agentes de Opencode.
-Para verificar sin crear: `scripts/setup-harness.ps1 -Check`.
+**Post-clone on Windows**: run `scripts/setup-harness.ps1` to recreate symlinks and resync Opencode agents.
+To verify without creating: `scripts/setup-harness.ps1 -Check`.

@@ -2,8 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> **Al iniciar sesión**: lee `AGENTS.md` → `feature_list.json` → `sdd/progress/current.md`.
-> Actúa siempre como el agente `leader` definido en `.claude/agents/leader.md`.
+> **On session start**: read `AGENTS.md` → `feature_list.json` → `sdd/progress/current.md`.
+> Always act as the `leader` agent defined in `.claude/agents/leader.md`.
+> Language policy (canonical): see `AGENTS.md` §0 — instructions in English, user-facing
+> output (chat, specs, docs, progress, backlog, commits) in Spanish.
 
 ## Project
 
@@ -118,25 +120,41 @@ Bearer` fallback once all clients are on cookies.
 - DB errors: use `commit_or_500()` helpers — never `str(e)` to client.
 - `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`: server-only, never `VITE_*`.
 
-## Skills & agentes
+## Skills & agents
 
-Agentes SDD en `.claude/agents/`: `leader` (orquesta), `explorer` (mapa pre-spec),
-`spec_author` (specs; 3 modos — Único/Secuencial/Batch: ≥4 specs o petición explícita
-= una ronda de asunciones + una sola confirmación + generación continua de todas),
-`implementer` (código), `reviewer` (aprueba), `skill-advisor`
-(broker de skills), `spec-sync` (consistencia entre specs tras renombres) y `doc_author`
-(documentación en `docs/`, flujo interactivo de 4 pasos como `spec_author`; el `leader`
-lo ofrece al cerrar una feature `done` o ante "documenta X", y actualiza docs existentes
-en vez de duplicar).
+SDD agents in `.claude/agents/`: `leader` (orchestrates), `explorer` (pre-spec map),
+`spec_author` (specs; 3 modes — Single/Sequential/Batch: ≥4 specs or explicit
+request = one round of assumptions + a single confirmation + continuous generation
+of all of them), `implementer` (code), `reviewer` (approves), `skill-advisor`
+(skill broker), `spec-sync` (consistency across specs after renames), and `doc_author`
+(documentation in `docs/`, 4-step interactive flow like `spec_author`; `leader`
+offers it when a feature closes `done` or on "document X", and updates existing docs
+instead of duplicating).
 
-Skills instaladas en `.agents/skills/` (symlink desde `.claude/skills/`), registradas
-en `skills-catalog.json` (metadata + triggers + seguridad) y bloqueadas en `skills-lock.json`:
-- `find-skills` — descubrir/instalar skills (`npx skills find` / `add`)
-- `find-docs` — docs actualizadas de librerías vía `npx ctx7@latest library|docs`. El
-  `implementer` la usa antes de escribir código con una librería concreta.
+Local GenOVA convention skills in `.claude/skills/` (source `local/genova`, real
+directories, not symlinked): `genova-dev` (dev workflow orchestration, plan mode,
+model-tiered subagents), `genova-angular` (Angular frontend conventions, complements
+the official `angular-developer` skill), `genova-fastapi` (FastAPI backend
+conventions), `genova-audit` (full repo audit against `CHECKPOINTS.md`, manual
+invocation via `/genova-audit`).
 
-Para buscar/instalar/actualizar skills: pídeselo al `leader` ("busca una skill para…",
-"actualiza skills"). Post-clone en Windows: `scripts/setup-harness.ps1` recrea symlinks.
+Skills installed in `.agents/skills/` (symlinked from `.claude/skills/`), registered
+in `skills-catalog.json` (metadata + triggers + security) and locked in `skills-lock.json`:
+- `find-skills` — discover/install skills (`npx skills find` / `add`)
+- `find-docs` — up-to-date library docs via `npx ctx7@latest library|docs`. Used by
+  `implementer` before writing code against a specific library.
+
+To search/install/update skills: ask the `leader` ("find a skill for…",
+"update skills"). Post-clone on Windows: `scripts/setup-harness.ps1` recreates symlinks.
+
+## Language policy
+
+Reason and write instructions in English (agents, skills, docs like this one).
+Produce all user-facing output in Spanish: chat replies, specs (`sdd/specs/`), docs
+(`docs/`), progress notes (`sdd/progress/`), backlog, audit reports (`sdd/audits/`),
+and commit messages. Never translate literal protocol tokens (receipts, status enums,
+checkpoint IDs, spec-type codes, `RESULTADO FINAL: PASA`). Canonical source:
+`AGENTS.md` §0.
 
 ## CI pipeline
 

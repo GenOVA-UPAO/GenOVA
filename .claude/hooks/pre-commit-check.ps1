@@ -1,24 +1,30 @@
-# pre-commit-check.ps1 - Hook PreToolUse (Bash, filtrado a "git commit*" via "if")
-# Corre verify.ps1 completo + scan de secretos SOLO antes de un git commit.
-# Bloquea el commit (permissionDecision=deny) si detecta secretos.
+# pre-commit-check.ps1 - PreToolUse hook (Bash, filtered to "git commit*" via "if")
+# Runs full verify.ps1 + secret scan ONLY before a git commit.
+# Blocks the commit (permissionDecision=deny) if secrets are detected.
+# Messages go to stderr; stdout is JSON only (Cursor requires valid JSON in PreToolUse).
+
+$ErrorActionPreference = "Continue"
+function Write-HookMsg([string]$Message, [string]$Color = "White") {
+    [Console]::Error.WriteLine($Message)
+}
 
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Set-Location $root
 
-Write-Host ""
-Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "  [harness] Verificacion pre-commit" -ForegroundColor Cyan
-Write-Host "============================================" -ForegroundColor Cyan
-Write-Host ""
+Write-HookMsg ""
+Write-HookMsg "============================================"
+Write-HookMsg "  [harness] Pre-commit verification"
+Write-HookMsg "============================================"
+Write-HookMsg ""
 
-# 1) verify.ps1 completo (no bloquea el commit por fallo de tests, solo avisa)
+# 1) full verify.ps1 (does not block the commit on test failure, only warns)
 & "$root\verify.ps1"
 $verifyExit = $LASTEXITCODE
 
-Write-Host ""
+Write-HookMsg ""
 
 if ($verifyExit -ne 0) {
-    Write-Host "[harness] verify.ps1 FALLO - revisa los errores antes de confirmar el commit." -ForegroundColor Red
+    Write-HookMsg "[harness] verify.ps1 FAILED - review the errors before confirming the commit."
 }
 
 # 2) Scan de secretos en archivos staged (fallback: working tree)
@@ -38,23 +44,23 @@ if (-not $changedFiles) { $changedFiles = (git diff --name-only HEAD 2>$null) }
 $secretsFound = @()
 foreach ($file in $changedFiles) {
     if (Test-Path $file) {
-        # Saltar binarios / lockfiles / fixtures conocidos
+        # Skip known binaries / lockfiles / fixtures
         if ($file -match "\.(png|jpg|jpeg|gif|ico|zip|pdf|lock)$") { continue }
         if ($file -match "(uv\.lock|pnpm-lock\.yaml|package-lock\.json)$") { continue }
         $content = Get-Content $file -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
         foreach ($pattern in $secretPatterns) {
-            if ($content -match $pattern) { $secretsFound += "$file : patron $pattern" }
+            if ($content -match $pattern) { $secretsFound += "$file : pattern $pattern" }
         }
     }
 }
 
 if ($secretsFound.Count -gt 0) {
-    Write-Host ""
-    Write-Host "[harness] BLOQUEADO - Posibles secretos en archivos a commitear:" -ForegroundColor Red
-    $secretsFound | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
-    Write-Host ""
-    $reason = "Posibles secretos detectados: " + ($secretsFound -join "; ")
+    Write-HookMsg ""
+    Write-HookMsg "[harness] BLOCKED - Possible secrets in files to be committed:"
+    $secretsFound | ForEach-Object { Write-HookMsg "  $_" }
+    Write-HookMsg ""
+    $reason = "Possible secrets detected: " + ($secretsFound -join "; ")
     $output = @{
         hookSpecificOutput = @{
             hookEventName = "PreToolUse"
@@ -66,16 +72,25 @@ if ($secretsFound.Count -gt 0) {
     exit 0
 }
 
-# 3) Wireframes huerfanos (implementer FASE 0 sin completar implementacion real)
+# 3) Orphan wireframes (implementer PHASE 0 without a completed real implementation)
 $wireframeDir = Join-Path $root "frontend\src\wireframes"
 if (Test-Path $wireframeDir) {
     $wireframes = Get-ChildItem $wireframeDir -Filter "*.jsx" -ErrorAction SilentlyContinue
     if ($wireframes.Count -gt 0) {
-        Write-Host "[harness] AVISO - Wireframes temporales presentes (sesion FASE 0 sin cerrar):" -ForegroundColor Yellow
-        $wireframes | ForEach-Object { Write-Host "  frontend/src/wireframes/$($_.Name)" -ForegroundColor Yellow }
-        Write-Host "          Elimina tras implementacion real o retomalos en la proxima sesion." -ForegroundColor Yellow
+        Write-HookMsg "[harness] WARNING - Temporary wireframes present (PHASE 0 session not closed):"
+        $wireframes | ForEach-Object { Write-HookMsg "  frontend/src/wireframes/$($_.Name)" }
+        Write-HookMsg "          Remove after real implementation or resume them next session."
     }
 }
 
-Write-Host "[harness] Pre-commit OK. Continuando con el commit." -ForegroundColor Green
-Write-Host ""
+Write-HookMsg "[harness] Pre-commit OK. Continuing with the commit."
+Write-HookMsg ""
+
+# Allow: stdout must be valid PreToolUse JSON (no log noise).
+@{
+    hookSpecificOutput = @{
+        hookEventName = "PreToolUse"
+        permissionDecision = "allow"
+    }
+} | ConvertTo-Json -Depth 5 -Compress
+exit 0

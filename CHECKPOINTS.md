@@ -1,118 +1,118 @@
-# CHECKPOINTS — Criterios objetivos de calidad de GenOVA
+# CHECKPOINTS — GenOVA objective quality criteria
 
-> El reviewer verifica estos checkpoints al aprobar cualquier feature.
-> Puede agregar nuevos criterios (documentando el cambio en su veredicto).
+> The reviewer verifies these checkpoints when approving any feature.
+> It may add new criteria (documenting the change in its verdict).
 
-## C1 — Tests verdes
-- [ ] `pnpm test:unit` pasa al 100% (cucumber-js)
-- [ ] `pytest tests/step_defs/ -v --tb=short` pasa al 100%
-- [ ] No hay tests en `[ ]` sin justificación documentada en `sdd/progress/implementados/impl_*.md`
+## C1 — Green tests
+- [ ] `pnpm test:unit` passes 100% (cucumber-js)
+- [ ] `pytest tests/step_defs/ -v --tb=short` passes 100%
+- [ ] No `[ ]` tests without justification documented in `sdd/progress/implementados/impl_*.md`
 
-## C2 — Lint limpio
-- [ ] `pnpm lint` sale con exit 0 (ESLint, max-lines: 250, sin errores)
-- [ ] `ruff check backend/` sale con exit 0 (E, F, W, I, B, UP, S, SIM)
+## C2 — Clean lint
+- [ ] `pnpm lint` exits 0 (ESLint, max-lines: 250, no errors)
+- [ ] `ruff check backend/` exits 0 (E, F, W, I, B, UP, S, SIM)
 
-## C3 — Límite de líneas respetado (NO aplica a archivos de test ni migraciones SQL)
-- [ ] Ningún archivo `.ts` en `frontend/src/` supera 250 líneas (plantillas `.html` exentas)
-- [ ] Ningún archivo en `backend/` supera 200 líneas
-- [ ] Si un archivo está por encima del límite sin exención, hay plan de split documentado en `sdd/progress/implementados/impl_*.md`
-- [ ] **Patrón de split frontend**: extraer subcomponentes, helpers o servicios; plantillas en `.html` separado del `.ts`
-- [ ] **Patrón de split backend**: extraer routers a `<dominio>/<recurso>_router.py`, helpers a `<dominio>/lib/`
-- [ ] **Exentos del límite**: archivos de test (`backend/tests/**`, `tests/**`, `test_*.py`, `*_test.py`, `*.test.*`, `*.steps.*`), migraciones SQL (`backend/migrations/*.sql`) y plantillas Angular (`*.html`)
+## C3 — Line limit respected (does NOT apply to test files or SQL migrations)
+- [ ] No `.ts` file in `frontend/src/` exceeds 250 lines (`.html` templates exempt)
+- [ ] No file in `backend/` exceeds 200 lines
+- [ ] If a file is over the limit without an exemption, a split plan is documented in `sdd/progress/implementados/impl_*.md`
+- [ ] **Frontend split pattern**: extract subcomponents, helpers, or services; `.html` templates kept separate from `.ts`
+- [ ] **Backend split pattern**: extract routers into `<domain>/<resource>_router.py`, helpers into `<domain>/lib/`
+- [ ] **Exempt from the limit**: test files (`backend/tests/**`, `tests/**`, `test_*.py`, `*_test.py`, `*.test.*`, `*.steps.*`), SQL migrations (`backend/migrations/*.sql`), and Angular templates (`*.html`)
 
-## C4 — Seguridad básica
-- [ ] No hay tokens, API keys, passwords, ni OTPs en respuestas HTTP
-- [ ] Nuevos endpoints con input externo tienen rate-limit (`@limiter.limit`)
-- [ ] Nuevos endpoints auth-adjacentes usan Pydantic con `Field(max_length=…)`
-- [ ] Errores de BD nunca se filtran al cliente (usar `commit_or_500()` helpers)
+## C4 — Basic security
+- [ ] No tokens, API keys, passwords, or OTPs in HTTP responses
+- [ ] New endpoints with external input have rate limiting (`@limiter.limit`)
+- [ ] New auth-adjacent endpoints use Pydantic with `Field(max_length=…)`
+- [ ] DB errors never leak to the client (use `commit_or_500()` helpers)
 
-## C5 — Trazabilidad specs ↔ tests
-- [ ] Cada `R<n>` del spec de la feature tiene al menos un test concreto
-- [ ] El mapa `R<n> → test` está documentado en `sdd/specs/<ID>_*.md` (§ Trazabilidad) **o** en `sdd/progress/implementados/impl_<name>.md` para features implementadas
+## C5 — Specs ↔ tests traceability
+- [ ] Every `R<n>` in the feature spec has at least one concrete test
+- [ ] The `R<n> → test` map is documented in `sdd/specs/<ID>_*.md` (§ Trazabilidad) **or** in `sdd/progress/implementados/impl_<name>.md` for implemented features
 
-## C6 — Estado del repo limpio
-- [ ] `verify.ps1` termina sin errores (PASA en todas las secciones)
-- [ ] `sdd/progress/current.md` refleja estado actualizado
-- [ ] No hay archivos temporales, `print()` de debug, ni TODOs sin contexto
+## C6 — Clean repo state
+- [ ] `verify.ps1` finishes with no errors (PASA on every section)
+- [ ] `sdd/progress/current.md` reflects the current state
+- [ ] No temp files, debug `print()`, or contextless TODOs
 
-## C7 — Arquitectura screaming (carpetas que describen el dominio)
-- [x] **Frontend** screaming architecture: `src/features/<dominio>/{pages,components,hooks,services,lib}/` (ej. `features/ova-workspace/`, NO `features/views/` o `features/http/`) — audit 2026-07-01: kebab-case domains, no `ova_workspace/` duplicate; see `impl_audit-closure.md`
-- [ ] **Backend** screaming architecture: paquetes por dominio (`auth/`, `ova/`, `agents/`, `rag/`, `prometheus/`...), NO módulos por tecnología (`controllers/`, `models/` universales)
-- [ ] Nombres de carpetas cuentan QUÉ hace el dominio, no la tecnología (`auth`, `ova-workspace`, `ova-library`, `rag`, `prometheus`, `scorm`)
-- [ ] Funciones genuinamente cross-dominio viven en `core/` (frontend) o `core/` (backend) con imports explícitos desde cada dominio
-- [x] **Capas en frontend**: services (HTTP) → hooks/signals (estado) → pages (orquestan layout). Pages NO hacen `fetch` directo; services encapsulan `apiFetch` — audit 2026-07-01: zero `apiFetch` in `features/**/pages/**` and `features/**/components/**`
-- [ ] **Capas en backend**: router (endpoint FastAPI) → service (lógica de negocio) → model (ORM). Routers NO contienen SQL ni reglas; services NO exponen HTTP
-- [ ] Features con `"sdd": true` en `feature_list.json` pasan por flujo SDD completo (spec → review → impl → verify)
+## C7 — Screaming architecture (folders describe the domain)
+- [x] **Frontend** screaming architecture: `src/features/<domain>/{pages,components,hooks,services,lib}/` (e.g. `features/ova-workspace/`, NOT `features/views/` or `features/http/`) — audit 2026-07-01: kebab-case domains, no `ova_workspace/` duplicate; see `impl_audit-closure.md`
+- [ ] **Backend** screaming architecture: packages per domain (`auth/`, `ova/`, `agents/`, `rag/`, `prometheus/`...), NOT modules per technology (universal `controllers/`, `models/`)
+- [ ] Folder names describe WHAT the domain does, not the technology (`auth`, `ova-workspace`, `ova-library`, `rag`, `prometheus`, `scorm`)
+- [ ] Genuinely cross-domain functions live in `core/` (frontend) or `core/` (backend) with explicit imports from each domain
+- [x] **Frontend layers**: services (HTTP) → hooks/signals (state) → pages (orchestrate layout). Pages do NOT `fetch` directly; services encapsulate `apiFetch` — audit 2026-07-01: zero `apiFetch` in `features/**/pages/**` and `features/**/components/**`
+- [ ] **Backend layers**: router (FastAPI endpoint) → service (business logic) → model (ORM). Routers do NOT contain SQL or rules; services do NOT expose HTTP
+- [ ] Features with `"sdd": true` in `feature_list.json` go through the full SDD flow (spec → review → impl → verify)
 
-## C9 — Anti-spaghetti: dependencias unidireccionales
-- [ ] Sin ciclos de import (verificable con `madge --circular frontend/src backend/` o inspección visual)
-- [ ] Cada archivo importa <15 dependencias de runtime (anti-god-module)
-- [ ] Cada módulo tiene un único concern visible en el nombre
-- [ ] Sin "kitchen sink": no existen `helpers.js`, `utils.ts` o `misc.py` con funciones de dominios distintos mezclados
-- [ ] Backend: ningún `router.py` importa de `models.*` sin pasar por un `service.py`
-- [x] Frontend: ninguna `page/*` importa de otra `page/*` (composición via componente compartido, no via cross-import) — audit 2026-07-01: grep clean; explore/engage use `components/phase/phase-page`
-- [ ] El grafo de imports respeta la dirección de las capas (services → hooks → pages en FE; router → service → model en BE)
+## C9 — Anti-spaghetti: unidirectional dependencies
+- [ ] No import cycles (verifiable with `madge --circular frontend/src backend/` or visual inspection)
+- [ ] Each file imports <15 runtime dependencies (anti-god-module)
+- [ ] Each module has a single concern visible in its name
+- [ ] No "kitchen sink": no `helpers.js`, `utils.ts`, or `misc.py` mixing functions from different domains
+- [ ] Backend: no `router.py` imports from `models.*` without going through a `service.py`
+- [x] Frontend: no `page/*` imports from another `page/*` (composition via a shared component, not cross-import) — audit 2026-07-01: grep clean; explore/engage use `components/phase/phase-page`
+- [ ] The import graph respects layer direction (services → hooks → pages in FE; router → service → model in BE)
 
-## C10 — Modularizar repetido (DRY)
-- [x] Theme save: `ThemeSettingsService.saveTheme` única fuente (P2: eliminado duplicado en `ProfileService`) — `impl_p2-polish-final.md`
-- [x] Modal Escape dismiss: `ModalDismissDirective` reutilizable (4 modales backdrop) — `core/directives/modal-dismiss.directive.ts`
-- [ ] Lógica usada en ≥2 lugares extraída a helper/módulo compartido en `lib/` o equivalente
-- [ ] Validaciones (`zod` schemas, `pydantic.Field`) declaradas una vez y reusadas (no duplicar schemas entre FE/BE)
-- [ ] Constantes de UI (colores mágicos, tamaños, badges, labels de provider/categoría) en tema o `core/lib/tokens` — no hardcoded en cada componente
-- [ ] Componentes UI primitivos usados (shadcn) en lugar de HTML crudo reinventado cuando ya existe uno equivalente
-- [ ] Sin archivos "tupperware" con funciones de dominios distintos mezclados (también cubierto en C9)
+## C10 — Modularize repetition (DRY)
+- [x] Theme save: `ThemeSettingsService.saveTheme` single source (P2: removed duplicate in `ProfileService`) — `impl_p2-polish-final.md`
+- [x] Modal Escape dismiss: reusable `ModalDismissDirective` (4 backdrop modals) — `core/directives/modal-dismiss.directive.ts`
+- [ ] Logic used in ≥2 places extracted to a shared helper/module in `lib/` or equivalent
+- [ ] Validations (`zod` schemas, `pydantic.Field`) declared once and reused (don't duplicate schemas between FE/BE)
+- [ ] UI constants (magic colors, sizes, badges, provider/category labels) in a theme or `core/lib/tokens` — not hardcoded in every component
+- [ ] Existing primitive UI components used (shadcn) instead of reinventing raw HTML when an equivalent already exists
+- [ ] No "tupperware" files mixing functions from different domains (also covered by C9)
 
-## C11 — Código muerto auditado
-- [x] `PlatformLlmConfigCardComponent` eliminado (reemplazado por `ModelAssignmentPanel` en `/models`) — P2 2026-07-01
-- [ ] `pnpm lint` reporta 0 `noUnusedImports` y 0 `noUnusedVariables`
-- [ ] `ruff check backend/` reporta 0 `F401` (imports no usados) y 0 `F841` (variables locales no usadas)
-- [ ] Sin `print(...)` de debug en código de aplicación (usar `logger.debug` o quitar)
-- [ ] Sin `TODO/FIXME/XXX` sin responsable ni ticket asociado (tienen que tener contexto accionable)
-- [ ] Sin código comentado "por si acaso" (restaurar desde git si se necesita)
-- [ ] Sin ramas inalcanzables (`if False: ...`, `return` seguido de código muerto, `else` sobre condición ya True)
-- [ ] Sin exports no usados en barrel files (`index.ts`, `__init__.py`) — usar `lint --fix` o `ruff --fix` regularmente
+## C11 — Audited dead code
+- [x] `PlatformLlmConfigCardComponent` removed (replaced by `ModelAssignmentPanel` in `/models`) — P2 2026-07-01
+- [ ] `pnpm lint` reports 0 `noUnusedImports` and 0 `noUnusedVariables`
+- [ ] `ruff check backend/` reports 0 `F401` (unused imports) and 0 `F841` (unused local variables)
+- [ ] No debug `print(...)` in application code (use `logger.debug` or remove)
+- [ ] No `TODO/FIXME/XXX` without an owner or associated ticket (must have actionable context)
+- [ ] No "just in case" commented-out code (restore from git if needed)
+- [ ] No unreachable branches (`if False: ...`, `return` followed by dead code, `else` on an already-True condition)
+- [ ] No unused exports in barrel files (`index.ts`, `__init__.py`) — use `lint --fix` or `ruff --fix` regularly
 
-## C12 — Adopción de frameworks disponibles (usar siempre el marco declarado)
-**Frontend** (declarados en `frontend/package.json`):
-- [x] Server state → Angular `resource()` + signals / RxJS (no `useEffect + fetch` casero)
-- [x] Formularios → `ReactiveFormsModule` + `zod` (no `onChange` imperativo por campo)
-- [x] UI primitives → PrimeNG + custom `gn-*` en `core/components/ui/`; no HTML crudo reinventado
-- [x] Iconos → `@phosphor-icons/web` en nav y `/models` (no SVGs sueltos en nav)
-- [x] Toasts → `core/lib/toast.ts` (custom; no `alert(...)` ni toasts ad-hoc)
-- [ ] Animaciones → `@angular/animations` (no keyframes CSS para UI crítica)
-- [x] Routing → `@angular/router` con `loadComponent` lazy routes
-- [x] Estilo → `tailwindcss` 4 + `tailwind-merge` + `clsx` (utility-first; sin CSS-in-JS ad-hoc)
-- [x] Error tracking → `@sentry/angular` lazy-loaded en `core/lib/observability/sentry.ts`
+## C12 — Adoption of available frameworks (always use the declared framework)
+**Frontend** (declared in `frontend/package.json`):
+- [x] Server state → Angular `resource()` + signals / RxJS (no homegrown `useEffect + fetch`)
+- [x] Forms → `ReactiveFormsModule` + `zod` (no imperative per-field `onChange`)
+- [x] UI primitives → PrimeNG + custom `gn-*` in `core/components/ui/`; no reinvented raw HTML
+- [x] Icons → `@phosphor-icons/web` in nav and `/models` (no loose SVGs in nav)
+- [x] Toasts → `core/lib/toast.ts` (custom; no `alert(...)` or ad-hoc toasts)
+- [ ] Animations → `@angular/animations` (no CSS keyframes for critical UI)
+- [x] Routing → `@angular/router` with lazy `loadComponent` routes
+- [x] Styling → `tailwindcss` 4 + `tailwind-merge` + `clsx` (utility-first; no ad-hoc CSS-in-JS)
+- [x] Error tracking → `@sentry/angular` lazy-loaded in `core/lib/observability/sentry.ts`
 - [x] Streaming/SSE → `@microsoft/fetch-event-source`
-- [x] Validación de inputs → `zod`
+- [x] Input validation → `zod`
 
-**Backend** (declarados en `backend/pyproject.toml`):
-- [ ] HTTP → FastAPI con Pydantic v2 (`Field(max_length=…)`, validators)
-- [ ] Cola de jobs durable → `arq` + Redis (no threads sueltos para durabilidad)
-- [ ] Observabilidad → `logfire` + `prometheus-fastapi-instrumentator` + `sentry-sdk`
-- [ ] Rate-limit → `slowapi` (`@limiter.limit`)
+**Backend** (declared in `backend/pyproject.toml`):
+- [ ] HTTP → FastAPI with Pydantic v2 (`Field(max_length=…)`, validators)
+- [ ] Durable job queue → `arq` + Redis (no loose threads for durability)
+- [ ] Observability → `logfire` + `prometheus-fastapi-instrumentator` + `sentry-sdk`
+- [ ] Rate limiting → `slowapi` (`@limiter.limit`)
 - [ ] SSE → `sse-starlette`
 - [ ] 2FA/TOTP → `pyotp`
-- [ ] ORM → `sqlalchemy` 2.x con modelos tipados (no SQL crudo inline)
-- [ ] Orquestación multi-agente → `langgraph`
-- [ ] Parseo de archivos → `pypdf`, `python-docx`, `python-pptx`, `filetype`
-- [ ] Hashing de passwords → `bcrypt`
+- [ ] ORM → `sqlalchemy` 2.x with typed models (no inline raw SQL)
+- [ ] Multi-agent orchestration → `langgraph`
+- [ ] File parsing → `pypdf`, `python-docx`, `python-pptx`, `filetype`
+- [ ] Password hashing → `bcrypt`
 - [ ] Tokens → `PyJWT`
-- [ ] Driver PostgreSQL → `psycopg[binary]`
-- [ ] Storage / DB cliente → `supabase` SDK (no REST improvisado)
+- [ ] PostgreSQL driver → `psycopg[binary]`
+- [ ] Storage / DB client → `supabase` SDK (no improvised REST)
 
-## C13 — Frontend responsive (todo componente usable en mobile/tablet/desktop)
-- [ ] Todo componente en `frontend/src/` usa utility classes responsive de Tailwind (`sm:`, `md:`, `lg:`) o es modal/dialog con `max-w-*`
-- [ ] Probado mentalmente para anchos: 320px (mobile), 768px (tablet), 1280px (desktop)
-- [ ] Tablas: contenedor con `overflow-x-auto` + `min-w-[…]` por columna
-- [ ] Modales: bottom-sheet en mobile (`<sm`), centradas en `sm+`
-- [ ] Inputs: tamaño mínimo táctil ≥44px en mobile
-- [ ] Imágenes: `aspect-ratio` o `object-cover`; `srcset` cuando hay varios tamaños
-- [ ] Sin tamaños fijos en `px` para layout (usar tokens Tailwind `p-4`, `gap-2`, etc.)
-- [ ] Diálogos y dropdowns se posicionan correctamente en viewports pequeños (no overflow horizontal)
-- [ ] Tipografía: clases `text-xs/sm/base/lg/xl` para escalar; no `text-[10px]` arbitrario salvo badges
+## C13 — Frontend responsive (every component usable on mobile/tablet/desktop)
+- [ ] Every component in `frontend/src/` uses Tailwind responsive utility classes (`sm:`, `md:`, `lg:`) or is a modal/dialog with `max-w-*`
+- [ ] Mentally tested at widths: 320px (mobile), 768px (tablet), 1280px (desktop)
+- [ ] Tables: container with `overflow-x-auto` + `min-w-[…]` per column
+- [ ] Modals: bottom-sheet on mobile (`<sm`), centered on `sm+`
+- [ ] Inputs: minimum touch size ≥44px on mobile
+- [ ] Images: `aspect-ratio` or `object-cover`; `srcset` when multiple sizes exist
+- [ ] No fixed `px` sizes for layout (use Tailwind tokens `p-4`, `gap-2`, etc.)
+- [ ] Dialogs and dropdowns position correctly on small viewports (no horizontal overflow)
+- [ ] Typography: `text-xs/sm/base/lg/xl` classes to scale; no arbitrary `text-[10px]` except on badges
 
-## C14 — ORM alineado con el DDL en deletes (relaciones con FK ON DELETE)
-- [ ] Toda `relationship()` padre→hijo cuyo FK declara `ON DELETE CASCADE` en `backend/migrations/` lleva `cascade="all, delete-orphan"` + `passive_deletes=True` (si el DDL usa `ON DELETE SET NULL`, el FK del modelo debe ser nullable y sin delete-orphan)
-- [ ] Regla verificable: `db.delete(padre)` con hijos existentes nunca emite `UPDATE hijo SET fk=NULL` (test de referencia: `backend/tests/test_c14_orm_delete_cascade.py`)
-- [ ] Origen: B1 de HU-012 — `DELETE /api/ovas/{id}/permanente` devolvía 500 (`NotNullViolation` en `ova_versions.ova_id`) para todo OVA con versiones
+## C14 — ORM aligned with the DDL on deletes (relationships with FK ON DELETE)
+- [ ] Every parent→child `relationship()` whose FK declares `ON DELETE CASCADE` in `backend/migrations/` carries `cascade="all, delete-orphan"` + `passive_deletes=True` (if the DDL uses `ON DELETE SET NULL`, the model's FK must be nullable and without delete-orphan)
+- [ ] Verifiable rule: `db.delete(parent)` with existing children never emits `UPDATE child SET fk=NULL` (reference test: `backend/tests/test_c14_orm_delete_cascade.py`)
+- [ ] Origin: B1 of HU-012 — `DELETE /api/ovas/{id}/permanente` returned 500 (`NotNullViolation` on `ova_versions.ova_id`) for any OVA with versions
