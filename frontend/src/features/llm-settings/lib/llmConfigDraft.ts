@@ -9,6 +9,8 @@ export interface Entry {
 export interface TaskDraft {
   default: Entry;
   fallbacks: Entry[];
+  /** Solo aplica a tareas de media (imagen/video); undefined = default de la tarea. */
+  generationEnabled?: boolean;
 }
 
 export type Draft = Record<string, TaskDraft>;
@@ -16,6 +18,18 @@ export type Draft = Record<string, TaskDraft>;
 export interface EffectiveConfig {
   defaults?: Record<string, Entry>;
   fallbacks?: Record<string, Entry[]>;
+  generation_enabled?: Record<string, boolean>;
+}
+
+const MEDIA_TASKS = new Set(["imagen", "video"]);
+
+export function isMediaTask(task: string): boolean {
+  return MEDIA_TASKS.has(task);
+}
+
+/** Video off by default (needs an explicit opt-in); imagen on. */
+export function defaultGenerationEnabled(task: string): boolean {
+  return task !== "video";
 }
 
 const emptyEntry = (): Entry => ({ provider: "", model_id: "", extra: {} });
@@ -39,11 +53,15 @@ export function setFallback(list: Entry[], i: number, provider: string, model_id
 export function toDraft(cfg: EffectiveConfig | null | undefined, tasks: string[]): Draft {
   const defaults = cfg?.defaults ?? {};
   const fallbacks = cfg?.fallbacks ?? {};
+  const generationEnabled = cfg?.generation_enabled ?? {};
   const draft: Draft = {};
   for (const t of tasks) {
     draft[t] = {
       default: defaults[t] ?? emptyEntry(),
       fallbacks: fallbacks[t] ?? [],
+      ...(isMediaTask(t) && t in generationEnabled
+        ? { generationEnabled: generationEnabled[t] }
+        : {}),
     };
   }
   return draft;
@@ -52,6 +70,7 @@ export function toDraft(cfg: EffectiveConfig | null | undefined, tasks: string[]
 export function toPayload(draft: Draft | null | undefined, tasks: string[]): EffectiveConfig {
   const defaults: Record<string, Entry> = {};
   const fallbacks: Record<string, Entry[]> = {};
+  const generationEnabled: Record<string, boolean> = {};
   for (const t of tasks) {
     const d = draft?.[t]?.default;
     if (d?.provider && d?.model_id) {
@@ -69,6 +88,13 @@ export function toPayload(draft: Draft | null | undefined, tasks: string[]): Eff
         extra: f.extra ?? {},
       }));
     if (fb.length) fallbacks[t] = fb;
+    if (isMediaTask(t) && typeof draft?.[t]?.generationEnabled === "boolean") {
+      generationEnabled[t] = draft[t].generationEnabled;
+    }
   }
-  return { defaults, fallbacks };
+  return {
+    defaults,
+    fallbacks,
+    ...(Object.keys(generationEnabled).length ? { generation_enabled: generationEnabled } : {}),
+  };
 }

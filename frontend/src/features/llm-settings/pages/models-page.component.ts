@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  type OnInit,
+  signal,
+} from "@angular/core";
 import { Router } from "@angular/router";
 
 import { AuthService } from "@/core/auth/auth.service";
@@ -12,8 +19,7 @@ import {
 import { toast } from "@/core/lib/toast";
 
 import { ManageModelsModalComponent } from "../components/manage-models-modal.component";
-import { ModelAssignmentPanelComponent } from "../components/model-assignment-panel.component";
-import { ModelCatalogBrowserComponent } from "../components/model-catalog-browser.component";
+import { ModelsMasterDetailComponent } from "../components/models-master-detail.component";
 import { PlatformApiKeysCardComponent } from "../components/platform-api-keys-card.component";
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
 import { PlatformNodesCardComponent } from "../components/platform-nodes-card.component";
@@ -35,9 +41,8 @@ function canAccessModels(user: ReturnType<AuthService["user"]>): boolean {
   selector: "gn-models-page",
   imports: [
     ButtonComponent,
-    ModelAssignmentPanelComponent,
+    ModelsMasterDetailComponent,
     ManageModelsModalComponent,
-    ModelCatalogBrowserComponent,
     PlatformApiKeysCardComponent,
     PlatformCapabilitiesCardComponent,
     PlatformNodesCardComponent,
@@ -57,12 +62,22 @@ export class ModelsPageComponent implements OnInit {
 
   readonly isAdmin = signal(false);
   readonly manageOpen = signal(false);
-  readonly activeTab = signal("tasks");
+  readonly activeTab = signal("models");
   readonly adminDraft = signal<Draft | null>(null);
   readonly adminTasks = signal<string[]>([]);
   readonly adminModels = signal<ChipModel[]>([]);
   readonly adminSaving = signal(false);
   readonly adminLoading = signal(true);
+  private readonly adminBaseline = signal("");
+
+  readonly adminDirty = computed(() => this.adminBaseline() !== JSON.stringify(this.adminDraft()));
+  readonly dirty = computed(() => this.store.dirty || this.adminDirty());
+
+  readonly connectedProviders = computed(() => {
+    const status = this.store.catalogStatus ?? {};
+    const entries = Object.values(status);
+    return { ok: entries.filter((s) => s.ok).length, total: entries.length };
+  });
 
   async ngOnInit() {
     const user = (await this.auth.revalidate()) ?? this.auth.user();
@@ -73,6 +88,7 @@ export class ModelsPageComponent implements OnInit {
     this.isAdmin.set(user?.role === "administrador");
     await this.store.load({ search: "", category: "all", page: 1 });
     await this.loadAdminConfig();
+    this.adminBaseline.set(JSON.stringify(this.adminDraft()));
   }
 
   private buildDraftFromStoreDefaults(): Draft {
@@ -131,18 +147,29 @@ export class ModelsPageComponent implements OnInit {
     this.adminDraft.set(next);
   }
 
-  async saveAdminPlatform() {
+  private async saveAdminPlatform() {
     const draft = this.adminDraft();
     if (!draft) return;
+    await this.adminSettings.saveAdminLlmConfig(toPayload(draft, this.adminTasks()));
+    this.adminBaseline.set(JSON.stringify(draft));
+  }
+
+  async saveAll() {
     this.adminSaving.set(true);
     try {
-      await this.adminSettings.saveAdminLlmConfig(toPayload(draft, this.adminTasks()));
-      toast.success("Configuración de plataforma guardada.");
+      if (this.adminDirty()) await this.saveAdminPlatform();
+      if (this.store.dirty) await this.store.save();
+      toast.success("Cambios guardados.");
     } catch (e) {
       toast.error((e as Error)?.message || "No se pudo guardar.");
     } finally {
       this.adminSaving.set(false);
     }
+  }
+
+  discardChanges() {
+    this.adminDraft.set(this.adminBaseline() ? (JSON.parse(this.adminBaseline()) as Draft) : null);
+    this.store.dirty = false;
   }
 
   openManageModels(): void {
@@ -151,6 +178,6 @@ export class ModelsPageComponent implements OnInit {
 
   goToApiKeys(_provider?: string): void {
     this.manageOpen.set(false);
-    this.activeTab.set("apikeys");
+    this.activeTab.set("credentials");
   }
 }

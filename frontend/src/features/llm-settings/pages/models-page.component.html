@@ -1,40 +1,37 @@
-<div class="mx-auto max-w-5xl space-y-8 pb-12 p-8 animate-in fade-in duration-300">
+<div class="mx-auto max-w-5xl space-y-6 pb-28 p-8 animate-in fade-in duration-300">
   <div
     class="relative overflow-hidden rounded-2xl border border-border/60 bg-card px-6 py-5 shadow-sm"
   >
-    <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div class="space-y-1">
-        <div
-          class="flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/8 px-2.5 py-0.5 w-fit mb-1.5"
-        >
-          <i class="ph ph-sliders-horizontal text-primary text-[9px]"></i>
+    <div class="space-y-1">
+      <h1 class="font-display text-3xl font-semibold text-foreground tracking-tight sm:text-4xl">
+        Modelos de IA
+      </h1>
+      <p class="text-sm text-muted-foreground font-medium max-w-sm">
+        Modelo primario, cadena de fallback y API keys por proveedor.
+      </p>
+    </div>
+  </div>
 
-          <span class="text-[9px] font-black uppercase tracking-[0.15em] text-primary"
-            >Configuración</span
-          >
-        </div>
-
-        <h1 class="font-display text-3xl font-semibold text-foreground tracking-tight sm:text-4xl">
-          Modelos de IA
-        </h1>
-
-        <p class="text-sm text-muted-foreground font-medium max-w-sm">
-          Modelo primario, cadena de fallback y API keys por proveedor.
-        </p>
-      </div>
-
-      @if (isAdmin()) {
-        <gn-button
-          size="sm"
-          (onClick)="saveAdminPlatform()"
-          [disabled]="!adminDraft() || adminSaving() || adminLoading()"
-          class="gap-1.5 shadow-md text-xs font-bold shrink-0"
-        >
-          <span [class.animate-spin]="adminSaving()">↻</span>
-
-          {{ adminSaving() ? "Guardando..." : "Guardar plataforma" }}
-        </gn-button>
-      }
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div class="rounded-xl border border-border/60 bg-card px-4 py-3">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+        Proveedores conectados
+      </p>
+      <p class="mt-1 text-lg font-semibold text-foreground">
+        {{ connectedProviders().ok }} / {{ connectedProviders().total }}
+      </p>
+    </div>
+    <div class="rounded-xl border border-border/60 bg-card px-4 py-3">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+        Modelos activos
+      </p>
+      <p class="mt-1 text-lg font-semibold text-foreground">{{ store.enabledModels.length }}</p>
+    </div>
+    <div class="rounded-xl border border-border/60 bg-card px-4 py-3">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+        Cambios sin guardar
+      </p>
+      <p class="mt-1 text-lg font-semibold text-foreground">{{ dirty() ? "Sí" : "No" }}</p>
     </div>
   </div>
 
@@ -42,34 +39,17 @@
     <gn-tabs-list
       class="bg-card border border-border/60 shadow-sm h-auto p-1 gap-0.5 rounded-xl w-fit flex-wrap"
     >
-      <gn-tabs-trigger value="tasks" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
-        <i class="ph ph-sliders-horizontal"></i> Asignación de Modelos
+      <gn-tabs-trigger value="models" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
+        Modelos
       </gn-tabs-trigger>
 
-      <gn-tabs-trigger value="catalog" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
-        <i class="ph ph-books"></i> Catálogo
-      </gn-tabs-trigger>
-
-      <gn-tabs-trigger value="apikeys" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
-        API Keys
+      <gn-tabs-trigger value="credentials" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
+        Credenciales
       </gn-tabs-trigger>
 
       @if (isAdmin()) {
-        <gn-tabs-trigger value="prometheus" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
-          <i class="ph ph-cpu"></i> Prometheus
-
-          <span
-            class="ml-1 rounded-sm bg-amber-500/15 px-1 py-0.5 text-[8px] font-black uppercase text-amber-600"
-            >Admin</span
-          >
-        </gn-tabs-trigger>
-
-        <gn-tabs-trigger
-          value="platform-keys"
-          class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5"
-        >
-          <i class="ph ph-robot"></i> Keys Globales
-
+        <gn-tabs-trigger value="platform" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
+          Plataforma
           <span
             class="ml-1 rounded-sm bg-amber-500/15 px-1 py-0.5 text-[8px] font-black uppercase text-amber-600"
             >Admin</span
@@ -78,7 +58,7 @@
       }
     </gn-tabs-list>
 
-    <gn-tabs-content value="tasks" class="mt-0 space-y-6 block">
+    <gn-tabs-content value="models" class="mt-0 space-y-6 block">
       @if (adminLoading()) {
         <div class="grid gap-4 sm:grid-cols-2">
           @for (i of [1, 2, 3, 4]; track i) {
@@ -86,37 +66,35 @@
           }
         </div>
       } @else {
-        <gn-model-assignment-panel
+        <gn-models-master-detail
           [tasks]="adminTasks()"
           [draft]="adminDraft()"
           [adminModels]="adminModels()"
           [isAdmin]="isAdmin()"
           [adminSaving]="adminSaving()"
           (draftChange)="onDraftChange($event)"
-          (openManageModels)="openManageModels()"
-        ></gn-model-assignment-panel>
-
-        @if (isAdmin()) {
-          <gn-platform-capabilities-card></gn-platform-capabilities-card>
-        }
+          (openCatalog)="openManageModels()"
+        ></gn-models-master-detail>
       }
     </gn-tabs-content>
 
-    <gn-tabs-content value="catalog" class="mt-0 block">
-      <gn-model-catalog-browser></gn-model-catalog-browser>
-    </gn-tabs-content>
-
-    <gn-tabs-content value="apikeys" class="mt-0 block">
-      <gn-user-api-keys-card></gn-user-api-keys-card>
+    <gn-tabs-content value="credentials" class="mt-0 space-y-6 block">
+      <div>
+        <h2 class="mb-2 text-sm font-semibold text-foreground">Tus claves</h2>
+        <gn-user-api-keys-card [compact]="true"></gn-user-api-keys-card>
+      </div>
+      @if (isAdmin()) {
+        <div>
+          <h2 class="mb-2 text-sm font-semibold text-foreground">Claves de la plataforma</h2>
+          <gn-platform-api-keys-card [adminZone]="true"></gn-platform-api-keys-card>
+        </div>
+      }
     </gn-tabs-content>
 
     @if (isAdmin()) {
-      <gn-tabs-content value="prometheus" class="mt-0 block">
+      <gn-tabs-content value="platform" class="mt-0 space-y-6 block">
         <gn-platform-nodes-card></gn-platform-nodes-card>
-      </gn-tabs-content>
-
-      <gn-tabs-content value="platform-keys" class="mt-0 block">
-        <gn-platform-api-keys-card></gn-platform-api-keys-card>
+        <gn-platform-capabilities-card></gn-platform-capabilities-card>
       </gn-tabs-content>
     }
   </gn-tabs>
@@ -126,4 +104,20 @@
     (onClose)="manageOpen.set(false)"
     (onGoToApiKeys)="goToApiKeys($event)"
   ></gn-manage-models-modal>
+
+  @if (dirty()) {
+    <div
+      class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-6 py-3 backdrop-blur"
+    >
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-3">
+        <p class="text-xs text-muted-foreground">Tienes cambios sin guardar en la asignación.</p>
+        <div class="flex items-center gap-2">
+          <gn-button variant="ghost" size="sm" (onClick)="discardChanges()">Cancelar</gn-button>
+          <gn-button size="sm" (onClick)="saveAll()" [disabled]="adminSaving()">
+            {{ adminSaving() ? "Guardando..." : "Guardar cambios" }}
+          </gn-button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

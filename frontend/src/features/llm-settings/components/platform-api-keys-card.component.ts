@@ -72,6 +72,8 @@ import { PROVIDER_META } from "./platformKeyMeta";
 })
 export class PlatformApiKeysCardComponent implements OnInit {
   readonly userOwned = input(false);
+  /** Renders inside an admin-only zone; caller already gates visibility. */
+  readonly adminZone = input(false);
 
   service = inject(PlatformSettingsService);
 

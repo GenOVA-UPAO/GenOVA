@@ -37,6 +37,8 @@ export class UserLlmSettingsStore {
   loading = false;
   loadingMore = false;
   saving = false;
+  /** True once the user changed settings locally and hasn't saved yet. */
+  dirty = false;
   error = "";
   catalogStatus: Record<string, { ok: boolean; last_success_at?: string }> | null = null;
   refreshingCatalog = false;
@@ -150,26 +152,32 @@ export class UserLlmSettingsStore {
 
   setModel(tipo: string, provider: string, modelId: string): void {
     this.settings = setModelIn(this.settings, tipo, provider, modelId);
+    this.dirty = true;
   }
 
   setTipoTimeout(tipo: string, timeoutS: number): void {
     this.settings = setTimeoutIn(this.settings, tipo, timeoutS);
+    this.dirty = true;
   }
 
   resetTipo(tipo: string): void {
     this.settings = resetTipoIn(this.settings, tipo, this.defaults, DEFAULT_TIMEOUT);
+    this.dirty = true;
   }
 
   setFallback(tipo: string, index: number, provider: string, modelId: string): void {
     this.settings = setFallbackIn(this.settings, tipo, index, provider, modelId);
+    this.dirty = true;
   }
 
   addFallback(tipo: string): void {
     this.settings = addFallbackIn(this.settings, tipo);
+    this.dirty = true;
   }
 
   removeFallback(tipo: string, index: number): void {
     this.settings = removeFallbackIn(this.settings, tipo, index);
+    this.dirty = true;
   }
 
   async save(): Promise<boolean> {
@@ -178,6 +186,7 @@ export class UserLlmSettingsStore {
     try {
       const data = await this.api.saveLlmSettings(this.settings);
       if (data?.settings) this.settings = data.settings;
+      this.dirty = false;
       toast.success("Configuración de IA guardada.");
       return true;
     } catch (err) {

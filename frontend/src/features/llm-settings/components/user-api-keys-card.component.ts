@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  type OnInit,
+  signal,
+} from "@angular/core";
 
 import { UserLlmSettingsService } from "../services/user-llm-settings.service";
 import { PROVIDER_META } from "./platformKeyMeta";
@@ -59,6 +66,9 @@ const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
   `,
 })
 export class UserApiKeysCardComponent implements OnInit {
+  /** Tighter layout when embedded inside the "Credenciales" tab. */
+  readonly compact = input(false);
+
   private service = inject(UserLlmSettingsService);
 
   readonly apiKeys = signal<Record<string, string>>({});

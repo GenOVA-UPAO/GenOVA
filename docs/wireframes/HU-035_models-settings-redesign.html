@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GenOVA — Modelos de IA (wireframe de rediseño)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: oklch(97% 0.012 85);
+    --surface: oklch(99% 0.006 85);
+    --surface-2: oklch(95.5% 0.01 85);
+    --fg: oklch(22% 0.02 264);
+    --muted: oklch(52% 0.02 264);
+    --border: oklch(85% 0.012 85);
+    --primary: #0A3D91;
+    --primary-ink: oklch(97% 0.01 264);
+    --accent: #F47A20;
+    --accent-strong: oklch(55% 0.18 45); /* darkened accent for text/fills — raw --accent fails 4.5:1 on bg and with white text */
+    --danger: oklch(50% 0.18 25);
+    --admin-tint: oklch(95% 0.02 70);
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'Geist Mono', Menlo, monospace;
+    --radius: 7px;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{ font-family:var(--font-display); font-weight:600; margin:0; }
+  button{ font-family:inherit; font-size:inherit; color:inherit; }
+  :focus-visible{ outline:2px solid var(--primary); outline-offset:2px; border-radius:3px; }
+
+  /* ---------- wireframe placeholder utility ---------- */
+  .ph{
+    display:inline-flex; align-items:center; justify-content:center;
+    border:1px dashed var(--border);
+    background:
+      repeating-linear-gradient(135deg, transparent 0 6px, oklch(0% 0 0 / 0.03) 6px 7px);
+    color:var(--muted);
+    font-size:11px; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.06em;
+    border-radius:4px;
+  }
+  .avatar{
+    display:inline-flex; align-items:center; justify-content:center; flex:none;
+    border-radius:50%; border:1px solid var(--border); background:var(--surface-2);
+    color:var(--fg); font-family:var(--font-mono); font-weight:600; letter-spacing:.02em;
+  }
+  .logo-ph{ width:36px; height:36px; font-size:12px; }
+  .logo-ph.small{ width:24px; height:24px; font-size:9.5px; }
+
+  /* ---------- annotation notes ---------- */
+  .note{
+    border:1px dotted oklch(55% 0.02 264 / .6);
+    background:transparent;
+    padding:10px 12px;
+    border-radius:4px;
+    font-size:12.5px;
+    color:var(--muted);
+    margin-bottom:12px;
+  }
+  .note strong{ display:block; color:var(--fg); font-size:11px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:3px; }
+  .app.annotations-hidden .annotation-rail{ display:none; }
+  .app.annotations-hidden .content-with-rail{ grid-template-columns: 1fr; }
+
+  /* ---------- shell ---------- */
+  .app{ max-width:1280px; margin:0 auto; padding:28px 32px 120px; }
+  .page-header{ display:flex; align-items:baseline; justify-content:space-between; gap:24px; margin-bottom:16px; }
+  .kicker{ display:block; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px; }
+  .page-header h1{ font-size:28px; }
+  .page-header p{ margin:4px 0 0; color:var(--muted); font-size:14px; }
+  .header-meta{ text-align:right; font-size:11px; color:var(--muted); font-family:var(--font-mono); }
+
+  /* status strip */
+  .status-strip{
+    display:flex; gap:0; border:1px solid var(--border); border-radius:var(--radius);
+    background:var(--surface); margin-bottom:18px; overflow:hidden;
+  }
+  .status-chip{ flex:1; padding:11px 16px; border-right:1px solid var(--border); }
+  .status-chip:last-child{ border-right:none; }
+  .status-chip .k{ display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:2px; }
+  .status-chip .v{ font-size:15px; font-weight:600; font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+  .status-chip .v.dirty{ color:var(--primary); }
+
+  /* nav */
+  .main-nav{ display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:10px; }
+  .nav-tab{
+    background:none; border:none; padding:12px 6px; margin-right:22px; cursor:pointer;
+    font-size:14.5px; color:var(--muted); border-bottom:2px solid transparent; position:relative; top:1px;
+  }
+  .nav-tab[aria-selected="true"]{ color:var(--fg); font-weight:600; border-bottom-color:var(--primary); }
+  .nav-tab .scope{ font-size:10.5px; font-family:var(--font-mono); color:var(--muted); margin-left:5px; font-weight:400; }
+
+  /* toolbar row */
+  .toolbar-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+  .toolbar-left{ display:flex; align-items:center; gap:16px; }
+  .toggle-label{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); cursor:pointer; }
+  .mobile-note-details{ font-size:12.5px; color:var(--muted); }
+  .mobile-note-details summary{ cursor:pointer; color:var(--primary); font-weight:500; }
+  .mobile-note-details[open] summary{ margin-bottom:6px; }
+  .mobile-note-details div{ border:1px dotted oklch(55% 0.02 264 / .6); padding:8px 10px; border-radius:4px; max-width:520px; }
+
+  /* buttons */
+  .btn{ border-radius:5px; padding:8px 14px; font-size:13.5px; cursor:pointer; border:1px solid var(--border); background:var(--surface); }
+  .btn:hover{ border-color:var(--muted); }
+  .btn:active{ background:var(--surface-2); }
+  .btn:disabled{ opacity:.55; cursor:not-allowed; }
+  .btn:disabled:hover{ border-color:var(--border); }
+  .btn-ghost{ background:none; }
+  .btn-outline{ background:none; border-style:dashed; color:var(--muted); }
+  .btn-small{ padding:5px 10px; font-size:12.5px; }
+  .btn-primary{ background:var(--primary); color:var(--primary-ink); border-color:var(--primary); font-weight:600; }
+  .btn-primary:active{ background:oklch(from var(--primary) calc(l - 0.06) c h); }
+  .btn-accent{ background:var(--accent-strong); color:#fff; border-color:var(--accent-strong); font-weight:600; }
+  .btn-icon{ border:none; background:none; padding:4px 6px; color:var(--muted); cursor:pointer; border-radius:4px; }
+  .btn-icon:hover{ background:var(--surface-2); color:var(--fg); }
+  .btn-icon:disabled{ opacity:.4; cursor:not-allowed; }
+  .link-btn{ background:none; border:none; padding:0; color:var(--primary); text-decoration:underline; cursor:pointer; font-size:inherit; }
+
+  /* panels */
+  .panel[hidden]{ display:none; }
+  .panel h2{ font-size:19px; margin-bottom:4px; }
+  .panel > .panel-sub{ color:var(--muted); font-size:13px; margin:0 0 16px; }
+
+  .content-with-rail{ display:grid; grid-template-columns: 1fr 260px; gap:24px; align-items:start; }
+  .annotation-rail{ position:sticky; top:16px; }
+
+  /* master-detail */
+  .master-detail{ display:grid; grid-template-columns: 260px 1fr; gap:0; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); overflow:hidden; }
+  .master-list{ border-right:1px solid var(--border); padding:8px; display:flex; flex-direction:column; gap:2px; }
+  .task-item{
+    display:flex; align-items:center; gap:10px; text-align:left; width:100%;
+    background:none; border:1px solid transparent; border-radius:5px; padding:8px 9px; cursor:pointer;
+  }
+  .task-item:hover{ background:var(--surface-2); }
+  .task-item[aria-selected="true"]{ background:var(--surface-2); border-color:var(--border); box-shadow: inset 3px 0 0 var(--primary); }
+  .task-icon{ width:30px; height:30px; font-size:11px; }
+  .task-label{ display:block; font-size:14px; font-weight:600; }
+  .task-sub{ display:block; font-size:11.5px; color:var(--muted); margin-top:1px; }
+
+  .detail{ padding:20px 22px; }
+  .status-pill{ font-size:11px; padding:2px 8px; border-radius:20px; border:1px solid var(--border); font-family:var(--font-mono); white-space:nowrap; }
+  .status-pill.ok{ border-color:var(--primary); color:var(--primary); }
+  .status-pill.warn{ border-color:var(--accent-strong); color:var(--accent-strong); }
+  .status-pill.error{ border-color:var(--danger); color:var(--danger); }
+
+  .model-card{ border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; background:var(--bg); }
+  .model-card-head{ display:flex; align-items:center; gap:12px; }
+  .model-card-head h3{ font-size:16px; }
+  .model-card-head p{ margin:2px 0 0; font-size:12.5px; color:var(--muted); }
+  .model-card-head .status-pill{ margin-left:auto; }
+  .model-card-actions{ margin-top:12px; }
+
+  .chain-head{ display:flex; align-items:center; justify-content:space-between; margin:22px 0 8px; }
+  .chain-head h4{ font-size:14px; }
+  .fallback-chain{ list-style:none; margin:0; padding:0; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .chain-row{ display:flex; align-items:center; gap:10px; padding:9px 12px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .chain-row:last-child{ border-bottom:none; }
+  .chain-pos{ width:18px; height:18px; border-radius:50%; border:1px solid var(--border); font-size:10.5px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); color:var(--muted); flex:none; }
+  .chain-name{ font-size:13.5px; flex:1; }
+  .chain-row-actions{ display:none; gap:2px; }
+  .app.editing-chain .chain-row-actions{ display:flex; }
+  .chain-empty{ padding:16px; text-align:center; color:var(--muted); font-size:13px; border:1px dashed var(--border); border-radius:var(--radius); }
+
+  /* credenciales */
+  .cred-section{ margin-bottom:26px; }
+  .cred-section-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .cred-section-head h3{ font-size:15px; }
+  .admin-badge{ font-size:10px; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.06em; border:1px solid var(--primary); color:var(--primary); padding:2px 7px; border-radius:20px; }
+  .cred-list{ border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .cred-list.admin-zone{ background:var(--admin-tint); }
+  .cred-row{ display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .cred-list.admin-zone .cred-row{ background:transparent; }
+  .cred-row:last-child{ border-bottom:none; }
+  .cred-provider{ font-weight:600; font-size:13.5px; min-width:180px; }
+  .cred-key{ font-family:var(--font-mono); font-size:12.5px; color:var(--muted); flex:1; }
+  .cred-row .status-pill{ margin-right:8px; }
+
+  /* plataforma */
+  .admin-banner{ display:flex; align-items:center; gap:8px; background:var(--admin-tint); border:1px solid oklch(80% 0.03 70); border-radius:var(--radius); padding:9px 14px; font-size:12.5px; color:oklch(35% 0.03 70); margin-bottom:18px; }
+  .admin-banner strong{ font-family:var(--font-mono); text-transform:uppercase; font-size:10.5px; letter-spacing:.06em; }
+  .platform-grid{ display:grid; grid-template-columns:1.2fr 1fr; gap:20px; align-items:start; }
+  .platform-card{ border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); padding:16px 18px; }
+  .platform-card h4{ font-size:14px; margin-bottom:10px; }
+  .chart-spark{ margin-bottom:10px; }
+  .chart-spark svg{ display:block; width:100%; height:auto; }
+  .chart-caption{ margin:6px 0 0; font-size:11px; color:var(--muted); }
+  .policy-row{ display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px dashed var(--border); font-size:13px; }
+  .policy-row:last-child{ border-bottom:none; }
+
+  /* save bar */
+  .save-bar{
+    position:fixed; left:50%; bottom:20px;
+    transform:translate(-50%, 8px); opacity:0;
+    transition: transform 220ms cubic-bezier(0.2,0,0,1), opacity 220ms ease;
+    display:flex; align-items:center; gap:14px;
+    background:var(--fg); color:var(--bg); border-radius:8px; padding:12px 18px;
+    box-shadow:0 8px 24px oklch(0% 0 0 / .18); z-index:40; max-width:calc(100% - 48px);
+  }
+  .save-bar[hidden]{ display:none; }
+  .save-bar.is-open{ transform:translate(-50%, 0); opacity:1; }
+  .save-bar span{ font-size:13px; }
+  .save-bar .btn{ background:none; border-color:oklch(100% 0 0 / .3); color:var(--bg); }
+
+  /* drawer */
+  .drawer-overlay{
+    position:fixed; inset:0; background:oklch(20% 0.02 264 / .35); z-index:50; display:flex; justify-content:flex-end;
+    opacity:0; pointer-events:none; transition: opacity 220ms ease;
+  }
+  .drawer-overlay[hidden]{ display:none; }
+  .drawer-overlay.is-open{ opacity:1; pointer-events:auto; }
+  .drawer{
+    width:400px; max-width:92vw; height:100%; background:var(--bg); border-left:1px solid var(--border); padding:22px; overflow-y:auto;
+    transform:translateX(24px); transition: transform 220ms cubic-bezier(0.2,0,0,1);
+  }
+  .drawer-overlay.is-open .drawer{ transform:translateX(0); }
+
+  @media (prefers-reduced-motion: reduce){
+    .save-bar, .drawer-overlay, .drawer{ transition:none; }
+  }
+  .drawer-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .drawer-sub{ color:var(--muted); font-size:12.5px; margin:0 0 14px; }
+  .catalog-filter{ width:100%; padding:8px 10px; margin-bottom:12px; }
+  .catalog-item{ display:flex; align-items:center; gap:10px; border:1px solid var(--border); border-radius:6px; padding:10px 12px; margin-bottom:8px; background:var(--surface); }
+  .catalog-item .meta{ flex:1; }
+  .catalog-item .meta .name{ font-size:13.5px; font-weight:600; }
+  .catalog-item .meta .prov{ font-size:11.5px; color:var(--muted); }
+  .catalog-item .tag{ font-size:10px; font-family:var(--font-mono); border:1px solid var(--border); border-radius:20px; padding:1px 7px; color:var(--muted); }
+
+  /* modal */
+  dialog{ border:1px solid var(--border); border-radius:10px; padding:0; max-width:640px; width:92vw; }
+  dialog::backdrop{ background:oklch(20% 0.02 264 / .35); }
+  .modal-inner{ padding:24px 28px; }
+  .modal-inner h2{ font-size:20px; margin-bottom:4px; }
+  .modal-inner p.lead{ color:var(--muted); font-size:13px; margin:0 0 18px; }
+  .ba-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
+  .ba-row:last-of-type{ border-bottom:none; }
+  .ba-col .k{ font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-family:var(--font-mono); margin-bottom:3px; }
+  .ba-col .before{ color:var(--muted); }
+  .ba-col .after{ font-weight:600; }
+  .modal-close-row{ text-align:right; margin-top:6px; }
+
+  .toast{ position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--primary); color:var(--primary-ink); padding:9px 16px; border-radius:6px; font-size:13px; z-index:60; opacity:0; pointer-events:none; transition:opacity .2s; }
+  .toast.show{ opacity:1; }
+
+  .mobile-back-btn{ display:none; }
+
+  @media (max-width: 860px){
+    .app{ padding:20px 16px 120px; }
+    .content-with-rail{ grid-template-columns:1fr; }
+    .main-nav{ overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; }
+    .nav-tab{ flex:none; white-space:nowrap; }
+    .master-detail{ grid-template-columns:1fr; }
+    .master-list{ border-right:none; border-bottom:1px solid var(--border); flex-direction:row; overflow-x:auto; }
+    /* progressive disclosure: list and detail become two steps, not two panels */
+    .app:not(.mobile-show-detail) .detail{ display:none; }
+    .app.mobile-show-detail .master-list{ display:none; }
+    .mobile-back-btn{ display:inline-flex; margin-bottom:14px; }
+    .platform-grid{ grid-template-columns:1fr; }
+    .cred-row{ flex-wrap:wrap; row-gap:8px; }
+    .cred-provider{ min-width:0; flex:1 1 100%; }
+    .cred-key{ min-width:0; flex:1 1 auto; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <header class="page-header">
+    <div>
+      <span class="kicker">GenOVA · UPAO</span>
+      <h1 data-od-id="page-title">Modelos de IA</h1>
+      <p>Configura qué modelo responde cada tipo de tarea y qué alternativas se usan si falla.</p>
+    </div>
+    <div class="header-meta">Wireframe de rediseño — v1 · para aprobación</div>
+  </header>
+
+  <div class="status-strip" id="statusStrip" data-od-id="status-strip">
+    <div class="status-chip"><span class="k">Proveedores conectados</span><span class="v" id="statProviders">3 / 4</span></div>
+    <div class="status-chip"><span class="k">Modelos activos</span><span class="v" id="statModels">6 / 6</span></div>
+    <div class="status-chip"><span class="k">Cambios sin guardar</span><span class="v" id="statDirty">No</span></div>
+  </div>
+
+  <nav class="main-nav" role="tablist" aria-label="Secciones de configuración">
+    <button class="nav-tab" role="tab" data-panel="modelos" aria-selected="true" data-od-id="nav-tab-modelos">Modelos</button>
+    <button class="nav-tab" role="tab" data-panel="credenciales" aria-selected="false" data-od-id="nav-tab-credenciales">Credenciales</button>
+    <button class="nav-tab" role="tab" data-panel="plataforma" aria-selected="false" data-od-id="nav-tab-plataforma">Plataforma <span class="scope">admin</span></button>
+  </nav>
+
+  <div class="toolbar-row">
+    <div class="toolbar-left">
+      <label class="toggle-label"><input type="checkbox" id="toggleAnnotations" checked> Mostrar anotaciones</label>
+      <button class="link-btn" id="openBeforeAfter" type="button" data-od-id="open-before-after">Ver Antes → Después</button>
+    </div>
+    <details class="mobile-note-details">
+      <summary>Nota — comportamiento en mobile</summary>
+      <div>En &lt;768px: las 3 pestañas pasan a scroll horizontal; el master-detail se apila (lista de tareas arriba, detalle abajo) con un botón "Volver a la lista"; la columna de anotaciones se oculta detrás de este mismo panel de notas.</div>
+    </details>
+  </div>
+
+  <main>
+    <!-- ================= MODELOS ================= -->
+    <section class="panel" id="panel-modelos" role="tabpanel" aria-labelledby="tab-modelos">
+      <h2 data-od-id="heading-modelos">Asignación de modelos</h2>
+      <p class="panel-sub">Selecciona un tipo de tarea a la izquierda para ver y editar su modelo principal y su cadena de fallback.</p>
+
+      <div class="content-with-rail">
+        <div class="content">
+          <div class="master-detail">
+            <div class="master-list" id="taskList" role="tablist" aria-label="Tipos de tarea"></div>
+            <div class="detail" id="taskDetail"></div>
+          </div>
+        </div>
+        <aside class="annotation-rail">
+          <div class="note">
+            <strong>Por qué — master-detail</strong>
+            Reemplaza la grilla de 6 tarjetas iguales + panel flotante de fallback. Una tarea seleccionada a la vez; su cadena vive junto al modelo principal, no debajo, flotando, sin relación visual clara.
+          </div>
+          <div class="note">
+            <strong>Por qué — catálogo como herramienta</strong>
+            "Abrir catálogo" es una acción dentro del flujo de edición (drawer), no un destino de navegación de primer nivel como en la versión actual.
+          </div>
+          <div class="note">
+            <strong>Accesibilidad</strong>
+            Foco visible en todo elemento interactivo · botones de solo-ícono (↑ ↓ ✕) llevan aria-label · la sección activa se sincroniza con el hash de la URL para permitir enlaces directos y el botón atrás del navegador.
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================= CREDENCIALES ================= -->
+    <section class="panel" id="panel-credenciales" role="tabpanel" aria-labelledby="tab-credenciales" hidden>
+      <h2 data-od-id="heading-credenciales">Credenciales</h2>
+      <p class="panel-sub">Claves de proveedor. Las de plataforma están agrupadas aparte y visibles solo para administradores.</p>
+
+      <div class="content-with-rail">
+        <div class="content">
+          <div class="cred-section">
+            <div class="cred-section-head"><h3>Tus claves</h3></div>
+            <div class="cred-list" id="userKeyList"></div>
+          </div>
+          <div class="cred-section">
+            <div class="cred-section-head"><h3>Claves de la plataforma</h3><span class="admin-badge">Admin</span></div>
+            <div class="cred-list admin-zone" id="platformKeyList"></div>
+          </div>
+        </div>
+        <aside class="annotation-rail">
+          <div class="note">
+            <strong>Por qué — subsecciones, no pestañas</strong>
+            "API Keys" y "Keys Globales (Admin)" eran pestañas separadas al mismo nivel. Son la misma categoría de información (credenciales) en dos alcances distintos — ahora conviven en una sección con un fondo tenue y una insignia que marca el alcance admin.
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ================= PLATAFORMA ================= -->
+    <section class="panel" id="panel-plataforma" role="tabpanel" aria-labelledby="tab-plataforma" hidden>
+      <div class="admin-banner"><strong>Zona de administrador</strong><span>Prometheus y políticas globales — visible solo para roles admin.</span></div>
+      <h2 data-od-id="heading-plataforma">Plataforma</h2>
+      <p class="panel-sub">Monitoreo y políticas que afectan a todos los usuarios de GenOVA.</p>
+
+      <div class="content-with-rail">
+        <div class="content">
+          <div class="platform-grid">
+            <div class="platform-card">
+              <h4>Prometheus — estado del sistema</h4>
+              <div class="chart-spark" data-od-id="prometheus-sparkline">
+                <svg viewBox="0 0 280 72" width="100%" height="72" role="img" aria-label="Tendencia de actividad del sistema, datos de ejemplo, estable en las últimas horas">
+                  <title>Actividad del sistema — datos de ejemplo</title>
+                  <line x1="0" y1="68" x2="280" y2="68" stroke="var(--border)" stroke-width="1"></line>
+                  <polyline points="0,40 35,34 70,38 105,26 140,30 175,20 210,24 245,14 280,18" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                  <circle cx="280" cy="18" r="4" fill="var(--primary)"><title>Valor actual — dato de ejemplo</title></circle>
+                </svg>
+                <p class="chart-caption">Actividad del sistema · últimas horas (datos de ejemplo)</p>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span class="status-pill ok">Operativo</span>
+                <button class="btn btn-ghost btn-small" data-action="stub" data-stub-label="Abrir Prometheus">Abrir Prometheus ↗</button>
+              </div>
+            </div>
+            <div class="platform-card">
+              <h4>Políticas globales</h4>
+              <div class="policy-row"><span>Política de fallback global</span><button class="btn-icon" aria-label="Editar política de fallback global" data-action="stub" data-stub-label="Editar política de fallback global">Editar</button></div>
+              <div class="policy-row"><span>Límites de tasa por proveedor</span><button class="btn-icon" aria-label="Editar límites de tasa" data-action="stub" data-stub-label="Editar límites de tasa">Editar</button></div>
+              <div class="policy-row"><span>Registro de auditoría</span><button class="btn-icon" aria-label="Editar registro de auditoría" data-action="stub" data-stub-label="Editar registro de auditoría">Editar</button></div>
+            </div>
+          </div>
+        </div>
+        <aside class="annotation-rail">
+          <div class="note">
+            <strong>Por qué — todo bajo un mismo techo</strong>
+            Prometheus y Keys Globales antes aparecían como pestañas sueltas con una insignia "Admin" salpicada. Ahora ambos viven dentro de "Plataforma", con un único banner que declara el alcance una sola vez.
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- sticky save bar -->
+<div class="save-bar" id="saveBar" hidden role="status">
+  <span>Tienes cambios sin guardar en la asignación de modelos.</span>
+  <button class="btn" id="cancelChanges" data-od-id="cancel-changes">Cancelar</button>
+  <button class="btn btn-accent" id="saveChanges" data-od-id="save-changes">Guardar cambios</button>
+</div>
+
+<!-- catalog drawer -->
+<div class="drawer-overlay" id="drawerOverlay" hidden>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Catálogo de modelos">
+    <div class="drawer-head">
+      <h3>Catálogo de modelos</h3>
+      <button class="btn-icon" id="closeDrawer" aria-label="Cerrar catálogo">✕</button>
+    </div>
+    <p class="drawer-sub" id="drawerContext">Añadir alternativa a la cadena de fallback</p>
+    <input class="ph catalog-filter" disabled placeholder="[Filtrar por proveedor / capacidad — placeholder]" aria-label="Filtrar catálogo por proveedor o capacidad (no disponible en este wireframe)">
+    <div id="catalogList"></div>
+  </aside>
+</div>
+
+<!-- antes / despues modal -->
+<dialog id="baModal" aria-labelledby="baModalTitle">
+  <div class="modal-inner">
+    <h2 id="baModalTitle">Antes → Después</h2>
+    <p class="lead">Los 5 movimientos estructurales de este rediseño.</p>
+    <div class="ba-row">
+      <div class="ba-col"><div class="k">Antes</div><div class="before">5 pestañas mezclando usuario y admin: Asignación · Catálogo · API Keys · Prometheus (Admin) · Keys Globales (Admin)</div></div>
+      <div class="ba-col"><div class="k">Después</div><div class="after">3 secciones: Modelos · Credenciales · Plataforma (admin)</div></div>
+    </div>
+    <div class="ba-row">
+      <div class="ba-col"><div class="k">Antes</div><div class="before">Grilla de 6 tarjetas iguales + panel de fallback flotante debajo, relación poco clara</div></div>
+      <div class="ba-col"><div class="k">Después</div><div class="after">Master-detail: lista de tareas a la izquierda, modelo principal + cadena a la derecha</div></div>
+    </div>
+    <div class="ba-row">
+      <div class="ba-col"><div class="k">Antes</div><div class="before">Catálogo como pestaña / destino de navegación propio</div></div>
+      <div class="ba-col"><div class="k">Después</div><div class="after">Catálogo como drawer — herramienta que se abre desde la acción "Abrir catálogo"</div></div>
+    </div>
+    <div class="ba-row">
+      <div class="ba-col"><div class="k">Antes</div><div class="before">Admin salpicado con insignias sueltas en varias pestañas</div></div>
+      <div class="ba-col"><div class="k">Después</div><div class="after">Admin agrupado bajo "Plataforma" + subsección con insignia en Credenciales</div></div>
+    </div>
+    <div class="ba-row">
+      <div class="ba-col"><div class="k">Antes</div><div class="before">Sin estado visible: no se sabe qué está conectado, sucio o roto</div></div>
+      <div class="ba-col"><div class="k">Después</div><div class="after">Status strip permanente + barra de guardado pegajosa solo cuando hay cambios</div></div>
+    </div>
+    <div class="modal-close-row"><button class="btn btn-primary" id="closeBaModal">Cerrar</button></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var TASKS = [
+    { id:'texto', label:'Texto', icon:'TX',
+      primary:{ name:'GPT-4o mini', provider:'OpenAI', status:'ok' },
+      fallbacks:[
+        { name:'Claude 3.5 Haiku', provider:'Anthropic' },
+        { name:'Gemini 1.5 Flash', provider:'Google' }
+      ]},
+    { id:'codigo', label:'Código', icon:'CO',
+      primary:{ name:'Claude Sonnet 4.5', provider:'Anthropic', status:'ok' },
+      fallbacks:[ { name:'GPT-4.1', provider:'OpenAI' } ]},
+    { id:'orquestador', label:'Orquestador', icon:'OR',
+      primary:{ name:'GPT-4o', provider:'OpenAI', status:'ok' },
+      fallbacks:[
+        { name:'Claude 3.5 Sonnet', provider:'Anthropic' },
+        { name:'Mixtral 8x7B', provider:'Mistral' }
+      ]},
+    { id:'razonamiento', label:'Razonamiento', icon:'RZ',
+      primary:{ name:'o1-mini', provider:'OpenAI', status:'warn' },
+      fallbacks:[]},
+    { id:'imagen', label:'Imagen', icon:'IM',
+      primary:{ name:'Flux Pro Ultra', provider:'fal', status:'ok' },
+      fallbacks:[ { name:'DALL·E 3', provider:'OpenAI' } ]},
+    { id:'video', label:'Video', icon:'VD',
+      primary:{ name:'Veo 3', provider:'fal', status:'warn' },
+      fallbacks:[]}
+  ];
+
+  var CATALOG = [
+    { name:'GPT-4o mini', provider:'OpenAI', tag:'texto' },
+    { name:'GPT-4.1', provider:'OpenAI', tag:'texto/código' },
+    { name:'Claude Sonnet 4.5', provider:'Anthropic', tag:'código' },
+    { name:'Claude 3.5 Haiku', provider:'Anthropic', tag:'texto' },
+    { name:'Gemini 1.5 Flash', provider:'Google', tag:'texto' },
+    { name:'Mixtral 8x7B', provider:'Mistral', tag:'orquestador' },
+    { name:'DALL·E 3', provider:'OpenAI', tag:'imagen' },
+    { name:'Flux Pro Ultra', provider:'fal', tag:'imagen' },
+    { name:'Veo 3', provider:'fal', tag:'video' },
+    { name:'Wan 2.1', provider:'fal', tag:'video' }
+  ];
+
+  var USER_KEYS = [
+    { provider:'OpenAI', key:'sk-••••4f2a', status:'ok', label:'Activa' },
+    { provider:'Anthropic', key:'sk-ant-••••91cd', status:'ok', label:'Activa' },
+    { provider:'Google AI', key:'—', status:'warn', label:'No configurada' }
+  ];
+  var PLATFORM_KEYS = [
+    { provider:'fal.ai (plataforma)', key:'fal-••••88bd', status:'ok', label:'Activa' },
+    { provider:'Azure OpenAI (plataforma)', key:'—', status:'warn', label:'No configurada' }
+  ];
+
+  var state = { selectedTask:'texto', editing:false, dirty:false, drawerTarget:null };
+
+  var app = document.getElementById('app');
+  var taskList = document.getElementById('taskList');
+  var taskDetail = document.getElementById('taskDetail');
+
+  function initials(provider){
+    var base = provider.split('(')[0].trim();
+    var words = base.split(/\s+/).filter(Boolean);
+    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+    return base.slice(0, 2).toUpperCase();
+  }
+
+  function statusPill(status, okText, warnText){
+    var cls = status === 'ok' ? 'ok' : 'warn';
+    var text = status === 'ok' ? okText : warnText;
+    return '<span class="status-pill ' + cls + '">' + text + '</span>';
+  }
+
+  function renderTaskList(){
+    taskList.innerHTML = TASKS.map(function(t){
+      var selected = t.id === state.selectedTask;
+      return '' +
+        '<button class="task-item" role="tab" data-task="' + t.id + '" aria-selected="' + selected + '" data-od-id="task-item-' + t.id + '">' +
+          '<span class="avatar task-icon" aria-hidden="true">' + t.icon + '</span>' +
+          '<span class="task-copy">' +
+            '<span class="task-label">' + t.label + '</span>' +
+            '<span class="task-sub">' + t.primary.name + ' · ' + (t.primary.status === 'ok' ? 'Conectado' : 'Configurar') + '</span>' +
+          '</span>' +
+        '</button>';
+    }).join('');
+    Array.prototype.forEach.call(taskList.querySelectorAll('.task-item'), function(btn){
+      btn.addEventListener('click', function(){
+        state.selectedTask = btn.getAttribute('data-task');
+        state.editing = false;
+        app.classList.remove('editing-chain');
+        app.classList.add('mobile-show-detail');
+        renderTaskList();
+        renderDetail();
+      });
+    });
+  }
+
+  function currentTask(){
+    var found = null;
+    TASKS.forEach(function(t){ if (t.id === state.selectedTask) found = t; });
+    return found;
+  }
+
+  function renderDetail(){
+    var t = currentTask();
+    var chainRows = t.fallbacks.map(function(f, i){
+      return '' +
+        '<li class="chain-row" data-index="' + i + '">' +
+          '<span class="chain-pos">' + (i+1) + '</span>' +
+          '<span class="avatar logo-ph small" aria-hidden="true">' + initials(f.provider) + '</span>' +
+          '<span class="chain-name">' + f.name + ' <span class="muted">· ' + f.provider + '</span></span>' +
+          '<span class="chain-row-actions">' +
+            '<button class="btn-icon" aria-label="Mover ' + f.name + ' hacia arriba" data-action="up" data-index="' + i + '">&uarr;</button>' +
+            '<button class="btn-icon" aria-label="Mover ' + f.name + ' hacia abajo" data-action="down" data-index="' + i + '">&darr;</button>' +
+            '<button class="btn-icon" aria-label="Quitar ' + f.name + ' de la cadena" data-action="remove" data-index="' + i + '">&times;</button>' +
+          '</span>' +
+        '</li>';
+    }).join('');
+    if (!t.fallbacks.length){
+      chainRows = '<div class="chain-empty">Sin alternativas configuradas — si el modelo principal falla, la tarea no tiene respaldo.</div>';
+    }
+
+    taskDetail.innerHTML = '' +
+      '<button class="btn btn-ghost btn-small mobile-back-btn" id="mobileBackBtn" type="button">&larr; Volver a la lista</button>' +
+      '<div class="model-card primary-card" data-od-id="model-card-primary">' +
+        '<div class="model-card-head">' +
+          '<span class="avatar logo-ph" aria-hidden="true">' + initials(t.primary.provider) + '</span>' +
+          '<div><h3>' + t.primary.name + '</h3><p>' + t.primary.provider + ' · Modelo principal para ' + t.label + '</p></div>' +
+          statusPill(t.primary.status, 'Conectado', 'Sin configurar') +
+        '</div>' +
+        '<div class="model-card-actions">' +
+          '<button class="btn btn-ghost" data-action="open-catalog" data-target="primary">Cambiar modelo — Abrir catálogo</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="chain-head">' +
+        '<h4>Cadena de fallback</h4>' +
+        '<button class="btn btn-ghost btn-small" id="editChainBtn">' + (state.editing ? 'Listo' : 'Editar cadena') + '</button>' +
+      '</div>' +
+      (t.fallbacks.length ? '<ol class="fallback-chain">' + chainRows + '</ol>' : chainRows) +
+      '<button class="btn btn-outline btn-small" id="addFallbackBtn" style="margin-top:10px;' + (state.editing ? '' : 'display:none;') + '" data-action="open-catalog" data-target="fallback">+ Añadir alternativa — Abrir catálogo</button>';
+
+    document.getElementById('editChainBtn').addEventListener('click', function(){
+      state.editing = !state.editing;
+      app.classList.toggle('editing-chain', state.editing);
+      renderDetail();
+    });
+
+    document.getElementById('mobileBackBtn').addEventListener('click', function(){
+      app.classList.remove('mobile-show-detail');
+    });
+
+    Array.prototype.forEach.call(taskDetail.querySelectorAll('[data-action="open-catalog"]'), function(btn){
+      btn.addEventListener('click', function(){ openDrawer(btn.getAttribute('data-target')); });
+    });
+
+    Array.prototype.forEach.call(taskDetail.querySelectorAll('[data-action="up"]'), function(btn){
+      btn.addEventListener('click', function(){ moveFallback(parseInt(btn.getAttribute('data-index'),10), -1); });
+    });
+    Array.prototype.forEach.call(taskDetail.querySelectorAll('[data-action="down"]'), function(btn){
+      btn.addEventListener('click', function(){ moveFallback(parseInt(btn.getAttribute('data-index'),10), 1); });
+    });
+    Array.prototype.forEach.call(taskDetail.querySelectorAll('[data-action="remove"]'), function(btn){
+      btn.addEventListener('click', function(){ removeFallback(parseInt(btn.getAttribute('data-index'),10)); });
+    });
+  }
+
+  function moveFallback(index, dir){
+    var t = currentTask();
+    var newIndex = index + dir;
+    if (newIndex < 0 || newIndex >= t.fallbacks.length) return;
+    var tmp = t.fallbacks[index];
+    t.fallbacks[index] = t.fallbacks[newIndex];
+    t.fallbacks[newIndex] = tmp;
+    markDirty();
+    renderDetail();
+  }
+  function removeFallback(index){
+    var t = currentTask();
+    t.fallbacks.splice(index, 1);
+    markDirty();
+    renderDetail();
+  }
+
+  function revealEl(el){
+    el.hidden = false;
+    void el.offsetWidth; // force reflow so the entrance transition runs
+    el.classList.add('is-open');
+  }
+  function dismissEl(el){
+    el.classList.remove('is-open');
+    var done = false;
+    function finish(){
+      if (done) return;
+      done = true;
+      el.hidden = true;
+      el.removeEventListener('transitionend', finish);
+    }
+    el.addEventListener('transitionend', finish);
+    setTimeout(finish, 260); // fallback: covers prefers-reduced-motion (no transitionend fires)
+  }
+
+  function markDirty(){
+    state.dirty = true;
+    revealEl(document.getElementById('saveBar'));
+    var chip = document.getElementById('statDirty');
+    chip.textContent = 'Sí';
+    chip.classList.add('dirty');
+  }
+  function clearDirty(){
+    state.dirty = false;
+    dismissEl(document.getElementById('saveBar'));
+    var chip = document.getElementById('statDirty');
+    chip.textContent = 'No';
+    chip.classList.remove('dirty');
+  }
+
+  document.getElementById('saveChanges').addEventListener('click', function(e){
+    var btn = e.currentTarget;
+    var originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+    setTimeout(function(){
+      clearDirty();
+      showToast('Cambios guardados');
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }, 450);
+  });
+  document.getElementById('cancelChanges').addEventListener('click', function(){
+    clearDirty();
+    showToast('Cambios descartados (simulado en este wireframe)');
+  });
+
+  function showToast(msg){
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 2200);
+  }
+
+  /* ---------- drawer ---------- */
+  var drawerOverlay = document.getElementById('drawerOverlay');
+  var catalogList = document.getElementById('catalogList');
+  var drawerContext = document.getElementById('drawerContext');
+
+  function renderCatalog(){
+    catalogList.innerHTML = CATALOG.map(function(m){
+      return '' +
+        '<div class="catalog-item">' +
+          '<span class="avatar logo-ph small" aria-hidden="true">' + initials(m.provider) + '</span>' +
+          '<span class="meta"><span class="name">' + m.name + '</span><br><span class="prov">' + m.provider + '</span></span>' +
+          '<span class="tag">' + m.tag + '</span>' +
+          '<button class="btn btn-small btn-primary" data-add="' + m.name + '::' + m.provider + '" data-od-id="catalog-add-' + slug(m.name) + '">Añadir</button>' +
+        '</div>';
+    }).join('');
+    Array.prototype.forEach.call(catalogList.querySelectorAll('[data-add]'), function(btn){
+      btn.addEventListener('click', function(){
+        var parts = btn.getAttribute('data-add').split('::');
+        addToChain(parts[0], parts[1]);
+      });
+    });
+  }
+
+  function addToChain(name, provider){
+    var t = currentTask();
+    if (state.drawerTarget === 'primary'){
+      t.primary = { name:name, provider:provider, status:'ok' };
+    } else {
+      t.fallbacks.push({ name:name, provider:provider });
+    }
+    markDirty();
+    renderTaskList();
+    renderDetail();
+    closeDrawer();
+    showToast((state.drawerTarget === 'primary' ? 'Modelo principal actualizado: ' : 'Añadido a la cadena: ') + name);
+  }
+
+  var drawerTriggerEl = null;
+
+  function openDrawer(target){
+    drawerTriggerEl = document.activeElement;
+    state.drawerTarget = target;
+    drawerContext.textContent = target === 'primary'
+      ? 'Elegir nuevo modelo principal para ' + currentTask().label
+      : 'Añadir alternativa a la cadena de fallback de ' + currentTask().label;
+    revealEl(drawerOverlay);
+    document.getElementById('closeDrawer').focus();
+  }
+  function closeDrawer(){
+    dismissEl(drawerOverlay);
+    if (drawerTriggerEl && typeof drawerTriggerEl.focus === 'function'){
+      drawerTriggerEl.focus();
+    }
+  }
+  function trapDrawerFocus(e){
+    if (e.key !== 'Tab') return;
+    var focusable = Array.prototype.filter.call(
+      drawerOverlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+      function(el){ return !el.disabled && el.offsetParent !== null; }
+    );
+    if (!focusable.length) return;
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first){
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last){
+      e.preventDefault(); first.focus();
+    }
+  }
+  document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
+  drawerOverlay.addEventListener('click', function(e){ if (e.target === drawerOverlay) closeDrawer(); });
+  document.addEventListener('keydown', function(e){
+    if (drawerOverlay.hidden) return;
+    if (e.key === 'Escape') closeDrawer();
+    else trapDrawerFocus(e);
+  });
+
+  /* ---------- nav tabs + URL hash sync ---------- */
+  var navTabs = Array.prototype.slice.call(document.querySelectorAll('.nav-tab'));
+  var panels = {
+    modelos: document.getElementById('panel-modelos'),
+    credenciales: document.getElementById('panel-credenciales'),
+    plataforma: document.getElementById('panel-plataforma')
+  };
+  function showPanel(name, pushHash){
+    navTabs.forEach(function(tab){
+      var match = tab.getAttribute('data-panel') === name;
+      tab.setAttribute('aria-selected', match);
+    });
+    Object.keys(panels).forEach(function(key){
+      panels[key].hidden = key !== name;
+    });
+    if (pushHash !== false) location.hash = name;
+  }
+  navTabs.forEach(function(tab){
+    tab.addEventListener('click', function(){ showPanel(tab.getAttribute('data-panel')); });
+  });
+  window.addEventListener('hashchange', function(){
+    var name = location.hash.replace('#','') || 'modelos';
+    if (panels[name]) showPanel(name, false);
+  });
+
+  /* ---------- credenciales render ---------- */
+  function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+
+  function renderCredRows(container, list){
+    container.innerHTML = list.map(function(k){
+      return '' +
+        '<div class="cred-row" data-od-id="cred-row-' + slug(k.provider) + '">' +
+          '<span class="avatar logo-ph small" aria-hidden="true">' + initials(k.provider) + '</span>' +
+          '<span class="cred-provider">' + k.provider + '</span>' +
+          '<span class="cred-key">' + k.key + '</span>' +
+          statusPill(k.status, 'Activa', k.label) +
+          '<button class="btn btn-ghost btn-small" data-action="stub" data-stub-label="Editar credencial de ' + k.provider + '">Editar</button>' +
+        '</div>';
+    }).join('');
+  }
+
+  /* ---------- antes/despues modal ---------- */
+  var baModal = document.getElementById('baModal');
+  document.getElementById('openBeforeAfter').addEventListener('click', function(){ baModal.showModal(); });
+  document.getElementById('closeBaModal').addEventListener('click', function(){ baModal.close(); });
+
+  /* ---------- stubbed actions (not built in this wireframe) ---------- */
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-action="stub"]');
+    if (!btn) return;
+    showToast((btn.getAttribute('data-stub-label') || 'Acción') + ' (simulado en este wireframe)');
+  });
+
+  /* ---------- annotations toggle ---------- */
+  document.getElementById('toggleAnnotations').addEventListener('change', function(e){
+    app.classList.toggle('annotations-hidden', !e.target.checked);
+  });
+
+  /* ---------- init ---------- */
+  renderTaskList();
+  renderDetail();
+  renderCatalog();
+  renderCredRows(document.getElementById('userKeyList'), USER_KEYS);
+  renderCredRows(document.getElementById('platformKeyList'), PLATFORM_KEYS);
+
+  var initial = location.hash.replace('#','') || 'modelos';
+  showPanel(panels[initial] ? initial : 'modelos', false);
+})();
+</script>
+</body>
+</html>
