@@ -12,6 +12,7 @@ import {
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { buildUploadsProps } from "../../lib/upload-chip-view-model";
+import { CrearOvaTourService } from "../../services/crear-ova-tour.service";
 import { OvaCreationFlowService } from "../../services/ova-creation-flow.service";
 import { OvaJobService } from "../../services/ova-job.service";
 import { OvaUploadsService } from "../../services/ova-uploads.service";
@@ -42,11 +43,13 @@ import { TotalFailurePanelComponent } from "./total-failure-panel.component";
         (openModal)="flow.openModal()"
         [selections]="flow.selections()"
         [totalResources]="flow.totalResources()"
+        [phasesWithResources]="flow.phasesWithResources()"
         [theme]="flow.theme()"
         (themeChange)="flow.setTheme($event)"
         (generate)="flow.generate()"
         [error]="job.error()"
         [uploadsProps]="uploadsProps"
+        (replayTour)="tour.restart()"
       ></gn-ova-create-form-card>
       @if (flow.isModalOpen()) {
         <gn-phase-select-modal
@@ -63,6 +66,9 @@ import { TotalFailurePanelComponent } from "./total-failure-panel.component";
             class="w-full sm:w-[380px] lg:w-[420px] sm:shrink-0 border-r border-border/50 flex flex-col overflow-hidden bg-card/30"
           >
             <div class="flex-1 overflow-y-auto p-4 space-y-3">
+              @if (isGenerating && job.viewModel().length === 0) {
+                <p role="status" class="text-sm text-muted-foreground">Iniciando generación…</p>
+              }
               @if (job.viewModel().length > 0) {
                 <gn-progress-panel
                   [job]="job.job()"
@@ -111,6 +117,7 @@ export class OvaCreationViewComponent implements OnInit {
   flow = inject(OvaCreationFlowService);
   job = inject(OvaJobService);
   uploadsSvc = inject(OvaUploadsService);
+  tour = inject(CrearOvaTourService);
 
   readonly initialJobId = input<string | undefined>(undefined);
   readonly onCreated = output<string>();
@@ -131,6 +138,7 @@ export class OvaCreationViewComponent implements OnInit {
     if (initialJobId && this.job.phase() === "idle") {
       this.flow.restore(initialJobId);
     }
+    if (!this.hasJob) this.tour.startIfNeeded();
   }
 
   get hasJob() {

@@ -10,15 +10,20 @@ export type ButtonSize = "default" | "sm" | "lg" | "icon";
  * variant/size API and a `loading` flag (Spartan buttons have no native loading
  * state, so we compose an hlm-spinner). Forwards `type` to the inner native
  * button so `type="submit"` inside a form actually submits.
+ *
+ * `display: contents` keeps the host out of the box tree so `class` styles apply
+ * only to the real `<button>` (avoids a double-padded wrapper vs navbar CTAs).
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-button",
   imports: [HlmButton, HlmSpinner],
+  host: { class: "contents" },
   template: `
     <button
       hlmBtn
       [attr.type]="type()"
+      [attr.aria-label]="ariaLabel() || null"
       [variant]="variant()"
       [size]="size()"
       [disabled]="disabled() || loading()"
@@ -39,6 +44,8 @@ export class ButtonComponent {
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly loading = input(false, { transform: booleanAttribute });
   readonly class = input("");
+  /** Accessible name forwarded to the native button (title alone is not enough). */
+  readonly ariaLabel = input<string | undefined>(undefined);
 
   readonly onClick = output<MouseEvent>();
 }

@@ -22,7 +22,28 @@
         </p>
       </div>
 
+      <div class="flex items-center justify-between gap-2 px-1">
+        <ol
+          aria-label="Pasos para crear un OVA"
+          class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
+        >
+          <li>1. Describe</li>
+          <li>2. Elige recursos</li>
+          <li>3. Genera</li>
+        </ol>
+        <gn-button
+          variant="ghost"
+          size="sm"
+          (onClick)="replayTour.emit()"
+          [ariaLabel]="'Ver tutorial'"
+          title="Ver tutorial"
+        >
+          <span aria-hidden="true">?</span>
+        </gn-button>
+      </div>
+
       <div
+        id="tour-crear-ova-prompt"
         class="rounded-2xl border border-border/70 bg-card overflow-hidden"
         style="
           box-shadow:
@@ -30,7 +51,9 @@
             0 1px 4px oklch(0 0 0 / 0.06);
         "
       >
+        <label for="ova-create-prompt" class="sr-only">Describe el tema del OVA</label>
         <textarea
+          id="ova-create-prompt"
           rows="5"
           [value]="prompt()"
           (input)="promptChange.emit($any($event.target).value)"
@@ -39,9 +62,20 @@
             minChars() +
             ' caracteres)'
           "
-          class="w-full resize-none border-0 rounded-none bg-transparent px-5 pt-5 pb-3 text-sm leading-relaxed placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-0"
+          class="w-full resize-none border-0 rounded-none bg-transparent px-5 pt-5 pb-3 text-sm leading-relaxed placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           (keydown)="handleKeydown($event)"
         ></textarea>
+
+        <div class="px-5 pb-3">
+          <button
+            type="button"
+            (click)="useExample()"
+            aria-label="Usar ejemplo de prompt"
+            class="text-xs font-medium text-primary hover:underline"
+          >
+            Usar ejemplo de prompt
+          </button>
+        </div>
 
         <input
           #fileInput
@@ -52,18 +86,18 @@
           (change)="handleFileChange($event)"
         />
 
-        @if (uploadsProps.uploads.length > 0) {
+        @if (uploadsProps().uploads.length > 0) {
           <div class="flex flex-wrap gap-1.5 px-5 pb-3">
-            @for (u of uploadsProps.uploads; track u) {
-              <gn-file-chip [file]="u" (onRemove)="uploadsProps.onRemove($event)"></gn-file-chip>
+            @for (u of uploadsProps().uploads; track u) {
+              <gn-file-chip [file]="u" (onRemove)="uploadsProps().onRemove($event)"></gn-file-chip>
             }
           </div>
         }
 
-        @if (totalResources > 0) {
+        @if (totalResources() > 0) {
           <p class="px-5 pb-3 text-xs text-muted-foreground">
             <span class="font-semibold text-primary"
-              >{{ totalResources }} recurso{{ totalResources !== 1 ? "s" : "" }}</span
+              >{{ totalResources() }} recurso{{ totalResources() !== 1 ? "s" : "" }}</span
             >
             @if (resourceSummary) {
               <span> — {{ resourceSummary }}</span>
@@ -86,42 +120,74 @@
           </button>
         </div>
 
-        <div class="flex items-center gap-0.5 border-t border-border/60 px-3 py-2.5 bg-muted/20">
+        <div
+          id="tour-crear-ova-config"
+          class="flex items-center gap-0.5 border-t border-border/60 px-3 py-2.5 bg-muted/20"
+        >
           <gn-button
             variant="ghost"
             size="sm"
             (onClick)="openModal.emit()"
-            [class.text-primary]="totalResources > 0"
+            [class.text-primary]="totalResources() > 0"
+            [ariaLabel]="'Configurar recursos 5E'"
             title="Configurar recursos 5E"
           >
-            ⚙
+            <span aria-hidden="true">⚙</span>
+            <span class="hidden sm:inline">Recursos</span>
           </gn-button>
           <gn-button
             variant="ghost"
             size="sm"
             (onClick)="showFiles = true"
-            [class.text-primary]="uploadsProps.uploads.length > 0"
+            [class.text-primary]="uploadsProps().uploads.length > 0"
+            [ariaLabel]="'Archivos de referencia'"
             title="Archivos de referencia"
           >
-            📎
+            <span aria-hidden="true">📎</span>
+            <span class="hidden sm:inline">Archivos</span>
           </gn-button>
-          <gn-button variant="ghost" size="sm" (onClick)="showTheme = true" title="Tema visual"
-            >🎨</gn-button
+          <gn-button
+            variant="ghost"
+            size="sm"
+            (onClick)="showTheme = true"
+            [ariaLabel]="'Tema visual'"
+            title="Tema visual"
           >
+            <span aria-hidden="true">🎨</span>
+            <span class="hidden sm:inline">Tema</span>
+          </gn-button>
           <div class="flex-1"></div>
-          <gn-button (onClick)="generate.emit()" [disabled]="!canGenerate()"
-            >⚡ Generar OVA</gn-button
+          <gn-button
+            id="tour-crear-ova-generar"
+            (onClick)="generate.emit()"
+            [disabled]="!canGenerate()"
           >
+            <span aria-hidden="true">⚡</span> Generar OVA
+          </gn-button>
         </div>
 
-        @if (error || uploadsProps.uploadError) {
-          <p class="px-5 pb-3 text-xs text-destructive">
-            {{ error || uploadsProps.uploadError }}
+        @if (missingChars() > 0) {
+          <p class="px-5 pb-3 text-xs text-muted-foreground">
+            Faltan {{ missingChars() }} caracteres para generar
+          </p>
+        }
+        @if (needsMorePhases()) {
+          <p class="px-5 pb-3 text-xs text-muted-foreground">
+            Selecciona recursos en al menos {{ 2 }} fases (falta {{ missingPhases() }})
+          </p>
+        }
+
+        @if (error() || uploadsProps().uploadError) {
+          <p role="alert" aria-live="polite" class="px-5 pb-3 text-xs text-destructive">
+            {{ error() || uploadsProps().uploadError }}
           </p>
         }
       </div>
 
-      <p class="text-center text-[11px] text-muted-foreground/60 tracking-wide">
+      <p class="text-center text-[11px] text-muted-foreground/60 tracking-wide sm:hidden">
+        Pulsa Generar cuando termines
+      </p>
+      <p class="hidden sm:block text-center text-[11px] text-muted-foreground/60 tracking-wide">
         Ctrl+Enter para generar
       </p>
     </div>
@@ -129,11 +195,11 @@
 
   <gn-ova-files-modal
     [open]="showFiles"
-    [uploads]="uploadsProps.uploads"
-    [activeUploadsCount]="uploadsProps.activeUploadsCount"
-    [maxUploadFiles]="uploadsProps.maxUploadFiles"
-    (onFilesSelected)="uploadsProps.onFilesSelected($event)"
-    (onRemove)="uploadsProps.onRemove($event)"
+    [uploads]="uploadsProps().uploads"
+    [activeUploadsCount]="uploadsProps().activeUploadsCount"
+    [maxUploadFiles]="uploadsProps().maxUploadFiles"
+    (onFilesSelected)="uploadsProps().onFilesSelected($event)"
+    (onRemove)="uploadsProps().onRemove($event)"
     (onOpenChange)="showFiles = $event"
   ></gn-ova-files-modal>
 

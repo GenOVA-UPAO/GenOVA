@@ -8,6 +8,7 @@ import { OvaUploadsService } from "./ova-uploads.service";
 import { ResourceConfigsService } from "./resource-configs.service";
 
 const MIN_CHARS = 10;
+export const MIN_PHASES_WITH_RESOURCES = 2;
 const ALL_PHASES = ["engage", "explore", "explain", "elaborate", "evaluate"];
 type Picks = Record<string, Resource[]>;
 const EMPTY_PICKS: Picks = Object.fromEntries(ALL_PHASES.map((p) => [p, []]));
@@ -43,7 +44,7 @@ export class OvaCreationFlowService {
   canGenerate = computed(
     () =>
       this.prompt().trim().length >= MIN_CHARS &&
-      this.phasesWithResources() >= 2 &&
+      this.phasesWithResources() >= MIN_PHASES_WITH_RESOURCES &&
       !this.isGenerating(),
   );
 

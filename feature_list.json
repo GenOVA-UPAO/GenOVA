@@ -31,7 +31,7 @@
     { "id": "EP-10", "name": "documentacion_cierre", "title": "Documentación y Cierre del Proyecto", "spec": "", "status": "pending" },
 
     { "id": "HU-001", "name": "registro_cuenta_usuario", "title": "Registro de Cuenta de Usuario", "spec": "sdd/specs/HU-001_registro-cuenta-usuario.md", "status": "done" },
-    { "id": "HU-002", "name": "crear_ova_desde_prompt", "title": "Crear nuevo OVA desde prompt", "spec": "sdd/specs/HU-002_crear_nuevo_ova_desde_prompt.md", "status": "done" },
+    { "id": "HU-002", "name": "crear_ova_desde_prompt", "title": "Crear nuevo OVA desde prompt", "spec": "sdd/specs/HU-002_crear_nuevo_ova_desde_prompt.md", "status": "done", "amended_from": "done" },
     { "id": "HU-003", "name": "visualizar_5e", "title": "Visualizar completa 5E", "spec": "sdd/specs/HU-003_visualizar-completa-5E.md", "status": "done" },
     { "id": "HU-004", "name": "exportar_scorm", "title": "Exportar OVA como paquete SCORM", "spec": "sdd/specs/HU-004_exportar-ova-como-paquete-scorm.md", "status": "done" },
     { "id": "HU-005", "name": "evaluar_sus", "title": "Evaluar plataforma mediante encuesta SUS", "spec": "", "status": "pending" },
