@@ -6,12 +6,13 @@ legacy map from ``ova_settings.image_*`` when the chain is still empty.
 
 from __future__ import annotations
 
-import logging
 import os
+
+import structlog
 
 from llm.utils import llm_config_store
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _DEFAULT_MAX = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
 

@@ -5,11 +5,11 @@ to repair common failures (truncation, missing SCORM callbacks) before
 the response reaches the client.
 """
 
-import logging
+import structlog
 
 from llm.utils.utils import SCORM_JS
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _FORBIDDEN_CDN = [
     "cdn.jsdelivr.net",
@@ -129,10 +129,10 @@ def validate_and_repair(html: str, phase: str, resource_type: int) -> tuple[str,
         return html, []
 
     logger.warning(
-        "HTML validation failed for %s/%d (%d issues), attempting repair",
-        phase,
-        resource_type,
-        len(failures),
+        "HTML validation failed, attempting repair",
+        phase=phase,
+        resource_type=resource_type,
+        issue_count=len(failures),
     )
 
     repaired = repair_truncated_html(html)
@@ -140,12 +140,12 @@ def validate_and_repair(html: str, phase: str, resource_type: int) -> tuple[str,
 
     if remaining:
         logger.warning(
-            "Repair incomplete for %s/%d: %s",
-            phase,
-            resource_type,
-            remaining,
+            "HTML repair incomplete",
+            phase=phase,
+            resource_type=resource_type,
+            remaining_failures=remaining,
         )
     else:
-        logger.info("HTML repair succeeded for %s/%d", phase, resource_type)
+        logger.info("HTML repair succeeded", phase=phase, resource_type=resource_type)
 
     return repaired, remaining

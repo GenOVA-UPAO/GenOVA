@@ -1,9 +1,9 @@
 """Auth router — login + mounted sub-routers (register, session, reset, verify,
 totp)."""
 
-import logging
 from datetime import UTC, datetime, timedelta
 
+import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
@@ -27,7 +27,7 @@ from core.security import PASSWORD_MAX_LENGTH, verify_dummy, verify_password
 from models import User
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class LoginRequest(BaseModel):

@@ -1,6 +1,6 @@
-import logging
 import os
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -17,7 +17,7 @@ from scorm.service import build_scorm_zip_bytes
 from storage import StorageError, is_configured, signed_url, upload_zip
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @router.get("/health")
@@ -65,7 +65,9 @@ def _persist_scorm_zip(
             upload_zip(object_key, zip_bytes)
             return object_key, None
         except StorageError:
-            logger.warning("Supabase upload failed for %s; falling back to local disk", object_key)
+            logger.warning(
+                "supabase upload failed, falling back to local disk", object_key=object_key
+            )
 
     output_dir = _ova_output_dir()
     os.makedirs(output_dir, exist_ok=True)
@@ -132,7 +134,7 @@ def save_ova(
         try:
             tie_uploads_to_ova(db, payload.upload_ids, str(ova.id))
         except Exception:
-            logger.exception("Failed to tie RAG chunks to ova=%s", ova.id)
+            logger.exception("failed to tie RAG chunks to ova", ova_id=ova.id)
 
     return {"ova_id": str(ova.id), "status": "listo"}
 
@@ -157,7 +159,7 @@ def download_ova_scorm(
             url = signed_url(str(ova.storage_key))
             return RedirectResponse(url=url, status_code=302)
         except StorageError:
-            logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
+            logger.exception("signed url failed, falling back to disk", ova_id=ova_id)
 
     # Legacy / dev fallback: stream bytes from local disk.
     if not ova.file_path or not os.path.exists(str(ova.file_path)):

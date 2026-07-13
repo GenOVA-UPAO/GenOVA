@@ -9,12 +9,11 @@ bound. A row in any of these is useless once `expires_at` is in the past:
 
 from __future__ import annotations
 
-import logging
-
+import structlog
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _TABLES = (
     "jwt_blocklist",
@@ -35,5 +34,5 @@ def purge_expired_auth(db: Session) -> int:
             total += result.rowcount or 0
         except Exception:
             db.rollback()
-            logger.exception("Auth cleanup failed for table %s (continuing).", table)
+            logger.exception("Auth cleanup falló (continuando)", table=table)
     return total

@@ -10,7 +10,7 @@ is accepted only if it does not regress (fewer/equal structural issues, not a
 truncated stub); otherwise the original is kept.
 """
 
-import logging
+import structlog
 
 from core.config import settings
 from llm.router import generar_texto
@@ -18,7 +18,7 @@ from llm.utils.html_validator import validate_html
 from llm.utils.themes import build_design_system
 from llm.utils.utils import strip_markdown
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _refine_enabled() -> bool:
@@ -87,7 +87,7 @@ def apply_feedback(
             )
         )
     except Exception:  # noqa: BLE001
-        logger.exception("apply_feedback failed for %s/%s", phase, rt)
+        logger.exception("apply_feedback failed", phase=phase, resource_type=rt)
         return html
 
 
@@ -112,7 +112,13 @@ def maybe_refine(
     before = len(validate_html(html, phase, rt))
     after = len(validate_html(refined, phase, rt))
     if refined and after <= before and len(refined) >= len(html) * 0.6:
-        logger.info("refine accepted for %s/%s (%d→%d issues)", phase, rt, before, after)
+        logger.info(
+            "refine accepted",
+            phase=phase,
+            resource_type=rt,
+            issues_before=before,
+            issues_after=after,
+        )
         return refined
-    logger.info("refine rejected for %s/%s (no improvement)", phase, rt)
+    logger.info("refine rejected: no improvement", phase=phase, resource_type=rt)
     return html

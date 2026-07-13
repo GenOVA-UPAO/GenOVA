@@ -11,11 +11,12 @@ routers fall back to local-disk persistence (legacy behavior).
 
 from __future__ import annotations
 
-import logging
 import os
 import threading
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 DEFAULT_BUCKET = "scorm-packages"
 DEFAULT_SIGNED_URL_TTL = 3600  # 1 hour
@@ -75,7 +76,7 @@ def _get_client():
             try:
                 _client = create_client(_clean_url(), _clean_key())
             except Exception as exc:
-                logger.exception("Supabase create_client failed")
+                logger.exception("Supabase create_client falló")
                 raise StorageError(f"Supabase client init failed: {exc}") from exc
     return _client
 
@@ -95,7 +96,7 @@ def upload_zip(object_key: str, zip_bytes: bytes) -> str:
             },
         )
     except Exception as exc:
-        logger.exception("Supabase upload failed for key=%s", object_key)
+        logger.exception("Supabase upload falló", object_key=object_key)
         raise StorageError(f"Upload failed: {exc}") from exc
     return object_key
 
@@ -118,7 +119,7 @@ def signed_url(
             object_key, ttl_seconds, options=options
         )
     except Exception as exc:
-        logger.exception("Supabase signed_url failed for key=%s", object_key)
+        logger.exception("Supabase signed_url falló", object_key=object_key)
         raise StorageError(f"Signed URL generation failed: {exc}") from exc
 
     # supabase-py returns {"signedURL": "..."} (some versions {"signedUrl": "..."}).
@@ -139,4 +140,4 @@ def delete_zip(object_key: str) -> None:
         client = _get_client()
         client.storage.from_(_bucket_name()).remove([object_key])
     except Exception:
-        logger.exception("Supabase delete failed for key=%s", object_key)
+        logger.exception("Supabase delete falló", object_key=object_key)

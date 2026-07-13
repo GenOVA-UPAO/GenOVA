@@ -1,7 +1,6 @@
 """Admin endpoints for Prometheus node configuration flags."""
 
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
@@ -11,7 +10,7 @@ from core.rate_limit import limiter
 from models import PlatformConfig
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @router.get("/nodes-config")
@@ -73,7 +72,7 @@ def put_nodes_config_endpoint(
     try:
         config = save_nodes_config(updates, db)
     except Exception:
-        logger.exception("Nodes config write failed")
+        logger.exception("nodes config write failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar la configuración de nodos.",

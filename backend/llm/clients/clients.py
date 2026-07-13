@@ -1,15 +1,15 @@
 """LLM SDK client initialization and API key resolution."""
 
-import logging
 import time
 from threading import RLock
 
+import structlog
 from groq import Groq
 from openai import OpenAI
 
 from core.config import settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _key_cache: dict[str, tuple[str | None, float]] = {}
 _key_lock = RLock()

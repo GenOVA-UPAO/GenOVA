@@ -13,11 +13,14 @@ work (Prometheus) never blocks the web process and survives a web redeploy.
 import asyncio
 import uuid
 
+import structlog
 from arq.connections import RedisSettings
 
 from core.config import settings
 from generation.jobs.jobs_runner import run_job
 from generation.jobs.queue import redis_settings
+
+logger = structlog.get_logger(__name__)
 
 
 async def run_generation(ctx, job_id: str, only: list[str] | None = None) -> None:
@@ -70,9 +73,7 @@ async def resume_orphans(ctx) -> None:
     try:
         orphans = await asyncio.to_thread(_find_and_requeue)
     except Exception:  # noqa: BLE001 — el resume nunca impide arrancar el worker
-        import logging
-
-        logging.getLogger(__name__).exception("resume_orphans failed")
+        logger.exception("resume_orphans falló")
         return
     for job_id, pending in orphans:
         if not pending:

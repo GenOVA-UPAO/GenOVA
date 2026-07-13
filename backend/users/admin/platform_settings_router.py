@@ -5,9 +5,9 @@ haven't configured their own. Keys are stored in the platform_config table,
 returned masked, and never logged.
 """
 
-import logging
 import threading
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,7 @@ from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS
 from models import PlatformConfig
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _MIN_KEY_LEN = 8
 _DB_KEY = "{}_api_key".format
@@ -97,7 +97,7 @@ def put_platform_config(
         db.commit()
     except Exception:
         db.rollback()
-        logger.exception("Platform config write failed")
+        logger.exception("platform config write failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar la configuración de plataforma.",
@@ -105,7 +105,7 @@ def put_platform_config(
 
     if any(p in TEXT_PROVIDERS for p in updates):
         threading.Thread(target=_bg_catalog_refresh, daemon=True).start()
-        logger.info("Catalog refresh triggered by platform key update: %s", list(updates))
+        logger.info("catalog refresh triggered by platform key update", providers=list(updates))
 
     keys = _load_platform_keys(db)
     return {"platform_config": {p: mask_key(keys.get(p)) for p in ALL_PROVIDERS}}

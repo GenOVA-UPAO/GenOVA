@@ -6,11 +6,12 @@ lifespan calls `refresh_catalog` at startup; endpoint users also hit the cache
 via `get_catalog_entries()`.
 """
 
-import logging
 import os
 from datetime import UTC, datetime
 from threading import Lock, RLock
 from time import monotonic
+
+import structlog
 
 from llm.catalog.catalog_builder import _build_full_catalog
 from llm.catalog.catalog_gather import (
@@ -26,7 +27,7 @@ from llm.catalog.catalog_refresh_providers import (
 )
 from llm.catalog.model_catalog import CATALOG_ENTRIES, _rebuild_catalog
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # In-memory cache. Thread-safe: written only by refresh thread, guarded by _CL.
 _catalog: list[dict] = list(CATALOG_ENTRIES)
@@ -83,7 +84,7 @@ def refresh_catalog(db=None) -> None:
     global _catalog, _full_catalog, _last_full_success
 
     if not _refresh_lock.acquire(blocking=False):
-        logger.info("Catalog refresh already in progress — skipping")
+        logger.info("catalog refresh already in progress — skipping")
         return
     try:
         with _CL:
@@ -92,7 +93,7 @@ def refresh_catalog(db=None) -> None:
                 and monotonic() - _last_full_success < _FRESH_WINDOW_S
             )
         if fresh:
-            logger.info("Catalog refreshed <%.0fs ago — skipping", _FRESH_WINDOW_S)
+            logger.info("catalog refreshed recently — skipping", fresh_window_s=_FRESH_WINDOW_S)
             return
 
         # Fetch all providers in parallel (None = failed), falling back to the
@@ -146,9 +147,9 @@ def refresh_catalog(db=None) -> None:
             if or_source == "api" and groq_source == "api":
                 _last_full_success = monotonic()
         logger.info(
-            "In-memory catalog updated (%d curated | %d total)",
-            len(_catalog),
-            len(full),
+            "in-memory catalog updated",
+            curated_count=len(_catalog),
+            total_count=len(full),
         )
 
         # Persist raw API data to Supabase cache (never re-save cache reads).
@@ -156,6 +157,6 @@ def refresh_catalog(db=None) -> None:
             try:
                 _persist_api_cache(db, sources, data)
             except Exception:
-                logger.exception("Failed to save catalog cache to DB")
+                logger.exception("failed to save catalog cache to DB")
     finally:
         _refresh_lock.release()

@@ -6,10 +6,10 @@ checkpointing, and persists the results back to OvaJobResource rows + materializ
 the OVA/SCORM.
 """
 
-import logging
 import threading
 import uuid
 
+import structlog
 from sqlalchemy import select
 
 from core.config import settings
@@ -24,7 +24,7 @@ from generation.jobs.jobs_progress import (
 )
 from models import OvaJob
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # Latido periódico de la fila ova_jobs mientras corre la generación. El nodo de
 # fase solo late al ENTRAR a la fase (runtime._touch_job); un recurso lento
@@ -146,7 +146,7 @@ def _generate(
         final_state = invoke_ova_generation(initial_state, str(job_id))
         return final_state.get("results", []), final_state.get("errors", [])
     except Exception:
-        logger.exception("Prometheus graph failed for job %s", job_id)
+        logger.exception("Prometheus graph failed", job_id=job_id)
         return [], []
 
 
@@ -162,7 +162,7 @@ def _finalize(job_id: uuid.UUID, results: list[dict], errors: list[dict]) -> Non
         any_done = _has_done_resource(db, job.id)
         _finish_job(db, job, any_done)
     except Exception:
-        logger.exception("Job runner crashed for job %s", job_id)
+        logger.exception("Job runner crashed", job_id=job_id)
         _safe_mark_error(db, job_id)
     finally:
         db.close()

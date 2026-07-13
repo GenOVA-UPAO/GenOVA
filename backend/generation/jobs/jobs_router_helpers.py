@@ -3,10 +3,10 @@
 Kept out of jobs_router so the router file stays a thin endpoint list.
 """
 
-import logging
 import threading
 import uuid
 
+import structlog
 from fastapi import status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -17,7 +17,7 @@ from generation.jobs.jobs_helpers import ResumeRequest
 from generation.jobs.jobs_model import JOB_TERMINAL
 from generation.jobs.jobs_runner import run_job
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _launch(job_id: uuid.UUID, only: list[uuid.UUID] | None = None) -> None:
@@ -31,7 +31,7 @@ def _launch(job_id: uuid.UUID, only: list[uuid.UUID] | None = None) -> None:
             enqueue_generation(job_id, only)
             return
         except Exception:
-            logger.exception("arq enqueue failed for job %s; running inline", job_id)
+            logger.exception("arq enqueue failed; running inline", job_id=job_id)
     threading.Thread(target=run_job, args=(job_id, only), daemon=True).start()
 
 

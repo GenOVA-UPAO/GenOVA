@@ -1,10 +1,10 @@
 """Session endpoints — logout (token revocation) and /me (current identity).
 Included into the auth router."""
 
-import logging
 from datetime import UTC, datetime
 
 import jwt
+import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -21,7 +21,7 @@ _security_scheme = HTTPBearer(auto_error=False)
 _COOKIE_NAME = "genova_token"
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @router.post("/logout")

@@ -5,8 +5,7 @@ They are NEVER logged and always returned masked (last 4 chars visible).
 An empty string value removes the key (falls back to platform/env key).
 """
 
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
@@ -18,7 +17,7 @@ from llm.providers import ALL_PROVIDERS
 from models import User
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _MIN_KEY_LEN = 8
 
@@ -72,7 +71,7 @@ def put_api_keys(
         db.commit()
     except Exception:
         db.rollback()
-        logger.exception("API keys write failed for user %s", current_user.id)
+        logger.exception("API keys write failed", user_id=current_user.id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar las API keys. Intenta de nuevo.",

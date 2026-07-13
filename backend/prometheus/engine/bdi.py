@@ -11,10 +11,11 @@ each desire against the agent's current beliefs and commits only viable ones
 as active intentions, assigning an execution plan type to each.
 """
 
-import logging
 import math
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 # Resource types requiring high model capability (complex interactives)
 _COMPLEX_TYPES = frozenset({4, 7, 9, 10})
@@ -87,12 +88,12 @@ def deliberar(desires: list[dict], beliefs: dict) -> list[dict]:
 
     intentions.sort(key=lambda i: i["priority"] * i["viability"], reverse=True)
     logger.info(
-        "BDI deliberation: %d desires → %d intentions (beliefs: rag=%.2f, complexity=%.2f, models=%.2f)",
-        len(desires),
-        len(intentions),
-        beliefs.get("rag_quality", 0),
-        beliefs.get("topic_complexity", 0),
-        beliefs.get("model_capability", 0),
+        "BDI deliberation",
+        desires=len(desires),
+        intentions=len(intentions),
+        rag_quality=beliefs.get("rag_quality", 0),
+        topic_complexity=beliefs.get("topic_complexity", 0),
+        model_capability=beliefs.get("model_capability", 0),
     )
     return intentions
 

@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
@@ -21,7 +20,7 @@ from ova.crud.edit_helpers import (
 from ova.crud.export_router import router as export_router
 from users.admin.helpers import commit_or_500
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 router = APIRouter()
 # SCORM export endpoint lives in export_router; included here to keep its path.

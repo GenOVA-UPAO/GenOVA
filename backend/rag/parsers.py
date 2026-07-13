@@ -8,11 +8,12 @@ network and should be timed out by the caller.
 
 from __future__ import annotations
 
-import logging
 import os
 from collections.abc import Callable
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 class ParserError(RuntimeError):
@@ -53,7 +54,7 @@ def _parse_pdf(path: str) -> str:
         try:
             text_parts.append(page.extract_text() or "")
         except Exception as exc:
-            logger.debug("Failed to extract text from PDF page: %s", exc)
+            logger.debug("Fallo al extraer texto de página PDF", error=str(exc))
             continue
     return "\n".join(p for p in text_parts if p.strip())
 
@@ -143,6 +144,6 @@ def extract_text(path: str, filename: str | None = None) -> str:
     except ParserError:
         raise
     except Exception as exc:
-        logger.exception("Parser failed for %s (%s)", name, kind)
+        logger.exception("Parser falló", filename=name, kind=kind)
         raise ParserError(f"Failed to extract text from {name}: {exc}") from exc
     return text.strip()

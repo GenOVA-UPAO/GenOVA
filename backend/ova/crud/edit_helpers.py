@@ -1,6 +1,6 @@
-import logging
 import os
 
+import structlog
 from fastapi import status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
@@ -10,7 +10,7 @@ from models import Ova, OvaPhase, OvaVersion, User
 from ova.helpers import _is_admin
 from storage import StorageError, is_configured, upload_zip
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _ova_output_dir() -> str:
@@ -172,8 +172,8 @@ def _rebuild_scorm_for_version(ova: Ova, version: OvaVersion, user_id: str) -> N
             stored_key = object_key
         except StorageError:
             logger.warning(
-                "Supabase upload failed on revert for %s; falling back to disk",
-                object_key,
+                "supabase upload failed on revert, falling back to disk",
+                object_key=object_key,
             )
     if not stored_key:
         output_dir = _ova_output_dir()

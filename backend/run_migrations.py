@@ -18,11 +18,12 @@ import logging
 import os
 import re
 
+import structlog
 from sqlalchemy import text
 
 from core.database import engine
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _TRACKING_TABLE_DDL = (
     "CREATE TABLE IF NOT EXISTS _migrations_applied ("
@@ -96,9 +97,9 @@ def _kill_zombies() -> None:
             )
             killed = sum(1 for (ok,) in result if ok)
             if killed:
-                logger.info("Terminated %d idle-in-transaction zombie connection(s).", killed)
+                logger.info("Conexiones zombie terminadas", count=killed)
     except Exception as exc:
-        logger.warning("Could not terminate zombie connections (%s).", exc)
+        logger.warning("No se pudieron terminar conexiones zombie", error=str(exc))
 
 
 def _record_applied(name: str) -> None:
@@ -115,7 +116,7 @@ def _record_applied(name: str) -> None:
 def run_migrations() -> None:
     migrations_dir = os.path.join(os.path.dirname(__file__), "migrations")
     if not os.path.exists(migrations_dir):
-        logger.warning("Migrations directory not found: %s", migrations_dir)
+        logger.warning("Directorio de migraciones no encontrado", path=migrations_dir)
         return
 
     sql_files = sorted(glob.glob(os.path.join(migrations_dir, "*.sql")))
@@ -148,7 +149,8 @@ def run_migrations() -> None:
             _record_applied(name)
             applied_now += 1
             logger.info(
-                "Squash migration %s auto-applied (incremental schema already present)", name
+                "Squash migration auto-aplicada (esquema incremental ya presente)",
+                filename=name,
             )
             continue
 
@@ -175,16 +177,16 @@ def run_migrations() -> None:
                     logger.exception("Failed to record migration %s after schema-exists", name)
             else:
                 logger.warning(
-                    "Migration %s failed (%s): %s — will retry on next startup.",
-                    name,
-                    type(exc).__name__,
-                    exc,
+                    "Migration falló — reintentará en el próximo startup",
+                    filename=name,
+                    exc_type=type(exc).__name__,
+                    error=str(exc),
                 )
 
     logger.info(
-        "Migrations done: %d applied, %d already-applied skipped.",
-        applied_now,
-        skipped,
+        "Migraciones completadas",
+        applied=applied_now,
+        skipped=skipped,
     )
 
 

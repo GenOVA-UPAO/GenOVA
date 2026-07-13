@@ -11,11 +11,11 @@ those MIME types directly.
 
 from __future__ import annotations
 
-import logging
 import mimetypes
 import os
 from pathlib import Path
 
+import structlog
 from sqlalchemy.orm import Session
 
 from rag.chunker import chunk_text
@@ -23,7 +23,7 @@ from rag.embedder import EmbedderError, get_embedder
 from rag.parsers import ParserError, detect_kind, extract_text
 from rag.store import insert_chunks
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 # MIME types Gemini Embedding 2 accepts directly as binary input.
@@ -72,10 +72,10 @@ def _ingest_text(
     try:
         embeddings = get_embedder().embed_batch(chunks)
     except EmbedderError as exc:
-        logger.warning("RAG embedding unavailable for %s: %s", filename, exc)
+        logger.warning("RAG embedding no disponible", filename=filename, error=str(exc))
         return {"status": "failed", "reason": "embedder_unavailable", "chunks": 0}
     except Exception:
-        logger.exception("RAG embedding failed for %s", filename)
+        logger.exception("RAG embedding falló", filename=filename)
         return {"status": "failed", "reason": "embedder_error", "chunks": 0}
 
     try:
@@ -88,7 +88,7 @@ def _ingest_text(
             embeddings=embeddings,
         )
     except Exception:
-        logger.exception("RAG insert failed for %s", filename)
+        logger.exception("RAG insert falló", filename=filename)
         return {"status": "failed", "reason": "db_error", "chunks": 0}
     return {"status": "indexed", "chunks": inserted}
 
@@ -111,7 +111,7 @@ def _ingest_binary(
         try:
             text = extract_text(storage_path, filename=filename)
         except ParserError as exc:
-            logger.warning("RAG parse failed for %s: %s", filename, exc)
+            logger.warning("RAG parse falló", filename=filename, error=str(exc))
             return {"status": "failed", "reason": "parse_error", "chunks": 0}
         return _ingest_text(db, user_id=user_id, upload_id=upload_id, filename=filename, text=text)
 
@@ -120,10 +120,10 @@ def _ingest_binary(
             data = f.read()
         embedding = embedder.embed_file(data, mime_type)  # type: ignore[attr-defined]
     except EmbedderError as exc:
-        logger.warning("RAG multimodal embed unavailable for %s: %s", filename, exc)
+        logger.warning("RAG multimodal embed no disponible", filename=filename, error=str(exc))
         return {"status": "failed", "reason": "embedder_unavailable", "chunks": 0}
     except Exception:
-        logger.exception("RAG multimodal embed failed for %s", filename)
+        logger.exception("RAG multimodal embed falló", filename=filename)
         return {"status": "failed", "reason": "embedder_error", "chunks": 0}
 
     # Try to extract the actual text content/description so the generator LLM can read it.
@@ -133,7 +133,9 @@ def _ingest_binary(
         if not chunk_content.strip():
             chunk_content = f"[Archivo multimodal: {filename} ({mime_type})]"
     except Exception as exc:
-        logger.warning("RAG extract_text failed for multimodal file %s: %s", filename, exc)
+        logger.warning(
+            "RAG extract_text falló para archivo multimodal", filename=filename, error=str(exc)
+        )
         chunk_content = f"[Archivo multimodal: {filename} ({mime_type})]"
 
     try:
@@ -146,7 +148,7 @@ def _ingest_binary(
             embeddings=[embedding],
         )
     except Exception:
-        logger.exception("RAG multimodal insert failed for %s", filename)
+        logger.exception("RAG multimodal insert falló", filename=filename)
         return {"status": "failed", "reason": "db_error", "chunks": 0}
     return {"status": "indexed", "chunks": inserted, "mode": "multimodal"}
 
@@ -181,7 +183,7 @@ def ingest_upload(
     try:
         text = extract_text(storage_path, filename=filename)
     except ParserError as exc:
-        logger.warning("RAG parse failed for %s: %s", filename, exc)
+        logger.warning("RAG parse falló", filename=filename, error=str(exc))
         return {"status": "failed", "reason": "parse_error", "chunks": 0}
     if not text or not text.strip():
         return {"status": "skipped", "reason": "empty_text", "chunks": 0}

@@ -18,13 +18,14 @@ allows — ~120 MB extra footprint).
 
 from __future__ import annotations
 
-import logging
 import os
 import time
 from abc import ABC, abstractmethod
 from typing import Any
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 VECTOR_DIM = 768  # Matches the pgvector(768) column in migration 011.
 
@@ -89,10 +90,11 @@ class _GeminiEmbedderBase(Embedder):
                 except Exception as exc:
                     delay = 2**attempt
                     logger.warning(
-                        "Gemini embedding retry %s/4 in %ss: %s",
-                        attempt + 1,
-                        delay,
-                        exc,
+                        "Gemini embedding retry",
+                        attempt=attempt + 1,
+                        max_attempts=4,
+                        delay_s=delay,
+                        error=str(exc),
                     )
                     if attempt == 3:
                         raise EmbedderError(f"Gemini embedding failed: {exc}") from exc

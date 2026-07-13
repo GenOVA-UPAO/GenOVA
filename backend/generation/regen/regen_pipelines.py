@@ -5,14 +5,14 @@ pipeline (engage / explore / explain-elaborate-evaluate) to produce fresh AI
 content. Resource-type resolution lives in regen_agents.
 """
 
-import logging
+import structlog
 
 from prometheus.prompts.elaborate_prompts import CODE_ONLY as ELABORATE_CODE_ONLY
 from prometheus.prompts.evaluate_prompts import CODE_ONLY as EVALUATE_CODE_ONLY
 from prometheus.prompts.explain_prompts import CODE_ONLY as EXPLAIN_CODE_ONLY
 from prometheus.prompts.explore_prompts import CODE_ONLY as EXPLORE_CODE_ONLY
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def regenerate_phase_content(
@@ -37,11 +37,14 @@ def regenerate_phase_content(
             return _generate_direct_or_two_step(
                 phase_type, resource_type, concept, llm_config, enabled_models
             )
-        logger.warning("Unknown phase_type '%s' for regen", phase_type)
+        logger.warning("unknown phase_type for regen", phase_type=phase_type)
         return None
     except Exception:
         logger.exception(
-            "Regen failed for %s/%d concept=%r", phase_type, resource_type, concept[:60]
+            "regen failed",
+            phase_type=phase_type,
+            resource_type=resource_type,
+            concept=concept[:60],
         )
         return None
 
@@ -138,5 +141,5 @@ def _safe_parse_json(raw: str, parser):
     try:
         return parser(raw)
     except Exception:
-        logger.warning("JSON parse failed during regen, using raw text")
+        logger.warning("json parse failed during regen, using raw text")
         return {"contenido": raw}

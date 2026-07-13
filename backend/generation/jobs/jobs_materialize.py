@@ -11,9 +11,9 @@ Runs inside the background runner's own DB Session (no request session), so a
 materialization failure is logged and contained — the job state is unaffected.
 """
 
-import logging
 import uuid
 
+import structlog
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -24,7 +24,7 @@ from prometheus.prompts.evaluate_prompts import RECURSOS_META as EVALUATE_META
 from prometheus.prompts.explain_prompts import RECURSOS_META as EXPLAIN_META
 from prometheus.prompts.explore_prompts import RECURSOS_META as EXPLORE_META
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _ENGAGE_NAME_TO_ID = {v["tipo"]: k for k, v in ENGAGE_META.items()}
 _EXPLORE_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLORE_META.items()}
@@ -72,7 +72,7 @@ def materialize_partial_ova(
         return _build_ova(db, job, done_resources)
     except Exception:
         db.rollback()
-        logger.exception("Failed to materialize partial OVA for job %s", job.id)
+        logger.exception("failed to materialize partial OVA", job_id=job.id)
         return None
 
 
@@ -165,4 +165,4 @@ def _tie_uploads(db: Session, job: OvaJob, ova_id: str) -> None:
 
         tie_uploads_to_ova(db, upload_ids, ova_id)
     except Exception:
-        logger.exception("Failed to tie RAG chunks to materialized ova=%s", ova_id)
+        logger.exception("failed to tie RAG chunks to materialized ova", ova_id=ova_id)

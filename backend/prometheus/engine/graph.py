@@ -7,9 +7,9 @@ se elimino tras el benchmark F2 (6:21/20 recursos, 0 fallos, vs ~30min del motor
 por fases). Ver docs/prometheus.md y docs/generacion-5e.md.
 """
 
-import logging
+import structlog
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None):

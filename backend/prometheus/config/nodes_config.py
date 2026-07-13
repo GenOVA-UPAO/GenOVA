@@ -1,9 +1,10 @@
 """Configuración de nodos/agentes Prometheus + store con TTL 30s (EN-017)."""
 
 import json
-import logging
 import time
 from threading import RLock
+
+import structlog
 
 # Re-exported so existing `from prometheus.config.nodes_config import NODES, ...`
 # call sites keep working after the static catalog moved to nodes_catalog.
@@ -14,7 +15,7 @@ from prometheus.config.nodes_catalog import (  # noqa: F401
     is_video_resource,
 )
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 PLATFORM_KEY = "ova_nodes_config"
 _TTL_S = 30.0
@@ -39,7 +40,7 @@ def load_stored() -> dict:
         data = json.loads(row.value)
         return data if isinstance(data, dict) else {}
     except Exception:
-        logger.exception("load %s failed", PLATFORM_KEY)
+        logger.exception("load config failed", key=PLATFORM_KEY)
         return {}
     finally:
         db.close()

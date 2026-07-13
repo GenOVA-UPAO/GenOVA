@@ -1,15 +1,15 @@
 """Provider-specific helpers for catalog_refresh: fetch, merge, build, and
 cache logic for OpenRouter and Groq providers."""
 
-import logging
 import os
 
 import httpx
+import structlog
 
 from llm.catalog.catalog_pricing import format_pricing, format_pricing_detail
 from llm.catalog.model_catalog import CATALOG_ENTRIES
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
 
@@ -19,13 +19,13 @@ def _fetch_openrouter() -> dict[str, dict] | None:
     or None when the fetch failed (so the caller can fall back instead of
     treating the provider as having zero models)."""
     url = f"{_OR_API}/models"
-    logger.info("Fetching OpenRouter model list from %s", url)
+    logger.info("fetching model list", provider="openrouter", url=url)
     try:
         resp = httpx.get(url, timeout=10.0)
         resp.raise_for_status()
         data = resp.json()
     except Exception:
-        logger.exception("OpenRouter model list fetch failed")
+        logger.exception("model list fetch failed", provider="openrouter")
         return None
 
     models = {}
@@ -33,7 +33,7 @@ def _fetch_openrouter() -> dict[str, dict] | None:
         mid = m.get("id")
         if mid:
             models[mid] = m
-    logger.info("OpenRouter returned %d models", len(models))
+    logger.info("model list fetched", provider="openrouter", count=len(models))
     return models
 
 
@@ -49,17 +49,17 @@ def _fetch_groq() -> set[str] | None:
         db.close()
 
     if not api_key:
-        logger.info("Groq: no API key configured — skipping model list fetch")
+        logger.info("no API key configured — skipping model list fetch", provider="groq")
         return None
     try:
         from groq import Groq
 
         resp = Groq(api_key=api_key, max_retries=0).models.list()
         ids = {m.id for m in resp.data if m.id}
-        logger.info("Groq returned %d models", len(ids))
+        logger.info("model list fetched", provider="groq", count=len(ids))
         return ids
     except Exception:
-        logger.exception("Groq model list fetch failed")
+        logger.exception("model list fetch failed", provider="groq")
         return None
 
 
@@ -76,7 +76,7 @@ def _merge_openrouter(api_models: dict[str, dict]) -> None:
             entry["description"] = (m.get("description") or "").strip()[:200]
             entry["active"] = True
         else:
-            logger.warning("OpenRouter model not found in API: %s", entry["model_id"])
+            logger.warning("model not found in API", provider="openrouter", model_id=entry["model_id"])
             entry["active"] = False
 
 
@@ -87,7 +87,7 @@ def _merge_groq(available_ids: set[str]) -> None:
         if entry["model_id"] in available_ids:
             entry["active"] = True
         else:
-            logger.warning("Groq model not found in API: %s", entry["model_id"])
+            logger.warning("model not found in API", provider="groq", model_id=entry["model_id"])
             entry["active"] = False
 
 
@@ -110,17 +110,17 @@ def _fetch_opencode() -> set[str] | None:
         db.close()
 
     if not api_key:
-        logger.info("OpenCode: no API key configured — skipping model list fetch")
+        logger.info("no API key configured — skipping model list fetch", provider="opencode")
         return None
     try:
         from openai import OpenAI
 
         resp = OpenAI(api_key=api_key, base_url="https://opencode.ai/zen/go/v1", max_retries=0, timeout=10.0).models.list()
         ids = {m.id for m in resp.data if m.id}
-        logger.info("OpenCode returned %d models", len(ids))
+        logger.info("model list fetched", provider="opencode", count=len(ids))
         return ids
     except Exception:
-        logger.exception("OpenCode model list fetch failed")
+        logger.exception("model list fetch failed", provider="opencode")
         return None
 
 
@@ -137,7 +137,7 @@ def _fetch_huggingface() -> set[str] | None:
         db.close()
 
     if not api_key:
-        logger.info("HuggingFace: no API key — skipping text model fetch")
+        logger.info("no API key — skipping text model fetch", provider="huggingface")
         return None
 
     try:
@@ -149,10 +149,10 @@ def _fetch_huggingface() -> set[str] | None:
         )
         resp.raise_for_status()
         ids = {m["id"] for m in resp.json() if m.get("id")}
-        logger.info("HuggingFace Hub returned %d warm text models", len(ids))
+        logger.info("warm text models fetched", provider="huggingface", count=len(ids))
         return ids
     except Exception:
-        logger.exception("HuggingFace model list fetch failed")
+        logger.exception("model list fetch failed", provider="huggingface")
         return None
 
 
@@ -173,7 +173,7 @@ def _load_cached(db, provider: str) -> dict | set | None:
 
         raw = load_from_cache(db, provider)
     except Exception:
-        logger.exception("Catalog cache read failed for provider=%s", provider)
+        logger.exception("catalog cache read failed", provider=provider)
         return None
     if not isinstance(raw, dict):
         return None

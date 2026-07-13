@@ -1,10 +1,9 @@
 """Audio helpers for transcribing and generating audio via Groq APIs."""
 
-import logging
-
+import structlog
 from groq import Groq
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _WHISPER_MODEL = "whisper-large-v3-turbo"
 _ORPHEUS_MODEL = "canopylabs/orpheus-v1-english"
@@ -52,11 +51,11 @@ def generar_audio_tts(text: str, voice: str = _ORPHEUS_VOICE) -> bytes:
         # y status real antes de intentar el fallback.
         status = getattr(exc, "status_code", None)
         logger.warning(
-            "Orpheus TTS failed (%s, status=%s): %s — retrying with %s",
-            type(exc).__name__,
-            status,
-            exc,
-            _PLAYAI_MODEL,
+            "Orpheus TTS failed, retrying with fallback model",
+            error_type=type(exc).__name__,
+            status_code=status,
+            error=str(exc),
+            fallback_model=_PLAYAI_MODEL,
         )
         response = client.audio.speech.create(
             model=_PLAYAI_MODEL,

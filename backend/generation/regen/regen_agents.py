@@ -4,7 +4,7 @@ Translates an OvaPhase (phase_type + resource_type_id) back to the correct
 5E generation pipeline so regen produces fresh AI content.
 """
 
-import logging
+import structlog
 
 from prometheus.prompts.elaborate_prompts import RECURSOS_META as ELABORATE_META
 from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
@@ -12,7 +12,7 @@ from prometheus.prompts.evaluate_prompts import RECURSOS_META as EVALUATE_META
 from prometheus.prompts.explain_prompts import RECURSOS_META as EXPLAIN_META
 from prometheus.prompts.explore_prompts import RECURSOS_META as EXPLORE_META
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # Map resource_type name → numeric id for fallback title parsing.
 _ENGAGE_NAME_TO_ID = {v["tipo"]: k for k, v in ENGAGE_META.items()}
@@ -58,18 +58,18 @@ def resolve_resource_type(phase: object) -> int | None:
     fallback = _PHASE_DEFAULT_ID.get(phase.phase_type)
     if fallback is not None:
         logger.warning(
-            "Unresolved resource_type for phase %s (type=%s, title=%r) — using default id %d",
-            phase.id,
-            phase.phase_type,
-            phase.title,
-            fallback,
+            "unresolved resource_type — using phase default",
+            phase_id=phase.id,
+            phase_type=phase.phase_type,
+            title=phase.title,
+            fallback=fallback,
         )
         return fallback
 
     logger.warning(
-        "Cannot resolve resource_type for phase %s (type=%s, title=%r)",
-        phase.id,
-        phase.phase_type,
-        phase.title,
+        "cannot resolve resource_type for phase",
+        phase_id=phase.id,
+        phase_type=phase.phase_type,
+        title=phase.title,
     )
     return None

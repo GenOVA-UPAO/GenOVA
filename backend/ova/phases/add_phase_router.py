@@ -7,8 +7,7 @@ Business rules:
   - Rate-limited, commit_or_500, services → router pattern
 """
 
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -28,7 +27,7 @@ from ova.crud.edit_helpers import (
 from ova.phases.phase_version_router import record_phase_micro_version
 from users.admin.helpers import commit_or_500
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 router = APIRouter()
 
 MAX_PHASES_PER_TYPE = 4
@@ -137,7 +136,12 @@ def add_phase(
     record_phase_micro_version(db, new_phase.id, ova_id, content)
     commit_or_500(db, op="add_phase")
 
-    logger.info("Added phase %s to OVA %s (version %s)", new_phase.id, ova_id, active_version.id)
+    logger.info(
+        "phase added",
+        phase_id=new_phase.id,
+        ova_id=ova_id,
+        version_id=active_version.id,
+    )
 
     return {
         "message": f"Recurso añadido a la fase '{payload.phase_type}'.",

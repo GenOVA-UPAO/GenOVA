@@ -4,12 +4,12 @@ Replaces the previous simulated-content approach with actual calls to the
 ENGAGE/EXPLORE generation agents via `regen_agents.py`.
 """
 
-import logging
 import os
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,7 +20,7 @@ from generation.regen.regen_pipelines import regenerate_phase_content
 from models import Ova, OvaPhase, OvaVersion
 from ova.crud.edit_helpers import _ensure_version_exists, _get_active_version
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _regen_jobs: dict[str, dict] = {}
 _regen_jobs_lock = threading.Lock()
@@ -118,7 +118,7 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
                 job["new_version_number"] = new_version_number
 
     except Exception as exc:
-        logger.error("Edit regen failed for OVA %s: %s", ova_id, exc)
+        logger.error("edit regen failed", ova_id=ova_id, error=str(exc))
         _mark_ova_error(db, ova_id)
         with _regen_jobs_lock:
             job = _regen_jobs.get(job_id)
@@ -140,9 +140,14 @@ def _regen_phase(phase: OvaPhase, concept: str, llm_config: dict | None = None) 
     """Call the real LLM agent for a single phase. Returns HTML or None."""
     rtype = resolve_resource_type(phase)
     if rtype is None:
-        logger.warning("Skipping regen for phase %s — unknown resource_type", phase.id)
+        logger.warning("skipping regen — unknown resource_type", phase_id=phase.id)
         return None
-    logger.info("Regenerating %s/%d for concept=%r", phase.phase_type, rtype, concept[:60])
+    logger.info(
+        "regenerating phase",
+        phase_type=phase.phase_type,
+        resource_type=rtype,
+        concept=concept[:60],
+    )
     return regenerate_phase_content(phase.phase_type, rtype, concept, llm_config)
 
 
@@ -169,7 +174,7 @@ def _regen_phases_parallel(
         try:
             return str(phase.id), _regen_phase(phase, concept, llm_config)
         except Exception:
-            logger.exception("Regen failed for phase %s", phase.id)
+            logger.exception("regen failed for phase", phase_id=phase.id)
             return str(phase.id), None
 
     with ThreadPoolExecutor(max_workers=workers) as pool:

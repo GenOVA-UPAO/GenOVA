@@ -1,6 +1,6 @@
-import logging
 from uuid import UUID
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -10,7 +10,7 @@ from core.database import commit_or_500, get_db
 from models import Role, UserRole
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -102,7 +102,7 @@ def delete_role(
             db.flush()
         except Exception:
             db.rollback()
-            logger.exception("Reassignment failed during delete_role")
+            logger.exception("reassignment failed during delete_role")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="No se pudo reasignar a los usuarios. Intenta de nuevo.",

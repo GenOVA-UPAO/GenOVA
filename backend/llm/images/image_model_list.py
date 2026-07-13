@@ -4,11 +4,10 @@ SiliconFlow: dynamic via /v1/models (OpenAI-compat).
 Runware / fal.ai: curated lists (their APIs don't offer simple REST model listing).
 """
 
-import logging
-
 import httpx
+import structlog
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _SF_BASE = "https://api.siliconflow.cn/v1"
 _SF_TIMEOUT = 10.0
@@ -54,10 +53,10 @@ def _fetch_siliconflow(api_key: str) -> list[dict]:
             if any(kw in mid for kw in _SF_IMAGE_KEYWORDS):
                 models.append({"id": m["id"], "label": m.get("id", m["id"])})
         models.sort(key=lambda x: x["id"])
-        logger.info("SiliconFlow image models fetched: %d", len(models))
+        logger.info("image models fetched", provider="siliconflow", count=len(models))
         return models
     except Exception:
-        logger.exception("SiliconFlow image model list fetch failed")
+        logger.exception("image model list fetch failed", provider="siliconflow")
         return []
 
 
@@ -81,7 +80,7 @@ def _fetch_huggingface_image_models() -> list[dict]:
         models = [{"id": m["id"], "label": m["id"]} for m in resp.json() if m.get("id")]
         return models or HF_IMAGE_MODELS_FALLBACK
     except Exception:
-        logger.exception("HuggingFace image model list fetch failed")
+        logger.exception("image model list fetch failed", provider="huggingface")
         return HF_IMAGE_MODELS_FALLBACK
 
 

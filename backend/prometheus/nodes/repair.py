@@ -8,13 +8,14 @@ y marca como `exhausted` los que vuelven a fallar, para que la reconciliación
 final (`_persist_results`) cierre la fila como "error" en vez de dejarla colgada.
 """
 
-import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import structlog
 
 from prometheus.engine.runtime import _concurrency, _persist_done, _touch_job
 from prometheus.engine.state import OvaGenerationState
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _recursos_meta_for(phase: str) -> dict:
@@ -63,7 +64,7 @@ def repair_node(state: OvaGenerationState) -> dict:
     resource_configs = state.get("resource_configs", {})
     job_id = state.get("job_id")
     _touch_job(job_id)
-    logger.info("repair: retrying %d failed resource(s)", len(failures))
+    logger.info("repair: retrying failed resources", count=len(failures))
 
     def _retry(err: dict):
         phase, rt = err["phase"], err["resource_type"]
@@ -77,7 +78,9 @@ def repair_node(state: OvaGenerationState) -> dict:
         original = err.get("plan") or plan_for(phase, rt)
         plan = degraded_plan(phase, rt, original) or original
         if plan != original:
-            logger.info("repair: %s:%s deliberación → plan degradado %s", phase, rt, plan)
+            logger.info(
+                "repair: deliberación plan degradado", phase=phase, resource_type=rt, plan=plan
+            )
         try:
             html = dispatch_by_plan(
                 plan, phase, rt, concept, llm_config, enabled_models, theme,
@@ -85,7 +88,7 @@ def repair_node(state: OvaGenerationState) -> dict:
             )
             return err, html
         except Exception as exc:  # noqa: BLE001 — aislar cada reintento
-            logger.warning("repair: %s:%s failed again: %s", phase, rt, exc)
+            logger.warning("repair: failed again", phase=phase, resource_type=rt, error=str(exc))
             return err, None
 
     results, exhausted = [], []
@@ -102,7 +105,7 @@ def repair_node(state: OvaGenerationState) -> dict:
                     {"phase": phase, "html": html, "resource_type": rt, "title": title}
                 )
                 _persist_done(job_id, phase, rt, html)
-                logger.info("repair: %s:%s recovered", phase, rt)
+                logger.info("repair: resource recovered", phase=phase, resource_type=rt)
             else:
                 exhausted.append({**err, "exhausted": True})
 

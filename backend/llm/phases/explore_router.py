@@ -1,6 +1,6 @@
 import json
-import logging
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -22,7 +22,7 @@ from prometheus.prompts.explore_prompts import (
 from rag.retriever import build_contexto_usuario, top_k
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _TAREA_POR_RECURSO = {
     2: "texto",
@@ -47,7 +47,9 @@ def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
     chunks = top_k(db, query, upload_ids)
     contexto = build_contexto_usuario(chunks)
     if contexto:
-        logger.info("RAG retrieved %d chunks for EXPLORE concept=%r", len(chunks), query[:60])
+        logger.info(
+            "RAG retrieved chunks", fase="EXPLORE", chunk_count=len(chunks), concept=query[:60]
+        )
     return contexto
 
 
@@ -57,8 +59,10 @@ def _generate_two_step(n: int, concept: str, contexto: str) -> tuple[dict | list
     try:
         json_data = parse_json(raw)
     except Exception:
-        logger.warning("JSON parse failed for EXPLORE %d, retrying with strict prompt", n)
-        logger.debug("Raw LLM output: %s", raw[:500])
+        logger.warning(
+            "JSON parse failed, retrying with strict prompt", fase="EXPLORE", resource_type=n
+        )
+        logger.debug("raw LLM output", raw_output=raw[:500])
         retry = generar_texto(
             prompt_texto(n, concept, contexto) + "\n\nIMPORTANTE: Responde SOLO con "
             "el JSON puro, sin texto adicional, sin markdown, sin explicaciones.",
@@ -68,7 +72,9 @@ def _generate_two_step(n: int, concept: str, contexto: str) -> tuple[dict | list
         try:
             json_data = parse_json(retry)
         except Exception:
-            logger.warning("JSON retry also failed for EXPLORE %d, using raw text", n)
+            logger.warning(
+                "JSON retry also failed, using raw text", fase="EXPLORE", resource_type=n
+            )
             json_data = {"contenido": retry}
     json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
     html = strip_markdown(
@@ -131,7 +137,7 @@ def generate_explore_resource(
     except HTTPException:
         raise
     except Exception:
-        logger.exception("Error generating EXPLORE resource %d", n)
+        logger.exception("error generating resource", fase="EXPLORE", resource_type=n)
         raise HTTPException(
             status_code=500, detail="Error al generar el recurso. Intenta de nuevo."
         ) from None

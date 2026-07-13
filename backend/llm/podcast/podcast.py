@@ -7,12 +7,13 @@ audio cannot be generated.
 
 import base64
 import html
-import logging
+
+import structlog
 
 from llm.podcast.audio_helpers import generar_audio_tts
 from llm.utils.utils import SCORM_JS
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def podcast_audio_b64(text: str) -> str | None:
@@ -20,7 +21,7 @@ def podcast_audio_b64(text: str) -> str | None:
     try:
         return base64.b64encode(generar_audio_tts(text)).decode("ascii")
     except Exception as exc:
-        logger.warning("Podcast TTS failed, falling back to text-only: %s", exc)
+        logger.warning("podcast TTS failed, falling back to text-only", error=str(exc))
         return None
 
 

@@ -13,9 +13,8 @@ Admin force-disable:
 
 from __future__ import annotations
 
-import logging
-
 import pyotp
+import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -28,7 +27,7 @@ from core.rate_limit import limiter
 from models import User
 
 router = APIRouter(prefix="/totp", tags=["totp"])
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _APP_NAME = "GenOVA"
 

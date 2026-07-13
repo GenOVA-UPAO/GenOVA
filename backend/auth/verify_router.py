@@ -4,10 +4,10 @@ Tokens use ``secrets.token_urlsafe(32)`` (brute force infeasible), expire in 24h
 and are single-use. ``issue_verification`` is shared with the register flow.
 """
 
-import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 
+import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
@@ -23,7 +23,7 @@ from core.rate_limit import limiter
 from models import EmailVerificationToken, User
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 FRONTEND_URL = settings.frontend_url.rstrip("/")
 _TOKEN_TTL_HOURS = 24

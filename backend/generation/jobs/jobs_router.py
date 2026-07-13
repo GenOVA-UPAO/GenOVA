@@ -7,8 +7,7 @@ All four endpoints require auth (cookie JWT) and the mutating one is rate-limite
 `str(e)` or tokens.
 """
 
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -34,7 +33,7 @@ from generation.jobs.jobs_router_helpers import (
 from models import User
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @router.post("")

@@ -9,16 +9,16 @@ never returned to the client (R6).
 """
 
 import contextlib
-import logging
 import re
 import uuid
 
+import structlog
 from sqlalchemy.orm import Session
 
 from generation.errors.error_log_model import DEFAULT_CATEGORY, ERROR_CATEGORIES, OvaErrorLog
 from users.admin.helpers import commit_or_500
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _REDACTED = "[REDACTED]"
 _MAX_MESSAGE_LEN = 2000
@@ -94,5 +94,5 @@ def log_generation_error(
         # errors; cover the rare add()-time failure too.
         with contextlib.suppress(Exception):
             db.rollback()
-        logger.exception("Failed to persist generation error log (error_id=%s)", error_id)
+        logger.exception("failed to persist generation error log", error_id=error_id)
     return str(error_id)

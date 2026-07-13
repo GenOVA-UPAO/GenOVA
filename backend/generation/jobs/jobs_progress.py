@@ -5,9 +5,9 @@ All functions are private to the generation package and called only by the runne
 _finalize / _load_for_run orchestrators. Nothing here touches the LLM or HTTP layer.
 """
 
-import logging
 import uuid
 
+import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -15,7 +15,7 @@ from core.config import settings
 from generation.errors.error_log_service import log_generation_error
 from models import OvaJob, OvaJobResource
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 MAX_ATTEMPTS = settings.resource_max_attempts
 
@@ -57,7 +57,7 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
                 ova.status = "error"
                 db.commit()
         except Exception:
-            logger.exception("Failed to mark placeholder OVA as error for job %s", job.id)
+            logger.exception("failed to mark placeholder OVA as error", job_id=job.id)
 
 
 def _materialize(db: Session, job: OvaJob) -> None:
@@ -86,7 +86,7 @@ def _safe_mark_error(db: Session, job_id: uuid.UUID) -> None:
             job.finished_at = _now()
             db.commit()
     except Exception:
-        logger.exception("Failed to mark job %s as error after crash", job_id)
+        logger.exception("failed to mark job as error after crash", job_id=job_id)
 
 
 def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list[dict]) -> None:

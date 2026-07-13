@@ -4,11 +4,12 @@ from collections.abc import Callable
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import structlog
 from fastapi import BackgroundTasks
 
 from core.config import settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 SMTP_HOST = settings.smtp_host or "smtp.gmail.com"
 SMTP_PORT = settings.smtp_port or 465
@@ -62,7 +63,7 @@ def _verify_html_body(verify_link: str, greeting: str) -> str:
 
 def _send_html(to_email: str, subject: str, html: str, log_label: str) -> None:
     if not SMTP_USER or not SMTP_PASSWORD:
-        logger.error("SMTP credentials missing; cannot send %s to %s", log_label, to_email)
+        logger.error("SMTP credentials faltantes", log_label=log_label, to_email=to_email)
         raise EmailNotConfigured("SMTP_USER and SMTP_PASSWORD must be set")
 
     msg = MIMEMultipart("alternative")
@@ -75,9 +76,9 @@ def _send_html(to_email: str, subject: str, html: str, log_label: str) -> None:
         with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.sendmail(SMTP_USER, to_email, msg.as_string())
-        logger.info("%s sent to %s", log_label, to_email)
+        logger.info("Correo enviado", log_label=log_label, to_email=to_email)
     except Exception:
-        logger.exception("Failed to send %s to %s", log_label, to_email)
+        logger.exception("Fallo al enviar correo", log_label=log_label, to_email=to_email)
         raise
 
 
@@ -130,8 +131,8 @@ def dispatch_or_log(
     level = logging.ERROR if settings.env == "production" else logging.WARNING
     logger.log(
         level,
-        "SMTP no configurado — %s no enviado a %s. Verificar configuración SMTP; "
+        "SMTP no configurado — enlace no enviado. Verificar configuración SMTP; "
         "el enlace no se registra en logs por contener un token de un solo uso.",
-        log_label,
-        to_email,
+        log_label=log_label,
+        to_email=to_email,
     )

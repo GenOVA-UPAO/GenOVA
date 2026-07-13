@@ -1,8 +1,8 @@
 """Per-user resource generation configs: {"phase:id": {"key": value, ...}}."""
 
-import logging
 import re
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -13,7 +13,7 @@ from core.rate_limit import limiter
 from models import User
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _VALID_KEY = re.compile(r"^(engage|explore|explain|elaborate|evaluate):([1-9]|10)$")
 
@@ -67,7 +67,7 @@ def put_resource_configs(
         db.commit()
     except Exception:
         db.rollback()
-        logger.exception("resource_configs write failed for user %s", current_user.id)
+        logger.exception("resource_configs write failed", user_id=current_user.id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar la configuración. Intenta de nuevo.",

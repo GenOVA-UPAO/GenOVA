@@ -3,8 +3,9 @@ plus dedupe/sort and cache-persist steps. Kept out of catalog_refresh so the
 orchestrator stays a readable top-level flow.
 """
 
-import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import structlog
 
 from llm.catalog.catalog_refresh_providers import (
     _fetch_groq,
@@ -14,7 +15,7 @@ from llm.catalog.catalog_refresh_providers import (
     _load_cached,
 )
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _gather_provider_data(db, timeout: float) -> tuple[dict, dict[str, str | None]]:
@@ -41,7 +42,7 @@ def _gather_provider_data(db, timeout: float) -> tuple[dict, dict[str, str | Non
                 elif future is f_hf:
                     hf_ids = future.result()
         except TimeoutError:
-            logger.exception("Catalog provider fetch timed out")
+            logger.exception("catalog provider fetch timed out")
 
     sources: dict[str, str | None] = {
         "openrouter": "api" if or_data is not None else None,

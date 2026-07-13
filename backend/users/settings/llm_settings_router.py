@@ -2,8 +2,7 @@
 OVAs). GET returns the effective config + catalog for the UI; PUT validates a
 chosen config against the curated catalog and persists it on the user row."""
 
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -30,7 +29,7 @@ from llm.providers import TEXT_PROVIDERS
 from models import Role, User, UserRole
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _enabled_keys(user) -> set[tuple[str, str]]:
@@ -158,7 +157,7 @@ def refresh_llm_catalog(
     try:
         refresh_catalog(db)
     except Exception:
-        logger.exception("User-triggered catalog refresh failed")
+        logger.exception("user-triggered catalog refresh failed")
     return {"catalog_status": get_provider_status()}
 
 
@@ -182,7 +181,7 @@ def put_llm_settings(
         db.commit()
     except Exception:
         db.rollback()
-        logger.exception("LLM settings write failed for user %s", current_user.id)
+        logger.exception("LLM settings write failed", user_id=current_user.id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar la configuración. Intenta de nuevo.",

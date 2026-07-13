@@ -1,10 +1,10 @@
 """LangGraph tool wrapping the existing generar_texto() LLM router call."""
 
-import logging
+import structlog
 
 from llm.router import generar_texto
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def llm_generate(

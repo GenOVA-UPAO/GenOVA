@@ -7,13 +7,14 @@ Usa "texto" (no "codigo") porque la evaluación es análisis semántico, no cód
 """
 
 import json
-import logging
 import re
+
+import structlog
 
 from llm.router import generar_texto
 from llm.utils.themes import build_design_system
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _FALLBACK = {"puntaje": 0, "problemas": [], "veredicto": "aceptar"}
 
@@ -81,7 +82,7 @@ def critique_resource(
     try:
         response = generar_texto(prompt, "texto", 512, llm_config, enabled_models)
     except Exception:  # noqa: BLE001
-        logger.exception("critic LLM call failed for %s/%s", phase, rt)
+        logger.exception("critic LLM call failed", phase=phase, resource_type=rt)
         return dict(_FALLBACK)
 
     return _parse_critic_response(response)

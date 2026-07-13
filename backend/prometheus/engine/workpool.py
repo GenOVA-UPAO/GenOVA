@@ -16,15 +16,14 @@ Motor único desde 2026-07-10 (benchmark F2: 6:21/20 recursos, 0 fallos, vs
 ~30min del motor por fases eliminado).
 """
 
-import logging
-
+import structlog
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
 from prometheus.engine.runtime import _persist_done, _touch_job
 from prometheus.engine.state import OvaGenerationState
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _CTX_KEYS = (
     "prompt",
@@ -97,7 +96,7 @@ def resource_worker(payload: dict) -> dict:
             per_config,
         )
     except Exception as exc:  # noqa: BLE001 — aislar el fallo de un recurso
-        logger.exception("workpool: %s:%s failed", phase, rt)
+        logger.exception("workpool: resource failed", phase=phase, resource_type=rt)
         return {
             "errors": [{"phase": phase, "resource_type": rt, "error": str(exc), "plan": plan}],
             "worker_signals": [

@@ -3,16 +3,16 @@
 Kept apart from regen_service so the orchestration thread reads top-to-bottom.
 """
 
-import logging
 import os
 
+import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Ova
 from ova.crud.edit_helpers import _ova_output_dir
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _build_and_persist(ova, ova_id, new_version, version_num, phases_data, db):
@@ -34,7 +34,7 @@ def _build_and_persist(ova, ova_id, new_version, version_num, phases_data, db):
             storage_key = f"{ova.user_id}/{ova_id}_v{version_num}.zip"
             upload_zip(storage_key, zip_bytes)
         except StorageError:
-            logger.warning("Supabase upload failed for regen %s; using disk", ova_id)
+            logger.warning("Supabase upload failed for regen; using disk", ova_id=ova_id)
             storage_key = None
 
     if not storage_key:

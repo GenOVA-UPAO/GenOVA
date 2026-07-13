@@ -9,18 +9,18 @@ stays as a reconciliation pass (it skips rows already marked "done").
 """
 
 import contextlib
-import logging
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 
+import structlog
 from sqlalchemy import select, update
 
 from core.config import settings
 from core.database import SessionLocal
 from models import OvaJob, OvaJobResource
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 DEFAULT_CONCURRENCY = 4
 
@@ -58,7 +58,7 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
             html = dispatch(rt, concept, llm_config, enabled_models, theme, image_settings, per_config)
             return item, html, None
         except Exception as exc:  # noqa: BLE001 — isolate one resource's failure
-            logger.exception("%s resource %s failed", phase, rt)
+            logger.exception("resource failed", phase=phase, resource_type=rt)
             return item, None, str(exc)
 
     results, errors = [], []
@@ -106,7 +106,7 @@ def _touch_job(job_id) -> None:
         )
         db.commit()
     except Exception:  # noqa: BLE001 — heartbeat is best-effort
-        logger.exception("job heartbeat failed for %s", job_id)
+        logger.exception("job heartbeat failed", job_id=job_id)
         with contextlib.suppress(Exception):
             db.rollback()
     finally:
@@ -159,7 +159,7 @@ def _persist_done(job_id, phase: str, rt, html: str) -> None:
         )
         db.commit()
     except Exception:  # noqa: BLE001 — incremental persist is best-effort
-        logger.exception("incremental persist failed for %s/%s", phase, rt)
+        logger.exception("incremental persist failed", phase=phase, resource_type=rt)
         with contextlib.suppress(Exception):
             db.rollback()
     finally:

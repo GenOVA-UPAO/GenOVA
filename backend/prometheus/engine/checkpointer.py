@@ -17,13 +17,13 @@ PostgresSaver.from_conn_string yields its connection from a `with` block, so
 dropping the context manager would GC-close the connection right after setup.
 """
 
-import logging
 import os
 import re
 
+import structlog
 from langgraph.checkpoint.memory import MemorySaver
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # Holds the live PostgresSaver context manager so its connection isn't GC-closed.
 _pg_cm = None

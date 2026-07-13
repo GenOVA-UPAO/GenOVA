@@ -4,9 +4,9 @@ Split out of edit_view_router (version/editor reads) and included back into it
 so the path stays under the same mount.
 """
 
-import logging
 import os
 
+import structlog
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
@@ -17,7 +17,7 @@ from models import User
 from ova.crud.edit_helpers import _get_active_version, _resolve_ova
 from storage import StorageError, is_configured, signed_url
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 router = APIRouter()
 
@@ -51,7 +51,7 @@ def export_scorm(
             url = signed_url(str(ova.storage_key), download_as=filename)
             return JSONResponse({"download_url": url, "filename": filename})
         except StorageError:
-            logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
+            logger.exception("signed url failed, falling back to disk", ova_id=ova_id)
 
     if not ova.file_path or not os.path.exists(ova.file_path):
         return JSONResponse(

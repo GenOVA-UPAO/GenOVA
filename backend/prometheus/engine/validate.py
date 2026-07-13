@@ -10,10 +10,11 @@ El conteo exacto de elementos vs resource_config queda como criterio del
 contrato del prompt (F4.3); aquí solo entra lo verificable sin ambigüedad.
 """
 
-import logging
 import re
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 _PLACEHOLDERS = (
     "contenido del card",
@@ -97,7 +98,13 @@ def validate_and_improve(
     rounds = 0
     while defects and rounds < max_rounds:
         rounds += 1
-        logger.info("validate: %s:%s round %d — %d defecto(s)", phase, rt, rounds, len(defects))
+        logger.info(
+            "validate: round with defects",
+            phase=phase,
+            resource_type=rt,
+            round=rounds,
+            defects=len(defects),
+        )
         improved = apply_feedback(
             html, concept, defects, phase, rt, llm_config, enabled_models, theme
         )
@@ -105,6 +112,11 @@ def validate_and_improve(
             html = improved
         defects = structural_defects(html)
     if defects:
-        logger.warning("validate: %s:%s aún con defectos tras %d ronda(s): %s",
-                       phase, rt, rounds, defects)
+        logger.warning(
+            "validate: aún con defectos tras reintentos",
+            phase=phase,
+            resource_type=rt,
+            rounds=rounds,
+            defects=defects,
+        )
     return html, defects

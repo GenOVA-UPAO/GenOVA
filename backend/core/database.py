@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from dotenv import load_dotenv
 from fastapi import HTTPException, status
 from sqlalchemy import create_engine
@@ -7,7 +6,7 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from core.config import settings
 
-_logger = logging.getLogger(__name__)
+_logger = structlog.get_logger(__name__)
 
 load_dotenv()
 
@@ -92,7 +91,7 @@ def commit_or_500(db: Session, op: str) -> None:
         db.commit()
     except Exception:
         db.rollback()
-        _logger.exception("DB write failed during %s", op)
+        _logger.exception("DB write falló", op=op)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo completar la operación. Intenta de nuevo.",

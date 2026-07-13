@@ -1,8 +1,8 @@
 """LLM routing — Groq (primary) + OpenRouter (secondary / arbitrary model)."""
 
-import logging
 import time
 
+import structlog
 from groq import RateLimitError as GroqRateLimitError
 from openai import RateLimitError as OpenAIRateLimitError
 
@@ -58,7 +58,7 @@ __all__ = [
     "time",
 ]
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _chat(
@@ -134,12 +134,12 @@ def generar_texto(
         if i > 0:
             backoff = _retry_delay(last_err, prev_provider, proveedor, i)
             logger.info(
-                "Task '%s' switching to %s → %s/%s (backoff %.1fs)",
-                tarea,
-                role,
-                proveedor,
-                model_id,
-                backoff,
+                "task switching to next model in chain",
+                tarea=tarea,
+                role=role,
+                provider=proveedor,
+                model_id=model_id,
+                backoff_s=round(backoff, 1),
             )
             if backoff:
                 time.sleep(backoff)
@@ -154,13 +154,13 @@ def generar_texto(
                 else "<chain exhausted>"
             )
             logger.warning(
-                "Task '%s' %s %s/%s failed (%s). Next: %s.",
-                tarea,
-                role,
-                proveedor,
-                model_id,
-                type(exc).__name__,
-                next_step,
+                "task attempt failed",
+                tarea=tarea,
+                role=role,
+                provider=proveedor,
+                model_id=model_id,
+                error_type=type(exc).__name__,
+                next_step=next_step,
             )
     raise last_err or RuntimeError("All LLM fallbacks failed")
 
@@ -199,10 +199,10 @@ def generar_texto_with_model(
 
     except (GroqRateLimitError, OpenAIRateLimitError):
         logger.warning(
-            "Rate limit on model='%s' provider='%s'; falling back to %s",
-            model_id,
-            provider,
-            _FALLBACK_OR_MODEL,
+            "rate limit hit, falling back to safety-net model",
+            model_id=model_id,
+            provider=provider,
+            fallback_model=_FALLBACK_OR_MODEL,
         )
         fb_key = _get_provider_key("openrouter")
         fb_client = openrouter_client.with_options(api_key=fb_key) if fb_key else openrouter_client

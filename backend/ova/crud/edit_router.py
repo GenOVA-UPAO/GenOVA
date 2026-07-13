@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
@@ -23,7 +22,7 @@ from ova.crud.edit_view_router import router as edit_view_router
 from ova.phases.phase_version_router import record_phase_micro_version
 from users.admin.helpers import commit_or_500
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 router = APIRouter()
 
 

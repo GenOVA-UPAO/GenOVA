@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-import logging
 import os
 from collections.abc import Sequence
 
+import structlog
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm import Session
 
 from rag.embedder import EmbedderError, get_embedder
 from rag.store import _vec_literal
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 DEFAULT_TOP_K = int(os.getenv("RAG_TOP_K", "5"))
 DEFAULT_MAX_CONTEXT_CHARS = int(os.getenv("RAG_MAX_CONTEXT_CHARS", "6000"))
@@ -36,7 +36,7 @@ def top_k(
 
     cache_key = (query.strip(), tuple(sorted(upload_ids)))
     if cache_key in _retrieval_cache:
-        logger.info("RAG retrieval cache hit for query=%r", query[:60])
+        logger.info("RAG retrieval cache hit", query_preview=query[:60])
         return _retrieval_cache[cache_key]
 
     try:
@@ -48,10 +48,12 @@ def top_k(
         else:
             emb = embedder.embed_batch([query])[0]
     except EmbedderError:
-        logger.exception("Embedder unavailable; returning empty RAG context.")
+        logger.exception("Embedder no disponible; devolviendo contexto RAG vacío")
         return []
     except Exception:
-        logger.exception("Embedding query failed; returning empty RAG context.")
+        logger.exception(
+            "Fallo al generar embedding de la consulta; devolviendo contexto RAG vacío"
+        )
         return []
 
     stmt = text(
@@ -82,7 +84,7 @@ def top_k(
             .all()
         )
     except Exception:
-        logger.exception("pgvector retrieval failed; returning empty.")
+        logger.exception("Fallo en retrieval de pgvector; devolviendo vacío")
         return []
 
     result = [dict(r) for r in rows]

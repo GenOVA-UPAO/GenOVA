@@ -6,7 +6,7 @@ live API lists replace/enrich them when credentials exist.
 
 from __future__ import annotations
 
-import logging
+import structlog
 
 from llm.catalog.catalog_aptitudes import aptitudes_for
 from llm.images.image_model_list import (
@@ -18,7 +18,7 @@ from llm.images.image_model_list import (
     _fetch_siliconflow,
 )
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 IMAGE_CATALOG_PROVIDERS = ("huggingface", "siliconflow", "runware", "falai")
 
@@ -64,7 +64,7 @@ def fetch_image_provider_entries(keys: dict[str, str | None]) -> dict[str, list[
         hf = _fetch_huggingface_image_models()
         result["huggingface"] = _from_static("huggingface", hf) if hf else None
     except Exception:
-        logger.exception("HF image catalog fetch failed")
+        logger.exception("image catalog fetch failed", provider="huggingface")
         result["huggingface"] = None
 
     sf_key = keys.get("siliconflow")
@@ -77,7 +77,7 @@ def fetch_image_provider_entries(keys: dict[str, str | None]) -> dict[str, list[
                 else []
             )
         except Exception:
-            logger.exception("SiliconFlow image catalog fetch failed")
+            logger.exception("image catalog fetch failed", provider="siliconflow")
             result["siliconflow"] = None
     else:
         result["siliconflow"] = None

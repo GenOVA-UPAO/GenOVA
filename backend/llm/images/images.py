@@ -7,13 +7,13 @@ so the caller can render a placeholder instead.
 
 import base64
 import hashlib
-import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 
 import httpx
+import structlog
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # Simple in-memory cache: prompt hash → data_uri. Avoids re-fetching the same
 # images during regeneration or retry flows.
@@ -68,9 +68,10 @@ def fetch_image_data_uri(
     }
     try:
         logger.info(
-            "Attempting Hugging Face image generation for prompt %r using model %s",
-            clean[:60],
-            hf_model,
+            "attempting image generation",
+            provider="huggingface",
+            prompt=clean[:60],
+            model=hf_model,
         )
         resp = httpx.post(
             url,
@@ -83,8 +84,8 @@ def fetch_image_data_uri(
         data = resp.content
         if data.startswith(b"{") and b"error" in data:
             logger.warning(
-                "HF Inference API returned JSON error: %s",
-                data.decode("utf-8", errors="ignore")[:200],
+                "HF Inference API returned JSON error",
+                error_body=data.decode("utf-8", errors="ignore")[:200],
             )
             return None
 
@@ -94,7 +95,9 @@ def fetch_image_data_uri(
         _cache[key] = uri
         return uri
     except Exception as exc:
-        logger.warning("Hugging Face image generation failed for %r: %s", clean[:60], exc)
+        logger.warning(
+            "image generation failed", provider="huggingface", prompt=clean[:60], error=str(exc)
+        )
         return None
 
 

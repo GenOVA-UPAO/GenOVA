@@ -5,17 +5,17 @@ from here return generic, non-leaking messages — never echo raw SQLAlchemy
 errors to the caller.
 """
 
-import logging
 import os
 from uuid import UUID
 
+import structlog
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Role, User, UserRole
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 APP_URL = os.getenv("APP_URL", "http://localhost:4200")
 GENDER_CHOICES = {"masculino", "femenino", "otro"}
@@ -61,7 +61,7 @@ def commit_or_500(db: Session, *, op: str) -> None:
         db.commit()
     except Exception:
         db.rollback()
-        logger.exception("Admin DB write failed during %s", op)
+        logger.exception("admin DB write failed", op=op)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo completar la operación. Intenta de nuevo.",

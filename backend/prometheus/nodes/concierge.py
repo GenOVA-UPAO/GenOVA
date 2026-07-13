@@ -11,14 +11,14 @@ Falls back to a deterministic plan (4 resources per phase) on any LLM failure;
 the BDI cycle runs regardless so beliefs/desires/intentions are always populated.
 """
 
-import logging
+import structlog
 
 from llm.router import generar_texto
 from llm.utils.utils import parse_json
 from prometheus.engine.bdi import deliberar, form_beliefs, generate_desires
 from prometheus.engine.state import OvaGenerationState
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _PHASE_ORDER = ["engage", "explore", "explain", "elaborate", "evaluate"]
 
@@ -71,7 +71,7 @@ def concierge_node(state: OvaGenerationState) -> dict:
     # Reconstruct phases preserving original order (deliberation only scores, not reorders phases)
     phases_data, phase_order, total = _intentions_to_phases(intentions)
 
-    logger.info("Concierge BDI: %d intentions across %d phases", total, len(phase_order))
+    logger.info("concierge plan built", intentions=total, phases=len(phase_order))
     return {
         "beliefs": beliefs,
         "desires": desires,

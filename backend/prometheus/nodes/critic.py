@@ -9,12 +9,13 @@ to the main ``results`` list and performs BDI belief revision.
 Flow: engage → critic → explore → critic → … → editor
 """
 
-import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import structlog
 
 from core.config import settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def critic_node(state: dict) -> dict:
@@ -56,7 +57,12 @@ def critic_node(state: dict) -> dict:
         for fut in as_completed(futures):
             refined.append(fut.result())
 
-    logger.info("Critic: %d/%d resources refined for phase %s", len(refined), len(phase_results), last_phase)
+    logger.info(
+        "critic: resources refined",
+        refined=len(refined),
+        total=len(phase_results),
+        phase=last_phase,
+    )
     return {
         "results": refined,
         "beliefs": _revise(state, last_phase, refined, state.get("current_phase_errors", [])),
@@ -77,7 +83,7 @@ def _evaluate(result: dict, concept: str, llm_config, enabled_models, theme, max
         try:
             r = critique_resource(html, phase, rt, concept, llm_config, enabled_models, theme)
         except Exception:  # noqa: BLE001
-            logger.exception("critic failed for %s/%s round %d", phase, rt, ronda)
+            logger.exception("critic failed", phase=phase, resource_type=rt, round=ronda)
             break
 
         score = r.get("puntaje", 0)
@@ -93,7 +99,7 @@ def _evaluate(result: dict, concept: str, llm_config, enabled_models, theme, max
         try:
             html = apply_feedback(html, concept, issues, phase, rt, llm_config, enabled_models, theme)
         except Exception:  # noqa: BLE001
-            logger.exception("apply_feedback failed for %s/%s", phase, rt)
+            logger.exception("apply_feedback failed", phase=phase, resource_type=rt)
             break
 
     return {**result, "html": best_html, "score": best_score, "critic_issues": issues}

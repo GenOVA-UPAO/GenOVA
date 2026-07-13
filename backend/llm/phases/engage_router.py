@@ -1,8 +1,8 @@
 import json
-import logging
 import os
 import re
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -25,7 +25,7 @@ from prometheus.prompts.engage_prompts import (
 from rag.retriever import build_contexto_usuario, top_k
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _TAREA_POR_RECURSO = {
     1: "texto",
@@ -63,7 +63,9 @@ def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
     chunks = top_k(db, query, upload_ids)
     contexto = build_contexto_usuario(chunks)
     if contexto:
-        logger.info("RAG retrieved %d chunks for ENGAGE concept=%r", len(chunks), query[:60])
+        logger.info(
+            "RAG retrieved chunks", fase="ENGAGE", chunk_count=len(chunks), concept=query[:60]
+        )
     return contexto
 
 
@@ -120,8 +122,10 @@ def generate_engage_resource(
         try:
             json_data = parse_json(raw_text)
         except Exception:
-            logger.warning("JSON parse failed for ENGAGE %d, retrying with strict prompt", n)
-            logger.debug("Raw LLM output: %s", raw_text[:500])
+            logger.warning(
+                "JSON parse failed, retrying with strict prompt", fase="ENGAGE", resource_type=n
+            )
+            logger.debug("raw LLM output", raw_output=raw_text[:500])
             # Retry once with a strict JSON-only suffix
             retry_text = generar_texto(
                 prompt_texto(n, concept, contexto) + "\n\nIMPORTANTE: Responde SOLO con "
@@ -132,7 +136,9 @@ def generate_engage_resource(
             try:
                 json_data = parse_json(retry_text)
             except Exception:
-                logger.warning("JSON retry also failed for ENGAGE %d, using raw text", n)
+                logger.warning(
+                    "JSON retry also failed, using raw text", fase="ENGAGE", resource_type=n
+                )
                 json_data = {"contenido": retry_text}
 
         # Build image_settings from the user's ova_settings + resolved API key.
@@ -179,7 +185,7 @@ def generate_engage_resource(
     except HTTPException:
         raise
     except Exception:
-        logger.exception("Error generating ENGAGE resource %d", n)
+        logger.exception("error generating resource", fase="ENGAGE", resource_type=n)
         raise HTTPException(
             status_code=500, detail="Error al generar el recurso. Intenta de nuevo."
         ) from None

@@ -6,14 +6,15 @@ OVA_EDITOR != "1". Best-effort: fallo → coherence_report={} sin bloquear.
 """
 
 import json
-import logging
 import re
+
+import structlog
 
 from core.config import settings
 from llm.router import generar_texto
 from prometheus.engine.state import OvaGenerationState
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _PROMPT_TMPL = """\
 [ROL] Editor de coherencia pedagógica 5E.
@@ -112,7 +113,9 @@ def editor_node(state: OvaGenerationState) -> dict:
             _apply_patches(results, parches)
 
         logger.info(
-            "Editor: %d hallazgos, %d parches", len(report.get("hallazgos", [])), len(parches)
+            "editor: coherence report built",
+            hallazgos=len(report.get("hallazgos", [])),
+            parches=len(parches),
         )
         return {"coherence_report": report}
 

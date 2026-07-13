@@ -6,13 +6,14 @@ single agent call (`regen_agents.regenerate_phase_content`) without touching the
 job loop. No DB access here — the caller persists the result.
 """
 
-import logging
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
 
+import structlog
+
 from generation.regen import regen_agents
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _RESOURCE_NAME_TO_ID: dict[str, int] = {}
 
@@ -101,11 +102,11 @@ def generate_resource_html(
         except Exception as exc:  # noqa: BLE001 — contained per R6
             last_err = f"{type(exc).__name__}: {exc}"
             logger.warning(
-                "Resource %s/%s attempt %d/%d failed: %s",
-                resource.phase_type,
-                rtype,
-                attempt,
-                max_attempts,
-                type(exc).__name__,
+                "resource generation attempt failed",
+                phase_type=resource.phase_type,
+                resource_type=rtype,
+                attempt=attempt,
+                max_attempts=max_attempts,
+                error=type(exc).__name__,
             )
     return None, f"{last_err} after {max_attempts} attempts"

@@ -4,15 +4,15 @@ A single row per provider stores the raw API response so we can rebuild the
 merged catalog even if both providers are unreachable at the same time.
 """
 
-import logging
 from datetime import UTC, datetime
 
+import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import CatalogCache
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def load_from_cache(db: Session, provider: str) -> dict | None:
@@ -23,9 +23,9 @@ def load_from_cache(db: Session, provider: str) -> dict | None:
         )
     ).scalar_one_or_none()
     if row and row.raw_data:
-        logger.info("Catalog cache HIT for provider=%s", provider)
+        logger.info("catalog cache hit", provider=provider)
         return row.raw_data
-    logger.info("Catalog cache MISS for provider=%s", provider)
+    logger.info("catalog cache miss", provider=provider)
     return None
 
 
@@ -42,4 +42,4 @@ def save_to_cache(db: Session, provider: str, raw_data: dict, ttl_hours: int = 2
     else:
         db.add(CatalogCache(provider=provider, raw_data=raw_data, expires_at=expires))
     db.commit()
-    logger.info("Catalog cache SAVED for provider=%s TTL=%dh", provider, ttl_hours)
+    logger.info("catalog cache saved", provider=provider, ttl_hours=ttl_hours)

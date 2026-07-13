@@ -5,8 +5,7 @@ GET returns the current list; PUT persists a new list, validated against the
 curated catalog. System default models can never be disabled.
 """
 
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -19,7 +18,7 @@ from llm.catalog.model_catalog import DEFAULTS
 from models import User
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class EnabledModelsUpdate(BaseModel):
@@ -77,7 +76,7 @@ def put_enabled_models(
         db.commit()
     except Exception:
         db.rollback()
-        logger.exception("Enabled models write failed for user %s", current_user.id)
+        logger.exception("enabled models write failed", user_id=current_user.id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar la lista de modelos. Intenta de nuevo.",

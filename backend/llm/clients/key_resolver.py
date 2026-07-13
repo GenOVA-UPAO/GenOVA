@@ -7,12 +7,13 @@ Priority chain for every provider:
   4. Env var (GROQ_API_KEY, OPENROUTER_API_KEY, …)
 """
 
-import logging
 import os
+
+import structlog
 
 from llm.providers import ENV_VARS
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # DB key name format: "{provider}_api_key"
 _DB_KEY = "{}_api_key".format
@@ -45,7 +46,7 @@ def _inherited_key(provider: str, user_id, db) -> str | None:
         return key or None
     except Exception:
         logger.warning(
-            "_inherited_key: DB error for user_id=%s provider=%s", user_id, provider, exc_info=True
+            "inherited key resolution: DB error", user_id=user_id, provider=provider, exc_info=True
         )
         return None
 

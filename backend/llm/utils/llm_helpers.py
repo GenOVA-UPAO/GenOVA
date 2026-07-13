@@ -1,7 +1,6 @@
 """LLM model selection, fallback chains, retry logic, and error types."""
 
-import logging
-
+import structlog
 from groq import APIConnectionError as GroqAPIConnectionError
 from groq import APIStatusError as GroqAPIStatusError
 from groq import APITimeoutError as GroqAPITimeoutError
@@ -13,7 +12,7 @@ from openai import RateLimitError as OpenAIRateLimitError
 
 from llm.catalog.model_catalog import clamp_timeout, is_valid_model
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # (provider, model_id, extra_kwargs) — SEMILLA. El admin puede sobrescribir por
 # tarea desde la UI (llm_config_store / PlatformConfig); estas se usan cuando no

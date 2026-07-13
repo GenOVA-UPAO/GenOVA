@@ -1,7 +1,7 @@
-import logging
 import math
 import os
 
+import structlog
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import func, select
@@ -14,7 +14,7 @@ from ova.helpers import VALID_STATUSES, _is_admin, _ova_to_dict
 from storage import StorageError, is_configured, signed_url
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @router.get("")
@@ -112,7 +112,7 @@ def download_ova(
             url = signed_url(str(ova.storage_key), download_as=filename)
             return JSONResponse({"download_url": url, "filename": filename})
         except StorageError:
-            logger.exception("Signed URL failed for ova=%s; falling back to disk", ova_id)
+            logger.exception("signed url failed, falling back to disk", ova_id=ova_id)
 
     # Legacy / dev fallback: serve from local disk.
     if not ova.file_path or not os.path.exists(ova.file_path):

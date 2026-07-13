@@ -7,11 +7,11 @@ the HTTP boundary back to the admin so that an admin cannot reset another
 user's password by reading the API response.
 """
 
-import logging
 import secrets
 import urllib.parse
 from datetime import UTC, datetime, timedelta
 
+import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import delete
@@ -30,7 +30,7 @@ from users.admin.helpers import (
 )
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class UserStatusUpdate(BaseModel):

@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -23,7 +22,7 @@ from rag.pipeline import ingest_upload
 from rag.pipeline import is_enabled as rag_enabled
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @router.get("/health")
@@ -140,7 +139,7 @@ async def upload_temp_files(
                         filename=created_item["filename"],
                     )
                 except Exception:  # noqa: BLE001 — RAG nunca bloquea el upload
-                    logger.exception("RAG ingestion failed for %s", file_name)
+                    logger.exception("RAG ingestion falló", filename=file_name)
                     rag_status = {
                         "status": "error",
                         "chunks": 0,

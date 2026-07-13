@@ -11,9 +11,10 @@ Cache en proceso con TTL corto: cada worker reconcilia el cambio del admin a los
 """
 
 import json
-import logging
 import time
 from threading import RLock
+
+import structlog
 
 from core.database import SessionLocal
 from llm.catalog.catalog_refresh import get_full_catalog_entries
@@ -21,7 +22,7 @@ from llm.catalog.model_catalog import TASKS, is_valid_model
 from llm.providers import TEXT_PROVIDERS
 from models import PlatformConfig
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 PLATFORM_KEY = "llm_model_config"
 _TTL_S = 30.0
@@ -90,7 +91,7 @@ def load_stored() -> dict:
         data = json.loads(row.value)
         return data if isinstance(data, dict) else {}
     except Exception:
-        logger.exception("load %s failed", PLATFORM_KEY)
+        logger.exception("load platform config failed", key=PLATFORM_KEY)
         return {}
     finally:
         db.close()

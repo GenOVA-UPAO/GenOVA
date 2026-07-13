@@ -1,7 +1,6 @@
 """Per-user OVA generation settings: image count, image provider, and image model."""
 
-import logging
-
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -13,7 +12,7 @@ from llm.images.image_providers import IMAGE_PROVIDERS
 from models import User
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 _DEFAULTS = {"max_images": 2, "image_provider": "cloudflare", "image_model": None}
 _MAX_IMAGES_MAX = 10
@@ -96,7 +95,7 @@ def put_ova_settings(
         db.commit()
     except Exception:
         db.rollback()
-        logger.exception("OVA settings write failed for user %s", current_user.id)
+        logger.exception("OVA settings write failed", user_id=current_user.id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No se pudo guardar la configuración. Intenta de nuevo.",

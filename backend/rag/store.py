@@ -7,15 +7,15 @@ Python lists to the `[v1,v2,...]` syntax pgvector accepts.
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import structlog
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm import Session
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 DEFAULT_TTL_SECONDS = 3600  # untied chunks expire after 1 h
 
