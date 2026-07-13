@@ -55,7 +55,7 @@ def test_worker_dispatches_by_plan_and_emits_signal(monkeypatch):
 
     monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
     monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))
-    monkeypatch.setattr(wp, "_dispatch_for", lambda phase: (None, {}))
+    monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {})
     out = resource_worker(
         {"work_item": {"phase": "engage", "resource_type": 6, "plan_type": "direct_code"}}
     )

@@ -12,7 +12,8 @@ Diferencias con el motor por fases (graph.py):
   fase) y sigue siendo quien commitea a `results`.
 - El nodo repair y el editor se reutilizan tal cual.
 
-Se activa con OVA_ENGINE=workpool (default: "phases", el motor legacy).
+Motor único desde 2026-07-10 (benchmark F2: 6:21/20 recursos, 0 fallos, vs
+~30min del motor por fases eliminado).
 """
 
 import logging
@@ -36,10 +37,10 @@ _CTX_KEYS = (
 )
 
 
-def _dispatch_for(phase: str):
-    from prometheus.nodes.repair import _dispatch_for as repair_dispatch_for
+def _recursos_meta_for(phase: str) -> dict:
+    from prometheus.nodes.repair import _recursos_meta_for as repair_recursos_meta_for
 
-    return repair_dispatch_for(phase)
+    return repair_recursos_meta_for(phase)
 
 
 def fan_out(state: OvaGenerationState) -> list[Send]:
@@ -124,7 +125,7 @@ def resource_worker(payload: dict) -> dict:
         payload.get("theme", {}),
     )
 
-    _, meta = _dispatch_for(phase)
+    meta = _recursos_meta_for(phase)
     title = (meta.get(rt) or {}).get("tipo", "")
     _persist_done(job_id, phase, rt, html)
     _touch_job(job_id)

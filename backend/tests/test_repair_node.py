@@ -41,7 +41,7 @@ def test_repair_recovers_resource(monkeypatch):
 
     monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
     monkeypatch.setattr(
-        repair_mod, "_dispatch_for", lambda phase: (None, {1: {"tipo": "Cómic"}})
+        repair_mod, "_recursos_meta_for", lambda phase: {1: {"tipo": "Cómic"}}
     )
     out = repair_node(_state([{"phase": "engage", "resource_type": 1, "error": "boom"}]))
     assert out["results"][0]["html"] == "<html>reparado</html>"

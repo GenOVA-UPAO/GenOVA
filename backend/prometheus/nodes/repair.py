@@ -17,16 +17,22 @@ from prometheus.engine.state import OvaGenerationState
 logger = logging.getLogger(__name__)
 
 
-def _dispatch_for(phase: str):
-    """Late import — evita ciclos nodes↔graph y carga solo lo necesario."""
-    from prometheus.nodes import elaborate, engage, evaluate, explain, explore
+def _recursos_meta_for(phase: str) -> dict:
+    """Late import — carga solo el módulo de prompts de la fase pedida."""
+    from prometheus.prompts import (
+        elaborate_prompts,
+        engage_prompts,
+        evaluate_prompts,
+        explain_prompts,
+        explore_prompts,
+    )
 
     return {
-        "engage": (engage._dispatch, engage.RECURSOS_META),
-        "explore": (explore._dispatch, explore.RECURSOS_META),
-        "explain": (explain._dispatch, explain.RECURSOS_META),
-        "elaborate": (elaborate._dispatch, elaborate.RECURSOS_META),
-        "evaluate": (evaluate._dispatch, evaluate.RECURSOS_META),
+        "engage": engage_prompts.RECURSOS_META,
+        "explore": explore_prompts.RECURSOS_META,
+        "explain": explain_prompts.RECURSOS_META,
+        "elaborate": elaborate_prompts.RECURSOS_META,
+        "evaluate": evaluate_prompts.RECURSOS_META,
     }[phase]
 
 
@@ -90,7 +96,7 @@ def repair_node(state: OvaGenerationState) -> dict:
             err, html = fut.result()
             phase, rt = err["phase"], err["resource_type"]
             if html is not None:
-                _, meta = _dispatch_for(phase)
+                meta = _recursos_meta_for(phase)
                 title = (meta.get(rt) or {}).get("tipo", "")
                 results.append(
                     {"phase": phase, "html": html, "resource_type": rt, "title": title}

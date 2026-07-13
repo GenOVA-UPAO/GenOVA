@@ -62,7 +62,7 @@ def test_worker_success_and_config(monkeypatch):
         return "<html>ok</html>"
 
     monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
-    monkeypatch.setattr(wp, "_dispatch_for", lambda phase: (None, {3: {"tipo": "Desafío"}}))
+    monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {3: {"tipo": "Desafío"}})
     sends = fan_out(_state())
     payload = next(s.arg for s in sends if s.arg["work_item"]["resource_type"] == 3)
     out = resource_worker(payload)
@@ -112,7 +112,7 @@ def test_workpool_end_to_end_with_fake_dispatch(monkeypatch):
 
     monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
     monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))
-    monkeypatch.setattr(wp, "_dispatch_for", lambda phase: (None, {}))
+    monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {})
     # concierge/editor/assemble reales harían RAG/LLM/zip — reemplazos mínimos
     import prometheus.nodes.assemble as asm
     import prometheus.nodes.concierge as con
