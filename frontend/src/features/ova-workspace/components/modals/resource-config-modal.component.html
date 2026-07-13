@@ -1,10 +1,10 @@
 <gn-dialog [open]="visible()" width="24rem" (openChange)="$event || onClose.emit()">
   <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
     <div
-      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg"
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
       [style.backgroundColor]="phaseColor() + '18'"
     >
-      {{ resource().emoji || "📦" }}
+      <i class="{{ iconClass }} text-lg leading-none" [style.color]="phaseColor()" aria-hidden="true"></i>
     </div>
     <div class="min-w-0">
       <p class="font-semibold text-sm text-foreground leading-tight truncate">

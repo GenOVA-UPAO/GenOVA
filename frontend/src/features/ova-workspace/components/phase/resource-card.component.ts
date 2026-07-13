@@ -1,7 +1,9 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input, output } from "@angular/core";
 
 import type { Resource } from "@/core/lib/ova-types";
+
+import { resourceIconClass } from "../../lib/resource-icons";
 
 const INTERACTIVIDAD_COLOR: Record<string, string> = {
   Alta: "bg-primary/10 text-primary",
@@ -29,23 +31,15 @@ const INTERACTIVIDAD_COLOR: Record<string, string> = {
       [ngStyle]="getSelectedStyle()"
     >
       <div class="flex items-start gap-3">
-        <div class="shrink-0 mt-0.5 p-1.5 rounded-lg" [style.backgroundColor]="phaseColor() + '18'">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            fill="currentColor"
-            viewBox="0 0 256 256"
+        <div
+          class="shrink-0 mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg"
+          [style.backgroundColor]="phaseColor() + '18'"
+        >
+          <i
+            class="{{ iconClass() }} text-lg leading-none"
             [style.color]="phaseColor()"
-          >
-            <path
-              d="M168,224H48V56A16,16,0,0,1,64,40h16v88a8,8,0,0,0,13.66,5.66L120,107.31l26.34,26.35A8,8,0,0,0,160,128V40h8a16,16,0,0,1,16,16V224Z"
-              opacity="0.2"
-            ></path>
-            <path
-              d="M216,56V224a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V56A24,24,0,0,1,56,32h16V24a8,8,0,0,1,16,0v8h56V24a8,8,0,0,1,16,0v8h8A24,24,0,0,1,216,56ZM152,48H96v76.69l18.34-18.35a8,8,0,0,1,11.32,0L144,124.69ZM48,224H184V56a8,8,0,0,0-8-8H168V128a16,16,0,0,1-27.31,11.31L120,118.63l-20.69,20.68A16,16,0,0,1,72,128V48H56a8,8,0,0,0-8,8Z"
-            ></path>
-          </svg>
+            aria-hidden="true"
+          ></i>
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 flex-wrap">
@@ -114,6 +108,8 @@ export class ResourceCardComponent {
   readonly onClick = output<Resource>();
   readonly onHover = output<Resource | null>();
   readonly onConfigClick = output<Resource>();
+
+  readonly iconClass = computed(() => resourceIconClass(this.resource().tipo));
 
   getBaseClass() {
     if (this.disabled()) {

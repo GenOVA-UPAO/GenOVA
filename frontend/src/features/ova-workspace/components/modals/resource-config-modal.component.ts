@@ -6,6 +6,7 @@ import type { Resource } from "@/core/lib/ova-types";
 
 import type { ConfigField } from "../../lib/resource-config";
 import { getSchema } from "../../lib/resource-config";
+import { resourceIconClass } from "../../lib/resource-icons";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,8 +31,10 @@ export class ResourceConfigModalComponent implements OnInit {
 
   schema: ConfigField[] = [];
   values: Record<string, number> = {};
+  iconClass = "";
 
   ngOnInit(): void {
+    this.iconClass = resourceIconClass(this.resource().tipo);
     this.schema = getSchema(this.phaseKey(), String(this.resource().id));
     const init: Record<string, number> = {};
     for (const f of this.schema) {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input } from "@angular/core";
 
 import type { AnalyticsTotals } from "../lib/types";
 
@@ -7,6 +7,13 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   generando: { label: "Generando", color: "bg-amber-500" },
   borrador: { label: "Borradores", color: "bg-slate-400" },
   error: { label: "Con error", color: "bg-red-500" },
+};
+
+const STAT_ICON_CLASS: Record<string, string> = {
+  stack: "ph-stack",
+  users: "ph-users",
+  "graduation-cap": "ph-graduation-cap",
+  "chart-bar": "ph-chart-bar",
 };
 
 @Component({
@@ -19,76 +26,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
         <div
           class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
         >
-          @switch (icon()) {
-            @case ("stack") {
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="currentColor"
-                viewBox="0 0 256 256"
-              >
-                <path
-                  d="M211.91,114.33l-79.93,42a16,16,0,0,1-15.05,0l-80-42a8,8,0,0,1,0-14.18l80-42a15.93,15.93,0,0,1,15.05,0l80,42A8,8,0,0,1,211.91,114.33Z"
-                  opacity="0.2"
-                ></path>
-                <path
-                  d="M219.43,101.46,140,59.39a24.1,24.1,0,0,0-22.56,0L38.08,101.46a16,16,0,0,0,0,28.27l79.35,42.06a24,24,0,0,0,22.56,0l79.35-42.06A16,16,0,0,0,219.43,101.46ZM128,157.34l-75.11-39.8L128,77.74l75.1,39.8ZM219.43,149.46l-20.73,11-66.5,35.24a24,24,0,0,1-22.56,0L43.14,160.46,22.41,149.46a8,8,0,0,0-7.53,14.13l80,42.41a24,24,0,0,0,22.56,0l80-42.41a8,8,0,1,0-7.53-14.13Z"
-                ></path>
-              </svg>
-            }
-            @case ("users") {
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="currentColor"
-                viewBox="0 0 256 256"
-              >
-                <path
-                  d="M216,216a64,64,0,0,0-43.2-60.59,48,48,0,1,0-89.6,0A64,64,0,0,0,40,216Z"
-                  opacity="0.2"
-                ></path>
-                <path
-                  d="M222.65,193.38a79.8,79.8,0,0,0-46.8-51.48,56,56,0,1,0-95.7,0A79.8,79.8,0,0,0,33.35,193.38a8,8,0,1,0,13.3,8.46,64,64,0,0,1,162.7,0,8,8,0,1,0,13.3-8.46ZM128,136a40,40,0,1,1,40-40A40,40,0,0,1,128,136Z"
-                ></path>
-              </svg>
-            }
-            @case ("graduation-cap") {
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="currentColor"
-                viewBox="0 0 256 256"
-              >
-                <path
-                  d="M232,104.38l-98.81,56.46a16,16,0,0,1-15.84,0L32,112l91.1-52.05a16,16,0,0,1,15.8,0Z"
-                  opacity="0.2"
-                ></path>
-                <path
-                  d="M246.36,99.88l-105-60a24,24,0,0,0-23.7,0l-105,60A8,8,0,0,0,16.59,114L32,122.8V168a48.06,48.06,0,0,0,48,48h96a48.06,48.06,0,0,0,48-48V122.8l15.41-8.81A8,8,0,0,0,246.36,99.88ZM208,168a32,32,0,0,1-32,32H80a32,32,0,0,1-32-32V131.94l68.64,39.23a24,24,0,0,0,23.7,0L208,131.94Zm-79.62,17.43a8,8,0,0,1-7.9,0l-91.13-52L128.32,53.86a8,8,0,0,1,7.9,0L228.16,112Z"
-                ></path>
-              </svg>
-            }
-            @case ("chart-bar") {
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="currentColor"
-                viewBox="0 0 256 256"
-              >
-                <path
-                  d="M224,208H200V88a8,8,0,0,0-8-8H152V40a8,8,0,0,0-8-8H96V208H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16Z"
-                  opacity="0.2"
-                ></path>
-                <path
-                  d="M224,200H208V88a16,16,0,0,0-16-16H160V40a16,16,0,0,0-16-16H96A16,16,0,0,0,80,40V200H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16Zm-16,0H160V88h48ZM96,40h48V200H96Z"
-                ></path>
-              </svg>
-            }
-          }
+          <i class="ph {{ iconClass() }} text-xl leading-none" aria-hidden="true"></i>
         </div>
         <div>
           <p class="text-2xl font-bold tabular-nums">{{ value() }}</p>
@@ -102,6 +40,8 @@ export class StatCardComponent {
   readonly icon = input.required<string>();
   readonly label = input.required<string>();
   readonly value = input.required<string | number>();
+
+  readonly iconClass = computed(() => STAT_ICON_CLASS[this.icon()] ?? "ph-squares-four");
 }
 
 @Component({
