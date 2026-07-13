@@ -12,7 +12,8 @@ export const navigationLinks: NavLinkItem[] = [
 
 export const adminNavLinks = [
   { to: "/admin/roles", label: "Roles", icon: "shield" as const },
-  { to: "/admin", label: "Usuarios", icon: "users" as const },
+  // exact: /admin is a prefix of /admin/roles — without it both stay active
+  { to: "/admin", label: "Usuarios", icon: "users" as const, exact: true },
 ];
 
 export const configNavLinks = [{ to: "/models", label: "Modelos", icon: "gear" as const }];

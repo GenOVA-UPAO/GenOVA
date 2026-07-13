@@ -13,6 +13,7 @@ import { navLinkClasses } from "../lib/layout-helpers";
         [routerLink]="to()"
         routerLinkActive
         #rla="routerLinkActive"
+        [routerLinkActiveOptions]="{ exact: exact() }"
         [class]="linkClass(rla.isActive)"
         (click)="onNavigate()?.()"
       >
@@ -32,6 +33,7 @@ import { navLinkClasses } from "../lib/layout-helpers";
 export class SidebarNavItemComponent {
   readonly to = input.required<string>();
   readonly label = input.required<string>();
+  readonly exact = input(false);
   @Input() badge?: number;
   readonly onNavigate = input<(() => void) | undefined>(undefined);
 

@@ -63,7 +63,12 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
       @if (isAdmin) {
         <gn-sidebar-section title="Administracion">
           @for (item of adminNavLinks; track item.to) {
-            <gn-sidebar-nav-item [to]="item.to" [label]="item.label" [onNavigate]="onNavigate()">
+            <gn-sidebar-nav-item
+              [to]="item.to"
+              [label]="item.label"
+              [exact]="item.exact === true"
+              [onNavigate]="onNavigate()"
+            >
               <gn-nav-icon icon [name]="item.icon" />
             </gn-sidebar-nav-item>
           }
