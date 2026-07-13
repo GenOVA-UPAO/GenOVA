@@ -30,6 +30,22 @@ In the template:
 <input [formField]="loginForm.email" />
 ```
 
+## Field state (Angular Signal Forms docs)
+
+Use schema-level signals for UX:
+
+- `loginForm.email().touched()` / `errors()` — show validation after interaction
+  (existing GenOVA login pattern).
+- `loginForm().dirty()` — unsaved-changes warnings / enable Save (Angular
+  field-state guide). Note: `dirty()` stays true even if the user reverts to
+  the initial value.
+- Prefer `submit(loginForm, handler)` for submit wiring rather than ad-hoc
+  `(ngSubmit)` without schema validation.
+
+Zoneless: reading these signals in the template is enough to schedule updates
+under `OnPush` + `provideZonelessChangeDetection()` — do not call
+`ChangeDetectorRef.detectChanges()` for form state.
+
 ## Known gotchas (from a prior audit, memory `genova-angular-audit-fixes`)
 
 - `[formField]` expects the **schema field** (`loginForm.email`), not the

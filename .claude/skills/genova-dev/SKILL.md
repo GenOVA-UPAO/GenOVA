@@ -3,7 +3,7 @@ name: genova-dev
 description: GenOVA master development workflow. Sizes the task (trivial/medium/large), activates plan mode for large tasks, generates a Markdown plan-ledger with a subtask table and assigned model (haiku/sonnet/opus), dispatches subagents with their own per-task memory, and applies the project's commit rules. Use when implementing features, refactors, or any non-trivial change in GenOVA.
 metadata:
   author: GenOVA local
-  version: '1.1'
+  version: '1.2'
   source: local/genova
 ---
 
@@ -24,6 +24,8 @@ For layer-specific code conventions, delegate to:
 
 Infra / compose / verify details: Read
 [docker-compose-workflow.md](references/docker-compose-workflow.md).
+pnpm workspace / lockfile / corepack: Read
+[pnpm-monorepo.md](references/pnpm-monorepo.md).
 Model mapping (including Cursor Composer / Grok): Read
 [model-tiers.md](references/model-tiers.md).
 

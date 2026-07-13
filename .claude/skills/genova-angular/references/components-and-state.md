@@ -28,6 +28,7 @@ Based on patterns observed in `frontend/src/app/layout/components/navbar.compone
 - **Server state** (data coming from the API) via **TanStack Query**
   (`@tanstack/angular-query-experimental`, configured in `app.config.ts` with
   `staleTime: 30s`, `retry: 1`) — don't reinvent manual caching for this.
+  Full patterns: [tanstack-query.md](tanstack-query.md).
 - Services: `@Injectable({ providedIn: 'root' })`, expose read-only signals
   + methods that mutate the internal signal. Dedupe in-flight promises where
   applicable (pattern seen in `auth.service.ts`).
@@ -36,6 +37,7 @@ Based on patterns observed in `frontend/src/app/layout/components/navbar.compone
 
 - A single entry point: `core/lib/http.ts` (`apiFetch`), which already handles
   `credentials: 'include'` for the JWT's httpOnly cookies.
+  Details: [http-and-cookies.md](http-and-cookies.md).
 - Angular's `provideHttpClient()` is only used for point integrations (e.g.
   Sentry) — the app's normal API flow does **not** go through `HttpClient`, it
   goes through `apiFetch`.

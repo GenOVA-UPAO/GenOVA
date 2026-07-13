@@ -110,6 +110,9 @@ When the audit scope includes Docker, logging, LangSmith, or design tokens,
 also execute [observability-docker-checks.md](observability-docker-checks.md)
 (extra greps + compose/Dockerfile checklist).
 
+When the audit scope includes frontend lists/auth/forms, also execute
+[frontend-server-state-checks.md](frontend-server-state-checks.md).
+
 ## C13 — Frontend responsive
 
 Grep Tailwind classes with only fixed values and no responsive variants in

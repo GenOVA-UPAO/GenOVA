@@ -3,7 +3,7 @@ name: genova-fastapi
 description: GenOVA-specific FastAPI backend conventions — router.py->service.py->models.py architecture per domain, hard security rules (commit_or_500, @limiter.limit, never log secrets), ruff/200-line limit, and migrations+ORM cascades (C14). Use when creating or reviewing endpoints, services, SQLAlchemy models, or migrations in the backend.
 metadata:
   author: GenOVA local
-  version: '1.1'
+  version: '1.2'
   source: local/genova
 ---
 
@@ -29,9 +29,12 @@ code — a rule already established for `implementer`.
    file grows. Read [ruff-and-limits.md](references/ruff-and-limits.md).
 4. If you touch `models.py` or the schema: a new migration is required and ORM↔DDL
    cascades must be reviewed. Read [migrations-and-orm.md](references/migrations-and-orm.md) — **checkpoint C14**.
+   Session/pooler rules: [sqlalchemy-sessions.md](references/sqlalchemy-sessions.md).
 5. If you touch logs, tracing, LangGraph observability, or add an opt-in sink:
    read [observability.md](references/observability.md) (structlog, Sentry,
    Logfire, LangSmith, R8 dual redaction).
+6. OVA generation / LangGraph nodes: [langgraph-prometheus.md](references/langgraph-prometheus.md).
+7. New env flags, Redis/arq, or SlowAPI storage: [settings-and-jobs.md](references/settings-and-jobs.md).
 
 ## Quick rules (summary)
 

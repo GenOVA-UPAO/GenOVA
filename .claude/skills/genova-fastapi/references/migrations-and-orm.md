@@ -44,3 +44,5 @@ children = relationship(
 - `prepare_threshold=None` in psycopg3 — server-side prepared statements are
   disabled because they collide across sessions on the Transaction pooler
   (`DuplicatePreparedStatement`). Don't re-enable them without changing pooler.
+
+Full Session/`select()` 2.0 patterns: [sqlalchemy-sessions.md](sqlalchemy-sessions.md).
