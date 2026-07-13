@@ -8,6 +8,8 @@ import {
   viewChild,
 } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { groupByProvider, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
@@ -17,7 +19,7 @@ import { ModelCatalogRowComponent } from "./model-catalog-row.component";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-model-catalog-browser",
-  imports: [CommonModule, ModelCatalogFilterRowComponent, ModelCatalogRowComponent],
+  imports: [CommonModule, ModelCatalogFilterRowComponent, ModelCatalogRowComponent, IconComponent],
   templateUrl: "./model-catalog-browser.component.html",
 })
 export class ModelCatalogBrowserComponent implements AfterViewInit {

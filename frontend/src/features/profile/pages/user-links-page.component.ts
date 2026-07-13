@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { AuthService, type MeUser } from "@/core/auth/auth.service";
 import { LinkRowComponent } from "@/core/components/cards/link-row.component";
 
@@ -10,7 +11,7 @@ import { canLink } from "./user-links-page.helpers";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-links-page",
-  imports: [FormsModule, LinkRowComponent],
+  imports: [FormsModule, LinkRowComponent, IconComponent],
   templateUrl: "./user-links-page.component.html",
 })
 export class UserLinksPageComponent implements OnInit {

@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import type { AdminUser } from "../../lib/types";
 import { isLockedOut } from "./statusHelpers";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-status-badge",
-  imports: [],
+  imports: [IconComponent],
   template: `
     @if (!user().is_active) {
       <span
@@ -19,9 +21,9 @@ import { isLockedOut } from "./statusHelpers";
     @if (user().is_active && isLocked) {
       <span
         [title]="lockedTitle"
-        class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm bg-destructive/10 text-destructive border-destructive/20"
+        class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm bg-destructive/10 text-destructive border-destructive/20"
       >
-        🔒 Bloqueado
+        <gn-icon name="lock" size="text-xs" /> Bloqueado
       </span>
     }
 

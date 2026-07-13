@@ -168,8 +168,9 @@
                   {{ videoNode.name }}
                   @if (videoWarning) {
                     <span
-                      class="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-widest border border-amber-200"
-                      >⚠ API Key faltante</span
+                      class="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-widest border border-amber-200 inline-flex items-center gap-1"
+                    >
+                      <gn-icon name="warning" size="text-[10px]" /> API Key faltante</span
                     >
                   }
                 </p>

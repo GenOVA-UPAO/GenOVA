@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { toast } from "@/core/lib/toast";
 
 import { criticRoundsVisible, hasUnsavedChanges } from "../lib/nodesConfigDraft";
@@ -10,7 +11,7 @@ import { getNodeBadgeColor, getNodeInitials } from "./platform-nodes-card.helper
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-platform-nodes-card",
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: "./platform-nodes-card.component.html",
 })
 export class PlatformNodesCardComponent implements OnInit {

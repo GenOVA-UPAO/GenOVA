@@ -2,36 +2,40 @@ import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, Input, output } from "@angular/core";
 import { HlmDropdownMenuItem, HlmDropdownMenuSeparator } from "@spartan-ng/helm/dropdown-menu";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import type { AdminUser } from "../../lib/types";
 import { isLockedOut } from "./statusHelpers";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-action-menu",
-  imports: [CommonModule, HlmDropdownMenuItem, HlmDropdownMenuSeparator],
+  imports: [CommonModule, HlmDropdownMenuItem, HlmDropdownMenuSeparator, IconComponent],
   template: `
     <div class="py-1">
-      <button hlmDropdownMenuItem (click)="onEdit.emit()"><span>✏️</span> Editar Perfil</button>
+      <button hlmDropdownMenuItem (click)="onEdit.emit()">
+        <gn-icon name="pencil-simple" size="text-sm" /> Editar Perfil
+      </button>
 
       <button
         hlmDropdownMenuItem
         (click)="onToggleStatus.emit(!user.is_active)"
         [ngClass]="user.is_active ? 'text-accent-brand' : 'text-primary'"
       >
-        <span>{{ user.is_active ? "🚫" : "✅" }}</span>
+        <gn-icon [name]="user.is_active ? 'prohibit' : 'check-circle'" size="text-sm" />
         {{ user.is_active ? "Desactivar Cuenta" : "Activar Cuenta" }}
       </button>
 
       @if (isLocked) {
         <button hlmDropdownMenuItem class="text-primary" (click)="onUnlock.emit(user.id)">
-          <span>🔓</span> Desbloquear Cuenta
+          <gn-icon name="lock-open" size="text-sm" /> Desbloquear Cuenta
         </button>
       }
 
       <div hlmDropdownMenuSeparator></div>
 
       <button hlmDropdownMenuItem (click)="onSendResetEmail.emit(user.id)">
-        <span>✉️</span> Restablecer por Correo
+        <gn-icon name="envelope" size="text-sm" /> Restablecer por Correo
       </button>
 
       @if (user.phone_number) {
@@ -40,12 +44,14 @@ import { isLockedOut } from "./statusHelpers";
           class="text-primary"
           (click)="onSendResetWhatsApp.emit(user.id)"
         >
-          <span>💬</span> Enlace WhatsApp
+          <gn-icon name="chat-circle" size="text-sm" /> Enlace WhatsApp
         </button>
       }
 
       @if (!user.phone_number) {
-        <button hlmDropdownMenuItem disabled><span>💬</span> Sin Teléfono</button>
+        <button hlmDropdownMenuItem disabled>
+          <gn-icon name="chat-circle" size="text-sm" /> Sin Teléfono
+        </button>
       }
     </div>
   `,

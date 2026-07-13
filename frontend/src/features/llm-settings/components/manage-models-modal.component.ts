@@ -10,6 +10,7 @@ import {
   viewChild,
 } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { ModalDismissDirective } from "@/core/directives/modal-dismiss.directive";
 
@@ -30,6 +31,7 @@ import { ManageModelsToolbarComponent } from "./manage-models-toolbar.component"
     ConnectProviderModalComponent,
     ManageModelRowComponent,
     ManageModelsToolbarComponent,
+    IconComponent,
   ],
   templateUrl: "./manage-models-modal.component.html",
 })

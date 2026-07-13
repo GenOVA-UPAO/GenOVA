@@ -1,29 +1,29 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { groupByPhase, type ResourceVM } from "../../lib/ova-job-view-model";
+import { PHASE_ICON_BY_KEY } from "../../lib/resource-icons";
 
 const MARK: Record<string, { icon: string; cls: string }> = {
-  check: { icon: "✔", cls: "text-primary border-primary/20 bg-primary/10" },
   X: { icon: "✖", cls: "text-destructive border-destructive/20 bg-destructive/10" },
   generando: { icon: "…", cls: "text-primary border-primary/20 bg-primary/5 animate-pulse" },
   pendiente: { icon: "○", cls: "text-muted-foreground border-border bg-muted" },
 };
-
-const PHASE_EMOJI: Record<string, string> = { engage: "🎯", explore: "🔍" };
+const CHECK_CLS = "text-primary border-primary/20 bg-primary/10";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-creation-resource-list",
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, ButtonComponent, IconComponent],
   template: `
     <div class="space-y-4">
       @for (g of groups; track g) {
         <div>
           <p class="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {{ phaseEmoji(g.phase) }} {{ g.phaseLabel }}
+            <gn-icon [name]="phaseIcon(g.phase)" size="text-xs" /> {{ g.phaseLabel }}
           </p>
           <ul class="space-y-1.5">
             @for (r of g.items; track r) {
@@ -41,7 +41,11 @@ const PHASE_EMOJI: Record<string, string> = { engage: "🎯", explore: "🔍" };
                     class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[13px] font-bold"
                     [ngClass]="markCls(r.status)"
                   >
-                    {{ markIcon(r.status) }}
+                    @if (r.status === "check") {
+                      <gn-icon name="check" size="text-xs" />
+                    } @else {
+                      {{ markIcon(r.status) }}
+                    }
                   </span>
                   <button
                     type="button"
@@ -99,8 +103,8 @@ export class CreationResourceListComponent {
     return new Set(this.selectedIds());
   }
 
-  phaseEmoji(phase: string) {
-    return PHASE_EMOJI[phase] || "";
+  phaseIcon(phase: string) {
+    return (PHASE_ICON_BY_KEY[phase] ?? "ph-circle").replace(/^ph-/, "");
   }
 
   markIcon(status: string) {
@@ -108,6 +112,7 @@ export class CreationResourceListComponent {
   }
 
   markCls(status: string) {
+    if (status === "check") return CHECK_CLS;
     return MARK[status]?.cls || MARK["pendiente"].cls;
   }
 }

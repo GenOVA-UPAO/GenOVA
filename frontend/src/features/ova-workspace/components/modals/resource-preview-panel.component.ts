@@ -5,11 +5,12 @@ import type { Resource } from "@/core/lib/ova-types";
 
 import { resourceIconClass } from "../../lib/resource-icons";
 import { getResourcePreview } from "../../lib/resource-previews";
+import { ResourceWireframeComponent } from "./resource-wireframe.component";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-resource-preview-panel",
-  imports: [NgClass],
+  imports: [NgClass, ResourceWireframeComponent],
   template: `
     <aside [class]="className()">
       @if (!resource()) {
@@ -50,6 +51,14 @@ import { getResourcePreview } from "../../lib/resource-previews";
 
         @if (preview(); as info) {
           <div class="p-4 flex flex-col gap-3 overflow-y-auto">
+            <div
+              class="aspect-video w-full overflow-hidden rounded-lg border border-border bg-muted/30"
+            >
+              <gn-resource-wireframe [wire]="info.wire" [phaseColor]="phaseColor()" />
+            </div>
+            <p class="text-xs text-muted-foreground leading-relaxed">
+              {{ info.returns }}
+            </p>
             <div>
               <p
                 class="text-[10px] font-bold uppercase tracking-widest mb-2"

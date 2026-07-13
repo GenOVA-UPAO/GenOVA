@@ -1,7 +1,7 @@
 <section class="space-y-6 animate-in fade-in duration-300">
   <header class="space-y-1">
     <div class="flex items-center gap-2">
-      <span class="text-2xl">{{ emoji() }}</span>
+      <gn-icon [name]="icon()" size="text-2xl" />
       <h1 class="text-2xl font-semibold text-foreground">Fase {{ phase() }}</h1>
     </div>
     <p class="text-muted-foreground text-sm">{{ description() }}</p>

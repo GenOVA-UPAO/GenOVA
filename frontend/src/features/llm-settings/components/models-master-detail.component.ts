@@ -9,6 +9,7 @@ import {
   signal,
 } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { type Draft, isMediaTask } from "../lib/llmConfigDraft";
@@ -32,6 +33,7 @@ import { UserOverrideSectionComponent } from "./user-override-section.component"
     LlmTaskRowComponent,
     ModelTaskCardChipsComponent,
     UserOverrideSectionComponent,
+    IconComponent,
   ],
   templateUrl: "./models-master-detail.component.html",
 })

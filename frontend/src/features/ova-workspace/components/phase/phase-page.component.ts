@@ -8,6 +8,7 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import type { PreviewResult, Resource } from "@/core/lib/ova-types";
 
 import { phaseCfg } from "../../lib/phase-select.config";
@@ -37,6 +38,7 @@ interface ConfigTarget {
   selector: "gn-phase-page",
   imports: [
     FormsModule,
+    IconComponent,
     ResourceCardComponent,
     HtmlPreviewComponent,
     ResourcePreviewPanelComponent,
@@ -47,7 +49,8 @@ interface ConfigTarget {
 })
 export class PhasePageComponent implements OnInit {
   readonly phase = input.required<string>();
-  readonly emoji = input.required<string>();
+  /** Phosphor icon slug (without `ph-` prefix), e.g. "target", "magnifying-glass". */
+  readonly icon = input.required<string>();
   readonly description = input.required<string>();
 
   private phaseService = inject(PhaseGenerationService);

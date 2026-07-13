@@ -9,7 +9,7 @@ import { PhasePageComponent } from "../components/phase/phase-page.component";
   template: `
     <gn-phase-page
       phase="EXPLORE"
-      emoji="🔍"
+      icon="magnifying-glass"
       description="Interactúa con simuladores y laboratorios para construir tus propias hipótesis antes de ver la teoría formal."
     ></gn-phase-page>
   `,

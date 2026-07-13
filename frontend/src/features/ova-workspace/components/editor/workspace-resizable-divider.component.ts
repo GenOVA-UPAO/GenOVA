@@ -7,16 +7,18 @@ import {
   output,
 } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { clampRatio, saveSplitRatio, SPLIT_MAX, SPLIT_MIN } from "../../lib/workspace-utils";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-resizable-divider",
-  imports: [],
+  imports: [IconComponent],
   template: `
     <div
       class="hidden sm:flex w-3 shrink-0 cursor-col-resize items-center justify-center group outline-none transition-colors hover:bg-primary/10 active:bg-primary/15 focus-visible:ring-2 focus-visible:ring-ring/50"
-      (mousedown)="startDrag()"
+      (mousedown)="startDrag($event)"
       role="separator"
       aria-label="Ajustar paneles"
       aria-orientation="vertical"
@@ -30,18 +32,11 @@ import { clampRatio, saveSplitRatio, SPLIT_MAX, SPLIT_MIN } from "../../lib/work
         <div
           class="h-16 w-0.5 rounded-full bg-border group-hover:bg-primary/40 transition-colors"
         ></div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          fill="currentColor"
-          viewBox="0 0 256 256"
+        <gn-icon
+          name="dots-six-vertical"
+          size="text-sm"
           class="absolute rounded bg-background text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-        >
-          <path
-            d="M100,64a12,12,0,1,1-12-12A12,12,0,0,1,100,64Zm56-12a12,12,0,1,0,12,12A12,12,0,0,0,156,52ZM88,116a12,12,0,1,0,12,12A12,12,0,0,0,88,116Zm68,0a12,12,0,1,0,12,12A12,12,0,0,0,156,116ZM88,180a12,12,0,1,0,12,12A12,12,0,0,0,88,180Zm68,0a12,12,0,1,0,12,12A12,12,0,0,0,156,180Z"
-          ></path>
-        </svg>
+        />
       </div>
     </div>
   `,
@@ -72,7 +67,9 @@ export class WorkspaceResizableDividerComponent implements OnDestroy {
     saveSplitRatio(next);
   }
 
-  startDrag() {
+  startDrag(e: MouseEvent) {
+    if (e.button !== 0) return;
+    e.preventDefault();
     this.dragging = true;
     document.body.style.userSelect = "none";
     document.body.style.cursor = "col-resize";
@@ -126,6 +123,12 @@ export class WorkspaceResizableDividerComponent implements OnDestroy {
   ngOnDestroy() {
     if (this.rafId) {
       globalThis.cancelAnimationFrame(this.rafId);
+      this.rafId = 0;
+    }
+    if (this.dragging) {
+      this.dragging = false;
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
     }
   }
 }

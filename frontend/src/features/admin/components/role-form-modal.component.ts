@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonDirective } from "@/core/components/ui/button.directive";
 import {
   DialogComponent,
@@ -28,6 +29,7 @@ import type { Role } from "../lib/types";
     ButtonDirective,
     LabelDirective,
     InputDirective,
+    IconComponent,
   ],
   template: `
     <gn-dialog [open]="true" (openChange)="handleOpenChange($event)">
@@ -103,18 +105,11 @@ import type { Role } from "../lib/types";
                       [disabled]="isSubmitting()"
                     />
                     @if (selectedPermissions().includes(perm.id)) {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="12"
-                        height="12"
-                        fill="white"
-                        viewBox="0 0 256 256"
-                        class="absolute pointer-events-none"
-                      >
-                        <path
-                          d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"
-                        ></path>
-                      </svg>
+                      <gn-icon
+                        name="check"
+                        size="text-xs"
+                        class="absolute pointer-events-none text-white"
+                      />
                     }
                   </div>
                   <div class="flex flex-col">

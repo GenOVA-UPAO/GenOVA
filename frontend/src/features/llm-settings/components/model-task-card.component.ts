@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import type { ChipModel } from "../lib/model-task-card.helpers";
 import { taskMeta } from "../lib/task-meta";
 import { LlmModelSelectComponent } from "./llm-model-select.component";
@@ -20,6 +22,7 @@ export interface AdminTaskDraft {
     LlmModelSelectComponent,
     ModelTaskCardChipsComponent,
     UserOverrideSectionComponent,
+    IconComponent,
   ],
   templateUrl: "./model-task-card.component.html",
 })

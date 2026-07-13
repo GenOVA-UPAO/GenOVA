@@ -14,16 +14,16 @@
         @for (p of PHASES; track p.key; let i = $index) {
           <button
             type="button"
-            (click)="step = i"
+            (click)="step.set(i)"
             class="rounded-lg px-2.5 py-1 text-xs font-medium border transition-colors"
-            [style.borderColor]="step === i ? p.color : undefined"
-            [style.backgroundColor]="step === i ? p.color : undefined"
-            [class.text-primary-foreground]="step === i"
-            [class.border-border]="step !== i"
+            [style.borderColor]="step() === i ? p.color : undefined"
+            [style.backgroundColor]="step() === i ? p.color : undefined"
+            [class.text-primary-foreground]="step() === i"
+            [class.border-border]="step() !== i"
           >
-            {{ p.emoji }} {{ p.label }}
-            @if (picks[p.key].length) {
-              <span> ({{ picks[p.key].length }})</span>
+            <gn-icon [name]="p.icon" size="text-sm" /> {{ p.label }}
+            @if (picks()[p.key].length) {
+              <span> ({{ picks()[p.key].length }})</span>
             }
           </button>
         }
@@ -89,7 +89,7 @@
       </div>
 
       <gn-resource-preview-panel
-        [resource]="previewResource"
+        [resource]="previewResource()"
         [phaseKey]="currentPhase.key"
         [phaseColor]="currentPhase.color"
       ></gn-resource-preview-panel>
@@ -115,7 +115,7 @@
           [style.backgroundColor]="canConfirm ? currentPhase.color : undefined"
           [style.borderColor]="canConfirm ? currentPhase.color : undefined"
         >
-          Confirmar ({{ total }}) ✓
+          Confirmar ({{ total }}) <gn-icon name="check" size="text-sm" />
         </gn-button>
       </div>
     </footer>

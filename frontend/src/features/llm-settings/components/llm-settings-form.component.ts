@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, input } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { formatContextLength, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import { TASK_VISUAL } from "../lib/llm-settings-labels";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
@@ -8,7 +10,7 @@ import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-llm-settings-form",
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: "./llm-settings-form.component.html",
 })
 export class LlmSettingsFormComponent {

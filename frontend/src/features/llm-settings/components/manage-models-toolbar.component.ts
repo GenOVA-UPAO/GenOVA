@@ -1,17 +1,21 @@
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { CATEGORY_LABELS } from "../lib/llm-settings-labels";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-manage-models-toolbar",
-  imports: [],
+  imports: [IconComponent],
   template: `
     <div class="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-background">
       <div class="relative flex-1">
-        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 text-xs"
-          >🔍</span
-        >
+        <gn-icon
+          name="magnifying-glass"
+          size="text-xs"
+          class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50"
+        />
         <input
           type="text"
           placeholder="Buscar modelo..."

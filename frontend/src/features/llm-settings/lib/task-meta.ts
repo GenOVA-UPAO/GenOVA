@@ -3,7 +3,10 @@ export type TaskType = "texto" | "codigo" | "orquestador" | "razonamiento" | "im
 export interface TaskMeta {
   label: string;
   desc: string;
+  /** Fallback text glyph, used when `iconName` is not set. */
   icon: string;
+  /** Phosphor slug (see `<gn-icon>`), preferred over `icon` when present. */
+  iconName?: string;
   grad: string;
   accent: string;
   iconBg: string;
@@ -61,6 +64,7 @@ export const TASK_META: Record<TaskType, TaskMeta> = {
     label: "Imagen",
     desc: "Recursos visuales del OVA",
     icon: "🖼",
+    iconName: "image",
     grad: "from-pink-500/[.07] to-pink-500/[.02]",
     accent: "text-pink-600",
     iconBg: "bg-pink-500/10 border-pink-500/20",
@@ -72,6 +76,7 @@ export const TASK_META: Record<TaskType, TaskMeta> = {
     label: "Video",
     desc: "Clips multimedia",
     icon: "🎬",
+    iconName: "film-strip",
     grad: "from-teal-500/[.07] to-teal-500/[.02]",
     accent: "text-teal-600",
     iconBg: "bg-teal-500/10 border-teal-500/20",

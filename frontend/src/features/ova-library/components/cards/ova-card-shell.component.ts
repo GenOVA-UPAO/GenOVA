@@ -11,7 +11,7 @@ import type { OvaListItem } from "@/features/ova-library/lib/types";
   imports: [CommonModule, CheckboxComponent, OvaStatusBadgeComponent],
   template: `
     <div [ngClass]="rootClassName() || defaultRootClass">
-      <div class="flex items-start gap-3">
+      <div class="flex flex-1 items-start gap-3">
         <gn-checkbox
           class="mt-0.5"
           [checked]="isSelected()"
@@ -61,7 +61,7 @@ export class OvaCardShellComponent {
   readonly onToggleSelect = output<string>();
 
   get defaultRootClass(): string {
-    return `rounded-xl border bg-card p-5 shadow-sm hover:shadow-md transition ${
+    return `flex h-full flex-col rounded-xl border bg-card p-5 shadow-sm hover:shadow-md transition ${
       this.isSelected() ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
     }`;
   }

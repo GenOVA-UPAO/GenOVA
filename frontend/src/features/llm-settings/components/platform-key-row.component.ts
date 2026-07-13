@@ -11,13 +11,15 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { PlatformSettingsService } from "../services/platform-settings.service";
 import { PROVIDER_META } from "./platformKeyMeta";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-platform-key-row",
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: "./platform-key-row.component.html",
 })
 export class PlatformKeyRowComponent {

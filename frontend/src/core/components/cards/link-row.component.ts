@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 export interface LinkData {
   id: string;
   status: string;
@@ -12,7 +14,7 @@ export interface LinkData {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-link-row",
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   template: `
     <div
       class="flex items-center gap-4 border-b border-border/50 px-5 py-4 last:border-0 hover:bg-accent/30 transition-colors"
@@ -42,18 +44,7 @@ export interface LinkData {
           (click)="onResend.emit(link.id)"
           class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:bg-accent hover:text-accent-foreground h-9 px-3 text-primary hover:bg-primary/10 hover:text-primary"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            fill="currentColor"
-            viewBox="0 0 256 256"
-            class="mr-1.5"
-          >
-            <path
-              d="M227.32,28.68a16,16,0,0,0-15.66-4.08l-.15,0L19.57,82.84a16,16,0,0,0-2.42,29.84l85.62,40.55,40.55,85.62A15.86,15.86,0,0,0,157.74,248q.69,0,1.38-.06a15.88,15.88,0,0,0,14-11.51l58.2-191.94c0-.05,0-.1,0-.15A16,16,0,0,0,227.32,28.68ZM157.83,231.85l-39.47-83.33,31.25-31.26a8,8,0,0,0-11.31-11.32L107.05,137.2,23.73,97.74,216,40Z"
-            ></path>
-          </svg>
+          <gn-icon name="paper-plane-tilt" size="text-sm" class="mr-1.5" />
           Reenviar
         </button>
       }

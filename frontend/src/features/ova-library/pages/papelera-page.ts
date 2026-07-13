@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ConfirmModalComponent } from "@/core/components/confirm-modal.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
@@ -22,6 +23,7 @@ import { OvaLibraryService } from "../services/ova-library.service";
     ConfirmModalComponent,
     TrashedOvaCardComponent,
     OvaListPaginationComponent,
+    IconComponent,
   ],
   templateUrl: "./papelera-page.html",
 })

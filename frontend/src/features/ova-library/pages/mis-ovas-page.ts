@@ -12,6 +12,7 @@ import { RouterLink } from "@angular/router";
 import { HlmInput } from "@spartan-ng/helm/input";
 import { HlmSelectImports } from "@spartan-ng/helm/select";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { OvaGridSkeletonComponent } from "@/core/components/ova-grid-skeleton.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
@@ -43,6 +44,7 @@ import { STATUS_OPTIONS } from "./mis-ovas-page.helpers";
     TrashModalComponent,
     BulkTrashModalComponent,
     EditMetadataModalComponent,
+    IconComponent,
   ],
   templateUrl: "./mis-ovas-page.html",
 })
@@ -50,6 +52,8 @@ export class MisOvasPage {
   service = inject(OvaLibraryService);
   jobsSvc = inject(GeneratingJobsService);
   statusOptions = STATUS_OPTIONS.map((o) => ({ label: o.label, value: o.value }));
+  statusItemToString = (value: string): string =>
+    this.statusOptions.find((o) => o.value === value)?.label ?? value;
 
   constructor() {
     effect(() => {

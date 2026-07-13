@@ -2,7 +2,10 @@ export interface ProviderOption {
   id: string;
   label: string;
   desc: string;
-  icon: string;
+  /** Fallback text glyph, used when `iconName` is not set. */
+  icon?: string;
+  /** Phosphor slug (see `<gn-icon>`), preferred over `icon` when present. */
+  iconName?: string;
   badge?: string;
   badgeColor?: string;
 }
@@ -14,7 +17,7 @@ export const PROVIDERS: ProviderOption[] = [
     desc: "Modelos LLaMA y Qwen gratuitos — sin costo por token.",
     badge: "Gratuito",
     badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    icon: "⚡",
+    iconName: "lightning",
   },
   {
     id: "openrouter",

@@ -1,25 +1,17 @@
 import { ChangeDetectionStrategy, Component, Input, input, output, signal } from "@angular/core";
 import { form, FormField, required } from "@angular/forms/signals";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-delete-account-form",
-  imports: [FormField],
+  imports: [FormField, IconComponent],
   template: `
     <div class="glass-card rounded-3xl border-destructive/20 bg-destructive/5 p-6 sm:p-8">
       <div class="flex flex-col gap-2 mb-4 text-destructive">
         <h2 class="text-lg font-bold font-display tracking-tight flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="22"
-            height="22"
-            fill="currentColor"
-            viewBox="0 0 256 256"
-          >
-            <path
-              d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z"
-            ></path>
-          </svg>
+          <gn-icon name="warning-circle" size="text-xl" />
           Zona de peligro
         </h2>
         <p class="text-sm font-medium text-muted-foreground/80">
@@ -82,30 +74,10 @@ import { form, FormField, required } from "@angular/forms/signals";
                     [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                   >
                     @if (showPassword) {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        viewBox="0 0 256 256"
-                      >
-                        <path
-                          d="M128,56C48,56,16,128,16,128s32,72,112,72,112-72,112-72S208,56,128,56Zm0,128c-55,0-89-48-96-60,7-12,41-60,96-60s89,48,96,60C217,136,183,184,128,184Z"
-                        ></path>
-                      </svg>
+                      <gn-icon name="eye" size="text-base" />
                     }
                     @if (!showPassword) {
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        viewBox="0 0 256 256"
-                      >
-                        <path
-                          d="M228,175.76l-10-15.54a101.44,101.44,0,0,1-19.16-35c-20-44.62-55.77-69.22-70.84-75.12L106,30.34a8,8,0,0,0-12,10.26l22,25.13C81.82,75,56,98.66,41,120.48A184.23,184.23,0,0,0,28,175.76a8,8,0,1,0,13.4,8.48A168.32,168.32,0,0,1,52,133.56c12.21-17.75,32-36.87,59-47.56l42.66,48.74a40,40,0,1,0,17.43,19.92L196.2,183.4c-20,44.62-55.77,69.22-70.84,75.12L150,225.66a8,8,0,0,0,12-10.26l-22-25.13c34.18-9.33,60-33,75-54.79A184.23,184.23,0,0,0,228,175.76Z"
-                        ></path>
-                      </svg>
+                      <gn-icon name="eye-slash" size="text-base" />
                     }
                   </button>
                 </div>
@@ -144,17 +116,7 @@ import { form, FormField, required } from "@angular/forms/signals";
               aria-label="Cerrar"
               class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                viewBox="0 0 256 256"
-              >
-                <path
-                  d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"
-                ></path>
-              </svg>
+              <gn-icon name="x" size="text-base" />
               <span class="sr-only">Close</span>
             </button>
           </div>

@@ -9,6 +9,7 @@ import {
 } from "@angular/core";
 import { RouterModule } from "@angular/router";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { buildUploadsPropBag } from "../../lib/upload-chip-view-model";
@@ -31,6 +32,7 @@ import { WorkspaceResizableDividerComponent } from "./workspace-resizable-divide
     WorkspaceChatPanelComponent,
     WorkspaceOvaPanelComponent,
     WorkspaceResizableDividerComponent,
+    IconComponent,
   ],
   templateUrl: "./ova-edit-view.component.html",
 })

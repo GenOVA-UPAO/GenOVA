@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { AuthService } from "@/core/auth/auth.service";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
@@ -11,7 +12,7 @@ type Status = "verifying" | "success" | "error";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-verify-email-page",
-  imports: [RouterLink, ButtonComponent],
+  imports: [RouterLink, ButtonComponent, IconComponent],
   template: `
     <section
       class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4"
@@ -30,19 +31,7 @@ type Status = "verifying" | "success" | "error";
           <div
             class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
           >
-            <!-- check-circle duotone analog placeholder using text or simple SVG for now -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="26"
-              height="26"
-              fill="currentColor"
-              class="text-primary"
-              viewBox="0 0 256 256"
-            >
-              <path
-                d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"
-              ></path>
-            </svg>
+            <gn-icon name="check-circle" size="text-2xl" class="text-primary" />
           </div>
           <h1 class="text-2xl font-semibold tracking-tight">¡Correo verificado!</h1>
           <p class="mt-2 text-sm text-muted-foreground">Tu cuenta ya está activa.</p>
@@ -55,19 +44,7 @@ type Status = "verifying" | "success" | "error";
           <div
             class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10"
           >
-            <!-- warning-circle duotone analog placeholder -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="26"
-              height="26"
-              fill="currentColor"
-              class="text-destructive"
-              viewBox="0 0 256 256"
-            >
-              <path
-                d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z"
-              ></path>
-            </svg>
+            <gn-icon name="warning-circle" size="text-2xl" class="text-destructive" />
           </div>
           <h1 class="text-2xl font-semibold tracking-tight">No se pudo verificar</h1>
           <p class="mt-2 text-sm text-muted-foreground">{{ message() }}</p>

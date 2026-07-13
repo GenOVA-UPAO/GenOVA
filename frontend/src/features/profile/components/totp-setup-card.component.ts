@@ -10,13 +10,15 @@ import {
 } from "@angular/core";
 import { form, FormField, maxLength, minLength, required } from "@angular/forms/signals";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { TotpService } from "../services/totp.service";
 import type { SetupData, TotpPhase } from "./totp-setup-card.types";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-totp-setup-card",
-  imports: [FormField],
+  imports: [FormField, IconComponent],
   templateUrl: "./totp-setup-card.component.html",
 })
 export class TotpSetupCardComponent implements OnInit, OnChanges {

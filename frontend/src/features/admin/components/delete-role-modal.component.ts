@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonDirective } from "@/core/components/ui/button.directive";
 import {
   DialogComponent,
@@ -23,6 +24,7 @@ import type { Role } from "../lib/types";
     DialogFooterComponent,
     ButtonDirective,
     LabelDirective,
+    IconComponent,
   ],
   template: `
     <gn-dialog [open]="true" (openChange)="handleOpenChange($event)">
@@ -40,7 +42,7 @@ import type { Role } from "../lib/types";
               class="rounded-lg border border-accent-brand/30 bg-accent-brand/10 p-4 text-sm text-accent-brand"
             >
               <div class="flex gap-2.5">
-                <span class="text-lg font-bold">⚠️</span>
+                <gn-icon name="warning" size="text-lg" />
                 <div>
                   <p class="font-semibold">Reasignación requerida</p>
                   <p class="text-xs text-accent-brand/90 mt-0.5">

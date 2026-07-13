@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   type OnInit,
@@ -8,6 +9,7 @@ import {
   signal,
 } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { ModalDismissDirective } from "@/core/directives/modal-dismiss.directive";
 import type { Resource } from "@/core/lib/ova-types";
@@ -42,6 +44,7 @@ interface ConfigTarget {
   selector: "gn-phase-select-modal",
   imports: [
     ButtonComponent,
+    IconComponent,
     ModalDismissDirective,
     ResourceCardComponent,
     ResourceConfigModalComponent,
@@ -64,8 +67,8 @@ export class PhaseSelectModalComponent implements OnInit {
   readonly PHASES = PHASE_SELECT_CFG;
   readonly MAX_PER_PHASE = MAX_PER_PHASE;
 
-  step = 0;
-  picks: PhaseResourceMap = emptyPicks();
+  readonly step = signal(0);
+  readonly picks = signal<PhaseResourceMap>(emptyPicks());
   readonly recursos = signal<PhaseResourceMap>(emptyPicks());
   readonly failedPhases = signal<Record<string, boolean>>(
     Object.fromEntries(PHASE_SELECT_CFG.map((p) => [p.key, false])),
@@ -73,12 +76,12 @@ export class PhaseSelectModalComponent implements OnInit {
   readonly loading = signal(true);
   resourceConfigs: ResourceConfigs = {};
   configTarget: ConfigTarget | null = null;
-  hovered: Resource | null = null;
+  readonly hovered = signal<Resource | null>(null);
   readonly videoKeyConfigured = signal(true);
 
   ngOnInit() {
     const initialSelections = this.initialSelections();
-    if (initialSelections) this.picks = { ...emptyPicks(), ...initialSelections };
+    if (initialSelections) this.picks.set({ ...emptyPicks(), ...initialSelections });
     const initialResourceConfigs = this.initialResourceConfigs();
     if (initialResourceConfigs) this.resourceConfigs = { ...initialResourceConfigs };
     void this.loadAll();
@@ -88,7 +91,7 @@ export class PhaseSelectModalComponent implements OnInit {
   }
 
   get currentPhase() {
-    return this.PHASES[this.step];
+    return this.PHASES[this.step()];
   }
 
   get currentList() {
@@ -100,42 +103,46 @@ export class PhaseSelectModalComponent implements OnInit {
   }
 
   get limitReached() {
-    return this.picks[this.currentPhase.key].length >= MAX_PER_PHASE;
+    return this.picks()[this.currentPhase.key].length >= MAX_PER_PHASE;
   }
 
   get total() {
-    return this.PHASES.reduce((s, p) => s + this.picks[p.key].length, 0);
+    return this.PHASES.reduce((s, p) => s + this.picks()[p.key].length, 0);
   }
 
   get phasesSelected() {
-    return this.PHASES.filter((p) => this.picks[p.key].length > 0).length;
+    return this.PHASES.filter((p) => this.picks()[p.key].length > 0).length;
   }
 
   get canConfirm() {
     return this.phasesSelected >= 2 && this.total > 0;
   }
 
-  get previewResource(): Resource | null {
-    const current = this.picks[this.currentPhase.key];
-    return this.hovered ?? (current.length > 0 ? current[current.length - 1] : null);
-  }
+  /** Hovered pick > last pick of the active phase > first resource of the active phase. */
+  readonly previewResource = computed<Resource | null>(() => {
+    const hovered = this.hovered();
+    if (hovered) return hovered;
+    const current = this.picks()[this.currentPhase.key];
+    if (current.length > 0) return current[current.length - 1];
+    return this.currentList[0] ?? null;
+  });
 
   isSelected(r: Resource) {
-    return this.picks[this.currentPhase.key].some((x) => String(x.id) === String(r.id));
+    return this.picks()[this.currentPhase.key].some((x) => String(x.id) === String(r.id));
   }
 
   selectionIndex(r: Resource): number | null {
-    const idx = this.picks[this.currentPhase.key].findIndex((x) => String(x.id) === String(r.id));
+    const idx = this.picks()[this.currentPhase.key].findIndex((x) => String(x.id) === String(r.id));
     return idx >= 0 ? idx + 1 : null;
   }
 
   toggleResource(r: Resource) {
     const key = this.currentPhase.key;
-    this.picks = { ...this.picks, [key]: toggleSelection(this.picks[key], r) };
+    this.picks.update((cur) => ({ ...cur, [key]: toggleSelection(cur[key], r) }));
   }
 
   setHovered(r: Resource | null) {
-    this.hovered = r;
+    this.hovered.set(r);
   }
 
   showVideoHint(r: Resource) {
@@ -175,7 +182,7 @@ export class PhaseSelectModalComponent implements OnInit {
 
   confirm() {
     if (!this.canConfirm) return;
-    this.onConfirm.emit({ picks: this.picks, configs: this.resourceConfigs });
+    this.onConfirm.emit({ picks: this.picks(), configs: this.resourceConfigs });
   }
 
   retryLoad() {

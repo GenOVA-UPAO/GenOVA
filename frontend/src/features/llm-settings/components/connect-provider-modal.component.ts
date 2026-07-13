@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { ModalDismissDirective } from "@/core/directives/modal-dismiss.directive";
 
@@ -9,7 +10,7 @@ import { type ProviderOption, PROVIDERS } from "./connect-provider-modal.helpers
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-connect-provider-modal",
-  imports: [CommonModule, ButtonComponent, ModalDismissDirective],
+  imports: [CommonModule, ButtonComponent, ModalDismissDirective, IconComponent],
   templateUrl: "./connect-provider-modal.component.html",
 })
 export class ConnectProviderModalComponent {

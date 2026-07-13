@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, input } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
@@ -72,7 +73,7 @@ export class OvaPhaseSectionComponent {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-phase-panel",
-  imports: [BadgeComponent, ButtonComponent, OvaPhaseSectionComponent],
+  imports: [BadgeComponent, ButtonComponent, IconComponent, OvaPhaseSectionComponent],
   template: `
     <div>
       <div class="flex items-start justify-between gap-4">
@@ -87,7 +88,7 @@ export class OvaPhaseSectionComponent {
           title="Disponible en Sprint 2"
           class="cursor-not-allowed opacity-60 gap-1.5"
         >
-          ✏ Editar
+          <gn-icon name="pencil-simple" size="text-sm" /> Editar
         </gn-button>
       </div>
       <div class="mt-4">

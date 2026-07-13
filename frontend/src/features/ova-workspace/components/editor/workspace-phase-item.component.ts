@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import type { PhaseWithContent } from "../../lib/types";
@@ -9,7 +10,7 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-phase-item",
-  imports: [FormsModule, ButtonComponent, PhaseVersionHistoryComponent],
+  imports: [FormsModule, ButtonComponent, IconComponent, PhaseVersionHistoryComponent],
   template: `
     <gn-phase-version-history
       [open]="historyOpen"
@@ -47,7 +48,7 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
             (click)="openEdit()"
             title="Editar contenido"
           >
-            ✏
+            <gn-icon name="pencil-simple" size="text-xs" />
           </gn-button>
           <gn-button
             type="button"
@@ -67,7 +68,7 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
             (click)="handleDelete()"
             title="Eliminar recurso"
           >
-            🗑
+            <gn-icon name="trash" size="text-xs" />
           </gn-button>
           <gn-button
             type="button"

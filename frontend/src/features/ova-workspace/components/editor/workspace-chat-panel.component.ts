@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
 
@@ -11,7 +12,7 @@ import type { RegenProgress, UploadsPropBag } from "./workspace-chat-panel.types
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-chat-panel",
-  imports: [FormsModule, ButtonComponent, CheckboxComponent, FileChipComponent],
+  imports: [FormsModule, ButtonComponent, CheckboxComponent, FileChipComponent, IconComponent],
   templateUrl: "./workspace-chat-panel.component.html",
 })
 export class WorkspaceChatPanelComponent {

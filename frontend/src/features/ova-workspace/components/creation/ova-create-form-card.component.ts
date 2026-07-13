@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import type { OvaTheme } from "../../lib/types";
@@ -17,7 +18,13 @@ export const EXAMPLE_PROMPT =
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-create-form-card",
-  imports: [ButtonComponent, FileChipComponent, OvaFilesModalComponent, OvaThemeModalComponent],
+  imports: [
+    ButtonComponent,
+    FileChipComponent,
+    IconComponent,
+    OvaFilesModalComponent,
+    OvaThemeModalComponent,
+  ],
   templateUrl: "./ova-create-form-card.component.html",
 })
 export class OvaCreateFormCardComponent {

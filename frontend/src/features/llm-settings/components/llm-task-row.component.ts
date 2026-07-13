@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import {
   addFallback,
   type Entry,
@@ -14,7 +16,7 @@ import { getModalitySymbol, TASK_DESCS, TASK_LABELS } from "./llm-task-row.helpe
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-llm-task-row",
-  imports: [CommonModule, LlmModelSelectComponent],
+  imports: [CommonModule, LlmModelSelectComponent, IconComponent],
   templateUrl: "./llm-task-row.component.html",
 })
 export class LlmTaskRowComponent {

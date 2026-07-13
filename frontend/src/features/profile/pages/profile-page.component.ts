@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { AuthService } from "@/core/auth/auth.service";
 
 import { PlatformApiKeysCardComponent } from "../../llm-settings/components/platform-api-keys-card.component";
@@ -24,6 +25,7 @@ import {
     DeleteAccountFormComponent,
     TotpSetupCardComponent,
     PlatformApiKeysCardComponent,
+    IconComponent,
   ],
   templateUrl: "./profile-page.component.html",
 })

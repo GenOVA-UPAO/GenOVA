@@ -27,7 +27,11 @@
             <span
               class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/50 text-base font-bold text-muted-foreground group-hover:border-primary/30 group-hover:bg-primary/5 group-hover:text-primary transition"
             >
-              {{ p.icon }}
+              @if (p.iconName) {
+                <gn-icon [name]="p.iconName" size="text-base" />
+              } @else {
+                {{ p.icon }}
+              }
             </span>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-0.5">
@@ -54,7 +58,11 @@
       <div
         class="mx-4 mb-4 flex items-start gap-2 rounded-lg border border-border/40 bg-muted/30 px-3 py-2.5"
       >
-        <span class="shrink-0 mt-0.5 text-muted-foreground/60 text-xs">ℹ</span>
+        <gn-icon
+          name="info"
+          size="text-xs"
+          class="shrink-0 mt-0.5 text-muted-foreground/60"
+        />
         <p class="text-[11px] text-muted-foreground leading-relaxed">
           Para acceder a modelos de
           <span class="font-semibold text-foreground">Anthropic, OpenAI, Google, Mistral</span>

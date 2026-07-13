@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from "@angular/core";
 import { form, FormField, minLength, pattern, required, validate } from "@angular/forms/signals";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import type { ChangePasswordValues } from "../services/profile.service";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-password-change-form",
-  imports: [FormField],
+  imports: [FormField, IconComponent],
   templateUrl: "./password-change-form.component.html",
 })
 export class PasswordChangeFormComponent {

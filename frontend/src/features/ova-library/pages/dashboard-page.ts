@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { AuthService } from "@/core/auth/auth.service";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
@@ -12,7 +13,7 @@ import { DashboardStatCardComponent } from "./dashboard-stat-card.component";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-dashboard-page",
-  imports: [RouterLink, ButtonComponent, DashboardStatCardComponent],
+  imports: [RouterLink, ButtonComponent, DashboardStatCardComponent, IconComponent],
   templateUrl: "./dashboard-page.html",
 })
 export class DashboardPage {

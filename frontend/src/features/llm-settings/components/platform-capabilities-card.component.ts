@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { toast } from "@/core/lib/toast";
 
 import { PlatformSettingsService } from "../services/platform-settings.service";
@@ -8,7 +9,7 @@ import { PlatformSettingsService } from "../services/platform-settings.service";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-platform-capabilities-card",
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   template: `
     <section class="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -67,9 +68,9 @@ import { PlatformSettingsService } from "../services/platform-settings.service";
                     }
                     @if (cap.id === "video" && videoWarning) {
                       <span
-                        class="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-widest border border-amber-200"
+                        class="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-widest border border-amber-200 inline-flex items-center gap-1"
                       >
-                        ⚠ API Key faltante
+                        <gn-icon name="warning" size="text-[10px]" /> API Key faltante
                       </span>
                     }
                   </div>

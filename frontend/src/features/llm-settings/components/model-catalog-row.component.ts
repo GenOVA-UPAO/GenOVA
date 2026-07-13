@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { formatContextLength, MODALITY_META } from "../lib/llm-catalog.utils";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 
@@ -15,7 +17,7 @@ const MODALITY_ICONS: Record<string, string> = {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-model-catalog-row",
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   template: `
     <div
       class="flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs transition-colors"
@@ -42,12 +44,17 @@ const MODALITY_ICONS: Record<string, string> = {
       <span class="flex-1 truncate text-foreground inline-flex items-center gap-1 min-w-0">
         <span class="truncate">{{ model().label || model().model_id }}</span>
         @if (!model().curated) {
-          <span class="shrink-0 text-muted-foreground/40" title="No optimizado para OVAs">⚠</span>
+          <gn-icon
+            name="warning"
+            size="text-xs"
+            class="shrink-0 text-muted-foreground/40"
+            title="No optimizado para OVAs"
+          />
         }
         @if (locked()) {
-          <span class="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground shrink-0"
-            >🔒 sistema</span
-          >
+          <span class="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground shrink-0">
+            <gn-icon name="lock" size="text-[10px]" /> sistema
+          </span>
         }
       </span>
       <span

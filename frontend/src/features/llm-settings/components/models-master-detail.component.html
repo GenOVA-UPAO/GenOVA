@@ -42,8 +42,13 @@
           <span
             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted/50 text-[11px] font-bold"
             aria-hidden="true"
-            >{{ taskMeta(task).icon }}</span
           >
+            @if (taskMeta(task).iconName) {
+              <gn-icon [name]="taskMeta(task).iconName!" size="text-sm" />
+            } @else {
+              {{ taskMeta(task).icon }}
+            }
+          </span>
           <span class="min-w-0">
             <span class="block text-sm font-semibold text-foreground">{{ taskLabel(task) }}</span>
             <span class="mt-0.5 block truncate text-[11px] text-muted-foreground">{{

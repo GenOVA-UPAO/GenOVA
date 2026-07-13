@@ -1,6 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, input } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import {
   chipLabel,
   chipModality,
@@ -13,7 +15,7 @@ import { LlmModelSelectComponent } from "./llm-model-select.component";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-user-override-section",
-  imports: [CommonModule, LlmModelSelectComponent],
+  imports: [CommonModule, LlmModelSelectComponent, IconComponent],
   templateUrl: "./user-override-section.component.html",
 })
 export class UserOverrideSectionComponent {

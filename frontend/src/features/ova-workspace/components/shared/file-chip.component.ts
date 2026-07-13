@@ -1,17 +1,19 @@
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { formatSize } from "../../lib/uploadFormatters";
 import type { UploadItem } from "../../lib/uploadTypes";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-file-chip",
-  imports: [],
+  imports: [IconComponent],
   template: `
     <div
       class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium shadow-sm transition duration-200 hover:shadow-md bg-muted text-foreground border-border"
     >
-      <span class="text-sm select-none">{{ icon }}</span>
+      <gn-icon [name]="icon" size="text-sm" />
       <div class="flex flex-col min-w-0">
         <span class="max-w-[130px] truncate font-semibold" [title]="file.filename">
           {{ file.filename }}
@@ -65,20 +67,7 @@ import type { UploadItem } from "../../lib/uploadTypes";
           title="Quitar"
           aria-label="Quitar"
         >
-          <svg
-            aria-hidden="true"
-            class="w-3.5 h-3.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <gn-icon name="x" size="text-xs" />
         </button>
       </div>
     </div>
@@ -93,13 +82,14 @@ export class FileChipComponent {
     return this.file.filename.split(".").pop()?.toLowerCase() ?? "";
   }
 
+  /** Phosphor icon slug (without `ph-` prefix) for the file's extension. */
   get icon() {
     const ext = this.extension;
-    if (ext === "pdf") return "📕";
-    if (["docx", "pptx"].includes(ext)) return "📘";
-    if (["mp3", "wav", "m4a", "aac", "ogg", "webm"].includes(ext)) return "🎵";
-    if (["jpg", "jpeg", "png", "webp", "gif"].includes(ext)) return "🖼️";
-    return "📄";
+    if (ext === "pdf") return "file-pdf";
+    if (["docx", "pptx"].includes(ext)) return "file-doc";
+    if (["mp3", "wav", "m4a", "aac", "ogg", "webm"].includes(ext)) return "music-notes";
+    if (["jpg", "jpeg", "png", "webp", "gif"].includes(ext)) return "image";
+    return "file-text";
   }
 
   get formattedSize() {

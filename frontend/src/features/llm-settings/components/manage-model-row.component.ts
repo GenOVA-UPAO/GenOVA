@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-manage-model-row",
-  imports: [],
+  imports: [IconComponent],
   template: `
     <div
       class="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
@@ -44,11 +46,12 @@ import type { CatalogModel } from "../lib/user-llm-settings.types";
             model.label || model.model_id
           }}</span>
           @if (locked()) {
-            <span
-              class="shrink-0 text-muted-foreground/50 text-[10px]"
+            <gn-icon
+              name="lock"
+              size="text-[10px]"
+              class="shrink-0 text-muted-foreground/50"
               title="Modelo base del sistema"
-              >🔒</span
-            >
+            />
           }
         </div>
         @if (model.description) {

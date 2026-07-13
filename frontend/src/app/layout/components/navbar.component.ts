@@ -16,13 +16,20 @@ import {
 } from "@/features/ova-library/components/modals/theme-modal.component";
 
 import { userInitials } from "../lib/layout-helpers";
+import { IconComponent } from "./icon.component";
 import { NavbarBrandComponent } from "./navbar-brand.component";
 import { SidebarMenuComponent } from "./sidebar-menu.component";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-navbar",
-  imports: [RouterLink, NavbarBrandComponent, SidebarMenuComponent, ThemeModalComponent],
+  imports: [
+    RouterLink,
+    NavbarBrandComponent,
+    SidebarMenuComponent,
+    ThemeModalComponent,
+    IconComponent,
+  ],
   templateUrl: "./navbar.component.html",
 })
 export class NavbarComponent {

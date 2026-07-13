@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, Input, output, signal } from "@angular/core";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
 import { DialogComponent } from "@/core/components/ui/dialog.component";
 
 import { ThemeSettingsService } from "../../services/theme-settings.service";
@@ -42,7 +43,13 @@ const PALETTES: Palette[] = [
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-theme-modal",
-  imports: [CommonModule, DialogComponent, ThemeRadioOptionComponent, ThemeMiniPreviewComponent],
+  imports: [
+    CommonModule,
+    DialogComponent,
+    ThemeRadioOptionComponent,
+    ThemeMiniPreviewComponent,
+    IconComponent,
+  ],
   template: `
     <gn-dialog [open]="true" width="42rem" [disableClose]="true" class="bg-card">
       <div class="bg-card rounded-2xl overflow-hidden">
@@ -54,18 +61,7 @@ const PALETTES: Palette[] = [
             aria-label="Cerrar"
             class="rounded-lg p-1.5 text-muted-foreground hover:bg-accent cursor-pointer"
           >
-            <!-- <X size={20} /> -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="currentColor"
-              viewBox="0 0 256 256"
-            >
-              <path
-                d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"
-              ></path>
-            </svg>
+            <gn-icon name="x" size="text-xl" />
           </button>
         </div>
 

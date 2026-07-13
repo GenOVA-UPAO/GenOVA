@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { IconComponent } from "@/app/layout/components/icon.component";
+
 import { EditUserModalComponent } from "../components/users/edit-user-modal.component";
 import { type Handlers, UsersTableComponent } from "../components/users/users-table.component";
 import type { AdminUser } from "../lib/types";
@@ -15,7 +17,7 @@ function buildWhatsAppHref(payload: any): string | null {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-admin-users-page",
-  imports: [FormsModule, UsersTableComponent, EditUserModalComponent],
+  imports: [FormsModule, UsersTableComponent, EditUserModalComponent, IconComponent],
   templateUrl: "./admin-users-page.component.html",
 })
 export class AdminUsersPageComponent {

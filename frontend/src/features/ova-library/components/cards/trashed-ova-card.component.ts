@@ -27,7 +27,6 @@ import { OvaCardShellComponent } from "./ova-card-shell.component";
           [disabled]="isRestoring() || isDeleting()"
           (onClick)="onRestore.emit(ova().id)"
         >
-          <!-- ↩ -->
           {{ isRestoring() ? "Restaurando..." : "Restaurar" }}
         </gn-button>
         <gn-button
@@ -37,7 +36,6 @@ import { OvaCardShellComponent } from "./ova-card-shell.component";
           [disabled]="isRestoring() || isDeleting()"
           (onClick)="onPermanentDelete.emit(ova())"
         >
-          <!-- 🗑 -->
           {{ isDeleting() ? "Eliminando..." : "Borrar definitivamente" }}
         </gn-button>
       </div>

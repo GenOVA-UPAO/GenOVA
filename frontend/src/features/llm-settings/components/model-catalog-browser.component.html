@@ -21,9 +21,11 @@
     <div class="border-t border-border/50">
       <div class="px-5 py-4 space-y-3 bg-muted/20 border-b border-border/40">
         <div class="relative">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 text-xs"
-            >🔍</span
-          >
+          <gn-icon
+            name="magnifying-glass"
+            size="text-xs"
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60"
+          />
           <input
             type="text"
             placeholder="Buscar modelo..."
@@ -52,9 +54,11 @@
 
       @if (isEmpty()) {
         <div class="flex flex-col items-center gap-2 py-12 text-center">
-          <span class="text-2xl text-muted-foreground/40">{{
-            store.searchQuery ? "🔍" : "☁"
-          }}</span>
+          <gn-icon
+            [name]="store.searchQuery ? 'magnifying-glass' : 'cloud'"
+            size="text-2xl"
+            class="text-muted-foreground/40"
+          />
           <p class="text-xs text-muted-foreground/60">
             {{ store.searchQuery ? "Sin coincidencias." : "Catálogo no disponible." }}
           </p>
