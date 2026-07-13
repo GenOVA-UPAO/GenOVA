@@ -130,7 +130,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<{ status: number; data: AuthMessageData }> {
-    const res = await apiFetch("/auth/login", {
+    const res = await apiFetch("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
@@ -143,7 +143,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ status: number; data: AuthMessageData }> {
-    const res = await apiFetch("/auth/register", {
+    const res = await apiFetch("/api/auth/register", {
       method: "POST",
       body: JSON.stringify({ full_name: full_name.trim(), email, password }),
     });
@@ -152,7 +152,7 @@ export class AuthService {
   }
 
   async forgotPassword(email: string): Promise<{ ok: boolean; data: AuthMessageData }> {
-    const res = await apiFetch("/auth/forgot-password", {
+    const res = await apiFetch("/api/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
@@ -164,7 +164,7 @@ export class AuthService {
     token: string,
     new_password: string,
   ): Promise<{ ok: boolean; data: AuthMessageData }> {
-    const res = await apiFetch("/auth/reset-password", {
+    const res = await apiFetch("/api/auth/reset-password", {
       method: "POST",
       body: JSON.stringify({ token, new_password }),
     });
@@ -176,7 +176,7 @@ export class AuthService {
     ticket: string,
     code: string,
   ): Promise<{ ok: boolean; data: AuthMessageData }> {
-    const res = await apiFetch("/auth/totp/verify", {
+    const res = await apiFetch("/api/auth/totp/verify", {
       method: "POST",
       body: JSON.stringify({ ticket, code: code.trim() }),
     });
