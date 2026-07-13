@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -7,6 +6,7 @@ from dotenv import load_dotenv
 # Load .env before importing modules that read env vars at import time.
 load_dotenv()
 
+import structlog
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -41,8 +41,10 @@ from users.admin.nodes_config_router import router as nodes_config_router
 from users.admin.platform_settings_router import router as platform_settings_router
 from users.router import router as users_router
 
-configure_logging(log_level=settings.log_level, env=settings.env)
-logger = logging.getLogger(__name__)
+configure_logging(
+    log_level=settings.log_level, env=settings.env, logfire_token=settings.logfire_token
+)
+logger = structlog.get_logger(__name__)
 
 _IS_PROD = settings.env.lower() == "production"
 
@@ -56,7 +58,7 @@ if settings.sentry_dsn:
         traces_sample_rate=settings.sentry_traces_sample_rate,
         send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
     )
-    logger.info("Sentry inicializado (environment=%s)", settings.env)
+    logger.info("Sentry inicializado", environment=settings.env)
 
 
 def _background_rag_purge() -> None:
@@ -68,7 +70,7 @@ def _background_rag_purge() -> None:
         with Session(engine) as session:
             removed = purge_expired(session)
             if removed:
-                logger.info("Purged %d expired RAG chunks on startup", removed)
+                logger.info("RAG chunks purgados en startup", count=removed)
     except Exception:
         logger.exception("RAG startup cleanup failed (continuing).")
 
@@ -82,7 +84,7 @@ def _background_auth_purge() -> None:
         with Session(engine) as session:
             removed = purge_expired_auth(session)
             if removed:
-                logger.info("Purged %d expired auth tokens on startup", removed)
+                logger.info("Auth tokens purgados en startup", count=removed)
     except Exception:
         logger.exception("Auth startup cleanup failed (continuing).")
 
@@ -154,7 +156,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     max_age=86400,
 )
-logger.info("CORS allowed origins: %s", allowed_origins)
+logger.info("CORS origins configurados", origins=allowed_origins)
 
 if settings.metrics_enabled:
     from prometheus_fastapi_instrumentator import Instrumentator

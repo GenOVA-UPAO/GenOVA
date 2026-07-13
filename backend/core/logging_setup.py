@@ -16,8 +16,13 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from core.log_redaction import RedactingFilter, redact_event_dict
 
 
-def configure_logging(*, log_level: str, env: str) -> None:
-    """Configure structlog + root stdlib handlers. Call once at process start."""
+def configure_logging(*, log_level: str, env: str, logfire_token: str = "") -> None:
+    """Configure structlog + root stdlib handlers. Call once at process start.
+
+    If ``logfire_token`` is set, also configures Logfire (must happen before
+    ``logfire.StructlogProcessor()`` is added to the processor chain below) so
+    every structlog kv-pair line becomes a SQL-queryable Logfire log entry.
+    """
     level = getattr(logging, log_level.upper(), logging.INFO)
     is_prod = env.lower() == "production"
 
@@ -32,6 +37,24 @@ def configure_logging(*, log_level: str, env: str) -> None:
         structlog.processors.UnicodeDecoder(),
         redact_event_dict,
     ]
+
+    if logfire_token:
+        try:
+            import logfire
+
+            logfire.configure(
+                token=logfire_token,
+                service_name="genova-backend",
+                environment=env,
+                console=False,  # no duplicar cada span en stdout
+            )
+            # Debe ir DESPUES de redact_event_dict (R8): Logfire solo recibe
+            # datos ya redactados, nunca secretos/PII crudos.
+            shared.append(logfire.StructlogProcessor())
+        except Exception:
+            logging.getLogger(__name__).exception(
+                "Logfire configure failed (continuing without it)."
+            )
 
     structlog.configure(
         processors=[
