@@ -3,6 +3,9 @@ export const PROVIDER_LABELS: Record<string, string> = {
   openrouter: "OpenRouter",
   opencode: "OpenCode",
   huggingface: "HuggingFace",
+  siliconflow: "SiliconFlow",
+  runware: "Runware",
+  falai: "fal.ai",
 };
 
 export interface ModalityMeta {
@@ -26,6 +29,11 @@ export const MODALITY_META: Record<string, ModalityMeta> = {
     label: "Imagen",
     color: "text-pink-600",
     bg: "bg-pink-50 border-pink-200 dark:bg-pink-950/30 dark:border-pink-800",
+  },
+  video: {
+    label: "Video",
+    color: "text-orange-600",
+    bg: "bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-800",
   },
   audio: {
     label: "Audio",

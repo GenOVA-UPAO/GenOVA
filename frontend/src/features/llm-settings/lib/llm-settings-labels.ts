@@ -12,6 +12,7 @@ export const TYPE_LABELS: Record<string, string> = {
   razonamiento: "Razonamiento",
   multimodal: "Multimodal",
   imagen: "Imagen",
+  video: "Video",
   embedding: "Embedding",
   audio: "Audio",
 };
@@ -23,11 +24,15 @@ export const CATEGORY_LABELS: Record<string, string> = {
   openrouter: "OpenRouter",
   opencode: "OpenCode",
   huggingface: "HuggingFace",
+  siliconflow: "SiliconFlow",
+  runware: "Runware",
+  falai: "fal.ai",
   texto: "Texto",
   codigo: "Código",
   razonamiento: "Razonamiento",
   multimodal: "Multimodal",
   imagen: "Imagen",
+  video: "Video",
   embedding: "Embedding",
   audio: "Audio",
 };
