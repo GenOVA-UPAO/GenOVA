@@ -47,7 +47,11 @@ with `from None` so the original exception isn't chained. **Never** build an
 - Never include reset tokens or OTPs in an HTTP response body, not even
   in debug/dev mode.
 - Server-only variables, **never** with a `VITE_*` prefix or exposed to the frontend:
-  `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`.
+  `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`,
+  `LANGSMITH_API_KEY`, `LOGFIRE_TOKEN`, `SENTRY_DSN` (DSN not for client bundles).
+
+Observability stack (structlog / Sentry / Logfire / LangSmith) and how to add a
+sink safely: read [observability.md](observability.md).
 
 ## Input validation
 

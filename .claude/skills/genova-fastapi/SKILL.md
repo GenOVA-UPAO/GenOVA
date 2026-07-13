@@ -3,7 +3,7 @@ name: genova-fastapi
 description: GenOVA-specific FastAPI backend conventions — router.py->service.py->models.py architecture per domain, hard security rules (commit_or_500, @limiter.limit, never log secrets), ruff/200-line limit, and migrations+ORM cascades (C14). Use when creating or reviewing endpoints, services, SQLAlchemy models, or migrations in the backend.
 metadata:
   author: GenOVA local
-  version: '1.0'
+  version: '1.1'
   source: local/genova
 ---
 
@@ -29,6 +29,9 @@ code — a rule already established for `implementer`.
    file grows. Read [ruff-and-limits.md](references/ruff-and-limits.md).
 4. If you touch `models.py` or the schema: a new migration is required and ORM↔DDL
    cascades must be reviewed. Read [migrations-and-orm.md](references/migrations-and-orm.md) — **checkpoint C14**.
+5. If you touch logs, tracing, LangGraph observability, or add an opt-in sink:
+   read [observability.md](references/observability.md) (structlog, Sentry,
+   Logfire, LangSmith, R8 dual redaction).
 
 ## Quick rules (summary)
 
@@ -44,9 +47,12 @@ code — a rule already established for `implementer`.
 - Every DB write error: `commit_or_500(db, "operation")` — never `str(e)`
   to the client.
 - Never log passwords/tokens/API keys/OTPs; never return reset tokens/OTPs
-  in an HTTP response.
+  in an HTTP response. Use `configure_logging` + redaction; opt-in sinks only
+  (see [observability.md](references/observability.md)).
 - New schema migration → `backend/migrations/0NN_*.sql`; if there's a
   `relationship()` with an `ON DELETE CASCADE` FK, review `cascade=`/`passive_deletes=`.
+- `main.py` ≤200 lines: extract middleware to `core/http_middleware.py` /
+  `core/logging_setup.py` rather than growing the entrypoint.
 
 ## When something doesn't fit
 

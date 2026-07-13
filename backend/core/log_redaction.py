@@ -24,6 +24,18 @@ def redact(text: str) -> str:
     return text
 
 
+def redact_event_dict(
+    _logger: object,
+    _method_name: str,
+    event_dict: dict,
+) -> dict:
+    """structlog processor: redact string values in the event dict (R8)."""
+    for key, value in list(event_dict.items()):
+        if isinstance(value, str):
+            event_dict[key] = redact(value)
+    return event_dict
+
+
 class RedactingFilter(logging.Filter):
     """Aplica `redact` al mensaje final de cada registro de log."""
 

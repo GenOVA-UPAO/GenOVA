@@ -4,7 +4,7 @@ description: Full, harsh audit of the GenOVA repo — walks CHECKPOINTS.md C1-C1
 disable-model-invocation: true
 metadata:
   author: GenOVA local
-  version: '1.0'
+  version: '1.1'
   source: local/genova
 ---
 
@@ -31,14 +31,16 @@ dramatically simpler.
    broken layers): apply the ambitious lens. Read [thermo-nuclear-lens.md](references/thermo-nuclear-lens.md).
 4. **Classify each finding** by severity before reporting it. Read
    [severity-rubric.md](references/severity-rubric.md).
-5. **If the repo is large**, dispatch read-only subagents per domain
+5. **If auditing Docker / logs / LangSmith / design tokens**, also apply
+   [observability-docker-checks.md](references/observability-docker-checks.md).
+6. **If the repo is large**, dispatch read-only subagents per domain
    (frontend / backend / security / architecture) in parallel, using the
    model heuristic from the `genova-dev` skill (see its
    `.claude/skills/genova-dev/references/model-tiers.md` —
-   code-analysis auditing is generally sonnet; escalate to opus
+   code-analysis auditing is generally sonnet/Grok; escalate to opus-tier
    if the domain is security or cross-cutting architecture). Each subagent
    returns findings with `file:line`, not long prose.
-6. **Consolidate** into a single report following the template. Read
+7. **Consolidate** into a single report following the template. Read
    [report-template.md](references/report-template.md). Save to
    `sdd/audits/<date>-audit.md` (same directory as `sdd/audits/2026-07-06-ova-recursos-audit.md`).
 

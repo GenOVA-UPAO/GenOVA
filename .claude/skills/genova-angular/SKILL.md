@@ -3,7 +3,7 @@ name: genova-angular
 description: GenOVA-specific Angular frontend conventions — screaming architecture (features/<domain> vs core/), standalone+OnPush+zoneless+inject(), Signal Forms, SpartanUI (libs/ui + gn-* wrappers), and quality gates (250 lines, strict ESLint, responsive). Complements the official angular-developer skill (which covers the general Angular API); this skill covers the project's own convention layer. Use when creating or reviewing frontend components, services, pages, or features.
 metadata:
   author: GenOVA local
-  version: '1.0'
+  version: '1.1'
   source: local/genova
 ---
 
@@ -27,8 +27,12 @@ for "how does Angular do X?"; use this skill for "how do we do it in GenOVA?".
 3. If the component has a form: use Signal Forms (`@angular/forms/signals`),
    not Reactive/Template forms. Read [signal-forms.md](references/signal-forms.md).
 4. If you need a UI primitive: check `libs/ui/` (SpartanUI helm) before creating
-   a new one. Read [design-system.md](references/design-system.md).
-5. Before closing the task: verify the quality gates (lines, lint,
+   a new one. Read [design-system.md](references/design-system.md)
+   (brain vs helm, typography tokens, UPAO chrome vs OVA content, dark mode).
+5. If you touch Docker / `ng build` / compose for the frontend: read
+   [docker-and-build.md](references/docker-and-build.md) (BuildKit cache, no
+   reinstall on `up`, multi-stage nginx prod).
+6. Before closing the task: verify the quality gates (lines, lint,
    responsive). Read [quality-gates.md](references/quality-gates.md).
 
 ## Quick rules (summary)
@@ -43,6 +47,10 @@ for "how does Angular do X?"; use this skill for "how do we do it in GenOVA?".
 - Screaming architecture: `features/<domain-kebab>/{pages,components,lib,services}`;
   `core/` only cross-cutting code (auth, http, shared ui); never domain-specific
   logic inside `core/`.
+- Prefer `@spartan-ng/helm/typography` (`hlmH1`, `hlmMuted`, …) for chrome titles.
+- Tokens only in `frontend/src/styles.css`; never mix OVA content themes into chrome.
+- Docker FE: never `pnpm install` in compose `command`; prod = multi-stage + nginx
+  (see [docker-and-build.md](references/docker-and-build.md)).
 - 250-line limit per `.ts` file (`.html` exempt, tests exempt).
 - Never NgModules, never React-style hooks.
 

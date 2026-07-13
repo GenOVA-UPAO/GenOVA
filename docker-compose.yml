@@ -27,11 +27,13 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    command: sh -c "pnpm install --no-frozen-lockfile && pnpm dev --host 0.0.0.0 --port 4200"
+    # Deps vienen de la imagen (capa cacheada) + volumen anónimo /app/node_modules.
+    command: pnpm dev --host 0.0.0.0 --port 4200
     ports:
       - '4200:4200'
     environment:
       - CI=true
+      - API_PROXY_TARGET=http://backend:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules

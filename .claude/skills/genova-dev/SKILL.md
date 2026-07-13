@@ -3,7 +3,7 @@ name: genova-dev
 description: GenOVA master development workflow. Sizes the task (trivial/medium/large), activates plan mode for large tasks, generates a Markdown plan-ledger with a subtask table and assigned model (haiku/sonnet/opus), dispatches subagents with their own per-task memory, and applies the project's commit rules. Use when implementing features, refactors, or any non-trivial change in GenOVA.
 metadata:
   author: GenOVA local
-  version: '1.0'
+  version: '1.1'
   source: local/genova
 ---
 
@@ -21,6 +21,11 @@ For layer-specific code conventions, delegate to:
 - Angular frontend → skill `genova-angular`
 - FastAPI backend → skill `genova-fastapi`
 - Full repo audit → skill `genova-audit` (manual, `/genova-audit`)
+
+Infra / compose / verify details: Read
+[docker-compose-workflow.md](references/docker-compose-workflow.md).
+Model mapping (including Cursor Composer / Grok): Read
+[model-tiers.md](references/model-tiers.md).
 
 ## 1. Size the task
 
@@ -45,7 +50,8 @@ under-planning a large one.
    (same directory the existing SDD flow uses, e.g. `sdd/plans/2026-07-06-plan-maestro-generacion-ova.md`).
    Full template: Read [plan-template.md](references/plan-template.md).
 4. The ledger includes a **task table** with an **assigned model** column
-   (haiku/sonnet/opus) per task — heuristic: Read [model-tiers.md](references/model-tiers.md).
+   (logical `haiku`/`sonnet`/`opus`; map to Cursor Composer/Grok per
+   [model-tiers.md](references/model-tiers.md)) per task.
 5. Human gate: present the plan-ledger and wait for approval before executing
    (consistent with the `spec_ready` gate of the SDD flow).
 

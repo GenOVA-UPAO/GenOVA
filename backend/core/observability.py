@@ -1,11 +1,12 @@
-"""B4 — Pydantic Logfire observability (opt-in).
+"""Observabilidad opt-in: Logfire + LangSmith (sin PII, R8).
 
-Activa tracing distribuido + token/cost tracking de las llamadas LLM solo si
-LOGFIRE_TOKEN está configurado. Sin token todo es no-op: ni se importa logfire en
-caliente ni se envía nada fuera. Espeja el patrón opt-in de Sentry (no PII).
+Sin token/key todo es no-op. Espeja el patrón de Sentry.
 """
 
+from __future__ import annotations
+
 import logging
+import os
 
 from core.config import settings
 
@@ -33,3 +34,20 @@ def init_logfire(app, engine) -> None:
         logger.info("Logfire inicializado (environment=%s)", settings.env)
     except Exception:
         logger.exception("Logfire init failed (continuing without it).")
+
+
+def init_langsmith() -> None:
+    """Activa tracing LangGraph→LangSmith si hay API key y flag; si no, no-op.
+
+    LangGraph lee LANGSMITH_TRACING / LANGSMITH_API_KEY del entorno al invocar.
+    """
+    if not settings.langsmith_api_key or not settings.langsmith_tracing:
+        return
+    os.environ["LANGSMITH_TRACING"] = "true"
+    os.environ["LANGSMITH_API_KEY"] = settings.langsmith_api_key
+    os.environ["LANGSMITH_PROJECT"] = settings.langsmith_project or "genova"
+    logger.info(
+        "LangSmith tracing habilitado (project=%s, environment=%s)",
+        settings.langsmith_project or "genova",
+        settings.env,
+    )

@@ -2,19 +2,26 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Instalar pnpm
-RUN npm install -g pnpm@11.9.0
+RUN corepack enable && corepack prepare pnpm@11.11.0 --activate
 
-# Copiar configuración de dependencias
 COPY package.json pnpm-lock.yaml* ./
 
-# Instalar dependencias (solo para capa cacheada)
-RUN pnpm install --no-frozen-lockfile
+# pnpm 11 strictDepBuilds: allowBuilds vive en el monorepo (fuera de ./frontend).
+RUN printf '%s\n' \
+      'allowBuilds:' \
+      "  '@parcel/watcher': true" \
+      '  esbuild: true' \
+      '  less: false' \
+      '  lmdb: true' \
+      '  msgpackr-extract: true' \
+      '  nx: false' \
+      > pnpm-workspace.yaml
 
-# El resto del código se monta en tiempo de ejecución (desarrollo) o se copia (producción)
+RUN --mount=type=cache,id=pnpm-frontend,target=/root/.local/share/pnpm/store \
+    pnpm install --no-frozen-lockfile
+
 COPY . .
 
 EXPOSE 4200
 
-# En desarrollo este CMD será sobrescrito por docker-compose
 CMD ["pnpm", "dev", "--host", "0.0.0.0", "--port", "4200"]

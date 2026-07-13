@@ -1,25 +1,25 @@
 # Sesión actual
 
-**Fecha:** 2026-07-01
-**Agente:** Cursor (P2 continuation)
+**Fecha:** 2026-07-12
+**Agente:** leader (Cursor Grok)
 **Sprint:** 3
 
 ## Resumen
 
-P2 Angular polish completado; integración 3 agentes paralelos (984fc315, 3dd619e7, 9a17bb97) — build + verify verdes.
+Plan ejecutado sin specs: Docker frontend + structlog + LangSmith + Spartan typography + auditoría.
 
-## Hecho en esta sesión (P2)
-- Auth pages: bracket access en payloads `Record<string, unknown>` — `ng build` verde.
-- `TotpService`, `PhaseGenerationService`, `StudentDashboardService`, `UserLlmSettingsService` verificados; pages sin `apiFetch` directo.
-- `/models` con tabs (tasks, apikeys, prometheus, platform-keys) + gate de permisos.
-- Phosphor icons en nav/models vía `styles.css`.
-- Eliminados dirs huérfanos `ova_library/`, `ova_workspace/`.
-- Documentación: `impl_p2-angular-polish.md`, CHECKPOINTS C7 hyphen folders, EN-011 diagram :4200.
+## Hecho
+- T1 Docker: compose sin reinstall; Dockerfile.prod + nginx + docker-compose.prod.yml
+- T2 structlog (JSON prod / console dev) + R8 dual + main.py ≤200
+- T3 LangSmith opt-in en observability + metadata en invoke_ova_generation
+- T4 typography Helm + dark UPAO
+- T5 `./verify.ps1 -Quick` → RESULTADO FINAL: PASA; 12 pytest logging/langsmith
+- T6 auditoría `sdd/audits/2026-07-12-audit.md`
 
-## Verificación
-- `pnpm lint` / `pnpm typecheck` / `pnpm build` — PASS
-- `./verify.ps1 -Quick` — PASA
+## Ledger
+`sdd/plans/2026-07-12-docker-structlog-spartan.md`
 
 ## Próximo paso
-
-E2E playwright (requiere :4200 + :8000 activos) o cierre de sprint / feature_list update.
+- Commit si el humano lo pide
+- Activar `LANGSMITH_TRACING=1` + API key en `.env` para validar traces reales
+- Smoke build `frontend/Dockerfile.prod` opcional

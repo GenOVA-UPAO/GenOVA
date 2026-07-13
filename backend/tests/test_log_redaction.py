@@ -34,3 +34,10 @@ def test_filter_redacts_logrecord_message():
     assert RedactingFilter().filter(record) is True
     assert "[email]" in record.getMessage()
     assert "user@example.com" not in record.getMessage()
+
+
+def test_redact_event_dict_exported():
+    from core.log_redaction import redact_event_dict
+
+    out = redact_event_dict(None, "info", {"event": "hi admin@genova.ai"})
+    assert "[email]" in out["event"]

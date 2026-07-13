@@ -73,6 +73,7 @@ def build_ova_graph():
 
 def invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None):
     from core.config import settings
+    from core.logging_setup import build_invoke_config
     from prometheus.engine.checkpointer import get_checkpointer
 
     if settings.llm_fake:
@@ -89,10 +90,9 @@ def invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None
     cp = checkpointer or get_checkpointer()
     compiled = graph.compile(checkpointer=cp)
 
-    config = {
-        "configurable": {"thread_id": thread_id},
-        # Limita los resource_workers paralelos del fan-out (F2.1); el motor
-        # legacy ya se auto-limita con su ThreadPool interno.
-        "max_concurrency": max(1, settings.ova_gen_concurrency),
-    }
+    config = build_invoke_config(
+        thread_id=thread_id,
+        max_concurrency=settings.ova_gen_concurrency,
+        env=settings.env,
+    )
     return compiled.invoke(initial_state, config)

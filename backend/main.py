@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import time
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -14,13 +13,14 @@ from fastapi.middleware.gzip import GZipMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
-from starlette.middleware.base import BaseHTTPMiddleware
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
 from auth.router import router as auth_router
 from core.config import settings
 from core.database import Base, engine
+from core.http_middleware import ProcessTimeMiddleware, SecurityHeadersMiddleware
+from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
@@ -41,85 +41,22 @@ from users.admin.nodes_config_router import router as nodes_config_router
 from users.admin.platform_settings_router import router as platform_settings_router
 from users.router import router as users_router
 
-logging.basicConfig(
-    level=settings.log_level.upper(),
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-)
-# R8: red de seguridad — enmascara PII/secretos en cualquier log antes de emitir.
-from core.log_redaction import RedactingFilter
-
-for _handler in logging.getLogger().handlers:
-    _handler.addFilter(RedactingFilter())
+configure_logging(log_level=settings.log_level, env=settings.env)
 logger = logging.getLogger(__name__)
-_LATENCY_THRESHOLD_MS = settings.latency_threshold_ms
-_LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save")
-
-# Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
-if settings.sentry_dsn:
-    import sentry_sdk
-
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        environment=settings.env,
-        traces_sample_rate=settings.sentry_traces_sample_rate,
-        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
-    )
-    logger.info("Sentry inicializado (environment=%s)", settings.env)
-
-# Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
-if settings.sentry_dsn:
-    import sentry_sdk
-
-    sentry_sdk.init(
-        dsn=settings.sentry_dsn,
-        environment=settings.env,
-        traces_sample_rate=settings.sentry_traces_sample_rate,
-        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
-    )
-    logger.info("Sentry inicializado (environment=%s)", settings.env)
-
-
-class ProcessTimeMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        t0 = time.perf_counter()
-        response = await call_next(request)
-        ms = (time.perf_counter() - t0) * 1000
-        response.headers["X-Process-Time-Ms"] = f"{ms:.1f}"
-        if ms > _LATENCY_THRESHOLD_MS and not any(
-            request.url.path.startswith(p) for p in _LATENCY_EXCLUDED_PREFIXES
-        ):
-            logger.warning(
-                "SLOW %s %s → %.1fms (threshold %.0fms)",
-                request.method,
-                request.url.path,
-                ms,
-                _LATENCY_THRESHOLD_MS,
-            )
-        return response
-
 
 _IS_PROD = settings.env.lower() == "production"
 
+# Error tracking opcional: solo se activa si SENTRY_DSN está configurado.
+if settings.sentry_dsn:
+    import sentry_sdk
 
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Cabeceras de seguridad en todas las respuestas (OWASP). CSP/HSTS solo en
-    producción: la API sirve JSON (default-src 'none' es seguro) y HSTS requiere
-    HTTPS. En dev se omiten para no romper Swagger /docs."""
-
-    async def dispatch(self, request, call_next):
-        response = await call_next(request)
-        response.headers.setdefault("X-Content-Type-Options", "nosniff")
-        response.headers.setdefault("X-Frame-Options", "DENY")
-        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-        response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
-        if _IS_PROD:
-            response.headers.setdefault(
-                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
-            )
-            response.headers.setdefault(
-                "Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'"
-            )
-        return response
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.env,
+        traces_sample_rate=settings.sentry_traces_sample_rate,
+        send_default_pii=False,  # nunca enviar PII (correos, tokens) a Sentry
+    )
+    logger.info("Sentry inicializado (environment=%s)", settings.env)
 
 
 def _background_rag_purge() -> None:
@@ -177,7 +114,6 @@ app = FastAPI(
     title="GENOVA Backend API",
     version="0.1.0",
     lifespan=lifespan,
-    # Swagger/OpenAPI expone el mapa completo de la API: deshabilitado en prod.
     docs_url=None if _IS_PROD else "/docs",
     redoc_url=None if _IS_PROD else "/redoc",
     openapi_url=None if _IS_PROD else "/openapi.json",
@@ -206,10 +142,11 @@ else:
         *_extra,
     ]
 
-app.add_middleware(ProcessTimeMiddleware)  # innermost: avoid 502 on OPTIONS preflight
+app.add_middleware(ProcessTimeMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(  # outermost: intercept OPTIONS before other middleware
+app.add_middleware(RequestContextMiddleware)
+app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
@@ -219,18 +156,16 @@ app.add_middleware(  # outermost: intercept OPTIONS before other middleware
 )
 logger.info("CORS allowed origins: %s", allowed_origins)
 
-# Métricas Prometheus opcionales (opt-in). /metrics se expone solo si se habilita
-# explícitamente para no filtrar patrones de tráfico en una URL pública.
 if settings.metrics_enabled:
     from prometheus_fastapi_instrumentator import Instrumentator
 
     Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
     logger.info("Prometheus /metrics habilitado")
 
-# Logfire opcional (opt-in): tracing + token/cost tracking de LLM si hay token.
-from core.observability import init_logfire
+from core.observability import init_langsmith, init_logfire
 
 init_logfire(app, engine)
+init_langsmith()
 
 _HEALTH_CACHE = "public, max-age=10"
 
@@ -279,10 +214,8 @@ def admin_refresh_catalog(
 
 app.include_router(agents_router, prefix="/api/agents")
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
-app.include_router(auth_router, prefix="/auth", tags=["Auth"])
 app.include_router(rag_router, prefix="/api/rag", tags=["RAG"])
 app.include_router(roles_router, prefix="/api/roles", tags=["Roles"])
-app.include_router(roles_router, prefix="/roles", tags=["Roles"])
 app.include_router(scorm_router, prefix="/api/scorm", tags=["SCORM"])
 app.include_router(ova_router, prefix="/api/ova", tags=["OVA"])
 app.include_router(ova_jobs_router, prefix="/api/ova/jobs", tags=["Generation"])
@@ -293,7 +226,6 @@ app.include_router(ova_phase_version_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(ova_add_phase_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(ova_subelement_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(users_router, prefix="/api/users", tags=["Users"])
-app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["RAG"])
 app.include_router(platform_settings_router, prefix="/api/admin", tags=["Admin"])
 app.include_router(nodes_config_router, prefix="/api/admin", tags=["Admin"])

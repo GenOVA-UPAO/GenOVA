@@ -102,8 +102,13 @@ explanation) and unused barrel exports.
 ## C12 — Adoption of declared frameworks
 
 Verify new code uses the already-adopted frameworks (TanStack Query,
-Signal Forms, SpartanUI on frontend; arq+Redis, langgraph, slowapi on backend)
-instead of reinventing equivalent mechanisms.
+Signal Forms, SpartanUI on frontend; arq+Redis, langgraph, slowapi, **structlog**,
+opt-in Sentry/Logfire/LangSmith on backend) instead of reinventing equivalent
+mechanisms.
+
+When the audit scope includes Docker, logging, LangSmith, or design tokens,
+also execute [observability-docker-checks.md](observability-docker-checks.md)
+(extra greps + compose/Dockerfile checklist).
 
 ## C13 — Frontend responsive
 

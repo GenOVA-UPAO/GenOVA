@@ -4,6 +4,8 @@
 @import "tailwindcss/utilities.css";
 
 @import "@spartan-ng/brain/hlm-tailwind-preset.css";
+@import "@angular/cdk/overlay-prebuilt.css";
+@import "driver.js/dist/driver.css";
 /* You can add global styles to this file, and also import other style files */
 
 @import "@phosphor-icons/web/regular";
@@ -111,44 +113,51 @@ gn-root {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.7 0.13 264); /* lighter UPAO blue on dark */
+  /* Editorial Académico UPAO — dark con matiz cálido (no slate frío genérico). */
+  --background: oklch(0.17 0.02 264);
+  --foreground: oklch(0.97 0.01 85);
+  --card: oklch(0.21 0.025 264);
+  --card-foreground: oklch(0.97 0.01 85);
+  --popover: oklch(0.21 0.025 264);
+  --popover-foreground: oklch(0.97 0.01 85);
+  --primary: oklch(0.72 0.12 264); /* lighter UPAO blue on dark */
   --primary-foreground: oklch(0.18 0.03 264);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.26 0.02 264);
+  --secondary-foreground: oklch(0.97 0.01 85);
+  --muted: oklch(0.26 0.02 264);
+  --muted-foreground: oklch(0.72 0.02 85);
+  --accent: oklch(0.28 0.025 264);
+  --accent-foreground: oklch(0.97 0.01 85);
   --accent-brand: oklch(0.76 0.16 55);
   --accent-brand-foreground: oklch(0.18 0.03 264);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --ring: oklch(0.72 0.12 264);
+  /* Data viz — mismo espectro azul→naranja UPAO que light */
+  --chart-1: oklch(0.72 0.12 264);
+  --chart-2: oklch(0.65 0.11 240);
+  --chart-3: oklch(0.62 0.1 200);
+  --chart-4: oklch(0.76 0.16 55);
+  --chart-5: oklch(0.62 0.18 30);
+  --sidebar: oklch(0.19 0.022 264);
+  --sidebar-foreground: oklch(0.97 0.01 85);
+  --sidebar-primary: oklch(0.72 0.12 264);
+  --sidebar-primary-foreground: oklch(0.18 0.03 264);
+  --sidebar-accent: oklch(0.26 0.02 264);
+  --sidebar-accent-foreground: oklch(0.97 0.01 85);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.72 0.12 264);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
   }
   body {
     @apply bg-background text-foreground;
@@ -166,6 +175,10 @@ gn-root {
     letter-spacing: -0.015em;
     font-weight: 600;
     line-height: 1.08;
+  }
+  gn-root {
+    display: block;
+    height: 100%;
   }
 }
 

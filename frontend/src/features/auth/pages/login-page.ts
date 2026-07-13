@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/cor
 import { email, form, FormField, required, submit } from "@angular/forms/signals";
 import { Router, RouterLink } from "@angular/router";
 import { HlmInput } from "@spartan-ng/helm/input";
+import { hlmH1, hlmMuted } from "@spartan-ng/helm/typography";
 
 import { AuthService } from "@/core/auth/auth.service";
 import { ButtonComponent } from "@/core/components/ui/button.component";
@@ -44,8 +45,8 @@ import { resendVerification } from "../services/verification";
             <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-brand">
               GenOVA · UPAO
             </p>
-            <h1 class="mt-2 text-3xl font-semibold tracking-tight">Iniciar sesión</h1>
-            <p class="mt-2 text-sm text-muted-foreground">Accede para continuar al curso de ML.</p>
+            <h1 class="${hlmH1} mt-2 text-3xl">Iniciar sesión</h1>
+            <p class="${hlmMuted} mt-2">Accede para continuar al curso de ML.</p>
             <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
               <div class="space-y-1.5 flex flex-col">
                 <label for="email" class="text-sm font-medium leading-none">Correo</label>

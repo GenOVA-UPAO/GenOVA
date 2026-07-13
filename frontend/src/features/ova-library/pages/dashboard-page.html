@@ -7,10 +7,10 @@
       <p class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-accent-brand">
         UPAO - GenOVA ML
       </p>
-      <h1 class="font-display text-4xl font-semibold text-foreground">
+      <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-foreground">
         Bienvenido, {{ firstName() }}
       </h1>
-      <p class="mt-1.5 text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+      <p class="mt-1.5 text-sm text-muted-foreground flex items-center gap-1.5">
         <!-- <Clock size={16} /> -->
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -26,12 +26,24 @@
         Tu espacio para crear y gestionar OVAs con IA.
       </p>
     </div>
-    <gn-button
-      routerLink="/crear-ova"
-      class="self-start gap-2 shadow-lg shadow-primary/25 rounded-xl px-5 h-11 sm:self-auto transition-transform active:scale-95 block"
+    <a
+      routerLink="/crear"
+      class="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:w-auto sm:justify-start sm:self-auto sm:py-2"
     >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        viewBox="0 0 256 256"
+        aria-hidden="true"
+      >
+        <path
+          d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"
+        />
+      </svg>
       Crear OVA
-    </gn-button>
+    </a>
   </div>
 
   <!-- Stats -->
@@ -141,12 +153,24 @@
           Describe un tema y la inteligencia artificial generará todo el contenido educativo de
           acuerdo a la metodología 5E.
         </p>
-        <gn-button
-          routerLink="/crear-ova"
-          class="mt-6 rounded-xl shadow-lg shadow-primary/20 block w-fit mx-auto"
+        <a
+          routerLink="/crear"
+          class="mt-6 inline-flex w-full max-w-xs items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:w-auto sm:py-2"
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            viewBox="0 0 256 256"
+            aria-hidden="true"
+          >
+            <path
+              d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"
+            />
+          </svg>
           Comenzar ahora
-        </gn-button>
+        </a>
       </div>
       }
     </div>

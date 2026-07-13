@@ -17,6 +17,11 @@ arq==0.28.0
 sentry-sdk[fastapi]==2.63.0
 prometheus-fastapi-instrumentator==8.0.2
 logfire==4.37.0
+structlog==25.5.0
+# Multi-agent orchestration (Prometheus via LangGraph) + LangSmith traces
+langgraph==1.2.6
+langgraph-checkpoint-postgres==3.1.0
+langsmith==0.7.22
 # AI SDKs
 openai==2.43.0
 groq==1.4.0
@@ -28,8 +33,5 @@ pypdf==6.13.3
 python-docx==1.2.0
 python-pptx==1.0.2
 filetype==1.2.0
-# Multi-agent orchestration (Prometheus via LangGraph)
-langgraph==1.2.6
-langgraph-checkpoint-postgres==3.1.0
 # 2FA
 pyotp==2.10.0

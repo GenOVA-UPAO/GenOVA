@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     # B4 — Pydantic Logfire (tracing distribuido + token/cost tracking de LLM).
     # Opt-in: sin token no se instrumenta nada. `console=False` evita ruido en logs.
     logfire_token: str = ""
+    # LangSmith (LangGraph traces). Opt-in: requiere API key + LANGSMITH_TRACING=1.
+    # Server-only — nunca exponer en HTTP ni logs (R8).
+    langsmith_api_key: str = ""
+    langsmith_tracing: bool = False
+    langsmith_project: str = "genova"
     latency_threshold_ms: float = 278.0
     app_url: str = "https://genova.ai"
     frontend_url: str = "http://localhost:4200"
@@ -90,10 +95,11 @@ class Settings(BaseSettings):
     upload_temp_dir: str = ""
 
     # --- Generación OVA ---
-    ova_gen_concurrency: int = 4
-    # Motor de generación: "phases" (legacy, secuencial por fase) o "workpool"
-    # (F2.1 — fan-out por recurso). Rollback rápido vía env OVA_ENGINE.
-    ova_engine: str = "phases"
+    # Concurrencia del fan-out del motor work-pool (F2.1). 8 es la config con
+    # la que corrió el benchmark v3 (6:21, 20/20, 0 fallos) — el default
+    # previo (4) subestimaba su propio benchmark. El motor por fases (legacy,
+    # ~30min/20 recursos) se eliminó tras el benchmark; work-pool es el único.
+    ova_gen_concurrency: int = 8
     ova_refine: str = "1"
     ova_generation_duration_seconds: int = 14
     ova_output_dir: str = ""
