@@ -118,8 +118,9 @@ def dispatch_or_log(
     log_label: str,
 ) -> None:
     """Queue `send_fn` (send_reset_email/send_verification_email) as a
-    background task when SMTP is configured; otherwise log the link so the
-    flow isn't dead-ended when creds are missing (dev, or misconfigured prod).
+    background task when SMTP is configured; otherwise log that delivery
+    failed (never the link itself — it embeds a single-use token, and logging
+    it would violate the hard rule against logging tokens/secrets).
     Escalates to ERROR in production since it means the account has no
     working delivery path. Shared by reset_router and verify_router — do not
     duplicate this check inline in either."""
@@ -129,8 +130,8 @@ def dispatch_or_log(
     level = logging.ERROR if settings.env == "production" else logging.WARNING
     logger.log(
         level,
-        "SMTP no configurado — %s no enviado a %s. Enlace manual: %s",
+        "SMTP no configurado — %s no enviado a %s. Verificar configuración SMTP; "
+        "el enlace no se registra en logs por contener un token de un solo uso.",
         log_label,
         to_email,
-        link,
     )

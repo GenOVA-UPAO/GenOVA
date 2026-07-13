@@ -4,17 +4,17 @@ Included into the settings profile router so paths keep the same prefix without
 changing the users-router wiring.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.cookies import clear_auth_cookie
 from auth.dependencies import get_current_user
 from core.database import commit_or_500, get_db
+from core.rate_limit import limiter
 from core.security import hash_password, verify_password
-from models import User
+from users.settings.account_service import anonymize_and_deactivate
 
 router = APIRouter()
 
@@ -26,7 +26,9 @@ class UserPasswordChange(BaseModel):
 
 
 @router.post("/me/change-password")
+@limiter.limit("5/minute")
 def change_password(
+    request: Request,
     payload: UserPasswordChange,
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -63,7 +65,9 @@ class UserDeleteRequest(BaseModel):
 
 
 @router.delete("/me")
+@limiter.limit("5/minute")
 def delete_account(
+    request: Request,
     payload: UserDeleteRequest,
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -74,43 +78,7 @@ def delete_account(
             detail="Contraseña incorrecta",
         )
 
-    from sqlalchemy.sql import func
-
-    from models import Role, UserRole
-
-    user_roles = (
-        db.execute(
-            select(Role.name)
-            .join(UserRole, UserRole.role_id == Role.id)
-            .where(UserRole.user_id == current_user.id)
-        )
-        .scalars()
-        .all()
-    )
-
-    if "administrador" in user_roles:
-        total_admins = db.execute(
-            select(func.count(UserRole.user_id))
-            .join(Role, Role.id == UserRole.role_id)
-            .join(User, User.id == UserRole.user_id)
-            .where(Role.name == "administrador", User.is_active)
-        ).scalar()
-        if total_admins and total_admins <= 1:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="No puedes eliminar tu cuenta porque eres el único administrador activo.",
-            )
-
-    import uuid
-
-    uid_suffix = str(uuid.uuid4())[:8]
-
-    current_user.is_active = False
-    current_user.email = f"deleted_{current_user.id}@{uid_suffix}.removed.local"
-    current_user.full_name = "[eliminado]"
-    current_user.phone_number = None
-    current_user.university_id = None
-
+    anonymize_and_deactivate(db, current_user)
     commit_or_500(db, "delete_account")
 
     response = JSONResponse(content={"message": "Cuenta eliminada exitosamente."})
