@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from "@an
 import { IconComponent } from "@/core/components/icon.component";
 import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
+import { DEFAULT_PHASE_COLOR } from "../../lib/phase-colors";
 import { resourceIconClass } from "../../lib/resource-icons";
 
 const INTERACTIVIDAD_COLOR: Record<string, string> = {
@@ -93,7 +94,7 @@ export class ResourceCardComponent {
   readonly resource = input.required<Resource>();
   readonly selected = input(false);
   readonly phaseKey = input("");
-  readonly phaseColor = input("#3B82F6");
+  readonly phaseColor = input(DEFAULT_PHASE_COLOR);
   readonly selectionIndex = input<number | null>(null);
   readonly disabled = input(false);
   readonly showVideoHint = input(false);

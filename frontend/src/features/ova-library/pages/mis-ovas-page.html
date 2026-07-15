@@ -49,6 +49,7 @@
         type="text"
         hlmInput
         placeholder="Buscar por título de la OVA..."
+        aria-label="Buscar por título de la OVA"
         [ngModel]="service.searchQuery()"
         (ngModelChange)="service.setSearch($event)"
         class="w-full pl-10 border-muted bg-background/50 h-10 shadow-inner focus-visible:ring-primary/30"

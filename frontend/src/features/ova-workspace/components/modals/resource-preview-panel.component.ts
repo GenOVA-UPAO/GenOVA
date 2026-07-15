@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from "@angular/co
 
 import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
+import { DEFAULT_PHASE_COLOR } from "../../lib/phase-colors";
 import { resourceIconClass } from "../../lib/resource-icons";
 import { getResourcePreview } from "../../lib/resource-previews";
 import { ResourceWireframeComponent } from "./resource-wireframe.component";
@@ -96,7 +97,7 @@ import { ResourceWireframeComponent } from "./resource-wireframe.component";
 export class ResourcePreviewPanelComponent {
   readonly resource = input<Resource | null>(null);
   readonly phaseKey = input("");
-  readonly phaseColor = input("#3B82F6");
+  readonly phaseColor = input(DEFAULT_PHASE_COLOR);
   readonly className = input(
     "hidden sm:flex flex-col w-72 border-l border-border bg-muted/20 shrink-0 overflow-y-auto",
   );

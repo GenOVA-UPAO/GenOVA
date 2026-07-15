@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { ConfirmModalComponent } from "@/core/components/confirm-modal.component";
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
@@ -10,8 +11,24 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-phase-item",
-  imports: [FormsModule, ButtonComponent, IconComponent, PhaseVersionHistoryComponent],
+  imports: [
+    FormsModule,
+    ButtonComponent,
+    ConfirmModalComponent,
+    IconComponent,
+    PhaseVersionHistoryComponent,
+  ],
   template: `
+    @if (confirmingDelete) {
+      <gn-confirm-modal
+        title="Eliminar recurso"
+        message="¿Eliminar este recurso? Se creará una nueva versión sin él."
+        confirmLabel="Eliminar"
+        (onConfirm)="confirmDelete()"
+        (onCancel)="confirmingDelete = false"
+      ></gn-confirm-modal>
+    }
+
     <gn-phase-version-history
       [open]="historyOpen"
       (openChange)="historyOpen = $event"
@@ -30,7 +47,7 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
           class="mt-0.5 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground select-none cursor-grab active:cursor-grabbing"
           aria-hidden="true"
         >
-          ⠿
+          <gn-icon name="dots-six-vertical" size="text-xs" />
         </span>
         <pre
           class="flex-1 text-xs overflow-auto max-h-28 whitespace-pre-wrap text-foreground/80 font-sans"
@@ -57,16 +74,18 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
             class="h-5 px-1.5 text-[10px]"
             (click)="openRegen()"
             title="Regenerar con prompt"
+            ariaLabel="Regenerar con prompt"
           >
-            ↺
+            <gn-icon name="arrow-counter-clockwise" size="text-xs" />
           </gn-button>
           <gn-button
             type="button"
             size="sm"
             variant="ghost"
             class="h-5 px-1.5 text-[10px] text-destructive hover:text-destructive"
-            (click)="handleDelete()"
+            (click)="confirmingDelete = true"
             title="Eliminar recurso"
+            ariaLabel="Eliminar recurso"
           >
             <gn-icon name="trash" size="text-xs" />
           </gn-button>
@@ -77,8 +96,9 @@ import { PhaseVersionHistoryComponent } from "../versioning/phase-version-histor
             class="h-5 px-1.5 text-[10px]"
             (click)="historyOpen = true"
             title="Historial micro-versiones"
+            ariaLabel="Historial de micro-versiones"
           >
-            ⏱
+            <gn-icon name="clock-counter-clockwise" size="text-xs" />
           </gn-button>
         </div>
       </div>
@@ -131,6 +151,7 @@ export class WorkspacePhaseItemComponent {
   readonly onReverted = output();
 
   historyOpen = false;
+  confirmingDelete = false;
   mode: "edit" | "regen" | null = null;
   text = "";
 
@@ -158,9 +179,8 @@ export class WorkspacePhaseItemComponent {
     this.cancel();
   }
 
-  handleDelete() {
-    if (window.confirm("¿Eliminar este recurso?")) {
-      this.onDelete.emit(this.phase().id);
-    }
+  confirmDelete() {
+    this.confirmingDelete = false;
+    this.onDelete.emit(this.phase().id);
   }
 }

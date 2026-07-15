@@ -1,13 +1,14 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 
+import { IconComponent } from "@/core/components/icon.component";
 import { HtmlPreviewFrameComponent } from "@/features/ova-workspace/components/shared/html-preview-frame.component";
 import type { PreviewResult } from "@/features/ova-workspace/lib/ova-types";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-html-preview",
-  imports: [CommonModule, HtmlPreviewFrameComponent],
+  imports: [CommonModule, HtmlPreviewFrameComponent, IconComponent],
   template: `
     @if (result) {
       <div class="space-y-3">
@@ -18,7 +19,8 @@ import type { PreviewResult } from "@/features/ova-workspace/lib/ova-types";
               <span class="text-primary">{{ result.concepto }}</span>
             </p>
             <p class="text-xs text-muted-foreground">
-              ⏱ {{ result.duracion }} · Interactividad: {{ result.interactividad }}
+              <gn-icon name="clock-counter-clockwise" size="text-xs" /> {{ result.duracion }} ·
+              Interactividad: {{ result.interactividad }}
             </p>
           </div>
           <div class="flex items-center gap-2 flex-wrap">

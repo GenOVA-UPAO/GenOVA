@@ -3,6 +3,7 @@ import { FormsModule } from "@angular/forms";
 
 import { AuthService, type MeUser } from "@/core/auth/auth.service";
 import { IconComponent } from "@/core/components/icon.component";
+import { toast } from "@/core/lib/toast";
 import { LinkRowComponent } from "@/features/profile/components/link-row.component";
 
 import { type UserLink, UserLinksService } from "../services/user-links.service";
@@ -51,7 +52,7 @@ export class UserLinksPageComponent implements OnInit {
         : await this.userLinksService.fetchMyLinks();
       this.links.set(data.links || []);
     } catch (err: any) {
-      alert(err.message || "No se pudieron cargar los vinculos.");
+      toast.error(err.message || "No se pudieron cargar los vínculos.");
     } finally {
       this.loading.set(false);
     }
@@ -78,9 +79,9 @@ export class UserLinksPageComponent implements OnInit {
     try {
       await this.userLinksService.acceptLink(this.code());
       this.code.set("");
-      alert("Cuenta vinculada.");
+      toast.success("Cuenta vinculada.");
     } catch (e: any) {
-      alert(e.message || "Error al vincular.");
+      toast.error(e.message || "Error al vincular.");
     }
   }
 
@@ -88,10 +89,10 @@ export class UserLinksPageComponent implements OnInit {
     try {
       const data = await this.userLinksService.resendLink(linkId);
       this.generatedCode.set(data.code);
-      alert("Invitacion reenviada.");
+      toast.success("Invitación reenviada.");
       await this.load();
     } catch (e: any) {
-      alert(e.message || "No se pudo reenviar la invitacion.");
+      toast.error(e.message || "No se pudo reenviar la invitación.");
     }
   }
 

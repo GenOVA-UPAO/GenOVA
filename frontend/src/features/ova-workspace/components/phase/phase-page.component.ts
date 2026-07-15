@@ -11,6 +11,7 @@ import { FormsModule } from "@angular/forms";
 import { IconComponent } from "@/core/components/icon.component";
 import type { PreviewResult, Resource } from "@/features/ova-workspace/lib/ova-types";
 
+import { DEFAULT_PHASE_COLOR } from "../../lib/phase-colors";
 import { phaseCfg } from "../../lib/phase-select.config";
 import { getSchema } from "../../lib/resource-config";
 import {
@@ -73,7 +74,7 @@ export class PhasePageComponent implements OnInit {
   }
 
   get phaseColor() {
-    return phaseCfg(this.phaseKey)?.color ?? "#3B82F6";
+    return phaseCfg(this.phaseKey)?.color ?? DEFAULT_PHASE_COLOR;
   }
 
   get demoContent(): OvaContent {

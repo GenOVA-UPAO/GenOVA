@@ -1,3 +1,14 @@
+@if (revertTarget(); as target) {
+  <gn-confirm-modal
+    title="Revertir micro-versión"
+    [message]="'¿Revertir el recurso a la micro-versión ' + target.minor_number + '?'"
+    confirmLabel="Revertir"
+    [isLoading]="reverting()"
+    (onConfirm)="confirmRevert()"
+    (onCancel)="revertTarget.set(null)"
+  ></gn-confirm-modal>
+}
+
 <gn-dialog [open]="open()" width="28rem" (openChange)="$event || close()">
   <div class="p-5 bg-card">
     <h2 class="text-lg font-display font-semibold mb-3">Historial del recurso</h2>

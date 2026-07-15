@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { ConfirmModalComponent } from "@/core/components/confirm-modal.component";
 import { IconComponent } from "@/core/components/icon.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
-import { ConfirmModalComponent } from "@/features/ova-library/components/confirm-modal.component";
 
 import { OvaListPaginationComponent } from "../components/cards/ova-list-pagination.component";
 import { TrashedOvaCardComponent } from "../components/cards/trashed-ova-card.component";
