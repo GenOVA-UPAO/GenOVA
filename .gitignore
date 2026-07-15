@@ -274,8 +274,18 @@ frontend/src/wireframes/
 
 /.mcp.json
 
-# Graphify knowledge graph — versionar archivos utiles, excluir backups y binarios grandes
-graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+# Graphify knowledge graph — artefacto local, no se versiona
+graphify-out/
+
+# Pulls temporales de configuración Railway (railway config pull)
+.railway-config-pull-*/
+
+# Directorio runtime de uploads locales del backend
+backend/tmp/
+
+# Artefactos de correr pnpm dentro de frontend/ (el workspace real es el de la raíz)
+frontend/pnpm-workspace.yaml
+frontend/proxy.conf.js
 
 # Playwright CLI cache + screenshots locales (artefactos, no se versionan)
 .playwright-cli/
