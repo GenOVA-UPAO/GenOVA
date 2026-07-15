@@ -52,114 +52,119 @@
 ## Índice por tipo
 
 **80 ítems** — 10 EP · 33 HU · 13 EN · 5 RN · 7 TA · 9 SP · 3 DO.
+**Origen: 63 de Notion (BD original del profesor) + 17 añadidos por los agentes
+del harness fuera de las capturas.** Columna `Origen` en cada tabla: `Notion`
+= confirmado en las capturas originales · `Harness` = agregado después por los
+agentes SDD (ya tenían su propia marca `(añadido)`/`(borrador)`/`(propuesto)`/
+`(editor OVA)`, que se conserva).
 
 ### Épicas (EP)
-| ID | Título | Épica/Tema | Sprint | Status |
-|---|---|---|---|---|
-| EP-1 | Especificación del Sistema | SDD — Specify | Sprint 1 | To Do |
-| EP-2 | Plataforma Web y Autenticación | SDD — Plan + Implement | Sprint 1 | To Do |
-| EP-3 | Interfaz de Creación y Gestión de OVAs | SDD — Implement | Sprint 1 | To Do |
-| EP-4 | Motor de Exportación SCORM | SDD — Implement | Sprint 1 | To Do |
-| EP-5 | Especificación del Sistema Multiagente | Prometheus — System Specification | Sprint 2 | To Do |
-| EP-6 | Base de Conocimiento Contextual RAG | Prometheus — Detailed Design | Sprint 2 | To Do |
-| EP-7 | Despliegue e Infraestructura Cloud | Prometheus — Architectural Design | Sprint 2 | To Do |
-| EP-8 | Validación Técnica y de Calidad | Validación técnica | Sprint 3 | To Do |
-| EP-9 | Evaluación de Usabilidad y UX | Evaluación UX | Sprint 3 | To Do |
-| EP-10 | Documentación y Cierre del Proyecto | Documentación | Sprint 3 | To Do |
+| ID | Título | Épica/Tema | Sprint | Status | Origen |
+|---|---|---|---|---|---|
+| EP-1 | Especificación del Sistema | SDD — Specify | Sprint 1 | To Do | Notion |
+| EP-2 | Plataforma Web y Autenticación | SDD — Plan + Implement | Sprint 1 | To Do | Notion |
+| EP-3 | Interfaz de Creación y Gestión de OVAs | SDD — Implement | Sprint 1 | To Do | Notion |
+| EP-4 | Motor de Exportación SCORM | SDD — Implement | Sprint 1 | To Do | Notion |
+| EP-5 | Especificación del Sistema Multiagente | Prometheus — System Specification | Sprint 2 | To Do | Notion |
+| EP-6 | Base de Conocimiento Contextual RAG | Prometheus — Detailed Design | Sprint 2 | To Do | Notion |
+| EP-7 | Despliegue e Infraestructura Cloud | Prometheus — Architectural Design | Sprint 2 | To Do | Notion |
+| EP-8 | Validación Técnica y de Calidad | Validación técnica | Sprint 3 | To Do | Notion |
+| EP-9 | Evaluación de Usabilidad y UX | Evaluación UX | Sprint 3 | To Do | Notion |
+| EP-10 | Documentación y Cierre del Proyecto | Documentación | Sprint 3 | To Do | Notion |
 
 ### Historias de Usuario (HU)
-| ID | Título | Épica | Sprint | Status | Prioridad |
-|---|---|---|---|---|---|
-| HU-001 | Registro de cuenta de usuario | EP2 | Sprint 1 | Closed | Alta |
-| HU-002 | Crear nuevo OVA desde prompt | EP3 | Sprint 1 | Closed | Alta |
-| HU-003 | Visualizar completa 5E | EP3 | Sprint 1 | Closed | Alta |
-| HU-004 | Exportar OVA como paquete SCORM | EP4 | Sprint 1 | Closed | Alta |
-| HU-005 | Evaluar plataforma mediante encuesta SUS | EP9 | Sprint 3 | To Do | Media |
-| HU-006 | Ver historial de OVAs | EP3 | Sprint 1 | Closed | Alta |
-| HU-007 | Subir archivos base para el OVA | EP3 | Sprint 1 | Closed | Alta |
-| HU-008 | Inicio de sesión con credenciales | EP2 | Sprint 1 | Closed | Alta |
-| HU-009 | Recuperación de contraseña | EP2 | Sprint 1 | To Do | Media |
-| HU-010 | Maquetación del Layout Principal y Enrutamiento Modular | EP2 | Sprint 1 | To Do | Alta |
-| HU-011 | Editar OVA Generado | EP3 | Sprint 1 | Closed | Alta |
-| HU-012 | Eliminar OVA del Historial | EP3 | Sprint 1 | Closed | Media |
-| HU-013 | Duplicar OVA Existente | EP3 | Sprint 1 | Closed | Media |
-| HU-014 | Renombrar y Editar Metadatos del OVA | EP3 | Sprint 1 | Closed | Media |
-| HU-015 | Ver y Editar Perfil de Usuario | EP2 | Sprint 1 | Closed | Alta |
-| HU-016 | Cambiar Contraseña desde el Perfil | EP2 | Sprint 1 | Closed | Media `(añadido)` |
-| HU-017 | Eliminar / dar de baja cuenta | EP2 | Sprint 1 | To Do | Media `(borrador)` |
-| HU-018 | Gestión de Roles — Crear Rol | EP2 | Sprint 1 | Closed | Alta |
-| HU-019 | Gestión de Roles — Editar Rol | EP2 | Sprint 1 | Closed | Alta |
-| HU-020 | Gestión de Roles — Eliminar Rol | EP2 | Sprint 1 | Closed | Media |
-| HU-021 | Gestión de Roles — Asignar Rol a Usuario | EP2 | Sprint 1 | Closed | Alta |
-| HU-022 | Recuperación de recursos parciales tras error de generación | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` |
-| HU-023 | Generación de OVA en background persistente y reanudación | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` |
-| HU-024 | Carga de archivos contextuales estilo chat | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
-| HU-025 | Workspace de edición de OVA (panel dividido) | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` |
-| HU-026 | Edición de recurso por click en el preview | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` |
-| HU-027 | Selección de recursos como contexto del prompt | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
-| HU-028 | Versionado de OVA (historial, diff y revertir) | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` |
-| HU-029 | Micro-versionado por recurso editado | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
-| HU-030 | "Mis OVAs": acceso al workspace + versión en metadata | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
-| HU-031 | Selección y edición granular de elementos dentro de un recurso | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
-| HU-032 | Añadir recurso al OVA (máx 4 por fase) | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
-| HU-033 | Reordenar recursos del OVA | EP3 | Sprint 1 | To Do | Media `(editor OVA)` |
+| ID | Título | Épica | Sprint | Status | Prioridad | Origen |
+|---|---|---|---|---|---|---|
+| HU-001 | Registro de cuenta de usuario | EP2 | Sprint 1 | Closed | Alta | Notion |
+| HU-002 | Crear nuevo OVA desde prompt | EP3 | Sprint 1 | Closed | Alta | Notion |
+| HU-003 | Visualizar completa 5E | EP3 | Sprint 1 | Closed | Alta | Notion |
+| HU-004 | Exportar OVA como paquete SCORM | EP4 | Sprint 1 | Closed | Alta | Notion |
+| HU-005 | Evaluar plataforma mediante encuesta SUS | EP9 | Sprint 3 | To Do | Media | Notion |
+| HU-006 | Ver historial de OVAs | EP3 | Sprint 1 | Closed | Alta | Notion |
+| HU-007 | Subir archivos base para el OVA | EP3 | Sprint 1 | Closed | Alta | Notion |
+| HU-008 | Inicio de sesión con credenciales | EP2 | Sprint 1 | Closed | Alta | Notion |
+| HU-009 | Recuperación de contraseña | EP2 | Sprint 1 | To Do | Media | Notion |
+| HU-010 | Maquetación del Layout Principal y Enrutamiento Modular | EP2 | Sprint 1 | To Do | Alta | Notion |
+| HU-011 | Editar OVA Generado | EP3 | Sprint 1 | Closed | Alta | Notion |
+| HU-012 | Eliminar OVA del Historial | EP3 | Sprint 1 | Closed | Media | Notion |
+| HU-013 | Duplicar OVA Existente | EP3 | Sprint 1 | Closed | Media | Notion |
+| HU-014 | Renombrar y Editar Metadatos del OVA | EP3 | Sprint 1 | Closed | Media | Notion |
+| HU-015 | Ver y Editar Perfil de Usuario | EP2 | Sprint 1 | Closed | Alta | Notion |
+| HU-016 | Cambiar Contraseña desde el Perfil | EP2 | Sprint 1 | Closed | Media `(añadido)` | Harness |
+| HU-017 | Eliminar / dar de baja cuenta | EP2 | Sprint 1 | To Do | Media `(borrador)` | Harness |
+| HU-018 | Gestión de Roles — Crear Rol | EP2 | Sprint 1 | Closed | Alta | Notion |
+| HU-019 | Gestión de Roles — Editar Rol | EP2 | Sprint 1 | Closed | Alta | Notion |
+| HU-020 | Gestión de Roles — Eliminar Rol | EP2 | Sprint 1 | Closed | Media | Notion |
+| HU-021 | Gestión de Roles — Asignar Rol a Usuario | EP2 | Sprint 1 | Closed | Alta | Notion |
+| HU-022 | Recuperación de recursos parciales tras error de generación | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` | Harness |
+| HU-023 | Generación de OVA en background persistente y reanudación | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` | Harness |
+| HU-024 | Carga de archivos contextuales estilo chat | EP3 | Sprint 1 | To Do | Media `(editor OVA)` | Harness |
+| HU-025 | Workspace de edición de OVA (panel dividido) | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` | Harness |
+| HU-026 | Edición de recurso por click en el preview | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` | Harness |
+| HU-027 | Selección de recursos como contexto del prompt | EP3 | Sprint 1 | To Do | Media `(editor OVA)` | Harness |
+| HU-028 | Versionado de OVA (historial, diff y revertir) | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` | Harness |
+| HU-029 | Micro-versionado por recurso editado | EP3 | Sprint 1 | To Do | Media `(editor OVA)` | Harness |
+| HU-030 | "Mis OVAs": acceso al workspace + versión en metadata | EP3 | Sprint 1 | To Do | Media `(editor OVA)` | Harness |
+| HU-031 | Selección y edición granular de elementos dentro de un recurso | EP3 | Sprint 1 | To Do | Media `(editor OVA)` | Harness |
+| HU-032 | Añadir recurso al OVA (máx 4 por fase) | EP3 | Sprint 1 | To Do | Media `(editor OVA)` | Harness |
+| HU-033 | Reordenar recursos del OVA | EP3 | Sprint 1 | To Do | Media `(editor OVA)` | Harness |
 
 ### Habilitadores (EN)
-| ID | Título | Épica | Sprint | Status | Prioridad |
-|---|---|---|---|---|---|
-| EN-001 | Habilitar especificaciones Gherkin Sprint 1 | EP1 | Sprint 1 | To Do | Alta |
-| EN-002 | Habilitar automatización BDD | EP1 | Sprint 1 | To Do | Alta |
-| EN-003 | Habilitar orquestación de agentes Prometheus | EP5 | Sprint 2 | To Do | Alta |
-| EN-004 | Habilitar pgvector (BD Vectorial) | EP6 | Sprint 2 | To Do | Alta |
-| EN-005 | Habilitar pipeline RAG end-to-end | EP6 | Sprint 2 | To Do | Alta |
-| EN-006 | Habilitar entornos Cloud y orquestación | EP7 | Sprint 2 | To Do | Alta |
-| EN-007 | Habilitar pruebas de integración en Canvas | EP8 | Sprint 3 | To Do | Media |
-| EN-008 | Habilitar Base de Datos para Gestión de Usuarios | EP2 | Sprint 1 | Closed | Alta |
-| EN-009 | Integración Frontend ↔ Backend de Agentes | EP7 | Sprint 2 | To Do | Alta |
-| EN-010 | Configuración del Monorepo y Arquitectura Base React | EP2 | Sprint 1 | To Do | Alta |
-| EN-011 | Setup Base de FastAPI y Orquestación Local (Docker) | EP2 | Sprint 1 | To Do | Alta |
-| EN-012 | Observabilidad de errores de generación en Supabase | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` |
-| EN-013 | Persistencia del estado de generación (jobs) | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` |
+| ID | Título | Épica | Sprint | Status | Prioridad | Origen |
+|---|---|---|---|---|---|---|
+| EN-001 | Habilitar especificaciones Gherkin Sprint 1 | EP1 | Sprint 1 | To Do | Alta | Notion |
+| EN-002 | Habilitar automatización BDD | EP1 | Sprint 1 | To Do | Alta | Notion |
+| EN-003 | Habilitar orquestación de agentes Prometheus | EP5 | Sprint 2 | To Do | Alta | Notion |
+| EN-004 | Habilitar pgvector (BD Vectorial) | EP6 | Sprint 2 | To Do | Alta | Notion |
+| EN-005 | Habilitar pipeline RAG end-to-end | EP6 | Sprint 2 | To Do | Alta | Notion |
+| EN-006 | Habilitar entornos Cloud y orquestación | EP7 | Sprint 2 | To Do | Alta | Notion |
+| EN-007 | Habilitar pruebas de integración en Canvas | EP8 | Sprint 3 | To Do | Media | Notion |
+| EN-008 | Habilitar Base de Datos para Gestión de Usuarios | EP2 | Sprint 1 | Closed | Alta | Notion |
+| EN-009 | Integración Frontend ↔ Backend de Agentes | EP7 | Sprint 2 | To Do | Alta | Notion |
+| EN-010 | Configuración del Monorepo y Arquitectura Base React | EP2 | Sprint 1 | To Do | Alta | Notion |
+| EN-011 | Setup Base de FastAPI y Orquestación Local (Docker) | EP2 | Sprint 1 | To Do | Alta | Notion |
+| EN-012 | Observabilidad de errores de generación en Supabase | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` | Harness |
+| EN-013 | Persistencia del estado de generación (jobs) | EP3 | Sprint 1 | To Do | Alta `(editor OVA)` | Harness |
 
 ### Requisitos No Funcionales (RN)
-| ID | Título | Épica | Sprint | Status | Prioridad |
-|---|---|---|---|---|---|
-| RN-001 | Latencia ≤ 278 ms | EP8 | Sprint 3 | To Do | Alta |
-| RN-002 | Tiempo de generación ≤ 180 segundos (MTTG) | EP6 | Sprint 2 | To Do | Alta |
-| RN-003 | Seguridad y manejo de API Keys | EP7 | Sprint 2 | To Do | Media |
-| RN-004 | Prueba de humo de rendimiento post-despliegue | EP7 | Sprint 2 | To Do | Media |
-| RN-005 | Frontend responsive | EP3 | Sprint 1 | To Do | Media `(propuesto)` |
+| ID | Título | Épica | Sprint | Status | Prioridad | Origen |
+|---|---|---|---|---|---|---|
+| RN-001 | Latencia ≤ 278 ms | EP8 | Sprint 3 | To Do | Alta | Notion |
+| RN-002 | Tiempo de generación ≤ 180 segundos (MTTG) | EP6 | Sprint 2 | To Do | Alta | Notion |
+| RN-003 | Seguridad y manejo de API Keys | EP7 | Sprint 2 | To Do | Media | Notion |
+| RN-004 | Prueba de humo de rendimiento post-despliegue | EP7 | Sprint 2 | To Do | Media | Notion |
+| RN-005 | Frontend responsive | EP3 | Sprint 1 | To Do | Media `(propuesto)` | Harness |
 
 ### Tareas Técnicas (TA)
-| ID | Título | Épica | Sprint | Status | Prioridad |
-|---|---|---|---|---|---|
-| TA-001 | Configuración de repositorios y ramas | EP2 | Sprint 1 | To Do | Alta |
-| TA-002 | Crear template base SCORM XML | EP4 | Sprint 1 | To Do | Alta |
-| TA-003 | Ejecutar scripts de precisión IA | EP8 | Sprint 3 | To Do | Media |
-| TA-004 | Preparación y coordinación de sesión SUS | EP9 | Sprint 3 | To Do | Alta |
-| TA-005 | Validación SCORM con SCORM Cloud Rustici | EP8 | Sprint 3 | To Do | Alta |
-| TA-006 | Configuración del Entorno de Producción y Despliegue del Backend en Render | EP2 | Sprint 1 | Closed | Alta |
-| TA-007 | Configuración y Despliegue del Frontend en Vercel | EP2 | Sprint 1 | Closed | Alta |
+| ID | Título | Épica | Sprint | Status | Prioridad | Origen |
+|---|---|---|---|---|---|---|
+| TA-001 | Configuración de repositorios y ramas | EP2 | Sprint 1 | To Do | Alta | Notion |
+| TA-002 | Crear template base SCORM XML | EP4 | Sprint 1 | To Do | Alta | Notion |
+| TA-003 | Ejecutar scripts de precisión IA | EP8 | Sprint 3 | To Do | Media | Notion |
+| TA-004 | Preparación y coordinación de sesión SUS | EP9 | Sprint 3 | To Do | Alta | Notion |
+| TA-005 | Validación SCORM con SCORM Cloud Rustici | EP8 | Sprint 3 | To Do | Alta | Notion |
+| TA-006 | Configuración del Entorno de Producción y Despliegue del Backend en Render | EP2 | Sprint 1 | Closed | Alta | Notion |
+| TA-007 | Configuración y Despliegue del Frontend en Vercel | EP2 | Sprint 1 | Closed | Alta | Notion |
 
 ### Spikes (SP)
-| ID | Título | Épica | Sprint | Status | Prioridad |
-|---|---|---|---|---|---|
-| SP-001 | Comparativa APIs multimodales | EP1 | Sprint 1 | Closed | Alta |
-| SP-002 | Metodología 5E y Estructura OVA | EP1 | Sprint 1 | Closed | Alta |
-| SP-003 | Mapeo de recursos y estructura de 5E | EP1 | Sprint 1 | Closed | Alta |
-| SP-004 | Spike: Herramientas de Orquestación y Despliegue | EP7 | Sprint 2 | To Do | Alta |
-| SP-005 | Investigación Spec-Driven Development | EP1 | Sprint 1 | Closed | Alta |
-| SP-006 | Estructura Técnica del Estándar SCORM | EP1 | Sprint 1 | Closed | Alta |
-| SP-007 | Metodología Prometheus para Agentes | EP5 | Sprint 2 | To Do | Alta |
-| SP-008 | Investigación de buenos principios para el frontend de aplicaciones web | EP1 | Sprint 1 | To Do | Alta `(reescrito)` |
-| SP-009 | Ingeniería de Harness Engineering en Sistemas de IA | EP1 | Sprint 2 | To Do | Alta |
+| ID | Título | Épica | Sprint | Status | Prioridad | Origen |
+|---|---|---|---|---|---|---|
+| SP-001 | Comparativa APIs multimodales | EP1 | Sprint 1 | Closed | Alta | Notion |
+| SP-002 | Metodología 5E y Estructura OVA | EP1 | Sprint 1 | Closed | Alta | Notion |
+| SP-003 | Mapeo de recursos y estructura de 5E | EP1 | Sprint 1 | Closed | Alta | Notion |
+| SP-004 | Spike: Herramientas de Orquestación y Despliegue | EP7 | Sprint 2 | To Do | Alta | Notion |
+| SP-005 | Investigación Spec-Driven Development | EP1 | Sprint 1 | Closed | Alta | Notion |
+| SP-006 | Estructura Técnica del Estándar SCORM | EP1 | Sprint 1 | Closed | Alta | Notion |
+| SP-007 | Metodología Prometheus para Agentes | EP5 | Sprint 2 | To Do | Alta | Notion |
+| SP-008 | Investigación de buenos principios para el frontend de aplicaciones web | EP1 | Sprint 1 | To Do | Alta `(reescrito)` | Notion `(reescrito por harness)` |
+| SP-009 | Ingeniería de Harness Engineering en Sistemas de IA | EP1 | Sprint 2 | To Do | Alta | Notion |
 
 ### Documentación (DO)
-| ID | Título | Épica | Sprint | Status | Prioridad |
-|---|---|---|---|---|---|
-| DO-001 | Documentación técnica completa | EP10 | Sprint 3 | To Do | Media |
-| DO-002 | Videos demostrativos del funcionamiento | EP10 | Sprint 3 | To Do | Baja |
-| DO-003 | Reporte comparativo de agentes LLM | EP10 | Sprint 3 | To Do | Baja |
+| ID | Título | Épica | Sprint | Status | Prioridad | Origen |
+|---|---|---|---|---|---|---|
+| DO-001 | Documentación técnica completa | EP10 | Sprint 3 | To Do | Media | Notion |
+| DO-002 | Videos demostrativos del funcionamiento | EP10 | Sprint 3 | To Do | Baja | Notion |
+| DO-003 | Reporte comparativo de agentes LLM | EP10 | Sprint 3 | To Do | Baja | Notion |
 
 ### Notas de reconciliación
 - **SP-008** reescrito (antes "investigación de interfaz") → buenos principios de frontend para apps web. `(añadido fuera de captura)`
@@ -2527,4 +2532,105 @@
 
 ---
 
-_Fin del backlog — 80 ítems (10 EP + 70 hijos), organizado por épica y estandarizado._
+### EN-024 — Romper acoplamiento circular ova ↔ generation
+
+| Campo | Valor |
+|---|---|
+| ID | EN-024 |
+| Tipo | Habilitador |
+| Épica/Tema | Deuda técnica (auditoría screaming 2026-07-15) |
+| Sprint | Futuro |
+| Status | To Do |
+| Prioridad | Media |
+| Estimación | 5 SP |
+| Dependencia | — |
+| Responsable | — |
+| Fase | Refactor |
+| Fecha creación | 2026-07-15 |
+| Fecha actualización | — |
+
+**Objetivo:** Eliminar la dependencia bidireccional entre los dominios `ova` y `generation`: `backend/ova/crud/edit_router.py` importa `generation.regen.regen_router`, mientras `backend/generation/regen/{regen_router,regen_persist,regen_service}.py` importan `ova.crud.edit_helpers`. Definir una frontera de servicio pública (p. ej. `ova` expone helpers de edición vía su capa service) para que la dependencia fluya en una sola dirección.
+
+**Criterios de aceptación:**
+- Ningún módulo de `generation/` importa internals `crud` de `ova` (solo su API pública).
+- `ova` no importa routers de `generation`.
+- Suite BDD backend verde sin cambios de comportamiento.
+
+---
+
+### EN-025 — Romper acoplamiento circular llm ↔ prometheus
+
+| Campo | Valor |
+|---|---|
+| ID | EN-025 |
+| Tipo | Habilitador |
+| Épica/Tema | Deuda técnica (auditoría screaming 2026-07-15) |
+| Sprint | Futuro |
+| Status | To Do |
+| Prioridad | Media |
+| Estimación | 5 SP |
+| Dependencia | — |
+| Responsable | — |
+| Fase | Refactor |
+| Fecha creación | 2026-07-15 |
+| Fecha actualización | — |
+
+**Objetivo:** `backend/llm/phases/*_router.py` importa `prometheus.prompts.*`, y a la vez `backend/prometheus/{critic,engine,nodes,plans,tools}` importan `llm.router`/`llm.utils`. Decidir la dirección canónica (prometheus consume llm) y mover los routers de fases o los prompts para eliminar la mutua dependencia.
+
+**Criterios de aceptación:**
+- Dependencia unidireccional entre `llm` y `prometheus` (grafo de imports sin ciclo).
+- Suite BDD backend verde.
+
+---
+
+### EN-026 — API pública del dominio llm para users/settings
+
+| Campo | Valor |
+|---|---|
+| ID | EN-026 |
+| Tipo | Habilitador |
+| Épica/Tema | Deuda técnica (auditoría screaming 2026-07-15) |
+| Sprint | Futuro |
+| Status | To Do |
+| Prioridad | Baja |
+| Estimación | 3 SP |
+| Dependencia | — |
+| Responsable | — |
+| Fase | Refactor |
+| Fecha creación | 2026-07-15 |
+| Fecha actualización | — |
+
+**Objetivo:** `backend/users/settings/*` y `backend/users/admin/platform_settings_router.py` acceden a internals de `llm` (`llm.clients.key_resolver`, `llm.providers`, `llm.catalog.catalog_refresh`, `llm.catalog.model_catalog`, `llm.images.image_providers`) en 6+ archivos. Exponer una fachada pública del dominio `llm` (funciones de consulta/actualización de catálogo y claves) y consumirla desde `users`. Observación menor relacionada: `backend/uploads/router.py` orquesta `ova.uploads.service` + `rag.pipeline`; es composición aceptable, pero conviene revisarla al tocar esta frontera.
+
+**Criterios de aceptación:**
+- `users/` solo importa la fachada pública de `llm` (un módulo, no internals).
+- Suite BDD backend verde.
+
+---
+
+### EN-027 — Desacoplar profile → llm-settings vía DI token (frontend)
+
+| Campo | Valor |
+|---|---|
+| ID | EN-027 |
+| Tipo | Habilitador |
+| Épica/Tema | Deuda técnica (auditoría screaming 2026-07-15) |
+| Sprint | Futuro |
+| Status | To Do |
+| Prioridad | Baja |
+| Estimación | 2 SP |
+| Dependencia | — |
+| Responsable | — |
+| Fase | Refactor |
+| Fecha creación | 2026-07-15 |
+| Fecha actualización | — |
+
+**Objetivo:** `frontend/src/features/profile/pages/profile-page.component.ts` importa `PlatformApiKeysCardComponent` desde `features/llm-settings/` (import cross-feature). Moverla a `core/` no aplica: la card depende de `PlatformSettingsService`, `PlatformKeyRowComponent` y `platformKeyMeta`, todos propios de llm-settings. Replicar el patrón ya existente de `core/lib/llm-settings-modal.token.ts` (token DI provisto en el composition root `app.config.ts` + `ngComponentOutlet`) para invertir la dependencia.
+
+**Criterios de aceptación:**
+- Cero imports `features/<a>` → `features/<b>` en el frontend (verificable por grep).
+- `pnpm typecheck`, lint y unit BDD verdes.
+
+---
+
+_Fin del backlog — 84 ítems (10 EP + 74 hijos), organizado por épica y estandarizado._
