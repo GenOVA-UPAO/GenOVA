@@ -110,7 +110,13 @@ def effective_llm_config() -> dict:
         tarea: [{"provider": p, "model_id": m, "extra": x} for (p, m, x) in _fallback_chain(tarea)]
         for tarea in _SEED_MODELOS
     }
-    return {"defaults": defaults, "fallbacks": fallbacks}
+    # HU-035 — media (imagen/video) no tiene semilla: solo lo almacenado + switches.
+    from llm.utils import llm_config_store
+
+    media_defaults, media_fallbacks, flags = llm_config_store.effective_media_slice()
+    defaults.update(media_defaults)
+    fallbacks.update(media_fallbacks)
+    return {"defaults": defaults, "fallbacks": fallbacks, "generation_enabled": flags}
 
 
 class EmptyContentError(RuntimeError):

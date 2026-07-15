@@ -34,8 +34,15 @@ def test_sanitize_drops_invalid_keeps_valid():
 
 
 def test_sanitize_empty():
-    assert store.sanitize_config(None) == {"defaults": {}, "fallbacks": {}}
-    assert store.sanitize_config({}) == {"defaults": {}, "fallbacks": {}}
+    # HU-035: los switches de generación siempre están presentes con sus
+    # defaults (imagen on, video off), incluso con payload vacío.
+    empty = {
+        "defaults": {},
+        "fallbacks": {},
+        "generation_enabled": {"imagen": True, "video": False},
+    }
+    assert store.sanitize_config(None) == empty
+    assert store.sanitize_config({}) == empty
 
 
 def test_default_models_seed_without_config(monkeypatch):

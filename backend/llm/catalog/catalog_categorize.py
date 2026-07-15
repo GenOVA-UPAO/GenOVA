@@ -7,7 +7,12 @@ MODALITY_CATEGORY = {
     "image": "imagen",
     "embedding": "embedding",
     "audio": "audio",
+    "video": "video",
 }
+
+# Model-id keywords that identify video-generation models whose declared
+# modality is still text->text in the provider listing (e.g. Kling on OpenRouter).
+_VIDEO_KEYWORDS = ("video", "kling", "sora", "veo")
 
 _CODIGO_KEYWORDS = (
     "coder",
@@ -33,12 +38,15 @@ _RAZONAMIENTO_KEYWORDS = (
 )
 
 
-def categorize_model(api_entry: dict, provider: str) -> str:
-    arch = api_entry.get("architecture") or {}
-    modality = arch.get("modality", "text") if isinstance(arch, dict) else str(arch)
-    category = MODALITY_CATEGORY.get(modality, "texto")
+def categorize_model(api_entry: dict, provider: str = "") -> str:
+    del provider  # reservado para reglas por proveedor; la heurística es global
+    from llm.catalog.catalog_aptitudes import parse_modality
+
+    category = MODALITY_CATEGORY.get(parse_modality(api_entry), "texto")
     mid = (api_entry.get("id") or "").lower()
     if category in ("texto", "multimodal"):
+        if any(kw in mid for kw in _VIDEO_KEYWORDS):
+            return "video"
         if any(kw in mid for kw in _CODIGO_KEYWORDS):
             return "codigo"
         if any(kw in mid for kw in _RAZONAMIENTO_KEYWORDS):
