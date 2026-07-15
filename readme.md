@@ -1,6 +1,6 @@
 # GenOVA
 
-Plataforma web para la generación asistida por IA de Objetos Virtuales de Aprendizaje (OVA) con exportación SCORM 1.2. Implementa la metodología 5E (ENGAGE y EXPLORE) y empaqueta los resultados como paquetes SCORM listos para subir a un LMS.
+Plataforma web para la generación asistida por IA de Objetos Virtuales de Aprendizaje (OVA) con exportación SCORM 1.2. Implementa la metodología 5E completa (ENGAGE, EXPLORE, EXPLAIN, ELABORATE, EVALUATE) y empaqueta los resultados como paquetes SCORM listos para subir a un LMS.
 
 ## Contenido
 
@@ -84,8 +84,8 @@ Clasificación de mensajes entrantes:
 
 Contexto del proyecto:
 - GenOVA — plataforma web para generación asistida por IA de Objetos Virtuales de Aprendizaje (OVA) con exportación SCORM 1.2.
-- Stack: React 19 + FastAPI + Supabase PostgreSQL + pgvector + Groq/OpenRouter.
-- Arquitectura frontend: services → hooks → pages. Backend: router → service → model.
+- Stack: Angular 22 + FastAPI + Supabase PostgreSQL + pgvector + Groq/OpenRouter.
+- Arquitectura frontend: services (signals) → components/pages standalone. Backend: router → service → model.
 - Límite: 250 líneas por archivo en frontend (hard rule en ESLint), 200 en backend (ruff).
 ```
 
@@ -171,7 +171,7 @@ npx skills update -p -y                # actualizar (project scope)
 Cuando un spec de frontend incluye una sección `## Mockup ASCII`, el `implementer` materializa primero el wireframe antes de implementar funcionalidad:
 
 1. Consulta al `skill-advisor` por una skill útil.
-2. Genera `frontend/src/wireframes/<ID>_<Page>Wireframe.jsx` — **solo visual** (sin hooks, sin fetch, datos hardcoded) con **shadcn/ui** + Tailwind.
+2. Genera `frontend/src/wireframes/<ID>_<page>-wireframe.component.ts` — **solo visual** (sin servicios, sin fetch, datos hardcoded) con **SpartanUI** + Tailwind.
 3. ⏸ El humano aprueba. Si pide cambios, el `## Mockup ASCII` del spec se actualiza para reflejar el wireframe aprobado.
 4. Recién entonces arranca FASE 1 (implementación real). Al terminar, el wireframe se elimina.
 
@@ -221,7 +221,7 @@ Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para resincronizar ag
 
 | Capa | Tecnología |
 |------|-----------|
-| Frontend | React 19 + Vite 8 + Tailwind CSS 4 + React Router 8 + TanStack Query 5 + react-hook-form + Zod + Motion + shadcn/Radix + Sonner. **TypeScript** en adopción incremental (Vitest + Testing Library para componentes) |
+| Frontend | Angular 22 (standalone + OnPush + zoneless) + Tailwind CSS 4 + SpartanUI (helm vendored en `libs/ui`) + TanStack Query + Signal Forms + Sonner. Tests de componente con Vitest + `@testing-library/angular` |
 | Backend | FastAPI + SQLAlchemy 2 + Uvicorn + SlowAPI. SSE (`sse-starlette`) para progreso; cola durable **arq + Redis** (opcional) con worker separado; observabilidad **Logfire** (opt-in) + Sentry |
 | Base de datos | Supabase (PostgreSQL + pgvector) vía `psycopg` |
 | Storage | Supabase Storage (`scorm-packages`) — fallback automático a disco local |
@@ -471,7 +471,7 @@ GenOVA/
 ## Convenciones de código
 
 - **Máx 250 líneas por archivo en frontend** (ESLint hard error), **200 en backend** (convención ruff).
-- **Capa de servicios separada de hooks y páginas**: `services/*.js` hace `fetch`, `hooks/*.js` mantiene estado, `pages/*.jsx` solo orquesta layout.
+- **Capa de servicios separada de componentes**: `services/*.ts` hace `fetch` y mantiene estado con signals; los componentes/páginas standalone solo orquestan layout (screaming architecture: `features/<dominio>/` + `core/` transversal).
 - **Mobile-first**: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
 
 ## Funcionalidades principales
@@ -486,8 +486,9 @@ GenOVA/
 
 ## Cómo funciona la generación (5E)
 
-GenOVA aplica la metodología **5E**; hoy cubre **ENGAGE** y **EXPLORE**, cada una con **10
-tipos de recurso** (cómic, podcast, gamificación, dilema ético, escape room, simulador…).
+GenOVA aplica la metodología **5E** completa (**ENGAGE, EXPLORE, EXPLAIN, ELABORATE,
+EVALUATE**), cada fase con **10 tipos de recurso** (cómic, podcast, gamificación, dilema
+ético, escape room, simulador…).
 El backend genera con LLMs reales en un pipeline `texto → JSON → HTML`, valida y auto-repara
 el HTML (incluye callbacks SCORM), recurre a una **cadena de fallback** entre proveedores
 (Groq + OpenRouter) y empaqueta todo en un único SCORM 1.2. Opcionalmente ancla la generación
@@ -497,21 +498,23 @@ con **RAG** (archivos del usuario) e inserta imágenes (HF FLUX.1-schnell) y aud
 
 ## Rutas del frontend
 
-React Router 7 (`frontend/src/App.jsx`). Las rutas protegidas exigen sesión; las admin exigen
-rol `administrador` (verificado contra `/api/auth/me`).
+Angular Router (`frontend/src/app/app.routes.ts`). Las rutas protegidas exigen sesión
+(`authGuard`); las admin exigen rol `administrador` (`adminGuard`).
 
 | Ruta | Página | Acceso |
 |---|---|---|
 | `/login`, `/register` | Login / Registro | Público |
+| `/forgot-password`, `/reset-password`, `/verify-email` | Recuperación / verificación | Público |
 | `/dashboard` | Dashboard | Protegido |
-| `/crear-ova` | Crear OVA | Protegido |
+| `/crear` | Crear OVA (workspace en modo creación) | Protegido |
 | `/mis-ovas` | Mis OVAs (listado/búsqueda) | Protegido |
-| `/mis-ovas/:ovaId/editar` | Editor de OVA | Protegido |
+| `/workspace/:id` | Workspace del OVA (edición) | Protegido |
 | `/papelera` | Papelera (soft-delete) | Protegido |
 | `/profile` | Perfil | Protegido |
-| `/metodologia/engage`, `/metodologia/explore` | Vistas 5E | Protegido |
+| `/models` | Catálogo y asignación de modelos LLM | Protegido |
+| `/explore`, `/engage/:id` | Playground público de fases 5E | Público |
+| `/admin` | Gestión de usuarios | Admin |
 | `/admin/roles` | CRUD de roles y permisos | Admin |
-| `/admin/users` | Gestión de usuarios | Admin |
 
 ## Endurecimiento de seguridad
 
