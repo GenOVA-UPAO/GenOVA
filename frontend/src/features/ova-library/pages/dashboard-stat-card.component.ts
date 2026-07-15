@@ -13,7 +13,7 @@ import { ChangeDetectionStrategy, Component, input } from "@angular/core";
       <p class="mt-2 font-display text-4xl font-bold" [ngClass]="tone()">
         {{ value() }}
       </p>
-      <p class="mt-2 text-xs font-medium text-muted-foreground/80">
+      <p class="mt-2 text-xs font-medium text-muted-foreground">
         {{ sub() }}
       </p>
     </div>

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, type OnInit, output } from "
 
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { DialogComponent } from "@/core/components/ui/dialog.component";
-import type { Resource } from "@/core/lib/ova-types";
+import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import type { ConfigField } from "../../lib/resource-config";
 import { getSchema } from "../../lib/resource-config";

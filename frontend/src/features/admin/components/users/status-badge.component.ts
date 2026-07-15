@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import type { AdminUser } from "../../lib/types";
 import { isLockedOut } from "./statusHelpers";

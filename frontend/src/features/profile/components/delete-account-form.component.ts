@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, input, output, signal } from "@angular/core";
 import { form, FormField, required } from "@angular/forms/signals";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

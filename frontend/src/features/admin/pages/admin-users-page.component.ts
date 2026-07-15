@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import { EditUserModalComponent } from "../components/users/edit-user-modal.component";
 import { type Handlers, UsersTableComponent } from "../components/users/users-table.component";

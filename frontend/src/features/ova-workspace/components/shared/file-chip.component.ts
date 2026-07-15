@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import { formatSize } from "../../lib/uploadFormatters";
 import type { UploadItem } from "../../lib/uploadTypes";

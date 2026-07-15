@@ -26,11 +26,16 @@ naranja como acento puntual. Brand chrome ≠ paleta de contenido OVA. */
   --secondary: oklch(0.96 0.008 85); /* warm neutral */
   --secondary-foreground: oklch(0.3 0.03 264);
   --muted: oklch(0.965 0.007 85);
-  --muted-foreground: oklch(0.52 0.02 264);
+  /* Oscurecido de 0.52 a 0.46 (2026-07-14): a 0.52 el contraste sobre --background
+  quedaba en ~4.27:1, por debajo del umbral WCAG AA de 4.5:1 (hallazgo axe-core, RN-a11y). */
+  --muted-foreground: oklch(0.46 0.02 264);
   --accent: oklch(0.95 0.012 85); /* subtle hover bg (kept neutral) */
   --accent-foreground: oklch(0.3 0.03 264);
-  /* Brand accent — UPAO naranja #F47A20. Use intentionally (keylines, highlights). */
-  --accent-brand: oklch(0.72 0.17 52);
+  /* Brand accent — UPAO naranja #F47A20. Oscurecido de L=0.72 a L=0.46 (2026-07-14):
+  como texto de 9-10px sobre fondo claro el tono original solo alcanzaba ~2.6:1, y
+  L=0.58 seguía en ~3.5-3.8:1 (falla WCAG AA 4.5:1, hallazgo axe-core); este tono
+  conserva el naranja de marca y pasa el umbral en los usos de texto pequeño/negrita. */
+  --accent-brand: oklch(0.46 0.19 52);
   --accent-brand-foreground: oklch(0.99 0.005 85);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.9 0.01 85);

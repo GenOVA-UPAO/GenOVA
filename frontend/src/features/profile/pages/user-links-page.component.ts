@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
 import { AuthService, type MeUser } from "@/core/auth/auth.service";
-import { LinkRowComponent } from "@/core/components/cards/link-row.component";
+import { IconComponent } from "@/core/components/icon.component";
+import { LinkRowComponent } from "@/features/profile/components/link-row.component";
 
 import { type UserLink, UserLinksService } from "../services/user-links.service";
 import { canLink } from "./user-links-page.helpers";

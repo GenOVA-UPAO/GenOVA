@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
 import { AuthService } from "@/core/auth/auth.service";
+import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { verifyEmail } from "../services/verification";

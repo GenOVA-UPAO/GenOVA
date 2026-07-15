@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import type { ChipModel } from "../lib/model-task-card.helpers";
 import { taskMeta } from "../lib/task-meta";

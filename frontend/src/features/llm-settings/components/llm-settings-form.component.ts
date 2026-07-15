@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, input } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import { formatContextLength, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import { TASK_VISUAL } from "../lib/llm-settings-labels";

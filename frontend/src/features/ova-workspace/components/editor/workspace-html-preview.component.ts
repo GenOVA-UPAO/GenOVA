@@ -1,8 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, Input, output, signal } from "@angular/core";
 
-import { HtmlPreviewFrameComponent } from "@/core/components/html-preview-frame.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
+import { HtmlPreviewFrameComponent } from "@/features/ova-workspace/components/shared/html-preview-frame.component";
 
 import type { PhaseWithContent } from "../../lib/types";
 

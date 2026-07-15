@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 
 import { apiFetch } from "@/core/lib/http";
-import type { PreviewResult, Resource } from "@/core/lib/ova-types";
+import type { PreviewResult, Resource } from "@/features/ova-workspace/lib/ova-types";
 
 @Injectable({ providedIn: "root" })
 export class PhaseGenerationService {

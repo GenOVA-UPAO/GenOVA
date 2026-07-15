@@ -7,7 +7,7 @@ import {
   output,
 } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import { clampRatio, saveSplitRatio, SPLIT_MAX, SPLIT_MIN } from "../../lib/workspace-utils";
 

@@ -1,8 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 
-import { OvaStatusBadgeComponent } from "@/core/components/ova-status-badge.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
+import { OvaStatusBadgeComponent } from "@/features/ova-library/components/cards/ova-status-badge.component";
 import type { OvaListItem } from "@/features/ova-library/lib/types";
 
 @Component({

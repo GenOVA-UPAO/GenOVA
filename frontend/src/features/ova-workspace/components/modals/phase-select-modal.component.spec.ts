@@ -1,8 +1,8 @@
 import { Component, input, output } from "@angular/core";
 import { render } from "@testing-library/angular/zoneless";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
-import type { Resource } from "@/core/lib/ova-types";
+import { IconComponent } from "@/core/components/icon.component";
+import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import { PhaseSelectService } from "../../services/phase-select.service";
 import { PhaseSelectModalComponent } from "./phase-select-modal.component";

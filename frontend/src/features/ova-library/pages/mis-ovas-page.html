@@ -55,13 +55,17 @@
       />
     </div>
 
+    <label for="mis-ovas-status-filter" class="sr-only">Filtrar por estado</label>
     <hlm-select
       class="w-full sm:w-48"
       [value]="service.statusFilter() || 'all'"
       [itemToString]="statusItemToString"
       (valueChange)="handleStatusChange($event)"
     >
-      <hlm-select-trigger class="w-full sm:w-48 h-10 border-muted bg-background/50 font-medium">
+      <hlm-select-trigger
+        [buttonId]="'mis-ovas-status-filter'"
+        class="w-full sm:w-48 h-10 border-muted bg-background/50 font-medium"
+      >
         <hlm-select-value placeholder="Todos" />
       </hlm-select-trigger>
       <hlm-select-content *hlmSelectPortal>

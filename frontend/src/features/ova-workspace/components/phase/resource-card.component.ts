@@ -1,8 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, computed, input, output } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
-import type { Resource } from "@/core/lib/ova-types";
+import { IconComponent } from "@/core/components/icon.component";
+import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import { resourceIconClass } from "../../lib/resource-icons";
 

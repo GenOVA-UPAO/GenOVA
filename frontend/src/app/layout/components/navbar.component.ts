@@ -10,13 +10,13 @@ import {
 import { RouterLink } from "@angular/router";
 
 import { AuthService } from "@/core/auth/auth.service";
+import { IconComponent } from "@/core/components/icon.component";
 import {
   ThemeModalComponent,
   type ThemeState,
 } from "@/features/ova-library/components/modals/theme-modal.component";
 
 import { userInitials } from "../lib/layout-helpers";
-import { IconComponent } from "./icon.component";
 import { NavbarBrandComponent } from "./navbar-brand.component";
 import { SidebarMenuComponent } from "./sidebar-menu.component";
 

@@ -1,8 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
 import { AuthService } from "@/core/auth/auth.service";
+import { IconComponent } from "@/core/components/icon.component";
 
 import { PlatformApiKeysCardComponent } from "../../llm-settings/components/platform-api-keys-card.component";
 import { DeleteAccountFormComponent } from "../components/delete-account-form.component";

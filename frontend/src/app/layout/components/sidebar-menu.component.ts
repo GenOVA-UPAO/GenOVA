@@ -24,38 +24,44 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
     <nav aria-label="Navegacion principal" class="flex-1 overflow-y-auto px-2 pb-3">
       <gn-sidebar-section title="Principal">
         @for (item of navigationLinks; track item.to) {
-          <gn-sidebar-nav-item [to]="item.to" [label]="item.label" [onNavigate]="onNavigate()">
+          <li gn-sidebar-nav-item [to]="item.to" [label]="item.label" [onNavigate]="onNavigate()">
             <gn-nav-icon icon [name]="item.icon" />
-          </gn-sidebar-nav-item>
+          </li>
         }
         @if (canAnalytics) {
-          <gn-sidebar-nav-item to="/analytics" label="Analítica" [onNavigate]="onNavigate()">
+          <li gn-sidebar-nav-item to="/analytics" label="Analítica" [onNavigate]="onNavigate()">
             <gn-nav-icon icon name="chart" />
-          </gn-sidebar-nav-item>
+          </li>
         }
-        <gn-sidebar-nav-item
+        <li
+          gn-sidebar-nav-item
           to="/papelera"
           label="Papelera"
           [badge]="trashCount"
           [onNavigate]="onNavigate()"
         >
           <gn-nav-icon icon name="trash" />
-        </gn-sidebar-nav-item>
+        </li>
       </gn-sidebar-section>
 
       @if (canModels || canLink) {
         <gn-sidebar-section title="Configuracion">
           @if (canModels) {
             @for (item of configNavLinks; track item.to) {
-              <gn-sidebar-nav-item [to]="item.to" [label]="item.label" [onNavigate]="onNavigate()">
+              <li
+                gn-sidebar-nav-item
+                [to]="item.to"
+                [label]="item.label"
+                [onNavigate]="onNavigate()"
+              >
                 <gn-nav-icon icon [name]="item.icon" />
-              </gn-sidebar-nav-item>
+              </li>
             }
           }
           @if (canLink) {
-            <gn-sidebar-nav-item to="/vinculacion" label="Vincular" [onNavigate]="onNavigate()">
+            <li gn-sidebar-nav-item to="/vinculacion" label="Vincular" [onNavigate]="onNavigate()">
               <gn-nav-icon icon name="link" />
-            </gn-sidebar-nav-item>
+            </li>
           }
         </gn-sidebar-section>
       }
@@ -63,14 +69,15 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
       @if (isAdmin) {
         <gn-sidebar-section title="Administracion">
           @for (item of adminNavLinks; track item.to) {
-            <gn-sidebar-nav-item
+            <li
+              gn-sidebar-nav-item
               [to]="item.to"
               [label]="item.label"
               [exact]="item.exact === true"
               [onNavigate]="onNavigate()"
             >
               <gn-nav-icon icon [name]="item.icon" />
-            </gn-sidebar-nav-item>
+            </li>
           }
         </gn-sidebar-section>
       }

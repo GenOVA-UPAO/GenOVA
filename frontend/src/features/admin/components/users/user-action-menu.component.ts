@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, Input, output } from "@angular/core";
 import { HlmDropdownMenuItem, HlmDropdownMenuSeparator } from "@spartan-ng/helm/dropdown-menu";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import type { AdminUser } from "../../lib/types";
 import { isLockedOut } from "./statusHelpers";

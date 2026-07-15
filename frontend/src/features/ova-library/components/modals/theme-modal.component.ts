@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, Input, output, signal } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 import { DialogComponent } from "@/core/components/ui/dialog.component";
 
 import { ThemeSettingsService } from "../../services/theme-settings.service";

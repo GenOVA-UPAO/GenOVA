@@ -7,7 +7,7 @@ import {
   signal,
 } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import { PlatformSettingsService } from "../services/platform-settings.service";
 import { PlatformKeyRowComponent } from "./platform-key-row.component";

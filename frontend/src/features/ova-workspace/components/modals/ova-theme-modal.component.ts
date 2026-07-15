@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, type OnInit, output } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import type { OvaTheme } from "../../lib/types";
 import { OvaThemeSelectorComponent } from "./ova-theme-selector.component";

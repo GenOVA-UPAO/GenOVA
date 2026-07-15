@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
 

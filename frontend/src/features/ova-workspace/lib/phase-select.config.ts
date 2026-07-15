@@ -1,4 +1,4 @@
-import type { Resource } from "@/core/lib/ova-types";
+import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import { PHASE_ICON_BY_KEY } from "./resource-icons";
 

@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 import { toast } from "@/core/lib/toast";
 
 import { PlatformSettingsService } from "../services/platform-settings.service";

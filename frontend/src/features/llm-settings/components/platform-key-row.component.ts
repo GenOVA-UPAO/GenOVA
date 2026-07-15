@@ -11,7 +11,7 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import { PlatformSettingsService } from "../services/platform-settings.service";
 import { PROVIDER_META } from "./platformKeyMeta";

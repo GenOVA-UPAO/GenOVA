@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 
-import type { Resource } from "@/core/lib/ova-types";
+import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import type { OvaTheme } from "../lib/types";
 import { OvaJobService } from "./ova-job.service";

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 type Status = "idle" | "sending" | "sent";

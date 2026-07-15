@@ -9,8 +9,8 @@ import {
   type SimpleChanges,
 } from "@angular/core";
 
-import { HtmlPreviewFrameComponent } from "@/core/components/html-preview-frame.component";
 import { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
+import { HtmlPreviewFrameComponent } from "@/features/ova-workspace/components/shared/html-preview-frame.component";
 
 import type { ResourceVM } from "../../lib/ova-job-view-model";
 

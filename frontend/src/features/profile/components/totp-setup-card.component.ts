@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import { form, FormField, maxLength, minLength, required } from "@angular/forms/signals";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
+import { IconComponent } from "@/core/components/icon.component";
 
 import { TotpService } from "../services/totp.service";
 import type { SetupData, TotpPhase } from "./totp-setup-card.types";

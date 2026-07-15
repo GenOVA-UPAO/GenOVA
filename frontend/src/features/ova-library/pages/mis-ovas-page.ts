@@ -12,10 +12,10 @@ import { RouterLink } from "@angular/router";
 import { HlmInput } from "@spartan-ng/helm/input";
 import { HlmSelectImports } from "@spartan-ng/helm/select";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
-import { OvaGridSkeletonComponent } from "@/core/components/ova-grid-skeleton.component";
+import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
+import { OvaGridSkeletonComponent } from "@/features/ova-library/components/ova-grid-skeleton.component";
 
 import { OvaCardComponent } from "../components/cards/ova-card.component";
 import { OvaListPaginationComponent } from "../components/cards/ova-list-pagination.component";

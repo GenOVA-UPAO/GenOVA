@@ -1,7 +1,7 @@
 import { inputBinding } from "@angular/core";
 import { render, screen } from "@testing-library/angular/zoneless";
 
-import type { Resource } from "@/core/lib/ova-types";
+import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import { ResourcePreviewPanelComponent } from "./resource-preview-panel.component";
 

@@ -8,8 +8,8 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { IconComponent } from "@/app/layout/components/icon.component";
-import type { PreviewResult, Resource } from "@/core/lib/ova-types";
+import { IconComponent } from "@/core/components/icon.component";
+import type { PreviewResult, Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import { phaseCfg } from "../../lib/phase-select.config";
 import { getSchema } from "../../lib/resource-config";

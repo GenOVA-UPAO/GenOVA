@@ -1,7 +1,7 @@
 import { NgClass } from "@angular/common";
 import { ChangeDetectionStrategy, Component, computed, input } from "@angular/core";
 
-import type { Resource } from "@/core/lib/ova-types";
+import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import { resourceIconClass } from "../../lib/resource-icons";
 import { getResourcePreview } from "../../lib/resource-previews";

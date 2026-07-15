@@ -1,9 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 
-import type { PreviewResult } from "@/core/lib/ova-types";
-
-import { HtmlPreviewFrameComponent } from "../../../../core/components/html-preview-frame.component";
+import { HtmlPreviewFrameComponent } from "@/features/ova-workspace/components/shared/html-preview-frame.component";
+import type { PreviewResult } from "@/features/ova-workspace/lib/ova-types";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
