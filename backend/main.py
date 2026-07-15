@@ -89,6 +89,17 @@ def _background_auth_purge() -> None:
         logger.exception("Auth startup cleanup failed (continuing).")
 
 
+def _background_regen_recovery() -> None:
+    # Regen jobs live in an in-memory dict (one thread per regen); a restart
+    # loses them while ova.status stays "generando" in DB, bricking the OVA.
+    try:
+        from generation.regen.regen_jobs import recover_orphan_regen
+
+        recover_orphan_regen()
+    except Exception:
+        logger.exception("Regen orphan recovery on startup failed (continuing).")
+
+
 def _background_catalog_refresh() -> None:
     try:
         from sqlalchemy.orm import Session
@@ -108,6 +119,7 @@ async def lifespan(_: FastAPI):
     seed_db()
     asyncio.create_task(asyncio.to_thread(_background_rag_purge))
     asyncio.create_task(asyncio.to_thread(_background_auth_purge))
+    asyncio.create_task(asyncio.to_thread(_background_regen_recovery))
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
     yield
 

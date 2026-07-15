@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Ova, OvaPhase, OvaVersion, User
-from ova.helpers import _is_admin
+from ova.helpers import _is_admin, forbidden_response
 from storage import StorageError, is_configured, upload_zip
 
 logger = structlog.get_logger(__name__)
@@ -58,6 +58,15 @@ def _ensure_version_exists(ova: Ova, db: Session) -> OvaVersion:
     return version
 
 
+def _phase_to_version_data(phase: OvaPhase, content: str | None = None) -> dict:
+    """SCORM/new-version payload for a phase, optionally overriding its content."""
+    return {
+        "type": phase.phase_type,
+        "order": phase.phase_order,
+        "content": phase.content if content is None else content,
+    }
+
+
 def _phase_to_dict(phase: OvaPhase) -> dict:
     return {
         "id": str(phase.id),
@@ -103,10 +112,7 @@ def _resolve_ova(ova_id: str, current_user: User, db: Session):
             content={"error": "not_found", "message": "OVA no encontrado."},
         )
     if not _is_ova_owner(ova, current_user) and not _is_admin(current_user, db):
-        return None, JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "forbidden", "message": "Sin permisos."},
-        )
+        return None, forbidden_response()
     return ova, None
 
 
@@ -154,9 +160,7 @@ def _rebuild_scorm_for_version(ova: Ova, version: OvaVersion, user_id: str) -> N
     """
     from scorm.service import build_scorm_zip_bytes
 
-    phases_data = [
-        {"type": p.phase_type, "order": p.phase_order, "content": p.content} for p in version.phases
-    ]
+    phases_data = [_phase_to_version_data(p) for p in version.phases]
     zip_bytes = build_scorm_zip_bytes(
         course_title=ova.title,
         module_title="OVA Generado por GenOVA",

@@ -20,6 +20,7 @@ from ova.crud.edit_helpers import (
     _get_active_version,
     _is_ova_owner,
 )
+from ova.helpers import forbidden_response
 from users.admin.helpers import commit_or_500
 
 router = APIRouter()
@@ -65,9 +66,7 @@ def list_phase_versions(
         )
 
     if not _is_ova_owner(ova, current_user):
-        return JSONResponse(
-            status_code=403, content={"error": "forbidden", "message": "Sin permisos."}
-        )
+        return forbidden_response()
 
     mvs = (
         db.execute(
@@ -113,9 +112,7 @@ def revert_phase_version(
         )
 
     if not _is_ova_owner(ova, current_user):
-        return JSONResponse(
-            status_code=403, content={"error": "forbidden", "message": "Sin permisos."}
-        )
+        return forbidden_response()
 
     mv = db.execute(
         select(OvaPhaseVersion).where(

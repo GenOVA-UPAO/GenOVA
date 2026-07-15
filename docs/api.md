@@ -124,7 +124,6 @@ la base definida en `frontend/src/core/lib/http.ts` (dev: proxy de `ng serve` ha
 | PATCH | `/api/users/admin/{user_id}/role` | Asigna/cambia rol | admin | — |
 | POST | `/api/users/admin/{user_id}/unlock` | Desbloquea cuenta (resetea intentos) | admin | — |
 | POST | `/api/users/admin/{user_id}/reset-password-email` | Envía reset por correo | admin | — |
-| POST | `/api/users/admin/{user_id}/reset-password-whatsapp` | Genera link de reset por WhatsApp | admin | — |
 
 ---
 

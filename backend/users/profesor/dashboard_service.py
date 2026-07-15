@@ -18,7 +18,7 @@ def get_profesor_stats(db: Session, user_id) -> dict:
             select(func.count())
             .select_from(Ova)
             .where(
-                Ova.owner_id == user_id,
+                Ova.user_id == user_id,
                 Ova.deleted_at.is_(None),
             )
         )

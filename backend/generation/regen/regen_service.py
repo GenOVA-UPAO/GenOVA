@@ -5,7 +5,6 @@ ENGAGE/EXPLORE generation agents via `regen_agents.py`.
 """
 
 import os
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -15,15 +14,13 @@ from sqlalchemy.orm import Session
 
 from core.database import SessionLocal
 from generation.regen.regen_agents import resolve_resource_type
+from generation.regen.regen_jobs import _regen_jobs, _regen_jobs_lock
 from generation.regen.regen_persist import _build_and_persist, _mark_ova_error
 from generation.regen.regen_pipelines import regenerate_phase_content
 from models import Ova, OvaPhase, OvaVersion
 from ova.crud.edit_helpers import _ensure_version_exists, _get_active_version
 
 logger = structlog.get_logger(__name__)
-
-_regen_jobs: dict[str, dict] = {}
-_regen_jobs_lock = threading.Lock()
 
 
 def _finalize_edit(job_id: str, ova_id: str) -> None:

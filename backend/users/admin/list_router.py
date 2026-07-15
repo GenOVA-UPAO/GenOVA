@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from auth.dependencies import require_permission
 from core.database import get_db
+from core.pagination import page_meta
 from models import Role, User, UserRole
 
 router = APIRouter()
@@ -41,7 +42,6 @@ def get_users(
 
     offset = (page - 1) * limit
     total_items = db.execute(select(func.count(User.id))).scalar() or 0
-    total_pages = (total_items + limit - 1) // limit
 
     # joinedload eliminates N+1: roles + role loaded in one JOIN query.
     users_db = (
@@ -63,9 +63,6 @@ def get_users(
         users_list.append(_serialize_user(u, user_role))
 
     return {
-        "total_items": total_items,
-        "total_pages": total_pages,
-        "page": page,
-        "limit": limit,
+        **page_meta(total_items, page, limit),
         "users": users_list,
     }

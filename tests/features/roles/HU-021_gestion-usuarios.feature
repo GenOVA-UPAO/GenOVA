@@ -1,10 +1,8 @@
 # Extraído de sdd/specs/HU-021_gestion-roles-asignar-rol-usuario.md § Escenarios Gherkin
 # INC-001: La spec usa formato informal (Dado/Cuando/Entonces sin wrapper Feature/Scenario).
 #          Convertido a Gherkin estándar.
-# INC-004: El contrato API de /api/users/{id}/reset-password-whatsapp en la spec expone
-#          otp_code en la respuesta HTTP. Esto viola la política de seguridad del proyecto
-#          (los tokens/OTPs nunca cruzan el límite HTTP). Escenario 5 corregido para
-#          esperar solo wa_url. Ver docs/tasks/TA-BDD-incompatibilidades.md.
+# Nota: el restablecimiento por WhatsApp fue eliminado (2026-07) — el enlace de reset
+#       (con token) viajaba en la respuesta HTTP, violando la política de seguridad.
 Feature: Gestión de Usuarios y Roles
 
   Background:
@@ -38,11 +36,3 @@ Feature: Gestión de Usuarios y Roles
     Then el backend genera un token de restablecimiento único
     And el servidor envía un correo electrónico automático a "estudiante@upao.edu.pe" desde "soporte.genova.upao@gmail.com"
     And el frontend muestra una notificación de éxito indicando que el correo fue enviado
-
-  Scenario: Restablecimiento de contraseña por WhatsApp
-    Given el usuario "estudiante@upao.edu.pe" tiene teléfono registrado
-    When hago clic en "Restablecer por WhatsApp" del usuario "estudiante@upao.edu.pe"
-    Then el backend genera un OTP internamente y construye el enlace de WhatsApp
-    And el servidor retorna solo la wa_url con el mensaje prellenado
-    And el frontend abre el enlace de WhatsApp en una nueva pestaña
-    And el otp_code no se expone en la respuesta HTTP

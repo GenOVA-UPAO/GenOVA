@@ -1,20 +1,23 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import get_db
+from core.database import commit_or_500, get_db
+from core.rate_limit import limiter
 from models import Ova, User
-from ova.helpers import UpdateOvaMetadataRequest, _is_admin
+from ova.helpers import UpdateOvaMetadataRequest, _is_admin, forbidden_response
 
 router = APIRouter()
 
 
 @router.patch("/{ova_id}/metadata")
+@limiter.limit("30/minute")
 def update_ova_metadata(
+    request: Request,
     ova_id: str,
     payload: UpdateOvaMetadataRequest,
     current_user: User = Depends(get_current_user),
@@ -53,13 +56,7 @@ def update_ova_metadata(
 
     admin = _is_admin(current_user, db)
     if not admin and str(ova.user_id) != str(current_user.id):
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={
-                "error": "forbidden",
-                "message": "No tienes permiso para editar este OVA.",
-            },
-        )
+        return forbidden_response("No tienes permiso para editar este OVA.")
 
     if ova.status == "generando":
         return JSONResponse(
@@ -72,7 +69,7 @@ def update_ova_metadata(
 
     ova.title = clean_title
     ova.description = clean_description
-    db.commit()
+    commit_or_500(db, op="update_ova_metadata")
 
     return {
         "id": str(ova.id),
@@ -83,7 +80,9 @@ def update_ova_metadata(
 
 
 @router.delete("/{ova_id}")
+@limiter.limit("20/minute")
 def delete_ova(
+    request: Request,
     ova_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -103,13 +102,7 @@ def delete_ova(
 
     admin = _is_admin(current_user, db)
     if not admin and str(ova.user_id) != str(current_user.id):
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={
-                "error": "forbidden",
-                "message": "No tienes permiso para eliminar este OVA.",
-            },
-        )
+        return forbidden_response("No tienes permiso para eliminar este OVA.")
 
     if ova.status == "generando":
         return JSONResponse(
@@ -121,6 +114,6 @@ def delete_ova(
         )
 
     ova.deleted_at = datetime.now(UTC)
-    db.commit()
+    commit_or_500(db, op="delete_ova")
 
     return {"message": "OVA eliminado correctamente.", "id": str(ova.id)}

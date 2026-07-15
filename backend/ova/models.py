@@ -20,7 +20,12 @@ class Ova(Base):
     )
 
     id = _pk_column()
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     title = Column(String(255), nullable=False)
     description = Column(Text)
     status = Column(String(20), nullable=False, default="borrador", server_default="borrador")

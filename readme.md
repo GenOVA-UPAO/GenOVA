@@ -526,7 +526,7 @@ Angular Router (`frontend/src/app/app.routes.ts`). Las rutas protegidas exigen s
 - **CORS** restringido a métodos `GET/POST/PATCH/PUT/DELETE/OPTIONS` y headers `Authorization, Content-Type, Accept, X-Requested-With`.
 - **Lockout**: 5 intentos fallidos → 15 min bloqueo.
 - **Fallback chain LLM**: errores recuperables (rate-limit, 402, 5xx) caen a un modelo Groq de respaldo en lugar de exponer el fallo al cliente.
-- **Reset tokens no se devuelven al cliente.** Los endpoints de reset (correo + WhatsApp) generan un token largo (`secrets.token_urlsafe(32)`) y solo devuelven la URL de entrega (correo encolado o `wa.me` share link). El admin que dispara la operación nunca ve el token.
+- **Reset tokens no se devuelven al cliente.** El endpoint de reset por correo genera un token largo (`secrets.token_urlsafe(32)`) y solo confirma que el correo fue encolado. El admin que dispara la operación nunca ve el token.
 - **Sin secretos hardcodeados.** `auth/email.py` exige `SMTP_USER` / `SMTP_PASSWORD` vía env; si faltan, lanza `EmailNotConfigured` y registra el fallo (no envía).
 - **Errores de BD nunca se filtran**. Todos los routers usan helpers `commit_or_500()` que loguean `logger.exception(...)` y responden con mensaje genérico.
 
