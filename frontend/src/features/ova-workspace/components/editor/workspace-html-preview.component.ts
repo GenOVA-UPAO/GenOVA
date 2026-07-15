@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, Input, output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, Input, signal } from "@angular/core";
 
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { HtmlPreviewFrameComponent } from "@/features/ova-workspace/components/shared/html-preview-frame.component";
@@ -49,11 +49,7 @@ function getMeta(phase_type: string) {
   selector: "gn-workspace-html-preview",
   imports: [CommonModule, BadgeComponent, HtmlPreviewFrameComponent],
   template: `
-    <section
-      role="presentation"
-      class="flex flex-col h-full"
-      (click)="onResourceClick.emit($event)"
-    >
+    <section role="presentation" class="flex flex-col h-full">
       @if (phases.length) {
         <nav
           aria-label="Recursos del OVA"
@@ -62,7 +58,7 @@ function getMeta(phase_type: string) {
           @for (p of phases; track p) {
             <button
               type="button"
-              (click)="$event.stopPropagation(); setActiveId(p.id)"
+              (click)="setActiveId(p.id)"
               class="rounded-md px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               [ngClass]="getTabClass(p)"
             >
@@ -105,7 +101,6 @@ function getMeta(phase_type: string) {
 })
 export class WorkspaceHtmlPreviewComponent {
   @Input() phases: PhaseWithContent[] = [];
-  readonly onResourceClick = output<MouseEvent>();
 
   activeId = signal<string | null>(null);
 

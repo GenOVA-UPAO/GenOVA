@@ -160,11 +160,13 @@ def save_phase(
         for p in current_phases
     ]
     new_version = _create_new_version(ova, active_version, new_phases_data, db)
-    # HU-029: record micro-version for the edited phase
+    # HU-029: record micro-version for the edited phase. Match by phase_order
+    # (position is unique per version); phase_type alone is ambiguous since
+    # HU-027 allows up to 4 resources of the same phase type.
     edited_phase = db.execute(
         select(OvaPhase).where(
             OvaPhase.version_id == new_version.id,
-            OvaPhase.phase_type == phase.phase_type,
+            OvaPhase.phase_order == phase.phase_order,
         )
     ).scalar_one_or_none()
     if edited_phase is not None:

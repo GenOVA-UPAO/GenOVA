@@ -112,6 +112,55 @@ export class OvaWorkspaceService implements OnDestroy {
     }
   }
 
+  async savePhase(phaseId: string, content: string) {
+    await this.mutatePhase(
+      (ovaId) => this.editService.savePhaseContent(ovaId, phaseId, content),
+      "Recurso guardado.",
+      "No se pudo guardar el recurso.",
+    );
+  }
+
+  async deletePhase(phaseId: string) {
+    await this.mutatePhase(
+      (ovaId) => this.editService.deletePhase(ovaId, phaseId),
+      "Recurso eliminado.",
+      "No se pudo eliminar el recurso.",
+    );
+  }
+
+  async addPhase(phaseType: string, prompt: string) {
+    await this.mutatePhase(
+      (ovaId) => this.editService.addPhase(ovaId, phaseType, prompt),
+      "Recurso añadido.",
+      "No se pudo añadir el recurso.",
+    );
+  }
+
+  async reorderPhases(phases: PhaseWithContent[]) {
+    const reorders = phases.map((p, idx) => ({ new_order: idx, phase_id: p.id }));
+    await this.mutatePhase(
+      (ovaId) => this.editService.reorderPhases(ovaId, reorders),
+      "Orden actualizado.",
+      "No se pudo reordenar.",
+    );
+  }
+
+  /** Ejecuta una mutación de fase, notifica y recarga el OVA (misma pauta que onPhaseReverted). */
+  private async mutatePhase(
+    action: (ovaId: string) => Promise<unknown>,
+    okMsg: string,
+    failMsg: string,
+  ) {
+    if (!this.ovaId) return;
+    try {
+      await action(this.ovaId);
+      this.toastSuccess(okMsg);
+      await this.load();
+    } catch (err: any) {
+      this.toastError(err?.message || failMsg);
+    }
+  }
+
   // Poll
   private async pollRegen(jobId: string) {
     if (!this.mounted || !this.ovaId) return;

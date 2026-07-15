@@ -121,11 +121,12 @@ historial de micro-versiones y arrastrar para reordenar dentro de la misma
 fase; `gn-add-resource-modal` añade un recurso nuevo (máximo 4 por tipo de
 fase). Estos componentes emiten sus eventos hacia arriba
 (`workspace-ova-panel.component.ts` los reexpone como `onEditPhase`,
-`onRegenPhase`, `onDeletePhase`, `onAddPhase`, `onReorder`), pero
-`ova-edit-view.component.html` no los conecta a ningún manejador todavía —
-por ahora la vía confirmada para modificar contenido es el chat de cambios
-(`submitPrompt`) y la reversión de versiones/micro-versiones (que sí están
-conectadas). Existe además un endpoint de edición granular a nivel de
+`onRegenPhase`, `onDeletePhase`, `onAddPhase`, `onReorder`) y
+`ova-edit-view.component.html` los conecta a los métodos de mutación de
+`OvaWorkspaceService` (`savePhase`, `deletePhase`, `addPhase`,
+`reorderPhases`; la regeneración por recurso reusa `runRegen` con
+`fase_ids`), que tras cada operación notifican con un toast y recargan el
+OVA, igual que la reversión de versiones. Existe además un endpoint de edición granular a nivel de
 sub-elemento HTML dentro de un recurso
 (`backend/ova/crud/subelement_router.py`, HU-031) que hoy responde `501 Not
 Implemented` para todos los tipos de fase — es un stub pendiente de

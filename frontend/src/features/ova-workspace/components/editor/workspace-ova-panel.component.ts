@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, Input, input, output } from "@angular/core";
 
 import { IconComponent } from "@/core/components/icon.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
@@ -111,14 +111,11 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
 
         @if (!isLoading() && hasPhases) {
           @if (tab === "preview") {
-            <gn-workspace-html-preview
-              [phases]="phases()"
-              (onResourceClick)="onResourceClick.emit($event)"
-            ></gn-workspace-html-preview>
+            <gn-workspace-html-preview [phases]="phases()"></gn-workspace-html-preview>
           }
           @if (tab === "code") {
             <div class="p-4 space-y-4">
-              @for (kv of grouped | keyvalue; track kv) {
+              @for (kv of grouped() | keyvalue; track kv.key) {
                 <gn-workspace-resource-list
                   [phaseType]="kv.key"
                   [phases]="kv.value"
@@ -161,7 +158,6 @@ export class WorkspaceOvaPanelComponent {
     phaseType: string;
     prompt: string;
   }>();
-  readonly onResourceClick = output<MouseEvent>();
   readonly onHistoryOpen = output();
 
   tab: "preview" | "code" = "preview";
@@ -172,14 +168,17 @@ export class WorkspaceOvaPanelComponent {
     return Array.isArray(phases) && phases.length > 0;
   }
 
-  get grouped() {
-    if (!this.hasPhases) return {};
+  // computed (no getter): referencia estable entre pasadas de change detection.
+  // Un getter devolvía un objeto nuevo en cada lectura y, con `track` por
+  // identidad, el @for destruía y recreaba las listas en bucle (congelaba la
+  // pestaña Code bajo zoneless).
+  readonly grouped = computed(() => {
     return this.phases().reduce<Record<string, PhaseWithContent[]>>((acc, p) => {
       if (!acc[p.phase_type]) acc[p.phase_type] = [];
       acc[p.phase_type].push(p);
       return acc;
     }, {});
-  }
+  });
 
   handleGroupReorder(phaseType: string, updatedGroup: PhaseWithContent[]) {
     let typeIdx = 0;

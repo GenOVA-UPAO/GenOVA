@@ -5,6 +5,11 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
 async function analyze(page) {
+  // Varias pantallas usan animaciones de entrada (animate-in fade-in, hasta
+  // ~800ms con delay) que dejan el texto a mitad de opacidad justo cuando el
+  // heading ya existe en el DOM. Sin esta espera, axe-core mide un frame
+  // intermedio y reporta contraste de color falso-positivo.
+  await page.waitForTimeout(900)
   return new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
 }
 

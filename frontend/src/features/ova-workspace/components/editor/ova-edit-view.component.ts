@@ -12,6 +12,7 @@ import { RouterModule } from "@angular/router";
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
+import type { PhaseWithContent } from "../../lib/types";
 import { buildUploadsPropBag } from "../../lib/upload-chip-view-model";
 import type { OvaVersionRow } from "../../lib/version-history.types";
 import { getSavedRatio } from "../../lib/workspace-utils";
@@ -85,5 +86,25 @@ export class OvaEditViewComponent implements OnInit {
 
   onRemoveUpload(clientId: string) {
     void this.uploadsSvc.handleRemoveUpload(clientId);
+  }
+
+  onEditPhase(event: { phaseId: string; content: string }) {
+    void this.ws.savePhase(event.phaseId, event.content);
+  }
+
+  onRegenPhase(event: { phaseId: string; prompt?: string }) {
+    void this.ws.runRegen({ faseIds: [event.phaseId], prompt: event.prompt ?? null });
+  }
+
+  onDeletePhase(phaseId: string) {
+    void this.ws.deletePhase(phaseId);
+  }
+
+  onAddPhase(event: { phaseType: string; prompt: string }) {
+    void this.ws.addPhase(event.phaseType, event.prompt);
+  }
+
+  onReorderPhases(phases: PhaseWithContent[]) {
+    void this.ws.reorderPhases(phases);
   }
 }

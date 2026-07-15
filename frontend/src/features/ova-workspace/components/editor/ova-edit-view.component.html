@@ -129,6 +129,11 @@
                   (onDownload)="ws.downloadScorm()"
                   (onHistoryOpen)="historyOpen = true"
                   (onPhaseReverted)="ws.load()"
+                  (onEditPhase)="onEditPhase($event)"
+                  (onRegenPhase)="onRegenPhase($event)"
+                  (onDeletePhase)="onDeletePhase($event)"
+                  (onAddPhase)="onAddPhase($event)"
+                  (onReorder)="onReorderPhases($event)"
                 ></gn-workspace-ova-panel>
               </div>
             }
@@ -169,6 +174,11 @@
               (onDownload)="ws.downloadScorm()"
               (onHistoryOpen)="historyOpen = true"
               (onPhaseReverted)="ws.load()"
+              (onEditPhase)="onEditPhase($event)"
+              (onRegenPhase)="onRegenPhase($event)"
+              (onDeletePhase)="onDeletePhase($event)"
+              (onAddPhase)="onAddPhase($event)"
+              (onReorder)="onReorderPhases($event)"
             ></gn-workspace-ova-panel>
           </div>
         </div>

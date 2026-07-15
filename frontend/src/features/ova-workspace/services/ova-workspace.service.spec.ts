@@ -1,0 +1,90 @@
+import { TestBed } from "@angular/core/testing";
+
+import { OvaEditService } from "./ova-edit.service";
+import { OvaWorkspaceService } from "./ova-workspace.service";
+
+vi.mock("ngx-sonner", () => ({
+  toast: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn() }),
+}));
+
+function editServiceStub() {
+  return {
+    addPhase: vi.fn(() => Promise.resolve({})),
+    deletePhase: vi.fn(() => Promise.resolve({})),
+    fetchOvaEditorData: vi.fn(() => Promise.resolve({ status: "listo" })),
+    reorderPhases: vi.fn(() => Promise.resolve({})),
+    savePhaseContent: vi.fn(() => Promise.resolve({})),
+    triggerRegen: vi.fn(() => Promise.resolve({ job_id: "job-1" })),
+  };
+}
+
+describe("OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)", () => {
+  let service: OvaWorkspaceService;
+  let edit: ReturnType<typeof editServiceStub>;
+
+  beforeEach(async () => {
+    edit = editServiceStub();
+    TestBed.configureTestingModule({
+      providers: [OvaWorkspaceService, { provide: OvaEditService, useValue: edit }],
+    });
+    service = TestBed.inject(OvaWorkspaceService);
+    service.init("ova-1");
+    // dejar terminar el load() inicial de init()
+    await vi.waitFor(() => {
+      expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("savePhase llama a savePhaseContent y recarga el OVA", async () => {
+    await service.savePhase("fase-9", "<p>nuevo</p>");
+
+    expect(edit.savePhaseContent).toHaveBeenCalledWith("ova-1", "fase-9", "<p>nuevo</p>");
+    expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(2);
+  });
+
+  it("deletePhase llama a deletePhase y recarga el OVA", async () => {
+    await service.deletePhase("fase-9");
+
+    expect(edit.deletePhase).toHaveBeenCalledWith("ova-1", "fase-9");
+    expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(2);
+  });
+
+  it("addPhase llama a addPhase con tipo y prompt y recarga el OVA", async () => {
+    await service.addPhase("engage", "Un cómic sobre redes");
+
+    expect(edit.addPhase).toHaveBeenCalledWith("ova-1", "engage", "Un cómic sobre redes");
+    expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(2);
+  });
+
+  it("reorderPhases mapea la lista a [{phase_id, new_order}] por índice global", async () => {
+    await service.reorderPhases([
+      { id: "b", phase_type: "engage" },
+      { id: "a", phase_type: "engage" },
+      { id: "c", phase_type: "explore" },
+    ]);
+
+    expect(edit.reorderPhases).toHaveBeenCalledWith("ova-1", [
+      { new_order: 0, phase_id: "b" },
+      { new_order: 1, phase_id: "a" },
+      { new_order: 2, phase_id: "c" },
+    ]);
+    expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(2);
+  });
+
+  it("runRegen con faseIds envía el subconjunto al endpoint de regeneración", async () => {
+    await service.runRegen({ faseIds: ["fase-9"], prompt: "más ejemplos" });
+
+    expect(edit.triggerRegen).toHaveBeenCalledWith("ova-1", {
+      faseIds: ["fase-9"],
+      prompt: "más ejemplos",
+    });
+  });
+
+  it("un fallo en la mutación no recarga el OVA", async () => {
+    edit.deletePhase.mockRejectedValueOnce(new Error("boom"));
+
+    await service.deletePhase("fase-9");
+
+    expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(1);
+  });
+});
