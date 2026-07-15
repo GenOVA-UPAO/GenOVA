@@ -1,10 +1,10 @@
 # Esquema de base de datos
 
 PostgreSQL (Supabase) + extensión **pgvector**. Las migraciones viven en
-`backend/migrations/` (`001`–`017`) y se aplican **automáticamente al arrancar** vía
+`backend/migrations/` (`001`–`034`) y se aplican **automáticamente al arrancar** vía
 `run_migrations()`; cada archivo corre como máximo una vez por base (registro en
 `_migrations_applied`, bootstrapped por la 016). Siguiente migración: crear
-`backend/migrations/018_<nombre>.sql`.
+`backend/migrations/035_<nombre>.sql`.
 
 El modelo ORM (SQLAlchemy 2) vive en `backend/models.py`.
 
@@ -106,4 +106,4 @@ El modelo ORM (SQLAlchemy 2) vive en `backend/models.py`.
 - **pgvector**: la dimensión depende del embedder (768 Gemini / 384 local). Ver
   [generacion-5e.md](generacion-5e.md) y la sección RAG del [README](../README.md).
 
-_Fuentes: `backend/migrations/001_init.sql`–`017_soft_delete_indexes.sql`, `backend/models.py`._
+_Fuentes: `backend/migrations/001_init.sql`–`034_user_roles_is_primary.sql`, `backend/models.py`._

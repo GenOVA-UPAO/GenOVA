@@ -1,9 +1,9 @@
 # Pipeline 5E — Generación completa de OVAs
 
 > Catálogo de los **50 tipos de recurso** (10 por fase 5E: Engage, Explore, Explain, Elaborate,
-> Evaluate) y las plantillas de prompt con que se generan. La **arquitectura del motor** (grafo
-> LangGraph de 7 nodos, paralelismo, persistencia, planes) vive en [prometheus.md](prometheus.md);
-> este documento se centra en el catálogo y los prompts.
+> Evaluate) y las plantillas de prompt con que se generan. La **arquitectura del motor**
+> (grafo LangGraph work-pool, paralelismo, persistencia, planes) vive en
+> [prometheus.md](prometheus.md); este documento se centra en el catálogo y los prompts.
 
 | Archivo | Rol |
 |---|---|
@@ -22,24 +22,27 @@
 ## Resumen
 
 El pipeline recibe un `prompt` del usuario y produce un OVA completo con recursos HTML5
-autocontenidos, validados y empaquetados en SCORM 1.2. La orquestación corre sobre **LangGraph**:
-un grafo de **7 nodos** (`concierge` + 5 fases + `assemble`) donde cada nodo de fase genera
-**todos** sus recursos en paralelo acotado. Cada recurso se genera con LLMs reales (Groq +
-OpenRouter) usando uno de tres planes según el tipo. Detalle completo del flujo en
-[prometheus.md](prometheus.md).
+autocontenidos, validados y empaquetados en SCORM 1.2. La orquestación corre sobre **LangGraph**
+con un motor **work-pool** (`backend/prometheus/engine/graph.py`): sin barreras de fase, cada
+recurso se genera en su propio worker. Cada recurso usa LLMs reales (Groq + OpenRouter) con
+uno de tres planes según el tipo. Detalle completo del flujo en [prometheus.md](prometheus.md).
 
 ---
 
 ## Arquitectura del grafo
 
 ```
-START → concierge → [engage → explore → explain → elaborate → evaluate] → assemble → END
+START → concierge → (fan-out Send) resource_worker × N → collect → critic → repair → editor → assemble → END
 ```
 
-**7 nodos**: `concierge`, `engage`, `explore`, `explain`, `elaborate`, `evaluate`, `assemble`.
-No hay nodo `validate`: la validación/reparación y el refine ocurren **dentro** de cada plan de
-generación. Cada nodo de fase genera **todos** los recursos de su fase en paralelo acotado
-(`run_phase`), no uno a uno. Ver [prometheus.md](prometheus.md#arquitectura-del-grafo).
+El `concierge` descompone el prompt en un plan de recursos por fase y hace fan-out vía Send
+API: un `resource_worker` **por recurso**, todos en el mismo superstep (concurrencia acotada
+por `OVA_GEN_CONCURRENCY`), sin esperar a que termine una fase para empezar la siguiente.
+`collect` agrega las señales de los workers, `critic` hace una única pasada global de calidad,
+`repair` reintenta los fallidos y `editor` armoniza coherencia 5E antes de `assemble`.
+La validación/reparación determinista y el refine ocurren **dentro** de cada plan de
+generación. (El motor legacy por fases secuenciales se eliminó el 2026-07-10.)
+Ver [prometheus.md](prometheus.md).
 
 ---
 

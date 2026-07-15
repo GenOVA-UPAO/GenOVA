@@ -1,5 +1,8 @@
 # Mejoras de infraestructura y robustez (2026-06)
 
+> **Registro histórico (junio 2026).** Las rutas de frontend citadas más abajo corresponden al
+> frontend React, ya reemplazado por Angular 22; las referencias de backend siguen vigentes.
+>
 > Tanda de mejoras transversales (resiliencia, observabilidad, tiempo real, calidad) sobre el
 > stack existente. Ninguna cambia el comportamiento por defecto cuando su dependencia opcional
 > (Redis, tokens) no está presente: todas degradan a un fallback seguro.

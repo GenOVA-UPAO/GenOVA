@@ -204,14 +204,14 @@ Botón "Preview" en Mis OVAs abre el SCORM en iframe sandbox sin descarga.
 
 ## II. MEJORAS DE TESTS
 
-### T1 — Vitest + RTL + MSW (completar EN-022)
+### T1 — Ampliar cobertura de tests de componente (completar EN-022)
 
 **Prioridad:** Alta · **Esfuerzo:** Medio
 
-Gap más urgente: solo 2 tests Vitest para ~267 componentes TypeScript.
+Gap más urgente: pocos tests de componente frente a la cantidad de componentes Angular.
 
-**Stack:**
-- Vitest + RTL (ya instalados)
+**Stack (Angular):**
+- Vitest + `@testing-library/angular` (ya instalados y en uso)
 - MSW (Mock Service Worker) para interceptar `apiJson` sin backend real
 - `@testing-library/user-event` para interacciones reales
 
@@ -366,7 +366,7 @@ await redis.setex(cache_key, ttl=LLM_CACHE_TTL_S, value=result)
 
 Plataforma educativa universitaria — obligación ética y potencialmente legal.
 
-- `@axe-core/react` en Vitest setup → falla tests si a11y rota
+- `@axe-core/playwright` en la suite a11y (ya en uso en `tests/a11y/`) → falla tests si a11y rota
 - Lighthouse CI en cada deploy de Vercel
 - Fixes probables: contraste naranja UPAO sobre blanco, focus rings visibles,
   ARIA labels en zonas drag-and-drop y splitter del workspace

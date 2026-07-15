@@ -23,16 +23,15 @@ separado** (`backend/worker.py`, servicio propio en Railway con `Dockerfile.work
 re-encola al arrancar los jobs huérfanos regenerando solo los recursos sin persistir. Sin Redis,
 el job corre inline en un thread (dev local).
 
-El motor Prometheus (`backend/prometheus/`, sobre LangGraph) tiene **dos modos**
-(`OVA_ENGINE`, default `phases`):
+El motor Prometheus (`backend/prometheus/`, sobre LangGraph) tiene un **único modo,
+work-pool** (el motor legacy por fases secuenciales se eliminó el 2026-07-10 tras el
+benchmark que motivó el reemplazo):
 
-- **workpool** (recomendado, activo en develop): `concierge` → un `resource_worker` **por
-  recurso** vía Send API (fan-out sin barreras de fase, concurrencia `OVA_GEN_CONCURRENCY`)
-  → `collect` (agrega señales de workers a beliefs) → `critic` (pass global único) →
-  `repair` (reintento de fallidos, con plan degradado si existe) → `editor` → `assemble`.
+- **workpool**: `concierge` → un `resource_worker` **por recurso** vía Send API (fan-out
+  sin barreras de fase, concurrencia `OVA_GEN_CONCURRENCY`) → `collect` (agrega señales de
+  workers a beliefs) → `critic` (pass global único) → `repair` (reintento de fallidos, con
+  plan degradado si existe) → `editor` → `assemble`.
   Wall-clock ≈ recurso más lento, no suma de fases (~30 min → ~6 min con 20 recursos).
-- **phases** (legacy): `concierge` → 5 nodos de fase secuenciales (paralelo acotado dentro
-  de cada fase) → critic entre fases → `repair` → `editor` → `assemble`.
 
 En ambos, cada recurso persiste a su fila `OvaJobResource` al terminar (progreso real en el
 front). El plan de ejecución por recurso (`podcast`/`direct_code`/`two_step`) vive en
@@ -46,7 +45,7 @@ Cada recurso usa uno de **tres planes** (`backend/prometheus/plans/`):
 - **podcast** (ENGAGE recurso 3): monólogo → TTS de Groq (`backend/llm/podcast.py`) → reproductor HTML.
 
 Tras generar, cada recurso pasa por `validate_and_repair` (determinista), `maybe_refine`
-(refinador estructural) y — en el motor workpool — el **validate** evaluator-optimizer
+(refinador estructural) y el **validate** evaluator-optimizer
 (`prometheus/engine/validate.py`): checklist estructural (completitud SCORM, interactividad,
 sin placeholders, contenido no esquelético) espejado como CONTRATO_DE_SALIDA en cada prompt;
 si falla, hasta 2 rondas de feedback dirigido. Detalle en [prometheus.md](prometheus.md).

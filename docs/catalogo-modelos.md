@@ -8,16 +8,17 @@
 
 | Archivo | Rol |
 |---|---|
-| `backend/llm/model_catalog.py` | Allowlist curado (9 modelos), defaults del sistema, validación |
-| `backend/llm/catalog_refresh.py` | Fetch paralelo OpenRouter + Groq, merge con curados, catálogo completo |
-| `backend/llm/catalog_cache.py` | Persistencia en Supabase (`catalog_cache`) con TTL 24 h |
-| `backend/users/llm_settings_router.py` | GET/PUT de configuración por tarea (modelo + timeout) |
-| `backend/users/enabled_models_router.py` | GET/PUT de toggle habilitar/deshabilitar modelos |
+| `backend/llm/catalog/model_catalog.py` | Allowlist curado, defaults del sistema, validación |
+| `backend/llm/catalog/catalog_refresh.py` + `catalog_refresh_providers.py` | Fetch paralelo de proveedores (OpenRouter, Groq, HF, Opencode), merge con curados |
+| `backend/llm/catalog/catalog_cache.py` | Persistencia en Supabase (`catalog_cache`) con TTL 24 h |
+| `backend/llm/catalog/catalog_router.py` | Endpoints HTTP del catálogo |
+| `backend/users/settings/llm_settings_router.py` | GET/PUT de configuración por tarea (modelo + timeout) |
+| `backend/users/settings/enabled_models_router.py` | GET/PUT de toggle habilitar/deshabilitar modelos |
 | `backend/llm/router.py` | Resolución runtime del modelo primario con validación de enabled |
-| `frontend/src/components/settings/LlmSettingsCard.jsx` | UI del catálogo completo (~310 modelos) con búsqueda, filtros, scroll infinito |
-| `frontend/src/components/settings/LlmSettingsForm.jsx` | Dropdowns de asignación por tarea + slider de timeout |
-| `frontend/src/components/workspace/LlmSettingsModal.jsx` | Modal accesible desde el workspace sin ir a Perfil |
-| `frontend/src/hooks/useLlmSettings.js` | Hook compartido (estado, búsqueda, paginación, toggle, save) |
+| `frontend/src/features/llm-settings/pages/models-page.component.ts` | Página `/models`: catálogo completo con búsqueda y filtros |
+| `frontend/src/features/llm-settings/components/llm-settings-form.component.ts` | Asignación de modelo por tarea + timeout |
+| `frontend/src/features/llm-settings/components/llm-settings-modal.component.ts` | Modal accesible desde el workspace |
+| `frontend/src/features/llm-settings/services/user-llm-settings.service.ts` + `.store.ts` | Estado compartido (signals): búsqueda, paginación, toggle, save |
 
 ---
 

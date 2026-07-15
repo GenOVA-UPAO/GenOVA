@@ -3,12 +3,12 @@
 ## Topología productiva
 
 ```
-            ┌──────────────┐        ┌──────────────┐
-  navegador │   Vercel     │  /api  │    Render    │
-  ─────────▶│  (frontend   │───────▶│  (backend    │
-            │   estático)  │  XHR   │   FastAPI)   │
-            └──────────────┘        └──────┬───────┘
-                                           │
+            ┌──────────────┐        ┌───────────────────────────┐
+  navegador │   Vercel     │  /api  │         Railway           │
+  ─────────▶│  (frontend   │───────▶│  API (FastAPI, uvicorn)   │
+            │   estático)  │  XHR   │  Worker (arq) ◀─ Redis ─┐ │
+            └──────────────┘        └──────┬──────────────────┘ │
+                                           │        cola de jobs┘
                               ┌────────────┴────────────┐
                               │        Supabase         │
                               │  PostgreSQL + pgvector  │
@@ -19,7 +19,8 @@
 | Componente | Host | Artefacto |
 |---|---|---|
 | Frontend | **Vercel** | `ng build` → estático (`dist/frontend/browser`; Vercel autodetecta Angular) |
-| Backend | **Render** | `backend/Dockerfile.prod` (uvicorn) |
+| Backend API | **Railway** | `backend/Dockerfile.prod` (uvicorn); servicios definidos en `.railway/railway.ts` |
+| Worker de generación | **Railway** | `backend/Dockerfile.worker` (arq), desacoplado de la API por Redis |
 | Base de datos | **Supabase** | PostgreSQL + pgvector (Transaction pooler, puerto 6543) |
 | Storage SCORM | **Supabase Storage** | bucket privado `scorm-packages` (signed URLs) |
 
@@ -29,9 +30,8 @@
 
 ## Frontend en Vercel
 
-- **Build**: `ng build` → `dist/frontend/browser/` (Angular CLI/esbuild). Vercel autodetecta
-  el framework Angular; ya no hay `frontend/vercel.json` (el legacy React vive en
-  `archive/frontend-react-legacy/`).
+- **Build**: `ng build` → `dist/frontend/browser/` (Angular CLI/esbuild). La configuración
+  vive en `frontend/vercel.json` (el Root Directory del proyecto Vercel es `frontend/`).
 - **Rewrites**: `/(.*) → /index.html` (SPA), provistos por el preset de Angular en Vercel.
 - **Origen del backend**: resuelto en tiempo de ejecución por `frontend/src/core/lib/http.ts`
   (constante `API_BASE_PROD` + override `window.__GENOVA_API_BASE__`), no vía env `VITE_*`.
@@ -40,7 +40,7 @@
 > se **salta** (`skipped`) si la rama no tiene un PR/branch Supabase asociado. Es normal,
 > no es un error. Solo crea DBs efímeras por PR si activas Branching.
 
-## Backend en Render
+## Backend en Railway
 
 - **Imagen**: `backend/Dockerfile.prod` (`python:3.12-slim`, `uvicorn main:app --host 0.0.0.0 --port 8000`).
 - Las **migraciones se aplican solas** al arrancar (`run_migrations()` en el lifespan).
@@ -142,13 +142,13 @@ cp frontend/.env.example frontend/.env
 | `ARQ_MAX_JOBS` | 4 | | Jobs de generación en paralelo que procesa un worker arq |
 | `LOGFIRE_TOKEN` | — | | Activa **Pydantic Logfire** (tracing distribuido + token/cost de LLM). Sin él: no-op (como Sentry) |
 
-### Frontend (`frontend/.env`)
+### Frontend
 
-| Variable | Default | Propósito |
-|---|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:8000` | Base de la API (usada por `frontend/src/lib/http.js`) |
-| `VITE_MIN_PROMPT_CHARS` | 10 | Mínimo de caracteres del prompt de creación |
-| `VITE_UPLOAD_MAX_FILES` | 5 | Máx archivos por lote de subida |
+El frontend Angular no lee variables `VITE_*`: la base de la API se resuelve en
+`frontend/src/core/lib/http.ts` (proxy de `ng serve` en dev, URLs de Railway en prod, con
+override `window.__GENOVA_API_BASE__`). Los límites de UI (mínimo de caracteres del prompt,
+máximo de archivos por subida) son constantes en código
+(p. ej. `frontend/src/features/ova-workspace/lib/upload-chip-view-model.ts`).
 
 > ⚠️ Las claves de servidor (`GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`,
 > `SUPABASE_SERVICE_ROLE_KEY`) **nunca** llevan prefijo `VITE_` ni se exponen al frontend.

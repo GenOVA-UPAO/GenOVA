@@ -1,11 +1,13 @@
-# Arquitectura objetivo — Equipo editorial pedagógico (diseño)
+# Arquitectura — Equipo editorial pedagógico
 
-> **Propuesta de arquitectura multiagente** para la generación de OVAs. Evoluciona el motor actual
-> (orchestrator-workers plano; ver [prometheus.md](prometheus.md)) hacia un **equipo editorial** con
-> roles que **colaboran vía crítica**, donde el multi-agente aporta valor real: **calidad
+> **Arquitectura multiagente** para la generación de OVAs: un **equipo editorial** con roles
+> que **colaboran vía crítica**, donde el multi-agente aporta valor real: **calidad
 > pedagógica** y **coherencia del arco 5E**. Framework: **LangGraph**.
 >
-> Estado: **diseño** (no implementado). Sección [Rollout](#rollout-por-fases) define cómo prototipar.
+> Estado: **implementado** (EN-015 Crítico y EN-016 Editor de Coherencia, done). Los roles
+> viven en `backend/prometheus/nodes/` (`critic.py`, `repair.py`, `editor.py`) integrados al
+> motor work-pool ([prometheus.md](prometheus.md)). Este documento conserva el diseño original
+> como referencia de la propuesta y su rollout.
 
 ---
 

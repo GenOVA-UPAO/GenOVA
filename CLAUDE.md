@@ -81,10 +81,11 @@ pnpm prod:docker   # Nginx on port 80
 
 ## Migrations
 
-Auto-applied on startup via `run_migrations()`. Files in `backend/migrations/` (001–017).
+Auto-applied on startup via `run_migrations()`. Files in `backend/migrations/`
+(check the directory for the current highest number; 034 as of 2026-07-15).
 Applied filenames are tracked in `_migrations_applied` (bootstrapped by 016) so
 each file runs at most once per database. Next migration: create
-`backend/migrations/018_<name>.sql`.
+`backend/migrations/0NN_<name>.sql` with the next free number.
 
 ## Database connection (Supabase)
 

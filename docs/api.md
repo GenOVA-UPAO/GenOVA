@@ -1,7 +1,7 @@
 # Referencia de API REST
 
 Backend FastAPI de GenOVA. Todos los endpoints cuelgan de la base configurada en
-`VITE_API_BASE_URL` (dev: `http://localhost:8000`).
+la base definida en `frontend/src/core/lib/http.ts` (dev: proxy de `ng serve` hacia `http://localhost:8000`; prod: URLs de Railway).
 
 > **Swagger interactivo**: con el backend corriendo, abre `http://localhost:8000/docs`
 > (Swagger UI) o `http://localhost:8000/redoc` (ReDoc) para explorar y probar todo en vivo.
