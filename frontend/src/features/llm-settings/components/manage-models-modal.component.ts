@@ -61,9 +61,9 @@ export class ManageModelsModalComponent implements AfterViewInit {
       ([entry]) => {
         if (
           entry?.isIntersecting &&
-          this.store.fullHasMore &&
-          !this.store.loadingMore &&
-          !this.store.loading
+          this.store.fullHasMore() &&
+          !this.store.loadingMore() &&
+          !this.store.loading()
         ) {
           this.store.loadMore();
         }
@@ -74,7 +74,7 @@ export class ManageModelsModalComponent implements AfterViewInit {
   }
 
   grouped(): Record<string, CatalogModel[]> {
-    return groupByProvider(this.store.catalogFull);
+    return groupByProvider(this.store.catalogFull());
   }
 
   onSearchChange(v: string): void {

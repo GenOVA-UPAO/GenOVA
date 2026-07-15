@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -48,7 +49,7 @@ import { TotalFailurePanelComponent } from "./total-failure-panel.component";
         (themeChange)="flow.setTheme($event)"
         (generate)="flow.generate()"
         [error]="job.error()"
-        [uploadsProps]="uploadsProps"
+        [uploadsProps]="uploadsProps()"
         (replayTour)="tour.restart()"
       ></gn-ova-create-form-card>
       @if (flow.isModalOpen()) {
@@ -165,7 +166,7 @@ export class OvaCreationViewComponent implements OnInit {
     this.pinnedId.set(id);
   }
 
-  get uploadsProps() {
-    return buildUploadsProps(this.uploadsSvc);
-  }
+  // computed: el getter devolvía un prop-bag nuevo por ciclo de CD hacia el
+  // form-card OnPush.
+  readonly uploadsProps = computed(() => buildUploadsProps(this.uploadsSvc));
 }

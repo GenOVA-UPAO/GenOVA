@@ -43,14 +43,14 @@
 
       <gn-manage-models-toolbar
         [localSearch]="localSearch"
-        [categoryFilter]="store.categoryFilter"
-        [categories]="store.categories"
+        [categoryFilter]="store.categoryFilter()"
+        [categories]="store.categories()"
         (onSearch)="onSearchChange($event)"
         (onCategory)="store.handleCategory($event)"
       />
 
       <div #scrollRoot class="flex-1 overflow-y-auto min-h-0 max-h-[560px]">
-        @if (!store.hasOwnLlmKey) {
+        @if (!store.hasOwnLlmKey()) {
           <div class="flex flex-col items-center gap-4 py-14 text-center px-8">
             <div
               class="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-card shadow-sm text-xl"
@@ -73,7 +73,7 @@
               🔑 Añadir API Key
             </gn-button>
           </div>
-        } @else if (store.loading) {
+        } @else if (store.loading()) {
           <div class="flex justify-center items-center py-12">
             <div
               class="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary"
@@ -105,16 +105,16 @@
               </div>
             }
             <div #sentinel class="h-1"></div>
-            @if (store.loadingMore) {
+            @if (store.loadingMore()) {
               <div class="flex justify-center py-4">
                 <div
                   class="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary"
                 ></div>
               </div>
-            } @else if (store.fullHasMore) {
+            } @else if (store.fullHasMore()) {
               <div class="flex flex-col items-center gap-1.5 py-5 border-t border-border/30">
                 <p class="text-[11px] text-muted-foreground">
-                  Mostrando {{ store.catalogFull.length }} modelos
+                  Mostrando {{ store.catalogFull().length }} modelos
                 </p>
                 <gn-button
                   size="sm"
@@ -124,9 +124,9 @@
                   >Cargar más modelos</gn-button
                 >
               </div>
-            } @else if (store.catalogFull.length > 0) {
+            } @else if (store.catalogFull().length > 0) {
               <p class="text-center text-[11px] text-muted-foreground/50 py-4">
-                {{ store.catalogFull.length }} modelos en total
+                {{ store.catalogFull().length }} modelos en total
               </p>
             }
           </div>

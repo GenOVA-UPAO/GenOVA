@@ -221,7 +221,7 @@ Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para resincronizar ag
 
 | Capa | Tecnología |
 |------|-----------|
-| Frontend | Angular 22 (standalone + OnPush + zoneless) + Tailwind CSS 4 + SpartanUI (helm vendored en `libs/ui`) + TanStack Query + Signal Forms + Sonner. Tests de componente con Vitest + `@testing-library/angular` |
+| Frontend | Angular 22 (standalone + OnPush + zoneless) + Tailwind CSS 4 + SpartanUI (helm vendored en `libs/ui`) + Signal Forms + Sonner. Tests de componente con Vitest + `@testing-library/angular` |
 | Backend | FastAPI + SQLAlchemy 2 + Uvicorn + SlowAPI. SSE (`sse-starlette`) para progreso; cola durable **arq + Redis** (opcional) con worker separado; observabilidad **Logfire** (opt-in) + Sentry |
 | Base de datos | Supabase (PostgreSQL + pgvector) vía `psycopg` |
 | Storage | Supabase Storage (`scorm-packages`) — fallback automático a disco local |

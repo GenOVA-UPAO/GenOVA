@@ -66,19 +66,14 @@ class StubCaps {}
 
 function makeDirtyStore(dirtySig: ReturnType<typeof signal<boolean>>) {
   return {
-    get dirty() {
-      return dirtySig();
-    },
-    set dirty(v: boolean) {
-      dirtySig.set(v);
-    },
-    catalogStatus: { groq: { ok: true }, openrouter: { ok: false } },
-    enabledModels: [{ provider: "groq", model_id: "x" }],
-    fullTotal: 4,
-    catalogFull: [],
-    defaults: {},
-    saving: false,
-    loading: false,
+    dirty: dirtySig,
+    catalogStatus: signal({ groq: { ok: true }, openrouter: { ok: false } }),
+    enabledModels: signal([{ provider: "groq", model_id: "x" }]),
+    fullTotal: signal(4),
+    catalogFull: signal([]),
+    defaults: signal({}),
+    saving: signal(false),
+    loading: signal(false),
     load: vi.fn(() => Promise.resolve()),
     save: vi.fn(() => Promise.resolve(true)),
   };

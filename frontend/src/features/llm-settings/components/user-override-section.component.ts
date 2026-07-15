@@ -28,11 +28,11 @@ export class UserOverrideSectionComponent {
   store = inject(UserLlmSettingsStore);
 
   get userSettings() {
-    return this.store.settings?.[this.task()];
+    return this.store.settings()?.[this.task()];
   }
 
   get userModels(): ChipModel[] {
-    return this.store.catalogEnabled;
+    return this.store.catalogEnabled();
   }
 
   get userFallbacks() {

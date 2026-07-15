@@ -76,7 +76,7 @@ export class ModelsMasterDetailComponent {
     if (d?.provider && d?.model_id) {
       return chipLabel(d, this.adminModels());
     }
-    const def = this.store.defaults[task];
+    const def = this.store.defaults()[task];
     if (def) return chipLabel(def, this.adminModels());
     return "Sin modelo";
   }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
 import { IconComponent } from "@/core/components/icon.component";
@@ -7,12 +7,6 @@ import { EditUserModalComponent } from "../components/users/edit-user-modal.comp
 import { type Handlers, UsersTableComponent } from "../components/users/users-table.component";
 import type { AdminUser } from "../lib/types";
 import { AdminUsersService } from "../services/admin-users.service";
-
-function buildWhatsAppHref(payload: any): string | null {
-  if (!payload || typeof payload !== "object") return null;
-  const url = payload.whatsapp_url;
-  return typeof url === "string" ? url : null;
-}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,9 +21,9 @@ export class AdminUsersPageComponent {
     void this.service.fetchUsers();
   }
 
-  search = "";
-  roleFilter = "all";
-  editingUser: AdminUser | null = null;
+  readonly search = signal("");
+  readonly roleFilter = signal("all");
+  readonly editingUser = signal<AdminUser | null>(null);
 
   handlers: Handlers = {
     handleRoleChange: (uid, rid) => {
@@ -44,19 +38,16 @@ export class AdminUsersPageComponent {
     handleSendResetEmail: (uid) => {
       void this.service.handleSendResetEmail(uid);
     },
-    runWhatsAppReset: async (uid) => {
-      const payload = await this.service.handleGenerateResetWhatsApp(uid);
-      const href = buildWhatsAppHref(payload);
-      if (href) window.open(href, "_blank", "noopener,noreferrer");
-    },
     openEdit: (user) => {
-      this.editingUser = user;
+      this.editingUser.set(user);
     },
   };
 
-  get visibleUsers(): AdminUser[] {
-    const term = this.search.toLowerCase();
-    const role = this.roleFilter;
+  // computed: el getter creaba un array nuevo (.filter) en cada ciclo de CD
+  // hacia el input [users] de la tabla OnPush.
+  readonly visibleUsers = computed<AdminUser[]>(() => {
+    const term = this.search().toLowerCase();
+    const role = this.roleFilter();
 
     return this.service.users().filter((u) => {
       const matchRole = role === "all" || u.role?.name?.toLowerCase() === role;
@@ -64,12 +55,13 @@ export class AdminUsersPageComponent {
         (u.full_name || "").toLowerCase().includes(term) || u.email.toLowerCase().includes(term);
       return matchRole && matchSearch;
     });
-  }
+  });
 
   async saveEditedUser(fields: Record<string, unknown>) {
-    if (this.editingUser) {
-      const ok = await this.service.handleEditUser(this.editingUser.id, fields);
-      if (ok) this.editingUser = null;
+    const editing = this.editingUser();
+    if (editing) {
+      const ok = await this.service.handleEditUser(editing.id, fields);
+      if (ok) this.editingUser.set(null);
     }
   }
 }

@@ -12,7 +12,6 @@ export interface Handlers {
   handleToggleStatus: (userId: string, isActive: boolean) => void;
   handleUnlockUser: (userId: string) => void;
   handleSendResetEmail: (userId: string) => void;
-  runWhatsAppReset: (userId: string) => Promise<void>;
   openEdit: (user: AdminUser) => void;
 }
 

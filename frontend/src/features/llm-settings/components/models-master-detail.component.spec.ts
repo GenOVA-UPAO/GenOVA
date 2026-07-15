@@ -1,4 +1,4 @@
-import { Component, input, inputBinding, output, outputBinding } from "@angular/core";
+import { Component, input, inputBinding, output, outputBinding, signal } from "@angular/core";
 import { render, screen } from "@testing-library/angular/zoneless";
 
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
@@ -71,12 +71,12 @@ const overrides = [
 
 function stubStore(): Partial<UserLlmSettingsStore> {
   return {
-    catalogStatus: null,
-    refreshingCatalog: false,
-    hasOwnLlmKey: false,
-    saving: false,
-    bounds: [30, 300],
-    defaults: {},
+    catalogStatus: signal(null),
+    refreshingCatalog: signal(false),
+    hasOwnLlmKey: signal(false),
+    saving: signal(false),
+    bounds: signal([30, 300]),
+    defaults: signal({}),
     retryRefresh: () => Promise.resolve(),
   };
 }

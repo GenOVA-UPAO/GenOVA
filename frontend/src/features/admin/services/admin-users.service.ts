@@ -183,20 +183,6 @@ export class AdminUsersService {
     });
   }
 
-  async handleGenerateResetWhatsApp(userId: string): Promise<any> {
-    return this.withUpdating(userId, async () => {
-      const { ok, body } = await send(`/api/users/${userId}/reset-password-whatsapp`, {
-        method: "POST",
-      });
-      if (!ok) {
-        toast.error(detail(body, "Error al generar el enlace."));
-        return null;
-      }
-      toast.success("Enlace de WhatsApp generado.");
-      return body;
-    });
-  }
-
   handlePageChange(newPage: number) {
     if (newPage >= 1 && newPage <= this._totalPages()) {
       void this.fetchUsers(newPage);

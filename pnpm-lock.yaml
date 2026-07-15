@@ -61,9 +61,6 @@ importers:
       '@spartan-ng/brain':
         specifier: ^1.0.4
         version: 1.0.4(73e2d12118f35f6eedfb9eca80193674)
-      '@tanstack/angular-query-experimental':
-        specifier: 5.101.2
-        version: 5.101.2(@angular/common@22.0.4(@angular/core@22.0.4(@angular/compiler@22.0.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.4(@angular/compiler@22.0.4)(rxjs@7.8.2))
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1
@@ -2930,18 +2927,6 @@ packages:
 
   '@tailwindcss/postcss@4.3.2':
     resolution: {integrity: sha512-rjVWYCa7Ngbi5AarT6k8TkxUG3Wl1QKzHdIZVsjZSzf36Jmo2IKZt/NHRAwly8oDkbBOH0YTu+CHuf9jPxMc+g==}
-
-  '@tanstack/angular-query-experimental@5.101.2':
-    resolution: {integrity: sha512-hjQVD0nO35ANRj+wrryK7JxryvHaufeOAYjkyGbQT6ox/ugElo/r4jKLJ66XPK/COh1hqlnqHjgDVxkzbw7egg==}
-    peerDependencies:
-      '@angular/common': '>=16.0.0'
-      '@angular/core': '>=16.0.0'
-
-  '@tanstack/query-core@5.101.2':
-    resolution: {integrity: sha512-hH5MLoJhF7KaIGd7q3xTXGXvslI+GYlM1Z/35aSHHWaCJWB7XvTSHYuV3eM7tw+aE0mT/xMro4M4Q9rCGHT0lw==}
-
-  '@tanstack/query-devtools@5.101.2':
-    resolution: {integrity: sha512-o+wHcqgN7Pp0s8v1i0UGq/ZrrEKrxdIiMQmKRdYb2w7NPtylYSJ4+wg/tIn71m9DLstwUwdEGAvROdly6HXP6w==}
 
   '@teppeis/multimaps@3.0.0':
     resolution: {integrity: sha512-ID7fosbc50TbT0MK0EG12O+gAP3W3Aa/Pz4DaTtQtEvlc9Odaqi0de+xuZ7Li2GtK4HzEX7IuRWS/JmZLksR3Q==}
@@ -9886,19 +9871,6 @@ snapshots:
       '@tailwindcss/oxide': 4.3.2
       postcss: 8.5.15
       tailwindcss: 4.3.2
-
-  '@tanstack/angular-query-experimental@5.101.2(@angular/common@22.0.4(@angular/core@22.0.4(@angular/compiler@22.0.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.4(@angular/compiler@22.0.4)(rxjs@7.8.2))':
-    dependencies:
-      '@angular/common': 22.0.4(@angular/core@22.0.4(@angular/compiler@22.0.4)(rxjs@7.8.2))(rxjs@7.8.2)
-      '@angular/core': 22.0.4(@angular/compiler@22.0.4)(rxjs@7.8.2)
-      '@tanstack/query-core': 5.101.2
-    optionalDependencies:
-      '@tanstack/query-devtools': 5.101.2
-
-  '@tanstack/query-core@5.101.2': {}
-
-  '@tanstack/query-devtools@5.101.2':
-    optional: true
 
   '@teppeis/multimaps@3.0.0': {}
 

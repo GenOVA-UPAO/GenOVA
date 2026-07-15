@@ -10,16 +10,16 @@
     </gn-dialog-header>
 
     <div class="px-6 max-h-[60vh] overflow-y-auto">
-      <gn-llm-settings-form [readOnly]="!store.hasOwnLlmKey"></gn-llm-settings-form>
+      <gn-llm-settings-form [readOnly]="!store.hasOwnLlmKey()"></gn-llm-settings-form>
     </div>
 
     <gn-dialog-footer class="px-6 pb-6 pt-4 gap-2 flex justify-end">
-      <gn-button variant="ghost" (click)="close()" [disabled]="store.saving">
-        {{ store.hasOwnLlmKey ? "Cancelar" : "Cerrar" }}
+      <gn-button variant="ghost" (click)="close()" [disabled]="store.saving()">
+        {{ store.hasOwnLlmKey() ? "Cancelar" : "Cerrar" }}
       </gn-button>
-      @if (store.hasOwnLlmKey) {
-        <gn-button (click)="handleSave()" [disabled]="store.saving || store.loading">
-          {{ store.saving ? "Guardando…" : "Guardar" }}
+      @if (store.hasOwnLlmKey()) {
+        <gn-button (click)="handleSave()" [disabled]="store.saving() || store.loading()">
+          {{ store.saving() ? "Guardando…" : "Guardar" }}
         </gn-button>
       }
     </gn-dialog-footer>

@@ -20,13 +20,17 @@ export interface OvaJobSyncDeps {
 export class OvaJobSyncRunner {
   private pollTimer: ReturnType<typeof setTimeout> | null = null;
   private sseCtrl: AbortController | null = null;
+  // Generación de polling: stop() no puede cancelar un getJobStatus en vuelo;
+  // si su .then resolvía tras el stop, reprogramaba el setTimeout y resucitaba
+  // el polling de un runner detenido (empujando snapshots stale al job nuevo).
+  private pollGen = 0;
 
   constructor(private deps: OvaJobSyncDeps) {}
 
   start(jobId: string) {
     this.stop();
     this.startSse(jobId);
-    this.triggerPoll(jobId);
+    this.triggerPoll(jobId, this.pollGen);
   }
 
   stop() {
@@ -36,7 +40,7 @@ export class OvaJobSyncRunner {
 
   pollNow(jobId: string) {
     this.stopPolling();
-    this.triggerPoll(jobId);
+    this.triggerPoll(jobId, this.pollGen);
   }
 
   private startSse(jobId: string) {
@@ -84,16 +88,18 @@ export class OvaJobSyncRunner {
   }
 
   private stopPolling() {
+    this.pollGen += 1;
     if (this.pollTimer) {
       clearTimeout(this.pollTimer);
       this.pollTimer = null;
     }
   }
 
-  private triggerPoll(jobId: string) {
+  private triggerPoll(jobId: string, gen: number) {
     this.deps.jobsApi
       .getJobStatus(jobId)
       .then((raw) => {
+        if (gen !== this.pollGen) return; // stop()/start() ganó mientras volaba
         const snapshot = raw as JobSnapshot;
         this.deps.onSnapshot(snapshot);
         if (jobOutcome(snapshot, this.deps.getViewModel()).isTerminal) {
@@ -101,14 +107,15 @@ export class OvaJobSyncRunner {
         } else {
           const delay = this.deps.isStreaming() ? STREAM_HEARTBEAT_MS : POLL_MS;
           this.pollTimer = setTimeout(() => {
-            this.triggerPoll(jobId);
+            this.triggerPoll(jobId, gen);
           }, delay);
         }
       })
       .catch(() => {
+        if (gen !== this.pollGen) return;
         const delay = this.deps.isStreaming() ? STREAM_HEARTBEAT_MS : POLL_MS;
         this.pollTimer = setTimeout(() => {
-          this.triggerPoll(jobId);
+          this.triggerPoll(jobId, gen);
         }, delay);
       });
   }

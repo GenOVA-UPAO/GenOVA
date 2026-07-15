@@ -20,7 +20,7 @@ export class LlmSettingsFormComponent {
   providerLabels = PROVIDER_LABELS;
 
   get locked(): boolean {
-    return this.store.saving || this.readOnly();
+    return this.store.saving() || this.readOnly();
   }
 
   taskKeys(): string[] {
@@ -28,7 +28,7 @@ export class LlmSettingsFormComponent {
   }
 
   currentValue(tipo: string): string {
-    const cur = this.store.settings?.[tipo];
+    const cur = this.store.settings()?.[tipo];
     return cur?.provider && cur?.model_id ? `${cur.provider}::${cur.model_id}` : "";
   }
 
@@ -38,18 +38,18 @@ export class LlmSettingsFormComponent {
   }
 
   catalogProviders(): string[] {
-    return Object.keys(this.store.catalog);
+    return Object.keys(this.store.catalog());
   }
 
   catalogModels(
     provider: string,
   ): { model_id: string; label?: string; pricing?: string; context_length?: number }[] {
-    const models = this.store.catalog[provider];
+    const models = this.store.catalog()[provider];
     return Array.isArray(models) ? models : [];
   }
 
   isProviderDown(provider: string): boolean {
-    return this.store.catalogStatus?.[provider]?.ok === false;
+    return this.store.catalogStatus()?.[provider]?.ok === false;
   }
 
   modelLabel(m: { model_id: string; label?: string }): string {

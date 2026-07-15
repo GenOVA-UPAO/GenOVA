@@ -79,9 +79,15 @@
         class="flex-1 flex overflow-hidden animate-in fade-in duration-500 delay-100 fill-mode-both"
       >
         <div class="sm:hidden flex-1 overflow-hidden flex flex-col">
-          <div class="mx-3 mt-3 w-auto self-start bg-muted/50 p-1 rounded-xl flex">
+          <div
+            role="tablist"
+            aria-label="Vista del workspace"
+            class="mx-3 mt-3 w-auto self-start bg-muted/50 p-1 rounded-xl flex"
+          >
             <button
               type="button"
+              role="tab"
+              [attr.aria-selected]="mobileTab === 'chat'"
               [class.bg-background]="mobileTab === 'chat'"
               [class.shadow-sm]="mobileTab === 'chat'"
               class="rounded-lg text-xs font-semibold px-3 py-1.5 transition-all"
@@ -91,6 +97,8 @@
             </button>
             <button
               type="button"
+              role="tab"
+              [attr.aria-selected]="mobileTab === 'preview'"
               [class.bg-background]="mobileTab === 'preview'"
               [class.shadow-sm]="mobileTab === 'preview'"
               class="rounded-lg text-xs font-semibold px-3 py-1.5 transition-all"
@@ -109,7 +117,7 @@
                   [isRegenerating]="ws.isRegenerating()"
                   [regenProgress]="ws.regenProgress()"
                   (onSubmit)="ws.submitPrompt()"
-                  [uploads]="uploadsProps"
+                  [uploads]="uploadsProps()"
                   (onFilesSelected)="onUploadFiles($event)"
                   (onRemoveFile)="onRemoveUpload($event)"
                   [phases]="ws.phases()"
@@ -151,7 +159,7 @@
               [isRegenerating]="ws.isRegenerating()"
               [regenProgress]="ws.regenProgress()"
               (onSubmit)="ws.submitPrompt()"
-              [uploads]="uploadsProps"
+              [uploads]="uploadsProps()"
               (onFilesSelected)="onUploadFiles($event)"
               (onRemoveFile)="onRemoveUpload($event)"
               [phases]="ws.phases()"
