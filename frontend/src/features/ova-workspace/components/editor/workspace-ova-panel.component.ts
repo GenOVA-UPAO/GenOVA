@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input, output } from "@angular/core";
 
 import { IconComponent } from "@/core/components/icon.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
@@ -53,9 +53,9 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
           </gn-button>
         </div>
 
-        @if (versionNumber) {
+        @if (versionNumber()) {
           <gn-badge variant="outline" class="text-[10px] text-muted-foreground">
-            v{{ versionNumber }}
+            v{{ versionNumber() }}
           </gn-badge>
         }
 
@@ -67,7 +67,7 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
           (click)="onHistoryOpen.emit()"
           title="Historial de versiones"
         >
-          ⏱ Historial
+          <gn-icon name="clock-counter-clockwise" size="text-xs" /> Historial
         </gn-button>
 
         <div class="ml-auto flex items-center gap-1">
@@ -89,7 +89,7 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
             class="h-6 text-xs px-2.5 gap-1"
             [title]="isReady() ? 'Descargar SCORM' : 'El OVA debe estar listo para descargar'"
           >
-            ⤓ SCORM
+            <gn-icon name="download-simple" size="text-xs" /> SCORM
           </gn-button>
         </div>
       </div>
@@ -137,7 +137,7 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
 })
 export class WorkspaceOvaPanelComponent {
   readonly phases = input<PhaseWithContent[]>([]);
-  @Input() versionNumber: number | null = null;
+  readonly versionNumber = input<number | null>(null);
   readonly isReady = input(false);
   readonly isLoading = input(false);
   readonly ovaId = input.required<string>();

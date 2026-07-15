@@ -1,5 +1,13 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, inject, Input, output, signal } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from "@angular/core";
 
 import { IconComponent } from "@/core/components/icon.component";
 import { DialogComponent } from "@/core/components/ui/dialog.component";
@@ -156,9 +164,7 @@ const PALETTES: Palette[] = [
 export class ThemeModalComponent {
   private themeSettings = inject(ThemeSettingsService);
 
-  @Input() set initialTheme(val: ThemeState | null | undefined) {
-    if (val) this.theme.set(val);
-  }
+  readonly initialTheme = input<ThemeState | null | undefined>(null);
 
   readonly onClose = output();
   readonly onSaved = output<ThemeState>();
@@ -166,6 +172,14 @@ export class ThemeModalComponent {
   theme = signal<ThemeState>({ colorMode: "upao", designMode: "upao", palette: null });
   saving = signal(false);
   saveError = signal("");
+
+  constructor() {
+    // Migración del setter @Input a input() + effect (misma semántica).
+    effect(() => {
+      const val = this.initialTheme();
+      if (val) this.theme.set(val);
+    });
+  }
 
   colorModes = COLOR_MODES;
   designModes = DESIGN_MODES;

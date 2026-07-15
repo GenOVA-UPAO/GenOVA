@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, input, output } from "@angular/core";
 import { Router } from "@angular/router";
 
 import { BadgeComponent } from "@/core/components/ui/badge.component";
@@ -16,21 +16,21 @@ export type { OvaJobInfo };
   imports: [OvaCardShellComponent, ButtonComponent, BadgeComponent],
   template: `
     <gn-ova-card-shell
-      [ova]="ova"
+      [ova]="ova()"
       [isSelected]="isSelected()"
       (onToggleSelect)="onToggleSelect.emit($event)"
       [checkboxDisabled]="isGenerating"
-      [dateValue]="formatDate(ova['created_at'])"
+      [dateValue]="formatDate(ova()['created_at'])"
     >
       <div extraBadges class="flex gap-1 items-center">
-        @if (ova["version_number"]) {
+        @if (ova()["version_number"]) {
           <gn-badge variant="outline" class="text-[10px] text-muted-foreground">
-            v{{ ova["version_number"] }}
+            v{{ ova()["version_number"] }}
           </gn-badge>
         }
-        @if (isGenerating && job?.progress) {
+        @if (isGenerating && job()?.progress) {
           <gn-badge variant="outline" class="text-[10px] text-primary border-primary/30">
-            {{ job!.progress!.done }}/{{ job!.progress!.total }}
+            {{ job()!.progress!.done }}/{{ job()!.progress!.total }}
           </gn-badge>
         }
       </div>
@@ -39,7 +39,7 @@ export type { OvaJobInfo };
         <!-- Generando: actions -->
         @if (isGenerating) {
           <div class="flex gap-2 mb-1.5">
-            @if (job?.isInterrupted) {
+            @if (job()?.isInterrupted) {
               <gn-button
                 variant="outline"
                 size="sm"
@@ -50,12 +50,12 @@ export type { OvaJobInfo };
                 Continuar
               </gn-button>
             }
-            @if (!job?.isInterrupted) {
+            @if (!job()?.isInterrupted) {
               <gn-button
                 variant="outline"
                 size="sm"
                 class="flex-1 text-primary border-primary/30 hover:bg-primary/5"
-                [disabled]="!job?.jobId"
+                [disabled]="!job()?.jobId"
                 (onClick)="handleResume()"
               >
                 <!-- <Clock /> -->
@@ -81,7 +81,7 @@ export type { OvaJobInfo };
             size="sm"
             class="flex-1 text-primary border-primary/30 hover:bg-primary/5"
             [disabled]="isGenerating || isDuplicating()"
-            (onClick)="onEditMetadata.emit(ova)"
+            (onClick)="onEditMetadata.emit(ova())"
           >
             <!-- <FileText /> -->
             Metadatos
@@ -94,7 +94,7 @@ export type { OvaJobInfo };
             size="sm"
             class="flex-1"
             [disabled]="isGenerating || isDuplicating()"
-            (onClick)="onDuplicate.emit(ova.id)"
+            (onClick)="onDuplicate.emit(ova().id)"
           >
             <!-- <Copy /> -->
             {{ isDuplicating() ? "Duplicando..." : "Duplicar" }}
@@ -104,7 +104,7 @@ export type { OvaJobInfo };
             size="sm"
             class="flex-1"
             [disabled]="!isReady || isDownloading() || isDuplicating()"
-            (onClick)="onDownload.emit({ id: ova.id, title: ova.title || '' })"
+            (onClick)="onDownload.emit({ id: ova().id, title: ova().title || '' })"
           >
             <!-- <DownloadSimple /> -->
             {{ isDownloading() ? "Descargando..." : "Descargar" }}
@@ -114,7 +114,7 @@ export type { OvaJobInfo };
             size="sm"
             class="flex-1 text-destructive border-destructive/30 hover:bg-destructive/5"
             [disabled]="isGenerating || isMoving() || isDuplicating()"
-            (onClick)="onMoveToTrash.emit(ova)"
+            (onClick)="onMoveToTrash.emit(ova())"
           >
             <!-- <Trash /> -->
             {{ isMoving() ? "Moviendo..." : "Papelera" }}
@@ -125,8 +125,8 @@ export type { OvaJobInfo };
   `,
 })
 export class OvaCardComponent {
-  @Input({ required: true }) ova!: OvaListItem;
-  @Input() job?: OvaJobInfo;
+  readonly ova = input.required<OvaListItem>();
+  readonly job = input<OvaJobInfo | undefined>(undefined);
   readonly isSelected = input(false);
   readonly isMoving = input(false);
   readonly isDownloading = input(false);
@@ -145,11 +145,11 @@ export class OvaCardComponent {
   private router = inject(Router);
 
   get isGenerating(): boolean {
-    return this.ova.status === "generando";
+    return this.ova().status === "generando";
   }
 
   get isReady(): boolean {
-    return this.ova.status === "listo";
+    return this.ova().status === "listo";
   }
 
   formatDate(date: unknown): string {
@@ -158,14 +158,14 @@ export class OvaCardComponent {
   }
 
   handleResume() {
-    void this.router.navigate(["/crear"], { state: { resumeJobId: this.job?.jobId } });
+    void this.router.navigate(["/crear"], { state: { resumeJobId: this.job()?.jobId } });
   }
 
   handleContinue() {
-    this.onResume.emit(this.ova.id);
+    this.onResume.emit(this.ova().id);
   }
 
   goToWorkspace() {
-    void this.router.navigate([`/workspace/${this.ova.id}`]);
+    void this.router.navigate([`/workspace/${this.ova().id}`]);
   }
 }

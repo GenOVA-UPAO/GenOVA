@@ -1,5 +1,6 @@
 import { Injectable, resource, signal } from "@angular/core";
 
+import { triggerDownloadFromResponse } from "@/core/lib/download";
 import { apiFetch, apiJson } from "@/core/lib/http";
 
 import type { OvaListItem } from "../lib/types";
@@ -145,26 +146,6 @@ export class OvaLibraryService {
       const data = (await res.json().catch(() => ({}))) as { message?: string; error?: string };
       throw new Error(data?.message || "No se pudo descargar el archivo.");
     }
-    const contentType = res.headers.get("content-type") || "";
-    if (contentType.includes("application/json")) {
-      const data = (await res.json()) as { download_url: string; filename?: string };
-      const a = document.createElement("a");
-      a.href = data.download_url;
-      if (data.filename) a.download = data.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      return;
-    }
-    // disk fallback: stream binary
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${title}.zip`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    await triggerDownloadFromResponse(res, `${title}.zip`);
   }
 }

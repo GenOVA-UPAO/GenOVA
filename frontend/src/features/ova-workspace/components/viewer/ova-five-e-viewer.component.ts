@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
 import { IconComponent } from "@/core/components/icon.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
@@ -12,23 +12,23 @@ import { phaseColor } from "./ova-five-e-viewer.helpers";
   selector: "gn-ova-phase-section",
   imports: [],
   template: `
-    @switch (section.type) {
+    @switch (section().type) {
       @case ("heading") {
-        <h3 class="mt-5 text-base font-semibold first:mt-0">{{ section.content }}</h3>
+        <h3 class="mt-5 text-base font-semibold first:mt-0">{{ section().content }}</h3>
       }
       @case ("paragraph") {
-        <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{{ section.content }}</p>
+        <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{{ section().content }}</p>
       }
       @case ("list") {
-        @if (section.ordered) {
+        @if (section().ordered) {
           <ol class="mt-3 space-y-1.5 pl-5 text-sm text-muted-foreground list-decimal">
-            @for (item of section.items ?? []; track $index) {
+            @for (item of section().items ?? []; track $index) {
               <li class="leading-relaxed">{{ item }}</li>
             }
           </ol>
         } @else {
           <ul class="mt-3 space-y-1.5 pl-5 text-sm text-muted-foreground list-disc">
-            @for (item of section.items ?? []; track $index) {
+            @for (item of section().items ?? []; track $index) {
               <li class="leading-relaxed">{{ item }}</li>
             }
           </ul>
@@ -36,29 +36,29 @@ import { phaseColor } from "./ova-five-e-viewer.helpers";
       }
       @case ("code") {
         <div class="mt-3 overflow-hidden rounded-lg border border-border">
-          @if (section.language) {
+          @if (section().language) {
             <div
               class="border-b border-border bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground"
             >
-              {{ section.language }}
+              {{ section().language }}
             </div>
           }
           <pre
             class="overflow-x-auto bg-slate-900 p-4 text-xs leading-relaxed text-slate-100"
-          ><code>{{ section.content }}</code></pre>
+          ><code>{{ section().content }}</code></pre>
         </div>
       }
       @case ("image") {
         <figure class="mt-3">
           <img
-            [src]="section.src"
-            [alt]="section.alt ?? ''"
+            [src]="section().src"
+            [alt]="section().alt ?? ''"
             loading="lazy"
             class="max-w-full rounded-lg border border-border"
           />
-          @if (section.alt) {
+          @if (section().alt) {
             <figcaption class="mt-1 text-center text-xs text-muted-foreground">
-              {{ section.alt }}
+              {{ section().alt }}
             </figcaption>
           }
         </figure>
@@ -67,7 +67,7 @@ import { phaseColor } from "./ova-five-e-viewer.helpers";
   `,
 })
 export class OvaPhaseSectionComponent {
-  @Input({ required: true }) section!: PhaseSection;
+  readonly section = input.required<PhaseSection>();
 }
 
 @Component({
@@ -114,11 +114,11 @@ export class OvaPhasePanelComponent {
   templateUrl: "./ova-five-e-viewer.component.html",
 })
 export class OvaFiveEViewerComponent {
-  @Input() content: OvaContent | null = null;
+  readonly content = input<OvaContent | null>(null);
   activeIndex = 0;
 
   get phases(): Phase[] {
-    return this.content?.phases ?? [];
+    return this.content()?.phases ?? [];
   }
 
   get activePhase(): Phase | undefined {
