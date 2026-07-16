@@ -4,45 +4,8 @@ import { ChangeDetectionStrategy, Component, Input, signal } from "@angular/core
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { HtmlPreviewFrameComponent } from "@/features/ova-workspace/components/shared/html-preview-frame.component";
 
+import { DEFAULT_PHASE_META, phaseMeta } from "../../lib/phase-meta";
 import type { PhaseWithContent } from "../../lib/types";
-
-const PHASE_META: Record<string, { label: string; tab: string; badge: string }> = {
-  engage: {
-    label: "Enganche",
-    tab: "bg-primary text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
-  },
-  explore: {
-    label: "Exploración",
-    tab: "bg-primary/85 text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
-  },
-  explain: {
-    label: "Explicación",
-    tab: "bg-primary/70 text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
-  },
-  elaborate: {
-    label: "Elaboración",
-    tab: "bg-accent-brand/85 text-primary-foreground",
-    badge: "bg-accent-brand/10 text-accent-brand border-accent-brand/25",
-  },
-  evaluate: {
-    label: "Evaluación",
-    tab: "bg-accent-brand text-primary-foreground",
-    badge: "bg-accent-brand/10 text-accent-brand border-accent-brand/25",
-  },
-};
-
-const DEFAULT_META = {
-  label: null as string | null,
-  tab: "bg-muted text-muted-foreground",
-  badge: "bg-muted text-muted-foreground border-border",
-};
-
-function getMeta(phase_type: string) {
-  return PHASE_META[phase_type] ?? { ...DEFAULT_META, label: phase_type };
-}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -118,7 +81,7 @@ export class WorkspaceHtmlPreviewComponent {
   get activeMeta() {
     return () => {
       const p = this.activePhase();
-      return p ? getMeta(p.phase_type) : DEFAULT_META;
+      return p ? phaseMeta(p.phase_type) : DEFAULT_PHASE_META;
     };
   }
 
@@ -128,13 +91,13 @@ export class WorkspaceHtmlPreviewComponent {
 
   getTabClass(p: PhaseWithContent): string {
     const isActive = p.id === this.activePhase()?.id;
-    const meta = getMeta(p.phase_type);
+    const meta = phaseMeta(p.phase_type);
     if (isActive) return meta.tab;
     return "bg-background text-muted-foreground border border-border hover:bg-muted/60";
   }
 
   getLabel(p: PhaseWithContent): string {
-    const meta = getMeta(p.phase_type);
+    const meta = phaseMeta(p.phase_type);
     return p.title ?? meta.label ?? p.phase_type;
   }
 }

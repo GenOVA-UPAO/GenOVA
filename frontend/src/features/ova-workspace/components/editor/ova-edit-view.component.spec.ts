@@ -92,6 +92,7 @@ function wsStub() {
     savePhase: vi.fn(() => Promise.resolve()),
     setPrompt: vi.fn(),
     submitPrompt: vi.fn(),
+    teardown: vi.fn(),
     versionHistory: signal([]),
     versionNumber: signal(1),
   };

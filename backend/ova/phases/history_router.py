@@ -1,4 +1,3 @@
-import math
 import os
 
 import structlog
@@ -9,8 +8,9 @@ from sqlalchemy.orm import Session, joinedload
 
 from auth.dependencies import get_current_user
 from core.database import get_db
+from core.pagination import page_meta
 from models import Ova, User
-from ova.helpers import VALID_STATUSES, _is_admin, _ova_to_dict
+from ova.helpers import VALID_STATUSES, _is_admin, _ova_to_dict, forbidden_response
 from storage import StorageError, is_configured, signed_url
 
 router = APIRouter()
@@ -41,7 +41,6 @@ def list_ovas(
 
     count_query = select(func.count()).select_from(base_query.subquery())
     total_items = db.execute(count_query).scalar_one()
-    total_pages = max(1, math.ceil(total_items / limit))
 
     # Eager-load versions (HU-030: expose active version_number) and owner (admin).
     # Applied after count_query to keep the subquery clean. Python-side filter in
@@ -61,10 +60,7 @@ def list_ovas(
 
     return {
         "ovas": [_ova_to_dict(ova, include_owner=admin) for ova in ovas],
-        "total_items": total_items,
-        "total_pages": total_pages,
-        "page": page,
-        "limit": limit,
+        **page_meta(total_items, page, limit),
     }
 
 
@@ -86,13 +82,7 @@ def download_ova(
 
     admin = _is_admin(current_user, db)
     if not admin and str(ova.user_id) != str(current_user.id):
-        return JSONResponse(
-            status_code=403,
-            content={
-                "error": "forbidden",
-                "message": "No tienes permiso para descargar este OVA.",
-            },
-        )
+        return forbidden_response("No tienes permiso para descargar este OVA.")
 
     if ova.status != "listo":
         return JSONResponse(

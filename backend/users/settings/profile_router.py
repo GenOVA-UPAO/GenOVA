@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import commit_or_500, get_db
+from core.rate_limit import limiter
 from models import User
 from users.settings.account_router import router as account_router
 
@@ -23,7 +24,9 @@ class UserProfileUpdate(BaseModel):
 
 
 @router.patch("/me")
+@limiter.limit("20/minute")
 def update_profile(
+    request: Request,
     payload: UserProfileUpdate,
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -108,7 +111,9 @@ class UserThemeUpdate(BaseModel):
 
 
 @router.patch("/me/theme")
+@limiter.limit("30/minute")
 def update_theme(
+    request: Request,
     payload: UserThemeUpdate,
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),

@@ -24,6 +24,7 @@ from ova.crud.edit_helpers import (
     _is_ova_owner,
     _phase_to_dict,
 )
+from ova.helpers import forbidden_response
 from ova.phases.phase_version_router import record_phase_micro_version
 from users.admin.helpers import commit_or_500
 
@@ -95,10 +96,7 @@ def add_phase(
         )
 
     if not _is_ova_owner(ova, current_user):
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={"error": "forbidden", "message": "Sin permisos."},
-        )
+        return forbidden_response()
 
     if ova.status == "generando":
         return JSONResponse(

@@ -1,9 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   type ElementRef,
   inject,
   input,
+  type OnDestroy,
   type OnInit,
   viewChild,
 } from "@angular/core";
@@ -37,7 +39,7 @@ import { WorkspaceResizableDividerComponent } from "./workspace-resizable-divide
   ],
   templateUrl: "./ova-edit-view.component.html",
 })
-export class OvaEditViewComponent implements OnInit {
+export class OvaEditViewComponent implements OnInit, OnDestroy {
   readonly ovaId = input.required<string>();
   readonly containerElement = viewChild.required<ElementRef<HTMLDivElement>>("container");
 
@@ -60,9 +62,11 @@ export class OvaEditViewComponent implements OnInit {
     return "Workspace OVA";
   }
 
-  get uploadsProps() {
-    return buildUploadsPropBag(this.uploadsSvc, this.ws.isRegenerating());
-  }
+  // computed: un getter devolvía un prop-bag NUEVO en cada ciclo de CD, lo que
+  // invalidaba los inputs OnPush de los chat panels en cada tick.
+  readonly uploadsProps = computed(() =>
+    buildUploadsPropBag(this.uploadsSvc, this.ws.isRegenerating()),
+  );
 
   get versionRows(): OvaVersionRow[] {
     return (this.ws.versionHistory() ?? []) as OvaVersionRow[];
@@ -78,6 +82,12 @@ export class OvaEditViewComponent implements OnInit {
     if (ovaId) {
       this.ws.init(ovaId);
     }
+  }
+
+  ngOnDestroy() {
+    // El servicio es singleton root: sin esto el retry de load() seguía
+    // puleando el OVA viejo para siempre tras salir de la página.
+    this.ws.teardown();
   }
 
   onUploadFiles(files: FileList) {

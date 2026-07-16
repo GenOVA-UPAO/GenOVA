@@ -1,13 +1,15 @@
 import time
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import get_db
+from core.database import commit_or_500, get_db
+from core.rate_limit import limiter
 from models import Ova, OvaPhase, OvaVersion, User
+from ova.helpers import _is_admin, forbidden_response
 
 router = APIRouter()
 
@@ -32,7 +34,9 @@ def _unique_copy_title(base_title: str, user_id, db: Session) -> str:
 
 
 @router.post("/{ova_id}/duplicar", status_code=201)
+@limiter.limit("10/minute")
 def duplicate_ova(
+    request: Request,
     ova_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -46,6 +50,9 @@ def duplicate_ova(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"error": "not_found", "message": "OVA no encontrado."},
         )
+
+    if str(original.user_id) != str(current_user.id) and not _is_admin(current_user, db):
+        return forbidden_response()
 
     if original.status == "generando":
         return JSONResponse(
@@ -106,7 +113,7 @@ def duplicate_ova(
         )
 
     new_ova.current_version_id = new_version.id
-    db.commit()
+    commit_or_500(db, op="duplicate_ova")
 
     new_id = str(new_ova.id)
     return JSONResponse(

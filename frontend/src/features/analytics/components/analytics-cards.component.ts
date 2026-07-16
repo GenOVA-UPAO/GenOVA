@@ -84,7 +84,7 @@ export class StatCardsComponent {
     <div class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
       <h2 class="mb-4 text-sm font-semibold">OVAs por estado</h2>
       <div class="space-y-3">
-        @for (item of statusEntries; track item) {
+        @for (item of statusEntries(); track item.key) {
           <div>
             <div class="mb-1 flex items-center justify-between text-xs">
               <span class="font-medium text-foreground">
@@ -113,15 +113,15 @@ export class StatCardsComponent {
 export class StatusBreakdownComponent {
   readonly byStatus = input.required<Record<string, number>>();
 
-  get total() {
-    return Object.values(this.byStatus()).reduce((a, b) => a + b, 0) || 1;
-  }
+  // computed + track por clave estable: el getter devolvía un array nuevo por
+  // ciclo de CD y `track item` (identidad) destruía/recreaba la lista entera.
+  readonly total = computed(() => Object.values(this.byStatus()).reduce((a, b) => a + b, 0) || 1);
 
-  get statusEntries() {
-    return Object.entries(STATUS_META).map(([key, meta]) => {
+  readonly statusEntries = computed(() =>
+    Object.entries(STATUS_META).map(([key, meta]) => {
       const n = this.byStatus()[key] || 0;
-      const pct = Math.round((n / this.total) * 100);
+      const pct = Math.round((n / this.total()) * 100);
       return { key, meta, n, pct };
-    });
-  }
+    }),
+  );
 }

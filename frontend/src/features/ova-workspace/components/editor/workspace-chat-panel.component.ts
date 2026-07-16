@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
 import { IconComponent } from "@/core/components/icon.component";
@@ -18,9 +18,9 @@ import type { RegenProgress, UploadsPropBag } from "./workspace-chat-panel.types
 export class WorkspaceChatPanelComponent {
   readonly prompt = input("");
   readonly isRegenerating = input(false);
-  @Input() uploads!: UploadsPropBag;
+  readonly uploads = input.required<UploadsPropBag>();
   readonly regenProgress = input.required<RegenProgress>();
-  @Input() phases: Phase[] = [];
+  readonly phases = input<Phase[]>([]);
   readonly selectionMode = input(false);
   readonly selectedPhaseIds = input<string[]>([]);
 
@@ -42,11 +42,11 @@ export class WorkspaceChatPanelComponent {
   }
 
   get allSelected() {
-    return this.phases.length > 0 && this.selectedCount === this.phases.length;
+    return this.phases().length > 0 && this.selectedCount === this.phases().length;
   }
 
   get canUploadMore() {
-    return this.uploads.activeUploadsCount < this.uploads.maxUploadFiles;
+    return this.uploads().activeUploadsCount < this.uploads().maxUploadFiles;
   }
 
   get promptPlaceholder() {

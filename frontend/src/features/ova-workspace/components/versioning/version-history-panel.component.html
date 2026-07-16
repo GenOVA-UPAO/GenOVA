@@ -1,3 +1,18 @@
+@if (revertTarget(); as target) {
+  <gn-confirm-modal
+    title="Revertir versión"
+    [message]="
+      '¿Revertir al OVA v' +
+      target.version_number +
+      '? Se perderán los cambios no guardados.'
+    "
+    confirmLabel="Revertir"
+    [isLoading]="reverting()"
+    (onConfirm)="confirmRevert()"
+    (onCancel)="revertTarget.set(null)"
+  ></gn-confirm-modal>
+}
+
 <gn-dialog [open]="open()" width="42rem" (openChange)="$event || close()">
   <div class="p-5 bg-card">
     <h2 class="text-lg font-display font-semibold mb-3">Historial de versiones</h2>
@@ -6,7 +21,7 @@
     </p>
 
     <div class="space-y-2">
-      @for (v of sortedVersions; track v) {
+      @for (v of sortedVersions(); track v.id) {
         <div class="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
           <gn-badge [variant]="isCurrent(v) ? 'default' : 'outline'" class="shrink-0">
             v{{ v.version_number }}

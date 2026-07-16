@@ -221,7 +221,7 @@ Post-clone en Windows, ejecuta `scripts/setup-harness.ps1` para resincronizar ag
 
 | Capa | Tecnología |
 |------|-----------|
-| Frontend | Angular 22 (standalone + OnPush + zoneless) + Tailwind CSS 4 + SpartanUI (helm vendored en `libs/ui`) + TanStack Query + Signal Forms + Sonner. Tests de componente con Vitest + `@testing-library/angular` |
+| Frontend | Angular 22 (standalone + OnPush + zoneless) + Tailwind CSS 4 + SpartanUI (helm vendored en `libs/ui`) + Signal Forms + Sonner. Tests de componente con Vitest + `@testing-library/angular` |
 | Backend | FastAPI + SQLAlchemy 2 + Uvicorn + SlowAPI. SSE (`sse-starlette`) para progreso; cola durable **arq + Redis** (opcional) con worker separado; observabilidad **Logfire** (opt-in) + Sentry |
 | Base de datos | Supabase (PostgreSQL + pgvector) vía `psycopg` |
 | Storage | Supabase Storage (`scorm-packages`) — fallback automático a disco local |
@@ -526,7 +526,7 @@ Angular Router (`frontend/src/app/app.routes.ts`). Las rutas protegidas exigen s
 - **CORS** restringido a métodos `GET/POST/PATCH/PUT/DELETE/OPTIONS` y headers `Authorization, Content-Type, Accept, X-Requested-With`.
 - **Lockout**: 5 intentos fallidos → 15 min bloqueo.
 - **Fallback chain LLM**: errores recuperables (rate-limit, 402, 5xx) caen a un modelo Groq de respaldo en lugar de exponer el fallo al cliente.
-- **Reset tokens no se devuelven al cliente.** Los endpoints de reset (correo + WhatsApp) generan un token largo (`secrets.token_urlsafe(32)`) y solo devuelven la URL de entrega (correo encolado o `wa.me` share link). El admin que dispara la operación nunca ve el token.
+- **Reset tokens no se devuelven al cliente.** El endpoint de reset por correo genera un token largo (`secrets.token_urlsafe(32)`) y solo confirma que el correo fue encolado. El admin que dispara la operación nunca ve el token.
 - **Sin secretos hardcodeados.** `auth/email.py` exige `SMTP_USER` / `SMTP_PASSWORD` vía env; si faltan, lanza `EmailNotConfigured` y registra el fallo (no envía).
 - **Errores de BD nunca se filtran**. Todos los routers usan helpers `commit_or_500()` que loguean `logger.exception(...)` y responden con mensaje genérico.
 

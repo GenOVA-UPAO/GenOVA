@@ -9,7 +9,7 @@ from core.database import get_db
 from core.rate_limit import limiter
 from generation.regen.regen_router import router as regen_router
 from models import OvaPhase, User
-from ova.crud.edit_helpers import _rebuild_scorm_for_version
+from ova.crud.edit_helpers import _phase_to_version_data, _rebuild_scorm_for_version
 from ova.crud.edit_phase_ops import (
     ReorderRequest,
     SavePhaseRequest,
@@ -110,9 +110,7 @@ def delete_phase(
                 "message": "No se puede eliminar la única fase restante.",
             },
         )
-    new_phases_data = [
-        {"type": p.phase_type, "order": p.phase_order, "content": p.content} for p in remaining
-    ]
+    new_phases_data = [_phase_to_version_data(p) for p in remaining]
     new_version = _create_new_version(ova, active_version, new_phases_data, db)
     db.refresh(new_version, ["phases"])
     _rebuild_scorm_for_version(ova, new_version, str(current_user.id))
@@ -129,7 +127,9 @@ def delete_phase(
 
 
 @router.patch("/{ova_id}/fases/{fase_id}")
+@limiter.limit("30/minute")
 def save_phase(
+    request: Request,
     ova_id: str,
     fase_id: str,
     payload: SavePhaseRequest,
@@ -152,11 +152,7 @@ def save_phase(
         )
     current_phases = _list_phases(str(active_version.id), db)
     new_phases_data = [
-        {
-            "type": p.phase_type,
-            "order": p.phase_order,
-            "content": payload.content if str(p.id) == fase_id else p.content,
-        }
+        _phase_to_version_data(p, content=payload.content if str(p.id) == fase_id else None)
         for p in current_phases
     ]
     new_version = _create_new_version(ova, active_version, new_phases_data, db)

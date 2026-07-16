@@ -18,6 +18,7 @@ from core.database import get_db
 from core.rate_limit import limiter
 from models import Ova, OvaPhase, User
 from ova.crud.edit_helpers import _get_active_version, _is_ova_owner
+from ova.helpers import forbidden_response
 
 router = APIRouter()
 
@@ -51,9 +52,7 @@ def edit_subelement(
         )
 
     if not _is_ova_owner(ova, current_user):
-        return JSONResponse(
-            status_code=403, content={"error": "forbidden", "message": "Sin permisos."}
-        )
+        return forbidden_response()
 
     active_version = _get_active_version(ova_id, db)
     if not active_version:

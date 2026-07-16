@@ -75,8 +75,13 @@ export class OvaCreationFlowService {
   }
 
   reset() {
+    // Reset completo: sin theme/resourceConfigs/configsLoaded, "Crear otro OVA"
+    // arrancaba con el tema y la configuración del OVA anterior.
     this.prompt.set("");
     this.selections.set({ ...EMPTY_PICKS });
+    this.theme.set({ color: "upao", design: "upao" });
+    this.resourceConfigs.set({});
+    this.configsLoaded = false;
     this.job.reset();
   }
 

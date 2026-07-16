@@ -2,9 +2,9 @@
   <section class="rounded-xl border border-border bg-background shadow-sm">
     <header class="border-b border-border px-5 py-4">
       <h2 class="text-lg font-semibold">Vista previa del OVA — Modelo 5E</h2>
-      @if (content?.title) {
-        <p class="mt-0.5 text-sm text-muted-foreground line-clamp-1" [title]="content!.title!">
-          {{ content!.title }}
+      @if (content()?.title) {
+        <p class="mt-0.5 text-sm text-muted-foreground line-clamp-1" [title]="content()!.title!">
+          {{ content()!.title }}
         </p>
       }
     </header>

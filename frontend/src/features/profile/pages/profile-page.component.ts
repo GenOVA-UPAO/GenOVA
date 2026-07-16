@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angula
 
 import { AuthService } from "@/core/auth/auth.service";
 import { IconComponent } from "@/core/components/icon.component";
+import { toast } from "@/core/lib/toast";
 
 import { PlatformApiKeysCardComponent } from "../../llm-settings/components/platform-api-keys-card.component";
 import { DeleteAccountFormComponent } from "../components/delete-account-form.component";
@@ -69,7 +70,7 @@ export class ProfilePageComponent implements OnInit {
       await this.profileService.saveProfile(event.values);
       event.reset();
     } catch (e: any) {
-      alert(e.message || "Error al actualizar.");
+      toast.error(e.message || "Error al actualizar.");
     } finally {
       this.isSavingProfile = false;
     }
@@ -80,9 +81,9 @@ export class ProfilePageComponent implements OnInit {
     try {
       await this.profileService.changePassword(event.values);
       event.reset();
-      alert("Contraseña actualizada con éxito");
+      toast.success("Contraseña actualizada con éxito.");
     } catch (e: any) {
-      alert(e.message || "Error al actualizar.");
+      toast.error(e.message || "Error al actualizar.");
     } finally {
       this.isChangingPassword = false;
     }

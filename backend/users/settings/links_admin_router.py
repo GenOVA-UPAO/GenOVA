@@ -6,12 +6,13 @@ under the same prefix without changing the users-router wiring.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_permission
 from core.database import commit_or_500, get_db
+from core.rate_limit import limiter
 from models import User, UserLink
 from users.settings.links_helpers import _serialize
 
@@ -46,7 +47,9 @@ def list_all_links(
 
 
 @router.delete("/links/admin/{link_id}")
+@limiter.limit("20/minute")
 def delete_any_link(
+    request: Request,
     link_id: UUID,
     current_user: User = Depends(require_permission("users:link:admin")),
     db: Session = Depends(get_db),

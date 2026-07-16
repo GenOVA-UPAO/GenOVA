@@ -123,6 +123,36 @@ def resource_worker(payload: dict) -> dict:
         payload.get("enabled_models", []),
         payload.get("theme", {}),
     )
+    if remaining:
+        # Defectos estructurales sin resolver (sin _scormComplete, placeholder,
+        # esqueleto…): el alumno no podría completar el recurso. Va por la ruta
+        # de error para que repair lo reintente en vez de cerrarse como done.
+        logger.warning(
+            "workpool: resource kept structural defects after improve rounds",
+            phase=phase,
+            resource_type=rt,
+            defects=remaining,
+        )
+        return {
+            "errors": [
+                {
+                    "phase": phase,
+                    "resource_type": rt,
+                    "error": "defectos estructurales sin resolver: " + "; ".join(remaining),
+                    "plan": plan,
+                }
+            ],
+            "worker_signals": [
+                {
+                    "phase": phase,
+                    "resource_type": rt,
+                    "ok": False,
+                    "plan": plan,
+                    "seconds": round(time.monotonic() - started, 1),
+                    "error_class": "StructuralDefects",
+                }
+            ],
+        }
 
     meta = _recursos_meta_for(phase)
     title = (meta.get(rt) or {}).get("tipo", "")

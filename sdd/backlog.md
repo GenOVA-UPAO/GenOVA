@@ -2633,4 +2633,85 @@ agentes SDD (ya tenían su propia marca `(añadido)`/`(borrador)`/`(propuesto)`/
 
 ---
 
-_Fin del backlog — 84 ítems (10 EP + 74 hijos), organizado por épica y estandarizado._
+### EN-028 — Migrar la regeneración a la cola arq
+
+| Campo | Valor |
+|---|---|
+| ID | EN-028 |
+| Tipo | Habilitador |
+| Épica/Tema | Deuda técnica (auditoría bugs/diseño 2026-07-15) |
+| Sprint | Futuro |
+| Status | To Do |
+| Prioridad | Media |
+| Estimación | 5 SP |
+| Dependencia | — |
+| Responsable | — |
+| Fase | Refactor |
+| Fecha creación | 2026-07-15 |
+| Fecha actualización | — |
+
+**Objetivo:** los jobs de regeneración viven en un dict en memoria (`generation/regen/regen_jobs.py`) con un thread por job: un redeploy los pierde y solo el sweep de arranque (`recover_orphan_regen`) rescata los OVAs atascados en "generando". Mover la regeneración a la cola arq (como la generación principal) elimina esta clase de bug de raíz, y de paso la misma clase en `auth/totp_helpers.py` (tickets TOTP en memoria) y `auth/throttle.py` (throttle por email en memoria), que rompen con escalado horizontal.
+
+**Criterios de aceptación:**
+- `POST /regenerar` encola en arq; el progreso se persiste en BD (no dict).
+- Un restart del web service a mitad de regen no deja el OVA en "generando".
+- Suite BDD backend verde.
+
+---
+
+### EN-029 — Higiene de datos y hallazgos menores de la auditoría 2026-07-15
+
+| Campo | Valor |
+|---|---|
+| ID | EN-029 |
+| Tipo | Habilitador |
+| Épica/Tema | Deuda técnica (auditoría bugs/diseño 2026-07-15) |
+| Sprint | Futuro |
+| Status | To Do |
+| Prioridad | Baja |
+| Estimación | 3 SP |
+| Dependencia | — |
+| Responsable | — |
+| Fase | Refactor |
+| Fecha creación | 2026-07-15 |
+| Fecha actualización | — |
+
+**Objetivo:** lote de hallazgos menores confirmados/plausibles que no rompen funcionalidad:
+- Purga de chunks RAG solo corre al arrancar (`main.py`); en deploys long-lived los chunks huérfanos y sus embeddings crecen sin límite → purga periódica o borrado en el delete del upload/OVA (A11).
+- Listado admin de links sin paginar (`users/settings/links_admin_router.py`).
+- Batch de papelera devuelve 500 ante un UUID inválido en `ova_ids` (falta parseo tolerante).
+- `URL.revokeObjectURL` síncrono tras `click()` en `core/lib/download.ts` (helper compartido) — revisar en Safari.
+- Deuda D8 registrada: 4 archivos backend sobre el cap de 200 líneas (`llm/utils/themes.py`, `llm/images/image_providers.py`, `llm/router.py`, `prometheus/engine/workpool.py`); sprawl de `os.getenv` (64 call-sites) → migrar a `core/config.py` empezando por `llm/images/`; unificar envelope de error (`{detail}` vs `{error,message}`) — cambio transversal API coordinado con frontend; extraer `save_phase`/`delete_phase` de `ova/crud/edit_router.py` a un `edit_service`.
+- Tests pre-existentes rotos en `main` (no relacionados con la remediación): `tests/test_hu035_media_assignment.py` (6 fallos: `sanitize_config` ya no expone `defaults`/`generation_enabled` como esperan) y `tests/test_catalog_unified.py` (ImportError: `SILICONFLOW_MODELS` eliminado de `llm/images/image_model_list.py`).
+
+**Criterios de aceptación:**
+- Cada hallazgo cerrado o descartado con justificación.
+- Suite BDD backend verde (incluidos los 2 archivos de test hoy rotos).
+
+---
+
+### EN-030 — Segunda pasada de auditoría (áreas no barridas)
+
+| Campo | Valor |
+|---|---|
+| ID | EN-030 |
+| Tipo | Habilitador |
+| Épica/Tema | Deuda técnica (auditoría bugs/diseño 2026-07-15) |
+| Sprint | Futuro |
+| Status | To Do |
+| Prioridad | Baja |
+| Estimación | 3 SP |
+| Dependencia | — |
+| Responsable | — |
+| Fase | Auditoría |
+| Fecha creación | 2026-07-15 |
+| Fecha actualización | — |
+
+**Objetivo:** la auditoría 2026-07-15 barrió workspace/lifecycle/regen/jobs/users; queda una segunda pasada sobre: backend — flujos de token de auth, transacciones RAG, concurrencia prometheus/jobs, scorm, cascadas C14 restantes; frontend — sub-árbol de creación del workspace (form-card, progress-panel, modals) y floating promises en `ova-creation-flow`/`ova-job` services.
+
+**Criterios de aceptación:**
+- Informe en `sdd/audits/` con hallazgos CONFIRMADO/PLAUSIBLE y remediación o backlog por ítem.
+
+---
+
+_Fin del backlog — 87 ítems (10 EP + 77 hijos), organizado por épica y estandarizado._

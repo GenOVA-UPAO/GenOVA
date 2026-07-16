@@ -1,6 +1,8 @@
 import contextlib
 import os
 
+from fastapi import status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -8,6 +10,14 @@ from sqlalchemy.orm import Session
 from models import Ova, Role, User, UserRole
 
 VALID_STATUSES = {"borrador", "generando", "listo", "error"}
+
+
+def forbidden_response(message: str = "Sin permisos.") -> JSONResponse:
+    """403 envelope compartido — el mismo JSON estaba repetido verbatim en 10+ routers."""
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"error": "forbidden", "message": message},
+    )
 
 
 def _is_admin(user: User, db: Session) -> bool:

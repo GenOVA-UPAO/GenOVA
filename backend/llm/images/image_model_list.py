@@ -13,27 +13,46 @@ _SF_BASE = "https://api.siliconflow.cn/v1"
 _SF_TIMEOUT = 10.0
 
 # Keywords that identify image-generation models in SiliconFlow's model list
-_SF_IMAGE_KEYWORDS = frozenset([
-    "stable-diffusion", "flux", "kolors", "wanx", "cogview",
-    "dall-e", "imagen", "sdxl", "deepfloyd", "playground",
-])
+_SF_IMAGE_KEYWORDS = frozenset(
+    [
+        "stable-diffusion",
+        "flux",
+        "kolors",
+        "wanx",
+        "cogview",
+        "dall-e",
+        "imagen",
+        "sdxl",
+        "deepfloyd",
+        "playground",
+    ]
+)
+
+# Curated fallback for the no-key catalog preload (HU-034). The live list is
+# fetched via _fetch_siliconflow when the admin configures an API key.
+SILICONFLOW_MODELS = [
+    {"id": "black-forest-labs/FLUX.1-schnell", "label": "FLUX.1 Schnell (fast)"},
+    {"id": "black-forest-labs/FLUX.1-dev", "label": "FLUX.1 Dev"},
+    {"id": "stabilityai/stable-diffusion-3-5-large", "label": "Stable Diffusion 3.5 Large"},
+    {"id": "Kwai-Kolors/Kolors", "label": "Kolors"},
+]
 
 RUNWARE_MODELS = [
-    {"id": "runware:100@1",  "label": "FLUX.1 Schnell (fast)"},
-    {"id": "runware:101@1",  "label": "FLUX.1 Dev"},
-    {"id": "runware:97@1",   "label": "Stable Diffusion 3.5 Large"},
-    {"id": "runware:98@1",   "label": "Stable Diffusion 3.5 Medium"},
-    {"id": "runware:5@1",    "label": "SDXL 1.0"},
+    {"id": "runware:100@1", "label": "FLUX.1 Schnell (fast)"},
+    {"id": "runware:101@1", "label": "FLUX.1 Dev"},
+    {"id": "runware:97@1", "label": "Stable Diffusion 3.5 Large"},
+    {"id": "runware:98@1", "label": "Stable Diffusion 3.5 Medium"},
+    {"id": "runware:5@1", "label": "SDXL 1.0"},
 ]
 
 FALAI_MODELS = [
-    {"id": "fal-ai/flux/schnell",       "label": "FLUX.1 Schnell (fast)"},
-    {"id": "fal-ai/flux/dev",           "label": "FLUX.1 Dev"},
-    {"id": "fal-ai/flux-pro",           "label": "FLUX Pro"},
-    {"id": "fal-ai/flux-pro/v1.1",      "label": "FLUX Pro v1.1"},
+    {"id": "fal-ai/flux/schnell", "label": "FLUX.1 Schnell (fast)"},
+    {"id": "fal-ai/flux/dev", "label": "FLUX.1 Dev"},
+    {"id": "fal-ai/flux-pro", "label": "FLUX Pro"},
+    {"id": "fal-ai/flux-pro/v1.1", "label": "FLUX Pro v1.1"},
     {"id": "fal-ai/stable-diffusion-v3-medium", "label": "Stable Diffusion 3 Medium"},
-    {"id": "fal-ai/aura-flow",          "label": "AuraFlow"},
-    {"id": "fal-ai/kolors",             "label": "Kolors"},
+    {"id": "fal-ai/aura-flow", "label": "AuraFlow"},
+    {"id": "fal-ai/kolors", "label": "Kolors"},
 ]
 
 
@@ -61,11 +80,11 @@ def _fetch_siliconflow(api_key: str) -> list[dict]:
 
 
 HF_IMAGE_MODELS_FALLBACK = [
-    {"id": "black-forest-labs/FLUX.1-schnell",           "label": "FLUX.1 Schnell (rápido, gratis)"},
-    {"id": "black-forest-labs/FLUX.1-dev",               "label": "FLUX.1 Dev"},
-    {"id": "stabilityai/stable-diffusion-xl-base-1.0",   "label": "SDXL 1.0"},
-    {"id": "stabilityai/stable-diffusion-3.5-large",     "label": "SD 3.5 Large"},
-    {"id": "stabilityai/stable-diffusion-2-1",           "label": "Stable Diffusion 2.1"},
+    {"id": "black-forest-labs/FLUX.1-schnell", "label": "FLUX.1 Schnell (rápido, gratis)"},
+    {"id": "black-forest-labs/FLUX.1-dev", "label": "FLUX.1 Dev"},
+    {"id": "stabilityai/stable-diffusion-xl-base-1.0", "label": "SDXL 1.0"},
+    {"id": "stabilityai/stable-diffusion-3.5-large", "label": "SD 3.5 Large"},
+    {"id": "stabilityai/stable-diffusion-2-1", "label": "Stable Diffusion 2.1"},
 ]
 
 
@@ -73,7 +92,13 @@ def _fetch_huggingface_image_models() -> list[dict]:
     try:
         resp = httpx.get(
             "https://huggingface.co/api/models",
-            params={"inference": "warm", "pipeline_tag": "text-to-image", "sort": "downloads", "limit": "30", "full": "false"},
+            params={
+                "inference": "warm",
+                "pipeline_tag": "text-to-image",
+                "sort": "downloads",
+                "limit": "30",
+                "full": "false",
+            },
             timeout=10.0,
         )
         resp.raise_for_status()

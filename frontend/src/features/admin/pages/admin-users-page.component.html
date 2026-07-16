@@ -12,7 +12,7 @@
     <button
       class="inline-flex items-center justify-center rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 font-bold shadow-md"
     >
-      <span class="mr-2 text-lg leading-none">+</span> Invitar usuario
+      <gn-icon name="plus" size="text-base" class="mr-2" /> Invitar usuario
     </button>
   </header>
 
@@ -27,6 +27,7 @@
       <input
         [(ngModel)]="search"
         placeholder="Buscar por nombre o email..."
+        aria-label="Buscar por nombre o email"
         class="w-full rounded-2xl border border-border/50 bg-card/50 backdrop-blur-md pl-10 pr-4 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition"
       />
     </div>
@@ -89,12 +90,12 @@
 
     @if (!service.loading() && !service.error()) {
       <gn-users-table
-        [users]="visibleUsers"
+        [users]="visibleUsers()"
         [roles]="service.roles()"
         [currentUser]="service.currentUser()"
         [updatingUserId]="service.updatingUserId()"
         [handlers]="handlers"
-        [searchQuery]="search"
+        [searchQuery]="search()"
       ></gn-users-table>
     }
   </div>
@@ -128,10 +129,10 @@
   }
 
   <!-- Edit Modal -->
-  @if (editingUser) {
+  @if (editingUser(); as editing) {
     <gn-edit-user-modal
-      [user]="editingUser"
-      (onClose)="editingUser = null"
+      [user]="editing"
+      (onClose)="editingUser.set(null)"
       (onSave)="saveEditedUser($event)"
     ></gn-edit-user-modal>
   }

@@ -57,7 +57,15 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     roles = relationship("UserRole", back_populates="user")
-    ovas = relationship("Ova", back_populates="owner")
+    # C14: el DDL declara ON DELETE CASCADE (migración 035); sin cascade/
+    # passive_deletes el ORM emitiría UPDATE ovas SET user_id=NULL al borrar
+    # el usuario → NotNullViolation (mismo modo de fallo que Ova.versions).
+    ovas = relationship(
+        "Ova",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
 
 class UserLink(Base):

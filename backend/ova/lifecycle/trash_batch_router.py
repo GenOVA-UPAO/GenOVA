@@ -1,11 +1,12 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import get_db
+from core.database import commit_or_500, get_db
+from core.rate_limit import limiter
 from models import Ova, User
 from ova.helpers import BatchIdsRequest, _delete_scorm_file, _is_admin
 
@@ -13,7 +14,9 @@ router = APIRouter()
 
 
 @router.post("/lote/papelera")
+@limiter.limit("10/minute")
 def batch_move_to_trash(
+    request: Request,
     payload: BatchIdsRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -36,7 +39,7 @@ def batch_move_to_trash(
         ova.deleted_at = datetime.now(UTC)
         moved.append(ova_id)
 
-    db.commit()
+    commit_or_500(db, op="batch_move_to_trash")
     return {
         "moved": moved,
         "skipped": skipped,
@@ -45,7 +48,9 @@ def batch_move_to_trash(
 
 
 @router.post("/lote/restaurar")
+@limiter.limit("10/minute")
 def batch_restore(
+    request: Request,
     payload: BatchIdsRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -65,7 +70,7 @@ def batch_restore(
         ova.deleted_at = None
         restored.append(ova_id)
 
-    db.commit()
+    commit_or_500(db, op="batch_restore")
     return {
         "restored": restored,
         "skipped": skipped,
@@ -74,13 +79,16 @@ def batch_restore(
 
 
 @router.delete("/lote/permanente")
+@limiter.limit("10/minute")
 def batch_permanent_delete(
+    request: Request,
     payload: BatchIdsRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     admin = _is_admin(current_user, db)
     deleted, skipped = [], []
+    file_paths: list[str | None] = []
 
     for ova_id in payload.ova_ids:
         ova = db.execute(
@@ -91,11 +99,16 @@ def batch_permanent_delete(
             skipped.append(ova_id)
             continue
 
-        _delete_scorm_file(ova.file_path)
+        file_paths.append(ova.file_path)
         db.delete(ova)
         deleted.append(ova_id)
 
-    db.commit()
+    # Files go only after the rows are gone for sure: if the commit fails the
+    # zips stay on disk (orphan files are recoverable; rows without files not).
+    commit_or_500(db, op="batch_permanent_delete")
+    for path in file_paths:
+        _delete_scorm_file(path)
+
     return {
         "deleted": deleted,
         "skipped": skipped,

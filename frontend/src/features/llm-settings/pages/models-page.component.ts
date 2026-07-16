@@ -71,10 +71,10 @@ export class ModelsPageComponent implements OnInit {
   private readonly adminBaseline = signal("");
 
   readonly adminDirty = computed(() => this.adminBaseline() !== JSON.stringify(this.adminDraft()));
-  readonly dirty = computed(() => this.store.dirty || this.adminDirty());
+  readonly dirty = computed(() => this.store.dirty() || this.adminDirty());
 
   readonly connectedProviders = computed(() => {
-    const status = this.store.catalogStatus ?? {};
+    const status = this.store.catalogStatus() ?? {};
     const entries = Object.values(status);
     return { ok: entries.filter((s) => s.ok).length, total: entries.length };
   });
@@ -95,7 +95,7 @@ export class ModelsPageComponent implements OnInit {
     const draft: Draft = {};
     for (const t of this.adminTasks()) {
       if (t === "imagen" || t === "video") continue;
-      const d = this.store.defaults[t];
+      const d = this.store.defaults()[t];
       draft[t] = {
         default: d
           ? { provider: d.provider, model_id: d.model_id }
@@ -113,7 +113,9 @@ export class ModelsPageComponent implements OnInit {
 
     if (!this.isAdmin()) {
       this.adminModels.set(
-        (this.store.catalogFull ?? []).filter((m) => (m as { active?: boolean }).active !== false),
+        (this.store.catalogFull() ?? []).filter(
+          (m) => (m as { active?: boolean }).active !== false,
+        ),
       );
       this.adminDraft.set(this.buildDraftFromStoreDefaults());
       this.adminLoading.set(false);
@@ -129,7 +131,7 @@ export class ModelsPageComponent implements OnInit {
       const tasks = data?.tasks ?? baseTasks;
       this.adminTasks.set([...new Set([...tasks, "imagen", "video"])]);
       this.adminModels.set(
-        (data?.catalog?.length ? data.catalog : (this.store.catalogFull ?? [])).filter(
+        (data?.catalog?.length ? data.catalog : (this.store.catalogFull() ?? [])).filter(
           (m) => (m as { active?: boolean }).active !== false,
         ),
       );
@@ -158,7 +160,7 @@ export class ModelsPageComponent implements OnInit {
     this.adminSaving.set(true);
     try {
       if (this.adminDirty()) await this.saveAdminPlatform();
-      if (this.store.dirty) await this.store.save();
+      if (this.store.dirty()) await this.store.save();
       toast.success("Cambios guardados.");
     } catch (e) {
       toast.error((e as Error)?.message || "No se pudo guardar.");
@@ -169,7 +171,7 @@ export class ModelsPageComponent implements OnInit {
 
   discardChanges() {
     this.adminDraft.set(this.adminBaseline() ? (JSON.parse(this.adminBaseline()) as Draft) : null);
-    this.store.dirty = false;
+    this.store.dirty.set(false);
   }
 
   openManageModels(): void {

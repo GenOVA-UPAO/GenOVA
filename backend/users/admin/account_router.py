@@ -1,18 +1,16 @@
-"""Admin endpoints: account status (activate, lock) + password-reset triggers.
+"""Admin endpoints: account status (activate, lock) + password-reset trigger.
 
-Security note: both reset endpoints generate a long random token via
-`secrets.token_urlsafe` and return ONLY a delivery URL (email queued in the
-background, WhatsApp share URL) to the caller. The token itself never crosses
-the HTTP boundary back to the admin so that an admin cannot reset another
-user's password by reading the API response.
+Security note: the reset endpoint generates a long random token via
+`secrets.token_urlsafe` and queues the email in the background. The token
+itself never crosses the HTTP boundary back to the admin so that an admin
+cannot reset another user's password by reading the API response.
 """
 
 import secrets
-import urllib.parse
 from datetime import UTC, datetime, timedelta
 
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
@@ -20,6 +18,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import require_permission
 from auth.email import send_reset_email
 from core.database import get_db
+from core.rate_limit import limiter
 from models import PasswordResetToken, User
 from users.admin.helpers import (
     APP_URL,
@@ -48,7 +47,9 @@ def _issue_reset_token(db: Session, user_id) -> str:
 
 
 @router.patch("/{user_id}/status")
+@limiter.limit("20/minute")
 def update_user_status(
+    request: Request,
     user_id: str,
     payload: UserStatusUpdate,
     current_user: User = Depends(require_permission("manage_users")),
@@ -68,7 +69,9 @@ def update_user_status(
 
 
 @router.post("/{user_id}/unlock")
+@limiter.limit("20/minute")
 def unlock_user(
+    request: Request,
     user_id: str,
     current_user: User = Depends(require_permission("manage_users")),
     db: Session = Depends(get_db),
@@ -83,7 +86,9 @@ def unlock_user(
 
 
 @router.post("/{user_id}/reset-password-email")
+@limiter.limit("5/minute")
 def trigger_reset_email(
+    request: Request,
     user_id: str,
     background_tasks: BackgroundTasks,
     current_user: User = Depends(require_permission("manage_users")),
@@ -101,39 +106,3 @@ def trigger_reset_email(
         send_reset_email, target_user.email, reset_link, target_user.full_name
     )
     return {"message": "Correo de restablecimiento encolado para su envío."}
-
-
-@router.post("/{user_id}/reset-password-whatsapp")
-def trigger_reset_whatsapp(
-    user_id: str,
-    current_user: User = Depends(require_permission("manage_users")),
-    db: Session = Depends(get_db),
-):
-    target_uuid = parse_uuid(user_id)
-    assert_can_touch_target(caller=current_user, target_id=target_uuid, db=db)
-    target_user = get_target_user(target_uuid, db)
-
-    if not target_user.phone_number:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El usuario no tiene un número de teléfono registrado.",
-        )
-
-    token = _issue_reset_token(db, target_uuid)
-    commit_or_500(db, op="reset_password_whatsapp_token")
-
-    reset_link = f"{APP_URL}/reset-password?token={token}"
-    text_msg = (
-        f"Hola {target_user.full_name or ''}, "
-        "tu enlace para restablecer la contraseña en GenOVA: "
-        f"{reset_link} (expira en 24 h)."
-    )
-    digits = "".join(ch for ch in target_user.phone_number if ch.isdigit())
-    if len(digits) == 9:  # Peruvian mobile without country code → autoprefix
-        digits = "51" + digits
-    wa_url = f"https://api.whatsapp.com/send?phone={digits}&text={urllib.parse.quote(text_msg)}"
-
-    return {
-        "phone_number": target_user.phone_number,
-        "whatsapp_url": wa_url,
-    }

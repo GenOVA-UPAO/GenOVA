@@ -37,22 +37,6 @@ import { isLockedOut } from "./statusHelpers";
       <button hlmDropdownMenuItem (click)="onSendResetEmail.emit(user.id)">
         <gn-icon name="envelope" size="text-sm" /> Restablecer por Correo
       </button>
-
-      @if (user.phone_number) {
-        <button
-          hlmDropdownMenuItem
-          class="text-primary"
-          (click)="onSendResetWhatsApp.emit(user.id)"
-        >
-          <gn-icon name="chat-circle" size="text-sm" /> Enlace WhatsApp
-        </button>
-      }
-
-      @if (!user.phone_number) {
-        <button hlmDropdownMenuItem disabled>
-          <gn-icon name="chat-circle" size="text-sm" /> Sin Teléfono
-        </button>
-      }
     </div>
   `,
 })
@@ -63,7 +47,6 @@ export class UserActionMenuComponent {
   readonly onToggleStatus = output<boolean>();
   readonly onUnlock = output<string>();
   readonly onSendResetEmail = output<string>();
-  readonly onSendResetWhatsApp = output<string>();
 
   get isLocked(): boolean {
     return isLockedOut(this.user);

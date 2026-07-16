@@ -52,12 +52,19 @@ export class LlmSettingsModalOutletComponent implements OnDestroy {
   }
 
   private async attach(): Promise<void> {
-    const type = await this.loadModal();
-    this.ref = this.vcr.createComponent(type);
-    this.sub = this.ref.instance.onOpenChange.subscribe((v) => {
-      this.onOpenChange.emit(v);
-    });
-    this.ref.setInput("open", this.open());
-    this.loading = false;
+    try {
+      const type = await this.loadModal();
+      this.ref = this.vcr.createComponent(type);
+      this.sub = this.ref.instance.onOpenChange.subscribe((v) => {
+        this.onOpenChange.emit(v);
+      });
+      this.ref.setInput("open", this.open());
+    } catch {
+      // Si el import() dinámico falla, cerrar el modal; sin este catch la
+      // rejection dejaba `loading` en true y bloqueaba reabrirlo toda la sesión.
+      this.onOpenChange.emit(false);
+    } finally {
+      this.loading = false;
+    }
   }
 }

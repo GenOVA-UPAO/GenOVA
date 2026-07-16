@@ -52,7 +52,7 @@
             <gn-icon name="copy" size="text-sm" />
           }
           @if (copiedUri) {
-            <gn-icon name="check" size="text-sm" class="text-green-500" />
+            <gn-icon name="check" size="text-sm" class="text-success" />
           }
         </button>
       </div>
@@ -71,7 +71,7 @@
             <gn-icon name="copy" size="text-sm" />
           }
           @if (copiedSecret) {
-            <gn-icon name="check" size="text-sm" class="text-green-500" />
+            <gn-icon name="check" size="text-sm" class="text-success" />
           }
         </button>
       </div>
@@ -134,7 +134,7 @@
 @if (phase === "enabled") {
   <div class="rounded-xl border border-green-500/30 bg-card p-5 space-y-3">
     <div class="flex items-center gap-2">
-      <gn-icon name="shield-check" size="text-lg" class="text-green-500" />
+      <gn-icon name="shield-check" size="text-lg" class="text-success" />
       <h3 class="font-semibold text-sm">Autenticación en 2 pasos activada</h3>
     </div>
     <p class="text-xs text-muted-foreground">

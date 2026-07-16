@@ -32,7 +32,6 @@
     "@phosphor-icons/web": "^2.1.2",
     "@sentry/angular": "^10.62.0",
     "@spartan-ng/brain": "^1.0.4",
-    "@tanstack/angular-query-experimental": "5.101.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "driver.js": "^1.6.0",

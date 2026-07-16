@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from "@angular/core";
 
+import { ConfirmModalComponent } from "@/core/components/confirm-modal.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { DialogComponent } from "@/core/components/ui/dialog.component";
@@ -11,7 +20,7 @@ import { VersionHistoryService } from "../../services/version-history.service";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-version-history-panel",
-  imports: [DialogComponent, BadgeComponent, ButtonComponent],
+  imports: [ConfirmModalComponent, DialogComponent, BadgeComponent, ButtonComponent],
   templateUrl: "./version-history-panel.component.html",
 })
 export class VersionHistoryPanelComponent {
@@ -29,10 +38,10 @@ export class VersionHistoryPanelComponent {
   diffRight = signal<string | null>(null);
   diffData = signal<VersionDiffData | null>(null);
   diffLoading = signal(false);
+  revertTarget = signal<OvaVersionRow | null>(null);
+  reverting = signal(false);
 
-  get sortedVersions() {
-    return sortVersionsDesc(this.versions());
-  }
+  readonly sortedVersions = computed(() => sortVersionsDesc(this.versions()));
 
   close() {
     this.openChange.emit(false);
@@ -73,20 +82,24 @@ export class VersionHistoryPanelComponent {
     }
   }
 
-  async handleRevert(v: OvaVersionRow) {
-    if (
-      !window.confirm(
-        `¿Revertir al OVA v${v.version_number}? Se perderán los cambios no guardados.`,
-      )
-    ) {
-      return;
-    }
+  handleRevert(v: OvaVersionRow) {
+    this.revertTarget.set(v);
+  }
+
+  async confirmRevert() {
+    const v = this.revertTarget();
+    if (!v) return;
+    this.reverting.set(true);
     try {
       await this.versionSvc.revertOvaVersion(this.ovaId(), v.id);
+      this.revertTarget.set(null);
       this.onReverted.emit();
       this.close();
     } catch {
       // toast handled by caller if needed
+      this.revertTarget.set(null);
+    } finally {
+      this.reverting.set(false);
     }
   }
 

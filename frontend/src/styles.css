@@ -38,6 +38,8 @@ naranja como acento puntual. Brand chrome ≠ paleta de contenido OVA. */
   --accent-brand: oklch(0.46 0.19 52);
   --accent-brand-foreground: oklch(0.99 0.005 85);
   --destructive: oklch(0.577 0.245 27.325);
+  /* Éxito — verde con matiz cálido, único token de estado positivo (C6). */
+  --success: oklch(0.55 0.15 150);
   --border: oklch(0.9 0.01 85);
   --input: oklch(0.9 0.01 85);
   --ring: oklch(0.4 0.15 264);
@@ -94,6 +96,7 @@ gn-root {
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -136,6 +139,7 @@ gn-root {
   --accent-brand: oklch(0.76 0.16 55);
   --accent-brand-foreground: oklch(0.18 0.03 264);
   --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.72 0.15 150);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.72 0.12 264);

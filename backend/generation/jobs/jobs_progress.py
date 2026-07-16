@@ -43,7 +43,22 @@ def _has_done_resource(db: Session, job_id: uuid.UUID) -> bool:
 def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     from generation.jobs.jobs_service import _now
 
-    job.status = "done" if any_done else "error"
+    # "done" requires every resource to have reached a terminal state; resources
+    # still pending/running (graph aborted mid-flight) leave the job resumable as
+    # "interrupted" instead of silently shipping an incomplete OVA as finished.
+    has_unfinished = (
+        db.execute(
+            select(OvaJobResource.id).where(
+                OvaJobResource.job_id == job.id,
+                OvaJobResource.status.in_(("pending", "running")),
+            )
+        ).first()
+        is not None
+    )
+    if has_unfinished:
+        job.status = "interrupted"
+    else:
+        job.status = "done" if any_done else "error"
     job.finished_at = _now()
     db.commit()
     if any_done:

@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 
+import { triggerDownloadFromResponse } from "@/core/lib/download";
 import { apiFetch, apiJson } from "@/core/lib/http";
 
 export interface RegenBody {
@@ -81,29 +82,6 @@ export class OvaEditService {
       const data = (await res.json().catch(() => ({}))) as { message?: string };
       throw new Error(data.message || "Error al exportar SCORM");
     }
-    const contentType = res.headers.get("content-type") || "";
-    if (contentType.includes("application/json")) {
-      const data = (await res.json()) as { download_url: string; filename?: string };
-      const a = document.createElement("a");
-      a.href = data.download_url;
-      if (data.filename) a.download = data.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      return;
-    }
-    // disk fallback: stream binary
-    const disposition = res.headers.get("Content-Disposition") || "";
-    const match = /filename="?([^"]+)"?/.exec(disposition);
-    const filename = match ? match[1] : "ova.zip";
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    await triggerDownloadFromResponse(res, "ova.zip");
   }
 }

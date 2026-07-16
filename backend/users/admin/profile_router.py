@@ -2,13 +2,14 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_permission
 from core.database import get_db
+from core.rate_limit import limiter
 from models import Role, User, UserRole
 from users.admin.helpers import (
     assert_can_touch_target,
@@ -66,7 +67,9 @@ def _check_duplicates(
 
 
 @router.patch("/{user_id}")
+@limiter.limit("20/minute")
 def update_user_profile(
+    request: Request,
     user_id: str,
     payload: UserProfileAdminUpdate,
     current_user: User = Depends(require_permission("manage_users")),
@@ -96,7 +99,9 @@ def update_user_profile(
 
 
 @router.patch("/{user_id}/role")
+@limiter.limit("20/minute")
 def update_user_role(
+    request: Request,
     user_id: str,
     payload: UserRoleUpdate,
     current_user: User = Depends(require_permission("manage_users")),

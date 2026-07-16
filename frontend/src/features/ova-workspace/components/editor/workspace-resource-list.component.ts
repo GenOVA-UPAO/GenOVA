@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
 
+import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { applyReorder } from "../../lib/resource-reorder";
@@ -12,7 +13,7 @@ const MAX_PHASES_PER_TYPE = 4;
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-workspace-resource-list",
-  imports: [ButtonComponent, WorkspacePhaseItemComponent, AddResourceModalComponent],
+  imports: [ButtonComponent, IconComponent, WorkspacePhaseItemComponent, AddResourceModalComponent],
   template: `
     <gn-add-resource-modal
       [open]="addOpen"
@@ -38,27 +39,53 @@ const MAX_PHASES_PER_TYPE = 4;
             isFull ? 'Máximo ' + MAX_PHASES_PER_TYPE + ' recursos por fase' : 'Añadir recurso'
           "
         >
-          + Añadir
+          <gn-icon name="plus" size="text-xs" /> Añadir
         </gn-button>
       </div>
 
-      @for (phase of phases(); track phase; let idx = $index) {
+      @for (phase of phases(); track phase.id; let idx = $index) {
         <div
+          class="flex items-stretch gap-1 group/reorder"
           draggable="true"
           (dragstart)="handleDragStart($event, idx)"
           (dragover)="handleDragOver($event)"
           (drop)="handleDrop($event, idx)"
           (dragend)="handleDragEnd()"
         >
-          <gn-workspace-phase-item
-            [phase]="phase"
-            [isDragging]="dragIdx === idx"
-            [ovaId]="ovaId()"
-            (onEdit)="handleEdit($event)"
-            (onRegen)="handleRegen($event)"
-            (onDelete)="onDelete.emit($event)"
-            (onReverted)="onReverted.emit()"
-          ></gn-workspace-phase-item>
+          <!-- Alternativa de teclado al drag & drop (C7): subir/bajar -->
+          <div
+            class="flex flex-col justify-center gap-0.5 opacity-0 group-hover/reorder:opacity-100 focus-within:opacity-100 transition-opacity"
+          >
+            <button
+              type="button"
+              class="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30"
+              [disabled]="idx === 0"
+              (click)="moveByOffset(idx, -1)"
+              aria-label="Subir recurso"
+            >
+              <gn-icon name="caret-up" size="text-xs" />
+            </button>
+            <button
+              type="button"
+              class="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30"
+              [disabled]="idx === phases().length - 1"
+              (click)="moveByOffset(idx, 1)"
+              aria-label="Bajar recurso"
+            >
+              <gn-icon name="caret-down" size="text-xs" />
+            </button>
+          </div>
+          <div class="flex-1 min-w-0">
+            <gn-workspace-phase-item
+              [phase]="phase"
+              [isDragging]="dragIdx === idx"
+              [ovaId]="ovaId()"
+              (onEdit)="handleEdit($event)"
+              (onRegen)="handleRegen($event)"
+              (onDelete)="onDelete.emit($event)"
+              (onReverted)="onReverted.emit()"
+            ></gn-workspace-phase-item>
+          </div>
         </div>
       }
     </div>
@@ -119,6 +146,12 @@ export class WorkspaceResourceListComponent {
 
   handleDragEnd() {
     this.dragIdx = null;
+  }
+
+  moveByOffset(idx: number, offset: number) {
+    const toIdx = idx + offset;
+    if (toIdx < 0 || toIdx >= this.phases().length) return;
+    this.onReorder.emit(applyReorder(this.phases(), idx, toIdx));
   }
 
   handleEdit(event: { phaseId: string; content: string }) {

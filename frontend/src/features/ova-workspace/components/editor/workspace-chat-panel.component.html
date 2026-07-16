@@ -55,7 +55,7 @@
       }}
     </gn-button>
 
-    @if (selectionMode() && phases.length > 0) {
+    @if (selectionMode() && phases().length > 0) {
       <div class="space-y-1.5">
         <div class="flex items-center justify-between">
           <p class="text-[10px] text-muted-foreground">
@@ -71,7 +71,7 @@
             </button>
           }
         </div>
-        @for (phase of phases; track phase) {
+        @for (phase of phases(); track phase.id) {
           <label
             class="flex items-center gap-2 cursor-pointer rounded-md border border-border px-2 py-1.5 text-xs hover:bg-muted/50"
           >
@@ -96,21 +96,21 @@
     (dragover)="$event.preventDefault()"
     (drop)="handleDrop($event)"
   >
-    @if (uploads.uploads.length > 0) {
+    @if (uploads().uploads.length > 0) {
       <div class="flex flex-wrap gap-2">
-        @for (u of uploads.uploads; track u) {
+        @for (u of uploads().uploads; track u.clientId) {
           <gn-file-chip
             [file]="u"
-            [disabled]="isRegenerating() || !!uploads.disabled"
+            [disabled]="isRegenerating() || !!uploads().disabled"
             (onRemove)="onRemoveFile.emit($event)"
           ></gn-file-chip>
         }
       </div>
     }
 
-    @if (uploads.uploadError) {
+    @if (uploads().uploadError) {
       <p class="text-xs text-destructive">
-        {{ uploads.uploadError }}
+        {{ uploads().uploadError }}
       </p>
     }
 
@@ -133,7 +133,7 @@
           accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.webp"
           class="hidden"
           (change)="handleFileChange($event)"
-          [disabled]="isRegenerating() || uploads.disabled || uploads.isUploadingFiles"
+          [disabled]="isRegenerating() || uploads().disabled || uploads().isUploadingFiles"
         />
 
         <gn-button

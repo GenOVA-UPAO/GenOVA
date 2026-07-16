@@ -88,3 +88,63 @@ describe("OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)", () =
     expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("OvaWorkspaceService — aislamiento entre OVAs y teardown (B1)", () => {
+  it("init con otro OVA limpia el estado del anterior mientras carga el nuevo", async () => {
+    const edit = {
+      ...editServiceStub(),
+      fetchOvaEditorData: vi.fn((id: string) =>
+        id === "ova-A"
+          ? Promise.resolve({
+              status: "listo",
+              title: "A",
+              current_version: { phases: [{ id: "p1", phase_type: "engage" }] },
+            })
+          : new Promise(() => {}),
+      ),
+    };
+    TestBed.configureTestingModule({
+      providers: [OvaWorkspaceService, { provide: OvaEditService, useValue: edit }],
+    });
+    const service = TestBed.inject(OvaWorkspaceService);
+
+    service.init("ova-A");
+    await vi.waitFor(() => {
+      expect(service.phases().length).toBe(1);
+    });
+    service.setPrompt("prompt de A");
+
+    service.init("ova-B");
+
+    expect(service.ova()).toBeNull();
+    expect(service.phases()).toEqual([]);
+    expect(service.prompt()).toBe("");
+    expect(service.error()).toBe("");
+  });
+
+  it("teardown cancela el reintento de load cuando el OVA está generando", async () => {
+    vi.useFakeTimers();
+    try {
+      const edit = editServiceStub();
+      edit.fetchOvaEditorData = vi.fn(() =>
+        Promise.reject(Object.assign(new Error("generando"), { status: 409 })),
+      );
+      TestBed.configureTestingModule({
+        providers: [OvaWorkspaceService, { provide: OvaEditService, useValue: edit }],
+      });
+      const service = TestBed.inject(OvaWorkspaceService);
+
+      service.init("ova-A");
+      await vi.advanceTimersByTimeAsync(0);
+      expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(1);
+      expect(service.generating()).toBe(true);
+
+      service.teardown();
+      await vi.advanceTimersByTimeAsync(30000);
+
+      expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

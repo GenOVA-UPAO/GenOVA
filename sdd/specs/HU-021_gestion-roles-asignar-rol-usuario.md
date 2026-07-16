@@ -27,7 +27,7 @@ Este documento define la especificación técnica y funcional completa para la h
 - **ID**: HU-021
 - **Nombre**: Gestión de Usuarios y Roles
 - **Rol**: Administrador de la plataforma o usuario con el permiso `"manage_users"`
-- **Descripción**: Como administrador de la plataforma, quiero poder visualizar la lista de usuarios, editar sus perfiles extendidos (ID Universitario, Sexo y Teléfono), cambiar sus roles, activar/desactivar sus cuentas, desbloquearlas e iniciar el restablecimiento de contraseñas por correo y WhatsApp, para gestionar integralmente el acceso de las personas en el sistema.
+- **Descripción**: Como administrador de la plataforma, quiero poder visualizar la lista de usuarios, editar sus perfiles extendidos (ID Universitario, Sexo y Teléfono), cambiar sus roles, activar/desactivar sus cuentas, desbloquearlas e iniciar el restablecimiento de contraseñas por correo, para gestionar integralmente el acceso de las personas en el sistema.
 
 ---
 
@@ -55,7 +55,10 @@ Cada fila de usuario (a excepción del propio usuario logueado) contará con un 
 *   **Desactivar / Activar Cuenta:** Modifica el atributo `is_active`. Si está inactivo, el usuario no podrá iniciar sesión en la plataforma.
 *   **Desbloquear Cuenta:** Habilitado únicamente si el usuario está bloqueado por demasiados intentos fallidos. Resetea `failed_login_attempts` a `0` y limpia `locked_until`.
 *   **Restablecer por Correo (SMTP):** Genera un token temporal en la tabla `PasswordResetToken` y envía de manera automática un correo electrónico usando el SMTP de Gmail de la aplicación (`soporte.genova.upao@gmail.com`) con un enlace para que el usuario restablezca su clave de forma autónoma.
-*   **Restablecer por WhatsApp (wa.me):** Genera un token de reset internamente (nunca expuesto al cliente) y devuelve una `wa_url` con el enlace de restablecimiento preformateado. El frontend abre esa URL en una pestaña nueva para que el administrador envíe el mensaje manualmente desde su cliente de WhatsApp. El teléfono se normaliza automáticamente en el frontend eliminando caracteres no numéricos y anteponiendo el código de país peruano ("51") si se ingresó un número de 9 dígitos.
+
+> **Nota (2026-07)**: la opción "Restablecer por WhatsApp" fue **eliminada** — la `wa_url`
+> devuelta incluía el enlace de reset (con el token) dentro del texto prellenado, exponiendo
+> el token al administrador y violando la política de seguridad del proyecto.
 
 
 ### 4. Protección contra Escalada de Privicios y Seguridad Jerárquica
@@ -104,14 +107,6 @@ Feature: Gestión de Usuarios y Roles
     And el servidor envía un correo electrónico automático a "estudiante@upao.edu.pe"
     And el frontend muestra una notificación de éxito indicando que el correo fue enviado
     And la respuesta del servidor NO contiene el token de restablecimiento
-
-  Scenario: Restablecimiento de contraseña por WhatsApp (link manual)
-    Given que soy un administrador en la pantalla de gestión de usuarios
-    And el usuario "estudiante@upao.edu.pe" tiene teléfono registrado
-    When hago clic en la opción "Restablecer por WhatsApp"
-    Then el backend genera un token internamente y retorna una wa_url de WhatsApp
-    And el frontend abre la URL de WhatsApp para que el administrador envíe el mensaje manualmente
-    And la respuesta del servidor NO contiene el token de restablecimiento
 ```
 
 ---
@@ -133,7 +128,7 @@ Feature: Gestión de Usuarios y Roles
 |  | Juan Pérez      | juan@correo.com    | 000257022   | +5198728599 | [Usuario  v] | [Acción  ]v |  --> [✏️ Editar]
 |  | María López     | maria@docencia.com | 000015367   | +5195544332 | [Docente  v] | [Acción  ]  |      [🚫 Desactivar]
 |  | Carlos Gómez    | carlos@user.com    | --          | --          | [Usuario  v] | [Acción  ]  |      [✉️ Enviar Correo]
-|  +-----------------+--------------------+-------------+-------------+--------------+-----------+  |      [💬 WhatsApp Link]
+|  +-----------------+--------------------+-------------+-------------+--------------+-----------+  |
 |                                                                                                   |
 |  Pagina 1 de 1   << Anterior   [ 1 ]   Siguiente >>                                               |
 |                                                                                                   |
@@ -219,12 +214,4 @@ Modal: Editar Perfil de Usuario
 
 ### 5. `POST /api/users/{id}/reset-password-email` (Enviar Correo SMTP)
 - **Respuesta (200 OK)**: `{ "message": "Correo de restablecimiento enviado exitosamente." }`
-
-### 6. `POST /api/users/{id}/reset-password-whatsapp` (Generar link WhatsApp para reset)
-- **Respuesta (200 OK)**:
-```json
-{
-  "wa_url": "https://api.whatsapp.com/send?phone=51987285992&text=Hola%2C+tu+enlace+de+recuperaci%C3%B3n+en+GenOVA+es%3A+..."
-}
-```
-> **Seguridad**: El token de restablecimiento se genera internamente y **nunca se devuelve al cliente**. Solo se expone la URL de WhatsApp para que el administrador la comparta manualmente. El token vive en `PasswordResetToken` y se consume en `POST /api/auth/reset-password`.
+> **Seguridad**: El token de restablecimiento se genera internamente y **nunca se devuelve al cliente**. El token vive en `PasswordResetToken` y se consume en `POST /api/auth/reset-password`.

@@ -1,3 +1,5 @@
+import { phaseMeta } from "../../lib/phase-meta";
+
 export interface PhaseSection {
   type: string;
   content?: string;
@@ -20,34 +22,10 @@ export interface OvaContent {
   phases?: Phase[];
 }
 
-export const PHASE_COLORS: Record<string, { tab: string; badge: string }> = {
-  enganche: {
-    tab: "bg-primary text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
-  },
-  exploracion: {
-    tab: "bg-primary/85 text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
-  },
-  explicacion: {
-    tab: "bg-primary/70 text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
-  },
-  elaboracion: {
-    tab: "bg-accent-brand/85 text-primary-foreground",
-    badge: "bg-accent-brand/10 text-accent-brand border-accent-brand/25",
-  },
-  evaluacion: {
-    tab: "bg-accent-brand text-primary-foreground",
-    badge: "bg-accent-brand/10 text-accent-brand border-accent-brand/25",
-  },
-};
-
-const DEFAULT_TAB = "bg-muted text-muted-foreground";
-const DEFAULT_BADGE = "bg-muted text-muted-foreground border-border";
-
+// Colores canónicos por fase: lib/phase-meta.ts (acepta claves en español).
 export function phaseColor(phaseId: string): { tab: string; badge: string } {
-  return PHASE_COLORS[phaseId] ?? { tab: DEFAULT_TAB, badge: DEFAULT_BADGE };
+  const meta = phaseMeta(phaseId);
+  return { tab: meta.tab, badge: meta.badge };
 }
 
 const PHASE_LABELS: Record<string, string> = {

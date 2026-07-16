@@ -12,6 +12,7 @@ import {
 import { FormsModule } from "@angular/forms";
 
 import { IconComponent } from "@/core/components/icon.component";
+import { BadgeComponent } from "@/core/components/ui/badge.component";
 
 import { PlatformSettingsService } from "../services/platform-settings.service";
 import { PROVIDER_META } from "./platformKeyMeta";
@@ -19,7 +20,7 @@ import { PROVIDER_META } from "./platformKeyMeta";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-platform-key-row",
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, BadgeComponent],
   templateUrl: "./platform-key-row.component.html",
 })
 export class PlatformKeyRowComponent {

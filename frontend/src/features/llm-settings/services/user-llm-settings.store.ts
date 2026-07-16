@@ -1,4 +1,4 @@
-import { inject, Injectable } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 
 import { toast } from "@/core/lib/toast";
 
@@ -17,53 +17,56 @@ import { UserLlmSettingsService } from "./user-llm-settings.service";
 
 const DEFAULT_TIMEOUT = 120;
 
+// Estado en signals: la app es zoneless y los consumidores son OnPush — con
+// campos de clase mutados desde callbacks async, el modal quedaba en
+// "cargando" hasta que un evento no relacionado disparaba CD.
 @Injectable({ providedIn: "root" })
 export class UserLlmSettingsStore {
   private api = inject(UserLlmSettingsService);
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-  settings: SettingsMap | null = null;
-  catalog: Record<string, CatalogModel[]> = {};
-  catalogFull: CatalogModel[] = [];
-  fullTotal = 0;
-  fullPage = 1;
-  fullHasMore = false;
-  categories: string[] = [];
-  types: string[] = [];
-  enabledModels: EnabledModel[] = [];
-  defaults: Record<string, EnabledModel> = {};
-  bounds: number[] = [30, 300];
-  hasOwnLlmKey = false;
-  loading = false;
-  loadingMore = false;
-  saving = false;
+  readonly settings = signal<SettingsMap | null>(null);
+  readonly catalog = signal<Record<string, CatalogModel[]>>({});
+  readonly catalogFull = signal<CatalogModel[]>([]);
+  readonly fullTotal = signal(0);
+  readonly fullPage = signal(1);
+  readonly fullHasMore = signal(false);
+  readonly categories = signal<string[]>([]);
+  readonly types = signal<string[]>([]);
+  readonly enabledModels = signal<EnabledModel[]>([]);
+  readonly defaults = signal<Record<string, EnabledModel>>({});
+  readonly bounds = signal<number[]>([30, 300]);
+  readonly hasOwnLlmKey = signal(false);
+  readonly loading = signal(false);
+  readonly loadingMore = signal(false);
+  readonly saving = signal(false);
   /** True once the user changed settings locally and hasn't saved yet. */
-  dirty = false;
-  error = "";
-  catalogStatus: Record<string, { ok: boolean; last_success_at?: string }> | null = null;
-  refreshingCatalog = false;
-  searchQuery = "";
-  categoryFilter = "all";
-  typeFilter = "all";
+  readonly dirty = signal(false);
+  readonly error = signal("");
+  readonly catalogStatus = signal<Record<string, { ok: boolean; last_success_at?: string }> | null>(
+    null,
+  );
+  readonly refreshingCatalog = signal(false);
+  readonly searchQuery = signal("");
+  readonly categoryFilter = signal("all");
+  readonly typeFilter = signal("all");
 
   readonly taskLabels = TASK_LABELS;
   readonly categoryLabels = CATEGORY_LABELS;
   readonly typeLabels = TYPE_LABELS;
 
-  get catalogEnabled() {
-    return Object.values(this.catalog).flat();
-  }
+  readonly catalogEnabled = computed(() => Object.values(this.catalog()).flat());
 
   async load(opts: LoadOpts = {}): Promise<void> {
     const append = opts.append ?? false;
     const reqPage = opts.page ?? 1;
-    const s = opts.search !== undefined ? opts.search : this.searchQuery;
-    const c = opts.category !== undefined ? opts.category : this.categoryFilter;
-    const t = opts.type !== undefined ? opts.type : this.typeFilter;
+    const s = opts.search !== undefined ? opts.search : this.searchQuery();
+    const c = opts.category !== undefined ? opts.category : this.categoryFilter();
+    const t = opts.type !== undefined ? opts.type : this.typeFilter();
 
-    if (!append) this.loading = true;
-    else this.loadingMore = true;
-    this.error = "";
+    if (!append) this.loading.set(true);
+    else this.loadingMore.set(true);
+    this.error.set("");
 
     try {
       const data = await this.api.getLlmSettings({
@@ -75,10 +78,10 @@ export class UserLlmSettingsStore {
       });
       this.applyResponse(data, append);
     } catch (err) {
-      this.error = (err as Error)?.message || "No se pudo cargar la configuración.";
+      this.error.set((err as Error)?.message || "No se pudo cargar la configuración.");
     } finally {
-      this.loading = false;
-      this.loadingMore = false;
+      this.loading.set(false);
+      this.loadingMore.set(false);
     }
   }
 
@@ -86,126 +89,129 @@ export class UserLlmSettingsStore {
     data: Awaited<ReturnType<UserLlmSettingsService["getLlmSettings"]>>,
     append: boolean,
   ): void {
-    this.settings = data.settings || {};
-    this.hasOwnLlmKey = data.has_own_llm_key ?? false;
-    this.catalog = data.catalog || {};
-    this.enabledModels = Array.isArray(data.enabled_models) ? data.enabled_models : [];
-    this.defaults = data.defaults || {};
-    if (Array.isArray(data.timeout_bounds)) this.bounds = data.timeout_bounds;
+    this.settings.set(data.settings || {});
+    this.hasOwnLlmKey.set(data.has_own_llm_key ?? false);
+    this.catalog.set(data.catalog || {});
+    this.enabledModels.set(Array.isArray(data.enabled_models) ? data.enabled_models : []);
+    this.defaults.set(data.defaults || {});
+    if (Array.isArray(data.timeout_bounds)) this.bounds.set(data.timeout_bounds);
     if (Array.isArray(data.catalog_full)) {
-      this.catalogFull = append ? [...this.catalogFull, ...data.catalog_full] : data.catalog_full;
+      this.catalogFull.set(
+        append ? [...this.catalogFull(), ...data.catalog_full] : data.catalog_full,
+      );
     }
-    this.fullTotal = data.full_total || 0;
-    this.fullPage = data.full_page || 1;
-    this.fullHasMore = data.full_has_more || false;
-    if (Array.isArray(data.categories)) this.categories = data.categories;
-    if (Array.isArray(data.types)) this.types = data.types;
-    this.catalogStatus = data.catalog_status || null;
+    this.fullTotal.set(data.full_total || 0);
+    this.fullPage.set(data.full_page || 1);
+    this.fullHasMore.set(data.full_has_more || false);
+    if (Array.isArray(data.categories)) this.categories.set(data.categories);
+    if (Array.isArray(data.types)) this.types.set(data.types);
+    this.catalogStatus.set(data.catalog_status || null);
   }
 
   loadMore(): void {
-    if (this.loadingMore || !this.fullHasMore) return;
-    void this.load({ append: true, page: this.fullPage + 1 });
+    if (this.loadingMore() || !this.fullHasMore()) return;
+    void this.load({ append: true, page: this.fullPage() + 1 });
   }
 
   handleSearch(q: string): void {
-    this.searchQuery = q;
+    this.searchQuery.set(q);
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
     this.debounceTimer = setTimeout(() => void this.load({ page: 1 }), 300);
   }
 
   handleCategory(cat: string): void {
-    this.categoryFilter = cat;
+    this.categoryFilter.set(cat);
     void this.load({ page: 1, category: cat });
   }
 
   handleType(typeVal: string): void {
-    this.typeFilter = typeVal;
+    this.typeFilter.set(typeVal);
     void this.load({ page: 1, type: typeVal });
   }
 
   isDefaultModel(provider: string, modelId: string): boolean {
-    return Object.values(this.defaults).some(
+    return Object.values(this.defaults()).some(
       (d) => d.provider === provider && d.model_id === modelId,
     );
   }
 
   isModelEnabled(provider: string, modelId: string): boolean {
-    return this.enabledModels.some((e) => e.provider === provider && e.model_id === modelId);
+    return this.enabledModels().some((e) => e.provider === provider && e.model_id === modelId);
   }
 
   async toggleFavorite(provider: string, modelId: string): Promise<void> {
-    const current = [...this.enabledModels];
+    const current = [...this.enabledModels()];
     const exists = current.some((e) => e.provider === provider && e.model_id === modelId);
     const next = exists
       ? current.filter((e) => !(e.provider === provider && e.model_id === modelId))
       : [...current, { provider, model_id: modelId }];
-    this.enabledModels = next;
+    this.enabledModels.set(next);
     try {
       const data = await this.api.saveEnabledModels(next);
-      if (Array.isArray(data?.models)) this.enabledModels = data.models;
+      if (Array.isArray(data?.models)) this.enabledModels.set(data.models);
     } catch (err) {
-      this.enabledModels = current;
+      this.enabledModels.set(current);
       toast.error((err as Error)?.message || "No se pudo guardar el favorito.");
     }
   }
 
   setModel(tipo: string, provider: string, modelId: string): void {
-    this.settings = setModelIn(this.settings, tipo, provider, modelId);
-    this.dirty = true;
+    this.settings.set(setModelIn(this.settings(), tipo, provider, modelId));
+    this.dirty.set(true);
   }
 
   setTipoTimeout(tipo: string, timeoutS: number): void {
-    this.settings = setTimeoutIn(this.settings, tipo, timeoutS);
-    this.dirty = true;
+    this.settings.set(setTimeoutIn(this.settings(), tipo, timeoutS));
+    this.dirty.set(true);
   }
 
   resetTipo(tipo: string): void {
-    this.settings = resetTipoIn(this.settings, tipo, this.defaults, DEFAULT_TIMEOUT);
-    this.dirty = true;
+    this.settings.set(resetTipoIn(this.settings(), tipo, this.defaults(), DEFAULT_TIMEOUT));
+    this.dirty.set(true);
   }
 
   setFallback(tipo: string, index: number, provider: string, modelId: string): void {
-    this.settings = setFallbackIn(this.settings, tipo, index, provider, modelId);
-    this.dirty = true;
+    this.settings.set(setFallbackIn(this.settings(), tipo, index, provider, modelId));
+    this.dirty.set(true);
   }
 
   addFallback(tipo: string): void {
-    this.settings = addFallbackIn(this.settings, tipo);
-    this.dirty = true;
+    this.settings.set(addFallbackIn(this.settings(), tipo));
+    this.dirty.set(true);
   }
 
   removeFallback(tipo: string, index: number): void {
-    this.settings = removeFallbackIn(this.settings, tipo, index);
-    this.dirty = true;
+    this.settings.set(removeFallbackIn(this.settings(), tipo, index));
+    this.dirty.set(true);
   }
 
   async save(): Promise<boolean> {
-    if (!this.settings) return false;
-    this.saving = true;
+    const current = this.settings();
+    if (!current) return false;
+    this.saving.set(true);
     try {
-      const data = await this.api.saveLlmSettings(this.settings);
-      if (data?.settings) this.settings = data.settings;
-      this.dirty = false;
+      const data = await this.api.saveLlmSettings(current);
+      if (data?.settings) this.settings.set(data.settings);
+      this.dirty.set(false);
       toast.success("Configuración de IA guardada.");
       return true;
     } catch (err) {
       toast.error((err as Error)?.message || "No se pudo guardar la configuración.");
       return false;
     } finally {
-      this.saving = false;
+      this.saving.set(false);
     }
   }
 
   async retryRefresh(): Promise<void> {
-    this.refreshingCatalog = true;
+    this.refreshingCatalog.set(true);
     try {
       await this.api.refreshLlmCatalog();
       await this.load({});
     } catch {
       toast.error("No se pudo actualizar el catálogo.");
     } finally {
-      this.refreshingCatalog = false;
+      this.refreshingCatalog.set(false);
     }
   }
 }

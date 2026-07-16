@@ -38,7 +38,7 @@ async def resume_orphans(ctx) -> None:
     def _find_and_requeue() -> list[tuple[uuid.UUID, list[uuid.UUID]]]:
         from datetime import UTC, datetime, timedelta
 
-        from sqlalchemy import select
+        from sqlalchemy import select, update
 
         from core.database import SessionLocal
         from models import OvaJob, OvaJobResource
@@ -47,17 +47,29 @@ async def resume_orphans(ctx) -> None:
         out: list[tuple[uuid.UUID, list[uuid.UUID]]] = []
         db = SessionLocal()
         try:
-            orphans = (
-                db.execute(select(OvaJob).where(OvaJob.status == "running"))
-                .scalars()
-                .all()
-            )
+            orphans = db.execute(select(OvaJob).where(OvaJob.status == "running")).scalars().all()
             for job in orphans:
                 updated = job.updated_at
                 if updated is not None and updated.tzinfo is None:
                     updated = updated.replace(tzinfo=UTC)
                 if updated is not None and updated > stale_cutoff:
                     continue  # otro worker lo tiene vivo (heartbeat reciente)
+                # Claim atómico ANTES de re-encolar: refresca updated_at solo si el
+                # job sigue 'running' y estancado. Sin esto, el sweep lazy del web
+                # (_sweep_if_stale) lo marcaba 'interrupted' en paralelo y un resume
+                # manual lanzaba una SEGUNDA ejecución sobre las mismas filas.
+                claimed = db.execute(
+                    update(OvaJob)
+                    .where(
+                        OvaJob.id == job.id,
+                        OvaJob.status == "running",
+                        OvaJob.updated_at <= stale_cutoff,
+                    )
+                    .values(updated_at=datetime.now(UTC))
+                )
+                db.commit()
+                if claimed.rowcount == 0:
+                    continue  # otro proceso lo reclamó o el sweep ya lo transicionó
                 pending = [
                     r.id
                     for r in db.execute(

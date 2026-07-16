@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input, output } from "@angular/core";
 
 import {
   AlertComponent,
@@ -14,15 +14,15 @@ import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
   selector: "gn-catalog-status-alert",
   imports: [AlertComponent, AlertTitleComponent, AlertDescriptionComponent, ButtonComponent],
   template: `
-    @if (downProviders.length > 0) {
+    @if (downProviders().length > 0) {
       <gn-alert class="border-accent-brand/40 bg-accent-brand/5 grid gap-2 rounded-lg border p-4">
         <gn-alert-title class="font-semibold text-sm">
-          No pudimos obtener los modelos de {{ providerNames }}
+          No pudimos obtener los modelos de {{ providerNames() }}
         </gn-alert-title>
         <gn-alert-description class="text-sm text-muted-foreground">
           Se muestran los últimos datos disponibles.
-          @if (lastOk) {
-            Última actualización: {{ lastOk }}.
+          @if (lastOk()) {
+            Última actualización: {{ lastOk() }}.
           }
         </gn-alert-description>
         <div class="mt-2">
@@ -46,21 +46,23 @@ export class CatalogStatusAlertComponent {
   readonly refreshing = input(false);
   readonly retry = output();
 
-  get downProviders(): [string, { ok: boolean; last_success_at?: string }][] {
-    return Object.entries(this.catalogStatus() || {}).filter(([, st]) => st && !st.ok);
-  }
+  readonly downProviders = computed<[string, { ok: boolean; last_success_at?: string }][]>(() =>
+    Object.entries(this.catalogStatus() || {}).filter(([, st]) => st && !st.ok),
+  );
 
-  get providerNames(): string {
-    return this.downProviders.map(([p]) => PROVIDER_LABELS[p] || p).join(" y ");
-  }
+  readonly providerNames = computed(() =>
+    this.downProviders()
+      .map(([p]) => PROVIDER_LABELS[p] || p)
+      .join(" y "),
+  );
 
-  get lastOk(): string | null {
-    for (const [, st] of this.downProviders) {
+  readonly lastOk = computed<string | null>(() => {
+    for (const [, st] of this.downProviders()) {
       const formatted = formatTimestamp(st.last_success_at);
       if (formatted) return formatted;
     }
     return null;
-  }
+  });
 }
 
 function formatTimestamp(iso: string | null | undefined): string | null {

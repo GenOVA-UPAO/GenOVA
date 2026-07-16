@@ -47,9 +47,36 @@ export class OvaWorkspaceService implements OnDestroy {
   private loadRetryTimer: any = null;
 
   init(ovaId: string) {
+    // Servicio singleton root: al navegar de un OVA a otro hay que limpiar el
+    // estado del anterior (fases/prompt/error visibles hasta que resuelva el
+    // fetch nuevo) y cancelar sus timers de polling.
+    this.clearTimers();
+    this.ovaState.set(null);
+    this.promptState.set("");
+    this.errorState.set("");
+    this.generatingState.set(false);
+    this.isRegeneratingState.set(false);
+    this.regenProgressState.set({ percentage: 0, stage: "" });
     this.ovaId = ovaId;
     this.mounted = true;
     void this.load();
+  }
+
+  /** Cancela timers y desmonta; llamar desde el ngOnDestroy de la vista. */
+  teardown() {
+    this.mounted = false;
+    this.clearTimers();
+  }
+
+  private clearTimers() {
+    if (this.regenTimer) {
+      clearTimeout(this.regenTimer);
+      this.regenTimer = null;
+    }
+    if (this.loadRetryTimer) {
+      clearTimeout(this.loadRetryTimer);
+      this.loadRetryTimer = null;
+    }
   }
 
   setPrompt(value: string) {
@@ -205,8 +232,6 @@ export class OvaWorkspaceService implements OnDestroy {
   }
 
   ngOnDestroy() {
-    this.mounted = false;
-    if (this.regenTimer) clearTimeout(this.regenTimer);
-    if (this.loadRetryTimer) clearTimeout(this.loadRetryTimer);
+    this.teardown();
   }
 }

@@ -6,11 +6,12 @@
       <div class="flex items-center gap-2 flex-wrap">
         <p class="font-bold text-base font-display">{{ meta.label }}</p>
         @if (meta.compat) {
-          <span
-            class="rounded-md bg-blue-50 border border-blue-200 px-1.5 py-0.5 text-[9px] font-bold text-blue-700 uppercase tracking-widest"
+          <gn-badge
+            variant="outline"
+            class="text-[9px] font-bold uppercase tracking-widest text-primary border-primary/30"
           >
             Compatible OpenAI
-          </span>
+          </gn-badge>
         }
       </div>
       <p class="text-xs font-medium text-muted-foreground mt-1">{{ meta.desc }}</p>

@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input, output } from "@angular/core";
 
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
@@ -20,19 +20,21 @@ const CHECK_CLS = "text-primary border-primary/20 bg-primary/10";
   imports: [CommonModule, ButtonComponent, IconComponent],
   template: `
     <div class="space-y-4">
-      @for (g of groups; track g) {
+      <!-- track por clave estable: los VMs se reconstruyen en cada tick del poll
+           (2 s); track por identidad destruía la lista y mataba animate-pulse -->
+      @for (g of groups(); track g.phase) {
         <div>
           <p class="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <gn-icon [name]="phaseIcon(g.phase)" size="text-xs" /> {{ g.phaseLabel }}
           </p>
           <ul class="space-y-1.5">
-            @for (r of g.items; track r) {
+            @for (r of g.items; track r.id) {
               <li class="rounded-lg border border-border bg-background px-3 py-2">
                 <div class="flex items-center gap-2.5">
                   @if (r.status === "X") {
                     <input
                       type="checkbox"
-                      [checked]="selectedSet.has(r.id)"
+                      [checked]="selectedSet().has(r.id)"
                       (change)="onToggle.emit(r.id)"
                       class="shrink-0"
                     />
@@ -95,13 +97,9 @@ export class CreationResourceListComponent {
   readonly onRetry = output<string>();
   readonly onPreview = output<string>();
 
-  get groups() {
-    return groupByPhase(this.viewModel());
-  }
+  readonly groups = computed(() => groupByPhase(this.viewModel()));
 
-  get selectedSet() {
-    return new Set(this.selectedIds());
-  }
+  readonly selectedSet = computed(() => new Set(this.selectedIds()));
 
   phaseIcon(phase: string) {
     return (PHASE_ICON_BY_KEY[phase] ?? "ph-circle").replace(/^ph-/, "");
