@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [develop, main]
 
+# Un push nuevo a la misma ref cancela el run anterior (solo PRs): dos suites
+# E2E solapadas agotan el pooler compartido de Supabase (EMAXCONNSESSION).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint-frontend:
     name: Lint Frontend
@@ -43,6 +49,10 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      # Pool acotado: 3 jobs levantan backend contra el mismo pooler de Supabase;
+      # con el default (10+10 por proceso) dos runs solapados lo agotan.
+      DB_POOL_SIZE: '3'
+      DB_MAX_OVERFLOW: '3'
       BASE: http://localhost:8000
       GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
       OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
@@ -106,6 +116,10 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      # Pool acotado: 3 jobs levantan backend contra el mismo pooler de Supabase;
+      # con el default (10+10 por proceso) dos runs solapados lo agotan.
+      DB_POOL_SIZE: '3'
+      DB_MAX_OVERFLOW: '3'
       GROQ_API_KEY: dummy-ci-key-not-used-by-contract-tests
       OPENROUTER_API_KEY: dummy-ci-key-not-used-by-contract-tests
       LLM_FAKE: '1'
@@ -209,6 +223,10 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      # Pool acotado: 3 jobs levantan backend contra el mismo pooler de Supabase;
+      # con el default (10+10 por proceso) dos runs solapados lo agotan.
+      DB_POOL_SIZE: '3'
+      DB_MAX_OVERFLOW: '3'
       BASE_URL: http://localhost:4200
       GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
       OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
