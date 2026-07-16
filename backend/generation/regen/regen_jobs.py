@@ -10,6 +10,7 @@ class of bug at the root (EN in backlog).
 import threading
 import time
 import uuid
+from collections.abc import Callable
 
 import structlog
 from sqlalchemy import select
@@ -32,10 +33,15 @@ def start_regen(
     effective_prompt: str,
     phase_ids: list[str],
     total_phases: int,
+    worker: Callable[[str, str], None],
 ) -> str:
-    """Mark the OVA as generating, register the job and spawn the worker thread."""
+    """Mark the OVA as generating, register the job and spawn the worker thread.
+
+    `worker(job_id, ova_id)` lo inyecta el router (regen_service._finalize_edit):
+    importarlo aquí crearía un ciclo regen_jobs ↔ regen_service (el service
+    importa el registry de este módulo).
+    """
     from core.database import commit_or_500
-    from generation.regen.regen_service import _finalize_edit
 
     ova.status = "generando"
     commit_or_500(db, op="start_regen")
@@ -52,7 +58,7 @@ def start_regen(
             "status": "running",
         }
 
-    threading.Thread(target=_finalize_edit, args=(job_id, str(ova.id)), daemon=True).start()
+    threading.Thread(target=worker, args=(job_id, str(ova.id)), daemon=True).start()
     return job_id
 
 

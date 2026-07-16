@@ -8,6 +8,7 @@ from auth.dependencies import get_current_user
 from core.database import get_db
 from core.rate_limit import limiter
 from generation.regen.regen_jobs import regen_progress_dto, start_regen
+from generation.regen.regen_service import _finalize_edit
 from models import Ova, OvaPhase, User
 from ova.crud.edit_helpers import (
     _ensure_version_exists,
@@ -95,7 +96,9 @@ def regenerate_ova(
             .where(OvaPhase.version_id == active_version.id)
         )
 
-    job_id = start_regen(db, ova, effective_prompt, payload.fase_ids, total_phases or 1)
+    job_id = start_regen(
+        db, ova, effective_prompt, payload.fase_ids, total_phases or 1, worker=_finalize_edit
+    )
 
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED,
