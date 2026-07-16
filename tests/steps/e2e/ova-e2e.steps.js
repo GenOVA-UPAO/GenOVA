@@ -42,7 +42,9 @@ When('escribo un prompt válido sobre {string}', async ({ page }, tema) => {
 })
 
 When('configuro recursos en al menos dos fases', async ({ page }) => {
-  await page.getByRole('button', { name: '⚙' }).click()
+  // El botón dejó de ser el glifo "⚙": ahora es gn-icon "gear" con
+  // ariaLabel "Configurar recursos 5E" (consolidación de íconos).
+  await page.getByRole('button', { name: 'Configurar recursos 5E' }).click()
   const firstCard = page.locator('gn-resource-card').first()
   await firstCard.waitFor({ state: 'visible', timeout: 20000 })
   await firstCard.click()
