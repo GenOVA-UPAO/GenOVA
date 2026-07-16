@@ -28,8 +28,8 @@ const ACCEPTED_ATTR = ".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.web
     FileChipComponent,
   ],
   template: `
-    <gn-dialog [open]="open()" (openChange)="onOpenChange.emit($event)">
-      <gn-dialog-content class="max-w-md">
+    <gn-dialog [open]="open()" width="28rem" (openChange)="onOpenChange.emit($event)">
+      <gn-dialog-content class="p-6">
         <gn-dialog-header>
           <gn-dialog-title>Archivos de referencia</gn-dialog-title>
           <gn-dialog-description>

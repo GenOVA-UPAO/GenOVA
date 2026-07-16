@@ -36,8 +36,8 @@ import type { AdminUser } from "../../lib/types";
     ButtonDirective,
   ],
   template: `
-    <gn-dialog [open]="true" (openChange)="handleOpenChange($event)">
-      <gn-dialog-content class="max-w-md max-h-[85vh] overflow-y-auto">
+    <gn-dialog [open]="true" width="28rem" (openChange)="handleOpenChange($event)">
+      <gn-dialog-content class="p-6 max-h-[85vh] overflow-y-auto">
         <gn-dialog-header>
           <gn-dialog-title>Editar Perfil: {{ user().full_name || user().email }}</gn-dialog-title>
         </gn-dialog-header>

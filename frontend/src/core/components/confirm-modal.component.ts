@@ -22,7 +22,7 @@ import { DialogComponent } from "@/core/components/ui/dialog.component";
         <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-6">
           <gn-button
             variant="outline"
-            class="flex-1 block"
+            class="flex-1"
             (onClick)="onCancel.emit()"
             [disabled]="isLoading()"
           >
@@ -30,7 +30,7 @@ import { DialogComponent } from "@/core/components/ui/dialog.component";
           </gn-button>
           <gn-button
             [variant]="danger() ? 'destructive' : 'default'"
-            class="flex-1 block"
+            class="flex-1"
             (onClick)="onConfirm.emit()"
             [disabled]="isLoading()"
             [loading]="isLoading()"

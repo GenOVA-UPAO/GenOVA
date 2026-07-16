@@ -38,7 +38,7 @@ type Status = "idle" | "sending" | "sent";
         <gn-button
           type="button"
           variant="outline"
-          class="mt-2 w-full block"
+          class="mt-2 w-full"
           (onClick)="handleResend()"
           [disabled]="status() === 'sending'"
           [loading]="status() === 'sending'"

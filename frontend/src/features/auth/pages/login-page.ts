@@ -97,7 +97,7 @@ import { resendVerification } from "../services/verification";
                 type="submit"
                 [loading]="isSubmitting()"
                 [disabled]="loginForm().invalid() || isSubmitting()"
-                class="w-full block"
+                class="w-full"
               >
                 {{ isSubmitting() ? "Ingresando..." : "Entrar" }}
               </gn-button>

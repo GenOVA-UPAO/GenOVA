@@ -55,7 +55,7 @@ import { ButtonComponent } from "@/core/components/ui/button.component";
             type="submit"
             [loading]="isSubmitting()"
             [disabled]="totpForm().invalid() || isSubmitting()"
-            class="w-full block"
+            class="w-full"
           >
             {{ isSubmitting() ? "Verificando..." : "Verificar" }}
           </gn-button>

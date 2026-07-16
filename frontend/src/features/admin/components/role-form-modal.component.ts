@@ -33,7 +33,7 @@ import type { Role } from "../lib/types";
   ],
   template: `
     <gn-dialog [open]="true" (openChange)="handleOpenChange($event)">
-      <gn-dialog-content class="max-w-lg max-h-[92vh] overflow-y-auto">
+      <gn-dialog-content class="p-6 max-h-[92vh] overflow-y-auto">
         <gn-dialog-header>
           <gn-dialog-title>
             {{ editingRole ? "Editar rol: " + editingRole.name : "Crear nuevo rol" }}
