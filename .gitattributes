@@ -1,0 +1,9 @@
+# Normaliza finales de línea a LF en todo el repo (prettier exige LF y
+# core.autocrlf=true en Windows reescribía el working tree a CRLF).
+* text=auto eol=lf
+
+# Binarios: sin conversión de finales de línea.
+*.png -text
+*.ico -text
+*.xlsx -text
+*.docx -text
