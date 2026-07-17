@@ -1,10 +1,11 @@
-"""Validate estructural por recurso (F2.3) — evaluator-optimizer.
+"""Validate estructural por recurso (F2.3) — checklist determinístico.
 
-Checklist determinístico sobre el HTML generado; si hay defectos, una ronda de
-`apply_feedback` (refinador existente) con el reporte exacto y re-chequeo.
-Cierra los dos defectos reales de la auditoría 2026-07-06 (#10): Noticia sin
-ningún clickable ni _scormComplete(), y Lab de Código esqueleto con placeholder
-"Contenido del card".
+`structural_defects` es el chequeo sin LLM (scormComplete, interactividad,
+placeholder, contenido escaso) que cierra los dos defectos reales de la auditoría
+2026-07-06 (#10): Noticia sin ningún clickable ni _scormComplete(), y Lab de
+Código esqueleto con placeholder "Contenido del card". Es la señal de routing a
+repair. El loop de refinamiento con feedback dirigido vive ahora en la compuerta
+única `prometheus.engine.refine.refine_and_check` (fusionada con maybe_refine).
 
 El conteo exacto de elementos vs resource_config queda como criterio del
 contrato del prompt (F4.3); aquí solo entra lo verificable sin ambigüedad.
@@ -75,48 +76,3 @@ def structural_defects(html: str) -> list[str]:
 # Reexport: el texto del contrato vive en llm/utils/output_contract.py (sin
 # dependencias) para evitar el ciclo utils→themes→prometheus→…→utils.
 from llm.utils.output_contract import output_contract  # noqa: E402, F401
-
-
-def validate_and_improve(
-    html: str,
-    phase: str,
-    rt,
-    concept: str,
-    llm_config=None,
-    enabled_models=None,
-    theme=None,
-    max_rounds: int = 2,
-) -> tuple[str, list[str]]:
-    """Chequea → si hay defectos, hasta max_rounds de feedback dirigido → rechequea.
-
-    Devuelve (html_final, defectos_restantes). Best-effort: nunca lanza; si el
-    refinado regresa peor (muy corto), se conserva la versión anterior.
-    """
-    from prometheus.engine.refine import apply_feedback
-
-    defects = structural_defects(html)
-    rounds = 0
-    while defects and rounds < max_rounds:
-        rounds += 1
-        logger.info(
-            "validate: round with defects",
-            phase=phase,
-            resource_type=rt,
-            round=rounds,
-            defects=len(defects),
-        )
-        improved = apply_feedback(
-            html, concept, defects, phase, rt, llm_config, enabled_models, theme
-        )
-        if improved and len(improved) >= len(html) * 0.5:
-            html = improved
-        defects = structural_defects(html)
-    if defects:
-        logger.warning(
-            "validate: aún con defectos tras reintentos",
-            phase=phase,
-            resource_type=rt,
-            rounds=rounds,
-            defects=defects,
-        )
-    return html, defects

@@ -1,5 +1,3 @@
-import json
-
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -8,31 +6,13 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from core.database import get_db
 from core.rate_limit import limiter
-from llm.router import generar_texto
-from llm.utils.html_validator import validate_and_repair
-from llm.utils.utils import parse_json, strip_markdown
 from models import User
-from prometheus.prompts.explore_prompts import (
-    CODE_ONLY,
-    RECURSOS_META,
-    prompt_codigo,
-    prompt_html,
-    prompt_texto,
-)
+from prometheus.plans.generate import generate_resource
+from prometheus.prompts.explore_prompts import RECURSOS_META
 from rag.retriever import build_contexto_usuario, top_k
 
 router = APIRouter()
 logger = structlog.get_logger(__name__)
-
-_TAREA_POR_RECURSO = {
-    2: "texto",
-    3: "texto",
-    4: "texto",
-    5: "texto",
-    7: "texto",
-    8: "texto",
-    9: "texto",
-}
 
 
 class GenerateExploreRequest(BaseModel):
@@ -51,36 +31,6 @@ def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
             "RAG retrieved chunks", fase="EXPLORE", chunk_count=len(chunks), concept=query[:60]
         )
     return contexto
-
-
-def _generate_two_step(n: int, concept: str, contexto: str) -> tuple[dict | list, str]:
-    tarea = _TAREA_POR_RECURSO.get(n, "texto")
-    raw = generar_texto(prompt_texto(n, concept, contexto), tarea, max_tokens=3000)
-    try:
-        json_data = parse_json(raw)
-    except Exception:
-        logger.warning(
-            "JSON parse failed, retrying with strict prompt", fase="EXPLORE", resource_type=n
-        )
-        logger.debug("raw LLM output", raw_output=raw[:500])
-        retry = generar_texto(
-            prompt_texto(n, concept, contexto) + "\n\nIMPORTANTE: Responde SOLO con "
-            "el JSON puro, sin texto adicional, sin markdown, sin explicaciones.",
-            tarea,
-            max_tokens=3000,
-        )
-        try:
-            json_data = parse_json(retry)
-        except Exception:
-            logger.warning(
-                "JSON retry also failed, using raw text", fase="EXPLORE", resource_type=n
-            )
-            json_data = {"contenido": retry}
-    json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
-    html = strip_markdown(
-        generar_texto(prompt_html(n, concept, json_str, contexto), "codigo", max_tokens=12000)
-    )
-    return json_data, html
 
 
 @router.get("/recursos")
@@ -111,31 +61,14 @@ def generate_explore_resource(
     contexto = _retrieve_contexto(db, concept, payload.upload_ids)
 
     try:
-        if n in CODE_ONLY:
-            html = strip_markdown(
-                generar_texto(prompt_codigo(n, concept, contexto), "codigo", max_tokens=12000)
-            )
-            html, _ = validate_and_repair(html, "explore", n)
-            return {
-                **meta,
-                "resource_type": n,
-                "concepto": concept,
-                "raw_json": None,
-                "html_content": html,
-            }
-
-        json_data, html = _generate_two_step(n, concept, contexto)
-        html, _ = validate_and_repair(html, "explore", n)
+        result = generate_resource("explore", n, concept, contexto=contexto)
         return {
             **meta,
             "resource_type": n,
             "concepto": concept,
-            "raw_json": json_data,
-            "html_content": html,
+            "raw_json": result.raw_json,
+            "html_content": result.html,
         }
-
-    except HTTPException:
-        raise
     except Exception:
         logger.exception("error generating resource", fase="EXPLORE", resource_type=n)
         raise HTTPException(

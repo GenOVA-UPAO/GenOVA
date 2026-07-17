@@ -4,7 +4,12 @@ Each prompt fixes the resource FORMAT but adapts all content to whatever
 Machine Learning concept is passed in `concept` — no hardcoded ML subtopic.
 """
 
-from prometheus.prompts._loader import render_html, render_simulador, render_texto
+from prometheus.prompts._loader import (
+    render_codigo,
+    render_html,
+    render_simulador,
+    render_texto,
+)
 from prometheus.prompts._scaffold import with_user_context
 
 RECURSOS_META = {
@@ -80,7 +85,15 @@ def prompt_codigo(
     design_system: str | None = None,
     config: dict | None = None,
 ) -> str:
-    return prompt_simulador(concept, contexto_usuario, design_system, config)
+    # engage:10 (Simulador Intuitivo) usa la plantilla [simulador]; el resto de
+    # recursos direct_code (p. ej. 6, Noticia de Impacto) su propia [codigo.N].
+    # Antes esto devolvía SIEMPRE el simulador, así que engage:6 se generaba con
+    # el prompt equivocado; plan_map ya marca {6,10} como direct_code.
+    if n == 10:
+        return prompt_simulador(concept, contexto_usuario, design_system, config)
+    return with_user_context(
+        render_codigo("engage", n, concept, design_system, config), contexto_usuario
+    )
 
 
 def prompt_html(

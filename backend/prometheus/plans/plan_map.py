@@ -55,20 +55,19 @@ def dispatch_by_plan(
     image_settings=None,
     resource_config=None,
 ) -> str:
-    """Ejecuta el plan indicado — contrato único worker/repair ↔ planes."""
-    n = int(rt)
-    if plan == PODCAST:
-        from prometheus.plans.podcast import podcast_gen
+    """Ejecuta el plan indicado devolviendo solo el HTML — shim de compatibilidad
+    sobre `generate_resource` (lo usa el nodo repair, que solo necesita el HTML del
+    reintento; el workpool llama `generate_resource` directo para leer los defectos)."""
+    from prometheus.plans.generate import generate_resource
 
-        return podcast_gen(phase, n, concept, llm_config, enabled_models, theme)
-    if plan == DIRECT_CODE:
-        from prometheus.plans.direct_code import direct_code_gen
-
-        return direct_code_gen(
-            phase, n, concept, llm_config, enabled_models, theme, resource_config
-        )
-    from prometheus.plans.two_step import two_step_gen
-
-    return two_step_gen(
-        phase, n, concept, llm_config, enabled_models, theme, image_settings, resource_config
-    )
+    return generate_resource(
+        phase,
+        rt,
+        concept,
+        plan=plan,
+        llm_config=llm_config,
+        enabled_models=enabled_models,
+        theme=theme,
+        image_settings=image_settings,
+        resource_config=resource_config,
+    ).html

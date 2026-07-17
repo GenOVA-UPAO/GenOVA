@@ -50,18 +50,16 @@ def test_fan_out_empty_plan_goes_to_collect():
 
 
 def test_worker_success_and_config(monkeypatch):
-    import prometheus.engine.validate as val
-    import prometheus.plans.plan_map as pm
+    import prometheus.plans.generate as gen
+    from prometheus.plans.generate import ResourceResult
 
-    monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))
     seen = {}
 
-    def fake_dispatch(plan, phase, rt, concept, llm_config=None, enabled_models=None, theme=None,
-                      image_settings=None, resource_config=None):
+    def fake_generate(phase, rt, concept, *, resource_config=None, **kw):
         seen["config"] = resource_config
-        return "<html>ok</html>"
+        return ResourceResult("<html>ok</html>", [], None)
 
-    monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
+    monkeypatch.setattr(gen, "generate_resource", fake_generate)
     monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {3: {"tipo": "Desafío"}})
     sends = fan_out(_state())
     payload = next(s.arg for s in sends if s.arg["work_item"]["resource_type"] == 3)
@@ -71,13 +69,27 @@ def test_worker_success_and_config(monkeypatch):
     assert seen["config"] == {"time_seconds": 60}
 
 
+def test_worker_structural_defects_route_to_error(monkeypatch):
+    import prometheus.plans.generate as gen
+    from prometheus.plans.generate import ResourceResult
+
+    def fake_generate(phase, rt, concept, **kw):
+        return ResourceResult("<html>defectuoso</html>", ["sin _scormComplete()"], None)
+
+    monkeypatch.setattr(gen, "generate_resource", fake_generate)
+    payload = fan_out(_state())[0].arg
+    out = resource_worker(payload)
+    assert "pool_results" not in out
+    assert "defectos estructurales" in out["errors"][0]["error"]
+
+
 def test_worker_failure_isolated(monkeypatch):
-    import prometheus.plans.plan_map as pm
+    import prometheus.plans.generate as gen
 
     def boom(*a, **k):
         raise RuntimeError("kaput")
 
-    monkeypatch.setattr(pm, "dispatch_by_plan", boom)
+    monkeypatch.setattr(gen, "generate_resource", boom)
     payload = fan_out(_state())[0].arg
     out = resource_worker(payload)
     assert out["errors"][0]["error"] == "kaput"
@@ -96,22 +108,29 @@ def test_collect_feeds_critic_channels():
 def test_workpool_graph_compiles():
     g = build_workpool_graph().compile()
     nodes = set(g.get_graph().nodes.keys())
-    assert {"concierge", "resource_worker", "collect", "critic", "repair", "editor", "assemble"} <= nodes
+    assert {
+        "concierge",
+        "resource_worker",
+        "collect",
+        "critic",
+        "repair",
+        "editor",
+        "assemble",
+    } <= nodes
 
 
-def test_workpool_end_to_end_with_fake_dispatch(monkeypatch):
-    """Invoke completo del grafo (sin checkpointer) con dispatch falso."""
+def test_workpool_end_to_end_with_fake_generate(monkeypatch):
+    """Invoke completo del grafo (sin checkpointer) con generate_resource falso."""
     calls = []
 
-    import prometheus.engine.validate as val
-    import prometheus.plans.plan_map as pm
+    import prometheus.plans.generate as gen
+    from prometheus.plans.generate import ResourceResult
 
-    def fake_dispatch(plan, phase, rt, *a, **k):
+    def fake_generate(phase, rt, concept, **kw):
         calls.append(rt)
-        return f"<html>{rt}</html>"
+        return ResourceResult(f"<html>{rt}</html>", [], None)
 
-    monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
-    monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))
+    monkeypatch.setattr(gen, "generate_resource", fake_generate)
     monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {})
     # concierge/editor/assemble reales harían RAG/LLM/zip — reemplazos mínimos
     import prometheus.nodes.assemble as asm
