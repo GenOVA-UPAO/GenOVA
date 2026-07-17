@@ -5,7 +5,7 @@ import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { groupByPhase, type ResourceVM } from "../../lib/ova-job-view-model";
-import { PHASE_ICON_BY_KEY } from "../../lib/resource-icons";
+import { PHASE_ICON_BY_KEY, resourceIconClass } from "../../lib/resource-icons";
 
 const MARK: Record<string, { icon: string; cls: string }> = {
   X: { icon: "✖", cls: "text-destructive border-destructive/20 bg-destructive/10" },
@@ -53,14 +53,15 @@ const CHECK_CLS = "text-primary border-primary/20 bg-primary/10";
                     type="button"
                     [disabled]="r.status !== 'check'"
                     (click)="r.status === 'check' && onPreview.emit(r.id)"
-                    class="flex-1 min-w-0 truncate text-left text-sm"
+                    class="flex-1 min-w-0 inline-flex items-center gap-1.5 text-left text-sm"
                     [class.text-foreground]="r.status === 'check'"
                     [class.hover:text-primary]="r.status === 'check'"
                     [class.text-muted-foreground]="r.status !== 'check'"
                     [class.font-semibold]="activeId() === r.id"
                     [class.text-primary]="activeId() === r.id"
                   >
-                    {{ r.emoji }} {{ r.label }}
+                    <i class="{{ resourceIcon(r.label) }} shrink-0" aria-hidden="true"></i>
+                    <span class="truncate">{{ r.label }}</span>
                   </button>
                   @if (r.status === "X") {
                     <gn-button
@@ -103,6 +104,10 @@ export class CreationResourceListComponent {
 
   phaseIcon(phase: string) {
     return (PHASE_ICON_BY_KEY[phase] ?? "ph-circle").replace(/^ph-/, "");
+  }
+
+  resourceIcon(label: string) {
+    return resourceIconClass(label);
   }
 
   markIcon(status: string) {

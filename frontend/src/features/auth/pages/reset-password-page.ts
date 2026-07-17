@@ -44,6 +44,23 @@ type Status = "idle" | "submitting" | "success" | "error";
               <a routerLink="/login" class="block w-full text-center">Ir a iniciar sesión</a>
             </gn-button>
           </div>
+        } @else if (!token()) {
+          <div class="mt-6 space-y-4">
+            <div
+              class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              Enlace inválido o incompleto
+            </div>
+            <p class="text-sm text-muted-foreground">
+              El enlace de restablecimiento no incluye un token válido. Solicita uno nuevo para
+              continuar.
+            </p>
+            <gn-button class="w-full">
+              <a routerLink="/forgot-password" class="block w-full text-center"
+                >Solicitar nuevo enlace</a
+              >
+            </gn-button>
+          </div>
         } @else {
           <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
             <div class="space-y-1.5 flex flex-col">
@@ -92,13 +109,6 @@ type Status = "idle" | "submitting" | "success" | "error";
                 class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
               >
                 {{ message() }}
-              </div>
-            }
-            @if (!token() && status() !== "error") {
-              <div
-                class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-              >
-                No se encontró el token de seguridad en la URL.
               </div>
             }
             <gn-button

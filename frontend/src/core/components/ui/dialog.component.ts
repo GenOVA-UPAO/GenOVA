@@ -1,6 +1,16 @@
-import { ChangeDetectionStrategy, Component, input, output } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  type OnDestroy,
+  output,
+} from "@angular/core";
 import type { BrnDialogState } from "@spartan-ng/brain/dialog";
 import { HlmDialog, HlmDialogContent, HlmDialogPortal } from "@spartan-ng/helm/dialog";
+
+import { ModalStackService } from "@/core/services/modal-stack.service";
 
 /**
  * gn-dialog — real modal backed by Spartan's Brain/Helm dialog (CDK overlay). It
@@ -11,6 +21,10 @@ import { HlmDialog, HlmDialogContent, HlmDialogPortal } from "@spartan-ng/helm/d
  * gn-dialog-header/title/footer sub-components below provide the shadcn-style
  * header/footer inside the body. Padding is neutralised (`p-0`) so nested
  * gn-dialog-content controls its own spacing, matching the old `!p-0` layout.
+ *
+ * While open, registers itself in `ModalStackService` so hand-rolled modals
+ * using `gnModalDismiss` know a `gn-dialog` is stacked on top of them and
+ * ignore Escape (only the topmost modal in the shared stack reacts to it).
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,14 +47,32 @@ import { HlmDialog, HlmDialogContent, HlmDialogPortal } from "@spartan-ng/helm/d
     </hlm-dialog>
   `,
 })
-export class DialogComponent {
+export class DialogComponent implements OnDestroy {
   readonly open = input(false);
   readonly width = input("32rem");
   readonly disableClose = input(false);
   readonly openChange = output<boolean>();
 
+  private modalStack = inject(ModalStackService);
+  private stackId: number | null = null;
+
+  constructor() {
+    effect(() => {
+      if (this.open()) {
+        this.stackId ??= this.modalStack.push();
+      } else if (this.stackId !== null) {
+        this.modalStack.pop(this.stackId);
+        this.stackId = null;
+      }
+    });
+  }
+
   onStateChanged(state: BrnDialogState): void {
     this.openChange.emit(state === "open");
+  }
+
+  ngOnDestroy(): void {
+    if (this.stackId !== null) this.modalStack.pop(this.stackId);
   }
 }
 

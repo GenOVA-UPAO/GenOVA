@@ -65,11 +65,11 @@ export type { OvaJobInfo };
           </div>
         }
 
-        <div class="flex items-center gap-1.5 w-full">
+        <div class="grid grid-cols-2 gap-1.5 w-full">
           <gn-button
             variant="outline"
             size="sm"
-            class="flex-1 text-primary border-primary/30 hover:bg-primary/5"
+            class="w-full min-w-0 truncate text-primary border-primary/30 hover:bg-primary/5"
             [disabled]="isGenerating || isDuplicating()"
             (onClick)="goToWorkspace()"
           >
@@ -79,7 +79,7 @@ export type { OvaJobInfo };
           <gn-button
             variant="outline"
             size="sm"
-            class="flex-1 text-primary border-primary/30 hover:bg-primary/5"
+            class="w-full min-w-0 truncate text-primary border-primary/30 hover:bg-primary/5"
             [disabled]="isGenerating || isDuplicating()"
             (onClick)="onEditMetadata.emit(ova())"
           >
@@ -88,11 +88,11 @@ export type { OvaJobInfo };
           </gn-button>
         </div>
 
-        <div class="flex flex-wrap items-center gap-1.5 w-full">
+        <div class="grid grid-cols-2 gap-1.5 w-full">
           <gn-button
             variant="outline"
             size="sm"
-            class="flex-1"
+            class="w-full min-w-0 truncate"
             [disabled]="isGenerating || isDuplicating()"
             (onClick)="onDuplicate.emit(ova().id)"
           >
@@ -102,7 +102,7 @@ export type { OvaJobInfo };
           <gn-button
             variant="outline"
             size="sm"
-            class="flex-1"
+            class="w-full min-w-0 truncate"
             [disabled]="!isReady || isDownloading() || isDuplicating()"
             (onClick)="onDownload.emit({ id: ova().id, title: ova().title || '' })"
           >
@@ -112,12 +112,13 @@ export type { OvaJobInfo };
           <gn-button
             variant="outline"
             size="sm"
-            class="flex-1 text-destructive border-destructive/30 hover:bg-destructive/5"
+            class="col-span-2 w-full min-w-0 truncate text-destructive border-destructive/30 hover:bg-destructive/5"
             [disabled]="isGenerating || isMoving() || isDuplicating()"
             (onClick)="onMoveToTrash.emit(ova())"
+            [attr.aria-label]="isMoving() ? 'Moviendo a papelera' : 'Enviar a papelera'"
           >
             <!-- <Trash /> -->
-            {{ isMoving() ? "Moviendo..." : "Papelera" }}
+            {{ isMoving() ? "Moviendo..." : "A papelera" }}
           </gn-button>
         </div>
       </div>

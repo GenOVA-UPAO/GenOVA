@@ -18,15 +18,17 @@ const INTERACTIVIDAD_COLOR: Record<string, string> = {
   selector: "gn-resource-card",
   imports: [CommonModule, IconComponent],
   template: `
-    <button
-      type="button"
+    <div
+      role="button"
+      [attr.tabindex]="disabled() ? -1 : 0"
       (click)="handleClick($event)"
+      (keydown)="handleKeydown($event)"
       (mouseenter)="onHover.emit(resource())"
       (mouseleave)="onHover.emit(null)"
       (focus)="onHover.emit(resource())"
       (blur)="onHover.emit(null)"
       [attr.aria-pressed]="selected()"
-      [disabled]="disabled()"
+      [attr.aria-disabled]="disabled()"
       class="text-left w-full rounded-xl border p-4 transition duration-150 cursor-pointer {{
         getBaseClass()
       }}"
@@ -87,7 +89,7 @@ const INTERACTIVIDAD_COLOR: Record<string, string> = {
           </button>
         }
       </div>
-    </button>
+    </div>
   `,
 })
 export class ResourceCardComponent {
@@ -133,6 +135,12 @@ export class ResourceCardComponent {
     if (!this.disabled()) {
       this.onClick.emit(this.resource());
     }
+  }
+
+  handleKeydown(e: KeyboardEvent) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    this.handleClick(e);
   }
 
   handleConfigClick(e: Event) {

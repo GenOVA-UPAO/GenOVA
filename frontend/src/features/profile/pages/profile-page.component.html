@@ -62,7 +62,7 @@
     <div class="space-y-5">
       <!-- Tabs Navigation -->
       <div
-        class="bg-card border border-border/60 shadow-sm p-1 gap-0.5 rounded-xl w-fit flex items-center h-auto"
+        class="bg-card border border-border/60 shadow-sm p-1 gap-0.5 rounded-xl w-fit max-w-full overflow-x-auto flex items-center h-auto"
       >
         <button
           (click)="activeTab = 'info'"
@@ -76,18 +76,20 @@
           <gn-icon name="user" size="text-xs" />
           Información
         </button>
-        <button
-          (click)="activeTab = 'config'"
-          [class]="
-            activeTab === 'config'
-              ? 'bg-primary text-primary-foreground shadow-sm'
-              : 'text-muted-foreground hover:bg-muted/50'
-          "
-          class="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-bold gap-1.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-        >
-          <gn-icon name="sliders-horizontal" size="text-xs" />
-          Configuración
-        </button>
+        @if (isAdmin) {
+          <button
+            (click)="activeTab = 'config'"
+            [class]="
+              activeTab === 'config'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-muted/50'
+            "
+            class="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-bold gap-1.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+          >
+            <gn-icon name="sliders-horizontal" size="text-xs" />
+            Configuración
+          </button>
+        }
         <button
           (click)="activeTab = 'security'"
           [class]="
@@ -116,7 +118,7 @@
           ></gn-profile-form>
         </div>
       }
-      @if (activeTab === "config") {
+      @if (activeTab === "config" && isAdmin) {
         <div class="space-y-5">
           <gn-platform-api-keys-card [userOwned]="true"></gn-platform-api-keys-card>
         </div>

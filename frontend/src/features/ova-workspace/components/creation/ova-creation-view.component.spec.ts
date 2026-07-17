@@ -30,6 +30,7 @@ class StubFormCard {
   readonly generate = output();
   readonly themeChange = output<unknown>();
   readonly replayTour = output();
+  readonly closePicker = output();
 }
 
 @Component({ selector: "gn-phase-select-modal", template: "" })
@@ -47,12 +48,14 @@ class StubProgressPanel {
   readonly selectedIds = input<string[]>([]);
   readonly activeId = input<string | null>(null);
   readonly showCancel = input(false);
+  readonly isStalled = input(false);
   readonly onToggle = output<string>();
   readonly onRetryOne = output<string>();
   readonly onPreview = output<string>();
   readonly onSelectAll = output();
   readonly onRetrySelected = output();
   readonly onCancel = output();
+  readonly onResume = output();
 }
 
 @Component({ selector: "gn-crear-ova-preview-panel", template: "" })
@@ -78,10 +81,12 @@ function jobStub(phase: "idle" | "starting" | "polling" | "terminal") {
     error: () => "",
     selectedFailedIds: () => [] as string[],
     outcome: () => ({ totalFail: false, anyDone: false, isTerminal: phase === "terminal" }),
+    isStalled: () => false,
     toggleFailed: vi.fn(),
     retryOne: vi.fn(),
     selectAllFailed: vi.fn(),
     retrySelected: vi.fn(),
+    retryAll: vi.fn(),
     cancel: vi.fn(),
   };
 }

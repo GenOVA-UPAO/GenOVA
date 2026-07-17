@@ -43,6 +43,7 @@ export interface PhaseGroup {
 
 export interface JobLike {
   status?: string;
+  updated_at?: string;
 }
 
 export interface JobSnapshot extends JobLike {
@@ -74,6 +75,23 @@ export function mapResourceStatus(backendStatus: string): UiStatus {
   return STATUS_MAP[backendStatus] || "pendiente";
 }
 
+/**
+ * GN-01/GN-02: cuando la selección original ya no está disponible (job
+ * restaurado/refrescado), `resource_type` es lo único que queda. Suele ser un
+ * id numérico ("3") — sin texto que humanizar, devuelve "" — o un slug/nombre
+ * ("comic_interactivo", "Lectura Interactiva") que se normaliza a Title Case.
+ */
+export function humanizeResourceType(raw: string | number | null | undefined): string {
+  const s = String(raw ?? "").trim();
+  if (!s || /^\d+$/.test(s)) return "";
+  return s
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
 function buildLabelIndex(selections: Selections): Map<string, Partial<SelectionItem>> {
   const index = new Map<string, Partial<SelectionItem>>();
   for (const phase of Object.keys(PHASE_LABEL)) {
@@ -96,11 +114,12 @@ export function toResourceViewModel(
       const phase = r.phase_type;
       const meta = labels.get(`${phase}:${String(r.resource_type)}`) || {};
       const status = mapResourceStatus(r.status);
+      const humanized = humanizeResourceType(r.resource_type);
       return {
         id: String(r.id),
         phase,
         phaseLabel: PHASE_LABEL[phase] || phase,
-        label: meta.tipo || `Recurso ${r.resource_type ?? ""}`.trim(),
+        label: meta.tipo || humanized || `Recurso ${r.resource_order + 1}`,
         emoji: meta.emoji || "",
         status,
         error_id: r.error_id || null,
@@ -134,6 +153,21 @@ export function groupByPhase(viewModel: ResourceVM[] = []): PhaseGroup[] {
 }
 
 const TERMINAL = new Set(["done", "error", "interrupted", "canceled"]);
+
+/** 3 min sin cambios de estado en `running` dispara el aviso de estancamiento (WS-02/CR-01). */
+export const STALL_MS = 3 * 60 * 1000;
+
+/**
+ * Huella barata de un snapshot para detectar progreso real entre polls: el
+ * status del job + el status de cada recurso. `updated_at` del job NO sirve
+ * solo — el backend únicamente lo toca en transiciones de job (running →
+ * done/error/interrupted), no en cada avance de recurso.
+ */
+export function resourcesFingerprint(snapshot: JobSnapshot | null | undefined): string {
+  if (!snapshot) return "";
+  const parts = (snapshot.resources || []).map((r) => `${r.id}:${r.status}`);
+  return `${snapshot.status ?? ""}|${parts.join(",")}`;
+}
 
 export function jobOutcome(
   job: JobLike | null | undefined,

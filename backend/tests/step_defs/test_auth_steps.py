@@ -13,6 +13,10 @@ import uuid
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
+# HU-001 asume flujo con verificación de correo (201 + email_verification_required);
+# el default de settings es False, así que se fija aquí para que el BDD sea
+# determinista sin depender del .env local.
+os.environ.setdefault("EMAIL_VERIFICATION_ENABLED", "1")
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 import pytest  # noqa: E402

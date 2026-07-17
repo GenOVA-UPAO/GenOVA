@@ -85,7 +85,6 @@ export class OvaPhaseSectionComponent {
           variant="outline"
           size="sm"
           [disabled]="true"
-          title="Disponible en Sprint 2"
           class="cursor-not-allowed opacity-60 gap-1.5"
         >
           <gn-icon name="pencil-simple" size="text-sm" /> Editar

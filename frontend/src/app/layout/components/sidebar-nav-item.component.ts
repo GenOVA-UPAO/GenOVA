@@ -18,6 +18,7 @@ import { navLinkClasses } from "../lib/layout-helpers";
       #rla="routerLinkActive"
       [routerLinkActiveOptions]="{ exact: exact() }"
       [class]="linkClass(rla.isActive)"
+      [attr.aria-label]="label()"
       (click)="onNavigate()?.()"
     >
       <ng-content select="[icon]" />

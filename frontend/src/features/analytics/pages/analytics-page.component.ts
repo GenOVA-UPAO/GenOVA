@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
 
+import { toast } from "@/core/lib/toast";
+
 import {
   StatCardsComponent,
   StatusBreakdownComponent,
@@ -71,6 +73,7 @@ export class AnalyticsPageComponent implements OnInit {
       this.data.set(await this.analyticsService.getAnalytics());
     } catch (err: any) {
       if (err.code === "forbidden") {
+        toast.error("No tienes acceso a Analítica.");
         void this.router.navigate(["/dashboard"], { replaceUrl: true });
         return;
       }

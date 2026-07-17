@@ -13,7 +13,12 @@ import { HlmCheckbox } from "@spartan-ng/helm/checkbox";
   selector: "gn-checkbox",
   imports: [HlmCheckbox],
   template: `
-    <hlm-checkbox [checked]="checked" [disabled]="disabled" (checkedChange)="onModel($event)" />
+    <hlm-checkbox
+      [checked]="checked"
+      [disabled]="disabled"
+      [aria-label]="ariaLabel"
+      (checkedChange)="onModel($event)"
+    />
   `,
   providers: [
     { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => CheckboxComponent), multi: true },
@@ -22,6 +27,7 @@ import { HlmCheckbox } from "@spartan-ng/helm/checkbox";
 export class CheckboxComponent implements ControlValueAccessor {
   @Input() checked = false;
   @Input() disabled = false;
+  @Input() ariaLabel: string | null = null;
   readonly checkedChange = output<boolean>();
 
   onChange: (value: boolean) => void = () => {};

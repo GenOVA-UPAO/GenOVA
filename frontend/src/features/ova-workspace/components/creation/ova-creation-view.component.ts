@@ -34,6 +34,9 @@ import { TotalFailurePanelComponent } from "./total-failure-panel.component";
     CrearOvaPreviewPanelComponent,
     TotalFailurePanelComponent,
   ],
+  // host flex: mismo fix de cadena de alturas que gn-ova-edit-view (ver
+  // ese componente para el diagnóstico completo).
+  host: { class: "flex min-h-0 flex-1 flex-col" },
   template: `
     @if (!hasJob) {
       <gn-ova-create-form-card
@@ -51,6 +54,7 @@ import { TotalFailurePanelComponent } from "./total-failure-panel.component";
         [error]="job.error()"
         [uploadsProps]="uploadsProps()"
         (replayTour)="tour.restart()"
+        (closePicker)="flow.closeModal()"
       ></gn-ova-create-form-card>
       @if (flow.isModalOpen()) {
         <gn-phase-select-modal
@@ -83,6 +87,8 @@ import { TotalFailurePanelComponent } from "./total-failure-panel.component";
                   (onRetrySelected)="job.retrySelected()"
                   [showCancel]="isGenerating"
                   (onCancel)="job.cancel()"
+                  [isStalled]="job.isStalled()"
+                  (onResume)="job.retryAll()"
                 ></gn-progress-panel>
               }
               @if (isTerminal && job.outcome().totalFail) {

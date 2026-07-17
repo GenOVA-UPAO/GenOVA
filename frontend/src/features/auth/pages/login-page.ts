@@ -46,7 +46,7 @@ import { resendVerification } from "../services/verification";
               GenOVA · UPAO
             </p>
             <h1 class="${hlmH1} mt-2 text-3xl">Iniciar sesión</h1>
-            <p class="${hlmMuted} mt-2">Accede para continuar al curso de ML.</p>
+            <p class="${hlmMuted} mt-2">Accede para crear y gestionar tus OVAs.</p>
             <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
               <div class="space-y-1.5 flex flex-col">
                 <label for="email" class="text-sm font-medium leading-none">Correo</label>

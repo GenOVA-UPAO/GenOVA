@@ -95,7 +95,7 @@
     </p>
   </div>
   } @if (!loading() && !error() && !isEmpty()) {
-  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
     @for (ova of ovas(); track ova) {
     <div class="animate-in zoom-in-95 duration-300">
       <gn-trashed-ova-card

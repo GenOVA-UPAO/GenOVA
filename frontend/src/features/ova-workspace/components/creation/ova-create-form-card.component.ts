@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from "@angular/core";
 
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
@@ -43,11 +43,30 @@ export class OvaCreateFormCardComponent {
   readonly generate = output();
   readonly themeChange = output<OvaTheme>();
   readonly replayTour = output();
+  /** Emitido cuando se abre "Archivos" o "Tema" — el padre debe cerrar el picker 5E si estaba abierto. */
+  readonly closePicker = output();
 
   readonly exampleId = EXAMPLE_PROMPT;
 
-  showFiles = false;
-  showTheme = false;
+  // Signals (no booleanos planos): en zoneless/OnPush, mutar un campo plano
+  // puede desincronizarse del binding [open] del hijo (gn-dialog CDK) cuando
+  // este cierra por su cuenta (Esc/backdrop) — ver CR-02.
+  readonly showFiles = signal(false);
+  readonly showTheme = signal(false);
+
+  /** Exclusión mutua: abrir Archivos cierra Tema (y el picker 5E). */
+  openFiles(): void {
+    this.showTheme.set(false);
+    this.showFiles.set(true);
+    this.closePicker.emit();
+  }
+
+  /** Exclusión mutua: abrir Tema cierra Archivos (y el picker 5E). */
+  openTheme(): void {
+    this.showFiles.set(false);
+    this.showTheme.set(true);
+    this.closePicker.emit();
+  }
 
   get themeLabel() {
     const color = this.theme().color === "free" ? "Libre" : "UPAO";

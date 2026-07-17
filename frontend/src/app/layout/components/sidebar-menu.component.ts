@@ -21,7 +21,7 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
   ],
   host: { class: "flex min-h-0 flex-1 flex-col" },
   template: `
-    <nav aria-label="Navegacion principal" class="flex-1 overflow-y-auto px-2 pb-3">
+    <nav aria-label="Navegación principal" class="flex-1 overflow-y-auto px-2 pb-3">
       <gn-sidebar-section title="Principal">
         @for (item of navigationLinks; track item.to) {
           <li gn-sidebar-nav-item [to]="item.to" [label]="item.label" [onNavigate]="onNavigate()">
@@ -45,7 +45,7 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
       </gn-sidebar-section>
 
       @if (canModels || canLink) {
-        <gn-sidebar-section title="Configuracion">
+        <gn-sidebar-section title="Configuración">
           @if (canModels) {
             @for (item of configNavLinks; track item.to) {
               <li
@@ -67,7 +67,7 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
       }
 
       @if (isAdmin) {
-        <gn-sidebar-section title="Administracion">
+        <gn-sidebar-section title="Administración">
           @for (item of adminNavLinks; track item.to) {
             <li
               gn-sidebar-nav-item

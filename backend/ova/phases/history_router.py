@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, joinedload
 from auth.dependencies import get_current_user
 from core.database import get_db
 from core.pagination import page_meta
+from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
 from models import Ova, User
 from ova.helpers import VALID_STATUSES, _is_admin, _ova_to_dict, forbidden_response
 from storage import StorageError, is_configured, signed_url
@@ -57,6 +58,11 @@ def list_ovas(
         .scalars()
         .all()
     )
+
+    # GN-03: los jobs zombis ("generando" con worker muerto o cola abandonada)
+    # solo se barrían al consultar el job exacto; al listar la página los
+    # finalizamos aquí para que el badge muestre el estado real.
+    sweep_stale_jobs_for_ovas(db, [ova.id for ova in ovas if ova.status == "generando"])
 
     return {
         "ovas": [_ova_to_dict(ova, include_owner=admin) for ova in ovas],

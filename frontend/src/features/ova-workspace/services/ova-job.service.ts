@@ -6,7 +6,9 @@ import {
   jobOutcome,
   type JobSnapshot,
   pruneSelection,
+  resourcesFingerprint,
   type Selections,
+  STALL_MS,
   toResourceViewModel,
 } from "../lib/ova-job-view-model";
 import { OvaCreationService, toResourcesPayload } from "./ova-creation.service";
@@ -36,6 +38,11 @@ export class OvaJobService implements OnDestroy {
   private selectedFailedIdsState = signal<string[]>([]);
   private jobSnapshot = signal<JobSnapshot | null>(null);
   private streamingState = signal(false);
+  // WS-02/CR-01: huella del último snapshot con progreso real (no solo el
+  // último poll — un job `running` sin worker sigue devolviendo el mismo
+  // snapshot en cada tick).
+  private lastFingerprint = "";
+  private lastProgressAtState = signal<number>(Date.now());
 
   jobId = this.jobIdState.asReadonly();
   job = this.jobSnapshot.asReadonly();
@@ -51,6 +58,13 @@ export class OvaJobService implements OnDestroy {
     pruneSelection(this.selectedFailedIdsState(), this.viewModel()),
   );
 
+  /** Aviso no-destructivo (no cancela ni reintenta nada por su cuenta). */
+  isStalled = computed(() => {
+    const snapshot = this.jobSnapshot();
+    if (snapshot?.status !== "running") return false;
+    return Date.now() - this.lastProgressAtState() > STALL_MS;
+  });
+
   phase = computed(() => {
     if (this.startingState()) return "starting";
     if (this.jobIdState() && this.jobSnapshot() && this.outcome().isTerminal) return "terminal";
@@ -62,6 +76,11 @@ export class OvaJobService implements OnDestroy {
     this.syncRunner = new OvaJobSyncRunner({
       jobsApi: this.jobsApi,
       onSnapshot: (snapshot) => {
+        const fingerprint = resourcesFingerprint(snapshot);
+        if (fingerprint !== this.lastFingerprint) {
+          this.lastFingerprint = fingerprint;
+          this.lastProgressAtState.set(Date.now());
+        }
         this.jobSnapshot.set(snapshot);
       },
       onTerminal: () => {
@@ -81,6 +100,7 @@ export class OvaJobService implements OnDestroy {
     this.selectedFailedIdsState.set([]);
     this.startingState.set(true);
     this.jobIdState.set(null);
+    this.resetStallTracking();
     this.syncRunner.stop();
 
     try {
@@ -108,13 +128,20 @@ export class OvaJobService implements OnDestroy {
     this.selectedFailedIdsState.set([]);
     this.startingState.set(false);
     this.jobSnapshot.set(null);
+    this.resetStallTracking();
   }
 
   restore(existingJobId: string) {
     this.errorState.set("");
     this.selectedFailedIdsState.set([]);
     this.jobIdState.set(existingJobId);
+    this.resetStallTracking();
     this.startSyncFlow();
+  }
+
+  private resetStallTracking() {
+    this.lastFingerprint = "";
+    this.lastProgressAtState.set(Date.now());
   }
 
   async resumeAndPoll(ids: string[]) {

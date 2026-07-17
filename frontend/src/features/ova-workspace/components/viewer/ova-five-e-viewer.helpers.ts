@@ -66,7 +66,7 @@ export function buildPhaseDemoContent(phaseName: string): OvaContent {
             ordered: true,
             items: [
               "Selecciona un tipo de recurso",
-              "Define el concepto de ML",
+              "Define el concepto",
               "Genera y revisa la vista previa",
             ],
           },

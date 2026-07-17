@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, Input, signal } from "@angular/core
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { HtmlPreviewFrameComponent } from "@/features/ova-workspace/components/shared/html-preview-frame.component";
 
+import { humanizeResourceType } from "../../lib/ova-job-view-model";
 import { DEFAULT_PHASE_META, phaseMeta } from "../../lib/phase-meta";
 import type { PhaseWithContent } from "../../lib/types";
 
@@ -35,7 +36,8 @@ import type { PhaseWithContent } from "../../lib/types";
         <div class="flex-1 overflow-hidden">
           <gn-html-preview-frame
             [html]="activePhase()?.content ?? ''"
-            class="w-full h-full border-0 block"
+            class="block h-full"
+            className="w-full h-full border-0 block"
             height=""
             [title]="activePhase()?.title ?? 'Vista previa del recurso'"
           ></gn-html-preview-frame>
@@ -96,8 +98,33 @@ export class WorkspaceHtmlPreviewComponent {
     return "bg-background text-muted-foreground border border-border hover:bg-muted/60";
   }
 
-  getLabel(p: PhaseWithContent): string {
+  /**
+   * WS-02/CR-01: sin título propio, dos recursos de la misma fase colapsaban
+   * en la misma pestaña ("Enganche", "Enganche"). Prioriza el título; si
+   * falta, compone fase + tipo humanizado y, si aun así se repite, sufija
+   * "(2)", "(3)" para mantener las pestañas distinguibles.
+   */
+  private get labelsById(): Map<string, string> {
+    const seen = new Map<string, number>();
+    const result = new Map<string, string>();
+    for (const p of this.phases) {
+      const base = this.baseLabel(p);
+      const count = (seen.get(base) ?? 0) + 1;
+      seen.set(base, count);
+      result.set(p.id, count > 1 ? `${base} (${count})` : base);
+    }
+    return result;
+  }
+
+  private baseLabel(p: PhaseWithContent): string {
+    const title = p.title?.trim();
+    if (title) return title;
     const meta = phaseMeta(p.phase_type);
-    return p.title ?? meta.label ?? p.phase_type;
+    const type = humanizeResourceType(p["resource_type"] as string | number | undefined);
+    return type ? `${meta.label} — ${type}` : meta.label || p.phase_type;
+  }
+
+  getLabel(p: PhaseWithContent): string {
+    return this.labelsById.get(p.id) ?? p.phase_type;
   }
 }

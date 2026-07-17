@@ -57,6 +57,24 @@ Then('ese recurso muestra la etiqueta {string} y el error_id {string}', function
   assert.equal(vm.error_id, errId)
 })
 
+// ── Scenario: humanización de resource_type sin selección (GN-01/GN-02) ─────
+Given('un recurso {string} sin selección del tipo {string}', function (status, tipo) {
+  this.resources = [res('rx', 'engage', tipo, status, { order: 0 })]
+  this.selections = { engage: [], explore: [] }
+})
+
+Given(
+  'un recurso {string} sin selección del tipo {string} en el orden {int}',
+  function (status, tipo, order) {
+    this.resources = [res('rx', 'engage', tipo, status, { order })]
+    this.selections = { engage: [], explore: [] }
+  },
+)
+
+Then('ese recurso muestra la etiqueta {string}', function (label) {
+  assert.equal(this.viewModel[0].label, label)
+})
+
 // ── Scenario: seleccionar todos los fallidos ─────────────────────────────────
 Given('un job con dos recursos en error y uno done', function () {
   this.resources = [

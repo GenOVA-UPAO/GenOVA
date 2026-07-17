@@ -11,6 +11,7 @@ work (Prometheus) never blocks the web process and survives a web redeploy.
 """
 
 import asyncio
+import sys
 import uuid
 
 import structlog
@@ -19,6 +20,12 @@ from arq.connections import RedisSettings
 from core.config import settings
 from generation.jobs.jobs_runner import run_job
 from generation.jobs.queue import redis_settings
+
+# GN-05: en consolas Windows (cp1252) el logging de errores con caracteres no
+# mapeables moría con UnicodeEncodeError y enmascaraba el traceback real.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 logger = structlog.get_logger(__name__)
 

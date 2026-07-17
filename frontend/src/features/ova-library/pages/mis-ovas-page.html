@@ -162,7 +162,7 @@
     }
   </div>
   } @if (!loading() && !error() && !isEmpty()) {
-  <div class="grid items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+  <div class="grid items-stretch gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
     @for (ova of ovas(); track ova) {
     <div class="h-full animate-in zoom-in-95 duration-300">
       <gn-ova-card

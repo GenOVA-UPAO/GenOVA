@@ -28,3 +28,15 @@ Feature: Recuperación de recursos parciales — viewmodel (HU-022)
     When se evalúa el resultado del job
     Then el resultado indica fallo total
     And no hay recursos done para previsualizar
+
+  # GN-01/GN-02: job restaurado sin selección original — la etiqueta ya no
+  # muestra el resource_type crudo, lo humaniza o cae a "Recurso N".
+  Scenario: Sin selección disponible, un tipo con texto se humaniza
+    Given un recurso "done" sin selección del tipo "comic_interactivo"
+    When se construye el viewmodel de recursos
+    Then ese recurso muestra la etiqueta "Comic Interactivo"
+
+  Scenario: Sin selección disponible, un tipo numérico cae a "Recurso N"
+    Given un recurso "done" sin selección del tipo "3" en el orden 1
+    When se construye el viewmodel de recursos
+    Then ese recurso muestra la etiqueta "Recurso 2"

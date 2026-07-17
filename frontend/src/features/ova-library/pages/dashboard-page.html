@@ -5,7 +5,7 @@
   <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <p class="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-accent-brand">
-        UPAO - GenOVA ML
+        UPAO · GenOVA
       </p>
       <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-foreground">
         Bienvenido, {{ firstName() }}
@@ -25,7 +25,7 @@
   </div>
 
   <!-- Stats -->
-  <div class="grid gap-5 sm:grid-cols-3">
+  <div class="grid gap-5 grid-cols-1 sm:grid-cols-3">
     @for (stat of stats(); track stat.label) {
     <gn-dashboard-stat-card
       [label]="stat.label"
@@ -122,7 +122,7 @@
     class="rounded-2xl glass-card p-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300 fill-mode-both"
   >
     <h2 class="font-display text-xl font-semibold px-1">Panel de administración</h2>
-    <div class="mt-5 grid gap-4 sm:grid-cols-3">
+    <div class="mt-5 grid gap-4 grid-cols-1 sm:grid-cols-3">
       @for (card of adminCards; track card.title) {
       <a
         [routerLink]="card.to"

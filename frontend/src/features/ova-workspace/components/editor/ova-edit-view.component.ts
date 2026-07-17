@@ -37,6 +37,10 @@ import { WorkspaceResizableDividerComponent } from "./workspace-resizable-divide
     WorkspaceResizableDividerComponent,
     IconComponent,
   ],
+  // host flex: el custom element es display:inline por defecto y corta la
+  // cadena de alturas heredada del <main>/host de la página hacia los
+  // paneles mobile (absolute inset-0 dentro de un padre flex-1 colapsado).
+  host: { class: "flex min-h-0 flex-1 flex-col" },
   templateUrl: "./ova-edit-view.component.html",
 })
 export class OvaEditViewComponent implements OnInit, OnDestroy {
