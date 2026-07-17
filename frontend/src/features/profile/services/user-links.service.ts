@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 
-import { apiFetch } from "../../../core/lib/http";
+import { apiJson as coreApiJson } from "../../../core/lib/http";
 
 export interface UserLink {
   id: string;
@@ -20,16 +20,8 @@ export interface LinkCodeResponse {
   code: string;
 }
 
-async function apiJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await apiFetch(url, init);
-  if (!res.ok) {
-    let data: any = {};
-    try {
-      data = await res.json();
-    } catch {}
-    throw new Error(data.message || data.detail || "Error en la solicitud");
-  }
-  return res.json() as Promise<T>;
+function apiJson<T = unknown>(url: string, init?: RequestInit): Promise<T> {
+  return coreApiJson<T>(url, init, { fallbackMsg: "Error en la solicitud" });
 }
 
 @Injectable({

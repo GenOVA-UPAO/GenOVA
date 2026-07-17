@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, type OnDestroy, signal } from "@angular/core";
-import { toast } from "ngx-sonner";
+import { toast } from "@/core/lib/toast";
 
 import type { OvaData, PhaseWithContent } from "../lib/types";
 import { OvaEditService, type RegenBody } from "./ova-edit.service";

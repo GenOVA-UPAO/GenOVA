@@ -1,6 +1,3 @@
-import { inject, Injectable } from "@angular/core";
-import { Router } from "@angular/router";
-
 import { AuthExpiredBus } from "./auth-expired-bus";
 
 // Re-export: los consumidores históricos (AuthService, guards) importan el bus
@@ -104,10 +101,14 @@ export async function apiFetch(
   }
 }
 
+/**
+ * apiFetch + parseo JSON. En error lanza HttpError con `message`/`detail` del
+ * backend, o `fallbackMsg` si el cuerpo no trae ninguno.
+ */
 export async function apiJson<T = unknown>(
   path: string,
   init: RequestInit = {},
-  opts: { timeoutMs?: number } = {},
+  opts: { timeoutMs?: number; fallbackMsg?: string } = {},
 ): Promise<T> {
   const res = await apiFetch(path, init, opts);
   let body: JsonBody | null = null;
@@ -119,57 +120,9 @@ export async function apiJson<T = unknown>(
   }
 
   if (!res.ok) {
-    const message = body?.message || body?.detail || `HTTP ${res.status}`;
+    const message = body?.message || body?.detail || opts.fallbackMsg || `HTTP ${res.status}`;
     throw new HttpError(message, { status: res.status, code: body?.error || "", body });
   }
 
   return (body ?? {}) as T;
-}
-
-/**
- * GET que resuelve a JSON; en error usa `detail` del backend o el mensaje dado.
- */
-export async function apiGetJson(path: string, fallbackMsg: string): Promise<unknown> {
-  const res = await apiFetch(path);
-  if (!res.ok) throw new Error(await extractDetail(res, fallbackMsg));
-  return res.json();
-}
-
-/**
- * PUT JSON que resuelve a JSON; en error usa `detail` del backend o el mensaje dado.
- */
-export async function apiPutJson(
-  path: string,
-  body: unknown,
-  fallbackMsg: string,
-): Promise<unknown> {
-  const res = await apiFetch(path, { method: "PUT", body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(await extractDetail(res, fallbackMsg));
-  return res.json();
-}
-
-async function extractDetail(res: Response, fallbackMsg: string): Promise<string> {
-  try {
-    const b = (await res.json()) as { detail?: string; message?: string };
-    return b.detail || b.message || fallbackMsg;
-  } catch {
-    return fallbackMsg;
-  }
-}
-
-/**
- * Injectable wrapper for use in Angular services via DI.
- */
-@Injectable({ providedIn: "root" })
-export class HttpClient {
-  private router = inject(Router);
-
-  constructor() {
-    AuthExpiredBus.subscribe(() => {
-      void this.router.navigate(["/login"], { queryParams: { expired: "1" } });
-    });
-  }
-
-  fetch = apiFetch;
-  json = apiJson;
 }
