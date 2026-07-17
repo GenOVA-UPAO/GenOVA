@@ -35,8 +35,8 @@ When('hago click en {string}', async ({ page }, btnText) => {
     // Logout button lives inside the avatar dropdown (conditional render).
     // Must open the dropdown first so the button is in the DOM.
     await page.getByRole('button', { name: 'Menú de usuario' }).click()
-    await page.getByRole('button', { name: 'Cerrar sesión' }).waitFor({ state: 'visible', timeout: 5000 })
-    await page.getByRole('button', { name: 'Cerrar sesión' }).click()
+    await page.getByRole('menuitem', { name: 'Cerrar sesión' }).waitFor({ state: 'visible', timeout: 5000 })
+    await page.getByRole('menuitem', { name: 'Cerrar sesión' }).click()
     return
   }
   await page.getByRole('button', { name: btnText }).click()
