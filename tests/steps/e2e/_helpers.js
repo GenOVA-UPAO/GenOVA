@@ -62,7 +62,9 @@ export function ovaCard(page, title) {
 
 /** Busca el título en el buscador de Mis OVAs y espera a que la card aparezca. */
 export async function searchOva(page, title) {
-  const search = page.getByPlaceholder(/Buscar por título/i)
+  // El <input> real (no el host <gn-search-input>, que también refleja el
+  // atributo placeholder): apuntamos por rol para no chocar con strict mode.
+  const search = page.getByRole('textbox', { name: /Buscar por título/i })
   await search.waitFor({ state: 'visible', timeout: 15000 })
   await search.fill(title)
   await ovaCard(page, title).waitFor({ state: 'visible', timeout: 15000 })

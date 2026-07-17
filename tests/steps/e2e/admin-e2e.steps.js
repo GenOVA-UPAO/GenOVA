@@ -53,7 +53,8 @@ Then('veo la pantalla de gestión de usuarios', async ({ page }) => {
 })
 
 When('busco el usuario {string} en la gestión de usuarios', async ({ page }, email) => {
-  const search = page.getByPlaceholder(/Buscar por nombre o email/i)
+  // El <input> real por rol (el host gn-search-input también refleja placeholder).
+  const search = page.getByRole('textbox', { name: /Buscar por nombre o email/i })
   await search.waitFor({ state: 'visible', timeout: 15000 })
   await search.fill(email)
 })
