@@ -39,32 +39,14 @@
   </div>
 
   <div class="glass-card rounded-2xl p-4 flex flex-col gap-3 sm:flex-row">
-    <div class="relative flex-1">
-      <gn-icon
-        name="magnifying-glass"
-        size="text-lg"
-        class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-      />
-      <input
-        type="text"
-        hlmInput
-        placeholder="Buscar por título de la OVA..."
-        aria-label="Buscar por título de la OVA"
-        [ngModel]="service.searchQuery()"
-        (ngModelChange)="service.setSearch($event)"
-        class="w-full pl-10 pr-10 border-muted bg-background/50 h-10 shadow-inner focus-visible:ring-primary/30"
-      />
-      @if (service.searchQuery()) {
-      <button
-        type="button"
-        (click)="service.setSearch('')"
-        aria-label="Limpiar búsqueda"
-        class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-      >
-        <gn-icon name="x" size="text-base" />
-      </button>
-      }
-    </div>
+    <gn-search-input
+      class="flex-1"
+      [value]="service.searchQuery()"
+      (valueChange)="service.setSearch($event)"
+      placeholder="Buscar por título de la OVA..."
+      ariaLabel="Buscar por título de la OVA"
+      inputClass="border-muted bg-background/50 h-10 shadow-inner focus-visible:ring-primary/30"
+    />
 
     <label for="mis-ovas-status-filter" class="sr-only">Filtrar por estado</label>
     <hlm-select

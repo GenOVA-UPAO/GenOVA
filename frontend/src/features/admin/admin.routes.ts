@@ -5,7 +5,7 @@ import { adminGuard, authGuard } from "@/core/auth/auth.guard";
 export const adminRoutes: Routes = [
   {
     path: "",
-    title: "Usuarios · GenOVA",
+    title: "Usuarios",
     canActivate: [authGuard, adminGuard],
     loadComponent: () =>
       import("./pages/admin-users-page.component").then((m) => m.AdminUsersPageComponent),
@@ -17,7 +17,7 @@ export const adminRoutes: Routes = [
   },
   {
     path: "roles",
-    title: "Gestión de roles · GenOVA",
+    title: "Gestión de roles",
     canActivate: [authGuard, adminGuard],
     loadComponent: () =>
       import("./pages/admin-roles-page.component").then((m) => m.AdminRolesPageComponent),

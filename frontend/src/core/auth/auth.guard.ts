@@ -4,6 +4,13 @@ import { type CanActivateFn, Router } from "@angular/router";
 import { AuthService } from "./auth.service";
 
 /**
+ * Una navegación puede encadenar guards (authGuard → redirect a /login →
+ * guestGuard); dentro de esta ventana se reutiliza el resultado de /auth/me
+ * en vez de repetir la petición.
+ */
+const REVALIDATE_MAX_AGE_MS = 3000;
+
+/**
  * Route guard — equivalent to React's AuthGateLoader.
  * Redirects to /login if no authenticated user is found after a /me revalidation.
  */
@@ -15,7 +22,7 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   if (auth.isAuthenticated()) return true;
 
   // Try to revalidate against the server.
-  const user = await auth.revalidate(3000);
+  const user = await auth.revalidate(REVALIDATE_MAX_AGE_MS);
 
   if (user) return true;
 
@@ -35,7 +42,7 @@ export const guestGuard: CanActivateFn = async () => {
   const router = inject(Router);
 
   if (!auth.isAuthenticated()) {
-    await auth.revalidate(3000);
+    await auth.revalidate(REVALIDATE_MAX_AGE_MS);
   }
 
   if (auth.isAuthenticated()) {
@@ -54,7 +61,7 @@ export const adminGuard: CanActivateFn = async () => {
   const router = inject(Router);
 
   if (!auth.isAuthenticated()) {
-    await auth.revalidate(3000);
+    await auth.revalidate(REVALIDATE_MAX_AGE_MS);
   }
 
   if (!auth.isAuthenticated()) {

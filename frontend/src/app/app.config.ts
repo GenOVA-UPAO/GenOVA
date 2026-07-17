@@ -10,6 +10,7 @@ import {
 import {
   PreloadAllModules,
   provideRouter,
+  TitleStrategy,
   withComponentInputBinding,
   withPreloading,
 } from "@angular/router";
@@ -18,6 +19,7 @@ import { LLM_SETTINGS_MODAL } from "../core/lib/llm-settings-modal.token";
 import { captureException, isSentryEnabled } from "../core/lib/observability/sentry";
 import { ThemeService } from "../core/theme/theme.service";
 import { routes } from "./app.routes";
+import { GenovaTitleStrategy } from "./genova-title.strategy";
 
 /**
  * Reports uncaught errors to Sentry via the lazy `captureException` helper.
@@ -54,6 +56,9 @@ export const appConfig: ApplicationConfig = {
       // navigation after first paint (chunks are already in cache).
       withPreloading(PreloadAllModules),
     ),
+    // Las rutas declaran solo el nombre de página; la marca la añade la
+    // estrategia (ver genova-title.strategy.ts).
+    { provide: TitleStrategy, useClass: GenovaTitleStrategy },
     // Angular HttpClient (used by Sentry and Angular-specific integrations).
     // Our own API calls go through core/lib/http.ts (fetch-based).
     provideHttpClient(),

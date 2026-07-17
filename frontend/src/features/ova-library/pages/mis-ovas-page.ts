@@ -7,14 +7,13 @@ import {
   linkedSignal,
   signal,
 } from "@angular/core";
-import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
-import { HlmInput } from "@spartan-ng/helm/input";
 import { HlmSelectImports } from "@spartan-ng/helm/select";
 
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
+import { SearchInputComponent } from "@/core/components/ui/search-input.component";
 import { OvaGridSkeletonComponent } from "@/features/ova-library/components/ova-grid-skeleton.component";
 
 import { OvaCardComponent } from "../components/cards/ova-card.component";
@@ -33,11 +32,10 @@ import { STATUS_OPTIONS } from "./mis-ovas-page.helpers";
   selector: "gn-mis-ovas-page",
   imports: [
     RouterLink,
-    FormsModule,
     OvaGridSkeletonComponent,
     ButtonComponent,
     CheckboxComponent,
-    HlmInput,
+    SearchInputComponent,
     HlmSelectImports,
     OvaCardComponent,
     OvaListPaginationComponent,

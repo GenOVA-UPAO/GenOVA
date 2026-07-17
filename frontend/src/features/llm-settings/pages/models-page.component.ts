@@ -68,10 +68,11 @@ export class ModelsPageComponent implements OnInit {
   readonly adminModels = signal<ChipModel[]>([]);
   readonly adminSaving = signal(false);
   readonly adminLoading = signal(true);
-  private readonly adminBaseline = signal(JSON.stringify(null));
+  private readonly adminBaseline = signal("");
 
-  // Gated on adminLoading: while the config is still loading, draft y baseline
-  // divergen transitoriamente y el strip mostraba "Cambios sin guardar: Sí".
+  // Gateado por adminLoading: hasta que la config termina de cargar, draft y
+  // baseline divergen transitoriamente y el strip mostraba "Cambios sin
+  // guardar: Sí"; ngOnInit fija el baseline real al finalizar la carga.
   readonly adminDirty = computed(
     () => !this.adminLoading() && this.adminBaseline() !== JSON.stringify(this.adminDraft()),
   );
