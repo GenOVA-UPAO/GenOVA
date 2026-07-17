@@ -48,13 +48,12 @@ def test_fan_out_uses_intentions_plan():
 
 def test_worker_dispatches_by_plan_and_emits_signal(monkeypatch):
     import prometheus.plans.generate as gen
-    from prometheus.plans.generate import ResourceResult
 
     seen = {}
 
     def fake_generate(phase, rt, concept, *, plan=None, **kw):
         seen["plan"] = plan
-        return ResourceResult("<html>ok</html>", [], None)
+        return gen.ResourceResult("<html>ok</html>", [], None)
 
     monkeypatch.setattr(gen, "generate_resource", fake_generate)
     monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {})

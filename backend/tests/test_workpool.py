@@ -51,13 +51,12 @@ def test_fan_out_empty_plan_goes_to_collect():
 
 def test_worker_success_and_config(monkeypatch):
     import prometheus.plans.generate as gen
-    from prometheus.plans.generate import ResourceResult
 
     seen = {}
 
     def fake_generate(phase, rt, concept, *, resource_config=None, **kw):
         seen["config"] = resource_config
-        return ResourceResult("<html>ok</html>", [], None)
+        return gen.ResourceResult("<html>ok</html>", [], None)
 
     monkeypatch.setattr(gen, "generate_resource", fake_generate)
     monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {3: {"tipo": "Desafío"}})
@@ -71,10 +70,9 @@ def test_worker_success_and_config(monkeypatch):
 
 def test_worker_structural_defects_route_to_error(monkeypatch):
     import prometheus.plans.generate as gen
-    from prometheus.plans.generate import ResourceResult
 
     def fake_generate(phase, rt, concept, **kw):
-        return ResourceResult("<html>defectuoso</html>", ["sin _scormComplete()"], None)
+        return gen.ResourceResult("<html>defectuoso</html>", ["sin _scormComplete()"], None)
 
     monkeypatch.setattr(gen, "generate_resource", fake_generate)
     payload = fan_out(_state())[0].arg
@@ -124,11 +122,10 @@ def test_workpool_end_to_end_with_fake_generate(monkeypatch):
     calls = []
 
     import prometheus.plans.generate as gen
-    from prometheus.plans.generate import ResourceResult
 
     def fake_generate(phase, rt, concept, **kw):
         calls.append(rt)
-        return ResourceResult(f"<html>{rt}</html>", [], None)
+        return gen.ResourceResult(f"<html>{rt}</html>", [], None)
 
     monkeypatch.setattr(gen, "generate_resource", fake_generate)
     monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {})

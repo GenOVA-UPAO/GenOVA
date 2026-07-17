@@ -44,30 +44,6 @@ def degraded_plan(phase: str, rt, current: str) -> str | None:
     return None
 
 
-def dispatch_by_plan(
-    plan: str,
-    phase: str,
-    rt,
-    concept: str,
-    llm_config=None,
-    enabled_models=None,
-    theme=None,
-    image_settings=None,
-    resource_config=None,
-) -> str:
-    """Ejecuta el plan indicado devolviendo solo el HTML — shim de compatibilidad
-    sobre `generate_resource` (lo usa el nodo repair, que solo necesita el HTML del
-    reintento; el workpool llama `generate_resource` directo para leer los defectos)."""
-    from prometheus.plans.generate import generate_resource
-
-    return generate_resource(
-        phase,
-        rt,
-        concept,
-        plan=plan,
-        llm_config=llm_config,
-        enabled_models=enabled_models,
-        theme=theme,
-        image_settings=image_settings,
-        resource_config=resource_config,
-    ).html
+# La ejecución de un plan vive en `prometheus.plans.generate.generate_resource`
+# (los llamadores — workpool y repair — la invocan directo). Este módulo queda como
+# hoja: solo tablas de selección de plan, sin importar `generate` (rompe el ciclo).

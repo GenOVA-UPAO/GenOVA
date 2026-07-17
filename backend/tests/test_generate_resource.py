@@ -7,7 +7,6 @@ LLM) y se ejerce la lógica real de plan, parseo, inyección y defectos.
 """
 
 import prometheus.plans.generate as gen
-from prometheus.plans.generate import generate_resource
 
 FULL_HTML = (
     "<!DOCTYPE html><html lang='es'><head></head><body>"
@@ -31,7 +30,7 @@ def _fake_generar(html=FULL_HTML):
 
 def test_two_step_applies_theming_and_returns_json(monkeypatch):
     monkeypatch.setattr(gen, "generar_texto", _fake_generar())
-    r = generate_resource("evaluate", 1, "tema", refine=False)  # evaluate:1 = two_step
+    r = gen.generate_resource("evaluate", 1, "tema", refine=False)  # evaluate:1 = two_step
     assert r.raw_json == {"contenido": "demo"}
     assert 'id="ova-base"' in r.html  # base_css inyectado (theme upao por defecto)
     assert "UPAO Components v" in r.html  # componentes inyectados
@@ -46,7 +45,7 @@ def test_direct_code_single_call_no_json(monkeypatch):
         return FULL_HTML
 
     monkeypatch.setattr(gen, "generar_texto", fake)
-    r = generate_resource("explain", 2, "tema", refine=False)  # explain:2 = direct_code
+    r = gen.generate_resource("explain", 2, "tema", refine=False)  # explain:2 = direct_code
     assert calls == ["codigo"]  # una sola llamada, sin paso texto→JSON
     assert r.raw_json is None
 
@@ -58,14 +57,14 @@ def test_json_retry_recovers_bad_first_parse(monkeypatch):
         return next(seq) if task == "texto" else FULL_HTML
 
     monkeypatch.setattr(gen, "generar_texto", fake)
-    r = generate_resource("evaluate", 1, "tema", refine=False)
+    r = gen.generate_resource("evaluate", 1, "tema", refine=False)
     assert r.raw_json == {"ok": 1}  # el retry estricto recuperó el JSON
 
 
 def test_podcast_returns_player_and_monologue(monkeypatch):
     monkeypatch.setattr(gen, "generar_texto", lambda *a, **k: "monólogo del podcast")
     monkeypatch.setattr("llm.podcast.podcast.podcast_audio_b64", lambda text: None)
-    r = generate_resource("engage", 3, "tema")  # engage:3 = podcast
+    r = gen.generate_resource("engage", 3, "tema")  # engage:3 = podcast
     assert r.raw_json == {"monologue": "monólogo del podcast"}
     assert r.html and r.defects == []
 
@@ -82,6 +81,6 @@ def test_structural_defects_flow_to_result(monkeypatch):
     monkeypatch.setattr(gen, "generar_texto", _fake_generar(html=broken))
     monkeypatch.setattr(refine_mod, "_refine_enabled", lambda: True)
     monkeypatch.setattr(refine_mod, "apply_feedback", lambda html, *a, **k: html)  # no mejora
-    r = generate_resource("evaluate", 1, "tema")
+    r = gen.generate_resource("evaluate", 1, "tema")
     # El defecto se reporta a `defects` para el routing a repair del workpool.
     assert any("placeholder" in d for d in r.defects)
