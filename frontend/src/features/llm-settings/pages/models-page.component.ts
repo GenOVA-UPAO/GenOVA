@@ -68,9 +68,13 @@ export class ModelsPageComponent implements OnInit {
   readonly adminModels = signal<ChipModel[]>([]);
   readonly adminSaving = signal(false);
   readonly adminLoading = signal(true);
-  private readonly adminBaseline = signal("");
+  private readonly adminBaseline = signal(JSON.stringify(null));
 
-  readonly adminDirty = computed(() => this.adminBaseline() !== JSON.stringify(this.adminDraft()));
+  // Gated on adminLoading: while the config is still loading, draft y baseline
+  // divergen transitoriamente y el strip mostraba "Cambios sin guardar: Sí".
+  readonly adminDirty = computed(
+    () => !this.adminLoading() && this.adminBaseline() !== JSON.stringify(this.adminDraft()),
+  );
   readonly dirty = computed(() => this.store.dirty() || this.adminDirty());
 
   readonly connectedProviders = computed(() => {

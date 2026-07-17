@@ -17,6 +17,7 @@ import structlog
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from core.text import smart_truncate
 from models import Ova, OvaJob, OvaJobResource, OvaPhase, OvaVersion
 from prometheus.prompts.elaborate_prompts import RECURSOS_META as ELABORATE_META
 from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
@@ -78,7 +79,7 @@ def materialize_partial_ova(
 
 def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uuid.UUID:
     prompt = job.prompt or ""
-    title = (prompt[:80].rstrip()) or "OVA parcial"
+    title = smart_truncate(prompt) or "OVA parcial"
 
     # Full success (every requested resource is done) yields a ready-to-export
     # OVA; a partial recovery (HU-022) stays a "borrador" for the user to finish.

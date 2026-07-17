@@ -52,8 +52,18 @@
         aria-label="Buscar por título de la OVA"
         [ngModel]="service.searchQuery()"
         (ngModelChange)="service.setSearch($event)"
-        class="w-full pl-10 border-muted bg-background/50 h-10 shadow-inner focus-visible:ring-primary/30"
+        class="w-full pl-10 pr-10 border-muted bg-background/50 h-10 shadow-inner focus-visible:ring-primary/30"
       />
+      @if (service.searchQuery()) {
+      <button
+        type="button"
+        (click)="service.setSearch('')"
+        aria-label="Limpiar búsqueda"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+      >
+        <gn-icon name="x" size="text-base" />
+      </button>
+      }
     </div>
 
     <label for="mis-ovas-status-filter" class="sr-only">Filtrar por estado</label>
@@ -153,10 +163,7 @@
       Empieza generando tu primer objeto virtual de aprendizaje. Nuestro asistente de IA te guiará
       en el proceso.
     </p>
-    <gn-button
-      routerLink="/crear-ova"
-      class="mt-6 shadow-lg shadow-primary/20 rounded-xl px-6"
-    >
+    <gn-button routerLink="/crear-ova" class="mt-6 shadow-lg shadow-primary/20 rounded-xl px-6">
       Crear mi primer OVA
     </gn-button>
     }

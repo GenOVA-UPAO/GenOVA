@@ -10,7 +10,11 @@ import { RouterOutlet } from "@angular/router";
   // never gets a bounded height and middle-click / scrollbar cannot scroll.
   host: { class: "contents" },
   template: `
-    <main class="flex-1 min-h-0 min-w-0 overflow-auto bg-muted/20">
+    <main
+      id="contenido-principal"
+      tabindex="-1"
+      class="flex-1 min-h-0 min-w-0 overflow-auto bg-muted/20 outline-none"
+    >
       <div
         class="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8 animate-in fade-in slide-in-from-bottom-2 duration-300"
       >

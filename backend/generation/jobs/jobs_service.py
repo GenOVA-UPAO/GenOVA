@@ -13,6 +13,7 @@ import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core.text import smart_truncate
 from models import Ova, OvaJob, OvaJobResource
 from users.admin.helpers import commit_or_500
 
@@ -52,7 +53,7 @@ def create_job(
     shows up in "Mis OVAs" during generation (HU-023 fix). The runner updates
     it to "borrador" on completion or "error" on total failure.
     """
-    title = (prompt[:80].rstrip()) or "OVA en generación"
+    title = smart_truncate(prompt) or "OVA en generación"
     ova = Ova(user_id=user_id, title=title, description=prompt, status="generando")
     db.add(ova)
     db.flush()

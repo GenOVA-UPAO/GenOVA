@@ -22,7 +22,7 @@ import { DomSanitizer, type SafeResourceUrl } from "@angular/platform-browser";
       [title]="title()"
       [class]="className()"
       [style.height]="height ? height : null"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts"
       [src]="safeUrl"
     ></iframe>
   `,

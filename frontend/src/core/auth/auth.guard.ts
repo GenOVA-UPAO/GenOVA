@@ -15,7 +15,7 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   if (auth.isAuthenticated()) return true;
 
   // Try to revalidate against the server.
-  const user = await auth.revalidate();
+  const user = await auth.revalidate(3000);
 
   if (user) return true;
 
@@ -35,7 +35,7 @@ export const guestGuard: CanActivateFn = async () => {
   const router = inject(Router);
 
   if (!auth.isAuthenticated()) {
-    await auth.revalidate();
+    await auth.revalidate(3000);
   }
 
   if (auth.isAuthenticated()) {
@@ -54,7 +54,7 @@ export const adminGuard: CanActivateFn = async () => {
   const router = inject(Router);
 
   if (!auth.isAuthenticated()) {
-    await auth.revalidate();
+    await auth.revalidate(3000);
   }
 
   if (!auth.isAuthenticated()) {
