@@ -5,9 +5,13 @@ import { apiJson } from "@/core/lib/http";
 @Injectable({ providedIn: "root" })
 export class PlatformSettingsService {
   getPlatformConfig(): Promise<unknown> {
-    return apiJson("/api/admin/platform-config", {}, {
-      fallbackMsg: "No se pudo cargar la configuración de plataforma.",
-    });
+    return apiJson(
+      "/api/admin/platform-config",
+      {},
+      {
+        fallbackMsg: "No se pudo cargar la configuración de plataforma.",
+      },
+    );
   }
 
   savePlatformConfigKey(provider: string, key: string): Promise<unknown> {
@@ -19,9 +23,13 @@ export class PlatformSettingsService {
   }
 
   getAdminLlmConfig(): Promise<unknown> {
-    return apiJson("/api/admin/llm-config", {}, {
-      fallbackMsg: "No se pudo cargar la configuración de modelos.",
-    });
+    return apiJson(
+      "/api/admin/llm-config",
+      {},
+      {
+        fallbackMsg: "No se pudo cargar la configuración de modelos.",
+      },
+    );
   }
 
   saveAdminLlmConfig(config: unknown): Promise<unknown> {
@@ -33,9 +41,13 @@ export class PlatformSettingsService {
   }
 
   getAdminNodesConfig(): Promise<unknown> {
-    return apiJson("/api/admin/nodes-config", {}, {
-      fallbackMsg: "No se pudo cargar la configuración de nodos.",
-    });
+    return apiJson(
+      "/api/admin/nodes-config",
+      {},
+      {
+        fallbackMsg: "No se pudo cargar la configuración de nodos.",
+      },
+    );
   }
 
   saveAdminNodesConfig(payload: unknown): Promise<unknown> {
