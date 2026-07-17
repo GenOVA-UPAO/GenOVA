@@ -264,3 +264,25 @@ def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[st
         item["image_placeholder"] = placeholder
         replacements[placeholder] = uri or IMG_PLACEHOLDER
     return replacements
+
+
+def build_image_settings(user, db) -> dict:
+    """image_settings desde ova_settings del usuario + API key resuelta del proveedor.
+
+    Fuente única para el pipeline de generación (endpoint engage + regen). Antes el
+    endpoint lo construía inline y regen no lo pasaba (regen-engage salía sin imágenes).
+    """
+    from llm.clients.key_resolver import resolve_key
+
+    ova_settings = getattr(user, "ova_settings", None) or {}
+    provider = ova_settings.get("image_provider", "cloudflare")
+    return {
+        "max_images": ova_settings.get(
+            "max_images", int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
+        ),
+        "provider": provider,
+        "api_key": resolve_key(
+            provider, getattr(user, "user_api_keys", None) or {}, db, user.id
+        ),
+        "image_model": ova_settings.get("image_model"),
+    }

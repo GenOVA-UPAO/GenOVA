@@ -75,7 +75,8 @@ def resource_worker(payload: dict) -> dict:
     tras el join). Emite worker_signals para la revisión de creencias (F3.1)."""
     import time
 
-    from prometheus.plans.plan_map import dispatch_by_plan, plan_for
+    from prometheus.plans.generate import generate_resource
+    from prometheus.plans.plan_map import plan_for
 
     item = payload["work_item"]
     phase, rt = item["phase"], item["resource_type"]
@@ -84,16 +85,16 @@ def resource_worker(payload: dict) -> dict:
     job_id = payload.get("job_id")
     started = time.monotonic()
     try:
-        html = dispatch_by_plan(
-            plan,
+        result = generate_resource(
             phase,
             rt,
             payload.get("prompt", ""),
-            payload.get("llm_config", {}),
-            payload.get("enabled_models", []),
-            payload.get("theme", {}),
-            payload.get("image_settings", {}),
-            per_config,
+            plan=plan,
+            llm_config=payload.get("llm_config", {}),
+            enabled_models=payload.get("enabled_models", []),
+            theme=payload.get("theme", {}),
+            image_settings=payload.get("image_settings", {}),
+            resource_config=per_config,
         )
     except Exception as exc:  # noqa: BLE001 — aislar el fallo de un recurso
         logger.exception("workpool: resource failed", phase=phase, resource_type=rt)
@@ -111,18 +112,10 @@ def resource_worker(payload: dict) -> dict:
             ],
         }
 
-    # F2.3 — evaluator-optimizer: checklist estructural + feedback dirigido.
-    from prometheus.engine.validate import validate_and_improve
-
-    html, remaining = validate_and_improve(
-        html,
-        phase,
-        rt,
-        payload.get("prompt", ""),
-        payload.get("llm_config", {}),
-        payload.get("enabled_models", []),
-        payload.get("theme", {}),
-    )
+    # F2.3 — el refinamiento (evaluator-optimizer) ya corrió dentro de
+    # generate_resource como compuerta única; aquí solo leemos los defectos
+    # estructurales restantes para el routing a repair.
+    html, remaining = result.html, result.defects
     if remaining:
         # Defectos estructurales sin resolver (sin _scormComplete, placeholder,
         # esqueleto…): el alumno no podría completar el recurso. Va por la ruta
@@ -159,9 +152,7 @@ def resource_worker(payload: dict) -> dict:
     _persist_done(job_id, phase, rt, html)
     _touch_job(job_id)
     return {
-        "pool_results": [
-            {"phase": phase, "html": html, "resource_type": rt, "title": title}
-        ],
+        "pool_results": [{"phase": phase, "html": html, "resource_type": rt, "title": title}],
         "worker_signals": [
             {
                 "phase": phase,
@@ -187,9 +178,7 @@ def collect_node(state: OvaGenerationState) -> dict:
         error_classes[key] = error_classes.get(key, 0) + 1
     beliefs = {
         **state.get("beliefs", {}),
-        "avg_resource_seconds": (
-            round(sum(durations) / len(durations), 1) if durations else None
-        ),
+        "avg_resource_seconds": (round(sum(durations) / len(durations), 1) if durations else None),
         "failed_resources": [
             {"phase": s["phase"], "resource_type": s["resource_type"], "plan": s.get("plan")}
             for s in failures

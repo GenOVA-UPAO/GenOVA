@@ -1,18 +1,18 @@
-"""Phase-generation pipelines for OVA regeneration.
+"""Regeneración de contenido de una fase de OVA.
 
-`regenerate_phase_content` dispatches an OvaPhase back to its 5E generation
-pipeline (engage / explore / explain-elaborate-evaluate) to produce fresh AI
-content. Resource-type resolution lives in regen_agents.
+`regenerate_phase_content` regenera un recurso de fase con el pipeline de
+generación UNIFICADO (`prometheus.plans.generate.generate_resource`) — el mismo
+que usa el batch — así regen produce la misma calidad (design-system, imágenes,
+refinamiento) en TODAS las fases. Antes engage/explore estaban reimplementados en
+versión ligera (regen-engage salía sin imágenes). La resolución del resource_type
+vive en regen_agents.
 """
 
 import structlog
 
-from prometheus.prompts.elaborate_prompts import CODE_ONLY as ELABORATE_CODE_ONLY
-from prometheus.prompts.evaluate_prompts import CODE_ONLY as EVALUATE_CODE_ONLY
-from prometheus.prompts.explain_prompts import CODE_ONLY as EXPLAIN_CODE_ONLY
-from prometheus.prompts.explore_prompts import CODE_ONLY as EXPLORE_CODE_ONLY
-
 logger = structlog.get_logger(__name__)
+
+_VALID_PHASES = {"engage", "explore", "explain", "elaborate", "evaluate"}
 
 
 def regenerate_phase_content(
@@ -21,24 +21,28 @@ def regenerate_phase_content(
     concept: str,
     llm_config: dict | None = None,
     enabled_models: list | None = None,
+    image_settings: dict | None = None,
 ) -> str | None:
-    """Generate fresh HTML for a single phase using the real LLM agents.
+    """Genera HTML fresco para un recurso con el pipeline unificado.
 
-    `llm_config` is the OVA owner's per-type model/timeout overrides (or None for
-    system defaults). `enabled_models` restricts overrides to models the user has
-    explicitly enabled. Returns the HTML string on success, None on failure.
+    `llm_config` son los overrides por-tipo del dueño del OVA (o None). `enabled_models`
+    restringe los overrides a modelos habilitados. `image_settings` habilita imágenes
+    en engage. Devuelve el HTML o None si falla o la fase es desconocida.
     """
-    try:
-        if phase_type == "engage":
-            return _generate_engage(resource_type, concept, llm_config, enabled_models)
-        if phase_type == "explore":
-            return _generate_explore(resource_type, concept, llm_config, enabled_models)
-        if phase_type in ("explain", "elaborate", "evaluate"):
-            return _generate_direct_or_two_step(
-                phase_type, resource_type, concept, llm_config, enabled_models
-            )
+    if phase_type not in _VALID_PHASES:
         logger.warning("unknown phase_type for regen", phase_type=phase_type)
         return None
+    try:
+        from prometheus.plans.generate import generate_resource
+
+        return generate_resource(
+            phase_type,
+            resource_type,
+            concept,
+            llm_config=llm_config,
+            enabled_models=enabled_models,
+            image_settings=image_settings,
+        ).html
     except Exception:
         logger.exception(
             "regen failed",
@@ -47,99 +51,3 @@ def regenerate_phase_content(
             concept=concept[:60],
         )
         return None
-
-
-def _generate_engage(
-    n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
-) -> str:
-    """Run the ENGAGE generation pipeline for resource type n."""
-    from llm.podcast.podcast import build_podcast_html, podcast_audio_b64
-    from llm.router import generar_texto
-    from llm.utils.html_validator import validate_and_repair
-    from llm.utils.utils import parse_json, strip_markdown
-    from prometheus.prompts.engage_prompts import prompt_html, prompt_simulador, prompt_texto
-
-    if n == 10:
-        html = strip_markdown(
-            generar_texto(
-                prompt_simulador(concept, ""), "codigo", 12000, llm_config, enabled_models
-            )
-        )
-        html, _ = validate_and_repair(html, "engage", n)
-        return html
-
-    if n == 3:
-        mono = generar_texto(prompt_texto(n, concept, ""), "texto", 700, llm_config, enabled_models)
-        audio_b64 = podcast_audio_b64(mono)
-        return build_podcast_html(concept, mono, audio_b64)
-
-    raw = generar_texto(prompt_texto(n, concept, ""), "texto", 3000, llm_config, enabled_models)
-    json_data = _safe_parse_json(raw, parse_json)
-    json_str = __import__("json").dumps(json_data, ensure_ascii=False, indent=2)
-    html = strip_markdown(
-        generar_texto(
-            prompt_html(n, concept, json_str, ""), "codigo", 12000, llm_config, enabled_models
-        )
-    )
-    html, _ = validate_and_repair(html, "engage", n)
-    return html
-
-
-def _generate_explore(
-    n: int, concept: str, llm_config: dict | None = None, enabled_models: list | None = None
-) -> str:
-    """Run the EXPLORE generation pipeline for resource type n."""
-    from llm.router import generar_texto
-    from llm.utils.html_validator import validate_and_repair
-    from llm.utils.utils import parse_json, strip_markdown
-    from prometheus.prompts.explore_prompts import prompt_codigo, prompt_html, prompt_texto
-
-    if n in EXPLORE_CODE_ONLY:
-        html = strip_markdown(
-            generar_texto(
-                prompt_codigo(n, concept, ""), "codigo", 12000, llm_config, enabled_models
-            )
-        )
-        html, _ = validate_and_repair(html, "explore", n)
-        return html
-
-    raw = generar_texto(prompt_texto(n, concept, ""), "texto", 3000, llm_config, enabled_models)
-    json_data = _safe_parse_json(raw, parse_json)
-    json_str = __import__("json").dumps(json_data, ensure_ascii=False, indent=2)
-    html = strip_markdown(
-        generar_texto(
-            prompt_html(n, concept, json_str, ""), "codigo", 12000, llm_config, enabled_models
-        )
-    )
-    html, _ = validate_and_repair(html, "explore", n)
-    return html
-
-
-def _generate_direct_or_two_step(
-    phase: str,
-    n: int,
-    concept: str,
-    llm_config: dict | None = None,
-    enabled_models: list | None = None,
-) -> str:
-    """Run generation for explain, elaborate, or evaluate phases."""
-    from prometheus.plans.direct_code import direct_code_gen
-    from prometheus.plans.two_step import two_step_gen
-
-    _code_only = {
-        "explain": EXPLAIN_CODE_ONLY,
-        "elaborate": ELABORATE_CODE_ONLY,
-        "evaluate": EVALUATE_CODE_ONLY,
-    }
-    if n in _code_only[phase]:
-        return direct_code_gen(phase, n, concept, llm_config, enabled_models)
-    return two_step_gen(phase, n, concept, llm_config, enabled_models)
-
-
-def _safe_parse_json(raw: str, parser):
-    """Parse JSON from LLM output with fallback to raw text dict."""
-    try:
-        return parser(raw)
-    except Exception:
-        logger.warning("json parse failed during regen, using raw text")
-        return {"contenido": raw}

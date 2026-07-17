@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthExpiredBus } from "./auth-expired-bus";
-import { HttpError, apiFetch, apiJson } from "./http";
+import { apiFetch, apiJson, HttpError } from "./http";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(body === undefined ? null : JSON.stringify(body), {

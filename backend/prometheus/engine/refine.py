@@ -91,34 +91,76 @@ def apply_feedback(
         return html
 
 
-def maybe_refine(
-    html: str, phase: str, rt: int, concept: str, llm_config=None, enabled_models=None, theme=None
-) -> str:
-    """Return refined HTML when the resource has defects and the fix improves it.
+_REFINE_MAX_ROUNDS = 2
 
-    No-op when refinement is disabled (env OVA_REFINE=0), the HTML is empty, or
-    no issues are detected — keeping the common (healthy) path cost-free.
+
+def _combined_issues(html: str, phase: str, rt: int) -> list[str]:
+    """Señales de refinamiento unificadas para una sola pasada de feedback.
+
+    Une los defectos ESTRUCTURALES (bloquean la completitud del recurso:
+    _scormComplete, interactividad, placeholder, contenido escaso) con los de
+    CALIDAD (validate_html + botones sin manejadores). Antes las evaluaban por
+    separado `validate_and_improve` (estructurales) y `maybe_refine` (calidad),
+    encadenando dos refinadores; ahora una ronda cubre todas las señales.
     """
-    if not _refine_enabled() or not html:
-        return html
+    from prometheus.engine.validate import structural_defects
 
-    issues = _quality_issues(html, phase, rt)
-    if not issues:
-        return html
+    return list(structural_defects(html)) + _quality_issues(html, phase, rt)
 
-    refined = apply_feedback(html, concept, issues, phase, rt, llm_config, enabled_models, theme)
 
-    # Accept only if it does not regress structurally and isn't a truncated stub.
-    before = len(validate_html(html, phase, rt))
+def _accepts(refined: str, original: str, phase: str, rt: int) -> bool:
+    """Acepta el refinado solo si no regresa estructuralmente ni queda truncado."""
+    if not refined:
+        return False
+    before = len(validate_html(original, phase, rt))
     after = len(validate_html(refined, phase, rt))
-    if refined and after <= before and len(refined) >= len(html) * 0.6:
-        logger.info(
-            "refine accepted",
-            phase=phase,
-            resource_type=rt,
-            issues_before=before,
-            issues_after=after,
+    return after <= before and len(refined) >= len(original) * 0.6
+
+
+def refine_and_check(
+    html: str,
+    phase: str,
+    rt: int,
+    concept: str,
+    llm_config=None,
+    enabled_models=None,
+    theme=None,
+    *,
+    max_rounds: int = _REFINE_MAX_ROUNDS,
+) -> tuple[str, list[str]]:
+    """Compuerta de refinamiento fusionada (reemplaza maybe_refine + validate_and_improve).
+
+    Refina mientras haya defectos (estructurales ∪ calidad), hasta `max_rounds`
+    rondas, aceptando solo mejoras que no regresen. Devuelve
+    ``(html, defectos_estructurales_restantes)``: los estructurales son la señal
+    de routing a repair; los de calidad disparan refinamiento pero NO enrutan
+    (misma semántica que antes de la fusión).
+
+    No-op (0 llamadas LLM) cuando el refinamiento está deshabilitado (OVA_REFINE=0),
+    el HTML está vacío o no hay defectos — el camino sano no paga refinamiento.
+    Un recurso defectuoso hace como máximo `max_rounds` llamadas (antes hasta 3
+    entre las dos compuertas encadenadas).
+    """
+    from prometheus.engine.validate import structural_defects
+
+    if not html:
+        return html, []
+    if not _refine_enabled():
+        return html, structural_defects(html)
+
+    rounds = 0
+    while rounds < max_rounds:
+        issues = _combined_issues(html, phase, rt)
+        if not issues:
+            break
+        rounds += 1
+        refined = apply_feedback(
+            html, concept, issues, phase, rt, llm_config, enabled_models, theme
         )
-        return refined
-    logger.info("refine rejected: no improvement", phase=phase, resource_type=rt)
-    return html
+        if not _accepts(refined, html, phase, rt):
+            logger.info("refine rejected: no improvement", phase=phase, resource_type=rt)
+            break
+        logger.info("refine accepted", phase=phase, resource_type=rt, round=rounds)
+        html = refined
+
+    return html, structural_defects(html)

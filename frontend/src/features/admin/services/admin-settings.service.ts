@@ -5,9 +5,13 @@ import { apiJson } from "../../../core/lib/http";
 @Injectable({ providedIn: "root" })
 export class AdminSettingsService {
   getRegistrationMode(): Promise<{ default_registration_role?: string }> {
-    return apiJson<{ default_registration_role?: string }>("/api/admin/registration-mode", {}, {
-      fallbackMsg: "No se pudo cargar el modo de registro.",
-    });
+    return apiJson<{ default_registration_role?: string }>(
+      "/api/admin/registration-mode",
+      {},
+      {
+        fallbackMsg: "No se pudo cargar el modo de registro.",
+      },
+    );
   }
 
   setRegistrationMode(default_registration_role: string): Promise<void> {
