@@ -59,7 +59,7 @@ const PALETTES: Palette[] = [
     IconComponent,
   ],
   template: `
-    <gn-dialog [open]="true" width="42rem" [disableClose]="true" class="bg-card">
+    <gn-dialog [open]="true" width="42rem" (openChange)="!$event && onClose.emit()" class="bg-card">
       <div class="bg-card rounded-2xl overflow-hidden">
         <div class="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 class="text-lg font-display font-semibold">Configuración de Diseño y Tema</h2>

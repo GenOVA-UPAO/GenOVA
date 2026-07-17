@@ -77,13 +77,12 @@
         </div>
         <span
           [class]="statusStyle(ova.status || '')"
-          class="shrink-0 rounded-full px-3 py-1 text-[10px] uppercase tracking-wider font-bold"
+          class="shrink-0 rounded-full px-3 py-1 text-xs uppercase tracking-wider font-bold"
         >
           {{ ova.status || 'borrador' }}
         </span>
         <gn-button
           variant="ghost"
-          size="sm"
           [routerLink]="['/ova', ova.id, 'workspace']"
           class="hidden sm:flex hover:bg-primary/10 hover:text-primary"
         >
