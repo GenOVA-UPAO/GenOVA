@@ -18,12 +18,14 @@ from ova.crud.edit_phase_ops import (
     _list_phases,
     _resolve_ova_and_version,
 )
+from ova.chat.router import router as chat_router
 from ova.crud.edit_view_router import router as edit_view_router
 from ova.phases.phase_version_router import record_phase_micro_version
 from users.admin.helpers import commit_or_500
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()
+router.include_router(chat_router)
 
 
 # ── Reorder phases ────────────────────────────────────────────────────────────

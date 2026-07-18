@@ -89,9 +89,10 @@ describe("OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)", () =
 
     const msgs = service.chatMessages();
     expect(msgs.length).toBeGreaterThanOrEqual(2);
-    expect(msgs[0].role).toBe("user");
-    expect(msgs[0].text).toBe("Añade más ejemplos prácticos");
-    expect(msgs[1].role).toBe("assistant");
+    expect(msgs.some((m) => m.role === "user" && m.text === "Añade más ejemplos prácticos")).toBe(
+      true,
+    );
+    expect(msgs.some((m) => m.role === "assistant")).toBe(true);
     expect(service.prompt()).toBe("");
   });
 

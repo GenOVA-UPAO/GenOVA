@@ -15,6 +15,7 @@ import { RouterModule } from "@angular/router";
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
+import { resourceLabel } from "../../lib/resource-label";
 import type { PhaseWithContent } from "../../lib/types";
 import { buildUploadsPropBag } from "../../lib/upload-chip-view-model";
 import type { OvaVersionRow } from "../../lib/version-history.types";
@@ -131,17 +132,27 @@ export class OvaEditViewComponent implements OnInit, OnDestroy {
     const next = !this.selectionMode();
     this.selectionMode.set(next);
     if (!next) this.selectedPhaseIds.set([]);
+    void this.ws.logSelectionMode(next);
   }
 
   togglePhaseSelection(phaseId: string): void {
+    const wasSelected = this.selectedPhaseIds().includes(phaseId);
     this.selectedPhaseIds.update((ids) =>
-      ids.includes(phaseId) ? ids.filter((id) => id !== phaseId) : [...ids, phaseId],
+      wasSelected ? ids.filter((id) => id !== phaseId) : [...ids, phaseId],
     );
+    const phase = this.ws.phases().find((p) => p.id === phaseId);
+    if (phase) void this.ws.logSelectionToggle(resourceLabel(phase), !wasSelected);
   }
 
   selectAllPhases(): void {
-    const all = this.ws.phases().map((p) => p.id);
-    this.selectedPhaseIds.update((ids) => (ids.length === all.length ? [] : all));
+    const phases = this.ws.phases();
+    const allIds = phases.map((p) => p.id);
+    const selectingAll = this.selectedPhaseIds().length !== allIds.length;
+    this.selectedPhaseIds.set(selectingAll ? allIds : []);
+    void this.ws.logSelectionAll(
+      phases.map((p) => resourceLabel(p)),
+      selectingAll,
+    );
   }
 
   submitChatPrompt(): void {

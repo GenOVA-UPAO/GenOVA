@@ -96,7 +96,15 @@
         </p>
       }
       @for (msg of messages(); track msg.id) {
-        @if (msg.role === "user") {
+        @if (msg.role === "system") {
+          <div class="flex justify-center">
+            <p
+              class="max-w-[95%] rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-center text-[11px] text-muted-foreground"
+            >
+              {{ msg.text }}
+            </p>
+          </div>
+        } @else if (msg.role === "user") {
           <div class="flex justify-end">
             <div
               class="max-w-[92%] rounded-2xl rounded-br-md bg-primary px-3 py-2 text-xs text-primary-foreground shadow-sm"
@@ -131,13 +139,15 @@
                   ></div>
                 </div>
               }
-              <p class="text-[10px] text-muted-foreground">
-                @if (msg.resourceLabels && msg.resourceLabels.length > 0) {
-                  En: {{ msg.resourceLabels.join(", ") }}
-                } @else {
-                  En: OVA completo
-                }
-              </p>
+              @if (msg.kind === "status" || msg.status) {
+                <p class="text-[10px] text-muted-foreground">
+                  @if (msg.resourceLabels && msg.resourceLabels.length > 0) {
+                    En: {{ msg.resourceLabels.join(", ") }}
+                  } @else {
+                    En: OVA completo
+                  }
+                </p>
+              }
               @if (msg.status === "success") {
                 <p class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
                   Completado
