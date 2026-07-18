@@ -36,67 +36,89 @@ async def run_generation(ctx, job_id: str, only: list[str] | None = None) -> Non
     await asyncio.to_thread(run_job, uuid.UUID(job_id), only_uuids)
 
 
-async def resume_orphans(ctx) -> None:
-    """F5.2 — al arrancar el worker, re-encolar jobs que quedaron 'running'
-    huérfanos (el proceso murió a mitad de generación). Solo se regeneran los
-    recursos NO persistidos: los done incrementales se conservan.
+def _pending_resource_ids(db, job_id: uuid.UUID) -> list[uuid.UUID]:
+    from sqlalchemy import select
+
+    from models import OvaJobResource
+
+    return [
+        r.id
+        for r in db.execute(select(OvaJobResource).where(OvaJobResource.job_id == job_id)).scalars()
+        if r.status != "done"
+    ]
+
+
+def _as_utc(dt):
+    from datetime import UTC
+
+    if dt is None:
+        return None
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=UTC)
+
+
+def _find_orphans_to_requeue() -> list[tuple[uuid.UUID, list[uuid.UUID]]]:
+    """Find stuck jobs: stale ``running`` (dead worker) or fresh ``queued`` (no worker).
+
+    Only reclaim queued jobs younger than QUEUED_STALE_AFTER_SECONDS — older
+    zombies stay for the lazy sweep (interrupted) instead of flooding Redis.
     """
+    from datetime import UTC, datetime, timedelta
 
-    def _find_and_requeue() -> list[tuple[uuid.UUID, list[uuid.UUID]]]:
-        from datetime import UTC, datetime, timedelta
+    from sqlalchemy import select, update
 
-        from sqlalchemy import select, update
+    from core.database import SessionLocal
+    from generation.jobs.jobs_service import QUEUED_STALE_AFTER_SECONDS, STALE_AFTER_SECONDS
+    from models import OvaJob
 
-        from core.database import SessionLocal
-        from models import OvaJob, OvaJobResource
-
-        stale_cutoff = datetime.now(UTC) - timedelta(seconds=180)
-        out: list[tuple[uuid.UUID, list[uuid.UUID]]] = []
-        db = SessionLocal()
-        try:
-            orphans = db.execute(select(OvaJob).where(OvaJob.status == "running")).scalars().all()
-            for job in orphans:
-                updated = job.updated_at
-                if updated is not None and updated.tzinfo is None:
-                    updated = updated.replace(tzinfo=UTC)
-                if updated is not None and updated > stale_cutoff:
-                    continue  # otro worker lo tiene vivo (heartbeat reciente)
-                # Claim atómico ANTES de re-encolar: refresca updated_at solo si el
-                # job sigue 'running' y estancado. Sin esto, el sweep lazy del web
-                # (_sweep_if_stale) lo marcaba 'interrupted' en paralelo y un resume
-                # manual lanzaba una SEGUNDA ejecución sobre las mismas filas.
-                claimed = db.execute(
-                    update(OvaJob)
-                    .where(
-                        OvaJob.id == job.id,
-                        OvaJob.status == "running",
-                        OvaJob.updated_at <= stale_cutoff,
-                    )
-                    .values(updated_at=datetime.now(UTC))
-                )
-                db.commit()
-                if claimed.rowcount == 0:
-                    continue  # otro proceso lo reclamó o el sweep ya lo transicionó
-                pending = [
-                    r.id
-                    for r in db.execute(
-                        select(OvaJobResource).where(OvaJobResource.job_id == job.id)
-                    ).scalars()
-                    if r.status != "done"
-                ]
-                out.append((job.id, pending))
-            return out
-        finally:
-            db.close()
-
+    now = datetime.now(UTC)
+    running_stale = now - timedelta(seconds=STALE_AFTER_SECONDS)
+    queued_fresh_after = now - timedelta(seconds=QUEUED_STALE_AFTER_SECONDS)
+    out: list[tuple[uuid.UUID, list[uuid.UUID]]] = []
+    db = SessionLocal()
     try:
-        orphans = await asyncio.to_thread(_find_and_requeue)
+        orphans = db.execute(select(OvaJob).where(OvaJob.status == "running")).scalars().all()
+        for job in orphans:
+            updated = _as_utc(job.updated_at)
+            if updated is not None and updated > running_stale:
+                continue  # otro worker lo tiene vivo (heartbeat reciente)
+            # Claim atómico ANTES de re-encolar: evita doble ejecución con el
+            # sweep lazy del web (_sweep_if_stale → interrupted + resume).
+            claimed = db.execute(
+                update(OvaJob)
+                .where(
+                    OvaJob.id == job.id,
+                    OvaJob.status == "running",
+                    OvaJob.updated_at <= running_stale,
+                )
+                .values(updated_at=now)
+            )
+            db.commit()
+            if claimed.rowcount == 0:
+                continue
+            out.append((job.id, _pending_resource_ids(db, job.id)))
+
+        # REDIS_URL sin worker → jobs quedan "En cola…". Solo los recientes.
+        for job in db.execute(select(OvaJob).where(OvaJob.status == "queued")).scalars().all():
+            updated = _as_utc(job.updated_at) or _as_utc(job.created_at)
+            if updated is None or updated < queued_fresh_after:
+                continue
+            pending = _pending_resource_ids(db, job.id)
+            if pending:
+                out.append((job.id, pending))
+        return out
+    finally:
+        db.close()
+
+
+async def resume_orphans(ctx) -> None:
+    """F5.2 — al arrancar, re-encolar jobs huérfanos (running estancado / queued)."""
+    try:
+        orphans = await asyncio.to_thread(_find_orphans_to_requeue)
     except Exception:  # noqa: BLE001 — el resume nunca impide arrancar el worker
         logger.exception("resume_orphans falló")
         return
     for job_id, pending in orphans:
         if not pending:
-            # Todo persistido: no hay nada que regenerar — lo cierra el sweep lazy.
             continue
         await ctx["redis"].enqueue_job("run_generation", str(job_id), [str(x) for x in pending])
         print(f"[worker] resume: job {job_id} re-encolado ({len(pending)} recursos pendientes)")
