@@ -5,6 +5,8 @@
 //   running → 'generando' · error → 'X' · done → 'check' · pending → 'pendiente'
 // Anything unknown falls back to 'pendiente'.
 
+import { phaseMeta } from "./phase-meta";
+
 export type UiStatus = "pendiente" | "generando" | "check" | "X";
 
 export interface BackendResource {
@@ -63,14 +65,6 @@ const STATUS_MAP: Record<string, UiStatus> = {
   error: "X",
 };
 
-const PHASE_LABEL: Record<string, string> = {
-  engage: "ENGAGE",
-  explore: "EXPLORE",
-  explain: "EXPLAIN",
-  elaborate: "ELABORATE",
-  evaluate: "EVALUATE",
-};
-
 export function mapResourceStatus(backendStatus: string): UiStatus {
   return STATUS_MAP[backendStatus] || "pendiente";
 }
@@ -92,9 +86,11 @@ export function humanizeResourceType(raw: string | number | null | undefined): s
     .join(" ");
 }
 
+const PHASES = ["engage", "explore", "explain", "elaborate", "evaluate"];
+
 function buildLabelIndex(selections: Selections): Map<string, Partial<SelectionItem>> {
   const index = new Map<string, Partial<SelectionItem>>();
-  for (const phase of Object.keys(PHASE_LABEL)) {
+  for (const phase of PHASES) {
     for (const r of selections[phase] || []) {
       index.set(`${phase}:${String(r.id)}`, { tipo: r.tipo, emoji: r.emoji });
     }
@@ -102,11 +98,19 @@ function buildLabelIndex(selections: Selections): Map<string, Partial<SelectionI
   return index;
 }
 
+/** Etiqueta cuando no hay catálogo ni tipo humanizable.
+ * `resource_order` es por fase: sin el nombre de fase, dos "Recurso 1" colisionan. */
+function fallbackResourceLabel(phase: string, resourceOrder: number): string {
+  const phaseLabel = phaseMeta(phase).label || phase;
+  return `${phaseLabel} · ${resourceOrder + 1}`;
+}
+
 export function toResourceViewModel(
   resources: BackendResource[] = [],
   selections: Selections = {},
 ): ResourceVM[] {
   const labels = buildLabelIndex(selections);
+  const seen = new Map<string, number>();
   return resources
     .slice()
     .sort((a, b) => a.phase_order - b.phase_order || a.resource_order - b.resource_order)
@@ -115,11 +119,14 @@ export function toResourceViewModel(
       const meta = labels.get(`${phase}:${String(r.resource_type)}`) || {};
       const status = mapResourceStatus(r.status);
       const humanized = humanizeResourceType(r.resource_type);
+      const base = meta.tipo?.trim() || humanized || fallbackResourceLabel(phase, r.resource_order);
+      const count = (seen.get(base) ?? 0) + 1;
+      seen.set(base, count);
       return {
         id: String(r.id),
         phase,
-        phaseLabel: PHASE_LABEL[phase] || phase,
-        label: meta.tipo || humanized || `Recurso ${r.resource_order + 1}`,
+        phaseLabel: phaseMeta(phase).label || phase,
+        label: count > 1 ? `${base} (${count})` : base,
         emoji: meta.emoji || "",
         status,
         error_id: r.error_id || null,
