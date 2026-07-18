@@ -4,28 +4,33 @@ import { AuthExpiredBus } from "./auth-expired-bus";
 // desde http.ts; el módulo puro existe para los tests unit sin Angular.
 export { AuthExpiredBus };
 
-// Angular uses environment.ts for env vars, not import.meta.env
-const API_BASE_PROD = "https://genova-backend-production.up.railway.app";
-const API_BASE_DEVELOP = "https://genova-backend-develop.up.railway.app";
+/** Valores de `GENOVA_API_BASE_*` inyectados por scripts/run-with-api-env.mjs. */
+function buildApiBases(): { prod: string; develop: string } {
+  // typeof es seguro si el build no paso --define (tests / ngc).
+  return {
+    prod: typeof GENOVA_API_BASE_PROD === "string" ? GENOVA_API_BASE_PROD : "",
+    develop: typeof GENOVA_API_BASE_DEVELOP === "string" ? GENOVA_API_BASE_DEVELOP : "",
+  };
+}
 
 function resolveApiBase(): string {
-  if (typeof window === "undefined") return API_BASE_PROD;
+  const { prod, develop } = buildApiBases();
+  if (typeof window === "undefined") return prod;
 
   const override = (window as unknown as Record<string, unknown>)["__GENOVA_API_BASE__"];
   if (typeof override === "string" && override.length > 0) return override;
 
-  // Local dev: ng serve + proxy.conf.json → same-origin requests to Railway backend.
+  // Local: ng serve + proxy → same-origin (las URLs de .env no se usan aqui).
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
     return location.origin;
   }
 
-  // Vercel previews de develop → backend del entorno develop de Railway
-  // (audit 2026-07-06 #1: apuntaban a producción y CORS rompía la app).
+  // Preview Vercel de develop → GENOVA_API_BASE_DEVELOP.
   if (location.hostname.includes("-git-develop-")) {
-    return API_BASE_DEVELOP;
+    return develop || prod;
   }
 
-  return API_BASE_PROD;
+  return prod;
 }
 
 export const API_BASE = resolveApiBase();

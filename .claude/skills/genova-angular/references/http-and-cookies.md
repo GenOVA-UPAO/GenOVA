@@ -23,17 +23,20 @@ All app API traffic goes through `frontend/src/core/lib/http.ts` → `apiFetch`.
 
 ## API base resolution
 
+URLs come from `.env` / Vercel (`GENOVA_API_BASE_PROD`, `GENOVA_API_BASE_DEVELOP`,
+optional `GENOVA_API_BASE_URL`) via `scripts/run-with-api-env.mjs` (`ng --define`).
+Never hardcode Railway hosts in `http.ts`.
+
 `resolveApiBase()` in `http.ts`:
 
 | Context | Base |
 |---|---|
 | `localhost` / `127.0.0.1` | `location.origin` (dev proxy) |
-| Vercel preview `*-git-develop-*` | Railway **develop** backend |
-| Production | Railway **production** backend |
+| Vercel preview `*-git-develop-*` | `API_BASE_DEVELOP` from env |
+| Production | `API_BASE_PROD` from env |
 | Override | `window.__GENOVA_API_BASE__` |
 
-Local proxy: `frontend/proxy.conf.js` (not the deleted JSON) + `API_PROXY_TARGET`
-in Docker compose → backend service.
+Local proxy: `frontend/proxy.conf.json` + `API_PROXY_TARGET` in Docker compose.
 
 ## Auth contract (with backend)
 
