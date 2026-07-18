@@ -28,7 +28,7 @@
         variant="outline"
         size="sm"
         class="w-full text-xs"
-        (click)="onRegenAll.emit()"
+        (onClick)="onRegenAll.emit()"
         [disabled]="isRegenerating()"
       >
         <gn-icon name="arrow-clockwise" size="text-sm" class="mr-2" />
@@ -40,7 +40,7 @@
       [variant]="selectionMode() ? 'default' : 'outline'"
       size="sm"
       class="w-full text-xs"
-      (click)="onToggleSelectionMode.emit()"
+      (onClick)="onToggleSelectionMode.emit()"
       [disabled]="isRegenerating()"
     >
       <gn-icon name="selection" size="text-sm" class="mr-2" />
@@ -140,7 +140,7 @@
           type="button"
           variant="ghost"
           size="sm"
-          (click)="fileInput.click()"
+          (onClick)="fileInput.click()"
           [disabled]="isRegenerating() || !canUploadMore"
           title="Adjuntar archivo de apoyo"
           class="absolute right-1 bottom-1 h-6 w-6"
@@ -150,7 +150,7 @@
       </div>
       <gn-button
         type="button"
-        (click)="onSubmit.emit()"
+        (onClick)="onSubmit.emit()"
         [disabled]="!prompt().trim() || isRegenerating()"
         size="sm"
         class="shrink-0 self-end"

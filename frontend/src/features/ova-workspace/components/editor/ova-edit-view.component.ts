@@ -7,6 +7,7 @@ import {
   input,
   type OnDestroy,
   type OnInit,
+  signal,
   viewChild,
 } from "@angular/core";
 import { RouterModule } from "@angular/router";
@@ -53,6 +54,10 @@ export class OvaEditViewComponent implements OnInit, OnDestroy {
   ratio = getSavedRatio(0.38);
   historyOpen = false;
   mobileTab: "chat" | "preview" = "chat";
+
+  /** Modo "Seleccionar recursos" del chat (prompt acotado a fases marcadas). */
+  readonly selectionMode = signal(false);
+  readonly selectedPhaseIds = signal<string[]>([]);
 
   get containerRef() {
     return this.containerElement()?.nativeElement || null;
@@ -120,5 +125,31 @@ export class OvaEditViewComponent implements OnInit, OnDestroy {
 
   onReorderPhases(phases: PhaseWithContent[]) {
     void this.ws.reorderPhases(phases);
+  }
+
+  toggleSelectionMode(): void {
+    const next = !this.selectionMode();
+    this.selectionMode.set(next);
+    if (!next) this.selectedPhaseIds.set([]);
+  }
+
+  togglePhaseSelection(phaseId: string): void {
+    this.selectedPhaseIds.update((ids) =>
+      ids.includes(phaseId) ? ids.filter((id) => id !== phaseId) : [...ids, phaseId],
+    );
+  }
+
+  selectAllPhases(): void {
+    const all = this.ws.phases().map((p) => p.id);
+    this.selectedPhaseIds.update((ids) => (ids.length === all.length ? [] : all));
+  }
+
+  submitChatPrompt(): void {
+    const ids = this.selectionMode() ? this.selectedPhaseIds() : [];
+    void this.ws.submitPrompt(ids);
+  }
+
+  regenAll(): void {
+    void this.ws.runRegen({ prompt: null, faseIds: [] });
   }
 }
