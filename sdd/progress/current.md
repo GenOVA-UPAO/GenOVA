@@ -1,25 +1,30 @@
 # Sesión actual
 
-**Fecha:** 2026-07-17
+**Fecha:** 2026-07-18
 **Agente:** leader (Cursor)
 **Sprint:** 2
 
 ## Resumen
 
-Wireframes del panel de preview 5E alineados a las familias de UI que generan los
-prompts (plan `mejora_wireframes_recursos`).
+1) UI «Vincular cuentas» retirada del frontend (backend intacto).
+2) Fix selects de Modelos: primario/fallbacks vacíos pese a datos en el draft.
 
 ## Hecho
 
-- Taxonomía `WireframeKind` ampliada a 24 familias (`storyboard`, `decisions`,
-  `matching`, `diploma`, `crossword`, `code`, `dashboard`, etc.).
-- Remap de los 50 recursos en `lib/previews/{engage,explore,explain,elaborate,evaluate}.ts`.
-- Sketches CSS/SVG en subcomponentes `wireframe-sketches-{media,interact,assess}` +
-  chrome en `gn-resource-wireframe`.
-- Tests: wireframe + remap + preview-panel; `./verify.ps1 -Quick` → `RESULTADO FINAL: PASA`
-  (127 tests frontend).
+### Vincular cuentas (sesión previa)
+- Ruta `/vinculacion` + nav + permisos FE ocultos; API backend sin cambios.
+
+### Modelos master-detail (bug selects)
+- Causa: listado usaba catálogo completo; selects usaban `poolModels` filtrado
+  por `category`/`aptitudes`. DeepSeek quedaba como `codigo` → fuera del pool
+  de «texto» → «— elegir modelo —».
+- FE: `includeSelectedInPool` + select con opción huérfana / `[selected]`.
+- BE: keywords `codigo` solo señales reales de código; `aptitudes` en
+  `catalog_builder`; texto cubre orquestador/razonamiento.
+- Tests: `llmConfigDraft.spec` (4) + `test_catalog_unified` (8) OK.
 
 ## Próximo paso
 
-- Smoke visual en `/crear` → Configurar recursos 5E (opcional).
+- Recargar `/models` → «Editar cadena» y comprobar selects poblados.
+- Para pools nuevos tras recategorizar: refrescar catálogo en admin.
 - Commit pendiente de aprobación del humano.
