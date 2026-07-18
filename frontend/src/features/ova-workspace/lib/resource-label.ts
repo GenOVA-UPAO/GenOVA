@@ -11,16 +11,31 @@ export function resourceLabel(phase: Phase): string {
   return phaseMeta(String(phase["phase_type"] ?? "")).label || "Recurso";
 }
 
-/** Vista previa de texto plano a partir del HTML del recurso. */
-export function contentPlainPreview(html: string | undefined | null, max = 140): string {
+const EMPTY_PREVIEW = "Sin contenido todavía.";
+const NO_TEXT_PREVIEW = "Contenido HTML del recurso (sin texto visible).";
+
+/** Texto plano completo extraído del HTML del recurso. */
+export function contentPlainText(html: string | undefined | null): string {
   const raw = String(html ?? "").trim();
-  if (!raw) return "Sin contenido todavía.";
+  if (!raw) return EMPTY_PREVIEW;
   const text = raw
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  if (!text) return "Contenido HTML del recurso (sin texto visible).";
+  return text || NO_TEXT_PREVIEW;
+}
+
+/** Vista previa truncada de texto plano a partir del HTML del recurso. */
+export function contentPlainPreview(html: string | undefined | null, max = 140): string {
+  const text = contentPlainText(html);
+  if (text === EMPTY_PREVIEW || text === NO_TEXT_PREVIEW) return text;
   return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
+}
+
+export function isContentPreviewTruncated(html: string | undefined | null, max = 140): boolean {
+  const text = contentPlainText(html);
+  if (text === EMPTY_PREVIEW || text === NO_TEXT_PREVIEW) return false;
+  return text.length > max;
 }

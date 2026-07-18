@@ -1,4 +1,9 @@
-import { contentPlainPreview, resourceLabel } from "./resource-label";
+import {
+  contentPlainPreview,
+  contentPlainText,
+  isContentPreviewTruncated,
+  resourceLabel,
+} from "./resource-label";
 
 describe("resourceLabel", () => {
   it("prioriza el título del recurso", () => {
@@ -26,5 +31,12 @@ describe("contentPlainPreview", () => {
 
   it("indica vacío cuando no hay contenido", () => {
     expect(contentPlainPreview("")).toBe("Sin contenido todavía.");
+  });
+
+  it("marca truncado solo cuando supera el máximo", () => {
+    const long = `<p>${"a".repeat(200)}</p>`;
+    expect(isContentPreviewTruncated(long, 140)).toBe(true);
+    expect(contentPlainText(long).length).toBe(200);
+    expect(isContentPreviewTruncated("<p>corto</p>", 140)).toBe(false);
   });
 });

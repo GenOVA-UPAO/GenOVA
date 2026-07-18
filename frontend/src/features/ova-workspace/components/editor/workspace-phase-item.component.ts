@@ -5,9 +5,16 @@ import { ConfirmModalComponent } from "@/core/components/confirm-modal.component
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
-import { contentPlainPreview, resourceLabel } from "../../lib/resource-label";
+import {
+  contentPlainPreview,
+  contentPlainText,
+  isContentPreviewTruncated,
+  resourceLabel,
+} from "../../lib/resource-label";
 import type { PhaseWithContent } from "../../lib/types";
 import { PhaseVersionHistoryComponent } from "../versioning/phase-version-history.component";
+
+const PREVIEW_MAX = 140;
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +47,7 @@ export class WorkspacePhaseItemComponent {
   historyOpen = false;
   confirmingDelete = false;
   showCode = false;
+  previewExpanded = false;
   mode: "edit" | "regen" | null = null;
   text = "";
 
@@ -48,11 +56,22 @@ export class WorkspacePhaseItemComponent {
   }
 
   get preview(): string {
-    return contentPlainPreview(this.phase().content);
+    const content = this.phase().content;
+    return this.previewExpanded
+      ? contentPlainText(content)
+      : contentPlainPreview(content, PREVIEW_MAX);
+  }
+
+  get canExpandPreview(): boolean {
+    return isContentPreviewTruncated(this.phase().content, PREVIEW_MAX);
   }
 
   get editorId(): string {
     return `phase-editor-${this.phase().id}`;
+  }
+
+  togglePreview(): void {
+    this.previewExpanded = !this.previewExpanded;
   }
 
   openEdit() {
