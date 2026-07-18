@@ -1,6 +1,6 @@
 <div class="flex flex-col h-full overflow-hidden">
-  <div class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
-    <p class="text-xs text-muted-foreground font-medium">
+  <div class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+    <p class="text-xs text-muted-foreground font-medium leading-relaxed">
       Describe los cambios que quieres aplicar al OVA.
     </p>
 
@@ -23,72 +23,74 @@
       </div>
     }
 
-    @if (canRegenAll()) {
+    <div class="flex flex-col gap-2 rounded-lg border border-border/60 bg-muted/20 p-2">
+      @if (canRegenAll()) {
+        <gn-button
+          variant="outline"
+          size="sm"
+          class="w-full h-8 justify-start text-xs"
+          (onClick)="onRegenAll.emit()"
+          [disabled]="isRegenerating()"
+        >
+          <gn-icon name="arrow-clockwise" size="text-sm" class="mr-2 shrink-0" />
+          Regenerar OVA completo
+        </gn-button>
+      }
+
       <gn-button
-        variant="outline"
+        [variant]="selectionMode() ? 'default' : 'outline'"
         size="sm"
-        class="w-full text-xs"
-        (onClick)="onRegenAll.emit()"
+        class="w-full h-8 justify-start text-xs"
+        (onClick)="onToggleSelectionMode.emit()"
         [disabled]="isRegenerating()"
       >
-        <gn-icon name="arrow-clockwise" size="text-sm" class="mr-2" />
-        Regenerar OVA completo
+        <gn-icon name="selection" size="text-sm" class="mr-2 shrink-0" />
+        {{
+          selectionMode()
+            ? "Seleccionando recursos (" +
+              selectedCount +
+              " elegido" +
+              (selectedCount !== 1 ? "s" : "") +
+              ")"
+            : "Seleccionar recursos"
+        }}
       </gn-button>
-    }
 
-    <gn-button
-      [variant]="selectionMode() ? 'default' : 'outline'"
-      size="sm"
-      class="w-full text-xs"
-      (onClick)="onToggleSelectionMode.emit()"
-      [disabled]="isRegenerating()"
-    >
-      <gn-icon name="selection" size="text-sm" class="mr-2" />
-      {{
-        selectionMode()
-          ? "Seleccionando recursos (" +
-            selectedCount +
-            " elegido" +
-            (selectedCount !== 1 ? "s" : "") +
-            ")"
-          : "Seleccionar recursos"
-      }}
-    </gn-button>
-
-    @if (selectionMode() && phases().length > 0) {
-      <div class="space-y-1.5">
-        <div class="flex items-center justify-between">
-          <p class="text-[10px] text-muted-foreground">
-            El prompt aplicará solo a los recursos marcados.
-          </p>
-          @if (canSelectAll()) {
-            <button
-              type="button"
-              (click)="onSelectAll.emit()"
-              class="text-[10px] font-medium text-primary hover:underline"
+      @if (selectionMode() && phases().length > 0) {
+        <div class="mt-1 space-y-1.5 border-t border-border/50 pt-2">
+          <div class="flex items-center justify-between gap-2 px-0.5">
+            <p class="text-[10px] text-muted-foreground">
+              El prompt aplicará solo a los recursos marcados.
+            </p>
+            @if (canSelectAll()) {
+              <button
+                type="button"
+                (click)="onSelectAll.emit()"
+                class="shrink-0 text-[10px] font-medium text-primary hover:underline"
+              >
+                {{ allSelected ? "Deseleccionar todas" : "Seleccionar todas" }}
+              </button>
+            }
+          </div>
+          @for (phase of phases(); track phase.id) {
+            <label
+              class="flex items-center gap-2 cursor-pointer rounded-md border border-border bg-background/80 px-2 py-1.5 text-xs hover:bg-muted/50"
             >
-              {{ allSelected ? "Deseleccionar todas" : "Seleccionar todas" }}
-            </button>
+              <gn-checkbox
+                [checked]="selectedPhaseIds().includes(phase.id)"
+                (checkedChange)="onTogglePhaseSelection.emit(phase.id)"
+              ></gn-checkbox>
+              <span class="capitalize">
+                {{ phase["phase_type"] }}
+              </span>
+              @if (phase["title"]) {
+                <span class="text-muted-foreground truncate"> — {{ phase["title"] }} </span>
+              }
+            </label>
           }
         </div>
-        @for (phase of phases(); track phase.id) {
-          <label
-            class="flex items-center gap-2 cursor-pointer rounded-md border border-border px-2 py-1.5 text-xs hover:bg-muted/50"
-          >
-            <gn-checkbox
-              [checked]="selectedPhaseIds().includes(phase.id)"
-              (checkedChange)="onTogglePhaseSelection.emit(phase.id)"
-            ></gn-checkbox>
-            <span class="capitalize">
-              {{ phase["phase_type"] }}
-            </span>
-            @if (phase["title"]) {
-              <span class="text-muted-foreground truncate"> — {{ phase["title"] }} </span>
-            }
-          </label>
-        }
-      </div>
-    }
+      }
+    </div>
   </div>
 
   <div
