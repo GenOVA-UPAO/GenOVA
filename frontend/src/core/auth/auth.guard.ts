@@ -18,10 +18,8 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  // Already authenticated (cached signal) → allow immediately.
-  if (auth.isAuthenticated()) return true;
-
-  // Try to revalidate against the server.
+  // Siempre revalidar (con ventana corta): si solo confiamos en sessionStorage,
+  // un cambio de permisos/rol en admin no se refleja hasta cerrar sesión.
   const user = await auth.revalidate(REVALIDATE_MAX_AGE_MS);
 
   if (user) return true;

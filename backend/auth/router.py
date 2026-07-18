@@ -33,6 +33,7 @@ logger = structlog.get_logger(__name__)
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=PASSWORD_MAX_LENGTH)
+    remember_me: bool = False
 
 
 def _is_locked(user: User) -> bool:
@@ -107,13 +108,15 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
     db.commit()
 
     if user.totp_enabled:
-        ticket = _issue_ticket(str(user.id))
+        ticket = _issue_ticket(str(user.id), remember_me=payload.remember_me)
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={"totp_required": True, "ticket": ticket},
         )
 
-    return issue_session_response(str(user.id), str(user.email))
+    return issue_session_response(
+        str(user.id), str(user.email), remember_me=payload.remember_me
+    )
 
 
 router.include_router(register_router)

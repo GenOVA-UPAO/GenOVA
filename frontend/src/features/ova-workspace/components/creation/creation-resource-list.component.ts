@@ -7,17 +7,44 @@ import { ButtonComponent } from "@/core/components/ui/button.component";
 import { groupByPhase, type ResourceVM } from "../../lib/ova-job-view-model";
 import { PHASE_ICON_BY_KEY, resourceIconClass } from "../../lib/resource-icons";
 
-const MARK: Record<string, { icon: string; cls: string }> = {
-  X: { icon: "✖", cls: "text-destructive border-destructive/20 bg-destructive/10" },
-  generando: { icon: "…", cls: "text-primary border-primary/20 bg-primary/5 animate-pulse" },
-  pendiente: { icon: "○", cls: "text-muted-foreground border-border bg-muted" },
+const MARK_CLS: Record<string, string> = {
+  X: "text-destructive border-destructive/30 bg-destructive/10",
+  generando: "text-primary border-primary/30 bg-primary/10",
+  pendiente: "text-muted-foreground border-border bg-muted/60",
+  check: "text-primary border-primary/30 bg-primary/10",
 };
-const CHECK_CLS = "text-primary border-primary/20 bg-primary/10";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-creation-resource-list",
   imports: [CommonModule, ButtonComponent, IconComponent],
+  styles: `
+    @keyframes gn-dot-bounce {
+      0%,
+      80%,
+      100% {
+        opacity: 0.25;
+        transform: translateY(0);
+      }
+      40% {
+        opacity: 1;
+        transform: translateY(-2px);
+      }
+    }
+    .gn-status-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 9999px;
+      background: currentColor;
+      animation: gn-dot-bounce 1.1s ease-in-out infinite;
+    }
+    .gn-status-dot:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+    .gn-status-dot:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+  `,
   template: `
     <div class="space-y-4">
       <!-- track por clave estable: los VMs se reconstruyen en cada tick del poll
@@ -40,13 +67,20 @@ const CHECK_CLS = "text-primary border-primary/20 bg-primary/10";
                     />
                   }
                   <span
-                    class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[13px] font-bold"
+                    class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
                     [ngClass]="markCls(r.status)"
+                    [attr.aria-label]="statusLabel(r.status)"
                   >
                     @if (r.status === "check") {
-                      <gn-icon name="check" size="text-xs" />
+                      <gn-icon name="check" size="text-xs" weight="bold" />
+                    } @else if (r.status === "X") {
+                      <gn-icon name="x" size="text-xs" weight="bold" />
                     } @else {
-                      {{ markIcon(r.status) }}
+                      <span class="inline-flex items-center gap-[3px]" aria-hidden="true">
+                        <span class="gn-status-dot"></span>
+                        <span class="gn-status-dot"></span>
+                        <span class="gn-status-dot"></span>
+                      </span>
                     }
                   </span>
                   <button
@@ -110,12 +144,14 @@ export class CreationResourceListComponent {
     return resourceIconClass(label);
   }
 
-  markIcon(status: string) {
-    return MARK[status]?.icon || MARK["pendiente"].icon;
+  markCls(status: string) {
+    return MARK_CLS[status] || MARK_CLS["pendiente"];
   }
 
-  markCls(status: string) {
-    if (status === "check") return CHECK_CLS;
-    return MARK[status]?.cls || MARK["pendiente"].cls;
+  statusLabel(status: string): string {
+    if (status === "check") return "Generado";
+    if (status === "X") return "Error";
+    if (status === "generando") return "Generando";
+    return "En espera";
   }
 }

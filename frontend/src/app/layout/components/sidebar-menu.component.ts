@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, input, type OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  type OnInit,
+  signal,
+} from "@angular/core";
 
 import { AuthService } from "@/core/auth/auth.service";
 import { OvaLibraryService } from "@/features/ova-library/services/ova-library.service";
@@ -28,7 +36,7 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
             <gn-nav-icon icon [name]="item.icon" />
           </li>
         }
-        @if (canAnalytics) {
+        @if (canAnalytics()) {
           <li gn-sidebar-nav-item to="/analytics" label="Analítica" [onNavigate]="onNavigate()">
             <gn-nav-icon icon name="chart" />
           </li>
@@ -37,16 +45,16 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
           gn-sidebar-nav-item
           to="/papelera"
           label="Papelera"
-          [badge]="trashCount"
+          [badge]="trashCount()"
           [onNavigate]="onNavigate()"
         >
           <gn-nav-icon icon name="trash" />
         </li>
       </gn-sidebar-section>
 
-      @if (canModels || canLink) {
+      @if (canModels() || canLink()) {
         <gn-sidebar-section title="Configuración">
-          @if (canModels) {
+          @if (canModels()) {
             @for (item of configNavLinks; track item.to) {
               <li
                 gn-sidebar-nav-item
@@ -58,7 +66,7 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
               </li>
             }
           }
-          @if (canLink) {
+          @if (canLink()) {
             <li gn-sidebar-nav-item to="/vinculacion" label="Vincular" [onNavigate]="onNavigate()">
               <gn-nav-icon icon name="link" />
             </li>
@@ -66,7 +74,7 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
         </gn-sidebar-section>
       }
 
-      @if (isAdmin) {
+      @if (isAdmin()) {
         <gn-sidebar-section title="Administración">
           @for (item of adminNavLinks; track item.to) {
             <li
@@ -97,34 +105,28 @@ export class SidebarMenuComponent implements OnInit {
   readonly configNavLinks = configNavLinks;
   readonly user = this.auth.user;
 
-  trashCount = 0;
+  readonly trashCount = signal(0);
 
-  get isAdmin(): boolean {
-    return this.user()?.role === "administrador";
-  }
+  readonly isAdmin = computed(() => this.user()?.role === "administrador");
 
-  get canLink(): boolean {
-    return (
-      hasPermission(this.user(), "users:link") || hasPermission(this.user(), "users:link:admin")
-    );
-  }
+  readonly canLink = computed(
+    () =>
+      hasPermission(this.user(), "users:link") || hasPermission(this.user(), "users:link:admin"),
+  );
 
-  get canModels(): boolean {
-    return (
+  readonly canModels = computed(
+    () =>
       hasPermission(this.user(), "ai:models:self") ||
-      hasPermission(this.user(), "ai:models:platform")
-    );
-  }
+      hasPermission(this.user(), "ai:models:platform"),
+  );
 
-  get canAnalytics(): boolean {
-    return hasPermission(this.user(), "view_analytics");
-  }
+  readonly canAnalytics = computed(() => hasPermission(this.user(), "view_analytics"));
 
   ngOnInit(): void {
     this.ovaLibrary
       .fetchTrashCount()
       .then((data) => {
-        this.trashCount = data.count || 0;
+        this.trashCount.set(data.count || 0);
       })
       .catch(() => {});
   }

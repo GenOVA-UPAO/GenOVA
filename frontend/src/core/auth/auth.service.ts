@@ -136,10 +136,14 @@ export class AuthService {
     this._user.set(user);
   }
 
-  async login(email: string, password: string): Promise<{ status: number; data: AuthMessageData }> {
+  async login(
+    email: string,
+    password: string,
+    rememberMe = false,
+  ): Promise<{ status: number; data: AuthMessageData }> {
     const res = await apiFetch("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, remember_me: rememberMe }),
     });
     const data = (await res.json().catch(() => ({}))) as AuthMessageData;
     return { status: res.status, data };

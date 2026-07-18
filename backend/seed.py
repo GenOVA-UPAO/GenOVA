@@ -74,9 +74,11 @@ def seed_db():
                 db.refresh(role)
             else:
                 print(f"El rol {r_data['name']} ya existe.")
-                # Asegurar permisos actualizados
-                role.permissions = r_data["permissions"]  # type: ignore
-                db.commit()
+                # No pisar permissions: el admin puede haberlas personalizado
+                # desde /admin/roles. Solo alinear descripción si cambió en seed.
+                if role.description != r_data["description"]:
+                    role.description = r_data["description"]  # type: ignore
+                    db.commit()
             roles_map[r_data["name"]] = role
 
         # 2. Crear usuarios de prueba
