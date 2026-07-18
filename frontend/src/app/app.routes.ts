@@ -124,14 +124,7 @@ export const routes: Routes = [
             (m) => m.ProfilePageComponent,
           ),
       },
-      {
-        path: "vinculacion",
-        title: "Vincular cuentas",
-        loadComponent: () =>
-          import("../features/profile/pages/user-links-page.component").then(
-            (m) => m.UserLinksPageComponent,
-          ),
-      },
+      // /vinculacion: UI diferida; API backend (users/settings/links_*) se mantiene.
       {
         path: "analytics",
         title: "Analítica",

@@ -70,30 +70,17 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
         </li>
       </gn-sidebar-section>
 
-      @if (canModels() || canLink()) {
+      @if (canModels()) {
         <gn-sidebar-section title="Configuración" [collapsed]="collapsed()">
-          @if (canModels()) {
-            @for (item of configNavLinks; track item.to) {
-              <li
-                gn-sidebar-nav-item
-                [to]="item.to"
-                [label]="item.label"
-                [collapsed]="collapsed()"
-                [onNavigate]="onNavigate()"
-              >
-                <gn-nav-icon icon [name]="item.icon" />
-              </li>
-            }
-          }
-          @if (canLink()) {
+          @for (item of configNavLinks; track item.to) {
             <li
               gn-sidebar-nav-item
-              to="/vinculacion"
-              label="Vincular"
+              [to]="item.to"
+              [label]="item.label"
               [collapsed]="collapsed()"
               [onNavigate]="onNavigate()"
             >
-              <gn-nav-icon icon name="link" />
+              <gn-nav-icon icon [name]="item.icon" />
             </li>
           }
         </gn-sidebar-section>
@@ -136,11 +123,6 @@ export class SidebarMenuComponent implements OnInit {
   readonly trashCount = signal(0);
 
   readonly isAdmin = computed(() => this.user()?.role === "administrador");
-
-  readonly canLink = computed(
-    () =>
-      hasPermission(this.user(), "users:link") || hasPermission(this.user(), "users:link:admin"),
-  );
 
   readonly canModels = computed(
     () =>

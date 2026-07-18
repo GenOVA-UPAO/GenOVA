@@ -51,14 +51,5 @@ export const AVAILABLE_PERMISSIONS: Permission[] = [
     label: "Configurar modelos de la plataforma",
     desc: "Puede administrar los modelos de IA globales del sistema.",
   },
-  {
-    id: "users:link",
-    label: "Vincular usuarios",
-    desc: "Puede vincular su cuenta con otras (p. ej. docente–estudiante).",
-  },
-  {
-    id: "users:link:admin",
-    label: "Administrar vínculos",
-    desc: "Puede gestionar vínculos entre usuarios a nivel administrativo.",
-  },
+  // users:link / users:link:admin: UI de /vinculacion diferida; permisos siguen en backend.
 ];

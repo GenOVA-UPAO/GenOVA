@@ -51,15 +51,6 @@
             <gn-icon name="user-circle" size="text-base" />
             Mi Perfil
           </a>
-          <a
-            routerLink="/vinculacion"
-            role="menuitem"
-            class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-accent"
-            (click)="avatarOpen.set(false)"
-          >
-            <gn-icon name="link" size="text-base" />
-            Vinculación
-          </a>
           @if (canAnalytics) {
             <a
               routerLink="/analytics"
