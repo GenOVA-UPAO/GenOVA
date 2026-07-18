@@ -8,19 +8,59 @@ export interface ResourcePreviewInfo {
   wire: WireframeKind;
 }
 
+/** UI-family sketches aligned with generated SCORM HTML layouts. */
 export type WireframeKind =
   | "comic"
-  | "video"
+  | "storyboard"
   | "audio"
   | "chat"
+  | "decisions"
   | "lab"
+  | "dashboard"
+  | "code"
+  | "demo"
   | "quiz"
   | "read"
-  | "map"
+  | "graph"
+  | "matching"
+  | "cardGrid"
+  | "dragdrop"
+  | "crossword"
   | "game"
   | "timeline"
   | "form"
-  | "card";
+  | "steps"
+  | "accordion"
+  | "table"
+  | "diploma"
+  | "infographic";
+
+export const ALL_WIREFRAME_KINDS: readonly WireframeKind[] = [
+  "comic",
+  "storyboard",
+  "audio",
+  "chat",
+  "decisions",
+  "lab",
+  "dashboard",
+  "code",
+  "demo",
+  "quiz",
+  "read",
+  "graph",
+  "matching",
+  "cardGrid",
+  "dragdrop",
+  "crossword",
+  "game",
+  "timeline",
+  "form",
+  "steps",
+  "accordion",
+  "table",
+  "diploma",
+  "infographic",
+] as const;
 
 export function preview(
   label: string,

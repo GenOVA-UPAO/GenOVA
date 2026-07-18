@@ -1,0 +1,252 @@
+@switch (wire()) {
+  @case ("chat") {
+    <div class="flex h-full w-full flex-col gap-1.5">
+      <div class="flex min-h-0 flex-1 flex-col justify-end gap-2">
+        <div class="flex items-end gap-1.5 self-start">
+          <span class="h-3.5 w-3.5 shrink-0 rounded-full bg-muted-foreground/30"></span>
+          <div class="h-3 w-24 rounded-lg rounded-bl-sm bg-muted-foreground/20"></div>
+        </div>
+        <div class="h-3 w-20 self-end rounded-lg rounded-br-sm bg-current"></div>
+        <div class="flex items-end gap-1.5 self-start">
+          <span class="h-3.5 w-3.5 shrink-0 rounded-full bg-muted-foreground/30"></span>
+          <div class="h-3 w-16 rounded-lg rounded-bl-sm bg-muted-foreground/20"></div>
+        </div>
+      </div>
+      <div
+        class="flex h-4 shrink-0 items-center rounded-md border border-muted-foreground/40 bg-muted/40 px-1.5"
+      >
+        <div class="h-1 w-1/2 rounded-full bg-muted-foreground/30"></div>
+      </div>
+    </div>
+  }
+  @case ("decisions") {
+    <div class="flex h-full w-full flex-col gap-2">
+      <div
+        class="flex min-h-0 flex-1 flex-col justify-center gap-1.5 rounded-md border border-border bg-muted/35 p-2"
+      >
+        <div class="h-1.5 w-4/5 rounded-full bg-muted-foreground/45"></div>
+        <div class="h-1.5 w-3/5 rounded-full bg-muted-foreground/30"></div>
+        <div class="h-1.5 w-2/3 rounded-full bg-muted-foreground/25"></div>
+      </div>
+      <div class="grid shrink-0 grid-cols-2 gap-1.5">
+        <div class="flex h-5 items-center justify-center rounded-md bg-current">
+          <div class="h-1 w-4 rounded-full bg-background/90"></div>
+        </div>
+        <div
+          class="flex h-5 items-center justify-center rounded-md border border-muted-foreground/45 bg-muted/40"
+        >
+          <div class="h-1 w-4 rounded-full bg-muted-foreground/40"></div>
+        </div>
+      </div>
+    </div>
+  }
+  @case ("lab") {
+    <div class="flex h-full w-full items-center gap-3">
+      <div class="flex h-full min-w-0 flex-1 items-center justify-center">
+        <svg
+          viewBox="0 0 64 80"
+          class="h-[90%] w-auto max-w-full overflow-visible"
+          fill="none"
+          aria-hidden="true"
+        >
+          <rect
+            x="26"
+            y="4"
+            width="12"
+            height="16"
+            rx="1.5"
+            class="stroke-muted-foreground/55"
+            stroke-width="1.5"
+            fill="currentColor"
+            fill-opacity="0.08"
+          />
+          <path
+            d="M26 20v8c0 0-16 14-16 28 0 12 10 20 22 20s22-8 22-20c0-14-16-28-16-28v-8"
+            class="stroke-muted-foreground/55"
+            stroke-width="1.5"
+            fill="currentColor"
+            fill-opacity="0.06"
+          />
+          <path
+            d="M14 52c0 14 8 20 18 20s18-6 18-20c-4-4-12-6-18-6s-14 2-18 6z"
+            fill="currentColor"
+            fill-opacity="0.78"
+          />
+          <circle cx="24" cy="54" r="2.2" fill="currentColor" />
+          <circle cx="36" cy="58" r="1.4" fill="currentColor" fill-opacity="0.85" />
+        </svg>
+      </div>
+      <div class="flex h-[88%] w-[42%] shrink-0 flex-col justify-center gap-3">
+        <div class="flex flex-col gap-1.5">
+          <div class="h-1 w-7 rounded-full bg-muted-foreground/40"></div>
+          <div class="relative h-2 w-full rounded-full bg-muted-foreground/20">
+            <div class="absolute inset-y-0 left-0 w-[65%] rounded-full bg-current/90"></div>
+            <div
+              class="absolute top-1/2 left-[65%] h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-current"
+            ></div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <div class="h-1 w-5 rounded-full bg-muted-foreground/40"></div>
+          <div class="relative h-2 w-full rounded-full bg-muted-foreground/20">
+            <div class="absolute inset-y-0 left-0 w-2/5 rounded-full bg-current/90"></div>
+            <div
+              class="absolute top-1/2 left-[40%] h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background bg-current"
+            ></div>
+          </div>
+        </div>
+        <div class="mt-0.5 flex h-4 w-full items-center justify-center rounded-md bg-current">
+          <div class="h-1.5 w-4 rounded-full bg-background/90"></div>
+        </div>
+      </div>
+    </div>
+  }
+  @case ("dashboard") {
+    <div class="flex h-full w-full flex-col gap-1.5">
+      <div class="grid flex-1 grid-cols-4 gap-0.5 rounded border border-border bg-muted/30 p-1">
+        @for (i of sixItems; track i) {
+          <div
+            class="h-2 rounded-sm"
+            [class]="i % 3 === 0 ? 'bg-current/50' : 'bg-muted-foreground/20'"
+          ></div>
+        }
+        @for (i of fourItems; track i) {
+          <div class="h-2 rounded-sm bg-muted-foreground/15"></div>
+        }
+      </div>
+      <div
+        class="flex h-[42%] items-end gap-1 rounded border border-border bg-muted/25 px-1.5 pb-1"
+      >
+        @for (h of [45, 70, 55, 90, 40]; track $index) {
+          <div
+            class="flex-1 rounded-t-sm"
+            [class]="$index === 3 ? 'bg-current' : 'bg-muted-foreground/35'"
+            [style.height.%]="h"
+          ></div>
+        }
+      </div>
+    </div>
+  }
+  @case ("code") {
+    <div class="flex h-full w-full flex-col gap-1.5">
+      <div
+        class="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden rounded-md border border-border bg-muted/40 p-2 font-mono"
+      >
+        <div class="h-1.5 w-2/5 rounded-full bg-current/70"></div>
+        <div class="h-1.5 w-4/5 rounded-full bg-muted-foreground/35"></div>
+        <div class="h-1.5 w-3/5 rounded-full bg-muted-foreground/25"></div>
+        <div class="h-1.5 w-3/4 rounded-full bg-muted-foreground/30"></div>
+        <div class="h-1.5 w-1/2 rounded-full bg-muted-foreground/20"></div>
+      </div>
+      <div
+        class="flex h-4 w-16 shrink-0 items-center justify-center self-end rounded-md bg-current"
+      >
+        <div class="h-1 w-5 rounded-full bg-background/90"></div>
+      </div>
+    </div>
+  }
+  @case ("graph") {
+    <div class="relative h-full w-full">
+      <svg class="absolute inset-0 h-full w-full stroke-muted-foreground/35" fill="none">
+        <line x1="50%" y1="22%" x2="18%" y2="68%" stroke-width="1.5" />
+        <line x1="50%" y1="22%" x2="82%" y2="68%" stroke-width="1.5" />
+        <line x1="18%" y1="68%" x2="50%" y2="78%" stroke-width="1.5" />
+        <line x1="82%" y1="68%" x2="50%" y2="78%" stroke-width="1.5" />
+      </svg>
+      @for (p of graphNodes; track $index) {
+        <div
+          class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background"
+          [class]="$index === 0 ? 'h-3.5 w-3.5 bg-current' : 'h-2.5 w-2.5 bg-muted-foreground/50'"
+          [style.left.%]="p.x"
+          [style.top.%]="p.y"
+        ></div>
+      }
+    </div>
+  }
+  @case ("matching") {
+    <div class="flex h-full w-full items-center gap-2">
+      <div class="flex h-full flex-1 flex-col justify-center gap-1.5">
+        @for (i of threeItems; track i) {
+          <div
+            [class]="
+              i === 0
+                ? 'h-4 rounded border border-current bg-current/15'
+                : 'h-4 rounded border border-muted-foreground/40 bg-muted/40'
+            "
+          ></div>
+        }
+      </div>
+      <div class="flex w-3 flex-col items-center justify-center gap-2">
+        <div class="h-px w-full bg-current/60"></div>
+        <div class="h-px w-full bg-muted-foreground/30"></div>
+        <div class="h-px w-full bg-muted-foreground/30"></div>
+      </div>
+      <div class="flex h-full flex-1 flex-col justify-center gap-1.5">
+        @for (i of threeItems; track i) {
+          <div
+            [class]="
+              i === 1
+                ? 'h-4 rounded border border-dashed border-current bg-muted/25'
+                : 'h-4 rounded border border-dashed border-muted-foreground/40 bg-muted/25'
+            "
+          ></div>
+        }
+      </div>
+    </div>
+  }
+  @case ("cardGrid") {
+    <div class="grid h-full w-full grid-cols-2 gap-1.5">
+      @for (i of fourItems; track i) {
+        <div
+          class="flex flex-col justify-end gap-1 rounded-md border border-border bg-muted/35 p-1.5"
+        >
+          <span
+            class="h-2.5 w-2.5 rounded"
+            [class]="i === 0 ? 'bg-current' : 'bg-muted-foreground/35'"
+          ></span>
+          <div class="h-1 w-full rounded-full bg-muted-foreground/30"></div>
+          <div class="h-1 w-2/3 rounded-full bg-muted-foreground/20"></div>
+        </div>
+      }
+    </div>
+  }
+  @case ("dragdrop") {
+    <div class="flex h-full w-full gap-2">
+      <div class="flex w-[38%] flex-col justify-center gap-1.5">
+        @for (i of threeItems; track i) {
+          <div
+            [class]="
+              i === 0
+                ? 'h-4 rounded-md border border-current bg-current/20 shadow-sm'
+                : 'h-4 rounded-md border border-muted-foreground/45 bg-muted/40 shadow-sm'
+            "
+          ></div>
+        }
+      </div>
+      <div class="grid min-w-0 flex-1 grid-rows-2 gap-1.5">
+        <div class="rounded-md border-2 border-dashed border-current/50 bg-current/5"></div>
+        <div class="rounded-md border-2 border-dashed border-muted-foreground/35 bg-muted/20"></div>
+      </div>
+    </div>
+  }
+  @case ("game") {
+    <div class="flex h-full w-full flex-col gap-1.5">
+      <div class="flex shrink-0 items-center justify-between">
+        <div class="h-1.5 w-10 rounded-full bg-muted-foreground/30"></div>
+        <div class="h-3 w-8 rounded-full bg-current/80"></div>
+      </div>
+      <div class="grid min-h-0 flex-1 grid-cols-3 gap-1.5">
+        @for (i of sixItems; track i) {
+          <div
+            class="flex items-center justify-center rounded-md"
+            [class]="i === 4 ? 'bg-current' : 'border border-muted-foreground/40 bg-muted/40'"
+          >
+            @if (i === 4) {
+              <i class="ph ph-star text-background" style="font-size: 11px"></i>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+}

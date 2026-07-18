@@ -41,14 +41,14 @@ export const EVALUATE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Emparejar términos con definiciones o ejemplos.",
     "HTML + matching",
     ["Columnas a relacionar", "Emparejamiento", "Feedback de aciertos"],
-    "game",
+    "matching",
   ),
   "7": preview(
     "Crucigrama Conceptual",
     "Crucigrama con pistas del vocabulario del tema.",
     "HTML + JS",
     ["Cuadrícula", "Pistas por número", "Validación de palabras"],
-    "game",
+    "crossword",
   ),
   "8": preview(
     "Preguntas de Desarrollo",
@@ -69,6 +69,6 @@ export const EVALUATE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Página de cierre con logros y mensaje de completitud.",
     "HTML certificado",
     ["Resumen de logros", "Mensaje motivacional", "Sello / diploma visual"],
-    "card",
+    "diploma",
   ),
 };

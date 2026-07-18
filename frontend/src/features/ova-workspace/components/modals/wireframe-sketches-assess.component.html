@@ -1,0 +1,161 @@
+@switch (wire()) {
+  @case ("quiz") {
+    <div class="flex h-full w-full flex-col gap-2">
+      <div class="flex shrink-0 items-center justify-between">
+        <div class="h-1.5 w-12 overflow-hidden rounded-full bg-muted-foreground/20">
+          <div class="h-full w-2/5 rounded-full bg-current"></div>
+        </div>
+        <div
+          class="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-current/60"
+        >
+          <div class="h-1.5 w-1.5 rounded-full bg-current"></div>
+        </div>
+      </div>
+      <div class="flex min-h-0 flex-1 flex-col justify-center gap-2">
+        @for (w of quizWidths; track $index) {
+          <div class="flex items-center gap-2">
+            @if ($index === 0) {
+              <span
+                class="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-current"
+              >
+                <i class="ph ph-check text-background" style="font-size: 8px"></i>
+              </span>
+            } @else {
+              <span
+                class="h-3.5 w-3.5 shrink-0 rounded-full border border-muted-foreground/50"
+              ></span>
+            }
+            <div class="h-1.5 rounded-full bg-muted-foreground/25" [style.width.%]="w"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+  @case ("form") {
+    <div class="flex h-full w-full flex-col justify-center gap-2">
+      @for (w of formWidths; track $index) {
+        <div class="flex flex-col gap-1">
+          <div class="h-1 w-8 rounded-full bg-muted-foreground/40"></div>
+          <div
+            class="h-3 rounded-md border border-muted-foreground/40 bg-muted/40"
+            [style.width.%]="w"
+          ></div>
+        </div>
+      }
+      <div class="mt-1 h-3 w-14 rounded-md bg-current"></div>
+    </div>
+  }
+  @case ("steps") {
+    <div class="flex h-full w-full flex-col justify-center gap-2">
+      @for (i of threeItems; track i) {
+        <div class="flex items-start gap-2">
+          <span
+            class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[8px] leading-none"
+            [class]="
+              i === 0
+                ? 'bg-current text-background'
+                : 'border border-muted-foreground/45 text-muted-foreground/50'
+            "
+          ></span>
+          <div class="flex min-w-0 flex-1 flex-col gap-1 pt-0.5">
+            <div
+              class="h-1.5 rounded-full"
+              [class]="i === 0 ? 'w-4/5 bg-muted-foreground/45' : 'w-3/5 bg-muted-foreground/25'"
+            ></div>
+            @if (i === 0) {
+              <div class="h-1 w-1/2 rounded-full bg-muted-foreground/20"></div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+  @case ("accordion") {
+    <div class="flex h-full w-full flex-col justify-center gap-1.5">
+      @for (i of threeItems; track i) {
+        <div
+          [class]="
+            i === 0
+              ? 'overflow-hidden rounded-md border border-current/40 bg-muted/30'
+              : 'overflow-hidden rounded-md border border-border bg-muted/30'
+          "
+        >
+          <div class="flex h-4 items-center justify-between px-1.5">
+            <div class="h-1 w-1/2 rounded-full bg-muted-foreground/40"></div>
+            <span
+              class="h-1.5 w-1.5 rounded-sm"
+              [class]="i === 0 ? 'bg-current' : 'bg-muted-foreground/35'"
+            ></span>
+          </div>
+          @if (i === 0) {
+            <div class="space-y-1 border-t border-border px-1.5 py-1.5">
+              <div class="h-1 w-full rounded-full bg-muted-foreground/25"></div>
+              <div class="h-1 w-3/4 rounded-full bg-muted-foreground/20"></div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+  @case ("table") {
+    <div class="flex h-full w-full flex-col overflow-hidden rounded-md border border-border">
+      <div class="grid grid-cols-3 gap-px bg-current/20">
+        @for (i of threeItems; track i) {
+          <div class="h-3 bg-current/15"></div>
+        }
+      </div>
+      @for (r of threeItems; track r) {
+        <div class="grid min-h-0 flex-1 grid-cols-3 gap-px bg-border">
+          @for (c of threeItems; track c) {
+            <div class="bg-muted/30" [class.bg-current/10]="r === 1 && c === 1"></div>
+          }
+        </div>
+      }
+    </div>
+  }
+  @case ("diploma") {
+    <div
+      class="relative flex h-full w-full flex-col items-center justify-center gap-1.5 overflow-hidden rounded-md border-2 border-current/50 bg-muted/20 p-2"
+    >
+      <div class="absolute inset-1 rounded border border-current/25"></div>
+      <div class="relative h-2 w-10 rounded-full bg-current/80"></div>
+      <div class="relative h-1.5 w-16 rounded-full bg-muted-foreground/40"></div>
+      <div class="relative h-1 w-12 rounded-full bg-muted-foreground/25"></div>
+      <div
+        class="relative mt-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-current/70 bg-current/20"
+      >
+        <div class="h-2 w-2 rounded-full bg-current"></div>
+      </div>
+    </div>
+  }
+  @case ("crossword") {
+    <div class="flex h-full w-full items-center gap-2">
+      <div
+        class="grid h-full max-h-28 flex-1 grid-cols-5 grid-rows-5 gap-px rounded border border-border bg-border p-px"
+      >
+        @for (i of crosswordCells; track i) {
+          <div
+            [class]="
+              crosswordFilled.has(i)
+                ? i === 12
+                  ? 'bg-current/70'
+                  : 'bg-muted/50'
+                : 'bg-foreground/80'
+            "
+          ></div>
+        }
+      </div>
+      <div class="flex w-8 shrink-0 flex-col justify-center gap-1.5">
+        @for (i of threeItems; track i) {
+          <div class="flex items-center gap-1">
+            <span
+              class="h-2 w-2 shrink-0 rounded-sm"
+              [class]="i === 0 ? 'bg-current' : 'bg-muted-foreground/35'"
+            ></span>
+            <div class="h-1 flex-1 rounded-full bg-muted-foreground/25"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+}
