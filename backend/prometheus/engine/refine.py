@@ -81,7 +81,7 @@ def apply_feedback(
             generar_texto(
                 _refine_prompt(html, concept, feedback, ds),
                 "codigo",
-                12000,
+                32768,
                 llm_config,
                 enabled_models,
             )

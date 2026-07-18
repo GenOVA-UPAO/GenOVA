@@ -126,8 +126,8 @@ def test_opencode_deepseek_thinking_disabled(monkeypatch):
     assert sink.get("extra_body") == {"thinking": {"type": "disabled"}}
 
 
-def test_openrouter_minimax_thinking_disabled(monkeypatch):
-    # MiniMax-M3 defaults to adaptive thinking → EmptyContentError on long HTML.
+def test_openrouter_minimax_thinking_disabled_small_budget(monkeypatch):
+    # Small max_tokens → thinking off (CoT would exhaust the budget).
     sink = {}
     monkeypatch.setattr(router, "openrouter_client", _FakeClient(sink))
     router._chat("openrouter", "minimax/minimax-m3", "hola", 100, {}, None)
@@ -137,7 +137,28 @@ def test_openrouter_minimax_thinking_disabled(monkeypatch):
     }
 
 
-def test_openrouter_deepseek_thinking_and_reasoning_none(monkeypatch):
+def test_openrouter_minimax_thinking_bounded_large_budget(monkeypatch):
+    # Codigo-scale budget → adaptive + hard reasoning cap.
+    sink = {}
+    monkeypatch.setattr(router, "openrouter_client", _FakeClient(sink))
+    router._chat("openrouter", "minimax/minimax-m3", "hola", 32768, {}, None)
+    assert sink.get("extra_body") == {
+        "thinking": {"type": "adaptive"},
+        "reasoning": {"max_tokens": 4096, "exclude": True},
+    }
+
+
+def test_openrouter_deepseek_thinking_low_medium_budget(monkeypatch):
+    sink = {}
+    monkeypatch.setattr(router, "openrouter_client", _FakeClient(sink))
+    router._chat("openrouter", "deepseek/deepseek-v4-flash", "hola", 8192, {}, None)
+    assert sink.get("extra_body") == {
+        "thinking": {"type": "enabled"},
+        "reasoning": {"effort": "low", "exclude": True},
+    }
+
+
+def test_openrouter_deepseek_thinking_off_small_budget(monkeypatch):
     sink = {}
     monkeypatch.setattr(router, "openrouter_client", _FakeClient(sink))
     router._chat("openrouter", "deepseek/deepseek-v4-flash", "hola", 100, {}, None)

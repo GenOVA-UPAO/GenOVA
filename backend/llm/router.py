@@ -27,7 +27,7 @@ from llm.utils.llm_helpers import (
     _resolve_primary,
     _retry_delay,
     effective_llm_config,
-    with_thinking_disabled,
+    with_model_thinking,
 )
 
 # ── Re-export everything external callers depend on ───────────────────────────
@@ -83,7 +83,7 @@ def _chat(
     elif provider == "opencode":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = opencode_client.with_options(**opts) if opts else opencode_client
-        call_extra = with_thinking_disabled(provider, model_id, extra)
+        call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
@@ -94,7 +94,7 @@ def _chat(
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = openrouter_client.with_options(**opts) if opts else openrouter_client
-        call_extra = with_thinking_disabled(provider, model_id, extra)
+        call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
@@ -108,7 +108,7 @@ def _chat(
 def generar_texto(
     prompt: str,
     tarea: str,
-    max_tokens: int = 3000,
+    max_tokens: int = 8192,
     llm_config: dict | None = None,
     enabled_models: list | None = None,
 ) -> str:

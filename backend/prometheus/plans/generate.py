@@ -66,7 +66,7 @@ def _design_system(theme: dict) -> str:
 
 def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_models):
     """Step-1 texto→JSON con un reintento estricto (robustez del camino HTTP)."""
-    raw = generar_texto(prompt, "texto", 3000, llm_config, enabled_models)
+    raw = generar_texto(prompt, "texto", 8192, llm_config, enabled_models)
     try:
         return parse_json(raw)
     except Exception:
@@ -75,7 +75,7 @@ def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_mode
             prompt + "\n\nIMPORTANTE: Responde SOLO con el JSON puro, sin texto "
             "adicional, sin markdown, sin explicaciones.",
             "texto",
-            3000,
+            8192,
             llm_config,
             enabled_models,
         )
@@ -134,7 +134,7 @@ def _gen_direct_code(
                 rt, concept, contexto, _design_system(theme), resource_config or {}
             ),
             "codigo",
-            12000,
+            32768,
             llm_config,
             enabled_models,
         )
@@ -181,7 +181,7 @@ def _gen_two_step(
         generar_texto(
             mod.prompt_html(rt, concept, json_str, contexto, _design_system(theme)),
             "codigo",
-            12000,
+            32768,
             llm_config,
             enabled_models,
         )
