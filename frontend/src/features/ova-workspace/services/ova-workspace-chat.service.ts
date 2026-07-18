@@ -127,8 +127,10 @@ export class OvaWorkspaceChatService {
           resource_labels: msg.resourceLabels ?? [],
         }),
       });
-    } catch {
-      /* no bloquear la UI si falla el guardado */
+    } catch (err) {
+      // No bloquear la UI, pero sin esto el historial “desaparece” al recargar
+      // y no hay rastro en consola (p. ej. API 404 por backend zombie).
+      console.warn("[chat] no se pudo persistir el mensaje", msg.id, err);
     }
   }
 }

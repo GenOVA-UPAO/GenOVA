@@ -25,6 +25,7 @@ from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
 from llm.catalog.catalog_router import router as agents_router
+from ova.chat.router import router as ova_chat_router
 from ova.crud.edit_router import router as ova_edit_router
 from ova.crud.subelement_router import router as ova_subelement_router
 from ova.phases.add_phase_router import router as ova_add_phase_router
@@ -236,6 +237,9 @@ app.include_router(ova_jobs_router, prefix="/api/ova/jobs", tags=["Generation"])
 app.include_router(ova_jobs_stream_router, prefix="/api/ova/jobs", tags=["Generation"])
 app.include_router(ova_history_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(ova_edit_router, prefix="/api/ovas", tags=["OVA"])
+# Chat también montado aquí: include anidado en edit_router a veces no aparece
+# en el proceso que queda pegado a un socket zombie de :8000.
+app.include_router(ova_chat_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(ova_phase_version_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(ova_add_phase_router, prefix="/api/ovas", tags=["OVA"])
 app.include_router(ova_subelement_router, prefix="/api/ovas", tags=["OVA"])
