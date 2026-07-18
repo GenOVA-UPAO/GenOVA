@@ -15,6 +15,9 @@ export interface BackendResource {
   phase_order: number;
   resource_order: number;
   resource_type?: string | number;
+  /** Título del catálogo (backend); evita labels genéricos e iconos rotos. */
+  title?: string | null;
+  emoji?: string | null;
   status: string;
   error_id?: string | null;
 }
@@ -118,8 +121,13 @@ export function toResourceViewModel(
       const phase = r.phase_type;
       const meta = labels.get(`${phase}:${String(r.resource_type)}`) || {};
       const status = mapResourceStatus(r.status);
+      const catalogTitle = (r.title ?? "").trim();
       const humanized = humanizeResourceType(r.resource_type);
-      const base = meta.tipo?.trim() || humanized || fallbackResourceLabel(phase, r.resource_order);
+      const base =
+        meta.tipo?.trim() ||
+        catalogTitle ||
+        humanized ||
+        fallbackResourceLabel(phase, r.resource_order);
       const count = (seen.get(base) ?? 0) + 1;
       seen.set(base, count);
       return {
@@ -127,7 +135,7 @@ export function toResourceViewModel(
         phase,
         phaseLabel: phaseMeta(phase).label || phase,
         label: count > 1 ? `${base} (${count})` : base,
-        emoji: meta.emoji || "",
+        emoji: meta.emoji || r.emoji || "",
         status,
         error_id: r.error_id || null,
         selectable: status === "X",

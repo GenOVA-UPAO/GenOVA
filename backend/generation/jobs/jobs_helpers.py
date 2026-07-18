@@ -149,13 +149,18 @@ def job_params(
 
 
 def resource_to_dict(resource: OvaJobResource) -> dict:
-    """Safe per-resource view: status + error_id only, never content/secrets (R8)."""
+    """Safe per-resource view: status + labels, never content/secrets (R8)."""
+    from generation.jobs.jobs_materialize import resolve_resource_display
+
+    _rid, title, emoji = resolve_resource_display(resource.phase_type, resource.resource_type)
     return {
         "id": str(resource.id),
         "phase_type": resource.phase_type,
         "phase_order": resource.phase_order,
         "resource_type": resource.resource_type,
         "resource_order": resource.resource_order,
+        "title": title,
+        "emoji": emoji,
         "status": resource.status,
         "attempts": resource.attempts,
         "error_id": str(resource.error_id) if resource.error_id else None,

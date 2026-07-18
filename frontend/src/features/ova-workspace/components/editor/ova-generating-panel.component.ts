@@ -93,9 +93,19 @@ export class OvaGeneratingPanelComponent implements OnInit {
       const outcome = this.job.outcome();
       if (terminal && outcome.anyDone && !outcome.totalFail && !this.readyEmitted) {
         this.readyEmitted = true;
-        this.onReady.emit();
+        void this.finishReady();
       }
     });
+  }
+
+  /** Reconsulta el job (repara OVA atascado en generando) y abre el editor. */
+  private async finishReady() {
+    try {
+      await this.jobsApi.getJobByOvaId(this.ovaId());
+    } catch {
+      /* el load del workspace reintentará si sigue en generando */
+    }
+    this.onReady.emit();
   }
 
   ngOnInit() {

@@ -85,6 +85,9 @@ def get_job(db: Session, job_id: uuid.UUID, user_id: uuid.UUID) -> OvaJob | None
     ).scalar_one_or_none()
     if job is not None:
         _sweep_if_stale(db, job)
+        from generation.jobs.jobs_progress import repair_stuck_ova_if_needed
+
+        repair_stuck_ova_if_needed(db, job)
     return job
 
 
@@ -101,6 +104,9 @@ def find_job_by_ova(db: Session, ova_id: uuid.UUID, user_id: uuid.UUID) -> OvaJo
     )
     if job is not None:
         _sweep_if_stale(db, job)
+        from generation.jobs.jobs_progress import repair_stuck_ova_if_needed
+
+        repair_stuck_ova_if_needed(db, job)
     return job
 
 

@@ -14,7 +14,7 @@ materialization failure is logged and contained — the job state is unaffected.
 import uuid
 
 import structlog
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
 from core.text import smart_truncate
@@ -27,46 +27,37 @@ from prometheus.prompts.explore_prompts import RECURSOS_META as EXPLORE_META
 
 logger = structlog.get_logger(__name__)
 
-_ENGAGE_NAME_TO_ID = {v["tipo"]: k for k, v in ENGAGE_META.items()}
-_EXPLORE_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLORE_META.items()}
-_EXPLAIN_NAME_TO_ID = {v["tipo"]: k for k, v in EXPLAIN_META.items()}
-_ELABORATE_NAME_TO_ID = {v["tipo"]: k for k, v in ELABORATE_META.items()}
-_EVALUATE_NAME_TO_ID = {v["tipo"]: k for k, v in EVALUATE_META.items()}
+_META = {
+    "engage": ENGAGE_META,
+    "explore": EXPLORE_META,
+    "explain": EXPLAIN_META,
+    "elaborate": ELABORATE_META,
+    "evaluate": EVALUATE_META,
+}
+_NAME_TO_ID = {phase: {v["tipo"]: k for k, v in meta.items()} for phase, meta in _META.items()}
 
 
-def _resolve_type(phase_type: str, resource_type: str | None) -> tuple[int | None, str | None]:
-    """Map a job resource_type (numeric id or name) to (resource_type_id, title)."""
-    if phase_type == "engage":
-        meta, name_to_id = ENGAGE_META, _ENGAGE_NAME_TO_ID
-    elif phase_type == "explore":
-        meta, name_to_id = EXPLORE_META, _EXPLORE_NAME_TO_ID
-    elif phase_type == "explain":
-        meta, name_to_id = EXPLAIN_META, _EXPLAIN_NAME_TO_ID
-    elif phase_type == "elaborate":
-        meta, name_to_id = ELABORATE_META, _ELABORATE_NAME_TO_ID
-    elif phase_type == "evaluate":
-        meta, name_to_id = EVALUATE_META, _EVALUATE_NAME_TO_ID
-    else:
-        meta, name_to_id = ENGAGE_META, _ENGAGE_NAME_TO_ID
-
+def resolve_resource_display(
+    phase_type: str, resource_type: str | None
+) -> tuple[int | None, str | None, str]:
+    """Map job resource_type (id or name) → (id, title, emoji)."""
+    meta = _META.get(phase_type) or ENGAGE_META
+    name_to_id = _NAME_TO_ID.get(phase_type) or _NAME_TO_ID["engage"]
     raw = (resource_type or "").strip()
     rid: int | None = None
     if raw.isdigit():
         rid = int(raw)
     elif raw in name_to_id:
         rid = name_to_id[raw]
-    title = meta.get(rid, {}).get("tipo") if rid else (raw or None)
-    return rid, title
+    info = meta.get(rid, {}) if rid else {}
+    title = info.get("tipo") if rid else (raw or None)
+    return rid, title, str(info.get("emoji") or "")
 
 
 def materialize_partial_ova(
     db: Session, job: OvaJob, done_resources: list[OvaJobResource]
 ) -> uuid.UUID | None:
-    """Build an OVA draft from `done` resources, link the job, re-tie RAG (R1/R2).
-
-    Returns the new `ova_id`, or None when there's nothing to materialize (R8) or
-    the build fails (contained — the job lifecycle is not disturbed).
-    """
+    """Build an OVA draft from `done` resources, link the job, re-tie RAG (R1/R2)."""
     if not done_resources:
         return None
     try:
@@ -80,18 +71,12 @@ def materialize_partial_ova(
 def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uuid.UUID:
     prompt = job.prompt or ""
     title = smart_truncate(prompt) or "OVA parcial"
-
-    # Full success (every requested resource is done) yields a ready-to-export
-    # OVA; a partial recovery (HU-022) stays a "borrador" for the user to finish.
     total = db.execute(
         select(func.count()).select_from(OvaJobResource).where(OvaJobResource.job_id == job.id)
     ).scalar_one()
     final_status = "listo" if total and len(resources) >= total else "borrador"
 
-    # Reuse the placeholder OVA created at job start (job.ova_id is always set now).
-    # Fall back to creating a new one only for legacy jobs without a pre-created OVA.
     ova = db.get(Ova, job.ova_id) if job.ova_id is not None else None
-
     if ova is None:
         ova = Ova(user_id=job.user_id, title=title, description=prompt, status=final_status)
         db.add(ova)
@@ -99,26 +84,63 @@ def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uui
         job.ova_id = ova.id
     else:
         ova.title = title
-        ova.status = final_status
 
-    version = OvaVersion(ova_id=ova.id, version_number=1, prompt=prompt, is_active=True)
-    db.add(version)
-    db.flush()
-
+    version = _acquire_version(db, ova, prompt)
+    ova.status = final_status
     phases_data = _add_phases(db, version.id, resources)
     _persist_scorm(ova, title, phases_data, str(job.user_id))
     ova.current_version_id = version.id
     db.commit()
-
     _tie_uploads(db, job, str(ova.id))
     return ova.id
 
 
+def _acquire_version(db: Session, ova: Ova, prompt: str) -> OvaVersion:
+    """Idempotent version row: reuse draft if stuck in generando, else next number.
+
+    Always inserting version_number=1 caused UniqueViolation on resume/rematerialize
+    after a prior attempt — job ended `done` while OVA stayed `generando`.
+    """
+    latest = db.execute(
+        select(OvaVersion)
+        .where(OvaVersion.ova_id == ova.id)
+        .order_by(OvaVersion.version_number.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+
+    if latest is None:
+        version = OvaVersion(ova_id=ova.id, version_number=1, prompt=prompt, is_active=True)
+        db.add(version)
+        db.flush()
+        return version
+
+    if ova.status == "generando":
+        db.execute(delete(OvaPhase).where(OvaPhase.version_id == latest.id))
+        latest.prompt = prompt
+        latest.is_active = True
+        db.flush()
+        return latest
+
+    db.execute(
+        update(OvaVersion)
+        .where(OvaVersion.ova_id == ova.id, OvaVersion.is_active.is_(True))
+        .values(is_active=False)
+    )
+    version = OvaVersion(
+        ova_id=ova.id,
+        version_number=latest.version_number + 1,
+        prompt=prompt,
+        is_active=True,
+    )
+    db.add(version)
+    db.flush()
+    return version
+
+
 def _add_phases(db: Session, version_id, resources: list[OvaJobResource]) -> list[dict]:
-    """Create one OvaPhase per done resource (ordered) and return SCORM phase dicts."""
     phases_data: list[dict] = []
     for order, r in enumerate(resources, start=1):
-        rid, ptitle = _resolve_type(r.phase_type, r.resource_type)
+        rid, ptitle, _emoji = resolve_resource_display(r.phase_type, r.resource_type)
         db.add(
             OvaPhase(
                 version_id=version_id,
@@ -142,7 +164,6 @@ def _add_phases(db: Session, version_id, resources: list[OvaJobResource]) -> lis
 
 
 def _persist_scorm(ova: Ova, title: str, phases_data: list[dict], user_id: str) -> None:
-    """Build + store the SCORM zip, reusing the router helper (no duplication)."""
     from ova.router import _persist_scorm_zip
     from scorm.service import build_scorm_zip_bytes
 
@@ -157,7 +178,6 @@ def _persist_scorm(ova: Ova, title: str, phases_data: list[dict], user_id: str) 
 
 
 def _tie_uploads(db: Session, job: OvaJob, ova_id: str) -> None:
-    """Re-tie RAG chunks so they don't expire after materialization (RAG risk)."""
     upload_ids = (job.params or {}).get("upload_ids") or []
     if not upload_ids:
         return

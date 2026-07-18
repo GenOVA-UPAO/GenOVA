@@ -90,6 +90,23 @@ def _materialize(db: Session, job: OvaJob) -> None:
     materialize_partial_ova(db, job, done)
 
 
+def repair_stuck_ova_if_needed(db: Session, job: OvaJob) -> None:
+    """Job `done`/`interrupted` but placeholder still `generando` → rematerialize."""
+    if job.status not in ("done", "interrupted") or job.ova_id is None:
+        return
+    if not _has_done_resource(db, job.id):
+        return
+    try:
+        from models import Ova as _Ova
+
+        ova = db.get(_Ova, job.ova_id)
+        if ova is None or ova.status != "generando":
+            return
+        _materialize(db, job)
+    except Exception:
+        logger.exception("stuck OVA rematerialize failed", job_id=job.id)
+
+
 def _safe_mark_error(db: Session, job_id: uuid.UUID) -> None:
     try:
         db.rollback()
