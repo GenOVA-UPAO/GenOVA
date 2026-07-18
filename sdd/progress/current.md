@@ -6,25 +6,23 @@
 
 ## Resumen
 
-1) UI «Vincular cuentas» retirada del frontend (backend intacto).
-2) Fix selects de Modelos: primario/fallbacks vacíos pese a datos en el draft.
+1) OpenRouter cableado como proveedor de imágenes.
+2) (prev) HF 410 / CF 401; selects Modelos.
 
 ## Hecho
 
-### Vincular cuentas (sesión previa)
-- Ruta `/vinculacion` + nav + permisos FE ocultos; API backend sin cambios.
+### OpenRouter imágenes — 2026-07-18
+- `image_openrouter.py`: POST `/api/v1/images` → data URI.
+- Registrado en `IMAGE_PROVIDERS` + catálogo curado/live.
+- Jobs/regen usan `image_settings_resolve` (cadena tarea `imagen`).
+- Default modelo: `openai/gpt-image-1-mini` (`OPENROUTER_IMAGE_MODEL`).
+- Tests: openrouter + catalog + hu035 + hf (25) OK.
 
-### Modelos master-detail (bug selects)
-- Causa: listado usaba catálogo completo; selects usaban `poolModels` filtrado
-  por `category`/`aptitudes`. DeepSeek quedaba como `codigo` → fuera del pool
-  de «texto» → «— elegir modelo —».
-- FE: `includeSelectedInPool` + select con opción huérfana / `[selected]`.
-- BE: keywords `codigo` solo señales reales de código; `aptitudes` en
-  `catalog_builder`; texto cubre orquestador/razonamiento.
-- Tests: `llmConfigDraft.spec` (4) + `test_catalog_unified` (8) OK.
+### Imágenes OVA (HF / Cloudflare) — prev
+- HF → fal-ai router; CF/HF env keys 401; cupo HF $0.10/$0.10 agotado.
 
 ## Próximo paso
 
-- Recargar `/models` → «Editar cadena» y comprobar selects poblados.
-- Para pools nuevos tras recategorizar: refrescar catálogo en admin.
-- Commit pendiente de aprobación del humano.
+- En Modelos → Imagen: elegir OpenRouter + p.ej. GPT Image 1 Mini.
+- Regenerar OVA; verificar logs `provider=openrouter`.
+- Commit pendiente de aprobación.
