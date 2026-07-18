@@ -23,7 +23,7 @@ dependencies = [
     "arq==0.28.0",
     "sentry-sdk[fastapi]==2.63.0",
     "prometheus-fastapi-instrumentator==8.0.2",
-    "logfire==4.37.0",
+    "logfire[fastapi,sqlalchemy]==4.37.0",
     "structlog==25.5.0",
     "openai==2.43.0",
     "groq==1.4.0",

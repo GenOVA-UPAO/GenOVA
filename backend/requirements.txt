@@ -16,7 +16,7 @@ arq==0.28.0
 # Observability
 sentry-sdk[fastapi]==2.63.0
 prometheus-fastapi-instrumentator==8.0.2
-logfire==4.37.0
+logfire[fastapi,sqlalchemy]==4.37.0
 structlog==25.5.0
 # Multi-agent orchestration (Prometheus via LangGraph) + LangSmith traces
 langgraph==1.2.6
