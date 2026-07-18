@@ -44,31 +44,6 @@ def degraded_plan(phase: str, rt, current: str) -> str | None:
     return None
 
 
-def dispatch_by_plan(
-    plan: str,
-    phase: str,
-    rt,
-    concept: str,
-    llm_config=None,
-    enabled_models=None,
-    theme=None,
-    image_settings=None,
-    resource_config=None,
-) -> str:
-    """Ejecuta el plan indicado — contrato único worker/repair ↔ planes."""
-    n = int(rt)
-    if plan == PODCAST:
-        from prometheus.plans.podcast import podcast_gen
-
-        return podcast_gen(phase, n, concept, llm_config, enabled_models, theme)
-    if plan == DIRECT_CODE:
-        from prometheus.plans.direct_code import direct_code_gen
-
-        return direct_code_gen(
-            phase, n, concept, llm_config, enabled_models, theme, resource_config
-        )
-    from prometheus.plans.two_step import two_step_gen
-
-    return two_step_gen(
-        phase, n, concept, llm_config, enabled_models, theme, image_settings, resource_config
-    )
+# La ejecución de un plan vive en `prometheus.plans.generate.generate_resource`
+# (los llamadores — workpool y repair — la invocan directo). Este módulo queda como
+# hoja: solo tablas de selección de plan, sin importar `generate` (rompe el ciclo).

@@ -31,7 +31,8 @@ describe("ResourcePreviewPanelComponent", () => {
     expect(
       screen.getByText("Página HTML con viñetas clicables y una pregunta final."),
     ).toBeTruthy();
-    expect(container.querySelectorAll(".grid.grid-cols-2 > div").length).toBe(4);
+    // Comic wireframe: single panel + 3-dot carousel nav (not a 2×2 grid).
+    expect(container.querySelectorAll(".h-1.w-1.rounded-full").length).toBe(3);
   });
 
   it("falls back to the unavailable-preview message for a resource with no preview info", async () => {

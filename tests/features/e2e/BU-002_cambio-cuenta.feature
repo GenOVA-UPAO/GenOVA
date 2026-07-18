@@ -8,7 +8,7 @@ Feature: BU-002 e2e — El cambio de cuenta actualiza la navegación
   Scenario: Pasar de admin a usuario retira el panel de administración
     Given que estoy autenticado como usuario con rol "administrador"
     When navego a "/dashboard"
-    Then la página muestra el texto "Administracion"
+    Then la página muestra el texto "Administración"
     Given que estoy autenticado como usuario con rol "usuario"
     When navego a "/dashboard"
     Then no debo ver el panel de administración

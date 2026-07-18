@@ -6,7 +6,9 @@ import {
   jobOutcome,
   type JobSnapshot,
   pruneSelection,
+  resourcesFingerprint,
   type Selections,
+  STALL_MS,
   toResourceViewModel,
 } from "../lib/ova-job-view-model";
 import { OvaCreationService, toResourcesPayload } from "./ova-creation.service";
@@ -19,16 +21,15 @@ export interface StartJobArgs {
   theme?: unknown;
   resourceConfigs?: Record<string, unknown>;
 }
-
-const ALL_PHASES = ["engage", "explore", "explain", "elaborate", "evaluate"];
-const EMPTY_SELECTIONS = Object.fromEntries(ALL_PHASES.map((p) => [p, []])) as Selections;
+const EMPTY_SELECTIONS = Object.fromEntries(
+  ["engage", "explore", "explain", "elaborate", "evaluate"].map((p) => [p, []]),
+) as Selections;
 
 @Injectable({ providedIn: "root" })
 export class OvaJobService implements OnDestroy {
   private creationService = inject(OvaCreationService);
   private jobsApi = inject(OvaJobsApiService);
   private syncRunner: OvaJobSyncRunner;
-
   private jobIdState = signal<string | null>(null);
   private selectionsState = signal<Selections>(EMPTY_SELECTIONS);
   private startingState = signal(false);
@@ -36,13 +37,13 @@ export class OvaJobService implements OnDestroy {
   private selectedFailedIdsState = signal<string[]>([]);
   private jobSnapshot = signal<JobSnapshot | null>(null);
   private streamingState = signal(false);
-
+  private lastFingerprint = "";
+  private lastProgressAtState = signal<number>(Date.now());
   jobId = this.jobIdState.asReadonly();
   job = this.jobSnapshot.asReadonly();
   error = this.errorState.asReadonly();
   selections = this.selectionsState.asReadonly();
   starting = this.startingState.asReadonly();
-
   viewModel = computed(() =>
     toResourceViewModel(this.jobSnapshot()?.resources || [], this.selectionsState()),
   );
@@ -50,7 +51,11 @@ export class OvaJobService implements OnDestroy {
   selectedFailedIds = computed(() =>
     pruneSelection(this.selectedFailedIdsState(), this.viewModel()),
   );
-
+  isStalled = computed(() => {
+    const snapshot = this.jobSnapshot();
+    if (snapshot?.status !== "running") return false;
+    return Date.now() - this.lastProgressAtState() > STALL_MS;
+  });
   phase = computed(() => {
     if (this.startingState()) return "starting";
     if (this.jobIdState() && this.jobSnapshot() && this.outcome().isTerminal) return "terminal";
@@ -62,6 +67,11 @@ export class OvaJobService implements OnDestroy {
     this.syncRunner = new OvaJobSyncRunner({
       jobsApi: this.jobsApi,
       onSnapshot: (snapshot) => {
+        const fingerprint = resourcesFingerprint(snapshot);
+        if (fingerprint !== this.lastFingerprint) {
+          this.lastFingerprint = fingerprint;
+          this.lastProgressAtState.set(Date.now());
+        }
         this.jobSnapshot.set(snapshot);
       },
       onTerminal: () => {
@@ -75,26 +85,28 @@ export class OvaJobService implements OnDestroy {
     });
   }
 
-  async start(args: StartJobArgs) {
+  /** Encola el job; devuelve ova_id placeholder para ir al workspace. */
+  async start(args: StartJobArgs): Promise<string | null> {
     this.selectionsState.set(args.selections);
     this.errorState.set("");
     this.selectedFailedIdsState.set([]);
     this.startingState.set(true);
     this.jobIdState.set(null);
+    this.resetStallTracking();
     this.syncRunner.stop();
-
     try {
-      const { job_id } = await this.creationService.startJob({
+      const ack = await this.creationService.startJob({
         prompt: args.prompt,
         uploadIds: args.uploadIds,
         resources: toResourcesPayload(args.selections),
         theme: args.theme,
         resourceConfigs: args.resourceConfigs,
       });
-      this.jobIdState.set(job_id);
-      this.startSyncFlow();
+      this.jobIdState.set(ack.job_id);
+      return ack.ova_id ?? null;
     } catch (err: any) {
       this.errorState.set(err.message || "No se pudo iniciar la generación.");
+      return null;
     } finally {
       this.startingState.set(false);
     }
@@ -108,12 +120,14 @@ export class OvaJobService implements OnDestroy {
     this.selectedFailedIdsState.set([]);
     this.startingState.set(false);
     this.jobSnapshot.set(null);
+    this.resetStallTracking();
   }
 
   restore(existingJobId: string) {
     this.errorState.set("");
     this.selectedFailedIdsState.set([]);
     this.jobIdState.set(existingJobId);
+    this.resetStallTracking();
     this.startSyncFlow();
   }
 
@@ -129,25 +143,21 @@ export class OvaJobService implements OnDestroy {
     }
   }
 
-  retryOne(resourceId: string) {
-    return this.resumeAndPoll([resourceId]);
+  retryOne(id: string) {
+    return this.resumeAndPoll([id]);
   }
-
   retrySelected() {
     return this.resumeAndPoll(this.selectedFailedIds());
   }
-
   retryAll() {
     return this.resumeAndPoll([]);
   }
 
   toggleFailed(resourceId: string) {
     const curr = this.selectedFailedIdsState();
-    if (curr.includes(resourceId)) {
-      this.selectedFailedIdsState.set(curr.filter((x) => x !== resourceId));
-    } else {
-      this.selectedFailedIdsState.set([...curr, resourceId]);
-    }
+    this.selectedFailedIdsState.set(
+      curr.includes(resourceId) ? curr.filter((x) => x !== resourceId) : [...curr, resourceId],
+    );
   }
 
   selectAllFailed() {
@@ -174,10 +184,13 @@ export class OvaJobService implements OnDestroy {
     this.reset();
   }
 
+  private resetStallTracking() {
+    this.lastFingerprint = "";
+    this.lastProgressAtState.set(Date.now());
+  }
+
   private startSyncFlow() {
-    if (this.outcome().isTerminal) return;
     const id = this.jobIdState();
-    if (!id) return;
-    this.syncRunner.start(id);
+    if (!this.outcome().isTerminal && id) this.syncRunner.start(id);
   }
 }

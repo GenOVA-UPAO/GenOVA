@@ -40,8 +40,25 @@ type Status = "idle" | "submitting" | "success" | "error";
             >
               {{ message() }}
             </div>
-            <gn-button class="w-full block">
+            <gn-button class="w-full">
               <a routerLink="/login" class="block w-full text-center">Ir a iniciar sesión</a>
+            </gn-button>
+          </div>
+        } @else if (!token()) {
+          <div class="mt-6 space-y-4">
+            <div
+              class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              Enlace inválido o incompleto
+            </div>
+            <p class="text-sm text-muted-foreground">
+              El enlace de restablecimiento no incluye un token válido. Solicita uno nuevo para
+              continuar.
+            </p>
+            <gn-button class="w-full">
+              <a routerLink="/forgot-password" class="block w-full text-center"
+                >Solicitar nuevo enlace</a
+              >
             </gn-button>
           </div>
         } @else {
@@ -94,18 +111,11 @@ type Status = "idle" | "submitting" | "success" | "error";
                 {{ message() }}
               </div>
             }
-            @if (!token() && status() !== "error") {
-              <div
-                class="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-              >
-                No se encontró el token de seguridad en la URL.
-              </div>
-            }
             <gn-button
               type="submit"
               [loading]="status() === 'submitting'"
               [disabled]="resetForm().invalid() || status() === 'submitting' || !token()"
-              class="w-full block"
+              class="w-full"
             >
               {{ status() === "submitting" ? "Guardando..." : "Guardar contraseña" }}
             </gn-button>

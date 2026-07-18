@@ -27,11 +27,12 @@ export type ButtonSize = "default" | "sm" | "lg" | "icon";
       [variant]="variant()"
       [size]="size()"
       [disabled]="disabled() || loading()"
-      [class]="class()"
+      [class]="loading() ? class() + ' opacity-100!' : class()"
+      [attr.aria-busy]="loading() || null"
       (click)="onClick.emit($event)"
     >
       @if (loading()) {
-        <hlm-spinner class="mr-2 !text-[length:1rem]" />
+        <hlm-spinner />
       }
       <ng-content></ng-content>
     </button>

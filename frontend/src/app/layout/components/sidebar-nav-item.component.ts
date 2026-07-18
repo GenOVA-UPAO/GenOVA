@@ -18,11 +18,23 @@ import { navLinkClasses } from "../lib/layout-helpers";
       #rla="routerLinkActive"
       [routerLinkActiveOptions]="{ exact: exact() }"
       [class]="linkClass(rla.isActive)"
+      [class.justify-center]="collapsed()"
+      [class.px-2]="collapsed()"
+      [attr.aria-label]="label()"
+      [attr.title]="collapsed() ? label() : null"
       (click)="onNavigate()?.()"
     >
-      <ng-content select="[icon]" />
-      <span class="flex-1 truncate">{{ label() }}</span>
-      @if (badge != null && badge > 0) {
+      <span class="relative inline-flex shrink-0">
+        <ng-content select="[icon]" />
+        @if (collapsed() && badge != null && badge > 0) {
+          <span
+            class="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-destructive ring-2 ring-sidebar"
+            aria-hidden="true"
+          ></span>
+        }
+      </span>
+      <span class="flex-1 truncate" [class.sr-only]="collapsed()">{{ label() }}</span>
+      @if (!collapsed() && badge != null && badge > 0) {
         <span
           class="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
         >
@@ -36,6 +48,7 @@ export class SidebarNavItemComponent {
   readonly to = input.required<string>();
   readonly label = input.required<string>();
   readonly exact = input(false);
+  readonly collapsed = input(false);
   @Input() badge?: number;
   readonly onNavigate = input<(() => void) | undefined>(undefined);
 

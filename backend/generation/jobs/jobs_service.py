@@ -9,16 +9,26 @@ DB failure never leaks `str(e)` to the client (R8).
 import uuid
 from datetime import UTC, datetime
 
+import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core.text import smart_truncate
 from models import Ova, OvaJob, OvaJobResource
 from users.admin.helpers import commit_or_500
 
+logger = structlog.get_logger(__name__)
+
 # A "running" job whose updated_at is older than this is presumed dead (its
-# process died / Render slept) and is lazily marked "interrupted" on the next
-# read, so we avoid running a persistent watchdog worker (R7).
+# process died / Render slept) and is lazily finalized on the next read, so we
+# avoid running a persistent watchdog worker (R7).
 STALE_AFTER_SECONDS = 180
+# A "queued" job that sat this long without a worker ever claiming it (arq
+# down, queue drained, no worker deployed) is presumed abandoned and swept the
+# same way — previously only "running" jobs were ever swept, so a job that
+# never even started stayed "queued" forever (GN-03).
+QUEUED_STALE_AFTER_SECONDS = 900
+_STALE_THRESHOLDS = {"running": STALE_AFTER_SECONDS, "queued": QUEUED_STALE_AFTER_SECONDS}
 _RESUMABLE_RESOURCE_STATUSES = ("pending", "error")
 
 
@@ -43,7 +53,7 @@ def create_job(
     shows up in "Mis OVAs" during generation (HU-023 fix). The runner updates
     it to "borrador" on completion or "error" on total failure.
     """
-    title = (prompt[:80].rstrip()) or "OVA en generación"
+    title = smart_truncate(prompt) or "OVA en generación"
     ova = Ova(user_id=user_id, title=title, description=prompt, status="generando")
     db.add(ova)
     db.flush()
@@ -75,6 +85,9 @@ def get_job(db: Session, job_id: uuid.UUID, user_id: uuid.UUID) -> OvaJob | None
     ).scalar_one_or_none()
     if job is not None:
         _sweep_if_stale(db, job)
+        from generation.jobs.jobs_progress import repair_stuck_ova_if_needed
+
+        repair_stuck_ova_if_needed(db, job)
     return job
 
 
@@ -91,6 +104,9 @@ def find_job_by_ova(db: Session, ova_id: uuid.UUID, user_id: uuid.UUID) -> OvaJo
     )
     if job is not None:
         _sweep_if_stale(db, job)
+        from generation.jobs.jobs_progress import repair_stuck_ova_if_needed
+
+        repair_stuck_ova_if_needed(db, job)
     return job
 
 
@@ -164,14 +180,66 @@ def cancel_job(db: Session, job: OvaJob) -> None:
 
 
 def _sweep_if_stale(db: Session, job: OvaJob) -> None:
-    """Mark a "running" job whose progress went stale as "interrupted" (R7)."""
-    if job.status != "running":
+    """Finalize a "running"/"queued" job whose progress went stale (R7, GN-03).
+
+    Delegates to `_finish_job` — the same transition a normal completion uses —
+    instead of only flipping `OvaJob.status`, so the owning `Ova.status` also
+    leaves "generando" (materialized as "listo" if some resources finished, or
+    "error" otherwise). The old version just flipped the job row and left the
+    Ova stuck at "generando" forever, since only a real finish ever touched it.
+    Local import of `jobs_progress` avoids a circular import (it already reaches
+    back into this module for `_now`). Best-effort: a failed sweep never breaks
+    the read that triggered it.
+    """
+    threshold = _STALE_THRESHOLDS.get(job.status)
+    if threshold is None:
         return
     updated = job.updated_at
     if updated is None:
         return
     if updated.tzinfo is None:
         updated = updated.replace(tzinfo=UTC)
-    if (_now() - updated).total_seconds() > STALE_AFTER_SECONDS:
-        job.status = "interrupted"
-        commit_or_500(db, op="sweep_interrupted")
+    if (_now() - updated).total_seconds() <= threshold:
+        return
+
+    from generation.jobs.jobs_progress import _finish_job, _has_done_resource
+
+    try:
+        _finish_job(db, job, _has_done_resource(db, job.id))
+    except Exception:
+        db.rollback()
+        logger.exception("stale job sweep failed to finalize", job_id=job.id)
+
+
+def sweep_stale_jobs_for_ovas(db: Session, ova_ids: list[uuid.UUID]) -> None:
+    """Batch variant of `_sweep_if_stale` for a page of listed OVAs (GN-03).
+
+    The per-job lazy sweep in `get_job`/`find_job_by_ova` only fires when the
+    owner queries that exact job, so a user who never reopens a stalled
+    generation never sees it leave "generando". This is called from the OVA
+    list endpoint instead, scoped to the ids already loaded for that page
+    (bounded by `limit`), so it stays a handful of jobs per call — no bulk
+    UPDATE is needed since each job may need a different finalization (partial
+    materialize vs. plain error) depending on its resources.
+    """
+    if not ova_ids:
+        return
+    try:
+        jobs = (
+            db.execute(
+                select(OvaJob)
+                .where(OvaJob.ova_id.in_(ova_ids), OvaJob.status.in_(("running", "queued")))
+                .order_by(OvaJob.created_at.desc())
+            )
+            .scalars()
+            .all()
+        )
+        swept: set[uuid.UUID] = set()
+        for job in jobs:
+            if job.ova_id in swept:
+                continue  # keep only the latest job per ova (older ones are superseded)
+            swept.add(job.ova_id)
+            _sweep_if_stale(db, job)
+    except Exception:
+        db.rollback()
+        logger.exception("sweep_stale_jobs_for_ovas failed (listing continues)")

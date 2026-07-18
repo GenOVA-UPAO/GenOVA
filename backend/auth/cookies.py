@@ -31,12 +31,18 @@ def _patch_partitioned(response: JSONResponse) -> None:
             return
 
 
-def set_auth_cookie(response: JSONResponse, token: str) -> None:
-    """Set the httpOnly auth cookie on a response."""
+def set_auth_cookie(
+    response: JSONResponse, token: str, *, max_age: int | None = None
+) -> None:
+    """Set the httpOnly auth cookie on a response.
+
+    ``max_age`` defaults to the standard JWT lifetime (seconds). Pass a larger
+    value for "remember me" sessions.
+    """
     response.set_cookie(
         key=_COOKIE_NAME,
         value=token,
-        max_age=_COOKIE_MAX_AGE,
+        max_age=_COOKIE_MAX_AGE if max_age is None else max_age,
         httponly=True,
         secure=_COOKIE_SECURE,
         samesite=_COOKIE_SAMESITE,

@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 from core.security import hash_password, verify_password
 
 # Temporary tickets for the TOTP login step (in-memory; acceptable for
-# single-instance). Maps ticket → {user_id, expires_at}.
+# single-instance). Maps ticket → {user_id, expires_at, remember_me}.
 _TOTP_TICKETS: dict[str, dict] = {}
 _TICKET_TTL_SECONDS = 300  # 5 min
 
@@ -25,25 +25,26 @@ def _clean_expired_tickets() -> None:
         del _TOTP_TICKETS[k]
 
 
-def _issue_ticket(user_id: str) -> str:
+def _issue_ticket(user_id: str, *, remember_me: bool = False) -> str:
     _clean_expired_tickets()
     ticket = secrets.token_urlsafe(32)
     _TOTP_TICKETS[ticket] = {
         "user_id": user_id,
+        "remember_me": remember_me,
         "expires_at": datetime.now(UTC) + timedelta(seconds=_TICKET_TTL_SECONDS),
     }
     return ticket
 
 
-def _consume_ticket(ticket: str) -> str | None:
+def _consume_ticket(ticket: str) -> tuple[str, bool] | None:
+    """Return (user_id, remember_me) or None if the ticket is missing/expired."""
     _clean_expired_tickets()
     entry = _TOTP_TICKETS.pop(ticket, None)
     if not entry:
         return None
     if entry["expires_at"] < datetime.now(UTC):
         return None
-    return entry["user_id"]
-
+    return entry["user_id"], bool(entry.get("remember_me", False))
 
 def _hash_backup(code: str) -> str:
     return hash_password(code)

@@ -123,6 +123,76 @@ class EmptyContentError(RuntimeError):
     """LLM returned empty content (e.g. reasoning model that didn't emit text)."""
 
 
+# Budgets below this → thinking off (JSON corto / critic / podcast).
+_THINK_OFF_MAX = 6000
+# Budgets at/above this → codigo-scale: adaptive/low thinking with hard cap.
+_THINK_LARGE_MAX = 24000
+
+# Presupuesto de salida para la tarea 'codigo' (HTML). Bajado de 32768: una
+# generación real usa ~20k tokens; 24k da margen sin runaway de reasoning ni
+# latencia de más. Centralizado (antes era un literal repetido en generate/refine).
+_CODE_MAX_TOKENS = 24000
+
+
+def with_model_thinking(provider: str, model_id: str, extra: dict, max_tokens: int) -> dict:
+    """Budget-aware thinking for DeepSeek / MiniMax (avoids EmptyContentError).
+
+    Small ``max_tokens`` (<6k): thinking disabled — CoT would eat the whole budget.
+    Medium (texto ~8k): light thinking (DeepSeek ``effort=low`` / MiniMax adaptive
+    with ``reasoning.max_tokens=2048``, ``exclude=true``).
+    Large (codigo ~32k): adaptive/low with ``reasoning.max_tokens=4096``.
+
+    Preserves an explicit ``extra_body`` from the caller.
+    """
+    call_extra = dict(extra or {})
+    if "extra_body" in call_extra:
+        return call_extra
+    mid = (model_id or "").lower()
+    is_ds = "deepseek" in mid
+    is_mm = "minimax" in mid
+    is_openai_reason = provider == "openrouter" and ("gpt-5" in mid or "codex" in mid)
+    if not is_ds and not is_mm and not is_openai_reason:
+        return call_extra
+
+    if is_openai_reason:
+        # OpenAI (gpt-5.x / codex): los tokens de reasoning cuentan contra el
+        # presupuesto y pueden dejar `content` vacío (EmptyContentError). Acotar el
+        # esfuerzo y excluir el reasoning del output deja sitio para el HTML.
+        effort = "minimal" if max_tokens < _THINK_OFF_MAX else "low"
+        call_extra["extra_body"] = {"reasoning": {"effort": effort, "exclude": True}}
+        return call_extra
+
+    if max_tokens < _THINK_OFF_MAX:
+        body: dict = {"thinking": {"type": "disabled"}}
+        if provider == "openrouter":
+            body["reasoning"] = {"effort": "none"}
+        call_extra["extra_body"] = body
+        return call_extra
+
+    reason_cap = 4096 if max_tokens >= _THINK_LARGE_MAX else 2048
+    if provider == "openrouter":
+        if is_mm:
+            body = {
+                "thinking": {"type": "adaptive"},
+                "reasoning": {"max_tokens": reason_cap, "exclude": True},
+            }
+        else:
+            body = {
+                "thinking": {"type": "enabled"},
+                "reasoning": {"effort": "low", "exclude": True},
+            }
+    else:
+        # OpenCode / native: only provider thinking toggle.
+        body = {"thinking": {"type": "adaptive" if is_mm else "enabled"}}
+    call_extra["extra_body"] = body
+    return call_extra
+
+
+def with_thinking_disabled(provider: str, model_id: str, extra: dict) -> dict:
+    """Back-compat: force thinking off (small-budget path)."""
+    return with_model_thinking(provider, model_id, extra, max_tokens=0)
+
+
 _RECOVERABLE_ERRORS = (
     GroqRateLimitError,
     OpenAIRateLimitError,

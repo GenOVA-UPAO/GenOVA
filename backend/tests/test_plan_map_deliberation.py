@@ -1,8 +1,6 @@
 """F3 — fuente única de planes, dispatch por intención y señales→beliefs."""
 
-import prometheus.engine.validate as val
 import prometheus.engine.workpool as wp
-import prometheus.plans.plan_map as pm
 from prometheus.engine.bdi import deliberar, generate_desires
 from prometheus.engine.workpool import collect_node, fan_out, resource_worker
 from prometheus.plans.plan_map import degraded_plan, plan_for
@@ -18,8 +16,10 @@ def test_plan_for_matches_real_plans():
 
 def test_bdi_intentions_carry_real_plan_types():
     desires = generate_desires(
-        {"engage": [{"resource_type": 3, "resource_order": 0}],
-         "evaluate": [{"resource_type": 1, "resource_order": 0}]}
+        {
+            "engage": [{"resource_type": 3, "resource_order": 0}],
+            "evaluate": [{"resource_type": 1, "resource_order": 0}],
+        }
     )
     intentions = deliberar(desires, {"rag_quality": 0.5, "model_capability": 1.0})
     plans = {(i["phase"], i["resource_type"]): i["plan_type"] for i in intentions}
@@ -47,14 +47,15 @@ def test_fan_out_uses_intentions_plan():
 
 
 def test_worker_dispatches_by_plan_and_emits_signal(monkeypatch):
+    import prometheus.plans.generate as gen
+
     seen = {}
 
-    def fake_dispatch(plan, phase, rt, *a, **k):
+    def fake_generate(phase, rt, concept, *, plan=None, **kw):
         seen["plan"] = plan
-        return "<html>ok</html>"
+        return gen.ResourceResult("<html>ok</html>", [], None)
 
-    monkeypatch.setattr(pm, "dispatch_by_plan", fake_dispatch)
-    monkeypatch.setattr(val, "validate_and_improve", lambda html, *a, **k: (html, []))
+    monkeypatch.setattr(gen, "generate_resource", fake_generate)
     monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {})
     out = resource_worker(
         {"work_item": {"phase": "engage", "resource_type": 6, "plan_type": "direct_code"}}
@@ -72,9 +73,21 @@ def test_collect_aggregates_signals_into_beliefs():
             "phase_order": ["engage"],
             "beliefs": {"rag_quality": 0.7},
             "worker_signals": [
-                {"phase": "engage", "resource_type": 6, "ok": True, "plan": "direct_code", "seconds": 12.0},
-                {"phase": "evaluate", "resource_type": 1, "ok": False, "plan": "two_step",
-                 "seconds": 30.0, "error_class": "RateLimitError"},
+                {
+                    "phase": "engage",
+                    "resource_type": 6,
+                    "ok": True,
+                    "plan": "direct_code",
+                    "seconds": 12.0,
+                },
+                {
+                    "phase": "evaluate",
+                    "resource_type": 1,
+                    "ok": False,
+                    "plan": "two_step",
+                    "seconds": 30.0,
+                    "error_class": "RateLimitError",
+                },
             ],
         }
     )
@@ -82,6 +95,4 @@ def test_collect_aggregates_signals_into_beliefs():
     assert b["rag_quality"] == 0.7  # conserva creencias previas
     assert b["avg_resource_seconds"] == 12.0
     assert b["failures_by_error"] == {"RateLimitError": 1}
-    assert b["failed_resources"] == [
-        {"phase": "evaluate", "resource_type": 1, "plan": "two_step"}
-    ]
+    assert b["failed_resources"] == [{"phase": "evaluate", "resource_type": 1, "plan": "two_step"}]

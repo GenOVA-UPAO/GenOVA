@@ -5,6 +5,8 @@ import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
 
+import type { RegenChatMessage } from "../../lib/regen-chat";
+import { resourceLabel as resolveResourceLabel } from "../../lib/resource-label";
 import type { Phase } from "../../lib/types";
 import { FileChipComponent } from "../shared/file-chip.component";
 import type { RegenProgress, UploadsPropBag } from "./workspace-chat-panel.types";
@@ -20,6 +22,7 @@ export class WorkspaceChatPanelComponent {
   readonly isRegenerating = input(false);
   readonly uploads = input.required<UploadsPropBag>();
   readonly regenProgress = input.required<RegenProgress>();
+  readonly messages = input<RegenChatMessage[]>([]);
   readonly phases = input<Phase[]>([]);
   readonly selectionMode = input(false);
   readonly selectedPhaseIds = input<string[]>([]);
@@ -36,6 +39,8 @@ export class WorkspaceChatPanelComponent {
 
   readonly onFilesSelected = output<FileList>();
   readonly onRemoveFile = output<string>();
+  readonly onDeleteMessage = output<string>();
+  readonly onClearChat = output();
 
   get selectedCount() {
     return this.selectedPhaseIds()?.length || 0;
@@ -75,5 +80,9 @@ export class WorkspaceChatPanelComponent {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       this.onSubmit.emit();
     }
+  }
+
+  resourceLabel(phase: Phase): string {
+    return resolveResourceLabel(phase);
   }
 }

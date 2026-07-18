@@ -35,8 +35,8 @@ const MAX_PHASES_PER_TYPE = 4;
     ButtonComponent,
   ],
   template: `
-    <gn-dialog [open]="open()" (openChange)="onOpenChange.emit($event)">
-      <gn-dialog-content class="max-w-md">
+    <gn-dialog [open]="open()" width="28rem" (openChange)="onOpenChange.emit($event)">
+      <gn-dialog-content class="p-6">
         <gn-dialog-header>
           <gn-dialog-title
             >Añadir recurso — <span class="capitalize">{{ phaseType() }}</span></gn-dialog-title

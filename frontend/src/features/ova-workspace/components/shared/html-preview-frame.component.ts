@@ -16,13 +16,14 @@ import { DomSanitizer, type SafeResourceUrl } from "@angular/platform-browser";
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-html-preview-frame",
   imports: [],
+  host: { class: "block h-full min-h-0 w-full" },
   template: `
     <iframe
       #iframe
       [title]="title()"
       [class]="className()"
       [style.height]="height ? height : null"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts"
       [src]="safeUrl"
     ></iframe>
   `,

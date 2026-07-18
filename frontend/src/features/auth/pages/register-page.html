@@ -5,10 +5,15 @@
 ></gn-verify-email-notice>
 } @else {
 <section
-  class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4"
+  class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4"
 >
-  <div class="w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-sm">
-    <h1 class="text-2xl font-semibold tracking-tight">Crear cuenta</h1>
+  <div
+    class="w-full max-w-md rounded-2xl border border-border border-t-2 border-t-accent-brand bg-card p-7 shadow-lg"
+  >
+    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-brand">
+      GenOVA · UPAO
+    </p>
+    <h1 class="text-2xl font-semibold tracking-tight mt-2">Crear cuenta</h1>
     <p class="mt-2 text-sm text-muted-foreground">Regístrate para guardar y acceder a tus OVAs.</p>
     <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
       <div class="space-y-1.5 flex flex-col">
@@ -19,7 +24,7 @@
           type="text"
           [formField]="registerForm.full_name"
           autocomplete="name"
-          placeholder="Ejemplo: Solange"
+          placeholder="Ej: María Pérez"
           class="w-full"
         />
         @if (registerForm.full_name().touched() && registerForm.full_name().errors().length) {
@@ -74,7 +79,7 @@
         type="submit"
         [loading]="isSubmitting()"
         [disabled]="registerForm().invalid() || isSubmitting()"
-        class="w-full block"
+        class="w-full"
       >
         {{ isSubmitting() ? 'Creando cuenta...' : 'Crear cuenta' }}
       </gn-button>

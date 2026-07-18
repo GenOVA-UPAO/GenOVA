@@ -25,6 +25,7 @@ import type { OvaTheme } from "../../lib/types";
           <button
             type="button"
             role="radio"
+            aria-label="Color UPAO"
             [attr.aria-checked]="theme().color === 'upao'"
             (click)="setColor('upao')"
             [disabled]="disabled()"
@@ -51,6 +52,7 @@ import type { OvaTheme } from "../../lib/types";
           <button
             type="button"
             role="radio"
+            aria-label="Color libre"
             [attr.aria-checked]="theme().color === 'free'"
             (click)="setColor('free')"
             [disabled]="disabled()"
@@ -72,6 +74,7 @@ import type { OvaTheme } from "../../lib/types";
           <button
             type="button"
             role="radio"
+            aria-label="Diseño UPAO"
             [attr.aria-checked]="theme().design === 'upao'"
             (click)="setDesign('upao')"
             [disabled]="disabled()"
@@ -84,6 +87,7 @@ import type { OvaTheme } from "../../lib/types";
           <button
             type="button"
             role="radio"
+            aria-label="Diseño libre"
             [attr.aria-checked]="theme().design === 'free'"
             (click)="setDesign('free')"
             [disabled]="disabled()"

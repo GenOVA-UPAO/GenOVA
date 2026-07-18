@@ -69,6 +69,9 @@ export class TabsComponent {
   selector: "gn-tabs-list",
   template: `<ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    role: "tablist",
+  },
 })
 export class TabsListComponent {}
 

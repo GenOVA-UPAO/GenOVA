@@ -5,7 +5,7 @@ export const PROVIDER_META: Record<
   groq: {
     label: "Groq",
     placeholder: "gsk_...",
-    desc: "LLM principal — Llama 3",
+    desc: "LLM principal de la plataforma",
     compat: true,
   },
   openrouter: {

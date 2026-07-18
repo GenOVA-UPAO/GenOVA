@@ -2,20 +2,24 @@ import { provideHttpClient } from "@angular/common/http";
 import {
   type ApplicationConfig,
   ErrorHandler,
+  inject,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from "@angular/core";
 import {
   PreloadAllModules,
   provideRouter,
+  TitleStrategy,
   withComponentInputBinding,
   withPreloading,
-  withViewTransitions,
 } from "@angular/router";
 
 import { LLM_SETTINGS_MODAL } from "../core/lib/llm-settings-modal.token";
 import { captureException, isSentryEnabled } from "../core/lib/observability/sentry";
+import { ThemeService } from "../core/theme/theme.service";
 import { routes } from "./app.routes";
+import { GenovaTitleStrategy } from "./genova-title.strategy";
 
 /**
  * Reports uncaught errors to Sentry via the lazy `captureException` helper.
@@ -43,14 +47,26 @@ export const appConfig: ApplicationConfig = {
     provideRouter(
       routes,
       withComponentInputBinding(),
-      withViewTransitions(),
+      // withViewTransitions() se quitó (G-02): generaba
+      // `InvalidStateError: Transition was aborted` en cada navegación y
+      // frames intermedios rotos. Se puede reintroducir en el futuro con
+      // manejo correcto (guardas de transición en curso / skip en rutas
+      // rápidas). Ver sdd/plans/2026-07-16-remediacion-auditoria-visual/tasks/T9.md.
       // Preload all lazy routes during idle time → near-instant page-to-page
       // navigation after first paint (chunks are already in cache).
       withPreloading(PreloadAllModules),
     ),
+    // Las rutas declaran solo el nombre de página; la marca la añade la
+    // estrategia (ver genova-title.strategy.ts).
+    { provide: TitleStrategy, useClass: GenovaTitleStrategy },
     // Angular HttpClient (used by Sentry and Angular-specific integrations).
     // Our own API calls go through core/lib/http.ts (fetch-based).
     provideHttpClient(),
+    // Instancia ThemeService (G-01) antes del primer render: aplica/quita la
+    // clase `dark` en <html> tempranamente para evitar flash de tema incorrecto.
+    provideAppInitializer(() => {
+      inject(ThemeService);
+    }),
     // Composición app→features: ova-workspace consume el modal de ajustes LLM
     // vía token de core; la implementación vive en la feature llm-settings.
     {

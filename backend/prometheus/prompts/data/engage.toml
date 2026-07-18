@@ -94,7 +94,7 @@ template = '''
 [ROL] Desarrollador front-end de simuladores educativos interactivos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Un simulador HTML5 autocontenido para la fase ENGAGE que provoque curiosidad: el estudiante manipula algo y ve el efecto, descubriendo la intuición central de "${concept}".
+[OBJETIVO] Un simulador HTML5 autocontenido que provoque curiosidad: el estudiante manipula algo y ve el efecto, descubriendo la intuición central de "${concept}". Sin menciones a fases 5E ni jerga interna en el HTML visible.
 [TAREA] Diseña la mecánica interactiva más apropiada para "${concept}" (slider, lienzo clicable, arrastre, botones...). Debe incluir: ${num_controls} control(es) manipulable(s), una visualización que reacciona en tiempo real (SVG o canvas), retroalimentación visual del estado, y un texto breve que interpreta lo que ocurre. Un botón de cierre ("¿Qué descubriste?") visible tras explorar.
 [REQUISITOS] HTML5 autocontenido con todo CSS y JS embebido. Mínimo 280 líneas de calidad sin secciones vacías. Paleta oscura elegante (educativa oscura). El control manipulable debe responder en <50ms a la interacción.
 ${ds}
@@ -106,7 +106,7 @@ estilo_default = 'página educativa moderna e interactiva'
 template = '''
 [ROL] Desarrollador front-end experto en recursos educativos interactivos.
 [CURSO] ${curso}
-[OBJETIVO] Construir un recurso HTML5 interactivo de la fase ENGAGE sobre "${concept}" que enganche al estudiante.
+[OBJETIVO] Construir un recurso HTML5 interactivo sobre "${concept}" que enganche al estudiante. El HTML visible no debe mencionar fases 5E (ENGAGE/EXPLORE/…) ni "FASE ·".
 [DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
 ${data_json}
 [FORMATO] ${estilo}

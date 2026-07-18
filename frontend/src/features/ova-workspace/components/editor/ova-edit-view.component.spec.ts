@@ -44,6 +44,7 @@ class StubChatPanel {
   readonly prompt = input("");
   readonly isRegenerating = input(false);
   readonly regenProgress = input<unknown>(null);
+  readonly messages = input<unknown[]>([]);
   readonly uploads = input<unknown>(null);
   readonly phases = input<PhaseWithContent[]>([]);
   readonly selectionMode = input(false);
@@ -92,6 +93,11 @@ function wsStub() {
     savePhase: vi.fn(() => Promise.resolve()),
     setPrompt: vi.fn(),
     submitPrompt: vi.fn(),
+    submitRegenAll: vi.fn(),
+    chatMessages: signal([]),
+    logSelectionMode: vi.fn(),
+    logSelectionToggle: vi.fn(),
+    logSelectionAll: vi.fn(),
     teardown: vi.fn(),
     versionHistory: signal([]),
     versionNumber: signal(1),

@@ -19,4 +19,7 @@ def output_contract() -> str:
         "4. El contenido está completamente desarrollado (no esqueleto): cada "
         "sección/pregunta/paso que pide la tarea existe con su contenido.\n"
         "5. Si la tarea especifica un número N de elementos, genera EXACTAMENTE N.\n"
+        "6. Ningún texto visible al estudiante menciona fases 5E ni jerga interna "
+        "(ENGAGE/EXPLORE/EXPLAIN/ELABORATE/EVALUATE, 'FASE ·', 'Fase 1', etc.). "
+        "Badge/eyebrow/títulos solo con tipo de actividad + concepto.\n"
     )

@@ -13,7 +13,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Guion visual por escenas + prompt listo para generar video.",
     "Guion + prompt de video",
     ["Escenas con indicaciones", "Diálogos por escena", "Prompt copiable de video"],
-    "video",
+    "storyboard",
   ),
   "3": preview(
     "Micro-Podcast",
@@ -34,7 +34,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Escenario con opciones de decisión y consecuencias.",
     "HTML narrativo + elección",
     ["Situación conflictiva", "2–3 opciones de acción", "Reflexión según la elección"],
-    "card",
+    "decisions",
   ),
   "6": preview(
     "Noticia de Impacto",
@@ -48,7 +48,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Escenario donde el estudiante asume un rol y responde.",
     "HTML + decisiones",
     ["Rol asignado", "Situación a resolver", "Retroalimentación del rol"],
-    "chat",
+    "decisions",
   ),
   "8": preview(
     "Timeline Interactivo",
@@ -62,7 +62,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Retos encadenados para “escapar” aplicando el concepto.",
     "HTML + JS interactivo",
     ["Pistas y acertijos", "Progreso por salas", "Desbloqueo final"],
-    "game",
+    "decisions",
   ),
   "10": preview(
     "Simulador Intuitivo",

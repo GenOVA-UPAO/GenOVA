@@ -6,6 +6,7 @@ import { hlmH1, hlmMuted } from "@spartan-ng/helm/typography";
 
 import { AuthService } from "@/core/auth/auth.service";
 import { ButtonComponent } from "@/core/components/ui/button.component";
+import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
 
 import { TotpLoginStepComponent } from "../components/totp-login-step.component";
 import { VerifyEmailNoticeComponent } from "../components/verify-email-notice.component";
@@ -18,6 +19,7 @@ import { resendVerification } from "../services/verification";
     FormField,
     RouterLink,
     ButtonComponent,
+    CheckboxComponent,
     HlmInput,
     TotpLoginStepComponent,
     VerifyEmailNoticeComponent,
@@ -46,7 +48,7 @@ import { resendVerification } from "../services/verification";
               GenOVA · UPAO
             </p>
             <h1 class="${hlmH1} mt-2 text-3xl">Iniciar sesión</h1>
-            <p class="${hlmMuted} mt-2">Accede para continuar al curso de ML.</p>
+            <p class="${hlmMuted} mt-2">Accede para crear y gestionar tus OVAs.</p>
             <form class="mt-6 space-y-4" (submit)="onSubmit(); $event.preventDefault()" novalidate>
               <div class="space-y-1.5 flex flex-col">
                 <label for="email" class="text-sm font-medium leading-none">Correo</label>
@@ -85,10 +87,18 @@ import { resendVerification } from "../services/verification";
                   {{ serverError() }}
                 </div>
               }
-              <div class="flex items-center justify-end">
+              <div class="flex items-center justify-between gap-3">
+                <label class="flex cursor-pointer items-center gap-2 text-sm text-foreground">
+                  <gn-checkbox
+                    [checked]="rememberMe()"
+                    (checkedChange)="rememberMe.set($event)"
+                    ariaLabel="Recordar sesión"
+                  ></gn-checkbox>
+                  <span>Recordar sesión</span>
+                </label>
                 <a
                   routerLink="/forgot-password"
-                  class="text-sm font-medium text-foreground hover:underline"
+                  class="shrink-0 text-sm font-medium text-foreground hover:underline"
                 >
                   ¿Olvidaste tu contraseña?
                 </a>
@@ -97,7 +107,7 @@ import { resendVerification } from "../services/verification";
                 type="submit"
                 [loading]="isSubmitting()"
                 [disabled]="loginForm().invalid() || isSubmitting()"
-                class="w-full block"
+                class="w-full"
               >
                 {{ isSubmitting() ? "Ingresando..." : "Entrar" }}
               </gn-button>
@@ -127,6 +137,7 @@ export class LoginPage {
 
   serverError = signal("");
   isSubmitting = signal(false);
+  rememberMe = signal(false);
 
   unverifiedEmail = signal<string | null>(null);
   totpTicket = signal<string | null>(null);
@@ -145,7 +156,7 @@ export class LoginPage {
 
       try {
         const { email, password } = this.loginModel();
-        const { status, data } = await this.authService.login(email, password);
+        const { status, data } = await this.authService.login(email, password, this.rememberMe());
 
         if (status === 200 && data.totp_required) {
           this.totpTicket.set(data.ticket ?? null);

@@ -29,6 +29,9 @@ const WEIGHT_CLASS: Record<IconWeight, string> = {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-icon",
+  // inline-flex: el glifo <i> se centra por flexbox en lugar de baseline —
+  // sin esto el strut de línea del contenedor deja el ícono pegado arriba.
+  host: { class: "inline-flex items-center justify-center leading-none" },
   template: `<i [class]="iconClass" aria-hidden="true"></i>`,
 })
 export class IconComponent {

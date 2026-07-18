@@ -4,17 +4,52 @@ export interface Permission {
   desc?: string;
 }
 
+/** IDs alineados con backend/seed.py y require_permission(...). */
 export const AVAILABLE_PERMISSIONS: Permission[] = [
-  { id: "admin:users", label: "Gestionar Usuarios" },
-  { id: "admin:roles", label: "Gestionar Roles" },
-  { id: "ova:create", label: "Crear OVAs" },
-  { id: "ova:edit", label: "Editar OVAs" },
-  { id: "ova:delete", label: "Eliminar OVAs" },
-  { id: "ova:view", label: "Ver OVAs" },
-  { id: "admin:settings", label: "Configuración del Sistema" },
-  { id: "ai:models:self", label: "Configurar modelos propios" },
-  { id: "ai:fallback:self", label: "Configurar fallback propio" },
-  { id: "ai:models:platform", label: "Configurar modelos de plataforma" },
-  { id: "users:link", label: "Vincular usuarios" },
-  { id: "users:link:admin", label: "Administrar vínculos" },
+  {
+    id: "create_ova",
+    label: "Crear OVAs",
+    desc: "Puede iniciar y generar nuevos objetos virtuales de aprendizaje.",
+  },
+  {
+    id: "view_ova",
+    label: "Ver OVAs",
+    desc: "Puede consultar OVAs a los que tenga acceso.",
+  },
+  {
+    id: "export_ova",
+    label: "Exportar OVAs",
+    desc: "Puede exportar OVAs (p. ej. paquete SCORM).",
+  },
+  {
+    id: "manage_users",
+    label: "Gestionar usuarios",
+    desc: "Puede listar, editar y administrar cuentas de usuario.",
+  },
+  {
+    id: "manage_roles",
+    label: "Gestionar roles",
+    desc: "Puede crear y modificar roles y sus permisos.",
+  },
+  {
+    id: "view_analytics",
+    label: "Ver analíticas",
+    desc: "Puede consultar métricas e informes de uso.",
+  },
+  {
+    id: "ai:models:self",
+    label: "Configurar modelos propios",
+    desc: "Puede elegir y ajustar sus propios modelos de IA.",
+  },
+  {
+    id: "ai:fallback:self",
+    label: "Configurar respaldo de modelos propio",
+    desc: "Puede definir la cadena de respaldo de modelos de IA personales.",
+  },
+  {
+    id: "ai:models:platform",
+    label: "Configurar modelos de la plataforma",
+    desc: "Puede administrar los modelos de IA globales del sistema.",
+  },
+  // users:link / users:link:admin: UI de /vinculacion diferida; permisos siguen en backend.
 ];

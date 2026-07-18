@@ -8,6 +8,7 @@ y marca como `exhausted` los que vuelven a fallar, para que la reconciliación
 final (`_persist_results`) cierre la fila como "error" en vez de dejarla colgada.
 """
 
+import contextvars
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import structlog
@@ -73,7 +74,8 @@ def repair_node(state: OvaGenerationState) -> dict:
         # two_step (2 llamadas LLM, más exposición a fallos), degradar a
         # direct_code cuando existe plantilla; si no hay degradación, mismo
         # plan (la cadena de fallback de modelos ya rota providers por dentro).
-        from prometheus.plans.plan_map import degraded_plan, dispatch_by_plan, plan_for
+        from prometheus.plans.generate import generate_resource
+        from prometheus.plans.plan_map import degraded_plan, plan_for
 
         original = err.get("plan") or plan_for(phase, rt)
         plan = degraded_plan(phase, rt, original) or original
@@ -82,10 +84,17 @@ def repair_node(state: OvaGenerationState) -> dict:
                 "repair: deliberación plan degradado", phase=phase, resource_type=rt, plan=plan
             )
         try:
-            html = dispatch_by_plan(
-                plan, phase, rt, concept, llm_config, enabled_models, theme,
-                image_settings, per_config,
-            )
+            html = generate_resource(
+                phase,
+                rt,
+                concept,
+                plan=plan,
+                llm_config=llm_config,
+                enabled_models=enabled_models,
+                theme=theme,
+                image_settings=image_settings,
+                resource_config=per_config,
+            ).html
             return err, html
         except Exception as exc:  # noqa: BLE001 — aislar cada reintento
             logger.warning("repair: failed again", phase=phase, resource_type=rt, error=str(exc))
@@ -94,16 +103,16 @@ def repair_node(state: OvaGenerationState) -> dict:
     results, exhausted = [], []
     workers = min(_concurrency(), len(failures))
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = [pool.submit(_retry, e) for e in failures]
+        # copy_context: propaga el contextvar del parent (job_trace) al sub-thread para
+        # que los reintentos LLM aniden bajo el trace del job (LangSmith).
+        futures = [pool.submit(contextvars.copy_context().run, _retry, e) for e in failures]
         for fut in as_completed(futures):
             err, html = fut.result()
             phase, rt = err["phase"], err["resource_type"]
             if html is not None:
                 meta = _recursos_meta_for(phase)
                 title = (meta.get(rt) or {}).get("tipo", "")
-                results.append(
-                    {"phase": phase, "html": html, "resource_type": rt, "title": title}
-                )
+                results.append({"phase": phase, "html": html, "resource_type": rt, "title": title})
                 _persist_done(job_id, phase, rt, html)
                 logger.info("repair: resource recovered", phase=phase, resource_type=rt)
             else:

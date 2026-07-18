@@ -70,7 +70,12 @@ export class ModelsPageComponent implements OnInit {
   readonly adminLoading = signal(true);
   private readonly adminBaseline = signal("");
 
-  readonly adminDirty = computed(() => this.adminBaseline() !== JSON.stringify(this.adminDraft()));
+  // Gateado por adminLoading: hasta que la config termina de cargar, draft y
+  // baseline divergen transitoriamente y el strip mostraba "Cambios sin
+  // guardar: Sí"; ngOnInit fija el baseline real al finalizar la carga.
+  readonly adminDirty = computed(
+    () => !this.adminLoading() && this.adminBaseline() !== JSON.stringify(this.adminDraft()),
+  );
   readonly dirty = computed(() => this.store.dirty() || this.adminDirty());
 
   readonly connectedProviders = computed(() => {

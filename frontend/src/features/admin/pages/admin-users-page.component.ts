@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from "@a
 import { FormsModule } from "@angular/forms";
 
 import { IconComponent } from "@/core/components/icon.component";
+import { SearchInputComponent } from "@/core/components/ui/search-input.component";
 
 import { EditUserModalComponent } from "../components/users/edit-user-modal.component";
 import { type Handlers, UsersTableComponent } from "../components/users/users-table.component";
@@ -11,7 +12,13 @@ import { AdminUsersService } from "../services/admin-users.service";
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-admin-users-page",
-  imports: [FormsModule, UsersTableComponent, EditUserModalComponent, IconComponent],
+  imports: [
+    FormsModule,
+    UsersTableComponent,
+    EditUserModalComponent,
+    IconComponent,
+    SearchInputComponent,
+  ],
   templateUrl: "./admin-users-page.component.html",
 })
 export class AdminUsersPageComponent {

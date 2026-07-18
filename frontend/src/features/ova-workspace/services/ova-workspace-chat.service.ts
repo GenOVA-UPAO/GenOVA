@@ -1,0 +1,136 @@
+import { Injectable, signal } from "@angular/core";
+
+import { apiJson } from "@/core/lib/http";
+
+import {
+  fromApiMessage,
+  patchChatMessage,
+  type RegenChatMessage,
+  selectionAllMessage,
+  selectionToggleMessage,
+  systemChatMessage,
+  userChatMessage,
+} from "../lib/regen-chat";
+
+@Injectable({ providedIn: "root" })
+export class OvaWorkspaceChatService {
+  private readonly messagesState = signal<RegenChatMessage[]>([]);
+  private ovaId: string | null = null;
+
+  readonly messages = this.messagesState.asReadonly();
+
+  reset(ovaId: string | null) {
+    this.ovaId = ovaId;
+    this.messagesState.set([]);
+  }
+
+  async load(ovaId: string): Promise<void> {
+    this.ovaId = ovaId;
+    try {
+      const data = await apiJson<{ messages?: Parameters<typeof fromApiMessage>[0][] }>(
+        `/api/ovas/${ovaId}/chat`,
+      );
+      this.messagesState.set((data.messages ?? []).map(fromApiMessage));
+    } catch {
+      this.messagesState.set([]);
+    }
+  }
+
+  async append(msg: RegenChatMessage): Promise<void> {
+    this.messagesState.update((msgs) => [...msgs, msg]);
+    await this.persistCreate(msg);
+  }
+
+  async appendMany(msgs: RegenChatMessage[]): Promise<void> {
+    this.messagesState.update((prev) => [...prev, ...msgs]);
+    for (const msg of msgs) {
+      await this.persistCreate(msg);
+    }
+  }
+
+  async patch(id: string, patch: Partial<RegenChatMessage>): Promise<void> {
+    this.messagesState.update((msgs) => patchChatMessage(msgs, id, patch));
+    const next = this.messagesState().find((m) => m.id === id);
+    if (!next || !this.ovaId) return;
+    try {
+      await apiJson(`/api/ovas/${this.ovaId}/chat/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          text: next.text,
+          status: next.status ?? null,
+          percentage: next.percentage ?? null,
+          resource_labels: next.resourceLabels ?? [],
+        }),
+      });
+    } catch {
+      /* historial local ya actualizado */
+    }
+  }
+
+  async logSelectionToggle(label: string, selected: boolean): Promise<void> {
+    await this.append(selectionToggleMessage(label, selected));
+  }
+
+  async logSelectionAll(labels: string[], allSelected: boolean): Promise<void> {
+    await this.append(selectionAllMessage(labels, allSelected));
+  }
+
+  async logSelectionMode(enabled: boolean): Promise<void> {
+    await this.append(
+      systemChatMessage(
+        enabled
+          ? "Modo selección de recursos activado."
+          : "Modo selección de recursos desactivado.",
+        { kind: "selection" },
+      ),
+    );
+  }
+
+  async logRegenAllIntent(): Promise<RegenChatMessage> {
+    const msg = userChatMessage("Regenerar OVA completo", { kind: "regen_all" });
+    await this.append(msg);
+    return msg;
+  }
+
+  async deleteMessage(id: string): Promise<void> {
+    this.messagesState.update((msgs) => msgs.filter((m) => m.id !== id));
+    if (!this.ovaId) return;
+    try {
+      await apiJson(`/api/ovas/${this.ovaId}/chat/${id}`, { method: "DELETE" });
+    } catch {
+      /* ya quitado en local */
+    }
+  }
+
+  async clearAll(): Promise<void> {
+    this.messagesState.set([]);
+    if (!this.ovaId) return;
+    try {
+      await apiJson(`/api/ovas/${this.ovaId}/chat`, { method: "DELETE" });
+    } catch {
+      /* ya vaciado en local */
+    }
+  }
+
+  private async persistCreate(msg: RegenChatMessage): Promise<void> {
+    if (!this.ovaId) return;
+    try {
+      await apiJson(`/api/ovas/${this.ovaId}/chat`, {
+        method: "POST",
+        body: JSON.stringify({
+          id: msg.id,
+          role: msg.role,
+          kind: msg.kind,
+          text: msg.text,
+          status: msg.status ?? null,
+          percentage: msg.percentage ?? null,
+          resource_labels: msg.resourceLabels ?? [],
+        }),
+      });
+    } catch (err) {
+      // No bloquear la UI, pero sin esto el historial “desaparece” al recargar
+      // y no hay rastro en consola (p. ej. API 404 por backend zombie).
+      console.warn("[chat] no se pudo persistir el mensaje", msg.id, err);
+    }
+  }
+}

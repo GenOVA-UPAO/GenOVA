@@ -43,6 +43,7 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
             return
 
         llm_config = _owner_llm_config(db, ova.user_id)
+        image_settings = _owner_image_settings(db, ova.user_id)
 
         current_version = _get_active_version(ova_id, db)
         if not current_version:
@@ -75,7 +76,7 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         # N phases × 2 LLM calls each — so the progress bar sat at 99% for
         # minutes. DB writes below stay in this thread, in phase order.
         to_regen = [p for p in current_phases if regen_all or str(p.id) in phase_ids_to_regen]
-        regen_content = _regen_phases_parallel(to_regen, prompt, llm_config)
+        regen_content = _regen_phases_parallel(to_regen, prompt, llm_config, image_settings)
 
         new_phases_data = []
         for phase in current_phases:
@@ -133,7 +134,21 @@ def _owner_llm_config(db: Session, user_id) -> dict:
     return (user.llm_settings if user else None) or {}
 
 
-def _regen_phase(phase: OvaPhase, concept: str, llm_config: dict | None = None) -> str | None:
+def _owner_image_settings(db: Session, user_id) -> dict:
+    """image_settings del dueño del OVA — habilita imágenes en regen de engage."""
+    from llm.images.image_providers import build_image_settings
+    from models import User
+
+    user = db.get(User, user_id)
+    return build_image_settings(user, db) if user else {}
+
+
+def _regen_phase(
+    phase: OvaPhase,
+    concept: str,
+    llm_config: dict | None = None,
+    image_settings: dict | None = None,
+) -> str | None:
     """Call the real LLM agent for a single phase. Returns HTML or None."""
     rtype = resolve_resource_type(phase)
     if rtype is None:
@@ -145,7 +160,9 @@ def _regen_phase(phase: OvaPhase, concept: str, llm_config: dict | None = None) 
         resource_type=rtype,
         concept=concept[:60],
     )
-    return regenerate_phase_content(phase.phase_type, rtype, concept, llm_config)
+    return regenerate_phase_content(
+        phase.phase_type, rtype, concept, llm_config, image_settings=image_settings
+    )
 
 
 def _regen_concurrency() -> int:
@@ -156,7 +173,10 @@ def _regen_concurrency() -> int:
 
 
 def _regen_phases_parallel(
-    phases: list[OvaPhase], concept: str, llm_config: dict | None
+    phases: list[OvaPhase],
+    concept: str,
+    llm_config: dict | None,
+    image_settings: dict | None = None,
 ) -> dict[str, str | None]:
     """Regenerate `phases` concurrently, returning {phase_id: html|None}.
 
@@ -169,7 +189,7 @@ def _regen_phases_parallel(
 
     def _one(phase: OvaPhase) -> tuple[str, str | None]:
         try:
-            return str(phase.id), _regen_phase(phase, concept, llm_config)
+            return str(phase.id), _regen_phase(phase, concept, llm_config, image_settings)
         except Exception:
             logger.exception("regen failed for phase", phase_id=phase.id)
             return str(phase.id), None

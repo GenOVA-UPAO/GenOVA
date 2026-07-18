@@ -137,7 +137,7 @@ Reglas de selección:
 
     full = f"{sys_prompt}\n\nConcepto del usuario: {prompt}"
     try:
-        raw = generar_texto(full, "orquestador", max_tokens=800)
+        raw = generar_texto(full, "orquestador", max_tokens=4096)
         data = parse_json(raw)
         if not isinstance(data, dict):
             return None

@@ -12,6 +12,7 @@ export interface StartJobArgs {
 
 export interface JobAck {
   job_id: string;
+  ova_id?: string | null;
   status: string;
 }
 

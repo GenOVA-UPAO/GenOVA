@@ -7,13 +7,12 @@ import { hlmLarge } from "@spartan-ng/helm/typography";
   selector: "gn-navbar-brand",
   imports: [RouterLink],
   template: `
-    <a routerLink="/dashboard" class="${hlmLarge} font-display tracking-tight text-foreground">
+    <a
+      routerLink="/dashboard"
+      aria-label="GenOVA"
+      class="${hlmLarge} font-display tracking-tight text-foreground"
+    >
       Gen<span class="text-primary">OVA</span>
-      <span
-        class="ml-1.5 align-middle text-[10px] font-sans font-semibold uppercase tracking-[0.18em] text-accent-brand"
-      >
-        ML
-      </span>
     </a>
   `,
 })

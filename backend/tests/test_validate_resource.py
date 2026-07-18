@@ -1,12 +1,13 @@
-"""F2.3 — checklist estructural + loop de mejora (casos reales de la auditoría)."""
+"""F2.3 — checklist estructural + compuerta de refinamiento fusionada (casos reales)."""
 
 import prometheus.engine.refine as refine_mod
-from prometheus.engine.validate import structural_defects, validate_and_improve
+from prometheus.engine.validate import structural_defects
 
 GOOD = (
     "<!DOCTYPE html><html><head></head><body>"
     "<h1>Regresión lineal</h1>"
-    + "<p>Contenido pedagógico real y desarrollado sobre el concepto. </p>" * 60
+    + "<p>Contenido pedagógico real y desarrollado sobre el concepto. </p>"
+    * 60
     + '<button id="done">Continuar</button>'
     "<script>document.getElementById('done').addEventListener('click',()=>_scormComplete());"
     "function _scormComplete(){}</script></body></html>"
@@ -45,7 +46,7 @@ def test_lab_esqueleto_detectado():
     assert "escaso" in joined
 
 
-def test_validate_improves_with_feedback(monkeypatch):
+def test_refine_improves_with_feedback(monkeypatch):
     calls = []
 
     def fake_feedback(html, concept, defects, phase, rt, *a, **k):
@@ -53,13 +54,24 @@ def test_validate_improves_with_feedback(monkeypatch):
         return GOOD
 
     monkeypatch.setattr(refine_mod, "apply_feedback", fake_feedback)
-    out, remaining = validate_and_improve(NOTICIA_ROTA, "engage", 6, "tema")
+    monkeypatch.setattr(refine_mod, "_refine_enabled", lambda: True)
+    out, remaining = refine_mod.refine_and_check(NOTICIA_ROTA, "engage", 6, "tema")
     assert out == GOOD and remaining == []
-    assert len(calls) == 1 and any("_scormComplete" in d for d in calls[0])
+    assert calls and any("_scormComplete" in d for d in calls[0])
 
 
-def test_validate_keeps_original_on_regression(monkeypatch):
+def test_refine_keeps_original_on_regression(monkeypatch):
     monkeypatch.setattr(refine_mod, "apply_feedback", lambda *a, **k: "<html>x</html>")
-    out, remaining = validate_and_improve(NOTICIA_ROTA, "engage", 6, "tema", max_rounds=1)
+    monkeypatch.setattr(refine_mod, "_refine_enabled", lambda: True)
+    out, remaining = refine_mod.refine_and_check(NOTICIA_ROTA, "engage", 6, "tema", max_rounds=1)
     assert out == NOTICIA_ROTA  # el refinado regresivo (muy corto) se descarta
     assert remaining  # y los defectos quedan reportados
+
+
+def test_refine_disabled_is_noop(monkeypatch):
+    monkeypatch.setattr(refine_mod, "_refine_enabled", lambda: False)
+    called = []
+    monkeypatch.setattr(refine_mod, "apply_feedback", lambda *a, **k: called.append(1))
+    out, remaining = refine_mod.refine_and_check(NOTICIA_ROTA, "engage", 6, "tema")
+    assert out == NOTICIA_ROTA and remaining  # devuelve defectos sin llamar al LLM
+    assert not called

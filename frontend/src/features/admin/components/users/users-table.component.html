@@ -109,7 +109,7 @@
                 [value]="user.role?.id || (roles().length > 0 ? roles()[0].id : '')"
                 (change)="onRoleChange(user.id, $event)"
                 [disabled]="updatingUserId() === user.id || isActionsDisabled(user)"
-                class="h-8 w-[130px] rounded-xl border border-border/50 bg-background/50 backdrop-blur-md px-3 text-[11px] font-bold uppercase tracking-wider focus:outline-none cursor-pointer capitalize shadow-sm disabled:opacity-50 hover:bg-accent/50 transition-colors"
+                class="h-8 w-[170px] rounded-xl border border-border/50 bg-background/50 backdrop-blur-md px-3 text-[11px] font-bold uppercase tracking-wider focus:outline-none cursor-pointer capitalize shadow-sm disabled:opacity-50 hover:bg-accent/50 transition-colors"
                 [ngClass]="getRoleColorClassesLocal(user.role?.name)"
               >
                 @for (r of roles(); track r) {

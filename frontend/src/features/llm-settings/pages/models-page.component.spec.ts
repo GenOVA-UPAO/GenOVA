@@ -135,7 +135,7 @@ describe("ModelsPageComponent", () => {
     expect(screen.queryByText("Configuración")).toBeNull();
     expect(screen.queryByText("Guardar plataforma")).toBeNull();
     expect(screen.getByText("Proveedores conectados")).toBeTruthy();
-    expect(screen.getByText("Modelos activos")).toBeTruthy();
+    expect(screen.getByText("Modelos favoritos")).toBeTruthy();
     expect(screen.getByText("Cambios sin guardar")).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Modelos$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Credenciales$/i })).toBeTruthy();

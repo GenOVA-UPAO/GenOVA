@@ -34,7 +34,7 @@ type Status = "idle" | "submitting" | "success" | "error";
             >
               {{ message() }}
             </div>
-            <gn-button class="w-full block">
+            <gn-button class="w-full">
               <a routerLink="/login" class="block w-full text-center">Volver a iniciar sesión</a>
             </gn-button>
           </div>
@@ -69,7 +69,7 @@ type Status = "idle" | "submitting" | "success" | "error";
               type="submit"
               [loading]="status() === 'submitting'"
               [disabled]="forgotForm().invalid() || status() === 'submitting'"
-              class="w-full block"
+              class="w-full"
             >
               {{ status() === "submitting" ? "Enviando..." : "Enviar enlace" }}
             </gn-button>

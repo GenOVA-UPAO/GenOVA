@@ -16,10 +16,13 @@ Motor único desde 2026-07-10 (benchmark F2: 6:21/20 recursos, 0 fallos, vs
 ~30min del motor por fases eliminado).
 """
 
+import functools
+
 import structlog
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
+from prometheus.engine.job_trace import job_trace
 from prometheus.engine.runtime import _persist_done, _touch_job
 from prometheus.engine.state import OvaGenerationState
 
@@ -75,7 +78,8 @@ def resource_worker(payload: dict) -> dict:
     tras el join). Emite worker_signals para la revisión de creencias (F3.1)."""
     import time
 
-    from prometheus.plans.plan_map import dispatch_by_plan, plan_for
+    from prometheus.plans.generate import generate_resource
+    from prometheus.plans.plan_map import plan_for
 
     item = payload["work_item"]
     phase, rt = item["phase"], item["resource_type"]
@@ -84,16 +88,16 @@ def resource_worker(payload: dict) -> dict:
     job_id = payload.get("job_id")
     started = time.monotonic()
     try:
-        html = dispatch_by_plan(
-            plan,
+        result = generate_resource(
             phase,
             rt,
             payload.get("prompt", ""),
-            payload.get("llm_config", {}),
-            payload.get("enabled_models", []),
-            payload.get("theme", {}),
-            payload.get("image_settings", {}),
-            per_config,
+            plan=plan,
+            llm_config=payload.get("llm_config", {}),
+            enabled_models=payload.get("enabled_models", []),
+            theme=payload.get("theme", {}),
+            image_settings=payload.get("image_settings", {}),
+            resource_config=per_config,
         )
     except Exception as exc:  # noqa: BLE001 — aislar el fallo de un recurso
         logger.exception("workpool: resource failed", phase=phase, resource_type=rt)
@@ -111,18 +115,10 @@ def resource_worker(payload: dict) -> dict:
             ],
         }
 
-    # F2.3 — evaluator-optimizer: checklist estructural + feedback dirigido.
-    from prometheus.engine.validate import validate_and_improve
-
-    html, remaining = validate_and_improve(
-        html,
-        phase,
-        rt,
-        payload.get("prompt", ""),
-        payload.get("llm_config", {}),
-        payload.get("enabled_models", []),
-        payload.get("theme", {}),
-    )
+    # F2.3 — el refinamiento (evaluator-optimizer) ya corrió dentro de
+    # generate_resource como compuerta única; aquí solo leemos los defectos
+    # estructurales restantes para el routing a repair.
+    html, remaining = result.html, result.defects
     if remaining:
         # Defectos estructurales sin resolver (sin _scormComplete, placeholder,
         # esqueleto…): el alumno no podría completar el recurso. Va por la ruta
@@ -159,9 +155,7 @@ def resource_worker(payload: dict) -> dict:
     _persist_done(job_id, phase, rt, html)
     _touch_job(job_id)
     return {
-        "pool_results": [
-            {"phase": phase, "html": html, "resource_type": rt, "title": title}
-        ],
+        "pool_results": [{"phase": phase, "html": html, "resource_type": rt, "title": title}],
         "worker_signals": [
             {
                 "phase": phase,
@@ -187,9 +181,7 @@ def collect_node(state: OvaGenerationState) -> dict:
         error_classes[key] = error_classes.get(key, 0) + 1
     beliefs = {
         **state.get("beliefs", {}),
-        "avg_resource_seconds": (
-            round(sum(durations) / len(durations), 1) if durations else None
-        ),
+        "avg_resource_seconds": (round(sum(durations) / len(durations), 1) if durations else None),
         "failed_resources": [
             {"phase": s["phase"], "resource_type": s["resource_type"], "plan": s.get("plan")}
             for s in failures
@@ -209,6 +201,19 @@ def collect_node(state: OvaGenerationState) -> dict:
     }
 
 
+def _traced(fn):
+    """Envuelve un nodo para reagrupar sus llamadas LLM bajo el trace del job
+    (LangSmith). No-op si el tracing está apagado."""
+
+    @functools.wraps(fn)
+    def wrapper(arg, *a, **kw):
+        job_id = arg.get("job_id") if isinstance(arg, dict) else None
+        with job_trace(job_id):
+            return fn(arg, *a, **kw)
+
+    return wrapper
+
+
 def build_workpool_graph():
     from prometheus.nodes.assemble import assemble_node
     from prometheus.nodes.concierge import concierge_node
@@ -217,13 +222,13 @@ def build_workpool_graph():
     from prometheus.nodes.repair import repair_node
 
     graph = StateGraph(OvaGenerationState)
-    graph.add_node("concierge", concierge_node)
-    graph.add_node("resource_worker", resource_worker)
-    graph.add_node("collect", collect_node)
-    graph.add_node("critic", critic_node)
-    graph.add_node("repair", repair_node)
-    graph.add_node("editor", editor_node)
-    graph.add_node("assemble", assemble_node)
+    graph.add_node("concierge", _traced(concierge_node))
+    graph.add_node("resource_worker", _traced(resource_worker))
+    graph.add_node("collect", _traced(collect_node))
+    graph.add_node("critic", _traced(critic_node))
+    graph.add_node("repair", _traced(repair_node))
+    graph.add_node("editor", _traced(editor_node))
+    graph.add_node("assemble", _traced(assemble_node))
 
     graph.add_edge(START, "concierge")
     graph.add_conditional_edges("concierge", fan_out, ["resource_worker", "collect"])

@@ -5,7 +5,8 @@ from __future__ import annotations
 import os
 from concurrent.futures import ThreadPoolExecutor
 
-from llm.images.image_providers import IMG_PLACEHOLDER, get_image_data_uri
+from llm.images.image_placeholder import IMG_PLACEHOLDER
+from llm.images.image_providers import get_image_data_uri
 
 
 def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[str, str]:
@@ -42,7 +43,7 @@ def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[st
             p, m = entry.get("provider"), entry.get("model_id")
             if not p:
                 continue
-            key = api_key if p == provider else entry.get("api_key")
+            key = entry.get("api_key") or (api_key if p == provider else None)
             uri = get_image_data_uri(prompt, p, key, model=m)
             if uri:
                 return uri

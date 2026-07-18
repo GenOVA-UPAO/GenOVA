@@ -1,0 +1,15 @@
+---
+description: Commits limpios sin trailers de autoria de IA ni marcas de herramientas
+alwaysApply: true
+---
+
+# Commits: sin marcas de IA ni herramientas
+
+Prohibido en **cualquier** commit (asunto, cuerpo, trailers, footer):
+
+- La palabra `cowork` / `Cowork` / `COWORK` y frases del estilo "Made with ..."
+- Trailers `Co-Authored-By:` de modelos o proveedores (p. ej. Claude, Anthropic, Cursor, OpenAI, etc.)
+- Cualquier footer automatico que atribuya el commit a un asistente de IA
+
+El mensaje debe ser solo Conventional Commits en espanol, centrado en el porque del cambio.
+Si un hook o plantilla anade ese texto, eliminalo y crea el commit sin el.

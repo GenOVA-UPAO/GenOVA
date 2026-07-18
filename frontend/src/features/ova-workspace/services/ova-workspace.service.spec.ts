@@ -12,6 +12,9 @@ function editServiceStub() {
     addPhase: vi.fn(() => Promise.resolve({})),
     deletePhase: vi.fn(() => Promise.resolve({})),
     fetchOvaEditorData: vi.fn(() => Promise.resolve({ status: "listo" })),
+    pollRegenProgress: vi.fn(() =>
+      Promise.resolve({ percentage: 100, stage: "listo", status: "success" }),
+    ),
     reorderPhases: vi.fn(() => Promise.resolve({})),
     savePhaseContent: vi.fn(() => Promise.resolve({})),
     triggerRegen: vi.fn(() => Promise.resolve({ job_id: "job-1" })),
@@ -80,6 +83,19 @@ describe("OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)", () =
     });
   });
 
+  it("submitPrompt deja el prompt en el historial del chat", async () => {
+    service.setPrompt("Añade más ejemplos prácticos");
+    await service.submitPrompt(["fase-9"]);
+
+    const msgs = service.chatMessages();
+    expect(msgs.length).toBeGreaterThanOrEqual(2);
+    expect(msgs.some((m) => m.role === "user" && m.text === "Añade más ejemplos prácticos")).toBe(
+      true,
+    );
+    expect(msgs.some((m) => m.role === "assistant")).toBe(true);
+    expect(service.prompt()).toBe("");
+  });
+
   it("un fallo en la mutación no recarga el OVA", async () => {
     edit.deletePhase.mockRejectedValueOnce(new Error("boom"));
 
@@ -120,6 +136,7 @@ describe("OvaWorkspaceService — aislamiento entre OVAs y teardown (B1)", () =>
     expect(service.phases()).toEqual([]);
     expect(service.prompt()).toBe("");
     expect(service.error()).toBe("");
+    expect(service.chatMessages()).toEqual([]);
   });
 
   it("teardown cancela el reintento de load cuando el OVA está generando", async () => {

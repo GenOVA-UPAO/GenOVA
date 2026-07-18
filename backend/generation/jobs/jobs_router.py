@@ -45,17 +45,14 @@ def start_job(
     db: Session = Depends(get_db),
 ):
     """Create a job + its resources, launch the runner, return {job_id, status}."""
-    from llm.clients.key_resolver import resolve_key
+    from llm.images.image_settings_resolve import build_image_settings
 
-    ova_settings = current_user.ova_settings or {}
-    image_provider = ova_settings.get("image_provider", "cloudflare")
-    resolved_image_settings = {
-        "max_images": ova_settings.get("max_images", 2),
-        "provider": image_provider,
-        "api_key": resolve_key(
-            image_provider, current_user.user_api_keys or {}, db, current_user.id
-        ),
-    }
+    resolved_image_settings = build_image_settings(
+        ova_settings=current_user.ova_settings or {},
+        user_api_keys=current_user.user_api_keys or {},
+        db=db,
+        user_id=current_user.id,
+    )
 
     job = jobs_service.create_job(
         db,
@@ -72,7 +69,11 @@ def start_job(
     _launch(job.id)
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED,
-        content={"job_id": str(job.id), "status": "queued"},
+        content={
+            "job_id": str(job.id),
+            "ova_id": str(job.ova_id) if job.ova_id else None,
+            "status": "queued",
+        },
     )
 
 

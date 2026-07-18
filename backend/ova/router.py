@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import get_db
+from core.text import smart_truncate
 from models import Ova, OvaPhase, OvaVersion, User
 from ova.crud.llm_helpers import _enabled_llm_options, _ova_output_dir
 from ova.helpers import _is_admin
@@ -83,7 +84,7 @@ def save_ova(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    title = payload.prompt[:80].rstrip()
+    title = smart_truncate(payload.prompt)
 
     ova = Ova(user_id=current_user.id, title=title, description=payload.prompt, status="listo")
     db.add(ova)

@@ -53,7 +53,7 @@ export class TrashedOvaCardComponent {
   readonly onPermanentDelete = output<OvaListItem>();
 
   get rootClass(): string {
-    return `rounded-xl border bg-white p-5 shadow-sm transition ${
+    return `flex h-full flex-col rounded-xl border bg-card p-5 shadow-sm transition ${
       this.isSelected() ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
     }`;
   }

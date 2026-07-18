@@ -16,7 +16,11 @@ arq==0.28.0
 # Observability
 sentry-sdk[fastapi]==2.63.0
 prometheus-fastapi-instrumentator==8.0.2
-logfire==4.37.0
+# NO agregar el extra [fastapi]: opentelemetry-instrumentation-fastapi 0.63b1 es
+# incompatible con FastAPI 0.138 (routing con _IncludedRouter sin `.path`) y crashea
+# el middleware ASGI en cada request /api/* (500 antes de CORS → login roto). Ver
+# core/observability.py::init_logfire.
+logfire[sqlalchemy]==4.37.0
 structlog==25.5.0
 # Multi-agent orchestration (Prometheus via LangGraph) + LangSmith traces
 langgraph==1.2.6

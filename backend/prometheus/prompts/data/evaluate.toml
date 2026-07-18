@@ -112,7 +112,7 @@ estilo_default = 'pagina educativa interactiva moderna'
 template = '''
 [ROL] Desarrollador front-end experto en recursos educativos interactivos.
 [CURSO] ${curso}
-[OBJETIVO] Construir un recurso HTML5 de la fase EVALUATE sobre "${concept}" que evalue el aprendizaje.
+[OBJETIVO] Construir un recurso HTML5 sobre "${concept}" que evalue el aprendizaje. El HTML visible no debe mencionar fases 5E ni jerga interna.
 [DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
 ${data_json}
 [FORMATO] ${estilo}

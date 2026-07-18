@@ -1,8 +1,6 @@
-"""Multi-provider image generation with a uniform interface.
+"""Multi-provider image gen → base64 data URI (or None → placeholder).
 
-All providers return a base64 JPEG data URI so SCORM packages stay self-contained.
-Returns None on any failure; callers must handle the None case with a placeholder.
-Supported: huggingface | siliconflow | runware | falai
+huggingface | siliconflow | runware | falai | cloudflare | openrouter
 """
 
 import base64
@@ -12,22 +10,10 @@ import httpx
 import structlog
 
 logger = structlog.get_logger(__name__)
-
 _TIMEOUT = 30.0
-
-# Gray SVG fallback — base64-encoded for universal HTML/SCORM compatibility.
-IMG_PLACEHOLDER = (
-    "data:image/svg+xml;base64,"
-    "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdo"
-    "dD0iNTEyIj48cmVjdCBmaWxsPSIjZTJlOGYwIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIvPjx0"
-    "ZXh0IHg9IjI1NiIgeT0iMjY2IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIy"
-    "MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzQ3NTU2OSI+SW1hZ2VuIG5vIGRpc3Bvbmli"
-    "bGU8L3RleHQ+PC9zdmc+"
-)
 
 
 def _url_to_data_uri(url: str) -> str | None:
-    """Download an image URL and return a base64 JPEG data URI."""
     try:
         resp = httpx.get(url, timeout=_TIMEOUT, follow_redirects=True)
         resp.raise_for_status()
@@ -127,46 +113,20 @@ def _falai(prompt: str, api_key: str | None, width: int, height: int, model: str
         return None
 
 
-def _cloudflare(prompt: str, api_key: str | None, width: int, height: int, model: str | None = None) -> str | None:
-    """Cloudflare Workers AI — free tier 10k neurons/day (~1k images).
+def _cloudflare(
+    prompt: str, api_key: str | None, width: int, height: int, model: str | None = None
+) -> str | None:
+    from llm.images.image_cloudflare import generate_cloudflare_image
 
-    Required env vars: CF_ACCOUNT_ID, CF_AI_API_KEY (or api_key arg).
-    Default model: @cf/black-forest-labs/flux-1-schnell (~10 neurons/image).
-    """
-    account_id = os.getenv("CF_ACCOUNT_ID", "").strip()
-    if not account_id:
-        logger.warning("image generation skipped: CF_ACCOUNT_ID not set", provider="cloudflare")
-        return None
-    token = api_key or os.getenv("CF_AI_API_KEY", "").strip()
-    if not token:
-        logger.warning("image generation skipped: no api_key / CF_AI_API_KEY", provider="cloudflare")
-        return None
-    cf_model = model or os.getenv("CF_IMAGE_MODEL", "@cf/black-forest-labs/flux-1-schnell")
-    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{cf_model}"
-    try:
-        resp = httpx.post(
-            url,
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-            json={"prompt": prompt, "num_steps": 4},
-            timeout=60.0,
-        )
-        resp.raise_for_status()
-        # Cloudflare returns raw image bytes (PNG) when successful, or JSON on error.
-        ct = resp.headers.get("content-type", "")
-        if "image" in ct:
-            return "data:image/png;base64," + base64.b64encode(resp.content).decode("ascii")
-        data = resp.json()
-        if data.get("success") and isinstance(data.get("result"), dict):
-            img_bytes = data["result"].get("image")
-            if img_bytes:
-                return "data:image/png;base64," + img_bytes
-        logger.warning(
-            "image generation returned unexpected response", provider="cloudflare", response=str(data)[:200]
-        )
-        return None
-    except Exception as exc:
-        logger.warning("image generation failed", provider="cloudflare", error=str(exc))
-        return None
+    return generate_cloudflare_image(prompt, api_key, width, height, model)
+
+
+def _openrouter(
+    prompt: str, api_key: str | None, width: int, height: int, model: str | None = None
+) -> str | None:
+    from llm.images.image_openrouter import generate_openrouter_image
+
+    return generate_openrouter_image(prompt, api_key, width, height, model)
 
 
 _PROVIDERS = {
@@ -175,11 +135,12 @@ _PROVIDERS = {
     "runware": _runware,
     "falai": _falai,
     "cloudflare": _cloudflare,
+    "openrouter": _openrouter,
 }
 
 IMAGE_PROVIDERS = tuple(_PROVIDERS.keys())
 
-_MODEL_PROVIDERS = {"siliconflow", "runware", "falai", "cloudflare"}
+_MODEL_PROVIDERS = {"siliconflow", "runware", "falai", "cloudflare", "openrouter"}
 
 
 def get_image_data_uri(
@@ -213,7 +174,6 @@ def get_image_data_uri(
 
 
 def _platform_hf_key() -> str | None:
-    """Resolve the huggingface key from platform config (DB) or env."""
     from core.database import SessionLocal
     from llm.clients.key_resolver import resolve_key
 
@@ -228,39 +188,13 @@ def _platform_hf_key() -> str | None:
             db.close()
 
 
-def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[str, str]:
-    """For engage JSON whose items have `prompt_imagen`, fetch images and inject
-    `image_placeholder` keys. Returns {placeholder: data_uri} for post-LLM replacement.
+def build_image_settings(user, db) -> dict:
+    """Delegate to llm_config imagen chain (+ legacy ova_settings)."""
+    from llm.images.image_settings_resolve import build_image_settings as resolve
 
-    image_settings keys: max_images (int), provider (str), api_key (str|None)
-    """
-    if not isinstance(json_data, list) or not json_data:
-        return {}
-    first = json_data[0] if isinstance(json_data[0], dict) else None
-    if not first or "prompt_imagen" not in first:
-        return {}
+    return resolve(
+        ova_settings=getattr(user, "ova_settings", None) or {},
+        user_api_keys=getattr(user, "user_api_keys", None) or {},
+        db=db, user_id=user.id,
+    )
 
-    settings = image_settings or {}
-    default_max = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
-    max_images = int(settings.get("max_images", default_max))
-    provider = settings.get("provider", "cloudflare")
-    api_key = settings.get("api_key") or None
-    model = settings.get("image_model") or None
-
-    if max_images <= 0 or provider in (None, "", "none"):
-        return {}
-
-    from concurrent.futures import ThreadPoolExecutor
-
-    targets = json_data[:max_images]
-    prompts = [(item.get("prompt_imagen") or "").strip() for item in targets]
-
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        uris = list(pool.map(lambda p: get_image_data_uri(p, provider, api_key, model=model), prompts))
-
-    replacements: dict[str, str] = {}
-    for i, (item, uri) in enumerate(zip(targets, uris, strict=True), start=1):
-        placeholder = f"__IMG_{i}__"
-        item["image_placeholder"] = placeholder
-        replacements[placeholder] = uri or IMG_PLACEHOLDER
-    return replacements

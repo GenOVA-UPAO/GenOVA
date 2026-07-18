@@ -1,0 +1,162 @@
+@if (confirmingDelete) {
+  <gn-confirm-modal
+    title="Eliminar recurso"
+    message="¿Eliminar este recurso? Se creará una nueva versión sin él."
+    confirmLabel="Eliminar"
+    (onConfirm)="confirmDelete()"
+    (onCancel)="confirmingDelete = false"
+  ></gn-confirm-modal>
+}
+
+<gn-phase-version-history
+  [open]="historyOpen"
+  (openChange)="historyOpen = $event"
+  [ovaId]="ovaId()"
+  [phaseId]="phase().id"
+  (onReverted)="onReverted.emit()"
+></gn-phase-version-history>
+
+<article
+  [attr.aria-label]="'Recurso: ' + label"
+  [class]="
+    'rounded-lg border border-border bg-card shadow-sm group ' + (isDragging() ? 'opacity-50' : '')
+  "
+>
+  <div class="flex items-start gap-2 p-3">
+    <span
+      class="mt-1 shrink-0 text-muted-foreground/60 select-none cursor-grab active:cursor-grabbing"
+      aria-hidden="true"
+      title="Arrastrar para reordenar"
+    >
+      <gn-icon name="dots-six-vertical" size="text-sm" />
+    </span>
+
+    <div class="min-w-0 flex-1 space-y-1.5">
+      <h3 class="truncate text-sm font-semibold text-foreground">{{ label }}</h3>
+      <div class="flex items-start gap-1">
+        <p
+          class="min-w-0 flex-1 text-xs leading-relaxed text-muted-foreground"
+          [class.max-h-40]="previewExpanded"
+          [class.overflow-y-auto]="previewExpanded"
+        >
+          {{ preview }}
+        </p>
+        @if (canExpandPreview) {
+          <button
+            type="button"
+            class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            (click)="togglePreview()"
+            [attr.aria-expanded]="previewExpanded"
+            [attr.aria-label]="
+              previewExpanded ? 'Ocultar resumen completo' : 'Ver resumen completo'
+            "
+            [title]="previewExpanded ? 'Ocultar' : 'Ver todo'"
+          >
+            <gn-icon
+              [name]="previewExpanded ? 'caret-up' : 'caret-down'"
+              size="text-xs"
+            />
+          </button>
+        }
+      </div>
+
+      @if (showCode) {
+        <pre
+          class="max-h-36 overflow-auto rounded-md border border-border/60 bg-muted/40 p-2 text-[10px] leading-snug text-foreground/70 whitespace-pre-wrap font-mono"
+          tabindex="0"
+          >{{ phase().content || "(sin contenido)" }}</pre
+        >
+      }
+
+      <div class="flex flex-wrap items-center gap-1 pt-0.5">
+        <gn-button
+          type="button"
+          size="sm"
+          variant="outline"
+          class="h-7 px-2 text-[11px]"
+          (onClick)="openEdit()"
+          ariaLabel="Editar contenido del recurso"
+        >
+          <gn-icon name="pencil-simple" size="text-xs" class="mr-1" />
+          Editar
+        </gn-button>
+        <gn-button
+          type="button"
+          size="sm"
+          variant="outline"
+          class="h-7 px-2 text-[11px]"
+          (onClick)="openRegen()"
+          ariaLabel="Mejorar recurso con IA"
+        >
+          <gn-icon name="arrow-counter-clockwise" size="text-xs" class="mr-1" />
+          Mejorar
+        </gn-button>
+        <gn-button
+          type="button"
+          size="sm"
+          variant="ghost"
+          class="h-7 px-2 text-[11px] text-muted-foreground"
+          (onClick)="showCode = !showCode"
+          [ariaLabel]="showCode ? 'Ocultar código HTML' : 'Ver código HTML'"
+        >
+          <gn-icon name="code" size="text-xs" class="mr-1" />
+          {{ showCode ? "Ocultar código" : "Ver código" }}
+        </gn-button>
+        <gn-button
+          type="button"
+          size="sm"
+          variant="ghost"
+          class="h-7 px-2 text-[11px] text-muted-foreground"
+          (onClick)="historyOpen = true"
+          ariaLabel="Historial de micro-versiones"
+        >
+          <gn-icon name="clock-counter-clockwise" size="text-xs" class="mr-1" />
+          Historial
+        </gn-button>
+        <gn-button
+          type="button"
+          size="sm"
+          variant="ghost"
+          class="h-7 px-2 text-[11px] text-destructive hover:text-destructive"
+          (onClick)="confirmingDelete = true"
+          ariaLabel="Eliminar recurso"
+        >
+          <gn-icon name="trash" size="text-xs" class="mr-1" />
+          Eliminar
+        </gn-button>
+      </div>
+    </div>
+  </div>
+
+  @if (mode) {
+    <div class="space-y-2 border-t border-border bg-muted/20 p-3">
+      <label class="block text-xs font-medium text-foreground" [attr.for]="editorId">
+        {{ mode === "edit" ? "Editar contenido del recurso" : "Describe cómo quieres mejorarlo" }}
+      </label>
+      <textarea
+        [id]="editorId"
+        class="min-h-[88px] w-full resize-y rounded-md border border-border bg-background px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+        [(ngModel)]="text"
+        [placeholder]="
+          mode === 'edit'
+            ? 'Pega o edita el contenido HTML…'
+            : 'Ej: Añade más ejemplos prácticos y acorta el texto…'
+        "
+      ></textarea>
+      <div class="flex flex-wrap gap-1.5">
+        <gn-button type="button" size="sm" class="h-7 text-xs px-3" (onClick)="submit()">
+          {{ mode === "edit" ? "Guardar cambios" : "Aplicar mejora" }}
+        </gn-button>
+        <gn-button
+          type="button"
+          size="sm"
+          variant="ghost"
+          class="h-7 text-xs px-2"
+          (onClick)="cancel()"
+        >
+          Cancelar
+        </gn-button>
+      </div>
+    </div>
+  }
+</article>

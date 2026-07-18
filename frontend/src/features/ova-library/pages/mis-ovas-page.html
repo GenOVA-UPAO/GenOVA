@@ -39,22 +39,14 @@
   </div>
 
   <div class="glass-card rounded-2xl p-4 flex flex-col gap-3 sm:flex-row">
-    <div class="relative flex-1">
-      <gn-icon
-        name="magnifying-glass"
-        size="text-lg"
-        class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-      />
-      <input
-        type="text"
-        hlmInput
-        placeholder="Buscar por título de la OVA..."
-        aria-label="Buscar por título de la OVA"
-        [ngModel]="service.searchQuery()"
-        (ngModelChange)="service.setSearch($event)"
-        class="w-full pl-10 border-muted bg-background/50 h-10 shadow-inner focus-visible:ring-primary/30"
-      />
-    </div>
+    <gn-search-input
+      class="flex-1"
+      [value]="service.searchQuery()"
+      (valueChange)="service.setSearch($event)"
+      placeholder="Buscar por título de la OVA..."
+      ariaLabel="Buscar por título de la OVA"
+      inputClass="border-muted bg-background/50 h-10 shadow-inner focus-visible:ring-primary/30"
+    />
 
     <label for="mis-ovas-status-filter" class="sr-only">Filtrar por estado</label>
     <hlm-select
@@ -153,16 +145,13 @@
       Empieza generando tu primer objeto virtual de aprendizaje. Nuestro asistente de IA te guiará
       en el proceso.
     </p>
-    <gn-button
-      routerLink="/crear-ova"
-      class="mt-6 shadow-lg shadow-primary/20 rounded-xl px-6 block"
-    >
+    <gn-button routerLink="/crear-ova" class="mt-6 shadow-lg shadow-primary/20 rounded-xl px-6">
       Crear mi primer OVA
     </gn-button>
     }
   </div>
   } @if (!loading() && !error() && !isEmpty()) {
-  <div class="grid items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+  <div class="grid items-stretch gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
     @for (ova of ovas(); track ova) {
     <div class="h-full animate-in zoom-in-95 duration-300">
       <gn-ova-card

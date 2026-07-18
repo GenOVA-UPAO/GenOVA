@@ -51,6 +51,30 @@ const TERMINAL = new Set(["done", "error", "canceled", "interrupted"]);
         </div>
       </div>
 
+      @if (!isTerminal && isStalled()) {
+        <div class="rounded-lg border border-accent-brand/30 bg-accent-brand/10 p-3 text-xs">
+          <p class="font-medium text-foreground">
+            La generación lleva un rato sin actividad — puedes seguir esperando, reanudar o
+            cancelar.
+          </p>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <gn-button variant="outline" size="sm" (onClick)="onResume.emit()">
+              Reanudar
+            </gn-button>
+            @if (showCancel()) {
+              <gn-button
+                variant="outline"
+                size="sm"
+                (onClick)="onCancel.emit()"
+                class="text-muted-foreground"
+              >
+                Cancelar
+              </gn-button>
+            }
+          </div>
+        </div>
+      }
+
       <gn-creation-resource-list
         [viewModel]="viewModel()"
         [selectedIds]="selectedIds()"
@@ -84,12 +108,14 @@ export class ProgressPanelComponent {
   readonly selectedIds = input<string[]>([]);
   readonly activeId = input<string | null>(null);
   readonly showCancel = input(false);
+  readonly isStalled = input(false);
   readonly onToggle = output<string>();
   readonly onRetryOne = output<string>();
   readonly onPreview = output<string>();
   readonly onSelectAll = output();
   readonly onRetrySelected = output();
   readonly onCancel = output();
+  readonly onResume = output();
 
   get status() {
     return this.job()?.status || "queued";

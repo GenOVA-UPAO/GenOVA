@@ -63,6 +63,7 @@ export class AuthService {
   private _user = signal<MeUser | null>(readCache());
   private _loading = signal<boolean>(false);
   private _inflight: Promise<MeUser | null> | null = null;
+  private _lastCheckAt = 0;
 
   /** Current authenticated user — null if not logged in. */
   readonly user = this._user.asReadonly();
@@ -85,10 +86,14 @@ export class AuthService {
 
   /**
    * Revalidates the session against GET /api/auth/me.
-   * Deduplicates concurrent calls via an in-flight promise.
+   * Deduplicates concurrent calls via an in-flight promise. With `maxAgeMs > 0`
+   * a result obtained within that window is reused without hitting the server —
+   * guards chained in one navigation (authGuard → redirect → guestGuard) would
+   * otherwise fire the same request twice back to back.
    */
-  async revalidate(): Promise<MeUser | null> {
+  async revalidate(maxAgeMs = 0): Promise<MeUser | null> {
     if (this._inflight) return this._inflight;
+    if (maxAgeMs > 0 && Date.now() - this._lastCheckAt < maxAgeMs) return this._user();
 
     this._loading.set(true);
     this._inflight = (async () => {
@@ -99,6 +104,7 @@ export class AuthService {
           const user = (await res.json()) as MeUser;
           writeCache(user);
           this._user.set(user);
+          this._lastCheckAt = Date.now();
           return user;
         }
 
@@ -108,6 +114,7 @@ export class AuthService {
           // guestGuard on /login → revalidate → 401 → navigate → infinite loop.
           clearCache();
           this._user.set(null);
+          this._lastCheckAt = Date.now();
           return null;
         }
 
@@ -129,10 +136,14 @@ export class AuthService {
     this._user.set(user);
   }
 
-  async login(email: string, password: string): Promise<{ status: number; data: AuthMessageData }> {
+  async login(
+    email: string,
+    password: string,
+    rememberMe = false,
+  ): Promise<{ status: number; data: AuthMessageData }> {
     const res = await apiFetch("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, remember_me: rememberMe }),
     });
     const data = (await res.json().catch(() => ({}))) as AuthMessageData;
     return { status: res.status, data };
@@ -200,6 +211,7 @@ export class AuthService {
     clearCache();
     this._user.set(null);
     this._inflight = null;
+    this._lastCheckAt = 0;
     void this.router.navigate(["/login"]);
   }
 
@@ -207,6 +219,7 @@ export class AuthService {
     clearCache();
     this._user.set(null);
     this._inflight = null;
+    this._lastCheckAt = 0;
     void this.router.navigate(["/login"], { queryParams: { expired: "1" } });
   }
 }

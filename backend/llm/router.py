@@ -11,10 +11,12 @@ from llm.clients.clients import (
     _get_provider_key,
     _key_cache,
     _key_lock,
+    current_parent,
     groq_client,
     huggingface_client,
     opencode_client,
     openrouter_client,
+    traced_openai,
 )
 from llm.utils.llm_helpers import (
     _RECOVERABLE_ERRORS,
@@ -27,6 +29,7 @@ from llm.utils.llm_helpers import (
     _resolve_primary,
     _retry_delay,
     effective_llm_config,
+    with_model_thinking,
 )
 
 # ── Re-export everything external callers depend on ───────────────────────────
@@ -61,6 +64,18 @@ __all__ = [
 logger = structlog.get_logger(__name__)
 
 
+def _ls_extra(client) -> dict:
+    """langsmith_extra para colgar la llamada del trace del job (parent explícito).
+
+    Solo cuando el cliente está envuelto por wrap_openai (`_genova_traced`) y hay un
+    job en curso — así el HTML de código (en threads del fan-out) anida igual que los
+    nodos secuenciales. Vacío en cualquier otro caso (el cliente crudo no acepta el kw)."""
+    if not getattr(client, "_genova_traced", False):
+        return {}
+    parent = current_parent()
+    return {"langsmith_extra": {"parent": parent}} if parent is not None else {}
+
+
 def _chat(
     provider: str,
     model_id: str,
@@ -81,28 +96,25 @@ def _chat(
         )
     elif provider == "opencode":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
-        client = opencode_client.with_options(**opts) if opts else opencode_client
-        # DeepSeek thinking models spend token budget on reasoning and return
-        # empty content on long prompts → EmptyContentError. Disable unless the
-        # caller already set extra_body explicitly.
-        call_extra = dict(extra)
-        if "deepseek" in model_id and "extra_body" not in call_extra:
-            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
+        client = traced_openai(opencode_client.with_options(**opts) if opts else opencode_client)
+        call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra, **_ls_extra(client)
         )
     elif provider == "huggingface":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
-        client = huggingface_client.with_options(**opts) if opts else huggingface_client
-        r = client.chat.completions.create(model=model_id, messages=msgs, max_tokens=max_tokens, **extra)
+        client = traced_openai(
+            huggingface_client.with_options(**opts) if opts else huggingface_client
+        )
+        r = client.chat.completions.create(
+            model=model_id, messages=msgs, max_tokens=max_tokens, **extra, **_ls_extra(client)
+        )
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
-        client = openrouter_client.with_options(**opts) if opts else openrouter_client
-        call_extra = dict(extra)
-        if "deepseek" in model_id and "extra_body" not in call_extra:
-            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
+        client = traced_openai(openrouter_client.with_options(**opts) if opts else openrouter_client)
+        call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
         r = client.chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra, **_ls_extra(client)
         )
     msg = r.choices[0].message if r.choices else None
     content = (msg.content if msg else None) or None
@@ -114,7 +126,7 @@ def _chat(
 def generar_texto(
     prompt: str,
     tarea: str,
-    max_tokens: int = 3000,
+    max_tokens: int = 8192,
     llm_config: dict | None = None,
     enabled_models: list | None = None,
 ) -> str:
@@ -143,8 +155,23 @@ def generar_texto(
             )
             if backoff:
                 time.sleep(backoff)
+        logger.info(
+            "task trying model",
+            tarea=tarea,
+            role=role,
+            provider=proveedor,
+            model_id=model_id,
+        )
         try:
-            return _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
+            content = _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
+            logger.info(
+                "task model ok",
+                tarea=tarea,
+                role=role,
+                provider=proveedor,
+                model_id=model_id,
+            )
+            return content
         except _RECOVERABLE_ERRORS as exc:
             last_err = exc
             prev_provider = proveedor

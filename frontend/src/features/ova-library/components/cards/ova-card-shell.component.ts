@@ -17,6 +17,7 @@ import type { OvaListItem } from "@/features/ova-library/lib/types";
           [checked]="isSelected()"
           (checkedChange)="onToggleSelect.emit(ova.id)"
           [disabled]="checkboxDisabled()"
+          [ariaLabel]="'Seleccionar ' + ova.title"
         ></gn-checkbox>
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap mb-1">

@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, effect, inject, type OnInit } from "@angular/core";
 
 import { AuthService } from "@/core/auth/auth.service";
 import { IconComponent } from "@/core/components/icon.component";
@@ -59,6 +59,16 @@ export class ProfilePageComponent implements OnInit {
 
   profileService = inject(ProfileService);
   private authService = inject(AuthService);
+
+  constructor() {
+    // El tab "Configuración" solo existe para admins: si el perfil carga y el
+    // usuario no lo es (o quedó activo de una sesión previa), vuelve a "info".
+    effect(() => {
+      if (this.activeTab === "config" && !this.loading && !this.isAdmin) {
+        this.activeTab = "info";
+      }
+    });
+  }
 
   ngOnInit() {
     void this.profileService.loadProfile();

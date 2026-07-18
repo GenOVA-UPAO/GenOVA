@@ -35,7 +35,7 @@ type Status = "verifying" | "success" | "error";
           </div>
           <h1 class="text-2xl font-semibold tracking-tight">¡Correo verificado!</h1>
           <p class="mt-2 text-sm text-muted-foreground">Tu cuenta ya está activa.</p>
-          <gn-button type="button" class="mt-5 w-full block" (onClick)="goToDashboard()">
+          <gn-button type="button" class="mt-5 w-full" (onClick)="goToDashboard()">
             Ir al dashboard
           </gn-button>
         }

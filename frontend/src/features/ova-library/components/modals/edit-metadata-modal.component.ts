@@ -77,7 +77,7 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
             <gn-button
               type="button"
               variant="outline"
-              class="flex-1 block"
+              class="flex-1"
               (onClick)="onCancel.emit()"
               [disabled]="isLoading()"
             >
@@ -85,7 +85,7 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
             </gn-button>
             <gn-button
               type="submit"
-              class="flex-1 block"
+              class="flex-1"
               [disabled]="isLoading() || metadataForm().invalid()"
               [loading]="isLoading()"
             >

@@ -15,7 +15,7 @@ import { ButtonComponent } from "@/core/components/ui/button.component";
 import { type Draft, isMediaTask } from "../lib/llmConfigDraft";
 import { chipLabel, type ChipModel } from "../lib/model-task-card.helpers";
 import { taskMeta } from "../lib/task-meta";
-import { modelsForTask } from "../lib/task-model-pool";
+import { includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 import { CatalogStatusAlertComponent } from "./catalog-status-alert.component";
 import { LlmTaskRowComponent } from "./llm-task-row.component";
@@ -64,7 +64,9 @@ export class ModelsMasterDetailComponent {
       category?: string;
     })[];
     const filtered = modelsForTask(all, task);
-    return filtered.length ? filtered : all;
+    const base = filtered.length ? filtered : all;
+    const d = this.selectedDraft();
+    return includeSelectedInPool(base, all, [d?.default, ...(d?.fallbacks ?? [])]);
   });
 
   taskLabel(task: string): string {

@@ -35,12 +35,13 @@ def totp_verify(
     body: VerifyBody,
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    user_id = _consume_ticket(body.ticket)
-    if not user_id:
+    consumed = _consume_ticket(body.ticket)
+    if not consumed:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={"error": "invalid_ticket", "message": "Ticket inválido o expirado."},
         )
+    user_id, remember_me = consumed
 
     user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
     if not user or not user.totp_enabled or not user.totp_secret:
@@ -54,7 +55,9 @@ def totp_verify(
     # Try TOTP first
     totp = pyotp.TOTP(str(user.totp_secret))
     if totp.verify(code, valid_window=1):
-        return issue_session_response(str(user.id), str(user.email))
+        return issue_session_response(
+            str(user.id), str(user.email), remember_me=remember_me
+        )
 
     # Try backup codes
     codes: list[dict] = list(user.totp_backup_codes or [])
@@ -64,7 +67,10 @@ def totp_verify(
             user.totp_backup_codes = codes  # type: ignore[assignment]
             db.commit()
             return issue_session_response(
-                str(user.id), str(user.email), extra_content={"backup_code_used": True}
+                str(user.id),
+                str(user.email),
+                extra_content={"backup_code_used": True},
+                remember_me=remember_me,
             )
 
     return JSONResponse(

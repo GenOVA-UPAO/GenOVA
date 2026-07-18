@@ -28,7 +28,7 @@ import type { Role } from "../lib/types";
   ],
   template: `
     <gn-dialog [open]="true" (openChange)="handleOpenChange($event)">
-      <gn-dialog-content class="max-w-lg">
+      <gn-dialog-content class="p-6">
         <gn-dialog-header>
           <gn-dialog-title>
             ¿Eliminar rol: <span class="capitalize">{{ deletingRole.name }}</span

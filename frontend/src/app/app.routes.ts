@@ -6,28 +6,33 @@ export const routes: Routes = [
   // ── Public / Auth routes ──────────────────────────────────────────────
   {
     path: "login",
+    title: "Iniciar sesión",
     canActivate: [guestGuard],
     loadComponent: () => import("../features/auth/pages/login-page").then((m) => m.LoginPage),
   },
   {
     path: "register",
+    title: "Crear cuenta",
     canActivate: [guestGuard],
     loadComponent: () => import("../features/auth/pages/register-page").then((m) => m.RegisterPage),
   },
   {
     path: "forgot-password",
+    title: "Recuperar contraseña",
     canActivate: [guestGuard],
     loadComponent: () =>
       import("../features/auth/pages/forgot-password-page").then((m) => m.ForgotPasswordPage),
   },
   {
     path: "reset-password",
+    title: "Restablecer contraseña",
     canActivate: [guestGuard],
     loadComponent: () =>
       import("../features/auth/pages/reset-password-page").then((m) => m.ResetPasswordPage),
   },
   {
     path: "verify-email",
+    title: "Verificar correo",
     loadComponent: () =>
       import("../features/auth/pages/verify-email-page").then((m) => m.VerifyEmailPage),
   },
@@ -63,16 +68,19 @@ export const routes: Routes = [
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
       {
         path: "dashboard",
+        title: "Dashboard",
         loadComponent: () =>
           import("../features/ova-library/pages/dashboard-page").then((m) => m.DashboardPage),
       },
       {
         path: "mis-ovas",
+        title: "Biblioteca de OVAs",
         loadComponent: () =>
           import("../features/ova-library/pages/mis-ovas-page").then((m) => m.MisOvasPage),
       },
       {
         path: "papelera",
+        title: "Papelera",
         loadComponent: () =>
           import("../features/ova-library/pages/papelera-page").then((m) => m.PapeleraPage),
       },
@@ -83,6 +91,8 @@ export const routes: Routes = [
       },
       {
         path: "crear",
+        title: "Crear OVA",
+        data: { fullBleed: true },
         loadComponent: () =>
           import("../features/ova-workspace/pages/ova-workspace-page.component").then(
             (m) => m.OvaWorkspacePageComponent,
@@ -93,12 +103,14 @@ export const routes: Routes = [
         redirectTo: "workspace/:id",
       },
       {
-        // React URL for in-flight generation jobs → query-param form.
+        // Deep link legado: /crear?jobId= resuelve ova_id y manda al workspace.
         path: "ova/job/:jobId/workspace",
         redirectTo: ({ params }) => `/crear?jobId=${params["jobId"]}`,
       },
       {
         path: "workspace/:id",
+        title: "Editor de OVA",
+        data: { fullBleed: true },
         loadComponent: () =>
           import("../features/ova-workspace/pages/ova-workspace-page.component").then(
             (m) => m.OvaWorkspacePageComponent,
@@ -106,20 +118,16 @@ export const routes: Routes = [
       },
       {
         path: "profile",
+        title: "Mi perfil",
         loadComponent: () =>
           import("../features/profile/pages/profile-page.component").then(
             (m) => m.ProfilePageComponent,
           ),
       },
-      {
-        path: "vinculacion",
-        loadComponent: () =>
-          import("../features/profile/pages/user-links-page.component").then(
-            (m) => m.UserLinksPageComponent,
-          ),
-      },
+      // /vinculacion: UI diferida; API backend (users/settings/links_*) se mantiene.
       {
         path: "analytics",
+        title: "Analítica",
         loadComponent: () =>
           import("../features/analytics/pages/analytics-page.component").then(
             (m) => m.AnalyticsPageComponent,
@@ -137,6 +145,7 @@ export const routes: Routes = [
       },
       {
         path: "models",
+        title: "Modelos de IA",
         loadComponent: () =>
           import("../features/llm-settings/pages/models-page.component").then(
             (m) => m.ModelsPageComponent,
@@ -153,6 +162,7 @@ export const routes: Routes = [
   // ── Playground público de fases 5E ────────────────────────────────────
   {
     path: "explore",
+    title: "Explora",
     loadComponent: () =>
       import("../features/ova-workspace/pages/explore-page.component").then(
         (m) => m.ExplorePageComponent,
@@ -160,6 +170,7 @@ export const routes: Routes = [
   },
   {
     path: "engage/:id",
+    title: "Engage",
     loadComponent: () =>
       import("../features/ova-workspace/pages/engage-page.component").then(
         (m) => m.EngagePageComponent,
@@ -169,6 +180,7 @@ export const routes: Routes = [
   // ── Fallback ──────────────────────────────────────────────────────────
   {
     path: "**",
+    title: "Página no encontrada",
     loadComponent: () => import("../core/components/not-found-page").then((m) => m.NotFoundPage),
   },
 ];

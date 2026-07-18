@@ -34,7 +34,7 @@
   vive en `frontend/vercel.json` (el Root Directory del proyecto Vercel es `frontend/`).
 - **Rewrites**: `/(.*) → /index.html` (SPA), provistos por el preset de Angular en Vercel.
 - **Origen del backend**: resuelto en tiempo de ejecución por `frontend/src/core/lib/http.ts`
-  (constante `API_BASE_PROD` + override `window.__GENOVA_API_BASE__`), no vía env `VITE_*`.
+  (`GENOVA_API_BASE_*` en build + override `window.__GENOVA_API_BASE__`), no vía `VITE_*`.
 
 > El check **"Supabase Preview"** que aparece en GitHub es la integración de *Branching*:
 > se **salta** (`skipped`) si la rama no tiene un PR/branch Supabase asociado. Es normal,
@@ -144,11 +144,12 @@ cp frontend/.env.example frontend/.env
 
 ### Frontend
 
-El frontend Angular no lee variables `VITE_*`: la base de la API se resuelve en
-`frontend/src/core/lib/http.ts` (proxy de `ng serve` en dev, URLs de Railway en prod, con
-override `window.__GENOVA_API_BASE__`). Los límites de UI (mínimo de caracteres del prompt,
-máximo de archivos por subida) son constantes en código
-(p. ej. `frontend/src/features/ova-workspace/lib/upload-chip-view-model.ts`).
+El frontend Angular no lee variables `VITE_*`. La base de la API se inyecta en
+`pnpm build` / `pnpm dev` desde `GENOVA_API_BASE_PROD` /
+`GENOVA_API_BASE_DEVELOP` (o `GENOVA_API_BASE_URL`) vía
+`frontend/scripts/run-with-api-env.mjs` (`ng --define`). En local, `ng serve` usa
+el proxy (`location.origin`). Override runtime: `window.__GENOVA_API_BASE__`.
+En Vercel hay que definir esas vars en el proyecto (Production / Preview).
 
 > ⚠️ Las claves de servidor (`GROQ_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`,
 > `SUPABASE_SERVICE_ROLE_KEY`) **nunca** llevan prefijo `VITE_` ni se exponen al frontend.
