@@ -5,6 +5,8 @@ import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
 
+import { humanizeResourceType } from "../../lib/ova-job-view-model";
+import { phaseMeta } from "../../lib/phase-meta";
 import type { Phase } from "../../lib/types";
 import { FileChipComponent } from "../shared/file-chip.component";
 import type { RegenProgress, UploadsPropBag } from "./workspace-chat-panel.types";
@@ -75,5 +77,14 @@ export class WorkspaceChatPanelComponent {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       this.onSubmit.emit();
     }
+  }
+
+  /** Etiqueta legible: nombre del recurso; fase 5E solo como respaldo en español. */
+  resourceLabel(phase: Phase): string {
+    const title = String(phase["title"] ?? "").trim();
+    if (title) return title;
+    const type = humanizeResourceType(phase["resource_type"] as string | number | undefined);
+    if (type) return type;
+    return phaseMeta(String(phase["phase_type"] ?? "")).label || "Recurso";
   }
 }

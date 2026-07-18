@@ -74,18 +74,15 @@
           </div>
           @for (phase of phases(); track phase.id) {
             <label
-              class="flex items-center gap-2 cursor-pointer rounded-md border border-border bg-background/80 px-2 py-1.5 text-xs hover:bg-muted/50"
+              class="flex min-w-0 items-center gap-2 cursor-pointer rounded-md border border-border bg-background/80 px-2 py-1.5 text-xs hover:bg-muted/50"
             >
               <gn-checkbox
                 [checked]="selectedPhaseIds().includes(phase.id)"
                 (checkedChange)="onTogglePhaseSelection.emit(phase.id)"
               ></gn-checkbox>
-              <span class="capitalize">
-                {{ phase["phase_type"] }}
+              <span class="min-w-0 truncate font-medium text-foreground">
+                {{ resourceLabel(phase) }}
               </span>
-              @if (phase["title"]) {
-                <span class="text-muted-foreground truncate"> — {{ phase["title"] }} </span>
-              }
             </label>
           }
         </div>
