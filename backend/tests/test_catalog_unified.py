@@ -34,6 +34,24 @@ def test_categorize_includes_video_and_imagen():
     )
 
 
+def test_categorize_general_llms_stay_texto_not_codigo():
+    """Brand names must not force codigo — that emptied the texto assignment pool."""
+    assert (
+        categorize_model(
+            {"id": "deepseek/deepseek-v4-flash", "architecture": {"modality": "text->text"}}
+        )
+        == "texto"
+    )
+    assert (
+        categorize_model({"id": "anthropic/claude-sonnet", "architecture": {"modality": "text"}})
+        == "texto"
+    )
+    assert (
+        categorize_model({"id": "openai/o3-mini", "architecture": {"modality": "text"}})
+        == "razonamiento"
+    )
+
+
 def test_multimodal_aptitudes_span_multiple_tasks():
     raw = {
         "id": "vision-model",

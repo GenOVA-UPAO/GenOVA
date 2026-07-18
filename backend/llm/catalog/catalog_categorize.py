@@ -14,19 +14,13 @@ MODALITY_CATEGORY = {
 # modality is still text->text in the provider listing (e.g. Kling on OpenRouter).
 _VIDEO_KEYWORDS = ("video", "kling", "sora", "veo")
 
+# Solo señales de modelos de código. Marcas generales (deepseek, claude, gpt-4…)
+# son LLMs de texto; meterlas aquí vaciaba el pool de asignación de «texto».
 _CODIGO_KEYWORDS = (
     "coder",
     "code",
-    "dev",
+    "devstral",
     "programming",
-    "claude",
-    "gpt-4",
-    "deepseek",
-    "gemini-pro",
-    "gemini-flash",
-    "o1",
-    "o3",
-    "o4",
 )
 
 _RAZONAMIENTO_KEYWORDS = (
@@ -35,6 +29,9 @@ _RAZONAMIENTO_KEYWORDS = (
     "think",
     "gpt-oss",
     "gpt-5",
+    "o1",
+    "o3",
+    "o4",
 )
 
 

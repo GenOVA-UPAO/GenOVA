@@ -17,9 +17,10 @@ CANONICAL_TYPES = (
 
 # category → default aptitudes for assignment pools.
 _CATEGORY_APTITUDES: dict[str, tuple[str, ...]] = {
-    "texto": ("texto", "orquestador"),
+    # General text LLMs can cover orchestration + reasoning assignment slots.
+    "texto": ("texto", "orquestador", "razonamiento"),
     "codigo": ("codigo",),
-    "razonamiento": ("razonamiento",),
+    "razonamiento": ("razonamiento", "texto"),
     "imagen": ("imagen",),
     "video": ("video",),
     "embedding": ("embedding",),

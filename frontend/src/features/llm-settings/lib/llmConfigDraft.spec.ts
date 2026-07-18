@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { defaultGenerationEnabled, isMediaTask, toDraft, toPayload } from "./llmConfigDraft";
-import { modelsForTask } from "./task-model-pool";
+import { includeSelectedInPool, modelsForTask } from "./task-model-pool";
 
 describe("llmConfigDraft media", () => {
   it("marks imagen/video as media; video generation defaults off", () => {
@@ -45,5 +45,30 @@ describe("modelsForTask", () => {
     expect(modelsForTask(catalog, "imagen").map((m) => m.model_id)).toEqual(["1", "2"]);
     expect(modelsForTask(catalog, "texto").map((m) => m.model_id)).toEqual(["1", "4"]);
     expect(modelsForTask(catalog, "video").map((m) => m.model_id)).toEqual(["3"]);
+  });
+});
+
+describe("includeSelectedInPool", () => {
+  it("keeps assigned models even when category filter excludes them", () => {
+    const all = [
+      {
+        provider: "openrouter",
+        model_id: "deepseek/deepseek-v4-flash",
+        category: "codigo",
+        label: "DeepSeek",
+      },
+      { provider: "groq", model_id: "llama", category: "texto", label: "Llama" },
+    ];
+    const pool = modelsForTask(all, "texto");
+    expect(pool.map((m) => m.model_id)).toEqual(["llama"]);
+    const merged = includeSelectedInPool(pool, all, [
+      { provider: "openrouter", model_id: "deepseek/deepseek-v4-flash" },
+      { provider: "openrouter", model_id: "other/missing" },
+    ]);
+    expect(merged.map((m) => m.model_id)).toEqual([
+      "llama",
+      "deepseek/deepseek-v4-flash",
+      "other/missing",
+    ]);
   });
 });

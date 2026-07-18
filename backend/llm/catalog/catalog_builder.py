@@ -3,6 +3,7 @@
 Extracted from catalog_refresh_providers to keep file sizes under 200 lines.
 """
 
+from llm.catalog.catalog_aptitudes import aptitudes_for
 from llm.catalog.catalog_categorize import categorize_model
 from llm.catalog.catalog_pricing import format_pricing, format_pricing_detail
 from llm.catalog.model_catalog import CATALOG_ENTRIES
@@ -109,4 +110,6 @@ def _build_full_catalog(
             })
 
     result.sort(key=lambda e: (not e["curated"], e["provider"], e["model_id"]))
+    for e in result:
+        e["aptitudes"] = aptitudes_for(e["category"], str(e.get("modality") or "text"))
     return result
