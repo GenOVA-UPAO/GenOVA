@@ -25,15 +25,31 @@ def init_logfire(app, engine) -> None:
         return
     try:
         import logfire
+    except Exception as exc:
+        # logger.warning (sin exc_info) evita la UserWarning de structlog
+        # (`Remove format_exc_info…`) que dispara cualquier log con traceback.
+        logger.warning("Logfire no disponible", error=str(exc))
+        return
 
-        logfire.instrument_fastapi(app, capture_headers=False)
+    # NO instrumentar FastAPI: otel-instrumentation-fastapi lee `route.path` sobre los
+    # nodos _IncludedRouter que FastAPI 0.137+ mete en `app.routes` (ahora un árbol, no
+    # una lista plana de APIRoute) → AttributeError en el middleware ASGI → 500 en todo
+    # /api/* antes de CORS. Re-habilitar cuando OTel migre a iter_route_contexts().
+
+    # Cada instrumentación aislada: un fallo no tumba a las otras ni ensucia el log.
+    try:
         logfire.instrument_sqlalchemy(engine=engine)
-        # Captura un span por llamada al SDK OpenAI (OpenRouter y compatibles) con
-        # el uso de tokens → base del cost/usage tracking por request (R8: sin PII).
+    except Exception as exc:
+        logger.warning("Logfire SQLAlchemy no instrumentado", error=str(exc))
+
+    # Span por llamada al SDK OpenAI (OpenRouter y compatibles) con el uso de tokens →
+    # base del cost/usage tracking por request (R8: sin PII).
+    try:
         logfire.instrument_openai()
-        logger.info("Logfire instrumentado", environment=settings.env)
-    except Exception:
-        logger.exception("Logfire instrumentation failed (continuing without it).")
+    except Exception as exc:
+        logger.warning("Logfire OpenAI no instrumentado", error=str(exc))
+
+    logger.info("Logfire instrumentado", environment=settings.env)
 
 
 def init_langsmith() -> None:
