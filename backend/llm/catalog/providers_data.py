@@ -90,6 +90,18 @@ CATALOG_ENTRIES = [
     },
     {
         "provider": "openrouter",
+        "model_id": "google/gemini-2.5-flash",
+        "label": "Gemini 2.5 Flash (OpenRouter)",
+        "task": "codigo",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+        "modality": "multimodal",
+        "notes": "Rápido (flash, sin thinking pesado), buen HTML/diseño. "
+        "Alternativa veloz a MiniMax M3 a precio similar.",
+    },
+    {
+        "provider": "openrouter",
         "model_id": "deepseek/deepseek-v4-flash",
         "label": "DeepSeek V4 Flash (OpenRouter)",
         "task": "texto",
