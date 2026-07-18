@@ -12,6 +12,27 @@ logger = structlog.get_logger(__name__)
 _TIMEOUT = 90.0
 _DEFAULT_MODEL = "openai/gpt-image-1-mini"
 
+# Closest common ratios accepted by Gemini / most image endpoints.
+_RATIOS: tuple[tuple[str, float], ...] = (
+    ("1:1", 1.0),
+    ("4:3", 4 / 3),
+    ("3:4", 3 / 4),
+    ("3:2", 3 / 2),
+    ("2:3", 2 / 3),
+    ("16:9", 16 / 9),
+    ("9:16", 9 / 16),
+    ("5:4", 5 / 4),
+    ("4:5", 4 / 5),
+    ("21:9", 21 / 9),
+)
+
+
+def _aspect_ratio(width: int, height: int) -> str:
+    if width <= 0 or height <= 0:
+        return "1:1"
+    target = width / height
+    return min(_RATIOS, key=lambda r: abs(r[1] - target))[0]
+
 
 def generate_openrouter_image(
     prompt: str,
@@ -20,7 +41,11 @@ def generate_openrouter_image(
     height: int,
     model: str | None = None,
 ) -> str | None:
-    """Generate one image via OpenRouter; return data URI or None."""
+    """Generate one image via OpenRouter; return data URI or None.
+
+    Payload stays minimal: many models (e.g. Gemini Flash Image) reject ``size`` /
+    ``output_format`` with HTTP 400. We only send ``aspect_ratio`` derived from w/h.
+    """
     if not api_key:
         logger.warning("image generation skipped: no api_key", provider="openrouter")
         return None
@@ -31,8 +56,7 @@ def generate_openrouter_image(
         "model": mid,
         "prompt": prompt,
         "n": 1,
-        "size": f"{width}x{height}",
-        "output_format": "jpeg",
+        "aspect_ratio": _aspect_ratio(width, height),
     }
     try:
         resp = httpx.post(
@@ -46,14 +70,16 @@ def generate_openrouter_image(
             json=payload,
             timeout=_TIMEOUT,
         )
-        if resp.status_code == 402:
+        if resp.status_code >= 400:
+            body = (resp.text or "")[:240].replace("\n", " ")
             logger.warning(
-                "image generation failed: OpenRouter credits exhausted (402)",
+                "image generation failed",
                 provider="openrouter",
                 model=mid,
+                status=resp.status_code,
+                body=body,
             )
             return None
-        resp.raise_for_status()
         data = resp.json().get("data") or []
         if not data:
             logger.warning("image generation returned empty data", provider="openrouter")
@@ -63,7 +89,7 @@ def generate_openrouter_image(
         if not b64:
             logger.warning("image generation missing b64_json", provider="openrouter")
             return None
-        ct = item.get("media_type") or "image/jpeg"
+        ct = item.get("media_type") or "image/png"
         if "svg" in ct:
             return None
         if b64.startswith("data:"):
