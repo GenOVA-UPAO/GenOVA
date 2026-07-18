@@ -83,7 +83,7 @@ def _layout_block(design_mode: str) -> str:
     return (
         "4) LAYOUT UPAO — USA LOS COMPONENTES UPAO DISPONIBLES:\n"
         "   El script upao_components.js YA está inyectado en el HTML. Usa estos Custom Elements:\n"
-        "   <upao-card eyebrow='FASE' title='Título' icon='🧠'>contenido</upao-card>\n"
+        "   <upao-card eyebrow='MINIJUEGO' title='Título del concepto' icon='🧠'>contenido</upao-card>\n"
         "   <upao-node number='1' title='Hito' label='Año'>detalle expandible</upao-node>\n"
         "   <upao-choice value='A' correct='true' feedback='¡Correcto!' group='q1'>texto</upao-choice>\n"
         "   <upao-reveal label='Ver respuesta'>contenido oculto</upao-reveal>\n"
@@ -155,13 +155,13 @@ _GOLDEN_SKELETON = """9) ESQUELETO DORADO (estructura de referencia — adapta e
 <html lang="es">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>[Tipo de recurso] · [Concepto]</title>
+  <title>[Tipo de actividad] · [Concepto]</title>
   <style>/* SOLO CSS específico del recurso, <=80 líneas */</style>
 </head>
 <body>
   <main class="ova-container">
-    <span class="ova-badge">FASE · TIPO DE RECURSO</span>
-    <h1>[Título con el concepto]</h1>
+    <span class="ova-badge">[TIPO DE ACTIVIDAD]</span>
+    <h1>[Título atractivo solo sobre el concepto]</h1>
     <hr class="ova-divider">
     <section class="ova-card"><!-- contenido/actividad principal --></section>
     <div class="ova-progress" aria-hidden="true"><span style="width:0%"></span></div>
@@ -257,6 +257,10 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
    - Comentarios > 30 caracteres en código de salida (mantén HTML compacto).
    - Múltiples <h1> en el mismo documento.
    - position:fixed que tape contenido en móvil.
+   - Texto visible al estudiante con jerga interna 5E o de pipeline: ENGAGE,
+     EXPLORE, EXPLAIN, ELABORATE, EVALUATE, "FASE ·", "Fase 1/2/…", "fase ENGAGE",
+     etc. En badge, eyebrow, <title>, <h1> y cuerpo solo habla el tipo de
+     actividad (p. ej. MINIJUEGO, QUIZ, SIMULADOR) y el concepto pedagógico.
 
 {_output_contract()}
 

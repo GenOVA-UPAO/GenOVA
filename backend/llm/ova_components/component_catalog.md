@@ -6,7 +6,7 @@ El script ya está inyectado — úsalos directamente en el HTML.
 ## upao-card
 Contenedor principal con cabecera UPAO.
 ```html
-<upao-card eyebrow="ENGAGE · FASE 1" title="Inteligencia Artificial" icon="🧠">
+<upao-card eyebrow="INTRODUCCIÓN" title="Inteligencia Artificial" icon="🧠">
   <p>Contenido aquí</p>
 </upao-card>
 ```
@@ -141,7 +141,7 @@ Events: `upao-completed` + llama `_scormComplete()` automáticamente
 <title>Quiz · Machine Learning</title>
 </head><body style="background:#F7F9FC;padding:20px;max-width:700px;margin:0 auto">
 
-<upao-card eyebrow="EVALUATE · QUIZ" title="Machine Learning" icon="🤖">
+<upao-card eyebrow="QUIZ" title="Machine Learning" icon="🤖">
   <upao-progress id="prog" current="0" total="3" show-fraction label="Respondidas"></upao-progress>
 
   <div id="q1" style="margin-top:20px">

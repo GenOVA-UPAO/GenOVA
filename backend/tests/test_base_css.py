@@ -26,6 +26,11 @@ def test_design_system_upao_references_injected_base():
     assert ".ova-btn" in ds
     # ya no pide definir el :root a mano
     assert "Define EXACTAMENTE estas variables" not in ds
+    # badge del esqueleto: tipo de actividad, no jerga 5E
+    assert "FASE · TIPO DE RECURSO" not in ds
+    assert "[TIPO DE ACTIVIDAD]" in ds
+    assert "ENGAGE" in ds  # aparece en la lista de PROHIBIDO
+    assert "jerga interna 5E" in ds
 
 
 def test_design_system_free_keeps_manual_css():

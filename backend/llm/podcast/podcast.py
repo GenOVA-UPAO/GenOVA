@@ -117,7 +117,7 @@ def build_podcast_html(concept: str, monologue: str, audio_b64: str | None) -> s
         + "</title>"
         + _STYLE
         + '</head>\n<body><div class="card">'
-        '<p class="tag">🎙️ Micro-Podcast · Fase ENGAGE</p>'
+        '<p class="tag">🎙️ Micro-Podcast</p>'
         "<h2>"
         + display_title
         + "</h2>"
