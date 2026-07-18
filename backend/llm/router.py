@@ -11,6 +11,7 @@ from llm.clients.clients import (
     _get_provider_key,
     _key_cache,
     _key_lock,
+    current_parent,
     groq_client,
     huggingface_client,
     opencode_client,
@@ -63,6 +64,18 @@ __all__ = [
 logger = structlog.get_logger(__name__)
 
 
+def _ls_extra(client) -> dict:
+    """langsmith_extra para colgar la llamada del trace del job (parent explícito).
+
+    Solo cuando el cliente está envuelto por wrap_openai (`_genova_traced`) y hay un
+    job en curso — así el HTML de código (en threads del fan-out) anida igual que los
+    nodos secuenciales. Vacío en cualquier otro caso (el cliente crudo no acepta el kw)."""
+    if not getattr(client, "_genova_traced", False):
+        return {}
+    parent = current_parent()
+    return {"langsmith_extra": {"parent": parent}} if parent is not None else {}
+
+
 def _chat(
     provider: str,
     model_id: str,
@@ -83,23 +96,25 @@ def _chat(
         )
     elif provider == "opencode":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
-        client = opencode_client.with_options(**opts) if opts else opencode_client
+        client = traced_openai(opencode_client.with_options(**opts) if opts else opencode_client)
         call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
-        r = traced_openai(client).chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
+        r = client.chat.completions.create(
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra, **_ls_extra(client)
         )
     elif provider == "huggingface":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
-        client = huggingface_client.with_options(**opts) if opts else huggingface_client
-        r = traced_openai(client).chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
+        client = traced_openai(
+            huggingface_client.with_options(**opts) if opts else huggingface_client
+        )
+        r = client.chat.completions.create(
+            model=model_id, messages=msgs, max_tokens=max_tokens, **extra, **_ls_extra(client)
         )
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
-        client = openrouter_client.with_options(**opts) if opts else openrouter_client
+        client = traced_openai(openrouter_client.with_options(**opts) if opts else openrouter_client)
         call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
-        r = traced_openai(client).chat.completions.create(
-            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
+        r = client.chat.completions.create(
+            model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra, **_ls_extra(client)
         )
     msg = r.choices[0].message if r.choices else None
     content = (msg.content if msg else None) or None

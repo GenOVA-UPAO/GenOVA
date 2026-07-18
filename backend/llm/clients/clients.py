@@ -1,6 +1,7 @@
 """LLM SDK client initialization and API key resolution."""
 
 import contextlib
+import contextvars
 import time
 from threading import RLock
 
@@ -106,3 +107,25 @@ def traced_openai(client: OpenAI) -> OpenAI:
     with contextlib.suppress(Exception):
         wrapped._genova_traced = True
     return wrapped
+
+
+# RunTree padre del job en curso (LangSmith). Lo setea job_trace por nodo; _chat lo
+# pasa EXPLÍCITO a wrap_openai (langsmith_extra) para anidar de forma robusta a través
+# de los thread-pools del fan-out — los contextvars no cruzan ThreadPoolExecutor.submit,
+# así que el contexto ambiente de langsmith no basta.
+_CURRENT_PARENT: contextvars.ContextVar = contextvars.ContextVar("genova_ls_parent", default=None)
+
+
+def current_parent():
+    """RunTree padre del job en curso, o None fuera de una generación/sin tracing."""
+    return _CURRENT_PARENT.get()
+
+
+def set_current_parent(rt):
+    """Setea el padre; devuelve el token para reset_current_parent."""
+    return _CURRENT_PARENT.set(rt)
+
+
+def reset_current_parent(token) -> None:
+    with contextlib.suppress(Exception):
+        _CURRENT_PARENT.reset(token)

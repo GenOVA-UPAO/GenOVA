@@ -8,6 +8,7 @@ y marca como `exhausted` los que vuelven a fallar, para que la reconciliación
 final (`_persist_results`) cierre la fila como "error" en vez de dejarla colgada.
 """
 
+import contextvars
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import structlog
@@ -102,7 +103,9 @@ def repair_node(state: OvaGenerationState) -> dict:
     results, exhausted = [], []
     workers = min(_concurrency(), len(failures))
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = [pool.submit(_retry, e) for e in failures]
+        # copy_context: propaga el contextvar del parent (job_trace) al sub-thread para
+        # que los reintentos LLM aniden bajo el trace del job (LangSmith).
+        futures = [pool.submit(contextvars.copy_context().run, _retry, e) for e in failures]
         for fut in as_completed(futures):
             err, html = fut.result()
             phase, rt = err["phase"], err["resource_type"]

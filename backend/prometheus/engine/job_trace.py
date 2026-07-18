@@ -47,15 +47,26 @@ def _get_or_create(job_id: str) -> Any:
 
 @contextlib.contextmanager
 def job_trace(job_id: Any):
-    """Reentra el contexto de trace del job (o no-op) alrededor de un nodo."""
+    """Reentra el contexto de trace del job (o no-op) alrededor de un nodo.
+
+    Setea dos cosas: (1) el contextvar propio `_CURRENT_PARENT` (que `_chat` lee y
+    pasa EXPLÍCITO a wrap_openai — robusto a través de thread-pools), y (2) el
+    contexto ambiente de langsmith (para el path secuencial). Nunca impide correr
+    el nodo si la instrumentación falla.
+    """
     if not (_enabled() and job_id):
         yield
         return
     cm = None
+    token = None
     try:
         from langsmith.run_helpers import tracing_context
 
-        cm = tracing_context(parent=_get_or_create(str(job_id)))
+        from llm.clients.clients import set_current_parent
+
+        rt = _get_or_create(str(job_id))
+        token = set_current_parent(rt)
+        cm = tracing_context(parent=rt)
         cm.__enter__()
     except Exception:  # nunca impedir la ejecución del nodo por instrumentar
         cm = None
@@ -65,6 +76,10 @@ def job_trace(job_id: Any):
         if cm is not None:
             with contextlib.suppress(Exception):
                 cm.__exit__(None, None, None)
+        if token is not None:
+            from llm.clients.clients import reset_current_parent
+
+            reset_current_parent(token)
 
 
 def end_job_trace(job_id: Any) -> None:

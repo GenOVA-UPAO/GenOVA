@@ -9,6 +9,7 @@ to the main ``results`` list and performs BDI belief revision.
 Flow: engage → critic → explore → critic → … → editor
 """
 
+import contextvars
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import structlog
@@ -50,8 +51,19 @@ def critic_node(state: dict) -> dict:
     workers = min(4, len(phase_results))
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
+        # copy_context: el contextvar del parent (job_trace) debe cruzar al sub-thread
+        # para que las llamadas LLM del critic aniden bajo el trace del job (LangSmith).
         futures = [
-            pool.submit(_evaluate, r, concept, llm_config, enabled_models, theme, max_rounds)
+            pool.submit(
+                contextvars.copy_context().run,
+                _evaluate,
+                r,
+                concept,
+                llm_config,
+                enabled_models,
+                theme,
+                max_rounds,
+            )
             for r in phase_results
         ]
         for fut in as_completed(futures):
