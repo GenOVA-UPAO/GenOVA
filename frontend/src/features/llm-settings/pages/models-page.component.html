@@ -36,27 +36,38 @@
   </div>
 
   <gn-tabs [(value)]="activeTab" class="space-y-5 block">
-    <gn-tabs-list
-      class="bg-card border border-border/60 shadow-sm h-auto p-1 gap-0.5 rounded-xl w-fit flex-wrap"
-    >
-      <gn-tabs-trigger value="models" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
-        Modelos
-      </gn-tabs-trigger>
-
-      <gn-tabs-trigger value="credentials" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
-        Credenciales
-      </gn-tabs-trigger>
-
-      @if (isAdmin()) {
-        <gn-tabs-trigger value="platform" class="rounded-lg px-4 py-2 text-xs font-bold gap-1.5">
-          Plataforma
-          <span
-            class="ml-1 rounded-sm bg-amber-500/15 px-1 py-0.5 text-[8px] font-black uppercase text-amber-600"
-            >Admin</span
-          >
+    <div class="flex justify-center">
+      <gn-tabs-list
+        class="inline-flex h-auto w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-2xl border border-border/70 bg-muted/40 p-1.5 shadow-sm backdrop-blur-sm"
+      >
+        <gn-tabs-trigger
+          value="models"
+          class="inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold tracking-tight text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/60"
+        >
+          Modelos
         </gn-tabs-trigger>
-      }
-    </gn-tabs-list>
+
+        <gn-tabs-trigger
+          value="credentials"
+          class="inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold tracking-tight text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/60"
+        >
+          Credenciales
+        </gn-tabs-trigger>
+
+        @if (isAdmin()) {
+          <gn-tabs-trigger
+            value="platform"
+            class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold tracking-tight text-muted-foreground transition-colors hover:text-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/60"
+          >
+            Plataforma
+            <span
+              class="rounded-full bg-amber-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 ring-1 ring-amber-500/25 dark:text-amber-400"
+              >Admin</span
+            >
+          </gn-tabs-trigger>
+        }
+      </gn-tabs-list>
+    </div>
 
     <gn-tabs-content value="models" class="mt-0 space-y-6 block">
       @if (adminLoading()) {
