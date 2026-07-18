@@ -1,5 +1,6 @@
 import {
   finishChatPatch,
+  formatChatTarget,
   labelsForPhaseIds,
   patchChatMessage,
   userChatMessage,
@@ -27,9 +28,26 @@ describe("regen-chat", () => {
 
   it("patchChatMessage y finishChatPatch actualizan el asistente", () => {
     const user = userChatMessage("hola");
-    const asst = { id: "asst-1", role: "assistant" as const, text: "…", createdAt: 1, status: "running" as const };
-    const patched = patchChatMessage([user, asst], "asst-1", finishChatPatch("success"));
+    const asst = {
+      id: "asst-1",
+      role: "assistant" as const,
+      text: "…",
+      createdAt: 1,
+      status: "running" as const,
+    };
+    const patched = patchChatMessage(
+      [user, asst],
+      "asst-1",
+      finishChatPatch("success", ["Juego de Gamificación"]),
+    );
     expect(patched[1].status).toBe("success");
     expect(patched[1].percentage).toBe(100);
+    expect(patched[1].text).toContain("Juego de Gamificación");
+    expect(patched[1].resourceLabels).toEqual(["Juego de Gamificación"]);
+  });
+
+  it("formatChatTarget distingue OVA completo y recursos", () => {
+    expect(formatChatTarget()).toBe("al OVA completo");
+    expect(formatChatTarget(["Lab"])).toBe("a «Lab»");
   });
 });

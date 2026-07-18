@@ -41,7 +41,10 @@ export function userChatMessage(text: string, resourceLabels?: string[]): RegenC
   };
 }
 
-export function assistantRunningMessage(text = "Iniciando regeneración…"): RegenChatMessage {
+export function assistantRunningMessage(
+  text = "Iniciando regeneración…",
+  resourceLabels?: string[],
+): RegenChatMessage {
   return {
     id: newChatId("asst"),
     role: "assistant",
@@ -49,6 +52,7 @@ export function assistantRunningMessage(text = "Iniciando regeneración…"): Re
     createdAt: Date.now(),
     status: "running",
     percentage: 0,
+    resourceLabels,
   };
 }
 
@@ -68,18 +72,29 @@ export function progressChatPatch(
   return { percentage, text: stage || "Regenerando…", status: "running" };
 }
 
+/** Texto del alcance: un recurso, varios, o todo el OVA. */
+export function formatChatTarget(resourceLabels?: string[]): string {
+  if (!resourceLabels?.length) return "al OVA completo";
+  if (resourceLabels.length === 1) return `a «${resourceLabels[0]}»`;
+  return `a ${resourceLabels.length} recursos (${resourceLabels.join(", ")})`;
+}
+
 export function finishChatPatch(
   status: "success" | "error",
+  resourceLabels?: string[],
 ): Partial<RegenChatMessage> {
+  const target = formatChatTarget(resourceLabels);
   if (status === "success") {
     return {
       status: "success",
       percentage: 100,
-      text: "Listo. Los cambios ya están aplicados al OVA.",
+      text: `Listo. Los cambios ya están aplicados ${target}.`,
+      resourceLabels,
     };
   }
   return {
     status: "error",
-    text: "La regeneración falló. Puedes intentarlo de nuevo.",
+    text: `La regeneración falló ${target}. Puedes intentarlo de nuevo.`,
+    resourceLabels,
   };
 }

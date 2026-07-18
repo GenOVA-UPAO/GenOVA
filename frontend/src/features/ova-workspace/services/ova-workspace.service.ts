@@ -146,7 +146,7 @@ export class OvaWorkspaceService implements OnDestroy {
     body: RegenBody,
     assistantText: string,
   ) {
-    const assistant = assistantRunningMessage(assistantText);
+    const assistant = assistantRunningMessage(assistantText, userMsg.resourceLabels);
     this.chatMessagesState.update((msgs) => [...msgs, userMsg, assistant]);
     this.activeAssistantId = assistant.id;
     if (await this.runRegen(body)) {
@@ -237,7 +237,9 @@ export class OvaWorkspaceService implements OnDestroy {
         this.isRegeneratingState.set(false);
         void this.load();
         if (this.activeAssistantId) {
-          this.patchAssistant(this.activeAssistantId, finishChatPatch(progress.status));
+          const labels = this.chatMessagesState().find((m) => m.id === this.activeAssistantId)
+            ?.resourceLabels;
+          this.patchAssistant(this.activeAssistantId, finishChatPatch(progress.status, labels));
         }
         this.activeAssistantId = null;
         if (progress.status === "success") this.toastSuccess("OVA regenerado.");

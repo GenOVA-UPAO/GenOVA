@@ -131,6 +131,13 @@
                   ></div>
                 </div>
               }
+              <p class="text-[10px] text-muted-foreground">
+                @if (msg.resourceLabels && msg.resourceLabels.length > 0) {
+                  En: {{ msg.resourceLabels.join(", ") }}
+                } @else {
+                  En: OVA completo
+                }
+              </p>
               @if (msg.status === "success") {
                 <p class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
                   Completado
