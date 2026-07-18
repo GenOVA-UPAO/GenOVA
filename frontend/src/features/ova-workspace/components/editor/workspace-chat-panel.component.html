@@ -88,6 +88,59 @@
         </div>
       }
     </div>
+
+    <div class="space-y-3 pt-1" aria-live="polite" aria-relevant="additions">
+      @if (messages().length === 0) {
+        <p class="rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-4 text-center text-[11px] text-muted-foreground">
+          Aquí verás el historial de tus prompts y el progreso de cada generación.
+        </p>
+      }
+      @for (msg of messages(); track msg.id) {
+        @if (msg.role === "user") {
+          <div class="flex justify-end">
+            <div
+              class="max-w-[92%] rounded-2xl rounded-br-md bg-primary px-3 py-2 text-xs text-primary-foreground shadow-sm"
+            >
+              <p class="whitespace-pre-wrap break-words">{{ msg.text }}</p>
+              @if (msg.resourceLabels && msg.resourceLabels.length > 0) {
+                <p class="mt-1.5 border-t border-primary-foreground/20 pt-1.5 text-[10px] opacity-90">
+                  En: {{ msg.resourceLabels.join(", ") }}
+                </p>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="flex justify-start">
+            <div
+              class="max-w-[92%] space-y-1.5 rounded-2xl rounded-bl-md border border-border bg-card px-3 py-2 text-xs shadow-sm"
+              [class.border-destructive/40]="msg.status === 'error'"
+              [class.border-primary/30]="msg.status === 'running'"
+            >
+              <p
+                class="whitespace-pre-wrap break-words"
+                [class.text-destructive]="msg.status === 'error'"
+                [class.text-muted-foreground]="msg.status !== 'error'"
+              >
+                {{ msg.text }}
+              </p>
+              @if (msg.status === "running" && msg.percentage != null) {
+                <div class="h-1 w-full overflow-hidden rounded-full bg-primary/10">
+                  <div
+                    class="h-full rounded-full bg-primary transition-[width] duration-500"
+                    [style.width]="msg.percentage + '%'"
+                  ></div>
+                </div>
+              }
+              @if (msg.status === "success") {
+                <p class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                  Completado
+                </p>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
   </div>
 
   <div

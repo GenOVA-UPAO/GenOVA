@@ -2,31 +2,37 @@ import { computed, inject, Injectable, type OnDestroy, signal } from "@angular/c
 
 import { toast } from "@/core/lib/toast";
 
+import {
+  assistantRunningMessage,
+  finishChatPatch,
+  labelsForPhaseIds,
+  patchChatMessage,
+  progressChatPatch,
+  type RegenChatMessage,
+  userChatMessage,
+} from "../lib/regen-chat";
 import type { OvaData, PhaseWithContent } from "../lib/types";
 import { OvaEditService, type RegenBody } from "./ova-edit.service";
 
 const POLL_MS = 3000;
 
-@Injectable({
-  providedIn: "root",
-})
+@Injectable({ providedIn: "root" })
 export class OvaWorkspaceService implements OnDestroy {
   private editService = inject(OvaEditService);
 
-  // State
   private ovaState = signal<OvaData | null>(null);
   private loadingState = signal(true);
   private generatingState = signal(false);
   private errorState = signal("");
-
   private promptState = signal("");
   private isRegeneratingState = signal(false);
   private regenProgressState = signal<{ percentage: number; stage: string }>({
     percentage: 0,
     stage: "",
   });
+  private chatMessagesState = signal<RegenChatMessage[]>([]);
+  private activeAssistantId: string | null = null;
 
-  // Accessors
   ova = this.ovaState.asReadonly();
   loading = this.loadingState.asReadonly();
   generating = this.generatingState.asReadonly();
@@ -34,23 +40,19 @@ export class OvaWorkspaceService implements OnDestroy {
   prompt = this.promptState.asReadonly();
   isRegenerating = this.isRegeneratingState.asReadonly();
   regenProgress = this.regenProgressState.asReadonly();
+  chatMessages = this.chatMessagesState.asReadonly();
 
-  // Derived
   phases = computed(() => (this.ovaState()?.current_version?.phases ?? []) as PhaseWithContent[]);
   versionNumber = computed(() => this.ovaState()?.current_version?.version_number ?? null);
   isReady = computed(() => this.ovaState()?.status === "listo");
   versionHistory = computed(() => this.ovaState()?.version_history ?? []);
 
-  // Internals
   private ovaId: string | null = null;
   private mounted = false;
-  private regenTimer: any = null;
-  private loadRetryTimer: any = null;
+  private regenTimer: ReturnType<typeof setTimeout> | null = null;
+  private loadRetryTimer: ReturnType<typeof setTimeout> | null = null;
 
   init(ovaId: string) {
-    // Servicio singleton root: al navegar de un OVA a otro hay que limpiar el
-    // estado del anterior (fases/prompt/error visibles hasta que resuelva el
-    // fetch nuevo) y cancelar sus timers de polling.
     this.clearTimers();
     this.ovaState.set(null);
     this.promptState.set("");
@@ -58,26 +60,23 @@ export class OvaWorkspaceService implements OnDestroy {
     this.generatingState.set(false);
     this.isRegeneratingState.set(false);
     this.regenProgressState.set({ percentage: 0, stage: "" });
+    this.chatMessagesState.set([]);
+    this.activeAssistantId = null;
     this.ovaId = ovaId;
     this.mounted = true;
     void this.load();
   }
 
-  /** Cancela timers y desmonta; llamar desde el ngOnDestroy de la vista. */
   teardown() {
     this.mounted = false;
     this.clearTimers();
   }
 
   private clearTimers() {
-    if (this.regenTimer) {
-      clearTimeout(this.regenTimer);
-      this.regenTimer = null;
-    }
-    if (this.loadRetryTimer) {
-      clearTimeout(this.loadRetryTimer);
-      this.loadRetryTimer = null;
-    }
+    if (this.regenTimer) clearTimeout(this.regenTimer);
+    if (this.loadRetryTimer) clearTimeout(this.loadRetryTimer);
+    this.regenTimer = null;
+    this.loadRetryTimer = null;
   }
 
   setPrompt(value: string) {
@@ -126,9 +125,40 @@ export class OvaWorkspaceService implements OnDestroy {
   async submitPrompt(selectedPhaseIds: string[] = []) {
     if (!this.promptState().trim() || this.isRegeneratingState()) return;
     const p = this.promptState().trim();
-    if (await this.runRegen({ prompt: p, faseIds: selectedPhaseIds })) {
+    await this.startTrackedRegen(
+      userChatMessage(p, labelsForPhaseIds(this.phases(), selectedPhaseIds)),
+      { prompt: p, faseIds: selectedPhaseIds },
+      "Iniciando regeneración…",
+    );
+  }
+
+  async submitRegenAll() {
+    if (this.isRegeneratingState()) return;
+    await this.startTrackedRegen(
+      userChatMessage("Regenerar OVA completo"),
+      { prompt: null, faseIds: [] },
+      "Regenerando el OVA completo…",
+    );
+  }
+
+  private async startTrackedRegen(
+    userMsg: RegenChatMessage,
+    body: RegenBody,
+    assistantText: string,
+  ) {
+    const assistant = assistantRunningMessage(assistantText);
+    this.chatMessagesState.update((msgs) => [...msgs, userMsg, assistant]);
+    this.activeAssistantId = assistant.id;
+    if (await this.runRegen(body)) {
       this.setPrompt("");
+      return;
     }
+    this.patchAssistant(assistant.id, {
+      status: "error",
+      text: "No se pudo iniciar la regeneración.",
+      percentage: 0,
+    });
+    this.activeAssistantId = null;
   }
 
   async downloadScorm() {
@@ -142,7 +172,7 @@ export class OvaWorkspaceService implements OnDestroy {
 
   async savePhase(phaseId: string, content: string) {
     await this.mutatePhase(
-      (ovaId) => this.editService.savePhaseContent(ovaId, phaseId, content),
+      (id) => this.editService.savePhaseContent(id, phaseId, content),
       "Recurso guardado.",
       "No se pudo guardar el recurso.",
     );
@@ -150,7 +180,7 @@ export class OvaWorkspaceService implements OnDestroy {
 
   async deletePhase(phaseId: string) {
     await this.mutatePhase(
-      (ovaId) => this.editService.deletePhase(ovaId, phaseId),
+      (id) => this.editService.deletePhase(id, phaseId),
       "Recurso eliminado.",
       "No se pudo eliminar el recurso.",
     );
@@ -158,7 +188,7 @@ export class OvaWorkspaceService implements OnDestroy {
 
   async addPhase(phaseType: string, prompt: string) {
     await this.mutatePhase(
-      (ovaId) => this.editService.addPhase(ovaId, phaseType, prompt),
+      (id) => this.editService.addPhase(id, phaseType, prompt),
       "Recurso añadido.",
       "No se pudo añadir el recurso.",
     );
@@ -167,13 +197,12 @@ export class OvaWorkspaceService implements OnDestroy {
   async reorderPhases(phases: PhaseWithContent[]) {
     const reorders = phases.map((p, idx) => ({ new_order: idx, phase_id: p.id }));
     await this.mutatePhase(
-      (ovaId) => this.editService.reorderPhases(ovaId, reorders),
+      (id) => this.editService.reorderPhases(id, reorders),
       "Orden actualizado.",
       "No se pudo reordenar.",
     );
   }
 
-  /** Ejecuta una mutación de fase, notifica y recarga el OVA (misma pauta que onPhaseReverted). */
   private async mutatePhase(
     action: (ovaId: string) => Promise<unknown>,
     okMsg: string,
@@ -189,7 +218,6 @@ export class OvaWorkspaceService implements OnDestroy {
     }
   }
 
-  // Poll
   private async pollRegen(jobId: string) {
     if (!this.mounted || !this.ovaId) return;
     try {
@@ -199,29 +227,40 @@ export class OvaWorkspaceService implements OnDestroy {
         status?: string;
       };
       if (!this.mounted) return;
-
-      this.regenProgressState.set({
-        percentage: progress.percentage ?? 0,
-        stage: progress.stage ?? "",
-      });
-
+      const percentage = progress.percentage ?? 0;
+      const stage = progress.stage ?? "";
+      this.regenProgressState.set({ percentage, stage });
+      if (this.activeAssistantId) {
+        this.patchAssistant(this.activeAssistantId, progressChatPatch(percentage, stage));
+      }
       if (progress.status === "success" || progress.status === "error") {
         this.isRegeneratingState.set(false);
         void this.load();
-        if (progress.status === "success") {
-          this.toastSuccess("OVA regenerado.");
-        } else {
-          this.toastError("La regeneración falló.");
+        if (this.activeAssistantId) {
+          this.patchAssistant(this.activeAssistantId, finishChatPatch(progress.status));
         }
+        this.activeAssistantId = null;
+        if (progress.status === "success") this.toastSuccess("OVA regenerado.");
+        else this.toastError("La regeneración falló.");
       } else {
         this.regenTimer = setTimeout(() => this.pollRegen(jobId), POLL_MS);
       }
     } catch {
-      if (this.mounted) {
-        this.isRegeneratingState.set(false);
-        this.toastError("Error al consultar el progreso de regeneración.");
+      if (!this.mounted) return;
+      this.isRegeneratingState.set(false);
+      if (this.activeAssistantId) {
+        this.patchAssistant(this.activeAssistantId, {
+          status: "error",
+          text: "Error al consultar el progreso de regeneración.",
+        });
+        this.activeAssistantId = null;
       }
+      this.toastError("Error al consultar el progreso de regeneración.");
     }
+  }
+
+  private patchAssistant(id: string, patch: Partial<RegenChatMessage>) {
+    this.chatMessagesState.update((msgs) => patchChatMessage(msgs, id, patch));
   }
 
   private toastSuccess(detail: string) {

@@ -5,6 +5,7 @@ import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { CheckboxComponent } from "@/core/components/ui/checkbox.component";
 
+import type { RegenChatMessage } from "../../lib/regen-chat";
 import { resourceLabel as resolveResourceLabel } from "../../lib/resource-label";
 import type { Phase } from "../../lib/types";
 import { FileChipComponent } from "../shared/file-chip.component";
@@ -21,6 +22,7 @@ export class WorkspaceChatPanelComponent {
   readonly isRegenerating = input(false);
   readonly uploads = input.required<UploadsPropBag>();
   readonly regenProgress = input.required<RegenProgress>();
+  readonly messages = input<RegenChatMessage[]>([]);
   readonly phases = input<Phase[]>([]);
   readonly selectionMode = input(false);
   readonly selectedPhaseIds = input<string[]>([]);

@@ -150,6 +150,6 @@ export class OvaEditViewComponent implements OnInit, OnDestroy {
   }
 
   regenAll(): void {
-    void this.ws.runRegen({ prompt: null, faseIds: [] });
+    void this.ws.submitRegenAll();
   }
 }
