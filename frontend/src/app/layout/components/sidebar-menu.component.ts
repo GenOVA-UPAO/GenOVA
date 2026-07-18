@@ -29,15 +29,32 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
   ],
   host: { class: "flex min-h-0 flex-1 flex-col" },
   template: `
-    <nav aria-label="Navegación principal" class="flex-1 overflow-y-auto px-2 pb-3">
-      <gn-sidebar-section title="Principal">
+    <nav
+      aria-label="Navegación principal"
+      class="flex-1 overflow-y-auto pb-3"
+      [class.px-2]="!collapsed()"
+      [class.px-1.5]="collapsed()"
+    >
+      <gn-sidebar-section title="Principal" [collapsed]="collapsed()">
         @for (item of navigationLinks; track item.to) {
-          <li gn-sidebar-nav-item [to]="item.to" [label]="item.label" [onNavigate]="onNavigate()">
+          <li
+            gn-sidebar-nav-item
+            [to]="item.to"
+            [label]="item.label"
+            [collapsed]="collapsed()"
+            [onNavigate]="onNavigate()"
+          >
             <gn-nav-icon icon [name]="item.icon" />
           </li>
         }
         @if (canAnalytics()) {
-          <li gn-sidebar-nav-item to="/analytics" label="Analítica" [onNavigate]="onNavigate()">
+          <li
+            gn-sidebar-nav-item
+            to="/analytics"
+            label="Analítica"
+            [collapsed]="collapsed()"
+            [onNavigate]="onNavigate()"
+          >
             <gn-nav-icon icon name="chart" />
           </li>
         }
@@ -46,6 +63,7 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
           to="/papelera"
           label="Papelera"
           [badge]="trashCount()"
+          [collapsed]="collapsed()"
           [onNavigate]="onNavigate()"
         >
           <gn-nav-icon icon name="trash" />
@@ -53,13 +71,14 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
       </gn-sidebar-section>
 
       @if (canModels() || canLink()) {
-        <gn-sidebar-section title="Configuración">
+        <gn-sidebar-section title="Configuración" [collapsed]="collapsed()">
           @if (canModels()) {
             @for (item of configNavLinks; track item.to) {
               <li
                 gn-sidebar-nav-item
                 [to]="item.to"
                 [label]="item.label"
+                [collapsed]="collapsed()"
                 [onNavigate]="onNavigate()"
               >
                 <gn-nav-icon icon [name]="item.icon" />
@@ -67,7 +86,13 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
             }
           }
           @if (canLink()) {
-            <li gn-sidebar-nav-item to="/vinculacion" label="Vincular" [onNavigate]="onNavigate()">
+            <li
+              gn-sidebar-nav-item
+              to="/vinculacion"
+              label="Vincular"
+              [collapsed]="collapsed()"
+              [onNavigate]="onNavigate()"
+            >
               <gn-nav-icon icon name="link" />
             </li>
           }
@@ -75,13 +100,14 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
       }
 
       @if (isAdmin()) {
-        <gn-sidebar-section title="Administración">
+        <gn-sidebar-section title="Administración" [collapsed]="collapsed()">
           @for (item of adminNavLinks; track item.to) {
             <li
               gn-sidebar-nav-item
               [to]="item.to"
               [label]="item.label"
               [exact]="item.exact === true"
+              [collapsed]="collapsed()"
               [onNavigate]="onNavigate()"
             >
               <gn-nav-icon icon [name]="item.icon" />
@@ -91,11 +117,13 @@ import { SidebarSectionComponent } from "./sidebar-section.component";
       }
     </nav>
 
-    <gn-sidebar-profile-footer [onNavigate]="onNavigate()" />
+    <gn-sidebar-profile-footer [onNavigate]="onNavigate()" [collapsed]="collapsed()" />
   `,
 })
 export class SidebarMenuComponent implements OnInit {
   readonly onNavigate = input<(() => void) | undefined>(undefined);
+  /** Solo desktop (`gn-sidebar`); el drawer móvil no colapsa. */
+  readonly collapsed = input(false);
 
   private auth = inject(AuthService);
   private ovaLibrary = inject(OvaLibraryService);
