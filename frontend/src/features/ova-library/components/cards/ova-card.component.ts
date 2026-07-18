@@ -159,7 +159,10 @@ export class OvaCardComponent {
   }
 
   handleResume() {
-    void this.router.navigate(["/crear"], { state: { resumeJobId: this.job()?.jobId } });
+    const jobId = this.job()?.jobId;
+    if (!jobId) return;
+    // La vista /crear restaura el panel de progreso con ?jobId= (no con router state).
+    void this.router.navigate(["/crear"], { queryParams: { jobId } });
   }
 
   handleContinue() {

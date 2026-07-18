@@ -138,13 +138,17 @@ export class OvaCreationViewComponent implements OnInit {
       const ovaId = (this.job.job() as { ova_id?: string | null } | null)?.ova_id;
       if (terminal && outcome.anyDone && ovaId) this.onCreated.emit(ovaId);
     });
+
+    // Mis OVAs → «Reanudar / Ver progreso» llega con ?jobId=. El servicio de
+    // job es singleton: hay que restaurar aunque hubiera otro job en memoria.
+    effect(() => {
+      const id = this.initialJobId();
+      if (!id || this.job.jobId() === id) return;
+      this.flow.restore(id);
+    });
   }
 
   ngOnInit() {
-    const initialJobId = this.initialJobId();
-    if (initialJobId && this.job.phase() === "idle") {
-      this.flow.restore(initialJobId);
-    }
     if (!this.hasJob) this.tour.startIfNeeded();
   }
 
