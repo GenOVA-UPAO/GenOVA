@@ -89,6 +89,7 @@ def test_curated_image_providers_in_catalog():
     assert "siliconflow" in providers
     assert "runware" in providers
     assert "falai" in providers
+    assert "openrouter" in providers
     assert all(e["category"] == "imagen" for e in rows)
     assert all("imagen" in e["aptitudes"] for e in rows)
 
@@ -111,10 +112,12 @@ def test_merge_prefers_live_siliconflow():
         "huggingface": None,
         "runware": None,
         "falai": None,
+        "openrouter": None,
     }
     merged = merge_image_entries(curated, live)
     assert any(e["provider"] == "siliconflow" for e in merged)
     assert any(e["provider"] == "runware" for e in merged)  # curated fallback
+    assert any(e["provider"] == "openrouter" for e in merged)
 
 
 def test_dedupe_by_provider_and_model_id():

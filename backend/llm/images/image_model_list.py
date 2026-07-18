@@ -55,6 +55,16 @@ FALAI_MODELS = [
     {"id": "fal-ai/kolors", "label": "Kolors"},
 ]
 
+# Curated OpenRouter Image API models (also refreshed live via /api/v1/images/models).
+OPENROUTER_MODELS = [
+    {"id": "openai/gpt-image-1-mini", "label": "GPT Image 1 Mini"},
+    {"id": "openai/gpt-5-image-mini", "label": "GPT-5 Image Mini"},
+    {"id": "google/gemini-2.5-flash-image", "label": "Gemini 2.5 Flash Image"},
+    {"id": "google/gemini-3.1-flash-lite-image", "label": "Gemini 3.1 Flash Lite Image"},
+    {"id": "bytedance-seed/seedream-4.5", "label": "Seedream 4.5"},
+    {"id": "black-forest-labs/flux.2-klein-4b", "label": "FLUX.2 Klein 4B"},
+]
+
 
 def _fetch_siliconflow(api_key: str) -> list[dict]:
     """Fetch image models from SiliconFlow /v1/models and filter by keyword."""
@@ -109,6 +119,32 @@ def _fetch_huggingface_image_models() -> list[dict]:
         return HF_IMAGE_MODELS_FALLBACK
 
 
+def _fetch_openrouter_image_models(api_key: str | None = None) -> list[dict]:
+    """List image models from OpenRouter Image Models API; fall back to curated."""
+    headers = {}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    try:
+        resp = httpx.get(
+            "https://openrouter.ai/api/v1/images/models",
+            headers=headers,
+            timeout=_SF_TIMEOUT,
+        )
+        resp.raise_for_status()
+        data = resp.json().get("data") or []
+        models = [
+            {"id": m["id"], "label": m.get("name") or m["id"]}
+            for m in data
+            if m.get("id") and m["id"] not in ("openrouter/auto", "openrouter/auto-beta")
+        ]
+        if models:
+            logger.info("image models fetched", provider="openrouter", count=len(models))
+            return models
+    except Exception:
+        logger.exception("image model list fetch failed", provider="openrouter")
+    return list(OPENROUTER_MODELS)
+
+
 def get_image_models(provider: str, api_key: str | None) -> list[dict]:
     """Return available image models for `provider`. Empty list if key missing."""
     if provider == "huggingface":
@@ -121,4 +157,6 @@ def get_image_models(provider: str, api_key: str | None) -> list[dict]:
         return RUNWARE_MODELS if api_key else []
     if provider == "falai":
         return FALAI_MODELS if api_key else []
+    if provider == "openrouter":
+        return _fetch_openrouter_image_models(api_key) if api_key else []
     return []

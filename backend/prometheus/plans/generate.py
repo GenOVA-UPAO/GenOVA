@@ -171,7 +171,7 @@ def _gen_two_step(
     # enrich_with_images MUTA json_data (añade image_placeholder) y exige una lista.
     img_replacements: dict[str, str] = {}
     if phase == "engage" and image_settings:
-        from llm.images.image_providers import enrich_with_images
+        from llm.images.image_enrich import enrich_with_images
 
         img_replacements = enrich_with_images(
             json_data if isinstance(json_data, list) else [json_data], image_settings
@@ -191,7 +191,7 @@ def _gen_two_step(
     if img_replacements:
         import re
 
-        from llm.images.image_providers import IMG_PLACEHOLDER
+        from llm.images.image_placeholder import IMG_PLACEHOLDER
 
         for placeholder, uri in img_replacements.items():
             html = html.replace(placeholder, uri)

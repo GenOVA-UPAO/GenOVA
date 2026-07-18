@@ -11,7 +11,7 @@ describe("HU-034 catalog labels", () => {
   });
 
   it("labels native image providers", () => {
-    for (const p of ["huggingface", "siliconflow", "runware", "falai"]) {
+    for (const p of ["huggingface", "siliconflow", "runware", "falai", "openrouter"]) {
       expect(CATEGORY_LABELS[p] || PROVIDER_LABELS[p]).toBeTruthy();
       expect(PROVIDER_LABELS[p]).toBeTruthy();
     }

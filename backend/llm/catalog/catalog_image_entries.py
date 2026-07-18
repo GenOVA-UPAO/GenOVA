@@ -1,4 +1,4 @@
-"""Build catalog rows for native image providers (HF / SiliconFlow / Runware / fal.ai).
+"""Build catalog rows for native image providers (HF / SF / Runware / fal / OpenRouter).
 
 Curated static lists are always included so the unified catalog works without keys;
 live API lists replace/enrich them when credentials exist.
@@ -12,15 +12,23 @@ from llm.catalog.catalog_aptitudes import aptitudes_for
 from llm.images.image_model_list import (
     FALAI_MODELS,
     HF_IMAGE_MODELS_FALLBACK,
+    OPENROUTER_MODELS,
     RUNWARE_MODELS,
     SILICONFLOW_MODELS,
     _fetch_huggingface_image_models,
+    _fetch_openrouter_image_models,
     _fetch_siliconflow,
 )
 
 logger = structlog.get_logger(__name__)
 
-IMAGE_CATALOG_PROVIDERS = ("huggingface", "siliconflow", "runware", "falai")
+IMAGE_CATALOG_PROVIDERS = (
+    "huggingface",
+    "siliconflow",
+    "runware",
+    "falai",
+    "openrouter",
+)
 
 
 def _row(provider: str, model_id: str, label: str, *, curated: bool = True) -> dict:
@@ -52,6 +60,7 @@ def curated_image_entries() -> list[dict]:
     rows.extend(_from_static("siliconflow", SILICONFLOW_MODELS))
     rows.extend(_from_static("runware", RUNWARE_MODELS))
     rows.extend(_from_static("falai", FALAI_MODELS))
+    rows.extend(_from_static("openrouter", OPENROUTER_MODELS))
     return rows
 
 
@@ -85,6 +94,18 @@ def fetch_image_provider_entries(keys: dict[str, str | None]) -> dict[str, list[
     # Runware / fal.ai: curated lists; mark ok when key present or always include curated.
     result["runware"] = _from_static("runware", RUNWARE_MODELS)
     result["falai"] = _from_static("falai", FALAI_MODELS)
+
+    or_key = keys.get("openrouter")
+    try:
+        or_models = _fetch_openrouter_image_models(or_key)
+        result["openrouter"] = (
+            [_row("openrouter", m["id"], m.get("label") or m["id"], curated=not or_key) for m in or_models]
+            if or_models
+            else _from_static("openrouter", OPENROUTER_MODELS)
+        )
+    except Exception:
+        logger.exception("image catalog fetch failed", provider="openrouter")
+        result["openrouter"] = None
     return result
 
 

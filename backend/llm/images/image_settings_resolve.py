@@ -98,12 +98,18 @@ def build_image_settings(
 
     primary = chain[0]
     provider = primary["provider"]
+    keys = user_api_keys or {}
+    chain_resolved: list[dict] = []
+    for entry in chain:
+        e = dict(entry)
+        e["api_key"] = resolve_key(e["provider"], keys, db, user_id)
+        chain_resolved.append(e)
     return {
         "max_images": max_images,
         "provider": provider,
-        "api_key": resolve_key(provider, user_api_keys or {}, db, user_id),
+        "api_key": chain_resolved[0]["api_key"],
         "image_model": primary.get("model_id"),
-        "chain": chain,
+        "chain": chain_resolved,
         "enabled": True,
     }
 
