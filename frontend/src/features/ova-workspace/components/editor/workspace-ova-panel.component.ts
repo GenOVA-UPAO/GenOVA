@@ -32,24 +32,30 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
       <div
         class="flex items-center gap-2 border-b border-border px-3 py-2 bg-background shrink-0 flex-wrap"
       >
-        <div class="flex items-center gap-1.5 rounded-md border border-border bg-muted/30 p-0.5">
+        <div
+          class="flex items-center gap-1.5 rounded-md border border-border bg-muted/30 p-0.5"
+          role="group"
+          aria-label="Vista del OVA"
+        >
           <gn-button
             type="button"
             size="sm"
             [variant]="tab === 'preview' ? 'default' : 'ghost'"
-            class="h-6 text-xs px-2.5"
-            (click)="tab = 'preview'"
+            class="h-7 text-xs px-2.5"
+            (onClick)="tab = 'preview'"
+            ariaLabel="Vista previa del OVA"
           >
-            Preview
+            Vista previa
           </gn-button>
           <gn-button
             type="button"
             size="sm"
             [variant]="tab === 'code' ? 'default' : 'ghost'"
-            class="h-6 text-xs px-2.5"
-            (click)="tab = 'code'"
+            class="h-7 text-xs px-2.5"
+            (onClick)="tab = 'code'"
+            ariaLabel="Editar recursos del OVA"
           >
-            Code
+            Recursos
           </gn-button>
         </div>
 
@@ -63,9 +69,10 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
           type="button"
           variant="ghost"
           size="sm"
-          class="h-6 text-xs px-1.5 text-muted-foreground"
-          (click)="onHistoryOpen.emit()"
+          class="h-7 text-xs px-1.5 text-muted-foreground"
+          (onClick)="onHistoryOpen.emit()"
           title="Historial de versiones"
+          ariaLabel="Historial de versiones"
         >
           <gn-icon name="clock-counter-clockwise" size="text-xs" /> Historial
         </gn-button>
@@ -85,9 +92,10 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
             size="sm"
             variant="outline"
             [disabled]="!isReady()"
-            (click)="onDownload.emit()"
-            class="h-6 text-xs px-2.5 gap-1"
+            (onClick)="onDownload.emit()"
+            class="h-7 text-xs px-2.5 gap-1"
             [title]="isReady() ? 'Descargar SCORM' : 'El OVA debe estar listo para descargar'"
+            ariaLabel="Descargar paquete SCORM"
           >
             <gn-icon name="download-simple" size="text-xs" /> SCORM
           </gn-button>
@@ -114,7 +122,11 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
             <gn-workspace-html-preview [phases]="phases()"></gn-workspace-html-preview>
           }
           @if (tab === "code") {
-            <div class="p-4 space-y-4">
+            <div class="space-y-5 p-4" role="tabpanel" aria-label="Lista de recursos del OVA">
+              <p class="text-xs leading-relaxed text-muted-foreground">
+                Elige un recurso para editarlo, mejorarlo con IA o reordenarlo. El código HTML queda
+                oculto hasta que lo abras.
+              </p>
               @for (kv of grouped() | keyvalue; track kv.key) {
                 <gn-workspace-resource-list
                   [phaseType]="kv.key"

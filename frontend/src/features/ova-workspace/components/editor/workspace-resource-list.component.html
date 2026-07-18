@@ -1,0 +1,80 @@
+<gn-add-resource-modal
+  [open]="addOpen"
+  (onOpenChange)="addOpen = $event"
+  [phaseType]="phaseType()"
+  [currentCount]="phases().length"
+  (onAdd)="onAdd.emit($event)"
+></gn-add-resource-modal>
+
+<section class="space-y-2" [attr.aria-labelledby]="sectionHeadingId">
+  <div class="flex items-center justify-between gap-2 px-0.5">
+    <h2
+      [id]="sectionHeadingId"
+      class="text-xs font-semibold tracking-wide text-foreground"
+    >
+      {{ phaseLabel }}
+    </h2>
+    <gn-button
+      type="button"
+      size="sm"
+      variant="ghost"
+      class="h-7 text-xs px-2 text-muted-foreground"
+      [disabled]="isFull"
+      (onClick)="addOpen = true"
+      [ariaLabel]="
+        isFull
+          ? 'Máximo de recursos alcanzado en esta sección'
+          : 'Añadir recurso a ' + phaseLabel
+      "
+      [title]="isFull ? 'Máximo ' + MAX_PHASES_PER_TYPE + ' recursos por sección' : 'Añadir recurso'"
+    >
+      <gn-icon name="plus" size="text-xs" class="mr-1" />
+      Añadir
+    </gn-button>
+  </div>
+
+  <ul class="space-y-2" role="list">
+    @for (phase of phases(); track phase.id; let idx = $index) {
+      <li
+        class="flex items-stretch gap-1"
+        draggable="true"
+        (dragstart)="handleDragStart($event, idx)"
+        (dragover)="handleDragOver($event)"
+        (drop)="handleDrop($event, idx)"
+        (dragend)="handleDragEnd()"
+      >
+        <div class="flex flex-col justify-center gap-0.5">
+          <button
+            type="button"
+            class="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30"
+            [disabled]="idx === 0"
+            (click)="moveByOffset(idx, -1)"
+            [attr.aria-label]="'Subir ' + resourceName(phase)"
+          >
+            <gn-icon name="caret-up" size="text-xs" />
+          </button>
+          <button
+            type="button"
+            class="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30"
+            [disabled]="idx === phases().length - 1"
+            (click)="moveByOffset(idx, 1)"
+            [attr.aria-label]="'Bajar ' + resourceName(phase)"
+          >
+            <gn-icon name="caret-down" size="text-xs" />
+          </button>
+        </div>
+        <div class="min-w-0 flex-1">
+          <gn-workspace-phase-item
+            [phase]="phase"
+            [isDragging]="dragIdx === idx"
+            [ovaId]="ovaId()"
+            (onEdit)="handleEdit($event)"
+            (onRegen)="handleRegen($event)"
+            (onDelete)="onDelete.emit($event)"
+            (onReverted)="onReverted.emit()"
+          ></gn-workspace-phase-item>
+        </div>
+      </li>
+    }
+  </ul>
+</section>
