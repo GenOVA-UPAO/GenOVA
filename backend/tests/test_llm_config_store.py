@@ -126,6 +126,27 @@ def test_opencode_deepseek_thinking_disabled(monkeypatch):
     assert sink.get("extra_body") == {"thinking": {"type": "disabled"}}
 
 
+def test_openrouter_minimax_thinking_disabled(monkeypatch):
+    # MiniMax-M3 defaults to adaptive thinking → EmptyContentError on long HTML.
+    sink = {}
+    monkeypatch.setattr(router, "openrouter_client", _FakeClient(sink))
+    router._chat("openrouter", "minimax/minimax-m3", "hola", 100, {}, None)
+    assert sink.get("extra_body") == {
+        "thinking": {"type": "disabled"},
+        "reasoning": {"effort": "none"},
+    }
+
+
+def test_openrouter_deepseek_thinking_and_reasoning_none(monkeypatch):
+    sink = {}
+    monkeypatch.setattr(router, "openrouter_client", _FakeClient(sink))
+    router._chat("openrouter", "deepseek/deepseek-v4-flash", "hola", 100, {}, None)
+    assert sink.get("extra_body") == {
+        "thinking": {"type": "disabled"},
+        "reasoning": {"effort": "none"},
+    }
+
+
 def test_opencode_non_deepseek_no_injection(monkeypatch):
     sink = {}
     monkeypatch.setattr(router, "opencode_client", _FakeClient(sink))

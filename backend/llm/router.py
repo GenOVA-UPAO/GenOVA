@@ -27,6 +27,7 @@ from llm.utils.llm_helpers import (
     _resolve_primary,
     _retry_delay,
     effective_llm_config,
+    with_thinking_disabled,
 )
 
 # ── Re-export everything external callers depend on ───────────────────────────
@@ -82,12 +83,7 @@ def _chat(
     elif provider == "opencode":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = opencode_client.with_options(**opts) if opts else opencode_client
-        # DeepSeek thinking models spend token budget on reasoning and return
-        # empty content on long prompts → EmptyContentError. Disable unless the
-        # caller already set extra_body explicitly.
-        call_extra = dict(extra)
-        if "deepseek" in model_id and "extra_body" not in call_extra:
-            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
+        call_extra = with_thinking_disabled(provider, model_id, extra)
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
@@ -98,9 +94,7 @@ def _chat(
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = openrouter_client.with_options(**opts) if opts else openrouter_client
-        call_extra = dict(extra)
-        if "deepseek" in model_id and "extra_body" not in call_extra:
-            call_extra["extra_body"] = {"thinking": {"type": "disabled"}}
+        call_extra = with_thinking_disabled(provider, model_id, extra)
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )

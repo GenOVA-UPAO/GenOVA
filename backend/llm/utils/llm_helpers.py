@@ -123,6 +123,28 @@ class EmptyContentError(RuntimeError):
     """LLM returned empty content (e.g. reasoning model that didn't emit text)."""
 
 
+def with_thinking_disabled(provider: str, model_id: str, extra: dict) -> dict:
+    """Disable default chain-of-thought for models that burn max_tokens on thinking
+    and return empty ``content`` (EmptyContentError).
+
+    - DeepSeek V4: ``thinking: {type: disabled}`` (same fix as historical Flash/Pro).
+    - MiniMax-M3: thinking defaults to ``adaptive`` per MiniMax docs; disable it.
+    - OpenRouter: also set ``reasoning.effort=none`` (unified reasoning API).
+    Preserves an explicit ``extra_body`` from the caller.
+    """
+    call_extra = dict(extra or {})
+    if "extra_body" in call_extra:
+        return call_extra
+    mid = (model_id or "").lower()
+    if "deepseek" not in mid and "minimax" not in mid:
+        return call_extra
+    body: dict = {"thinking": {"type": "disabled"}}
+    if provider == "openrouter":
+        body["reasoning"] = {"effort": "none"}
+    call_extra["extra_body"] = body
+    return call_extra
+
+
 _RECOVERABLE_ERRORS = (
     GroqRateLimitError,
     OpenAIRateLimitError,
