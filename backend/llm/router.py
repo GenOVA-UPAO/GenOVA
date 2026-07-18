@@ -15,6 +15,7 @@ from llm.clients.clients import (
     huggingface_client,
     opencode_client,
     openrouter_client,
+    traced_openai,
 )
 from llm.utils.llm_helpers import (
     _RECOVERABLE_ERRORS,
@@ -84,18 +85,20 @@ def _chat(
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = opencode_client.with_options(**opts) if opts else opencode_client
         call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
-        r = client.chat.completions.create(
+        r = traced_openai(client).chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
     elif provider == "huggingface":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = huggingface_client.with_options(**opts) if opts else huggingface_client
-        r = client.chat.completions.create(model=model_id, messages=msgs, max_tokens=max_tokens, **extra)
+        r = traced_openai(client).chat.completions.create(
+            model=model_id, messages=msgs, max_tokens=max_tokens, **extra
+        )
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = openrouter_client.with_options(**opts) if opts else openrouter_client
         call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
-        r = client.chat.completions.create(
+        r = traced_openai(client).chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra
         )
     msg = r.choices[0].message if r.choices else None

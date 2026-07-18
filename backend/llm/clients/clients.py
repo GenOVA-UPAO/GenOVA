@@ -1,5 +1,6 @@
 """LLM SDK client initialization and API key resolution."""
 
+import contextlib
 import time
 from threading import RLock
 
@@ -78,3 +79,30 @@ huggingface_client = OpenAI(
     timeout=_LLM_TIMEOUT_S,
     max_retries=0,
 )
+
+
+def traced_openai(client: OpenAI) -> OpenAI:
+    """Envuelve un cliente OpenAI con tracing LangSmith: cada
+    ``chat.completions.create`` aparece como run hijo 'llm' (tokens/costo/latencia)
+    bajo el nodo LangGraph actual (resource_worker, critic…).
+
+    No-op si el tracing está apagado. Se envuelve POR LLAMADA porque
+    ``client.with_options()`` devuelve una copia sin el patch — envolver solo el
+    cliente base perdería el trazado en la ruta con api_key/timeout (la común).
+    """
+    if not (settings.langsmith_tracing and settings.langsmith_api_key):
+        return client
+    # wrap_openai muta el cliente in-place y lo devuelve; marcar para no re-envolver
+    # el mismo objeto (las copias de with_options son frescas → se envuelven 1 vez).
+    if getattr(client, "_genova_traced", False):
+        return client
+    try:
+        from langsmith.wrappers import wrap_openai
+
+        wrapped = wrap_openai(client)
+    except Exception:  # nunca romper la generación por instrumentar
+        return client
+    # cliente sin __dict__ escribible: se envolvería de nuevo, inofensivo
+    with contextlib.suppress(Exception):
+        wrapped._genova_traced = True
+    return wrapped
