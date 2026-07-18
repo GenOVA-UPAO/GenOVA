@@ -18,8 +18,11 @@ import type { ResourceVM } from "../../lib/ova-job-view-model";
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-crear-ova-preview-panel",
   imports: [HtmlPreviewFrameComponent],
+  // host flex: sin esto el custom element no estira en el split y el iframe
+  // queda como una franja pequeña arriba del panel derecho.
+  host: { class: "flex min-h-0 flex-1 flex-col" },
   template: `
-    <section class="flex flex-col h-full">
+    <section class="flex min-h-0 flex-1 flex-col">
       @if (doneTabs.length > 0) {
         <nav
           aria-label="Recursos generados"
@@ -67,8 +70,9 @@ import type { ResourceVM } from "../../lib/ova-job-view-model";
           }
           @if (!loading() && html()) {
             <gn-html-preview-frame
+              class="block h-full min-h-0 w-full"
               [html]="html()"
-              className="w-full h-full border-0 block"
+              className="h-full min-h-0 w-full border-0 block"
               height=""
             ></gn-html-preview-frame>
           }

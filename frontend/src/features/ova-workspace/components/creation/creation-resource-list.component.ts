@@ -8,10 +8,11 @@ import { groupByPhase, type ResourceVM } from "../../lib/ova-job-view-model";
 import { PHASE_ICON_BY_KEY, resourceIconClass } from "../../lib/resource-icons";
 
 const MARK_CLS: Record<string, string> = {
-  X: "text-destructive border-destructive/30 bg-destructive/10",
+  X: "text-destructive border-destructive/40 bg-destructive/10",
   generando: "text-primary border-primary/30 bg-primary/10",
   pendiente: "text-muted-foreground border-border bg-muted/60",
-  check: "text-primary border-primary/30 bg-primary/10",
+  // Solo se importa @phosphor-icons/web/regular — no usar weight bold/fill.
+  check: "text-emerald-600 border-emerald-500/40 bg-emerald-500/10 dark:text-emerald-400",
 };
 
 @Component({
@@ -72,9 +73,9 @@ const MARK_CLS: Record<string, string> = {
                     [attr.aria-label]="statusLabel(r.status)"
                   >
                     @if (r.status === "check") {
-                      <gn-icon name="check" size="text-xs" weight="bold" />
+                      <gn-icon name="check" size="text-sm" />
                     } @else if (r.status === "X") {
-                      <gn-icon name="x" size="text-xs" weight="bold" />
+                      <gn-icon name="x" size="text-sm" />
                     } @else {
                       <span class="inline-flex items-center gap-[3px]" aria-hidden="true">
                         <span class="gn-status-dot"></span>

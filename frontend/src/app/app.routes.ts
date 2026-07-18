@@ -92,6 +92,7 @@ export const routes: Routes = [
       {
         path: "crear",
         title: "Crear OVA",
+        data: { fullBleed: true },
         loadComponent: () =>
           import("../features/ova-workspace/pages/ova-workspace-page.component").then(
             (m) => m.OvaWorkspacePageComponent,
@@ -109,6 +110,7 @@ export const routes: Routes = [
       {
         path: "workspace/:id",
         title: "Editor de OVA",
+        data: { fullBleed: true },
         loadComponent: () =>
           import("../features/ova-workspace/pages/ova-workspace-page.component").then(
             (m) => m.OvaWorkspacePageComponent,

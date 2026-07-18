@@ -56,7 +56,11 @@ export class AppLayout implements OnInit {
       child = child.firstChild;
     }
 
+    const url = this.router.url;
     this.fullBleed =
-      child?.snapshot.data["fullBleed"] === true || this.router.url.includes("/workspace/");
+      child?.snapshot.data["fullBleed"] === true ||
+      url.includes("/workspace/") ||
+      url === "/crear" ||
+      url.startsWith("/crear?");
   }
 }
