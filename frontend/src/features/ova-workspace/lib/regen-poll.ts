@@ -1,13 +1,13 @@
 import type { RegenChatMessage } from "./regen-chat";
 import { finishChatPatch, progressChatPatch } from "./regen-chat";
 
-export type RegenProgressDto = {
+export interface RegenProgressDto {
   percentage?: number;
   stage?: string;
   status?: string;
-};
+}
 
-type PollDeps = {
+interface PollDeps {
   mounted: () => boolean;
   setProgress: (p: { percentage: number; stage: string }) => void;
   getAssistantId: () => string | null;
@@ -18,7 +18,7 @@ type PollDeps = {
   onError: (msg: string) => void;
   schedule: (jobId: string) => void;
   fetchProgress: (jobId: string) => Promise<RegenProgressDto>;
-};
+}
 
 /** Un tick de polling de regeneración; actualiza chat y reprograma si sigue. */
 export async function handleRegenPollTick(jobId: string, d: PollDeps): Promise<void> {

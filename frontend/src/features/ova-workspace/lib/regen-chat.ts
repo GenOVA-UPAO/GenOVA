@@ -4,12 +4,7 @@ import type { PhaseWithContent } from "./types";
 export type RegenChatRole = "user" | "assistant" | "system";
 export type RegenChatStatus = "running" | "success" | "error";
 export type RegenChatKind =
-  | "message"
-  | "prompt"
-  | "selection"
-  | "selection_all"
-  | "regen_all"
-  | "status";
+  "message" | "prompt" | "selection" | "selection_all" | "regen_all" | "status";
 
 export interface RegenChatMessage {
   id: string;
@@ -98,10 +93,7 @@ export function patchChatMessage(
   return msgs.map((m) => (m.id === id ? { ...m, ...patch } : m));
 }
 
-export function progressChatPatch(
-  percentage: number,
-  stage: string,
-): Partial<RegenChatMessage> {
+export function progressChatPatch(percentage: number, stage: string): Partial<RegenChatMessage> {
   return { percentage, text: stage || "Regenerando…", status: "running" };
 }
 
@@ -131,10 +123,7 @@ export function finishChatPatch(
   };
 }
 
-export function selectionToggleMessage(
-  label: string,
-  selected: boolean,
-): RegenChatMessage {
+export function selectionToggleMessage(label: string, selected: boolean): RegenChatMessage {
   return systemChatMessage(
     selected ? `Recurso seleccionado: ${label}` : `Recurso deseleccionado: ${label}`,
     { kind: "selection", resourceLabels: selected ? [label] : undefined },
@@ -143,10 +132,13 @@ export function selectionToggleMessage(
 
 export function selectionAllMessage(labels: string[], allSelected: boolean): RegenChatMessage {
   if (allSelected) {
-    return systemChatMessage(`Seleccionados todos los recursos (${labels.length}): ${labels.join(", ")}`, {
-      kind: "selection_all",
-      resourceLabels: labels,
-    });
+    return systemChatMessage(
+      `Seleccionados todos los recursos (${labels.length}): ${labels.join(", ")}`,
+      {
+        kind: "selection_all",
+        resourceLabels: labels,
+      },
+    );
   }
   return systemChatMessage("Se vació la selección de recursos.", { kind: "selection_all" });
 }

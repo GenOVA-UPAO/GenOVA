@@ -2,13 +2,18 @@ import { humanizeResourceType } from "./ova-job-view-model";
 import { phaseMeta } from "./phase-meta";
 import type { Phase } from "./types";
 
+/** Devuelve el valor solo si es texto; evita stringificar objetos a "[object Object]". */
+function asText(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
 /** Nombre legible del recurso para docentes (no jerga 5E en inglés). */
 export function resourceLabel(phase: Phase): string {
-  const title = String(phase["title"] ?? "").trim();
+  const title = asText(phase["title"]).trim();
   if (title) return title;
   const type = humanizeResourceType(phase["resource_type"] as string | number | undefined);
   if (type) return type;
-  return phaseMeta(String(phase["phase_type"] ?? "")).label || "Recurso";
+  return phaseMeta(asText(phase["phase_type"])).label || "Recurso";
 }
 
 const EMPTY_PREVIEW = "Sin contenido todavía.";
@@ -16,11 +21,11 @@ const NO_TEXT_PREVIEW = "Contenido HTML del recurso (sin texto visible).";
 
 /** Texto plano completo extraído del HTML del recurso. */
 export function contentPlainText(html: string | undefined | null): string {
-  const raw = String(html ?? "").trim();
+  const raw = (html ?? "").trim();
   if (!raw) return EMPTY_PREVIEW;
   const text = raw
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style\s*>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script\s*>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();

@@ -8,7 +8,7 @@ import {
   type RegenChatMessage,
   userChatMessage,
 } from "../lib/regen-chat";
-import { handleRegenPollTick } from "../lib/regen-poll";
+import { handleRegenPollTick, type RegenProgressDto } from "../lib/regen-poll";
 import type { OvaData, PhaseWithContent } from "../lib/types";
 import { OvaEditService, type RegenBody } from "./ova-edit.service";
 import { OvaWorkspaceChatService } from "./ova-workspace-chat.service";
@@ -246,7 +246,9 @@ export class OvaWorkspaceService implements OnDestroy {
     const ovaId = this.ovaId;
     await handleRegenPollTick(jobId, {
       mounted: () => this.mounted,
-      setProgress: (p) => this.regenProgressState.set(p),
+      setProgress: (p) => {
+        this.regenProgressState.set(p);
+      },
       getAssistantId: () => this.activeAssistantId,
       getAssistantLabels: () =>
         this.chat.messages().find((m) => m.id === this.activeAssistantId)?.resourceLabels,
@@ -256,17 +258,17 @@ export class OvaWorkspaceService implements OnDestroy {
         this.activeAssistantId = null;
         void this.load();
       },
-      onSuccess: () => toast.success("Éxito", { description: "OVA regenerado." }),
-      onError: (msg) => toast.error("Error", { description: msg }),
+      onSuccess: () => {
+        toast.success("Éxito", { description: "OVA regenerado." });
+      },
+      onError: (msg) => {
+        toast.error("Error", { description: msg });
+      },
       schedule: (id) => {
         this.regenTimer = setTimeout(() => this.pollRegen(id), POLL_MS);
       },
       fetchProgress: (id) =>
-        this.editService.pollRegenProgress(ovaId, id) as Promise<{
-          percentage?: number;
-          stage?: string;
-          status?: string;
-        }>,
+        this.editService.pollRegenProgress(ovaId, id) as Promise<RegenProgressDto>,
     });
   }
 

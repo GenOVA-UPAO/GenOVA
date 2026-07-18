@@ -92,7 +92,9 @@ describe("OvaCreateFormCardComponent", () => {
     expect(EXAMPLE_PROMPT).toMatch(/Objetivos:/i);
     expect(EXAMPLE_PROMPT).toMatch(/Nivel educativo:/i);
     expect(EXAMPLE_PROMPT).toMatch(/Universitario/i);
-    expect(EXAMPLE_PROMPT).toMatch(/machine learning|aprendizaje supervisado|redes neuronales|clasificador/i);
+    expect(EXAMPLE_PROMPT).toMatch(
+      /machine learning|aprendizaje supervisado|redes neuronales|clasificador/i,
+    );
   });
 
   it("CA-11 / CA-25 shows the three-step guide without optional resources", async () => {

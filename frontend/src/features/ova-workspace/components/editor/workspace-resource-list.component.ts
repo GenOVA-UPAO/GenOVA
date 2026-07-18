@@ -4,8 +4,8 @@ import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import { phaseMeta } from "../../lib/phase-meta";
-import { applyReorder } from "../../lib/resource-reorder";
 import { resourceLabel } from "../../lib/resource-label";
+import { applyReorder } from "../../lib/resource-reorder";
 import type { PhaseWithContent } from "../../lib/types";
 import { AddResourceModalComponent } from "../modals/add-resource-modal.component";
 import { WorkspacePhaseItemComponent } from "./workspace-phase-item.component";

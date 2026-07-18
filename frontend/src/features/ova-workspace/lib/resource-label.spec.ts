@@ -7,9 +7,9 @@ import {
 
 describe("resourceLabel", () => {
   it("prioriza el título del recurso", () => {
-    expect(
-      resourceLabel({ id: "1", title: "Juego de Gamificación", phase_type: "engage" }),
-    ).toBe("Juego de Gamificación");
+    expect(resourceLabel({ id: "1", title: "Juego de Gamificación", phase_type: "engage" })).toBe(
+      "Juego de Gamificación",
+    );
   });
 
   it("usa el tipo humanizado si no hay título", () => {

@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from "@angular/core";
+import { Injectable, signal } from "@angular/core";
 
 import { apiJson } from "@/core/lib/http";
 
@@ -27,9 +27,9 @@ export class OvaWorkspaceChatService {
   async load(ovaId: string): Promise<void> {
     this.ovaId = ovaId;
     try {
-      const data = (await apiJson(`/api/ovas/${ovaId}/chat`)) as {
-        messages?: Array<Parameters<typeof fromApiMessage>[0]>;
-      };
+      const data = await apiJson<{ messages?: Parameters<typeof fromApiMessage>[0][] }>(
+        `/api/ovas/${ovaId}/chat`,
+      );
       this.messagesState.set((data.messages ?? []).map(fromApiMessage));
     } catch {
       this.messagesState.set([]);

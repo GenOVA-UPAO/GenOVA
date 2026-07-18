@@ -156,11 +156,7 @@ export class LoginPage {
 
       try {
         const { email, password } = this.loginModel();
-        const { status, data } = await this.authService.login(
-          email,
-          password,
-          this.rememberMe(),
-        );
+        const { status, data } = await this.authService.login(email, password, this.rememberMe());
 
         if (status === 200 && data.totp_required) {
           this.totpTicket.set(data.ticket ?? null);
