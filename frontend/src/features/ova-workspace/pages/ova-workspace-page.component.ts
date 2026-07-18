@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, type OnInit } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Router } from "@angular/router";
 import { map } from "rxjs/operators";
+
+import { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
 
 import { OvaCreationViewComponent } from "../components/creation/ova-creation-view.component";
 import { OvaEditViewComponent } from "../components/editor/ova-edit-view.component";
@@ -17,26 +19,39 @@ import { OvaEditViewComponent } from "../components/editor/ova-edit-view.compone
     @if (ovaId()) {
       <gn-ova-edit-view [ovaId]="ovaId()!"></gn-ova-edit-view>
     } @else {
-      <gn-ova-creation-view
-        [initialJobId]="jobId() ?? undefined"
-        (onCreated)="handleCreated($event)"
-      ></gn-ova-creation-view>
+      <gn-ova-creation-view (onStarted)="handleStarted($event)"></gn-ova-creation-view>
     }
   `,
 })
-export class OvaWorkspacePageComponent {
+export class OvaWorkspacePageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private jobsApi = inject(OvaJobsApiService);
 
   readonly ovaId = toSignal(this.route.paramMap.pipe(map((p) => p.get("id"))), {
     initialValue: this.route.snapshot.paramMap.get("id"),
   });
 
-  readonly jobId = toSignal(this.route.queryParamMap.pipe(map((q) => q.get("jobId"))), {
-    initialValue: this.route.snapshot.queryParamMap.get("jobId"),
-  });
+  ngOnInit() {
+    // Deep link legado `/crear?jobId=` → workspace del OVA (progreso ya no vive en crear).
+    const jobId = this.route.snapshot.queryParamMap.get("jobId");
+    if (!this.ovaId() && jobId) void this.redirectJobToWorkspace(jobId);
+  }
 
-  handleCreated(id: string) {
-    void this.router.navigate(["/workspace", id], { replaceUrl: true });
+  handleStarted(ovaId: string) {
+    void this.router.navigate(["/workspace", ovaId], { replaceUrl: true });
+  }
+
+  private async redirectJobToWorkspace(jobId: string) {
+    try {
+      const data = (await this.jobsApi.getJobStatus(jobId)) as { ova_id?: string | null };
+      if (data?.ova_id) {
+        await this.router.navigate(["/workspace", data.ova_id], { replaceUrl: true });
+        return;
+      }
+    } catch {
+      /* strip query abajo */
+    }
+    await this.router.navigate(["/crear"], { replaceUrl: true });
   }
 }

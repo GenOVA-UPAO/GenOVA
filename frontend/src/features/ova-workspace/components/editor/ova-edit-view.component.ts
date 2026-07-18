@@ -21,9 +21,10 @@ import { buildUploadsPropBag } from "../../lib/upload-chip-view-model";
 import type { OvaVersionRow } from "../../lib/version-history.types";
 import { getSavedRatio } from "../../lib/workspace-utils";
 import { OvaUploadsService } from "../../services/ova-uploads.service";
-import { OvaWorkspaceChatService } from "../../services/ova-workspace-chat.service";
 import { OvaWorkspaceService } from "../../services/ova-workspace.service";
+import { OvaWorkspaceChatService } from "../../services/ova-workspace-chat.service";
 import { VersionHistoryPanelComponent } from "../versioning/version-history-panel.component";
+import { OvaGeneratingPanelComponent } from "./ova-generating-panel.component";
 import { WorkspaceChatPanelComponent } from "./workspace-chat-panel.component";
 import { WorkspaceOvaPanelComponent } from "./workspace-ova-panel.component";
 import { WorkspaceResizableDividerComponent } from "./workspace-resizable-divider.component";
@@ -35,6 +36,7 @@ import { WorkspaceResizableDividerComponent } from "./workspace-resizable-divide
     RouterModule,
     ButtonComponent,
     VersionHistoryPanelComponent,
+    OvaGeneratingPanelComponent,
     WorkspaceChatPanelComponent,
     WorkspaceOvaPanelComponent,
     WorkspaceResizableDividerComponent,

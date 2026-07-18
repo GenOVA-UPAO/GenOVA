@@ -103,7 +103,7 @@ export const routes: Routes = [
         redirectTo: "workspace/:id",
       },
       {
-        // React URL for in-flight generation jobs → query-param form.
+        // Deep link legado: /crear?jobId= resuelve ova_id y manda al workspace.
         path: "ova/job/:jobId/workspace",
         redirectTo: ({ params }) => `/crear?jobId=${params["jobId"]}`,
       },

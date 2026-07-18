@@ -72,7 +72,11 @@ def start_job(
     _launch(job.id)
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED,
-        content={"job_id": str(job.id), "status": "queued"},
+        content={
+            "job_id": str(job.id),
+            "ova_id": str(job.ova_id) if job.ova_id else None,
+            "status": "queued",
+        },
     )
 
 

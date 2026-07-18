@@ -89,9 +89,10 @@ export class OvaCreationFlowService {
     this.job.restore(jobId);
   }
 
-  generate() {
-    if (!this.canGenerate()) return;
-    void this.job.start({
+  /** Arranca el job y devuelve el ova_id para ir al workspace. */
+  async generate(): Promise<string | null> {
+    if (!this.canGenerate()) return null;
+    return this.job.start({
       prompt: this.prompt().trim(),
       uploadIds: this.uploads.uploadIds(),
       selections: this.selections(),

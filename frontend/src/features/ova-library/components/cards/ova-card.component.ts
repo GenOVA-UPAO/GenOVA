@@ -55,7 +55,6 @@ export type { OvaJobInfo };
                 variant="outline"
                 size="sm"
                 class="flex-1 text-primary border-primary/30 hover:bg-primary/5"
-                [disabled]="!job()?.jobId"
                 (onClick)="handleResume()"
               >
                 <!-- <Clock /> -->
@@ -159,14 +158,13 @@ export class OvaCardComponent {
   }
 
   handleResume() {
-    const jobId = this.job()?.jobId;
-    if (!jobId) return;
-    // La vista /crear restaura el panel de progreso con ?jobId= (no con router state).
-    void this.router.navigate(["/crear"], { queryParams: { jobId } });
+    // Progreso de generación = workspace del OVA, no /crear.
+    void this.router.navigate(["/workspace", this.ova().id]);
   }
 
   handleContinue() {
     this.onResume.emit(this.ova().id);
+    void this.router.navigate(["/workspace", this.ova().id]);
   }
 
   goToWorkspace() {
