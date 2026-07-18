@@ -143,8 +143,23 @@ def generar_texto(
             )
             if backoff:
                 time.sleep(backoff)
+        logger.info(
+            "task trying model",
+            tarea=tarea,
+            role=role,
+            provider=proveedor,
+            model_id=model_id,
+        )
         try:
-            return _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
+            content = _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
+            logger.info(
+                "task model ok",
+                tarea=tarea,
+                role=role,
+                provider=proveedor,
+                model_id=model_id,
+            )
+            return content
         except _RECOVERABLE_ERRORS as exc:
             last_err = exc
             prev_provider = proveedor
