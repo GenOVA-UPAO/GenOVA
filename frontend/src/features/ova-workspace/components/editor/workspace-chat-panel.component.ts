@@ -39,6 +39,8 @@ export class WorkspaceChatPanelComponent {
 
   readonly onFilesSelected = output<FileList>();
   readonly onRemoveFile = output<string>();
+  readonly onDeleteMessage = output<string>();
+  readonly onClearChat = output();
 
   get selectedCount() {
     return this.selectedPhaseIds()?.length || 0;

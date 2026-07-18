@@ -21,6 +21,7 @@ import { buildUploadsPropBag } from "../../lib/upload-chip-view-model";
 import type { OvaVersionRow } from "../../lib/version-history.types";
 import { getSavedRatio } from "../../lib/workspace-utils";
 import { OvaUploadsService } from "../../services/ova-uploads.service";
+import { OvaWorkspaceChatService } from "../../services/ova-workspace-chat.service";
 import { OvaWorkspaceService } from "../../services/ova-workspace.service";
 import { VersionHistoryPanelComponent } from "../versioning/version-history-panel.component";
 import { WorkspaceChatPanelComponent } from "./workspace-chat-panel.component";
@@ -50,6 +51,7 @@ export class OvaEditViewComponent implements OnInit, OnDestroy {
   readonly containerElement = viewChild.required<ElementRef<HTMLDivElement>>("container");
 
   ws = inject(OvaWorkspaceService);
+  chat = inject(OvaWorkspaceChatService);
   uploadsSvc = inject(OvaUploadsService);
 
   ratio = getSavedRatio(0.38);
@@ -162,5 +164,13 @@ export class OvaEditViewComponent implements OnInit, OnDestroy {
 
   regenAll(): void {
     void this.ws.submitRegenAll();
+  }
+
+  deleteChatMessage(id: string): void {
+    void this.chat.deleteMessage(id);
+  }
+
+  clearChat(): void {
+    void this.chat.clearAll();
   }
 }

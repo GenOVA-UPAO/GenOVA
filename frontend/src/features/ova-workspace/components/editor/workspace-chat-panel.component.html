@@ -90,6 +90,25 @@
     </div>
 
     <div class="space-y-3 pt-1" aria-live="polite" aria-relevant="additions">
+      <div class="flex items-center justify-between gap-2 px-0.5">
+        <p class="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          Historial
+        </p>
+        @if (messages().length > 0) {
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"
+            (click)="onClearChat.emit()"
+            [disabled]="isRegenerating()"
+            title="Borrar todo el historial"
+            aria-label="Borrar todos los mensajes del chat"
+          >
+            <gn-icon name="trash" size="text-xs" />
+            Borrar todo
+          </button>
+        }
+      </div>
+
       @if (messages().length === 0) {
         <p class="rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-4 text-center text-[11px] text-muted-foreground">
           Aquí verás el historial de tus prompts y el progreso de cada generación.
@@ -97,17 +116,36 @@
       }
       @for (msg of messages(); track msg.id) {
         @if (msg.role === "system") {
-          <div class="flex justify-center">
+          <div class="group/msg flex items-center justify-center gap-1">
             <p
-              class="max-w-[95%] rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-center text-[11px] text-muted-foreground"
+              class="max-w-[88%] rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-center text-[11px] text-muted-foreground"
             >
               {{ msg.text }}
             </p>
+            <button
+              type="button"
+              class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground opacity-70 hover:bg-muted hover:text-destructive focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/msg:opacity-100"
+              (click)="onDeleteMessage.emit(msg.id)"
+              [disabled]="isRegenerating() && msg.status === 'running'"
+              title="Borrar mensaje"
+              aria-label="Borrar este mensaje"
+            >
+              <gn-icon name="x" size="text-xs" />
+            </button>
           </div>
         } @else if (msg.role === "user") {
-          <div class="flex justify-end">
+          <div class="group/msg flex items-start justify-end gap-1">
+            <button
+              type="button"
+              class="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground opacity-70 hover:bg-muted hover:text-destructive focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/msg:opacity-100"
+              (click)="onDeleteMessage.emit(msg.id)"
+              title="Borrar mensaje"
+              aria-label="Borrar este mensaje"
+            >
+              <gn-icon name="x" size="text-xs" />
+            </button>
             <div
-              class="max-w-[92%] rounded-2xl rounded-br-md bg-primary px-3 py-2 text-xs text-primary-foreground shadow-sm"
+              class="max-w-[88%] rounded-2xl rounded-br-md bg-primary px-3 py-2 text-xs text-primary-foreground shadow-sm"
             >
               <p class="whitespace-pre-wrap break-words">{{ msg.text }}</p>
               @if (msg.resourceLabels && msg.resourceLabels.length > 0) {
@@ -118,9 +156,9 @@
             </div>
           </div>
         } @else {
-          <div class="flex justify-start">
+          <div class="group/msg flex items-start justify-start gap-1">
             <div
-              class="max-w-[92%] space-y-1.5 rounded-2xl rounded-bl-md border border-border bg-card px-3 py-2 text-xs shadow-sm"
+              class="max-w-[88%] space-y-1.5 rounded-2xl rounded-bl-md border border-border bg-card px-3 py-2 text-xs shadow-sm"
               [class.border-destructive/40]="msg.status === 'error'"
               [class.border-primary/30]="msg.status === 'running'"
             >
@@ -154,6 +192,16 @@
                 </p>
               }
             </div>
+            <button
+              type="button"
+              class="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground opacity-70 hover:bg-muted hover:text-destructive focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/msg:opacity-100"
+              (click)="onDeleteMessage.emit(msg.id)"
+              [disabled]="msg.status === 'running'"
+              title="Borrar mensaje"
+              aria-label="Borrar este mensaje"
+            >
+              <gn-icon name="x" size="text-xs" />
+            </button>
           </div>
         }
       }

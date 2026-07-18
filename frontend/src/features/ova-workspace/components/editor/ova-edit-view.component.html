@@ -130,6 +130,8 @@
                   (onTogglePhaseSelection)="togglePhaseSelection($event)"
                   (onSelectAll)="selectAllPhases()"
                   (onRegenAll)="regenAll()"
+                  (onDeleteMessage)="deleteChatMessage($event)"
+                  (onClearChat)="clearChat()"
                 ></gn-workspace-chat-panel>
               </div>
             }
@@ -179,6 +181,8 @@
               (onTogglePhaseSelection)="togglePhaseSelection($event)"
               (onSelectAll)="selectAllPhases()"
               (onRegenAll)="regenAll()"
+              (onDeleteMessage)="deleteChatMessage($event)"
+              (onClearChat)="clearChat()"
             ></gn-workspace-chat-panel>
           </div>
           <gn-workspace-resizable-divider

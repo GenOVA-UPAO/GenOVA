@@ -124,3 +124,40 @@ def patch_chat(
     commit_or_500(db, op="update_chat_message")
     db.refresh(row)
     return chat_service.message_to_dict(row)
+
+
+@router.delete("/{ova_id}/chat/{message_id}")
+@limiter.limit("60/minute")
+def delete_chat_message(
+    request: Request,
+    ova_id: str,
+    message_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ova, err = _resolve_ova(ova_id, current_user, db)
+    if err:
+        return err
+    if not chat_service.delete_message(db, ova_id=str(ova.id), message_id=message_id):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"error": "not_found", "message": "Mensaje no encontrado."},
+        )
+    commit_or_500(db, op="delete_chat_message")
+    return {"ok": True}
+
+
+@router.delete("/{ova_id}/chat")
+@limiter.limit("30/minute")
+def clear_chat(
+    request: Request,
+    ova_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ova, err = _resolve_ova(ova_id, current_user, db)
+    if err:
+        return err
+    deleted = chat_service.clear_messages(db, ova_id=str(ova.id))
+    commit_or_500(db, op="clear_chat_messages")
+    return {"ok": True, "deleted": deleted}

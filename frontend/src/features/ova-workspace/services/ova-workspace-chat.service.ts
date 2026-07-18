@@ -92,6 +92,26 @@ export class OvaWorkspaceChatService {
     return msg;
   }
 
+  async deleteMessage(id: string): Promise<void> {
+    this.messagesState.update((msgs) => msgs.filter((m) => m.id !== id));
+    if (!this.ovaId) return;
+    try {
+      await apiJson(`/api/ovas/${this.ovaId}/chat/${id}`, { method: "DELETE" });
+    } catch {
+      /* ya quitado en local */
+    }
+  }
+
+  async clearAll(): Promise<void> {
+    this.messagesState.set([]);
+    if (!this.ovaId) return;
+    try {
+      await apiJson(`/api/ovas/${this.ovaId}/chat`, { method: "DELETE" });
+    } catch {
+      /* ya vaciado en local */
+    }
+  }
+
   private async persistCreate(msg: RegenChatMessage): Promise<void> {
     if (!this.ovaId) return;
     try {

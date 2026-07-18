@@ -98,3 +98,27 @@ def update_message(
     if resource_labels is not None:
         row.resource_labels = list(resource_labels)
     return row
+
+
+def delete_message(db: Session, *, ova_id: str, message_id: str) -> bool:
+    row = db.execute(
+        select(OvaEditorChatMessage).where(
+            OvaEditorChatMessage.id == message_id,
+            OvaEditorChatMessage.ova_id == ova_id,
+        )
+    ).scalar_one_or_none()
+    if not row:
+        return False
+    db.delete(row)
+    return True
+
+
+def clear_messages(db: Session, *, ova_id: str) -> int:
+    rows = (
+        db.execute(select(OvaEditorChatMessage).where(OvaEditorChatMessage.ova_id == ova_id))
+        .scalars()
+        .all()
+    )
+    for row in rows:
+        db.delete(row)
+    return len(rows)
