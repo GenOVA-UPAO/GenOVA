@@ -55,7 +55,7 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
             (onClick)="tab = 'code'"
             ariaLabel="Editar recursos del OVA"
           >
-            Recursos
+            Editar
           </gn-button>
         </div>
 
@@ -122,7 +122,7 @@ import { WorkspaceResourceListComponent } from "./workspace-resource-list.compon
             <gn-workspace-html-preview [phases]="phases()"></gn-workspace-html-preview>
           }
           @if (tab === "code") {
-            <div class="space-y-5 p-4" role="tabpanel" aria-label="Lista de recursos del OVA">
+            <div class="space-y-5 p-4" role="tabpanel" aria-label="Editar recursos del OVA">
               <p class="text-xs leading-relaxed text-muted-foreground">
                 Elige un recurso para editarlo, mejorarlo con IA o reordenarlo. El código HTML queda
                 oculto hasta que lo abras.
