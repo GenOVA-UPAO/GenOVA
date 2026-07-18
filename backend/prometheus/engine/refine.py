@@ -15,6 +15,7 @@ import structlog
 from core.config import settings
 from llm.router import generar_texto
 from llm.utils.html_validator import validate_html
+from llm.utils.llm_helpers import _CODE_MAX_TOKENS
 from llm.utils.themes import build_design_system
 from llm.utils.utils import strip_markdown
 
@@ -81,7 +82,7 @@ def apply_feedback(
             generar_texto(
                 _refine_prompt(html, concept, feedback, ds),
                 "codigo",
-                32768,
+                _CODE_MAX_TOKENS,
                 llm_config,
                 enabled_models,
             )

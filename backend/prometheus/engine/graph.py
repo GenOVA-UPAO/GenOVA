@@ -33,4 +33,10 @@ def invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None
         max_concurrency=settings.ova_gen_concurrency,
         env=settings.env,
     )
-    return compiled.invoke(initial_state, config)
+    from prometheus.engine.job_trace import end_job_trace
+
+    try:
+        return compiled.invoke(initial_state, config)
+    finally:
+        # Cierra el RunTree "ova-generation" agrupador (LangSmith), pase lo que pase.
+        end_job_trace(initial_state.get("job_id") or thread_id)

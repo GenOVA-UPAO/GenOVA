@@ -128,6 +128,11 @@ _THINK_OFF_MAX = 6000
 # Budgets at/above this → codigo-scale: adaptive/low thinking with hard cap.
 _THINK_LARGE_MAX = 24000
 
+# Presupuesto de salida para la tarea 'codigo' (HTML). Bajado de 32768: una
+# generación real usa ~20k tokens; 24k da margen sin runaway de reasoning ni
+# latencia de más. Centralizado (antes era un literal repetido en generate/refine).
+_CODE_MAX_TOKENS = 24000
+
 
 def with_model_thinking(provider: str, model_id: str, extra: dict, max_tokens: int) -> dict:
     """Budget-aware thinking for DeepSeek / MiniMax (avoids EmptyContentError).
@@ -145,7 +150,16 @@ def with_model_thinking(provider: str, model_id: str, extra: dict, max_tokens: i
     mid = (model_id or "").lower()
     is_ds = "deepseek" in mid
     is_mm = "minimax" in mid
-    if not is_ds and not is_mm:
+    is_openai_reason = provider == "openrouter" and ("gpt-5" in mid or "codex" in mid)
+    if not is_ds and not is_mm and not is_openai_reason:
+        return call_extra
+
+    if is_openai_reason:
+        # OpenAI (gpt-5.x / codex): los tokens de reasoning cuentan contra el
+        # presupuesto y pueden dejar `content` vacío (EmptyContentError). Acotar el
+        # esfuerzo y excluir el reasoning del output deja sitio para el HTML.
+        effort = "minimal" if max_tokens < _THINK_OFF_MAX else "low"
+        call_extra["extra_body"] = {"reasoning": {"effort": effort, "exclude": True}}
         return call_extra
 
     if max_tokens < _THINK_OFF_MAX:

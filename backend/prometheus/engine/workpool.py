@@ -16,10 +16,13 @@ Motor único desde 2026-07-10 (benchmark F2: 6:21/20 recursos, 0 fallos, vs
 ~30min del motor por fases eliminado).
 """
 
+import functools
+
 import structlog
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
+from prometheus.engine.job_trace import job_trace
 from prometheus.engine.runtime import _persist_done, _touch_job
 from prometheus.engine.state import OvaGenerationState
 
@@ -198,6 +201,19 @@ def collect_node(state: OvaGenerationState) -> dict:
     }
 
 
+def _traced(fn):
+    """Envuelve un nodo para reagrupar sus llamadas LLM bajo el trace del job
+    (LangSmith). No-op si el tracing está apagado."""
+
+    @functools.wraps(fn)
+    def wrapper(arg, *a, **kw):
+        job_id = arg.get("job_id") if isinstance(arg, dict) else None
+        with job_trace(job_id):
+            return fn(arg, *a, **kw)
+
+    return wrapper
+
+
 def build_workpool_graph():
     from prometheus.nodes.assemble import assemble_node
     from prometheus.nodes.concierge import concierge_node
@@ -206,13 +222,13 @@ def build_workpool_graph():
     from prometheus.nodes.repair import repair_node
 
     graph = StateGraph(OvaGenerationState)
-    graph.add_node("concierge", concierge_node)
-    graph.add_node("resource_worker", resource_worker)
-    graph.add_node("collect", collect_node)
-    graph.add_node("critic", critic_node)
-    graph.add_node("repair", repair_node)
-    graph.add_node("editor", editor_node)
-    graph.add_node("assemble", assemble_node)
+    graph.add_node("concierge", _traced(concierge_node))
+    graph.add_node("resource_worker", _traced(resource_worker))
+    graph.add_node("collect", _traced(collect_node))
+    graph.add_node("critic", _traced(critic_node))
+    graph.add_node("repair", _traced(repair_node))
+    graph.add_node("editor", _traced(editor_node))
+    graph.add_node("assemble", _traced(assemble_node))
 
     graph.add_edge(START, "concierge")
     graph.add_conditional_edges("concierge", fan_out, ["resource_worker", "collect"])

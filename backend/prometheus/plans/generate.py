@@ -22,6 +22,7 @@ from typing import NamedTuple
 import structlog
 
 from llm.router import generar_texto
+from llm.utils.llm_helpers import _CODE_MAX_TOKENS
 from llm.utils.utils import parse_json, strip_markdown
 
 logger = structlog.get_logger(__name__)
@@ -134,7 +135,7 @@ def _gen_direct_code(
                 rt, concept, contexto, _design_system(theme), resource_config or {}
             ),
             "codigo",
-            32768,
+            _CODE_MAX_TOKENS,
             llm_config,
             enabled_models,
         )
@@ -181,7 +182,7 @@ def _gen_two_step(
         generar_texto(
             mod.prompt_html(rt, concept, json_str, contexto, _design_system(theme)),
             "codigo",
-            32768,
+            _CODE_MAX_TOKENS,
             llm_config,
             enabled_models,
         )
