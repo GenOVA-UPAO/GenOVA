@@ -22,16 +22,49 @@
         </p>
       </div>
 
-      <div class="flex items-center justify-between gap-2 px-1">
+      <div class="relative px-1 pt-1">
         <ol
           aria-label="Pasos para crear un OVA"
-          class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
+          class="mx-auto flex w-full max-w-md items-center justify-center sm:max-w-lg"
         >
-          <li>1. Describe</li>
-          <li>2. Elige recursos</li>
-          <li>3. Genera</li>
+          <li class="flex min-w-0 flex-1 items-center">
+            <div
+              class="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center"
+              [attr.aria-current]="stepDescribeDone() && !stepResourcesDone() ? 'step' : null"
+            >
+              <span [class]="stepCircleClass(stepDescribeDone())" aria-hidden="true">1</span>
+              <span [class]="stepLabelClass(stepDescribeDone())">1. Describe</span>
+            </div>
+            <span [class]="stepLineClass(stepDescribeDone())" aria-hidden="true"></span>
+          </li>
+          <li class="flex min-w-0 flex-1 items-center">
+            <div
+              class="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center"
+              [attr.aria-current]="
+                stepResourcesDone() && !stepGenerateReady() ? 'step' : null
+              "
+            >
+              <span [class]="stepCircleClass(stepResourcesDone())" aria-hidden="true">2</span>
+              <span [class]="stepLabelClass(stepResourcesDone())">2. Elige recursos</span>
+            </div>
+            <span [class]="stepLineClass(stepResourcesDone())" aria-hidden="true"></span>
+          </li>
+          <li
+            class="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center"
+            [attr.aria-current]="stepGenerateReady() ? 'step' : null"
+          >
+            <span
+              [class]="stepCircleClass(stepGenerateReady(), stepGenerateReady())"
+              aria-hidden="true"
+              >3</span
+            >
+            <span [class]="stepLabelClass(stepGenerateReady(), stepGenerateReady())"
+              >3. Genera</span
+            >
+          </li>
         </ol>
         <gn-button
+          class="absolute right-0 top-0"
           variant="ghost"
           size="sm"
           (onClick)="replayTour.emit()"

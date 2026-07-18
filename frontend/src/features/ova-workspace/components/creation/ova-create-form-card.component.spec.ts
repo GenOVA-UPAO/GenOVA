@@ -87,10 +87,12 @@ async function renderForm(
 }
 
 describe("OvaCreateFormCardComponent", () => {
-  it("EXAMPLE_PROMPT includes tema, objetivos and nivel educativo", () => {
+  it("EXAMPLE_PROMPT includes tema, objetivos, nivel universitario y machine learning", () => {
     expect(EXAMPLE_PROMPT).toMatch(/Tema:/i);
     expect(EXAMPLE_PROMPT).toMatch(/Objetivos:/i);
     expect(EXAMPLE_PROMPT).toMatch(/Nivel educativo:/i);
+    expect(EXAMPLE_PROMPT).toMatch(/Universitario/i);
+    expect(EXAMPLE_PROMPT).toMatch(/machine learning|aprendizaje supervisado|redes neuronales|clasificador/i);
   });
 
   it("CA-11 / CA-25 shows the three-step guide without optional resources", async () => {
@@ -110,12 +112,13 @@ describe("OvaCreateFormCardComponent", () => {
     expect(replayed).toEqual([true]);
   });
 
-  it("CA-12 useExample emits EXAMPLE_PROMPT", async () => {
+  it("CA-12 useExample emits the first university ML EXAMPLE_PROMPT", async () => {
     const emitted: string[] = [];
     await renderForm({ onPromptChange: (v) => emitted.push(v) });
 
     screen.getByRole("button", { name: "Usar ejemplo de prompt" }).click();
     expect(emitted).toEqual([EXAMPLE_PROMPT]);
+    expect(emitted[0]).toMatch(/Universitario/i);
   });
 
   it("CA-13 toolbar buttons expose aria-labels and sm+ text classes", async () => {
