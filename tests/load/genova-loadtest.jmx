@@ -9,11 +9,15 @@
 
   Ejecución headless + reporte HTML:
     jmeter -n -t tests/load/genova-loadtest.jmx -l tests/load/jmeter-result.jtl \
-           -e -o tests/load/jmeter-report -Jhost=localhost -Jport=8001
+           -e -o tests/load/jmeter-report -Jhost=localhost -Jport=8000
 
   Variables (-J):
-    host (localhost)  port (8001)  users (25)  rampup (5)  duration (120)
+    host (localhost)  port (8000)  users (25)  rampup (5)  duration (120)
     email (user@genova.ai)  password (user1234password)  loadGeneration (false)
+
+  Nota: si el backend emite genova_token con Secure (COOKIE_SAMESITE=none), el
+  Cookie Manager no la reenvía sobre http://. El plan extrae el token del
+  Set-Cookie del login y lo manda en el header Cookie (paridad con locustfile).
 -->
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
@@ -23,7 +27,7 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
           <elementProp name="host" elementType="Argument"><stringProp name="Argument.name">host</stringProp><stringProp name="Argument.value">${__P(host,localhost)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
-          <elementProp name="port" elementType="Argument"><stringProp name="Argument.name">port</stringProp><stringProp name="Argument.value">${__P(port,8001)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="port" elementType="Argument"><stringProp name="Argument.name">port</stringProp><stringProp name="Argument.value">${__P(port,8000)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
           <elementProp name="email" elementType="Argument"><stringProp name="Argument.name">email</stringProp><stringProp name="Argument.value">${__P(email,user@genova.ai)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
           <elementProp name="password" elementType="Argument"><stringProp name="Argument.name">password</stringProp><stringProp name="Argument.value">${__P(password,user1234password)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
         </collectionProp>
@@ -50,6 +54,7 @@
       <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
         <collectionProp name="HeaderManager.headers">
           <elementProp name="" elementType="Header"><stringProp name="Header.name">Content-Type</stringProp><stringProp name="Header.value">application/json</stringProp></elementProp>
+          <elementProp name="" elementType="Header"><stringProp name="Header.name">Cookie</stringProp><stringProp name="Header.value">genova_token=${authToken}</stringProp></elementProp>
         </collectionProp>
       </HeaderManager>
       <hashTree/>
@@ -91,6 +96,15 @@
               <boolProp name="Assertion.assume_success">false</boolProp>
               <intProp name="Assertion.test_type">8</intProp>
             </ResponseAssertion>
+            <hashTree/>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract genova_token" enabled="true">
+              <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+              <stringProp name="RegexExtractor.refname">authToken</stringProp>
+              <stringProp name="RegexExtractor.regex">genova_token=([^;]+)</stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.default"></stringProp>
+              <stringProp name="RegexExtractor.match_number">1</stringProp>
+            </RegexExtractor>
             <hashTree/>
           </hashTree>
         </hashTree>

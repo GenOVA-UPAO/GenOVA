@@ -54,6 +54,16 @@ def resolve_resource_display(
     return rid, title, str(info.get("emoji") or "")
 
 
+def resource_exists(phase_type: str, resource_type: str | None) -> bool:
+    """True if (phase, resource_type id/name) is a known 5E resource; guards the job endpoint."""
+    phase = (phase_type or "").strip().lower()
+    meta = _META.get(phase)
+    if meta is None:
+        return False
+    raw = (resource_type or "").strip()
+    return int(raw) in meta if raw.isdigit() else raw in _NAME_TO_ID.get(phase, {})
+
+
 def materialize_partial_ova(
     db: Session, job: OvaJob, done_resources: list[OvaJobResource]
 ) -> uuid.UUID | None:

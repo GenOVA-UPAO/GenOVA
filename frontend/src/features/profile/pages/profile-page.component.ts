@@ -1,5 +1,12 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, effect, inject, type OnInit } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  type OnInit,
+  signal,
+} from "@angular/core";
 
 import { AuthService } from "@/core/auth/auth.service";
 import { IconComponent } from "@/core/components/icon.component";
@@ -33,10 +40,12 @@ import {
 export class ProfilePageComponent implements OnInit {
   activeTab: "info" | "config" | "security" = "info";
 
-  isSavingProfile = false;
-  isChangingPassword = false;
-  isDeletingAccount = false;
-  deleteAccountError = "";
+  // Signals (no plain fields): OnPush + zoneless no detecta mutaciones tras un
+  // `await`, y el botón quedaba en "Actualizando…" sin toast de resultado.
+  readonly isSavingProfile = signal(false);
+  readonly isChangingPassword = signal(false);
+  readonly isDeletingAccount = signal(false);
+  readonly deleteAccountError = signal("");
 
   get profile() {
     return this.profileService.profileData();
@@ -75,19 +84,19 @@ export class ProfilePageComponent implements OnInit {
   }
 
   async handleSaveProfile(event: { values: ProfileFormValues; reset: () => void }) {
-    this.isSavingProfile = true;
+    this.isSavingProfile.set(true);
     try {
       await this.profileService.saveProfile(event.values);
       event.reset();
     } catch (e: any) {
       toast.error(e.message || "Error al actualizar.");
     } finally {
-      this.isSavingProfile = false;
+      this.isSavingProfile.set(false);
     }
   }
 
   async handleChangePassword(event: { values: ChangePasswordValues; reset: () => void }) {
-    this.isChangingPassword = true;
+    this.isChangingPassword.set(true);
     try {
       await this.profileService.changePassword(event.values);
       event.reset();
@@ -95,20 +104,20 @@ export class ProfilePageComponent implements OnInit {
     } catch (e: any) {
       toast.error(e.message || "Error al actualizar.");
     } finally {
-      this.isChangingPassword = false;
+      this.isChangingPassword.set(false);
     }
   }
 
   async handleDeleteAccount(password: string) {
-    this.isDeletingAccount = true;
-    this.deleteAccountError = "";
+    this.isDeletingAccount.set(true);
+    this.deleteAccountError.set("");
     try {
       await this.profileService.deleteAccount(password);
       void this.authService.logout();
     } catch (e: unknown) {
-      this.deleteAccountError = e instanceof Error ? e.message : "Error al eliminar la cuenta.";
+      this.deleteAccountError.set(e instanceof Error ? e.message : "Error al eliminar la cuenta.");
     } finally {
-      this.isDeletingAccount = false;
+      this.isDeletingAccount.set(false);
     }
   }
 }
