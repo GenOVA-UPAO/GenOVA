@@ -69,6 +69,18 @@ class StartJobRequest(BaseModel):
             raise ValueError("Se requieren recursos de al menos 2 fases 5E distintas.")
         return self
 
+    @model_validator(mode="after")
+    def validate_resource_types(self) -> "StartJobRequest":
+        """Reject a resource whose type doesn't belong to its 5E phase (→ 422, guards the runner)."""
+        if not self.resources:
+            return self
+        from generation.jobs.jobs_materialize import resource_exists
+
+        for r in self.resources:
+            if not resource_exists(r.phase_type, r.resource_type):
+                raise ValueError(f"Recurso no válido para la fase '{r.phase_type.strip()}'.")
+        return self
+
 
 def build_resource_plan(payload: StartJobRequest) -> list[dict]:
     """Translate the chosen resources into the rows to create — one per resource (R1, R2).

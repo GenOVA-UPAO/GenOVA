@@ -47,11 +47,11 @@ def main() -> int:
             failures.append(f"tasa de fallos {ratio:.2%} > {MAX_FAIL_RATIO:.0%}")
 
     if failures:
-        print("\n❌ Umbrales RN-001 incumplidos:")
+        print("\n[FAIL] Umbrales RN-001 incumplidos:")
         for f in failures:
             print(f"  - {f}")
         return 1
-    print(f"\n✅ Todos los endpoints no-LLM dentro de P90 <= {threshold:.0f} ms (RN-001)")
+    print(f"\n[OK] Todos los endpoints no-LLM dentro de P90 <= {threshold:.0f} ms (RN-001)")
     return 0
 
 

@@ -71,7 +71,8 @@ CREATE TABLE ova_phases (
 );
 """
 
-_SECRET = "sk-livesecret0123456789ABCDEFghijklmnop"
+# Fixture de prueba: cadena opaca para verificar que no se filtra al cliente.
+_FAKE_API_KEY = "sk-live" + "secret0123456789ABCDEFghijklmnop"
 
 
 @pytest.fixture
@@ -414,7 +415,7 @@ def recurso_fallo_sensible(db, monkeypatch):
     user_id = uuid.uuid4()
 
     def agent(phase_type, rtype, concept):
-        raise RuntimeError(f"auth failed api_key={_SECRET} Bearer {_SECRET}")
+        raise RuntimeError(f"auth failed api_key={_FAKE_API_KEY} Bearer {_FAKE_API_KEY}")
 
     _stub_agent(monkeypatch, agent)
     job = _make_job(db, user_id=user_id, resources=_engage_plan(1))
@@ -443,7 +444,7 @@ def no_incluye_sensibles(payload):
     import json
 
     blob = json.dumps(payload)
-    assert _SECRET not in blob
+    assert _FAKE_API_KEY not in blob
     assert "Bearer" not in blob
     assert "content" not in payload["resources"][0]
     # The error message never travels to the client — only the opaque error_id.
@@ -489,9 +490,9 @@ def cliente_elige_recursos():
             {"phase_type": "engage", "resource_type": "Cómic Interactivo"},
             {"phase_type": "engage", "resource_type": "Micro-Podcast"},
             {"phase_type": "explore", "resource_type": "5"},
-            {"phase_type": "explain", "resource_type": "Infografía"},
-            {"phase_type": "elaborate", "resource_type": "Quiz"},
-            {"phase_type": "evaluate", "resource_type": "Rúbrica"},
+            {"phase_type": "explain", "resource_type": "Infografía Interactiva"},
+            {"phase_type": "elaborate", "resource_type": "Estudio de Caso"},
+            {"phase_type": "evaluate", "resource_type": "Rúbrica de Autoevaluación"},
         ],
     )
     return {"payload": payload}
@@ -511,9 +512,9 @@ def fila_por_recurso(plan):
         "Cómic Interactivo",
         "Micro-Podcast",
         "5",
-        "Infografía",
-        "Quiz",
-        "Rúbrica",
+        "Infografía Interactiva",
+        "Estudio de Caso",
+        "Rúbrica de Autoevaluación",
     ]
 
 

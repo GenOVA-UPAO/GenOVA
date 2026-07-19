@@ -113,7 +113,7 @@
             [getInitials]="getInitials"
             [formatDate]="formatDate"
             [hideHeader]="true"
-            [isSubmitting]="isSavingProfile"
+            [isSubmitting]="isSavingProfile()"
             (onSave)="handleSaveProfile($event)"
           ></gn-profile-form>
         </div>
@@ -127,12 +127,12 @@
         <div class="space-y-5">
           <gn-totp-setup-card [totpEnabled]="!!profile?.totp_enabled"></gn-totp-setup-card>
           <gn-password-change-form
-            [isSubmitting]="isChangingPassword"
+            [isSubmitting]="isChangingPassword()"
             (onSave)="handleChangePassword($event)"
           ></gn-password-change-form>
           <gn-delete-account-form
-            [isSubmitting]="isDeletingAccount"
-            [serverError]="deleteAccountError"
+            [isSubmitting]="isDeletingAccount()"
+            [serverError]="deleteAccountError()"
             (onDelete)="handleDeleteAccount($event)"
           ></gn-delete-account-form>
         </div>

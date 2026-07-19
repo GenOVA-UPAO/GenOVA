@@ -24,8 +24,8 @@ export function contentPlainText(html: string | undefined | null): string {
   const raw = (html ?? "").trim();
   if (!raw) return EMPTY_PREVIEW;
   const text = raw
-    .replace(/<style[\s\S]*?<\/style\s*>/gi, " ")
-    .replace(/<script[\s\S]*?<\/script\s*>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style[^>]*>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script[^>]*>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();

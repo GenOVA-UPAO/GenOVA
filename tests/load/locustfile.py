@@ -20,6 +20,7 @@ Variables de entorno:
 """
 
 import os
+import re
 import uuid
 
 from locust import HttpUser, between, task
@@ -27,6 +28,21 @@ from locust import HttpUser, between, task
 SEED_EMAIL = os.getenv("EMAIL", "user@genova.ai")
 SEED_PASS = os.getenv("PASS", "user1234password")
 LOAD_GENERATION = os.getenv("LOAD_GENERATION", "1") == "1"
+
+# El backend puede emitir genova_token con Secure (p. ej. COOKIE_SAMESITE=none).
+# requests/Locust no reenvían cookies Secure sobre http://localhost; las
+# reinyectamos sin el flag para medir latencia autenticada en carga local.
+_TOKEN_RE = re.compile(r"genova_token=([^;]+)")
+
+
+def _apply_auth_cookie(client, response) -> None:
+    token = response.cookies.get("genova_token")
+    if not token:
+        match = _TOKEN_RE.search(response.headers.get("Set-Cookie") or "")
+        token = match.group(1) if match else None
+    if not token:
+        return
+    client.cookies.set("genova_token", token, path="/")
 
 
 class GenovaUser(HttpUser):
@@ -44,6 +60,7 @@ class GenovaUser(HttpUser):
             raise RuntimeError(
                 f"Login seed falló ({resp.status_code}): ¿backend arriba y usuario seed creado?"
             )
+        _apply_auth_cookie(self.client, resp)
 
     @task(5)
     def health(self) -> None:
@@ -55,11 +72,13 @@ class GenovaUser(HttpUser):
 
     @task(2)
     def login(self) -> None:
-        self.client.post(
+        resp = self.client.post(
             "/api/auth/login",
             json={"email": SEED_EMAIL, "password": SEED_PASS},
             name="POST /api/auth/login",
         )
+        if resp.status_code == 200:
+            _apply_auth_cookie(self.client, resp)
 
     @task(1)
     def register(self) -> None:

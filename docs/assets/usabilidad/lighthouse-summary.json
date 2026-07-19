@@ -1,0 +1,26 @@
+[
+  {
+    "id": "login",
+    "url": "http://localhost:4200/login",
+    "performance": 41,
+    "accessibility": 98,
+    "bestPractices": 96,
+    "seo": 90
+  },
+  {
+    "id": "register",
+    "url": "http://localhost:4200/register",
+    "performance": 34,
+    "accessibility": 98,
+    "bestPractices": 96,
+    "seo": 90
+  },
+  {
+    "id": "dashboard",
+    "url": "http://localhost:4200/dashboard",
+    "performance": 36,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 90
+  }
+]
