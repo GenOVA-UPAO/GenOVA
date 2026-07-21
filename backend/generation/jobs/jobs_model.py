@@ -53,6 +53,9 @@ class OvaJob(Base):
     status = Column(String(20), nullable=False, default="queued", server_default="queued")
     prompt = Column(Text, nullable=False, default="", server_default="")
     params = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    # Contexto RAG inyectado en los prompts (migración 037). NULL = generación sin
+    # material del usuario. Es la referencia contra la que se mide OE2.
+    rag_context = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False

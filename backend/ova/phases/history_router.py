@@ -10,7 +10,7 @@ from auth.dependencies import get_current_user
 from core.database import get_db
 from core.pagination import page_meta
 from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
-from models import Ova, User
+from models import Ova, OvaVersion, User
 from ova.helpers import VALID_STATUSES, _is_admin, _ova_to_dict, forbidden_response
 from storage import StorageError, is_configured, signed_url
 
@@ -40,24 +40,45 @@ def list_ovas(
     if status.strip() and status.strip() in VALID_STATUSES:
         base_query = base_query.where(Ova.status == status.strip())
 
-    count_query = select(func.count()).select_from(base_query.subquery())
-    total_items = db.execute(count_query).scalar_one()
-
-    # Eager-load versions (HU-030: expose active version_number) and owner (admin).
-    # Applied after count_query to keep the subquery clean. Python-side filter in
-    # _ova_to_dict picks the is_active=True entry — versions are few per OVA.
-    base_query = base_query.options(joinedload(Ova.versions))
+    # El número de versión activa (HU-030) se resuelve con una subconsulta escalar
+    # en vez de joinedload(Ova.versions): la colección duplicaba filas e impedía
+    # fusionar el COUNT con la consulta de página. Sin duplicación, `count(*) OVER ()`
+    # devuelve el total del conjunto filtrado (Postgres evalúa la ventana antes del
+    # LIMIT), así que listado y total viajan en un único round-trip (RN-001).
+    active_version_sq = (
+        select(OvaVersion.version_number)
+        .where(OvaVersion.ova_id == Ova.id, OvaVersion.is_active.is_(True))
+        .correlate(Ova)
+        .limit(1)
+        .scalar_subquery()
+    )
+    page_query = base_query.add_columns(
+        active_version_sq.label("active_version_number"),
+        func.count().over().label("total_items"),
+    )
     if admin:
-        base_query = base_query.options(joinedload(Ova.owner))
+        # many-to-one: no duplica filas, no afecta a la ventana.
+        page_query = page_query.options(joinedload(Ova.owner))
 
-    ovas = (
+    rows = (
         db.execute(
-            base_query.order_by(Ova.created_at.desc()).offset((page - 1) * limit).limit(limit)
+            page_query.order_by(Ova.created_at.desc()).offset((page - 1) * limit).limit(limit)
         )
         .unique()
-        .scalars()
         .all()
     )
+
+    ovas = [row[0] for row in rows]
+    if rows:
+        total_items = rows[0].total_items
+    elif page > 1:
+        # Página vacía más allá del final: la ventana no devuelve filas, así que el
+        # total se consulta aparte (caso raro, no está en la ruta caliente).
+        total_items = db.execute(
+            select(func.count()).select_from(base_query.subquery())
+        ).scalar_one()
+    else:
+        total_items = 0
 
     # GN-03: los jobs zombis ("generando" con worker muerto o cola abandonada)
     # solo se barrían al consultar el job exacto; al listar la página los
@@ -65,7 +86,12 @@ def list_ovas(
     sweep_stale_jobs_for_ovas(db, [ova.id for ova in ovas if ova.status == "generando"])
 
     return {
-        "ovas": [_ova_to_dict(ova, include_owner=admin) for ova in ovas],
+        "ovas": [
+            _ova_to_dict(
+                row[0], include_owner=admin, active_version_number=row.active_version_number
+            )
+            for row in rows
+        ],
         **page_meta(total_items, page, limit),
     }
 

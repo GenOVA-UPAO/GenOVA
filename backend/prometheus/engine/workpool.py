@@ -36,6 +36,9 @@ _CTX_KEYS = (
     "image_settings",
     "resource_configs",
     "job_id",
+    # Contexto RAG recuperado por el concierge: sin esta clave los workers
+    # generaban ignorando el material subido por el usuario.
+    "rag_context",
 )
 
 
@@ -98,6 +101,7 @@ def resource_worker(payload: dict) -> dict:
             theme=payload.get("theme", {}),
             image_settings=payload.get("image_settings", {}),
             resource_config=per_config,
+            contexto=payload.get("rag_context", "") or "",
         )
     except Exception as exc:  # noqa: BLE001 — aislar el fallo de un recurso
         logger.exception("workpool: resource failed", phase=phase, resource_type=rt)

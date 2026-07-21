@@ -55,7 +55,9 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
         rt = item["resource_type"]
         per_config = resource_configs.get(f"{phase}:{rt}", {})
         try:
-            html = dispatch(rt, concept, llm_config, enabled_models, theme, image_settings, per_config)
+            html = dispatch(
+                rt, concept, llm_config, enabled_models, theme, image_settings, per_config
+            )
             return item, html, None
         except Exception as exc:  # noqa: BLE001 — isolate one resource's failure
             logger.exception("resource failed", phase=phase, resource_type=rt)
@@ -69,9 +71,7 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
             rt = item["resource_type"]
             if html is not None:
                 title = (meta.get(rt) or {}).get("tipo", "")
-                results.append(
-                    {"phase": phase, "html": html, "resource_type": rt, "title": title}
-                )
+                results.append({"phase": phase, "html": html, "resource_type": rt, "title": title})
                 _persist_done(job_id, phase, rt, html)
             else:
                 errors.append({"phase": phase, "resource_type": rt, "error": err})
@@ -107,6 +107,29 @@ def _touch_job(job_id) -> None:
         db.commit()
     except Exception:  # noqa: BLE001 — heartbeat is best-effort
         logger.exception("job heartbeat failed", job_id=job_id)
+        with contextlib.suppress(Exception):
+            db.rollback()
+    finally:
+        db.close()
+
+
+def _persist_rag_context(job_id, contexto: str) -> None:
+    """Guarda el contexto RAG usado en la generación (migración 037).
+
+    Sin esto el contexto solo existe en el estado de LangGraph y desaparece al
+    terminar el job, dejando imposible auditar contra qué material se generó cada
+    OVA. Best-effort: un fallo al persistir nunca aborta la generación.
+    """
+    if not job_id or not contexto:
+        return
+    db = SessionLocal()
+    try:
+        db.execute(
+            update(OvaJob).where(OvaJob.id == uuid.UUID(str(job_id))).values(rag_context=contexto)
+        )
+        db.commit()
+    except Exception:  # noqa: BLE001 — persistencia auxiliar
+        logger.exception("no se pudo persistir rag_context", job_id=job_id)
         with contextlib.suppress(Exception):
             db.rollback()
     finally:

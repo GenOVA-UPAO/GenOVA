@@ -39,6 +39,9 @@ class StubOvaPanel {
   readonly onReorder = output<PhaseWithContent[]>();
 }
 
+// El stub debe declarar TODA la superficie que la plantilla de OvaEditViewComponent
+// enlaza: cualquier input ausente aborta el render con NG0303 y tumba el archivo
+// entero, no solo la aserción que lo usa.
 @Component({ selector: "gn-workspace-chat-panel", template: "" })
 class StubChatPanel {
   readonly prompt = input("");
@@ -49,10 +52,18 @@ class StubChatPanel {
   readonly phases = input<PhaseWithContent[]>([]);
   readonly selectionMode = input(false);
   readonly selectedPhaseIds = input<string[]>([]);
+  readonly canSelectAll = input(false);
+  readonly canRegenAll = input(false);
   readonly promptChange = output<string>();
   readonly onSubmit = output();
   readonly onFilesSelected = output<FileList>();
   readonly onRemoveFile = output<string>();
+  readonly onRegenAll = output();
+  readonly onToggleSelectionMode = output();
+  readonly onTogglePhaseSelection = output<string>();
+  readonly onSelectAll = output();
+  readonly onDeleteMessage = output<string>();
+  readonly onClearChat = output();
 }
 
 @Component({ selector: "gn-workspace-resizable-divider", template: "" })
