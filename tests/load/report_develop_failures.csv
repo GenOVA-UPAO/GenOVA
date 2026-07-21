@@ -1,0 +1,7 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+POST,POST /api/auth/login,HTTPError('429 Client Error: Too Many Requests for url: POST /api/auth/login'),185,2026-07-21T05:06:25Z,2026-07-21T05:07:42Z
+POST,POST /api/auth/register,HTTPError('502 Server Error: Bad Gateway for url: POST /api/auth/register'),11,2026-07-21T05:06:12Z,2026-07-21T05:06:23Z
+GET,GET /api/ovas,HTTPError('502 Server Error: Bad Gateway for url: GET /api/ovas'),78,2026-07-21T05:06:12Z,2026-07-21T05:06:24Z
+GET,/health,HTTPError('502 Server Error: Bad Gateway for url: /health'),74,2026-07-21T05:06:12Z,2026-07-21T05:06:23Z
+POST,POST /api/auth/login,HTTPError('502 Server Error: Bad Gateway for url: POST /api/auth/login'),42,2026-07-21T05:06:12Z,2026-07-21T05:06:23Z
+POST,POST /api/auth/register,HTTPError('429 Client Error: Too Many Requests for url: POST /api/auth/register'),28,2026-07-21T05:06:30Z,2026-07-21T05:07:35Z

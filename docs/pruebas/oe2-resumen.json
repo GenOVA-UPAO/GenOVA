@@ -1,0 +1,100 @@
+{
+  "global": {
+    "afirmaciones_juzgadas": 30,
+    "soportadas": 25,
+    "contradichas": 0,
+    "no_inferibles": 5,
+    "errores_juez": 0,
+    "accuracy_pct": 83.33,
+    "ic95_pct": [
+      66.44,
+      92.66
+    ],
+    "umbral_pct": 88.67,
+    "cumple_umbral": false,
+    "cumple_estimacion_puntual": false
+  },
+  "por_fase": {
+    "elaborate": {
+      "afirmaciones_juzgadas": 10,
+      "soportadas": 10,
+      "contradichas": 0,
+      "no_inferibles": 0,
+      "errores_juez": 0,
+      "accuracy_pct": 100.0,
+      "ic95_pct": [
+        72.25,
+        100.0
+      ],
+      "umbral_pct": 88.67,
+      "cumple_umbral": false,
+      "cumple_estimacion_puntual": true
+    },
+    "engage": {
+      "afirmaciones_juzgadas": 3,
+      "soportadas": 1,
+      "contradichas": 0,
+      "no_inferibles": 2,
+      "errores_juez": 0,
+      "accuracy_pct": 33.33,
+      "ic95_pct": [
+        6.15,
+        79.23
+      ],
+      "umbral_pct": 88.67,
+      "cumple_umbral": false,
+      "cumple_estimacion_puntual": false
+    },
+    "evaluate": {
+      "afirmaciones_juzgadas": 1,
+      "soportadas": 1,
+      "contradichas": 0,
+      "no_inferibles": 0,
+      "errores_juez": 0,
+      "accuracy_pct": 100.0,
+      "ic95_pct": [
+        20.65,
+        100.0
+      ],
+      "umbral_pct": 88.67,
+      "cumple_umbral": false,
+      "cumple_estimacion_puntual": true
+    },
+    "explain": {
+      "afirmaciones_juzgadas": 12,
+      "soportadas": 10,
+      "contradichas": 0,
+      "no_inferibles": 2,
+      "errores_juez": 0,
+      "accuracy_pct": 83.33,
+      "ic95_pct": [
+        55.2,
+        95.3
+      ],
+      "umbral_pct": 88.67,
+      "cumple_umbral": false,
+      "cumple_estimacion_puntual": false
+    },
+    "explore": {
+      "afirmaciones_juzgadas": 4,
+      "soportadas": 3,
+      "contradichas": 0,
+      "no_inferibles": 1,
+      "errores_juez": 0,
+      "accuracy_pct": 75.0,
+      "ic95_pct": [
+        30.06,
+        95.44
+      ],
+      "umbral_pct": 88.67,
+      "cumple_umbral": false,
+      "cumple_estimacion_puntual": false
+    }
+  },
+  "juez": {
+    "provider": "openrouter",
+    "model_id": "meta-llama/llama-3.3-70b-instruct"
+  },
+  "fuente": "arboles_decision.txt",
+  "concepto": "Árboles de decisión"
+}

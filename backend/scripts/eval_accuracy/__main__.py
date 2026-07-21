@@ -33,10 +33,12 @@ from scripts.eval_accuracy.extract import extract_claims  # noqa: E402
 from scripts.eval_accuracy.judge import judge_batch  # noqa: E402
 from scripts.eval_accuracy.stats import breakdown, summarize  # noqa: E402
 
-# Juez por defecto: familia distinta a la del generador (DeepSeek vía OpenRouter),
-# para que la métrica no sea autoevaluación del mismo modelo.
-DEFAULT_JUDGE_PROVIDER = "groq"
-DEFAULT_JUDGE_MODEL = "llama-3.3-70b-versatile"
+# Juez por defecto: familia Llama, distinta a la del generador (DeepSeek vía
+# OpenRouter), para que la métrica no sea autoevaluación del mismo modelo.
+# No se usa el mismo modelo en Groq porque su free tier corta por volumen
+# sostenido a mitad de corrida y los veredictos perdidos sesgan el denominador.
+DEFAULT_JUDGE_PROVIDER = "openrouter"
+DEFAULT_JUDGE_MODEL = "meta-llama/llama-3.3-70b-instruct"
 
 
 def _load_units(db, limit: int) -> list[dict]:

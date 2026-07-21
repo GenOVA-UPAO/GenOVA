@@ -8,6 +8,7 @@ sobre el dominio y contaminaría el denominador de la métrica.
 from __future__ import annotations
 
 import re
+import time
 from html import unescape
 
 from llm.router import generar_texto_with_model
@@ -79,11 +80,17 @@ def extract_claims(
     if len(texto) < 80:
         return []
     prompt = _EXTRACT_PROMPT.format(texto=texto, max_claims=max_claims, concepto=concepto)
-    try:
-        raw = generar_texto_with_model(prompt, model_id, provider, max_tokens=2048)
-        data = parse_json(raw)
-    except Exception:  # noqa: BLE001 — el recurso se salta, no invalida la corrida
-        return []
+    # Reintento con backoff: un corte por rate-limit dejaba el recurso entero sin
+    # afirmaciones y lo sacaba de la muestra sin dejar rastro en el resumen.
+    for attempt in range(3):
+        try:
+            raw = generar_texto_with_model(prompt, model_id, provider, max_tokens=2048)
+            data = parse_json(raw)
+            break
+        except Exception:  # noqa: BLE001 — el recurso se salta, no invalida la corrida
+            if attempt == 2:
+                return []
+            time.sleep(2 ** (attempt + 1))
     if not isinstance(data, dict):
         return []
     claims = data.get("afirmaciones")
