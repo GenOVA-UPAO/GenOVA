@@ -5,7 +5,7 @@ the user in immediately). Included into the auth router."""
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -54,20 +54,40 @@ def register(
                 "message": "El nombre debe contener al menos una letra.",
             },
         )
-    if db.execute(select(User).where(User.email_normalized == email_key)).scalar_one_or_none():
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "email_exists", "message": "El correo ya está registrado."},
-        )
+    # El rol por defecto se resuelve en un único round-trip: el nombre sale de
+    # PlatformConfig con COALESCE al valor por defecto, sin una segunda consulta
+    # (RN-001 — cada ida y vuelta al pooler remoto costaba ~150 ms).
+    _role_name_sq = (
+        select(PlatformConfig.value)
+        .where(PlatformConfig.key == "default_registration_role")
+        .scalar_subquery()
+    )
+    _role = db.execute(
+        select(Role).where(Role.name == func.coalesce(_role_name_sq, "usuarios_prueba"))
+    ).scalar_one_or_none()
 
+    verification_required = settings.email_verification_enabled
     user = User(
         email=email_display,
         email_normalized=email_key,
         password_hash=hash_password(payload.password),
         full_name=full_name or None,
+        # Se fija antes del INSERT en vez de con un UPDATE posterior.
+        email_verified=not verification_required,
     )
     db.add(user)
     try:
+        # flush (no commit) materializa el id sin cerrar la transacción ni pagar
+        # un refresh extra; el unique de email_normalized es quien detecta el
+        # duplicado, así que la comprobación previa por SELECT sobra.
+        db.flush()
+        if _role:
+            db.add(UserRole(user_id=user.id, role_id=_role.id))
+        if verification_required:
+            issue_verification(user, db, background_tasks)
+        # La sesión usa expire_on_commit=True: leer user.id/user.email después del
+        # commit dispararía un SELECT de recarga. Se capturan antes.
+        user_id, user_email = str(user.id), str(user.email)
         db.commit()
     except IntegrityError:
         db.rollback()
@@ -75,22 +95,9 @@ def register(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"error": "email_exists", "message": "El correo ya está registrado."},
         )
-    db.refresh(user)
 
-    # Assign default registration role (from PlatformConfig, default: 'usuarios_prueba')
-    _cfg = db.execute(
-        select(PlatformConfig).where(PlatformConfig.key == "default_registration_role")
-    ).scalar_one_or_none()
-    _role_name = (_cfg.value if _cfg else None) or "usuarios_prueba"
-    _role = db.execute(select(Role).where(Role.name == _role_name)).scalar_one_or_none()
-    if _role:
-        db.add(UserRole(user_id=user.id, role_id=_role.id))
-        db.commit()
-
-    if settings.email_verification_enabled:
+    if verification_required:
         # Verificación obligatoria: no se inicia sesión hasta confirmar el correo.
-        issue_verification(user, db, background_tasks)
-        db.commit()
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content={
@@ -101,10 +108,8 @@ def register(
 
     # Verificación deshabilitada (EMAIL_VERIFICATION_ENABLED=0): la cuenta queda
     # activa al instante y se inicia sesión directamente.
-    user.email_verified = True  # type: ignore[assignment]
-    db.commit()
     return issue_session_response(
-        str(user.id),
-        str(user.email),
+        user_id,
+        user_email,
         extra_content={"email_verification_required": False, "message": "Cuenta creada."},
     )

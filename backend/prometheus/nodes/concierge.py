@@ -37,11 +37,50 @@ Elaborate: 1=EstudioCaso,2=EjercicioGuiado,3=MiniProyecto,4=SimulaciónAplicada,
 Evaluate: 1=Quiz,2=RúbricaAutoeval,3=DesafíoContrarreloj,4=ExamenOpciónMúltiple,5=CompletarEspacios,6=RelacionarConceptos,7=Crucigrama,8=PreguntasDesarrollo,9=SimulaciónEval,10=DiplomaLogro"""
 
 
+def _retrieve_rag_context(prompt: str, upload_ids: list) -> str:
+    """Recupera el contexto RAG del material subido para este job.
+
+    Es el único punto de recuperación del motor work-pool: se hace una vez por
+    generación (no por recurso) porque todos los recursos comparten el mismo
+    concepto, y así una sola llamada de embedding sirve a las 5 fases. Best-effort:
+    cualquier fallo devuelve "" y la generación continúa sin anclaje.
+    """
+    if not upload_ids or not prompt.strip():
+        return ""
+    from core.database import SessionLocal
+    from rag.retriever import build_contexto_usuario, top_k
+
+    db = SessionLocal()
+    try:
+        chunks = top_k(db, prompt, [str(u) for u in upload_ids])
+        contexto = build_contexto_usuario(chunks)
+        logger.info(
+            "concierge RAG retrieved",
+            chunk_count=len(chunks),
+            context_chars=len(contexto),
+            uploads=len(upload_ids),
+        )
+        return contexto
+    except Exception:  # noqa: BLE001 — el RAG es best-effort (R4)
+        logger.exception("concierge: fallo al recuperar contexto RAG; se genera sin anclaje")
+        return ""
+    finally:
+        db.close()
+
+
 def concierge_node(state: OvaGenerationState) -> dict:
     prompt = state.get("prompt", "")
-    rag_context = state.get("rag_context", "")
     enabled_models = state.get("enabled_models", [])
     upload_ids = state.get("upload_ids", [])
+
+    # El estado traía `rag_context` pero nadie lo poblaba: los recursos se
+    # generaban sin el material del usuario aunque estuviera subido, chunkeado y
+    # embebido. Se recupera aquí y viaja a cada worker vía `_CTX_KEYS`.
+    rag_context = state.get("rag_context") or _retrieve_rag_context(prompt, upload_ids)
+    if rag_context:
+        from prometheus.engine.runtime import _persist_rag_context
+
+        _persist_rag_context(state.get("job_id"), rag_context)
 
     # --- BDI: 1. Percibir → Creencias ---
     beliefs = form_beliefs(prompt, rag_context, enabled_models, upload_ids)
@@ -54,6 +93,7 @@ def concierge_node(state: OvaGenerationState) -> dict:
             "beliefs": beliefs,
             "desires": desires,
             "intentions": intentions,
+            "rag_context": rag_context,
             "current_phase_idx": state.get("current_phase_idx", 0),
             "current_resource_idx": 0,
         }
@@ -76,6 +116,7 @@ def concierge_node(state: OvaGenerationState) -> dict:
         "beliefs": beliefs,
         "desires": desires,
         "intentions": intentions,
+        "rag_context": rag_context,
         "phases": phases_data,
         "phase_order": phase_order,
         "current_phase_idx": 0,

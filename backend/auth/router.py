@@ -65,9 +65,7 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
             },
         )
 
-    user = db.execute(
-        select(User).where(User.email_normalized == email)
-    ).scalar_one_or_none()
+    user = db.execute(select(User).where(User.email_normalized == email)).scalar_one_or_none()
 
     if not user:
         verify_dummy()
@@ -103,20 +101,27 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
             },
         )
 
-    user.failed_login_attempts = 0  # type: ignore[assignment]
-    user.locked_until = None  # type: ignore[assignment]
-    db.commit()
+    # Capturados antes del commit: expire_on_commit=True obligaría a recargar la
+    # fila para leer cualquiera de estos atributos después.
+    user_id, user_email = str(user.id), str(user.email)
+    totp_enabled = bool(user.totp_enabled)
 
-    if user.totp_enabled:
-        ticket = _issue_ticket(str(user.id), remember_me=payload.remember_me)
+    # Solo se escribe si el login previo había dejado contadores sucios. En la ruta
+    # feliz habitual ambos ya están limpios y el COMMIT era un round-trip a Supabase
+    # que no cambiaba nada (RN-001).
+    if user.failed_login_attempts or user.locked_until is not None:
+        user.failed_login_attempts = 0  # type: ignore[assignment]
+        user.locked_until = None  # type: ignore[assignment]
+        db.commit()
+
+    if totp_enabled:
+        ticket = _issue_ticket(user_id, remember_me=payload.remember_me)
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={"totp_required": True, "ticket": ticket},
         )
 
-    return issue_session_response(
-        str(user.id), str(user.email), remember_me=payload.remember_me
-    )
+    return issue_session_response(user_id, user_email, remember_me=payload.remember_me)
 
 
 router.include_router(register_router)

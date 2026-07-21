@@ -36,6 +36,7 @@ CREATE TABLE ova_jobs (
   id TEXT PRIMARY KEY, user_id TEXT NOT NULL, ova_id TEXT,
   status VARCHAR(20) NOT NULL DEFAULT 'queued', prompt TEXT NOT NULL DEFAULT '',
   params TEXT NOT NULL DEFAULT '{}',
+  rag_context TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   started_at TIMESTAMP, finished_at TIMESTAMP

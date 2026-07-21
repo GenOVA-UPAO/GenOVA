@@ -26,7 +26,12 @@ describe("ResourceWireframeComponent", () => {
     const { container } = await renderWireframe("storyboard", "#3B82F6");
 
     const root = container.querySelector<HTMLElement>('[style*="color"]')!;
-    expect(root.style.color).toBe("#3B82F6");
+
+    // El DOM normaliza todo color inline a `rgb(...)`, así que comparar contra el
+    // hex crudo nunca puede pasar. Se normaliza el esperado por la misma vía.
+    const expected = document.createElement("div");
+    expected.style.color = "#3B82F6";
+    expect(root.style.color).toBe(expected.style.color);
   });
 
   it("comic renders a single panel with nav chrome", async () => {

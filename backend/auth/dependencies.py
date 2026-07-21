@@ -1,7 +1,7 @@
 import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
+from sqlalchemy import literal, select
 from sqlalchemy.orm import Session
 
 from core.config import settings
@@ -48,39 +48,60 @@ def get_current_user(
             detail="Token de autenticación inválido o expirado.",
         ) from exc
 
+    # Un solo round-trip para las tres comprobaciones (RN-001): el token revocado
+    # y el rol de administrador viajan como EXISTS correlacionados junto a la fila
+    # de usuario. Contra el pooler remoto de Supabase cada consulta separada
+    # costaba ~150 ms, y este dependency corre en TODA petición autenticada.
     jti = payload.get("jti")
-    if jti and db.execute(select(RevokedToken).where(RevokedToken.jti == jti)).scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token revocado. Inicia sesión nuevamente.",
-        )
+    revoked_flag = (
+        select(RevokedToken.jti).where(RevokedToken.jti == jti).exists() if jti else literal(False)
+    )
+    admin_flag = (
+        select(UserRole.user_id)
+        .join(Role, Role.id == UserRole.role_id)
+        .where(UserRole.user_id == User.id, Role.name == "administrador")
+        .exists()
+    )
 
-    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
-    if not user:
+    row = db.execute(select(User, revoked_flag, admin_flag).where(User.id == user_id)).first()
+    if row is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuario no encontrado.",
+        )
+    user, revoked, is_admin = row
+    if revoked:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token revocado. Inicia sesión nuevamente.",
         )
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Cuenta desactivada.",
         )
+    # Cache de petición: `ova.helpers._is_admin` lo lee en vez de repetir el JOIN
+    # (14 llamadores hacían una consulta extra cada uno).
+    user.admin_flag_cached = bool(is_admin)
     return user
 
 
 def require_admin(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ) -> User:
-    is_admin = (
-        db.execute(
-            select(UserRole)
-            .join(Role)
-            .where(UserRole.user_id == current_user.id, Role.name == "administrador")
+    # `get_current_user` ya resolvió el rol en su consulta única; solo se vuelve a
+    # consultar si el atributo no está (llamadas directas fuera del dependency).
+    is_admin = getattr(current_user, "admin_flag_cached", None)
+    if is_admin is None:
+        is_admin = bool(
+            db.execute(
+                select(UserRole)
+                .join(Role)
+                .where(UserRole.user_id == current_user.id, Role.name == "administrador")
+            )
+            .scalars()
+            .first()
         )
-        .scalars()
-        .first()
-    )
 
     if not is_admin:
         raise HTTPException(

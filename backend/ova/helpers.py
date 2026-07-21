@@ -21,16 +21,26 @@ def forbidden_response(message: str = "Sin permisos.") -> JSONResponse:
 
 
 def _is_admin(user: User, db: Session) -> bool:
+    """El rol ya viene resuelto por `get_current_user` en su consulta única; se
+    reutiliza esa bandera para no repetir el JOIN en cada uno de los 14 llamadores
+    (un round-trip menos por petición contra el pooler remoto, RN-001)."""
+    cached = getattr(user, "admin_flag_cached", None)
+    if cached is not None:
+        return bool(cached)
     result = db.execute(
         select(UserRole).join(Role).where(UserRole.user_id == user.id, Role.name == "administrador")
     ).scalar_one_or_none()
     return result is not None
 
 
-def _ova_to_dict(ova: Ova, include_owner: bool = False) -> dict:
-    # Find active version number when versions are already eager-loaded (HU-030).
-    active_version_number: int | None = None
-    if ova.versions:
+def _ova_to_dict(
+    ova: Ova, include_owner: bool = False, active_version_number: int | None = None
+) -> dict:
+    """`active_version_number` permite pasar el número ya resuelto por SQL (listado
+    paginado) y evitar el eager-load de la colección `versions`, que duplicaba filas
+    e impedía fusionar el COUNT con la consulta de página."""
+    if active_version_number is None and ova.versions:
+        # Fallback (HU-030): versiones ya cargadas en memoria por el llamador.
         for v in ova.versions:
             if v.is_active:
                 active_version_number = v.version_number

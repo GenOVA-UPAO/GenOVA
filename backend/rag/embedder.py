@@ -50,6 +50,10 @@ class _GeminiEmbedderBase(Embedder):
     dim = VECTOR_DIM
     model_id: str = "gemini-embedding-2-preview"
     supports_multimodal: bool = True
+    # ¿Una petición con N contents devuelve N embeddings? v2 NO: trata la lista
+    # como un único documento multi-parte y responde con un solo vector (ver
+    # GeminiEmbedder). v1 sí batchea de verdad.
+    supports_batch: bool = True
 
     def __init__(self) -> None:
         api_key = os.getenv("GEMINI_API_KEY", "").strip()
@@ -80,12 +84,23 @@ class _GeminiEmbedderBase(Embedder):
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
+        # Con `supports_batch=False` cada texto va en su propia petición: agrupar
+        # devolvía UN vector para todo el lote y luego `insert_chunks` reventaba con
+        # "chunks and embeddings must be the same length", así que la ingesta de
+        # cualquier documento de más de un chunk fallaba entera.
+        step = 32 if self.supports_batch else 1
         out: list[list[float]] = []
-        for i in range(0, len(texts), 32):
-            batch = texts[i : i + 32]
+        for i in range(0, len(texts), step):
+            batch = texts[i : i + step]
             for attempt in range(4):
                 try:
-                    out.extend(self._call(batch, "RETRIEVAL_DOCUMENT"))
+                    vectors = self._call(batch, "RETRIEVAL_DOCUMENT")
+                    if len(vectors) != len(batch):
+                        raise EmbedderError(
+                            f"{self.model_id} devolvió {len(vectors)} embeddings "
+                            f"para {len(batch)} textos"
+                        )
+                    out.extend(vectors)
                     break
                 except Exception as exc:
                     delay = 2**attempt
@@ -110,6 +125,9 @@ class GeminiEmbedder(_GeminiEmbedderBase):
 
     model_id = "gemini-embedding-2-preview"
     supports_multimodal = True
+    # v2 produce UN embedding por petición aunque reciba varios contents (es la
+    # misma semántica que aprovecha embed_file para un PDF de varias páginas).
+    supports_batch = False
 
     def embed_file(self, data: bytes, mime_type: str) -> list[float]:
         """Embed a binary file (PDF, image, audio, video) directly. Returns

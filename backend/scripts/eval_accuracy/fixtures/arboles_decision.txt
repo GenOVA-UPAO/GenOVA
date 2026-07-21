@@ -1,0 +1,44 @@
+Árboles de decisión: criterios de división y control del sobreajuste
+
+Un árbol de decisión es un modelo de aprendizaje supervisado que particiona el
+espacio de características mediante divisiones binarias sucesivas. Cada nodo
+interno aplica una prueba sobre un atributo, cada rama corresponde a un resultado
+de esa prueba y cada hoja asigna una etiqueta de clase o un valor numérico.
+
+Criterio de Gini. La impureza de Gini de un nodo con K clases se define como
+G = 1 - suma de p_k al cuadrado, donde p_k es la proporción de ejemplos de la
+clase k en ese nodo. Su valor mínimo es 0, que ocurre cuando todos los ejemplos
+del nodo pertenecen a una única clase. Para un problema binario el valor máximo
+es 0.5, alcanzado cuando ambas clases están en proporción 50/50. La biblioteca
+scikit-learn usa el criterio de Gini por defecto en DecisionTreeClassifier.
+
+Entropía y ganancia de información. La entropía de Shannon se define como
+H = - suma de p_k por log2(p_k). Para un problema binario su valor máximo es 1.0
+bit con proporciones 50/50, frente al 0.5 del índice de Gini. La ganancia de
+información de una división es la entropía del nodo padre menos la media
+ponderada de las entropías de los nodos hijos. En la práctica Gini y entropía
+producen árboles muy similares; Gini es algo más rápido de calcular porque evita
+el logaritmo.
+
+Algoritmos históricos. ID3, propuesto por Ross Quinlan en 1986, usa ganancia de
+información y solo admite atributos categóricos. C4.5, su sucesor de 1993,
+introduce el ratio de ganancia, admite atributos continuos y maneja valores
+faltantes. CART, publicado por Breiman y colaboradores en 1984, usa el índice de
+Gini para clasificación y el error cuadrático medio para regresión, y genera
+exclusivamente árboles binarios.
+
+Sobreajuste y poda. Un árbol desarrollado hasta que todas sus hojas son puras
+memoriza el conjunto de entrenamiento y generaliza mal. Las estrategias de
+control son dos. La pre-poda detiene el crecimiento mediante hiperparámetros como
+max_depth, min_samples_split o min_samples_leaf. La post-poda deja crecer el árbol
+completo y después elimina ramas; la variante de complejidad de coste minimiza el
+error de entrenamiento más alpha por el número de hojas, donde alpha es un
+parámetro de penalización no negativo.
+
+Sesgos conocidos. La ganancia de información favorece los atributos con muchos
+valores distintos: un identificador único produciría una ganancia máxima y sería
+inútil para predecir. El ratio de ganancia de C4.5 corrige ese sesgo dividiendo la
+ganancia entre la información intrínseca del atributo. Los árboles individuales
+también presentan alta varianza: pequeños cambios en los datos de entrenamiento
+pueden alterar por completo la estructura del árbol, y esa inestabilidad es la
+motivación de los métodos de conjunto como bagging y Random Forest.

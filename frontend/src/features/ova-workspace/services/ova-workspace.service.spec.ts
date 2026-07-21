@@ -1,11 +1,66 @@
+import { signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 
+import { patchChatMessage, type RegenChatMessage, userChatMessage } from "../lib/regen-chat";
 import { OvaEditService } from "./ova-edit.service";
 import { OvaWorkspaceService } from "./ova-workspace.service";
+import { OvaWorkspaceChatService } from "./ova-workspace-chat.service";
 
 vi.mock("ngx-sonner", () => ({
   toast: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn() }),
 }));
+
+/**
+ * Historial de chat en memoria.
+ *
+ * El servicio real persiste por HTTP y no estaba stubbeado, así que hacía fetch de
+ * verdad: `init()` lanza `void chat.load(ovaId)` sin await, el fetch fallaba más
+ * tarde y su `catch` vaciaba el historial (`set([])`), borrando los mensajes que el
+ * test acababa de añadir — de ahí "expected 0 to be greater than or equal to 2".
+ *
+ * Se stubea vía TestBed y no con vi.mock del módulo http porque el sistema de test
+ * de Angular rechaza vi.mock con imports relativos ("Please use Angular TestBed for
+ * mocking dependencies") y lo ignora en silencio con el alias "@/".
+ * Conserva la semántica real de la lista para que las aserciones sigan valiendo.
+ */
+function chatServiceStub() {
+  const messagesState = signal<RegenChatMessage[]>([]);
+  return {
+    messages: messagesState.asReadonly(),
+    reset: vi.fn(() => {
+      messagesState.set([]);
+    }),
+    load: vi.fn(() => Promise.resolve()),
+    append: vi.fn((msg: RegenChatMessage) => {
+      messagesState.update((msgs) => [...msgs, msg]);
+      return Promise.resolve();
+    }),
+    appendMany: vi.fn((msgs: RegenChatMessage[]) => {
+      messagesState.update((prev) => [...prev, ...msgs]);
+      return Promise.resolve();
+    }),
+    patch: vi.fn((id: string, patch: Partial<RegenChatMessage>) => {
+      messagesState.update((msgs) => patchChatMessage(msgs, id, patch));
+      return Promise.resolve();
+    }),
+    logSelectionToggle: vi.fn(() => Promise.resolve()),
+    logSelectionAll: vi.fn(() => Promise.resolve()),
+    logSelectionMode: vi.fn(() => Promise.resolve()),
+    logRegenAllIntent: vi.fn(() => {
+      const msg = userChatMessage("Regenerar todo el OVA", { kind: "regen_all" });
+      messagesState.update((msgs) => [...msgs, msg]);
+      return Promise.resolve(msg);
+    }),
+    deleteMessage: vi.fn((id: string) => {
+      messagesState.update((msgs) => msgs.filter((m) => m.id !== id));
+      return Promise.resolve();
+    }),
+    clearAll: vi.fn(() => {
+      messagesState.set([]);
+      return Promise.resolve();
+    }),
+  };
+}
 
 function editServiceStub() {
   return {
@@ -28,7 +83,11 @@ describe("OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)", () =
   beforeEach(async () => {
     edit = editServiceStub();
     TestBed.configureTestingModule({
-      providers: [OvaWorkspaceService, { provide: OvaEditService, useValue: edit }],
+      providers: [
+        OvaWorkspaceService,
+        { provide: OvaEditService, useValue: edit },
+        { provide: OvaWorkspaceChatService, useValue: chatServiceStub() },
+      ],
     });
     service = TestBed.inject(OvaWorkspaceService);
     service.init("ova-1");
@@ -36,6 +95,9 @@ describe("OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)", () =
     await vi.waitFor(() => {
       expect(edit.fetchOvaEditorData).toHaveBeenCalledTimes(1);
     });
+    // `init()` también lanza `void chat.load()` sin await: se drena aquí para que
+    // no vacíe el historial en mitad de un test.
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   it("savePhase llama a savePhaseContent y recarga el OVA", async () => {

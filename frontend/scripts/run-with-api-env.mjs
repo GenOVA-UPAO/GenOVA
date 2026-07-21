@@ -65,18 +65,37 @@ if (ngArgs.length === 0) {
   process.exit(1);
 }
 
+/**
+ * Solo los builders de compilacion aceptan --define: `@angular/build:application`
+ * y `@angular/build:dev-server` lo declaran en su schema, `unit-test` no. Pasarselo
+ * a `ng test` aborta con "Unknown argument: define" antes de correr un solo test.
+ *
+ * En tests no hace falta inyectarlo: `src/core/lib/http.ts` comprueba
+ * `typeof GENOVA_API_BASE_PROD === "string"` y cae a "" cuando el global no existe,
+ * que es justo lo que se quiere en unitarias (sin URL de API real).
+ */
+const DEFINE_AWARE_COMMANDS = new Set(["build", "serve", "watch"]);
+const command = ngArgs[0];
+const supportsDefine = DEFINE_AWARE_COMMANDS.has(command);
+
 const ngCli = resolve(root, "node_modules/@angular/cli/bin/ng.js");
 const args = [
   ngCli,
   ...ngArgs,
-  "--define",
-  defineArg("GENOVA_API_BASE_PROD", prod),
-  "--define",
-  defineArg("GENOVA_API_BASE_DEVELOP", develop),
+  ...(supportsDefine
+    ? [
+        "--define",
+        defineArg("GENOVA_API_BASE_PROD", prod),
+        "--define",
+        defineArg("GENOVA_API_BASE_DEVELOP", develop),
+      ]
+    : []),
 ];
 
 console.log(
-  `[api-env] prod=${prod ? "set" : "empty"} develop=${develop ? "set" : "empty"}`,
+  supportsDefine
+    ? `[api-env] prod=${prod ? "set" : "empty"} develop=${develop ? "set" : "empty"}`
+    : `[api-env] '${command}' no acepta --define; se omite la inyeccion`,
 );
 
 const result = spawnSync(process.execPath, args, {
