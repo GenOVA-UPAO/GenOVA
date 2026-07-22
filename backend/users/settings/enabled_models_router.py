@@ -17,7 +17,7 @@ from llm.catalog.catalog_refresh import get_full_catalog_entries
 from llm.catalog.model_catalog import DEFAULTS
 from models import User
 
-router = APIRouter()
+router = APIRouter(tags=["Ajustes de usuario"])
 logger = structlog.get_logger(__name__)
 
 
@@ -51,14 +51,14 @@ def _validate_enabled_models(payload: list[dict]) -> list[dict]:
     return clean
 
 
-@router.get("/me/enabled-models")
+@router.get("/me/enabled-models", summary="Obtener los modelos habilitados")
 def get_enabled_models(current_user: User = Depends(get_current_user)):
     models = current_user.enabled_models or []
     defaults = {(d["provider"], d["model_id"]) for d in DEFAULTS.values()}
     return {"models": models, "defaults": [{"provider": p, "model_id": m} for p, m in defaults]}
 
 
-@router.put("/me/enabled-models")
+@router.put("/me/enabled-models", summary="Actualizar los modelos habilitados")
 @limiter.limit("20/minute")
 def put_enabled_models(
     request: Request,

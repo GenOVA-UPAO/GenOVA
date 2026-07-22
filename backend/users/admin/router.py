@@ -8,7 +8,7 @@ from users.admin.account_router import router as account_router
 from users.admin.list_router import router as list_router
 from users.admin.profile_router import router as profile_router
 
-router = APIRouter()
+router = APIRouter(tags=["Admin · Usuarios"])
 router.include_router(list_router)
 router.include_router(profile_router)
 router.include_router(account_router)

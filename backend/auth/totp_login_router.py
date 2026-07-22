@@ -20,7 +20,7 @@ from core.database import get_db
 from core.rate_limit import limiter
 from models import User
 
-router = APIRouter(prefix="/totp", tags=["totp"])
+router = APIRouter(prefix="/totp", tags=["Autenticación · TOTP"])
 
 
 class VerifyBody(BaseModel):
@@ -28,7 +28,7 @@ class VerifyBody(BaseModel):
     code: str
 
 
-@router.post("/verify")
+@router.post("/verify", summary="Verificar el código TOTP al iniciar sesión")
 @limiter.limit("10/minute")
 def totp_verify(
     request: Request,
@@ -55,9 +55,7 @@ def totp_verify(
     # Try TOTP first
     totp = pyotp.TOTP(str(user.totp_secret))
     if totp.verify(code, valid_window=1):
-        return issue_session_response(
-            str(user.id), str(user.email), remember_me=remember_me
-        )
+        return issue_session_response(str(user.id), str(user.email), remember_me=remember_me)
 
     # Try backup codes
     codes: list[dict] = list(user.totp_backup_codes or [])
@@ -83,7 +81,7 @@ class DisableBody(BaseModel):
     code: str
 
 
-@router.delete("")
+@router.delete("", summary="Desactivar el TOTP de la cuenta propia")
 @limiter.limit("5/minute")
 def totp_disable_self(
     request: Request,
@@ -115,7 +113,7 @@ class AdminDisableBody(BaseModel):
     user_id: str
 
 
-@router.delete("/admin")
+@router.delete("/admin", summary="Desactivar el TOTP de otro usuario (admin)")
 @limiter.limit("10/minute")
 def totp_admin_disable(
     request: Request,

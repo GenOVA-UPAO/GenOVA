@@ -29,7 +29,7 @@ from ova.phases.phase_version_router import record_phase_micro_version
 from users.admin.helpers import commit_or_500
 
 logger = structlog.get_logger(__name__)
-router = APIRouter()
+router = APIRouter(tags=["OVA · Fases y versiones"])
 
 MAX_PHASES_PER_TYPE = 4
 
@@ -64,7 +64,7 @@ class AddPhaseRequest(BaseModel):
     prompt: str
 
 
-@router.post("/{ova_id}/fases")
+@router.post("/{ova_id}/fases", summary="Añadir una fase a la OVA")
 @limiter.limit("5/minute")
 def add_phase(
     request: Request,

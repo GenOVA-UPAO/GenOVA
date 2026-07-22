@@ -17,7 +17,7 @@ from ova.crud.edit_helpers import (
 )
 from ova.helpers import forbidden_response
 
-router = APIRouter()
+router = APIRouter(tags=["Generación"])
 
 
 class RegenRequest(BaseModel):
@@ -25,7 +25,7 @@ class RegenRequest(BaseModel):
     fase_ids: list[str] = Field(default_factory=list)
 
 
-@router.post("/{ova_id}/regenerar")
+@router.post("/{ova_id}/regenerar", summary="Regenerar los recursos de una OVA")
 @limiter.limit("10/minute")
 def regenerate_ova(
     request: Request,
@@ -110,7 +110,9 @@ def regenerate_ova(
     )
 
 
-@router.get("/{ova_id}/regenerar/{job_id}/progress")
+@router.get(
+    "/{ova_id}/regenerar/{job_id}/progress", summary="Consultar el progreso de una regeneración"
+)
 def get_regen_progress(
     ova_id: str,
     job_id: str,

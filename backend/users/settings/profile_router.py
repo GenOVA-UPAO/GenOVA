@@ -9,7 +9,7 @@ from core.rate_limit import limiter
 from models import User
 from users.settings.account_router import router as account_router
 
-router = APIRouter()
+router = APIRouter(tags=["Perfil"])
 # Account-security endpoints (change password, delete) live in account_router;
 # included here so they keep the same /me prefix.
 router.include_router(account_router)
@@ -23,7 +23,7 @@ class UserProfileUpdate(BaseModel):
     phone_number: str | None = Field(default=None, max_length=20)
 
 
-@router.patch("/me")
+@router.patch("/me", summary="Actualizar el perfil propio")
 @limiter.limit("20/minute")
 def update_profile(
     request: Request,
@@ -110,7 +110,7 @@ class UserThemeUpdate(BaseModel):
     palette: dict | None = None
 
 
-@router.patch("/me/theme")
+@router.patch("/me/theme", summary="Actualizar el tema de la interfaz")
 @limiter.limit("30/minute")
 def update_theme(
     request: Request,

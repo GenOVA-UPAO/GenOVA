@@ -16,10 +16,10 @@ from core.rate_limit import limiter
 from models import User, UserLink
 from users.settings.links_helpers import _serialize
 
-router = APIRouter()
+router = APIRouter(tags=["Admin · Usuarios"])
 
 
-@router.get("/links/admin")
+@router.get("/links/admin", summary="Listar todos los vínculos")
 def list_all_links(
     current_user: User = Depends(require_permission("users:link:admin")),
     db: Session = Depends(get_db),
@@ -46,7 +46,7 @@ def list_all_links(
     }
 
 
-@router.delete("/links/admin/{link_id}")
+@router.delete("/links/admin/{link_id}", summary="Eliminar cualquier vínculo")
 @limiter.limit("20/minute")
 def delete_any_link(
     request: Request,

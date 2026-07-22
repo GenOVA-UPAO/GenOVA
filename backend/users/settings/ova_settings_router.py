@@ -11,7 +11,7 @@ from core.rate_limit import limiter
 from llm.images.image_providers import IMAGE_PROVIDERS
 from models import User
 
-router = APIRouter()
+router = APIRouter(tags=["Ajustes de usuario"])
 logger = structlog.get_logger(__name__)
 
 _DEFAULTS = {"max_images": 2, "image_provider": "cloudflare", "image_model": None}
@@ -41,7 +41,7 @@ def _effective(raw: dict | None) -> dict:
     }
 
 
-@router.get("/me/ova-settings")
+@router.get("/me/ova-settings", summary="Obtener los ajustes de OVA propios")
 def get_ova_settings(current_user: User = Depends(get_current_user)):
     return {
         "settings": _effective(current_user.ova_settings),
@@ -50,7 +50,7 @@ def get_ova_settings(current_user: User = Depends(get_current_user)):
     }
 
 
-@router.get("/me/image-models")
+@router.get("/me/image-models", summary="Listar los modelos de imagen disponibles")
 @limiter.limit("30/minute")
 def get_image_models(
     request: Request,
@@ -72,7 +72,7 @@ def get_image_models(
     return {"provider": provider, "models": models}
 
 
-@router.put("/me/ova-settings")
+@router.put("/me/ova-settings", summary="Actualizar los ajustes de OVA propios")
 @limiter.limit("20/minute")
 def put_ova_settings(
     request: Request,

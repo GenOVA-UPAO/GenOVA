@@ -13,7 +13,7 @@ from ova.chat import service as chat_service
 from ova.crud.edit_helpers import _resolve_ova
 from users.admin.helpers import commit_or_500
 
-router = APIRouter()
+router = APIRouter(tags=["OVA · Chat"])
 
 _ALLOWED_ROLES = frozenset({"user", "assistant", "system"})
 _ALLOWED_STATUS = frozenset({"running", "success", "error"})
@@ -36,7 +36,7 @@ class ChatMessagePatch(BaseModel):
     resource_labels: list[str] | None = None
 
 
-@router.get("/{ova_id}/chat")
+@router.get("/{ova_id}/chat", summary="Obtener el historial de chat de la OVA")
 @limiter.limit("60/minute")
 def get_chat(
     request: Request,
@@ -50,7 +50,7 @@ def get_chat(
     return {"messages": chat_service.list_messages(db, str(ova.id))}
 
 
-@router.post("/{ova_id}/chat")
+@router.post("/{ova_id}/chat", summary="Enviar un mensaje al chat de la OVA")
 @limiter.limit("60/minute")
 def post_chat(
     request: Request,
@@ -89,7 +89,7 @@ def post_chat(
     return chat_service.message_to_dict(row)
 
 
-@router.patch("/{ova_id}/chat/{message_id}")
+@router.patch("/{ova_id}/chat/{message_id}", summary="Editar un mensaje del chat")
 @limiter.limit("60/minute")
 def patch_chat(
     request: Request,
@@ -126,7 +126,7 @@ def patch_chat(
     return chat_service.message_to_dict(row)
 
 
-@router.delete("/{ova_id}/chat/{message_id}")
+@router.delete("/{ova_id}/chat/{message_id}", summary="Eliminar un mensaje del chat")
 @limiter.limit("60/minute")
 def delete_chat_message(
     request: Request,
@@ -147,7 +147,7 @@ def delete_chat_message(
     return {"ok": True}
 
 
-@router.delete("/{ova_id}/chat")
+@router.delete("/{ova_id}/chat", summary="Vaciar el chat de la OVA")
 @limiter.limit("30/minute")
 def clear_chat(
     request: Request,

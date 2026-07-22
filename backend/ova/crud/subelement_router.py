@@ -20,7 +20,7 @@ from models import Ova, OvaPhase, User
 from ova.crud.edit_helpers import _get_active_version, _is_ova_owner
 from ova.helpers import forbidden_response
 
-router = APIRouter()
+router = APIRouter(tags=["OVA · Fases y versiones"])
 
 # Phase types that support granular sub-element editing (none yet — future work)
 _SUPPORTED_TYPES: set[str] = set()
@@ -31,7 +31,9 @@ class SubelementEditRequest(BaseModel):
     prompt: str
 
 
-@router.patch("/{ova_id}/fases/{fase_id}/subelementos/{sub_id}")
+@router.patch(
+    "/{ova_id}/fases/{fase_id}/subelementos/{sub_id}", summary="Editar un subelemento de una fase"
+)
 @limiter.limit("5/minute")
 def edit_subelement(
     request: Request,

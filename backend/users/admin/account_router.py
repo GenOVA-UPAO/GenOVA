@@ -46,7 +46,7 @@ def _issue_reset_token(db: Session, user_id) -> str:
     return token
 
 
-@router.patch("/{user_id}/status")
+@router.patch("/{user_id}/status", summary="Activar o desactivar un usuario")
 @limiter.limit("20/minute")
 def update_user_status(
     request: Request,
@@ -68,7 +68,7 @@ def update_user_status(
     return {"id": str(target_uuid), "is_active": target_user.is_active}
 
 
-@router.post("/{user_id}/unlock")
+@router.post("/{user_id}/unlock", summary="Desbloquear un usuario")
 @limiter.limit("20/minute")
 def unlock_user(
     request: Request,
@@ -85,7 +85,9 @@ def unlock_user(
     return {"id": str(target_uuid), "message": "Cuenta desbloqueada con éxito."}
 
 
-@router.post("/{user_id}/reset-password-email")
+@router.post(
+    "/{user_id}/reset-password-email", summary="Enviar correo de restablecimiento a un usuario"
+)
 @limiter.limit("5/minute")
 def trigger_reset_email(
     request: Request,

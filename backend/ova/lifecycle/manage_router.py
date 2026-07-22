@@ -11,10 +11,10 @@ from core.rate_limit import limiter
 from models import Ova, User
 from ova.helpers import UpdateOvaMetadataRequest, _is_admin, forbidden_response
 
-router = APIRouter()
+router = APIRouter(tags=["OVA · CRUD"])
 
 
-@router.patch("/{ova_id}/metadata")
+@router.patch("/{ova_id}/metadata", summary="Actualizar los metadatos de la OVA")
 @limiter.limit("30/minute")
 def update_ova_metadata(
     request: Request,
@@ -79,7 +79,7 @@ def update_ova_metadata(
     }
 
 
-@router.delete("/{ova_id}")
+@router.delete("/{ova_id}", summary="Enviar la OVA a la papelera")
 @limiter.limit("20/minute")
 def delete_ova(
     request: Request,

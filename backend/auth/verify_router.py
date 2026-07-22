@@ -22,7 +22,7 @@ from core.database import get_db
 from core.rate_limit import limiter
 from models import EmailVerificationToken, User
 
-router = APIRouter()
+router = APIRouter(tags=["Autenticación"])
 logger = structlog.get_logger(__name__)
 
 FRONTEND_URL = settings.frontend_url.rstrip("/")
@@ -43,15 +43,11 @@ class ResendVerificationRequest(BaseModel):
     email: EmailStr
 
 
-def issue_verification(
-    user: User, db: Session, background_tasks: BackgroundTasks
-) -> None:
+def issue_verification(user: User, db: Session, background_tasks: BackgroundTasks) -> None:
     """Replace any pending token for the user, persist a fresh one and queue the
     email. Caller commits. No-op email send when SMTP is unconfigured (dev)."""
     db.execute(
-        EmailVerificationToken.__table__.delete().where(
-            EmailVerificationToken.user_id == user.id
-        )
+        EmailVerificationToken.__table__.delete().where(EmailVerificationToken.user_id == user.id)
     )
     token_str = secrets.token_urlsafe(32)
     db.add(
@@ -81,7 +77,7 @@ def _build_login_response(user: User) -> JSONResponse:
     )
 
 
-@router.post("/verify-email")
+@router.post("/verify-email", summary="Verificar el correo con el token recibido")
 @limiter.limit("10/minute")
 def verify_email(request: Request, payload: VerifyEmailSubmit, db: Session = Depends(get_db)):
     record = db.execute(
@@ -90,7 +86,10 @@ def verify_email(request: Request, payload: VerifyEmailSubmit, db: Session = Dep
     if not record:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "invalid_token", "message": "El enlace de verificación es inválido o ya fue usado."},
+            content={
+                "error": "invalid_token",
+                "message": "El enlace de verificación es inválido o ya fue usado.",
+            },
         )
 
     expires_at = record.expires_at
@@ -101,7 +100,10 @@ def verify_email(request: Request, payload: VerifyEmailSubmit, db: Session = Dep
         db.commit()
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "expired_token", "message": "El enlace de verificación ha expirado. Solicita uno nuevo."},
+            content={
+                "error": "expired_token",
+                "message": "El enlace de verificación ha expirado. Solicita uno nuevo.",
+            },
         )
 
     user = db.execute(select(User).where(User.id == record.user_id)).scalar_one_or_none()
@@ -115,15 +117,13 @@ def verify_email(request: Request, payload: VerifyEmailSubmit, db: Session = Dep
 
     user.email_verified = True  # type: ignore[assignment]
     db.execute(
-        EmailVerificationToken.__table__.delete().where(
-            EmailVerificationToken.user_id == user.id
-        )
+        EmailVerificationToken.__table__.delete().where(EmailVerificationToken.user_id == user.id)
     )
     db.commit()
     return _build_login_response(user)
 
 
-@router.post("/resend-verification")
+@router.post("/resend-verification", summary="Reenviar el correo de verificación")
 @limiter.limit("3/minute")
 def resend_verification(
     request: Request,
@@ -136,9 +136,7 @@ def resend_verification(
         "message": "Si el correo está registrado y pendiente de verificar, te enviamos un nuevo enlace."
     }
     email = normalize_email(payload.email)
-    user = db.execute(
-        select(User).where(User.email_normalized == email)
-    ).scalar_one_or_none()
+    user = db.execute(select(User).where(User.email_normalized == email)).scalar_one_or_none()
     if user and not user.email_verified:
         issue_verification(user, db, background_tasks)
         db.commit()

@@ -16,13 +16,13 @@ from llm.clients.key_resolver import mask_key
 from llm.providers import ALL_PROVIDERS
 from models import User
 
-router = APIRouter()
+router = APIRouter(tags=["Ajustes de usuario"])
 logger = structlog.get_logger(__name__)
 
 _MIN_KEY_LEN = 8
 
 
-@router.get("/me/api-keys")
+@router.get("/me/api-keys", summary="Obtener las claves de API propias")
 def get_api_keys(current_user: User = Depends(get_current_user)):
     """Return masked status for all configurable providers."""
     keys = current_user.user_api_keys or {}
@@ -32,7 +32,7 @@ def get_api_keys(current_user: User = Depends(get_current_user)):
     }
 
 
-@router.put("/me/api-keys")
+@router.put("/me/api-keys", summary="Guardar las claves de API propias")
 @limiter.limit("10/minute")
 def put_api_keys(
     request: Request,

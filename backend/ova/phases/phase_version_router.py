@@ -23,7 +23,7 @@ from ova.crud.edit_helpers import (
 from ova.helpers import forbidden_response
 from users.admin.helpers import commit_or_500
 
-router = APIRouter()
+router = APIRouter(tags=["OVA · Fases y versiones"])
 
 
 def _next_minor(db: Session, phase_id, ova_id) -> int:
@@ -49,7 +49,7 @@ def record_phase_micro_version(db: Session, phase_id, ova_id: str, content: str)
     return mv
 
 
-@router.get("/{ova_id}/fases/{fase_id}/versiones")
+@router.get("/{ova_id}/fases/{fase_id}/versiones", summary="Listar las versiones de una fase")
 def list_phase_versions(
     ova_id: str,
     fase_id: str,
@@ -92,7 +92,10 @@ def list_phase_versions(
     }
 
 
-@router.post("/{ova_id}/fases/{fase_id}/versiones/{mvid}/revert")
+@router.post(
+    "/{ova_id}/fases/{fase_id}/versiones/{mvid}/revert",
+    summary="Revertir una fase a una versión anterior",
+)
 @limiter.limit("10/minute")
 def revert_phase_version(
     request: Request,

@@ -66,7 +66,7 @@ def _check_duplicates(
         )
 
 
-@router.patch("/{user_id}")
+@router.patch("/{user_id}", summary="Actualizar el perfil de un usuario")
 @limiter.limit("20/minute")
 def update_user_profile(
     request: Request,
@@ -98,7 +98,7 @@ def update_user_profile(
     return {"message": "Perfil actualizado exitosamente."}
 
 
-@router.patch("/{user_id}/role")
+@router.patch("/{user_id}/role", summary="Cambiar el rol de un usuario")
 @limiter.limit("20/minute")
 def update_user_role(
     request: Request,

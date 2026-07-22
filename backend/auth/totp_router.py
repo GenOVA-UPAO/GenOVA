@@ -26,7 +26,7 @@ from core.database import get_db
 from core.rate_limit import limiter
 from models import User
 
-router = APIRouter(prefix="/totp", tags=["totp"])
+router = APIRouter(prefix="/totp", tags=["Autenticación · TOTP"])
 logger = structlog.get_logger(__name__)
 
 _APP_NAME = "GenOVA"
@@ -37,7 +37,7 @@ _APP_NAME = "GenOVA"
 # ---------------------------------------------------------------------------
 
 
-@router.post("/setup")
+@router.post("/setup", summary="Iniciar el alta del segundo factor TOTP")
 @limiter.limit("5/minute")
 def totp_setup(
     request: Request,
@@ -79,7 +79,7 @@ class ConfirmBody(BaseModel):
     code: str
 
 
-@router.post("/confirm")
+@router.post("/confirm", summary="Confirmar el alta del TOTP con el primer código")
 @limiter.limit("10/minute")
 def totp_confirm(
     request: Request,

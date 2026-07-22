@@ -18,7 +18,7 @@ from llm.clients.key_resolver import mask_key
 from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS
 from models import PlatformConfig
 
-router = APIRouter()
+router = APIRouter(tags=["Admin · Plataforma"])
 logger = structlog.get_logger(__name__)
 
 _MIN_KEY_LEN = 8
@@ -42,7 +42,7 @@ def _load_platform_keys(db: Session) -> dict[str, str | None]:
     return {p: rows.get(_DB_KEY(p)) for p in ALL_PROVIDERS}
 
 
-@router.get("/platform-config")
+@router.get("/platform-config", summary="Obtener la configuración de la plataforma")
 def get_platform_config(
     _admin: None = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -55,7 +55,7 @@ def get_platform_config(
     }
 
 
-@router.put("/platform-config")
+@router.put("/platform-config", summary="Actualizar la configuración de la plataforma")
 @limiter.limit("10/minute")
 def put_platform_config(
     request: Request,
@@ -111,7 +111,7 @@ def put_platform_config(
     return {"platform_config": {p: mask_key(keys.get(p)) for p in ALL_PROVIDERS}}
 
 
-@router.get("/llm-config")
+@router.get("/llm-config", summary="Obtener la configuración global de LLM")
 def get_llm_config(_admin: None = Depends(require_admin)):
     """Modelos por tarea + cadena de fallback efectivos (semilla ⊕ admin)."""
     from llm.router import effective_llm_config
@@ -124,7 +124,7 @@ def get_llm_config(_admin: None = Depends(require_admin)):
     }
 
 
-@router.put("/llm-config")
+@router.put("/llm-config", summary="Actualizar la configuración global de LLM")
 @limiter.limit("10/minute")
 def put_llm_config(
     request: Request,
@@ -150,7 +150,7 @@ def put_llm_config(
     return {"config": effective_llm_config(), "tasks": list(CONFIG_TASKS)}
 
 
-@router.get("/registration-mode")
+@router.get("/registration-mode", summary="Obtener el modo de registro")
 def get_registration_mode(
     _admin: None = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -160,7 +160,7 @@ def get_registration_mode(
     return {"default_registration_role": row.value if row else "usuarios_prueba"}
 
 
-@router.put("/registration-mode")
+@router.put("/registration-mode", summary="Actualizar el modo de registro")
 @limiter.limit("10/minute")
 def put_registration_mode(
     request: Request,

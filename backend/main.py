@@ -21,6 +21,7 @@ from core.config import settings
 from core.database import Base, engine
 from core.http_middleware import ProcessTimeMiddleware, SecurityHeadersMiddleware
 from core.logging_setup import RequestContextMiddleware, configure_logging
+from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
@@ -128,6 +129,12 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="GENOVA Backend API",
     version="0.1.0",
+    description=(
+        "API de GenOVA: generación asistida por IA de Objetos Virtuales de Aprendizaje "
+        "con exportación SCORM 1.2. La sesión se mantiene con la cookie httpOnly "
+        "`genova_token` que devuelve `POST /api/auth/login`."
+    ),
+    openapi_tags=OPENAPI_TAGS,
     lifespan=lifespan,
     docs_url=None if _IS_PROD else "/docs",
     redoc_url=None if _IS_PROD else "/redoc",
@@ -185,19 +192,19 @@ init_langsmith()
 _HEALTH_CACHE = "public, max-age=10"
 
 
-@app.get("/health")
+@app.get("/health", tags=["Health"], summary="Estado del servicio")
 def health(response: Response) -> dict[str, str]:
     response.headers["Cache-Control"] = _HEALTH_CACHE
     return {"status": "ok"}
 
 
-@app.get("/api/health")
+@app.get("/api/health", tags=["Health"], summary="Estado de la API")
 def api_health(response: Response) -> dict[str, str]:
     response.headers["Cache-Control"] = _HEALTH_CACHE
     return {"status": "ok", "scope": "api"}
 
 
-@app.get("/api/db/health")
+@app.get("/api/db/health", tags=["Health"], summary="Estado de la base de datos")
 def db_health(response: Response) -> dict[str, str]:
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
@@ -205,7 +212,11 @@ def db_health(response: Response) -> dict[str, str]:
     return {"status": "ok", "scope": "db"}
 
 
-@app.post("/api/admin/refresh-catalog")
+@app.post(
+    "/api/admin/refresh-catalog",
+    tags=["Admin · Plataforma"],
+    summary="Refrescar el catálogo global de modelos",
+)
 @limiter.limit("2/minute")
 def admin_refresh_catalog(
     request: Request,
@@ -228,22 +239,22 @@ def admin_refresh_catalog(
 
 
 app.include_router(agents_router, prefix="/api/agents")
-app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
-app.include_router(rag_router, prefix="/api/rag", tags=["RAG"])
-app.include_router(roles_router, prefix="/api/roles", tags=["Roles"])
-app.include_router(scorm_router, prefix="/api/scorm", tags=["SCORM"])
-app.include_router(ova_router, prefix="/api/ova", tags=["OVA"])
-app.include_router(ova_jobs_router, prefix="/api/ova/jobs", tags=["Generation"])
-app.include_router(ova_jobs_stream_router, prefix="/api/ova/jobs", tags=["Generation"])
-app.include_router(ova_history_router, prefix="/api/ovas", tags=["OVA"])
-app.include_router(ova_edit_router, prefix="/api/ovas", tags=["OVA"])
+app.include_router(auth_router, prefix="/api/auth")
+app.include_router(rag_router, prefix="/api/rag")
+app.include_router(roles_router, prefix="/api/roles")
+app.include_router(scorm_router, prefix="/api/scorm")
+app.include_router(ova_router, prefix="/api/ova")
+app.include_router(ova_jobs_router, prefix="/api/ova/jobs")
+app.include_router(ova_jobs_stream_router, prefix="/api/ova/jobs")
+app.include_router(ova_history_router, prefix="/api/ovas")
+app.include_router(ova_edit_router, prefix="/api/ovas")
 # Chat también montado aquí: include anidado en edit_router a veces no aparece
 # en el proceso que queda pegado a un socket zombie de :8000.
-app.include_router(ova_chat_router, prefix="/api/ovas", tags=["OVA"])
-app.include_router(ova_phase_version_router, prefix="/api/ovas", tags=["OVA"])
-app.include_router(ova_add_phase_router, prefix="/api/ovas", tags=["OVA"])
-app.include_router(ova_subelement_router, prefix="/api/ovas", tags=["OVA"])
-app.include_router(users_router, prefix="/api/users", tags=["Users"])
-app.include_router(uploads_router, prefix="/api/uploads", tags=["RAG"])
-app.include_router(platform_settings_router, prefix="/api/admin", tags=["Admin"])
-app.include_router(nodes_config_router, prefix="/api/admin", tags=["Admin"])
+app.include_router(ova_chat_router, prefix="/api/ovas")
+app.include_router(ova_phase_version_router, prefix="/api/ovas")
+app.include_router(ova_add_phase_router, prefix="/api/ovas")
+app.include_router(ova_subelement_router, prefix="/api/ovas")
+app.include_router(users_router, prefix="/api/users")
+app.include_router(uploads_router, prefix="/api/uploads")
+app.include_router(platform_settings_router, prefix="/api/admin")
+app.include_router(nodes_config_router, prefix="/api/admin")

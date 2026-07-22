@@ -13,7 +13,7 @@ from ova.helpers import BatchIdsRequest, _delete_scorm_file, _is_admin
 router = APIRouter()
 
 
-@router.post("/lote/papelera")
+@router.post("/lote/papelera", summary="Enviar varias OVA a la papelera")
 @limiter.limit("10/minute")
 def batch_move_to_trash(
     request: Request,
@@ -47,7 +47,7 @@ def batch_move_to_trash(
     }
 
 
-@router.post("/lote/restaurar")
+@router.post("/lote/restaurar", summary="Restaurar varias OVA")
 @limiter.limit("10/minute")
 def batch_restore(
     request: Request,
@@ -78,7 +78,7 @@ def batch_restore(
     }
 
 
-@router.delete("/lote/permanente")
+@router.delete("/lote/permanente", summary="Eliminar varias OVA de forma permanente")
 @limiter.limit("10/minute")
 def batch_permanent_delete(
     request: Request,

@@ -10,10 +10,10 @@ from core.rate_limit import limiter
 from models import User
 from users.analytics.analytics_service import get_analytics
 
-router = APIRouter(prefix="/analytics", tags=["analytics"])
+router = APIRouter(prefix="/analytics", tags=["Analítica"])
 
 
-@router.get("")
+@router.get("", summary="Obtener las métricas de uso del usuario")
 @limiter.limit("30/minute")
 def analytics(
     request: Request,

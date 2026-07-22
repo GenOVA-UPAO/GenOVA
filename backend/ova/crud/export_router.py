@@ -19,10 +19,10 @@ from storage import StorageError, is_configured, signed_url
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["SCORM y descargas"])
 
 
-@router.get("/{ova_id}/export-scorm")
+@router.get("/{ova_id}/export-scorm", summary="Exportar la OVA como paquete SCORM 1.2")
 def export_scorm(
     ova_id: str,
     current_user: User = Depends(get_current_user),

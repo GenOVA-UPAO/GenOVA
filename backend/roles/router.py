@@ -10,7 +10,7 @@ from core.database import commit_or_500, get_db
 from models import Role, UserRole
 from roles.delete_router import router as delete_router
 
-router = APIRouter()
+router = APIRouter(tags=["Admin · Roles"])
 
 
 class RoleCreate(BaseModel):
@@ -19,7 +19,7 @@ class RoleCreate(BaseModel):
     permissions: list[str] = Field(default_factory=list)
 
 
-@router.get("")
+@router.get("", summary="Listar los roles")
 def get_roles(current_user=Depends(require_admin), db: Session = Depends(get_db)):
     # Single JOIN query replaces N+1 COUNT queries — avoids Supabase latency
     # accumulation when the roles table grows over multiple CI runs.
@@ -42,7 +42,7 @@ def get_roles(current_user=Depends(require_admin), db: Session = Depends(get_db)
     ]
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, summary="Crear un rol")
 def create_role(
     payload: RoleCreate,
     current_user=Depends(require_admin),
@@ -84,7 +84,7 @@ class RoleUpdate(BaseModel):
     permissions: list[str] | None = Field(None)
 
 
-@router.patch("/{id}")
+@router.patch("/{id}", summary="Actualizar un rol")
 def update_role(
     id: str,
     payload: RoleUpdate,

@@ -28,7 +28,7 @@ def _serialize_user(u: User, role: Role | None) -> dict:
     }
 
 
-@router.get("/")
+@router.get("/", summary="Listar los usuarios de la plataforma")
 def get_users(
     page: int = 1,
     limit: int = 10,

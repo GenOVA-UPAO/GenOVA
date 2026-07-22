@@ -20,11 +20,11 @@ from models import RevokedToken, Role, User, UserRole
 _security_scheme = HTTPBearer(auto_error=False)
 _COOKIE_NAME = "genova_token"
 
-router = APIRouter()
+router = APIRouter(tags=["Autenticación"])
 logger = structlog.get_logger(__name__)
 
 
-@router.post("/logout")
+@router.post("/logout", summary="Cerrar sesión y revocar el token actual")
 def logout(
     request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(_security_scheme),
@@ -53,7 +53,7 @@ def logout(
     return response
 
 
-@router.get("/me")
+@router.get("/me", summary="Obtener el usuario autenticado")
 def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     # BU-002 AC#1/#2/#3: resolver el "rol primario" del usuario con un orden
     # determinista (is_primary=TRUE > más permisos > None). El antiguo

@@ -13,7 +13,7 @@ router = APIRouter()
 logger = structlog.get_logger(__name__)
 
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT, summary="Eliminar un rol")
 def delete_role(
     id: str,
     reassign_to_id: str | None = None,

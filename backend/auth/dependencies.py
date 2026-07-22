@@ -1,6 +1,6 @@
 import jwt
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import literal, select
 from sqlalchemy.orm import Session
 
@@ -13,6 +13,9 @@ _COOKIE_NAME = "genova_token"
 # Set AUTH_ACCEPT_BEARER=0 in production once all clients use cookies.
 _ACCEPT_BEARER = settings.auth_accept_bearer
 _security_scheme = HTTPBearer(auto_error=False)
+# Declarado solo para que OpenAPI describa el mecanismo real (cookie httpOnly);
+# el token se sigue leyendo de request.cookies en _extract_token.
+_cookie_scheme = APIKeyCookie(name=_COOKIE_NAME, auto_error=False)
 
 
 def _extract_token(request: Request, creds: HTTPAuthorizationCredentials | None) -> str:
@@ -31,6 +34,7 @@ def _extract_token(request: Request, creds: HTTPAuthorizationCredentials | None)
 def get_current_user(
     request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(_security_scheme),
+    _cookie: str | None = Depends(_cookie_scheme),
     db: Session = Depends(get_db),
 ) -> User:
     token = _extract_token(request, creds)
