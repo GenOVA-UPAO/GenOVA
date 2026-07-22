@@ -8,9 +8,13 @@ Ejecutadas con `pnpm --filter frontend test` sobre 49 archivos de especificació
 
 ### `frontend/src/app/app.spec.ts`
 
-#### CU-001 · should create the app
+#### CU-001 · Crea el componente raíz de la aplicación
+
+*Monta el componente raíz y comprueba que se instancia sin errores; es la prueba de humo del arranque de Angular.*
 
 **Escenario:** AppComponent
+
+**Nombre del caso en la suite:** `should create the app`
 
 **Código:**
 
@@ -26,9 +30,13 @@ it("should create the app", () => {
 
 ### `frontend/src/core/components/ui/button.component.spec.ts`
 
-#### CU-002 · renders projected content
+#### CU-002 · Muestra el contenido proyectado dentro del botón
+
+*Comprueba que el texto o los iconos que se colocan dentro del componente llegan al botón nativo.*
 
 **Escenario:** ButtonComponent
+
+**Nombre del caso en la suite:** `renders projected content`
 
 **Código:**
 
@@ -41,9 +49,13 @@ it("renders projected content", async () => {
 
 **Salida obtenida:** `PASSED` en 137 ms
 
-#### CU-003 · emits onClick when clicked
+#### CU-003 · Emite el evento onClick al pulsarlo
+
+*Simula una pulsación y verifica que el componente notifica el clic a quien lo usa.*
 
 **Escenario:** ButtonComponent
+
+**Nombre del caso en la suite:** `emits onClick when clicked`
 
 **Código:**
 
@@ -62,9 +74,13 @@ it("emits onClick when clicked", async () => {
 
 **Salida obtenida:** `PASSED` en 37 ms
 
-#### CU-004 · disables the native button when disabled
+#### CU-004 · Deshabilita el botón nativo cuando se marca como deshabilitado
+
+*Comprueba que el atributo llega hasta el elemento <button> real, de modo que el navegador ignore las pulsaciones.*
 
 **Escenario:** ButtonComponent
+
+**Nombre del caso en la suite:** `disables the native button when disabled`
 
 **Código:**
 
@@ -86,9 +102,13 @@ it("disables the native button when disabled", async () => {
 
 **Salida obtenida:** `PASSED` en 28 ms
 
-#### CU-005 · forwards type=submit to the native button so forms actually submit
+#### CU-005 · Propaga type=submit al botón nativo para que el formulario se envíe
+
+*Sin esta propagación el botón quedaría como type=button y el formulario nunca se enviaría.*
 
 **Escenario:** ButtonComponent
+
+**Nombre del caso en la suite:** `forwards type=submit to the native button so forms actually submit`
 
 **Código:**
 
@@ -104,9 +124,13 @@ it("forwards type=submit to the native button so forms actually submit", async (
 
 ### `frontend/src/core/components/ui/checkbox.component.spec.ts`
 
-#### CU-006 · reflects the checked input on the underlying hlm-checkbox
+#### CU-006 · Refleja el estado marcado en la casilla subyacente
+
+*Comprueba que el valor que recibe el componente se traslada al control real de SpartanUI.*
 
 **Escenario:** CheckboxComponent
+
+**Nombre del caso en la suite:** `reflects the checked input on the underlying hlm-checkbox`
 
 **Código:**
 
@@ -121,9 +145,13 @@ it("reflects the checked input on the underlying hlm-checkbox", async () => {
 
 **Salida obtenida:** `PASSED` en 156 ms
 
-#### CU-007 · emits checkedChange when toggled
+#### CU-007 · Emite checkedChange al alternar la casilla
+
+*Verifica que marcar y desmarcar notifica el nuevo valor al componente padre.*
 
 **Escenario:** CheckboxComponent
+
+**Nombre del caso en la suite:** `emits checkedChange when toggled`
 
 **Código:**
 
@@ -145,9 +173,13 @@ it("emits checkedChange when toggled", async () => {
 
 **Salida obtenida:** `PASSED` en 49 ms
 
-#### CU-008 · disables the checkbox when disabled is true
+#### CU-008 · Deshabilita la casilla cuando se marca como deshabilitada
+
+*Comprueba que la casilla deja de ser interactiva al recibir el estado deshabilitado.*
 
 **Escenario:** CheckboxComponent
+
+**Nombre del caso en la suite:** `disables the checkbox when disabled is true`
 
 **Código:**
 
@@ -166,9 +198,13 @@ it("disables the checkbox when disabled is true", async () => {
 
 ### `frontend/src/core/components/ui/dialog.component.spec.ts`
 
-#### CU-009 · does not render content when closed
+#### CU-009 · No renderiza el contenido mientras el diálogo está cerrado
+
+*Evita que el contenido del modal exista en el DOM antes de abrirlo.*
 
 **Escenario:** DialogComponent
+
+**Nombre del caso en la suite:** `does not render content when closed`
 
 **Código:**
 
@@ -183,9 +219,13 @@ it("does not render content when closed", async () => {
 
 **Salida obtenida:** `PASSED` en 135 ms
 
-#### CU-010 · renders content in the CDK overlay when open
+#### CU-010 · Renderiza el contenido en la capa superpuesta al abrirse
+
+*Comprueba que el contenido se proyecta en el overlay del CDK y queda visible.*
 
 **Escenario:** DialogComponent
+
+**Nombre del caso en la suite:** `renders content in the CDK overlay when open`
 
 **Código:**
 
@@ -200,9 +240,13 @@ it("renders content in the CDK overlay when open", async () => {
 
 **Salida obtenida:** `PASSED` en 128 ms
 
-#### CU-011 · emits openChange(false) on Escape unless disableClose is set
+#### CU-011 · Cierra con Escape salvo que se bloquee el cierre
+
+*Verifica el atajo de teclado y su excepción cuando el diálogo está marcado como no cerrable.*
 
 **Escenario:** DialogComponent
+
+**Nombre del caso en la suite:** `emits openChange(false) on Escape unless disableClose is set`
 
 **Código:**
 
@@ -225,9 +269,13 @@ it("emits openChange(false) on Escape unless disableClose is set", async () => {
 
 ### `frontend/src/core/lib/http.spec.ts`
 
-#### CU-012 · envía credentials y el header X-Requested-With
+#### CU-012 · Envía las credenciales y la cabecera X-Requested-With
+
+*Sin credentials la cookie de sesión no viaja; la cabecera identifica la petición como XHR de la aplicación.*
 
 **Escenario:** apiFetch
+
+**Nombre del caso en la suite:** `envía credentials y el header X-Requested-With`
 
 **Código:**
 
@@ -242,9 +290,13 @@ it("envía credentials y el header X-Requested-With", async () => {
 
 **Salida obtenida:** `PASSED` en 4 ms
 
-#### CU-013 · pone Content-Type JSON solo cuando hay body no-FormData
+#### CU-013 · Pone Content-Type JSON solo cuando el cuerpo no es FormData
+
+*Con FormData el navegador debe fijar el boundary; forzar JSON rompería la subida de archivos.*
 
 **Escenario:** apiFetch
+
+**Nombre del caso en la suite:** `pone Content-Type JSON solo cuando hay body no-FormData`
 
 **Código:**
 
@@ -261,9 +313,13 @@ it("pone Content-Type JSON solo cuando hay body no-FormData", async () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-014 · notifica al AuthExpiredBus en 401 de endpoint protegido
+#### CU-014 · Avisa de sesión expirada ante un 401 en endpoint protegido
+
+*Comprueba que un 401 dispara el bus que redirige al login.*
 
 **Escenario:** apiFetch
+
+**Nombre del caso en la suite:** `notifica al AuthExpiredBus en 401 de endpoint protegido`
 
 **Código:**
 
@@ -280,9 +336,13 @@ it("notifica al AuthExpiredBus en 401 de endpoint protegido", async () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-015 · no notifica en 401 de endpoints de auth
+#### CU-015 · No avisa de sesión expirada ante un 401 de los endpoints de autenticación
+
+*Un login fallido no debe interpretarse como sesión caducada.*
 
 **Escenario:** apiFetch
+
+**Nombre del caso en la suite:** `no notifica en 401 de endpoints de auth`
 
 **Código:**
 
@@ -299,9 +359,13 @@ it("no notifica en 401 de endpoints de auth", async () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-016 · devuelve el body parseado en éxito
+#### CU-016 · Devuelve el cuerpo ya interpretado cuando la respuesta es correcta
+
+*Comprueba el camino feliz del cliente HTTP: JSON de respuesta convertido a objeto.*
 
 **Escenario:** apiJson
+
+**Nombre del caso en la suite:** `devuelve el body parseado en éxito`
 
 **Código:**
 
@@ -314,9 +378,13 @@ it("devuelve el body parseado en éxito", async () => {
 
 **Salida obtenida:** `PASSED` en 4 ms
 
-#### CU-017 · devuelve {} cuando la respuesta no trae body JSON
+#### CU-017 · Devuelve un objeto vacío cuando la respuesta no trae JSON
+
+*Evita que un 204 o un cuerpo vacío rompa a quien consume la función.*
 
 **Escenario:** apiJson
+
+**Nombre del caso en la suite:** `devuelve {} cuando la respuesta no trae body JSON`
 
 **Código:**
 
@@ -326,9 +394,13 @@ it("devuelve {} cuando la respuesta no trae body JSON", async () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-018 · lanza HttpError con message/detail del backend
+#### CU-018 · Lanza HttpError con el mensaje o detalle que envía el backend
+
+*Verifica que el error del servidor llega al llamador con su texto original.*
 
 **Escenario:** apiJson
+
+**Nombre del caso en la suite:** `lanza HttpError con message/detail del backend`
 
 **Código:**
 
@@ -344,9 +416,13 @@ it("lanza HttpError con message/detail del backend", async () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-019 · usa fallbackMsg cuando el error no trae detail ni message
+#### CU-019 · Usa el mensaje de respaldo cuando el error no trae texto
+
+*Garantiza que el usuario siempre vea una explicación, aunque el backend no la envíe.*
 
 **Escenario:** apiJson
+
+**Nombre del caso en la suite:** `usa fallbackMsg cuando el error no trae detail ni message`
 
 **Código:**
 
@@ -362,9 +438,13 @@ it("usa fallbackMsg cuando el error no trae detail ni message", async () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-020 · cae a HTTP <status> sin fallbackMsg ni body
+#### CU-020 · Cae a «HTTP <código>» cuando no hay mensaje de respaldo ni cuerpo
+
+*Último recurso del cliente HTTP para no mostrar un error vacío.*
 
 **Escenario:** apiJson
+
+**Nombre del caso en la suite:** `cae a HTTP <status> sin fallbackMsg ni body`
 
 **Código:**
 
@@ -381,9 +461,13 @@ it("cae a HTTP <status> sin fallbackMsg ni body", async () => {
 
 ### `frontend/src/core/services/modal-stack.service.spec.ts`
 
-#### CU-021 · reports the last pushed id as top
+#### CU-021 · Informa como modal activo el último apilado
+
+*La pila de modales debe considerar «arriba» al último que se abrió.*
 
 **Escenario:** ModalStackService
+
+**Nombre del caso en la suite:** `reports the last pushed id as top`
 
 **Código:**
 
@@ -400,9 +484,13 @@ it("reports the last pushed id as top", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-022 · restores the previous top after popping the current one
+#### CU-022 · Restaura el modal anterior al cerrar el actual
+
+*Comprueba que cerrar un modal devuelve el foco lógico al que estaba debajo.*
 
 **Escenario:** ModalStackService
+
+**Nombre del caso en la suite:** `restores the previous top after popping the current one`
 
 **Código:**
 
@@ -420,9 +508,13 @@ it("restores the previous top after popping the current one", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-023 · isTop is false for an empty stack
+#### CU-023 · Con la pila vacía ningún modal figura como activo
+
+*Evita falsos positivos cuando no hay ningún modal abierto.*
 
 **Escenario:** ModalStackService
+
+**Nombre del caso en la suite:** `isTop is false for an empty stack`
 
 **Código:**
 
@@ -435,9 +527,13 @@ it("isTop is false for an empty stack", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-024 · popping an id that is not on the stack is a no-op
+#### CU-024 · Cerrar un modal que no está en la pila no cambia nada
+
+*Protege el estado ante cierres duplicados o fuera de orden.*
 
 **Escenario:** ModalStackService
+
+**Nombre del caso en la suite:** `popping an id that is not on the stack is a no-op`
 
 **Código:**
 
@@ -456,9 +552,13 @@ it("popping an id that is not on the stack is a no-op", () => {
 
 ### `frontend/src/core/theme/theme.service.spec.ts`
 
-#### CU-025 · defaults to 'system' when localStorage has no stored preference
+#### CU-025 · Usa la preferencia del sistema cuando no hay ninguna guardada
+
+*Primer arranque: el tema sigue al del sistema operativo.*
 
 **Escenario:** ThemeService
+
+**Nombre del caso en la suite:** `defaults to 'system' when localStorage has no stored preference`
 
 **Código:**
 
@@ -471,9 +571,13 @@ it("defaults to 'system' when localStorage has no stored preference", () => {
 
 **Salida obtenida:** `PASSED` en 13 ms
 
-#### CU-026 · reads a previously stored preference on construction
+#### CU-026 · Lee la preferencia guardada al construirse el servicio
+
+*Comprueba que la elección del usuario sobrevive a recargar la página.*
 
 **Escenario:** ThemeService
+
+**Nombre del caso en la suite:** `reads a previously stored preference on construction`
 
 **Código:**
 
@@ -487,9 +591,13 @@ it("reads a previously stored preference on construction", () => {
 
 **Salida obtenida:** `PASSED` en 5 ms
 
-#### CU-027 · setTheme updates the signal and persists to localStorage
+#### CU-027 · Cambiar el tema actualiza el estado y lo persiste
+
+*Verifica que la elección se refleja en la interfaz y queda guardada.*
 
 **Escenario:** ThemeService
+
+**Nombre del caso en la suite:** `setTheme updates the signal and persists to localStorage`
 
 **Código:**
 
@@ -504,9 +612,13 @@ it("setTheme updates the signal and persists to localStorage", () => {
 
 **Salida obtenida:** `PASSED` en 3 ms
 
-#### CU-028 · resolvedTheme mirrors an explicit non-system preference
+#### CU-028 · El tema resuelto refleja la preferencia explícita del usuario
+
+*Cuando el usuario elige claro u oscuro, el sistema deja de mandar.*
 
 **Escenario:** ThemeService
+
+**Nombre del caso en la suite:** `resolvedTheme mirrors an explicit non-system preference`
 
 **Código:**
 
@@ -522,9 +634,13 @@ it("resolvedTheme mirrors an explicit non-system preference", () => {
 
 **Salida obtenida:** `PASSED` en 4 ms
 
-#### CU-029 · applies the 'dark' class to <html> when resolvedTheme is 'dark'
+#### CU-029 · Aplica la clase «dark» al documento con el tema oscuro
+
+*Es el mecanismo con el que Tailwind pinta toda la interfaz en oscuro.*
 
 **Escenario:** ThemeService
+
+**Nombre del caso en la suite:** `applies the 'dark' class to <html> when resolvedTheme is 'dark'`
 
 **Código:**
 
@@ -539,9 +655,13 @@ it("applies the 'dark' class to <html> when resolvedTheme is 'dark'", () => {
 
 **Salida obtenida:** `PASSED` en 7 ms
 
-#### CU-030 · removes the 'dark' class from <html> when resolvedTheme is 'light'
+#### CU-030 · Quita la clase «dark» del documento con el tema claro
+
+*Comprueba el camino inverso al volver al tema claro.*
 
 **Escenario:** ThemeService
+
+**Nombre del caso en la suite:** `removes the 'dark' class from <html> when resolvedTheme is 'light'`
 
 **Código:**
 
@@ -558,9 +678,13 @@ it("removes the 'dark' class from <html> when resolvedTheme is 'light'", () => {
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### CU-031 · cycle() moves light -> dark -> system -> light
+#### CU-031 · El ciclo del tema recorre claro → oscuro → sistema → claro
+
+*Verifica el orden del botón que alterna temas.*
 
 **Escenario:** ThemeService
+
+**Nombre del caso en la suite:** `cycle() moves light -> dark -> system -> light`
 
 **Código:**
 
@@ -581,9 +705,13 @@ it("cycle() moves light -> dark -> system -> light", () => {
 
 ### `frontend/src/features/llm-settings/components/models-master-detail.component.spec.ts`
 
-#### CU-032 · renders task list and opens catalog
+#### CU-032 · Muestra la lista de tareas y abre el catálogo de modelos
+
+*Comprueba la navegación principal de la pantalla de modelos.*
 
 **Escenario:** ModelsMasterDetailComponent
+
+**Nombre del caso en la suite:** `renders task list and opens catalog`
 
 **Código:**
 
@@ -614,9 +742,13 @@ it("renders task list and opens catalog", async () => {
 
 **Salida obtenida:** `PASSED` en 271 ms
 
-#### CU-033 · shows primary+fallbacks pattern for imagen (no media-task-card)
+#### CU-033 · Muestra modelo primario y cadena de respaldo para la tarea de imagen
+
+*La tarea de imagen usa el mismo patrón que el resto y no una tarjeta especial.*
 
 **Escenario:** ModelsMasterDetailComponent
+
+**Nombre del caso en la suite:** `shows primary+fallbacks pattern for imagen (no media-task-card)`
 
 **Código:**
 
@@ -646,9 +778,13 @@ it("shows primary+fallbacks pattern for imagen (no media-task-card)", async () =
 
 **Salida obtenida:** `PASSED` en 92 ms
 
-#### CU-034 · video switch off by default shows prompts-only message
+#### CU-034 · Con la generación de vídeo desactivada avisa de que solo se generan guiones
+
+*Documenta el comportamiento por defecto: sin vídeo real, solo prompts.*
 
 **Escenario:** ModelsMasterDetailComponent
+
+**Nombre del caso en la suite:** `video switch off by default shows prompts-only message`
 
 **Código:**
 
@@ -675,9 +811,13 @@ it("video switch off by default shows prompts-only message", async () => {
 
 **Salida obtenida:** `PASSED` en 79 ms
 
-#### CU-035 · reveals llm-task-row only after Editar cadena
+#### CU-035 · Solo muestra la fila de configuración tras pulsar «Editar cadena»
+
+*Evita exponer la configuración avanzada hasta que el usuario la pide.*
 
 **Escenario:** ModelsMasterDetailComponent
+
+**Nombre del caso en la suite:** `reveals llm-task-row only after Editar cadena`
 
 **Código:**
 
@@ -712,9 +852,13 @@ it("reveals llm-task-row only after Editar cadena", async () => {
 
 ### `frontend/src/features/llm-settings/lib/llm-catalog.utils.spec.ts`
 
-#### CU-036 · exposes multimodal embedding audio and video type filters
+#### CU-036 · Expone los filtros de tipo multimodal, embedding, audio y vídeo
+
+*Comprueba que el catálogo permite filtrar por todas las modalidades soportadas.*
 
 **Escenario:** HU-034 catalog labels
+
+**Nombre del caso en la suite:** `exposes multimodal embedding audio and video type filters`
 
 **Código:**
 
@@ -728,9 +872,13 @@ it("exposes multimodal embedding audio and video type filters", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-037 · labels native image providers
+#### CU-037 · Etiqueta los proveedores con generación de imagen nativa
+
+*Distingue en la interfaz qué proveedores generan imágenes por sí mismos.*
 
 **Escenario:** HU-034 catalog labels
+
+**Nombre del caso en la suite:** `labels native image providers`
 
 **Código:**
 
@@ -745,9 +893,13 @@ it("labels native image providers", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-038 · has modality badge for video
+#### CU-038 · Muestra el distintivo de modalidad para vídeo
+
+*Verifica la insignia que identifica a los modelos de vídeo en el catálogo.*
 
 **Escenario:** HU-034 catalog labels
+
+**Nombre del caso en la suite:** `has modality badge for video`
 
 **Código:**
 
@@ -761,9 +913,13 @@ it("has modality badge for video", () => {
 
 ### `frontend/src/features/llm-settings/lib/llmConfigDraft.spec.ts`
 
-#### CU-039 · marks imagen/video as media; video generation defaults off
+#### CU-039 · Marca imagen y vídeo como tareas de medios, con el vídeo desactivado por defecto
+
+*Fija el estado inicial seguro de la configuración de medios.*
 
 **Escenario:** llmConfigDraft media
+
+**Nombre del caso en la suite:** `marks imagen/video as media; video generation defaults off`
 
 **Código:**
 
@@ -779,9 +935,13 @@ it("marks imagen/video as media; video generation defaults off", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-040 · toDraft/toPayload round-trip generation_enabled
+#### CU-040 · Conserva el interruptor de generación al convertir ida y vuelta
+
+*Comprueba que pasar de configuración a borrador y de vuelta no pierde el ajuste.*
 
 **Escenario:** llmConfigDraft media
+
+**Nombre del caso en la suite:** `toDraft/toPayload round-trip generation_enabled`
 
 **Código:**
 
@@ -809,9 +969,13 @@ it("toDraft/toPayload round-trip generation_enabled", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-041 · filters by aptitudes; multimodal can appear in several tasks
+#### CU-041 · Filtra los modelos por aptitud y permite que un multimodal aparezca en varias tareas
+
+*Un modelo que sabe texto e imagen debe ofrecerse en ambas tareas.*
 
 **Escenario:** modelsForTask
+
+**Nombre del caso en la suite:** `filters by aptitudes; multimodal can appear in several tasks`
 
 **Código:**
 
@@ -825,9 +989,13 @@ it("filters by aptitudes; multimodal can appear in several tasks", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-042 · keeps assigned models even when category filter excludes them
+#### CU-042 · Mantiene visible el modelo asignado aunque el filtro lo excluya
+
+*Evita que un filtro haga desaparecer el modelo que ya está en uso.*
 
 **Escenario:** includeSelectedInPool
+
+**Nombre del caso en la suite:** `keeps assigned models even when category filter excludes them`
 
 **Código:**
 
@@ -860,9 +1028,13 @@ it("keeps assigned models even when category filter excludes them", () => {
 
 ### `frontend/src/features/llm-settings/pages/models-page.component.spec.ts`
 
-#### CU-043 · renders clean header, status strip and three sections for admin
+#### CU-043 · Muestra al administrador la cabecera, la franja de estado y las tres secciones
+
+*Comprueba la composición de la pantalla de modelos para un administrador.*
 
 **Escenario:** ModelsPageComponent
+
+**Nombre del caso en la suite:** `renders clean header, status strip and three sections for admin`
 
 **Código:**
 
@@ -885,9 +1057,13 @@ it("renders clean header, status strip and three sections for admin", async () =
 
 **Salida obtenida:** `PASSED` en 216 ms
 
-#### CU-044 · shows sticky save bar only when dirty
+#### CU-044 · Muestra la barra de guardado solo cuando hay cambios sin guardar
+
+*Evita ofrecer «guardar» cuando no hay nada que guardar.*
 
 **Escenario:** ModelsPageComponent
+
+**Nombre del caso en la suite:** `shows sticky save bar only when dirty`
 
 **Código:**
 
@@ -915,9 +1091,13 @@ it("shows sticky save bar only when dirty", async () => {
 
 **Salida obtenida:** `PASSED` en 119 ms
 
-#### CU-045 · shows credential subsections for admin
+#### CU-045 · Muestra las subsecciones de credenciales al administrador
+
+*Verifica que la gestión de claves solo aparece para quien puede usarla.*
 
 **Escenario:** ModelsPageComponent
+
+**Nombre del caso en la suite:** `shows credential subsections for admin`
 
 **Código:**
 
@@ -940,9 +1120,13 @@ it("shows credential subsections for admin", async () => {
 
 **Salida obtenida:** `PASSED` en 64 ms
 
-#### CU-046 · mounts platform nodes card on Plataforma tab (not a metrics chart)
+#### CU-046 · Monta la tarjeta de nodos en la pestaña Plataforma
+
+*Comprueba que la pestaña muestra la configuración del motor y no un gráfico de métricas.*
 
 **Escenario:** ModelsPageComponent
+
+**Nombre del caso en la suite:** `mounts platform nodes card on Plataforma tab (not a metrics chart)`
 
 **Código:**
 
@@ -967,9 +1151,13 @@ it("mounts platform nodes card on Plataforma tab (not a metrics chart)", async (
 
 ### `frontend/src/features/ova-workspace/components/creation/ova-create-form-card.component.spec.ts`
 
-#### CU-047 · EXAMPLE_PROMPT includes tema, objetivos, nivel universitario y machine learning
+#### CU-047 · El prompt de ejemplo incluye tema, objetivos, nivel universitario y machine learning
+
+*Garantiza que el ejemplo que se ofrece al usuario es representativo del caso de uso real.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `EXAMPLE_PROMPT includes tema, objetivos, nivel universitario y machine learning`
 
 **Código:**
 
@@ -987,9 +1175,13 @@ it("EXAMPLE_PROMPT includes tema, objetivos, nivel universitario y machine learn
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### CU-048 · CA-11 / CA-25 shows the three-step guide without optional resources
+#### CU-048 · CA-11 / CA-25 · Muestra la guía de tres pasos sin recursos opcionales
+
+*Comprueba que la pantalla de creación explica el flujo en tres pasos.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-11 / CA-25 shows the three-step guide without optional resources`
 
 **Código:**
 
@@ -1006,9 +1198,13 @@ it("CA-11 / CA-25 shows the three-step guide without optional resources", async 
 
 **Salida obtenida:** `PASSED` en 254 ms
 
-#### CU-049 · CA-24 help button emits replayTour
+#### CU-049 · CA-24 · El botón de ayuda vuelve a lanzar el tour
+
+*Permite repetir la visita guiada a demanda.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-24 help button emits replayTour`
 
 **Código:**
 
@@ -1024,9 +1220,13 @@ it("CA-24 help button emits replayTour", async () => {
 
 **Salida obtenida:** `PASSED` en 76 ms
 
-#### CU-050 · CA-12 useExample emits the first university ML EXAMPLE_PROMPT
+#### CU-050 · CA-12 · «Usar ejemplo» rellena el prompt con el ejemplo universitario
+
+*Comprueba el atajo que carga un prompt de muestra en el formulario.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-12 useExample emits the first university ML EXAMPLE_PROMPT`
 
 **Código:**
 
@@ -1043,9 +1243,13 @@ it("CA-12 useExample emits the first university ML EXAMPLE_PROMPT", async () => 
 
 **Salida obtenida:** `PASSED` en 66 ms
 
-#### CU-051 · CA-13 toolbar buttons expose aria-labels and sm+ text classes
+#### CU-051 · CA-13 · Los botones de la barra exponen etiquetas accesibles
+
+*Verifica que cada acción tiene nombre para lectores de pantalla y texto visible en pantallas medianas.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-13 toolbar buttons expose aria-labels and sm+ text classes`
 
 **Código:**
 
@@ -1066,9 +1270,13 @@ it("CA-13 toolbar buttons expose aria-labels and sm+ text classes", async () => 
 
 **Salida obtenida:** `PASSED` en 64 ms
 
-#### CU-052 · CA-15 shows missing-characters message and keeps Generar disabled
+#### CU-052 · CA-15 · Avisa de que faltan caracteres y mantiene «Generar» deshabilitado
+
+*Impide lanzar una generación con un prompt demasiado corto.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-15 shows missing-characters message and keeps Generar disabled`
 
 **Código:**
 
@@ -1084,9 +1292,13 @@ it("CA-15 shows missing-characters message and keeps Generar disabled", async ()
 
 **Salida obtenida:** `PASSED` en 65 ms
 
-#### CU-053 · CA-27 shows missing-phases message when prompt is valid but phases < 2
+#### CU-053 · CA-27 · Avisa de que faltan fases cuando el prompt es válido pero hay menos de dos
+
+*El modelo 5E exige configurar al menos dos fases antes de generar.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-27 shows missing-phases message when prompt is valid but phases < 2`
 
 **Código:**
 
@@ -1107,9 +1319,13 @@ it("CA-27 shows missing-phases message when prompt is valid but phases < 2", asy
 
 **Salida obtenida:** `PASSED` en 55 ms
 
-#### CU-054 · CA-16 associates label with the prompt textarea
+#### CU-054 · CA-16 · Asocia la etiqueta con el área de texto del prompt
+
+*Requisito de accesibilidad: el campo debe tener un nombre programático.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-16 associates label with the prompt textarea`
 
 **Código:**
 
@@ -1124,9 +1340,13 @@ it("CA-16 associates label with the prompt textarea", async () => {
 
 **Salida obtenida:** `PASSED` en 46 ms
 
-#### CU-055 · CA-17 prompt has visible focus-visible ring (not ring-0 alone)
+#### CU-055 · CA-17 · El campo de prompt muestra un anillo de foco visible
+
+*Permite navegar con teclado sabiendo dónde está el foco.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-17 prompt has visible focus-visible ring (not ring-0 alone)`
 
 **Código:**
 
@@ -1143,9 +1363,13 @@ it("CA-17 prompt has visible focus-visible ring (not ring-0 alone)", async () =>
 
 **Salida obtenida:** `PASSED` en 35 ms
 
-#### CU-056 · CA-18 announces errors with role=alert and aria-live=polite
+#### CU-056 · CA-18 · Anuncia los errores con role=alert y aria-live
+
+*Los lectores de pantalla deben leer el error sin que el usuario lo busque.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-18 announces errors with role=alert and aria-live=polite`
 
 **Código:**
 
@@ -1160,9 +1384,13 @@ it("CA-18 announces errors with role=alert and aria-live=polite", async () => {
 
 **Salida obtenida:** `PASSED` en 43 ms
 
-#### CU-057 · CA-19 shows mobile and desktop generate hints with correct visibility classes
+#### CU-057 · CA-19 · Muestra las ayudas de generación adecuadas a móvil y escritorio
+
+*Comprueba las clases de visibilidad responsive de los textos de ayuda.*
 
 **Escenario:** OvaCreateFormCardComponent
+
+**Nombre del caso en la suite:** `CA-19 shows mobile and desktop generate hints with correct visibility classes`
 
 **Código:**
 
@@ -1185,9 +1413,13 @@ it("CA-19 shows mobile and desktop generate hints with correct visibility classe
 
 ### `frontend/src/features/ova-workspace/components/creation/ova-creation-view.component.spec.ts`
 
-#### CU-058 · al entrar en /crear resetea el flujo (progreso vive en workspace)
+#### CU-058 · Al entrar en /crear se reinicia el flujo de creación
+
+*El progreso de una generación vive en el workspace, no en el formulario: entrar de nuevo debe empezar limpio.*
 
 **Escenario:** OvaCreationViewComponent
+
+**Nombre del caso en la suite:** `al entrar en /crear resetea el flujo (progreso vive en workspace)`
 
 **Código:**
 
@@ -1229,9 +1461,13 @@ it("al entrar en /crear resetea el flujo (progreso vive en workspace)", async ()
 
 ### `frontend/src/features/ova-workspace/components/editor/ova-edit-view.component.spec.ts`
 
-#### CU-059 · onEditPhase guarda el contenido de la fase vía el servicio
+#### CU-059 · Editar una fase guarda su contenido a través del servicio
+
+*Comprueba el enlace entre el panel de edición y la llamada de guardado.*
 
 **Escenario:** OvaEditViewComponent — enlaces del panel OVA
+
+**Nombre del caso en la suite:** `onEditPhase guarda el contenido de la fase vía el servicio`
 
 **Código:**
 
@@ -1248,9 +1484,13 @@ it("onEditPhase guarda el contenido de la fase vía el servicio", async () => {
 
 **Salida obtenida:** `PASSED` en 179 ms
 
-#### CU-060 · onRegenPhase dispara una regeneración acotada a esa fase
+#### CU-060 · Regenerar una fase lanza una regeneración acotada a ella
+
+*Evita regenerar el OVA entero cuando solo se pide una fase.*
 
 **Escenario:** OvaEditViewComponent — enlaces del panel OVA
+
+**Nombre del caso en la suite:** `onRegenPhase dispara una regeneración acotada a esa fase`
 
 **Código:**
 
@@ -1267,9 +1507,13 @@ it("onRegenPhase dispara una regeneración acotada a esa fase", async () => {
 
 **Salida obtenida:** `PASSED` en 68 ms
 
-#### CU-061 · onDeletePhase elimina la fase vía el servicio
+#### CU-061 · Eliminar una fase la borra a través del servicio
+
+*Comprueba el enlace del botón de borrado con la operación real.*
 
 **Escenario:** OvaEditViewComponent — enlaces del panel OVA
+
+**Nombre del caso en la suite:** `onDeletePhase elimina la fase vía el servicio`
 
 **Código:**
 
@@ -1286,9 +1530,13 @@ it("onDeletePhase elimina la fase vía el servicio", async () => {
 
 **Salida obtenida:** `PASSED` en 55 ms
 
-#### CU-062 · onAddPhase añade un recurso con tipo y prompt
+#### CU-062 · Añadir una fase envía el tipo de recurso y su prompt
+
+*Verifica que el alta de recurso viaja con los dos datos que necesita el motor.*
 
 **Escenario:** OvaEditViewComponent — enlaces del panel OVA
+
+**Nombre del caso en la suite:** `onAddPhase añade un recurso con tipo y prompt`
 
 **Código:**
 
@@ -1305,9 +1553,13 @@ it("onAddPhase añade un recurso con tipo y prompt", async () => {
 
 **Salida obtenida:** `PASSED` en 46 ms
 
-#### CU-063 · onReorder envía la lista reordenada al servicio
+#### CU-063 · Reordenar envía la lista con el nuevo orden al servicio
+
+*Comprueba el enlace del arrastrar y soltar con la persistencia del orden.*
 
 **Escenario:** OvaEditViewComponent — enlaces del panel OVA
+
+**Nombre del caso en la suite:** `onReorder envía la lista reordenada al servicio`
 
 **Código:**
 
@@ -1330,9 +1582,13 @@ it("onReorder envía la lista reordenada al servicio", async () => {
 
 ### `frontend/src/features/ova-workspace/components/modals/phase-select-modal.component.spec.ts`
 
-#### CU-064 · CA-3 falls back to the first resource of the active phase when nothing is hovered or picked
+#### CU-064 · CA-3 · Sin selección ni cursor encima, previsualiza el primer recurso de la fase activa
+
+*Garantiza que el panel de vista previa nunca queda vacío al abrirse.*
 
 **Escenario:** PhaseSelectModalComponent — 3a previewResource default
+
+**Nombre del caso en la suite:** `CA-3 falls back to the first resource of the active phase when nothing is hovered or picked`
 
 **Código:**
 
@@ -1347,9 +1603,13 @@ it("CA-3 falls back to the first resource of the active phase when nothing is ho
 
 **Salida obtenida:** `PASSED` en 261 ms
 
-#### CU-065 · CA-4 prefers the hovered resource over the default fallback
+#### CU-065 · CA-4 · Da prioridad al recurso señalado con el cursor
+
+*Al pasar el ratón, la vista previa sigue al recurso señalado.*
 
 **Escenario:** PhaseSelectModalComponent — 3a previewResource default
+
+**Nombre del caso en la suite:** `CA-4 prefers the hovered resource over the default fallback`
 
 **Código:**
 
@@ -1367,9 +1627,13 @@ it("CA-4 prefers the hovered resource over the default fallback", async () => {
 
 **Salida obtenida:** `PASSED` en 119 ms
 
-#### CU-066 · CA-5 prefers the last pick over the default fallback once hover clears
+#### CU-066 · CA-5 · Al retirar el cursor mantiene el último recurso elegido
+
+*La selección explícita del usuario pesa más que el valor por defecto.*
 
 **Escenario:** PhaseSelectModalComponent — 3a previewResource default
+
+**Nombre del caso en la suite:** `CA-5 prefers the last pick over the default fallback once hover clears`
 
 **Código:**
 
@@ -1390,9 +1654,13 @@ it("CA-5 prefers the last pick over the default fallback once hover clears", asy
 
 ### `frontend/src/features/ova-workspace/components/modals/resource-preview-panel.component.spec.ts`
 
-#### CU-067 · shows the empty-state hint when no resource is given (CA-1)
+#### CU-067 · CA-1 · Muestra el estado vacío cuando no hay recurso seleccionado
+
+*Explica al usuario qué hacer en vez de dejar un hueco en blanco.*
 
 **Escenario:** ResourcePreviewPanelComponent
+
+**Nombre del caso en la suite:** `shows the empty-state hint when no resource is given (CA-1)`
 
 **Código:**
 
@@ -1410,9 +1678,13 @@ it("shows the empty-state hint when no resource is given (CA-1)", async () => {
 
 **Salida obtenida:** `PASSED` en 71 ms
 
-#### CU-068 · renders the mini-wireframe sketch and the 'returns' description for a known resource (CA-2)
+#### CU-068 · CA-2 · Dibuja el boceto y la descripción del recurso conocido
+
+*Comprueba que la vista previa explica qué devuelve cada tipo de recurso.*
 
 **Escenario:** ResourcePreviewPanelComponent
+
+**Nombre del caso en la suite:** `renders the mini-wireframe sketch and the 'returns' description for a known resource (CA-2)`
 
 **Código:**
 
@@ -1437,9 +1709,13 @@ it("renders the mini-wireframe sketch and the 'returns' description for a known 
 
 **Salida obtenida:** `PASSED` en 43 ms
 
-#### CU-069 · falls back to the unavailable-preview message for a resource with no preview info
+#### CU-069 · Avisa cuando un recurso no tiene vista previa disponible
+
+*Evita un panel roto ante un tipo de recurso sin boceto definido.*
 
 **Escenario:** ResourcePreviewPanelComponent
+
+**Nombre del caso en la suite:** `falls back to the unavailable-preview message for a resource with no preview info`
 
 **Código:**
 
@@ -1460,9 +1736,13 @@ it("falls back to the unavailable-preview message for a resource with no preview
 
 ### `frontend/src/features/ova-workspace/components/modals/resource-wireframe.component.spec.ts`
 
-#### CU-070 · renders a sketch for wire kind 'comic' without throwing
+#### CU-070 · Dibuja el boceto del tipo de recurso «comic» sin lanzar errores
+
+*Renderiza la variante «comic» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'comic' without throwing`
 
 **Código:**
 
@@ -1480,9 +1760,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 129 ms
 
-#### CU-071 · renders a sketch for wire kind 'storyboard' without throwing
+#### CU-071 · Dibuja el boceto del tipo de recurso «storyboard» sin lanzar errores
+
+*Renderiza la variante «storyboard» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'storyboard' without throwing`
 
 **Código:**
 
@@ -1500,9 +1784,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 14 ms
 
-#### CU-072 · renders a sketch for wire kind 'audio' without throwing
+#### CU-072 · Dibuja el boceto del tipo de recurso «audio» sin lanzar errores
+
+*Renderiza la variante «audio» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'audio' without throwing`
 
 **Código:**
 
@@ -1520,9 +1808,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 20 ms
 
-#### CU-073 · renders a sketch for wire kind 'chat' without throwing
+#### CU-073 · Dibuja el boceto del tipo de recurso «chat» sin lanzar errores
+
+*Renderiza la variante «chat» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'chat' without throwing`
 
 **Código:**
 
@@ -1540,9 +1832,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 26 ms
 
-#### CU-074 · renders a sketch for wire kind 'decisions' without throwing
+#### CU-074 · Dibuja el boceto del tipo de recurso «decisions» sin lanzar errores
+
+*Renderiza la variante «decisions» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'decisions' without throwing`
 
 **Código:**
 
@@ -1560,9 +1856,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 15 ms
 
-#### CU-075 · renders a sketch for wire kind 'lab' without throwing
+#### CU-075 · Dibuja el boceto del tipo de recurso «lab» sin lanzar errores
+
+*Renderiza la variante «lab» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'lab' without throwing`
 
 **Código:**
 
@@ -1580,9 +1880,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 14 ms
 
-#### CU-076 · renders a sketch for wire kind 'dashboard' without throwing
+#### CU-076 · Dibuja el boceto del tipo de recurso «dashboard» sin lanzar errores
+
+*Renderiza la variante «dashboard» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'dashboard' without throwing`
 
 **Código:**
 
@@ -1600,9 +1904,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 13 ms
 
-#### CU-077 · renders a sketch for wire kind 'code' without throwing
+#### CU-077 · Dibuja el boceto del tipo de recurso «code» sin lanzar errores
+
+*Renderiza la variante «code» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'code' without throwing`
 
 **Código:**
 
@@ -1620,9 +1928,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-078 · renders a sketch for wire kind 'demo' without throwing
+#### CU-078 · Dibuja el boceto del tipo de recurso «demo» sin lanzar errores
+
+*Renderiza la variante «demo» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'demo' without throwing`
 
 **Código:**
 
@@ -1640,9 +1952,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 15 ms
 
-#### CU-079 · renders a sketch for wire kind 'quiz' without throwing
+#### CU-079 · Dibuja el boceto del tipo de recurso «quiz» sin lanzar errores
+
+*Renderiza la variante «quiz» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'quiz' without throwing`
 
 **Código:**
 
@@ -1660,9 +1976,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 12 ms
 
-#### CU-080 · renders a sketch for wire kind 'read' without throwing
+#### CU-080 · Dibuja el boceto del tipo de recurso «read» sin lanzar errores
+
+*Renderiza la variante «read» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'read' without throwing`
 
 **Código:**
 
@@ -1680,9 +2000,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 30 ms
 
-#### CU-081 · renders a sketch for wire kind 'graph' without throwing
+#### CU-081 · Dibuja el boceto del tipo de recurso «graph» sin lanzar errores
+
+*Renderiza la variante «graph» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'graph' without throwing`
 
 **Código:**
 
@@ -1700,9 +2024,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 21 ms
 
-#### CU-082 · renders a sketch for wire kind 'matching' without throwing
+#### CU-082 · Dibuja el boceto del tipo de recurso «matching» sin lanzar errores
+
+*Renderiza la variante «matching» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'matching' without throwing`
 
 **Código:**
 
@@ -1720,9 +2048,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-083 · renders a sketch for wire kind 'cardGrid' without throwing
+#### CU-083 · Dibuja el boceto del tipo de recurso «cardGrid» sin lanzar errores
+
+*Renderiza la variante «cardGrid» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'cardGrid' without throwing`
 
 **Código:**
 
@@ -1740,9 +2072,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 7 ms
 
-#### CU-084 · renders a sketch for wire kind 'dragdrop' without throwing
+#### CU-084 · Dibuja el boceto del tipo de recurso «dragdrop» sin lanzar errores
+
+*Renderiza la variante «dragdrop» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'dragdrop' without throwing`
 
 **Código:**
 
@@ -1760,9 +2096,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 13 ms
 
-#### CU-085 · renders a sketch for wire kind 'crossword' without throwing
+#### CU-085 · Dibuja el boceto del tipo de recurso «crossword» sin lanzar errores
+
+*Renderiza la variante «crossword» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'crossword' without throwing`
 
 **Código:**
 
@@ -1780,9 +2120,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 14 ms
 
-#### CU-086 · renders a sketch for wire kind 'game' without throwing
+#### CU-086 · Dibuja el boceto del tipo de recurso «game» sin lanzar errores
+
+*Renderiza la variante «game» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'game' without throwing`
 
 **Código:**
 
@@ -1800,9 +2144,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-087 · renders a sketch for wire kind 'timeline' without throwing
+#### CU-087 · Dibuja el boceto del tipo de recurso «timeline» sin lanzar errores
+
+*Renderiza la variante «timeline» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'timeline' without throwing`
 
 **Código:**
 
@@ -1820,9 +2168,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 11 ms
 
-#### CU-088 · renders a sketch for wire kind 'form' without throwing
+#### CU-088 · Dibuja el boceto del tipo de recurso «form» sin lanzar errores
+
+*Renderiza la variante «form» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'form' without throwing`
 
 **Código:**
 
@@ -1840,9 +2192,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-089 · renders a sketch for wire kind 'steps' without throwing
+#### CU-089 · Dibuja el boceto del tipo de recurso «steps» sin lanzar errores
+
+*Renderiza la variante «steps» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'steps' without throwing`
 
 **Código:**
 
@@ -1860,9 +2216,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 11 ms
 
-#### CU-090 · renders a sketch for wire kind 'accordion' without throwing
+#### CU-090 · Dibuja el boceto del tipo de recurso «accordion» sin lanzar errores
+
+*Renderiza la variante «accordion» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'accordion' without throwing`
 
 **Código:**
 
@@ -1880,9 +2240,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-091 · renders a sketch for wire kind 'table' without throwing
+#### CU-091 · Dibuja el boceto del tipo de recurso «table» sin lanzar errores
+
+*Renderiza la variante «table» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'table' without throwing`
 
 **Código:**
 
@@ -1900,9 +2264,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-092 · renders a sketch for wire kind 'diploma' without throwing
+#### CU-092 · Dibuja el boceto del tipo de recurso «diploma» sin lanzar errores
+
+*Renderiza la variante «diploma» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'diploma' without throwing`
 
 **Código:**
 
@@ -1920,9 +2288,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### CU-093 · renders a sketch for wire kind 'infographic' without throwing
+#### CU-093 · Dibuja el boceto del tipo de recurso «infographic» sin lanzar errores
+
+*Renderiza la variante «infographic» del componente de boceto y comprueba que aplica el color de acento de la fase.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `renders a sketch for wire kind 'infographic' without throwing`
 
 **Código:**
 
@@ -1940,9 +2312,13 @@ it.each([...ALL_WIREFRAME_KINDS])(
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### CU-094 · paints the accent color from phaseColor on the sketch root
+#### CU-094 · Pinta el boceto con el color de acento de la fase
+
+*El boceto debe heredar el color que identifica a cada fase del modelo 5E.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `paints the accent color from phaseColor on the sketch root`
 
 **Código:**
 
@@ -1962,9 +2338,13 @@ it("paints the accent color from phaseColor on the sketch root", async () => {
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-095 · comic renders a single panel with nav chrome
+#### CU-095 · El boceto de cómic dibuja una viñeta con sus controles de navegación
+
+*Comprueba la estructura concreta del boceto de cómic interactivo.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `comic renders a single panel with nav chrome`
 
 **Código:**
 
@@ -1978,9 +2358,13 @@ it("comic renders a single panel with nav chrome", async () => {
 
 **Salida obtenida:** `PASSED` en 10 ms
 
-#### CU-096 · storyboard renders stacked frames and a prompt strip
+#### CU-096 · El boceto de storyboard dibuja los cuadros apilados y la franja de prompt
+
+*Verifica la estructura del boceto que representa un guion gráfico.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `storyboard renders stacked frames and a prompt strip`
 
 **Código:**
 
@@ -1994,9 +2378,13 @@ it("storyboard renders stacked frames and a prompt strip", async () => {
 
 **Salida obtenida:** `PASSED` en 16 ms
 
-#### CU-097 · audio renders 8 waveform bars
+#### CU-097 · El boceto de audio dibuja ocho barras de onda
+
+*Comprueba la representación visual del recurso de audio.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `audio renders 8 waveform bars`
 
 **Código:**
 
@@ -2009,9 +2397,13 @@ it("audio renders 8 waveform bars", async () => {
 
 **Salida obtenida:** `PASSED` en 20 ms
 
-#### CU-098 · lab fills the canvas with flask svg and control thumbs
+#### CU-098 · El boceto de laboratorio dibuja el matraz y sus controles
+
+*Verifica la estructura del boceto de simulación de laboratorio.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `lab fills the canvas with flask svg and control thumbs`
 
 **Código:**
 
@@ -2028,9 +2420,13 @@ it("lab fills the canvas with flask svg and control thumbs", async () => {
 
 **Salida obtenida:** `PASSED` en 7 ms
 
-#### CU-099 · decisions renders scenario block and A/B actions
+#### CU-099 · El boceto de decisiones dibuja el escenario y las dos opciones
+
+*Comprueba la representación del recurso de toma de decisiones.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `decisions renders scenario block and A/B actions`
 
 **Código:**
 
@@ -2044,9 +2440,13 @@ it("decisions renders scenario block and A/B actions", async () => {
 
 **Salida obtenida:** `PASSED` en 15 ms
 
-#### CU-100 · matching renders two columns
+#### CU-100 · El boceto de emparejamiento dibuja dos columnas
+
+*Verifica la estructura del ejercicio de relacionar conceptos.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `matching renders two columns`
 
 **Código:**
 
@@ -2059,9 +2459,13 @@ it("matching renders two columns", async () => {
 
 **Salida obtenida:** `PASSED` en 10 ms
 
-#### CU-101 · diploma renders ornamental certificate frame
+#### CU-101 · El boceto de diploma dibuja el marco del certificado
+
+*Comprueba la representación del recurso de certificado final.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `diploma renders ornamental certificate frame`
 
 **Código:**
 
@@ -2074,9 +2478,13 @@ it("diploma renders ornamental certificate frame", async () => {
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-102 · crossword renders a 5x5 grid
+#### CU-102 · El boceto de crucigrama dibuja una cuadrícula de 5×5
+
+*Verifica la estructura del crucigrama de repaso.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `crossword renders a 5x5 grid`
 
 **Código:**
 
@@ -2090,9 +2498,13 @@ it("crossword renders a 5x5 grid", async () => {
 
 **Salida obtenida:** `PASSED` en 9 ms
 
-#### CU-103 · code renders editor lines and run affordance
+#### CU-103 · El boceto de código dibuja las líneas del editor y el botón de ejecución
+
+*Comprueba la representación del recurso de práctica de programación.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `code renders editor lines and run affordance`
 
 **Código:**
 
@@ -2106,9 +2518,13 @@ it("code renders editor lines and run affordance", async () => {
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### CU-104 · quiz renders progress, timer cue and 3 choice rows
+#### CU-104 · El boceto de cuestionario dibuja progreso, temporizador y tres opciones
+
+*Verifica la estructura del recurso de evaluación tipo test.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `quiz renders progress, timer cue and 3 choice rows`
 
 **Código:**
 
@@ -2122,9 +2538,13 @@ it("quiz renders progress, timer cue and 3 choice rows", async () => {
 
 **Salida obtenida:** `PASSED` en 9 ms
 
-#### CU-105 · timeline renders 4 milestone dots
+#### CU-105 · El boceto de línea de tiempo dibuja cuatro hitos
+
+*Comprueba la representación del recurso cronológico.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `timeline renders 4 milestone dots`
 
 **Código:**
 
@@ -2137,9 +2557,13 @@ it("timeline renders 4 milestone dots", async () => {
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### CU-106 · game renders a 6-cell board with score chip
+#### CU-106 · El boceto de juego dibuja un tablero de seis casillas con marcador
+
+*Verifica la estructura del recurso lúdico.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `game renders a 6-cell board with score chip`
 
 **Código:**
 
@@ -2152,9 +2576,13 @@ it("game renders a 6-cell board with score chip", async () => {
 
 **Salida obtenida:** `PASSED` en 8 ms
 
-#### CU-107 · graph renders 4 nodes with connecting lines
+#### CU-107 · El boceto de grafo dibuja cuatro nodos conectados
+
+*Comprueba la representación del mapa conceptual.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `graph renders 4 nodes with connecting lines`
 
 **Código:**
 
@@ -2168,9 +2596,13 @@ it("graph renders 4 nodes with connecting lines", async () => {
 
 **Salida obtenida:** `PASSED` en 7 ms
 
-#### CU-108 · falls back to the default dashed sketch for an unmapped kind
+#### CU-108 · Usa el boceto punteado por defecto ante un tipo desconocido
+
+*Garantiza que un tipo nuevo no rompe la vista previa.*
 
 **Escenario:** ResourceWireframeComponent
+
+**Nombre del caso en la suite:** `falls back to the default dashed sketch for an unmapped kind`
 
 **Código:**
 
@@ -2185,9 +2617,13 @@ it("falls back to the default dashed sketch for an unmapped kind", async () => {
 
 ### `frontend/src/features/ova-workspace/lib/previews/preview-wire-remap.spec.ts`
 
-#### CU-109 · maps all 50 resources to a known WireframeKind
+#### CU-109 · Asigna un boceto conocido a los 50 tipos de recurso
+
+*Ningún recurso del catálogo puede quedarse sin representación visual.*
 
 **Escenario:** resource preview wire remap
+
+**Nombre del caso en la suite:** `maps all 50 resources to a known WireframeKind`
 
 **Código:**
 
@@ -2208,9 +2644,13 @@ it("maps all 50 resources to a known WireframeKind", () => {
 
 **Salida obtenida:** `PASSED` en 10 ms
 
-#### CU-110 · uses storyboard for former video resources
+#### CU-110 · Usa el boceto de storyboard para los antiguos recursos de vídeo
+
+*Documenta la migración de vídeo a guion gráfico tras desactivar la generación de vídeo.*
 
 **Escenario:** resource preview wire remap
+
+**Nombre del caso en la suite:** `uses storyboard for former video resources`
 
 **Código:**
 
@@ -2224,9 +2664,13 @@ it("uses storyboard for former video resources", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-111 · keeps chat only for Agente Socrático
+#### CU-111 · Reserva el boceto de chat para el Agente Socrático
+
+*Evita que otros recursos se representen como conversación.*
 
 **Escenario:** resource preview wire remap
+
+**Nombre del caso en la suite:** `keeps chat only for Agente Socrático`
 
 **Código:**
 
@@ -2240,9 +2684,13 @@ it("keeps chat only for Agente Socrático", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-112 · splits map/card/game families into specific kinds
+#### CU-112 · Separa las familias de mapa, tarjetas y juego en bocetos específicos
+
+*Cada familia debe tener su propia representación, no una genérica.*
 
 **Escenario:** resource preview wire remap
+
+**Nombre del caso en la suite:** `splits map/card/game families into specific kinds`
 
 **Código:**
 
@@ -2262,9 +2710,13 @@ it("splits map/card/game families into specific kinds", () => {
 
 ### `frontend/src/features/ova-workspace/lib/regen-chat.spec.ts`
 
-#### CU-113 · userChatMessage guarda texto y etiquetas de recurso
+#### CU-113 · El mensaje del usuario guarda su texto y las etiquetas de recurso
+
+*Comprueba que el chat de regeneración conserva a qué recursos apunta el mensaje.*
 
 **Escenario:** regen-chat
+
+**Nombre del caso en la suite:** `userChatMessage guarda texto y etiquetas de recurso`
 
 **Código:**
 
@@ -2281,9 +2733,13 @@ it("userChatMessage guarda texto y etiquetas de recurso", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-114 · labelsForPhaseIds resuelve títulos
+#### CU-114 · Resuelve los títulos legibles a partir de los identificadores de fase
+
+*Traduce identificadores internos a nombres que el usuario reconoce.*
 
 **Escenario:** regen-chat
+
+**Nombre del caso en la suite:** `labelsForPhaseIds resuelve títulos`
 
 **Código:**
 
@@ -2303,9 +2759,13 @@ it("labelsForPhaseIds resuelve títulos", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-115 · finishChatPatch nombra el recurso
+#### CU-115 · El mensaje de cierre nombra el recurso regenerado
+
+*Comprueba que al terminar la regeneración el chat dice qué se regeneró.*
 
 **Escenario:** regen-chat
+
+**Nombre del caso en la suite:** `finishChatPatch nombra el recurso`
 
 **Código:**
 
@@ -2331,9 +2791,13 @@ it("finishChatPatch nombra el recurso", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-116 · formatChatTarget distingue OVA completo y recursos
+#### CU-116 · Distingue en el chat si la acción afecta al OVA completo o a recursos concretos
+
+*Evita ambigüedad sobre el alcance de la regeneración.*
 
 **Escenario:** regen-chat
+
+**Nombre del caso en la suite:** `formatChatTarget distingue OVA completo y recursos`
 
 **Código:**
 
@@ -2346,9 +2810,13 @@ it("formatChatTarget distingue OVA completo y recursos", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-117 · selection messages reflejan marcar y seleccionar todos
+#### CU-117 · Los mensajes de selección reflejan marcar uno y seleccionar todos
+
+*Comprueba el texto que resume la selección del usuario.*
 
 **Escenario:** regen-chat
+
+**Nombre del caso en la suite:** `selection messages reflejan marcar y seleccionar todos`
 
 **Código:**
 
@@ -2364,9 +2832,13 @@ it("selection messages reflejan marcar y seleccionar todos", () => {
 
 ### `frontend/src/features/ova-workspace/lib/resource-label.spec.ts`
 
-#### CU-118 · prioriza el título del recurso
+#### CU-118 · Da prioridad al título del recurso
+
+*Si el recurso tiene título propio, es el que se muestra.*
 
 **Escenario:** resourceLabel
+
+**Nombre del caso en la suite:** `prioriza el título del recurso`
 
 **Código:**
 
@@ -2380,9 +2852,13 @@ it("prioriza el título del recurso", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-119 · usa el tipo humanizado si no hay título
+#### CU-119 · Usa el tipo de recurso legible cuando no hay título
+
+*Evita mostrar identificadores técnicos en la interfaz.*
 
 **Escenario:** resourceLabel
+
+**Nombre del caso en la suite:** `usa el tipo humanizado si no hay título`
 
 **Código:**
 
@@ -2396,9 +2872,13 @@ it("usa el tipo humanizado si no hay título", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-120 · cae a la fase 5E en español
+#### CU-120 · Cae al nombre de la fase 5E en español como último recurso
+
+*Garantiza que siempre haya una etiqueta comprensible.*
 
 **Escenario:** resourceLabel
+
+**Nombre del caso en la suite:** `cae a la fase 5E en español`
 
 **Código:**
 
@@ -2410,9 +2890,13 @@ it("cae a la fase 5E en español", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-121 · extrae texto visible y oculta CSS
+#### CU-121 · Extrae el texto visible y descarta el CSS
+
+*El resumen del recurso no debe incluir estilos ni marcas.*
 
 **Escenario:** contentPlainPreview
+
+**Nombre del caso en la suite:** `extrae texto visible y oculta CSS`
 
 **Código:**
 
@@ -2425,9 +2909,13 @@ it("extrae texto visible y oculta CSS", () => {
 
 **Salida obtenida:** `PASSED` en 1 ms
 
-#### CU-122 · indica vacío cuando no hay contenido
+#### CU-122 · Indica que está vacío cuando no hay contenido
+
+*Distingue un recurso sin contenido de uno que falló.*
 
 **Escenario:** contentPlainPreview
+
+**Nombre del caso en la suite:** `indica vacío cuando no hay contenido`
 
 **Código:**
 
@@ -2439,9 +2927,13 @@ it("indica vacío cuando no hay contenido", () => {
 
 **Salida obtenida:** `PASSED` en 0 ms
 
-#### CU-123 · marca truncado solo cuando supera el máximo
+#### CU-123 · Marca el texto como truncado solo si supera el máximo
+
+*Evita añadir puntos suspensivos a textos que caben enteros.*
 
 **Escenario:** contentPlainPreview
+
+**Nombre del caso en la suite:** `marca truncado solo cuando supera el máximo`
 
 **Código:**
 
@@ -2458,9 +2950,13 @@ it("marca truncado solo cuando supera el máximo", () => {
 
 ### `frontend/src/features/ova-workspace/services/crear-ova-tour.service.spec.ts`
 
-#### CU-124 · uses a per-user storage key when userId is available
+#### CU-124 · Guarda el estado del tour por usuario cuando hay sesión
+
+*Dos usuarios en el mismo navegador no comparten si ya vieron la visita guiada.*
 
 **Escenario:** CrearOvaTourService
+
+**Nombre del caso en la suite:** `uses a per-user storage key when userId is available`
 
 **Código:**
 
@@ -2472,9 +2968,13 @@ it("uses a per-user storage key when userId is available", () => {
 
 **Salida obtenida:** `PASSED` en 22 ms
 
-#### CU-125 · CA-23 marks the tour done so it does not auto-show again
+#### CU-125 · CA-23 · Marca el tour como visto para no repetirlo solo
+
+*La visita guiada se muestra una vez, no en cada entrada.*
 
 **Escenario:** CrearOvaTourService
+
+**Nombre del caso en la suite:** `CA-23 marks the tour done so it does not auto-show again`
 
 **Código:**
 
@@ -2489,9 +2989,13 @@ it("CA-23 marks the tour done so it does not auto-show again", () => {
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### CU-126 · CA-22 does not start driver when tour is already done
+#### CU-126 · CA-22 · No arranca el tour si ya se completó
+
+*Comprueba la condición de arranque automático.*
 
 **Escenario:** CrearOvaTourService
+
+**Nombre del caso en la suite:** `CA-22 does not start driver when tour is already done`
 
 **Código:**
 
@@ -2509,9 +3013,13 @@ it("CA-22 does not start driver when tour is already done", () => {
 
 **Salida obtenida:** `PASSED` en 9 ms
 
-#### CU-127 · CA-22 starts driver with prompt → config → generar steps
+#### CU-127 · CA-22 · Arranca el tour con los pasos prompt → configuración → generar
+
+*Verifica el guion de la visita guiada de creación.*
 
 **Escenario:** CrearOvaTourService
+
+**Nombre del caso en la suite:** `CA-22 starts driver with prompt → config → generar steps`
 
 **Código:**
 
@@ -2538,9 +3046,13 @@ it("CA-22 starts driver with prompt → config → generar steps", () => {
 
 **Salida obtenida:** `PASSED` en 7 ms
 
-#### CU-128 · CA-24 restart starts driver even when tour is already done
+#### CU-128 · CA-24 · Reiniciar el tour funciona aunque ya se haya completado
+
+*El botón de ayuda debe poder repetir la visita a demanda.*
 
 **Escenario:** CrearOvaTourService
+
+**Nombre del caso en la suite:** `CA-24 restart starts driver even when tour is already done`
 
 **Código:**
 
@@ -2558,9 +3070,13 @@ it("CA-24 restart starts driver even when tour is already done", () => {
 
 **Salida obtenida:** `PASSED` en 4 ms
 
-#### CU-129 · CA-24 restart destroys prior instance before starting a new one
+#### CU-129 · CA-24 · Reiniciar destruye la visita anterior antes de abrir otra
+
+*Evita dos tours superpuestos en pantalla.*
 
 **Escenario:** CrearOvaTourService
+
+**Nombre del caso en la suite:** `CA-24 restart destroys prior instance before starting a new one`
 
 **Código:**
 
@@ -2581,9 +3097,13 @@ it("CA-24 restart destroys prior instance before starting a new one", () => {
 
 **Salida obtenida:** `PASSED` en 10 ms
 
-#### CU-130 · destroy clears the live instance
+#### CU-130 · Destruir el tour limpia la instancia activa
+
+*Libera el recurso al salir de la pantalla.*
 
 **Escenario:** CrearOvaTourService
+
+**Nombre del caso en la suite:** `destroy clears the live instance`
 
 **Código:**
 
@@ -2602,9 +3122,13 @@ it("destroy clears the live instance", () => {
 
 **Salida obtenida:** `PASSED` en 9 ms
 
-#### CU-131 · CA-26 tour config step requires resources in at least 2 phases
+#### CU-131 · CA-26 · El paso de configuración exige recursos en al menos dos fases
+
+*La visita guiada refuerza el mismo requisito que valida el formulario.*
 
 **Escenario:** CrearOvaTourService
+
+**Nombre del caso en la suite:** `CA-26 tour config step requires resources in at least 2 phases`
 
 **Código:**
 
@@ -2628,9 +3152,13 @@ it("CA-26 tour config step requires resources in at least 2 phases", () => {
 
 ### `frontend/src/features/ova-workspace/services/ova-workspace.service.spec.ts`
 
-#### CU-132 · savePhase llama a savePhaseContent y recarga el OVA
+#### CU-132 · Guardar una fase llama al endpoint de guardado y recarga el OVA
+
+*Comprueba que tras guardar se refresca el estado mostrado.*
 
 **Escenario:** OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)
+
+**Nombre del caso en la suite:** `savePhase llama a savePhaseContent y recarga el OVA`
 
 **Código:**
 
@@ -2645,9 +3173,13 @@ it("savePhase llama a savePhaseContent y recarga el OVA", async () => {
 
 **Salida obtenida:** `PASSED` en 47 ms
 
-#### CU-133 · deletePhase llama a deletePhase y recarga el OVA
+#### CU-133 · Eliminar una fase llama al endpoint de borrado y recarga el OVA
+
+*Verifica que la fase desaparece de la vista tras borrarla.*
 
 **Escenario:** OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)
+
+**Nombre del caso en la suite:** `deletePhase llama a deletePhase y recarga el OVA`
 
 **Código:**
 
@@ -2662,9 +3194,13 @@ it("deletePhase llama a deletePhase y recarga el OVA", async () => {
 
 **Salida obtenida:** `PASSED` en 21 ms
 
-#### CU-134 · addPhase llama a addPhase con tipo y prompt y recarga el OVA
+#### CU-134 · Añadir una fase envía tipo y prompt, y recarga el OVA
+
+*Comprueba el alta de recurso y el refresco posterior.*
 
 **Escenario:** OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)
+
+**Nombre del caso en la suite:** `addPhase llama a addPhase con tipo y prompt y recarga el OVA`
 
 **Código:**
 
@@ -2679,9 +3215,13 @@ it("addPhase llama a addPhase con tipo y prompt y recarga el OVA", async () => {
 
 **Salida obtenida:** `PASSED` en 19 ms
 
-#### CU-135 · reorderPhases mapea la lista a [{phase_id, new_order}] por índice global
+#### CU-135 · Reordenar convierte la lista al formato que espera la API
+
+*Traduce el orden visual a pares identificador/posición para el backend.*
 
 **Escenario:** OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)
+
+**Nombre del caso en la suite:** `reorderPhases mapea la lista a [{phase_id, new_order}] por índice global`
 
 **Código:**
 
@@ -2691,9 +3231,13 @@ it("reorderPhases mapea la lista a [{phase_id, new_order}] por índice global", 
 
 **Salida obtenida:** `PASSED` en 37 ms
 
-#### CU-136 · runRegen con faseIds envía el subconjunto al endpoint de regeneración
+#### CU-136 · Regenerar con fases seleccionadas envía solo ese subconjunto
+
+*Evita regenerar y facturar recursos que el usuario no pidió.*
 
 **Escenario:** OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)
+
+**Nombre del caso en la suite:** `runRegen con faseIds envía el subconjunto al endpoint de regeneración`
 
 **Código:**
 
@@ -2710,9 +3254,13 @@ it("runRegen con faseIds envía el subconjunto al endpoint de regeneración", as
 
 **Salida obtenida:** `PASSED` en 24 ms
 
-#### CU-137 · submitPrompt deja el prompt en el historial del chat
+#### CU-137 · Enviar un prompt lo deja registrado en el historial del chat
+
+*El usuario debe poder ver qué pidió y cuándo.*
 
 **Escenario:** OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)
+
+**Nombre del caso en la suite:** `submitPrompt deja el prompt en el historial del chat`
 
 **Código:**
 
@@ -2733,9 +3281,13 @@ it("submitPrompt deja el prompt en el historial del chat", async () => {
 
 **Salida obtenida:** `PASSED` en 36 ms
 
-#### CU-138 · un fallo en la mutación no recarga el OVA
+#### CU-138 · Un fallo en la operación no recarga el OVA
+
+*Evita perder el estado local cuando la petición falla.*
 
 **Escenario:** OvaWorkspaceService — mutaciones de fase (HU-026/031/032/033)
+
+**Nombre del caso en la suite:** `un fallo en la mutación no recarga el OVA`
 
 **Código:**
 
@@ -2751,9 +3303,13 @@ it("un fallo en la mutación no recarga el OVA", async () => {
 
 **Salida obtenida:** `PASSED` en 29 ms
 
-#### CU-139 · init con otro OVA limpia el estado del anterior mientras carga el nuevo
+#### CU-139 · Abrir otro OVA limpia el estado del anterior mientras carga
+
+*Impide que se muestren datos del OVA previo durante la carga.*
 
 **Escenario:** OvaWorkspaceService — aislamiento entre OVAs y teardown (B1)
+
+**Nombre del caso en la suite:** `init con otro OVA limpia el estado del anterior mientras carga el nuevo`
 
 **Código:**
 
@@ -2794,9 +3350,13 @@ it("init con otro OVA limpia el estado del anterior mientras carga el nuevo", as
 
 **Salida obtenida:** `PASSED` en 98 ms
 
-#### CU-140 · teardown cancela el reintento de load cuando el OVA está generando
+#### CU-140 · Salir de la pantalla cancela el reintento de carga
+
+*Evita peticiones huérfanas cuando el OVA sigue generándose.*
 
 **Escenario:** OvaWorkspaceService — aislamiento entre OVAs y teardown (B1)
+
+**Nombre del caso en la suite:** `teardown cancela el reintento de load cuando el OVA está generando`
 
 **Código:**
 
@@ -2838,6 +3398,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-001 · Reordenar la cadena de fallback hacia arriba
 
+*Comprueba que la cadena resultante es "groq:a,groq:c,openrouter:b".*
+
 **Escenario:** Config admin de modelos LLM — lógica de panel (unit)
 
 **Código (Gherkin ejecutable):**
@@ -2853,6 +3415,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-002 · Mover fuera de rango no cambia nada
 
+*Comprueba que la cadena resultante es "groq:a,openrouter:b".*
+
 **Escenario:** Config admin de modelos LLM — lógica de panel (unit)
 
 **Código (Gherkin ejecutable):**
@@ -2867,6 +3431,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-003 · Agregar y quitar fallback
+
+*Comprueba que la cadena tiene 2 elementos.*
 
 **Escenario:** Config admin de modelos LLM — lógica de panel (unit)
 
@@ -2885,6 +3451,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-004 · toPayload descarta entries sin modelo y preserva orden
 
+*Comprueba que el payload tiene default "openrouter:deepseek/deepseek-v4-flash" para "codigo"; el payload tiene 1 fallback para "codigo".*
+
 **Escenario:** Config admin de modelos LLM — lógica de panel (unit)
 
 **Código (Gherkin ejecutable):**
@@ -2900,6 +3468,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 4 pasos en 0 ms
 
 #### BDD-F-005 · toPayload omite la tarea si el primario no tiene modelo
+
+*Comprueba que el payload no incluye "texto" en defaults.*
 
 **Escenario:** Config admin de modelos LLM — lógica de panel (unit)
 
@@ -2918,6 +3488,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-006 · Campo rondas visible cuando critico esta activo
 
+*Comprueba que criticRoundsVisible retorna true.*
+
 **Escenario:** Panel de nodos Prometheus — lógica de draft (unit)
 
 **Código (Gherkin ejecutable):**
@@ -2932,6 +3504,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-007 · Campo rondas oculto cuando critico esta apagado
 
+*Comprueba que criticRoundsVisible retorna false.*
+
 **Escenario:** Panel de nodos Prometheus — lógica de draft (unit)
 
 **Código (Gherkin ejecutable):**
@@ -2945,6 +3519,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 2 pasos en 0 ms
 
 #### BDD-F-008 · hasUnsavedChanges detecta cambio en flag
+
+*Comprueba que hasUnsavedChanges retorna true.*
 
 **Escenario:** Panel de nodos Prometheus — lógica de draft (unit)
 
@@ -2961,6 +3537,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 4 pasos en 0 ms
 
 #### BDD-F-009 · hasUnsavedChanges detecta cambio en rounds
+
+*Comprueba que hasUnsavedChanges retorna true.*
 
 **Escenario:** Panel de nodos Prometheus — lógica de draft (unit)
 
@@ -2982,6 +3560,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-010 · Un suscriptor recibe la notificación de expiración
 
+*Comprueba que el suscriptor fue notificado 1 vez.*
+
 **Escenario:** BU-001 unit — Bus de expiración de sesión (AuthExpiredBus)
 
 **Código (Gherkin ejecutable):**
@@ -2996,6 +3576,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 1 ms
 
 #### BDD-F-011 · Cancelar la suscripción detiene las notificaciones
+
+*Comprueba que el suscriptor fue notificado 0 veces.*
 
 **Escenario:** BU-001 unit — Bus de expiración de sesión (AuthExpiredBus)
 
@@ -3012,6 +3594,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 4 pasos en 0 ms
 
 #### BDD-F-012 · Varios suscriptores reciben la misma notificación
+
+*Comprueba que cada suscriptor fue notificado 1 vez.*
 
 **Escenario:** BU-001 unit — Bus de expiración de sesión (AuthExpiredBus)
 
@@ -3030,6 +3614,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-013 · Un nombre real es válido
 
+*Comprueba que la validación de nombre es aceptada.*
+
 **Escenario:** HU-001 unit — Validaciones del registro
 
 **Código (Gherkin ejecutable):**
@@ -3044,6 +3630,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 1 ms
 
 #### BDD-F-014 · Un nombre de solo puntos es rechazado
+
+*Comprueba que la validación de nombre es rechazada.*
 
 **Escenario:** HU-001 unit — Validaciones del registro
 
@@ -3060,6 +3648,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-015 · Un nombre de solo espacios es rechazado
 
+*Comprueba que la validación de nombre es rechazada.*
+
 **Escenario:** HU-001 unit — Validaciones del registro
 
 **Código (Gherkin ejecutable):**
@@ -3074,6 +3664,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-016 · Un nombre demasiado corto es rechazado
+
+*Comprueba que la validación de nombre es rechazada.*
 
 **Escenario:** HU-001 unit — Validaciones del registro
 
@@ -3090,6 +3682,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-017 · Una contraseña alfanumérica de 8+ caracteres es válida
 
+*Comprueba que la validación de contraseña es aceptada.*
+
 **Escenario:** HU-001 unit — Validaciones del registro
 
 **Código (Gherkin ejecutable):**
@@ -3105,6 +3699,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-018 · Una contraseña sin números es rechazada
 
+*Comprueba que la validación de contraseña es rechazada.*
+
 **Escenario:** HU-001 unit — Validaciones del registro
 
 **Código (Gherkin ejecutable):**
@@ -3119,6 +3715,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-019 · Una contraseña corta es rechazada
+
+*Comprueba que la validación de contraseña es rechazada.*
 
 **Escenario:** HU-001 unit — Validaciones del registro
 
@@ -3137,6 +3735,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-020 · El viewmodel mapea estados backend a estados de UI
 
+*Comprueba que los estados de UI son "check, X, generando, pendiente" en orden; solo el recurso en error es seleccionable.*
+
 **Escenario:** Recuperación de recursos parciales — viewmodel (HU-022)
 
 **Código (Gherkin ejecutable):**
@@ -3153,6 +3753,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-021 · El recurso fallido conserva su Error ID y etiqueta del catálogo
 
+*Comprueba que ese recurso muestra la etiqueta "Diagrama" y el error_id "8f3a-c1".*
+
 **Escenario:** Recuperación de recursos parciales — viewmodel (HU-022)
 
 **Código (Gherkin ejecutable):**
@@ -3167,6 +3769,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-022 · Seleccionar todos los fallidos toma solo los recursos en error
+
+*Comprueba que se obtienen exactamente los dos recursos en error.*
 
 **Escenario:** Recuperación de recursos parciales — viewmodel (HU-022)
 
@@ -3183,6 +3787,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-023 · La selección se depura cuando un fallido pasa a done
 
+*Comprueba que ese id ya no está en la selección.*
+
 **Escenario:** Recuperación de recursos parciales — viewmodel (HU-022)
 
 **Código (Gherkin ejecutable):**
@@ -3197,6 +3803,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-024 · Fallo total se detecta cuando ningún recurso quedó done
+
+*Comprueba que el resultado indica fallo total; no hay recursos done para previsualizar.*
 
 **Escenario:** Recuperación de recursos parciales — viewmodel (HU-022)
 
@@ -3217,6 +3825,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-025 · Sin selección disponible, un tipo con texto se humaniza
 
+*Comprueba que ese recurso muestra la etiqueta "Comic Interactivo".*
+
 **Escenario:** Recuperación de recursos parciales — viewmodel (HU-022)
 
 **Código (Gherkin ejecutable):**
@@ -3231,6 +3841,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-026 · Sin selección disponible, un tipo numérico cae a fase + orden
+
+*Comprueba que ese recurso muestra la etiqueta "Enganche · 2".*
 
 **Escenario:** Recuperación de recursos parciales — viewmodel (HU-022)
 
@@ -3249,6 +3861,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-027 · Progreso se calcula correctamente desde recursos del job
 
+*Comprueba que el progreso muestra 3 de 8.*
+
 **Escenario:** Generación en background y reanudación — viewmodel (HU-023)
 
 **Código (Gherkin ejecutable):**
@@ -3263,6 +3877,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-028 · Un job en estado terminal no necesita más polling
+
+*Comprueba que el job no requiere polling.*
 
 **Escenario:** Generación en background y reanudación — viewmodel (HU-023)
 
@@ -3279,6 +3895,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-029 · Un job en estado activo requiere polling
 
+*Comprueba que el job requiere polling.*
+
 **Escenario:** Generación en background y reanudación — viewmodel (HU-023)
 
 **Código (Gherkin ejecutable):**
@@ -3293,6 +3911,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-030 · Un job interrumpido se identifica correctamente
+
+*Comprueba que el job está interrumpido.*
 
 **Escenario:** Generación en background y reanudación — viewmodel (HU-023)
 
@@ -3311,6 +3931,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-031 · Rechazo por exceder el límite de archivos
 
+*Comprueba que se produce un error indicando el límite de 5 archivos; el archivo no se adjunta.*
+
 **Escenario:** Archivos contextuales estilo chat — viewmodel (HU-024)
 
 **Código (Gherkin ejecutable):**
@@ -3326,6 +3948,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 4 pasos en 0 ms
 
 #### BDD-F-032 · Rechazo no ocurre si no se supera el límite
+
+*Comprueba que no hay error de validación.*
 
 **Escenario:** Archivos contextuales estilo chat — viewmodel (HU-024)
 
@@ -3344,6 +3968,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-033 · El ratio del divider se clampea al mínimo
 
+*Comprueba que el ratio resultante es 0.25.*
+
 **Escenario:** Workspace de edición OVA — split panel (HU-025)
 
 **Código (Gherkin ejecutable):**
@@ -3358,6 +3984,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-034 · El ratio del divider se clampea al máximo
+
+*Comprueba que el ratio resultante es 0.65.*
 
 **Escenario:** Workspace de edición OVA — split panel (HU-025)
 
@@ -3374,6 +4002,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-035 · Un ratio válido no se modifica
 
+*Comprueba que el ratio resultante es 0.4.*
+
 **Escenario:** Workspace de edición OVA — split panel (HU-025)
 
 **Código (Gherkin ejecutable):**
@@ -3388,6 +4018,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-036 · El workspace muestra el título del OVA
+
+*Comprueba que el título visible es "Árboles de decisión".*
 
 **Escenario:** Workspace de edición OVA — split panel (HU-025)
 
@@ -3406,6 +4038,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-037 · Eliminar única fase falla validación
 
+*Comprueba que la eliminación es rechazada por ser la última.*
+
 **Escenario:** Edición de recurso por click (HU-026)
 
 **Código (Gherkin ejecutable):**
@@ -3420,6 +4054,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-038 · Eliminar fase de varias deja el resto
+
+*Comprueba que quedan 2 fases.*
 
 **Escenario:** Edición de recurso por click (HU-026)
 
@@ -3436,6 +4072,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-039 · Editar con contenido vacío es inválido
 
+*Comprueba que la edición es inválida.*
+
 **Escenario:** Edición de recurso por click (HU-026)
 
 **Código (Gherkin ejecutable):**
@@ -3450,6 +4088,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-040 · Editar con contenido válido es aceptado
+
+*Comprueba que la edición es válida.*
 
 **Escenario:** Edición de recurso por click (HU-026)
 
@@ -3468,6 +4108,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-041 · Seleccionar un recurso lo agrega a la lista
 
+*Comprueba que "phase-abc" está en la lista de seleccionados.*
+
 **Escenario:** Selección de recursos como contexto (HU-027)
 
 **Código (Gherkin ejecutable):**
@@ -3482,6 +4124,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-042 · Deseleccionar un recurso lo elimina de la lista
+
+*Comprueba que la lista de seleccionados está vacía.*
 
 **Escenario:** Selección de recursos como contexto (HU-027)
 
@@ -3498,6 +4142,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-043 · Sin selección el prompt aplica a todos
 
+*Comprueba que fase_ids está vacío.*
+
 **Escenario:** Selección de recursos como contexto (HU-027)
 
 **Código (Gherkin ejecutable):**
@@ -3512,6 +4158,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-044 · Con selección el prompt aplica solo a los marcados
+
+*Comprueba que fase_ids contiene "p1" y "p2".*
 
 **Escenario:** Selección de recursos como contexto (HU-027)
 
@@ -3530,6 +4178,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-045 · Las versiones se listan en orden descendente
 
+*Comprueba que el orden es 3, 2, 1.*
+
 **Escenario:** Versionado de OVA (HU-028)
 
 **Código (Gherkin ejecutable):**
@@ -3544,6 +4194,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-046 · Se pueden seleccionar dos versiones para diff
+
+*Comprueba que hay dos versiones seleccionadas para diff.*
 
 **Escenario:** Versionado de OVA (HU-028)
 
@@ -3562,6 +4214,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-047 · El primer minor de un recurso es 1
 
+*Comprueba que el número de micro-versión es 1.*
+
 **Escenario:** Micro-versionado por recurso (HU-029)
 
 **Código (Gherkin ejecutable):**
@@ -3577,6 +4231,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-048 · El minor incrementa con cada edición
 
+*Comprueba que el número de micro-versión es 4.*
+
 **Escenario:** Micro-versionado por recurso (HU-029)
 
 **Código (Gherkin ejecutable):**
@@ -3591,6 +4247,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-049 · El historial está ordenado de más reciente a más antiguo
+
+*Comprueba que el primer elemento tiene minor_number 3.*
 
 **Escenario:** Micro-versionado por recurso (HU-029)
 
@@ -3609,6 +4267,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-050 · La URL de edición apunta al workspace
 
+*Comprueba que la URL es "/ova/ova-abc-123/workspace".*
+
 **Escenario:** Mis OVAs — acceso workspace + versión (HU-030)
 
 **Código (Gherkin ejecutable):**
@@ -3624,6 +4284,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-051 · La tarjeta muestra la versión activa del OVA
 
+*Comprueba que la etiqueta de versión es "v2".*
+
 **Escenario:** Mis OVAs — acceso workspace + versión (HU-030)
 
 **Código (Gherkin ejecutable):**
@@ -3638,6 +4300,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-052 · Sin versión activa no se muestra etiqueta
+
+*Comprueba que no hay etiqueta de versión.*
 
 **Escenario:** Mis OVAs — acceso workspace + versión (HU-030)
 
@@ -3656,6 +4320,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-053 · Un tipo de fase sin soporte devuelve 501
 
+*Comprueba que el resultado es 501 no implementado.*
+
 **Escenario:** Edición granular de sub-elementos (HU-031)
 
 **Código (Gherkin ejecutable):**
@@ -3671,6 +4337,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-054 · Identificador de sub-elemento vacío es inválido
 
+*Comprueba que la validación falla.*
+
 **Escenario:** Edición granular de sub-elementos (HU-031)
 
 **Código (Gherkin ejecutable):**
@@ -3685,6 +4353,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-055 · Identificador de sub-elemento válido
+
+*Comprueba que la validación pasa correctamente.*
 
 **Escenario:** Edición granular de sub-elementos (HU-031)
 
@@ -3703,6 +4373,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-056 · Se puede añadir si hay menos de 4 recursos
 
+*Comprueba que se puede añadir.*
+
 **Escenario:** Añadir recurso al OVA (HU-032)
 
 **Código (Gherkin ejecutable):**
@@ -3717,6 +4389,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-057 · No se puede añadir si ya hay 4 recursos
+
+*Comprueba que no se puede añadir.*
 
 **Escenario:** Añadir recurso al OVA (HU-032)
 
@@ -3733,6 +4407,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-058 · El prompt vacío es inválido para añadir
 
+*Comprueba que el intento es inválido.*
+
 **Escenario:** Añadir recurso al OVA (HU-032)
 
 **Código (Gherkin ejecutable):**
@@ -3747,6 +4423,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-059 · Prompt con contenido es válido
+
+*Comprueba que el intento es válido.*
 
 **Escenario:** Añadir recurso al OVA (HU-032)
 
@@ -3765,6 +4443,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-060 · Reordenar dentro de la misma fase cambia el orden
 
+*Comprueba que el orden resultante es "C,A,B".*
+
 **Escenario:** Reordenar recursos del OVA (HU-033)
 
 **Código (Gherkin ejecutable):**
@@ -3779,6 +4459,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-061 · Mover al mismo índice no cambia nada
+
+*Comprueba que el orden resultante es "A,B,C".*
 
 **Escenario:** Reordenar recursos del OVA (HU-033)
 
@@ -3795,6 +4477,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 
 #### BDD-F-062 · El backend rechaza reordenamiento entre fases distintas
 
+*Comprueba que la validación falla por tipos distintos.*
+
 **Escenario:** Reordenar recursos del OVA (HU-033)
 
 **Código (Gherkin ejecutable):**
@@ -3809,6 +4493,8 @@ Ejecutadas con `pnpm test:unit`. Cada caso es un escenario Gherkin que ejercita 
 **Salida obtenida:** `PASSED` — 3 pasos en 0 ms
 
 #### BDD-F-063 · El backend acepta reordenamiento dentro de la misma fase
+
+*Comprueba que la validación pasa.*
 
 **Escenario:** Reordenar recursos del OVA (HU-033)
 
@@ -3829,9 +4515,13 @@ Ejecutadas con `pytest tests/step_defs/ -v`. Cada caso ata un escenario Gherkin 
 
 ### `tests/step_defs/test_auth_steps.py`
 
-#### BDD-B-001 · test_login_exitoso
+#### BDD-B-001 · Login exitoso
 
-**Escenario:** Login exitoso (test_auth_steps)
+*Comprueba que debo recibir un JWT con expiración de 24 horas; debo ser redirigido al dashboard.*
+
+**Escenario:** test_auth_steps
+
+**Nombre del caso en la suite:** `test_login_exitoso`
 
 **Código (escenario Gherkin):**
 
@@ -3854,9 +4544,13 @@ def test_login_exitoso():
 
 **Salida obtenida:** `PASSED` en 492 ms
 
-#### BDD-B-002 · test_login_credenciales_invalidas
+#### BDD-B-002 · Credenciales inválidas
 
-**Escenario:** Credenciales inválidas (test_auth_steps)
+*Comprueba que debo recibir un error descriptivo; no debo acceder al dashboard.*
+
+**Escenario:** test_auth_steps
+
+**Nombre del caso en la suite:** `test_login_credenciales_invalidas`
 
 **Código (escenario Gherkin):**
 
@@ -3879,9 +4573,13 @@ def test_login_credenciales_invalidas():
 
 **Salida obtenida:** `PASSED` en 464 ms
 
-#### BDD-B-003 · test_login_bloqueo
+#### BDD-B-003 · Bloqueo tras intentos fallidos
 
-**Escenario:** Bloqueo tras intentos fallidos (test_auth_steps)
+*Comprueba que la cuenta debe quedar bloqueada por 15 minutos; debo recibir un mensaje indicando el bloqueo.*
+
+**Escenario:** test_auth_steps
+
+**Nombre del caso en la suite:** `test_login_bloqueo`
 
 **Código (escenario Gherkin):**
 
@@ -3903,9 +4601,13 @@ def test_login_bloqueo():
 
 **Salida obtenida:** `PASSED` en 4912 ms
 
-#### BDD-B-004 · test_registro_exitoso
+#### BDD-B-004 · Registro exitoso con credenciales válidas
 
-**Escenario:** Registro exitoso con credenciales válidas (test_auth_steps)
+*Comprueba que el sistema debe crear la cuenta sin verificar; los campos university_id, gender y phone_number deben crearse como NULL; debo ver un aviso para verificar mi correo; no debo iniciar sesión hasta verificar el correo.*
+
+**Escenario:** test_auth_steps
+
+**Nombre del caso en la suite:** `test_registro_exitoso`
 
 **Código (escenario Gherkin):**
 
@@ -3930,9 +4632,13 @@ def test_registro_exitoso():
 
 **Salida obtenida:** `PASSED` en 3335 ms
 
-#### BDD-B-005 · test_registro_email_duplicado
+#### BDD-B-005 · Registro fallido por email duplicado
 
-**Escenario:** Registro fallido por email duplicado (test_auth_steps)
+*Comprueba que debo ver un mensaje indicando que el correo ya existe; no debo ser redirigido al dashboard.*
+
+**Escenario:** test_auth_steps
+
+**Nombre del caso en la suite:** `test_registro_email_duplicado`
 
 **Código (escenario Gherkin):**
 
@@ -3956,9 +4662,13 @@ def test_registro_email_duplicado():
 
 ### `tests/step_defs/test_db_api_keys_steps.py`
 
-#### BDD-B-006 · test_resolve_from_db
+#### BDD-B-006 · Resuelve la clave desde PlatformConfig cuando existe la fila en base de datos
 
-**Escenario:** resolve key from PlatformConfig when DB row exists (test_db_api_keys_steps)
+*Comprueba que la clave del proveedor se lee de la configuración guardada en base de datos.*
+
+**Escenario:** test_db_api_keys_steps
+
+**Nombre del caso en la suite:** `test_resolve_from_db`
 
 **Código (escenario Gherkin):**
 
@@ -3979,9 +4689,13 @@ def test_resolve_from_db():
 
 **Salida obtenida:** `PASSED` en 7 ms
 
-#### BDD-B-007 · test_resolve_none
+#### BDD-B-007 · Devuelve vacío cuando no hay fila en base de datos ni variable de entorno
 
-**Escenario:** resolve key returns None when no DB row and no env var (test_db_api_keys_steps)
+*Comprueba que sin configuración en base de datos ni variable de entorno la clave queda vacía.*
+
+**Escenario:** test_db_api_keys_steps
+
+**Nombre del caso en la suite:** `test_resolve_none`
 
 **Código (escenario Gherkin):**
 
@@ -4003,9 +4717,13 @@ def test_resolve_none():
 
 **Salida obtenida:** `PASSED` en 5 ms
 
-#### BDD-B-008 · test_cache_ttl
+#### BDD-B-008 · La caché evita consultar la base en la segunda llamada dentro de 30 s
 
-**Escenario:** cache TTL — second call within 30s skips DB query (test_db_api_keys_steps)
+*Comprueba que dentro de la ventana de caché la segunda llamada no vuelve a consultar la base.*
+
+**Escenario:** test_db_api_keys_steps
+
+**Nombre del caso en la suite:** `test_cache_ttl`
 
 **Código (escenario Gherkin):**
 
@@ -4028,9 +4746,13 @@ def test_cache_ttl():
 
 ### `tests/step_defs/test_error_log_steps.py`
 
-#### BDD-B-009 · test_registrar_error_con_id
+#### BDD-B-009 · Registrar un error con Error ID
 
-**Escenario:** Registrar un error con Error ID (test_error_log_steps)
+*Comprueba que se crea una fila en "ova_error_logs" con un Error ID único; el registro incluye categoría, ova_id, recurso y timestamp; el Error ID guardado coincide con el expuesto al usuario.*
+
+**Escenario:** test_error_log_steps
+
+**Nombre del caso en la suite:** `test_registrar_error_con_id`
 
 **Código (escenario Gherkin):**
 
@@ -4053,9 +4775,11 @@ def test_registrar_error_con_id():
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### BDD-B-010 · test_categoria_invalida
+#### BDD-B-010 · Categoría inválida cae a 
 
-**Escenario:** Categoría inválida cae a  (test_error_log_steps)
+**Escenario:** test_error_log_steps
+
+**Nombre del caso en la suite:** `test_categoria_invalida`
 
 **Código (escenario Gherkin):**
 
@@ -4073,9 +4797,13 @@ def test_categoria_invalida():
 
 **Salida obtenida:** `PASSED` en 4 ms
 
-#### BDD-B-011 · test_no_filtra_secretos
+#### BDD-B-011 · El registro no filtra secretos
 
-**Escenario:** El registro no filtra secretos (test_error_log_steps)
+*Comprueba que el registro almacenado no contiene la API key ni tokens.*
+
+**Escenario:** test_error_log_steps
+
+**Nombre del caso en la suite:** `test_no_filtra_secretos`
 
 **Código (escenario Gherkin):**
 
@@ -4096,9 +4824,13 @@ def test_no_filtra_secretos():
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### BDD-B-012 · test_fallo_no_interrumpe
+#### BDD-B-012 · Un fallo al registrar no interrumpe la generación
 
-**Escenario:** Un fallo al registrar no interrumpe la generación (test_error_log_steps)
+*Comprueba que la generación del resto de recursos continúa; el helper devuelve igualmente un Error ID.*
+
+**Escenario:** test_error_log_steps
+
+**Nombre del caso en la suite:** `test_fallo_no_interrumpe`
 
 **Código (escenario Gherkin):**
 
@@ -4122,9 +4854,13 @@ def test_fallo_no_interrumpe():
 
 ### `tests/step_defs/test_jobs_steps.py`
 
-#### BDD-B-013 · test_continua_tras_desconexion
+#### BDD-B-013 · La generación continúa aunque el cliente se desconecte
 
-**Escenario:** La generación continúa aunque el cliente se desconecte (test_jobs_steps)
+*Comprueba que el job refleja las fases completadas durante la desconexión; el contenido de cada recurso quedó persistido en la base de datos.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_continua_tras_desconexion`
 
 **Código (escenario Gherkin):**
 
@@ -4148,9 +4884,13 @@ def test_continua_tras_desconexion():
 
 **Salida obtenida:** `PASSED` en 37 ms
 
-#### BDD-B-014 · test_recurso_falla_sin_abortar
+#### BDD-B-014 · Un recurso falla sin abortar el resto
 
-**Escenario:** Un recurso falla sin abortar el resto (test_jobs_steps)
+*Comprueba que el recurso que falla queda en estado "error" con un error_id; los otros recursos quedan "done"; el job termina "done" porque al menos un recurso quedó listo; el contenido de los recursos "done" quedó persistido.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_recurso_falla_sin_abortar`
 
 **Código (escenario Gherkin):**
 
@@ -4174,9 +4914,13 @@ def test_recurso_falla_sin_abortar():
 
 **Salida obtenida:** `PASSED` en 28 ms
 
-#### BDD-B-015 · test_reintentos
+#### BDD-B-015 · Reintenta el recurso hasta agotar los intentos
 
-**Escenario:** Reintenta el recurso hasta agotar los intentos (test_jobs_steps)
+*Comprueba que el recurso registra el máximo de intentos; queda "error" con un error_id.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_reintentos`
 
 **Código (escenario Gherkin):**
 
@@ -4198,9 +4942,13 @@ def test_reintentos():
 
 **Salida obtenida:** `PASSED` en 21 ms
 
-#### BDD-B-016 · test_reanudar_solo_pendientes
+#### BDD-B-016 · Reanudar continúa solo las fases pendientes
 
-**Escenario:** Reanudar continúa solo las fases pendientes (test_jobs_steps)
+*Comprueba que solo se listan los recursos "pending"; el recurso "done" no se incluye.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_reanudar_solo_pendientes`
 
 **Código (escenario Gherkin):**
 
@@ -4222,9 +4970,13 @@ def test_reanudar_solo_pendientes():
 
 **Salida obtenida:** `PASSED` en 11 ms
 
-#### BDD-B-017 · test_barrido_interrupted
+#### BDD-B-017 · Un job running sin progreso reciente se marca interrupted
 
-**Escenario:** Un job running sin progreso reciente se marca interrupted (test_jobs_steps)
+*Comprueba que el job pasa a "interrupted".*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_barrido_interrupted`
 
 **Código (escenario Gherkin):**
 
@@ -4245,9 +4997,13 @@ def test_barrido_interrupted():
 
 **Salida obtenida:** `PASSED` en 13 ms
 
-#### BDD-B-018 · test_no_filtra_sensibles
+#### BDD-B-018 · El estado no filtra detalles sensibles
 
-**Escenario:** El estado no filtra detalles sensibles (test_jobs_steps)
+*Comprueba que la respuesta incluye status y error_id por recurso.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_no_filtra_sensibles`
 
 **Código (escenario Gherkin):**
 
@@ -4269,9 +5025,13 @@ def test_no_filtra_sensibles():
 
 **Salida obtenida:** `PASSED` en 21 ms
 
-#### BDD-B-019 · test_solo_dueno
+#### BDD-B-019 · Solo el dueño puede consultar su job
 
-**Escenario:** Solo el dueño puede consultar su job (test_jobs_steps)
+*Comprueba que el servicio no devuelve el job.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_solo_dueno`
 
 **Código (escenario Gherkin):**
 
@@ -4294,9 +5054,13 @@ def test_solo_dueno():
 
 **Salida obtenida:** `PASSED` en 9 ms
 
-#### BDD-B-020 · test_plan_recurso_por_fila
+#### BDD-B-020 · El plan de recursos crea una fila por recurso elegido
 
-**Escenario:** El plan de recursos crea una fila por recurso elegido (test_jobs_steps)
+*Comprueba que hay una fila por cada recurso elegido con su resource_type; cada recurso conserva su fase y su orden dentro de la fase.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_plan_recurso_por_fila`
 
 **Código (escenario Gherkin):**
 
@@ -4320,9 +5084,13 @@ def test_plan_recurso_por_fila():
 
 **Salida obtenida:** `PASSED` en 3 ms
 
-#### BDD-B-021 · test_materializa_ova_parcial
+#### BDD-B-021 · Un job con recursos generados materializa un OVA parcial
 
-**Escenario:** Un job con recursos generados materializa un OVA parcial (test_jobs_steps)
+*Comprueba que el job queda ligado a un OVA con sus fases generadas; solo los recursos done se vuelven fases del OVA.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_materializa_ova_parcial`
 
 **Código (escenario Gherkin):**
 
@@ -4346,9 +5114,13 @@ def test_materializa_ova_parcial():
 
 **Salida obtenida:** `PASSED` en 32 ms
 
-#### BDD-B-022 · test_fallo_total_sin_ova
+#### BDD-B-022 · Un fallo total no materializa ningún OVA
 
-**Escenario:** Un fallo total no materializa ningún OVA (test_jobs_steps)
+*Comprueba que el job termina en error sin OVA asociado.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_fallo_total_sin_ova`
 
 **Código (escenario Gherkin):**
 
@@ -4371,9 +5143,13 @@ def test_fallo_total_sin_ova():
 
 **Salida obtenida:** `PASSED` en 23 ms
 
-#### BDD-B-023 · test_contenido_aparte
+#### BDD-B-023 · El contenido de un recurso done se obtiene aparte del estado
 
-**Escenario:** El contenido de un recurso done se obtiene aparte del estado (test_jobs_steps)
+*Comprueba que recibe el HTML del recurso.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_contenido_aparte`
 
 **Código (escenario Gherkin):**
 
@@ -4397,9 +5173,13 @@ def test_contenido_aparte():
 
 **Salida obtenida:** `PASSED` en 12 ms
 
-#### BDD-B-024 · test_resume_subconjunto
+#### BDD-B-024 · Reintentar un subconjunto de recursos del job
 
-**Escenario:** Reintentar un subconjunto de recursos del job (test_jobs_steps)
+*Comprueba que solo se reanudan los recursos solicitados.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_resume_subconjunto`
 
 **Código (escenario Gherkin):**
 
@@ -4422,9 +5202,13 @@ def test_resume_subconjunto():
 
 **Salida obtenida:** `PASSED` en 18 ms
 
-#### BDD-B-025 · test_resume_ajeno_rechazado
+#### BDD-B-025 · Reintentar con un recurso ajeno al job se rechaza
 
-**Escenario:** Reintentar con un recurso ajeno al job se rechaza (test_jobs_steps)
+*Comprueba que la resolución se rechaza como no encontrada.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_resume_ajeno_rechazado`
 
 **Código (escenario Gherkin):**
 
@@ -4448,9 +5232,13 @@ def test_resume_ajeno_rechazado():
 
 **Salida obtenida:** `PASSED` en 10 ms
 
-#### BDD-B-026 · test_resume_done_en_subset
+#### BDD-B-026 · Reintentar un subconjunto con un recurso done no lo regenera
 
-**Escenario:** Reintentar un subconjunto con un recurso done no lo regenera (test_jobs_steps)
+*Comprueba que solo se regenera el recurso en error; el recurso done conserva su contenido original sin relanzarse.*
+
+**Escenario:** test_jobs_steps
+
+**Nombre del caso en la suite:** `test_resume_done_en_subset`
 
 **Código (escenario Gherkin):**
 
@@ -4474,9 +5262,13 @@ def test_resume_done_en_subset():
 
 ### `tests/step_defs/test_llm_config_steps.py`
 
-#### BDD-B-027 · test_admin_get
+#### BDD-B-027 · Admin obtiene la configuración efectiva
 
-**Escenario:** Admin obtiene la configuración efectiva (test_llm_config_steps)
+*Comprueba que la respuesta es 200; la config incluye las tareas "texto", "codigo", "orquestador", "razonamiento"; cada tarea tiene un modelo primario por defecto.*
+
+**Escenario:** test_llm_config_steps
+
+**Nombre del caso en la suite:** `test_admin_get`
 
 **Código (escenario Gherkin):**
 
@@ -4499,9 +5291,13 @@ def test_admin_get():
 
 **Salida obtenida:** `PASSED` en 16 ms
 
-#### BDD-B-028 · test_admin_put_valid
+#### BDD-B-028 · Admin guarda una configuración válida y se refleja
 
-**Escenario:** Admin guarda una configuración válida y se refleja (test_llm_config_steps)
+*Comprueba que la respuesta es 200; al consultar la config el modelo de codigo es "openrouter/deepseek/deepseek-v4-flash".*
+
+**Escenario:** test_llm_config_steps
+
+**Nombre del caso en la suite:** `test_admin_put_valid`
 
 **Código (escenario Gherkin):**
 
@@ -4523,9 +5319,13 @@ def test_admin_put_valid():
 
 **Salida obtenida:** `PASSED` en 18 ms
 
-#### BDD-B-029 · test_admin_put_invalid
+#### BDD-B-029 · Un modelo invalido se descarta y cae a la semilla
 
-**Escenario:** Un modelo invalido se descarta y cae a la semilla (test_llm_config_steps)
+*Comprueba que la respuesta es 200; al consultar la config el modelo de codigo no es "openrouter/modelo-inexistente-xyz".*
+
+**Escenario:** test_llm_config_steps
+
+**Nombre del caso en la suite:** `test_admin_put_invalid`
 
 **Código (escenario Gherkin):**
 
@@ -4547,9 +5347,13 @@ def test_admin_put_invalid():
 
 **Salida obtenida:** `PASSED` en 89 ms
 
-#### BDD-B-030 · test_user_get_forbidden
+#### BDD-B-030 · Un usuario no admin no puede leer la config
 
-**Escenario:** Un usuario no admin no puede leer la config (test_llm_config_steps)
+*Comprueba que la respuesta es 403.*
+
+**Escenario:** test_llm_config_steps
+
+**Nombre del caso en la suite:** `test_user_get_forbidden`
 
 **Código (escenario Gherkin):**
 
@@ -4570,9 +5374,13 @@ def test_user_get_forbidden():
 
 **Salida obtenida:** `PASSED` en 16 ms
 
-#### BDD-B-031 · test_user_put_forbidden
+#### BDD-B-031 · Un usuario no admin no puede guardar la config
 
-**Escenario:** Un usuario no admin no puede guardar la config (test_llm_config_steps)
+*Comprueba que la respuesta es 403.*
+
+**Escenario:** test_llm_config_steps
+
+**Nombre del caso en la suite:** `test_user_put_forbidden`
 
 **Código (escenario Gherkin):**
 
@@ -4595,9 +5403,13 @@ def test_user_put_forbidden():
 
 ### `tests/step_defs/test_nodes_config_steps.py`
 
-#### BDD-B-032 · test_get_defaults
+#### BDD-B-032 · GET retorna nodos y config con defaults cuando no hay DB config
 
-**Escenario:** GET retorna nodos y config con defaults cuando no hay DB config (test_nodes_config_steps)
+*Comprueba que la respuesta incluye nodes con al menos 9 nodos; config.ova_critic es "0".*
+
+**Escenario:** test_nodes_config_steps
+
+**Nombre del caso en la suite:** `test_get_defaults`
 
 **Código (escenario Gherkin):**
 
@@ -4619,9 +5431,13 @@ def test_get_defaults():
 
 **Salida obtenida:** `PASSED` en 14 ms
 
-#### BDD-B-033 · test_put_and_get
+#### BDD-B-033 · PUT guarda flags y GET refleja el cambio
 
-**Escenario:** PUT guarda flags y GET refleja el cambio (test_nodes_config_steps)
+*Comprueba que la respuesta incluye config.ova_critic igual a "1"; config.ova_reflection_rounds igual a 2.*
+
+**Escenario:** test_nodes_config_steps
+
+**Nombre del caso en la suite:** `test_put_and_get`
 
 **Código (escenario Gherkin):**
 
@@ -4643,9 +5459,13 @@ def test_put_and_get():
 
 **Salida obtenida:** `PASSED` en 14 ms
 
-#### BDD-B-034 · test_put_invalid_flag
+#### BDD-B-034 · PUT con flag inválido retorna 400
 
-**Escenario:** PUT con flag inválido retorna 400 (test_nodes_config_steps)
+*Comprueba que la respuesta tiene status 400.*
+
+**Escenario:** test_nodes_config_steps
+
+**Nombre del caso en la suite:** `test_put_invalid_flag`
 
 **Código (escenario Gherkin):**
 
@@ -4668,9 +5488,13 @@ def test_put_invalid_flag():
 
 ### `tests/step_defs/test_ova_critic_steps.py`
 
-#### BDD-B-035 · test_critico_apagado
+#### BDD-B-035 · Crítico apagado — sin cambio de comportamiento
 
-**Escenario:** Crítico apagado — sin cambio de comportamiento (test_ova_critic_steps)
+*Comprueba que el result dict no incluye score ni critic_issues distintos de cero.*
+
+**Escenario:** test_ova_critic_steps
+
+**Nombre del caso en la suite:** `test_critico_apagado`
 
 **Código (escenario Gherkin):**
 
@@ -4691,9 +5515,13 @@ def test_critico_apagado():
 
 **Salida obtenida:** `PASSED` en 1636 ms
 
-#### BDD-B-036 · test_critico_acepta
+#### BDD-B-036 · Crítico acepta un recurso de calidad
 
-**Escenario:** Crítico acepta un recurso de calidad (test_ova_critic_steps)
+*Comprueba que el result dict incluye score=85 y critic_issues vacío.*
+
+**Escenario:** test_ova_critic_steps
+
+**Nombre del caso en la suite:** `test_critico_acepta`
 
 **Código (escenario Gherkin):**
 
@@ -4715,9 +5543,13 @@ def test_critico_acepta():
 
 **Salida obtenida:** `PASSED` en 6 ms
 
-#### BDD-B-037 · test_critico_regenera
+#### BDD-B-037 · Crítico re-genera un recurso defectuoso
 
-**Escenario:** Crítico re-genera un recurso defectuoso (test_ova_critic_steps)
+*Comprueba que el result dict incluye score=78 y critique fue llamado dos veces.*
+
+**Escenario:** test_ova_critic_steps
+
+**Nombre del caso en la suite:** `test_critico_regenera`
 
 **Código (escenario Gherkin):**
 
@@ -4740,9 +5572,13 @@ def test_critico_regenera():
 
 **Salida obtenida:** `PASSED` en 3 ms
 
-#### BDD-B-038 · test_critico_rondas_cero
+#### BDD-B-038 · Crítico con rondas=0 evalúa pero no re-genera
 
-**Escenario:** Crítico con rondas=0 evalúa pero no re-genera (test_ova_critic_steps)
+*Comprueba que el Crítico fue invocado exactamente una vez.*
+
+**Escenario:** test_ova_critic_steps
+
+**Nombre del caso en la suite:** `test_critico_rondas_cero`
 
 **Código (escenario Gherkin):**
 
@@ -4764,9 +5600,13 @@ def test_critico_rondas_cero():
 
 **Salida obtenida:** `PASSED` en 3 ms
 
-#### BDD-B-039 · test_critico_falla
+#### BDD-B-039 · Crítico falla — recurso aceptado igual
 
-**Escenario:** Crítico falla — recurso aceptado igual (test_ova_critic_steps)
+*Comprueba que el recurso se acepta sin error y score=0.*
+
+**Escenario:** test_ova_critic_steps
+
+**Nombre del caso en la suite:** `test_critico_falla`
 
 **Código (escenario Gherkin):**
 
@@ -4790,9 +5630,13 @@ def test_critico_falla():
 
 ### `tests/step_defs/test_ova_editor_steps.py`
 
-#### BDD-B-040 · test_editor_apagado
+#### BDD-B-040 · Editor apagado — noop
 
-**Escenario:** Editor apagado — noop (test_ova_editor_steps)
+*Comprueba que retorna dict vacío sin coherence_report.*
+
+**Escenario:** test_ova_editor_steps
+
+**Nombre del caso en la suite:** `test_editor_apagado`
 
 **Código (escenario Gherkin):**
 
@@ -4814,9 +5658,13 @@ def test_editor_apagado():
 
 **Salida obtenida:** `PASSED` en 2 ms
 
-#### BDD-B-041 · test_editor_aplica_parche
+#### BDD-B-041 · Editor detecta inconsistencia y aplica parche
 
-**Escenario:** Editor detecta inconsistencia y aplica parche (test_ova_editor_steps)
+*Comprueba que coherence_report incluye hallazgos y parches; el resultado de la fase "explore" ya no contiene "término X".*
+
+**Escenario:** test_ova_editor_steps
+
+**Nombre del caso en la suite:** `test_editor_aplica_parche`
 
 **Código (escenario Gherkin):**
 
@@ -4840,9 +5688,13 @@ def test_editor_aplica_parche():
 
 **Salida obtenida:** `PASSED` en 2 ms
 
-#### BDD-B-042 · test_editor_falla
+#### BDD-B-042 · Editor falla — continúa sin crash
 
-**Escenario:** Editor falla — continúa sin crash (test_ova_editor_steps)
+*Comprueba que retorna coherence_report vacío sin error.*
+
+**Escenario:** test_ova_editor_steps
+
+**Nombre del caso en la suite:** `test_editor_falla`
 
 **Código (escenario Gherkin):**
 
@@ -4867,9 +5719,13 @@ def test_editor_falla():
 
 ### `tests/step_defs/test_ova_steps.py`
 
-#### BDD-B-043 · test_db_health
+#### BDD-B-043 · Endpoint de salud de base de datos responde ok
 
-**Escenario:** Endpoint de salud de base de datos responde ok (test_ova_steps)
+*Comprueba que la respuesta es 200 con estado "ok".*
+
+**Escenario:** test_ova_steps
+
+**Nombre del caso en la suite:** `test_db_health`
 
 **Código (escenario Gherkin):**
 
@@ -4890,9 +5746,13 @@ def test_db_health():
 
 **Salida obtenida:** `PASSED` en 9 ms
 
-#### BDD-B-044 · test_historial_listado
+#### BDD-B-044 · CA-01 — Ver lista de OVAs propios
 
-**Escenario:** CA-01 — Ver lista de OVAs propios (test_ova_steps)
+*Comprueba que veo exactamente 4 cards de OVAs; están ordenados por fecha de creación descendente; cada card muestra título, fecha y badge de estado.*
+
+**Escenario:** test_ova_steps
+
+**Nombre del caso en la suite:** `test_historial_listado`
 
 **Código (escenario Gherkin):**
 
@@ -4916,9 +5776,13 @@ def test_historial_listado():
 
 ### `tests/step_defs/test_roles_steps.py`
 
-#### BDD-B-045 · test_listar_roles
+#### BDD-B-045 · Ver lista de roles existentes
 
-**Escenario:** Ver lista de roles existentes (test_roles_steps)
+*Comprueba que debo ver la lista de roles registrados; debo ver al menos los roles "administrador" y "usuario".*
+
+**Escenario:** test_roles_steps
+
+**Nombre del caso en la suite:** `test_listar_roles`
 
 **Código (escenario Gherkin):**
 
@@ -4939,9 +5803,13 @@ def test_listar_roles():
 
 **Salida obtenida:** `PASSED` en 20 ms
 
-#### BDD-B-046 · test_crear_rol
+#### BDD-B-046 · Crear un nuevo rol exitosamente
 
-**Escenario:** Crear un nuevo rol exitosamente (test_roles_steps)
+*Comprueba que el sistema debe crear el rol y retornar 201; el nuevo rol "docente" debe aparecer inmediatamente en la lista.*
+
+**Escenario:** test_roles_steps
+
+**Nombre del caso en la suite:** `test_crear_rol`
 
 **Código (escenario Gherkin):**
 
@@ -4966,9 +5834,13 @@ def test_crear_rol():
 
 **Salida obtenida:** `PASSED` en 28 ms
 
-#### BDD-B-047 · test_crear_rol_duplicado
+#### BDD-B-047 · Intentar crear un rol con nombre duplicado
 
-**Escenario:** Intentar crear un rol con nombre duplicado (test_roles_steps)
+*Comprueba que el sistema retorna 409; debo ver el mensaje "Ya existe un rol con ese nombre"; el rol no debe duplicarse en la lista.*
+
+**Escenario:** test_roles_steps
+
+**Nombre del caso en la suite:** `test_crear_rol_duplicado`
 
 **Código (escenario Gherkin):**
 
@@ -4991,9 +5863,13 @@ def test_crear_rol_duplicado():
 
 **Salida obtenida:** `PASSED` en 21 ms
 
-#### BDD-B-048 · test_editar_rol
+#### BDD-B-048 · Modificación exitosa del rol
 
-**Escenario:** Modificación exitosa del rol (test_roles_steps)
+*Comprueba que el sistema debe actualizar el rol en la base de datos y retornar 200; el modal debe cerrarse automáticamente; el rol "instructor" con sus nuevos permisos debe listarse inmediatamente en la tabla.*
+
+**Escenario:** test_roles_steps
+
+**Nombre del caso en la suite:** `test_editar_rol`
 
 **Código (escenario Gherkin):**
 
@@ -5018,9 +5894,13 @@ def test_editar_rol():
 
 **Salida obtenida:** `PASSED` en 20 ms
 
-#### BDD-B-049 · test_editar_rol_duplicado
+#### BDD-B-049 · Nombre duplicado al intentar editar
 
-**Escenario:** Nombre duplicado al intentar editar (test_roles_steps)
+*Comprueba que el sistema debe retornar un código 409; debo ver el mensaje de error "Ya existe un rol con ese nombre"; el modal debe permanecer abierto.*
+
+**Escenario:** test_roles_steps
+
+**Nombre del caso en la suite:** `test_editar_rol_duplicado`
 
 **Código (escenario Gherkin):**
 
@@ -5045,9 +5925,13 @@ def test_editar_rol_duplicado():
 
 **Salida obtenida:** `PASSED` en 15 ms
 
-#### BDD-B-050 · test_eliminar_rol_sin_usuarios
+#### BDD-B-050 · Eliminar un rol sin usuarios asignados
 
-**Escenario:** Eliminar un rol sin usuarios asignados (test_roles_steps)
+*Comprueba que debo ver un modal de confirmación simple; debo ver la advertencia de que la acción es irreversible.*
+
+**Escenario:** test_roles_steps
+
+**Nombre del caso en la suite:** `test_eliminar_rol_sin_usuarios`
 
 **Código (escenario Gherkin):**
 
@@ -5073,9 +5957,13 @@ def test_eliminar_rol_sin_usuarios():
 
 **Salida obtenida:** `PASSED` en 26 ms
 
-#### BDD-B-051 · test_eliminar_rol_sin_reasignar
+#### BDD-B-051 · Intentar eliminar un rol con usuarios sin especificar reasignación
 
-**Escenario:** Intentar eliminar un rol con usuarios sin especificar reasignación (test_roles_steps)
+*Comprueba que el sistema retorna un código 409; responde con el mensaje "El rol tiene usuarios asignados".*
+
+**Escenario:** test_roles_steps
+
+**Nombre del caso en la suite:** `test_eliminar_rol_sin_reasignar`
 
 **Código (escenario Gherkin):**
 
