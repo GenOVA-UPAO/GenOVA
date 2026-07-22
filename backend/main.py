@@ -13,12 +13,14 @@ from fastapi.middleware.gzip import GZipMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
+from sqlalchemy.exc import DataError
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
 from auth.router import router as auth_router
 from core.config import settings
 from core.database import Base, engine
+from core.http_errors import data_error_handler
 from core.http_middleware import ProcessTimeMiddleware, SecurityHeadersMiddleware
 from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.openapi_ids import generate_operation_id
@@ -145,6 +147,8 @@ app = FastAPI(
 )
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# Un identificador o valor con formato inválido es 400, no 500.
+app.add_exception_handler(DataError, data_error_handler)
 
 _env = settings.env.lower()
 _extra = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]

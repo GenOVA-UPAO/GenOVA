@@ -49,6 +49,24 @@ conjunto de rutas del OpenAPI es idéntico al de antes del cambio.
   `db_health_api_db_health_get`. Las 5 funciones `list_recursos` de las fases 5E
   se renombraron (`list_engage_recursos`, …) porque compartían tag y colisionaban.
 
+### Hallazgo adicional (H16) — identificadores mal formados devolvían 500
+
+Detectado al ejecutar los 120 endpoints desde Swagger para el manual de
+despliegue: cualquier identificador de la URL que no fuera un UUID llegaba a
+PostgreSQL y abortaba la consulta con `InvalidTextRepresentation`, que salía
+como **500**. Ejemplos: `GET /api/ovas/{id}/versiones/diff?v1=1&v2=2`,
+`GET /api/ovas/no-es-uuid/editar`.
+
+Corregido con dos defensas:
+- `core/ids.py::is_uuid` comprueba el formato antes de tocar la base en
+  `_resolve_ova` y `_load_version_with_phases`, que ahora responden **404**
+  (semántica correcta: el recurso no existe).
+- `core/http_errors.py::data_error_handler`, registrado en `main.py`, traduce
+  cualquier `DataError` restante a **400** con un mensaje genérico, sin filtrar
+  el detalle del driver.
+
+Cubierto por `backend/tests/test_uuid_guards.py` (15 casos).
+
 Desviaciones respecto de la propuesta original:
 - `POST /api/ovas/{id}/regenerar` y su `progress` quedaron en `Generación`
   (son trabajos con progreso), no en `OVA · Fases y versiones`.
