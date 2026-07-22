@@ -108,6 +108,7 @@
               <select
                 [value]="user.role?.id || (roles().length > 0 ? roles()[0].id : '')"
                 (change)="onRoleChange(user.id, $event)"
+                [attr.aria-label]="'Rol de ' + (user.full_name || user.email)"
                 [disabled]="updatingUserId() === user.id || isActionsDisabled(user)"
                 class="h-8 w-[170px] rounded-xl border border-border/50 bg-background/50 backdrop-blur-md px-3 text-[11px] font-bold uppercase tracking-wider focus:outline-none cursor-pointer capitalize shadow-sm disabled:opacity-50 hover:bg-accent/50 transition-colors"
                 [ngClass]="getRoleColorClassesLocal(user.role?.name)"

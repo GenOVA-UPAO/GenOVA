@@ -6,7 +6,9 @@ import { RouterLink } from "@angular/router";
   selector: "gn-not-found-page",
   imports: [RouterLink],
   template: `
-    <div class="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4 text-center">
+    <main
+      class="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4 text-center"
+    >
       <h1 class="mb-4 text-6xl font-extrabold tracking-tight text-primary">404</h1>
       <h2 class="font-display mb-2 text-2xl font-semibold tracking-tight">Página no encontrada</h2>
       <p class="mb-8 text-muted-foreground">
@@ -18,7 +20,7 @@ import { RouterLink } from "@angular/router";
       >
         Volver al inicio
       </a>
-    </div>
+    </main>
   `,
 })
 export class NotFoundPage {}
