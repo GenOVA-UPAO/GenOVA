@@ -11,6 +11,10 @@ Uso:  python tests/load/check_thresholds.py <report_stats.csv> [p90_ms]
 import csv
 import sys
 
+# La consola de Windows es cp1252 y los nombres del CSV pueden traer acentos.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 P90_THRESHOLD_MS = 278.0  # RN-001
 MAX_FAIL_RATIO = 0.01
 LLM_MARKER = "LLM"  # los names de tasks LLM en locustfile.py incluyen "(encolado LLM)"
@@ -25,7 +29,9 @@ def main() -> int:
 
     failures = []
     total_requests = total_failures = 0
-    with open(path, newline="", encoding="utf-8") as fh:
+    # Locust escribe el CSV con la codificación de la consola (cp1252 en Windows),
+    # así que utf-8 estricto reventaba al leer nombres con acentos.
+    with open(path, newline="", encoding="utf-8", errors="replace") as fh:
         for row in csv.DictReader(fh):
             name = row.get("Name", "")
             if name == "Aggregated":

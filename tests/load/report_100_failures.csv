@@ -1,0 +1,33 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+GET,GET /api/users/me/links,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:20:15Z,2026-07-22T17:20:15Z
+GET,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:20:20Z,2026-07-22T17:20:20Z
+POST,POST /api/ovas/{ova_id}/duplicar,"CatchResponseError('esperaba (200, 201, 404, 409), llegó 500')",1,2026-07-22T17:19:44Z,2026-07-22T17:19:44Z
+PATCH,PATCH /api/users/me/theme,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:20:16Z,2026-07-22T17:20:16Z
+GET,GET /api/ovas/{ova_id}/regenerar/{job_id}/progress,"CatchResponseError('esperaba (200, 403, 404), llegó 500')",2,2026-07-22T17:19:44Z,2026-07-22T17:20:17Z
+POST,POST /api/auth/verify-email,"CatchResponseError('esperaba (200, 400), llegó 500')",2,2026-07-22T17:19:43Z,2026-07-22T17:19:44Z
+GET,GET /api/admin/llm-config,"CatchResponseError('esperaba (200,), llegó 500')",2,2026-07-22T17:19:42Z,2026-07-22T17:20:14Z
+GET,GET /api/ovas,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:19:42Z,2026-07-22T17:19:42Z
+POST,POST /api/ovas/{ova_id}/chat,"CatchResponseError('esperaba (200, 201, 404, 409), llegó 500')",2,2026-07-22T17:19:42Z,2026-07-22T17:19:44Z
+GET,GET /api/jobs (buscar),"CatchResponseError('esperaba (200, 404), llegó 500')",2,2026-07-22T17:19:42Z,2026-07-22T17:20:18Z
+POST,POST /api/users/{user_id}/unlock,"CatchResponseError('esperaba (200, 404), llegó 500')",1,2026-07-22T17:19:43Z,2026-07-22T17:19:43Z
+GET,GET /api/auth/me,"CatchResponseError('esperaba (200,), llegó 500')",2,2026-07-22T17:19:42Z,2026-07-22T17:19:44Z
+GET,GET /api/ovas/{ova_id}/editar,"CatchResponseError('esperaba (200, 409), llegó 500')",2,2026-07-22T17:19:41Z,2026-07-22T17:19:46Z
+GET,GET /api/ovas/{ova_id}/export-scorm,"CatchResponseError('esperaba (200, 302, 404), llegó 500')",1,2026-07-22T17:19:41Z,2026-07-22T17:19:41Z
+GET,GET /api/users/me/enabled-models,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:20:17Z,2026-07-22T17:20:17Z
+POST,POST /api/ovas/lote/restaurar,"CatchResponseError('esperaba (200,), llegó 500')",2,2026-07-22T17:20:15Z,2026-07-22T17:20:19Z
+POST,POST /api/ovas/save,"CatchResponseError('esperaba (200, 201), llegó 500')",2,2026-07-22T17:19:44Z,2026-07-22T17:20:17Z
+POST,POST /api/users/me/links/code,"CatchResponseError('esperaba (200, 201), llegó 500')",1,2026-07-22T17:19:42Z,2026-07-22T17:19:42Z
+GET,GET /api/jobs/{job_id}/resources/{resource_id}/content,"CatchResponseError('esperaba (200, 404), llegó 500')",2,2026-07-22T17:19:42Z,2026-07-22T17:20:17Z
+GET,GET /api/ovas/{ova_id}/download,"CatchResponseError('esperaba (200, 302, 404, 409), llegó 500')",1,2026-07-22T17:19:42Z,2026-07-22T17:19:42Z
+POST,POST /api/ovas/{ova_id}/versiones/{version_id}/revert,"CatchResponseError('esperaba (200, 404, 409), llegó 0')",1,2026-07-22T17:19:44Z,2026-07-22T17:19:44Z
+PATCH,PATCH /api/ovas/{ova_id}/fases/{fase_id},"CatchResponseError('esperaba (200, 404, 409), llegó 500')",1,2026-07-22T17:20:17Z,2026-07-22T17:20:17Z
+DELETE,DELETE /api/ovas/{ova_id}/chat/{message_id},"CatchResponseError('esperaba (200, 204, 404), llegó 500')",2,2026-07-22T17:20:16Z,2026-07-22T17:20:16Z
+PATCH,PATCH /api/ovas/{ova_id}/restaurar,"CatchResponseError('esperaba (200, 404), llegó 500')",1,2026-07-22T17:19:44Z,2026-07-22T17:19:44Z
+POST,POST /api/auth/login,"CatchResponseError('esperaba (200,), llegó 500')",6,2026-07-22T17:19:42Z,2026-07-22T17:20:17Z
+POST,POST /api/ovas/{ova_id}/versiones/{version_id}/revert,"CatchResponseError('esperaba (200, 404, 409), llegó 500')",1,2026-07-22T17:20:19Z,2026-07-22T17:20:19Z
+PATCH,PATCH /api/ovas/{ova_id}/metadata,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:19:43Z,2026-07-22T17:19:43Z
+GET,GET /api/admin/nodes-config,"CatchResponseError('esperaba (200,), llegó 500')",3,2026-07-22T17:19:44Z,2026-07-22T17:20:45Z
+DELETE,DELETE /api/users/me/links/{link_id},"CatchResponseError('esperaba (200, 204, 404), llegó 0')",1,2026-07-22T17:20:17Z,2026-07-22T17:20:17Z
+POST,POST /api/ovas/{ova_id}/duplicar,"CatchResponseError('esperaba (200, 201, 404, 409), llegó 0')",2,2026-07-22T17:19:44Z,2026-07-22T17:20:17Z
+GET,GET /api/admin/registration-mode,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:19:42Z,2026-07-22T17:19:42Z
+PATCH,PATCH /api/ovas/{ova_id}/fases/reorder,"CatchResponseError('esperaba (200, 404, 409, 422), llegó 500')",1,2026-07-22T17:20:17Z,2026-07-22T17:20:17Z
