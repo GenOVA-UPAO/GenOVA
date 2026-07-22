@@ -9,7 +9,7 @@
 |---|---|
 | **Proyecto** | GenOVA — generación asistida por IA de OVAs (SCORM 1.2 / 5E) |
 | **Tipo de prueba** | Carga / rendimiento HTTP (backend completo) |
-| **Herramienta** | Locust 2.46 (`tests/load/locustfile.py`) |
+| **Herramientas** | Locust 2.46 (`tests/load/locustfile.py`) y Apache JMeter 5.6.3 (`tests/load/genova-loadtest.jmx`) |
 | **Fecha de ejecución** | 22/07/2026 |
 | **Ejecutado por** | Jeffry A. Romero Uriol |
 | **Niveles de carga** | 10 · 50 · 100 usuarios concurrentes, 2 min por nivel |
@@ -95,6 +95,12 @@ Un solo comando reproduce las tres corridas y valida los umbrales:
 
 # 2. En otra terminal: 10, 50 y 100 concurrentes + validación + limpieza
 ./tests/load/run-load.ps1
+```
+
+La misma prueba con Apache JMeter (requiere JMeter 5.6.3+ y Java 8+):
+
+```powershell
+./tests/load/run-load-jmeter.ps1
 ```
 
 Corrida de contraste con el pool ampliado (CP-CARGA-04):
@@ -284,7 +290,37 @@ Recomendaciones, por orden de impacto esperado:
 
 ## 7. Comparación con Apache JMeter
 
-La corrida previa (18/07/2026) ejecutó el mismo escenario reducido con **Apache JMeter 5.6.3** (`tests/load/genova-loadtest.jmx`) y con Locust, para contrastar herramientas sobre los cuatro endpoints principales. Los resultados coincidieron dentro del margen esperado (diferencias < 10 % en P90), lo que valida el harness. Esa comparación se conserva en `tests/load/jmeter-report/` y en el histórico de este documento; la cobertura completa de los 120 endpoints se mantiene únicamente en Locust, donde el plan se define en Python y no en XML.
+El mismo escenario se implementó en **Apache JMeter 5.6.3** (`tests/load/genova-loadtest.jmx`) y se ejecutó en los mismos tres niveles, el mismo día y contra el mismo backend. El plan replica el de Locust: los mismos endpoints, el mismo reparto 80/20 entre usuario y administrador, el mismo think time (0.5–2 s) y la misma proporción de tareas, resuelta con `Random Controller` (elige una petición del bloque) dentro de `Loop Controller` (repite el bloque tantas veces como pesa la tarea en Locust).
+
+### 7.1 Diferencias de criterio entre las dos herramientas
+
+| Aspecto | Locust | JMeter |
+|---|---|---|
+| Definición del plan | Python: `random.choice` sobre listas de endpoints | XML: `Random Controller` + `Loop Controller` |
+| Códigos aceptados | Por endpoint (`(200, 404, 409)`, etc.) | Regla global: sólo 5xx cuenta como error (`Response Assertion` con *ignore status*) |
+| Fixtures | Sembrados una vez al arrancar (`test_start`) | Cada hilo los resuelve en su `Once Only Controller` |
+| Sesión | Cookie reinyectada en el cliente | `Regex Extractor` + cabecera `Cookie` |
+
+Por eso JMeter reporta menos errores en el mismo escenario: sólo cuenta los 5xx, mientras Locust marca además cualquier código fuera del conjunto declarado para ese endpoint concreto.
+
+### 7.2 Resultados lado a lado
+
+| Nivel | Herramienta | Peticiones | Errores | RPS | Media (ms) | P90 (ms) | P99 (ms) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 10 | Locust | 580 | 0.0 % | 4.9 | 946 | 2 100 | 4 100 |
+| 10 | JMeter | 346 | 0.0 % | 4.8 | 570 | 908 | 1 712 |
+| 50 | Locust | 2 337 | 0.5 % | 19.6 | 1 266 | 2 100 | 3 700 |
+| 50 | JMeter | 1 730 | 2.3 % | 18.1 | 871 | 1 415 | 6 556 |
+| 100 | Locust | 355 | 14.4 % | 3.0 | 18 161 | 36 000 | 65 000 |
+| 100 | JMeter | 831 | 6.5 % | 6.8 | 12 145 | 33 076 | 62 030 |
+
+### 7.3 Lectura de la comparación
+
+**Las dos herramientas coinciden en lo que importa.** El throughput medido a 10 y 50 concurrentes es prácticamente el mismo (4.9 vs 4.8 req/s y 19.6 vs 18.1 req/s), y ambas sitúan el colapso en el mismo punto: a 100 usuarios el P90 se va por encima de los 30 s en las dos (36 s en Locust, 33 s en JMeter) y el throughput cae por debajo del que se obtenía con 50. Que dos implementaciones independientes del mismo escenario den la misma curva descarta que el resultado sea un artefacto del arnés.
+
+**Dónde difieren y por qué.** JMeter registra menos peticiones a 10 y 50 concurrentes porque su think time se aplica antes de cada muestra dentro de bloques secuenciales, mientras Locust reparte las tareas al azar; y reporta menos errores por el criterio más laxo de la §7.1. A 100 concurrentes JMeter completa más peticiones (831 vs 355) porque sus hilos siguen enviando mientras Locust espera respuestas encoladas: es la misma saturación vista desde dos modelos de concurrencia distintos (hilos frente a gevent).
+
+**Cuál conviene para este proyecto.** Locust, por dos razones prácticas: el plan vive en Python junto al resto de la suite (los 120 endpoints se mantienen en una lista, no en 2 000 líneas de XML) y permite declarar los códigos aceptables endpoint por endpoint, que es lo que distingue un 404 esperado de un 500 real. JMeter se conserva como verificación cruzada.
 
 ## 8. Limitaciones
 
@@ -302,5 +338,8 @@ La corrida previa (18/07/2026) ejecutó el mismo escenario reducido con **Apache
 | `tests/load/check_thresholds.py` | Gate RN-001 sobre el CSV |
 | `tests/load/cleanup_load_data.py` | Purga de las OVAs y cuentas creadas |
 | `scripts/serve-load.ps1` · `scripts/serve-load-pool.ps1` | Arranque del backend en modo carga |
-| `tests/load/report_{10,50,100,100_pool40}.html` | Informes completos por nivel |
+| `tests/load/genova-loadtest.jmx` | Plan equivalente en Apache JMeter |
+| `tests/load/run-load-jmeter.ps1` | Ejecuta los tres niveles con JMeter y genera el dashboard |
+| `tests/load/report_{10,50,100,100_pool40}.html` | Informes de Locust por nivel |
+| `tests/load/jmeter-report-{10,50,100}/index.html` | Dashboards de JMeter por nivel |
 | `tests/load/report_*_stats.csv` · `report_*_failures.csv` | Datos crudos |

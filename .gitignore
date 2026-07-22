@@ -296,3 +296,7 @@ production-*.png
 .temp/
 .vercel
 tests/test-results/
+
+# Dashboards HTML de JMeter: 4 MB de jquery/bootstrap vendorizado por corrida.
+# Se regeneran desde el .jtl con:  jmeter -g tests/load/jmeter_<n>.jtl -o tests/load/jmeter-report-<n>
+tests/load/jmeter-report-*/
