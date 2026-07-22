@@ -290,7 +290,7 @@ Recomendaciones, por orden de impacto esperado:
 
 ## 7. Comparación con Apache JMeter
 
-El mismo escenario se implementó en **Apache JMeter 5.6.3** (`tests/load/genova-loadtest.jmx`) y se ejecutó en los mismos tres niveles, el mismo día y contra el mismo backend. El plan replica el de Locust: los mismos endpoints, el mismo reparto 80/20 entre usuario y administrador, el mismo think time (0.5–2 s) y la misma proporción de tareas, resuelta con `Random Controller` (elige una petición del bloque) dentro de `Loop Controller` (repite el bloque tantas veces como pesa la tarea en Locust).
+El mismo escenario se implementó en **Apache JMeter 5.6.3** (`tests/load/genova-loadtest.jmx`) y se ejecutó en los mismos tres niveles, el mismo día y contra el mismo backend. El plan replica el escenario de Locust: el mismo reparto 80/20 entre usuario y administrador, el mismo think time (0.5–2 s) y la misma proporción de tareas, resuelta con `Random Controller` (elige una petición del bloque) dentro de `Loop Controller` (repite el bloque tantas veces como pesa la tarea en Locust). La cobertura no es idéntica: Locust mide 90 etiquetas distintas y JMeter 79, porque el plan de JMeter deja fuera los endpoints costosos (encolado de generación, regeneración, agentes 5E y subida con indexado RAG), que en Locust sólo se ejercitan en el nivel de 10 concurrentes. La comparación de la §7.2 usa por tanto el subconjunto común, que es el que domina el tráfico.
 
 ### 7.1 Diferencias de criterio entre las dos herramientas
 
