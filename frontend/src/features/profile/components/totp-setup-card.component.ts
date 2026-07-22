@@ -24,16 +24,16 @@ import type { SetupData, TotpPhase } from "./totp-setup-card.types";
 export class TotpSetupCardComponent implements OnInit, OnChanges {
   readonly totpEnabled = input(false);
 
-  phase: TotpPhase = "idle";
-  setupData: SetupData | null = null;
-  backupCodes: string[] | null = null;
-  serverError = "";
+  phase = signal<TotpPhase>("idle");
+  setupData = signal<SetupData | null>(null);
+  backupCodes = signal<string[] | null>(null);
+  serverError = signal("");
   disableCode = signal("");
-  disableError = "";
-  disabling = false;
-  isSubmitting = false;
-  copiedUri = false;
-  copiedSecret = false;
+  disableError = signal("");
+  disabling = signal(false);
+  isSubmitting = signal(false);
+  copiedUri = signal(false);
+  copiedSecret = signal(false);
 
   private totpService = inject(TotpService);
 
@@ -45,71 +45,73 @@ export class TotpSetupCardComponent implements OnInit, OnChanges {
   });
 
   ngOnInit() {
-    this.phase = this.totpEnabled() ? "enabled" : "idle";
+    this.phase.set(this.totpEnabled() ? "enabled" : "idle");
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes["totpEnabled"] && !changes["totpEnabled"].firstChange) {
-      this.phase = this.totpEnabled() ? "enabled" : "idle";
+      this.phase.set(this.totpEnabled() ? "enabled" : "idle");
     }
   }
 
   async startSetup() {
-    this.serverError = "";
+    this.serverError.set("");
     try {
       const data = await this.totpService.startSetup();
-      this.setupData = data;
-      this.backupCodes = data.backup_codes || null;
-      this.phase = "setup";
+      this.setupData.set(data);
+      this.backupCodes.set(data.backup_codes || null);
+      this.phase.set("setup");
     } catch (e: unknown) {
-      this.serverError = e instanceof Error ? e.message : "No se pudo conectar con el servidor.";
+      this.serverError.set(e instanceof Error ? e.message : "No se pudo conectar con el servidor.");
     }
   }
 
   async confirmSetup() {
     if (this.confirmForm().invalid()) return;
-    this.isSubmitting = true;
-    this.serverError = "";
+    this.isSubmitting.set(true);
+    this.serverError.set("");
     try {
       await this.totpService.confirmSetup(this.confirmModel().code);
       this.confirmForm().reset();
-      this.phase = "enabled";
-      this.setupData = null;
+      this.phase.set("enabled");
+      this.setupData.set(null);
     } catch (e: unknown) {
-      this.serverError = e instanceof Error ? e.message : "No se pudo conectar con el servidor.";
+      this.serverError.set(e instanceof Error ? e.message : "No se pudo conectar con el servidor.");
     } finally {
-      this.isSubmitting = false;
+      this.isSubmitting.set(false);
     }
   }
 
   cancelSetup() {
-    this.phase = "idle";
-    this.setupData = null;
+    this.phase.set("idle");
+    this.setupData.set(null);
     this.confirmForm().reset();
   }
 
   async disable2fa() {
-    this.disableError = "";
-    this.disabling = true;
+    this.disableError.set("");
+    this.disabling.set(true);
     try {
       await this.totpService.disable(this.disableCode());
-      this.phase = "idle";
+      this.phase.set("idle");
       this.disableCode.set("");
     } catch (e: unknown) {
-      this.disableError = e instanceof Error ? e.message : "No se pudo conectar con el servidor.";
+      this.disableError.set(
+        e instanceof Error ? e.message : "No se pudo conectar con el servidor.",
+      );
     } finally {
-      this.disabling = false;
+      this.disabling.set(false);
     }
   }
 
   copyToClipboard(text: string, type: "uri" | "secret") {
     void navigator.clipboard.writeText(text).then(() => {
       if (type === "uri") {
-        this.copiedUri = true;
-        setTimeout(() => (this.copiedUri = false), 2000);
+        this.copiedUri.set(true);
+        setTimeout(() => (this.copiedUri.set(false), 2000));
       } else {
-        this.copiedSecret = true;
-        setTimeout(() => (this.copiedSecret = false), 2000);
+        this.copiedSecret.set(true);
+        setTimeout(() => (this.copiedSecret.set(false), 2000));
       }
     });
   }

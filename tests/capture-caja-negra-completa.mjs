@@ -1,5 +1,5 @@
 // Captura de screenshots para el Documento de Pruebas de Caja Negra (Anexo 9) — versión AMPLIADA.
-// Ejecuta 13 escenarios contra el stack local REAL (frontend :4200 → backend :8000,
+// Ejecuta 18 escenarios contra el stack local REAL (frontend :4200 → backend :8000,
 // LLMs reales, worker arq activo) y guarda las capturas en docs/assets/caja-negra-completa/.
 // Reutiliza los selectores reales de tests/steps/e2e y reaprovecha OVAs ya "listos"
 // de la cuenta admin (evita regenerar); sólo el Escenario 4 hace UNA generación real.
@@ -483,13 +483,142 @@ async function esc13(ctx) {
   await upage.close();
 }
 
+// ─── Escenario 14: Restablecimiento de contraseña (formulario con token) ───
+async function esc14(ctx) {
+  console.log("[esc14] Restablecimiento de contraseña");
+  const page = await ctx.newPage();
+  await page.context().clearCookies();
+
+  // Sin token en la URL: el formulario no se muestra.
+  await page.goto(`${BASE}/reset-password`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(800);
+  await shot(page, "esc14_01_sin_token", "Enlace sin token: la aplicación no muestra el formulario y ofrece solicitar uno nuevo");
+
+  const nueva = () => page.locator("#new_password input, #new_password").first();
+  const confirmar = () => page.locator("#confirm_password input, #confirm_password").first();
+  const guardar = () => page.getByRole("button", { name: /Guardar contraseña/i }).first();
+
+  await page.goto(`${BASE}/reset-password?token=token-de-prueba-invalido`, {
+    waitUntil: "domcontentloaded",
+  });
+  await page.waitForTimeout(800);
+
+  // Contraseña que no cumple la política.
+  await nueva().fill("abc");
+  await confirmar().fill("abc");
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.waitForTimeout(600);
+  await shot(page, "esc14_02_password_debil", 'Contraseña "abc": no cumple la política y el botón queda deshabilitado');
+
+  // Confirmación distinta.
+  await nueva().fill("NuevaClave1234");
+  await confirmar().fill("OtraClave5678");
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.waitForTimeout(600);
+  await shot(page, "esc14_03_no_coinciden", 'Confirmación distinta: error "Las contraseñas no coinciden"');
+
+  // Datos válidos pero token inválido: lo rechaza el servidor.
+  await confirmar().fill("NuevaClave1234");
+  await page.waitForTimeout(400);
+  await guardar().click({ timeout: 5000 }).catch(() => {});
+  await page.waitForTimeout(2500);
+  await shot(page, "esc14_04_token_invalido", "Datos válidos con token inválido: el backend rechaza el restablecimiento");
+  await page.close();
+}
+
+// ─── Escenario 15: Verificación de correo ─────────────────────────────────
+async function esc15(ctx) {
+  console.log("[esc15] Verificación de correo");
+  const page = await ctx.newPage();
+  await page.context().clearCookies();
+
+  await page.goto(`${BASE}/verify-email`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1200);
+  await shot(page, "esc15_01_sin_token", "Enlace sin token: la pantalla informa que no se pudo verificar");
+
+  await page.goto(`${BASE}/verify-email?token=token-de-prueba-invalido`, {
+    waitUntil: "domcontentloaded",
+  });
+  await page.waitForTimeout(2500);
+  await shot(page, "esc15_02_token_invalido", "Token inválido o caducado: el backend rechaza la verificación");
+  await page.close();
+}
+
+// ─── Escenario 16: Segundo factor de autenticación (2FA/TOTP) ─────────────
+async function esc16(ctx) {
+  console.log("[esc16] Segundo factor (TOTP)");
+  const page = await ctx.newPage();
+  await login(page, USER.email, USER.pass);
+  await page.goto(`${BASE}/profile`, { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "Seguridad" }).first().click();
+  await page.waitForTimeout(1000);
+  await shot(page, "esc16_01_estado_inicial", "Pestaña Seguridad: el 2FA aparece desactivado con la acción para activarlo");
+
+  await page.getByRole("button", { name: /Activar 2FA/i }).first().click({ timeout: 8000 });
+  await page.waitForTimeout(2500);
+  await shot(page, "esc16_02_alta_secreto", "Alta del 2FA: la aplicación muestra el código QR y el secreto para el autenticador");
+
+  const codigo = page.locator('input[placeholder="123456"]').first();
+  await codigo.fill("000");
+  await page.locator("body").click({ position: { x: 5, y: 5 } });
+  await page.waitForTimeout(600);
+  await shot(page, "esc16_03_codigo_corto", "Código de 3 dígitos: la validación exige 6 dígitos");
+
+  await codigo.fill("000000");
+  await page.waitForTimeout(400);
+  await page.getByRole("button", { name: /Confirmar y activar/i }).first().click({ timeout: 5000 }).catch(() => {});
+  await page.waitForTimeout(2500);
+  await shot(page, "esc16_04_codigo_invalido", "Código de 6 dígitos incorrecto: el backend rechaza la activación");
+  await page.close();
+}
+
+// ─── Escenario 17: Credenciales de proveedores (API keys) ─────────────────
+async function esc17(ctx) {
+  console.log("[esc17] Credenciales de proveedores");
+  const page = await ctx.newPage();
+  await login(page, ADMIN.email, ADMIN.pass);
+
+  await page.goto(`${BASE}/models`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1500);
+  await page.getByRole("button", { name: /Credenciales/i }).first().click({ timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  await shot(page, "esc17_01_pestana_credenciales", "Pestaña Credenciales: estado de conexión por proveedor, con las claves enmascaradas");
+
+  await page.goto(`${BASE}/profile`, { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "Configuración" }).first().click({ timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  await shot(page, "esc17_02_claves_propias", "Claves propias del usuario en el perfil: nunca se muestran en claro");
+  await page.close();
+}
+
+// ─── Escenario 18: Analítica de aprendizaje ───────────────────────────────
+async function esc18(ctx) {
+  console.log("[esc18] Analítica");
+  const page = await ctx.newPage();
+  await login(page, ADMIN.email, ADMIN.pass);
+  await page.goto(`${BASE}/analytics`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(2500);
+  await shot(page, "esc18_01_panel", "Panel de analítica con las métricas agregadas de la cuenta");
+  await page.close();
+
+  // Control de acceso: la analítica exige permiso; la cuenta sin él es rechazada.
+  const upage = await ctx.newPage();
+  await login(upage, USER.email, USER.pass);
+  await upage.goto(`${BASE}/analytics`, { waitUntil: "domcontentloaded" });
+  await upage.waitForTimeout(2500);
+  await shot(upage, "esc18_02_sin_permiso", "Cuenta sin permiso de analítica: la aplicación deniega el acceso");
+  await upage.close();
+}
+
+
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({
     viewport: { width: 1440, height: 900 },
     acceptDownloads: true,
   });
-  const all = { esc1, esc2, esc3, esc4, esc5, esc6, esc7, esc8, esc9, esc10, esc11, esc12, esc13 };
+  const all = { esc1, esc2, esc3, esc4, esc5, esc6, esc7, esc8, esc9, esc10, esc11, esc12, esc13,
+              esc14, esc15, esc16, esc17, esc18 };
   const only = (process.env.ONLY || "").split(",").map((s) => s.trim()).filter(Boolean);
   const steps = only.length ? only.map((k) => all[k]).filter(Boolean) : Object.values(all);
   for (const step of steps) {
