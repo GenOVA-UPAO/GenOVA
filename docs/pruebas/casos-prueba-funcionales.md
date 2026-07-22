@@ -1,12 +1,13 @@
 # Casos de prueba funcionales — GenOVA
 
-> Plan de pruebas del sprint 3. Pruebas funcionales de caja negra ejecutadas sobre el stack real (frontend Angular en :4200, backend FastAPI en :8000, worker de generación y base de datos Supabase). Cada paso se describe desde el arranque de la aplicación. Las evidencias son las capturas de `docs/assets/caja-negra-completa/` referenciadas en los comentarios de cada caso.
+> Plan de pruebas del sprint 3. Pruebas funcionales de caja negra ejecutadas sobre la **aplicación desplegada** (frontend en https://gen-ova-frontend.vercel.app, backend en Railway y base de datos Supabase). Cada paso se describe desde el arranque: el primero es siempre abrir el navegador e ingresar a la URL de la aplicación. Las evidencias son las capturas de `docs/assets/caja-negra-completa/` referenciadas en los comentarios de cada caso.
 
 | Campo | Valor |
 |---|---|
 | Plan de pruebas | Sprint 3 |
 | Fecha de creación | 18/07/2026 |
 | Última actualización | 22/07/2026 |
+| Entorno de ejecución | https://gen-ova-frontend.vercel.app (producción) |
 | Creado por | Jeffry Anderson Romero Uriol · Juan Diego Carranza Jacinto |
 | Casos de prueba | 31 |
 
@@ -25,7 +26,7 @@
 | 2 | Creación de OVA con validación del formulario de prompt | Creación de OVA | PASE | 2 | Método: partición de equivalencia sobre la longitud del prompt. |
 | 2.1 | Configuración de recursos por fase del modelo 5E | Creación de OVA / Recursos 5E | PASE | 2 | Método: partición de equivalencia sobre el número de fases configuradas. |
 | 2.2 | Generación del OVA en vivo (worker y SSE) | Generación | PASE | 2 | Generación real de extremo a extremo con proveedores LLM activos. |
-| 2.3 | Validación de la combinación fase y tipo de recurso | Generación / API | PASE | 2 | Método: tabla de decisiones fase × tipo de recurso contra el catálogo RECURSOS_META. |
+| 2.3 | Validación de la combinación fase y tipo de recurso | Generación / API | PASE | 2 | Método: tabla de decisiones fase × tipo de recurso contra el catálogo RECURSOS_META. La documentación interactiva (/docs) está deshabilitada en producción, así que la comprobación se hace desde la consola del navegador con la sesión activa. |
 | 2.4 | Carga de archivos base para el contexto (RAG) | RAG / Archivos de contexto | PASE | 3 | Método: partición de equivalencia sobre el tipo de archivo. |
 | 2.5 | Visualización del OVA en el workspace (modelo 5E) | Workspace | PASE | 1 | Evidencia: capturas esc5_01 y esc5_02. |
 | 3 | Edición del OVA mediante el panel de cambios | Workspace / Edición | PASE | 2 | Evidencia: captura esc6_01. |
@@ -60,7 +61,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador e ingresar a la aplicación en http://localhost:4200. La aplicación redirige a la pantalla de inicio de sesión (/login) por no haber sesión activa. | Carga la pantalla «Iniciar sesión» con los campos Email y Contraseña, sin errores en la consola del navegador. | PASE |
+| Paso 1 | Abrir el navegador e ingresar a la aplicación desplegada en https://gen-ova-frontend.vercel.app. La aplicación redirige a la pantalla de inicio de sesión (https://gen-ova-frontend.vercel.app/login) por no haber sesión activa. | Carga la pantalla «Iniciar sesión» con los campos Email y Contraseña, sin errores en la consola del navegador. | PASE |
 | Paso 2 | Pulsar el enlace «Crear cuenta» del pie del formulario para navegar a /register. | Carga el formulario de registro con los campos Nombre completo, Email y Contraseña, y el botón «Crear cuenta». | PASE |
 | Paso 3 | Con los tres campos vacíos, pulsar el botón «Crear cuenta». | No permite el envío: marca los campos como requeridos y la aplicación permanece en /register. | PASE |
 | Paso 4 | Escribir un nombre válido, un email válido y la contraseña «abc» (3 caracteres, sin números). | Rechaza el registro, mantiene el botón «Crear cuenta» deshabilitado y muestra «Mínimo 8 caracteres con letras y números». | PASE |
@@ -84,7 +85,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador e ingresar a http://localhost:4200/login. | Carga la pantalla «Iniciar sesión» con los campos Email y Contraseña y el botón «Entrar». | PASE |
+| Paso 1 | Abrir el navegador e ingresar a https://gen-ova-frontend.vercel.app/login. | Carga la pantalla «Iniciar sesión» con los campos Email y Contraseña y el botón «Entrar». | PASE |
 | Paso 2 | Sin escribir nada, observar el estado del botón «Entrar». | El botón «Entrar» permanece deshabilitado mientras los campos estén vacíos. | PASE |
 | Paso 3 | Escribir «correo-invalido» en el campo Email y salir del campo. | La validación del campo marca el email como inválido y el botón sigue deshabilitado. | PASE |
 | Paso 4 | Escribir el email válido «user@genova.ai» y la contraseña incorrecta «claveErronea1» y pulsar «Entrar». | No autentica: la aplicación muestra «Credenciales inválidas.» (HTTP 401) y permanece en /login. | PASE |
@@ -107,7 +108,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador e ingresar a http://localhost:4200/login. | Carga la pantalla de inicio de sesión. | PASE |
+| Paso 1 | Abrir el navegador e ingresar a https://gen-ova-frontend.vercel.app/login. | Carga la pantalla de inicio de sesión. | PASE |
 | Paso 2 | Escribir el email «user@genova.ai» con una contraseña incorrecta y pulsar «Entrar». | Muestra «Credenciales inválidas.» (HTTP 401) y contabiliza el intento fallido. | PASE |
 | Paso 3 | Repetir el intento fallido con la misma cuenta hasta acumular cuatro intentos. | La aplicación sigue respondiendo «Credenciales inválidas.» sin revelar cuántos intentos quedan. | PASE |
 | Paso 4 | Realizar el quinto intento fallido consecutivo sobre la misma cuenta. | La cuenta queda bloqueada de forma temporal y la aplicación muestra «Cuenta bloqueada. Intenta de nuevo en N minuto(s).» (HTTP 403). | PASE |
@@ -129,7 +130,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador e ingresar a http://localhost:4200/login. | Carga la pantalla de inicio de sesión. | PASE |
+| Paso 1 | Abrir el navegador e ingresar a https://gen-ova-frontend.vercel.app/login. | Carga la pantalla de inicio de sesión. | PASE |
 | Paso 2 | Pulsar el enlace «¿Olvidaste tu contraseña?» para navegar a /forgot-password. | Carga la pantalla de recuperación con el campo Email y el botón de envío. | PASE |
 | Paso 3 | Escribir un correo que NO existe en el sistema (por ejemplo «no-existe@upao.edu.pe») y enviar la solicitud. | Responde con un mensaje genérico de confirmación que no revela si el correo está registrado (protección contra enumeración de cuentas). | PASE |
 | Paso 4 | Repetir el envío con un correo que SÍ existe («user@genova.ai»). | Muestra exactamente el mismo mensaje genérico que en el paso anterior: desde fuera, ambos casos son indistinguibles. | PASE |
@@ -151,7 +152,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse con «user@genova.ai» / «user1234password». | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse con «user@genova.ai» / «user1234password». | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Abrir el menú de usuario de la barra superior y pulsar «Perfil» (o navegar a /profile). | Carga la pantalla de perfil en la pestaña «Información» con los datos de la cuenta: nombre, correo, rol y fecha de alta. | PASE |
 | Paso 3 | Modificar el campo «Nombre completo» por un valor válido distinto y pulsar «Guardar Cambios». | Acepta el cambio, lo persiste en el backend y muestra el aviso de guardado. | PASE |
 | Paso 4 | Recargar la página con F5 y volver a la pestaña «Información». | El nombre actualizado se mantiene tras recargar: el cambio quedó persistido y no solo en memoria. | PASE |
@@ -172,7 +173,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse con una cuenta de prueba creada para este caso. | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse con una cuenta de prueba creada para este caso. | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a /profile y pulsar la pestaña «Seguridad». | Muestra el bloque «Seguridad de la Cuenta» con los campos Contraseña actual, Nueva contraseña y Confirmar nueva contraseña. | PASE |
 | Paso 3 | Escribir una contraseña actual INCORRECTA junto a una nueva contraseña válida y pulsar «Actualizar Contraseña». | El backend rechaza el cambio con HTTP 400 «La contraseña actual ingresada es incorrecta.» y no modifica la contraseña. | PASE |
 | Paso 4 | Escribir la contraseña actual correcta y «abc» como nueva contraseña. | La validación en línea muestra «Debe tener al menos 8 caracteres.» y mantiene deshabilitado el botón «Actualizar Contraseña». | PASE |
@@ -195,8 +196,8 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador e ingresar a http://localhost:4200/reset-password SIN el parámetro token en la URL. | No muestra el formulario: informa de que el enlace no incluye un token válido y ofrece el enlace «Solicitar nuevo enlace». | PASE |
-| Paso 2 | Ingresar ahora a http://localhost:4200/reset-password?token=token-de-prueba-invalido. | Muestra el formulario «Nueva contraseña» con los campos Nueva contraseña y Confirmar contraseña. | PASE |
+| Paso 1 | Abrir el navegador e ingresar a https://gen-ova-frontend.vercel.app/reset-password SIN el parámetro token en la URL. | No muestra el formulario: informa de que el enlace no incluye un token válido y ofrece el enlace «Solicitar nuevo enlace». | PASE |
+| Paso 2 | Ingresar ahora a https://gen-ova-frontend.vercel.app/reset-password?token=token-de-prueba-invalido. | Muestra el formulario «Nueva contraseña» con los campos Nueva contraseña y Confirmar contraseña. | PASE |
 | Paso 3 | Escribir «abc» en ambos campos y salir del campo. | La política de contraseña rechaza el valor y el botón «Guardar contraseña» permanece deshabilitado. | PASE |
 | Paso 4 | Escribir «NuevaClave1234» en Nueva contraseña y «OtraClave5678» en Confirmar contraseña. | Marca el campo de confirmación en rojo y muestra «Las contraseñas no coinciden»; no envía la petición. | PASE |
 | Paso 5 | Corregir la confirmación para que ambas coincidan y pulsar «Guardar contraseña». | El formulario sí envía y es el backend quien rechaza el restablecimiento por token inválido o caducado. | PASE |
@@ -217,8 +218,8 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador e ingresar a http://localhost:4200/verify-email SIN el parámetro token en la URL. | Muestra el estado «No se pudo verificar» con el motivo, sin activar ninguna cuenta. | PASE |
-| Paso 2 | Ingresar a http://localhost:4200/verify-email?token=token-de-prueba-invalido. | La pantalla pasa por el estado «Verificando tu correo…» y termina en «No se pudo verificar»: el backend rechaza el token. | PASE |
+| Paso 1 | Abrir el navegador e ingresar a https://gen-ova-frontend.vercel.app/verify-email SIN el parámetro token en la URL. | Muestra el estado «No se pudo verificar» con el motivo, sin activar ninguna cuenta. | PASE |
+| Paso 2 | Ingresar a https://gen-ova-frontend.vercel.app/verify-email?token=token-de-prueba-invalido. | La pantalla pasa por el estado «Verificando tu correo…» y termina en «No se pudo verificar»: el backend rechaza el token. | PASE |
 | Paso 3 | Comprobar el mensaje mostrado en el caso anterior. | El mensaje no indica si el token existió alguna vez ni a qué cuenta pertenece: no filtra información. | PASE |
 | Paso 4 | Pulsar la acción de volver al inicio de sesión que ofrece la pantalla. | Navega a /login sin haber alterado el estado de ninguna cuenta. | PASE |
 
@@ -240,7 +241,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse con «user@genova.ai» / «user1234password». | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse con «user@genova.ai» / «user1234password». | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Pulsar «Crear OVA» en la barra superior o en el menú lateral para navegar a /crear. | Carga la pantalla «Crear nuevo OVA» con el área de texto del prompt, la sección de recursos por fase y el botón «Generar OVA». | PASE |
 | Paso 3 | Observar el botón «Generar OVA» con el prompt vacío. | El botón permanece deshabilitado y la ayuda indica «Faltan N caracteres para generar». | PASE |
 | Paso 4 | Escribir un prompt corto (menos del mínimo exigido) en el área de texto. | El botón sigue deshabilitado y el contador de caracteres que faltan se actualiza. | PASE |
@@ -263,7 +264,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse y navegar a /crear. | Carga la pantalla «Crear nuevo OVA» con el prompt vacío. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse y navegar a /crear. | Carga la pantalla «Crear nuevo OVA» con el prompt vacío. | PASE |
 | Paso 2 | Escribir un prompt válido en el área de texto. | El botón «Generar OVA» se habilita. | PASE |
 | Paso 3 | Pulsar «Configurar recursos» para abrir el modal de configuración por fase. | Muestra el modal con las cinco fases del modelo 5E: Engage, Explore, Explain, Elaborate y Evaluate. | PASE |
 | Paso 4 | Seleccionar una fase, por ejemplo Engage, y revisar los tipos de recurso disponibles. | Lista los tipos de recurso admitidos por esa fase (por ejemplo «Cómic Interactivo») con su vista previa. | PASE |
@@ -286,7 +287,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse y navegar a /crear. | Carga la pantalla de creación. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse y navegar a /crear. | Carga la pantalla de creación. | PASE |
 | Paso 2 | Escribir un prompt válido, configurar recursos en al menos dos fases y pulsar «Generar OVA». | La aplicación encola el trabajo (HTTP 202) y navega al workspace del OVA en generación. | PASE |
 | Paso 3 | Observar el panel de progreso mientras el worker procesa el trabajo. | Muestra el estado «Generando…» con el aviso «Los recursos aparecerán aquí a medida que se generen» y el progreso en vivo por SSE. | PASE |
 | Paso 4 | Esperar a que termine la generación sin recargar la página. | Los recursos aparecen conforme se completan, sin necesidad de refrescar: la conexión SSE actualiza la vista. | PASE |
@@ -308,15 +309,15 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse para obtener la cookie de sesión. | Autentica y emite la cookie httpOnly genova_token. | PASE |
-| Paso 2 | Abrir la documentación interactiva del backend en http://localhost:8000/docs y desplegar «Generación → POST /api/jobs». | Muestra la ficha del endpoint con su esquema de petición. | PASE |
-| Paso 3 | Pulsar «Try it out» y enviar un cuerpo con una combinación inválida: recurso «Lectura Interactiva» dentro de la fase «engage». | El backend responde HTTP 422 con «Recurso no válido para la fase 'engage'.» y NO encola el trabajo. | PASE |
-| Paso 4 | Repetir el envío con la combinación válida: «Lectura Interactiva» en la fase «explore». | El backend responde HTTP 202 y encola el trabajo con normalidad. | PASE |
-| Paso 5 | Consultar el estado del trabajo encolado en GET /api/jobs/{job_id}. | El trabajo progresa sin errores: la validación previa evita que el worker caiga con una combinación imposible. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse con «user@genova.ai» / «user1234password». | Autentica y el backend emite la cookie httpOnly genova_token para el dominio de la API. | PASE |
+| Paso 2 | Abrir las herramientas de desarrollo del navegador (F12) y situarse en la pestaña Consola, sin salir del dominio de la aplicación. | La consola queda lista para lanzar peticiones con la sesión ya iniciada. | PASE |
+| Paso 3 | Enviar una petición a POST /api/jobs de la API desplegada con una combinación inválida: el recurso «Lectura Interactiva» dentro de la fase «engage». | El backend responde HTTP 422 con «Recurso no válido para la fase 'engage'.» y NO encola el trabajo. | PASE |
+| Paso 4 | Repetir la petición con la combinación válida: «Lectura Interactiva» en la fase «explore». | El backend responde HTTP 202 y encola el trabajo con normalidad, devolviendo su identificador. | PASE |
+| Paso 5 | Consultar el estado de ese trabajo en GET /api/jobs/{job_id} con el identificador devuelto. | El trabajo progresa sin errores: la validación previa evita que el worker caiga con una combinación imposible. | PASE |
 
 **Problemas encontrados:** Se detectó y corrigió que la combinación inválida se aceptaba con HTTP 202 y el worker fallaba después dejando el trabajo interrumpido.
 
-**Otros comentarios:** Método: tabla de decisiones fase × tipo de recurso contra el catálogo RECURSOS_META.
+**Otros comentarios:** Método: tabla de decisiones fase × tipo de recurso contra el catálogo RECURSOS_META. La documentación interactiva (/docs) está deshabilitada en producción, así que la comprobación se hace desde la consola del navegador con la sesión activa.
 
 ### Caso de prueba 2.4 — Carga de archivos base para el contexto (RAG)
 
@@ -330,7 +331,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse y navegar a /crear. | Carga la pantalla de creación. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse y navegar a /crear. | Carga la pantalla de creación. | PASE |
 | Paso 2 | Desplegar la sección de archivos de referencia del formulario. | Muestra la zona de carga con los formatos admitidos (PDF, DOCX, PPTX, MP3, WAV, M4A, JPG, PNG y WEBP) y el límite de 5 archivos. | PASE |
 | Paso 3 | Adjuntar un archivo de un tipo aceptado, por ejemplo una imagen .png. | Acepta el archivo y muestra su chip con el nombre, el tamaño y el estado de subida (1 de 5). | PASE |
 | Paso 4 | Comprobar el indicador de indexado del archivo adjuntado. | El archivo queda subido e indexado para RAG y disponible como contexto de la generación. | PASE |
@@ -352,7 +353,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse. | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse. | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a «Mis OVAs» y localizar un OVA en estado «Listo». | La biblioteca muestra las tarjetas de los OVAs con su estado. | PASE |
 | Paso 3 | Pulsar «Editar» en la tarjeta para abrir el workspace del OVA. | Carga el workspace con el título del OVA, la versión (v1) y las pestañas de recurso. | PASE |
 | Paso 4 | Recorrer las pestañas de recurso generadas, por ejemplo «Cómic Interactivo» y «Preguntas de Desarrollo». | Cada recurso se renderiza con su contenido real: título, narrativa y las ilustraciones generadas. | PASE |
@@ -376,7 +377,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse y abrir un OVA «Listo» desde «Mis OVAs». | Carga el workspace del OVA con sus recursos. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse y abrir un OVA «Listo» desde «Mis OVAs». | Carga el workspace del OVA con sus recursos. | PASE |
 | Paso 2 | Abrir el panel de edición lateral del workspace. | Muestra el panel con el área de instrucciones y las acciones «Regenerar» y «Seleccionar recursos». | PASE |
 | Paso 3 | Pulsar «Seleccionar recursos» y marcar uno de los recursos como contexto del cambio. | El panel refleja el recurso seleccionado y lo usa como alcance de la instrucción. | PASE |
 | Paso 4 | Escribir una instrucción de cambio, por ejemplo «Añade un ejemplo aplicado al final», y revisar el botón «Aplicar». | El panel queda listo para aplicar el cambio con la instrucción escrita y el recurso seleccionado. | PASE |
@@ -397,7 +398,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse. | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse. | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a «Mis OVAs» y localizar un OVA en estado «Listo». | La tarjeta del OVA muestra el botón «Descargar» habilitado. | PASE |
 | Paso 3 | Pulsar «Descargar» en la tarjeta del OVA. | La aplicación genera el paquete y el navegador descarga un archivo .zip. | PASE |
 | Paso 4 | Abrir el .zip descargado y revisar su contenido. | Contiene imsmanifest.xml, index.html, cmi5.xml y los recursos HTML por fase (resources/recurso_1.html, resources/recurso_2.html): 9 archivos en total. | PASE |
@@ -418,7 +419,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse. | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse. | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a «Mis OVAs» desde el menú lateral. | Muestra la biblioteca con las tarjetas de los OVAs del usuario y el contador total. | PASE |
 | Paso 3 | Escribir en el buscador una palabra contenida en el título de un OVA existente. | El listado se filtra y deja visibles solo las tarjetas cuyo título coincide. | PASE |
 | Paso 4 | Borrar el texto del buscador. | Se restablece el listado completo de la biblioteca. | PASE |
@@ -439,7 +440,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse y navegar a «Mis OVAs». | Muestra la biblioteca y su contador (10 OVAs en la corrida documentada). | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse y navegar a «Mis OVAs». | Muestra la biblioteca y su contador (10 OVAs en la corrida documentada). | PASE |
 | Paso 2 | Abrir el menú de acciones de la tarjeta de un OVA y pulsar «Duplicar». | La aplicación crea una copia del OVA con el sufijo «(copia)». | PASE |
 | Paso 3 | Comprobar el contador de la biblioteca y la nueva tarjeta. | El total aumenta de 10 a 11 y la copia aparece en el listado (el título se trunca visualmente en la tarjeta, pero el sufijo se conserva en el dato). | PASE |
 | Paso 4 | Abrir la copia para comprobar su contenido. | La copia conserva las fases y los recursos del OVA original. | PASE |
@@ -460,7 +461,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse y navegar a «Mis OVAs». | Muestra la biblioteca con la copia creada en el caso 3.3. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse y navegar a «Mis OVAs». | Muestra la biblioteca con la copia creada en el caso 3.3. | PASE |
 | Paso 2 | Abrir el menú de acciones de la copia y pulsar «Eliminar». | Muestra el diálogo de confirmación explicando que el OVA se moverá a la papelera. | PASE |
 | Paso 3 | Confirmar la acción con el botón «Mover». | La copia desaparece de «Mis OVAs» y el contador de la biblioteca se reduce. | PASE |
 | Paso 4 | Navegar a «Papelera» en el menú lateral. | La copia aparece en la papelera con estado «Borrador» y su fecha de eliminación («1 OVA en papelera»): el borrado es lógico, no definitivo. | PASE |
@@ -481,7 +482,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse y navegar a «Papelera». | Muestra la copia enviada a la papelera en el caso 3.4. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse y navegar a «Papelera». | Muestra la copia enviada a la papelera en el caso 3.4. | PASE |
 | Paso 2 | Pulsar «Restaurar» en la tarjeta de la copia. | La copia sale de la papelera y vuelve a aparecer en «Mis OVAs». | PASE |
 | Paso 3 | Volver a enviarla a la papelera y, ya en /papelera, pulsar «Eliminar definitivamente». | Muestra el diálogo de confirmación advirtiendo de que la acción es irreversible. | PASE |
 | Paso 4 | Confirmar el borrado definitivo. | La copia desaparece de la papelera y de la biblioteca: se elimina el registro y su paquete SCORM asociado. | PASE |
@@ -504,7 +505,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse con «admin@genova.ai» / «admin1234password». | Autentica como administrador y redirige al dashboard, con la sección «Administración» visible en el menú lateral. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse con «admin@genova.ai» / «admin1234password». | Autentica como administrador y redirige al dashboard, con la sección «Administración» visible en el menú lateral. | PASE |
 | Paso 2 | Pulsar «Administración → Usuarios» para navegar a /admin. | Carga el panel con la tabla de usuarios paginada y el contador total (419 usuarios en la corrida documentada). | PASE |
 | Paso 3 | Escribir un correo parcial en el buscador de la tabla. | La tabla filtra y muestra solo los usuarios cuyo correo coincide. | PASE |
 | Paso 4 | Abrir el selector de rol de un usuario de la lista. | Ofrece los roles disponibles del sistema para reasignar al usuario. | PASE |
@@ -526,7 +527,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse como administrador. | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse como administrador. | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a «Administración → Roles» (/admin/roles). | Muestra la lista de roles del sistema: administrador, profesor, estudiante, usuario y usuarios_prueba. | PASE |
 | Paso 3 | Abrir el detalle de un rol del sistema. | Muestra los permisos asociados a ese rol. | PASE |
 | Paso 4 | Intentar editar un rol del sistema. | Los roles del sistema no son editables: la interfaz no ofrece la acción de edición para ellos. | PASE |
@@ -547,7 +548,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse como administrador y navegar a /admin/roles. | Muestra la lista de roles. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse como administrador y navegar a /admin/roles. | Muestra la lista de roles. | PASE |
 | Paso 2 | Pulsar «Crear rol». | Abre el modal «Crear nuevo rol» con los campos Nombre y Descripción y la lista de permisos (Crear, Ver y Exportar OVAs, entre otros). | PASE |
 | Paso 3 | Enviar el formulario con el campo Nombre vacío. | No crea el rol: la validación exige el nombre. | PASE |
 | Paso 4 | Escribir el nombre de un rol que ya existe y enviar. | El backend rechaza la creación por nombre duplicado. | PASE |
@@ -569,7 +570,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse con la cuenta SIN rol administrador «user@genova.ai». | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse con la cuenta SIN rol administrador «user@genova.ai». | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Revisar el menú lateral de la aplicación. | No aparece la sección «Administración»: la navegación no expone opciones que la cuenta no puede usar. | PASE |
 | Paso 3 | Escribir directamente la URL /admin en la barra de direcciones y pulsar Entrar. | El adminGuard bloquea el acceso y redirige la navegación al Dashboard, sin renderizar el panel. | PASE |
 | Paso 4 | Repetir la prueba con la ruta /admin/roles. | El resultado es el mismo: redirección al Dashboard sin exponer datos de administración. | PASE |
@@ -590,7 +591,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse como administrador. | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse como administrador. | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a «Modelos» (/models) desde el menú lateral. | Carga la pantalla de modelos con la franja de estado y las pestañas Modelos, Credenciales y Plataforma. | PASE |
 | Paso 3 | Revisar el indicador de proveedores conectados de la franja de estado. | Muestra «Proveedores conectados 4/4» y los modelos marcados como favoritos. | PASE |
 | Paso 4 | Abrir el catálogo completo con «Abrir catálogo» y aplicar un filtro por modalidad. | El catálogo filtra los modelos por la modalidad elegida (texto, imagen, audio, vídeo o embedding). | PASE |
@@ -611,7 +612,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse como administrador y navegar a /models. | Carga la pantalla de modelos en la pestaña «Modelos». | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse como administrador y navegar a /models. | Carga la pantalla de modelos en la pestaña «Modelos». | PASE |
 | Paso 2 | Revisar la tarea «Texto» en la lista de tareas. | Muestra el modelo primario asignado (por ejemplo «DeepSeek V4 Flash») y su cadena de respaldo (Qwen3 → Meta Llama 3.3 → llama-3.1-8b). | PASE |
 | Paso 3 | Pulsar «Editar cadena» en esa tarea. | Solo entonces se despliega la fila de configuración avanzada con los modelos de la cadena. | PASE |
 | Paso 4 | Modificar el orden de la cadena de respaldo. | La barra de guardado aparece indicando que hay cambios sin guardar. | PASE |
@@ -633,7 +634,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse como administrador. | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse como administrador. | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a /models y pulsar la pestaña «Credenciales». | Muestra el estado de conexión por proveedor (Groq, OpenRouter, Gemini y demás) con sus claves enmascaradas. | PASE |
 | Paso 3 | Comprobar si alguna clave se muestra en claro en pantalla. | Ninguna clave se muestra completa: solo el estado de conexión y una versión enmascarada. | PASE |
 | Paso 4 | Navegar a /profile y abrir la pestaña «Configuración». | Muestra la tarjeta de claves propias del usuario, también enmascaradas. | PASE |
@@ -655,7 +656,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse con una cuenta con permiso de analítica (administrador). | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse con una cuenta con permiso de analítica (administrador). | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a /analytics. | Carga la pantalla «Analítica de aprendizaje» con las métricas agregadas de la cuenta. | PASE |
 | Paso 3 | Revisar las métricas mostradas en el panel. | Presenta los indicadores agregados de uso, sin exponer datos de otras cuentas. | PASE |
 | Paso 4 | Cerrar sesión e iniciar sesión con la cuenta «user@genova.ai», que no tiene el permiso. | Autentica y redirige al dashboard. | PASE |
@@ -679,7 +680,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y abrir las herramientas de desarrollo en la pestaña de red. | Carga la pantalla de inicio de sesión con el panel de red registrando las peticiones. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y abrir las herramientas de desarrollo en la pestaña de red. | Carga la pantalla de inicio de sesión con el panel de red registrando las peticiones. | PASE |
 | Paso 2 | Autenticarse con «user@genova.ai» / «user1234password» y localizar la respuesta de POST /api/auth/login. | La respuesta incluye la cabecera Set-Cookie con genova_token y los atributos HttpOnly, Secure y SameSite. | PASE |
 | Paso 3 | Abrir la consola del navegador y ejecutar document.cookie. | El token no aparece: al ser httpOnly, el JavaScript de la página no puede leerlo (protección frente a XSS). | PASE |
 | Paso 4 | Navegar a una ruta protegida como /mis-ovas y revisar la petición en el panel de red. | La cookie viaja automáticamente en la petición y el backend responde 200: la sesión se mantiene sin guardar el token en localStorage. | PASE |
@@ -701,7 +702,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login, autenticarse y descargar el paquete de un OVA «Listo» desde «Mis OVAs». | El navegador descarga el archivo .zip del paquete SCORM. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login, autenticarse y descargar el paquete de un OVA «Listo» desde «Mis OVAs». | El navegador descarga el archivo .zip del paquete SCORM. | PASE |
 | Paso 2 | Descomprimir el .zip y listar su contenido. | Contiene imsmanifest.xml, index.html, cmi5.xml y la carpeta resources con un HTML por recurso: 9 archivos en total. | PASE |
 | Paso 3 | Abrir imsmanifest.xml y comprobar que cada recurso declarado existe en el paquete. | Todas las referencias del manifiesto apuntan a archivos presentes: no hay recursos declarados que falten. | PASE |
 | Paso 4 | Abrir index.html en el navegador. | El paquete se abre y navega entre los recursos de las fases sin errores. | PASE |
@@ -722,7 +723,7 @@
 
 | Workflow | Datos | Resultado esperado | Resultado de la prueba |
 |---|---|---|:--:|
-| Paso 1 | Abrir el navegador, ingresar a http://localhost:4200/login y autenticarse con «user@genova.ai» / «user1234password». | Autentica y redirige al dashboard. | PASE |
+| Paso 1 | Abrir el navegador, ingresar a https://gen-ova-frontend.vercel.app/login y autenticarse con «user@genova.ai» / «user1234password». | Autentica y redirige al dashboard. | PASE |
 | Paso 2 | Navegar a /profile y pulsar la pestaña «Seguridad». | Muestra la tarjeta «Autenticación en 2 pasos (2FA)» con el segundo factor desactivado y el botón «Activar 2FA». | PASE |
 | Paso 3 | Pulsar «Activar 2FA». | La tarjeta pasa al paso «Configura tu autenticador» y muestra la URI de aprovisionamiento, la clave secreta y ocho códigos de respaldo de un solo uso. | PASE |
 | Paso 4 | Escribir «000» (tres dígitos) en el campo «Código de verificación». | La validación exige seis dígitos y no permite confirmar la activación. | PASE |
