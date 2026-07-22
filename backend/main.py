@@ -21,6 +21,7 @@ from core.config import settings
 from core.database import Base, engine
 from core.http_middleware import ProcessTimeMiddleware, SecurityHeadersMiddleware
 from core.logging_setup import RequestContextMiddleware, configure_logging
+from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
@@ -39,6 +40,7 @@ from run_migrations import run_migrations
 from scorm.router import router as scorm_router
 from seed import seed_db
 from uploads.router import router as uploads_router
+from users.admin.list_router import router as users_list_router
 from users.admin.nodes_config_router import router as nodes_config_router
 from users.admin.platform_settings_router import router as platform_settings_router
 from users.router import router as users_router
@@ -135,6 +137,7 @@ app = FastAPI(
         "`genova_token` que devuelve `POST /api/auth/login`."
     ),
     openapi_tags=OPENAPI_TAGS,
+    generate_unique_id_function=generate_operation_id,
     lifespan=lifespan,
     docs_url=None if _IS_PROD else "/docs",
     redoc_url=None if _IS_PROD else "/redoc",
@@ -243,9 +246,9 @@ app.include_router(auth_router, prefix="/api/auth")
 app.include_router(rag_router, prefix="/api/rag")
 app.include_router(roles_router, prefix="/api/roles")
 app.include_router(scorm_router, prefix="/api/scorm")
-app.include_router(ova_router, prefix="/api/ova")
-app.include_router(ova_jobs_router, prefix="/api/ova/jobs")
-app.include_router(ova_jobs_stream_router, prefix="/api/ova/jobs")
+app.include_router(ova_router, prefix="/api/ovas")
+app.include_router(ova_jobs_router, prefix="/api/jobs")
+app.include_router(ova_jobs_stream_router, prefix="/api/jobs")
 app.include_router(ova_history_router, prefix="/api/ovas")
 app.include_router(ova_edit_router, prefix="/api/ovas")
 # Chat también montado aquí: include anidado en edit_router a veces no aparece
@@ -255,6 +258,16 @@ app.include_router(ova_phase_version_router, prefix="/api/ovas")
 app.include_router(ova_add_phase_router, prefix="/api/ovas")
 app.include_router(ova_subelement_router, prefix="/api/ovas")
 app.include_router(users_router, prefix="/api/users")
+# La colección `/api/users` se monta aquí porque su ruta es "" y FastAPI no
+# admite prefijo y ruta vacíos en un include anidado.
+app.include_router(users_list_router, prefix="/api/users")
 app.include_router(uploads_router, prefix="/api/uploads")
 app.include_router(platform_settings_router, prefix="/api/admin")
 app.include_router(nodes_config_router, prefix="/api/admin")
+
+# Alias heredados: el recurso vivía en /api/ova (singular) y los trabajos colgaban
+# de /api/ova/jobs. Se mantienen fuera del esquema para no romper clientes ya
+# desplegados; se retiran cuando ninguno los use.
+app.include_router(ova_router, prefix="/api/ova", include_in_schema=False)
+app.include_router(ova_jobs_router, prefix="/api/ova/jobs", include_in_schema=False)
+app.include_router(ova_jobs_stream_router, prefix="/api/ova/jobs", include_in_schema=False)

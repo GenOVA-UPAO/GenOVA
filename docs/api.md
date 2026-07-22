@@ -11,9 +11,10 @@ la base definida en `frontend/src/core/lib/http.ts` (dev: proxy de `ng serve` ha
 - `user` requiere sesión (`Depends(get_current_user)`)
 - `admin` requiere rol administrador (`Depends(require_admin)`)
 
-> Los routers de **auth**, **roles** y **users** están montados por duplicado: bajo
-> `/api/...` (canónico) y sin el prefijo `/api` (`/auth`, `/roles`, `/users`) por
-> compatibilidad. Abajo se listan solo las rutas canónicas `/api/*`.
+> **Alias heredados**: el recurso OVA vivía en `/api/ova` (singular) y los trabajos
+> de generación colgaban de `/api/ova/jobs`. Ambos siguen respondiendo pero están
+> fuera del esquema OpenAPI y se retirarán; las rutas canónicas son `/api/ovas`
+> y `/api/jobs`.
 
 ---
 
@@ -27,7 +28,7 @@ la base definida en `frontend/src/core/lib/http.ts` (dev: proxy de `ng serve` ha
 | GET | `/api/agents/health` | Salud del módulo agents/5E | — | — |
 | GET | `/api/rag/health` | Salud RAG (embedder, dim vector, pgvector listo) | — | — |
 | GET | `/api/scorm/health` | Salud del módulo SCORM | — | — |
-| GET | `/api/ova/health` | Salud del módulo OVA | — | — |
+| GET | `/api/ovas/health` | Salud del módulo OVA | — | — |
 | GET | `/api/uploads/health` | Salud del módulo uploads | — | — |
 
 ## Auth (`/api/auth`)
@@ -40,13 +41,25 @@ la base definida en `frontend/src/core/lib/http.ts` (dev: proxy de `ng serve` ha
 | GET | `/api/auth/me` | Perfil + rol del usuario actual | user | — |
 | POST | `/api/auth/reset-password` | Solicita correo de restablecimiento | — | 10/min |
 
-## OVA — generación y descarga (`/api/ova`)
+## OVA — generación y descarga (`/api/ovas`)
 
 | Método | Ruta | Propósito | Auth | Rate-limit |
 |---|---|---|---|---|
-| GET | `/api/ova/llm-options` | Modelos LLM habilitados para el selector | — | — |
-| POST | `/api/ova/save` | Guarda OVA generada (crea versión, fases, zip SCORM) | user | — |
-| GET | `/api/ova/{ova_id}/scorm` | Descarga el zip SCORM (endpoint legacy) | user | — |
+| GET | `/api/ovas/llm-options` | Modelos LLM habilitados para el selector (deprecado) | user | — |
+| POST | `/api/ovas/save` | Guarda OVA generada (crea versión, fases, zip SCORM) | user | — |
+| GET | `/api/ovas/{ova_id}/scorm` | Descarga el zip SCORM (endpoint legacy) | user | — |
+
+## Generación — trabajos (`/api/jobs`)
+
+| Método | Ruta | Propósito | Auth | Rate-limit |
+|---|---|---|---|---|
+| POST | `/api/jobs` | Encola un trabajo de generación de OVA | user | sí |
+| GET | `/api/jobs` | Busca un trabajo por criterios (`ova_id`, …) | user | — |
+| GET | `/api/jobs/{job_id}` | Estado del trabajo | user | — |
+| GET | `/api/jobs/{job_id}/stream` | Progreso por SSE | user | — |
+| GET | `/api/jobs/{job_id}/resources/{resource_id}/content` | Contenido de un recurso generado | user | — |
+| POST | `/api/jobs/{job_id}/cancel` | Cancela el trabajo | user | — |
+| POST | `/api/jobs/{job_id}/resume` | Reanuda un trabajo interrumpido | user | — |
 
 ## OVA — listado y papelera (`/api/ovas`)
 

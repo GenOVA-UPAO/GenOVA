@@ -46,7 +46,7 @@ export class OvaJobSyncRunner {
   private startSse(jobId: string) {
     this.sseCtrl = new AbortController();
 
-    fetchEventSource(`${API_BASE}/api/ova/jobs/${jobId}/stream`, {
+    fetchEventSource(`${API_BASE}/api/jobs/${jobId}/stream`, {
       credentials: "include",
       headers: { "X-Requested-With": "XMLHttpRequest" },
       signal: this.sseCtrl.signal,

@@ -26,11 +26,16 @@ def ova_health() -> dict[str, str]:
     return {"module": "ova", "status": "ok"}
 
 
-@router.get("/llm-options", tags=["OVA · CRUD"], summary="Listar los modelos LLM disponibles")
-def list_llm_options() -> dict[str, list[dict]]:
+@router.get(
+    "/llm-options",
+    tags=["OVA · CRUD"],
+    summary="Listar los modelos LLM disponibles",
+    deprecated=True,
+)
+def list_llm_options(_: User = Depends(get_current_user)) -> dict[str, list[dict]]:
     """Deprecated: use GET /api/users/me/llm-settings for the catalog filtered
     by user-enabled models. This endpoint remains for backward compat; new code
-    should not use it."""
+    should not use it. Auth is required so the model catalog is not public."""
     return {"items": _enabled_llm_options()}
 
 

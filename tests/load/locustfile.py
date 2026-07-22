@@ -14,7 +14,7 @@ Uso local (backend en :8000 con RATE_LIMIT_ENABLED=0 y LLM_FAKE=1):
 
 Variables de entorno:
     EMAIL / PASS      — cuenta seed para el flujo autenticado (default user@genova.ai)
-    LOAD_GENERATION   — 0 desactiva el task de POST /api/ova/jobs (default 1).
+    LOAD_GENERATION   — 0 desactiva el task de POST /api/jobs (default 1).
                         NUNCA activarlo contra un backend sin LLM_FAKE=1: cada
                         request encola una generación LLM real.
 """
@@ -100,7 +100,7 @@ class GenovaUser(HttpUser):
             """Mide SOLO el encolado (202): el job corre en background con LLM_FAKE."""
             uid = uuid.uuid4().hex[:8]
             with self.client.post(
-                "/api/ova/jobs",
+                "/api/jobs",
                 json={
                     "prompt": f"OVA de carga {uid}: tema de prueba de capacidad.",
                     "resources": [
@@ -108,7 +108,7 @@ class GenovaUser(HttpUser):
                         {"phase_type": "explore", "resource_type": "Lectura Interactiva"},
                     ],
                 },
-                name="POST /api/ova/jobs (encolado LLM)",
+                name="POST /api/jobs (encolado LLM)",
                 catch_response=True,
             ) as resp:
                 if resp.status_code == 202:

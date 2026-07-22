@@ -20,15 +20,34 @@
 | H9 administración repartida | Corregido |
 | H10 nomenclatura inconsistente | Corregido |
 | H11 sin `openapi_tags` | Corregido |
-| H12 `/api/ova` vs `/api/ovas` | Pendiente (rompe el frontend) |
+| H12 `/api/ova` vs `/api/ovas` | Corregido (con alias heredado) |
 | H13 summaries en inglés | Corregido (120 `summary=` en español) |
 | H14 securityScheme irreal | Corregido (`APIKeyCookie` declarado) |
-| H15 menores | Pendiente |
+| H15 menores | Corregido |
 
 Resultado: **18 grupos, 120 operaciones, 0 duplicadas, 0 sin tag**, orden y
 descripciones declaradas en `backend/core/openapi_tags.py`.
 Verificado con `ruff check` limpio y `pytest tests/step_defs/` (51 passed); el
 conjunto de rutas del OpenAPI es idéntico al de antes del cambio.
+
+### Segunda tanda (H12 + H15)
+
+- **H12**: el recurso pasa a ser plural y los trabajos dejan de colgar de él.
+  `/api/ova/health|llm-options|save|{id}/scorm` → `/api/ovas/...`;
+  `/api/ova/jobs/*` → `/api/jobs/*`. Los prefijos viejos siguen montados con
+  `include_in_schema=False` para no romper clientes desplegados; se retiran
+  cuando nadie los use. Actualizados los 7 puntos de llamada del frontend, los
+  arneses de `tests/` (capturas, e2e, JMeter, Locust), `backend/scripts/ova_e2e`
+  y `docs/api.md`.
+- **H15.1**: `GET /api/users/` → `GET /api/users`. `list_router` se monta ahora
+  desde `main.py` porque FastAPI rechaza prefijo y ruta vacíos en un include
+  anidado.
+- **H15.2**: `/api/ovas/llm-options` deja de ser público (`Depends(get_current_user)`)
+  y se marca `deprecated=True`; ya no expone el catálogo de modelos sin sesión.
+- **H15.3**: `operationId` legibles vía `generate_unique_id_function`
+  (`core/openapi_ids.py`): `<tag>_<función>`, p. ej. `health_db_health` en vez de
+  `db_health_api_db_health_get`. Las 5 funciones `list_recursos` de las fases 5E
+  se renombraron (`list_engage_recursos`, …) porque compartían tag y colisionaban.
 
 Desviaciones respecto de la propuesta original:
 - `POST /api/ovas/{id}/regenerar` y su `progress` quedaron en `Generación`

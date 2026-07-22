@@ -60,7 +60,7 @@ def run_flow(
         "theme": theme,
         "upload_ids": upload_ids,
     }
-    started = client.post("/api/ova/jobs", body)
+    started = client.post("/api/jobs", body)
     job_id = started["job_id"]
     log_cb(f"[job] {job_id[:8]}.. {started.get('status')} → POST ok")
 
@@ -68,7 +68,7 @@ def run_flow(
     res = FlowResult()
     job: dict = {}
     while True:
-        job = client.get(f"/api/ova/jobs/{job_id}")
+        job = client.get(f"/api/jobs/{job_id}")
         elapsed = time.monotonic() - t0
         log_cb(f"[poll] {job['status']:<11} {_counts(job.get('resources', []))}  ({elapsed:.0f}s)")
         if job["status"] in _TERMINAL:
@@ -93,7 +93,7 @@ def _collect_artifacts(client: ApiClient, res: FlowResult, log_cb) -> None:
     except Exception as exc:  # noqa: BLE001 — 409/404 si no materializó
         log_cb(f"[ova] editar no disponible: {exc}")
     try:
-        res.scorm_bytes = client.download(f"/api/ova/{res.ova_id}/scorm")
+        res.scorm_bytes = client.download(f"/api/ovas/{res.ova_id}/scorm")
         log_cb(f"[scorm] descargado {len(res.scorm_bytes) / 1024:.0f} KB ok")
     except Exception as exc:  # noqa: BLE001 — sin SCORM si 0 recursos done
         res.scorm_error = str(exc)

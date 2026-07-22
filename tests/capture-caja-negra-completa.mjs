@@ -169,7 +169,7 @@ async function esc4(ctx) {
   await page.keyboard.press("Escape").catch(() => {});
   await page.waitForTimeout(400);
   // Generación REAL mínima vía API (1 recurso) para acotar créditos/tiempo.
-  const res = await page.request.post(`${BASE}/api/ova/jobs`, {
+  const res = await page.request.post(`${BASE}/api/jobs`, {
     data: {
       prompt,
       resources: [
@@ -193,7 +193,7 @@ async function esc4(ctx) {
   let ovaId = null;
   const deadline = Date.now() + 480000;
   for (;;) {
-    const poll = await page.request.get(`${BASE}/api/ova/jobs/${job_id}`);
+    const poll = await page.request.get(`${BASE}/api/jobs/${job_id}`);
     if (poll.ok()) {
       const j = await poll.json();
       if (j.status === "done") { ovaId = j.ova_id; break; }

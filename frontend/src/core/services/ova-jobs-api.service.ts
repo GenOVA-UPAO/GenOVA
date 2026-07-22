@@ -9,27 +9,27 @@ import { apiJson } from "../lib/http";
 @Injectable({ providedIn: "root" })
 export class OvaJobsApiService {
   getJobStatus(jobId: string): Promise<unknown> {
-    return apiJson(`/api/ova/jobs/${jobId}`);
+    return apiJson(`/api/jobs/${jobId}`);
   }
 
   getJobByOvaId(ovaId: string): Promise<unknown> {
-    return apiJson(`/api/ova/jobs?ova_id=${ovaId}`);
+    return apiJson(`/api/jobs?ova_id=${ovaId}`);
   }
 
   getResourceContent(jobId: string, resourceId: string): Promise<unknown> {
-    return apiJson(`/api/ova/jobs/${jobId}/resources/${resourceId}/content`);
+    return apiJson(`/api/jobs/${jobId}/resources/${resourceId}/content`);
   }
 
   resumeJob(jobId: string, resourceIds?: string[]): Promise<unknown> {
     const body = resourceIds && resourceIds.length > 0 ? { resource_ids: resourceIds } : {};
-    return apiJson(`/api/ova/jobs/${jobId}/resume`, {
+    return apiJson(`/api/jobs/${jobId}/resume`, {
       method: "POST",
       body: JSON.stringify(body),
     });
   }
 
   cancelJob(jobId: string): Promise<{ job_id: string; status: string }> {
-    return apiJson<{ job_id: string; status: string }>(`/api/ova/jobs/${jobId}/cancel`, {
+    return apiJson<{ job_id: string; status: string }>(`/api/jobs/${jobId}/cancel`, {
       method: "POST",
     });
   }

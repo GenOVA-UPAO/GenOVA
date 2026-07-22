@@ -148,8 +148,8 @@
           <stringProp name="HTTPSampler.method">POST</stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <!-- 5) POST /api/ova/jobs (encolado LLM) — desactivado por defecto -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/ova/jobs (encolado LLM)" enabled="${__P(loadGeneration,false)}">
+        <!-- 5) POST /api/jobs (encolado LLM) — desactivado por defecto -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/jobs (encolado LLM)" enabled="${__P(loadGeneration,false)}">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
@@ -160,7 +160,7 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.path">/api/ova/jobs</stringProp>
+          <stringProp name="HTTPSampler.path">/api/jobs</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
         </HTTPSamplerProxy>
         <hashTree/>

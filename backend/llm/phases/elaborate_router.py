@@ -34,7 +34,7 @@ def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
 
 
 @router.get("/recursos", summary="Listar los recursos de la fase Elaborate")
-def list_recursos():
+def list_elaborate_recursos():
     return {
         "fase": "ELABORATE",
         "recursos": [{"id": k, **v} for k, v in RECURSOS_META.items()],

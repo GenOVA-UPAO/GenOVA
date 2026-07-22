@@ -19,7 +19,7 @@ export function state(page) {
  */
 export async function seedOvaViaApi(page) {
   const title = `OVA e2e ${uniqueId()}`
-  const res = await page.request.post('/api/ova/jobs', {
+  const res = await page.request.post('/api/jobs', {
     data: {
       prompt: title,
       resources: [
@@ -29,13 +29,13 @@ export async function seedOvaViaApi(page) {
     },
   })
   if (res.status() !== 202) {
-    throw new Error(`Seed OVA falló: POST /api/ova/jobs → ${res.status()} ${await res.text()}`)
+    throw new Error(`Seed OVA falló: POST /api/jobs → ${res.status()} ${await res.text()}`)
   }
   const { job_id: jobId } = await res.json()
 
   const deadline = Date.now() + 90000
   for (;;) {
-    const poll = await page.request.get(`/api/ova/jobs/${jobId}`)
+    const poll = await page.request.get(`/api/jobs/${jobId}`)
     if (poll.ok()) {
       const job = await poll.json()
       if (job.status === 'done') return { title, jobId, ovaId: job.ova_id }

@@ -9,7 +9,7 @@ from core.database import get_db
 from core.pagination import page_meta
 from models import Role, User, UserRole
 
-router = APIRouter()
+router = APIRouter(tags=["Admin · Usuarios"])
 
 
 def _serialize_user(u: User, role: Role | None) -> dict:
@@ -28,7 +28,7 @@ def _serialize_user(u: User, role: Role | None) -> dict:
     }
 
 
-@router.get("/", summary="Listar los usuarios de la plataforma")
+@router.get("", summary="Listar los usuarios de la plataforma")
 def get_users(
     page: int = 1,
     limit: int = 10,

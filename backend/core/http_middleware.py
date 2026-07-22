@@ -12,7 +12,7 @@ from core.config import settings
 logger = structlog.get_logger(__name__)
 
 _LATENCY_THRESHOLD_MS = settings.latency_threshold_ms
-_LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ova/save")
+_LATENCY_EXCLUDED_PREFIXES = ("/api/agents/", "/api/ovas/save", "/api/ova/save")
 _IS_PROD = settings.env.lower() == "production"
 
 

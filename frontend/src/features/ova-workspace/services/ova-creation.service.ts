@@ -44,7 +44,7 @@ function pickSelectedConfigs(
 })
 export class OvaCreationService {
   startJob(args: StartJobArgs): Promise<JobAck> {
-    return apiJson<JobAck>("/api/ova/jobs", {
+    return apiJson<JobAck>("/api/jobs", {
       method: "POST",
       body: JSON.stringify({
         prompt: args.prompt,
