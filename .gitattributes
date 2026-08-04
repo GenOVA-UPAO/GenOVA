@@ -7,3 +7,15 @@
 *.ico -text
 *.xlsx -text
 *.docx -text
+
+# --- Barra de lenguajes (GitHub Linguist) ---
+# Los reportes de carga y de Lighthouse son artefactos generados por las
+# pruebas, no código del proyecto: entre los cinco pesan ~5 MB de HTML/JS y
+# hacían que el repo apareciera como "HTML/JavaScript" en lugar de
+# Python/TypeScript. Excluirlos también los colapsa en los diffs.
+tests/load/**                linguist-generated=true
+tests/lighthouse-reports/**  linguist-generated=true
+
+# Los scripts de las skills del harness son utillaje de agentes, no producto.
+.claude/skills/**            linguist-vendored=true
+.agents/skills/**            linguist-vendored=true
