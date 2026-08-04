@@ -29,7 +29,7 @@ genera/actualiza el agente `doc_author`):
 
 | Doc | Contenido |
 |---|---|
-| [docs/api.md](docs/api.md) | Referencia REST completa (~70 endpoints) + Swagger `/docs` |
+| [docs/api.md](docs/api.md) | Referencia REST de las rutas canónicas (55 de 120 documentadas) + Swagger `/docs` |
 | [docs/database.md](docs/database.md) | Esquema de BD (tablas, índices, pgvector) |
 | [docs/generacion-5e.md](docs/generacion-5e.md) | Pipeline 5E, 10 tipos de recurso, fallback LLM, validador HTML |
 | [docs/deployment.md](docs/deployment.md) | Deploy cloud (Vercel/Render/Supabase) + **referencia completa de env vars** |
@@ -543,8 +543,9 @@ GET /api/ova/health
 GET /api/uploads/health
 ```
 
-> **API completa** (~70 endpoints) en [docs/api.md](docs/api.md). Con el backend corriendo,
-> Swagger interactivo en `http://localhost:8000/docs` y ReDoc en `/redoc`.
+> El backend registra **120 rutas REST**. [docs/api.md](docs/api.md) documenta las 55
+> canónicas principales; la referencia siempre al día es Swagger. Con el backend
+> corriendo, Swagger interactivo en `http://localhost:8000/docs` y ReDoc en `/redoc`.
 
 ## CI/CD
 
