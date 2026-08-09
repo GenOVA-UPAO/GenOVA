@@ -16,6 +16,6 @@
     "test:a11y": "pnpm --filter genova-tests test:a11y"
   },
   "devDependencies": {
-    "railway": "^3.5.5"
+    "railway": "^3.8.1"
   }
 }
