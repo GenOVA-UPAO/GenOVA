@@ -354,23 +354,49 @@ allow_indirect_imports = true
 # (su registro ORM importa `ova.infrastructure`, que ejecuta el `__init__` a mitad
 # de la carga de `models`, antes de que sus `from models import ...` resuelvan).
 
-# --- users: pase estructural en capas (la extracción de cada router a casos de
-#     uso es un 2º pase, como en `auth`). ---
+# --- users: 2º pase en curso. Perfil / seguridad de cuenta / configuración de
+#     recursos ya están extraídos a casos de uso; los 12 routers restantes (admin,
+#     analytics, links, llm-settings, api-keys) siguen con la lógica dentro y sus
+#     módulos de servicio heredados (`admin_helpers`, `analytics_service`,
+#     `dashboard_*`) todavía tocan fastapi/sqlalchemy. Por eso la pureza de
+#     `application` se exige sobre las partes ya migradas, no sobre el paquete
+#     entero: el contrato crece según avanzan las olas. ---
 
 [[tool.importlinter.contracts]]
 name = "users.domain es puro (sin capas externas ni frameworks)"
 type = "forbidden"
 source_modules = ["users.domain"]
 forbidden_modules = [
-    "users.application", "users.infrastructure", "users.interface",
+    "users.application", "users.infrastructure", "users.interface", "users.container",
     "fastapi", "sqlalchemy", "pydantic", "starlette",
 ]
 
 [[tool.importlinter.contracts]]
-name = "users.infrastructure no depende de application ni interface"
+name = "users.application (parte migrada) no depende de infraestructura ni frameworks"
+type = "forbidden"
+source_modules = [
+    "users.application.use_cases", "users.application.ports", "users.application.dto",
+]
+forbidden_modules = [
+    "users.infrastructure", "users.interface", "users.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "users.infrastructure no depende de application/interface/container"
 type = "forbidden"
 source_modules = ["users.infrastructure"]
-forbidden_modules = ["users.application", "users.interface"]
+forbidden_modules = ["users.application", "users.interface", "users.container"]
+
+[[tool.importlinter.contracts]]
+name = "users: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "users.interface",
+    "users.container",
+    "users.application",
+    "users.domain",
+]
 
 [[tool.importlinter.contracts]]
 name = "users no depende de ova/generation/scorm/rag/storage"
