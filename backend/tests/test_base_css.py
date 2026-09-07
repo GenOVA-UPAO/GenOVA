@@ -48,6 +48,17 @@ def test_design_system_free_keeps_manual_css():
     assert "TIPOGRAF" in ds
 
 
+def test_design_system_avoids_generated_page_tells():
+    for color_mode in ("upao", "free"):
+        ds = build_design_system(color_mode, "upao")
+        assert "Animaciones de entrada" not in ds
+        assert "UN solo momento de movimiento intencional" in ds
+        assert "No acentúes una sola palabra" in ds
+        assert "secuencia real" in ds
+        assert "codifican información" in ds
+        assert "pocas regiones fuertes" in ds
+
+
 def test_inject_components_even_if_llm_used_tags():
     """Regresión: el early-return por 'upao-card' dejaba tags sin registrar."""
     html = "<html><head></head><body><upao-card title='x'>y</upao-card></body></html>"
