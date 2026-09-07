@@ -139,9 +139,23 @@ export default tseslint.config(
       // table cells) are intentionally empty classes — all behavior lives in
       // the template/decorator. Standard Angular pattern.
       "@typescript-eslint/no-extraneous-class": "off",
-      // `||` vs `??`: 140+ call sites, several rely on falsy-string/zero
-      // fallback behavior that `??` would silently change. Needs a dedicated
-      // pass, not a blanket lint-config flip.
+      // `||` vs `??`: la pasada dedicada ya se hizo (revisión de los 339 usos
+      // en src, fichero a fichero). Criterio aplicado: `??` solo cuando el
+      // tipo del operando izquierdo es explícitamente opcional/nullish y ""
+      // es imposible (p. ej. link-row `linked ?? { email }`, dashboard-page
+      // `created ?? updated`, emails validados). Se quedó con `||` TODO lo que
+      // depende a propósito del falsy: condiciones booleanas, mensajes de
+      // error donde "" debe caer al fallback, defaults de payload (`|| 0`,
+      // `|| []`), normalización de formularios (`"" -> null`) y cadenas de
+      // display donde el backend envía "" real (serializadores `x or ""` en
+      // full_name/name — con `??` se mostraría una cadena vacía).
+      // La regla sigue "off" a conciencia: sin `strictNullChecks` el
+      // type-checker considera nullables TODOS los tipos, así que la regla
+      // marca también los fallbacks intencionales (136 flags: p. ej.
+      // `http.ts` "body?.message || body?.detail", `layout-helpers`
+      // "full_name || email") — activarla exigiría 130+ `eslint-disable`
+      // que entrenan a ignorar los disables. Se revisita si algún día se
+      // activa `strictNullChecks` en el frontend.
       "@typescript-eslint/prefer-nullish-coalescing": "off",
       // Mostly noise from optional chaining against loosely-typed API
       // response shapes (backend contracts aren't statically verified);
