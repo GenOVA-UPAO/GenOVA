@@ -12,6 +12,12 @@ from uuid import UUID
 from generation.domain.job import Job, JobResource
 
 
+class JobSnapshotPort(Protocol):
+    def get_owned_with_resources(
+        self, job_id: UUID, user_id: UUID
+    ) -> tuple[Job, list[JobResource]] | None: ...
+
+
 class JobRepository(Protocol):
     def create(
         self,

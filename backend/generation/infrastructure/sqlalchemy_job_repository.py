@@ -11,6 +11,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core.database import SessionLocal
 from generation.domain.job import Job, JobResource
 from generation.infrastructure.mappers import to_job, to_resource
 from generation.jobs import jobs_service
@@ -54,3 +55,16 @@ class SqlAlchemyJobRepository:
     def cancel(self, job_id: UUID) -> None:
         orm = self._db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one()
         jobs_service.cancel_job(self._db, orm)
+
+
+class FreshSessionJobRepository:
+    """Abre una sesión corta por lectura para que el SSE vea los commits del runner."""
+
+    def get_owned_with_resources(
+        self, job_id: UUID, user_id: UUID
+    ) -> tuple[Job, list[JobResource]] | None:
+        db = SessionLocal()
+        try:
+            return SqlAlchemyJobRepository(db).get_owned_with_resources(job_id, user_id)
+        finally:
+            db.close()

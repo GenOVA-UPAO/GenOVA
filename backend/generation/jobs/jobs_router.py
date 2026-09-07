@@ -7,7 +7,6 @@ All four endpoints require auth (cookie JWT) and the mutating one is rate-limite
 `str(e)` or tokens.
 """
 
-import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -15,16 +14,18 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from core.database import get_db
 from core.rate_limit import limiter
+from generation.application.dto import CreateJobInput
+from generation.container import GenerationUseCases, build_generation
+from generation.domain.errors import GenerationError
+from generation.interface.http.error_map import generation_error_to_response
 from generation.jobs import jobs_service
 from generation.jobs.jobs_helpers import (
     ResumeRequest,
     StartJobRequest,
     build_resource_plan,
-    job_params,
     job_to_dict,
 )
 from generation.jobs.jobs_router_helpers import (
-    _cancel_or_409,
     _launch,
     _not_found,
     _parse_uuid,
@@ -33,7 +34,6 @@ from generation.jobs.jobs_router_helpers import (
 from models import User
 
 router = APIRouter(tags=["Generación"])
-logger = structlog.get_logger(__name__)
 
 
 @router.post("", summary="Encolar un trabajo de generación de OVA")
@@ -42,37 +42,31 @@ def start_job(
     request: Request,
     payload: StartJobRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    uc: GenerationUseCases = Depends(build_generation),
 ):
     """Create a job + its resources, launch the runner, return {job_id, status}."""
-    from llm.images.image_settings_resolve import build_image_settings
-
-    resolved_image_settings = build_image_settings(
-        ova_settings=current_user.ova_settings or {},
-        user_api_keys=current_user.user_api_keys or {},
-        db=db,
-        user_id=current_user.id,
+    result = uc.create_job.execute(
+        CreateJobInput(
+            user_id=current_user.id,
+            prompt=payload.prompt.strip(),
+            resource_plan=build_resource_plan(payload),
+            upload_ids=list(payload.upload_ids),
+            phases=list(payload.phases),
+            resources=[r.model_dump() for r in payload.resources],
+            theme=payload.theme.model_dump(),
+            resource_configs=dict(payload.resource_configs),
+            llm_settings=current_user.llm_settings or {},
+            enabled_models=current_user.enabled_models or [],
+            ova_settings=current_user.ova_settings or {},
+            user_api_keys=current_user.user_api_keys or {},
+        )
     )
-
-    job = jobs_service.create_job(
-        db,
-        user_id=current_user.id,
-        prompt=payload.prompt.strip(),
-        params=job_params(
-            payload,
-            current_user.llm_settings,
-            current_user.enabled_models,
-            resolved_image_settings,
-        ),
-        resources=build_resource_plan(payload),
-    )
-    _launch(job.id)
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED,
         content={
-            "job_id": str(job.id),
-            "ova_id": str(job.ova_id) if job.ova_id else None,
-            "status": "queued",
+            "job_id": result.job_id,
+            "ova_id": result.ova_id,
+            "status": result.status,
         },
     )
 
@@ -98,17 +92,17 @@ def find_job(
 def get_job_status(
     job_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    uc: GenerationUseCases = Depends(build_generation),
 ):
     """Job + resources state, by polling, independent of the starting connection."""
     parsed = _parse_uuid(job_id)
     if parsed is None:
         return _not_found("job_not_found", "Job no encontrado.")
-    job = jobs_service.get_job(db, parsed, current_user.id)
-    if job is None:
-        return _not_found("job_not_found", "Job no encontrado.")
-    resources = jobs_service.list_resources(db, job.id)
-    return job_to_dict(job, resources)
+    try:
+        view = uc.get_job_status.execute(parsed, current_user.id)
+    except GenerationError as err:
+        return generation_error_to_response(err)
+    return view.as_dict()
 
 
 @router.get(
@@ -155,13 +149,17 @@ def cancel_job(
     request: Request,
     job_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    uc: GenerationUseCases = Depends(build_generation),
 ):
     """Abort a queued or running job. Returns 409 if already terminal."""
     parsed = _parse_uuid(job_id)
     if parsed is None:
         return _not_found("job_not_found", "Job no encontrado.")
-    return _cancel_or_409(db, parsed, current_user.id)
+    try:
+        result = uc.cancel_job.execute(parsed, current_user.id)
+    except GenerationError as err:
+        return generation_error_to_response(err)
+    return JSONResponse(content={"job_id": result.job_id, "status": result.status})
 
 
 @router.post("/{job_id}/resume", summary="Reanudar un trabajo interrumpido")
