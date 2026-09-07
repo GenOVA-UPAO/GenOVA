@@ -10,11 +10,16 @@ from fastapi import HTTPException, status
 
 from users.domain.errors import (
     EmailAlreadyInUse,
+    IncorrectAccountPassword,
+    IncorrectCurrentPassword,
     InvalidGender,
     InvalidPhoneNumber,
+    PasswordConfirmationMismatch,
     PhoneNumberAlreadyInUse,
+    SoleAdminRemoval,
     UniversityIdAlreadyInUse,
     UserError,
+    WeakNewPassword,
 )
 
 _STATUS_BY_ERROR: dict[type[UserError], int] = {
@@ -23,6 +28,11 @@ _STATUS_BY_ERROR: dict[type[UserError], int] = {
     EmailAlreadyInUse: status.HTTP_400_BAD_REQUEST,
     PhoneNumberAlreadyInUse: status.HTTP_400_BAD_REQUEST,
     UniversityIdAlreadyInUse: status.HTTP_400_BAD_REQUEST,
+    PasswordConfirmationMismatch: status.HTTP_400_BAD_REQUEST,
+    WeakNewPassword: status.HTTP_400_BAD_REQUEST,
+    IncorrectCurrentPassword: status.HTTP_400_BAD_REQUEST,
+    IncorrectAccountPassword: status.HTTP_400_BAD_REQUEST,
+    SoleAdminRemoval: status.HTTP_403_FORBIDDEN,
 }
 
 

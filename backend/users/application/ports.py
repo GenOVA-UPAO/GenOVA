@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Protocol
 from uuid import UUID
 
+from users.domain.account import UserAccount
 from users.domain.profile import UserProfile
 
 
@@ -31,3 +32,27 @@ class UserProfileRepository(Protocol):
     def save_theme(
         self, user_id: UUID, *, color_mode: str, design_mode: str, palette: dict | None
     ) -> dict: ...
+
+
+class UserAccountRepository(Protocol):
+    """Persistencia de la seguridad de la cuenta propia."""
+
+    def get(self, user_id: UUID) -> UserAccount | None: ...
+
+    def update_password(self, user_id: UUID, password_hash: str) -> None: ...
+
+    def assert_not_sole_admin(self, user_id: UUID) -> None:
+        """Lanza `SoleAdminRemoval` si el usuario es el único admin activo."""
+        ...
+
+    def deactivate_and_anonymize(self, user_id: UUID) -> None:
+        """Soft-delete: anonimiza el PII en sitio y persiste (commit)."""
+        ...
+
+
+class PasswordHasher(Protocol):
+    """Hashing/verificación de contraseñas (adaptador sobre bcrypt)."""
+
+    def verify(self, raw: str, hashed: str) -> bool: ...
+
+    def hash(self, raw: str) -> str: ...

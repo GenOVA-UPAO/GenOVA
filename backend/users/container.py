@@ -12,7 +12,14 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from core.database import get_db
-from users.application.use_cases import UpdateUserProfile, UpdateUserTheme
+from users.application.use_cases import (
+    ChangePassword,
+    DeleteAccount,
+    UpdateUserProfile,
+    UpdateUserTheme,
+)
+from users.infrastructure.password_adapters import CorePasswordHasher
+from users.infrastructure.sqlalchemy_account_repository import SqlAlchemyUserAccountRepository
 from users.infrastructure.sqlalchemy_profile_repository import SqlAlchemyUserProfileRepository
 
 
@@ -20,11 +27,17 @@ from users.infrastructure.sqlalchemy_profile_repository import SqlAlchemyUserPro
 class UsersUseCases:
     update_profile: UpdateUserProfile
     update_theme: UpdateUserTheme
+    change_password: ChangePassword
+    delete_account: DeleteAccount
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
     profiles = SqlAlchemyUserProfileRepository(db)
+    accounts = SqlAlchemyUserAccountRepository(db)
+    hasher = CorePasswordHasher()
     return UsersUseCases(
         update_profile=UpdateUserProfile(profiles),
         update_theme=UpdateUserTheme(profiles),
+        change_password=ChangePassword(accounts, hasher),
+        delete_account=DeleteAccount(accounts, hasher),
     )

@@ -45,3 +45,36 @@ class UniversityIdAlreadyInUse(UserError):
         self, detail: str = "El código universitario ya está registrado por otro usuario."
     ) -> None:
         super().__init__(detail)
+
+
+class PasswordConfirmationMismatch(UserError):
+    def __init__(
+        self, detail: str = "La nueva contraseña y su confirmación no coinciden."
+    ) -> None:
+        super().__init__(detail)
+
+
+class WeakNewPassword(UserError):
+    def __init__(
+        self,
+        detail: str = "La nueva contraseña debe tener al menos 8 caracteres y contener letras y números.",
+    ) -> None:
+        super().__init__(detail)
+
+
+class IncorrectCurrentPassword(UserError):
+    def __init__(self, detail: str = "La contraseña actual ingresada es incorrecta.") -> None:
+        super().__init__(detail)
+
+
+class IncorrectAccountPassword(UserError):
+    def __init__(self, detail: str = "Contraseña incorrecta") -> None:
+        super().__init__(detail)
+
+
+class SoleAdminRemoval(UserError):
+    def __init__(
+        self,
+        detail: str = "No puedes eliminar tu cuenta porque eres el único administrador activo.",
+    ) -> None:
+        super().__init__(detail)

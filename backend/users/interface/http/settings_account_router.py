@@ -1,20 +1,21 @@
 """Account-security endpoints: change password and delete (deactivate) account.
 
-Included into the settings profile router so paths keep the same prefix without
-changing the users-router wiring.
+Adaptador HTTP de los casos de uso de seguridad de la cuenta. Incluido en el
+router de ajustes de perfil para conservar el prefijo /me sin cambiar el
+cableado de usuarios.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from auth.infrastructure.cookies import clear_auth_cookie
-from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
-from core.security import hash_password, verify_password
-from users.application.account_service import anonymize_and_deactivate
+from users.application.dto import ChangePasswordInput, DeleteAccountInput
+from users.container import UsersUseCases, build_users
+from users.domain.errors import UserError
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter()
 
@@ -31,32 +32,20 @@ def change_password(
     request: Request,
     payload: UserPasswordChange,
     current_user=Depends(get_current_user),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    current_pass = payload.current_password
-    new_pass = payload.new_password
-    confirm_pass = payload.confirm_password
-
-    if new_pass != confirm_pass:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La nueva contraseña y su confirmación no coinciden.",
+    try:
+        users.change_password.execute(
+            ChangePasswordInput(
+                user_id=current_user.id,
+                current_password=payload.current_password,
+                new_password=payload.new_password,
+                confirm_password=payload.confirm_password,
+            )
         )
+    except UserError as err:
+        raise to_http_exception(err) from None
 
-    if not (any(c.isalpha() for c in new_pass) and any(c.isdigit() for c in new_pass)):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La nueva contraseña debe tener al menos 8 caracteres y contener letras y números.",
-        )
-
-    if not verify_password(current_pass, current_user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La contraseña actual ingresada es incorrecta.",
-        )
-
-    current_user.password_hash = hash_password(new_pass)
-    commit_or_500(db, "change_password")
     return {"message": "Contraseña actualizada con éxito."}
 
 
@@ -70,16 +59,14 @@ def delete_account(
     request: Request,
     payload: UserDeleteRequest,
     current_user=Depends(get_current_user),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    if not verify_password(payload.password, current_user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Contraseña incorrecta",
+    try:
+        users.delete_account.execute(
+            DeleteAccountInput(user_id=current_user.id, password=payload.password)
         )
-
-    anonymize_and_deactivate(db, current_user)
-    commit_or_500(db, "delete_account")
+    except UserError as err:
+        raise to_http_exception(err) from None
 
     response = JSONResponse(content={"message": "Cuenta eliminada exitosamente."})
     clear_auth_cookie(response)

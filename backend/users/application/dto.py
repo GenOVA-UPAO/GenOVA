@@ -22,3 +22,17 @@ class UpdateThemeInput:
     color_mode: str
     design_mode: str
     palette: dict | None
+
+
+@dataclass(frozen=True, slots=True)
+class ChangePasswordInput:
+    user_id: UUID
+    current_password: str
+    new_password: str
+    confirm_password: str
+
+
+@dataclass(frozen=True, slots=True)
+class DeleteAccountInput:
+    user_id: UUID
+    password: str
