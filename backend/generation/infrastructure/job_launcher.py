@@ -24,7 +24,7 @@ def launch_job(job_id: UUID, only: list[UUID] | None = None) -> None:
     """
     if settings.redis_url:
         try:
-            from generation.jobs.queue import enqueue_generation
+            from generation.infrastructure.arq_queue import enqueue_generation
 
             enqueue_generation(job_id, only)
             return

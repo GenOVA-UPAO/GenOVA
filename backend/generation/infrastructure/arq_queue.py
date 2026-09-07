@@ -1,14 +1,17 @@
-"""B2/B3 — arq job queue wiring for OVA generation.
+"""B2/B3 — adaptador de cola arq para la generación de OVAs.
 
-When REDIS_URL is set, a generation run is enqueued to a durable arq queue
-(processed by a separate worker — see backend/worker.py) instead of an inline
-daemon thread, so a web redeploy or crash no longer drops in-flight generations.
-Helpers here are sync-callable (the jobs router endpoints are sync) and the router
-falls back to a thread when enqueue raises, so local dev works without a worker.
+Cuando REDIS_URL está configurado, una generación se encola en una cola arq
+duradera (procesada por un worker aparte — ver backend/worker.py) en lugar de
+un hilo daemon inline, para que un redeploy o crash web ya no pierda
+generaciones en curso. Los helpers son sync-callable (los endpoints de jobs
+son sync) y el launcher hace fallback a hilo si enqueue lanza, así el dev
+local funciona sin worker.
 """
 
+from __future__ import annotations
+
 import asyncio
-import uuid
+from uuid import UUID
 
 from arq import create_pool
 from arq.connections import RedisSettings
@@ -23,7 +26,7 @@ def redis_settings() -> RedisSettings:
     return RedisSettings.from_dsn(settings.redis_url)
 
 
-async def _enqueue(job_id: uuid.UUID, only: list[uuid.UUID] | None) -> None:
+async def _enqueue(job_id: UUID, only: list[UUID] | None) -> None:
     pool = await create_pool(redis_settings())
     try:
         await pool.enqueue_job(
@@ -38,7 +41,7 @@ async def _enqueue(job_id: uuid.UUID, only: list[uuid.UUID] | None) -> None:
             await pool.close()
 
 
-def enqueue_generation(job_id: uuid.UUID, only: list[uuid.UUID] | None = None) -> None:
+def enqueue_generation(job_id: UUID, only: list[UUID] | None = None) -> None:
     """Enqueue a generation job on arq. Sync wrapper: runs its own event loop since
     the caller is a sync FastAPI endpoint executing in the threadpool."""
     asyncio.run(_enqueue(job_id, only))
