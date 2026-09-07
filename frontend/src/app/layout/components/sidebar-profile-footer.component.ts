@@ -43,7 +43,7 @@ import { profileLinkClasses, userInitials } from "../lib/layout-helpers";
               </span>
             </div>
             <p class="truncate text-xs text-muted-foreground">
-              {{ user()?.email || "sesión activa" }}
+              {{ user()?.email ?? "sesión activa" }}
             </p>
           </div>
         }

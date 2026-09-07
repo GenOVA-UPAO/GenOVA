@@ -75,7 +75,8 @@ export class DashboardPage {
   formatDateLabel(ova: OvaListItem): string {
     const created = ova["created_at"];
     const updated = ova["updated_at"];
-    return formatDate((created || updated) as string | undefined);
+    // created_at/updated_at son ISO-o-null (el backend nunca manda ""): ??.
+    return formatDate((created ?? updated) as string | undefined);
   }
 
   ownerName(ova: OvaListItem): string {
