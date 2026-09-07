@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable
-from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
@@ -24,19 +22,13 @@ def _as_uuid(value: str) -> uuid.UUID | str:
 
 
 class SqlAlchemyOvaCatalogRepository:
-    def __init__(self, db: Session, sweep_generating: Callable[[list[Any]], None]) -> None:
+    def __init__(self, db: Session) -> None:
         self._db = db
-        self._sweep_generating = sweep_generating
 
     def list_page(self, filters: OvaListFilter) -> tuple[tuple[Ova, ...], int]:
         base_query = self._base_query(filters)
         rows = self._fetch_rows(base_query, filters)
         total_items = self._total_items(base_query, rows, filters.page)
-        ovas = [row[0] for row in rows]
-        # GN-03: los jobs zombis ("generando" con worker muerto o cola abandonada)
-        # solo se barrían al consultar el job exacto; al listar la página los
-        # finalizamos aquí para que el badge muestre el estado real.
-        self._sweep_generating([ova.id for ova in ovas if ova.status == "generando"])
         mapped = tuple(
             _to_domain(
                 row[0],
