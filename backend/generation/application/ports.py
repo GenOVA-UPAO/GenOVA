@@ -34,6 +34,10 @@ class JobRepository(Protocol):
         self, job_id: UUID, user_id: UUID
     ) -> tuple[Job, list[JobResource]] | None: ...
 
+    def get_owned_by_ova_with_resources(
+        self, ova_id: UUID, user_id: UUID
+    ) -> tuple[Job, list[JobResource]] | None: ...
+
     def cancel(self, job_id: UUID) -> None: ...
 
 

@@ -52,6 +52,15 @@ class SqlAlchemyJobRepository:
         resources = jobs_service.list_resources(self._db, orm.id)
         return to_job(orm), [to_resource(r) for r in resources]
 
+    def get_owned_by_ova_with_resources(
+        self, ova_id: UUID, user_id: UUID
+    ) -> tuple[Job, list[JobResource]] | None:
+        orm = jobs_service.find_job_by_ova(self._db, ova_id, user_id)
+        if orm is None:
+            return None
+        resources = jobs_service.list_resources(self._db, orm.id)
+        return to_job(orm), [to_resource(r) for r in resources]
+
     def cancel(self, job_id: UUID) -> None:
         orm = self._db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one()
         jobs_service.cancel_job(self._db, orm)

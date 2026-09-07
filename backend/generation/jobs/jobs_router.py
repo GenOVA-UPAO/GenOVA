@@ -23,7 +23,6 @@ from generation.jobs.jobs_helpers import (
     ResumeRequest,
     StartJobRequest,
     build_resource_plan,
-    job_to_dict,
 )
 from generation.jobs.jobs_router_helpers import (
     _launch,
@@ -75,17 +74,17 @@ def start_job(
 def find_job(
     ova_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    uc: GenerationUseCases = Depends(build_generation),
 ):
     """Locate the latest job of an OVA owned by the user (for HU-023)."""
     parsed = _parse_uuid(ova_id)
     if parsed is None:
         return _not_found("job_not_found", "No hay generación para este OVA.")
-    job = jobs_service.find_job_by_ova(db, parsed, current_user.id)
-    if job is None:
-        return _not_found("job_not_found", "No hay generación para este OVA.")
-    resources = jobs_service.list_resources(db, job.id)
-    return job_to_dict(job, resources)
+    try:
+        view = uc.find_job_by_ova.execute(parsed, current_user.id)
+    except GenerationError as err:
+        return generation_error_to_response(err)
+    return view.as_dict()
 
 
 @router.get("/{job_id}", summary="Consultar el estado de un trabajo")
