@@ -106,9 +106,12 @@ export default tseslint.config(
       "sort-imports": "off",
 
       // Convenciones de tamaño (ver readme §Convenciones): lo que importa es cohesión
-      // y una sola responsabilidad, no un cap de líneas por archivo. Todas en "warn"
-      // durante el refactor; `max-lines-per-function` y `max-classes-per-file` pasan
-      // a "error" tras la pasada de limpieza del frontend (Fase 4 del refactor).
+      // y una sola responsabilidad, no un cap por archivo. Se quedan en "warn" a
+      // propósito: los infractores actuales son métodos de 31-40 líneas cohesivos
+      // (partirlos en dos de 20 fragmenta sin mejorar) y ficheros de componentes
+      // compuestos de Angular (dialog+header+footer, viewer+panel) que agrupan
+      // clases estructurales relacionadas — un patrón idiomático, no una violación.
+      // El aviso sigue marcando el crecimiento; no rompe el build.
       "max-lines-per-function": [
         "warn",
         { max: 30, skipBlankLines: true, skipComments: true, IIFEs: true },

@@ -86,43 +86,35 @@ export class OvaUploadsService {
     this.uploadsState.update((prev) => [...prev, ...uploadingItems]);
     this.isUploadingState.set(true);
 
-    await Promise.all(
-      uploadingItems.map(async (item, index) => {
-        try {
-          const result = await uploadTempFiles([selectedFiles[index]]);
-          const saved = result?.items?.[0];
-          const failure = result?.errors?.[0];
-          if (saved) {
-            this.uploadsState.update((prev) =>
-              prev.map((cur) =>
-                cur.clientId === item.clientId
-                  ? {
-                      ...cur,
-                      uploadId: saved.upload_id,
-                      filename: saved.filename,
-                      contentType: saved.content_type,
-                      sizeBytes: saved.size_bytes || cur.sizeBytes,
-                      status: "success" as const,
-                      message: "Carga exitosa",
-                      ragStatus: saved.rag_status ?? null,
-                    }
-                  : cur,
-              ),
-            );
-            return;
-          }
-          const msg = failure?.message || "No se pudo cargar el archivo.";
-          this.patchItem(item.clientId, { status: "error", message: msg });
-        } catch (err: unknown) {
-          this.patchItem(item.clientId, {
-            status: "error",
-            message: err instanceof Error ? err.message : "Error al subir archivo.",
-          });
-        }
-      }),
-    );
+    await Promise.all(uploadingItems.map((item, i) => this.uploadOne(item, selectedFiles[i])));
 
     this.isUploadingState.set(false);
+  }
+
+  private async uploadOne(item: UploadItem, file: File): Promise<void> {
+    try {
+      const result = await uploadTempFiles([file]);
+      const saved = result?.items?.[0];
+      if (saved) {
+        this.patchItem(item.clientId, {
+          uploadId: saved.upload_id,
+          filename: saved.filename,
+          contentType: saved.content_type,
+          sizeBytes: saved.size_bytes || item.sizeBytes,
+          status: "success",
+          message: "Carga exitosa",
+          ragStatus: saved.rag_status ?? null,
+        });
+        return;
+      }
+      const msg = result?.errors?.[0]?.message || "No se pudo cargar el archivo.";
+      this.patchItem(item.clientId, { status: "error", message: msg });
+    } catch (err: unknown) {
+      this.patchItem(item.clientId, {
+        status: "error",
+        message: err instanceof Error ? err.message : "Error al subir archivo.",
+      });
+    }
   }
 
   async handleRemoveUpload(clientId: string) {
