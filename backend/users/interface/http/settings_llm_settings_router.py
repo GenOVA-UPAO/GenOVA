@@ -48,6 +48,18 @@ class LlmSettingsUpdate(BaseModel):
     settings: dict
 
 
+def _own_model_keys(user: User, *, has_key: bool) -> set[tuple[str, str]]:
+    """Modelos fuera del catálogo curado que este usuario puede usar.
+
+    `enabled_models` la controla el propio usuario (`PUT /me/enabled-models`), así
+    que honrarla sin más deja elegir cualquier modelo del catálogo completo —
+    incluidos los caros— pagando con la key de la plataforma. Solo cuenta si el
+    usuario aporta su propia API key: si no, se queda con los modelos que fijó el
+    administrador (DEFAULTS).
+    """
+    return enabled_keys(user.enabled_models or []) if has_key else set()
+
+
 @router.get("/me/llm-settings", summary="Obtener los ajustes de LLM propios")
 def get_llm_settings(
     request: Request,
@@ -60,7 +72,8 @@ def get_llm_settings(
     Query params: search, category, page, page_size
     """
     all_entries = get_catalog_entries()
-    ek = enabled_keys(current_user.enabled_models or [])
+    has_key = users.has_own_llm_key.execute(current_user.id, TEXT_PROVIDERS)
+    ek = _own_model_keys(current_user, has_key=has_key)
     default_keys = {(d["provider"], d["model_id"]) for d in DEFAULTS.values()}
 
     filtered_catalog = build_filtered_catalog(
@@ -84,7 +97,7 @@ def get_llm_settings(
 
     return {
         "settings": merge_with_defaults(current_user.llm_settings, extra_keys=ek),
-        "has_own_llm_key": users.has_own_llm_key.execute(current_user.id, TEXT_PROVIDERS),
+        "has_own_llm_key": has_key,
         "catalog": filtered_catalog,
         "catalog_all": [e for e in all_entries if e.get("active")],
         "catalog_full": page_items,
@@ -128,7 +141,10 @@ def put_llm_settings(
     users: UsersUseCases = Depends(build_users),
 ):
     """Validate against the catalog and persist. 400 on any invalid model/timeout."""
-    ek = enabled_keys(current_user.enabled_models or [])
+    ek = _own_model_keys(
+        current_user,
+        has_key=users.has_own_llm_key.execute(current_user.id, TEXT_PROVIDERS),
+    )
     try:
         clean = sanitize_settings(payload.settings, extra_keys=ek)
     except ValueError as exc:
