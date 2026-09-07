@@ -123,6 +123,14 @@ class EmptyContentError(RuntimeError):
     """LLM returned empty content (e.g. reasoning model that didn't emit text)."""
 
 
+class LLMBudgetExhaustedError(RuntimeError):
+    """La cadena de modelos ni se intentó: el presupuesto del recurso (reloj)
+    se agotó antes de llegar a ella. Distinto de "todos los modelos fallaron"
+    — el remedio es el reparto del tiempo o el modelo primario, no los
+    fallbacks. Subclase de RuntimeError para no romper a los que atrapan
+    RuntimeError genérico."""
+
+
 # Budgets below this → thinking off (JSON corto / critic / podcast).
 _THINK_OFF_MAX = 6000
 # Budgets at/above this → codigo-scale: adaptive/low thinking with hard cap.
@@ -268,3 +276,4 @@ def _retry_delay(
             return 0.0
         return float(min(base * 2, 15))
     return float(base)
+

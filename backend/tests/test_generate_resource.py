@@ -110,3 +110,16 @@ def test_final_sweep_replaces_markers_reintroduced_by_refinement(monkeypatch):
 
     assert "__IMG_8__" not in result.html
     assert "data:image/svg+xml;base64," in result.html
+
+
+def test_json_step_fuerza_thinking_off(monkeypatch):
+    calls = []
+
+    def fake(prompt, task, *a, **k):
+        calls.append(k)
+        return '{"contenido": "demo"}' if task == "texto" else FULL_HTML
+
+    monkeypatch.setattr(gen, "generar_texto", fake)
+    gen._parse_json_with_retry("prompt", "engage", 1, {}, [])
+    # Ambas llamadas (principal y reintento estricto) van sin thinking.
+    assert all(c.get("thinking") is False for c in calls)

@@ -30,6 +30,7 @@ from llm.utils.llm_helpers import (
     _retry_delay,
     effective_llm_config,
     with_model_thinking,
+    with_thinking_disabled,
 )
 
 # ── Re-export everything external callers depend on ───────────────────────────
@@ -131,6 +132,7 @@ def generar_texto(
     enabled_models: list | None = None,
     *,
     deadline: float | None = None,
+    thinking: bool | None = None,
 ) -> str:
     """Route a task to its model and walk the per-task fallback chain on any
     recoverable API error (rate-limit, 402 insufficient credit, provider 5xx,
@@ -138,8 +140,11 @@ def generar_texto(
     always responds within the free tier. `llm_config` carries per-user model/
     timeout overrides for the primary attempt. `enabled_models` restricts overrides
     to models the user has explicitly enabled (system defaults always pass).
-    `deadline` (monotonic) corta fallbacks restantes y acota el timeout del
-    intento al tiempo que queda — no cambia el orden de la cadena."""
+    `deadline` (monotonic) corta fallbacks restantes y acota el timeout de cada
+    intento. `thinking=False` fuerza thinking off en todos los modelos de la
+    cadena (ruta de datos estructurados: el JSON no gana nada con CoT y su
+    latencia se come el presupuesto — medido: 39.7s → 11.5s con el mismo JSON
+    válido)."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
     chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea, llm_config)]
 
@@ -147,6 +152,9 @@ def generar_texto(
     prev_provider: str | None = None
     for i, (proveedor, model_id, extra) in enumerate(chain):
         role = "primary" if i == 0 else f"fallback {i}/{len(chain) - 1}"
+        attempt_extra = extra
+        if thinking is False:
+            attempt_extra = with_thinking_disabled(proveedor, model_id, extra)
         attempt_timeout = timeout
         if deadline is not None:
             left = deadline - time.monotonic()
@@ -179,7 +187,7 @@ def generar_texto(
             model_id=model_id,
         )
         try:
-            content = _chat(proveedor, model_id, prompt, max_tokens, extra, attempt_timeout)
+            content = _chat(proveedor, model_id, prompt, max_tokens, attempt_extra, attempt_timeout)
             logger.info(
                 "task model ok",
                 tarea=tarea,
@@ -268,3 +276,4 @@ def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
         timeout=_LLM_TIMEOUT_S,
     )
     return response.choices[0].message.content
+

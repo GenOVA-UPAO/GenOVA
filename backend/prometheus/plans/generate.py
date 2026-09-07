@@ -66,10 +66,19 @@ def _design_system(theme: dict) -> str:
 
 
 def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_models, deadline=None):
-    """Step-1 texto→JSON con un reintento estricto (robustez del camino HTTP)."""
+    """Step-1 texto→JSON con un reintento estricto (robustez del camino HTTP).
+
+    thinking=False explícito: el JSON son DATOS, no razonamiento. Con el
+    thinking auto del helper, deepseek gastaba ~40s en este paso y dejaba el
+    presupuesto de recurso sin margen para el HTML; sin thinking son ~11s con
+    el mismo JSON válido (medido, ver reporte). Explícito en vez de depender
+    del umbral numérico _THINK_OFF_MAX, que se rompe si alguien toca
+    max_tokens."""
     from prometheus.engine.budget import can_spend
 
-    raw = generar_texto(prompt, "texto", 8192, llm_config, enabled_models, deadline=deadline)
+    raw = generar_texto(
+        prompt, "texto", 8192, llm_config, enabled_models, deadline=deadline, thinking=False
+    )
     try:
         return parse_json(raw)
     except Exception:
@@ -85,6 +94,7 @@ def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_mode
             llm_config,
             enabled_models,
             deadline=deadline,
+            thinking=False,
         )
         try:
             return parse_json(retry)
