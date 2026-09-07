@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ova.domain.model import Ova, OvaActor
+from ova.domain.model import Ova, OvaActor, OvaPhase
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,3 +58,17 @@ class BatchOvaInput:
 class BatchOvaResult:
     completed: tuple[str, ...]
     skipped: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class SaveOvaInput:
+    actor_id: str
+    title: str
+    prompt: str
+    phases: tuple[OvaPhase, ...]
+    upload_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class SaveOvaResult:
+    ova_id: str

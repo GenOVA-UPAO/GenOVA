@@ -10,12 +10,12 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from core.database import get_db
 from core.text import smart_truncate
-from models import Ova, OvaPhase, OvaVersion, User
+from models import Ova, User
+from ova.application.dto import SaveOvaInput
 from ova.application.llm_helpers import _enabled_llm_options
-from ova.application.scorm_persist import persist_scorm_zip
+from ova.container import OvaUseCases, build_ova
+from ova.domain.model import OvaPhase
 from ova.interface.http._shared import _is_admin
-from rag import tie_uploads_to_ova
-from scorm import build_scorm_zip_bytes
 from storage import StorageError, is_configured, signed_url
 
 router = APIRouter()
@@ -62,62 +62,28 @@ class SaveOvaRequest(BaseModel):
 def save_ova(
     payload: SaveOvaRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
     title = smart_truncate(payload.prompt)
-
-    ova = Ova(user_id=current_user.id, title=title, description=payload.prompt, status="listo")
-    db.add(ova)
-    db.flush()
-
-    version = OvaVersion(ova_id=ova.id, version_number=1, prompt=payload.prompt, is_active=True)
-    db.add(version)
-    db.flush()
-
-    phases_data = []
-    for p in payload.phases:
-        db.add(
-            OvaPhase(
-                version_id=version.id,
-                phase_type=p.type,
-                phase_order=p.order,
-                content=p.content,
-                regenerated=False,
-                resource_type_id=p.resource_type_id,
-                title=p.title,
-            )
+    result = use_cases.save_ova.execute(
+        SaveOvaInput(
+            actor_id=str(current_user.id),
+            title=title,
+            prompt=payload.prompt,
+            phases=tuple(
+                OvaPhase(
+                    type=phase.type,
+                    order=phase.order,
+                    content=phase.content,
+                    title=phase.title,
+                    resource_type_id=phase.resource_type_id,
+                )
+                for phase in payload.phases
+            ),
+            upload_ids=tuple(payload.upload_ids),
         )
-        phases_data.append(
-            {
-                "type": p.type,
-                "order": p.order,
-                "content": p.content,
-                "title": p.title,
-            }
-        )
-
-    zip_bytes = build_scorm_zip_bytes(
-        course_title=title,
-        module_title="OVA Generado por GenOVA",
-        phases=phases_data,
     )
-
-    storage_key, file_path = persist_scorm_zip(
-        zip_bytes, str(current_user.id), str(ova.id), version=1
-    )
-    ova.storage_key = storage_key
-    ova.file_path = file_path
-    ova.current_version_id = version.id
-    db.commit()
-
-    # Promote RAG chunks: tying them to the new OVA prevents expiry.
-    if payload.upload_ids:
-        try:
-            tie_uploads_to_ova(db, payload.upload_ids, str(ova.id))
-        except Exception:
-            logger.exception("failed to tie RAG chunks to ova", ova_id=ova.id)
-
-    return {"ova_id": str(ova.id), "status": "listo"}
+    return {"ova_id": result.ova_id, "status": "listo"}
 
 
 @router.get(

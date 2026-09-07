@@ -6,6 +6,7 @@ from ova.application.use_cases.delete_ova import DeleteOva
 from ova.application.use_cases.list_trashed_ovas import ListTrashedOvas
 from ova.application.use_cases.permanently_delete_ova import PermanentlyDeleteOva
 from ova.application.use_cases.restore_ova import RestoreOva
+from ova.application.use_cases.save_ova import SaveOva
 from ova.application.use_cases.update_ova_metadata import UpdateOvaMetadata
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "ListTrashedOvas",
     "PermanentlyDeleteOva",
     "RestoreOva",
+    "SaveOva",
     "UpdateOvaMetadata",
 ]

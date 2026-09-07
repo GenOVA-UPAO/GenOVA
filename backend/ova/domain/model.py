@@ -19,6 +19,15 @@ class OvaOwner:
 
 
 @dataclass(frozen=True, slots=True)
+class OvaPhase:
+    type: str
+    order: int
+    content: str
+    title: str | None = None
+    resource_type_id: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class Ova:
     id: str
     owner_id: str

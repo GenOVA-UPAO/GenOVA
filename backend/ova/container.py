@@ -8,6 +8,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from core.database import get_db
+from ova.application.scorm_persist import persist_scorm_zip
 from ova.application.use_cases import (
     BatchDeleteOvas,
     BatchMoveOvasToTrash,
@@ -17,16 +18,20 @@ from ova.application.use_cases import (
     ListTrashedOvas,
     PermanentlyDeleteOva,
     RestoreOva,
+    SaveOva,
     UpdateOvaMetadata,
 )
 from ova.infrastructure.scorm_package_cleaner import ProjectScormPackageCleaner
+from ova.infrastructure.sqlalchemy_creation_repository import SqlAlchemyOvaCreationRepository
 from ova.infrastructure.sqlalchemy_lifecycle_repository import (
     SqlAlchemyOvaLifecycleRepository,
 )
+from scorm import build_scorm_zip_bytes
 
 
 @dataclass(frozen=True, slots=True)
 class OvaUseCases:
+    save_ova: SaveOva
     update_metadata: UpdateOvaMetadata
     delete_ova: DeleteOva
     count_trashed: CountTrashedOvas
@@ -40,8 +45,14 @@ class OvaUseCases:
 
 def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
     lifecycle = SqlAlchemyOvaLifecycleRepository(db)
+    creation = SqlAlchemyOvaCreationRepository(db)
     packages = ProjectScormPackageCleaner()
     return OvaUseCases(
+        save_ova=SaveOva(
+            creation,
+            build_scorm_zip=build_scorm_zip_bytes,
+            persist_scorm_zip=persist_scorm_zip,
+        ),
         update_metadata=UpdateOvaMetadata(lifecycle),
         delete_ova=DeleteOva(lifecycle),
         count_trashed=CountTrashedOvas(lifecycle),
