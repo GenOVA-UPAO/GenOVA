@@ -32,7 +32,7 @@ Git hooks vía **Husky** (`pnpm install` los activa con el script `prepare`):
 |---|---|
 | `pre-commit` | `lint-staged` — ESLint `--fix` + Prettier sobre los archivos **staged** del frontend |
 | `commit-msg` | `commitlint` — exige Conventional Commits (`tipo(scope): asunto`) |
-| `pre-push` | lint frontend + Vitest + `ruff` backend; BDD del backend solo si responde en `:8000` |
+| `pre-push` | lint frontend + Vitest + `ruff` backend + **fronteras de arquitectura** (`lint-imports` + `check_module_size.py`); BDD del backend solo si responde en `:8000` |
 
 Saltar un hook puntualmente: `git commit --no-verify` / `git push --no-verify`.
 
@@ -141,7 +141,7 @@ Para desactivar RAG por completo: `RAG_DISABLED=1`.
 
 ### SMTP (restablecimiento de contraseña)
 
-`POST /api/auth/reset-password` consume un token enviado por correo. El sender vive en `backend/auth/email.py`. Override de credenciales:
+`POST /api/auth/reset-password` consume un token enviado por correo. El sender vive en `backend/auth/infrastructure/email_adapters.py`. Override de credenciales:
 
 ```env
 SMTP_HOST=smtp.gmail.com
@@ -161,6 +161,27 @@ pnpm dev:docker
 ```
 
 Levanta frontend (`http://localhost:4200`) y backend (`http://localhost:8000`) en contenedores con hot-reload.
+
+### Stack local completo con Postgres + pgvector (sin Supabase)
+
+`docker-compose.dev.yml` es un override que añade un Postgres con pgvector y
+reapunta el backend a él por la red interna de compose. Migraciones y seed corren
+solos al arrancar el backend:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db backend
+```
+
+> ⚠️ **El servicio `frontend` de compose NO arranca hoy**: su `pnpm install`
+> dentro del contenedor falla con `ERR_PNPM_IGNORED_BUILDS`. El workaround que
+> funciona es levantar el frontend en el host, saltándose el envoltorio de pnpm:
+>
+> ```bash
+> cd frontend && node scripts/run-with-api-env.mjs serve --host 0.0.0.0 --port 4200
+> ```
+>
+> El proxy de `frontend/proxy.conf.json` ya apunta a `127.0.0.1:8000`, así que
+> con el backend de compose en marcha el frontend del host le habla sin tocar nada.
 
 ### Sin Docker — Backend con `pip`
 
@@ -215,7 +236,7 @@ completa de variables de entorno está en `backend/.env.example` y `frontend/.en
 | `pnpm dev` | Frontend en modo desarrollo |
 | `pnpm build` | Build de producción del frontend |
 | `pnpm preview` | Previsualiza el build (`http://localhost:4173`) |
-| `pnpm lint` | ESLint sobre el frontend (typescript-eslint strict + angular-eslint, max-lines: 250, error) |
+| `pnpm lint` | ESLint sobre el frontend (typescript-eslint **type-checked strict** + angular-eslint + prettier; fronteras de features y anti-barrels en `error`; caps de tamaño en `warn`) |
 | `pnpm format` | Prettier sobre el frontend (vía eslint-plugin-prettier) |
 | `pnpm test:unit` | BDD unit (cucumber-js, sin browser/backend; corre TS vía `tsx`) |
 | `pnpm --filter frontend test` | Tests de componente (Vitest + Testing Library) |
@@ -239,6 +260,11 @@ uv run ruff format .
 pytest                  # con pip
 uv run pytest           # con uv
 
+# Arquitectura: fronteras de import entre dominios (~40 contratos en
+# pyproject.toml → [tool.importlinter]) y tamaño de módulos (aviso, no bloquea)
+uv run lint-imports
+uv run python scripts/check_module_size.py
+
 # Tests manuales contra API en vivo:
 python tests/test_agents_io.py
 python tests/test_resource_quality.py
@@ -251,27 +277,28 @@ Override env para los tests manuales: `BASE`, `EMAIL`, `PASS`, `PHASE`, `TYPE`, 
 
 ```
 GenOVA/
-├── .github/                 # workflows CI (lint + backend-bdd + frontend-unit → e2e), dependabot, codeql
+├── .github/                 # workflows CI (lint-frontend/lint-backend → backend-bdd + frontend-unit → e2e), dependabot, codeql
 ├── .husky/                  # git hooks: pre-commit (lint-staged), commit-msg (commitlint), pre-push
 ├── commitlint.config.mjs    # Conventional Commits
 ├── lint-staged.config.mjs   # ESLint --fix + Prettier sobre archivos staged del frontend
-├── frontend/                # Angular 22 (ESLint, 250-line cap)
+├── frontend/                # Angular 22 (ESLint type-checked, caps de tamaño en warn)
 ├── backend/                 # FastAPI
-│   ├── pyproject.toml       # uv + ruff + pytest config
+│   ├── pyproject.toml       # uv + ruff + pytest + import-linter (~40 contratos)
 │   ├── requirements.txt     # pip (sincronizado con pyproject)
 │   ├── requirements-dev.txt # pip — extras de desarrollo
 │   ├── .python-version      # 3.11 (uv lo lee)
-│   ├── auth/                # Login, registro, JWT, reset-password + SMTP
-│   ├── ova/                 # Save, listado, edición, regeneración, papelera, duplicar
-│   ├── generation/          # Pipeline de generación 5E
-│   ├── llm/                 # Router de LLMs + cadenas de fallback (Groq / OpenRouter)
-│   ├── rag/                 # Ingesta + retrieval pgvector (multimodal Gemini)
-│   ├── roles/               # CRUD de roles y permisos (JSONB)
-│   ├── users/               # Perfil propio + administración de usuarios
-│   ├── scorm/               # Empaquetado SCORM 1.2 (template + service)
-│   ├── storage/             # Wrapper de Supabase Storage (signed URLs)
-│   ├── prometheus/          # Panel de nodos / observabilidad de generación
-│   ├── uploads/             # Subida temporal de archivos (alimenta RAG)
+│   ├── models.py            # Registro agregado del ORM (punto de corte sancionado)
+│   ├── auth/                # Hexagonal: login, registro, JWT, reset-password + SMTP
+│   ├── ova/                 # Hexagonal: CRUD, versiones, papelera, duplicar
+│   ├── generation/          # Hexagonal: jobs (runner/arq) + regen 5E por fases
+│   ├── llm/                 # Soporte KISS: catálogo, routers y fallbacks (Groq/OpenRouter)
+│   ├── rag/                 # Hexagonal: ingesta + retrieval pgvector (multimodal Gemini)
+│   ├── roles/               # Hexagonal (piloto): CRUD de roles y permisos (JSONB)
+│   ├── users/               # Hexagonal: ajustes propios + administración + analítica
+│   ├── scorm/               # dominio puro de empaquetado SCORM 1.2 + router de health
+│   ├── storage/             # Adaptador outbound: Supabase Storage (signed URLs)
+│   ├── prometheus/          # Soporte KISS: motor LangGraph de generación
+│   ├── uploads/             # Hexagonal: subida temporal de archivos (alimenta RAG)
 │   ├── migrations/          # SQL aplicados al arrancar (auto-migración en lifespan)
 │   ├── main.py              # Entry point (CORS, logging, lifespan, registro de routers)
 │   ├── worker.py            # Worker arq (cola durable opcional)
@@ -295,31 +322,115 @@ Lo que importa es **una sola responsabilidad por unidad**, no un límite de lín
 | Clase | ESLint `max-classes-per-file` | 1 por archivo | error (frontend, tras Fase 4) |
 | Archivo / módulo | ESLint `max-lines` · `backend/scripts/check_module_size.py` | 400 | warn — dispara revisión, no rompe build |
 
-Excepciones: `*.spec.ts` / `tests/**`; `backend/prometheus/**` (motor LangGraph) y ficheros de datos (`*_data.py`, catálogos).
+Excepciones declaradas en `backend/pyproject.toml → per-file-ignores`: `tests/**`, `tools/**`,
+`scripts/**`, y los subdominios de soporte con tratamiento ligero (`prometheus/**`, `llm/**`,
+`users/**`, `generation/**` en las reglas de complejidad) y ficheros de datos (`*_data.py`,
+catálogos). Estas excepciones son deuda marcada: se eliminan línea a línea cuando el código
+las merece, no de golpe.
 
 ### Arquitectura
 
-- **Backend — hexagonal por dominio** (`backend/<dominio>/`):
-  `domain/` (entidades puras + value objects + errores + políticas; sin `fastapi`/`sqlalchemy`/`pydantic`) →
-  `application/` (puertos `Protocol`, DTOs `@dataclass`, casos de uso) →
-  `infrastructure/` (`orm.py`, mappers, repos SQLAlchemy) · `interface/http/` (routers FastAPI, schemas).
-  `container.py` cablea la DI de FastAPI (`Depends`). Cross-dominio solo vía `<dominio>/__init__.py`.
-  Fronteras enforced con **`import-linter`** (`backend/pyproject.toml` → `[tool.importlinter]`;
-  `lint-imports` en `pre-push` y CI) — 25 contratos.
-  Estado: `roles`/`uploads`/`rag` completos (puertos + casos de uso); `storage`/`scorm` ligeros
-  (adaptador / dominio puro); `auth`/`users`/`ova` con las capas ya separadas y la extracción
-  de cada router a casos de uso pendiente; `generation`/`llm`/`prometheus` como subdominios de
-  soporte (solo contratos de perímetro).
-- **Frontend — features + fronteras enforced** (`eslint-plugin-boundaries`, en `warn` durante
-  el refactor): `feature` → `core` / su propia feature (nunca otra feature); `core` → `core`
-  (nunca `feature`); `app` → cualquiera.
-- **Sin barrel files** en el frontend (`eslint-plugin-no-barrel-files`, hard error): nada de
-  `index.ts` que solo re-exporta ni `export { X } from …`; se importa del módulo fuente. Los
-  subpath de `@spartan-ng/helm` están exentos.
-- **Capa de servicios separada de componentes** (frontend): `services/*.ts` hace `fetch` y
-  mantiene estado con signals; los componentes/páginas standalone solo orquestan layout.
-- **Mobile-first**: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y
-  centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
+#### Backend — hexagonal por dominio
+
+Ejemplo canónico: `backend/roles/` (el piloto). Cada dominio con hexagonal estricto tiene
+exactamente este esqueleto:
+
+```
+backend/<dominio>/
+├── domain/              # Entidades, value objects, errores y políticas PURAS.
+│                        # Sin fastapi, sin sqlalchemy, sin pydantic. Si esto importa
+│                        # un framework, la frontera está rota.
+├── application/         # ports.py (Protocol — contratos estructurales), dto.py
+│                        # (@dataclass de entrada/salida), use_cases/<verbo>_<sustantivo>.py
+│                        # (una clase por fichero con .execute()). Sin I/O.
+├── infrastructure/      # Adaptadores SQLAlchemy que implementan los puertos, mappers,
+│                        # clientes externos. No importa application: los Protocol son
+│                        # estructurales. El ORM llega por `from models import X`.
+├── interface/http/      # Routers FINOS: validan el request, invocan el caso de uso
+│                        # y traducen. error_map.py traduce errores de dominio → HTTP.
+│                        # El sobre JSON de cada endpoint se copia tal cual está hoy.
+└── container.py         # Composition root: build_<dominio>(db=Depends(get_db)) →
+                         # dataclass con los casos de uso. FastAPI ES el contenedor.
+```
+
+Los routers consumen `Depends(build_<dominio>())`; los errores de dominio suben y
+`error_map.py` los baja a HTTP con el mismo cuerpo que antes del refactor (byte a byte).
+
+**Quién adopta qué, y por qué:**
+
+| Dominio | Estado | Motivo |
+|---|---|---|
+| `roles`, `auth`, `users`, `ova`, `generation`, `rag`, `uploads` | Hexagonal completo | Agregados de negocio con lógica y estado propios |
+| `scorm` | dominio puro + router de health, **sin** capa de aplicación | Ensamblar el zip no tiene caso de uso HTTP que lo justifique |
+| `storage` | adaptador outbound puro (`port.py` + `supabase.py`) | Solo habla con Supabase Storage; prohibido que toque HTTP/ORM |
+| `prometheus` (motor LangGraph) y `llm` (catálogo/proveedores) | **KISS por diseño**, no por deuda | Subdominios de soporte: no tienen entidad agregada ni ciclo de vida propio. Adoptar entity/VO/DTO/use-case era ceremonia sin retorno. Se les exige solo perímetro: cero `fastapi` dentro y fronteras con import-linter |
+
+#### Puntos de corte sancionados (los "por qué" que se pierden sin documentar)
+
+- **`models.py` NO está en `root_packages` de import-linter a propósito.** Es el registro
+  agregado del ORM (re-exporta cada clase para poblar `Base.metadata`). Al no ser paquete
+  raíz, import-linter no atraviesa `from models import X`: ese patrón NO acopla dominios a
+  ojos de los contratos y es la vía legítima para *entidades de persistencia*.
+  ⚠️ Meterlo en `root_packages` reacoplaría los 11 dominios de golpe. No hacerlo.
+- **`ova/__init__.py` re-exporta con `__getattr__` (PEP 562), no con imports ansiosos.**
+  `models.py` importa `ova.infrastructure.orm` (línea 30), lo que ejecuta `ova/__init__.py`
+  a mitad de la carga de `models`; si el `__init__` importara `ova.application.*` de forma
+  ansiosa, `edit_helpers` haría `from models import Ova` sobre un módulo a medio cargar →
+  ImportError circular. Los re-export perezosos (`ensure_version_exists`, `get_active_version`,
+  `is_ova_owner`, `ova_output_dir`, `persist_scorm_zip`) son la superficie pública que
+  consumen otros dominios — nunca `ova.interface` (crearía un ciclo con `generation`).
+- **`auth.dependencies`** (`get_current_user` / `require_admin` / `require_permission`) es
+  la superficie transversal de guards, consumida por ~40 módulos: equiparable a
+  `core.database.get_db`. Cualquier `*.interface` puede importarla; es un edge sancionado,
+  no un acoplamiento a perseguir.
+- **`auth.infrastructure.cookies`** (limpiar cookie de auth) y **`llm.clients.key_resolver.mask_key`**
+  son los otros edges entre dominios explícitamente permitidos y listados en los contratos.
+
+#### Cómo se enforza todo
+
+| Herramienta | Qué vigila | Dónde corre |
+|---|---|---|
+| `lint-imports` (import-linter) | ~40 contratos en `backend/pyproject.toml → [tool.importlinter]`: pureza de cada `domain/`, capas `interface → container → application → domain`, independencia entre dominios, perímetro de `prometheus`/`llm` | `pre-push`, CI (job `lint-backend`), ejecutable a mano desde `backend/` |
+| `eslint-plugin-boundaries` | frontend: `feature → core` / su propia feature (nunca otra feature), `core → core`, `app` → cualquiera — en `error` | `pnpm lint`, `pre-commit` (vía lint-staged), CI |
+| `eslint-plugin-no-barrel-files` | nada de `index.ts` que solo re-exporta; importar del módulo fuente (`@spartan-ng/helm/*` exentos) | ídem |
+| `scripts/check_module_size.py` | ningún `.py` supera 400 líneas de código (aviso, no bloquea) | ídem |
+
+Los cuatro corren en `.husky/pre-push` y en `.github/workflows/ci.yml` (job `lint-backend`
+incluye import-linter y tamaño de módulos; `lint-frontend` corre `pnpm lint`).
+
+#### Frontend — features con fronteras enforced
+
+`eslint-plugin-boundaries` (en `error`): `feature → core` / su propia feature (nunca otra
+feature); `core → core` (nunca `feature`); `app → cualquiera`. Sin barrel files
+(`eslint-plugin-no-barrel-files`, hard error). La capa de servicios está separada de los
+componentes: `services/*.ts` hace `fetch` y mantiene estado con signals; los
+componentes/páginas standalone solo orquestan layout.
+
+Dos decisiones de lint documentadas en `frontend/eslint.config.mjs` porque lo contrario
+cambiaría comportamiento en silencio:
+
+- `prefer-nullish-coalescing` en **off**: se hizo la pasada dedicada de `||` → `??` y se
+  midió la regla activándola (136 flags). Sin `strictNullChecks` el type-checker considera
+  nullables todos los tipos y la regla marca también los fallbacks intencionales (mensajes
+  de error, defaults `|| 0`/`|| []`, y campos donde el backend envía `""` real por sus
+  serializadores `x or ""`). Activarla exigiría 130+ `eslint-disable`. Se revisita si se
+  activa `strictNullChecks`.
+- `no-unnecessary-condition` en **off**: contra payloads de API tipados flojo produce más
+  falsos positivos que señal.
+
+Mobile-first: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y
+centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
+
+#### Backend — núcleo de ejecución (lateral, comportamiento de infraestructura)
+
+`generation/jobs/` y `generation/regen/` viven fuera de los cuatro directorios formales a
+propósito: son el core de ejecución en hilos/worker (runner, sweep, materialización, regen)
+con anclas de tests que hacen monkeypatch de sus atributos (`jobs_runner.SessionLocal`,
+`jobs_materialize._persist_scorm`, …). Moverlos rompería tests y consumers sin ganar nada:
+los edges hacia `prometheus`/`llm`/`scorm`/`rag`/`storage` que quedan ahí son de
+infraestructura y están cubiertos por contratos. Los edge HTTP (`regen_router.router`,
+`jobs_service.sweep_stale_jobs_for_ovas`) se resuelven desde esas rutas exactas porque `ova`
+los importa.
 
 ## Funcionalidades principales
 
@@ -372,7 +483,7 @@ Angular Router (`frontend/src/app/app.routes.ts`). Las rutas protegidas exigen s
 - **Lockout**: 5 intentos fallidos → 15 min bloqueo.
 - **Fallback chain LLM**: errores recuperables (rate-limit, 402, 5xx) caen a un modelo Groq de respaldo en lugar de exponer el fallo al cliente.
 - **Reset tokens no se devuelven al cliente.** El endpoint de reset por correo genera un token largo (`secrets.token_urlsafe(32)`) y solo confirma que el correo fue encolado. El admin que dispara la operación nunca ve el token.
-- **Sin secretos hardcodeados.** `auth/email.py` exige `SMTP_USER` / `SMTP_PASSWORD` vía env; si faltan, lanza `EmailNotConfigured` y registra el fallo (no envía).
+- **Sin secretos hardcodeados.** `auth/infrastructure/email_adapters.py` exige `SMTP_USER` / `SMTP_PASSWORD` vía env; si faltan, lanza `EmailNotConfigured` y registra el fallo (no envía).
 - **Errores de BD nunca se filtran**. Todos los routers usan helpers `commit_or_500()` que loguean `logger.exception(...)` y responden con mensaje genérico.
 
 ## Endpoints de salud
@@ -393,12 +504,14 @@ GET /api/uploads/health
 
 ## CI/CD
 
-Push o PR a `develop` / `main` dispara el pipeline en paralelo:
+Push o PR a `develop` / `main` dispara el pipeline en `.github/workflows/ci.yml`:
 
 ```
-lint ──────────────────┐
-backend-bdd ───────────┼──→ e2e
-frontend-unit (BDD) ───┘
+lint-frontend (pnpm lint) ─────────┐
+lint-backend (ruff + import-linter │
+  + tamaño de módulos) ────────────┼──→ e2e
+backend-bdd (pytest-bdd, coverage) │
+frontend-unit (cucumber-js BDD) ───┘
 ```
 
 Secrets requeridos en el repositorio CI:
