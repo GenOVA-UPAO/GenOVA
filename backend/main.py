@@ -41,7 +41,7 @@ from roles.interface.http.router import router as roles_router
 from run_migrations import run_migrations
 from scorm.router import router as scorm_router
 from seed import seed_db
-from uploads.router import router as uploads_router
+from uploads.interface.http.router import router as uploads_router
 from users.admin.list_router import router as users_list_router
 from users.admin.nodes_config_router import router as nodes_config_router
 from users.admin.platform_settings_router import router as platform_settings_router

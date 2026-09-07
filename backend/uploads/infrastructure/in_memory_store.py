@@ -1,8 +1,10 @@
-"""In-memory registry of temp uploads + thread-safe pruning.
+"""Registro en memoria de subidas temporales + pruning thread-safe.
 
-Kept in its own module so `service.py` can stay narrow and the lock
-internals don't leak across the package boundary.
+En su propio módulo para que el repositorio quede estrecho y los internals del
+lock no se filtren fuera del paquete.
 """
+
+from __future__ import annotations
 
 import os
 import threading
@@ -49,21 +51,8 @@ def remove_file(file_path: str) -> None:
         path_obj.unlink(missing_ok=True)
 
 
-def serialize_upload(upload: dict) -> dict:
-    return {
-        "upload_id": upload["upload_id"],
-        "filename": upload["filename"],
-        "content_type": upload["content_type"],
-        "size_bytes": upload["size_bytes"],
-        "created_at": upload["created_at"],
-        "expires_at": upload["expires_at"],
-        "confirmed_at": upload.get("confirmed_at"),
-        "rag_status": upload.get("rag_status"),
-    }
-
-
 def prune_expired_locked() -> None:
-    """Drop expired entries. Caller must hold `lock()`."""
+    """Descarta entradas expiradas. El llamador debe tener `lock()`."""
     now = time.time()
     expired_ids = [uid for uid, item in _temp_uploads.items() if now >= float(item["expires_at"])]
     for uid in expired_ids:

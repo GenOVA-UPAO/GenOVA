@@ -183,6 +183,36 @@ forbidden_modules = [
     "users", "scorm", "generation", "prometheus", "uploads",
 ]
 
+# --- uploads: hexagonal estricto ---
+
+[[tool.importlinter.contracts]]
+name = "uploads.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["uploads.domain"]
+forbidden_modules = [
+    "uploads.application", "uploads.infrastructure", "uploads.interface", "uploads.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "uploads.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["uploads.application"]
+forbidden_modules = [
+    "uploads.infrastructure", "uploads.interface", "uploads.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette", "rag",
+]
+
+[[tool.importlinter.contracts]]
+name = "uploads: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "uploads.interface",
+    "uploads.container",
+    "uploads.application",
+    "uploads.domain",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
