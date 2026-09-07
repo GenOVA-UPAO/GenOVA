@@ -346,7 +346,12 @@ forbidden_modules = [
     "generation.application", "generation.infrastructure", "generation.interface",
     "generation.container", "generation.jobs", "generation.regen",
     "fastapi", "sqlalchemy", "pydantic", "starlette",
+    "prometheus", "llm",
 ]
+# `prometheus` y `llm` se cierran ahora que el núcleo de ejecución pasó a capas:
+# las reglas puras del runner (seed_plan, build_graph_state, finish_status) y el
+# progreso de regen viven en domain y son solo stdlib. El motor LangGraph y el
+# cliente LLM quedan como adaptadores en `generation.infrastructure`.
 
 [[tool.importlinter.contracts]]
 name = "generation.application no depende de infraestructura/interface ni frameworks"
