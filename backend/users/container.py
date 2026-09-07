@@ -27,12 +27,14 @@ from users.application.use_cases import (
     GetApiKeys,
     GetResourceConfigs,
     GetUserAnalytics,
+    HasOwnLlmKey,
     ListAllLinks,
     ListMyLinks,
     ListUsers,
     ResendLink,
     SaveApiKeys,
     SaveEnabledModels,
+    SaveLlmSettings,
     SaveOvaSettings,
     SaveResourceConfigs,
     UpdateUserProfile,
@@ -79,6 +81,8 @@ class UsersUseCases:
     save_api_keys: SaveApiKeys
     save_enabled_models: SaveEnabledModels
     save_ova_settings: SaveOvaSettings
+    save_llm_settings: SaveLlmSettings
+    has_own_llm_key: HasOwnLlmKey
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -116,4 +120,6 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         save_api_keys=SaveApiKeys(api_keys),
         save_enabled_models=SaveEnabledModels(settings),
         save_ova_settings=SaveOvaSettings(settings),
+        save_llm_settings=SaveLlmSettings(settings),
+        has_own_llm_key=HasOwnLlmKey(settings),
     )

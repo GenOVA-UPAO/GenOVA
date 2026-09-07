@@ -168,3 +168,9 @@ class SaveEnabledModelsInput:
 class SaveOvaSettingsInput:
     user_id: UUID
     settings: dict
+
+
+@dataclass(frozen=True, slots=True)
+class SaveLlmSettingsInput:
+    user_id: UUID
+    settings: dict

@@ -1,12 +1,15 @@
 """Per-user LLM generation settings (general config, applies to all the user's
 OVAs). GET returns the effective config + catalog for the UI; PUT validates a
-chosen config against the curated catalog and persists it on the user row."""
+chosen config against the curated catalog and persists it on the user row.
+
+Adaptador HTTP: el filtrado de catálogo y la forma del payload viven en
+`users.domain.llm_settings` (el catálogo se inyecta); las llamadas a llm se
+resuelven aquí (edge sancionado users -> llm).
+"""
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import get_db
@@ -21,38 +24,24 @@ from llm.catalog.model_catalog import (
     DEFAULTS,
     TIMEOUT_MAX,
     TIMEOUT_MIN,
-    is_default_model,
     merge_with_defaults,
     sanitize_settings,
 )
 from llm.providers import TEXT_PROVIDERS
-from models import Role, User, UserRole
+from models import User
+from users.application.dto import SaveLlmSettingsInput
+from users.container import UsersUseCases, build_users
+from users.domain.errors import UserError
+from users.domain.llm_settings import (
+    build_filtered_catalog,
+    enabled_keys,
+    filter_full_catalog,
+    providers_and_types,
+)
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Ajustes de usuario"])
 logger = structlog.get_logger(__name__)
-
-
-def _enabled_keys(user) -> set[tuple[str, str]]:
-    """Set of (provider, model_id) the user has explicitly enabled."""
-    enabled = user.enabled_models or []
-    return {(e["provider"], e["model_id"]) for e in enabled if isinstance(e, dict)}
-
-
-def _has_own_llm_key(user, db: Session) -> bool:
-    """True when user has a personal LLM API key, or holds the admin role."""
-    own = user.user_api_keys or {}
-    if any(own.get(p) for p in TEXT_PROVIDERS):
-        return True
-    return (
-        db.execute(
-            select(UserRole)
-            .join(Role)
-            .where(UserRole.user_id == user.id, Role.name == "administrador")
-        )
-        .scalars()
-        .first()
-        is not None
-    )
 
 
 class LlmSettingsUpdate(BaseModel):
@@ -63,7 +52,7 @@ class LlmSettingsUpdate(BaseModel):
 def get_llm_settings(
     request: Request,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     """Effective per-type config (user override or default) + filtered catalog +
     enabled_models + full catalog (search/category/paginated).
@@ -71,50 +60,18 @@ def get_llm_settings(
     Query params: search, category, page, page_size
     """
     all_entries = get_catalog_entries()
-    enabled_keys = _enabled_keys(current_user)
+    ek = enabled_keys(current_user.enabled_models or [])
+    default_keys = {(d["provider"], d["model_id"]) for d in DEFAULTS.values()}
 
-    # Step 1: curated models — visible when active + (enabled OR default).
-    curated_key_set: set[tuple[str, str]] = set()
-    filtered_catalog: dict[str, list[dict]] = {}
-    for entry in all_entries:
-        if not entry.get("active"):
-            continue
-        p = entry["provider"]
-        key = (p, entry["model_id"])
-        curated_key_set.add(key)
-        if key not in enabled_keys and not is_default_model(p, entry["model_id"]):
-            continue
-        filtered_catalog.setdefault(p, []).append(entry)
-
-    # Step 2: non-curated enabled models from the full catalog. A user who finds
-    # and enables a model in the browser (e.g. qwen/qwen3-32b via OpenRouter)
-    # must see it in the assignment dropdown even if it's not in CATALOG_ENTRIES.
-    full_entries = get_full_catalog_entries()
-    full_by_key = {(e["provider"], e["model_id"]): e for e in full_entries}
-    for key in enabled_keys:
-        if key in curated_key_set:
-            continue  # already handled above
-        fc_entry = full_by_key.get(key)
-        if fc_entry and fc_entry.get("active"):
-            filtered_catalog.setdefault(fc_entry["provider"], []).append(fc_entry)
+    filtered_catalog = build_filtered_catalog(
+        all_entries, get_full_catalog_entries(), ek, default_keys
+    )
 
     full = get_full_catalog_entries()
     search = (request.query_params.get("search") or "").strip().lower()
     category = (request.query_params.get("category") or "all").strip().lower()
     model_type = (request.query_params.get("type") or "all").strip().lower()
-
-    if search:
-        full = [
-            e
-            for e in full
-            if search in e["model_id"].lower() or search in (e.get("label") or "").lower()
-        ]
-    if category == "recommended":
-        full = [e for e in full if e.get("curated")]
-    elif category and category != "all":
-        full = [e for e in full if e.get("provider") == category]
-    if model_type and model_type != "all":
-        full = [e for e in full if e.get("category") == model_type]
+    full = filter_full_catalog(full, search, category, model_type)
 
     page = max(1, int(request.query_params.get("page") or 1))
     page_size = min(int(request.query_params.get("page_size") or 50), 1000)
@@ -123,12 +80,11 @@ def get_llm_settings(
     page_items = full[offset : offset + page_size]
 
     all_entries_active = [e for e in get_full_catalog_entries() if e.get("active")]
-    all_providers = sorted({e.get("provider", "") for e in all_entries_active if e.get("provider")})
-    all_types = sorted({e.get("category", "texto") for e in all_entries_active})
+    all_providers, all_types = providers_and_types(all_entries_active)
 
     return {
-        "settings": merge_with_defaults(current_user.llm_settings, extra_keys=enabled_keys),
-        "has_own_llm_key": _has_own_llm_key(current_user, db),
+        "settings": merge_with_defaults(current_user.llm_settings, extra_keys=ek),
+        "has_own_llm_key": users.has_own_llm_key.execute(current_user.id, TEXT_PROVIDERS),
         "catalog": filtered_catalog,
         "catalog_all": [e for e in all_entries if e.get("active")],
         "catalog_full": page_items,
@@ -152,7 +108,7 @@ def get_llm_settings(
 def refresh_llm_catalog(
     request: Request,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db=Depends(get_db),
 ):
     """Re-fetch the provider catalogs on demand (retry path after a transient
     failure). Always 200 — the per-provider status payload IS the result."""
@@ -169,24 +125,20 @@ def put_llm_settings(
     request: Request,
     payload: LlmSettingsUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     """Validate against the catalog and persist. 400 on any invalid model/timeout."""
-    ek = _enabled_keys(current_user)
+    ek = enabled_keys(current_user.enabled_models or [])
     try:
         clean = sanitize_settings(payload.settings, extra_keys=ek)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
 
-    current_user.llm_settings = clean
     try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("LLM settings write failed", user_id=current_user.id)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo guardar la configuración. Intenta de nuevo.",
-        ) from None
+        saved = users.save_llm_settings.execute(
+            SaveLlmSettingsInput(user_id=current_user.id, settings=clean)
+        )
+    except UserError as err:
+        raise to_http_exception(err) from None
 
-    return {"settings": merge_with_defaults(current_user.llm_settings, extra_keys=ek)}
+    return {"settings": merge_with_defaults(saved, extra_keys=ek)}
