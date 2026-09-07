@@ -37,4 +37,5 @@ def to_resource(orm: OvaJobResource) -> JobResource:
         error_id=orm.error_id,
         title=title,
         emoji=emoji,
+        content=orm.content,
     )

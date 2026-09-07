@@ -14,7 +14,13 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from core.database import get_db
-from generation.application.use_cases import CancelJob, CreateJob, FindJobByOva, GetJobStatus
+from generation.application.use_cases import (
+    CancelJob,
+    CreateJob,
+    FindJobByOva,
+    GetJobStatus,
+    GetResourceContent,
+)
 from generation.infrastructure.image_settings import LlmImageSettingsResolver
 from generation.infrastructure.job_launcher import ThreadOrQueueJobLauncher
 from generation.infrastructure.sqlalchemy_job_repository import (
@@ -28,6 +34,7 @@ class GenerationUseCases:
     create_job: CreateJob
     get_job_status: GetJobStatus
     find_job_by_ova: FindJobByOva
+    get_resource_content: GetResourceContent
     cancel_job: CancelJob
 
 
@@ -41,6 +48,7 @@ def build_generation(db: Session = Depends(get_db)) -> GenerationUseCases:
         ),
         get_job_status=GetJobStatus(repo=repo),
         find_job_by_ova=FindJobByOva(repo=repo),
+        get_resource_content=GetResourceContent(repo=repo),
         cancel_job=CancelJob(repo=repo),
     )
 

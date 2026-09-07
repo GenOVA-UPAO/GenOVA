@@ -34,3 +34,4 @@ class JobResource:
     error_id: UUID | None = None
     title: str = ""
     emoji: str = ""
+    content: str | None = None

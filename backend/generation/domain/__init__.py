@@ -1,6 +1,12 @@
 """Núcleo de dominio de generación. Sin dependencias de framework ni de otras capas."""
 
-from generation.domain.errors import GenerationError, JobNotFound, JobNotRunning
+from generation.domain.errors import (
+    GenerationError,
+    JobNotFound,
+    JobNotRunning,
+    ResourceNotFound,
+    ResourceNotReady,
+)
 from generation.domain.job import Job, JobResource
 from generation.domain.lifecycle import (
     JOB_STATUSES,
@@ -21,6 +27,8 @@ __all__ = [
     "JobNotFound",
     "JobNotRunning",
     "JobResource",
+    "ResourceNotFound",
+    "ResourceNotReady",
     "can_cancel",
     "is_stream_terminal",
 ]

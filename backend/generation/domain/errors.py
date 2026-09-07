@@ -25,3 +25,17 @@ class JobNotRunning(GenerationError):
 
     def __init__(self, message: str = "El job ya no está en curso.") -> None:
         super().__init__(message)
+
+
+class ResourceNotFound(GenerationError):
+    code = "resource_not_found"
+
+    def __init__(self, message: str = "Recurso no encontrado.") -> None:
+        super().__init__(message)
+
+
+class ResourceNotReady(GenerationError):
+    code = "resource_not_ready"
+
+    def __init__(self, message: str = "El recurso aún no está listo.") -> None:
+        super().__init__(message)

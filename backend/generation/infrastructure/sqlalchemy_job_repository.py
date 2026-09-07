@@ -61,6 +61,10 @@ class SqlAlchemyJobRepository:
         resources = jobs_service.list_resources(self._db, orm.id)
         return to_job(orm), [to_resource(r) for r in resources]
 
+    def get_resource(self, job_id: UUID, resource_id: UUID) -> JobResource | None:
+        orm = jobs_service.get_resource(self._db, job_id, resource_id)
+        return to_resource(orm) if orm is not None else None
+
     def cancel(self, job_id: UUID) -> None:
         orm = self._db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one()
         jobs_service.cancel_job(self._db, orm)

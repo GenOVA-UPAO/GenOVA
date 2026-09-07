@@ -87,3 +87,19 @@ class JobStatusView:
 class CancelJobResult:
     job_id: str
     status: str
+
+
+@dataclass(frozen=True, slots=True)
+class ResourceContentView:
+    id: str
+    phase_type: str
+    resource_type: str | None
+    content: str
+
+    def as_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "phase_type": self.phase_type,
+            "resource_type": self.resource_type,
+            "content": self.content,
+        }

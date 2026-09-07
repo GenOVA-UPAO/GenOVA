@@ -112,7 +112,7 @@ def get_resource_content(
     job_id: str,
     resource_id: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    uc: GenerationUseCases = Depends(build_generation),
 ):
     """Return the generated HTML of a `done` resource (preview, R1). Owner only.
 
@@ -123,23 +123,11 @@ def get_resource_content(
     res_uuid = _parse_uuid(resource_id)
     if job_uuid is None or res_uuid is None:
         return _not_found("resource_not_found", "Recurso no encontrado.")
-    job = jobs_service.get_job(db, job_uuid, current_user.id)
-    if job is None:
-        return _not_found("resource_not_found", "Recurso no encontrado.")
-    resource = jobs_service.get_resource(db, job.id, res_uuid)
-    if resource is None:
-        return _not_found("resource_not_found", "Recurso no encontrado.")
-    if resource.status != "done" or not resource.content:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={"error": "resource_not_ready", "message": "El recurso aún no está listo."},
-        )
-    return {
-        "id": str(resource.id),
-        "phase_type": resource.phase_type,
-        "resource_type": resource.resource_type,
-        "content": resource.content,
-    }
+    try:
+        view = uc.get_resource_content.execute(job_uuid, res_uuid, current_user.id)
+    except GenerationError as err:
+        return generation_error_to_response(err)
+    return view.as_dict()
 
 
 @router.post("/{job_id}/cancel", summary="Cancelar un trabajo en curso")
