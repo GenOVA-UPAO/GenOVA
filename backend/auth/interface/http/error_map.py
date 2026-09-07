@@ -13,8 +13,11 @@ from auth.domain.errors import (
     AuthError,
     EmailAlreadyRegistered,
     EmailNotVerified,
+    EmailVerificationUserNotFound,
+    ExpiredEmailVerificationToken,
     ExpiredPasswordResetToken,
     InvalidCredentials,
+    InvalidEmailVerificationToken,
     InvalidFullName,
     InvalidPasswordResetToken,
     PasswordResetUserNotFound,
@@ -24,6 +27,27 @@ from auth.domain.errors import (
 )
 
 _ERROR_RESPONSES: dict[type[AuthError], tuple[int, dict[str, object]]] = {
+    InvalidEmailVerificationToken: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "invalid_token",
+            "message": "El enlace de verificación es inválido o ya fue usado.",
+        },
+    ),
+    ExpiredEmailVerificationToken: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "expired_token",
+            "message": "El enlace de verificación ha expirado. Solicita uno nuevo.",
+        },
+    ),
+    EmailVerificationUserNotFound: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "user_not_found",
+            "message": "La cuenta asociada ya no existe.",
+        },
+    ),
     WeakResetPassword: (
         status.HTTP_400_BAD_REQUEST,
         {

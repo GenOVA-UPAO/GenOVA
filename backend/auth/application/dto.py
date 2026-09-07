@@ -50,3 +50,19 @@ class RequestPasswordResetInput:
 class ResetPasswordInput:
     token: str
     new_password: str
+
+
+@dataclass(frozen=True, slots=True)
+class VerifyEmailInput:
+    token: str
+
+
+@dataclass(frozen=True, slots=True)
+class VerifyEmailResult:
+    user_id: str
+    email: str
+
+
+@dataclass(frozen=True, slots=True)
+class ResendVerificationInput:
+    email: str

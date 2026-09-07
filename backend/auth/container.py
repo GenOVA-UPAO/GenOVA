@@ -16,7 +16,9 @@ from auth.application.use_cases import (
     LoginUser,
     RegisterUser,
     RequestPasswordReset,
+    ResendVerification,
     ResetPassword,
+    VerifyEmail,
 )
 from auth.infrastructure.email_adapters import SmtpAuthEmailSender
 from auth.infrastructure.login_adapters import (
@@ -32,6 +34,7 @@ from auth.infrastructure.security_adapters import (
     ProjectPasswordPolicy,
     SecureTokenGenerator,
 )
+from auth.infrastructure.verify_adapters import SqlAlchemyEmailVerificationTokenRepository
 from core.config import settings
 from core.database import get_db
 
@@ -42,6 +45,8 @@ class AuthUseCases:
     register_user: RegisterUser
     request_password_reset: RequestPasswordReset
     reset_password: ResetPassword
+    verify_email: VerifyEmail
+    resend_verification: ResendVerification
 
 
 def build_auth(
@@ -53,6 +58,7 @@ def build_auth(
     tokens = SecureTokenGenerator()
     emails = SmtpAuthEmailSender(background_tasks, settings.frontend_url)
     password_reset_repo = SqlAlchemyPasswordResetTokenRepository(db)
+    email_verification_repo = SqlAlchemyEmailVerificationTokenRepository(db)
     return AuthUseCases(
         login_user=LoginUser(
             repo=SqlAlchemyAuthUserRepository(db),
@@ -79,5 +85,11 @@ def build_auth(
             repo=password_reset_repo,
             passwords=passwords,
             password_policy=password_policy,
+        ),
+        verify_email=VerifyEmail(repo=email_verification_repo),
+        resend_verification=ResendVerification(
+            repo=email_verification_repo,
+            tokens=tokens,
+            emails=emails,
         ),
     )

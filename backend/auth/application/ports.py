@@ -12,6 +12,9 @@ from uuid import UUID
 
 from auth.domain.user import (
     AuthUser,
+    EmailRecipient,
+    EmailVerificationTokenRecord,
+    EmailVerificationUser,
     PasswordResetTokenRecord,
     PasswordResetUser,
     RegisteredUser,
@@ -20,7 +23,9 @@ from auth.domain.user import (
 __all__ = [
     "AuthUser",
     "AuthUserRepository",
+    "EmailRecipient",
     "EmailSender",
+    "EmailVerificationTokenRepository",
     "LoginThrottle",
     "PasswordHasher",
     "PasswordPolicy",
@@ -72,7 +77,7 @@ class TokenGenerator(Protocol):
 
 
 class EmailSender(Protocol):
-    def send_verification(self, user: RegisteredUser, token: str) -> None: ...
+    def send_verification(self, user: EmailRecipient, token: str) -> None: ...
 
     def send_password_reset(self, user: PasswordResetUser, token: str) -> None: ...
 
@@ -103,3 +108,19 @@ class PasswordResetTokenRepository(Protocol):
     def find_user(self, user_id: UUID) -> bool: ...
 
     def apply_new_password(self, user_id: UUID, password_hash: str) -> None: ...
+
+
+class EmailVerificationTokenRepository(Protocol):
+    def find_by_token(self, token: str) -> EmailVerificationTokenRecord | None: ...
+
+    def delete(self, token: str) -> None: ...
+
+    def find_user(self, user_id: UUID) -> EmailVerificationUser | None: ...
+
+    def mark_verified(self, user_id: UUID) -> None: ...
+
+    def find_user_by_normalized_email(
+        self, normalized_email: str
+    ) -> EmailVerificationUser | None: ...
+
+    def replace_for_user(self, user_id: UUID, token: str, expires_at: datetime) -> None: ...

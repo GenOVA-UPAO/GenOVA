@@ -9,7 +9,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Protocol
 from uuid import UUID
+
+
+class EmailRecipient(Protocol):
+    email: str
+    full_name: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +45,21 @@ class PasswordResetUser:
 
 @dataclass(frozen=True, slots=True)
 class PasswordResetTokenRecord:
+    user_id: UUID
+    token: str
+    expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class EmailVerificationUser:
+    id: UUID
+    email: str
+    full_name: str | None
+    email_verified: bool
+
+
+@dataclass(frozen=True, slots=True)
+class EmailVerificationTokenRecord:
     user_id: UUID
     token: str
     expires_at: datetime

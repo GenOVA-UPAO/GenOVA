@@ -57,3 +57,15 @@ class ExpiredPasswordResetToken(AuthError):
 
 class PasswordResetUserNotFound(AuthError):
     """La cuenta asociada al token de recuperación ya no existe."""
+
+
+class InvalidEmailVerificationToken(AuthError):
+    """El token de verificación no existe o ya fue utilizado."""
+
+
+class ExpiredEmailVerificationToken(AuthError):
+    """El token de verificación superó su fecha de expiración."""
+
+
+class EmailVerificationUserNotFound(AuthError):
+    """La cuenta asociada al token de verificación ya no existe."""
