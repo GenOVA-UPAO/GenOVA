@@ -3,8 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from 
 
 import { IconComponent } from "@/core/components/icon.component";
 import { toast } from "@/core/lib/toast";
-
-import { PlatformSettingsService } from "../services/platform-settings.service";
+import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

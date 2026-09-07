@@ -3,14 +3,14 @@ import { provideRouter } from "@angular/router";
 import { render, screen, waitFor } from "@testing-library/angular/zoneless";
 
 import { AuthService } from "@/core/auth/auth.service";
+import { PlatformApiKeysCardComponent } from "@/core/components/platform-api-keys-card.component";
+import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
 import { ManageModelsModalComponent } from "../components/manage-models-modal.component";
 import { ModelsMasterDetailComponent } from "../components/models-master-detail.component";
-import { PlatformApiKeysCardComponent } from "../components/platform-api-keys-card.component";
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
 import { PlatformNodesCardComponent } from "../components/platform-nodes-card.component";
 import { UserApiKeysCardComponent } from "../components/user-api-keys-card.component";
-import { PlatformSettingsService } from "../services/platform-settings.service";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 import { ModelsPageComponent } from "./models-page.component";
 

@@ -9,6 +9,7 @@ import {
 import { Router } from "@angular/router";
 
 import { AuthService } from "@/core/auth/auth.service";
+import { PlatformApiKeysCardComponent } from "@/core/components/platform-api-keys-card.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import {
   TabsComponent,
@@ -17,16 +18,15 @@ import {
   TabsTriggerComponent,
 } from "@/core/components/ui/tabs.component";
 import { toast } from "@/core/lib/toast";
+import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
 import { ManageModelsModalComponent } from "../components/manage-models-modal.component";
 import { ModelsMasterDetailComponent } from "../components/models-master-detail.component";
-import { PlatformApiKeysCardComponent } from "../components/platform-api-keys-card.component";
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
 import { PlatformNodesCardComponent } from "../components/platform-nodes-card.component";
 import { UserApiKeysCardComponent } from "../components/user-api-keys-card.component";
 import { type Draft, toDraft, toPayload } from "../lib/llm-config-draft";
 import type { ChipModel } from "../lib/model-task-card.helpers";
-import { PlatformSettingsService } from "../services/platform-settings.service";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 
 function canAccessModels(user: ReturnType<AuthService["user"]>): boolean {

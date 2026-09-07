@@ -33,10 +33,9 @@ export default tseslint.config(
     },
   },
   // Fronteras de arquitectura por features (eslint-plugin-boundaries).
-  // Arranca en "warn" durante el refactor; pasa a "error" en la Fase 4 (frontend).
-  // Reglas: feature -> core / su propia feature (nunca otra feature);
-  //         core    -> core (nunca feature ni app);
-  //         app     -> app / core / feature.
+  // Reglas (enforced como error): feature -> core / su propia feature (nunca otra feature);
+  //                               core    -> core (nunca feature ni app);
+  //                               app     -> app / core / feature.
   {
     files: ["src/**/*.ts"],
     plugins: { boundaries },
@@ -56,7 +55,7 @@ export default tseslint.config(
       "boundaries/no-unknown": "off",
       "boundaries/no-unknown-files": "off",
       "boundaries/element-types": [
-        "warn",
+        "error",
         {
           default: "disallow",
           rules: [

@@ -8,10 +8,9 @@ import {
 } from "@angular/core";
 
 import { IconComponent } from "@/core/components/icon.component";
-
-import { PlatformSettingsService } from "../services/platform-settings.service";
-import { PROVIDER_META } from "./platform-key-meta";
-import { PlatformKeyRowComponent } from "./platform-key-row.component";
+import { PROVIDER_META } from "@/core/components/platform-key-meta";
+import { PlatformKeyRowComponent } from "@/core/components/platform-key-row.component";
+import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

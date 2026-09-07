@@ -3,9 +3,9 @@ import { ChangeDetectionStrategy, Component, inject, type OnInit, signal } from 
 
 import { IconComponent } from "@/core/components/icon.component";
 import { toast } from "@/core/lib/toast";
+import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
 import { criticRoundsVisible, hasUnsavedChanges } from "../lib/nodes-config-draft";
-import { PlatformSettingsService } from "../services/platform-settings.service";
 import { getNodeBadgeColor, getNodeInitials } from "./platform-nodes-card.helpers";
 
 @Component({

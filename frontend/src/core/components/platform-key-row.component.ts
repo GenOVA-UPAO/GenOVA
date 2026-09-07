@@ -12,10 +12,9 @@ import {
 import { FormsModule } from "@angular/forms";
 
 import { IconComponent } from "@/core/components/icon.component";
+import { PROVIDER_META } from "@/core/components/platform-key-meta";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
-
-import { PlatformSettingsService } from "../services/platform-settings.service";
-import { PROVIDER_META } from "./platform-key-meta";
+import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

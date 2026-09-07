@@ -11,8 +11,9 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
+import { PROVIDER_META } from "@/core/components/platform-key-meta";
+
 import { UserLlmSettingsService } from "../services/user-llm-settings.service";
-import { PROVIDER_META } from "./platform-key-meta";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

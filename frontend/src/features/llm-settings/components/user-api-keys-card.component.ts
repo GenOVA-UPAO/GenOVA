@@ -7,8 +7,9 @@ import {
   signal,
 } from "@angular/core";
 
+import { PROVIDER_META } from "@/core/components/platform-key-meta";
+
 import { UserLlmSettingsService } from "../services/user-llm-settings.service";
-import { PROVIDER_META } from "./platform-key-meta";
 import { UserKeyRowComponent } from "./user-key-row.component";
 
 const LLM_PROVIDERS = ["groq", "openrouter", "opencode"];
