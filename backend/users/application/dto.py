@@ -162,3 +162,9 @@ class SaveApiKeysInput:
 class SaveEnabledModelsInput:
     user_id: UUID
     models: list
+
+
+@dataclass(frozen=True, slots=True)
+class SaveOvaSettingsInput:
+    user_id: UUID
+    settings: dict

@@ -67,6 +67,10 @@ class UserSettingsRepository(Protocol):
 
     def save_enabled_models(self, user_id, clean: list) -> list: ...
 
+    def get_ova_settings(self, user_id) -> dict | None: ...
+
+    def save_ova_settings(self, user_id, settings: dict) -> dict: ...
+
 
 class AnalyticsRepository(Protocol):
     """Consultas agregadas de la analítica de aprendizaje (solo lectura)."""

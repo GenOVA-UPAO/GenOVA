@@ -33,6 +33,7 @@ from users.application.use_cases import (
     ResendLink,
     SaveApiKeys,
     SaveEnabledModels,
+    SaveOvaSettings,
     SaveResourceConfigs,
     UpdateUserProfile,
     UpdateUserTheme,
@@ -77,6 +78,7 @@ class UsersUseCases:
     get_api_keys: GetApiKeys
     save_api_keys: SaveApiKeys
     save_enabled_models: SaveEnabledModels
+    save_ova_settings: SaveOvaSettings
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -113,4 +115,5 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         get_api_keys=GetApiKeys(api_keys),
         save_api_keys=SaveApiKeys(api_keys),
         save_enabled_models=SaveEnabledModels(settings),
+        save_ova_settings=SaveOvaSettings(settings),
     )

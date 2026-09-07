@@ -1,52 +1,39 @@
-"""Per-user OVA generation settings: image count, image provider, and image model."""
+"""Per-user OVA generation settings: image count, image provider, and image model.
 
-import structlog
+Adaptador HTTP de los ajustes de OVA; las reglas puras viven en
+`users.domain.ova_settings` y las llamadas a llm se resuelven aquí (edge
+sancionado users -> llm).
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import get_db
 from core.rate_limit import limiter
 from llm.images.image_providers import IMAGE_PROVIDERS
 from models import User
+from users.application.dto import SaveOvaSettingsInput
+from users.container import UsersUseCases, build_users
+from users.domain.errors import UserError
+from users.domain.ova_settings import DEFAULTS, MAX_IMAGES_MAX, assert_provider_in, effective
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Ajustes de usuario"])
-logger = structlog.get_logger(__name__)
-
-_DEFAULTS = {"max_images": 2, "image_provider": "cloudflare", "image_model": None}
-_MAX_IMAGES_MAX = 10
-
-_PROVIDER_DEFAULT_MODEL = {
-    "siliconflow": "stabilityai/stable-diffusion-3-5-large",
-    "runware": "runware:100@1",
-    "falai": "fal-ai/flux/schnell",
-    "cloudflare": "@cf/black-forest-labs/flux-1-schnell",
-}
 
 
 class OvaSettingsUpdate(BaseModel):
-    max_images: int = Field(ge=0, le=_MAX_IMAGES_MAX)
+    max_images: int = Field(ge=0, le=MAX_IMAGES_MAX)
     image_provider: str
     image_model: str | None = None
-
-
-def _effective(raw: dict | None) -> dict:
-    s = raw or {}
-    provider = s.get("image_provider", _DEFAULTS["image_provider"])
-    return {
-        "max_images": s.get("max_images", _DEFAULTS["max_images"]),
-        "image_provider": provider,
-        "image_model": s.get("image_model") or _PROVIDER_DEFAULT_MODEL.get(provider),
-    }
 
 
 @router.get("/me/ova-settings", summary="Obtener los ajustes de OVA propios")
 def get_ova_settings(current_user: User = Depends(get_current_user)):
     return {
-        "settings": _effective(current_user.ova_settings),
+        "settings": effective(current_user.ova_settings),
         "image_providers": list(IMAGE_PROVIDERS),
-        "defaults": _DEFAULTS,
+        "defaults": DEFAULTS,
     }
 
 
@@ -56,17 +43,17 @@ def get_image_models(
     request: Request,
     provider: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db=Depends(get_db),
 ):
     """Return available image models for `provider` using the user's resolved API key."""
     from llm.clients.key_resolver import resolve_key
     from llm.images.image_model_list import get_image_models as _get_models
 
-    if provider not in IMAGE_PROVIDERS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"provider debe ser uno de: {', '.join(IMAGE_PROVIDERS)}",
-        )
+    try:
+        assert_provider_in(provider, IMAGE_PROVIDERS, "provider")
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
+
     api_key = resolve_key(provider, current_user.user_api_keys, db)
     models = _get_models(provider, api_key)
     return {"provider": provider, "models": models}
@@ -78,27 +65,25 @@ def put_ova_settings(
     request: Request,
     payload: OvaSettingsUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    if payload.image_provider not in IMAGE_PROVIDERS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"image_provider debe ser uno de: {', '.join(IMAGE_PROVIDERS)}",
-        )
-
-    current_user.ova_settings = {
-        "max_images": payload.max_images,
-        "image_provider": payload.image_provider,
-        "image_model": payload.image_model,
-    }
     try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("OVA settings write failed", user_id=current_user.id)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo guardar la configuración. Intenta de nuevo.",
-        ) from None
+        assert_provider_in(payload.image_provider, IMAGE_PROVIDERS, "image_provider")
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
 
-    return {"settings": _effective(current_user.ova_settings)}
+    try:
+        saved = users.save_ova_settings.execute(
+            SaveOvaSettingsInput(
+                user_id=current_user.id,
+                settings={
+                    "max_images": payload.max_images,
+                    "image_provider": payload.image_provider,
+                    "image_model": payload.image_model,
+                },
+            )
+        )
+    except UserError as err:
+        raise to_http_exception(err) from None
+
+    return {"settings": effective(saved)}

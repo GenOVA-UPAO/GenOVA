@@ -6,7 +6,7 @@ import structlog
 from sqlalchemy.orm import Session
 
 from models import User
-from users.domain.errors import EnabledModelsNotSaved
+from users.domain.errors import EnabledModelsNotSaved, SettingsWriteFailed
 
 logger = structlog.get_logger(__name__)
 
@@ -32,3 +32,20 @@ class SqlAlchemyUserSettingsRepository:
             raise EnabledModelsNotSaved() from None
 
         return clean
+
+    def get_ova_settings(self, user_id) -> dict | None:
+        user = self._db.get(User, user_id)
+        return user.ova_settings
+
+    def save_ova_settings(self, user_id, settings: dict) -> dict:
+        user = self._db.get(User, user_id)
+        user.ova_settings = settings
+        try:
+            self._db.commit()
+        except Exception:
+            self._db.rollback()
+            logger.exception("OVA settings write failed", user_id=user_id)
+            raise SettingsWriteFailed() from None
+
+        # Tras el commit la sesión expira: la lectura recarga lo persistido.
+        return user.ova_settings
