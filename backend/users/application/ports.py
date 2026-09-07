@@ -6,6 +6,7 @@ from typing import Protocol
 from uuid import UUID
 
 from users.domain.account import UserAccount
+from users.domain.admin import AdminUserSummary
 from users.domain.profile import UserProfile
 
 
@@ -64,3 +65,11 @@ class ResourceConfigRepository(Protocol):
     def get(self, user_id: UUID) -> dict: ...
 
     def save(self, user_id: UUID, configs: dict) -> dict: ...
+
+
+class AdminUserRepository(Protocol):
+    """Persistencia del cluster de administración de usuarios."""
+
+    def count_users(self) -> int: ...
+
+    def list_page(self, offset: int, limit: int) -> list[AdminUserSummary]: ...

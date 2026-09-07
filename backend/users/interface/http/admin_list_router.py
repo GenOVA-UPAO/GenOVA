@@ -1,20 +1,20 @@
 """Admin endpoint: paginated user listing."""
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session, joinedload
 
 from auth.dependencies import require_permission
-from core.database import get_db
 from core.pagination import page_meta
-from models import Role, User, UserRole
+from models import User
+from users.application.dto import ListUsersInput
+from users.container import UsersUseCases, build_users
+from users.domain.admin import AdminUserSummary
 
 router = APIRouter(tags=["Admin · Usuarios"])
 
 
-def _serialize_user(u: User, role: Role | None) -> dict:
+def _serialize_user(u: AdminUserSummary) -> dict:
     return {
-        "id": str(u.id),
+        "id": u.id,
         "email": u.email,
         "full_name": u.full_name or "",
         "university_id": u.university_id,
@@ -22,9 +22,9 @@ def _serialize_user(u: User, role: Role | None) -> dict:
         "phone_number": u.phone_number or "",
         "is_active": u.is_active,
         "failed_login_attempts": u.failed_login_attempts,
-        "locked_until": u.locked_until.isoformat() if u.locked_until else None,
-        "role": {"id": str(role.id), "name": role.name} if role else None,
-        "created_at": u.created_at.isoformat() if u.created_at else None,
+        "locked_until": u.locked_until,
+        "role": {"id": u.role.id, "name": u.role.name} if u.role else None,
+        "created_at": u.created_at,
     }
 
 
@@ -33,36 +33,16 @@ def get_users(
     page: int = 1,
     limit: int = 10,
     _: User = Depends(require_permission("manage_users")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     if page < 1:
         page = 1
     if limit < 1 or limit > 100:
         limit = 10
 
-    offset = (page - 1) * limit
-    total_items = db.execute(select(func.count(User.id))).scalar() or 0
-
-    # joinedload eliminates N+1: roles + role loaded in one JOIN query.
-    users_db = (
-        db.execute(
-            select(User)
-            .options(joinedload(User.roles).joinedload(UserRole.role))
-            .order_by(User.created_at.desc())
-            .offset(offset)
-            .limit(limit)
-        )
-        .unique()
-        .scalars()
-        .all()
-    )
-
-    users_list = []
-    for u in users_db:
-        user_role = u.roles[0].role if u.roles else None
-        users_list.append(_serialize_user(u, user_role))
+    result = users.list_users.execute(ListUsersInput(page=page, limit=limit))
 
     return {
-        **page_meta(total_items, page, limit),
-        "users": users_list,
+        **page_meta(result.total_items, page, limit),
+        "users": [_serialize_user(u) for u in result.users],
     }

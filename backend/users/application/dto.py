@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from uuid import UUID
 
 
@@ -42,3 +42,17 @@ class DeleteAccountInput:
 class SaveResourceConfigsInput:
     user_id: UUID
     configs: dict
+
+
+@dataclass(frozen=True, slots=True)
+class ListUsersInput:
+    page: int
+    limit: int
+
+
+@dataclass(frozen=True, slots=True)
+class AdminUserPage:
+    """Salida del listado administrativo: meta de página + filas."""
+
+    total_items: int
+    users: list = field(default_factory=list)

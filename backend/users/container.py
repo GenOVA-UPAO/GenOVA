@@ -16,12 +16,14 @@ from users.application.use_cases import (
     ChangePassword,
     DeleteAccount,
     GetResourceConfigs,
+    ListUsers,
     SaveResourceConfigs,
     UpdateUserProfile,
     UpdateUserTheme,
 )
 from users.infrastructure.password_adapters import CorePasswordHasher
 from users.infrastructure.sqlalchemy_account_repository import SqlAlchemyUserAccountRepository
+from users.infrastructure.sqlalchemy_admin_repository import SqlAlchemyAdminUserRepository
 from users.infrastructure.sqlalchemy_profile_repository import SqlAlchemyUserProfileRepository
 from users.infrastructure.sqlalchemy_resource_config_repository import (
     SqlAlchemyResourceConfigRepository,
@@ -36,12 +38,14 @@ class UsersUseCases:
     delete_account: DeleteAccount
     get_resource_configs: GetResourceConfigs
     save_resource_configs: SaveResourceConfigs
+    list_users: ListUsers
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
     profiles = SqlAlchemyUserProfileRepository(db)
     accounts = SqlAlchemyUserAccountRepository(db)
     configs = SqlAlchemyResourceConfigRepository(db)
+    admin = SqlAlchemyAdminUserRepository(db)
     hasher = CorePasswordHasher()
     return UsersUseCases(
         update_profile=UpdateUserProfile(profiles),
@@ -50,4 +54,5 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         delete_account=DeleteAccount(accounts, hasher),
         get_resource_configs=GetResourceConfigs(configs),
         save_resource_configs=SaveResourceConfigs(configs),
+        list_users=ListUsers(admin),
     )
