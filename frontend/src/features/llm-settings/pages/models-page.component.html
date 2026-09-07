@@ -9,29 +9,7 @@
       <p class="text-sm text-muted-foreground font-medium max-w-sm">
         Modelo primario, cadena de fallback y API keys por proveedor.
       </p>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-    <div class="rounded-xl border border-border/60 bg-card px-4 py-3">
-      <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-        Proveedores conectados
-      </p>
-      <p class="mt-1 text-lg font-semibold text-foreground">
-        {{ connectedProviders().ok }} / {{ connectedProviders().total }}
-      </p>
-    </div>
-    <div class="rounded-xl border border-border/60 bg-card px-4 py-3">
-      <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-        Modelos favoritos
-      </p>
-      <p class="mt-1 text-lg font-semibold text-foreground">{{ store.enabledModels().length }}</p>
-    </div>
-    <div class="rounded-xl border border-border/60 bg-card px-4 py-3">
-      <p class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-        Cambios sin guardar
-      </p>
-      <p class="mt-1 text-lg font-semibold text-foreground">{{ dirty() ? "Sí" : "No" }}</p>
+      <p class="pt-1 text-xs text-muted-foreground/80">{{ headerStatus() }}</p>
     </div>
   </div>
 

@@ -84,6 +84,18 @@ export class ModelsPageComponent implements OnInit {
     return { ok: entries.filter((s) => s.ok).length, total: entries.length };
   });
 
+  readonly favoritesLabel = computed(() => {
+    const n = this.store.enabledModels().length;
+    if (n === 0) return "Todos los modelos disponibles";
+    return n === 1 ? "1 favorito" : `${n} favoritos`;
+  });
+
+  readonly headerStatus = computed(() => {
+    const { ok, total } = this.connectedProviders();
+    if (total === 0) return this.favoritesLabel();
+    return `${ok} / ${total} proveedores · ${this.favoritesLabel()}`;
+  });
+
   async ngOnInit() {
     const user = (await this.auth.revalidate()) ?? this.auth.user();
     if (user && !canAccessModels(user)) {
