@@ -132,7 +132,9 @@ describe("ModelsMasterDetailComponent", () => {
     await fixture.whenStable();
     expect(screen.queryByTestId("media-card")).toBeNull();
     expect(screen.getByRole("switch")).toBeTruthy();
-    expect(screen.getByText(/Pulsa «Editar cadena»/i)).toBeTruthy();
+    expect(screen.getByTestId("task-row")).toBeTruthy();
+    expect(screen.queryByText(/Pulsa «Editar cadena»/i)).toBeNull();
+    expect(screen.queryByRole("button", { name: /Editar cadena/i })).toBeNull();
   });
 
   it("video switch off by default shows prompts-only message", async () => {
@@ -154,8 +156,8 @@ describe("ModelsMasterDetailComponent", () => {
     expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("false");
   });
 
-  it("reveals llm-task-row only after Editar cadena", async () => {
-    const { fixture } = await render(ModelsMasterDetailComponent, {
+  it("shows llm-task-row immediately for admin without an edit toggle", async () => {
+    await render(ModelsMasterDetailComponent, {
       providers: [{ provide: UserLlmSettingsStore, useValue: stubStore() }],
       importOverrides: overrides,
       bindings: [
@@ -168,14 +170,9 @@ describe("ModelsMasterDetailComponent", () => {
       ],
     });
 
-    expect(screen.queryByTestId("task-row")).toBeNull();
-    expect(screen.getByText(/Pulsa «Editar cadena»/i)).toBeTruthy();
-
-    screen.getByRole("button", { name: /Editar cadena/i }).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
     expect(screen.getByTestId("task-row").textContent).toContain("texto");
-    expect(screen.getByRole("button", { name: /^Listo$/i })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Editar cadena/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Listo$/i })).toBeNull();
+    expect(screen.queryByText(/Pulsa «Editar cadena»/i)).toBeNull();
   });
 });

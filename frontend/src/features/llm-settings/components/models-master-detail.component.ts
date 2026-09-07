@@ -50,7 +50,6 @@ export class ModelsMasterDetailComponent {
   store = inject(UserLlmSettingsStore);
   readonly selectedTask = signal("texto");
   readonly mobileShowDetail = signal(false);
-  readonly editingChain = signal(false);
   readonly taskMeta = taskMeta;
   readonly isMediaTask = isMediaTask;
 
@@ -95,7 +94,6 @@ export class ModelsMasterDetailComponent {
 
   selectTask(task: string): void {
     this.selectedTask.set(task);
-    this.editingChain.set(false);
     this.mobileShowDetail.set(true);
   }
 
@@ -129,9 +127,5 @@ export class ModelsMasterDetailComponent {
       ...draft,
       [task]: { ...prev, generationEnabled: !this.generationOn(task) },
     });
-  }
-
-  toggleEditChain(): void {
-    this.editingChain.update((v) => !v);
   }
 }
