@@ -11,13 +11,37 @@ from fastapi.responses import JSONResponse
 from auth.domain.errors import (
     AccountLocked,
     AuthError,
+    EmailAlreadyRegistered,
     EmailNotVerified,
     InvalidCredentials,
+    InvalidFullName,
     TooManyAttempts,
+    WeakRegistrationPassword,
 )
 
 
 def auth_error_to_response(err: AuthError) -> JSONResponse:
+    if isinstance(err, WeakRegistrationPassword):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "weak_password",
+                "message": "La contraseña debe tener al menos 8 caracteres con letras y números.",
+            },
+        )
+    if isinstance(err, InvalidFullName):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": "invalid_name",
+                "message": "El nombre debe contener al menos una letra.",
+            },
+        )
+    if isinstance(err, EmailAlreadyRegistered):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": "email_exists", "message": "El correo ya está registrado."},
+        )
     if isinstance(err, TooManyAttempts):
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

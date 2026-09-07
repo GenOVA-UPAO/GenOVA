@@ -20,3 +20,10 @@ class AuthUser:
     locked_until: datetime | None
     email_verified: bool
     totp_enabled: bool
+
+
+@dataclass(frozen=True, slots=True)
+class RegisteredUser:
+    id: str
+    email: str
+    full_name: str | None

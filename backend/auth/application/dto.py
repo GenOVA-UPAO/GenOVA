@@ -25,3 +25,17 @@ class LoginResult:
     remember_me: bool
     totp_required: bool = False
     totp_ticket: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class RegisterInput:
+    email: str
+    password: str
+    full_name: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class RegisterResult:
+    user_id: str
+    email: str
+    email_verification_required: bool

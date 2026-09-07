@@ -9,13 +9,18 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol
 
-from auth.domain.user import AuthUser
+from auth.domain.user import AuthUser, RegisteredUser
 
 __all__ = [
     "AuthUser",
     "AuthUserRepository",
+    "EmailSender",
     "LoginThrottle",
+    "PasswordHasher",
+    "PasswordPolicy",
     "PasswordVerifier",
+    "RegistrationRepository",
+    "TokenGenerator",
     "TotpTicketIssuer",
 ]
 
@@ -45,3 +50,33 @@ class LoginThrottle(Protocol):
 
 class TotpTicketIssuer(Protocol):
     def issue(self, user_id: str, *, remember_me: bool) -> str: ...
+
+
+class PasswordHasher(Protocol):
+    def hash(self, raw: str) -> str: ...
+
+
+class PasswordPolicy(Protocol):
+    def accepts(self, raw: str) -> bool: ...
+
+
+class TokenGenerator(Protocol):
+    def generate(self) -> str: ...
+
+
+class EmailSender(Protocol):
+    def send_verification(self, user: RegisteredUser, token: str) -> None: ...
+
+
+class RegistrationRepository(Protocol):
+    def create(
+        self,
+        *,
+        email: str,
+        normalized_email: str,
+        password_hash: str,
+        full_name: str | None,
+        email_verified: bool,
+        verification_token: str | None,
+        verification_expires_at: datetime | None,
+    ) -> RegisteredUser: ...

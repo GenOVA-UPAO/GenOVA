@@ -29,3 +29,15 @@ class AccountLocked(AuthError):
 
 class EmailNotVerified(AuthError):
     """El correo aún no está verificado y la verificación es obligatoria."""
+
+
+class WeakRegistrationPassword(AuthError):
+    """La contraseña de registro no cumple la política de complejidad."""
+
+
+class InvalidFullName(AuthError):
+    """El nombre de registro no contiene ninguna letra."""
+
+
+class EmailAlreadyRegistered(AuthError):
+    """La clave canónica del correo ya pertenece a otra cuenta."""
