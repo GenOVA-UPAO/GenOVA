@@ -7,6 +7,7 @@ import {
 } from "@/core/components/ui/alert.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
+import { joinList } from "../lib/join-list";
 import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 
 @Component({
@@ -51,9 +52,7 @@ export class CatalogStatusAlertComponent {
   );
 
   readonly providerNames = computed(() =>
-    this.downProviders()
-      .map(([p]) => PROVIDER_LABELS[p] || p)
-      .join(" y "),
+    joinList(this.downProviders().map(([p]) => PROVIDER_LABELS[p] || p)),
   );
 
   readonly lastOk = computed<string | null>(() => {
