@@ -5,6 +5,8 @@ from generation.domain.errors import (
     JobAlreadyRunning,
     JobNotFound,
     JobNotRunning,
+    PromptInappropriateLanguage,
+    PromptOffTopic,
     ResourceNotFound,
     ResourceNotReady,
 )
@@ -40,6 +42,8 @@ __all__ = [
     "JobNotFound",
     "JobNotRunning",
     "JobResource",
+    "PromptInappropriateLanguage",
+    "PromptOffTopic",
     "ResourceNotFound",
     "ResourceNotReady",
     "can_cancel",

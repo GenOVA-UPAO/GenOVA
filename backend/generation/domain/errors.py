@@ -46,3 +46,30 @@ class JobAlreadyRunning(GenerationError):
 
     def __init__(self, message: str = "El job ya está en ejecución.") -> None:
         super().__init__(message)
+
+
+class PromptOffTopic(GenerationError):
+    """El prompt del usuario no pertenece al área temática configurada."""
+
+    code = "prompt_off_topic"
+
+    def __init__(
+        self,
+        message: str = "El prompt no pertenece al área temática permitida. Elige un tema de esa área.",
+    ) -> None:
+        super().__init__(message)
+
+
+class PromptInappropriateLanguage(GenerationError):
+    """El prompt del usuario contiene lenguaje inapropiado."""
+
+    code = "prompt_inappropriate_language"
+
+    def __init__(
+        self,
+        message: str = (
+            "El prompt contiene lenguaje inapropiado. "
+            "Reformúlalo sin insultos ni contenido sexual explícito."
+        ),
+    ) -> None:
+        super().__init__(message)
