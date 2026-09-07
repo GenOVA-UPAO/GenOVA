@@ -66,6 +66,10 @@ const STATUS_MAP: Record<string, UiStatus> = {
   running: "generando",
   done: "check",
   error: "X",
+  // Se generó contenido pero no pasó el validador. Sin esta entrada caería al
+  // "pendiente" por defecto y se pintaría como si aún faltara por generar,
+  // ocultando que salió defectuoso.
+  degraded: "X",
 };
 
 export function mapResourceStatus(backendStatus: string): UiStatus {
@@ -176,10 +180,15 @@ export const STALL_MS = 3 * 60 * 1000;
  * Estados de recurso que el backend reintentará al reanudar: espejo de
  * `_RESUMABLE_RESOURCE_STATUSES` en `jobs_service.py`. Lo ya "done" se
  * conserva; las filas nunca quedan en "running" (el grafo solo escribe
- * done/error por recurso), así que tras una caída a media generación todo lo
- * no terminado está en pending/error y es exactamente lo reanudable.
+ * done/error/degraded por recurso), así que tras una caída a media generación
+ * todo lo no terminado es exactamente lo reanudable.
+ *
+ * `degraded` = se generó HTML pero no pasó el validador. Se conserva el
+ * contenido y el motivo (`defect_reason`), pero NO cuenta como terminado: es
+ * justo el caso que este botón existe para rescatar. Si se añade un estado
+ * nuevo en `jobs_service.py`, hay que añadirlo aquí o el botón no aparecerá.
  */
-export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "error"]);
+export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "error", "degraded"]);
 
 export function resumableResourceIds(snapshot: JobSnapshot | null | undefined): string[] {
   if (!snapshot) return [];

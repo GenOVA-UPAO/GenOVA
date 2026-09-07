@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { BackendResource } from "./ova-job-view-model";
-import { isResumableJob, resumableResourceIds } from "./ova-job-view-model";
+import { isResumableJob, mapResourceStatus, resumableResourceIds } from "./ova-job-view-model";
 
 const RES = (status: string): BackendResource => ({
   id: `r-${status}`,
@@ -55,5 +55,32 @@ describe("resumableResourceIds", () => {
 
   it("snapshot ausente → vacío", () => {
     expect(resumableResourceIds(null)).toEqual([]);
+  });
+});
+
+describe("degraded: el estado nuevo del validador", () => {
+  const job = { status: "interrupted" };
+
+  it("un recurso degraded hace el job reanudable", () => {
+    expect(
+      isResumableJob(job, [
+        { id: "1", phase_type: "engage", status: "degraded", phase_order: 1, resource_order: 1 },
+      ]),
+    ).toBe(true);
+  });
+
+  it("degraded entra en los ids a reanudar", () => {
+    const snap = {
+      status: "interrupted",
+      resources: [
+        { id: "a", phase_type: "engage", status: "done", phase_order: 1, resource_order: 1 },
+        { id: "b", phase_type: "explore", status: "degraded", phase_order: 2, resource_order: 1 },
+      ],
+    };
+    expect(resumableResourceIds(snap)).toEqual(["b"]);
+  });
+
+  it("no se pinta como pendiente: salio mal y debe verse", () => {
+    expect(mapResourceStatus("degraded")).toBe("X");
   });
 });
