@@ -12,7 +12,40 @@ from users.domain.admin import (
     AdminTargetSummary,
     AdminUserSummary,
 )
+from users.domain.links import LinkParticipant, LinkRecord, LinkSnapshot
 from users.domain.profile import UserProfile
+
+
+class UserLinkRepository(Protocol):
+    """Persistencia de los vínculos entre usuarios (invitación por código)."""
+
+    def list_for_owner(self, owner_id) -> tuple[list[LinkSnapshot], dict[str, LinkParticipant]]: ...
+
+    def list_all(self) -> tuple[list[LinkSnapshot], dict[str, LinkParticipant]]: ...
+
+    def list_redeemable(self, now, invite_email: str) -> list[LinkRecord]: ...
+
+    def get_participant(self, user_id: str) -> LinkParticipant | None: ...
+
+    def create(
+        self,
+        owner_id,
+        *,
+        invite_email: str | None,
+        code_hash: str,
+        expires_at,
+        op: str,
+    ) -> LinkSnapshot: ...
+
+    def redeem(self, link_id: str, *, linked_user_id, consumed_at, op: str) -> LinkSnapshot: ...
+
+    def get_owned(self, link_id: UUID, owner_id) -> LinkRecord: ...
+
+    def rotate_code(self, link_id: UUID, *, code_hash: str, expires_at, op: str) -> LinkSnapshot: ...
+
+    def delete_owned(self, link_id: UUID, owner_id) -> None: ...
+
+    def delete_any(self, link_id: UUID) -> None: ...
 
 
 class AnalyticsRepository(Protocol):

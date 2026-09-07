@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from uuid import UUID
 
+from users.domain.links import LinkParticipant, LinkSnapshot
+
 
 @dataclass(frozen=True, slots=True)
 class UpdateProfileInput:
@@ -110,3 +112,34 @@ class AdminStatusResult:
 
     id: str
     is_active: bool
+
+
+@dataclass(frozen=True, slots=True)
+class CreateLinkInput:
+    owner_id: UUID
+    invite_email: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class AcceptLinkInput:
+    user_id: UUID
+    email: str
+    code: str
+
+
+@dataclass(frozen=True, slots=True)
+class LinkCreationResult:
+    link: LinkSnapshot
+    code: str
+
+
+@dataclass(frozen=True, slots=True)
+class LinkListResult:
+    links: list[LinkSnapshot]
+    linked_map: dict[str, LinkParticipant]
+
+
+@dataclass(frozen=True, slots=True)
+class AcceptLinkResult:
+    link: LinkSnapshot
+    owner: LinkParticipant | None

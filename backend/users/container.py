@@ -13,16 +13,21 @@ from sqlalchemy.orm import Session
 
 from core.database import get_db
 from users.application.use_cases import (
+    AcceptLink,
     AdminSendResetEmail,
     AdminUnlockAccount,
     AdminUpdateProfile,
     AdminUpdateRole,
     AdminUpdateStatus,
     ChangePassword,
+    CreateLinkCode,
     DeleteAccount,
+    DeleteMyLink,
     GetResourceConfigs,
     GetUserAnalytics,
+    ListMyLinks,
     ListUsers,
+    ResendLink,
     SaveResourceConfigs,
     UpdateUserProfile,
     UpdateUserTheme,
@@ -35,6 +40,7 @@ from users.infrastructure.sqlalchemy_profile_repository import SqlAlchemyUserPro
 from users.infrastructure.sqlalchemy_resource_config_repository import (
     SqlAlchemyResourceConfigRepository,
 )
+from users.infrastructure.sqlalchemy_user_link_repository import SqlAlchemyUserLinkRepository
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,6 +58,11 @@ class UsersUseCases:
     admin_unlock_account: AdminUnlockAccount
     admin_send_reset_email: AdminSendResetEmail
     get_user_analytics: GetUserAnalytics
+    list_my_links: ListMyLinks
+    create_link_code: CreateLinkCode
+    accept_link: AcceptLink
+    delete_my_link: DeleteMyLink
+    resend_link: ResendLink
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -60,6 +71,7 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
     configs = SqlAlchemyResourceConfigRepository(db)
     admin = SqlAlchemyAdminUserRepository(db)
     analytics = SqlAlchemyAnalyticsRepository(db)
+    links = SqlAlchemyUserLinkRepository(db)
     hasher = CorePasswordHasher()
     return UsersUseCases(
         update_profile=UpdateUserProfile(profiles),
@@ -75,4 +87,9 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         admin_unlock_account=AdminUnlockAccount(admin),
         admin_send_reset_email=AdminSendResetEmail(admin),
         get_user_analytics=GetUserAnalytics(analytics),
+        list_my_links=ListMyLinks(links),
+        create_link_code=CreateLinkCode(links, hasher),
+        accept_link=AcceptLink(links, hasher),
+        delete_my_link=DeleteMyLink(links),
+        resend_link=ResendLink(links, hasher),
     )

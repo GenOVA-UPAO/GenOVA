@@ -1,19 +1,18 @@
 """User linking endpoints controlled by granular role permissions."""
 
-from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user, require_permission
-from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
-from core.security import hash_password, verify_password
-from models import User, UserLink
-from users.application.links_helpers import _new_code, _serialize
+from models import User
+from users.application.dto import AcceptLinkInput, CreateLinkInput
+from users.container import UsersUseCases, build_users
+from users.domain.errors import UserError
+from users.domain.links import LinkParticipant, serialize_link
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Vinculaciones"])
 
@@ -28,27 +27,15 @@ class AcceptRequest(BaseModel):
 
 @router.get("/me/links", summary="Listar los vínculos propios")
 def list_my_links(
-    current_user: User = Depends(require_permission("users:link")), db: Session = Depends(get_db)
+    current_user: User = Depends(require_permission("users:link")),
+    users: UsersUseCases = Depends(build_users),
 ):
-    links = (
-        db.execute(
-            select(UserLink)
-            .where(UserLink.owner_user_id == current_user.id)
-            .order_by(UserLink.created_at.desc())
-        )
-        .scalars()
-        .all()
-    )
-    linked_ids = [lnk.linked_user_id for lnk in links if lnk.linked_user_id]
-    linked_map = (
-        {u.id: u for u in db.execute(select(User).where(User.id.in_(linked_ids))).scalars().all()}
-        if linked_ids
-        else {}
-    )
+    result = users.list_my_links.execute(current_user.id)
+    owner = LinkParticipant(email=current_user.email, full_name=current_user.full_name)
     return {
         "links": [
-            _serialize(link, owner=current_user, linked=linked_map.get(link.linked_user_id))
-            for link in links
+            serialize_link(link, owner=owner, linked=result.linked_map.get(link.linked_user_id))
+            for link in result.links
         ]
     }
 
@@ -62,17 +49,13 @@ def list_my_links(
 def create_link_code(
     request: Request,
     current_user: User = Depends(require_permission("users:link")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    code = _new_code()
-    expires_at = datetime.now(UTC) + timedelta(hours=24)
-    link = UserLink(
-        owner_user_id=current_user.id, code_hash=hash_password(code), expires_at=expires_at
+    result = users.create_link_code.execute(
+        CreateLinkInput(owner_id=current_user.id, invite_email=None)
     )
-    db.add(link)
-    commit_or_500(db, "la creacion del codigo")
-    db.refresh(link)
-    return {"link": _serialize(link, owner=current_user), "code": code}
+    owner = LinkParticipant(email=current_user.email, full_name=current_user.full_name)
+    return {"link": serialize_link(result.link, owner=owner), "code": result.code}
 
 
 @router.post(
@@ -85,20 +68,13 @@ def invite_link(
     request: Request,
     payload: InviteRequest,
     current_user: User = Depends(require_permission("users:link")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    code = _new_code()
-    expires_at = datetime.now(UTC) + timedelta(hours=24)
-    link = UserLink(
-        owner_user_id=current_user.id,
-        invite_email=payload.email.lower(),
-        code_hash=hash_password(code),
-        expires_at=expires_at,
+    result = users.create_link_code.execute(
+        CreateLinkInput(owner_id=current_user.id, invite_email=payload.email)
     )
-    db.add(link)
-    commit_or_500(db, "la invitacion")
-    db.refresh(link)
-    return {"link": _serialize(link, owner=current_user), "code": code}
+    owner = LinkParticipant(email=current_user.email, full_name=current_user.full_name)
+    return {"link": serialize_link(result.link, owner=owner), "code": result.code}
 
 
 @router.post("/me/links/accept", summary="Aceptar una vinculación con un código")
@@ -107,50 +83,30 @@ def accept_link(
     request: Request,
     payload: AcceptRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    code = payload.code.strip().upper()
-    now = datetime.now(UTC)
-    # Only redeemable links: open invite or email-matched
-    pending = (
-        db.execute(
-            select(UserLink).where(
-                UserLink.status == "pending",
-                UserLink.expires_at > now,
-                (UserLink.invite_email.is_(None))
-                | (UserLink.invite_email == current_user.email.lower()),
-            )
+    try:
+        result = users.accept_link.execute(
+            AcceptLinkInput(user_id=current_user.id, email=current_user.email, code=payload.code)
         )
-        .scalars()
-        .all()
-    )
-    for link in pending:
-        if not verify_password(code, link.code_hash):
-            continue
-        if link.owner_user_id == current_user.id:
-            raise HTTPException(status_code=400, detail="No puedes vincularte contigo mismo.")
-        link.linked_user_id = current_user.id
-        link.status = "active"
-        link.consumed_at = now
-        commit_or_500(db, "la vinculacion")
-        db.refresh(link)
-        return {
-            "link": _serialize(link, owner=db.get(User, link.owner_user_id), linked=current_user)
-        }
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Codigo invalido o expirado.")
+    except UserError as err:
+        raise to_http_exception(err) from None
+
+    linked = LinkParticipant(email=current_user.email, full_name=current_user.full_name)
+    return {"link": serialize_link(result.link, owner=result.owner, linked=linked)}
 
 
 @router.delete("/me/links/{link_id}", summary="Eliminar un vínculo propio")
 def delete_my_link(
     link_id: UUID,
     current_user: User = Depends(require_permission("users:link")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    link = db.get(UserLink, link_id)
-    if not link or link.owner_user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vinculo no encontrado.")
-    db.delete(link)
-    commit_or_500(db, "la desvinculacion")
+    try:
+        users.delete_my_link.execute(current_user.id, link_id)
+    except UserError as err:
+        raise to_http_exception(err) from None
+
     return {"status": "ok"}
 
 
@@ -160,19 +116,12 @@ def resend_link(
     request: Request,
     link_id: UUID,
     current_user: User = Depends(require_permission("users:link")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    link = db.get(UserLink, link_id)
-    if not link or link.owner_user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vinculo no encontrado.")
-    if link.status != "pending":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Solo se pueden reenviar invitaciones pendientes.",
-        )
-    code = _new_code()
-    link.code_hash = hash_password(code)
-    link.expires_at = datetime.now(UTC) + timedelta(hours=24)
-    commit_or_500(db, "el reenvio")
-    db.refresh(link)
-    return {"link": _serialize(link, owner=current_user), "code": code}
+    try:
+        result = users.resend_link.execute(current_user.id, link_id)
+    except UserError as err:
+        raise to_http_exception(err) from None
+
+    owner = LinkParticipant(email=current_user.email, full_name=current_user.full_name)
+    return {"link": serialize_link(result.link, owner=owner), "code": result.code}

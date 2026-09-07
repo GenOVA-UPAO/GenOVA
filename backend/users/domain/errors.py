@@ -139,3 +139,42 @@ class AdminRoleAssignmentForbidden(UserError):
         detail: str = "Acceso denegado: No tienes permisos para asignar el rol de administrador.",
     ) -> None:
         super().__init__(detail)
+
+
+class LinkNotFound(UserError):
+    def __init__(self, detail: str = "Vinculo no encontrado.") -> None:
+        super().__init__(detail)
+
+
+class LinkNotPending(UserError):
+    def __init__(
+        self, detail: str = "Solo se pueden reenviar invitaciones pendientes."
+    ) -> None:
+        super().__init__(detail)
+
+
+class SelfLinkForbidden(UserError):
+    def __init__(self, detail: str = "No puedes vincularte contigo mismo.") -> None:
+        super().__init__(detail)
+
+
+class InvalidLinkCode(UserError):
+    def __init__(self, detail: str = "Codigo invalido o expirado.") -> None:
+        super().__init__(detail)
+
+
+class InvalidApiKeyPayload(UserError):
+    def __init__(self, detail: str = "Payload de claves de API inválido.") -> None:
+        super().__init__(detail)
+
+
+class ApiKeyTooShort(UserError):
+    def __init__(self, detail: str = "La API key es demasiado corta.") -> None:
+        super().__init__(detail)
+
+
+class ApiKeysNotSaved(UserError):
+    def __init__(
+        self, detail: str = "No se pudo guardar las API keys. Intenta de nuevo."
+    ) -> None:
+        super().__init__(detail)
