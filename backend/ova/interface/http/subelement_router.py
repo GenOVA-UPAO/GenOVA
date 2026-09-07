@@ -7,23 +7,18 @@ upgrade this endpoint to actually call the regen service with the sub-element
 context instead of returning 501.
 """
 
-from fastapi import APIRouter, Depends, Request, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import get_db
-from core.http_errors import forbidden_response
 from core.rate_limit import limiter
-from models import Ova, OvaPhase, User
-from ova.application.edit_helpers import _get_active_version, _is_ova_owner
+from ova.application.dto import SubelementEditInput
+from ova.container import OvaUseCases, build_ova
+from ova.domain.errors import OvaError
+from ova.domain.model import OvaActor
+from ova.interface.http.error_map import ova_error_to_response
 
 router = APIRouter(tags=["OVA · Fases y versiones"])
-
-# Phase types that support granular sub-element editing (none yet — future work)
-_SUPPORTED_TYPES: set[str] = set()
 
 
 class SubelementEditRequest(BaseModel):
@@ -41,47 +36,22 @@ def edit_subelement(
     fase_id: str,
     sub_id: str,
     payload: SubelementEditRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
-    ova = db.execute(
-        select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
-    ).scalar_one_or_none()
-
-    if not ova:
-        return JSONResponse(
-            status_code=404, content={"error": "not_found", "message": "OVA no encontrado."}
+    try:
+        use_cases.edit_subelement.execute(
+            SubelementEditInput(
+                ova_id=ova_id,
+                phase_id=fase_id,
+                subelement_id=payload.subelement_id or sub_id,
+                actor=OvaActor(
+                    id=str(current_user.id),
+                    is_admin=bool(current_user.admin_flag_cached),
+                ),
+                prompt=payload.prompt,
+            )
         )
-
-    if not _is_ova_owner(ova, current_user):
-        return forbidden_response()
-
-    active_version = _get_active_version(ova_id, db)
-    if not active_version:
-        return JSONResponse(
-            status_code=404, content={"error": "no_version", "message": "Sin versión activa."}
-        )
-
-    phase = db.execute(
-        select(OvaPhase).where(OvaPhase.id == fase_id, OvaPhase.version_id == active_version.id)
-    ).scalar_one_or_none()
-
-    if not phase:
-        return JSONResponse(
-            status_code=404, content={"error": "phase_not_found", "message": "Fase no encontrada."}
-        )
-
-    if phase.phase_type not in _SUPPORTED_TYPES:
-        return JSONResponse(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            content={
-                "error": "not_supported",
-                "message": f"La edición granular no está disponible para la fase '{phase.phase_type}' aún.",
-            },
-        )
-
-    # Future: extract sub_id fragment, call LLM with context, splice result back
-    return JSONResponse(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        content={"error": "not_implemented", "message": "Edición granular en desarrollo."},
-    )
+    except OvaError as error:
+        return ova_error_to_response(error)
+    return None

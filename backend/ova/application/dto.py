@@ -120,3 +120,12 @@ class VersionInput:
     ova_id: str
     version_id: str
     actor: OvaActor
+
+
+@dataclass(frozen=True, slots=True)
+class SubelementEditInput:
+    ova_id: str
+    phase_id: str
+    subelement_id: str
+    actor: OvaActor
+    prompt: str

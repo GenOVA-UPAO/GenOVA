@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 MAX_PHASES_PER_TYPE = 4
+SUBELEMENT_SUPPORTED_TYPES: frozenset[str] = frozenset()
 PLACEHOLDER_CONTENT = (
     "Este recurso fue creado mediante prompt y está pendiente de regeneración.\n"
     "Usa 'Regenerar' con tu prompt para generar el contenido real."

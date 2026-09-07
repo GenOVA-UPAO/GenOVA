@@ -18,6 +18,7 @@ from ova.application.use_cases import (
     DeleteOva,
     DuplicateOva,
     EditPhases,
+    EditSubelement,
     EditView,
     ListTrashedOvas,
     PermanentlyDeleteOva,
@@ -39,6 +40,7 @@ class OvaUseCases:
     save_ova: SaveOva
     duplicate_ova: DuplicateOva
     edit_phases: EditPhases
+    edit_subelement: EditSubelement
     add_phase: AddPhase
     edit_view: EditView
     update_metadata: UpdateOvaMetadata
@@ -65,6 +67,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         ),
         duplicate_ova=DuplicateOva(creation),
         edit_phases=EditPhases(editor),
+        edit_subelement=EditSubelement(editor),
         add_phase=AddPhase(editor),
         edit_view=EditView(editor),
         update_metadata=UpdateOvaMetadata(lifecycle),

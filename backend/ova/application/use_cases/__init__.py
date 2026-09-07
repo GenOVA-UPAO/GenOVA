@@ -6,6 +6,7 @@ from ova.application.use_cases.count_trashed_ovas import CountTrashedOvas
 from ova.application.use_cases.delete_ova import DeleteOva
 from ova.application.use_cases.duplicate_ova import DuplicateOva
 from ova.application.use_cases.edit_phases import EditPhases
+from ova.application.use_cases.edit_subelement import EditSubelement
 from ova.application.use_cases.edit_view import EditView
 from ova.application.use_cases.list_trashed_ovas import ListTrashedOvas
 from ova.application.use_cases.permanently_delete_ova import PermanentlyDeleteOva
@@ -22,6 +23,7 @@ __all__ = [
     "DeleteOva",
     "DuplicateOva",
     "EditPhases",
+    "EditSubelement",
     "EditView",
     "ListTrashedOvas",
     "PermanentlyDeleteOva",

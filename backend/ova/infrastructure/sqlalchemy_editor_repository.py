@@ -71,6 +71,15 @@ class SqlAlchemyOvaEditorRepository:
         self._versions[str(row.id)] = row
         return self._version_state(row, with_phases=True)
 
+    def get_active_version(self, ova_id: str) -> EditorVersion | None:
+        row = self._db.execute(
+            select(OvaVersion).where(OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True))
+        ).scalar_one_or_none()
+        if row is None:
+            return None
+        self._versions[str(row.id)] = row
+        return self._version_state(row)
+
     def get_phase(self, phase_id: str, version_id: str) -> EditorPhase | None:
         row = self._db.execute(
             select(OvaPhase).where(OvaPhase.id == phase_id, OvaPhase.version_id == version_id)
