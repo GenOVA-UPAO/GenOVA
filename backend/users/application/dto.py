@@ -36,3 +36,9 @@ class ChangePasswordInput:
 class DeleteAccountInput:
     user_id: UUID
     password: str
+
+
+@dataclass(frozen=True, slots=True)
+class SaveResourceConfigsInput:
+    user_id: UUID
+    configs: dict

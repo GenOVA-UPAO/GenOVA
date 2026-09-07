@@ -78,3 +78,15 @@ class SoleAdminRemoval(UserError):
         detail: str = "No puedes eliminar tu cuenta porque eres el único administrador activo.",
     ) -> None:
         super().__init__(detail)
+
+
+class InvalidResourceConfigs(UserError):
+    def __init__(self, detail: str = "Configuración de recursos inválida.") -> None:
+        super().__init__(detail)
+
+
+class ResourceConfigsNotSaved(UserError):
+    def __init__(
+        self, detail: str = "No se pudo guardar la configuración. Intenta de nuevo."
+    ) -> None:
+        super().__init__(detail)

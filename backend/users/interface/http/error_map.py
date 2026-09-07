@@ -14,8 +14,10 @@ from users.domain.errors import (
     IncorrectCurrentPassword,
     InvalidGender,
     InvalidPhoneNumber,
+    InvalidResourceConfigs,
     PasswordConfirmationMismatch,
     PhoneNumberAlreadyInUse,
+    ResourceConfigsNotSaved,
     SoleAdminRemoval,
     UniversityIdAlreadyInUse,
     UserError,
@@ -33,6 +35,8 @@ _STATUS_BY_ERROR: dict[type[UserError], int] = {
     IncorrectCurrentPassword: status.HTTP_400_BAD_REQUEST,
     IncorrectAccountPassword: status.HTTP_400_BAD_REQUEST,
     SoleAdminRemoval: status.HTTP_403_FORBIDDEN,
+    InvalidResourceConfigs: status.HTTP_400_BAD_REQUEST,
+    ResourceConfigsNotSaved: status.HTTP_500_INTERNAL_SERVER_ERROR,
 }
 
 
