@@ -20,6 +20,19 @@ from llm.utils.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS
 
 _DATA_DIR = Path(__file__).parent / "data"
 
+_TOPIC_LOCK = (
+    "\n\n[ANCLAJE DE TEMA — INQUEBRANTABLE]\n"
+    'El ÚNICO tema de este recurso es: "${concept}".\n'
+    "El <h1> DEBE nombrar ese tema (o un recorte fiel). PROHIBIDO cambiar de "
+    "dominio: no sustituyas el tema por otro (p.ej. machine learning, churn o "
+    "una empresa ficticia si el tema es historia, biología o matemáticas). "
+    "Si dudas, desarrolla ESE concepto; no inventes otro.\n"
+)
+
+
+def _lock(concept: str) -> str:
+    return Template(_TOPIC_LOCK).substitute(concept=concept)
+
 
 @cache
 def _phase(name: str) -> dict:
@@ -44,7 +57,7 @@ def render_texto(phase: str, n: int, concept: str, config: dict | None = None) -
         return ""
     return Template(entry["template"]).substitute(
         concept=concept, curso=CURSO_CONTEXTO, scorm=SCORM_JS, **_params(entry, config)
-    )
+    ) + _lock(concept)
 
 
 def render_codigo(
@@ -53,12 +66,15 @@ def render_codigo(
     entry = _phase(phase).get("codigo", {}).get(str(n))
     if not entry:
         return ""
-    return Template(entry["template"]).substitute(
-        concept=concept,
-        curso=CURSO_CONTEXTO,
-        scorm=SCORM_JS,
-        ds=design_system or DESIGN_SYSTEM,
-        **_params(entry, config),
+    return (
+        Template(entry["template"]).substitute(
+            concept=concept,
+            curso=CURSO_CONTEXTO,
+            scorm=SCORM_JS,
+            ds=design_system or DESIGN_SYSTEM,
+            **_params(entry, config),
+        )
+        + _lock(concept)
     )
 
 
@@ -66,12 +82,15 @@ def render_simulador(
     phase: str, concept: str, design_system: str | None = None, config: dict | None = None
 ) -> str:
     entry = _phase(phase)["simulador"]
-    return Template(entry["template"]).substitute(
-        concept=concept,
-        curso=CURSO_CONTEXTO,
-        scorm=SCORM_JS,
-        ds=design_system or DESIGN_SYSTEM,
-        **_params(entry, config),
+    return (
+        Template(entry["template"]).substitute(
+            concept=concept,
+            curso=CURSO_CONTEXTO,
+            scorm=SCORM_JS,
+            ds=design_system or DESIGN_SYSTEM,
+            **_params(entry, config),
+        )
+        + _lock(concept)
     )
 
 
@@ -87,4 +106,4 @@ def render_html(
         ds=design_system or DESIGN_SYSTEM,
         data_json=data_json,
         estilo=estilo,
-    )
+    ) + _lock(concept)

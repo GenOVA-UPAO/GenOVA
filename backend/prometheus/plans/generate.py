@@ -105,14 +105,14 @@ def _post_process(
 
     if not refine:
         from llm.images.image_placeholder import resolve_image_placeholders
-        from prometheus.engine.validate import structural_defects
+        from prometheus.engine.validate import resource_defects
 
         html = resolve_image_placeholders(html)
-        return html, structural_defects(html)
+        return html, resource_defects(html, concept)
 
     from llm.images.image_placeholder import resolve_image_placeholders
     from prometheus.engine.refine import refine_and_check
-    from prometheus.engine.validate import structural_defects
+    from prometheus.engine.validate import resource_defects
 
     # The refiner can return entirely new HTML, including image markers that
     # were already resolved before this pass. Sanitize its final output too.
@@ -120,7 +120,7 @@ def _post_process(
         html, phase, rt, concept, llm_config, enabled_models, theme, deadline=deadline
     )
     html = resolve_image_placeholders(html)
-    return html, structural_defects(html)
+    return html, resource_defects(html, concept)
 
 
 def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models) -> ResourceResult:

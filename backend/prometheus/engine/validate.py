@@ -73,6 +73,17 @@ def structural_defects(html: str) -> list[str]:
     return defects
 
 
+def resource_defects(html: str, prompt: str = "") -> list[str]:
+    """Defectos de routing a repair: estructurales ∪ deriva de tema."""
+    from prometheus.engine.topic import topic_drift_defect
+
+    defects = structural_defects(html)
+    drift = topic_drift_defect(html, prompt)
+    if drift:
+        defects.append(drift)
+    return defects
+
+
 # Reexport: el texto del contrato vive en llm/utils/output_contract.py (sin
 # dependencias) para evitar el ciclo utils→themes→prometheus→…→utils.
 from llm.utils.output_contract import output_contract  # noqa: E402, F401
