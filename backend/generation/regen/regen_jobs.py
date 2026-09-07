@@ -16,15 +16,12 @@ import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from generation.regen.regen_progress import _resolve_regen_stage
+from generation.domain.regen_progress import estimate_percentage, is_terminal, resolve_regen_stage
 
 logger = structlog.get_logger(__name__)
 
 _regen_jobs: dict[str, dict] = {}
 _regen_jobs_lock = threading.Lock()
-
-# Estimated seconds per resource for real LLM regeneration.
-_EST_SECONDS_PER_PHASE = 60
 
 
 def start_regen(
@@ -70,24 +67,23 @@ def regen_progress_dto(job_id: str, ova_id: str) -> dict | None:
         return None
 
     job_status = job.get("status", "running")
-    if job_status in ("success", "error"):
-        percentage = 100
-    else:
-        n_phases = max(int(job.get("total_phases", 1)), 1)
-        est_total = n_phases * _EST_SECONDS_PER_PHASE
-        elapsed = max(0.0, time.time() - float(job["started_at"]))
-        percentage = min(99, int((elapsed / est_total) * 100))
+    percentage = estimate_percentage(
+        status=job_status,
+        total_phases=job.get("total_phases", 1),
+        started_at=job["started_at"],
+        now=time.time(),
+    )
 
     # No-terminal incluye "generating" (lo pone el thread al arrancar); antes
     # solo "running" mapeaba al stage por porcentaje y la etiqueta quedaba
     # congelada en "Finalizando" durante toda la generación.
-    terminal = job_status in ("success", "error")
+    terminal = is_terminal(job_status)
     return {
         "job_id": job_id,
         "ova_id": ova_id,
         "status": job_status,
         "percentage": percentage,
-        "stage": _resolve_regen_stage(100 if terminal else percentage),
+        "stage": resolve_regen_stage(100 if terminal else percentage),
         "new_version_number": job.get("new_version_number"),
     }
 
