@@ -63,3 +63,31 @@ class EmailVerificationTokenRecord:
     user_id: UUID
     token: str
     expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class AuthenticatedUser:
+    id: UUID
+    email: str
+    full_name: str | None
+    university_id: int | None
+    gender: str | None
+    phone_number: str | None
+    theme_settings: dict[str, object]
+    created_at: datetime | None
+    totp_enabled: bool
+    totp_secret: str | None
+    totp_backup_codes: list[dict[str, object]]
+
+
+@dataclass(frozen=True, slots=True)
+class UserAccess:
+    role: str | None
+    permissions: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class TokenRevocation:
+    jti: str
+    user_id: str | None
+    expires_at: datetime

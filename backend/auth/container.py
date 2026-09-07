@@ -13,7 +13,9 @@ from fastapi import BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from auth.application.use_cases import (
+    GetSessionProfile,
     LoginUser,
+    LogoutSession,
     RegisterUser,
     RequestPasswordReset,
     ResendVerification,
@@ -34,6 +36,11 @@ from auth.infrastructure.security_adapters import (
     ProjectPasswordPolicy,
     SecureTokenGenerator,
 )
+from auth.infrastructure.session_adapters import (
+    JwtSessionTokenDecoder,
+    SqlAlchemyRevokedTokenRepository,
+    SqlAlchemySessionUserRepository,
+)
 from auth.infrastructure.verify_adapters import SqlAlchemyEmailVerificationTokenRepository
 from core.config import settings
 from core.database import get_db
@@ -41,7 +48,9 @@ from core.database import get_db
 
 @dataclass(frozen=True, slots=True)
 class AuthUseCases:
+    get_session_profile: GetSessionProfile
     login_user: LoginUser
+    logout_session: LogoutSession
     register_user: RegisterUser
     request_password_reset: RequestPasswordReset
     reset_password: ResetPassword
@@ -60,6 +69,7 @@ def build_auth(
     password_reset_repo = SqlAlchemyPasswordResetTokenRepository(db)
     email_verification_repo = SqlAlchemyEmailVerificationTokenRepository(db)
     return AuthUseCases(
+        get_session_profile=GetSessionProfile(users=SqlAlchemySessionUserRepository(db)),
         login_user=LoginUser(
             repo=SqlAlchemyAuthUserRepository(db),
             passwords=BcryptPasswordVerifier(),
@@ -67,6 +77,10 @@ def build_auth(
             tickets=TotpTicketAdapter(),
             rate_limit_enabled=settings.rate_limit_enabled,
             email_verification_enabled=settings.email_verification_enabled,
+        ),
+        logout_session=LogoutSession(
+            tokens=JwtSessionTokenDecoder(),
+            revoked_tokens=SqlAlchemyRevokedTokenRepository(db),
         ),
         register_user=RegisterUser(
             repo=SqlAlchemyRegistrationRepository(db),

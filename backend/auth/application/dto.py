@@ -66,3 +66,18 @@ class VerifyEmailResult:
 @dataclass(frozen=True, slots=True)
 class ResendVerificationInput:
     email: str
+
+
+@dataclass(frozen=True, slots=True)
+class SessionProfileResult:
+    id: str
+    email: str
+    full_name: str | None
+    university_id: int | None
+    gender: str
+    phone_number: str
+    theme_settings: dict[str, object]
+    role: str | None
+    permissions: tuple[str, ...]
+    created_at: str | None
+    totp_enabled: bool

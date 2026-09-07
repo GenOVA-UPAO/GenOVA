@@ -18,6 +18,8 @@ from auth.domain.user import (
     PasswordResetTokenRecord,
     PasswordResetUser,
     RegisteredUser,
+    TokenRevocation,
+    UserAccess,
 )
 
 __all__ = [
@@ -32,6 +34,9 @@ __all__ = [
     "PasswordResetTokenRepository",
     "PasswordVerifier",
     "RegistrationRepository",
+    "RevokedTokenRepository",
+    "SessionTokenDecoder",
+    "SessionUserRepository",
     "TokenGenerator",
     "TotpTicketIssuer",
 ]
@@ -124,3 +129,17 @@ class EmailVerificationTokenRepository(Protocol):
     ) -> EmailVerificationUser | None: ...
 
     def replace_for_user(self, user_id: UUID, token: str, expires_at: datetime) -> None: ...
+
+
+class SessionTokenDecoder(Protocol):
+    def decode_for_revocation(self, token: str) -> TokenRevocation | None: ...
+
+
+class RevokedTokenRepository(Protocol):
+    def exists(self, jti: str) -> bool: ...
+
+    def add(self, revocation: TokenRevocation) -> None: ...
+
+
+class SessionUserRepository(Protocol):
+    def access_for(self, user_id: UUID) -> UserAccess: ...
