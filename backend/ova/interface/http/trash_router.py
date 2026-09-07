@@ -8,8 +8,13 @@ from core.database import commit_or_500, get_db
 from core.pagination import page_meta
 from core.rate_limit import limiter
 from models import Ova, User
-from ova.helpers import _delete_scorm_file, _is_admin, _ova_to_dict, forbidden_response
-from ova.lifecycle.trash_batch_router import router as trash_batch_router
+from ova.interface.http._shared import (
+    _delete_scorm_file,
+    _is_admin,
+    _ova_to_dict,
+    forbidden_response,
+)
+from ova.interface.http.trash_batch_router import router as trash_batch_router
 
 router = APIRouter(tags=["OVA · Papelera"])
 

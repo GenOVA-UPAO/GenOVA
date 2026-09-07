@@ -11,7 +11,7 @@ from core.database import get_db
 from core.pagination import page_meta
 from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
 from models import Ova, OvaVersion, User
-from ova.helpers import VALID_STATUSES, _is_admin, _ova_to_dict, forbidden_response
+from ova.interface.http._shared import VALID_STATUSES, _is_admin, _ova_to_dict, forbidden_response
 from storage import StorageError, is_configured, signed_url
 
 router = APIRouter()
@@ -153,9 +153,9 @@ def download_ova(
     )
 
 
-from ova.lifecycle.duplicate_router import router as duplicate_router  # noqa: E402
-from ova.lifecycle.manage_router import router as manage_router  # noqa: E402
-from ova.lifecycle.trash_router import router as trash_router  # noqa: E402
+from ova.interface.http.duplicate_router import router as duplicate_router  # noqa: E402
+from ova.interface.http.manage_router import router as manage_router  # noqa: E402
+from ova.interface.http.trash_router import router as trash_router  # noqa: E402
 
 router.include_router(trash_router)
 router.include_router(duplicate_router)

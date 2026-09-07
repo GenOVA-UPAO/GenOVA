@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Ova
-from ova.crud.edit_helpers import _ova_output_dir
+from ova.application.edit_helpers import _ova_output_dir
 
 logger = structlog.get_logger(__name__)
 

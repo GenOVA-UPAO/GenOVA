@@ -17,8 +17,8 @@ from auth.dependencies import get_current_user
 from core.database import get_db
 from core.rate_limit import limiter
 from models import Ova, OvaPhase, User
-from ova.crud.edit_helpers import _get_active_version, _is_ova_owner
-from ova.helpers import forbidden_response
+from ova.application.edit_helpers import _get_active_version, _is_ova_owner
+from ova.interface.http._shared import forbidden_response
 
 router = APIRouter(tags=["OVA · Fases y versiones"])
 

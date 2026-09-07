@@ -9,8 +9,8 @@ from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from generation.regen.regen_router import router as regen_router
 from models import OvaPhase, User
-from ova.crud.edit_helpers import _phase_to_version_data, _rebuild_scorm_for_version
-from ova.crud.edit_phase_ops import (
+from ova.application.edit_helpers import _phase_to_version_data, _rebuild_scorm_for_version
+from ova.application.edit_phase_ops import (
     ReorderRequest,
     SavePhaseRequest,
     _create_new_version,
@@ -18,8 +18,8 @@ from ova.crud.edit_phase_ops import (
     _list_phases,
     _resolve_ova_and_version,
 )
-from ova.crud.edit_view_router import router as edit_view_router
-from ova.phases.phase_version_router import record_phase_micro_version
+from ova.interface.http.edit_view_router import router as edit_view_router
+from ova.interface.http.phase_version_router import record_phase_micro_version
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()

@@ -8,7 +8,7 @@ from auth.dependencies import get_current_user
 from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from models import OvaVersion, User
-from ova.crud.edit_helpers import (
+from ova.application.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _get_all_versions,
@@ -17,7 +17,7 @@ from ova.crud.edit_helpers import (
     _resolve_ova,
     _version_to_dict,
 )
-from ova.crud.export_router import router as export_router
+from ova.interface.http.export_router import router as export_router
 
 logger = structlog.get_logger(__name__)
 

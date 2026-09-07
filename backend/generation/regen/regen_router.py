@@ -10,12 +10,12 @@ from core.rate_limit import limiter
 from generation.regen.regen_jobs import regen_progress_dto, start_regen
 from generation.regen.regen_service import _finalize_edit
 from models import Ova, OvaPhase, User
-from ova.crud.edit_helpers import (
+from ova.application.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _is_ova_owner,
 )
-from ova.helpers import forbidden_response
+from ova.interface.http._shared import forbidden_response
 
 router = APIRouter(tags=["Generación"])
 

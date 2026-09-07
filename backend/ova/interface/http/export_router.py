@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from core.database import get_db
 from models import User
-from ova.crud.edit_helpers import _get_active_version, _resolve_ova
+from ova.application.edit_helpers import _get_active_version, _resolve_ova
 from storage import StorageError, is_configured, signed_url
 
 logger = structlog.get_logger(__name__)

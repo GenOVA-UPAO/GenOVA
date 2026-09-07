@@ -8,7 +8,7 @@ from auth.dependencies import get_current_user
 from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from models import Ova, User
-from ova.helpers import BatchIdsRequest, _delete_scorm_file, _is_admin
+from ova.interface.http._shared import BatchIdsRequest, _delete_scorm_file, _is_admin
 
 router = APIRouter()
 

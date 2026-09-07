@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Ova, OvaPhase, OvaVersion, User
-from ova.crud.edit_helpers import (
+from ova.application.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _resolve_ova,

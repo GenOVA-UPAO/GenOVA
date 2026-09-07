@@ -18,14 +18,14 @@ from auth.dependencies import get_current_user
 from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from models import Ova, OvaPhase, User
-from ova.crud.edit_helpers import (
+from ova.application.edit_helpers import (
     _ensure_version_exists,
     _get_active_version,
     _is_ova_owner,
     _phase_to_dict,
 )
-from ova.helpers import forbidden_response
-from ova.phases.phase_version_router import record_phase_micro_version
+from ova.interface.http._shared import forbidden_response
+from ova.interface.http.phase_version_router import record_phase_micro_version
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(tags=["OVA · Fases y versiones"])

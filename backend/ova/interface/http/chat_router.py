@@ -9,8 +9,8 @@ from auth.dependencies import get_current_user
 from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from models import User
-from ova.chat import service as chat_service
-from ova.crud.edit_helpers import _resolve_ova
+from ova.application import chat_service
+from ova.application.edit_helpers import _resolve_ova
 
 router = APIRouter(tags=["OVA · Chat"])
 

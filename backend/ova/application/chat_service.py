@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ova.chat.models import OvaEditorChatMessage
+from ova.infrastructure.orm_chat import OvaEditorChatMessage
 
 
 def message_to_dict(row: OvaEditorChatMessage) -> dict[str, Any]:

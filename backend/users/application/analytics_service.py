@@ -15,7 +15,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from models import Role, User, UserRole
-from ova.models import Ova
+from ova.infrastructure.orm import Ova
 
 _STATUSES = ("borrador", "generando", "listo", "error")
 _RECENT_DAYS = 30

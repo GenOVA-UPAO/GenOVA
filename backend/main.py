@@ -29,13 +29,13 @@ from core.rate_limit import limiter
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
 from llm.catalog.catalog_router import router as agents_router
-from ova.chat.router import router as ova_chat_router
-from ova.crud.edit_router import router as ova_edit_router
-from ova.crud.subelement_router import router as ova_subelement_router
-from ova.phases.add_phase_router import router as ova_add_phase_router
-from ova.phases.history_router import router as ova_history_router
-from ova.phases.phase_version_router import router as ova_phase_version_router
-from ova.router import router as ova_router
+from ova.interface.http.add_phase_router import router as ova_add_phase_router
+from ova.interface.http.chat_router import router as ova_chat_router
+from ova.interface.http.edit_router import router as ova_edit_router
+from ova.interface.http.history_router import router as ova_history_router
+from ova.interface.http.phase_version_router import router as ova_phase_version_router
+from ova.interface.http.router import router as ova_router
+from ova.interface.http.subelement_router import router as ova_subelement_router
 from rag.interface.http.router import router as rag_router
 from roles.interface.http.router import router as roles_router
 from run_migrations import run_migrations

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 def get_profesor_stats(db: Session, user_id) -> dict:
     """Retorna estadísticas del profesor: OVAs creados, exportados, vinculados."""
     from models import UserLink
-    from ova.models import Ova
+    from ova.infrastructure.orm import Ova
 
     total_ovas = (
         db.scalar(

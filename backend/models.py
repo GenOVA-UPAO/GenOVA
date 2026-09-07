@@ -20,8 +20,8 @@ from generation.jobs.jobs_model import (  # noqa: F401  — registers ova_jobs t
     OvaJobResource,
 )
 from llm.catalog.models import CatalogCache  # noqa: F401
-from ova.chat.models import OvaEditorChatMessage  # noqa: F401
-from ova.models import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
+from ova.infrastructure.orm import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
+from ova.infrastructure.orm_chat import OvaEditorChatMessage  # noqa: F401
 from rag.infrastructure.orm import RagChunk  # noqa: F401
 from roles.infrastructure.orm import Role, UserRole  # noqa: F401
 from users.infrastructure.orm import User, UserLink  # noqa: F401
