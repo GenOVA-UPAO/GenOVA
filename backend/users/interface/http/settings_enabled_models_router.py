@@ -5,20 +5,21 @@ GET returns the current list; PUT persists a new list, validated against the
 curated catalog. System default models can never be disabled.
 """
 
-import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import get_db
 from core.rate_limit import limiter
 from llm.catalog.catalog_refresh import get_full_catalog_entries
 from llm.catalog.model_catalog import DEFAULTS
 from models import User
+from users.application.dto import SaveEnabledModelsInput
+from users.container import UsersUseCases, build_users
+from users.domain.enabled_models import validate_enabled_models
+from users.domain.errors import UserError
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Ajustes de usuario"])
-logger = structlog.get_logger(__name__)
 
 
 class EnabledModelsUpdate(BaseModel):
@@ -26,29 +27,11 @@ class EnabledModelsUpdate(BaseModel):
 
 
 def _validate_enabled_models(payload: list[dict]) -> list[dict]:
-    full = get_full_catalog_entries()
-    valid_keys = {(e["provider"], e["model_id"]) for e in full}
-    seen: set[tuple[str, str]] = set()
-    clean: list[dict] = []
-    for item in payload:
-        provider = item.get("provider")
-        model_id = item.get("model_id")
-        if not (provider and model_id):
-            continue
-        key = (provider, model_id)
-        if key in seen:
-            continue
-        if key not in valid_keys:
-            raise ValueError(f"Modelo no reconocido: {provider}/{model_id}")
-        seen.add(key)
-        clean.append({"provider": provider, "model_id": model_id})
-
-    defaults = {(d["provider"], d["model_id"]) for d in DEFAULTS.values()}
-    for d in defaults:
-        if d not in seen:
-            clean.append({"provider": d[0], "model_id": d[1]})
-
-    return clean
+    # `get_full_catalog_entries` se resuelve por el namespace de ESTE módulo a
+    # propósito: un test hace monkeypatch del símbolo aquí.
+    return validate_enabled_models(
+        payload, full_entries=get_full_catalog_entries(), defaults=DEFAULTS.values()
+    )
 
 
 @router.get("/me/enabled-models", summary="Obtener los modelos habilitados")
@@ -64,22 +47,18 @@ def put_enabled_models(
     request: Request,
     payload: EnabledModelsUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     try:
         clean = _validate_enabled_models(payload.models)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
 
-    current_user.enabled_models = clean
     try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("enabled models write failed", user_id=current_user.id)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo guardar la lista de modelos. Intenta de nuevo.",
-        ) from None
+        users.save_enabled_models.execute(
+            SaveEnabledModelsInput(user_id=current_user.id, models=clean)
+        )
+    except UserError as err:
+        raise to_http_exception(err) from None
 
     return {"models": clean}

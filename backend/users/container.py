@@ -32,6 +32,7 @@ from users.application.use_cases import (
     ListUsers,
     ResendLink,
     SaveApiKeys,
+    SaveEnabledModels,
     SaveResourceConfigs,
     UpdateUserProfile,
     UpdateUserTheme,
@@ -46,6 +47,9 @@ from users.infrastructure.sqlalchemy_resource_config_repository import (
     SqlAlchemyResourceConfigRepository,
 )
 from users.infrastructure.sqlalchemy_user_link_repository import SqlAlchemyUserLinkRepository
+from users.infrastructure.sqlalchemy_user_settings_repository import (
+    SqlAlchemyUserSettingsRepository,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,6 +76,7 @@ class UsersUseCases:
     delete_any_link: DeleteAnyLink
     get_api_keys: GetApiKeys
     save_api_keys: SaveApiKeys
+    save_enabled_models: SaveEnabledModels
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -82,6 +87,7 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
     analytics = SqlAlchemyAnalyticsRepository(db)
     links = SqlAlchemyUserLinkRepository(db)
     api_keys = SqlAlchemyApiKeyRepository(db)
+    settings = SqlAlchemyUserSettingsRepository(db)
     hasher = CorePasswordHasher()
     return UsersUseCases(
         update_profile=UpdateUserProfile(profiles),
@@ -106,4 +112,5 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         delete_any_link=DeleteAnyLink(links),
         get_api_keys=GetApiKeys(api_keys),
         save_api_keys=SaveApiKeys(api_keys),
+        save_enabled_models=SaveEnabledModels(settings),
     )

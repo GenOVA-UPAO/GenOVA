@@ -178,3 +178,31 @@ class ApiKeysNotSaved(UserError):
         self, detail: str = "No se pudo guardar las API keys. Intenta de nuevo."
     ) -> None:
         super().__init__(detail)
+
+
+class EnabledModelsNotSaved(UserError):
+    def __init__(
+        self, detail: str = "No se pudo guardar la lista de modelos. Intenta de nuevo."
+    ) -> None:
+        super().__init__(detail)
+
+
+class SettingsWriteFailed(UserError):
+    def __init__(
+        self, detail: str = "No se pudo guardar la configuración. Intenta de nuevo."
+    ) -> None:
+        super().__init__(detail)
+
+
+class PlatformConfigNotSaved(UserError):
+    def __init__(
+        self, detail: str = "No se pudo guardar la configuración de plataforma."
+    ) -> None:
+        super().__init__(detail)
+
+
+class NodesConfigNotSaved(UserError):
+    def __init__(
+        self, detail: str = "No se pudo guardar la configuración de nodos."
+    ) -> None:
+        super().__init__(detail)

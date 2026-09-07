@@ -60,6 +60,14 @@ class UserLinkRepository(Protocol):
     def delete_any(self, link_id: UUID) -> None: ...
 
 
+class UserSettingsRepository(Protocol):
+    """Ajustes de generación por usuario (columnas JSONB de la fila User)."""
+
+    def get_enabled_models(self, user_id) -> list: ...
+
+    def save_enabled_models(self, user_id, clean: list) -> list: ...
+
+
 class AnalyticsRepository(Protocol):
     """Consultas agregadas de la analítica de aprendizaje (solo lectura)."""
 

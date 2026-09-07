@@ -19,6 +19,7 @@ from users.application.use_cases.list_my_links import ListMyLinks
 from users.application.use_cases.list_users import ListUsers
 from users.application.use_cases.resend_link import ResendLink
 from users.application.use_cases.save_api_keys import SaveApiKeys
+from users.application.use_cases.save_enabled_models import SaveEnabledModels
 from users.application.use_cases.save_resource_configs import SaveResourceConfigs
 from users.application.use_cases.update_user_profile import UpdateUserProfile
 from users.application.use_cases.update_user_theme import UpdateUserTheme
@@ -43,6 +44,7 @@ __all__ = [
     "ListUsers",
     "ResendLink",
     "SaveApiKeys",
+    "SaveEnabledModels",
     "SaveResourceConfigs",
     "UpdateUserProfile",
     "UpdateUserTheme",

@@ -156,3 +156,9 @@ class SaveApiKeysInput:
     user_id: UUID
     payload: dict
     providers: list
+
+
+@dataclass(frozen=True, slots=True)
+class SaveEnabledModelsInput:
+    user_id: UUID
+    models: list
