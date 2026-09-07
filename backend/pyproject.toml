@@ -344,12 +344,15 @@ source_modules = ["users.infrastructure"]
 forbidden_modules = ["users.application", "users.interface"]
 
 [[tool.importlinter.contracts]]
-name = "users no depende de generation/scorm/rag/storage"
+name = "users no depende de ova/generation/scorm/rag/storage"
 type = "forbidden"
 source_modules = ["users"]
-forbidden_modules = ["generation", "scorm", "rag", "storage"]
-# `users.interface.http.admin_nodes_config_router` sí configura `prometheus.config`
-# (endpoint admin para tunear el motor de generación) — dependencia legítima.
+forbidden_modules = ["ova", "generation", "scorm", "rag", "storage"]
+# Excepciones sancionadas (endpoints admin/settings que configuran el motor):
+#   users.interface.http.admin_nodes_config_router      -> prometheus.config
+#   users.interface.http.{admin_platform_settings,settings_*}_router -> llm.*
+#   users.interface.http.{admin_account,settings_account}_router -> auth.infrastructure
+# (contar OVAs en analytics pasa por `from models import Ova`, no por ova.*)
 
 # --- ova: pase estructural en capas (agregado central; 2º pase pendiente). ---
 
@@ -375,6 +378,66 @@ source_modules = ["ova"]
 forbidden_modules = ["roles", "users"]
 # `ova` sí alcanza `prometheus` transitivamente a través de `generation` (que usa
 # el motor de generación) — acoplamiento legítimo, no un import directo de `ova`.
+
+# =====================================================================
+# Fase 3 — contratos globales entre dominios
+# =====================================================================
+#
+# `models` (backend/models.py) NO está en `root_packages` a propósito: es el
+# registro agregado del ORM (re-exporta cada clase para poblar `Base.metadata`).
+# Al no ser paquete raíz, import-linter no atraviesa `from models import X`, así
+# que ese patrón NO acopla dominios entre sí a ojos de los contratos — es el
+# punto de corte sancionado para *entidades de persistencia*. Añadir `models` a
+# `root_packages` reacoplaría los 11 dominios de golpe: no hacerlo.
+#
+# `auth.dependencies` (guards FastAPI: get_current_user / require_admin /
+# require_permission) es una preocupación transversal de la capa `interface`,
+# como `core.database.get_db`. Cualquier `*.interface` puede importarlo; se
+# ignora ese edge en los contratos de independencia.
+#
+# El grafo de dominios NO es un conjunto plano de pares: es un DAG por capas con
+# `llm`+`prometheus` como subdominios de soporte mutuamente cíclicos. Por eso la
+# independencia se expresa como (a) un `independence` sobre la base que de verdad
+# no se toca, y (b) reglas direccionales `forbidden` "no mirar hacia arriba".
+
+# (a) La base es mutuamente independiente.
+[[tool.importlinter.contracts]]
+name = "Base independiente: auth / roles / scorm / storage / uploads"
+type = "independence"
+modules = ["auth", "roles", "scorm", "storage", "uploads"]
+ignore_imports = [
+    "roles.interface.http.router -> auth.dependencies",
+    "uploads.interface.http.router -> auth.dependencies",
+    "rag.interface.http.router -> auth.dependencies",
+]
+
+# (b) Reglas direccionales: los dominios de identidad/base no dependen de los
+#     dominios de producto/orquestación ni de los subdominios de soporte.
+[[tool.importlinter.contracts]]
+name = "auth y roles no dependen de ningún dominio superior"
+type = "forbidden"
+source_modules = ["auth", "roles"]
+forbidden_modules = [
+    "ova", "generation", "llm", "prometheus", "rag", "scorm", "storage", "uploads",
+]
+
+[[tool.importlinter.contracts]]
+name = "rag solo depende de llm (para visión/transcripción), no de dominios superiores"
+type = "forbidden"
+source_modules = ["rag"]
+forbidden_modules = [
+    "ova", "generation", "users", "roles", "prometheus", "scorm", "storage", "uploads",
+]
+
+[[tool.importlinter.contracts]]
+name = "uploads solo depende de rag (ingesta), no de dominios superiores"
+type = "forbidden"
+source_modules = ["uploads"]
+forbidden_modules = [
+    "ova", "generation", "prometheus", "users", "roles", "scorm", "storage",
+]
+# `llm` no se lista: uploads lo alcanza solo transitivamente vía `rag`
+# (rag.infrastructure.parsers usa visión/transcripción), que es un edge permitido.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

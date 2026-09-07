@@ -3,7 +3,14 @@
 Domain models live co-located in their domain packages (screaming
 architecture). This module re-exports every model so that importing it
 populates ``Base.metadata`` in full for ``create_all()`` and the migration
-runner, and so legacy ``from models import X`` call sites keep working.
+runner, and so ``from models import X`` call sites keep working.
+
+Fase 3 — punto de corte sancionado: este módulo NO figura en
+``[tool.importlinter] root_packages``. import-linter no atraviesa
+``from models import X``, así que ese patrón no acopla dominios entre sí a
+ojos de los contratos de independencia: ``models`` es la superficie
+compartida para *entidades de persistencia*. Añadirlo a ``root_packages``
+reacoplaría los 11 dominios de golpe — no hacerlo.
 """
 
 from auth.infrastructure.orm import (  # noqa: F401
