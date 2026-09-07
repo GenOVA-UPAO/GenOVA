@@ -1,0 +1,78 @@
+services:
+  - type: web
+    name: genova-api
+    runtime: docker
+    plan: free
+    dockerfilePath: backend/Dockerfile.prod
+    # El Dockerfile copia backend/... y por ello el contexto debe ser la raíz.
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ENV
+        value: production
+      - key: DATABASE_URL
+        # URL del Transaction pooler de Supabase (puerto 6543), no el host directo 5432.
+        sync: false
+      - key: DB_POOL_SIZE
+        value: "3"
+      - key: DB_MAX_OVERFLOW
+        value: "0"
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        # Origen exacto del Static Site, por ejemplo https://genova-frontend.onrender.com.
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: COOKIE_SAMESITE
+        value: none
+      # NO configurar Redis: con un valor aquí arq encola los jobs, pero este Blueprint
+      # no crea worker y quedarían esperando para siempre. Vacío activa el hilo del servidor.
+      - key: REDIS_URL
+        value: ""
+      # Un recurso a la vez reduce los picos de RAM del proceso único del plan gratuito.
+      - key: OVA_GEN_CONCURRENCY
+        value: "1"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        # Fallback opcional: la clave de plataforma puede permanecer en la base de datos.
+        sync: false
+      - key: OPENCODE_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: HF_TOKEN
+        sync: false
+      - key: SILICONFLOW_API_KEY
+        sync: false
+      - key: RUNWARE_API_KEY
+        sync: false
+      - key: FALAI_API_KEY
+        sync: false
+      - key: CF_AI_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: scorm-packages
+
+  - type: web
+    name: genova-frontend
+    runtime: static
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && cd frontend && node scripts/run-with-api-env.mjs build
+    # @angular/build:application escribe el navegador bajo este subdirectorio.
+    staticPublishPath: frontend/dist/frontend-ng/browser
+    envVars:
+      # Se sustituye en el bundle en tiempo de build; usar la URL pública de genova-api.
+      - key: GENOVA_API_BASE_URL
+        sync: false
+    routes:
+      # SPA: recargar /ova/<id> debe servir la aplicación, no buscar un archivo físico.
+      - type: rewrite
+        source: /*
+        destination: /index.html
