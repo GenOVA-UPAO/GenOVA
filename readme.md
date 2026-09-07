@@ -299,13 +299,17 @@ Excepciones: `*.spec.ts` / `tests/**`; `backend/prometheus/**` (motor LangGraph)
 
 ### Arquitectura
 
-- **Backend — hexagonal estricto por dominio** (`backend/<dominio>/`):
+- **Backend — hexagonal por dominio** (`backend/<dominio>/`):
   `domain/` (entidades puras + value objects + errores + políticas; sin `fastapi`/`sqlalchemy`/`pydantic`) →
-  `application/` (puertos, DTOs, casos de uso) →
-  `infrastructure/` (ORM, mappers, repos SQLAlchemy) · `interface/http/` (routers FastAPI, schemas).
-  `container.py` cablea la DI de FastAPI. Fronteras enforced con **`import-linter`**
-  (`backend/pyproject.toml` → `[tool.importlinter]`; `lint-imports` en `pre-push` y CI).
-  Cross-dominio solo vía `<dominio>/__init__.py`.
+  `application/` (puertos `Protocol`, DTOs `@dataclass`, casos de uso) →
+  `infrastructure/` (`orm.py`, mappers, repos SQLAlchemy) · `interface/http/` (routers FastAPI, schemas).
+  `container.py` cablea la DI de FastAPI (`Depends`). Cross-dominio solo vía `<dominio>/__init__.py`.
+  Fronteras enforced con **`import-linter`** (`backend/pyproject.toml` → `[tool.importlinter]`;
+  `lint-imports` en `pre-push` y CI) — 25 contratos.
+  Estado: `roles`/`uploads`/`rag` completos (puertos + casos de uso); `storage`/`scorm` ligeros
+  (adaptador / dominio puro); `auth`/`users`/`ova` con las capas ya separadas y la extracción
+  de cada router a casos de uso pendiente; `generation`/`llm`/`prometheus` como subdominios de
+  soporte (solo contratos de perímetro).
 - **Frontend — features + fronteras enforced** (`eslint-plugin-boundaries`, en `warn` durante
   el refactor): `feature` → `core` / su propia feature (nunca otra feature); `core` → `core`
   (nunca `feature`); `app` → cualquiera.
