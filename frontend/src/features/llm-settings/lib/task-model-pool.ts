@@ -1,3 +1,18 @@
+/**
+ * Restringe el catálogo a los modelos que el usuario activó en «Gestionar
+ * modelos». Es lo que da sentido a ese interruptor: filtra lo que se puede
+ * elegir como primario o como fallback de cada tarea.
+ *
+ * Con la lista vacía (instalación nueva, o nadie ha activado nada todavía) se
+ * devuelve el catálogo entero: dejar los selects en blanco sería peor que no
+ * filtrar.
+ */
+export function enabledOnly<T extends ModelRef>(models: T[], enabled: readonly ModelRef[]): T[] {
+  if (enabled.length === 0) return models;
+  const keys = new Set(enabled.map(modelKey));
+  return models.filter((m) => keys.has(modelKey(m)));
+}
+
 /** Pool = enabled catalog ∩ apt for task (multimodal may appear in several). */
 export function modelsForTask<T extends { aptitudes?: string[]; category?: string }>(
   models: T[],

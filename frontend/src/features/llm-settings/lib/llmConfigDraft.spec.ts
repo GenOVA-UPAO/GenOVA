@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { defaultGenerationEnabled, isMediaTask, toDraft, toPayload } from "./llm-config-draft";
-import { includeSelectedInPool, modelsForTask } from "./task-model-pool";
+import { enabledOnly, includeSelectedInPool, modelsForTask } from "./task-model-pool";
 
 describe("llmConfigDraft media", () => {
   it("marks imagen/video as media; video generation defaults off", () => {
@@ -70,5 +70,27 @@ describe("includeSelectedInPool", () => {
       "deepseek/deepseek-v4-flash",
       "other/missing",
     ]);
+  });
+});
+
+describe("enabledOnly", () => {
+  const A = { provider: "openrouter", model_id: "a", label: "A" };
+  const B = { provider: "openrouter", model_id: "b", label: "B" };
+  const C = { provider: "opencode", model_id: "a", label: "C" };
+
+  it("acota el catalogo a lo que el usuario activo", () => {
+    expect(enabledOnly([A, B, C], [B])).toEqual([B]);
+  });
+
+  it("no confunde el mismo model_id de proveedores distintos", () => {
+    expect(enabledOnly([A, B, C], [C])).toEqual([C]);
+  });
+
+  it("con la lista vacia devuelve el catalogo entero, no nada", () => {
+    expect(enabledOnly([A, B, C], [])).toEqual([A, B, C]);
+  });
+
+  it("ignora activados que ya no estan en el catalogo", () => {
+    expect(enabledOnly([A], [B])).toEqual([]);
   });
 });

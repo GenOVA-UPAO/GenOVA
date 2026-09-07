@@ -77,6 +77,8 @@ function stubStore(): Partial<UserLlmSettingsStore> {
     saving: signal(false),
     bounds: signal([30, 300]),
     defaults: signal({}),
+    // Vacío = sin acotar; el pool por tarea cae al catálogo entero.
+    enabledModels: signal([]),
     retryRefresh: () => Promise.resolve(),
   };
 }

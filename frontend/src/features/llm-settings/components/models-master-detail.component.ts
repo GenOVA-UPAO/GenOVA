@@ -15,7 +15,7 @@ import { ButtonComponent } from "@/core/components/ui/button.component";
 import { type Draft, isMediaTask } from "../lib/llm-config-draft";
 import { chipLabel, type ChipModel } from "../lib/model-task-card.helpers";
 import { taskMeta } from "../lib/task-meta";
-import { includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";
+import { enabledOnly, includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 import { CatalogStatusAlertComponent } from "./catalog-status-alert.component";
 import { LlmTaskRowComponent } from "./llm-task-row.component";
@@ -63,8 +63,12 @@ export class ModelsMasterDetailComponent {
       aptitudes?: string[];
       category?: string;
     })[];
-    const filtered = modelsForTask(all, task);
-    const base = filtered.length ? filtered : all;
+    // «Gestionar modelos» acota primero: solo se ofrece lo activado. Después se
+    // filtra por aptitud de la tarea. `includeSelectedInPool` mantiene visible
+    // lo ya asignado aunque no pase esos filtros, para no perder la selección.
+    const enabled = enabledOnly(all, this.store.enabledModels());
+    const filtered = modelsForTask(enabled, task);
+    const base = filtered.length ? filtered : enabled;
     const d = this.selectedDraft();
     return includeSelectedInPool(base, all, [d?.default, ...(d?.fallbacks ?? [])]);
   });
