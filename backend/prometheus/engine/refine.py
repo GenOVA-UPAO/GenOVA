@@ -71,6 +71,7 @@ def apply_feedback(
     llm_config=None,
     enabled_models=None,
     theme=None,
+    deadline: float | None = None,
 ) -> str:
     """Re-generate HTML incorporating explicit feedback list.
 
@@ -88,6 +89,7 @@ def apply_feedback(
                 _CODE_MAX_TOKENS,
                 llm_config,
                 enabled_models,
+                deadline=deadline,
             )
         )
     except Exception:  # noqa: BLE001
@@ -170,7 +172,7 @@ def refine_and_check(
             break
         rounds += 1
         refined = apply_feedback(
-            html, concept, issues, phase, rt, llm_config, enabled_models, theme
+            html, concept, issues, phase, rt, llm_config, enabled_models, theme, deadline
         )
         if not _accepts(refined, html, phase, rt):
             logger.info("refine rejected: no improvement", phase=phase, resource_type=rt)

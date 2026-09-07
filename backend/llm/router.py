@@ -129,13 +129,17 @@ def generar_texto(
     max_tokens: int = 8192,
     llm_config: dict | None = None,
     enabled_models: list | None = None,
+    *,
+    deadline: float | None = None,
 ) -> str:
     """Route a task to its model and walk the per-task fallback chain on any
     recoverable API error (rate-limit, 402 insufficient credit, provider 5xx,
     Crucible/sub-host failures). The chain ends in a Groq model that almost
     always responds within the free tier. `llm_config` carries per-user model/
     timeout overrides for the primary attempt. `enabled_models` restricts overrides
-    to models the user has explicitly enabled (system defaults always pass)."""
+    to models the user has explicitly enabled (system defaults always pass).
+    `deadline` (monotonic) corta fallbacks restantes y acota el timeout del
+    intento al tiempo que queda — no cambia el orden de la cadena."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
     chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea, llm_config)]
 
@@ -143,6 +147,18 @@ def generar_texto(
     prev_provider: str | None = None
     for i, (proveedor, model_id, extra) in enumerate(chain):
         role = "primary" if i == 0 else f"fallback {i}/{len(chain) - 1}"
+        attempt_timeout = timeout
+        if deadline is not None:
+            left = deadline - time.monotonic()
+            if left < 20.0:
+                logger.info(
+                    "task chain cut: resource budget exhausted",
+                    tarea=tarea,
+                    role=role,
+                    attempts=i,
+                )
+                break
+            attempt_timeout = min(timeout or _LLM_TIMEOUT_S, left)
         if i > 0:
             backoff = _retry_delay(last_err, prev_provider, proveedor, i)
             logger.info(
@@ -163,7 +179,7 @@ def generar_texto(
             model_id=model_id,
         )
         try:
-            content = _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
+            content = _chat(proveedor, model_id, prompt, max_tokens, extra, attempt_timeout)
             logger.info(
                 "task model ok",
                 tarea=tarea,

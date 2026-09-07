@@ -65,13 +65,18 @@ def _design_system(theme: dict) -> str:
     return build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
 
 
-def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_models):
+def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_models, deadline=None):
     """Step-1 texto→JSON con un reintento estricto (robustez del camino HTTP)."""
-    raw = generar_texto(prompt, "texto", 8192, llm_config, enabled_models)
+    from prometheus.engine.budget import can_spend
+
+    raw = generar_texto(prompt, "texto", 8192, llm_config, enabled_models, deadline=deadline)
     try:
         return parse_json(raw)
     except Exception:
         logger.warning("JSON parse failed, retrying strict", phase=phase, resource_type=rt)
+        if not can_spend(deadline):
+            logger.info("JSON retry skipped: resource budget exhausted", phase=phase, resource_type=rt)
+            return {"contenido": raw}
         retry = generar_texto(
             prompt + "\n\nIMPORTANTE: Responde SOLO con el JSON puro, sin texto "
             "adicional, sin markdown, sin explicaciones.",
@@ -79,6 +84,7 @@ def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_mode
             8192,
             llm_config,
             enabled_models,
+            deadline=deadline,
         )
         try:
             return parse_json(retry)
@@ -123,7 +129,7 @@ def _post_process(
     return html, resource_defects(html, concept)
 
 
-def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models) -> ResourceResult:
+def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models, deadline=None) -> ResourceResult:
     from llm.podcast.podcast import build_podcast_html, podcast_audio_b64
 
     mono = generar_texto(
@@ -132,6 +138,7 @@ def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models) -> Re
         700,
         llm_config,
         enabled_models,
+        deadline=deadline,
     )
     audio_b64 = podcast_audio_b64(mono)
     # El player se ensambla de plantilla fija (sin design-system ni refinamiento).
@@ -159,6 +166,7 @@ def _gen_direct_code(
             _CODE_MAX_TOKENS,
             llm_config,
             enabled_models,
+            deadline=deadline,
         )
     )
     html, defects = _post_process(
@@ -187,17 +195,21 @@ def _gen_two_step(
         rt,
         llm_config,
         enabled_models,
+        deadline,
     )
 
     # Enriquecimiento con imágenes — solo engage tiene campos prompt_imagen.
     # enrich_with_images MUTA json_data (añade image_placeholder) y exige una lista.
     img_replacements: dict[str, str] = {}
     if phase == "engage" and image_settings:
-        from llm.images.image_enrich import enrich_with_images
+        from prometheus.engine.budget import can_spend
 
-        img_replacements = enrich_with_images(
-            json_data if isinstance(json_data, list) else [json_data], image_settings
-        )
+        if can_spend(deadline):
+            from llm.images.image_enrich import enrich_with_images
+
+            img_replacements = enrich_with_images(
+                json_data if isinstance(json_data, list) else [json_data], image_settings
+            )
 
     json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
     html = strip_markdown(
@@ -207,6 +219,7 @@ def _gen_two_step(
             _CODE_MAX_TOKENS,
             llm_config,
             enabled_models,
+            deadline=deadline,
         )
     )
 
@@ -252,7 +265,7 @@ def generate_resource(
         deadline = deadline_at(time.monotonic())
 
     if plan == PODCAST:
-        return _gen_podcast(phase, n, concept, contexto, llm_config, enabled_models)
+        return _gen_podcast(phase, n, concept, contexto, llm_config, enabled_models, deadline)
     if plan == DIRECT_CODE:
         return _gen_direct_code(
             phase,

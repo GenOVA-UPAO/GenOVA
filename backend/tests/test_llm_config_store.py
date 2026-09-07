@@ -233,6 +233,21 @@ def test_fallback_advances_on_empty_content(monkeypatch):
     assert router.generar_texto("p", "codigo", 100) == "<ok>"
 
 
+def test_fallback_cut_when_budget_exhausted(monkeypatch):
+    _admin(
+        monkeypatch,
+        {"codigo": {"provider": "openrouter", "model_id": "primary-x", "extra": {}}},
+        {"codigo": [{"provider": "groq", "model_id": "fb-y", "extra": {}}]},
+    )
+    monkeypatch.setattr(router, "openrouter_client", _ModelFake({"primary-x": ""}))
+    monkeypatch.setattr(router, "groq_client", _ModelFake({"fb-y": "<ok>"}))
+    ticks = iter([0.0, 80.0, 80.0, 80.0])
+    monkeypatch.setattr(router.time, "monotonic", lambda: next(ticks, 80.0))
+    with pytest.raises(router.EmptyContentError):
+        router.generar_texto("p", "codigo", 100, deadline=90.0)
+    # primary falló; el fallback groq no corre porque el presupuesto se agotó.
+
+
 def test_fallback_respects_order(monkeypatch):
     # primario vacío, fallback#1 vacío, fallback#2 responde → se usa el #2.
     _admin(
