@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol
 
-from ova.domain.editor import EditorOva, EditorPhase, EditorVersion
+from ova.domain.editor import EditorMicroVersion, EditorOva, EditorPhase, EditorVersion
 from ova.domain.model import Ova, OvaDuplicateSource, OvaPhase
 
 
@@ -111,5 +111,11 @@ class OvaEditorRepository(Protocol):
     def get_version(self, version_id: str, ova_id: str, with_phases: bool = False) -> EditorVersion | None: ...
 
     def activate_version(self, ova_id: str, version_id: str) -> None: ...
+
+    def list_micro_versions(self, phase_id: str, ova_id: str) -> tuple[EditorMicroVersion, ...]: ...
+
+    def get_micro_version(self, micro_id: str, phase_id: str) -> EditorMicroVersion | None: ...
+
+    def set_phase_content(self, phase_id: str, content: str) -> None: ...
 
     def commit(self, operation: str) -> None: ...

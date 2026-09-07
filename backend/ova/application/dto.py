@@ -129,3 +129,11 @@ class SubelementEditInput:
     subelement_id: str
     actor: OvaActor
     prompt: str
+
+
+@dataclass(frozen=True, slots=True)
+class PhaseVersionInput:
+    ova_id: str
+    phase_id: str
+    actor: OvaActor
+    micro_version_id: str = ""

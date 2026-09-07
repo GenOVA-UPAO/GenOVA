@@ -22,6 +22,7 @@ from ova.application.use_cases import (
     EditView,
     ListTrashedOvas,
     PermanentlyDeleteOva,
+    PhaseVersions,
     RestoreOva,
     SaveOva,
     UpdateOvaMetadata,
@@ -43,6 +44,7 @@ class OvaUseCases:
     edit_subelement: EditSubelement
     add_phase: AddPhase
     edit_view: EditView
+    phase_versions: PhaseVersions
     update_metadata: UpdateOvaMetadata
     delete_ova: DeleteOva
     count_trashed: CountTrashedOvas
@@ -70,6 +72,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         edit_subelement=EditSubelement(editor),
         add_phase=AddPhase(editor),
         edit_view=EditView(editor),
+        phase_versions=PhaseVersions(editor),
         update_metadata=UpdateOvaMetadata(lifecycle),
         delete_ova=DeleteOva(lifecycle),
         count_trashed=CountTrashedOvas(lifecycle),

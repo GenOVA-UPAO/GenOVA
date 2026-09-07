@@ -43,6 +43,14 @@ class EditorVersion:
     phases: tuple[EditorPhase, ...] = ()
 
 
+@dataclass(frozen=True, slots=True)
+class EditorMicroVersion:
+    id: str
+    minor_number: int
+    content: str
+    created_at: datetime | None
+
+
 def phase_to_dict(phase: EditorPhase) -> dict:
     return {
         "id": phase.id,

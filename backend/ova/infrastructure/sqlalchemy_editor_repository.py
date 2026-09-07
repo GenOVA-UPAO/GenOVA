@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from core.database import commit_or_500
 from core.ids import is_uuid
 from models import Ova, OvaPhase, OvaPhaseVersion, OvaVersion
-from ova.domain.editor import EditorOva, EditorPhase, EditorVersion
+from ova.domain.editor import EditorMicroVersion, EditorOva, EditorPhase, EditorVersion
 from storage import StorageError, is_configured, upload_zip
 
 logger = structlog.get_logger(__name__)
@@ -255,6 +255,41 @@ class SqlAlchemyOvaEditorRepository:
             row.is_active = False
         self._db.flush()
         self._versions[version_id].is_active = True
+
+    def list_micro_versions(self, phase_id: str, ova_id: str) -> tuple[EditorMicroVersion, ...]:
+        return tuple(
+            EditorMicroVersion(
+                id=str(row.id),
+                minor_number=row.minor_number,
+                content=row.content,
+                created_at=row.created_at,
+            )
+            for row in self._db.execute(
+                select(OvaPhaseVersion)
+                .where(OvaPhaseVersion.phase_id == phase_id, OvaPhaseVersion.ova_id == ova_id)
+                .order_by(OvaPhaseVersion.minor_number.desc())
+            )
+            .scalars()
+            .all()
+        )
+
+    def get_micro_version(self, micro_id: str, phase_id: str) -> EditorMicroVersion | None:
+        row = self._db.execute(
+            select(OvaPhaseVersion).where(
+                OvaPhaseVersion.id == micro_id, OvaPhaseVersion.phase_id == phase_id
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            return None
+        return EditorMicroVersion(
+            id=str(row.id),
+            minor_number=row.minor_number,
+            content=row.content,
+            created_at=row.created_at,
+        )
+
+    def set_phase_content(self, phase_id: str, content: str) -> None:
+        self._db.get(OvaPhase, phase_id).content = content
 
     def commit(self, operation: str) -> None:
         commit_or_500(self._db, operation)
