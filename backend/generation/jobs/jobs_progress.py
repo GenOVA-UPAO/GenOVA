@@ -13,6 +13,11 @@ from sqlalchemy.orm import Session
 
 from core.config import settings
 from generation.domain.execution import build_result_maps, finish_status
+from generation.domain.resource_outcome import (
+    MATERIALIZABLE_STATUSES,
+    defect_reason,
+    persist_status,
+)
 from generation.errors.error_log_service import log_generation_error
 from models import OvaJob, OvaJobResource
 
@@ -41,6 +46,18 @@ def _has_done_resource(db: Session, job_id: uuid.UUID) -> bool:
     )
 
 
+def _has_materializable_resource(db: Session, job_id: uuid.UUID) -> bool:
+    return (
+        db.execute(
+            select(OvaJobResource.id).where(
+                OvaJobResource.job_id == job_id,
+                OvaJobResource.status.in_(MATERIALIZABLE_STATUSES),
+            )
+        ).first()
+        is not None
+    )
+
+
 def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     from generation.jobs.jobs_service import _now
 
@@ -56,7 +73,7 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     job.status = finish_status(has_unfinished=has_unfinished, any_done=any_done)
     job.finished_at = _now()
     db.commit()
-    if any_done:
+    if _has_materializable_resource(db, job.id):
         _materialize(db, job)
     elif job.ova_id is not None:
         try:
@@ -76,7 +93,10 @@ def _materialize(db: Session, job: OvaJob) -> None:
     done = list(
         db.execute(
             select(OvaJobResource)
-            .where(OvaJobResource.job_id == job.id, OvaJobResource.status == "done")
+            .where(
+                OvaJobResource.job_id == job.id,
+                OvaJobResource.status.in_(MATERIALIZABLE_STATUSES),
+            )
             .order_by(OvaJobResource.phase_order, OvaJobResource.resource_order)
         )
         .scalars()
@@ -89,7 +109,7 @@ def repair_stuck_ova_if_needed(db: Session, job: OvaJob) -> None:
     """Job `done`/`interrupted` but placeholder still `generando` → rematerialize."""
     if job.status not in ("done", "interrupted") or job.ova_id is None:
         return
-    if not _has_done_resource(db, job.id):
+    if not _has_materializable_resource(db, job.id):
         return
     try:
         from models import Ova as _Ova
@@ -116,6 +136,22 @@ def _safe_mark_error(db: Session, job_id: uuid.UUID) -> None:
         logger.exception("failed to mark job as error after crash", job_id=job_id)
 
 
+def _ensure_degraded_error(db: Session, job: OvaJob, res: OvaJobResource) -> None:
+    """Guarda el motivo en error_log (categoría validation) si aún no hay error_id."""
+    if res.error_id is not None:
+        return
+    eid = log_generation_error(
+        db,
+        message=res.defect_reason or "recurso generado con defectos estructurales",
+        error_category="validation",
+        user_id=job.user_id,
+        ova_id=job.ova_id,
+        job_id=job.id,
+        job_resource_id=res.id,
+    )
+    res.error_id = uuid.UUID(eid)
+
+
 def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list[dict]) -> None:
     resources = list(
         db.execute(
@@ -132,12 +168,19 @@ def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list
     for res in resources:
         if res.status == "done":
             continue
+        if res.status == "degraded":
+            _ensure_degraded_error(db, job, res)
+            continue
         key = f"{res.phase_type}:{res.resource_type}"
         r = result_map.get(key)
         if r and r.get("html"):
+            defects = list(r.get("defects") or [])
             res.content = r["html"]
-            res.status = "done"
+            res.status = persist_status(html=r["html"], defects=defects)
+            res.defect_reason = defect_reason(defects)
             res.attempts = (res.attempts or 0) + 1
+            if res.status == "degraded":
+                _ensure_degraded_error(db, job, res)
         elif key in exhausted_map:
             e = exhausted_map[key]
             eid = log_generation_error(

@@ -17,11 +17,22 @@ from generation.domain.lifecycle import (
     can_cancel,
     is_stream_terminal,
 )
+from generation.domain.resource_outcome import (
+    CONTENT_READY_STATUSES,
+    MATERIALIZABLE_STATUSES,
+    RESOURCE_DEGRADED,
+    defect_reason,
+    is_content_ready,
+    persist_status,
+)
 
 __all__ = [
     "JOB_STATUSES",
     "JOB_STREAM_TERMINAL",
     "JOB_TERMINAL",
+    "CONTENT_READY_STATUSES",
+    "MATERIALIZABLE_STATUSES",
+    "RESOURCE_DEGRADED",
     "RESOURCE_STATUSES",
     "GenerationError",
     "JobAlreadyRunning",
@@ -32,5 +43,8 @@ __all__ = [
     "ResourceNotFound",
     "ResourceNotReady",
     "can_cancel",
+    "defect_reason",
+    "is_content_ready",
     "is_stream_terminal",
+    "persist_status",
 ]

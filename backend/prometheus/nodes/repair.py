@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import structlog
 
-from prometheus.engine.runtime import _concurrency, _persist_done, _touch_job
+from prometheus.engine.runtime import _concurrency, _persist_outcome, _touch_job
 from prometheus.engine.state import OvaGenerationState
 
 logger = structlog.get_logger(__name__)
@@ -84,7 +84,7 @@ def repair_node(state: OvaGenerationState) -> dict:
                 "repair: deliberación plan degradado", phase=phase, resource_type=rt, plan=plan
             )
         try:
-            html = generate_resource(
+            result = generate_resource(
                 phase,
                 rt,
                 concept,
@@ -94,11 +94,11 @@ def repair_node(state: OvaGenerationState) -> dict:
                 theme=theme,
                 image_settings=image_settings,
                 resource_config=per_config,
-            ).html
-            return err, html
+            )
+            return err, result.html, result.defects
         except Exception as exc:  # noqa: BLE001 — aislar cada reintento
             logger.warning("repair: failed again", phase=phase, resource_type=rt, error=str(exc))
-            return err, None
+            return err, None, []
 
     results, exhausted = [], []
     workers = min(_concurrency(), len(failures))
@@ -107,14 +107,42 @@ def repair_node(state: OvaGenerationState) -> dict:
         # que los reintentos LLM aniden bajo el trace del job (LangSmith).
         futures = [pool.submit(contextvars.copy_context().run, _retry, e) for e in failures]
         for fut in as_completed(futures):
-            err, html = fut.result()
+            err, html, defects = fut.result()
             phase, rt = err["phase"], err["resource_type"]
             if html is not None:
+                kept, remaining = html, list(defects)
+            else:
+                kept, remaining = err.get("html"), list(err.get("defects") or [])
+            if kept:
                 meta = _recursos_meta_for(phase)
                 title = (meta.get(rt) or {}).get("tipo", "")
-                results.append({"phase": phase, "html": html, "resource_type": rt, "title": title})
-                _persist_done(job_id, phase, rt, html)
-                logger.info("repair: resource recovered", phase=phase, resource_type=rt)
+                results.append(
+                    {
+                        "phase": phase,
+                        "html": kept,
+                        "resource_type": rt,
+                        "title": title,
+                        "defects": remaining,
+                    }
+                )
+                _persist_outcome(job_id, phase, rt, kept, defects=remaining)
+                if remaining:
+                    logger.info(
+                        "repair: resource still defective",
+                        phase=phase,
+                        resource_type=rt,
+                        defects=remaining,
+                    )
+                    exhausted.append(
+                        {
+                            **err,
+                            "exhausted": True,
+                            "error": "defectos estructurales sin resolver: "
+                            + "; ".join(remaining),
+                        }
+                    )
+                else:
+                    logger.info("repair: resource recovered", phase=phase, resource_type=rt)
             else:
                 exhausted.append({**err, "exhausted": True})
 

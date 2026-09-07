@@ -94,6 +94,7 @@ class OvaJobResource(Base):
     status = Column(String(20), nullable=False, default="pending", server_default="pending")
     attempts = Column(Integer, nullable=False, default=0, server_default="0")
     error_id = Column(UUID(as_uuid=True), nullable=True)
+    defect_reason = Column(Text, nullable=True)
     ova_phase_id = Column(
         UUID(as_uuid=True), ForeignKey("ova_phases.id", ondelete="SET NULL"), nullable=True
     )

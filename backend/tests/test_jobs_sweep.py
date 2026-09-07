@@ -50,7 +50,7 @@ CREATE TABLE ova_job_resources (
   resource_type VARCHAR(40), resource_order INTEGER NOT NULL DEFAULT 0,
   status VARCHAR(20) NOT NULL DEFAULT 'pending',
   attempts INTEGER NOT NULL DEFAULT 0,
-  error_id TEXT, ova_phase_id TEXT, content TEXT,
+  error_id TEXT, defect_reason TEXT, ova_phase_id TEXT, content TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

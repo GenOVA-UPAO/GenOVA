@@ -31,4 +31,5 @@ def _resource_view(resource: JobResource) -> ResourceStatusView:
         status=resource.status,
         attempts=resource.attempts,
         error_id=str(resource.error_id) if resource.error_id else None,
+        defect_reason=resource.defect_reason,
     )

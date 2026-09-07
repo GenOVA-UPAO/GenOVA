@@ -35,3 +35,4 @@ class JobResource:
     title: str = ""
     emoji: str = ""
     content: str | None = None
+    defect_reason: str | None = None

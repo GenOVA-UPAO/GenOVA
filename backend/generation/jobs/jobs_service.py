@@ -29,7 +29,9 @@ STALE_AFTER_SECONDS = 180
 # never even started stayed "queued" forever (GN-03).
 QUEUED_STALE_AFTER_SECONDS = 900
 _STALE_THRESHOLDS = {"running": STALE_AFTER_SECONDS, "queued": QUEUED_STALE_AFTER_SECONDS}
-_RESUMABLE_RESOURCE_STATUSES = ("pending", "error")
+# `degraded` = HTML conservado que no pasó el validador; reanudable sin
+# reutilizar `error` (fallo duro) ni `pending` (aún no intentado).
+_RESUMABLE_RESOURCE_STATUSES = ("pending", "error", "degraded")
 
 
 def _now() -> datetime:
@@ -141,7 +143,7 @@ def resource_ids_in_job(db: Session, job_id: uuid.UUID) -> set[uuid.UUID]:
 
 
 def resumable_resource_ids(db: Session, job_id: uuid.UUID) -> list[uuid.UUID]:
-    """IDs of resources eligible for resume — only pending/error, never done (R7)."""
+    """IDs of resources eligible for resume — pending/error/degraded, never done (R7)."""
     rows = (
         db.execute(
             select(OvaJobResource.id).where(
@@ -156,9 +158,10 @@ def resumable_resource_ids(db: Session, job_id: uuid.UUID) -> list[uuid.UUID]:
 
 
 def resumable_subset(db: Session, job_id: uuid.UUID, requested: list[uuid.UUID]) -> list[uuid.UUID]:
-    """Keep only the requested ids that are resumable (pending/error), dropping
-    `done` ones so a client subset never re-runs and overwrites good content
-    (R6/R7). Preserves the requested order. Ownership is validated by the caller.
+    """Keep only the requested ids that are resumable (pending/error/degraded),
+    dropping `done` ones so a client subset never re-runs and overwrites good
+    content (R6/R7). Preserves the requested order. Ownership is validated by
+    the caller.
     """
     eligible = set(resumable_resource_ids(db, job_id))
     return [rid for rid in requested if rid in eligible]

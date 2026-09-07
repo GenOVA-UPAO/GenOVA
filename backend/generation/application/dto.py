@@ -41,6 +41,7 @@ class ResourceStatusView:
     status: str
     attempts: int
     error_id: str | None
+    defect_reason: str | None = None
 
     def as_dict(self) -> dict:
         return {
@@ -54,6 +55,7 @@ class ResourceStatusView:
             "status": self.status,
             "attempts": self.attempts,
             "error_id": self.error_id,
+            "defect_reason": self.defect_reason,
         }
 
 

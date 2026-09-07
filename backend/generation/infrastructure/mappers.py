@@ -38,4 +38,5 @@ def to_resource(orm: OvaJobResource) -> JobResource:
         title=title,
         emoji=emoji,
         content=orm.content,
+        defect_reason=orm.defect_reason,
     )

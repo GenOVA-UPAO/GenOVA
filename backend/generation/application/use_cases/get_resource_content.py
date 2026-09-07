@@ -8,6 +8,7 @@ from uuid import UUID
 from generation.application.dto import ResourceContentView
 from generation.application.ports import JobRepository
 from generation.domain.errors import ResourceNotFound, ResourceNotReady
+from generation.domain.resource_outcome import is_content_ready
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,7 +22,7 @@ class GetResourceContent:
         resource = self.repo.get_resource(job.id, resource_id)
         if resource is None:
             raise ResourceNotFound()
-        if resource.status != "done" or not resource.content:
+        if not is_content_ready(resource.status, resource.content):
             raise ResourceNotReady()
         return ResourceContentView(
             id=str(resource.id),

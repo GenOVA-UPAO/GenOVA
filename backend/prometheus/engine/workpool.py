@@ -23,7 +23,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
 from prometheus.engine.job_trace import job_trace
-from prometheus.engine.runtime import _persist_done, _touch_job
+from prometheus.engine.runtime import _persist_outcome, _touch_job
 from prometheus.engine.state import OvaGenerationState
 
 logger = structlog.get_logger(__name__)
@@ -123,16 +123,18 @@ def resource_worker(payload: dict) -> dict:
     # generate_resource como compuerta única; aquí solo leemos los defectos
     # estructurales restantes para el routing a repair.
     html, remaining = result.html, result.defects
+    meta = _recursos_meta_for(phase)
+    title = (meta.get(rt) or {}).get("tipo", "")
     if remaining:
-        # Defectos estructurales sin resolver (sin _scormComplete, placeholder,
-        # esqueleto…): el alumno no podría completar el recurso. Va por la ruta
-        # de error para que repair lo reintente en vez de cerrarse como done.
+        # Conserva el HTML y no miente con `done`. Repair puede reintentar una
+        # vez; si no mejora, la fila queda `degraded` (reanudable).
         logger.warning(
             "workpool: resource kept structural defects after improve rounds",
             phase=phase,
             resource_type=rt,
             defects=remaining,
         )
+        _persist_outcome(job_id, phase, rt, html, defects=remaining)
         return {
             "errors": [
                 {
@@ -140,6 +142,8 @@ def resource_worker(payload: dict) -> dict:
                     "resource_type": rt,
                     "error": "defectos estructurales sin resolver: " + "; ".join(remaining),
                     "plan": plan,
+                    "html": html,
+                    "defects": remaining,
                 }
             ],
             "worker_signals": [
@@ -154,12 +158,12 @@ def resource_worker(payload: dict) -> dict:
             ],
         }
 
-    meta = _recursos_meta_for(phase)
-    title = (meta.get(rt) or {}).get("tipo", "")
-    _persist_done(job_id, phase, rt, html)
+    _persist_outcome(job_id, phase, rt, html)
     _touch_job(job_id)
     return {
-        "pool_results": [{"phase": phase, "html": html, "resource_type": rt, "title": title}],
+        "pool_results": [
+            {"phase": phase, "html": html, "resource_type": rt, "title": title, "defects": []}
+        ],
         "worker_signals": [
             {
                 "phase": phase,
