@@ -147,13 +147,15 @@ function startStaticServer() {
         return proxyToBackend(req, res)
       }
       let fp = path.join(distDir, decodeURIComponent(url.pathname))
+      // Sin stat previo (evita TOCTOU js/file-system-race): se intenta leer y se
+      // reacciona al error — EISDIR → index.html del directorio, resto → SPA.
+      let buf
       try {
-        const s = await stat(fp)
-        if (s.isDirectory()) fp = path.join(fp, 'index.html')
-      } catch {
-        fp = path.join(distDir, 'index.html') // fallback SPA
+        buf = await readFile(fp)
+      } catch (err) {
+        fp = err?.code === 'EISDIR' ? path.join(fp, 'index.html') : path.join(distDir, 'index.html')
+        buf = await readFile(fp)
       }
-      const buf = await readFile(fp)
       const ext = path.extname(fp)
       const headers = { 'content-type': MIME[ext] || 'application/octet-stream' }
       if ((req.headers['accept-encoding'] || '').includes('gzip') && COMPRESSIBLE.has(ext)) {
