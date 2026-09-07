@@ -102,13 +102,21 @@ def _post_process(html, phase, rt, concept, theme, llm_config, enabled_models, r
         html = inject_components(html)
 
     if not refine:
+        from llm.images.image_placeholder import resolve_image_placeholders
         from prometheus.engine.validate import structural_defects
 
+        html = resolve_image_placeholders(html)
         return html, structural_defects(html)
 
+    from llm.images.image_placeholder import resolve_image_placeholders
     from prometheus.engine.refine import refine_and_check
+    from prometheus.engine.validate import structural_defects
 
-    return refine_and_check(html, phase, rt, concept, llm_config, enabled_models, theme)
+    # The refiner can return entirely new HTML, including image markers that
+    # were already resolved before this pass. Sanitize its final output too.
+    html, _ = refine_and_check(html, phase, rt, concept, llm_config, enabled_models, theme)
+    html = resolve_image_placeholders(html)
+    return html, structural_defects(html)
 
 
 def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models) -> ResourceResult:
@@ -189,13 +197,9 @@ def _gen_two_step(
     )
 
     if img_replacements:
-        import re
+        from llm.images.image_placeholder import resolve_image_placeholders
 
-        from llm.images.image_placeholder import IMG_PLACEHOLDER
-
-        for placeholder, uri in img_replacements.items():
-            html = html.replace(placeholder, uri)
-        html = re.sub(r"__IMG_\d+__", IMG_PLACEHOLDER, html)
+        html = resolve_image_placeholders(html, img_replacements)
 
     html, defects = _post_process(
         html, phase, rt, concept, theme, llm_config, enabled_models, refine
