@@ -12,6 +12,7 @@ import {
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
+import type { SlotIssue } from "../lib/chain-validation";
 import { type Draft, isMediaTask } from "../lib/llm-config-draft";
 import { chipLabel, type ChipModel } from "../lib/model-task-card.helpers";
 import { taskMeta } from "../lib/task-meta";
@@ -43,6 +44,7 @@ export class ModelsMasterDetailComponent {
   readonly adminModels = input.required<ChipModel[]>();
   readonly isAdmin = input(false);
   readonly adminSaving = input(false);
+  readonly chainIssues = input<Record<string, SlotIssue[]>>({});
 
   readonly draftChange = output<Draft>();
   readonly openCatalog = output();
@@ -55,6 +57,7 @@ export class ModelsMasterDetailComponent {
 
   readonly selectedMeta = computed(() => taskMeta(this.selectedTask()));
   readonly selectedDraft = computed(() => this.draft()?.[this.selectedTask()]);
+  readonly selectedIssues = computed(() => this.chainIssues()[this.selectedTask()] ?? []);
 
   readonly poolModels = computed(() => {
     const task = this.selectedTask();

@@ -130,6 +130,7 @@
           [value]="selectedDraft()!"
           [models]="poolModels()"
           [disabled]="adminSaving()"
+          [issues]="selectedIssues()"
           (onChange)="onChainChange($event)"
         ></gn-llm-task-row>
       } @else {

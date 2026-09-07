@@ -24,6 +24,7 @@ class StubMasterDetail {
   readonly adminModels = input<unknown[]>([]);
   readonly isAdmin = input(false);
   readonly adminSaving = input(false);
+  readonly chainIssues = input<unknown>({});
   readonly draftChange = output();
   readonly openCatalog = output();
 }
@@ -179,6 +180,23 @@ describe("ModelsPageComponent", () => {
     await fixture.whenStable();
 
     expect(screen.queryByRole("button", { name: "Guardar cambios" })).toBeNull();
+  });
+
+  it("disables save while the chain has empty or duplicate models", async () => {
+    const { fixture } = await renderAdminPage(true);
+    const cmp = fixture.componentInstance;
+    cmp.adminTasks.set(["texto"]);
+    cmp.adminDraft.set({
+      texto: {
+        default: { provider: "groq", model_id: "llama" },
+        fallbacks: [{ provider: "", model_id: "" }],
+      },
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(screen.getByText(/duplicados o vacíos/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeDisabled();
   });
 
   it("shows credential subsections for admin", async () => {

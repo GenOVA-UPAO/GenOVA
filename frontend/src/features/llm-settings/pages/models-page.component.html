@@ -61,6 +61,7 @@
           [adminModels]="adminModels()"
           [isAdmin]="isAdmin()"
           [adminSaving]="adminSaving()"
+          [chainIssues]="taskIssues()"
           (draftChange)="onDraftChange($event)"
           (openCatalog)="openManageModels()"
         ></gn-models-master-detail>
@@ -99,10 +100,16 @@
       class="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-6 py-3 backdrop-blur"
     >
       <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
-        <p class="text-xs text-muted-foreground">Tienes cambios sin guardar en la asignación.</p>
+        <p class="text-xs text-muted-foreground">
+          @if (chainInvalid()) {
+            Corrige los modelos duplicados o vacíos para guardar.
+          } @else {
+            Tienes cambios sin guardar en la asignación.
+          }
+        </p>
         <div class="flex items-center gap-2">
           <gn-button variant="ghost" size="sm" (onClick)="discardChanges()">Cancelar</gn-button>
-          <gn-button size="sm" (onClick)="saveAll()" [disabled]="adminSaving()">
+          <gn-button size="sm" (onClick)="saveAll()" [disabled]="adminSaving() || chainInvalid()">
             {{ adminSaving() ? "Guardando..." : "Guardar cambios" }}
           </gn-button>
         </div>

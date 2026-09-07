@@ -24,6 +24,7 @@ class StubTaskRow {
   readonly value = input<unknown>(null);
   readonly models = input<unknown[]>([]);
   readonly disabled = input(false);
+  readonly issues = input<unknown[]>([]);
   readonly onChange = output();
 }
 

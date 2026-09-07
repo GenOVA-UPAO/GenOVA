@@ -55,9 +55,11 @@
         <div
           class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl border transition shadow-sm"
           [ngClass]="
-            disabled()
-              ? 'border-border/50 bg-muted/20'
-              : 'border-border bg-card/50 hover:bg-accent/30'
+            issueAt(i)
+              ? 'border-destructive bg-destructive/5'
+              : disabled()
+                ? 'border-border/50 bg-muted/20'
+                : 'border-border bg-card/50 hover:bg-accent/30'
           "
         >
           <div class="flex items-center gap-2 shrink-0">
@@ -88,6 +90,9 @@
               [ariaLabel]="'Fallback ' + (i + 1) + ' de ' + task()"
               (onChange)="setFallback(i, $event.provider, $event.modelId)"
             ></gn-llm-model-select>
+            @if (issueAt(i); as msg) {
+              <p class="mt-1.5 text-xs font-medium text-destructive" role="alert">{{ msg }}</p>
+            }
           </div>
           <div class="flex items-center justify-end gap-2 shrink-0 sm:ml-2">
             <button

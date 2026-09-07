@@ -25,6 +25,7 @@ import { ModelsMasterDetailComponent } from "../components/models-master-detail.
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
 import { PlatformNodesCardComponent } from "../components/platform-nodes-card.component";
 import { UserApiKeysCardComponent } from "../components/user-api-keys-card.component";
+import { draftHasIssues, validateDraft } from "../lib/chain-validation";
 import { type Draft, toDraft, toPayload } from "../lib/llm-config-draft";
 import type { ChipModel } from "../lib/model-task-card.helpers";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
@@ -95,6 +96,9 @@ export class ModelsPageComponent implements OnInit {
     if (total === 0) return this.favoritesLabel();
     return `${ok} / ${total} proveedores · ${this.favoritesLabel()}`;
   });
+
+  readonly taskIssues = computed(() => validateDraft(this.adminDraft(), this.adminTasks()));
+  readonly chainInvalid = computed(() => draftHasIssues(this.adminDraft(), this.adminTasks()));
 
   async ngOnInit() {
     const user = (await this.auth.revalidate()) ?? this.auth.user();
@@ -168,12 +172,12 @@ export class ModelsPageComponent implements OnInit {
 
   private async saveAdminPlatform() {
     const draft = this.adminDraft();
-    if (!draft) return;
     await this.adminSettings.saveAdminLlmConfig(toPayload(draft, this.adminTasks()));
     this.adminBaseline.set(JSON.stringify(draft));
   }
 
   async saveAll() {
+    if (this.chainInvalid()) return;
     this.adminSaving.set(true);
     try {
       if (this.adminDirty()) await this.saveAdminPlatform();
