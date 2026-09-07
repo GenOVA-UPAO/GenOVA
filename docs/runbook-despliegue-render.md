@@ -1,9 +1,16 @@
 # Runbook — Levantar GenOVA (backend en Render, frontend en Vercel)
 
-> Estado a 2026-09-07: el backend en Railway **ya no existe** (404) y el proyecto
-> Supabase `tdwezncaxegjtgdsunhe` **no resuelve en DNS** (pausado o borrado). Este
-> runbook lleva la app de vuelta a producción **sin Redis ni worker**: solo
-> backend (Render) + frontend (Vercel) + BD (Supabase).
+> **Estado a 2026-09-07 (tarde): backend YA desplegado y verificado.**
+> - Servicio Render `genova-backend` (`srv-dafig3740ujc73beg5ig`), rama `main`,
+>   URL **`https://genova-backend-lbdr.onrender.com`**. `/health`, `/api/db/health`,
+>   `/api/rag/health` y login con cuenta seed → OK.
+> - Supabase nuevo (`qsvffnbadvnxhmudwfur`, West US N. California) con las 41
+>   migraciones aplicadas y cuentas seed sembradas.
+> - **Pendiente**: en Vercel, `GENOVA_API_BASE_PROD` / `GENOVA_API_BASE_DEVELOP`
+>   → la URL de Render, y redeploy de Production (Paso 2).
+>
+> Contexto original: el backend en Railway se borró (404) y el Supabase anterior
+> (`tdwezncaxegjtgdsunhe`) quedó pausado. Migración **sin Redis ni worker**.
 
 ## Topología objetivo
 
@@ -88,14 +95,14 @@ región `oregon`, plan `free`, health check `/health` y todas las variables.
 5. **Apply / Create**. El primer build tarda ~5-10 min (imagen Docker + `uv pip install`).
 6. En los logs debe verse: `Migraciones completadas` (todas skipped, ya aplicadas) →
    `Siembra completada` → `Uvicorn running on http://0.0.0.0:10000`.
-7. Anota la URL pública real: `https://genova-backend.onrender.com` (o con sufijo si
+7. Anota la URL pública real: `https://genova-backend-lbdr.onrender.com` (o con sufijo si
    el nombre está tomado). **Si no es exactamente esa, corrige el Paso 2 y `CORS_ORIGINS`.**
 
 ### Verificación
 ```bash
-curl https://genova-backend.onrender.com/health
+curl https://genova-backend-lbdr.onrender.com/health
 # {"status":"ok"}
-curl https://genova-backend.onrender.com/api/db/health
+curl https://genova-backend-lbdr.onrender.com/api/db/health
 # {"status":"ok","scope":"db"}   ← confirma que la BD responde
 ```
 
@@ -111,8 +118,8 @@ El frontend Angular resuelve la URL del backend en build desde
 
 1. https://vercel.com → proyecto del frontend → **Settings → Environment Variables**.
 2. Edita (o crea) para **Production** y **Preview**:
-   - `GENOVA_API_BASE_PROD` = `https://genova-backend.onrender.com`
-   - `GENOVA_API_BASE_DEVELOP` = `https://genova-backend.onrender.com`
+   - `GENOVA_API_BASE_PROD` = `https://genova-backend-lbdr.onrender.com`
+   - `GENOVA_API_BASE_DEVELOP` = `https://genova-backend-lbdr.onrender.com`
    (borra cualquier valor viejo `*.up.railway.app`)
 3. **Deployments → … → Redeploy** el último de Production (sin cache).
 
