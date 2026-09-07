@@ -21,7 +21,7 @@ import { OvaListPaginationComponent } from "../components/cards/ova-list-paginat
 import { BulkTrashModalComponent } from "../components/modals/bulk-trash-modal.component";
 import { EditMetadataModalComponent } from "../components/modals/edit-metadata-modal.component";
 import { TrashModalComponent } from "../components/modals/trash-modal.component";
-import type { MetadataInput } from "../lib/metadataSchema";
+import type { MetadataInput } from "../lib/metadata-schema";
 import type { OvaListItem } from "../lib/types";
 import { GeneratingJobsService } from "../services/generating-jobs.service";
 import { OvaLibraryService } from "../services/ova-library.service";

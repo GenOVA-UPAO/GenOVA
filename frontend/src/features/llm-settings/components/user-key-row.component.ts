@@ -12,7 +12,7 @@ import {
 import { FormsModule } from "@angular/forms";
 
 import { UserLlmSettingsService } from "../services/user-llm-settings.service";
-import { PROVIDER_META } from "./platformKeyMeta";
+import { PROVIDER_META } from "./platform-key-meta";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

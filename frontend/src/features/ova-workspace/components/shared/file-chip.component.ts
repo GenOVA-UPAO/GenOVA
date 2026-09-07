@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, Input, input, output } from "@angul
 
 import { IconComponent } from "@/core/components/icon.component";
 
-import { formatSize } from "../../lib/uploadFormatters";
-import type { UploadItem } from "../../lib/uploadTypes";
+import { formatSize } from "../../lib/upload-formatters";
+import type { UploadItem } from "../../lib/upload-types";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

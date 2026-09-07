@@ -24,7 +24,7 @@ import { PlatformApiKeysCardComponent } from "../components/platform-api-keys-ca
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
 import { PlatformNodesCardComponent } from "../components/platform-nodes-card.component";
 import { UserApiKeysCardComponent } from "../components/user-api-keys-card.component";
-import { type Draft, toDraft, toPayload } from "../lib/llmConfigDraft";
+import { type Draft, toDraft, toPayload } from "../lib/llm-config-draft";
 import type { ChipModel } from "../lib/model-task-card.helpers";
 import { PlatformSettingsService } from "../services/platform-settings.service";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";

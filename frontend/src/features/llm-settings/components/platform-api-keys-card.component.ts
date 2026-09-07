@@ -10,8 +10,8 @@ import {
 import { IconComponent } from "@/core/components/icon.component";
 
 import { PlatformSettingsService } from "../services/platform-settings.service";
+import { PROVIDER_META } from "./platform-key-meta";
 import { PlatformKeyRowComponent } from "./platform-key-row.component";
-import { PROVIDER_META } from "./platformKeyMeta";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

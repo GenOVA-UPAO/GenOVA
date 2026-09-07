@@ -1,5 +1,5 @@
 import type { UploadsPropBag } from "../components/editor/workspace-chat-panel.types";
-import type { UploadsProps } from "./uploadTypes";
+import type { UploadsProps } from "./upload-types";
 
 export const UPLOAD_MAX_FILES = 5;
 
@@ -15,7 +15,7 @@ export function validateFileAdd(
 }
 
 export interface UploadsServiceLike {
-  uploads: () => readonly import("./uploadTypes").UploadItem[];
+  uploads: () => readonly import("./upload-types").UploadItem[];
   activeUploadsCount: () => number;
   maxUploadFiles: number;
   isUploadingFiles: () => boolean;

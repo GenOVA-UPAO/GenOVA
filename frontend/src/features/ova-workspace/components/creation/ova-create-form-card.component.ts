@@ -4,7 +4,7 @@ import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
 import type { OvaTheme } from "../../lib/types";
-import type { UploadsProps } from "../../lib/uploadTypes";
+import type { UploadsProps } from "../../lib/upload-types";
 import { MIN_PHASES_WITH_RESOURCES } from "../../services/ova-creation-flow.service";
 import { OvaFilesModalComponent } from "../modals/ova-files-modal.component";
 import { OvaThemeModalComponent } from "../modals/ova-theme-modal.component";

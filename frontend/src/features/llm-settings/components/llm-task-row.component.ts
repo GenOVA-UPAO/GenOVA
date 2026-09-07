@@ -9,7 +9,7 @@ import {
   moveFallback,
   removeFallback,
   setFallback,
-} from "../lib/llmConfigDraft";
+} from "../lib/llm-config-draft";
 import { LlmModelSelectComponent } from "./llm-model-select.component";
 import { getModalitySymbol, TASK_DESCS, TASK_LABELS } from "./llm-task-row.helpers";
 

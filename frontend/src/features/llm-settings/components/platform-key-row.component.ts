@@ -15,7 +15,7 @@ import { IconComponent } from "@/core/components/icon.component";
 import { BadgeComponent } from "@/core/components/ui/badge.component";
 
 import { PlatformSettingsService } from "../services/platform-settings.service";
-import { PROVIDER_META } from "./platformKeyMeta";
+import { PROVIDER_META } from "./platform-key-meta";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,4 @@
-import { addEmpty, moveIn, removeAt, setAt } from "./fallbackArray";
+import { addEmpty, moveIn, removeAt, setAt } from "./fallback-array";
 
 export interface ModelEntry {
   provider: string;

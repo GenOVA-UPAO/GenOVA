@@ -1,7 +1,7 @@
 import { computed, Injectable, signal } from "@angular/core";
 
 import { UPLOAD_MAX_FILES, validateFileAdd } from "../lib/upload-chip-view-model";
-import type { UploadItem } from "../lib/uploadTypes";
+import type { UploadItem } from "../lib/upload-types";
 import { deleteTempFile, listTempFiles, type ServerItem, uploadTempFiles } from "./upload.service";
 
 function generateClientId(): string {

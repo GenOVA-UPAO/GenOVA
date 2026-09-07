@@ -12,7 +12,7 @@ import {
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
-import { type Draft, isMediaTask } from "../lib/llmConfigDraft";
+import { type Draft, isMediaTask } from "../lib/llm-config-draft";
 import { chipLabel, type ChipModel } from "../lib/model-task-card.helpers";
 import { taskMeta } from "../lib/task-meta";
 import { includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";

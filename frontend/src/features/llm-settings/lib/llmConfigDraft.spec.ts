@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { defaultGenerationEnabled, isMediaTask, toDraft, toPayload } from "./llmConfigDraft";
+import { defaultGenerationEnabled, isMediaTask, toDraft, toPayload } from "./llm-config-draft";
 import { includeSelectedInPool, modelsForTask } from "./task-model-pool";
 
 describe("llmConfigDraft media", () => {
