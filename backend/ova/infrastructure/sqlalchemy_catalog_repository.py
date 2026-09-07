@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from collections.abc import Callable
 from typing import Any
 
@@ -13,6 +14,13 @@ from models import OvaVersion
 from ova.domain.catalog import LISTABLE_STATUSES, OvaListFilter
 from ova.domain.model import Ova
 from ova.infrastructure.sqlalchemy_lifecycle_repository import _to_domain
+
+
+def _as_uuid(value: str) -> uuid.UUID | str:
+    try:
+        return uuid.UUID(str(value))
+    except ValueError:
+        return value
 
 
 class SqlAlchemyOvaCatalogRepository:
@@ -42,7 +50,7 @@ class SqlAlchemyOvaCatalogRepository:
     def _base_query(self, filters: OvaListFilter):
         query = select(OvaORM).where(OvaORM.deleted_at.is_(None))
         if filters.owner_id is not None:
-            query = query.where(OvaORM.user_id == filters.owner_id)
+            query = query.where(OvaORM.user_id == _as_uuid(filters.owner_id))
         if filters.search.strip():
             query = query.where(OvaORM.title.ilike(f"%{filters.search.strip()}%"))
         if filters.status.strip() and filters.status.strip() in LISTABLE_STATUSES:
