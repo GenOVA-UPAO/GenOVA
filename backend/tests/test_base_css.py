@@ -16,8 +16,17 @@ def test_inject_into_head():
 
 def test_base_css_has_contract_classes():
     for cls in [".ova-card", ".ova-btn", ".ova-option", ".ova-feedback--ok",
-                ".ova-progress", ".ova-grid", "--primary:#0A3D91"]:
+                ".ova-progress", ".ova-grid", ".ova-number", ".ova-counter",
+                ".ova-timer", ".ova-score", "--primary:#0A3D91"]:
         assert cls in OVA_BASE_CSS, cls
+
+
+def test_base_css_themes_browser_surfaces_and_reading_rhythm():
+    for rule in ["::selection", "caret-color:var(--accent)", "scrollbar-color",
+                 "text-underline-offset", "font-variant-numeric:tabular-nums",
+                 "margin-block:var(--space-5) var(--space-2)", "text-wrap:balance",
+                 "max-inline-size:72ch"]:
+        assert rule in OVA_BASE_CSS, rule
 
 
 def test_design_system_upao_references_injected_base():

@@ -17,15 +17,23 @@ OVA_BASE_CSS = (
     _upao_root_vars()
     + """
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scrollbar-color:var(--primary) var(--surface-tint);scrollbar-width:thin}
 body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;
 font-size:clamp(.95rem,2vw,1.05rem)}
+::selection{background:var(--accent-tint);color:var(--text)}
+h1,h2,h3{margin-block:var(--space-5) var(--space-2);text-wrap:balance}
+h1:first-child,h2:first-child,h3:first-child{margin-block-start:0}
 h1{font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;color:var(--primary);font-weight:700}
 h2{font-size:clamp(1.3rem,3vw,1.6rem);line-height:1.2;color:var(--primary);font-weight:700}
 h3{font-size:clamp(1.1rem,2.5vw,1.3rem);line-height:1.25;font-weight:600}
+p,li{max-inline-size:72ch;text-wrap:pretty}
 img,svg{max-width:100%;height:auto}
 button{font:inherit;cursor:pointer}
+a{text-underline-offset:.16em;text-decoration-thickness:.08em}
+input,textarea{caret-color:var(--accent)}
+table,th,td,.ova-number,.ova-counter,.ova-timer,.ova-score,.ova-progress{font-variant-numeric:tabular-nums}
+@media (pointer:fine){::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:var(--surface-tint)}::-webkit-scrollbar-thumb{background:var(--primary);border:3px solid var(--surface-tint);border-radius:999px}}
 :focus-visible{outline:3px solid var(--primary);outline-offset:2px}
 .ova-container{max-width:880px;margin-inline:auto;padding:var(--space-4)}
 .ova-card{background:var(--surface);border:1px solid var(--border);
