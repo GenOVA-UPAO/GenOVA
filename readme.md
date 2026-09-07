@@ -284,10 +284,38 @@ GenOVA/
 
 ## Convenciones de código
 
-- **Máx 250 líneas por archivo en frontend** (ESLint hard error), **200 en backend** (convención ruff).
-- **Sin barrel files** en el frontend (`eslint-plugin-no-barrel-files`, hard error): nada de `index.ts` que solo re-exporta ni `export { X } from …`; se importa siempre del módulo fuente. Los subpath de `@spartan-ng/helm` están exentos (son API pública de la librería).
-- **Capa de servicios separada de componentes**: `services/*.ts` hace `fetch` y mantiene estado con signals; los componentes/páginas standalone solo orquestan layout (screaming architecture: `features/<dominio>/` + `core/` transversal).
-- **Mobile-first**: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
+### Tamaño (cohesión, no un cap de líneas)
+
+Lo que importa es **una sola responsabilidad por unidad**, no un límite de líneas por archivo.
+
+| Nivel | Regla | Umbral | Severidad |
+|---|---|---|---|
+| Función / método | ESLint `max-lines-per-function` · ruff `PLR0915` + `C901` | ~30 líneas / 30 statements / complejidad 10 | error (por dominio ya migrado); `warn` en el resto |
+| Nº de argumentos | ESLint `max-params` · ruff `PLR0913` | 4–6 | warn |
+| Clase | ESLint `max-classes-per-file` | 1 por archivo | error (frontend, tras Fase 4) |
+| Archivo / módulo | ESLint `max-lines` · `backend/scripts/check_module_size.py` | 400 | warn — dispara revisión, no rompe build |
+
+Excepciones: `*.spec.ts` / `tests/**`; `backend/prometheus/**` (motor LangGraph) y ficheros de datos (`*_data.py`, catálogos).
+
+### Arquitectura
+
+- **Backend — hexagonal estricto por dominio** (`backend/<dominio>/`):
+  `domain/` (entidades puras + value objects + errores + políticas; sin `fastapi`/`sqlalchemy`/`pydantic`) →
+  `application/` (puertos, DTOs, casos de uso) →
+  `infrastructure/` (ORM, mappers, repos SQLAlchemy) · `interface/http/` (routers FastAPI, schemas).
+  `container.py` cablea la DI de FastAPI. Fronteras enforced con **`import-linter`**
+  (`backend/pyproject.toml` → `[tool.importlinter]`; `lint-imports` en `pre-push` y CI).
+  Cross-dominio solo vía `<dominio>/__init__.py`.
+- **Frontend — features + fronteras enforced** (`eslint-plugin-boundaries`, en `warn` durante
+  el refactor): `feature` → `core` / su propia feature (nunca otra feature); `core` → `core`
+  (nunca `feature`); `app` → cualquiera.
+- **Sin barrel files** en el frontend (`eslint-plugin-no-barrel-files`, hard error): nada de
+  `index.ts` que solo re-exporta ni `export { X } from …`; se importa del módulo fuente. Los
+  subpath de `@spartan-ng/helm` están exentos.
+- **Capa de servicios separada de componentes** (frontend): `services/*.ts` hace `fetch` y
+  mantiene estado con signals; los componentes/páginas standalone solo orquestan layout.
+- **Mobile-first**: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y
+  centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
 
 ## Funcionalidades principales
 

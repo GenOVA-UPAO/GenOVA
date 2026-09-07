@@ -18,6 +18,15 @@ else
   echo "[pre-push] ruff/uv no disponible — se omite el lint de backend"
 fi
 
+echo "[pre-push] Backend: fronteras de arquitectura (import-linter) + tamaño de módulos"
+if command -v lint-imports >/dev/null 2>&1; then
+  ( cd backend && lint-imports && python scripts/check_module_size.py )
+elif command -v uv >/dev/null 2>&1; then
+  ( cd backend && uv run lint-imports && uv run python scripts/check_module_size.py )
+else
+  echo "[pre-push] import-linter/uv no disponible — se omite el chequeo de arquitectura"
+fi
+
 echo "[pre-push] Backend: BDD (solo si el backend responde en :8000)"
 if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
   if python -c "import pytest" >/dev/null 2>&1; then

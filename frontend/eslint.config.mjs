@@ -2,6 +2,7 @@
 import js from "@eslint/js";
 import angular from "angular-eslint";
 import eslintConfigPrettier from "eslint-config-prettier";
+import boundaries from "eslint-plugin-boundaries";
 import noBarrelFiles from "eslint-plugin-no-barrel-files";
 import eslintPluginPrettier from "eslint-plugin-prettier";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
@@ -28,6 +29,45 @@ export default tseslint.config(
       "no-barrel-files/prefer-source-imports": [
         "error",
         { ignore: ["@spartan-ng/helm/*", "@spartan-ng/*"] },
+      ],
+    },
+  },
+  // Fronteras de arquitectura por features (eslint-plugin-boundaries).
+  // Arranca en "warn" durante el refactor; pasa a "error" en la Fase 4 (frontend).
+  // Reglas: feature -> core / su propia feature (nunca otra feature);
+  //         core    -> core (nunca feature ni app);
+  //         app     -> app / core / feature.
+  {
+    files: ["src/**/*.ts"],
+    plugins: { boundaries },
+    settings: {
+      "boundaries/dependency-nodes": ["import"],
+      "boundaries/ignore": ["src/main.ts", "src/**/*.spec.ts", "src/**/*.d.ts"],
+      "boundaries/elements": [
+        { type: "app", pattern: "src/app/**/*" },
+        { type: "core", pattern: "src/core/**/*" },
+        { type: "feature", pattern: "src/features/*/**/*", capture: ["featureName"] },
+      ],
+      "import/resolver": {
+        typescript: { alwaysTryTypes: true, project: ["./tsconfig.app.json", "./tsconfig.spec.json"] },
+      },
+    },
+    rules: {
+      "boundaries/no-unknown": "off",
+      "boundaries/no-unknown-files": "off",
+      "boundaries/element-types": [
+        "warn",
+        {
+          default: "disallow",
+          rules: [
+            { from: ["app"], allow: ["app", "core", "feature"] },
+            { from: ["core"], allow: ["core"] },
+            {
+              from: ["feature"],
+              allow: ["core", ["feature", { featureName: "${from.featureName}" }]],
+            },
+          ],
+        },
       ],
     },
   },
@@ -66,8 +106,17 @@ export default tseslint.config(
       "simple-import-sort/exports": "error",
       "sort-imports": "off",
 
-      // File-size cap (frontend convention, carried over from biome.json).
-      "max-lines": ["error", { max: 250, skipBlankLines: true, skipComments: false }],
+      // Convenciones de tamaño (ver readme §Convenciones): lo que importa es cohesión
+      // y una sola responsabilidad, no un cap de líneas por archivo. Todas en "warn"
+      // durante el refactor; `max-lines-per-function` y `max-classes-per-file` pasan
+      // a "error" tras la pasada de limpieza del frontend (Fase 4 del refactor).
+      "max-lines-per-function": [
+        "warn",
+        { max: 30, skipBlankLines: true, skipComments: true, IIFEs: true },
+      ],
+      "max-classes-per-file": ["warn", 1],
+      "max-params": ["warn", 4],
+      "max-lines": ["warn", { max: 400, skipBlankLines: true, skipComments: true }],
 
       // Deliberate project conventions (previously set in biome.json):
       // heavy `any` usage at API/DOM boundaries, `!` for narrowed-but-provable state.
@@ -127,8 +176,10 @@ export default tseslint.config(
   {
     files: ["src/**/*.spec.ts"],
     rules: {
-      // 200/250-line rule excludes tests (project convention).
+      // Los tests quedan fuera de las convenciones de tamaño (fixtures, arrange largo).
       "max-lines": "off",
+      "max-lines-per-function": "off",
+      "max-classes-per-file": "off",
     },
   },
   {

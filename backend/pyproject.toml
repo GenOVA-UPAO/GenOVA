@@ -50,6 +50,7 @@ dev = [
     "pytest-cov>=5.0.0",
     "requests>=2.31.0",
     "beautifulsoup4>=4.12.0",
+    "import-linter>=2.0",
 ]
 
 [build-system]
@@ -69,14 +70,17 @@ extend-exclude = ["migrations", "scorm_output", "uploads", "venv", ".venv"]
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "W",   # pycodestyle warnings
-    "I",   # isort
-    "B",   # bugbear
-    "UP",  # pyupgrade
-    "S",   # bandit (security)
-    "SIM", # simplify
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "W",     # pycodestyle warnings
+    "I",     # isort
+    "B",     # bugbear
+    "UP",    # pyupgrade
+    "S",     # bandit (security)
+    "SIM",   # simplify
+    "C901",  # mccabe: función demasiado compleja
+    "PLR0912",  # pylint: demasiadas ramas
+    "PLR0915",  # pylint: demasiados statements (función haciendo demasiado)
 ]
 ignore = [
     "E501",   # handled by formatter
@@ -86,16 +90,56 @@ ignore = [
     "S110",   # try-except-pass acceptable in cleanup paths
 ]
 
+# Convenciones de tamaño (ver readme §Convenciones): función/método con demasiadas
+# responsabilidades = error. Umbrales alineados con el frontend (~30 líneas / ~10 de
+# complejidad). PLR0913 (nº de args) se activa por dominio al migrarlo — hoy es ruido
+# por la DI de FastAPI.
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-statements = 30
+max-branches = 12
+max-args = 6
+
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S", "E"]
+"tests/**" = ["S", "E", "C901", "PLR0912", "PLR0915"]
 "tools/**" = ["S"]
-"seed.py" = ["S105", "S106"]
+"scripts/**" = ["C901", "PLR0912", "PLR0915"]
+"seed.py" = ["S105", "S106", "PLR0915"]
+"run_migrations.py" = ["PLR0915"]
 "main.py" = ["E402"]
 "ova/history_router.py" = ["E402"]
+# Deuda de tamaño en dominios aún no migrados a hexagonal — cada línea se elimina
+# cuando su dominio pasa por el refactor (Fase 2). `roles/**` sale en la Fase 1.
+"roles/**" = ["C901", "PLR0912", "PLR0915"]
+"users/**" = ["C901", "PLR0912", "PLR0915"]
+"generation/**" = ["C901", "PLR0912", "PLR0915"]
+"llm/**" = ["C901", "PLR0912", "PLR0915"]
+# Subdominio de soporte (motor LangGraph): exento de las reglas de tamaño de función
+# por diseño (KISS) — ver readme §Convenciones.
+"prometheus/**" = ["C901", "PLR0912", "PLR0915"]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.importlinter]
+# Los módulos de dominio son paquetes top-level (pythonpath = "."), no `backend.*`.
+# `lint-imports` se ejecuta desde `backend/`.
+root_packages = [
+    "core", "auth", "ova", "llm", "rag", "roles",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads",
+]
+
+[[tool.importlinter.contracts]]
+name = "El kernel (core) no depende de ningún dominio"
+type = "forbidden"
+source_modules = ["core"]
+forbidden_modules = [
+    "auth", "ova", "llm", "rag", "roles",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
