@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from auth.dependencies import get_current_user
 from core.rate_limit import limiter
+from models import User
 from users.application.dto import SaveResourceConfigsInput
 from users.container import UsersUseCases, build_users
 from users.domain.errors import UserError
@@ -22,7 +23,7 @@ class ResourceConfigsUpdate(BaseModel):
 
 @router.get("/me/resource-configs", summary="Obtener la configuración de recursos")
 def get_resource_configs(
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     users: UsersUseCases = Depends(build_users),
 ):
     return {"configs": users.get_resource_configs.execute(current_user.id)}
