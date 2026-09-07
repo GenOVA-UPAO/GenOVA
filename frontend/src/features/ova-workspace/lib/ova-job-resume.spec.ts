@@ -1,0 +1,59 @@
+import { describe, expect, it } from "vitest";
+
+import type { BackendResource } from "./ova-job-view-model";
+import { isResumableJob, resumableResourceIds } from "./ova-job-view-model";
+
+const RES = (status: string): BackendResource => ({
+  id: `r-${status}`,
+  phase_type: "engage",
+  phase_order: 0,
+  resource_order: 0,
+  status,
+});
+
+describe("isResumableJob", () => {
+  it("un job interrumpido con recursos pendientes es reanudable", () => {
+    const job = { status: "interrupted" };
+    const resources = [RES("done"), RES("pending"), RES("pending")] as BackendResource[];
+    expect(isResumableJob(job, resources)).toBe(true);
+  });
+
+  it("los recursos en error también son reanudables", () => {
+    const resources = [RES("error")] as BackendResource[];
+    expect(isResumableJob({ status: "interrupted" }, resources)).toBe(true);
+  });
+
+  it("sin recursos pendientes ni en error, no se ofrece reanudar", () => {
+    // El backend respondería resumed=0/accepted=false: el botón no haría nada.
+    const resources = [RES("done")] as BackendResource[];
+    expect(isResumableJob({ status: "interrupted" }, resources)).toBe(false);
+  });
+
+  it("los otros estados no ofrecen reanudación global", () => {
+    const resources = [RES("pending")] as BackendResource[];
+    expect(isResumableJob({ status: "running" }, resources)).toBe(false);
+    expect(isResumableJob({ status: "queued" }, resources)).toBe(false);
+    expect(isResumableJob({ status: "error" }, resources)).toBe(false);
+    expect(isResumableJob({ status: "done" }, resources)).toBe(false);
+    expect(isResumableJob(null, resources)).toBe(false);
+  });
+
+  it("un job interrumpido sin resources no es reanudable", () => {
+    expect(isResumableJob({ status: "interrupted" }, [])).toBe(false);
+    expect(isResumableJob({ status: "interrupted" })).toBe(false);
+  });
+});
+
+describe("resumableResourceIds", () => {
+  it("devuelve solo los ids pending/error, en orden", () => {
+    const snapshot = {
+      status: "interrupted",
+      resources: [RES("done"), RES("pending"), RES("error")] as BackendResource[],
+    };
+    expect(resumableResourceIds(snapshot)).toEqual(["r-pending", "r-error"]);
+  });
+
+  it("snapshot ausente → vacío", () => {
+    expect(resumableResourceIds(null)).toEqual([]);
+  });
+});

@@ -173,6 +173,39 @@ const TERMINAL = new Set(["done", "error", "interrupted", "canceled"]);
 export const STALL_MS = 3 * 60 * 1000;
 
 /**
+ * Estados de recurso que el backend reintentará al reanudar: espejo de
+ * `_RESUMABLE_RESOURCE_STATUSES` en `jobs_service.py`. Lo ya "done" se
+ * conserva; las filas nunca quedan en "running" (el grafo solo escribe
+ * done/error por recurso), así que tras una caída a media generación todo lo
+ * no terminado está en pending/error y es exactamente lo reanudable.
+ */
+export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "error"]);
+
+export function resumableResourceIds(snapshot: JobSnapshot | null | undefined): string[] {
+  if (!snapshot) return [];
+  return (snapshot.resources || [])
+    .filter((r) => RESUMABLE_RESOURCE_STATUSES.has(r.status))
+    .map((r) => String(r.id));
+}
+
+/**
+ * ¿Este job es candidato al botón «Reanudar generación»?
+ *
+ * Solo el estado `interrupted` (lo marca el barrido cuando el hilo muere a
+ * media generación) ofrece reanudar desde cero: `running` tiene su propio aviso
+ * de estancamiento, y `error`/`done` ya tienen sus CTA de reintento propios.
+ * Sin recursos pendientes ni fallidos el botón no haría nada (el backend
+ * respondería `resumed: 0`), así que no se ofrece.
+ */
+export function isResumableJob(
+  job: JobLike | null | undefined,
+  resources: BackendResource[] = [],
+): boolean {
+  if (job?.status !== "interrupted") return false;
+  return resources.some((r) => RESUMABLE_RESOURCE_STATUSES.has(r.status));
+}
+
+/**
  * Huella barata de un snapshot para detectar progreso real entre polls: el
  * status del job + el status de cada recurso. `updated_at` del job NO sirve
  * solo — el backend únicamente lo toca en transiciones de job (running →
