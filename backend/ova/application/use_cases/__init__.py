@@ -1,6 +1,7 @@
 from ova.application.use_cases.batch_delete_ovas import BatchDeleteOvas
 from ova.application.use_cases.batch_move_ovas_to_trash import BatchMoveOvasToTrash
 from ova.application.use_cases.batch_restore_ovas import BatchRestoreOvas
+from ova.application.use_cases.add_phase import AddPhase
 from ova.application.use_cases.count_trashed_ovas import CountTrashedOvas
 from ova.application.use_cases.delete_ova import DeleteOva
 from ova.application.use_cases.duplicate_ova import DuplicateOva
@@ -16,6 +17,7 @@ __all__ = [
     "BatchDeleteOvas",
     "BatchMoveOvasToTrash",
     "BatchRestoreOvas",
+    "AddPhase",
     "CountTrashedOvas",
     "DeleteOva",
     "DuplicateOva",

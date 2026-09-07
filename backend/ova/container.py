@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from ova.application.scorm_persist import persist_scorm_zip
 from ova.application.use_cases import (
+    AddPhase,
     BatchDeleteOvas,
     BatchMoveOvasToTrash,
     BatchRestoreOvas,
@@ -38,6 +39,7 @@ class OvaUseCases:
     save_ova: SaveOva
     duplicate_ova: DuplicateOva
     edit_phases: EditPhases
+    add_phase: AddPhase
     edit_view: EditView
     update_metadata: UpdateOvaMetadata
     delete_ova: DeleteOva
@@ -63,6 +65,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         ),
         duplicate_ova=DuplicateOva(creation),
         edit_phases=EditPhases(editor),
+        add_phase=AddPhase(editor),
         edit_view=EditView(editor),
         update_metadata=UpdateOvaMetadata(lifecycle),
         delete_ova=DeleteOva(lifecycle),
