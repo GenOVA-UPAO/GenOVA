@@ -22,9 +22,6 @@ import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
         </gn-alert-title>
         <gn-alert-description class="text-sm text-muted-foreground">
           Se muestran los últimos datos disponibles.
-          @if (lastOk()) {
-            Última actualización: {{ lastOk() }}.
-          }
         </gn-alert-description>
         <div class="mt-2">
           <gn-button size="sm" variant="outline" (onClick)="retry.emit()" [disabled]="refreshing()">
@@ -54,19 +51,4 @@ export class CatalogStatusAlertComponent {
   readonly providerNames = computed(() =>
     joinList(this.downProviders().map(([p]) => PROVIDER_LABELS[p] || p)),
   );
-
-  readonly lastOk = computed<string | null>(() => {
-    for (const [, st] of this.downProviders()) {
-      const formatted = formatTimestamp(st.last_success_at);
-      if (formatted) return formatted;
-    }
-    return null;
-  });
-}
-
-function formatTimestamp(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleString("es-PE", { dateStyle: "short", timeStyle: "short" });
 }
