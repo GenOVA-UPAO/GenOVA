@@ -8,6 +8,7 @@ from users.application.use_cases.admin_update_status import AdminUpdateStatus
 from users.application.use_cases.change_password import ChangePassword
 from users.application.use_cases.delete_account import DeleteAccount
 from users.application.use_cases.get_resource_configs import GetResourceConfigs
+from users.application.use_cases.get_user_analytics import GetUserAnalytics
 from users.application.use_cases.list_users import ListUsers
 from users.application.use_cases.save_resource_configs import SaveResourceConfigs
 from users.application.use_cases.update_user_profile import UpdateUserProfile
@@ -22,6 +23,7 @@ __all__ = [
     "ChangePassword",
     "DeleteAccount",
     "GetResourceConfigs",
+    "GetUserAnalytics",
     "ListUsers",
     "SaveResourceConfigs",
     "UpdateUserProfile",

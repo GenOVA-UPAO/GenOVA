@@ -2,13 +2,11 @@
 sees the cohort of students linked to them."""
 
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
 
 from auth.dependencies import require_permission
-from core.database import get_db
 from core.rate_limit import limiter
 from models import User
-from users.application.analytics_service import get_analytics
+from users.container import UsersUseCases, build_users
 
 router = APIRouter(prefix="/analytics", tags=["Analítica"])
 
@@ -18,6 +16,6 @@ router = APIRouter(prefix="/analytics", tags=["Analítica"])
 def analytics(
     request: Request,
     current_user: User = Depends(require_permission("view_analytics")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ) -> dict:
-    return get_analytics(db, current_user.id)
+    return users.get_user_analytics.execute(current_user.id)

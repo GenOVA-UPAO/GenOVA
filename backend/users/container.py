@@ -21,6 +21,7 @@ from users.application.use_cases import (
     ChangePassword,
     DeleteAccount,
     GetResourceConfigs,
+    GetUserAnalytics,
     ListUsers,
     SaveResourceConfigs,
     UpdateUserProfile,
@@ -29,6 +30,7 @@ from users.application.use_cases import (
 from users.infrastructure.password_adapters import CorePasswordHasher
 from users.infrastructure.sqlalchemy_account_repository import SqlAlchemyUserAccountRepository
 from users.infrastructure.sqlalchemy_admin_repository import SqlAlchemyAdminUserRepository
+from users.infrastructure.sqlalchemy_analytics_repository import SqlAlchemyAnalyticsRepository
 from users.infrastructure.sqlalchemy_profile_repository import SqlAlchemyUserProfileRepository
 from users.infrastructure.sqlalchemy_resource_config_repository import (
     SqlAlchemyResourceConfigRepository,
@@ -49,6 +51,7 @@ class UsersUseCases:
     admin_update_status: AdminUpdateStatus
     admin_unlock_account: AdminUnlockAccount
     admin_send_reset_email: AdminSendResetEmail
+    get_user_analytics: GetUserAnalytics
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -56,6 +59,7 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
     accounts = SqlAlchemyUserAccountRepository(db)
     configs = SqlAlchemyResourceConfigRepository(db)
     admin = SqlAlchemyAdminUserRepository(db)
+    analytics = SqlAlchemyAnalyticsRepository(db)
     hasher = CorePasswordHasher()
     return UsersUseCases(
         update_profile=UpdateUserProfile(profiles),
@@ -70,4 +74,5 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         admin_update_status=AdminUpdateStatus(admin),
         admin_unlock_account=AdminUnlockAccount(admin),
         admin_send_reset_email=AdminSendResetEmail(admin),
+        get_user_analytics=GetUserAnalytics(analytics),
     )

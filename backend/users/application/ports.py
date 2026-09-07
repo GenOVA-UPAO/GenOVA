@@ -15,6 +15,26 @@ from users.domain.admin import (
 from users.domain.profile import UserProfile
 
 
+class AnalyticsRepository(Protocol):
+    """Consultas agregadas de la analítica de aprendizaje (solo lectura)."""
+
+    def is_admin(self, user_id) -> bool: ...
+
+    def linked_student_ids(self, professor_id) -> list: ...
+
+    def count_ovas(self, owner_ids: list | None) -> int: ...
+
+    def count_users(self) -> int: ...
+
+    def ova_status_breakdown(self, owner_ids: list | None) -> list: ...
+
+    def ovas_per_day(self, owner_ids: list | None) -> list: ...
+
+    def top_creators(self, owner_ids: list | None) -> list: ...
+
+    def recent_ovas(self, owner_ids: list | None) -> list: ...
+
+
 class UserProfileRepository(Protocol):
     """Persistencia del perfil propio. La implementación vive en `infrastructure/`."""
 
