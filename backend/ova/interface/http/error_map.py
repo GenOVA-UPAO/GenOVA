@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from core.http_errors import forbidden_response
 from ova.domain.errors import (
     MetadataTitleTooLong,
+    OvaEditError,
     OvaError,
     OvaForbidden,
     OvaGenerating,
@@ -16,6 +17,11 @@ from ova.domain.errors import (
 
 
 def ova_error_to_response(error: OvaError) -> JSONResponse:
+    if isinstance(error, OvaEditError):
+        return JSONResponse(
+            status_code=error.status_code,
+            content={"error": error.error, "message": error.message},
+        )
     if isinstance(error, OvaForbidden):
         return forbidden_response(error.message)
     if isinstance(error, OvaNotFound):

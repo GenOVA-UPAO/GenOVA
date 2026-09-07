@@ -84,3 +84,39 @@ class DuplicateOvaInput:
 class DuplicateOvaResult:
     id: str
     title: str
+
+
+@dataclass(frozen=True, slots=True)
+class PhaseReorder:
+    phase_id: str
+    new_order: int
+
+
+@dataclass(frozen=True, slots=True)
+class ReorderPhasesInput:
+    ova_id: str
+    actor: OvaActor
+    reorders: tuple[PhaseReorder, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class PhaseContentInput:
+    ova_id: str
+    phase_id: str
+    actor: OvaActor
+    content: str
+
+
+@dataclass(frozen=True, slots=True)
+class AddPhaseInput:
+    ova_id: str
+    actor: OvaActor
+    phase_type: str
+    prompt: str
+
+
+@dataclass(frozen=True, slots=True)
+class VersionInput:
+    ova_id: str
+    version_id: str
+    actor: OvaActor

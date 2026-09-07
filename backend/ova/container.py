@@ -16,6 +16,7 @@ from ova.application.use_cases import (
     CountTrashedOvas,
     DeleteOva,
     DuplicateOva,
+    EditPhases,
     ListTrashedOvas,
     PermanentlyDeleteOva,
     RestoreOva,
@@ -24,6 +25,7 @@ from ova.application.use_cases import (
 )
 from ova.infrastructure.scorm_package_cleaner import ProjectScormPackageCleaner
 from ova.infrastructure.sqlalchemy_creation_repository import SqlAlchemyOvaCreationRepository
+from ova.infrastructure.sqlalchemy_editor_repository import SqlAlchemyOvaEditorRepository
 from ova.infrastructure.sqlalchemy_lifecycle_repository import (
     SqlAlchemyOvaLifecycleRepository,
 )
@@ -34,6 +36,7 @@ from scorm import build_scorm_zip_bytes
 class OvaUseCases:
     save_ova: SaveOva
     duplicate_ova: DuplicateOva
+    edit_phases: EditPhases
     update_metadata: UpdateOvaMetadata
     delete_ova: DeleteOva
     count_trashed: CountTrashedOvas
@@ -48,6 +51,7 @@ class OvaUseCases:
 def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
     lifecycle = SqlAlchemyOvaLifecycleRepository(db)
     creation = SqlAlchemyOvaCreationRepository(db)
+    editor = SqlAlchemyOvaEditorRepository(db)
     packages = ProjectScormPackageCleaner()
     return OvaUseCases(
         save_ova=SaveOva(
@@ -56,6 +60,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
             persist_scorm_zip=persist_scorm_zip,
         ),
         duplicate_ova=DuplicateOva(creation),
+        edit_phases=EditPhases(editor),
         update_metadata=UpdateOvaMetadata(lifecycle),
         delete_ova=DeleteOva(lifecycle),
         count_trashed=CountTrashedOvas(lifecycle),
