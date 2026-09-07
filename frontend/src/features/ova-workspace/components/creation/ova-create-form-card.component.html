@@ -190,13 +190,16 @@
             <span class="hidden sm:inline">Tema</span>
           </gn-button>
           <div class="flex-1"></div>
-          <gn-button
-            id="tour-crear-ova-generar"
-            (onClick)="generate.emit()"
-            [disabled]="!canGenerate()"
-          >
-            <gn-icon name="lightning" size="text-base" /> Generar OVA
-          </gn-button>
+          <!-- El ancla del tour va en este span, no en el `gn-button`: su host es
+               `display: contents` (a propósito, para que los estilos apliquen al
+               <button> real), y un elemento sin caja devuelve un
+               getBoundingClientRect() de ceros, lo que dejaba el popover de
+               driver.js clavado en la esquina superior izquierda. -->
+          <span id="tour-crear-ova-generar" class="inline-flex">
+            <gn-button (onClick)="generate.emit()" [disabled]="!canGenerate()">
+              <gn-icon name="lightning" size="text-base" /> Generar OVA
+            </gn-button>
+          </span>
         </div>
 
         @if (missingChars() > 0) {
