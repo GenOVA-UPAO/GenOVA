@@ -103,6 +103,12 @@ describe("ModelsMasterDetailComponent", () => {
 
     expect(screen.getByRole("tab", { name: /Texto/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /Código/i })).toBeTruthy();
+    const textoTab = screen.getByRole("tab", { name: /Texto/i });
+    expect(textoTab.getAttribute("aria-controls")).toBe("task-panel-texto");
+    expect(textoTab.id).toBe("task-tab-texto");
+    const panel = document.getElementById("task-panel-texto");
+    expect(panel?.getAttribute("role")).toBe("tabpanel");
+    expect(panel?.getAttribute("aria-labelledby")).toBe("task-tab-texto");
     screen.getByRole("button", { name: /Abrir catálogo/i }).click();
     expect(openCatalog).toHaveBeenCalledOnce();
   });
