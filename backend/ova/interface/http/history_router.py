@@ -8,10 +8,11 @@ from sqlalchemy.orm import Session, joinedload
 
 from auth.dependencies import get_current_user
 from core.database import get_db
+from core.http_errors import forbidden_response
 from core.pagination import page_meta
 from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
 from models import Ova, OvaVersion, User
-from ova.interface.http._shared import VALID_STATUSES, _is_admin, _ova_to_dict, forbidden_response
+from ova.interface.http._shared import VALID_STATUSES, _is_admin, _ova_to_dict
 from storage import StorageError, is_configured, signed_url
 
 router = APIRouter()

@@ -7,9 +7,10 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import commit_or_500, get_db
+from core.http_errors import forbidden_response
 from core.rate_limit import limiter
 from models import Ova, OvaPhase, OvaVersion, User
-from ova.interface.http._shared import _is_admin, forbidden_response
+from ova.interface.http._shared import _is_admin
 
 router = APIRouter(tags=["OVA · CRUD"])
 

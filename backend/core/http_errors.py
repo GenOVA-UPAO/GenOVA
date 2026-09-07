@@ -14,6 +14,14 @@ from sqlalchemy.exc import DataError
 logger = structlog.get_logger(__name__)
 
 
+def forbidden_response(message: str = "Sin permisos.") -> JSONResponse:
+    """403 envelope compartido — el mismo JSON estaba repetido verbatim en 10+ routers."""
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"error": "forbidden", "message": message},
+    )
+
+
 async def data_error_handler(request: Request, exc: DataError) -> JSONResponse:
     logger.warning(
         "Valor con formato inválido en la petición",
