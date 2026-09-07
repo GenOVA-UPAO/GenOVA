@@ -174,3 +174,14 @@ class SaveOvaSettingsInput:
 class SaveLlmSettingsInput:
     user_id: UUID
     settings: dict
+
+
+@dataclass(frozen=True, slots=True)
+class SavePlatformKeysInput:
+    payload: dict
+    providers: list
+
+
+@dataclass(frozen=True, slots=True)
+class SaveRegistrationModeInput:
+    role_name: str

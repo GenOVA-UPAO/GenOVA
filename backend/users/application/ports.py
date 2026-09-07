@@ -60,6 +60,18 @@ class UserLinkRepository(Protocol):
     def delete_any(self, link_id: UUID) -> None: ...
 
 
+class PlatformSettingsRepository(Protocol):
+    """Configuración de plataforma (PlatformConfig); claves solo enmascaradas."""
+
+    def get_masked_keys(self) -> dict: ...
+
+    def save_keys(self, updates: dict) -> None: ...
+
+    def get_registration_mode(self) -> str: ...
+
+    def save_registration_mode(self, role_name: str) -> None: ...
+
+
 class UserSettingsRepository(Protocol):
     """Ajustes de generación por usuario (columnas JSONB de la fila User)."""
 

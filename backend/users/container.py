@@ -25,6 +25,8 @@ from users.application.use_cases import (
     DeleteAnyLink,
     DeleteMyLink,
     GetApiKeys,
+    GetPlatformKeys,
+    GetRegistrationMode,
     GetResourceConfigs,
     GetUserAnalytics,
     HasOwnLlmKey,
@@ -36,6 +38,8 @@ from users.application.use_cases import (
     SaveEnabledModels,
     SaveLlmSettings,
     SaveOvaSettings,
+    SavePlatformKeys,
+    SaveRegistrationMode,
     SaveResourceConfigs,
     UpdateUserProfile,
     UpdateUserTheme,
@@ -45,6 +49,9 @@ from users.infrastructure.sqlalchemy_account_repository import SqlAlchemyUserAcc
 from users.infrastructure.sqlalchemy_admin_repository import SqlAlchemyAdminUserRepository
 from users.infrastructure.sqlalchemy_analytics_repository import SqlAlchemyAnalyticsRepository
 from users.infrastructure.sqlalchemy_api_key_repository import SqlAlchemyApiKeyRepository
+from users.infrastructure.sqlalchemy_platform_settings_repository import (
+    SqlAlchemyPlatformSettingsRepository,
+)
 from users.infrastructure.sqlalchemy_profile_repository import SqlAlchemyUserProfileRepository
 from users.infrastructure.sqlalchemy_resource_config_repository import (
     SqlAlchemyResourceConfigRepository,
@@ -82,6 +89,10 @@ class UsersUseCases:
     save_enabled_models: SaveEnabledModels
     save_ova_settings: SaveOvaSettings
     save_llm_settings: SaveLlmSettings
+    get_platform_keys: GetPlatformKeys
+    save_platform_keys: SavePlatformKeys
+    get_registration_mode: GetRegistrationMode
+    save_registration_mode: SaveRegistrationMode
     has_own_llm_key: HasOwnLlmKey
 
 
@@ -94,6 +105,7 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
     links = SqlAlchemyUserLinkRepository(db)
     api_keys = SqlAlchemyApiKeyRepository(db)
     settings = SqlAlchemyUserSettingsRepository(db)
+    platform = SqlAlchemyPlatformSettingsRepository(db)
     hasher = CorePasswordHasher()
     return UsersUseCases(
         update_profile=UpdateUserProfile(profiles),
@@ -122,4 +134,8 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         save_ova_settings=SaveOvaSettings(settings),
         save_llm_settings=SaveLlmSettings(settings),
         has_own_llm_key=HasOwnLlmKey(settings),
+        get_platform_keys=GetPlatformKeys(platform),
+        save_platform_keys=SavePlatformKeys(platform),
+        get_registration_mode=GetRegistrationMode(platform),
+        save_registration_mode=SaveRegistrationMode(platform),
     )

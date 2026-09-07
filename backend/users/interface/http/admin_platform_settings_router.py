@@ -1,28 +1,26 @@
 """Admin-only platform API key management.
 
 Admins can set platform-level API keys that all users fall back to when they
-haven't configured their own. Keys are stored in the platform_config table,
-returned masked, and never logged.
+haven't configured their own. Keys live and die inside the platform settings
+repository: they are stored in the platform_config table, returned MASKED,
+and never logged.
 """
 
 import threading
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy.orm import Session
 
 from auth.dependencies import require_admin
-from core.database import get_db
 from core.rate_limit import limiter
-from llm.clients.key_resolver import mask_key
 from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS
-from models import PlatformConfig
+from users.application.dto import SavePlatformKeysInput
+from users.container import UsersUseCases, build_users
+from users.domain.errors import UserError
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Admin · Plataforma"])
 logger = structlog.get_logger(__name__)
-
-_MIN_KEY_LEN = 8
-_DB_KEY = "{}_api_key".format
 
 
 def _bg_catalog_refresh() -> None:
@@ -37,20 +35,14 @@ def _bg_catalog_refresh() -> None:
         db.close()
 
 
-def _load_platform_keys(db: Session) -> dict[str, str | None]:
-    rows = {r.key: r.value for r in db.query(PlatformConfig).all()}
-    return {p: rows.get(_DB_KEY(p)) for p in ALL_PROVIDERS}
-
-
 @router.get("/platform-config", summary="Obtener la configuración de la plataforma")
 def get_platform_config(
     _admin: None = Depends(require_admin),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     """Return masked platform API key status for all providers (admin-only)."""
-    keys = _load_platform_keys(db)
     return {
-        "platform_config": {p: mask_key(keys.get(p)) for p in ALL_PROVIDERS},
+        "platform_config": users.get_platform_keys.execute(),
         "providers": list(ALL_PROVIDERS),
     }
 
@@ -61,54 +53,24 @@ def put_platform_config(
     request: Request,
     payload: dict,
     _admin: None = Depends(require_admin),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     """Upsert or delete platform API keys (admin-only).
 
     Pass `{provider: "key"}` to set, `{provider: ""}` to remove.
     """
-    updates = {k: v for k, v in payload.items() if k in ALL_PROVIDERS and isinstance(v, str)}
-    if not updates:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Payload must contain at least one key from: {', '.join(ALL_PROVIDERS)}",
-        )
-
-    for provider, value in updates.items():
-        if value and len(value.strip()) < _MIN_KEY_LEN:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"La API key para '{provider}' es demasiado corta (mínimo {_MIN_KEY_LEN} caracteres).",
-            )
-
     try:
-        for provider, value in updates.items():
-            db_key = _DB_KEY(provider)
-            if value.strip():
-                row = db.get(PlatformConfig, db_key)
-                if row:
-                    row.value = value.strip()
-                else:
-                    db.add(PlatformConfig(key=db_key, value=value.strip()))
-            else:
-                row = db.get(PlatformConfig, db_key)
-                if row:
-                    db.delete(row)
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("platform config write failed")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo guardar la configuración de plataforma.",
-        ) from None
+        updates = users.save_platform_keys.execute(
+            SavePlatformKeysInput(payload=payload, providers=ALL_PROVIDERS)
+        )
+    except UserError as err:
+        raise to_http_exception(err) from None
 
     if any(p in TEXT_PROVIDERS for p in updates):
         threading.Thread(target=_bg_catalog_refresh, daemon=True).start()
         logger.info("catalog refresh triggered by platform key update", providers=list(updates))
 
-    keys = _load_platform_keys(db)
-    return {"platform_config": {p: mask_key(keys.get(p)) for p in ALL_PROVIDERS}}
+    return {"platform_config": users.get_platform_keys.execute()}
 
 
 @router.get("/llm-config", summary="Obtener la configuración global de LLM")
@@ -153,11 +115,10 @@ def put_llm_config(
 @router.get("/registration-mode", summary="Obtener el modo de registro")
 def get_registration_mode(
     _admin: None = Depends(require_admin),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     """Return the default role assigned to new self-registered users."""
-    row = db.get(PlatformConfig, "default_registration_role")
-    return {"default_registration_role": row.value if row else "usuarios_prueba"}
+    return {"default_registration_role": users.get_registration_mode.execute()}
 
 
 @router.put("/registration-mode", summary="Actualizar el modo de registro")
@@ -166,18 +127,12 @@ def put_registration_mode(
     request: Request,
     payload: dict,
     _admin: None = Depends(require_admin),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     """Set the default role for new registrations (admin-only).
 
     Pass `{"default_registration_role": "usuarios_prueba"}` for tesis mode,
     or `{"default_registration_role": "usuario"}` to restore normal access.
     """
-    role_name = (payload.get("default_registration_role") or "usuarios_prueba").strip()
-    row = db.get(PlatformConfig, "default_registration_role")
-    if row:
-        row.value = role_name
-    else:
-        db.add(PlatformConfig(key="default_registration_role", value=role_name))
-    db.commit()
+    role_name = users.save_registration_mode.execute(payload.get("default_registration_role"))
     return {"default_registration_role": role_name}

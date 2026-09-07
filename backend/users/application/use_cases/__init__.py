@@ -12,6 +12,8 @@ from users.application.use_cases.delete_account import DeleteAccount
 from users.application.use_cases.delete_any_link import DeleteAnyLink
 from users.application.use_cases.delete_my_link import DeleteMyLink
 from users.application.use_cases.get_api_keys import GetApiKeys
+from users.application.use_cases.get_platform_keys import GetPlatformKeys
+from users.application.use_cases.get_registration_mode import GetRegistrationMode
 from users.application.use_cases.get_resource_configs import GetResourceConfigs
 from users.application.use_cases.get_user_analytics import GetUserAnalytics
 from users.application.use_cases.has_own_llm_key import HasOwnLlmKey
@@ -23,6 +25,8 @@ from users.application.use_cases.save_api_keys import SaveApiKeys
 from users.application.use_cases.save_enabled_models import SaveEnabledModels
 from users.application.use_cases.save_llm_settings import SaveLlmSettings
 from users.application.use_cases.save_ova_settings import SaveOvaSettings
+from users.application.use_cases.save_platform_keys import SavePlatformKeys
+from users.application.use_cases.save_registration_mode import SaveRegistrationMode
 from users.application.use_cases.save_resource_configs import SaveResourceConfigs
 from users.application.use_cases.update_user_profile import UpdateUserProfile
 from users.application.use_cases.update_user_theme import UpdateUserTheme
@@ -40,6 +44,8 @@ __all__ = [
     "DeleteAnyLink",
     "DeleteMyLink",
     "GetApiKeys",
+    "GetPlatformKeys",
+    "GetRegistrationMode",
     "GetResourceConfigs",
     "GetUserAnalytics",
     "HasOwnLlmKey",
@@ -51,6 +57,8 @@ __all__ = [
     "SaveEnabledModels",
     "SaveLlmSettings",
     "SaveOvaSettings",
+    "SavePlatformKeys",
+    "SaveRegistrationMode",
     "SaveResourceConfigs",
     "UpdateUserProfile",
     "UpdateUserTheme",
