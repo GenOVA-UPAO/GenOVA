@@ -20,6 +20,7 @@ from ova.application.use_cases import (
     EditPhases,
     EditSubelement,
     EditView,
+    ExportScorm,
     ListTrashedOvas,
     PermanentlyDeleteOva,
     PhaseVersions,
@@ -33,6 +34,7 @@ from ova.infrastructure.sqlalchemy_editor_repository import SqlAlchemyOvaEditorR
 from ova.infrastructure.sqlalchemy_lifecycle_repository import (
     SqlAlchemyOvaLifecycleRepository,
 )
+from ova.infrastructure.storage_packages import StoragePackageSource
 from scorm import build_scorm_zip_bytes
 
 
@@ -44,6 +46,7 @@ class OvaUseCases:
     edit_subelement: EditSubelement
     add_phase: AddPhase
     edit_view: EditView
+    export_scorm: ExportScorm
     phase_versions: PhaseVersions
     update_metadata: UpdateOvaMetadata
     delete_ova: DeleteOva
@@ -61,6 +64,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
     creation = SqlAlchemyOvaCreationRepository(db)
     editor = SqlAlchemyOvaEditorRepository(db)
     packages = ProjectScormPackageCleaner()
+    downloads = StoragePackageSource()
     return OvaUseCases(
         save_ova=SaveOva(
             creation,
@@ -72,6 +76,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         edit_subelement=EditSubelement(editor),
         add_phase=AddPhase(editor),
         edit_view=EditView(editor),
+        export_scorm=ExportScorm(lifecycle, editor, downloads),
         phase_versions=PhaseVersions(editor),
         update_metadata=UpdateOvaMetadata(lifecycle),
         delete_ova=DeleteOva(lifecycle),

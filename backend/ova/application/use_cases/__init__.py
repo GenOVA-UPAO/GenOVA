@@ -8,6 +8,7 @@ from ova.application.use_cases.duplicate_ova import DuplicateOva
 from ova.application.use_cases.edit_phases import EditPhases
 from ova.application.use_cases.edit_subelement import EditSubelement
 from ova.application.use_cases.edit_view import EditView
+from ova.application.use_cases.export_scorm import ExportScorm
 from ova.application.use_cases.list_trashed_ovas import ListTrashedOvas
 from ova.application.use_cases.permanently_delete_ova import PermanentlyDeleteOva
 from ova.application.use_cases.phase_versions import PhaseVersions
@@ -26,6 +27,7 @@ __all__ = [
     "EditPhases",
     "EditSubelement",
     "EditView",
+    "ExportScorm",
     "ListTrashedOvas",
     "PermanentlyDeleteOva",
     "PhaseVersions",

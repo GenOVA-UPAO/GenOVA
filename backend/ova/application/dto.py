@@ -137,3 +137,11 @@ class PhaseVersionInput:
     phase_id: str
     actor: OvaActor
     micro_version_id: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class PackageDownload:
+    kind: str
+    filename: str
+    url: str | None = None
+    file_path: str | None = None

@@ -78,3 +78,7 @@ def version_to_dict(version: EditorVersion, include_phases: bool = False) -> dic
 
 def placeholder_content(prompt: str) -> str:
     return f"[Generado con prompt: {prompt.strip()}]\n\n{PLACEHOLDER_CONTENT}"
+
+
+def scorm_filename_stem(title: str) -> str:
+    return "".join(c for c in title if c.isalnum() or c in " _-").strip() or "ova"
