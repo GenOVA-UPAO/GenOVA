@@ -4,26 +4,33 @@
 
 ```
             ┌──────────────┐        ┌───────────────────────────┐
-  navegador │   Vercel     │  /api  │         Railway           │
-  ─────────▶│  (frontend   │───────▶│  API (FastAPI, uvicorn)   │
-            │   estático)  │  XHR   │  Worker (arq) ◀─ Redis ─┐ │
-            └──────────────┘        └──────┬──────────────────┘ │
-                                           │        cola de jobs┘
-                              ┌────────────┴────────────┐
+  navegador │   Vercel     │  /api  │          Render           │
+  ─────────▶│  (frontend   │───────▶│  genova-backend (FastAPI, │
+            │   estático)  │  XHR   │  uvicorn, Docker, free)    │
+            └──────────────┘        └──────────────┬────────────┘
+                                                   │
+                              ┌────────────────────┴────┐
                               │        Supabase         │
-                              │  PostgreSQL + pgvector  │
+                              │  PostgreSQL + pgvector   │
                               │  Storage (scorm-packages)│
                               └─────────────────────────┘
 ```
 
 | Componente | Host | Artefacto |
 |---|---|---|
-| Frontend | **Vercel** | `ng build` → estático (`dist/frontend/browser`; Vercel autodetecta Angular) |
-| Backend API | **Railway** | `backend/Dockerfile.prod` (uvicorn); servicios definidos en `.railway/railway.ts` |
-| Worker de generación | **Railway** | `backend/Dockerfile.worker` (arq), desacoplado de la API por Redis |
+| Frontend | **Vercel** | `ng build` → estático (`dist/frontend-ng/browser`; Vercel autodetecta Angular) |
+| Backend API | **Render** | `backend/Dockerfile.prod` (uvicorn); servicio definido en `render.yaml` (raíz), región `oregon`, plan `free` |
 | Base de datos | **Supabase** | PostgreSQL + pgvector (Transaction pooler, puerto 6543) |
 | Storage SCORM | **Supabase Storage** | bucket privado `scorm-packages` (signed URLs) |
 
+> **Sin Redis ni worker.** Sin `REDIS_URL`, la generación de OVA corre en un hilo
+> dentro del proceso web (`generation/jobs/jobs_router_helpers.py`). El worker arq
+> (`backend/Dockerfile.worker`) y Redis son opcionales — ver más abajo — y hoy no
+> se despliegan.
+>
+> Guía paso a paso: [runbook-despliegue-render.md](runbook-despliegue-render.md).
+> `.railway/railway.ts` queda como referencia histórica del despliegue anterior.
+>
 > Alternativa todo-en-uno con Docker (Nginx como gateway): ver más abajo.
 
 ---
@@ -40,17 +47,25 @@
 > se **salta** (`skipped`) si la rama no tiene un PR/branch Supabase asociado. Es normal,
 > no es un error. Solo crea DBs efímeras por PR si activas Branching.
 
-## Backend en Railway
+## Backend en Render
 
-- **Imagen**: `backend/Dockerfile.prod` (`python:3.12-slim`, `uvicorn main:app --host 0.0.0.0 --port 8000`).
+- **Blueprint**: `render.yaml` en la raíz del repo (Render Dashboard → New → Blueprint).
+- **Imagen**: `backend/Dockerfile.prod` (`python:3.12-slim`, `uvicorn main:app --host 0.0.0.0 --port ${PORT}`).
+  Render inyecta `PORT`; el `CMD` ya lo respeta.
+- **Contexto de build**: la raíz del repo (`dockerContext: .`), porque el Dockerfile
+  hace `COPY backend/...`.
+- **Región**: `oregon` (US-West) — la más cercana a Supabase `aws-1-us-west-1`.
+- **Health check**: `/health`.
 - Las **migraciones se aplican solas** al arrancar (`run_migrations()` en el lifespan).
+  Si la BD no responde, el servicio **no levanta**.
 - `seed.py` crea roles y cuentas de prueba en el primer arranque.
 - **Env mínima**: `DATABASE_URL`, `JWT_SECRET`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`,
   `CORS_ORIGINS` (origen de Vercel), `ENV=production`. Storage/RAG/SMTP opcionales (ver tabla).
 - Usa el **Transaction pooler** de Supabase (puerto 6543) en free tier; `pool_pre_ping` y
   `pool_recycle=300` sobreviven la evicción de pgbouncer.
+- Plan `free`: el servicio **duerme tras 15 min sin tráfico** (primer request ~30-50 s).
 
-### Worker de generación (arq) — opcional pero recomendado en prod
+### Worker de generación (arq) — opcional, hoy NO desplegado
 
 Con `REDIS_URL` configurado, la generación de OVA se **encola** (arq) en vez de correr en un
 thread dentro del proceso web, de modo que un redeploy/crash no pierde generaciones en curso.

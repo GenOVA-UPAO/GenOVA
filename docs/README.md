@@ -7,7 +7,8 @@ estos documentos cubren el detalle. La genera/actualiza el agente `doc_author`.
 |---|---|---|---|
 | [api.md](api.md) | Referencia REST completa (~70 endpoints) | — | 2026-07-15 |
 | [database.md](database.md) | Esquema de BD (tablas, índices, pgvector, migraciones 001–034) | — | 2026-07-15 |
-| [deployment.md](deployment.md) | Deploy cloud (Vercel/Railway/Supabase) + env vars | — | 2026-07-15 |
+| [deployment.md](deployment.md) | Deploy cloud (Vercel/Render/Supabase) + env vars | — | 2026-09-07 |
+| [runbook-despliegue-render.md](runbook-despliegue-render.md) | Runbook paso a paso: levantar backend en Render + repuntar Vercel (sin Redis/worker) | — | 2026-09-07 |
 | [testing.md](testing.md) | Estrategia BDD (unit/backend/e2e) + CI | — | 2026-06-03 |
 | [pruebas/](pruebas/README.md) | Documentación de pruebas: caja negra, funcionales, carga, BDD/E2E | — | 2026-07-14 |
 | [fases-5e.md](fases-5e.md) | Catálogo de los 50 recursos 5E + plantillas de prompt por fase | EN-003, SP-002, SP-003 | 2026-07-15 |
