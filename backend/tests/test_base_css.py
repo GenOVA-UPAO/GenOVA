@@ -59,6 +59,16 @@ def test_design_system_avoids_generated_page_tells():
         assert "pocas regiones fuertes" in ds
 
 
+def test_design_system_guides_chart_choice_and_pedagogical_copy():
+    ds = build_design_system()
+    for rule in ["cambio en el tiempo", "barras ordenadas o tabla",
+                 "nunca tarta decorativa", "histograma/dot plot", "scatter con escalas reales",
+                 "TABLA, no gráfico", "unidades, rango temporal y fuente",
+                 "No inventes datos", "COPY: voz activa", "qué falló y cómo corregirlo",
+                 "estado vacío invita a actuar", "cada texto hace un solo trabajo"]:
+        assert rule in ds
+
+
 def test_inject_components_even_if_llm_used_tags():
     """Regresión: el early-return por 'upao-card' dejaba tags sin registrar."""
     html = "<html><head></head><body><upao-card title='x'>y</upao-card></body></html>"

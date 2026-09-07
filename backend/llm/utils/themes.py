@@ -253,8 +253,16 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
      draggable="true" y handlers dragstart/dragend; las zonas destino tienen
      dragover (preventDefault) + drop.
    - Si el tipo requiere cronómetro: usa Date.now() o setInterval con cleanup.
-   - Si el tipo requiere visualización (gráfico, árbol, scatter): genera SVG real
-     con elementos visibles (no solo texto plano); usa viewBox + preserveAspectRatio.
+   - Para cambio en el tiempo usa línea/área; para magnitud ordenada, barras ordenadas o tabla.
+   - Para parte-todo usa barras apiladas solo si el denominador significa algo (nunca tarta decorativa);
+     para distribución, histograma/dot plot; para relación, scatter con escalas reales.
+   - Si importan más valores exactos que la forma, usa TABLA, no gráfico. Todo gráfico es SVG real
+     con elementos visibles (no solo texto plano), viewBox y preserveAspectRatio.
+   - Etiqueta unidades, rango temporal y fuente. No inventes datos para completar: si son ilustrativos, dilo.
+   - COPY: voz activa; el botón nombra lo que sucede al pulsarlo.
+   - Conserva el mismo nombre de la acción en todo el flujo.
+   - Los errores indican qué falló y cómo corregirlo, sin disculpas ni vaguedad.
+   - Un estado vacío invita a actuar; frases llanas y sin relleno: cada texto hace un solo trabajo.
    - Si el tipo usa cards/items en grid: usa CSS grid con minmax(min, 1fr) para
      que se reflowee en móvil sin overflow horizontal.
    - PROHIBIDO `width:` o `min-width:` en px > 320 sin un media query / clamp().
