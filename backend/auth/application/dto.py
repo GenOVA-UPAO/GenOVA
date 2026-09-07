@@ -107,3 +107,22 @@ class ConfirmTotpInput:
 class DisableTotpInput:
     user: AuthenticatedUser
     code: str
+
+
+@dataclass(frozen=True, slots=True)
+class VerifyTotpLoginInput:
+    ticket: str
+    code: str
+
+
+@dataclass(frozen=True, slots=True)
+class VerifyTotpLoginResult:
+    user_id: str
+    email: str
+    remember_me: bool
+    backup_code_used: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class AdminDisableTotpInput:
+    user_id: str

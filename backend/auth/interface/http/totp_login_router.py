@@ -1,24 +1,18 @@
-"""TOTP login-step verification and 2FA disable endpoints (self + admin).
-
-Shares the /totp prefix with totp_router (enrollment); both are included into
-the auth router.
-"""
+"""Adaptadores HTTP del segundo paso de login y desactivación administrativa."""
 
 from __future__ import annotations
 
-import pyotp
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
+from auth.application.dto import AdminDisableTotpInput, VerifyTotpLoginInput
+from auth.container import AuthUseCases, build_auth
+from auth.domain.errors import AuthError
 from auth.infrastructure.jwt import issue_session_response
-from auth.infrastructure.totp_tickets import _consume_ticket, _verify_backup
 from auth.interface.http.dependencies import require_admin
-from core.database import get_db
+from auth.interface.http.error_map import auth_error_to_response
 from core.rate_limit import limiter
-from models import User
 
 router = APIRouter(prefix="/totp", tags=["Autenticación · TOTP"])
 
@@ -28,57 +22,31 @@ class VerifyBody(BaseModel):
     code: str
 
 
+class AdminDisableBody(BaseModel):
+    user_id: str
+
+
 @router.post("/verify", summary="Verificar el código TOTP al iniciar sesión")
 @limiter.limit("10/minute")
 def totp_verify(
     request: Request,
     body: VerifyBody,
-    db: Session = Depends(get_db),
+    auth: AuthUseCases = Depends(build_auth),
 ) -> JSONResponse:
-    consumed = _consume_ticket(body.ticket)
-    if not consumed:
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"error": "invalid_ticket", "message": "Ticket inválido o expirado."},
+    try:
+        result = auth.verify_totp_login.execute(
+            VerifyTotpLoginInput(ticket=body.ticket, code=body.code)
         )
-    user_id, remember_me = consumed
+    except AuthError as err:
+        return auth_error_to_response(err)
 
-    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
-    if not user or not user.totp_enabled or not user.totp_secret:
-        return JSONResponse(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            content={"error": "invalid_ticket", "message": "Ticket inválido o expirado."},
-        )
-
-    code = body.code.strip().replace(" ", "")
-
-    # Try TOTP first
-    totp = pyotp.TOTP(str(user.totp_secret))
-    if totp.verify(code, valid_window=1):
-        return issue_session_response(str(user.id), str(user.email), remember_me=remember_me)
-
-    # Try backup codes
-    codes: list[dict] = list(user.totp_backup_codes or [])
-    for entry in codes:
-        if not entry.get("used") and _verify_backup(code, entry["hash"]):
-            entry["used"] = True
-            user.totp_backup_codes = codes  # type: ignore[assignment]
-            db.commit()
-            return issue_session_response(
-                str(user.id),
-                str(user.email),
-                extra_content={"backup_code_used": True},
-                remember_me=remember_me,
-            )
-
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={"error": "invalid_code", "message": "Código incorrecto o expirado."},
+    extra_content = {"backup_code_used": True} if result.backup_code_used else None
+    return issue_session_response(
+        result.user_id,
+        result.email,
+        extra_content=extra_content,
+        remember_me=result.remember_me,
     )
-
-
-class AdminDisableBody(BaseModel):
-    user_id: str
 
 
 @router.delete("/admin", summary="Desactivar el TOTP de otro usuario (admin)")
@@ -86,18 +54,11 @@ class AdminDisableBody(BaseModel):
 def totp_admin_disable(
     request: Request,
     body: AdminDisableBody,
-    _admin: User = Depends(require_admin),
-    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+    auth: AuthUseCases = Depends(build_auth),
 ) -> JSONResponse:
-    user = db.execute(select(User).where(User.id == body.user_id)).scalar_one_or_none()
-    if not user:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "not_found", "message": "Usuario no encontrado."},
-        )
-
-    user.totp_secret = None  # type: ignore[assignment]
-    user.totp_enabled = False  # type: ignore[assignment]
-    user.totp_backup_codes = []  # type: ignore[assignment]
-    db.commit()
+    try:
+        auth.admin_disable_totp.execute(AdminDisableTotpInput(user_id=body.user_id))
+    except AuthError as err:
+        return auth_error_to_response(err)
     return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "2fa_disabled"})

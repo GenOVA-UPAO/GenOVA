@@ -99,3 +99,18 @@ class TotpEnrollment:
     secret: str
     backup_codes: tuple[str, ...]
     hashed_backup_codes: list[dict[str, object]]
+
+
+@dataclass(frozen=True, slots=True)
+class TotpLoginTicket:
+    user_id: str
+    remember_me: bool
+
+
+@dataclass(frozen=True, slots=True)
+class TotpLoginUser:
+    id: UUID
+    email: str
+    totp_enabled: bool
+    totp_secret: str | None
+    backup_codes: list[dict[str, object]]

@@ -20,6 +20,8 @@ from auth.domain.user import (
     RegisteredUser,
     TokenRevocation,
     TotpEnrollment,
+    TotpLoginTicket,
+    TotpLoginUser,
     UserAccess,
 )
 
@@ -40,6 +42,9 @@ __all__ = [
     "SessionUserRepository",
     "TokenGenerator",
     "TotpAuthenticator",
+    "TotpAdminRepository",
+    "TotpLoginUserRepository",
+    "TotpTicketConsumer",
     "TotpTicketIssuer",
     "TotpUserRepository",
 ]
@@ -153,6 +158,8 @@ class TotpAuthenticator(Protocol):
 
     def verify(self, secret: str, code: str) -> bool: ...
 
+    def verify_backup(self, code: str, hashed: str) -> bool: ...
+
 
 class TotpUserRepository(Protocol):
     def save_setup(
@@ -165,3 +172,19 @@ class TotpUserRepository(Protocol):
     def enable(self, user_id: UUID) -> None: ...
 
     def disable(self, user_id: UUID) -> None: ...
+
+
+class TotpTicketConsumer(Protocol):
+    def consume(self, ticket: str) -> TotpLoginTicket | None: ...
+
+
+class TotpLoginUserRepository(Protocol):
+    def find_by_id(self, user_id: str) -> TotpLoginUser | None: ...
+
+    def save_backup_codes(
+        self, user_id: UUID, backup_codes: list[dict[str, object]]
+    ) -> None: ...
+
+
+class TotpAdminRepository(Protocol):
+    def disable_by_id(self, user_id: str) -> bool: ...

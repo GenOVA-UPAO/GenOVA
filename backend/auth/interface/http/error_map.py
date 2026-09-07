@@ -21,8 +21,10 @@ from auth.domain.errors import (
     InvalidFullName,
     InvalidPasswordResetToken,
     InvalidTotpCode,
+    InvalidTotpTicket,
     PasswordResetUserNotFound,
     TooManyAttempts,
+    TotpAdminUserNotFound,
     TotpAlreadyEnabled,
     TotpNotEnabled,
     TotpNotSetup,
@@ -31,6 +33,14 @@ from auth.domain.errors import (
 )
 
 _ERROR_RESPONSES: dict[type[AuthError], tuple[int, dict[str, object]]] = {
+    InvalidTotpTicket: (
+        status.HTTP_401_UNAUTHORIZED,
+        {"error": "invalid_ticket", "message": "Ticket inválido o expirado."},
+    ),
+    TotpAdminUserNotFound: (
+        status.HTTP_404_NOT_FOUND,
+        {"error": "not_found", "message": "Usuario no encontrado."},
+    ),
     TotpAlreadyEnabled: (
         status.HTTP_409_CONFLICT,
         {"error": "totp_already_enabled", "message": "2FA ya está activado."},

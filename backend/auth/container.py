@@ -13,6 +13,7 @@ from fastapi import BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from auth.application.use_cases import (
+    AdminDisableTotp,
     ConfirmTotp,
     DisableTotp,
     GetSessionProfile,
@@ -24,6 +25,7 @@ from auth.application.use_cases import (
     ResetPassword,
     SetupTotp,
     VerifyEmail,
+    VerifyTotpLogin,
 )
 from auth.infrastructure.email_adapters import SmtpAuthEmailSender
 from auth.infrastructure.login_adapters import (
@@ -44,7 +46,11 @@ from auth.infrastructure.session_adapters import (
     SqlAlchemyRevokedTokenRepository,
     SqlAlchemySessionUserRepository,
 )
-from auth.infrastructure.totp_adapters import PyotpTotpAuthenticator, SqlAlchemyTotpUserRepository
+from auth.infrastructure.totp_adapters import (
+    InMemoryTotpTicketConsumer,
+    PyotpTotpAuthenticator,
+    SqlAlchemyTotpUserRepository,
+)
 from auth.infrastructure.verify_adapters import SqlAlchemyEmailVerificationTokenRepository
 from core.config import settings
 from core.database import get_db
@@ -52,6 +58,7 @@ from core.database import get_db
 
 @dataclass(frozen=True, slots=True)
 class AuthUseCases:
+    admin_disable_totp: AdminDisableTotp
     confirm_totp: ConfirmTotp
     disable_totp: DisableTotp
     get_session_profile: GetSessionProfile
@@ -62,6 +69,7 @@ class AuthUseCases:
     reset_password: ResetPassword
     setup_totp: SetupTotp
     verify_email: VerifyEmail
+    verify_totp_login: VerifyTotpLogin
     resend_verification: ResendVerification
 
 
@@ -78,6 +86,7 @@ def build_auth(
     totp_authenticator = PyotpTotpAuthenticator()
     totp_user_repo = SqlAlchemyTotpUserRepository(db)
     return AuthUseCases(
+        admin_disable_totp=AdminDisableTotp(users=totp_user_repo),
         confirm_totp=ConfirmTotp(authenticator=totp_authenticator, users=totp_user_repo),
         disable_totp=DisableTotp(authenticator=totp_authenticator, users=totp_user_repo),
         get_session_profile=GetSessionProfile(users=SqlAlchemySessionUserRepository(db)),
@@ -113,6 +122,11 @@ def build_auth(
         ),
         setup_totp=SetupTotp(authenticator=totp_authenticator, users=totp_user_repo),
         verify_email=VerifyEmail(repo=email_verification_repo),
+        verify_totp_login=VerifyTotpLogin(
+            tickets=InMemoryTotpTicketConsumer(),
+            users=totp_user_repo,
+            authenticator=totp_authenticator,
+        ),
         resend_verification=ResendVerification(
             repo=email_verification_repo,
             tokens=tokens,

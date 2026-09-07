@@ -85,3 +85,11 @@ class TotpNotEnabled(AuthError):
 
 class InvalidTotpCode(AuthError):
     """El código TOTP o de respaldo no es válido."""
+
+
+class InvalidTotpTicket(AuthError):
+    """El ticket del segundo paso no existe, expiró o ya fue consumido."""
+
+
+class TotpAdminUserNotFound(AuthError):
+    """La cuenta elegida por el administrador no existe."""
