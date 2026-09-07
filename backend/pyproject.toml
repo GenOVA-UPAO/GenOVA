@@ -474,6 +474,16 @@ source_modules = ["ova.infrastructure"]
 forbidden_modules = ["ova.application", "ova.interface", "ova.container"]
 
 [[tool.importlinter.contracts]]
+name = "ova.infrastructure no depende de generation"
+type = "forbidden"
+source_modules = ["ova.infrastructure"]
+forbidden_modules = ["generation"]
+# El barrido de jobs obsoletos (`sweep_stale_jobs_for_ovas`) se inyecta desde
+# `ova.container`, no se importa desde un repositorio. Cuando estuvo en
+# infraestructura cerró un ciclo de 5 saltos que cruzaba la frontera de dominio y
+# volvía: ova.infrastructure -> generation.jobs.* -> ova -> ova.application.
+
+[[tool.importlinter.contracts]]
 name = "ova.application no depende de la capa de interface"
 type = "forbidden"
 source_modules = ["ova.application"]
