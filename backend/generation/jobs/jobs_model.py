@@ -18,15 +18,23 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.sql import func
 
 from core.database import Base
+from generation.domain.lifecycle import (
+    JOB_STATUSES,
+    JOB_STREAM_TERMINAL,
+    JOB_TERMINAL,
+    RESOURCE_STATUSES,
+)
 
-# Allowed lifecycle states. Kept next to the models so service, runner and tests
-# share a single source of truth.
-JOB_STATUSES = ("queued", "running", "done", "error", "interrupted", "canceled")
-RESOURCE_STATUSES = ("pending", "running", "done", "error")
-# Jobs in these states cannot be canceled or produce new results.
-JOB_TERMINAL = frozenset({"done", "error", "canceled", "interrupted"})
-# SSE stream closes when job reaches one of these (interrupted stays open until timeout).
-JOB_STREAM_TERMINAL = frozenset({"done", "error", "canceled"})
+# Re-export domain lifecycle constants so service, runner and tests keep
+# importing from this module. The source of truth is generation.domain.lifecycle.
+__all__ = [
+    "JOB_STATUSES",
+    "JOB_STREAM_TERMINAL",
+    "JOB_TERMINAL",
+    "OvaJob",
+    "OvaJobResource",
+    "RESOURCE_STATUSES",
+]
 
 
 def _job_pk() -> Column:

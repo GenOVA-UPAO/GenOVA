@@ -1,7 +1,9 @@
 """Orquestación de la generación de OVAs (jobs + regeneración).
 
-Subdominio de soporte con routers HTTP propios (jobs, regen). Acoplado a `ova` y
-`users` (helpers compartidos) — deuda conocida a resolver cuando esos dominios
-pasen por el refactor hexagonal. Enforcement mínimo vía import-linter: no depende
-de `roles` ni de `auth.infrastructure`.
+2º pase hexagonal en curso: `domain` / `application` / `infrastructure` /
+`interface` / `container` cubren el ciclo de vida de un job. `jobs/` y `regen/`
+siguen como capa de compatibilidad (runner, materialize, pipelines).
+
+Enforcement vía import-linter: no depende de `roles` ni de `auth.infrastructure`,
+y no toca internos de `ova`.
 """
