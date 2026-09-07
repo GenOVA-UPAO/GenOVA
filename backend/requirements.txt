@@ -24,7 +24,7 @@ logfire[sqlalchemy]==4.37.0
 structlog==25.5.0
 # Multi-agent orchestration (Prometheus via LangGraph) + LangSmith traces
 langgraph==1.2.6
-langgraph-checkpoint-postgres==3.1.0
+langgraph-checkpoint-postgres==3.1.2
 langsmith==0.8.18
 # AI SDKs
 openai==2.43.0
@@ -33,7 +33,7 @@ groq==1.4.0
 instructor==1.15.4
 supabase==2.31.0
 google-genai==2.9.0
-pypdf==6.13.3
+pypdf==6.18.0
 python-docx==1.2.0
 python-pptx==1.0.2
 filetype==1.2.0
