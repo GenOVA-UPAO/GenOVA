@@ -91,3 +91,11 @@ class TokenRevocation:
     jti: str
     user_id: str | None
     expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class TotpEnrollment:
+    provisioning_uri: str
+    secret: str
+    backup_codes: tuple[str, ...]
+    hashed_backup_codes: list[dict[str, object]]

@@ -13,6 +13,8 @@ from fastapi import BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from auth.application.use_cases import (
+    ConfirmTotp,
+    DisableTotp,
     GetSessionProfile,
     LoginUser,
     LogoutSession,
@@ -20,6 +22,7 @@ from auth.application.use_cases import (
     RequestPasswordReset,
     ResendVerification,
     ResetPassword,
+    SetupTotp,
     VerifyEmail,
 )
 from auth.infrastructure.email_adapters import SmtpAuthEmailSender
@@ -41,6 +44,7 @@ from auth.infrastructure.session_adapters import (
     SqlAlchemyRevokedTokenRepository,
     SqlAlchemySessionUserRepository,
 )
+from auth.infrastructure.totp_adapters import PyotpTotpAuthenticator, SqlAlchemyTotpUserRepository
 from auth.infrastructure.verify_adapters import SqlAlchemyEmailVerificationTokenRepository
 from core.config import settings
 from core.database import get_db
@@ -48,12 +52,15 @@ from core.database import get_db
 
 @dataclass(frozen=True, slots=True)
 class AuthUseCases:
+    confirm_totp: ConfirmTotp
+    disable_totp: DisableTotp
     get_session_profile: GetSessionProfile
     login_user: LoginUser
     logout_session: LogoutSession
     register_user: RegisterUser
     request_password_reset: RequestPasswordReset
     reset_password: ResetPassword
+    setup_totp: SetupTotp
     verify_email: VerifyEmail
     resend_verification: ResendVerification
 
@@ -68,7 +75,11 @@ def build_auth(
     emails = SmtpAuthEmailSender(background_tasks, settings.frontend_url)
     password_reset_repo = SqlAlchemyPasswordResetTokenRepository(db)
     email_verification_repo = SqlAlchemyEmailVerificationTokenRepository(db)
+    totp_authenticator = PyotpTotpAuthenticator()
+    totp_user_repo = SqlAlchemyTotpUserRepository(db)
     return AuthUseCases(
+        confirm_totp=ConfirmTotp(authenticator=totp_authenticator, users=totp_user_repo),
+        disable_totp=DisableTotp(authenticator=totp_authenticator, users=totp_user_repo),
         get_session_profile=GetSessionProfile(users=SqlAlchemySessionUserRepository(db)),
         login_user=LoginUser(
             repo=SqlAlchemyAuthUserRepository(db),
@@ -100,6 +111,7 @@ def build_auth(
             passwords=passwords,
             password_policy=password_policy,
         ),
+        setup_totp=SetupTotp(authenticator=totp_authenticator, users=totp_user_repo),
         verify_email=VerifyEmail(repo=email_verification_repo),
         resend_verification=ResendVerification(
             repo=email_verification_repo,

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from auth.domain.user import AuthenticatedUser
+
 
 @dataclass(frozen=True, slots=True)
 class LoginInput:
@@ -81,3 +83,27 @@ class SessionProfileResult:
     permissions: tuple[str, ...]
     created_at: str | None
     totp_enabled: bool
+
+
+@dataclass(frozen=True, slots=True)
+class SetupTotpInput:
+    user: AuthenticatedUser
+
+
+@dataclass(frozen=True, slots=True)
+class SetupTotpResult:
+    provisioning_uri: str
+    secret: str
+    backup_codes: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ConfirmTotpInput:
+    user: AuthenticatedUser
+    code: str
+
+
+@dataclass(frozen=True, slots=True)
+class DisableTotpInput:
+    user: AuthenticatedUser
+    code: str

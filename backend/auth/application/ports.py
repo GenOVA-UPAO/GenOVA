@@ -19,6 +19,7 @@ from auth.domain.user import (
     PasswordResetUser,
     RegisteredUser,
     TokenRevocation,
+    TotpEnrollment,
     UserAccess,
 )
 
@@ -38,7 +39,9 @@ __all__ = [
     "SessionTokenDecoder",
     "SessionUserRepository",
     "TokenGenerator",
+    "TotpAuthenticator",
     "TotpTicketIssuer",
+    "TotpUserRepository",
 ]
 
 
@@ -143,3 +146,22 @@ class RevokedTokenRepository(Protocol):
 
 class SessionUserRepository(Protocol):
     def access_for(self, user_id: UUID) -> UserAccess: ...
+
+
+class TotpAuthenticator(Protocol):
+    def create_enrollment(self, email: str) -> TotpEnrollment: ...
+
+    def verify(self, secret: str, code: str) -> bool: ...
+
+
+class TotpUserRepository(Protocol):
+    def save_setup(
+        self,
+        user_id: UUID,
+        secret: str,
+        hashed_backup_codes: list[dict[str, object]],
+    ) -> None: ...
+
+    def enable(self, user_id: UUID) -> None: ...
+
+    def disable(self, user_id: UUID) -> None: ...

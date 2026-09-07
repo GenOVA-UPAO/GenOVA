@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from auth.infrastructure.jwt import issue_session_response
 from auth.infrastructure.totp_tickets import _consume_ticket, _verify_backup
-from auth.interface.http.dependencies import get_current_user, require_admin
+from auth.interface.http.dependencies import require_admin
 from core.database import get_db
 from core.rate_limit import limiter
 from models import User
@@ -75,38 +75,6 @@ def totp_verify(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"error": "invalid_code", "message": "Código incorrecto o expirado."},
     )
-
-
-class DisableBody(BaseModel):
-    code: str
-
-
-@router.delete("", summary="Desactivar el TOTP de la cuenta propia")
-@limiter.limit("5/minute")
-def totp_disable_self(
-    request: Request,
-    body: DisableBody,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-) -> JSONResponse:
-    if not current_user.totp_enabled or not current_user.totp_secret:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "totp_not_enabled", "message": "2FA no está activado."},
-        )
-
-    totp = pyotp.TOTP(str(current_user.totp_secret))
-    if not totp.verify(body.code.strip(), valid_window=1):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "invalid_code", "message": "Código incorrecto o expirado."},
-        )
-
-    current_user.totp_secret = None  # type: ignore[assignment]
-    current_user.totp_enabled = False  # type: ignore[assignment]
-    current_user.totp_backup_codes = []  # type: ignore[assignment]
-    db.commit()
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "2fa_disabled"})
 
 
 class AdminDisableBody(BaseModel):

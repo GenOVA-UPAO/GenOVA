@@ -20,13 +20,33 @@ from auth.domain.errors import (
     InvalidEmailVerificationToken,
     InvalidFullName,
     InvalidPasswordResetToken,
+    InvalidTotpCode,
     PasswordResetUserNotFound,
     TooManyAttempts,
+    TotpAlreadyEnabled,
+    TotpNotEnabled,
+    TotpNotSetup,
     WeakRegistrationPassword,
     WeakResetPassword,
 )
 
 _ERROR_RESPONSES: dict[type[AuthError], tuple[int, dict[str, object]]] = {
+    TotpAlreadyEnabled: (
+        status.HTTP_409_CONFLICT,
+        {"error": "totp_already_enabled", "message": "2FA ya está activado."},
+    ),
+    TotpNotSetup: (
+        status.HTTP_400_BAD_REQUEST,
+        {"error": "totp_not_setup", "message": "Primero llama a /totp/setup."},
+    ),
+    TotpNotEnabled: (
+        status.HTTP_400_BAD_REQUEST,
+        {"error": "totp_not_enabled", "message": "2FA no está activado."},
+    ),
+    InvalidTotpCode: (
+        status.HTTP_400_BAD_REQUEST,
+        {"error": "invalid_code", "message": "Código incorrecto o expirado."},
+    ),
     InvalidEmailVerificationToken: (
         status.HTTP_400_BAD_REQUEST,
         {

@@ -69,3 +69,19 @@ class ExpiredEmailVerificationToken(AuthError):
 
 class EmailVerificationUserNotFound(AuthError):
     """La cuenta asociada al token de verificación ya no existe."""
+
+
+class TotpAlreadyEnabled(AuthError):
+    """La cuenta ya tiene activo el segundo factor."""
+
+
+class TotpNotSetup(AuthError):
+    """La cuenta todavía no inició el enrolamiento TOTP."""
+
+
+class TotpNotEnabled(AuthError):
+    """La cuenta no tiene activo el segundo factor."""
+
+
+class InvalidTotpCode(AuthError):
+    """El código TOTP o de respaldo no es válido."""

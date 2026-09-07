@@ -1,82 +1,51 @@
-"""2FA / TOTP endpoints.
-
-Setup flow (user must already be logged in):
-  POST /auth/totp/setup   → returns provisioning_uri + backup_codes (plaintext, shown once)
-  POST /auth/totp/confirm → verifies first TOTP code, enables 2FA
-
-Login flow (unauthenticated, after password verified):
-  POST /auth/totp/verify  → receives totp_ticket + code, returns JWT cookie
-
-Admin force-disable:
-  DELETE /auth/totp        → admin only, disables 2FA for target user_id
-"""
+"""Adaptadores HTTP para enrolar, confirmar y desactivar TOTP."""
 
 from __future__ import annotations
 
-import pyotp
-import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
-from auth.infrastructure.totp_tickets import _generate_backup_codes
+from auth.application.dto import ConfirmTotpInput, DisableTotpInput, SetupTotpInput
+from auth.container import AuthUseCases, build_auth
+from auth.domain.errors import AuthError
+from auth.infrastructure.session_adapters import snapshot_authenticated_user
 from auth.interface.http.dependencies import get_current_user
-from core.database import get_db
+from auth.interface.http.error_map import auth_error_to_response
 from core.rate_limit import limiter
-from models import User
 
 router = APIRouter(prefix="/totp", tags=["Autenticación · TOTP"])
-logger = structlog.get_logger(__name__)
-
-_APP_NAME = "GenOVA"
 
 
-# ---------------------------------------------------------------------------
-# Setup — authenticated user begins TOTP enrollment
-# ---------------------------------------------------------------------------
+class ConfirmBody(BaseModel):
+    code: str
+
+
+class DisableBody(BaseModel):
+    code: str
 
 
 @router.post("/setup", summary="Iniciar el alta del segundo factor TOTP")
 @limiter.limit("5/minute")
 def totp_setup(
     request: Request,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    auth: AuthUseCases = Depends(build_auth),
 ) -> JSONResponse:
-    if current_user.totp_enabled:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={"error": "totp_already_enabled", "message": "2FA ya está activado."},
+    try:
+        result = auth.setup_totp.execute(
+            SetupTotpInput(user=snapshot_authenticated_user(current_user))
         )
-
-    secret = pyotp.random_base32()
-    totp = pyotp.TOTP(secret)
-    uri = totp.provisioning_uri(name=str(current_user.email), issuer_name=_APP_NAME)
-
-    plaintext_codes, hashed_codes = _generate_backup_codes()
-
-    current_user.totp_secret = secret  # type: ignore[assignment]
-    current_user.totp_backup_codes = hashed_codes  # type: ignore[assignment]
-    db.commit()
-
+    except AuthError as err:
+        return auth_error_to_response(err)
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
-            "provisioning_uri": uri,
-            "secret": secret,
-            "backup_codes": plaintext_codes,
+            "provisioning_uri": result.provisioning_uri,
+            "secret": result.secret,
+            "backup_codes": list(result.backup_codes),
         },
     )
-
-
-# ---------------------------------------------------------------------------
-# Confirm — verify first code to activate 2FA
-# ---------------------------------------------------------------------------
-
-
-class ConfirmBody(BaseModel):
-    code: str
 
 
 @router.post("/confirm", summary="Confirmar el alta del TOTP con el primer código")
@@ -84,27 +53,36 @@ class ConfirmBody(BaseModel):
 def totp_confirm(
     request: Request,
     body: ConfirmBody,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    auth: AuthUseCases = Depends(build_auth),
 ) -> JSONResponse:
-    if not current_user.totp_secret:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "totp_not_setup", "message": "Primero llama a /totp/setup."},
+    try:
+        auth.confirm_totp.execute(
+            ConfirmTotpInput(
+                user=snapshot_authenticated_user(current_user),
+                code=body.code,
+            )
         )
-    if current_user.totp_enabled:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={"error": "totp_already_enabled", "message": "2FA ya está activado."},
-        )
-
-    totp = pyotp.TOTP(str(current_user.totp_secret))
-    if not totp.verify(body.code.strip(), valid_window=1):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "invalid_code", "message": "Código incorrecto o expirado."},
-        )
-
-    current_user.totp_enabled = True  # type: ignore[assignment]
-    db.commit()
+    except AuthError as err:
+        return auth_error_to_response(err)
     return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "2fa_enabled"})
+
+
+@router.delete("", summary="Desactivar el TOTP de la cuenta propia")
+@limiter.limit("5/minute")
+def totp_disable_self(
+    request: Request,
+    body: DisableBody,
+    current_user=Depends(get_current_user),
+    auth: AuthUseCases = Depends(build_auth),
+) -> JSONResponse:
+    try:
+        auth.disable_totp.execute(
+            DisableTotpInput(
+                user=snapshot_authenticated_user(current_user),
+                code=body.code,
+            )
+        )
+    except AuthError as err:
+        return auth_error_to_response(err)
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "2fa_disabled"})

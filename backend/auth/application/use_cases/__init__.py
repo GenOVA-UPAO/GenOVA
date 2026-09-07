@@ -5,9 +5,12 @@ from auth.application.use_cases.register_user import RegisterUser
 from auth.application.use_cases.request_password_reset import RequestPasswordReset
 from auth.application.use_cases.resend_verification import ResendVerification
 from auth.application.use_cases.reset_password import ResetPassword
+from auth.application.use_cases.setup_totp import SetupTotp
 from auth.application.use_cases.verify_email import VerifyEmail
 
 __all__ = [
+    "ConfirmTotp",
+    "DisableTotp",
     "LoginUser",
     "LogoutSession",
     "GetSessionProfile",
@@ -15,5 +18,8 @@ __all__ = [
     "RequestPasswordReset",
     "ResendVerification",
     "ResetPassword",
+    "SetupTotp",
     "VerifyEmail",
 ]
+from auth.application.use_cases.confirm_totp import ConfirmTotp
+from auth.application.use_cases.disable_totp import DisableTotp
