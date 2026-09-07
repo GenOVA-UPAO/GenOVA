@@ -17,6 +17,8 @@ import type { CatalogModel, EnabledModel, LoadOpts } from "../lib/user-llm-setti
 import { UserLlmSettingsService } from "./user-llm-settings.service";
 
 const DEFAULT_TIMEOUT = 120;
+/** Máximo que acepta la API: mantiene orden y agrupación sobre todo el catálogo. */
+const CATALOG_PAGE_SIZE = 1000;
 
 // Estado en signals: la app es zoneless y los consumidores son OnPush — con
 // campos de clase mutados desde callbacks async, el modal quedaba en
@@ -79,7 +81,7 @@ export class UserLlmSettingsStore {
         category: c,
         type: t,
         page: reqPage,
-        page_size: 500,
+        page_size: CATALOG_PAGE_SIZE,
       });
       this.applyResponse(data, append);
     } catch (err) {

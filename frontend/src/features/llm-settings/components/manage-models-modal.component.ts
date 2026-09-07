@@ -82,7 +82,12 @@ export class ManageModelsModalComponent implements AfterViewInit {
    */
   readonly grouped = computed<{ key: string; label: string; models: CatalogModel[] }[]>(() => {
     const ordenados = sortModels(this.store.catalogFull(), this.store.sortKey());
-    return groupModels(ordenados, this.store.groupBy(), this.providerLabels);
+    return groupModels(
+      ordenados,
+      this.store.groupBy(),
+      this.providerLabels,
+      this.store.sortKey() !== "default",
+    );
   });
 
   onSearchChange(v: string): void {

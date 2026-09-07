@@ -107,6 +107,19 @@ describe("groupModels", () => {
     expect(groups[0].label).toBe("Groq");
   });
 
+  it("con orden explícito conserva el grupo del primer modelo ordenado", () => {
+    const groups = groupModels(
+      [
+        M({ provider: "openrouter", model_id: "barato" }),
+        M({ provider: "groq", model_id: "caro" }),
+      ],
+      "provider",
+      { groq: "Groq", openrouter: "OpenRouter" },
+      true,
+    );
+    expect(groups.map((g) => g.key)).toEqual(["openrouter", "groq"]);
+  });
+
   it("por tipo usa la categoria del modelo", () => {
     const groups = groupModels(
       [M({ model_id: "1", category: "texto" }), M({ model_id: "2", category: "codigo" })],

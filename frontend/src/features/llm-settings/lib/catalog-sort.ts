@@ -6,12 +6,10 @@ import type { CatalogModel } from "./user-llm-settings.types";
  * Lógica pura (sin componentes, sin store): se testea en catalog-sort.spec.ts.
  *
  * DECISIÓN DE ORDENACIÓN CON PAGINACIÓN: el catálogo llega paginado del
- * servidor (page_size 500, ~431 modelos hoy ⇒ todo entra en una página), pero
- * podría pasar de 500. El orden se aplica en CLIENTE sobre lo cargado y el
- * store (`loadAllSorted`) se asegura de traer TODAS las páginas antes de
- * ordenar cuando el orden no es «Por defecto»: así nunca se ordena una página
- * suelta. Elegir un `sort` en el backend implicaría tocar el carril del
- * backend, fuera del alcance de este cambio.
+ * servidor (page_size 1000, ~431 modelos hoy ⇒ todo entra en una petición).
+ * Así el orden se aplica en cliente sobre el catálogo completo; si el catálogo
+ * superase el máximo de la API habría que llevar el orden al servidor antes de
+ * volver a paginar para no ordenar una página suelta.
  */
 
 export type SortKey = "default" | "price-asc" | "price-desc" | "name-asc" | "context-desc";
@@ -152,6 +150,7 @@ export function groupModels(
   models: CatalogModel[],
   groupBy: GroupBy,
   labels: Record<string, string>,
+  preserveModelOrder = false,
 ): CatalogGroup[] {
   const groups = new Map<string, CatalogModel[]>();
   for (const m of models) {
@@ -161,11 +160,10 @@ export function groupModels(
     else groups.set(k, [m]);
   }
 
-  return [...groups.entries()]
-    .map(([key, models]) => ({
-      key,
-      label: (groupBy === "modality" ? MODALITY_BUCKET_LABELS[key] : null) || labels[key] || key,
-      models,
-    }))
-    .sort((a, b) => sortGroupKeys(a, b, groupBy));
+  const grouped = [...groups.entries()].map(([key, models]) => ({
+    key,
+    label: (groupBy === "modality" ? MODALITY_BUCKET_LABELS[key] : null) || labels[key] || key,
+    models,
+  }));
+  return preserveModelOrder ? grouped : grouped.sort((a, b) => sortGroupKeys(a, b, groupBy));
 }
