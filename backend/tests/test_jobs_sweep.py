@@ -151,3 +151,41 @@ def test_sweep_por_listado_barre_varios_ovas(db):
 
 def test_sweep_por_listado_lista_vacia_no_falla(db):
     jobs_service.sweep_stale_jobs_for_ovas(db, [])
+
+
+def test_job_canceled_libera_ova_generando_sin_cambiar_el_job(db):
+    """Causa raíz: cancel dejaba el Ova en generando; el sweep lo reconcilia."""
+    job_id, ova_id = _mk_job(db, status="canceled", age_seconds=10)
+    job = _reload(db, OvaJob, job_id)
+    jobs_service._sweep_if_stale(db, job)
+    assert _reload(db, OvaJob, job_id).status == "canceled"
+    assert _reload(db, Ova, ova_id).status == "error"
+
+
+def test_job_done_sin_recursos_listos_marca_ova_error(db):
+    job_id, ova_id = _mk_job(db, status="done", age_seconds=10)
+    job = _reload(db, OvaJob, job_id)
+    jobs_service._sweep_if_stale(db, job)
+    assert _reload(db, OvaJob, job_id).status == "done"
+    assert _reload(db, Ova, ova_id).status == "error"
+
+
+def test_cancel_job_libera_ova_de_inmediato(db):
+    job_id, ova_id = _mk_job(db, status="running", age_seconds=5)
+    job = _reload(db, OvaJob, job_id)
+    jobs_service.cancel_job(db, job)
+    assert _reload(db, OvaJob, job_id).status == "canceled"
+    assert _reload(db, Ova, ova_id).status == "error"
+
+
+def test_sweep_por_listado_cura_terminal_y_no_toca_generando_de_verdad(db):
+    """Las dos ramas: abandonado se libera; generando de verdad sigue generando."""
+    canceled, ova_c = _mk_job(db, status="canceled", age_seconds=60)
+    running, ova_r = _mk_job(db, status="running", age_seconds=5)
+
+    jobs_service.sweep_stale_jobs_for_ovas(db, [ova_c, ova_r])
+
+    assert _reload(db, Ova, ova_c).status == "error"
+    assert _reload(db, OvaJob, canceled).status == "canceled"
+    assert _reload(db, Ova, ova_r).status == "generando"
+    assert _reload(db, OvaJob, running).status == "running"

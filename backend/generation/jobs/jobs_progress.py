@@ -58,8 +58,41 @@ def _has_materializable_resource(db: Session, job_id: uuid.UUID) -> bool:
     )
 
 
+def _release_ova_from_generating(db: Session, job: OvaJob) -> None:
+    """Saca el placeholder de 'generando' sin tocar job.status.
+
+    Un job ya terminal (canceled/done/error/interrupted) no debe dejar el Ova
+    bloqueado en la biblioteca. Si hay recursos materializables se intenta
+    `_materialize`; si no hay, o si materializar no mueve el status, se marca
+    'error' para que el usuario pueda borrar.
+    """
+    if job.ova_id is None:
+        return
+    from models import Ova as _Ova
+
+    ova = db.get(_Ova, job.ova_id)
+    if ova is None or ova.status != "generando":
+        return
+    if _has_materializable_resource(db, job.id):
+        try:
+            _materialize(db, job)
+        except Exception:
+            db.rollback()
+            logger.exception("failed to materialize OVA on release", job_id=job.id)
+        ova = db.get(_Ova, job.ova_id)
+        if ova is None or ova.status != "generando":
+            return
+    ova.status = "error"
+    db.commit()
+
+
 def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     from generation.jobs.jobs_service import _now
+
+    db.refresh(job)
+    if job.status == "canceled":
+        _release_ova_from_generating(db, job)
+        return
 
     has_unfinished = (
         db.execute(
@@ -73,18 +106,7 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     job.status = finish_status(has_unfinished=has_unfinished, any_done=any_done)
     job.finished_at = _now()
     db.commit()
-    if _has_materializable_resource(db, job.id):
-        _materialize(db, job)
-    elif job.ova_id is not None:
-        try:
-            from models import Ova as _Ova
-
-            ova = db.get(_Ova, job.ova_id)
-            if ova is not None:
-                ova.status = "error"
-                db.commit()
-        except Exception:
-            logger.exception("failed to mark placeholder OVA as error", job_id=job.id)
+    _release_ova_from_generating(db, job)
 
 
 def _materialize(db: Session, job: OvaJob) -> None:
@@ -106,18 +128,13 @@ def _materialize(db: Session, job: OvaJob) -> None:
 
 
 def repair_stuck_ova_if_needed(db: Session, job: OvaJob) -> None:
-    """Job `done`/`interrupted` but placeholder still `generando` → rematerialize."""
-    if job.status not in ("done", "interrupted") or job.ova_id is None:
-        return
-    if not _has_materializable_resource(db, job.id):
+    """Job terminal + placeholder aún `generando` → materializa o marca error."""
+    from generation.domain.lifecycle import JOB_TERMINAL
+
+    if job.status not in JOB_TERMINAL:
         return
     try:
-        from models import Ova as _Ova
-
-        ova = db.get(_Ova, job.ova_id)
-        if ova is None or ova.status != "generando":
-            return
-        _materialize(db, job)
+        _release_ova_from_generating(db, job)
     except Exception:
         logger.exception("stuck OVA rematerialize failed", job_id=job.id)
 
@@ -132,6 +149,7 @@ def _safe_mark_error(db: Session, job_id: uuid.UUID) -> None:
             job.status = "error"
             job.finished_at = _now()
             db.commit()
+            _release_ova_from_generating(db, job)
     except Exception:
         logger.exception("failed to mark job as error after crash", job_id=job_id)
 

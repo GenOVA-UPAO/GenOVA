@@ -120,12 +120,26 @@ def test_delete_ova_falla_si_usuario_no_es_dueno_ni_admin():
 
 
 def test_delete_ova_falla_si_status_es_generando():
+    """Generando de verdad: el guard sigue bloqueando el borrado (409)."""
     ova = _make_ova("ova-1", owner_id="user-1", status="generando")
     repo = DummyLifecycleRepository(active_ovas={"ova-1": ova})
     use_case = DeleteOva(repo=repo)
 
     with pytest.raises(OvaGenerating, match="No se puede eliminar el OVA mientras se está generando."):
         use_case.execute(ManageOvaInput(ova_id="ova-1", actor=OvaActor("user-1", False)))
+
+
+def test_delete_ova_abandonado_ya_reconciliado_se_puede_borrar():
+    """Tras el sweep, el Ova zombi deja 'generando' (p.ej. error) y el borrado pasa."""
+    ova = _make_ova("ova-1", owner_id="user-1", status="error")
+    repo = DummyLifecycleRepository(active_ovas={"ova-1": ova})
+    use_case = DeleteOva(repo=repo)
+
+    result = use_case.execute(ManageOvaInput(ova_id="ova-1", actor=OvaActor("user-1", False)))
+
+    assert result.id == "ova-1"
+    assert repo.moved_to_trash[0][0] == "ova-1"
+    assert repo.commits == ["delete_ova"]
 
 
 def test_delete_ova_exitoso_mueve_a_papelera_y_hace_commit():

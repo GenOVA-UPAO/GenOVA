@@ -22,6 +22,7 @@ from generation.jobs.jobs_progress import (
     _finish_job,
     _has_done_resource,
     _persist_results,
+    _release_ova_from_generating,
     _safe_mark_error,
     _start_job,
 )
@@ -105,6 +106,7 @@ def _finalize(job_id: uuid.UUID, results: list[dict], errors: list[dict]) -> Non
         if job is None:
             return
         if job.status == "canceled":
+            _release_ova_from_generating(db, job)
             return
         _persist_results(db, job, results, errors)
         any_done = _has_done_resource(db, job.id)
