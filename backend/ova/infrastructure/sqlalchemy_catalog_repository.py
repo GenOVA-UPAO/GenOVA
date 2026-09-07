@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
-from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
 from models import Ova as OvaORM
 from models import OvaVersion
 from ova.domain.catalog import LISTABLE_STATUSES, OvaListFilter
@@ -14,8 +16,9 @@ from ova.infrastructure.sqlalchemy_lifecycle_repository import _to_domain
 
 
 class SqlAlchemyOvaCatalogRepository:
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: Session, sweep_generating: Callable[[list[Any]], None]) -> None:
         self._db = db
+        self._sweep_generating = sweep_generating
 
     def list_page(self, filters: OvaListFilter) -> tuple[tuple[Ova, ...], int]:
         base_query = self._base_query(filters)
@@ -25,7 +28,7 @@ class SqlAlchemyOvaCatalogRepository:
         # GN-03: los jobs zombis ("generando" con worker muerto o cola abandonada)
         # solo se barrían al consultar el job exacto; al listar la página los
         # finalizamos aquí para que el badge muestre el estado real.
-        sweep_stale_jobs_for_ovas(self._db, [ova.id for ova in ovas if ova.status == "generando"])
+        self._sweep_generating([ova.id for ova in ovas if ova.status == "generando"])
         mapped = tuple(
             _to_domain(
                 row[0],

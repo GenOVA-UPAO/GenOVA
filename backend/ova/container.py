@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from core.database import get_db
+from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
 from ova.application.scorm_persist import persist_scorm_zip
 from ova.application.use_cases import (
     AddPhase,
@@ -71,7 +73,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
     lifecycle = SqlAlchemyOvaLifecycleRepository(db)
     creation = SqlAlchemyOvaCreationRepository(db)
     editor = SqlAlchemyOvaEditorRepository(db)
-    catalog = SqlAlchemyOvaCatalogRepository(db)
+    catalog = SqlAlchemyOvaCatalogRepository(db, partial(sweep_stale_jobs_for_ovas, db))
     chat = SqlAlchemyChatRepository(db)
     packages = ProjectScormPackageCleaner()
     downloads = StoragePackageSource()
