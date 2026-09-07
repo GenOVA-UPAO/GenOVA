@@ -65,6 +65,19 @@ class SqlAlchemyJobRepository:
         orm = jobs_service.get_resource(self._db, job_id, resource_id)
         return to_resource(orm) if orm is not None else None
 
+    def resource_ids_in_job(self, job_id: UUID) -> set[UUID]:
+        return jobs_service.resource_ids_in_job(self._db, job_id)
+
+    def resumable_resource_ids(self, job_id: UUID) -> list[UUID]:
+        return jobs_service.resumable_resource_ids(self._db, job_id)
+
+    def resumable_subset(self, job_id: UUID, requested: list[UUID]) -> list[UUID]:
+        return jobs_service.resumable_subset(self._db, job_id, requested)
+
+    def mark_resuming(self, job_id: UUID) -> None:
+        orm = self._db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one()
+        jobs_service.mark_job_resuming(self._db, orm)
+
     def cancel(self, job_id: UUID) -> None:
         orm = self._db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one()
         jobs_service.cancel_job(self._db, orm)

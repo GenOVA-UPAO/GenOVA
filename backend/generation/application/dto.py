@@ -103,3 +103,18 @@ class ResourceContentView:
             "resource_type": self.resource_type,
             "content": self.content,
         }
+
+
+@dataclass(frozen=True, slots=True)
+class ResumeJobInput:
+    job_id: UUID
+    user_id: UUID
+    resource_ids: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ResumeJobResult:
+    job_id: str
+    status: str
+    resumed: int
+    accepted: bool

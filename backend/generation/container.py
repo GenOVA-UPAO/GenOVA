@@ -20,6 +20,7 @@ from generation.application.use_cases import (
     FindJobByOva,
     GetJobStatus,
     GetResourceContent,
+    ResumeJob,
 )
 from generation.infrastructure.image_settings import LlmImageSettingsResolver
 from generation.infrastructure.job_launcher import ThreadOrQueueJobLauncher
@@ -36,20 +37,23 @@ class GenerationUseCases:
     find_job_by_ova: FindJobByOva
     get_resource_content: GetResourceContent
     cancel_job: CancelJob
+    resume_job: ResumeJob
 
 
 def build_generation(db: Session = Depends(get_db)) -> GenerationUseCases:
     repo = SqlAlchemyJobRepository(db)
+    launcher = ThreadOrQueueJobLauncher()
     return GenerationUseCases(
         create_job=CreateJob(
             repo=repo,
             images=LlmImageSettingsResolver(db),
-            launcher=ThreadOrQueueJobLauncher(),
+            launcher=launcher,
         ),
         get_job_status=GetJobStatus(repo=repo),
         find_job_by_ova=FindJobByOva(repo=repo),
         get_resource_content=GetResourceContent(repo=repo),
         cancel_job=CancelJob(repo=repo),
+        resume_job=ResumeJob(repo=repo, launcher=launcher),
     )
 
 

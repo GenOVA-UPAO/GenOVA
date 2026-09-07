@@ -9,30 +9,31 @@ All four endpoints require auth (cookie JWT) and the mutating one is rate-limite
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import get_db
 from core.rate_limit import limiter
-from generation.application.dto import CreateJobInput
+from generation.application.dto import CreateJobInput, ResumeJobInput
 from generation.container import GenerationUseCases, build_generation
 from generation.domain.errors import GenerationError
 from generation.interface.http.error_map import generation_error_to_response
-from generation.jobs import jobs_service
 from generation.jobs.jobs_helpers import (
     ResumeRequest,
     StartJobRequest,
     build_resource_plan,
 )
 from generation.jobs.jobs_router_helpers import (
-    _launch,
     _not_found,
     _parse_uuid,
-    _resolve_resume_targets,
+    _resolve_resume_targets as _impl_resolve_resume_targets,
 )
 from models import User
 
 router = APIRouter(tags=["Generación"])
+
+
+def _resolve_resume_targets(*args, **kwargs):
+    """Re-export for tests that import the helper from this module (B4)."""
+    return _impl_resolve_resume_targets(*args, **kwargs)
 
 
 @router.post("", summary="Encolar un trabajo de generación de OVA")
@@ -156,7 +157,7 @@ def resume_job(
     job_id: str,
     payload: ResumeRequest | None = None,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    uc: GenerationUseCases = Depends(build_generation),
 ):
     """Continue the pending/error resources of an interrupted/error job (R7).
 
@@ -166,22 +167,18 @@ def resume_job(
     parsed = _parse_uuid(job_id)
     if parsed is None:
         return _not_found("job_not_found", "Job no encontrado.")
-    job = jobs_service.get_job(db, parsed, current_user.id)
-    if job is None:
-        return _not_found("job_not_found", "Job no encontrado.")
-    if job.status == "running":
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={"error": "job_running", "message": "El job ya está en ejecución."},
+    resource_ids = tuple(payload.resource_ids) if payload and payload.resource_ids else ()
+    try:
+        result = uc.resume_job.execute(
+            ResumeJobInput(
+                job_id=parsed,
+                user_id=current_user.id,
+                resource_ids=resource_ids,
+            )
         )
-    targets, error = _resolve_resume_targets(db, job.id, payload)
-    if error is not None:
-        return error
-    if not targets:
-        return {"job_id": str(job.id), "status": job.status, "resumed": 0}
-    jobs_service.mark_job_resuming(db, job)
-    _launch(job.id, targets)
-    return JSONResponse(
-        status_code=status.HTTP_202_ACCEPTED,
-        content={"job_id": str(job.id), "status": "running", "resumed": len(targets)},
-    )
+    except GenerationError as err:
+        return generation_error_to_response(err)
+    body = {"job_id": result.job_id, "status": result.status, "resumed": result.resumed}
+    if result.accepted:
+        return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=body)
+    return body

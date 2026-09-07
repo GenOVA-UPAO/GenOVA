@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from generation.domain.errors import (
     GenerationError,
+    JobAlreadyRunning,
     JobNotFound,
     JobNotRunning,
     ResourceNotFound,
@@ -21,6 +22,7 @@ _STATUS_BY_ERROR: dict[type[GenerationError], int] = {
     ResourceNotFound: status.HTTP_404_NOT_FOUND,
     JobNotRunning: status.HTTP_409_CONFLICT,
     ResourceNotReady: status.HTTP_409_CONFLICT,
+    JobAlreadyRunning: status.HTTP_409_CONFLICT,
 }
 
 

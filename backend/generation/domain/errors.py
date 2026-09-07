@@ -39,3 +39,10 @@ class ResourceNotReady(GenerationError):
 
     def __init__(self, message: str = "El recurso aún no está listo.") -> None:
         super().__init__(message)
+
+
+class JobAlreadyRunning(GenerationError):
+    code = "job_running"
+
+    def __init__(self, message: str = "El job ya está en ejecución.") -> None:
+        super().__init__(message)

@@ -2,6 +2,7 @@
 
 from generation.domain.errors import (
     GenerationError,
+    JobAlreadyRunning,
     JobNotFound,
     JobNotRunning,
     ResourceNotFound,
@@ -23,6 +24,7 @@ __all__ = [
     "JOB_TERMINAL",
     "RESOURCE_STATUSES",
     "GenerationError",
+    "JobAlreadyRunning",
     "Job",
     "JobNotFound",
     "JobNotRunning",
