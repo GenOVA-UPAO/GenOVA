@@ -57,4 +57,22 @@ export class PlatformSettingsService {
       { fallbackMsg: "No se pudo guardar la configuración de nodos." },
     );
   }
+
+  getAdminGuardrails(): Promise<unknown> {
+    return apiJson(
+      "/api/admin/guardrails",
+      {},
+      {
+        fallbackMsg: "No se pudo cargar la configuración de guardrails.",
+      },
+    );
+  }
+
+  saveAdminGuardrails(payload: unknown): Promise<unknown> {
+    return apiJson(
+      "/api/admin/guardrails",
+      { method: "PUT", body: JSON.stringify(payload) },
+      { fallbackMsg: "No se pudo guardar la configuración de guardrails." },
+    );
+  }
 }

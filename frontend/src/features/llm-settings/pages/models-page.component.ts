@@ -20,6 +20,7 @@ import {
 import { toast } from "@/core/lib/toast";
 import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
+import { GuardrailsCardComponent } from "../components/guardrails-card.component";
 import { ManageModelsModalComponent } from "../components/manage-models-modal.component";
 import { ModelsMasterDetailComponent } from "../components/models-master-detail.component";
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
@@ -47,6 +48,7 @@ function canAccessModels(user: ReturnType<AuthService["user"]>): boolean {
     PlatformApiKeysCardComponent,
     PlatformCapabilitiesCardComponent,
     PlatformNodesCardComponent,
+    GuardrailsCardComponent,
     UserApiKeysCardComponent,
     TabsComponent,
     TabsListComponent,
