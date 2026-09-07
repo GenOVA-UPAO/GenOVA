@@ -236,13 +236,12 @@ node_modules/
 *.key
 *.pem
 
-# Archivos locales, sesiones y memoria de la IA
-.claude/settings.local.json
-.claude/sessions/
-.claude/todos/
-.claude/projects/
-.claude/plans/
-.claude/statsig/
+# Configuración de agentes/herramientas de IA (fuera del repo; conocimiento en el bául Obsidian "GenOVA")
+.claude/
+.agents/
+.codex/
+.cursor/
+.opencode/
 
 # Caché e historial
 history.jsonl
@@ -269,16 +268,10 @@ frontend/src/wireframes/
 .vercel
 /vercel.json
 
-# Harness E2E de OVAs (scripts/ova-e2e.ps1) — resultados navegables, no se versionan
+# Salidas navegables del harness E2E de OVAs — no se versionan
 /test-output/
 
 /.mcp.json
-
-# Graphify knowledge graph — artefacto local, no se versiona
-graphify-out/
-
-# Pulls temporales de configuración Railway (railway config pull)
-.railway-config-pull-*/
 
 # Directorio runtime de uploads locales del backend
 backend/tmp/

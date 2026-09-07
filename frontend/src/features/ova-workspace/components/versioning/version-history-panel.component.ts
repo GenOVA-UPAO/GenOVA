@@ -13,8 +13,8 @@ import { BadgeComponent } from "@/core/components/ui/badge.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { DialogComponent } from "@/core/components/ui/dialog.component";
 
-import { sortVersionsDesc } from "../../lib/ova-versioning";
-import type { OvaVersionRow, VersionDiffData } from "../../lib/version-history.types";
+import { type OvaVersionRow, sortVersionsDesc } from "../../lib/ova-versioning";
+import type { VersionDiffData } from "../../lib/version-history.types";
 import { VersionHistoryService } from "../../services/version-history.service";
 
 @Component({

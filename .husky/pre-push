@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+# Verificación antes de push — reemplaza al antiguo verify.ps1.
+# Se puede saltar con: git push --no-verify
+set -e
+
+echo "[pre-push] Frontend: lint"
+pnpm lint
+
+echo "[pre-push] Frontend: tests unitarios"
+pnpm --filter frontend test --watch=false
+
+echo "[pre-push] Backend: ruff"
+if python -c "import ruff" >/dev/null 2>&1; then
+  ( cd backend && python -m ruff check . )
+elif command -v uv >/dev/null 2>&1; then
+  ( cd backend && uv run ruff check . )
+else
+  echo "[pre-push] ruff/uv no disponible — se omite el lint de backend"
+fi
+
+echo "[pre-push] Backend: BDD (solo si el backend responde en :8000)"
+if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+  if python -c "import pytest" >/dev/null 2>&1; then
+    ( cd backend && python -m pytest tests/step_defs/ -q )
+  elif command -v uv >/dev/null 2>&1; then
+    ( cd backend && uv run pytest tests/step_defs/ -q )
+  fi
+else
+  echo "[pre-push] backend no está en :8000 — se omiten los BDD (igual que verify.ps1)"
+fi
+
+echo "[pre-push] OK"

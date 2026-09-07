@@ -2,6 +2,7 @@
 import js from "@eslint/js";
 import angular from "angular-eslint";
 import eslintConfigPrettier from "eslint-config-prettier";
+import noBarrelFiles from "eslint-plugin-no-barrel-files";
 import eslintPluginPrettier from "eslint-plugin-prettier";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import unusedImports from "eslint-plugin-unused-imports";
@@ -15,6 +16,20 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     ignores: ["dist/**", ".angular/**", "node_modules/**", "coverage/**", "libs/ui/**"],
+  },
+  // Prohíbe barrel files (re-export index.ts) y fuerza importar del módulo fuente.
+  // configs["flat/recommended"] activa no-barrel-files/no-barrel-files +
+  // no-barrel-files/prefer-source-imports (ambas "error").
+  ...noBarrelFiles.configs["flat/recommended"],
+  {
+    // Los subpath de @spartan-ng/helm (`@spartan-ng/helm/button`, …) son la API
+    // pública de la librería, no barrels internos — no los "corrijas" a deep imports.
+    rules: {
+      "no-barrel-files/prefer-source-imports": [
+        "error",
+        { ignore: ["@spartan-ng/helm/*", "@spartan-ng/*"] },
+      ],
+    },
   },
   {
     files: ["src/**/*.ts"],

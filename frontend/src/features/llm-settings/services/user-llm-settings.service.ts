@@ -2,11 +2,8 @@ import { Injectable } from "@angular/core";
 
 import { apiFetch } from "@/core/lib/http";
 
-import type {
-  EnabledModel,
-  LlmSettingsResponse,
-  SettingsMap,
-} from "../lib/user-llm-settings.types";
+import type { SettingsMap } from "../lib/llm-settings-mutations";
+import type { EnabledModel, LlmSettingsResponse } from "../lib/user-llm-settings.types";
 
 export interface LlmSettingsParams {
   search?: string;
