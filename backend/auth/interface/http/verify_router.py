@@ -14,9 +14,9 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth.email import dispatch_or_log, send_verification_email
-from auth.email_normalize import normalize_email
-from auth.token_utils import issue_session_response
+from auth.domain.email import normalize_email
+from auth.infrastructure.jwt import issue_session_response
+from auth.infrastructure.smtp_email import dispatch_or_log, send_verification_email
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter

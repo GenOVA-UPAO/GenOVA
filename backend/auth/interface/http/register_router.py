@@ -9,9 +9,9 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from auth.email_normalize import normalize_email
-from auth.token_utils import issue_session_response
-from auth.verify_router import issue_verification
+from auth.domain.email import normalize_email
+from auth.infrastructure.jwt import issue_session_response
+from auth.interface.http.verify_router import issue_verification
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter

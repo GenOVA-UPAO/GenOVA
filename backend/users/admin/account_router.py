@@ -16,7 +16,7 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from auth.dependencies import require_permission
-from auth.email import send_reset_email
+from auth.infrastructure.smtp_email import send_reset_email
 from core.database import get_db
 from core.rate_limit import limiter
 from models import PasswordResetToken, User

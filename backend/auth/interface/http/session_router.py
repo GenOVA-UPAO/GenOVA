@@ -11,8 +11,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from auth.cookies import clear_auth_cookie
-from auth.dependencies import get_current_user
+from auth.infrastructure.cookies import clear_auth_cookie
+from auth.interface.http.dependencies import get_current_user
 from core.database import get_db
 from core.security import JWT_ALGORITHM, JWT_SECRET
 from models import RevokedToken, Role, User, UserRole

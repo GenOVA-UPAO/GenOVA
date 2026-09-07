@@ -8,7 +8,7 @@ from uuid import uuid4
 import jwt
 from fastapi.responses import JSONResponse
 
-from auth.cookies import set_auth_cookie
+from auth.infrastructure.cookies import set_auth_cookie
 from core.security import JWT_ALGORITHM, JWT_EXPIRES_MINUTES, JWT_SECRET
 
 # Persistent "remember me" sessions (cookie Max-Age + JWT exp).

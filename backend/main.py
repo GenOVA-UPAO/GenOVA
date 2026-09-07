@@ -17,7 +17,7 @@ from sqlalchemy.exc import DataError
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
-from auth.router import router as auth_router
+from auth.interface.http.router import router as auth_router
 from core.config import settings
 from core.database import Base, engine
 from core.http_errors import data_error_handler
@@ -85,7 +85,7 @@ def _background_auth_purge() -> None:
     try:
         from sqlalchemy.orm import Session
 
-        from auth.cleanup import purge_expired_auth
+        from auth.infrastructure.cleanup import purge_expired_auth
 
         with Session(engine) as session:
             removed = purge_expired_auth(session)

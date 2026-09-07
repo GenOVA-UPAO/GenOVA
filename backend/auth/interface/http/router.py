@@ -10,16 +10,16 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth.email_normalize import normalize_email
-from auth.register_router import router as register_router
-from auth.reset_router import router as reset_router
-from auth.session_router import router as session_router
-from auth.throttle import email_throttled
-from auth.token_utils import issue_session_response
-from auth.totp_helpers import _issue_ticket
-from auth.totp_login_router import router as totp_login_router
-from auth.totp_router import router as totp_router
-from auth.verify_router import router as verify_router
+from auth.domain.email import normalize_email
+from auth.infrastructure.email_throttle import email_throttled
+from auth.infrastructure.jwt import issue_session_response
+from auth.infrastructure.totp_tickets import _issue_ticket
+from auth.interface.http.register_router import router as register_router
+from auth.interface.http.reset_router import router as reset_router
+from auth.interface.http.session_router import router as session_router
+from auth.interface.http.totp_login_router import router as totp_login_router
+from auth.interface.http.totp_router import router as totp_router
+from auth.interface.http.verify_router import router as verify_router
 from core.config import settings
 from core.database import get_db
 from core.rate_limit import limiter

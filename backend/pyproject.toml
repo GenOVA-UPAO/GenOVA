@@ -256,6 +256,33 @@ layers = [
     "rag.domain",
 ]
 
+# --- auth: reorganización estructural en capas (la extracción de los flujos a
+#     casos de uso es un segundo pase; los routers todavía llevan la lógica). ---
+
+[[tool.importlinter.contracts]]
+name = "auth.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["auth.domain"]
+forbidden_modules = [
+    "auth.infrastructure", "auth.interface",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "auth.infrastructure no depende de la capa de interface"
+type = "forbidden"
+source_modules = ["auth.infrastructure"]
+forbidden_modules = ["auth.interface"]
+
+[[tool.importlinter.contracts]]
+name = "auth: capas (interface -> infrastructure -> domain)"
+type = "layers"
+layers = [
+    "auth.interface",
+    "auth.infrastructure",
+    "auth.domain",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

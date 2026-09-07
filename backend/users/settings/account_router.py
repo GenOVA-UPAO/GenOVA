@@ -9,8 +9,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from auth.cookies import clear_auth_cookie
 from auth.dependencies import get_current_user
+from auth.infrastructure.cookies import clear_auth_cookie
 from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from core.security import hash_password, verify_password

@@ -20,8 +20,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from auth.dependencies import get_current_user
-from auth.totp_helpers import _generate_backup_codes
+from auth.infrastructure.totp_tickets import _generate_backup_codes
+from auth.interface.http.dependencies import get_current_user
 from core.database import get_db
 from core.rate_limit import limiter
 from models import User

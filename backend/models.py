@@ -6,7 +6,7 @@ populates ``Base.metadata`` in full for ``create_all()`` and the migration
 runner, and so legacy ``from models import X`` call sites keep working.
 """
 
-from auth.models import (  # noqa: F401
+from auth.infrastructure.orm import (  # noqa: F401
     EmailVerificationToken,
     PasswordResetToken,
     RevokedToken,

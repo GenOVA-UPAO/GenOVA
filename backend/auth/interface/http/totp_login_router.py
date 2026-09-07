@@ -13,9 +13,9 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from auth.dependencies import get_current_user, require_admin
-from auth.token_utils import issue_session_response
-from auth.totp_helpers import _consume_ticket, _verify_backup
+from auth.infrastructure.jwt import issue_session_response
+from auth.infrastructure.totp_tickets import _consume_ticket, _verify_backup
+from auth.interface.http.dependencies import get_current_user, require_admin
 from core.database import get_db
 from core.rate_limit import limiter
 from models import User
