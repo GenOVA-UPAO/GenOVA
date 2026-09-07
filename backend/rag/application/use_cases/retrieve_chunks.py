@@ -15,9 +15,9 @@ logger = structlog.get_logger(__name__)
 
 # 8 = justo lo que llena el presupuesto de contexto por defecto
 # (RAG_MAX_CONTEXT_CHARS=6000 con chunks de ~800 chars dan ~7 bloques); con 5
-# quedaba ~1/3 del presupuesto sin usar. Justificado con la comparación
-# viejo/nuevo sobre consultas reales (ver tests y reporte).
-DEFAULT_TOP_K = int(os.getenv("RAG_TOP_K", "5"))
+# quedaba ~1/3 del presupuesto sin usar (medido: 4.255/6.000 chars) y el
+# recall@5 era 0.60 frente a 0.76 con k=8 en la comparación con corpus real.
+DEFAULT_TOP_K = int(os.getenv("RAG_TOP_K", "8"))
 
 # Caché simple en memoria: (query, tuple(upload_ids)) -> list[dict]
 _retrieval_cache: dict[tuple[str, tuple[str, ...]], list[dict]] = {}

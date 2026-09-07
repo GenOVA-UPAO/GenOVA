@@ -17,6 +17,28 @@ def _normalize(text: str) -> str:
     return text.strip()
 
 
+def chunks_needed(
+    text: str,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    overlap: int = DEFAULT_CHUNK_OVERLAP,
+) -> int:
+    """Cuantos chunks generaría ``chunk_text`` si no hubiera tope (0 si vacío).
+
+    Permite a la ingesta saber si el tope MAX_CHUNKS_PER_FILE truncó el
+    documento sin trocearlo entero de nuevo. Mismo slide/normalize que
+    ``chunk_text``: `ceil(len(cleaned) / step)`.
+    """
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
+    if overlap < 0 or overlap >= chunk_size:
+        raise ValueError("overlap must be in [0, chunk_size)")
+    cleaned = _normalize(text)
+    if not cleaned:
+        return 0
+    step = chunk_size - overlap
+    return (len(cleaned) + step - 1) // step
+
+
 def chunk_text(
     text: str,
     chunk_size: int = DEFAULT_CHUNK_SIZE,

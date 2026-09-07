@@ -14,7 +14,7 @@ import structlog
 
 from rag.application.errors import EmbedderError, ParserError
 from rag.application.ports import ChunkStorePort, EmbedderPort, TextExtractorPort
-from rag.domain.chunking import chunk_text
+from rag.domain.chunking import MAX_CHUNKS_PER_FILE, chunk_text, chunks_needed
 
 logger = structlog.get_logger(__name__)
 
@@ -78,10 +78,20 @@ class IngestDocument:
         chunks = chunk_text(text)
         if not chunks:
             return {"status": "skipped", "reason": "no_chunks", "chunks": 0}
+        # El tope MAX_CHUNKS_PER_FILE recorta el documento en silencio; exponer
+        # el aviso (viaja en `rag_status.message` a la respuesta de la subida).
+        expected = chunks_needed(text)
+        message = (
+            f"Documento truncado: {len(chunks)} de {expected} fragmentos indexados "
+            f"(tope RAG_MAX_CHUNKS_PER_FILE={MAX_CHUNKS_PER_FILE}). "
+            "El resto del documento no está disponible para el RAG."
+            if expected > len(chunks)
+            else None
+        )
         embeddings = self._embed_batch(chunks, filename)
         if embeddings is None:
             return {"status": "failed", "reason": "embedder_error", "chunks": 0}
-        return self._persist(user_id, upload_id, filename, chunks, embeddings)
+        return self._persist(user_id, upload_id, filename, chunks, embeddings, message)
 
     def _ingest_binary(
         self, user_id: str, upload_id: str, filename: str, storage_path: str, mime_type: str
@@ -129,6 +139,7 @@ class IngestDocument:
         filename: str,
         chunks: list[str],
         embeddings: list[list[float]],
+        message: str | None = None,
     ) -> dict:
         try:
             inserted = self.store.insert_chunks(
@@ -141,4 +152,13 @@ class IngestDocument:
         except Exception:
             logger.exception("RAG insert falló", filename=filename)
             return {"status": "failed", "reason": "db_error", "chunks": 0}
-        return {"status": "indexed", "chunks": inserted}
+        result = {"status": "indexed", "chunks": inserted}
+        if message:
+            result["message"] = message
+            logger.warning(
+                "RAG documento truncado por tope de chunks",
+                filename=filename,
+                chunks=len(chunks),
+                expected=message,
+            )
+        return result

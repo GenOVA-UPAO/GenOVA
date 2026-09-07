@@ -29,9 +29,13 @@ from rag.infrastructure.pgvector_store import (
 )
 
 
-def top_k(db: Session, query: str, upload_ids: Sequence[str], k: int = 5) -> list[dict]:
+def top_k(db: Session, query: str, upload_ids: Sequence[str], k: int | None = None) -> list[dict]:
+    from rag.application.use_cases.retrieve_chunks import DEFAULT_TOP_K
+
     store = PgVectorChunkStore(db)
-    return RetrieveChunks(get_embedder(), store).execute(query, upload_ids, k)
+    return RetrieveChunks(get_embedder(), store).execute(
+        query, upload_ids, DEFAULT_TOP_K if k is None else k
+    )
 
 
 def ingest_upload(
