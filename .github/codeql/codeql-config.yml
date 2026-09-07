@@ -1,0 +1,15 @@
+name: "GenOVA CodeQL config"
+
+# Excluye assets generados / vendorizados que no son código del producto:
+# reportes de JMeter/Locust y Lighthouse traen bundles minificados de terceros
+# (jQuery, D3, Bootstrap…) que disparan cientos de alertas falsas
+# (js/prototype-pollution-utility, js/overly-large-range, etc.).
+paths-ignore:
+  - 'tests/load'
+  - 'tests/lighthouse-reports'
+  - '**/*.report.html'
+  - '**/jmeter-report/**'
+  - '**/bower_components/**'
+  - '.claude/skills'
+  - '.agents/skills'
+  - 'docs/wireframes'
