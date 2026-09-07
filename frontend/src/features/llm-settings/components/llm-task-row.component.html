@@ -51,7 +51,7 @@
         </p>
       }
 
-      @for (f of fallbacks; track f; let i = $index) {
+      @for (f of fallbacks; track $index; let i = $index) {
         <div
           class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl border transition shadow-sm"
           [ngClass]="
