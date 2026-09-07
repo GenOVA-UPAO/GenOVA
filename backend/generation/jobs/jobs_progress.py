@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.config import settings
+from generation.domain.execution import build_result_maps, finish_status
 from generation.errors.error_log_service import log_generation_error
 from models import OvaJob, OvaJobResource
 
@@ -43,9 +44,6 @@ def _has_done_resource(db: Session, job_id: uuid.UUID) -> bool:
 def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     from generation.jobs.jobs_service import _now
 
-    # "done" requires every resource to have reached a terminal state; resources
-    # still pending/running (graph aborted mid-flight) leave the job resumable as
-    # "interrupted" instead of silently shipping an incomplete OVA as finished.
     has_unfinished = (
         db.execute(
             select(OvaJobResource.id).where(
@@ -55,10 +53,7 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
         ).first()
         is not None
     )
-    if has_unfinished:
-        job.status = "interrupted"
-    else:
-        job.status = "done" if any_done else "error"
+    job.status = finish_status(has_unfinished=has_unfinished, any_done=any_done)
     job.finished_at = _now()
     db.commit()
     if any_done:
@@ -132,22 +127,7 @@ def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list
         .all()
     )
 
-    result_map = {}
-    for r in results:
-        phase = r.get("phase", "")
-        rt = r.get("resource_type", "")
-        key = f"{phase}:{rt}"
-        if key not in result_map:
-            result_map[key] = r
-        title = r.get("title", "")
-        if title and title != rt:
-            result_map.setdefault(f"{phase}:{title}", r)
-
-    exhausted_map = {
-        f"{e.get('phase', '')}:{e.get('title') or e.get('resource_type', '')}": e
-        for e in errors
-        if e.get("exhausted")
-    }
+    result_map, exhausted_map = build_result_maps(results, errors)
 
     for res in resources:
         if res.status == "done":

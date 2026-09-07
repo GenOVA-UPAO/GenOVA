@@ -1,9 +1,9 @@
 """EN-013 — background runner that generates a job's resources server-side.
 
 Now powered by the Prometheus LangGraph (EP-5, EN-003). The runner creates
-the graph state from the job params, invokes the compiled graph with LangGraph
-checkpointing, and persists the results back to OvaJobResource rows + materializes
-the OVA/SCORM.
+the graph state from the job params (reglas puras en `generation.domain.execution`),
+invokes the compiled graph via el adaptador de infraestructura, and persists
+the results back to OvaJobResource rows + materializes the OVA/SCORM.
 """
 
 import threading
@@ -14,6 +14,9 @@ from sqlalchemy import select
 
 from core.config import settings
 from core.database import SessionLocal
+from generation.domain.execution import build_graph_state, seed_plan
+from generation.infrastructure.heartbeat import start_heartbeat
+from generation.infrastructure.prometheus_engine import invoke_generation
 from generation.jobs.jobs_progress import (
     MAX_ATTEMPTS,  # noqa: F401 — re-exported for test/monkeypatch access
     _finish_job,
@@ -26,53 +29,14 @@ from models import OvaJob
 
 logger = structlog.get_logger(__name__)
 
-# Latido periódico de la fila ova_jobs mientras corre la generación. El nodo de
-# fase solo late al ENTRAR a la fase (runtime._touch_job); un recurso lento
-# (p.ej. el modelo 'codigo' tarda 2-3 min) deja pasar >STALE_AFTER_SECONDS sin
-# latido y el sweep marca el job 'interrupted' aunque está sano → el front lo
-# relanza ("carga indefinida"). Un latido cada HEARTBEAT_S lo evita.
+# Latido periódico de la fila ova_jobs mientras corre la generación (ver
+# `generation.infrastructure.heartbeat`).
 HEARTBEAT_S = settings.job_heartbeat_seconds
 
 
 def _start_heartbeat(job_id: uuid.UUID) -> tuple[threading.Thread, threading.Event]:
-    """Lanza un hilo daemon que bombea OvaJob.updated_at cada HEARTBEAT_S hasta
-    que se señala el stop. Si el proceso muere, el hilo muere con él y el sweep
-    vuelve a detectar el job como interrumpido (comportamiento deseado)."""
-    from prometheus.engine.runtime import _touch_job
-
-    stop = threading.Event()
-
-    def _run() -> None:
-        while not stop.wait(HEARTBEAT_S):
-            _touch_job(str(job_id))
-
-    t = threading.Thread(target=_run, daemon=True)
-    t.start()
-    return t, stop
-
-
-_PHASE_ORDER = ("engage", "explore", "explain", "elaborate", "evaluate")
-
-
-def _seed_plan(resources: list[dict]) -> tuple[dict, list[str]]:
-    """Construye (phases, phase_order) del estado del grafo desde los recursos
-    pedidos por el cliente. ``resources`` = [{phase_type, resource_type}, ...]
-    (snapshot en job.params). El concierge se salta cuando ambos vienen poblados.
-    Devuelve ({}, []) si no hay recursos (modo legacy → concierge planifica)."""
-    phases: dict[str, list[dict]] = {}
-    for r in resources:
-        phase = (r.get("phase_type") or "").strip().lower()
-        if phase not in _PHASE_ORDER:
-            continue
-        raw = r.get("resource_type")
-        try:
-            rt: object = int(str(raw).strip())
-        except (TypeError, ValueError):
-            rt = raw
-        items = phases.setdefault(phase, [])
-        items.append({"resource_type": rt, "resource_order": len(items)})
-    phase_order = [p for p in _PHASE_ORDER if p in phases]
-    return phases, phase_order
+    """Delega en el adaptador de infraestructura (edge users→prometheus vive ahí)."""
+    return start_heartbeat(job_id, HEARTBEAT_S)
 
 
 def run_job(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID] | None = None) -> None:
@@ -118,36 +82,20 @@ def _generate(
     params: dict,
     only_resource_ids: list[uuid.UUID] | None,
 ) -> tuple[list[dict], list[dict]]:
-    try:
-        from prometheus.engine.graph import invoke_ova_generation
-
-        # Sembrar el plan desde los recursos que el cliente eligió, para que el
-        # concierge NO re-planifique por LLM e ignore la selección (lo que
-        # desalineaba las filas OvaJobResource → quedaban pending/error y el job se
-        # materializaba vacío). Sin resources (modo legacy) → el concierge planifica.
-        phases_seed, phase_order_seed = _seed_plan(params.get("resources") or [])
-        initial_state = {
-            "prompt": prompt,
-            "upload_ids": params.get("upload_ids") or [],
-            "llm_config": params.get("llm_config") or {},
-            "enabled_models": params.get("enabled_models") or [],
-            "theme": params.get("theme") or {"color": "upao", "design": "upao"},
-            "image_settings": params.get("image_settings") or {},
-            "resource_configs": params.get("resource_configs") or {},
-            "job_id": str(job_id),
-            "phases": phases_seed,
-            "phase_order": phase_order_seed,
-            "results": [],
-            "errors": [],
-            "current_phase_idx": 0,
-            "current_resource_idx": 0,
-            "only_resource_ids": [str(r) for r in only_resource_ids] if only_resource_ids else None,
-        }
-        final_state = invoke_ova_generation(initial_state, str(job_id))
-        return final_state.get("results", []), final_state.get("errors", [])
-    except Exception:
-        logger.exception("Prometheus graph failed", job_id=job_id)
-        return [], []
+    # Sembrar el plan desde los recursos que el cliente eligió, para que el
+    # concierge NO re-planifique por LLM e ignore la selección (lo que
+    # desalineaba las filas OvaJobResource → quedaban pending/error y el job se
+    # materializaba vacío). Sin resources (modo legacy) → el concierge planifica.
+    phases_seed, phase_order_seed = seed_plan(params.get("resources") or [])
+    initial_state = build_graph_state(
+        prompt=prompt,
+        params=params,
+        job_id=job_id,
+        only_resource_ids=only_resource_ids,
+        phases_seed=phases_seed,
+        phase_order_seed=phase_order_seed,
+    )
+    return invoke_generation(initial_state, str(job_id))
 
 
 def _finalize(job_id: uuid.UUID, results: list[dict], errors: list[dict]) -> None:
