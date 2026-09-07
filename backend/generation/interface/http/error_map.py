@@ -13,6 +13,8 @@ from generation.domain.errors import (
     JobAlreadyRunning,
     JobNotFound,
     JobNotRunning,
+    PromptInappropriateLanguage,
+    PromptOffTopic,
     ResourceNotFound,
     ResourceNotReady,
 )
@@ -23,6 +25,8 @@ _STATUS_BY_ERROR: dict[type[GenerationError], int] = {
     JobNotRunning: status.HTTP_409_CONFLICT,
     ResourceNotReady: status.HTTP_409_CONFLICT,
     JobAlreadyRunning: status.HTTP_409_CONFLICT,
+    PromptOffTopic: status.HTTP_400_BAD_REQUEST,
+    PromptInappropriateLanguage: status.HTTP_400_BAD_REQUEST,
 }
 
 

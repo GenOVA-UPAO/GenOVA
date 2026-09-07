@@ -5,7 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from generation.application.dto import CreateJobInput, CreateJobResult
-from generation.application.ports import ImageSettingsResolver, JobLauncher, JobRepository
+from generation.application.ports import (
+    ImageSettingsResolver,
+    InputGuardrail,
+    JobLauncher,
+    JobRepository,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -13,8 +18,10 @@ class CreateJob:
     repo: JobRepository
     images: ImageSettingsResolver
     launcher: JobLauncher
+    guardrail: InputGuardrail
 
     def execute(self, data: CreateJobInput) -> CreateJobResult:
+        self.guardrail.assert_allowed(data.prompt, data.user_id)
         image_settings = self.images.resolve(
             ova_settings=data.ova_settings,
             user_api_keys=data.user_api_keys,

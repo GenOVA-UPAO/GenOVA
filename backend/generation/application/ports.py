@@ -63,3 +63,7 @@ class ImageSettingsResolver(Protocol):
         user_api_keys: dict,
         user_id: UUID,
     ) -> dict: ...
+
+
+class InputGuardrail(Protocol):
+    def assert_allowed(self, prompt: str, user_id: UUID) -> None: ...

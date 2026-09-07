@@ -47,22 +47,25 @@ def start_job(
     uc: GenerationUseCases = Depends(build_generation),
 ):
     """Create a job + its resources, launch the runner, return {job_id, status}."""
-    result = uc.create_job.execute(
-        CreateJobInput(
-            user_id=current_user.id,
-            prompt=payload.prompt.strip(),
-            resource_plan=build_resource_plan(payload),
-            upload_ids=list(payload.upload_ids),
-            phases=list(payload.phases),
-            resources=[r.model_dump() for r in payload.resources],
-            theme=payload.theme.model_dump(),
-            resource_configs=dict(payload.resource_configs),
-            llm_settings=current_user.llm_settings or {},
-            enabled_models=current_user.enabled_models or [],
-            ova_settings=current_user.ova_settings or {},
-            user_api_keys=current_user.user_api_keys or {},
+    try:
+        result = uc.create_job.execute(
+            CreateJobInput(
+                user_id=current_user.id,
+                prompt=payload.prompt.strip(),
+                resource_plan=build_resource_plan(payload),
+                upload_ids=list(payload.upload_ids),
+                phases=list(payload.phases),
+                resources=[r.model_dump() for r in payload.resources],
+                theme=payload.theme.model_dump(),
+                resource_configs=dict(payload.resource_configs),
+                llm_settings=current_user.llm_settings or {},
+                enabled_models=current_user.enabled_models or [],
+                ova_settings=current_user.ova_settings or {},
+                user_api_keys=current_user.user_api_keys or {},
+            )
         )
-    )
+    except GenerationError as err:
+        return generation_error_to_response(err)
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED,
         content={
