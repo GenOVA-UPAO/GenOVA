@@ -128,6 +128,7 @@ def refine_and_check(
     theme=None,
     *,
     max_rounds: int = _REFINE_MAX_ROUNDS,
+    deadline: float | None = None,
 ) -> tuple[str, list[str]]:
     """Compuerta de refinamiento fusionada (reemplaza maybe_refine + validate_and_improve).
 
@@ -140,8 +141,10 @@ def refine_and_check(
     No-op (0 llamadas LLM) cuando el refinamiento está deshabilitado (OVA_REFINE=0),
     el HTML está vacío o no hay defectos — el camino sano no paga refinamiento.
     Un recurso defectuoso hace como máximo `max_rounds` llamadas (antes hasta 3
-    entre las dos compuertas encadenadas).
+    entre las dos compuertas encadenadas). `deadline` (monotonic) corta rondas
+    extra cuando el presupuesto de reloj del recurso se agotó.
     """
+    from prometheus.engine.budget import can_spend
     from prometheus.engine.validate import structural_defects
 
     if not html:
@@ -153,6 +156,14 @@ def refine_and_check(
     while rounds < max_rounds:
         issues = _combined_issues(html, phase, rt)
         if not issues:
+            break
+        if not can_spend(deadline):
+            logger.info(
+                "refine skipped: resource budget exhausted",
+                phase=phase,
+                resource_type=rt,
+                round=rounds,
+            )
             break
         rounds += 1
         refined = apply_feedback(

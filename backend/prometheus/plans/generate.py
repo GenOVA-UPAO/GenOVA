@@ -87,7 +87,9 @@ def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_mode
             return {"contenido": retry}
 
 
-def _post_process(html, phase, rt, concept, theme, llm_config, enabled_models, refine):
+def _post_process(
+    html, phase, rt, concept, theme, llm_config, enabled_models, refine, deadline=None
+):
     """Cola común: validate_and_repair → base_css/components (upao) → refinamiento fusionado."""
     from llm.utils.html_validator import validate_and_repair
 
@@ -114,7 +116,9 @@ def _post_process(html, phase, rt, concept, theme, llm_config, enabled_models, r
 
     # The refiner can return entirely new HTML, including image markers that
     # were already resolved before this pass. Sanitize its final output too.
-    html, _ = refine_and_check(html, phase, rt, concept, llm_config, enabled_models, theme)
+    html, _ = refine_and_check(
+        html, phase, rt, concept, llm_config, enabled_models, theme, deadline=deadline
+    )
     html = resolve_image_placeholders(html)
     return html, structural_defects(html)
 
@@ -135,7 +139,16 @@ def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models) -> Re
 
 
 def _gen_direct_code(
-    phase, rt, concept, contexto, theme, resource_config, llm_config, enabled_models, refine
+    phase,
+    rt,
+    concept,
+    contexto,
+    theme,
+    resource_config,
+    llm_config,
+    enabled_models,
+    refine,
+    deadline=None,
 ) -> ResourceResult:
     html = strip_markdown(
         generar_texto(
@@ -149,7 +162,7 @@ def _gen_direct_code(
         )
     )
     html, defects = _post_process(
-        html, phase, rt, concept, theme, llm_config, enabled_models, refine
+        html, phase, rt, concept, theme, llm_config, enabled_models, refine, deadline
     )
     return ResourceResult(html, defects, None)
 
@@ -165,6 +178,7 @@ def _gen_two_step(
     llm_config,
     enabled_models,
     refine,
+    deadline=None,
 ) -> ResourceResult:
     mod = _prompts(phase)
     json_data = _parse_json_with_retry(
@@ -202,7 +216,7 @@ def _gen_two_step(
         html = resolve_image_placeholders(html, img_replacements)
 
     html, defects = _post_process(
-        html, phase, rt, concept, theme, llm_config, enabled_models, refine
+        html, phase, rt, concept, theme, llm_config, enabled_models, refine, deadline
     )
     return ResourceResult(html, defects, json_data)
 
@@ -220,21 +234,37 @@ def generate_resource(
     resource_config: dict | None = None,
     contexto: str = "",
     refine: bool = True,
+    deadline: float | None = None,
 ) -> ResourceResult:
     """Genera UN recurso 5E con el pipeline completo. `plan` por defecto = plan
     canónico de `plan_map.plan_for`. `contexto` = RAG (los endpoints HTTP lo pasan;
-    batch/regen usan "")."""
+    batch/regen usan ""). `deadline` (monotonic) acota refine; si falta, se
+    abre un presupuesto de reloj propio (HTTP/regen)."""
+    import time
+
+    from prometheus.engine.budget import deadline_at
     from prometheus.plans.plan_map import DIRECT_CODE, PODCAST, plan_for
 
     n = int(rt)
     theme = theme or {}
     plan = plan or plan_for(phase, n)
+    if deadline is None:
+        deadline = deadline_at(time.monotonic())
 
     if plan == PODCAST:
         return _gen_podcast(phase, n, concept, contexto, llm_config, enabled_models)
     if plan == DIRECT_CODE:
         return _gen_direct_code(
-            phase, n, concept, contexto, theme, resource_config, llm_config, enabled_models, refine
+            phase,
+            n,
+            concept,
+            contexto,
+            theme,
+            resource_config,
+            llm_config,
+            enabled_models,
+            refine,
+            deadline,
         )
     return _gen_two_step(
         phase,
@@ -247,4 +277,5 @@ def generate_resource(
         llm_config,
         enabled_models,
         refine,
+        deadline,
     )

@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import structlog
 
+from prometheus.engine.budget import can_spend
 from prometheus.engine.runtime import _concurrency, _persist_outcome, _touch_job
 from prometheus.engine.state import OvaGenerationState
 
@@ -83,6 +84,14 @@ def repair_node(state: OvaGenerationState) -> dict:
             logger.info(
                 "repair: deliberación plan degradado", phase=phase, resource_type=rt, plan=plan
             )
+        deadline = err.get("deadline")
+        if not can_spend(deadline):
+            logger.info(
+                "repair: skipped, resource budget exhausted",
+                phase=phase,
+                resource_type=rt,
+            )
+            return err, err.get("html"), list(err.get("defects") or [])
         try:
             result = generate_resource(
                 phase,
@@ -94,6 +103,7 @@ def repair_node(state: OvaGenerationState) -> dict:
                 theme=theme,
                 image_settings=image_settings,
                 resource_config=per_config,
+                deadline=deadline,
             )
             return err, result.html, result.defects
         except Exception as exc:  # noqa: BLE001 — aislar cada reintento

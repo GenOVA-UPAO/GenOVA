@@ -22,6 +22,7 @@ import structlog
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
+from prometheus.engine.budget import can_spend, deadline_at
 from prometheus.engine.job_trace import job_trace
 from prometheus.engine.runtime import _persist_outcome, _touch_job
 from prometheus.engine.state import OvaGenerationState
@@ -90,6 +91,7 @@ def resource_worker(payload: dict) -> dict:
     per_config = (payload.get("resource_configs") or {}).get(f"{phase}:{rt}", {})
     job_id = payload.get("job_id")
     started = time.monotonic()
+    deadline = deadline_at(started)
     try:
         result = generate_resource(
             phase,
@@ -102,11 +104,20 @@ def resource_worker(payload: dict) -> dict:
             image_settings=payload.get("image_settings", {}),
             resource_config=per_config,
             contexto=payload.get("rag_context", "") or "",
+            deadline=deadline,
         )
     except Exception as exc:  # noqa: BLE001 — aislar el fallo de un recurso
         logger.exception("workpool: resource failed", phase=phase, resource_type=rt)
         return {
-            "errors": [{"phase": phase, "resource_type": rt, "error": str(exc), "plan": plan}],
+            "errors": [
+                {
+                    "phase": phase,
+                    "resource_type": rt,
+                    "error": str(exc),
+                    "plan": plan,
+                    "deadline": deadline,
+                }
+            ],
             "worker_signals": [
                 {
                     "phase": phase,
@@ -126,8 +137,8 @@ def resource_worker(payload: dict) -> dict:
     meta = _recursos_meta_for(phase)
     title = (meta.get(rt) or {}).get("tipo", "")
     if remaining:
-        # Conserva el HTML y no miente con `done`. Repair puede reintentar una
-        # vez; si no mejora, la fila queda `degraded` (reanudable).
+        # Conserva el HTML y no miente con `done`. Repair reintenta una vez
+        # solo si queda presupuesto; si no, se queda el mejor intento.
         logger.warning(
             "workpool: resource kept structural defects after improve rounds",
             phase=phase,
@@ -135,6 +146,32 @@ def resource_worker(payload: dict) -> dict:
             defects=remaining,
         )
         _persist_outcome(job_id, phase, rt, html, defects=remaining)
+        signal = {
+            "phase": phase,
+            "resource_type": rt,
+            "ok": False,
+            "plan": plan,
+            "seconds": round(time.monotonic() - started, 1),
+            "error_class": "StructuralDefects",
+        }
+        if not can_spend(deadline):
+            logger.warning(
+                "workpool: resource budget exhausted, skipping repair",
+                phase=phase,
+                resource_type=rt,
+            )
+            return {
+                "pool_results": [
+                    {
+                        "phase": phase,
+                        "html": html,
+                        "resource_type": rt,
+                        "title": title,
+                        "defects": remaining,
+                    }
+                ],
+                "worker_signals": [signal],
+            }
         return {
             "errors": [
                 {
@@ -144,18 +181,10 @@ def resource_worker(payload: dict) -> dict:
                     "plan": plan,
                     "html": html,
                     "defects": remaining,
+                    "deadline": deadline,
                 }
             ],
-            "worker_signals": [
-                {
-                    "phase": phase,
-                    "resource_type": rt,
-                    "ok": False,
-                    "plan": plan,
-                    "seconds": round(time.monotonic() - started, 1),
-                    "error_class": "StructuralDefects",
-                }
-            ],
+            "worker_signals": [signal],
         }
 
     _persist_outcome(job_id, phase, rt, html)

@@ -109,6 +109,9 @@ class Settings(BaseSettings):
     ova_critic: str = "0"
     ova_reflection_rounds: int = 1
     ova_editor: str = "0"
+    # Techo de reloj por recurso (generate + refine + repair). 90s: los recursos
+    # sanos (24-60s) no se cortan; el bucle patológico de refine+repair sí.
+    ova_resource_budget_s: float = 90.0
 
     # --- Supabase Storage ---
     supabase_url: str = ""
