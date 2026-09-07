@@ -372,26 +372,17 @@ forbidden_modules = [
 ]
 
 [[tool.importlinter.contracts]]
-name = "users.application entera está libre de HTTP (fastapi/pydantic/starlette)"
+name = "users.application no depende de infraestructura/interface ni frameworks"
 type = "forbidden"
 source_modules = ["users.application"]
-forbidden_modules = ["fastapi", "pydantic", "starlette"]
-# Ya se cumple en todo el paquete desde que `admin_helpers` se disolvió. Falta
-# `sqlalchemy`: lo siguen importando `analytics_service` y `dashboard_{estudiante,
-# profesor}`, los módulos de servicio heredados de los routers de analítica y
-# dashboards que aún no se han migrado. Por eso ese veto va en el contrato de
-# abajo, acotado a lo ya migrado, hasta que esa ola los absorba.
-
-[[tool.importlinter.contracts]]
-name = "users.application (parte migrada) no depende de infraestructura ni de sqlalchemy"
-type = "forbidden"
-source_modules = [
-    "users.application.use_cases", "users.application.ports", "users.application.dto",
-]
 forbidden_modules = [
     "users.infrastructure", "users.interface", "users.container",
     "fastapi", "sqlalchemy", "pydantic", "starlette",
 ]
+# Los dos contratos acotados que hubo aquí se fusionan en este: al disolverse
+# `admin_helpers`, `analytics_service` y `dashboard_{estudiante,profesor}` no
+# queda ningún módulo de servicio heredado, así que la pureza ya se exige al
+# paquete entero. El acceso al ORM va por `models` desde infrastructure.
 
 [[tool.importlinter.contracts]]
 name = "users.infrastructure no depende de application/interface/container"
@@ -432,16 +423,41 @@ forbidden_modules = [
 ]
 
 [[tool.importlinter.contracts]]
-name = "ova.infrastructure no depende de application ni interface"
+name = "ova.infrastructure no depende de application/interface/container"
 type = "forbidden"
 source_modules = ["ova.infrastructure"]
-forbidden_modules = ["ova.application", "ova.interface"]
+forbidden_modules = ["ova.application", "ova.interface", "ova.container"]
 
 [[tool.importlinter.contracts]]
 name = "ova.application no depende de la capa de interface"
 type = "forbidden"
 source_modules = ["ova.application"]
 forbidden_modules = ["ova.interface"]
+
+[[tool.importlinter.contracts]]
+name = "ova.application (parte migrada) no depende de infraestructura ni frameworks"
+type = "forbidden"
+source_modules = [
+    "ova.application.use_cases", "ova.application.ports", "ova.application.dto",
+]
+forbidden_modules = [
+    "ova.infrastructure", "ova.interface", "ova.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+# Acotado a lo migrado, igual que se hizo en `users`: los módulos de servicio
+# heredados de los 11 routers que faltan (`edit_helpers`, `edit_phase_ops`,
+# `llm_helpers`, `chat_service`) todavía tocan fastapi/sqlalchemy. El contrato
+# se ensancha cuando esas olas los absorban.
+
+[[tool.importlinter.contracts]]
+name = "ova: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "ova.interface",
+    "ova.container",
+    "ova.application",
+    "ova.domain",
+]
 # `forbidden_response` vive en `core.http_errors` y `_is_admin` en
 # `ova.application.access`; antes ambos colgaban de `ova.interface.http._shared`,
 # lo que invertía la capa.
