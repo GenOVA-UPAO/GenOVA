@@ -13,17 +13,41 @@ export function enabledOnly<T extends ModelRef>(models: T[], enabled: readonly M
   return models.filter((m) => keys.has(modelKey(m)));
 }
 
-/** Pool = enabled catalog ∩ apt for task (multimodal may appear in several). */
+/**
+ * Tareas que exigen una capacidad que un modelo de texto NO puede suplir: si el
+ * modelo no genera imagen o vídeo, ofrecerlo sería ofrecer algo que fallará.
+ * El resto (texto, código/HTML, orquestador, razonamiento) son variantes de
+ * generar texto, así que ahí la aptitud ORIENTA pero no excluye.
+ */
+const APTITUD_OBLIGATORIA = new Set(["imagen", "video"]);
+
+function tieneAptitud(m: { aptitudes?: string[]; category?: string }, task: string): boolean {
+  const apt = m.aptitudes;
+  if (Array.isArray(apt) && apt.length > 0) return apt.includes(task);
+  // Catálogos antiguos sin `aptitudes`: cae a la categoría.
+  return (m.category || "") === task;
+}
+
+/**
+ * Modelos ofrecibles para una tarea.
+ *
+ * Para imagen y vídeo se filtra de verdad. Para las tareas de texto NO se
+ * excluye a nadie: solo 20 de los ~430 modelos del catálogo declaran aptitud
+ * `codigo`, y generar HTML no requiere ninguna capacidad especial, así que
+ * filtrar por ella dejaba el selector de Código con un único modelo. Los que sí
+ * declaran la aptitud van primero, para que la recomendación siga visible.
+ */
 export function modelsForTask<T extends { aptitudes?: string[]; category?: string }>(
   models: T[],
   task: string,
 ): T[] {
-  return models.filter((m) => {
-    const apt = m.aptitudes;
-    if (Array.isArray(apt) && apt.length > 0) return apt.includes(task);
-    // Fallback: category match when aptitudes absent (older catalog rows).
-    return (m.category || "") === task;
-  });
+  if (APTITUD_OBLIGATORIA.has(task)) {
+    return models.filter((m) => tieneAptitud(m, task));
+  }
+  const aptos: T[] = [];
+  const resto: T[] = [];
+  for (const m of models) (tieneAptitud(m, task) ? aptos : resto).push(m);
+  return [...aptos, ...resto];
 }
 
 export interface ModelRef {
