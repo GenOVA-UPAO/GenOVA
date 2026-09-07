@@ -36,10 +36,16 @@ class LoginRequest(BaseModel):
     remember_me: bool = False
 
 
+def _as_utc(dt: datetime) -> datetime:
+    """Normaliza a tz-aware UTC. SQLite devuelve `DateTime(timezone=True)` naive
+    (mismo tratamiento que reset_router/verify_router)."""
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=UTC)
+
+
 def _is_locked(user: User) -> bool:
     if not user.locked_until:
         return False
-    return user.locked_until > datetime.now(UTC)  # type: ignore[operator]
+    return _as_utc(user.locked_until) > datetime.now(UTC)  # type: ignore[arg-type]
 
 
 def _invalid_credentials() -> JSONResponse:
@@ -75,7 +81,7 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
 
     if _is_locked(user):
         remaining = int(
-            (user.locked_until - datetime.now(UTC)).total_seconds() // 60  # type: ignore[operator]
+            (_as_utc(user.locked_until) - datetime.now(UTC)).total_seconds() // 60  # type: ignore[operator]
         )
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
