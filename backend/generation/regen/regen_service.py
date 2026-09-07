@@ -13,10 +13,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.database import SessionLocal
-from generation.regen.regen_agents import resolve_resource_type
+from generation.infrastructure.regen_agents import resolve_resource_type
+from generation.infrastructure.regen_persist import _build_and_persist, _mark_ova_error
+from generation.infrastructure.regen_pipelines import regenerate_phase_content
 from generation.regen.regen_jobs import _regen_jobs, _regen_jobs_lock
-from generation.regen.regen_persist import _build_and_persist, _mark_ova_error
-from generation.regen.regen_pipelines import regenerate_phase_content
 from models import Ova, OvaPhase, OvaVersion
 from ova import ensure_version_exists, get_active_version
 
