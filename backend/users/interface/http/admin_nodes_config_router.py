@@ -1,13 +1,20 @@
-"""Admin endpoints for Prometheus node configuration flags."""
+"""Admin endpoints for Prometheus node configuration flags.
+
+Adaptador HTTP del tuning de nodos: la validación de flags vive en
+`users.domain.nodes_config` y el edge sancionado users -> prometheus (motor)
+se resuelve aquí, en interface.
+"""
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy.orm import Session
 
 from auth.dependencies import require_admin
 from core.database import get_db
 from core.rate_limit import limiter
 from models import PlatformConfig
+from users.domain.errors import NodesConfigNotSaved
+from users.domain.nodes_config import validate_node_updates
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Admin · Plataforma"])
 logger = structlog.get_logger(__name__)
@@ -16,7 +23,7 @@ logger = structlog.get_logger(__name__)
 @router.get("/nodes-config", summary="Obtener la configuración de nodos del motor")
 def get_nodes_config_endpoint(
     _admin: None = Depends(require_admin),
-    db: Session = Depends(get_db),
+    db=Depends(get_db),
 ):
     """Return node definitions + current configurable flags (admin-only)."""
     from prometheus.config.nodes_config import CAPABILITIES, NODES, get_nodes_config
@@ -37,46 +44,22 @@ def put_nodes_config_endpoint(
     request: Request,
     payload: dict,
     _admin: None = Depends(require_admin),
-    db: Session = Depends(get_db),
+    db=Depends(get_db),
 ):
     """Save configurable node flags (admin-only)."""
     from prometheus.config.nodes_config import CAPABILITIES, NODES, save_nodes_config
 
-    VALID_FLAGS = {"ova_refine", "ova_critic", "ova_editor"}
-    VALID_BOOL = {"0", "1"}
-    updates: dict = {}
-    for k, v in payload.items():
-        if k in VALID_FLAGS:
-            if str(v) not in VALID_BOOL:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Flag '{k}' debe ser '0' o '1'",
-                )
-            updates[k] = str(v)
-        elif k == "ova_reflection_rounds":
-            try:
-                rounds = int(v)
-                if not (0 <= rounds <= 3):
-                    raise ValueError
-                updates[k] = rounds
-            except (ValueError, TypeError):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="ova_reflection_rounds debe ser entero 0-3",
-                ) from None
-    if not updates:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Payload vacío o sin flags reconocidos",
-        )
+    try:
+        updates = validate_node_updates(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
+
     try:
         config = save_nodes_config(updates, db)
     except Exception:
         logger.exception("nodes config write failed")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo guardar la configuración de nodos.",
-        ) from None
+        raise to_http_exception(NodesConfigNotSaved()) from None
+
     video_configured = bool(db.get(PlatformConfig, "video_api_key"))
     return {
         "nodes": NODES,
