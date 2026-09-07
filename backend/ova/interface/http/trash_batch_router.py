@@ -1,16 +1,23 @@
-from datetime import UTC, datetime
+"""Adaptadores HTTP para operaciones por lotes sobre la papelera."""
 
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
-from models import Ova, User
-from ova.interface.http._shared import BatchIdsRequest, _delete_scorm_file, _is_admin
+from ova.application.dto import BatchOvaInput
+from ova.container import OvaUseCases, build_ova
+from ova.domain.model import OvaActor
+from ova.interface.http._shared import BatchIdsRequest
 
 router = APIRouter()
+
+
+def _input(payload: BatchIdsRequest, current_user) -> BatchOvaInput:
+    actor = OvaActor(
+        id=str(current_user.id),
+        is_admin=bool(current_user.admin_flag_cached),
+    )
+    return BatchOvaInput(ova_ids=tuple(payload.ova_ids), actor=actor)
 
 
 @router.post("/lote/papelera", summary="Enviar varias OVA a la papelera")
@@ -18,28 +25,12 @@ router = APIRouter()
 def batch_move_to_trash(
     request: Request,
     payload: BatchIdsRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    ova: OvaUseCases = Depends(build_ova),
 ):
-    admin = _is_admin(current_user, db)
-    moved, skipped = [], []
-
-    for ova_id in payload.ova_ids:
-        ova = db.execute(
-            select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
-        ).scalar_one_or_none()
-
-        if not ova or (not admin and str(ova.user_id) != str(current_user.id)):
-            skipped.append(ova_id)
-            continue
-        if ova.status == "generando":
-            skipped.append(ova_id)
-            continue
-
-        ova.deleted_at = datetime.now(UTC)
-        moved.append(ova_id)
-
-    commit_or_500(db, op="batch_move_to_trash")
+    result = ova.batch_move_to_trash.execute(_input(payload, current_user))
+    moved = list(result.completed)
+    skipped = list(result.skipped)
     return {
         "moved": moved,
         "skipped": skipped,
@@ -52,25 +43,12 @@ def batch_move_to_trash(
 def batch_restore(
     request: Request,
     payload: BatchIdsRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    ova: OvaUseCases = Depends(build_ova),
 ):
-    admin = _is_admin(current_user, db)
-    restored, skipped = [], []
-
-    for ova_id in payload.ova_ids:
-        ova = db.execute(
-            select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_not(None))
-        ).scalar_one_or_none()
-
-        if not ova or (not admin and str(ova.user_id) != str(current_user.id)):
-            skipped.append(ova_id)
-            continue
-
-        ova.deleted_at = None
-        restored.append(ova_id)
-
-    commit_or_500(db, op="batch_restore")
+    result = ova.batch_restore.execute(_input(payload, current_user))
+    restored = list(result.completed)
+    skipped = list(result.skipped)
     return {
         "restored": restored,
         "skipped": skipped,
@@ -83,34 +61,17 @@ def batch_restore(
 def batch_permanent_delete(
     request: Request,
     payload: BatchIdsRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    ova: OvaUseCases = Depends(build_ova),
 ):
-    admin = _is_admin(current_user, db)
-    deleted, skipped = [], []
-    file_paths: list[str | None] = []
-
-    for ova_id in payload.ova_ids:
-        ova = db.execute(
-            select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_not(None))
-        ).scalar_one_or_none()
-
-        if not ova or (not admin and str(ova.user_id) != str(current_user.id)):
-            skipped.append(ova_id)
-            continue
-
-        file_paths.append(ova.file_path)
-        db.delete(ova)
-        deleted.append(ova_id)
-
-    # Files go only after the rows are gone for sure: if the commit fails the
-    # zips stay on disk (orphan files are recoverable; rows without files not).
-    commit_or_500(db, op="batch_permanent_delete")
-    for path in file_paths:
-        _delete_scorm_file(path)
-
+    result = ova.batch_permanently_delete.execute(_input(payload, current_user))
+    deleted = list(result.completed)
+    skipped = list(result.skipped)
     return {
         "deleted": deleted,
         "skipped": skipped,
-        "message": f"{len(deleted)} OVA(s) eliminado(s) permanentemente. {len(skipped)} omitido(s).",
+        "message": (
+            f"{len(deleted)} OVA(s) eliminado(s) permanentemente. "
+            f"{len(skipped)} omitido(s)."
+        ),
     }

@@ -2,9 +2,6 @@ from pydantic import BaseModel, Field
 
 from models import Ova
 from ova.application.access import _is_admin as _is_admin
-from ova.infrastructure.scorm_package_cleaner import delete_scorm_file
-
-_delete_scorm_file = delete_scorm_file
 
 VALID_STATUSES = {"borrador", "generando", "listo", "error"}
 

@@ -9,6 +9,9 @@ from sqlalchemy.orm import Session
 
 from core.database import get_db
 from ova.application.use_cases import (
+    BatchDeleteOvas,
+    BatchMoveOvasToTrash,
+    BatchRestoreOvas,
     CountTrashedOvas,
     DeleteOva,
     ListTrashedOvas,
@@ -30,6 +33,9 @@ class OvaUseCases:
     list_trashed: ListTrashedOvas
     restore_ova: RestoreOva
     permanently_delete_ova: PermanentlyDeleteOva
+    batch_move_to_trash: BatchMoveOvasToTrash
+    batch_restore: BatchRestoreOvas
+    batch_permanently_delete: BatchDeleteOvas
 
 
 def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
@@ -42,4 +48,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         list_trashed=ListTrashedOvas(lifecycle),
         restore_ova=RestoreOva(lifecycle),
         permanently_delete_ova=PermanentlyDeleteOva(lifecycle, packages),
+        batch_move_to_trash=BatchMoveOvasToTrash(lifecycle),
+        batch_restore=BatchRestoreOvas(lifecycle),
+        batch_permanently_delete=BatchDeleteOvas(lifecycle, packages),
     )
