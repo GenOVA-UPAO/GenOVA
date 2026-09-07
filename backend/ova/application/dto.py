@@ -145,3 +145,33 @@ class PackageDownload:
     filename: str
     url: str | None = None
     file_path: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ChatAccessInput:
+    ova_id: str
+    actor: OvaActor
+
+
+@dataclass(frozen=True, slots=True)
+class ChatCreateInput:
+    ova_id: str
+    actor: OvaActor
+    role: str
+    kind: str
+    text: str
+    status: str | None
+    percentage: int | None
+    resource_labels: tuple[str, ...]
+    message_id: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ChatPatchInput:
+    ova_id: str
+    actor: OvaActor
+    message_id: str
+    text: str | None = None
+    status: str | None = None
+    percentage: int | None = None
+    resource_labels: tuple[str, ...] | None = None

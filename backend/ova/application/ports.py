@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol
 
+from ova.domain.chat import ChatMessage, ChatMessageDraft, ChatMessagePatch
 from ova.domain.editor import EditorMicroVersion, EditorOva, EditorPhase, EditorVersion
 from ova.domain.model import Ova, OvaDuplicateSource, OvaPhase
 
@@ -125,3 +126,15 @@ class PackageSource(Protocol):
     def try_signed_url(self, storage_key: str | None, filename: str) -> str | None: ...
 
     def disk_available(self, file_path: str | None) -> bool: ...
+
+
+class ChatRepository(Protocol):
+    def list_messages(self, ova_id: str, limit: int = 200) -> tuple[ChatMessage, ...]: ...
+
+    def create_message(self, draft: ChatMessageDraft) -> ChatMessage: ...
+
+    def update_message(self, patch: ChatMessagePatch) -> ChatMessage | None: ...
+
+    def delete_message(self, ova_id: str, message_id: str) -> bool: ...
+
+    def clear_messages(self, ova_id: str) -> int: ...

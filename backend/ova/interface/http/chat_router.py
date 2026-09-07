@@ -1,21 +1,18 @@
 """HTTP endpoints for OVA editor chat history."""
 
-from fastapi import APIRouter, Depends, Request, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
-from models import User
-from ova.application import chat_service
-from ova.application.edit_helpers import _resolve_ova
+from ova.application.dto import ChatAccessInput, ChatCreateInput, ChatPatchInput
+from ova.container import OvaUseCases, build_ova
+from ova.domain.chat import ChatMessage
+from ova.domain.errors import OvaError
+from ova.domain.model import OvaActor
+from ova.interface.http.error_map import ova_error_to_response
 
 router = APIRouter(tags=["OVA · Chat"])
-
-_ALLOWED_ROLES = frozenset({"user", "assistant", "system"})
-_ALLOWED_STATUS = frozenset({"running", "success", "error"})
 
 
 class ChatMessageIn(BaseModel):
@@ -28,11 +25,32 @@ class ChatMessageIn(BaseModel):
     resource_labels: list[str] = Field(default_factory=list)
 
 
-class ChatMessagePatch(BaseModel):
+class ChatMessagePatchBody(BaseModel):
     text: str | None = None
     status: str | None = None
     percentage: int | None = None
     resource_labels: list[str] | None = None
+
+
+def _actor(user) -> OvaActor:
+    return OvaActor(id=str(user.id), is_admin=bool(user.admin_flag_cached))
+
+
+def _access(ova_id: str, user) -> ChatAccessInput:
+    return ChatAccessInput(ova_id=ova_id, actor=_actor(user))
+
+
+def _message_to_dict(message: ChatMessage) -> dict:
+    return {
+        "id": message.id,
+        "role": message.role,
+        "kind": message.kind,
+        "text": message.text or "",
+        "status": message.status,
+        "percentage": message.percentage,
+        "resource_labels": list(message.resource_labels),
+        "created_at": message.created_at.isoformat() if message.created_at else None,
+    }
 
 
 @router.get("/{ova_id}/chat", summary="Obtener el historial de chat de la OVA")
@@ -40,13 +58,14 @@ class ChatMessagePatch(BaseModel):
 def get_chat(
     request: Request,
     ova_id: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
-    ova, err = _resolve_ova(ova_id, current_user, db)
-    if err:
-        return err
-    return {"messages": chat_service.list_messages(db, str(ova.id))}
+    try:
+        messages = use_cases.editor_chat.list(_access(ova_id, current_user))
+    except OvaError as error:
+        return ova_error_to_response(error)
+    return {"messages": [_message_to_dict(message) for message in messages]}
 
 
 @router.post("/{ova_id}/chat", summary="Enviar un mensaje al chat de la OVA")
@@ -55,37 +74,26 @@ def post_chat(
     request: Request,
     ova_id: str,
     payload: ChatMessageIn,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
-    ova, err = _resolve_ova(ova_id, current_user, db)
-    if err:
-        return err
-    if payload.role not in _ALLOWED_ROLES:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "invalid_role", "message": "Rol de mensaje no válido."},
+    try:
+        message = use_cases.editor_chat.create(
+            ChatCreateInput(
+                ova_id=ova_id,
+                actor=_actor(current_user),
+                role=payload.role,
+                kind=payload.kind,
+                text=payload.text,
+                status=payload.status,
+                percentage=payload.percentage,
+                resource_labels=tuple(payload.resource_labels),
+                message_id=payload.id,
+            )
         )
-    if payload.status and payload.status not in _ALLOWED_STATUS:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "invalid_status", "message": "Estado de mensaje no válido."},
-        )
-    row = chat_service.create_message(
-        db,
-        ova_id=str(ova.id),
-        user_id=str(current_user.id),
-        role=payload.role,
-        kind=payload.kind[:40],
-        text=payload.text[:8000],
-        status=payload.status,
-        percentage=payload.percentage,
-        resource_labels=payload.resource_labels[:20],
-        message_id=payload.id,
-    )
-    commit_or_500(db, op="save_chat_message")
-    db.refresh(row)
-    return chat_service.message_to_dict(row)
+    except OvaError as error:
+        return ova_error_to_response(error)
+    return _message_to_dict(message)
 
 
 @router.patch("/{ova_id}/chat/{message_id}", summary="Editar un mensaje del chat")
@@ -94,35 +102,27 @@ def patch_chat(
     request: Request,
     ova_id: str,
     message_id: str,
-    payload: ChatMessagePatch,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    payload: ChatMessagePatchBody,
+    current_user=Depends(get_current_user),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
-    ova, err = _resolve_ova(ova_id, current_user, db)
-    if err:
-        return err
-    if payload.status and payload.status not in _ALLOWED_STATUS:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "invalid_status", "message": "Estado de mensaje no válido."},
+    try:
+        message = use_cases.editor_chat.patch(
+            ChatPatchInput(
+                ova_id=ova_id,
+                actor=_actor(current_user),
+                message_id=message_id,
+                text=payload.text,
+                status=payload.status,
+                percentage=payload.percentage,
+                resource_labels=(
+                    tuple(payload.resource_labels) if payload.resource_labels is not None else None
+                ),
+            )
         )
-    row = chat_service.update_message(
-        db,
-        ova_id=str(ova.id),
-        message_id=message_id,
-        text=payload.text[:8000] if payload.text is not None else None,
-        status=payload.status,
-        percentage=payload.percentage,
-        resource_labels=payload.resource_labels,
-    )
-    if not row:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "not_found", "message": "Mensaje no encontrado."},
-        )
-    commit_or_500(db, op="update_chat_message")
-    db.refresh(row)
-    return chat_service.message_to_dict(row)
+    except OvaError as error:
+        return ova_error_to_response(error)
+    return _message_to_dict(message)
 
 
 @router.delete("/{ova_id}/chat/{message_id}", summary="Eliminar un mensaje del chat")
@@ -131,18 +131,17 @@ def delete_chat_message(
     request: Request,
     ova_id: str,
     message_id: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
-    ova, err = _resolve_ova(ova_id, current_user, db)
-    if err:
-        return err
-    if not chat_service.delete_message(db, ova_id=str(ova.id), message_id=message_id):
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "not_found", "message": "Mensaje no encontrado."},
+    try:
+        use_cases.editor_chat.delete(
+            ChatPatchInput(
+                ova_id=ova_id, actor=_actor(current_user), message_id=message_id
+            )
         )
-    commit_or_500(db, op="delete_chat_message")
+    except OvaError as error:
+        return ova_error_to_response(error)
     return {"ok": True}
 
 
@@ -151,12 +150,11 @@ def delete_chat_message(
 def clear_chat(
     request: Request,
     ova_id: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
-    ova, err = _resolve_ova(ova_id, current_user, db)
-    if err:
-        return err
-    deleted = chat_service.clear_messages(db, ova_id=str(ova.id))
-    commit_or_500(db, op="clear_chat_messages")
+    try:
+        deleted = use_cases.editor_chat.clear(_access(ova_id, current_user))
+    except OvaError as error:
+        return ova_error_to_response(error)
     return {"ok": True, "deleted": deleted}
