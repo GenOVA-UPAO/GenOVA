@@ -24,6 +24,8 @@ from generation.jobs.jobs_helpers import (
 from generation.jobs.jobs_router_helpers import (
     _not_found,
     _parse_uuid,
+)
+from generation.jobs.jobs_router_helpers import (
     _resolve_resume_targets as _impl_resolve_resume_targets,
 )
 from models import User
