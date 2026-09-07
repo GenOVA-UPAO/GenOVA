@@ -3,6 +3,11 @@
 We use raw SQL because SQLAlchemy doesn't ship a vector type out of the box.
 The `embedding` column is stored as a `vector(768)` literal — we serialize
 Python lists to the `[v1,v2,...]` syntax pgvector accepts.
+
+Recuperación híbrida (EN RAG): rama vectorial (HNSW, coseno) + rama léxica
+(tsvector 'spanish' + websearch_to_tsquery) fusionadas por Reciprocal Rank
+Fusion (rag.domain.fusion, lógica pura). Cada rama falla independientemente a
+[] — el RAG sigue siendo best-effort.
 """
 
 from __future__ import annotations
@@ -15,9 +20,13 @@ import structlog
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm import Session
 
+from rag.domain.fusion import reciprocal_rank_fusion, sanitize_websearch_query
+
 logger = structlog.get_logger(__name__)
 
 DEFAULT_TTL_SECONDS = 3600  # untied chunks expire after 1 h
+_HNSW_EF_SEARCH = 40  # defecto de pgvector; fijado explícito para plan predecible
+_LEXICAL_CANDIDATES = 20  # candidatos por rama antes de fusionar (RRF)
 
 
 def _vec_literal(vec: Sequence[float]) -> str:
@@ -127,8 +136,24 @@ def search(
     k: int,
 ) -> list[dict]:
     """Top-k por similitud coseno sobre los chunks de esos uploads. Devuelve []
-    (no lanza) ante cualquier fallo — el RAG es best-effort."""
+    (no lanza) ante cualquier fallo — el RAG es best-effort.
+
+    Compatibilidad: envoltorio fino de la rama vectorial del modo híbrido.
+    """
     if not upload_ids:
+        return []
+    rows = _fetch_vector(db, query_embedding, upload_ids, k)
+    return rows
+
+
+def _fetch_vector(
+    db: Session,
+    query_embedding: list[float],
+    upload_ids: Sequence[str],
+    candidate_k: int,
+) -> list[dict]:
+    """Rama vectorial: top-N por coseno (HNSW). Falla a [] sin lanzar."""
+    if not upload_ids or not query_embedding:
         return []
     stmt = text(
         """
@@ -141,7 +166,52 @@ def search(
         FROM rag_chunks
         WHERE upload_id::text IN :upload_ids
         ORDER BY embedding <=> CAST(:q AS vector)
-        LIMIT :k
+        LIMIT :ck
+        """
+    ).bindparams(bindparam("upload_ids", expanding=True))
+    try:
+        # SET no acepta parámetros enlazados en PostgreSQL; constante interna.
+        db.execute(text(f"SET hnsw.ef_search = {int(_HNSW_EF_SEARCH)}"))
+        rows = (
+            db.execute(
+                stmt,
+                {
+                    "q": _vec_literal(query_embedding),
+                    "upload_ids": [str(u) for u in upload_ids],
+                    "ck": candidate_k,
+                },
+            )
+            .mappings()
+            .all()
+        )
+    except Exception:
+        logger.exception("Fallo en retrieval vectorial de pgvector; rama vacía")
+        return []
+    return [dict(r) for r in rows]
+
+
+def _fetch_lexical(
+    db: Session,
+    query_text: str,
+    upload_ids: Sequence[str],
+    candidate_k: int,
+) -> list[dict]:
+    """Rama léxica: tsvector 'spanish' + websearch_to_tsquery. Falla a []."""
+    clean = sanitize_websearch_query(query_text)
+    if not clean or not upload_ids:
+        return []
+    stmt = text(
+        """
+        SELECT id::text,
+               upload_id::text,
+               source_filename,
+               chunk_index,
+               content
+        FROM rag_chunks, websearch_to_tsquery('spanish', :query_text) AS q
+        WHERE upload_id::text IN :upload_ids
+          AND content_tsv @@ q
+        ORDER BY ts_rank(content_tsv, q) DESC
+        LIMIT :ck
         """
     ).bindparams(bindparam("upload_ids", expanding=True))
     try:
@@ -149,18 +219,50 @@ def search(
             db.execute(
                 stmt,
                 {
-                    "q": _vec_literal(query_embedding),
+                    "query_text": clean,
                     "upload_ids": [str(u) for u in upload_ids],
-                    "k": k,
+                    "ck": candidate_k,
                 },
             )
             .mappings()
             .all()
         )
     except Exception:
-        logger.exception("Fallo en retrieval de pgvector; devolviendo vacío")
+        logger.exception("Fallo en retrieval léxico de pgvector; rama vacía")
         return []
     return [dict(r) for r in rows]
+
+
+def search_hybrid(
+    db: Session,
+    query_text: str,
+    query_embedding: list[float] | None,
+    upload_ids: Sequence[str],
+    k: int,
+    candidate_k: int = _LEXICAL_CANDIDATES,
+) -> list[dict]:
+    """Recuperación híbrida con RRF: rama vectorial + rama léxica.
+
+    Cada rama devuelve hasta ``candidate_k`` candidatos (más de los ``k`` que
+    se devuelven) y rag.domain.fusion los fusiona por consenso de rangos.
+    Una rama que falla no tumba a la otra; si ambas fallan, [] (best-effort).
+    """
+    if not upload_ids:
+        return []
+    vector_rows = _fetch_vector(db, query_embedding, upload_ids, candidate_k) if query_embedding else []
+    lexical_rows = _fetch_lexical(db, query_text, upload_ids, candidate_k)
+    if not vector_rows and not lexical_rows:
+        return []
+
+    fused_ids = reciprocal_rank_fusion(
+        [[r["id"] for r in vector_rows], [r["id"] for r in lexical_rows]]
+    )[:k]
+    by_id: dict[str, dict] = {}
+    for r in lexical_rows:
+        by_id[r["id"]] = r
+    for r in vector_rows:  # el score vectorial manda si el id está en ambas
+        by_id[r["id"]] = r
+    return [by_id[i] for i in fused_ids if i in by_id]
 
 
 class PgVectorChunkStore:
@@ -193,6 +295,18 @@ class PgVectorChunkStore:
         self, query_embedding: list[float], upload_ids: Sequence[str], k: int
     ) -> list[dict]:
         return search(self._db, query_embedding, upload_ids, k)
+
+    def search_hybrid(
+        self,
+        query_text: str,
+        query_embedding: list[float] | None,
+        upload_ids: Sequence[str],
+        k: int,
+        candidate_k: int = _LEXICAL_CANDIDATES,
+    ) -> list[dict]:
+        return search_hybrid(
+            self._db, query_text, query_embedding, upload_ids, k, candidate_k
+        )
 
     def tie_uploads_to_ova(self, upload_ids: Sequence[str], ova_id: str) -> int:
         return tie_uploads_to_ova(self._db, upload_ids, ova_id)

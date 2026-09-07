@@ -13,6 +13,10 @@ from rag.application.ports import ChunkStorePort, EmbedderPort
 
 logger = structlog.get_logger(__name__)
 
+# 8 = justo lo que llena el presupuesto de contexto por defecto
+# (RAG_MAX_CONTEXT_CHARS=6000 con chunks de ~800 chars dan ~7 bloques); con 5
+# quedaba ~1/3 del presupuesto sin usar. Justificado con la comparación
+# viejo/nuevo sobre consultas reales (ver tests y reporte).
 DEFAULT_TOP_K = int(os.getenv("RAG_TOP_K", "5"))
 
 # Caché simple en memoria: (query, tuple(upload_ids)) -> list[dict]
@@ -38,10 +42,9 @@ class RetrieveChunks:
             return cached
 
         embedding = self._embed_query(query)
-        if embedding is None:
-            return []
-
-        result = self.store.search(embedding, upload_ids, k)
+        # La búsqueda es híbrida (RRF): si el embedder falla, la rama léxica
+        # sigue funcionando (embedding=None → solo léxica). Best-effort.
+        result = self.store.search_hybrid(query, embedding, upload_ids, k)
         if len(_retrieval_cache) >= _MAX_RETRIEVAL_CACHE:
             _retrieval_cache.pop(next(iter(_retrieval_cache)))
         _retrieval_cache[cache_key] = result

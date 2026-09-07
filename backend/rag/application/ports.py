@@ -31,6 +31,18 @@ class ChunkStorePort(Protocol):
         self, query_embedding: list[float], upload_ids: Sequence[str], k: int
     ) -> list[dict]: ...
 
+    def search_hybrid(
+        self,
+        query_text: str,
+        query_embedding: list[float] | None,
+        upload_ids: Sequence[str],
+        k: int,
+        candidate_k: int = 20,
+    ) -> list[dict]:
+        """Recuperación híbrida (RRF). ``query_embedding`` puede ser None →
+        solo rama léxica."""
+        ...
+
     def tie_uploads_to_ova(self, upload_ids: Sequence[str], ova_id: str) -> int: ...
 
     def purge_expired(self) -> int: ...
