@@ -15,14 +15,14 @@ class RagIngestionAdapter:
         self._db = db
 
     def is_enabled(self) -> bool:
-        from rag.pipeline import is_enabled
+        from rag import is_enabled
 
         return is_enabled()
 
     def ingest(
         self, *, user_id: str, upload_id: str, storage_path: str, filename: str
     ) -> RagStatus:
-        from rag.pipeline import ingest_upload
+        from rag import ingest_upload
 
         raw = ingest_upload(
             self._db,

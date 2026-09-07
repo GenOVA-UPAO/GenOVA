@@ -226,6 +226,36 @@ forbidden_modules = [
     "users", "generation", "prometheus", "storage", "uploads",
 ]
 
+# --- rag: hexagonal estricto ---
+
+[[tool.importlinter.contracts]]
+name = "rag.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["rag.domain"]
+forbidden_modules = [
+    "rag.application", "rag.infrastructure", "rag.interface", "rag.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "rag.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["rag.application"]
+forbidden_modules = [
+    "rag.infrastructure", "rag.interface", "rag.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "rag: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "rag.interface",
+    "rag.container",
+    "rag.application",
+    "rag.domain",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

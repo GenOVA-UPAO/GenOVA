@@ -118,3 +118,87 @@ def chunks_for_upload(db: Session, upload_id: str) -> list[dict]:
     )
     rows = db.execute(stmt, {"upload_id": upload_id}).mappings().all()
     return [dict(r) for r in rows]
+
+
+def search(
+    db: Session,
+    query_embedding: list[float],
+    upload_ids: Sequence[str],
+    k: int,
+) -> list[dict]:
+    """Top-k por similitud coseno sobre los chunks de esos uploads. Devuelve []
+    (no lanza) ante cualquier fallo — el RAG es best-effort."""
+    if not upload_ids:
+        return []
+    stmt = text(
+        """
+        SELECT id::text,
+               upload_id::text,
+               source_filename,
+               chunk_index,
+               content,
+               1 - (embedding <=> CAST(:q AS vector)) AS score
+        FROM rag_chunks
+        WHERE upload_id::text IN :upload_ids
+        ORDER BY embedding <=> CAST(:q AS vector)
+        LIMIT :k
+        """
+    ).bindparams(bindparam("upload_ids", expanding=True))
+    try:
+        rows = (
+            db.execute(
+                stmt,
+                {
+                    "q": _vec_literal(query_embedding),
+                    "upload_ids": [str(u) for u in upload_ids],
+                    "k": k,
+                },
+            )
+            .mappings()
+            .all()
+        )
+    except Exception:
+        logger.exception("Fallo en retrieval de pgvector; devolviendo vacío")
+        return []
+    return [dict(r) for r in rows]
+
+
+class PgVectorChunkStore:
+    """Adaptador que implementa ChunkStorePort sobre una sesión SQLAlchemy."""
+
+    def __init__(self, db: Session) -> None:
+        self._db = db
+
+    def insert_chunks(
+        self,
+        *,
+        user_id: UUID | str,
+        upload_id: UUID | str,
+        source_filename: str,
+        chunks: list[str],
+        embeddings: list[list[float]],
+        ttl_seconds: int = DEFAULT_TTL_SECONDS,
+    ) -> int:
+        return insert_chunks(
+            self._db,
+            user_id=user_id,
+            upload_id=upload_id,
+            source_filename=source_filename,
+            chunks=chunks,
+            embeddings=embeddings,
+            ttl_seconds=ttl_seconds,
+        )
+
+    def search(
+        self, query_embedding: list[float], upload_ids: Sequence[str], k: int
+    ) -> list[dict]:
+        return search(self._db, query_embedding, upload_ids, k)
+
+    def tie_uploads_to_ova(self, upload_ids: Sequence[str], ova_id: str) -> int:
+        return tie_uploads_to_ova(self._db, upload_ids, ova_id)
+
+    def purge_expired(self) -> int:
+        return purge_expired(self._db)
+
+    def chunks_for_upload(self, upload_id: str) -> list[dict]:
+        return chunks_for_upload(self._db, upload_id)

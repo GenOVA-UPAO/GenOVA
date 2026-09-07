@@ -13,12 +13,9 @@ from collections.abc import Callable
 
 import structlog
 
+from rag.application.errors import ParserError  # noqa: F401  (re-export para compat)
+
 logger = structlog.get_logger(__name__)
-
-
-class ParserError(RuntimeError):
-    pass
-
 
 _EXT_MAP: dict[str, str] = {
     ".pdf": "pdf",
@@ -147,3 +144,13 @@ def extract_text(path: str, filename: str | None = None) -> str:
         logger.exception("Parser falló", filename=name, kind=kind)
         raise ParserError(f"Failed to extract text from {name}: {exc}") from exc
     return text.strip()
+
+
+class FileTextExtractor:
+    """Adaptador que implementa TextExtractorPort sobre los parsers de fichero."""
+
+    def detect_kind(self, filename: str) -> str | None:
+        return detect_kind(filename)
+
+    def extract_text(self, storage_path: str, *, filename: str) -> str:
+        return extract_text(storage_path, filename=filename)

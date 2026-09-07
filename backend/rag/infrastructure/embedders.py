@@ -25,13 +25,13 @@ from typing import Any
 
 import structlog
 
+from rag.application.errors import EmbedderError
+
 logger = structlog.get_logger(__name__)
 
 VECTOR_DIM = 768  # Matches the pgvector(768) column in migration 011.
 
-
-class EmbedderError(RuntimeError):
-    pass
+__all__ = ["Embedder", "EmbedderError", "get_embedder", "vector_dim"]
 
 
 class Embedder(ABC):

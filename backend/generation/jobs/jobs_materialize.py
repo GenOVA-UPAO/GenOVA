@@ -192,7 +192,7 @@ def _tie_uploads(db: Session, job: OvaJob, ova_id: str) -> None:
     if not upload_ids:
         return
     try:
-        from rag.store import tie_uploads_to_ova
+        from rag import tie_uploads_to_ova
 
         tie_uploads_to_ova(db, upload_ids, ova_id)
     except Exception:

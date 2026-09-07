@@ -36,7 +36,7 @@ from ova.phases.add_phase_router import router as ova_add_phase_router
 from ova.phases.history_router import router as ova_history_router
 from ova.phases.phase_version_router import router as ova_phase_version_router
 from ova.router import router as ova_router
-from rag.router import router as rag_router
+from rag.interface.http.router import router as rag_router
 from roles.interface.http.router import router as roles_router
 from run_migrations import run_migrations
 from scorm.interface.http.router import router as scorm_router
@@ -71,7 +71,7 @@ def _background_rag_purge() -> None:
     try:
         from sqlalchemy.orm import Session
 
-        from rag.store import purge_expired
+        from rag import purge_expired
 
         with Session(engine) as session:
             removed = purge_expired(session)

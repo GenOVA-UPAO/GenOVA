@@ -13,7 +13,7 @@ from core.text import smart_truncate
 from models import Ova, OvaPhase, OvaVersion, User
 from ova.crud.llm_helpers import _enabled_llm_options, _ova_output_dir
 from ova.helpers import _is_admin
-from rag.store import tie_uploads_to_ova
+from rag import tie_uploads_to_ova
 from scorm import build_scorm_zip_bytes
 from storage import StorageError, is_configured, signed_url, upload_zip
 

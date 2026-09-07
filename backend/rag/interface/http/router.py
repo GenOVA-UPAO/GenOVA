@@ -12,8 +12,8 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from core.database import get_db
 from models import User
-from rag.embedder import vector_dim
-from rag.store import chunks_for_upload
+from rag.infrastructure.embedders import vector_dim
+from rag.infrastructure.pgvector_store import chunks_for_upload
 
 router = APIRouter()
 
