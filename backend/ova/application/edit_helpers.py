@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from core.http_errors import forbidden_response
 from core.ids import is_uuid
 from models import Ova, OvaPhase, OvaVersion, User
-from ova.interface.http._shared import _is_admin
+from ova.application.access import _is_admin
 from storage import StorageError, is_configured, upload_zip
 
 logger = structlog.get_logger(__name__)
