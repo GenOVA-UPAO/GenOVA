@@ -17,6 +17,7 @@ from ova.application.use_cases import (
     CountTrashedOvas,
     DeleteOva,
     DownloadOva,
+    DownloadOvaScorm,
     DuplicateOva,
     EditorChat,
     EditPhases,
@@ -55,6 +56,7 @@ class OvaUseCases:
     editor_chat: EditorChat
     list_ovas: ListOvas
     download_ova: DownloadOva
+    download_ova_scorm: DownloadOvaScorm
     phase_versions: PhaseVersions
     update_metadata: UpdateOvaMetadata
     delete_ova: DeleteOva
@@ -90,6 +92,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         editor_chat=EditorChat(editor, chat),
         list_ovas=ListOvas(catalog),
         download_ova=DownloadOva(lifecycle, downloads),
+        download_ova_scorm=DownloadOvaScorm(lifecycle, downloads),
         phase_versions=PhaseVersions(editor),
         update_metadata=UpdateOvaMetadata(lifecycle),
         delete_ova=DeleteOva(lifecycle),

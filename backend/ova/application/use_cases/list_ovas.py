@@ -9,21 +9,26 @@ from ova.application.ports import OvaCatalogRepository
 from ova.domain.catalog import OvaListFilter
 
 
+def _filters(data: OvaListQuery) -> OvaListFilter:
+    return OvaListFilter(
+        owner_id=None if data.actor.is_admin else data.actor.id,
+        include_owner=data.actor.is_admin,
+        search=data.search,
+        status=data.status,
+        page=data.page,
+        limit=data.limit,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class ListOvas:
     catalog: OvaCatalogRepository
 
+    def generating_ids(self, data: OvaListQuery) -> tuple:
+        return self.catalog.list_generating_ids(_filters(data))
+
     def execute(self, data: OvaListQuery) -> OvaListPage:
-        ovas, total_items = self.catalog.list_page(
-            OvaListFilter(
-                owner_id=None if data.actor.is_admin else data.actor.id,
-                include_owner=data.actor.is_admin,
-                search=data.search,
-                status=data.status,
-                page=data.page,
-                limit=data.limit,
-            )
-        )
+        ovas, total_items = self.catalog.list_page(_filters(data))
         return OvaListPage(
             ovas=ovas,
             total_items=total_items,

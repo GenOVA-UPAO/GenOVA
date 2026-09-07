@@ -39,6 +39,21 @@ class SqlAlchemyOvaCatalogRepository:
         )
         return mapped, int(total_items)
 
+    def list_generating_ids(self, filters: OvaListFilter) -> tuple:
+        query = select(OvaORM.id, OvaORM.status).where(OvaORM.deleted_at.is_(None))
+        if filters.owner_id is not None:
+            query = query.where(OvaORM.user_id == _as_uuid(filters.owner_id))
+        if filters.search.strip():
+            query = query.where(OvaORM.title.ilike(f"%{filters.search.strip()}%"))
+        if filters.status.strip() and filters.status.strip() in LISTABLE_STATUSES:
+            query = query.where(OvaORM.status == filters.status.strip())
+        rows = self._db.execute(
+            query.order_by(OvaORM.created_at.desc())
+            .offset((filters.page - 1) * filters.limit)
+            .limit(filters.limit)
+        ).all()
+        return tuple(row.id for row in rows if row.status == "generando")
+
     def _base_query(self, filters: OvaListFilter):
         query = select(OvaORM).where(OvaORM.deleted_at.is_(None))
         if filters.owner_id is not None:

@@ -124,7 +124,12 @@ class OvaEditorRepository(Protocol):
 
 
 class PackageSource(Protocol):
-    def try_signed_url(self, storage_key: str | None, filename: str) -> str | None: ...
+    def try_signed_url(
+        self,
+        storage_key: str | None,
+        filename: str | None = None,
+        ova_id: str | None = None,
+    ) -> str | None: ...
 
     def disk_available(self, file_path: str | None) -> bool: ...
 
@@ -143,3 +148,5 @@ class ChatRepository(Protocol):
 
 class OvaCatalogRepository(Protocol):
     def list_page(self, filters: OvaListFilter) -> tuple[tuple[Ova, ...], int]: ...
+
+    def list_generating_ids(self, filters: OvaListFilter) -> tuple: ...

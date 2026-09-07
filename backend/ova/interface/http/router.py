@@ -1,25 +1,20 @@
-import os
-
-import structlog
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import get_db
 from core.text import smart_truncate
-from models import Ova, User
-from ova.application.dto import SaveOvaInput
+from models import User
+from ova.application.dto import ManageOvaInput, SaveOvaInput
 from ova.application.llm_helpers import _enabled_llm_options
 from ova.container import OvaUseCases, build_ova
-from ova.domain.model import OvaPhase
+from ova.domain.errors import OvaEditError, OvaNotFound
+from ova.domain.model import OvaActor, OvaPhase
 from ova.interface.http._shared import _is_admin
-from storage import StorageError, is_configured, signed_url
 
 router = APIRouter()
-logger = structlog.get_logger(__name__)
 
 
 @router.get("/health", tags=["Health"], summary="Estado del módulo de OVA")
@@ -93,33 +88,28 @@ def download_ova_scorm(
     ova_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
-    admin = _is_admin(current_user, db)
-    ova_query = select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
-    if not admin:
-        ova_query = ova_query.where(Ova.user_id == current_user.id)
-    ova = db.execute(ova_query).scalar_one_or_none()
-    if not ova:
-        raise HTTPException(status_code=404, detail="OVA no encontrado.")
-
-    # Prefer Supabase Storage signed URL.
-    if ova.storage_key and is_configured():
-        try:
-            url = signed_url(str(ova.storage_key))
-            return RedirectResponse(url=url, status_code=302)
-        except StorageError:
-            logger.exception("signed url failed, falling back to disk", ova_id=ova_id)
-
-    # Legacy / dev fallback: stream bytes from local disk.
-    if not ova.file_path or not os.path.exists(str(ova.file_path)):
-        raise HTTPException(status_code=404, detail="Archivo SCORM no disponible aún.")
-
-    with open(str(ova.file_path), "rb") as f:
+    try:
+        result = use_cases.download_ova_scorm.execute(
+            ManageOvaInput(
+                ova_id=ova_id,
+                actor=OvaActor(
+                    id=str(current_user.id),
+                    is_admin=_is_admin(current_user, db),
+                ),
+            )
+        )
+    except OvaNotFound:
+        raise HTTPException(status_code=404, detail="OVA no encontrado.") from None
+    except OvaEditError as error:
+        raise HTTPException(status_code=error.status_code, detail=error.message) from None
+    if result.kind == "redirect":
+        return RedirectResponse(url=result.url, status_code=302)
+    with open(str(result.file_path), "rb") as f:
         zip_bytes = f.read()
-
-    safe_title = "".join(c for c in ova.title if c.isalnum() or c in " _-")[:40].strip()
     return Response(
         content=zip_bytes,
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="{safe_title}-scorm.zip"'},
+        headers={"Content-Disposition": f'attachment; filename="{result.filename}"'},
     )

@@ -5,6 +5,7 @@ from ova.application.use_cases.batch_restore_ovas import BatchRestoreOvas
 from ova.application.use_cases.count_trashed_ovas import CountTrashedOvas
 from ova.application.use_cases.delete_ova import DeleteOva
 from ova.application.use_cases.download_ova import DownloadOva
+from ova.application.use_cases.download_ova_scorm import DownloadOvaScorm
 from ova.application.use_cases.duplicate_ova import DuplicateOva
 from ova.application.use_cases.edit_phases import EditPhases
 from ova.application.use_cases.edit_subelement import EditSubelement
@@ -27,6 +28,7 @@ __all__ = [
     "CountTrashedOvas",
     "DeleteOva",
     "DownloadOva",
+    "DownloadOvaScorm",
     "DuplicateOva",
     "EditPhases",
     "EditSubelement",

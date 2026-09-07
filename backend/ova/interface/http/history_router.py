@@ -1,18 +1,13 @@
-import uuid
-
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse, JSONResponse
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import get_db
 from core.pagination import page_meta
 from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
-from models import Ova as OvaORM
 from ova.application.dto import ManageOvaInput, OvaListQuery
 from ova.container import OvaUseCases, build_ova
-from ova.domain.catalog import LISTABLE_STATUSES
 from ova.domain.errors import OvaError
 from ova.domain.model import Ova, OvaActor
 from ova.interface.http._shared import _is_admin
@@ -23,29 +18,6 @@ router = APIRouter()
 
 def _actor(user, db: Session) -> OvaActor:
     return OvaActor(id=str(user.id), is_admin=_is_admin(user, db))
-
-
-def _sweep_stale_jobs_on_page(db: Session, query: OvaListQuery) -> None:
-    # GN-03: barrer jobs zombis de esta página ANTES del listado para que el
-    # caso de uso lea el status ya materializado. Vive en interface para no
-    # cerrar el ciclo infrastructure → generation → ova.application.
-    page_query = select(OvaORM.id, OvaORM.status).where(OvaORM.deleted_at.is_(None))
-    if not query.actor.is_admin:
-        try:
-            owner_id = uuid.UUID(str(query.actor.id))
-        except ValueError:
-            owner_id = query.actor.id
-        page_query = page_query.where(OvaORM.user_id == owner_id)
-    if query.search.strip():
-        page_query = page_query.where(OvaORM.title.ilike(f"%{query.search.strip()}%"))
-    if query.status.strip() and query.status.strip() in LISTABLE_STATUSES:
-        page_query = page_query.where(OvaORM.status == query.status.strip())
-    rows = db.execute(
-        page_query.order_by(OvaORM.created_at.desc())
-        .offset((query.page - 1) * query.limit)
-        .limit(query.limit)
-    ).all()
-    sweep_stale_jobs_for_ovas(db, [row.id for row in rows if row.status == "generando"])
 
 
 def _ova_to_dict(ova: Ova, include_owner: bool) -> dict:
@@ -79,7 +51,9 @@ def list_ovas(
     list_query = OvaListQuery(
         actor=actor, page=page, limit=limit, search=search, status=status
     )
-    _sweep_stale_jobs_on_page(db, list_query)
+    # GN-03: barrer jobs zombis de esta página ANTES del listado. El SQL vive
+    # en el catálogo; aquí solo se invoca generation desde interface.
+    sweep_stale_jobs_for_ovas(db, list(use_cases.list_ovas.generating_ids(list_query)))
     result = use_cases.list_ovas.execute(list_query)
     return {
         "ovas": [_ova_to_dict(item, include_owner=actor.is_admin) for item in result.ovas],
