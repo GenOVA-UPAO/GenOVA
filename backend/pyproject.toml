@@ -111,8 +111,7 @@ max-args = 6
 "main.py" = ["E402"]
 "ova/history_router.py" = ["E402"]
 # Deuda de tamaño en dominios aún no migrados a hexagonal — cada línea se elimina
-# cuando su dominio pasa por el refactor (Fase 2). `roles/**` sale en la Fase 1.
-"roles/**" = ["C901", "PLR0912", "PLR0915"]
+# cuando su dominio pasa por el refactor (Fase 2). `roles/` ya migrado (Fase 1).
 "users/**" = ["C901", "PLR0912", "PLR0915"]
 "generation/**" = ["C901", "PLR0912", "PLR0915"]
 "llm/**" = ["C901", "PLR0912", "PLR0915"]
@@ -131,6 +130,7 @@ root_packages = [
     "core", "auth", "ova", "llm", "rag", "roles",
     "users", "scorm", "generation", "prometheus", "storage", "uploads",
 ]
+include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "El kernel (core) no depende de ningún dominio"
@@ -139,6 +139,36 @@ source_modules = ["core"]
 forbidden_modules = [
     "auth", "ova", "llm", "rag", "roles",
     "users", "scorm", "generation", "prometheus", "storage", "uploads",
+]
+
+# --- roles: hexagonal estricto (piloto) ---
+
+[[tool.importlinter.contracts]]
+name = "roles.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["roles.domain"]
+forbidden_modules = [
+    "roles.application", "roles.infrastructure", "roles.interface", "roles.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "roles.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["roles.application"]
+forbidden_modules = [
+    "roles.infrastructure", "roles.interface", "roles.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "roles: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "roles.interface",
+    "roles.container",
+    "roles.application",
+    "roles.domain",
 ]
 
 [tool.pytest.ini_options]

@@ -23,7 +23,7 @@ from llm.catalog.models import CatalogCache  # noqa: F401
 from ova.chat.models import OvaEditorChatMessage  # noqa: F401
 from ova.models import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
 from rag.models import RagChunk  # noqa: F401
-from roles.models import Role, UserRole  # noqa: F401
+from roles.infrastructure.orm import Role, UserRole  # noqa: F401
 from users.admin.models import PlatformConfig  # noqa: F401
 from users.models import User, UserLink  # noqa: F401
 

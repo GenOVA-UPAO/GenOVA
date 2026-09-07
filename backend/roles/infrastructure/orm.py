@@ -1,4 +1,10 @@
-"""Role and UserRole ORM models (roles domain)."""
+"""Modelos ORM del dominio de roles (SQLAlchemy).
+
+Único sitio del paquete `roles` que conoce SQLAlchemy. Los nombres de clase
+(`Role`, `UserRole`) se conservan porque el registro de SQLAlchemy y los
+`relationship("Role" | "UserRole", ...)` de otros dominios los resuelven por
+nombre.
+"""
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
