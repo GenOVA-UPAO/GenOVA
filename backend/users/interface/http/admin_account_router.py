@@ -1,49 +1,37 @@
 """Admin endpoints: account status (activate, lock) + password-reset trigger.
 
-Security note: the reset endpoint generates a long random token via
-`secrets.token_urlsafe` and queues the email in the background. The token
-itself never crosses the HTTP boundary back to the admin so that an admin
-cannot reset another user's password by reading the API response.
+Adaptador HTTP de los casos de uso de administración de cuentas. Security
+note: the reset endpoint uses a long random token issued by the use case and
+queues the email in the background. The token itself never crosses the HTTP
+boundary back to the admin so that an admin cannot reset another user's
+password by reading the API response.
 """
 
-import secrets
-from datetime import UTC, datetime, timedelta
+import os
 
-import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from pydantic import BaseModel
-from sqlalchemy import delete
-from sqlalchemy.orm import Session
 
 from auth.dependencies import require_permission
 from auth.infrastructure.smtp_email import send_reset_email
-from core.database import get_db
 from core.rate_limit import limiter
-from models import PasswordResetToken, User
-from users.application.admin_helpers import (
-    APP_URL,
-    assert_can_touch_target,
-    commit_or_500,
-    get_target_user,
-    parse_uuid,
+from models import User
+from users.application.dto import (
+    AdminSendResetEmailInput,
+    AdminUnlockAccountInput,
+    AdminUpdateStatusInput,
 )
+from users.container import UsersUseCases, build_users
+from users.domain.errors import UserError
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter()
-logger = structlog.get_logger(__name__)
+
+APP_URL = os.getenv("APP_URL", "http://localhost:4200")
 
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
-
-
-def _issue_reset_token(db: Session, user_id) -> str:
-    """Replace any existing reset tokens for the user with a fresh long token."""
-    db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
-    db.flush()
-    token = secrets.token_urlsafe(32)
-    expires_at = datetime.now(UTC) + timedelta(hours=24)
-    db.add(PasswordResetToken(user_id=user_id, token=token, expires_at=expires_at))
-    return token
 
 
 @router.patch("/{user_id}/status", summary="Activar o desactivar un usuario")
@@ -53,19 +41,18 @@ def update_user_status(
     user_id: str,
     payload: UserStatusUpdate,
     current_user: User = Depends(require_permission("manage_users")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    target_uuid = parse_uuid(user_id)
-    if target_uuid == current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="No puedes desactivar tu propia cuenta."
+    try:
+        result = users.admin_update_status.execute(
+            AdminUpdateStatusInput(
+                caller_id=current_user.id, user_id=user_id, is_active=payload.is_active
+            )
         )
-    assert_can_touch_target(caller=current_user, target_id=target_uuid, db=db)
+    except UserError as err:
+        raise to_http_exception(err) from None
 
-    target_user = get_target_user(target_uuid, db)
-    target_user.is_active = payload.is_active
-    commit_or_500(db, op="update_user_status")
-    return {"id": str(target_uuid), "is_active": target_user.is_active}
+    return {"id": result.id, "is_active": result.is_active}
 
 
 @router.post("/{user_id}/unlock", summary="Desbloquear un usuario")
@@ -74,15 +61,16 @@ def unlock_user(
     request: Request,
     user_id: str,
     current_user: User = Depends(require_permission("manage_users")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    target_uuid = parse_uuid(user_id)
-    assert_can_touch_target(caller=current_user, target_id=target_uuid, db=db)
-    target_user = get_target_user(target_uuid, db)
-    target_user.failed_login_attempts = 0
-    target_user.locked_until = None
-    commit_or_500(db, op="unlock_user")
-    return {"id": str(target_uuid), "message": "Cuenta desbloqueada con éxito."}
+    try:
+        account_id = users.admin_unlock_account.execute(
+            AdminUnlockAccountInput(caller_id=current_user.id, user_id=user_id)
+        )
+    except UserError as err:
+        raise to_http_exception(err) from None
+
+    return {"id": account_id, "message": "Cuenta desbloqueada con éxito."}
 
 
 @router.post(
@@ -94,17 +82,15 @@ def trigger_reset_email(
     user_id: str,
     background_tasks: BackgroundTasks,
     current_user: User = Depends(require_permission("manage_users")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    target_uuid = parse_uuid(user_id)
-    assert_can_touch_target(caller=current_user, target_id=target_uuid, db=db)
-    target_user = get_target_user(target_uuid, db)
+    try:
+        info = users.admin_send_reset_email.execute(
+            AdminSendResetEmailInput(caller_id=current_user.id, user_id=user_id)
+        )
+    except UserError as err:
+        raise to_http_exception(err) from None
 
-    token = _issue_reset_token(db, target_uuid)
-    commit_or_500(db, op="reset_password_email_token")
-
-    reset_link = f"{APP_URL}/reset-password?token={token}"
-    background_tasks.add_task(
-        send_reset_email, target_user.email, reset_link, target_user.full_name
-    )
+    reset_link = f"{APP_URL}/reset-password?token={info.token}"
+    background_tasks.add_task(send_reset_email, info.email, reset_link, info.full_name)
     return {"message": "Correo de restablecimiento encolado para su envío."}

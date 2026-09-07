@@ -74,3 +74,39 @@ class AdminUpdateRoleInput:
     caller_id: UUID
     user_id: str
     role_id: str
+
+
+@dataclass(frozen=True, slots=True)
+class AdminUpdateStatusInput:
+    caller_id: UUID
+    user_id: str
+    is_active: bool
+
+
+@dataclass(frozen=True, slots=True)
+class AdminUnlockAccountInput:
+    caller_id: UUID
+    user_id: str
+
+
+@dataclass(frozen=True, slots=True)
+class AdminSendResetEmailInput:
+    caller_id: UUID
+    user_id: str
+
+
+@dataclass(frozen=True, slots=True)
+class AdminResetEmailInfo:
+    """Datos para encolar el correo de reset (el token NUNCA va a la respuesta)."""
+
+    email: str
+    full_name: str | None
+    token: str
+
+
+@dataclass(frozen=True, slots=True)
+class AdminStatusResult:
+    """Salida de activar/desactivar: id normalizado + estado persistido."""
+
+    id: str
+    is_active: bool

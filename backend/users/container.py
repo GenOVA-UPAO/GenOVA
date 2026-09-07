@@ -13,8 +13,11 @@ from sqlalchemy.orm import Session
 
 from core.database import get_db
 from users.application.use_cases import (
+    AdminSendResetEmail,
+    AdminUnlockAccount,
     AdminUpdateProfile,
     AdminUpdateRole,
+    AdminUpdateStatus,
     ChangePassword,
     DeleteAccount,
     GetResourceConfigs,
@@ -43,6 +46,9 @@ class UsersUseCases:
     list_users: ListUsers
     admin_update_profile: AdminUpdateProfile
     admin_update_role: AdminUpdateRole
+    admin_update_status: AdminUpdateStatus
+    admin_unlock_account: AdminUnlockAccount
+    admin_send_reset_email: AdminSendResetEmail
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -61,4 +67,7 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         list_users=ListUsers(admin),
         admin_update_profile=AdminUpdateProfile(admin),
         admin_update_role=AdminUpdateRole(admin),
+        admin_update_status=AdminUpdateStatus(admin),
+        admin_unlock_account=AdminUnlockAccount(admin),
+        admin_send_reset_email=AdminSendResetEmail(admin),
     )

@@ -50,6 +50,15 @@ class AdminRoleUpdateResult:
     updated_at: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class AdminTargetSummary:
+    """Datos del usuario gestionado que el flujo necesita tras cargarlo."""
+
+    id: str
+    email: str
+    full_name: str | None
+
+
 def parse_user_id(raw: str) -> UUID:
     try:
         return UUID(raw)

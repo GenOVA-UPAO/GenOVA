@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import secrets
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, joinedload
 
 from core.database import commit_or_500
-from models import Role, User, UserRole
+from models import PasswordResetToken, Role, User, UserRole
 from users.domain.admin import (
     AdminRoleSummary,
     AdminRoleUpdateResult,
+    AdminTargetSummary,
     AdminUserSummary,
     assert_can_touch_target,
 )
@@ -77,10 +80,11 @@ class SqlAlchemyAdminUserRepository:
         caller_is_admin = self.is_admin(caller_id) if target_is_admin else False
         assert_can_touch_target(caller_is_admin=caller_is_admin, target_is_admin=target_is_admin)
 
-    def get_target(self, user_id: UUID) -> None:
+    def get_target(self, user_id: UUID) -> AdminTargetSummary:
         user = self._db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
         if not user:
             raise UserNotFound()
+        return AdminTargetSummary(id=str(user.id), email=user.email, full_name=user.full_name)
 
     def email_in_use(self, email: str, excluding_user_id: UUID) -> bool:
         found = self._db.execute(
@@ -143,3 +147,25 @@ class SqlAlchemyAdminUserRepository:
             role=AdminRoleSummary(id=str(role.id), name=role.name),
             updated_at=user.updated_at.isoformat() if user.updated_at else None,
         )
+
+    def set_status(self, user_id: UUID, is_active: bool) -> bool:
+        user = self._db.get(User, user_id)
+        user.is_active = is_active
+        commit_or_500(self._db, op="update_user_status")
+        return user.is_active
+
+    def unlock(self, user_id: UUID) -> None:
+        user = self._db.get(User, user_id)
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        commit_or_500(self._db, op="unlock_user")
+
+    def issue_reset_token(self, user_id: UUID) -> str:
+        """Replace any existing reset tokens for the user with a fresh long token."""
+        self._db.execute(delete(PasswordResetToken).where(PasswordResetToken.user_id == user_id))
+        self._db.flush()
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(UTC) + timedelta(hours=24)
+        self._db.add(PasswordResetToken(user_id=user_id, token=token, expires_at=expires_at))
+        commit_or_500(self._db, op="reset_password_email_token")
+        return token

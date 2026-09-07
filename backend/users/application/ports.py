@@ -6,7 +6,12 @@ from typing import Protocol
 from uuid import UUID
 
 from users.domain.account import UserAccount
-from users.domain.admin import AdminRoleSummary, AdminRoleUpdateResult, AdminUserSummary
+from users.domain.admin import (
+    AdminRoleSummary,
+    AdminRoleUpdateResult,
+    AdminTargetSummary,
+    AdminUserSummary,
+)
 from users.domain.profile import UserProfile
 
 
@@ -78,7 +83,7 @@ class AdminUserRepository(Protocol):
 
     def assert_can_touch_target(self, caller_id: UUID, target_id: UUID) -> None: ...
 
-    def get_target(self, user_id: UUID) -> None: ...
+    def get_target(self, user_id: UUID) -> AdminTargetSummary: ...
 
     def update_profile(
         self,
@@ -94,3 +99,9 @@ class AdminUserRepository(Protocol):
     def get_role(self, role_id: UUID) -> AdminRoleSummary | None: ...
 
     def replace_role(self, user_id: UUID, role_id: UUID) -> AdminRoleUpdateResult: ...
+
+    def set_status(self, user_id: UUID, is_active: bool) -> bool: ...
+
+    def unlock(self, user_id: UUID) -> None: ...
+
+    def issue_reset_token(self, user_id: UUID) -> str: ...
