@@ -8,8 +8,14 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Protocol
+from uuid import UUID
 
-from auth.domain.user import AuthUser, RegisteredUser
+from auth.domain.user import (
+    AuthUser,
+    PasswordResetTokenRecord,
+    PasswordResetUser,
+    RegisteredUser,
+)
 
 __all__ = [
     "AuthUser",
@@ -18,6 +24,7 @@ __all__ = [
     "LoginThrottle",
     "PasswordHasher",
     "PasswordPolicy",
+    "PasswordResetTokenRepository",
     "PasswordVerifier",
     "RegistrationRepository",
     "TokenGenerator",
@@ -67,6 +74,8 @@ class TokenGenerator(Protocol):
 class EmailSender(Protocol):
     def send_verification(self, user: RegisteredUser, token: str) -> None: ...
 
+    def send_password_reset(self, user: PasswordResetUser, token: str) -> None: ...
+
 
 class RegistrationRepository(Protocol):
     def create(
@@ -80,3 +89,17 @@ class RegistrationRepository(Protocol):
         verification_token: str | None,
         verification_expires_at: datetime | None,
     ) -> RegisteredUser: ...
+
+
+class PasswordResetTokenRepository(Protocol):
+    def find_active_user(self, normalized_email: str) -> PasswordResetUser | None: ...
+
+    def replace_for_user(self, user_id: UUID, token: str, expires_at: datetime) -> None: ...
+
+    def find_by_token(self, token: str) -> PasswordResetTokenRecord | None: ...
+
+    def delete(self, token: str) -> None: ...
+
+    def find_user(self, user_id: UUID) -> bool: ...
+
+    def apply_new_password(self, user_id: UUID, password_hash: str) -> None: ...

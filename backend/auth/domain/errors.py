@@ -41,3 +41,19 @@ class InvalidFullName(AuthError):
 
 class EmailAlreadyRegistered(AuthError):
     """La clave canónica del correo ya pertenece a otra cuenta."""
+
+
+class WeakResetPassword(AuthError):
+    """La nueva contraseña no cumple la política de complejidad."""
+
+
+class InvalidPasswordResetToken(AuthError):
+    """El token de recuperación no existe o ya fue utilizado."""
+
+
+class ExpiredPasswordResetToken(AuthError):
+    """El token de recuperación superó su fecha de expiración."""
+
+
+class PasswordResetUserNotFound(AuthError):
+    """La cuenta asociada al token de recuperación ya no existe."""

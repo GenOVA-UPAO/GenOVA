@@ -13,43 +13,90 @@ from auth.domain.errors import (
     AuthError,
     EmailAlreadyRegistered,
     EmailNotVerified,
+    ExpiredPasswordResetToken,
     InvalidCredentials,
     InvalidFullName,
+    InvalidPasswordResetToken,
+    PasswordResetUserNotFound,
     TooManyAttempts,
     WeakRegistrationPassword,
+    WeakResetPassword,
 )
+
+_ERROR_RESPONSES: dict[type[AuthError], tuple[int, dict[str, object]]] = {
+    WeakResetPassword: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "weak_password",
+            "message": (
+                "La nueva contraseña debe tener al menos 8 caracteres y contener letras y números."
+            ),
+        },
+    ),
+    InvalidPasswordResetToken: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "invalid_token",
+            "message": "El token de restablecimiento es inválido o ya ha sido utilizado.",
+        },
+    ),
+    ExpiredPasswordResetToken: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "expired_token",
+            "message": "El token de restablecimiento ha expirado.",
+        },
+    ),
+    PasswordResetUserNotFound: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "user_not_found",
+            "message": "El usuario asociado a este token no existe.",
+        },
+    ),
+    WeakRegistrationPassword: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "weak_password",
+            "message": "La contraseña debe tener al menos 8 caracteres con letras y números.",
+        },
+    ),
+    InvalidFullName: (
+        status.HTTP_400_BAD_REQUEST,
+        {
+            "error": "invalid_name",
+            "message": "El nombre debe contener al menos una letra.",
+        },
+    ),
+    EmailAlreadyRegistered: (
+        status.HTTP_400_BAD_REQUEST,
+        {"error": "email_exists", "message": "El correo ya está registrado."},
+    ),
+    TooManyAttempts: (
+        status.HTTP_429_TOO_MANY_REQUESTS,
+        {
+            "error": "too_many_attempts",
+            "message": "Demasiados intentos para esta cuenta. Espera un minuto.",
+        },
+    ),
+    EmailNotVerified: (
+        status.HTTP_403_FORBIDDEN,
+        {
+            "error": "email_not_verified",
+            "message": (
+                "Verifica tu correo para iniciar sesión. Revisa tu bandeja o "
+                "solicita un nuevo enlace."
+            ),
+        },
+    ),
+    InvalidCredentials: (
+        status.HTTP_401_UNAUTHORIZED,
+        {"error": "invalid_credentials", "message": "Credenciales inválidas."},
+    ),
+}
 
 
 def auth_error_to_response(err: AuthError) -> JSONResponse:
-    if isinstance(err, WeakRegistrationPassword):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "error": "weak_password",
-                "message": "La contraseña debe tener al menos 8 caracteres con letras y números.",
-            },
-        )
-    if isinstance(err, InvalidFullName):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "error": "invalid_name",
-                "message": "El nombre debe contener al menos una letra.",
-            },
-        )
-    if isinstance(err, EmailAlreadyRegistered):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "email_exists", "message": "El correo ya está registrado."},
-        )
-    if isinstance(err, TooManyAttempts):
-        return JSONResponse(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            content={
-                "error": "too_many_attempts",
-                "message": "Demasiados intentos para esta cuenta. Espera un minuto.",
-            },
-        )
     if isinstance(err, AccountLocked):
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -59,20 +106,11 @@ def auth_error_to_response(err: AuthError) -> JSONResponse:
                 "retry_after_minutes": err.retry_after_minutes,
             },
         )
-    if isinstance(err, EmailNotVerified):
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={
-                "error": "email_not_verified",
-                "message": (
-                    "Verifica tu correo para iniciar sesión. Revisa tu bandeja o "
-                    "solicita un nuevo enlace."
-                ),
-            },
-        )
-    # InvalidCredentials y cualquier AuthError no específico: 401 genérico.
-    assert isinstance(err, (InvalidCredentials, AuthError))
-    return JSONResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        content={"error": "invalid_credentials", "message": "Credenciales inválidas."},
+    status_code, content = _ERROR_RESPONSES.get(
+        type(err),
+        (
+            status.HTTP_401_UNAUTHORIZED,
+            {"error": "invalid_credentials", "message": "Credenciales inválidas."},
+        ),
     )
+    return JSONResponse(status_code=status_code, content=content)

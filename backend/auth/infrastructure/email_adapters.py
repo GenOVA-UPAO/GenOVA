@@ -4,8 +4,12 @@ from __future__ import annotations
 
 from fastapi import BackgroundTasks
 
-from auth.domain.user import RegisteredUser
-from auth.infrastructure.smtp_email import dispatch_or_log, send_verification_email
+from auth.domain.user import PasswordResetUser, RegisteredUser
+from auth.infrastructure.smtp_email import (
+    dispatch_or_log,
+    send_reset_email,
+    send_verification_email,
+)
 
 
 class SmtpAuthEmailSender:
@@ -22,4 +26,15 @@ class SmtpAuthEmailSender:
             verify_link,
             user.full_name,
             "enlace de verificación",
+        )
+
+    def send_password_reset(self, user: PasswordResetUser, token: str) -> None:
+        reset_link = f"{self._frontend_url}/reset-password?token={token}"
+        dispatch_or_log(
+            self._background_tasks,
+            send_reset_email,
+            user.email,
+            reset_link,
+            user.full_name,
+            "enlace de restablecimiento",
         )

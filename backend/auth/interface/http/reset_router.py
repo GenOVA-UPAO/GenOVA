@@ -1,31 +1,15 @@
-"""Password reset finalization endpoint.
+"""Adaptadores HTTP para solicitar y completar la recuperación de contraseña."""
 
-Lookup is by exact token match. Tokens are issued elsewhere
-(`users/admin_account_router.py`) using `secrets.token_urlsafe(32)`, so brute
-force is infeasible — we still rate-limit by IP to throttle scripted attempts.
-"""
-
-import secrets
-from datetime import UTC, datetime, timedelta
-
-from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
-from auth.domain.email import normalize_email
-from auth.infrastructure.smtp_email import dispatch_or_log, send_reset_email
-from core.config import settings
-from core.database import get_db
+from auth.application.dto import RequestPasswordResetInput, ResetPasswordInput
+from auth.container import AuthUseCases, build_auth
+from auth.domain.errors import AuthError
+from auth.interface.http.error_map import auth_error_to_response
 from core.rate_limit import limiter
-from core.security import hash_password, password_complexity_ok
-from models import PasswordResetToken, User
 
 router = APIRouter(tags=["Autenticación"])
-
-FRONTEND_URL = settings.frontend_url.rstrip("/")
-
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
@@ -36,91 +20,30 @@ class ResetPasswordSubmit(BaseModel):
     new_password: str = Field(..., min_length=8, max_length=128)
 
 
-def _err(code: str, message: str) -> JSONResponse:
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={"error": code, "message": message},
-    )
-
-
 @router.post("/forgot-password", summary="Solicitar recuperación de contraseña")
 @limiter.limit("5/minute")
 def forgot_password(
     request: Request,
     payload: ForgotPasswordRequest,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
+    auth: AuthUseCases = Depends(build_auth),
 ):
-    email = normalize_email(payload.email)
-    user = db.execute(
-        select(User).where(User.email_normalized == email, User.is_active)
-    ).scalar_one_or_none()
-
-    response = {
+    auth.request_password_reset.execute(RequestPasswordResetInput(email=payload.email))
+    return {
         "message": "Si el correo electrónico está registrado en GenOVA, recibirás un enlace para restablecer tu contraseña."
     }
-    if not user:
-        return response
-
-    db.execute(PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user.id))
-
-    token_str = secrets.token_urlsafe(32)
-
-    token_record = PasswordResetToken(
-        user_id=user.id, token=token_str, expires_at=datetime.now(UTC) + timedelta(hours=1)
-    )
-    db.add(token_record)
-    db.commit()
-
-    reset_link = f"{FRONTEND_URL}/reset-password?token={token_str}"
-    dispatch_or_log(
-        background_tasks,
-        send_reset_email,
-        email,
-        reset_link,
-        user.full_name,
-        "enlace de restablecimiento",
-    )
-
-    return response
 
 
 @router.post("/reset-password", summary="Restablecer la contraseña con un token")
 @limiter.limit("10/minute")
-def reset_password(request: Request, payload: ResetPasswordSubmit, db: Session = Depends(get_db)):
-    token_str = payload.token.strip()
-    new_pass = payload.new_password
-
-    if not password_complexity_ok(new_pass):
-        return _err(
-            "weak_password",
-            "La nueva contraseña debe tener al menos 8 caracteres y contener letras y números.",
+def reset_password(
+    request: Request,
+    payload: ResetPasswordSubmit,
+    auth: AuthUseCases = Depends(build_auth),
+):
+    try:
+        auth.reset_password.execute(
+            ResetPasswordInput(token=payload.token, new_password=payload.new_password)
         )
-
-    reset_token = db.execute(
-        select(PasswordResetToken).where(PasswordResetToken.token == token_str)
-    ).scalar_one_or_none()
-    if not reset_token:
-        return _err(
-            "invalid_token", "El token de restablecimiento es inválido o ya ha sido utilizado."
-        )
-
-    expires_at = reset_token.expires_at
-    if expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=UTC)
-    if expires_at < datetime.now(UTC):
-        db.delete(reset_token)
-        db.commit()
-        return _err("expired_token", "El token de restablecimiento ha expirado.")
-
-    user = db.execute(select(User).where(User.id == reset_token.user_id)).scalar_one_or_none()
-    if not user:
-        return _err("user_not_found", "El usuario asociado a este token no existe.")
-
-    user.password_hash = hash_password(new_pass)
-    user.failed_login_attempts = 0
-    user.locked_until = None
-
-    db.execute(PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user.id))
-    db.commit()
+    except AuthError as err:
+        return auth_error_to_response(err)
     return {"message": "Contraseña restablecida con éxito."}

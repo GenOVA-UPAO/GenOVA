@@ -12,7 +12,12 @@ from dataclasses import dataclass
 from fastapi import BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
-from auth.application.use_cases import LoginUser, RegisterUser
+from auth.application.use_cases import (
+    LoginUser,
+    RegisterUser,
+    RequestPasswordReset,
+    ResetPassword,
+)
 from auth.infrastructure.email_adapters import SmtpAuthEmailSender
 from auth.infrastructure.login_adapters import (
     BcryptPasswordVerifier,
@@ -21,6 +26,7 @@ from auth.infrastructure.login_adapters import (
     TotpTicketAdapter,
 )
 from auth.infrastructure.register_adapters import SqlAlchemyRegistrationRepository
+from auth.infrastructure.reset_adapters import SqlAlchemyPasswordResetTokenRepository
 from auth.infrastructure.security_adapters import (
     BcryptPasswordHasher,
     ProjectPasswordPolicy,
@@ -34,6 +40,8 @@ from core.database import get_db
 class AuthUseCases:
     login_user: LoginUser
     register_user: RegisterUser
+    request_password_reset: RequestPasswordReset
+    reset_password: ResetPassword
 
 
 def build_auth(
@@ -44,6 +52,7 @@ def build_auth(
     password_policy = ProjectPasswordPolicy()
     tokens = SecureTokenGenerator()
     emails = SmtpAuthEmailSender(background_tasks, settings.frontend_url)
+    password_reset_repo = SqlAlchemyPasswordResetTokenRepository(db)
     return AuthUseCases(
         login_user=LoginUser(
             repo=SqlAlchemyAuthUserRepository(db),
@@ -60,5 +69,15 @@ def build_auth(
             tokens=tokens,
             emails=emails,
             email_verification_enabled=settings.email_verification_enabled,
+        ),
+        request_password_reset=RequestPasswordReset(
+            repo=password_reset_repo,
+            tokens=tokens,
+            emails=emails,
+        ),
+        reset_password=ResetPassword(
+            repo=password_reset_repo,
+            passwords=passwords,
+            password_policy=password_policy,
         ),
     )

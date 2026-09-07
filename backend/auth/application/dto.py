@@ -39,3 +39,14 @@ class RegisterResult:
     user_id: str
     email: str
     email_verification_required: bool
+
+
+@dataclass(frozen=True, slots=True)
+class RequestPasswordResetInput:
+    email: str
+
+
+@dataclass(frozen=True, slots=True)
+class ResetPasswordInput:
+    token: str
+    new_password: str
