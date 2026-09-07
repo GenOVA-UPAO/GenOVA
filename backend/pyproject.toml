@@ -372,7 +372,18 @@ forbidden_modules = [
 ]
 
 [[tool.importlinter.contracts]]
-name = "users.application (parte migrada) no depende de infraestructura ni frameworks"
+name = "users.application entera está libre de HTTP (fastapi/pydantic/starlette)"
+type = "forbidden"
+source_modules = ["users.application"]
+forbidden_modules = ["fastapi", "pydantic", "starlette"]
+# Ya se cumple en todo el paquete desde que `admin_helpers` se disolvió. Falta
+# `sqlalchemy`: lo siguen importando `analytics_service` y `dashboard_{estudiante,
+# profesor}`, los módulos de servicio heredados de los routers de analítica y
+# dashboards que aún no se han migrado. Por eso ese veto va en el contrato de
+# abajo, acotado a lo ya migrado, hasta que esa ola los absorba.
+
+[[tool.importlinter.contracts]]
+name = "users.application (parte migrada) no depende de infraestructura ni de sqlalchemy"
 type = "forbidden"
 source_modules = [
     "users.application.use_cases", "users.application.ports", "users.application.dto",
