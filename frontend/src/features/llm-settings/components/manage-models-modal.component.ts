@@ -14,7 +14,8 @@ import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { ModalDismissDirective } from "@/core/directives/modal-dismiss.directive";
 
-import { groupByProvider, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
+import { groupModels } from "../lib/catalog-sort";
+import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 import { ConnectProviderModalComponent } from "./connect-provider-modal.component";
@@ -73,8 +74,9 @@ export class ManageModelsModalComponent implements AfterViewInit {
     this.observer.observe(el);
   }
 
-  grouped(): Record<string, CatalogModel[]> {
-    return groupByProvider(this.store.catalogFull());
+  /** Grupos a pintar: orden en cliente (catálogo ya completo si hay sort activo). */
+  grouped(): { key: string; label: string; models: CatalogModel[] }[] {
+    return groupModels(this.store.catalogFull(), this.store.groupBy(), this.providerLabels);
   }
 
   onSearchChange(v: string): void {
@@ -89,6 +91,13 @@ export class ManageModelsModalComponent implements AfterViewInit {
 
   async handleToggle(provider: string, modelId: string): Promise<void> {
     await this.store.toggleFavorite(provider, modelId);
+  }
+
+  clearFilters(): void {
+    this.localSearch = "";
+    this.store.handleSearch("");
+    this.store.handleCategory("all");
+    this.store.handleType("all");
   }
 
   dismissModal = (): void => {

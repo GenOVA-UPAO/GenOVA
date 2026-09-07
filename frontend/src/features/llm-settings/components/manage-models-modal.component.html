@@ -45,8 +45,15 @@
         [localSearch]="localSearch"
         [categoryFilter]="store.categoryFilter()"
         [categories]="store.categories()"
+        [typeFilter]="store.typeFilter()"
+        [types]="store.types()"
+        [sortKey]="store.sortKey()"
+        [groupBy]="store.groupBy()"
         (onSearch)="onSearchChange($event)"
         (onCategory)="store.handleCategory($event)"
+        (onType)="store.handleType($event)"
+        (onSort)="store.handleSort($event)"
+        (onGroup)="store.handleGroup($event)"
       />
 
       <div #scrollRoot class="flex-1 overflow-y-auto min-h-0 max-h-[560px]">
@@ -79,21 +86,40 @@
               class="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary"
             ></div>
           </div>
+        } @else if (grouped().length === 0) {
+          <div class="flex flex-col items-center gap-3 py-14 text-center px-8">
+            <div
+              class="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-card shadow-sm text-xl"
+            >
+              🔎
+            </div>
+            <p class="text-sm font-bold text-foreground font-display">
+              Ningún modelo con estos filtros
+            </p>
+            <p class="text-xs text-muted-foreground">
+              Prueba con otro tipo, categoría o búsqueda.
+            </p>
+            <gn-button size="sm" variant="outline" (onClick)="clearFilters()" class="text-xs font-bold">
+              Limpiar filtros
+            </gn-button>
+          </div>
         } @else {
           <div class="divide-y divide-border/30">
-            @for (entry of grouped() | keyvalue; track entry.key) {
+            @for (entry of grouped(); track entry.key) {
               <div class="px-3 py-2">
                 <p
                   class="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/40 mb-1 px-2 flex items-center gap-1.5"
                 >
-                  {{ providerLabels[entry.key] || entry.key }}
-                  @if (entry.key === "groq" || entry.key === "huggingface") {
+                  {{ entry.label }}
+                  @if (store.groupBy() === "provider" && (entry.key === "groq" || entry.key ===
+                    "huggingface")) {
                     <span class="font-normal normal-case tracking-normal text-emerald-500"
                       >· gratuito</span
                     >
                   }
+                  <span class="font-normal normal-case tracking-normal">· {{ entry.models.length }}</span>
                 </p>
-                @for (m of entry.value; track m.provider + ":" + m.model_id) {
+                @for (m of entry.models; track m.provider + ":" + m.model_id) {
                   @let locked = store.isDefaultModel(m.provider, m.model_id);
                   <gn-manage-model-row
                     [model]="m"
@@ -114,7 +140,7 @@
             } @else if (store.fullHasMore()) {
               <div class="flex flex-col items-center gap-1.5 py-5 border-t border-border/30">
                 <p class="text-[11px] text-muted-foreground">
-                  Mostrando {{ store.catalogFull().length }} modelos
+                  Mostrando {{ store.catalogFull().length }} de {{ store.fullTotal() }} modelos
                 </p>
                 <gn-button
                   size="sm"
