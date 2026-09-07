@@ -171,6 +171,18 @@ layers = [
     "roles.domain",
 ]
 
+# --- storage: adaptador outbound puro (sin HTTP, sin ORM, sin dominios) ---
+
+[[tool.importlinter.contracts]]
+name = "storage es un adaptador outbound aislado"
+type = "forbidden"
+source_modules = ["storage"]
+forbidden_modules = [
+    "fastapi", "sqlalchemy", "starlette",
+    "auth", "ova", "llm", "rag", "roles",
+    "users", "scorm", "generation", "prometheus", "uploads",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
