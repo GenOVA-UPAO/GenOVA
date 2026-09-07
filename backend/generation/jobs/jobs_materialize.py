@@ -174,7 +174,7 @@ def _add_phases(db: Session, version_id, resources: list[OvaJobResource]) -> lis
 
 
 def _persist_scorm(ova: Ova, title: str, phases_data: list[dict], user_id: str) -> None:
-    from ova.interface.http.router import _persist_scorm_zip
+    from ova import persist_scorm_zip
     from scorm import build_scorm_zip_bytes
 
     zip_bytes = build_scorm_zip_bytes(
@@ -182,7 +182,7 @@ def _persist_scorm(ova: Ova, title: str, phases_data: list[dict], user_id: str) 
         module_title="OVA Generado por GenOVA",
         phases=phases_data,
     )
-    storage_key, file_path = _persist_scorm_zip(zip_bytes, user_id, str(ova.id), version=1)
+    storage_key, file_path = persist_scorm_zip(zip_bytes, user_id, str(ova.id), version=1)
     ova.storage_key = storage_key
     ova.file_path = file_path
 

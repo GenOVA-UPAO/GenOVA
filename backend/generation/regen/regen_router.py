@@ -11,11 +11,7 @@ from core.rate_limit import limiter
 from generation.regen.regen_jobs import regen_progress_dto, start_regen
 from generation.regen.regen_service import _finalize_edit
 from models import Ova, OvaPhase, User
-from ova.application.edit_helpers import (
-    _ensure_version_exists,
-    _get_active_version,
-    _is_ova_owner,
-)
+from ova import ensure_version_exists, get_active_version, is_ova_owner
 
 router = APIRouter(tags=["Generación"])
 
@@ -44,7 +40,7 @@ def regenerate_ova(
             content={"error": "not_found", "message": "OVA no encontrado."},
         )
 
-    if not _is_ova_owner(ova, current_user):
+    if not is_ova_owner(ova, current_user):
         return forbidden_response("No tienes permiso para editar este OVA.")
 
     if ova.status == "generando":
@@ -56,9 +52,9 @@ def regenerate_ova(
             },
         )
 
-    active_version = _get_active_version(ova_id, db)
+    active_version = get_active_version(ova_id, db)
     if not active_version:
-        active_version = _ensure_version_exists(ova, db)
+        active_version = ensure_version_exists(ova, db)
 
     if payload.fase_ids:
         valid_phase_ids = {
@@ -129,7 +125,7 @@ def get_regen_progress(
             content={"error": "not_found", "message": "OVA no encontrado."},
         )
 
-    if not _is_ova_owner(ova, current_user):
+    if not is_ova_owner(ova, current_user):
         return forbidden_response()
 
     progress = regen_progress_dto(job_id, ova_id)

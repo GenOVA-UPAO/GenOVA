@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import Ova
-from ova.application.edit_helpers import _ova_output_dir
+from ova import ova_output_dir
 
 logger = structlog.get_logger(__name__)
 
@@ -38,7 +38,7 @@ def _build_and_persist(ova, ova_id, new_version, version_num, phases_data, db):
             storage_key = None
 
     if not storage_key:
-        output_dir = _ova_output_dir()
+        output_dir = ova_output_dir()
         os.makedirs(output_dir, exist_ok=True)
         file_path = os.path.join(output_dir, f"{ova_id}_v{version_num}.zip")
         with open(file_path, "wb") as f:
