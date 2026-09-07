@@ -16,6 +16,18 @@ from users.domain.links import LinkParticipant, LinkRecord, LinkSnapshot
 from users.domain.profile import UserProfile
 
 
+class ApiKeyRepository(Protocol):
+    """Almacenamiento de claves de API por usuario.
+
+    Las claves en claro NUNCA salen de infrastructure: los métodos devuelven
+    el mapa ya enmascarado.
+    """
+
+    def get_masked(self, user_id) -> dict: ...
+
+    def save(self, user_id, updates: dict) -> dict: ...
+
+
 class UserLinkRepository(Protocol):
     """Persistencia de los vínculos entre usuarios (invitación por código)."""
 

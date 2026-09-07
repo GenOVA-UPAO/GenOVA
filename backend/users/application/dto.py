@@ -149,3 +149,10 @@ class AcceptLinkResult:
 class LinkAdminListResult:
     links: list[LinkSnapshot]
     participants: dict[str, LinkParticipant]
+
+
+@dataclass(frozen=True, slots=True)
+class SaveApiKeysInput:
+    user_id: UUID
+    payload: dict
+    providers: list

@@ -1,33 +1,33 @@
 """Per-user provider API keys — masked GET, upsert/delete PUT.
 
-Keys are stored plaintext in the user_api_keys JSONB column.
-They are NEVER logged and always returned masked (last 4 chars visible).
-An empty string value removes the key (falls back to platform/env key).
+Keys are stored plaintext in the user_api_keys JSONB column but never leave
+the infrastructure adapter unmasked: they are ALWAYS returned masked (last 4
+chars visible) and NEVER logged. An empty string value removes the key (falls
+back to platform/env key).
 """
 
-import structlog
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Request
 
 from auth.dependencies import get_current_user
-from core.database import get_db
 from core.rate_limit import limiter
-from llm.clients.key_resolver import mask_key
 from llm.providers import ALL_PROVIDERS
 from models import User
+from users.application.dto import SaveApiKeysInput
+from users.container import UsersUseCases, build_users
+from users.domain.errors import UserError
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Ajustes de usuario"])
-logger = structlog.get_logger(__name__)
-
-_MIN_KEY_LEN = 8
 
 
 @router.get("/me/api-keys", summary="Obtener las claves de API propias")
-def get_api_keys(current_user: User = Depends(get_current_user)):
+def get_api_keys(
+    current_user: User = Depends(get_current_user),
+    users: UsersUseCases = Depends(build_users),
+):
     """Return masked status for all configurable providers."""
-    keys = current_user.user_api_keys or {}
     return {
-        "api_keys": {p: mask_key(keys.get(p)) for p in ALL_PROVIDERS},
+        "api_keys": users.get_api_keys.execute(current_user.id),
         "providers": list(ALL_PROVIDERS),
     }
 
@@ -38,44 +38,18 @@ def put_api_keys(
     request: Request,
     payload: dict,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
     """Upsert or delete provider API keys.
 
     Pass `{provider: "key"}` to set, `{provider: ""}` to remove.
     Unknown providers are ignored.
     """
-    updates = {k: v for k, v in payload.items() if k in ALL_PROVIDERS and isinstance(v, str)}
-    if not updates:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Payload must contain at least one key from: {', '.join(ALL_PROVIDERS)}",
-        )
-
-    for provider, value in updates.items():
-        if value and len(value.strip()) < _MIN_KEY_LEN:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"La API key para '{provider}' es demasiado corta (mínimo {_MIN_KEY_LEN} caracteres).",
-            )
-
-    current_keys = dict(current_user.user_api_keys or {})
-    for provider, value in updates.items():
-        if value.strip():
-            current_keys[provider] = value.strip()
-        else:
-            current_keys.pop(provider, None)
-
-    current_user.user_api_keys = current_keys
     try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("API keys write failed", user_id=current_user.id)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo guardar las API keys. Intenta de nuevo.",
-        ) from None
+        api_keys = users.save_api_keys.execute(
+            SaveApiKeysInput(user_id=current_user.id, payload=payload, providers=ALL_PROVIDERS)
+        )
+    except UserError as err:
+        raise to_http_exception(err) from None
 
-    saved = current_user.user_api_keys or {}
-    return {"api_keys": {p: mask_key(saved.get(p)) for p in ALL_PROVIDERS}}
+    return {"api_keys": api_keys}

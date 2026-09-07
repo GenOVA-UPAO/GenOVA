@@ -24,12 +24,14 @@ from users.application.use_cases import (
     DeleteAccount,
     DeleteAnyLink,
     DeleteMyLink,
+    GetApiKeys,
     GetResourceConfigs,
     GetUserAnalytics,
     ListAllLinks,
     ListMyLinks,
     ListUsers,
     ResendLink,
+    SaveApiKeys,
     SaveResourceConfigs,
     UpdateUserProfile,
     UpdateUserTheme,
@@ -38,6 +40,7 @@ from users.infrastructure.password_adapters import CorePasswordHasher
 from users.infrastructure.sqlalchemy_account_repository import SqlAlchemyUserAccountRepository
 from users.infrastructure.sqlalchemy_admin_repository import SqlAlchemyAdminUserRepository
 from users.infrastructure.sqlalchemy_analytics_repository import SqlAlchemyAnalyticsRepository
+from users.infrastructure.sqlalchemy_api_key_repository import SqlAlchemyApiKeyRepository
 from users.infrastructure.sqlalchemy_profile_repository import SqlAlchemyUserProfileRepository
 from users.infrastructure.sqlalchemy_resource_config_repository import (
     SqlAlchemyResourceConfigRepository,
@@ -67,6 +70,8 @@ class UsersUseCases:
     resend_link: ResendLink
     list_all_links: ListAllLinks
     delete_any_link: DeleteAnyLink
+    get_api_keys: GetApiKeys
+    save_api_keys: SaveApiKeys
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -76,6 +81,7 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
     admin = SqlAlchemyAdminUserRepository(db)
     analytics = SqlAlchemyAnalyticsRepository(db)
     links = SqlAlchemyUserLinkRepository(db)
+    api_keys = SqlAlchemyApiKeyRepository(db)
     hasher = CorePasswordHasher()
     return UsersUseCases(
         update_profile=UpdateUserProfile(profiles),
@@ -98,4 +104,6 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         resend_link=ResendLink(links, hasher),
         list_all_links=ListAllLinks(links),
         delete_any_link=DeleteAnyLink(links),
+        get_api_keys=GetApiKeys(api_keys),
+        save_api_keys=SaveApiKeys(api_keys),
     )
