@@ -1,129 +1,43 @@
-import time
-
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import commit_or_500, get_db
-from core.http_errors import forbidden_response
 from core.rate_limit import limiter
-from models import Ova, OvaPhase, OvaVersion, User
-from ova.interface.http._shared import _is_admin
+from ova.application.dto import DuplicateOvaInput
+from ova.container import OvaUseCases, build_ova
+from ova.domain.errors import OvaError
+from ova.domain.model import OvaActor
+from ova.interface.http.error_map import ova_error_to_response
 
 router = APIRouter(tags=["OVA · CRUD"])
-
-
-def _unique_copy_title(base_title: str, user_id, db: Session) -> str:
-    candidate = f"{base_title} (copia)"
-    exists = db.execute(
-        select(Ova).where(Ova.user_id == user_id, Ova.title == candidate, Ova.deleted_at.is_(None))
-    ).scalar_one_or_none()
-    if not exists:
-        return candidate
-    for n in range(2, 12):
-        candidate = f"{base_title} (copia {n})"
-        exists = db.execute(
-            select(Ova).where(
-                Ova.user_id == user_id, Ova.title == candidate, Ova.deleted_at.is_(None)
-            )
-        ).scalar_one_or_none()
-        if not exists:
-            return candidate
-    return f"{base_title} (copia {int(time.time())})"
-
 
 @router.post("/{ova_id}/duplicar", status_code=201, summary="Duplicar una OVA")
 @limiter.limit("10/minute")
 def duplicate_ova(
     request: Request,
     ova_id: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    use_cases: OvaUseCases = Depends(build_ova),
 ):
-    original = db.execute(
-        select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
-    ).scalar_one_or_none()
-
-    if not original:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content={"error": "not_found", "message": "OVA no encontrado."},
-        )
-
-    if str(original.user_id) != str(current_user.id) and not _is_admin(current_user, db):
-        return forbidden_response()
-
-    if original.status == "generando":
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={
-                "error": "ova_generating",
-                "message": "No se puede duplicar mientras se está generando.",
-            },
-        )
-
-    active_version = db.execute(
-        select(OvaVersion).where(OvaVersion.ova_id == ova_id, OvaVersion.is_active.is_(True))
-    ).scalar_one_or_none()
-
-    source_prompt = original.description or original.title or ""
-    source_phases = []
-    if active_version:
-        source_prompt = active_version.prompt
-        source_phases = list(
-            db.execute(
-                select(OvaPhase)
-                .where(OvaPhase.version_id == active_version.id)
-                .order_by(OvaPhase.phase_order)
-            )
-            .scalars()
-            .all()
-        )
-
-    new_title = _unique_copy_title(original.title, current_user.id, db)
-
-    new_ova = Ova(
-        user_id=current_user.id,
-        title=new_title,
-        description=original.description,
-        status="borrador",
-    )
-    db.add(new_ova)
-    db.flush()
-
-    new_version = OvaVersion(
-        ova_id=new_ova.id,
-        version_number=1,
-        prompt=source_prompt,
-        is_active=True,
-    )
-    db.add(new_version)
-    db.flush()
-
-    for phase in source_phases:
-        db.add(
-            OvaPhase(
-                version_id=new_version.id,
-                phase_type=phase.phase_type,
-                phase_order=phase.phase_order,
-                content=phase.content,
-                regenerated=False,
+    try:
+        result = use_cases.duplicate_ova.execute(
+            DuplicateOvaInput(
+                ova_id=ova_id,
+                actor=OvaActor(
+                    id=str(current_user.id),
+                    is_admin=bool(current_user.admin_flag_cached),
+                ),
             )
         )
-
-    new_ova.current_version_id = new_version.id
-    commit_or_500(db, op="duplicate_ova")
-
-    new_id = str(new_ova.id)
+    except OvaError as error:
+        return ova_error_to_response(error)
     return JSONResponse(
         status_code=201,
         content={
-            "id": new_id,
-            "title": new_title,
+            "id": result.id,
+            "title": result.title,
             "status": "borrador",
             "message": "OVA duplicado correctamente.",
-            "edit_url": f"/ova/{new_id}/workspace",
+            "edit_url": f"/ova/{result.id}/workspace",
         },
     )

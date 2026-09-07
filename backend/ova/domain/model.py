@@ -28,6 +28,16 @@ class OvaPhase:
 
 
 @dataclass(frozen=True, slots=True)
+class OvaDuplicateSource:
+    owner_id: str
+    title: str
+    description: str | None
+    status: str
+    prompt: str
+    phases: tuple[OvaPhase, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class Ova:
     id: str
     owner_id: str

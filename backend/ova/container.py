@@ -15,6 +15,7 @@ from ova.application.use_cases import (
     BatchRestoreOvas,
     CountTrashedOvas,
     DeleteOva,
+    DuplicateOva,
     ListTrashedOvas,
     PermanentlyDeleteOva,
     RestoreOva,
@@ -32,6 +33,7 @@ from scorm import build_scorm_zip_bytes
 @dataclass(frozen=True, slots=True)
 class OvaUseCases:
     save_ova: SaveOva
+    duplicate_ova: DuplicateOva
     update_metadata: UpdateOvaMetadata
     delete_ova: DeleteOva
     count_trashed: CountTrashedOvas
@@ -53,6 +55,7 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
             build_scorm_zip=build_scorm_zip_bytes,
             persist_scorm_zip=persist_scorm_zip,
         ),
+        duplicate_ova=DuplicateOva(creation),
         update_metadata=UpdateOvaMetadata(lifecycle),
         delete_ova=DeleteOva(lifecycle),
         count_trashed=CountTrashedOvas(lifecycle),

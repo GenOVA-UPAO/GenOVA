@@ -72,3 +72,15 @@ class SaveOvaInput:
 @dataclass(frozen=True, slots=True)
 class SaveOvaResult:
     ova_id: str
+
+
+@dataclass(frozen=True, slots=True)
+class DuplicateOvaInput:
+    ova_id: str
+    actor: OvaActor
+
+
+@dataclass(frozen=True, slots=True)
+class DuplicateOvaResult:
+    id: str
+    title: str

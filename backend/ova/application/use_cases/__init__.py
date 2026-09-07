@@ -3,6 +3,7 @@ from ova.application.use_cases.batch_move_ovas_to_trash import BatchMoveOvasToTr
 from ova.application.use_cases.batch_restore_ovas import BatchRestoreOvas
 from ova.application.use_cases.count_trashed_ovas import CountTrashedOvas
 from ova.application.use_cases.delete_ova import DeleteOva
+from ova.application.use_cases.duplicate_ova import DuplicateOva
 from ova.application.use_cases.list_trashed_ovas import ListTrashedOvas
 from ova.application.use_cases.permanently_delete_ova import PermanentlyDeleteOva
 from ova.application.use_cases.restore_ova import RestoreOva
@@ -15,6 +16,7 @@ __all__ = [
     "BatchRestoreOvas",
     "CountTrashedOvas",
     "DeleteOva",
+    "DuplicateOva",
     "ListTrashedOvas",
     "PermanentlyDeleteOva",
     "RestoreOva",
