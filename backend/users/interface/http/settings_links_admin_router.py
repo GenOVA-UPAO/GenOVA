@@ -1,20 +1,20 @@
 """Admin-only user-link management endpoints (list/delete any link).
 
-Mounted by including it into the user-facing links router, so the paths stay
-under the same prefix without changing the users-router wiring.
+Adaptador HTTP de los casos de uso de administración de vínculos. Montado
+dentro del router de vínculos propios para conservar el prefijo.
 """
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Request
 
 from auth.dependencies import require_permission
-from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
-from models import User, UserLink
-from users.application.links_helpers import _serialize
+from models import User
+from users.container import UsersUseCases, build_users
+from users.domain.errors import UserError
+from users.domain.links import serialize_link
+from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Admin · Usuarios"])
 
@@ -22,26 +22,19 @@ router = APIRouter(tags=["Admin · Usuarios"])
 @router.get("/links/admin", summary="Listar todos los vínculos")
 def list_all_links(
     current_user: User = Depends(require_permission("users:link:admin")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    del current_user
-    links = db.execute(select(UserLink).order_by(UserLink.created_at.desc())).scalars().all()
-    user_ids = {lnk.owner_user_id for lnk in links} | {
-        lnk.linked_user_id for lnk in links if lnk.linked_user_id
-    }
-    users_map = (
-        {u.id: u for u in db.execute(select(User).where(User.id.in_(user_ids))).scalars().all()}
-        if user_ids
-        else {}
-    )
+    result = users.list_all_links.execute()
     return {
         "links": [
-            _serialize(
+            serialize_link(
                 link,
-                owner=users_map.get(link.owner_user_id),
-                linked=users_map.get(link.linked_user_id) if link.linked_user_id else None,
+                owner=result.participants.get(link.owner_user_id),
+                linked=result.participants.get(link.linked_user_id)
+                if link.linked_user_id
+                else None,
             )
-            for link in links
+            for link in result.links
         ]
     }
 
@@ -52,12 +45,11 @@ def delete_any_link(
     request: Request,
     link_id: UUID,
     current_user: User = Depends(require_permission("users:link:admin")),
-    db: Session = Depends(get_db),
+    users: UsersUseCases = Depends(build_users),
 ):
-    del current_user
-    link = db.get(UserLink, link_id)
-    if not link:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vinculo no encontrado.")
-    db.delete(link)
-    commit_or_500(db, "la desvinculacion")
+    try:
+        users.delete_any_link.execute(link_id)
+    except UserError as err:
+        raise to_http_exception(err) from None
+
     return {"status": "ok"}

@@ -22,9 +22,11 @@ from users.application.use_cases import (
     ChangePassword,
     CreateLinkCode,
     DeleteAccount,
+    DeleteAnyLink,
     DeleteMyLink,
     GetResourceConfigs,
     GetUserAnalytics,
+    ListAllLinks,
     ListMyLinks,
     ListUsers,
     ResendLink,
@@ -63,6 +65,8 @@ class UsersUseCases:
     accept_link: AcceptLink
     delete_my_link: DeleteMyLink
     resend_link: ResendLink
+    list_all_links: ListAllLinks
+    delete_any_link: DeleteAnyLink
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -92,4 +96,6 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         accept_link=AcceptLink(links, hasher),
         delete_my_link=DeleteMyLink(links),
         resend_link=ResendLink(links, hasher),
+        list_all_links=ListAllLinks(links),
+        delete_any_link=DeleteAnyLink(links),
     )

@@ -143,3 +143,9 @@ class LinkListResult:
 class AcceptLinkResult:
     link: LinkSnapshot
     owner: LinkParticipant | None
+
+
+@dataclass(frozen=True, slots=True)
+class LinkAdminListResult:
+    links: list[LinkSnapshot]
+    participants: dict[str, LinkParticipant]
