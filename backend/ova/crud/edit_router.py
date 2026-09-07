@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import get_db
+from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from generation.regen.regen_router import router as regen_router
 from models import OvaPhase, User
@@ -20,7 +20,6 @@ from ova.crud.edit_phase_ops import (
 )
 from ova.crud.edit_view_router import router as edit_view_router
 from ova.phases.phase_version_router import record_phase_micro_version
-from users.admin.helpers import commit_or_500
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()

@@ -24,8 +24,8 @@ from ova.chat.models import OvaEditorChatMessage  # noqa: F401
 from ova.models import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
 from rag.infrastructure.orm import RagChunk  # noqa: F401
 from roles.infrastructure.orm import Role, UserRole  # noqa: F401
-from users.admin.models import PlatformConfig  # noqa: F401
-from users.models import User, UserLink  # noqa: F401
+from users.infrastructure.orm import User, UserLink  # noqa: F401
+from users.infrastructure.orm_platform import PlatformConfig  # noqa: F401
 
 __all__ = [
     "CatalogCache",

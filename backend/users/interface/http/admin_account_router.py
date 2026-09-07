@@ -20,7 +20,7 @@ from auth.infrastructure.smtp_email import send_reset_email
 from core.database import get_db
 from core.rate_limit import limiter
 from models import PasswordResetToken, User
-from users.admin.helpers import (
+from users.application.admin_helpers import (
     APP_URL,
     assert_can_touch_target,
     commit_or_500,

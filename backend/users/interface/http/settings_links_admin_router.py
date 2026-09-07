@@ -14,7 +14,7 @@ from auth.dependencies import require_permission
 from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from models import User, UserLink
-from users.settings.links_helpers import _serialize
+from users.application.links_helpers import _serialize
 
 router = APIRouter(tags=["Admin · Usuarios"])
 

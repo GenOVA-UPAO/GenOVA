@@ -8,7 +8,7 @@ from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
 from models import User
-from users.analytics.analytics_service import get_analytics
+from users.application.analytics_service import get_analytics
 
 router = APIRouter(prefix="/analytics", tags=["Analítica"])
 

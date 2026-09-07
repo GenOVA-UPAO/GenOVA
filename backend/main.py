@@ -42,10 +42,10 @@ from run_migrations import run_migrations
 from scorm.interface.http.router import router as scorm_router
 from seed import seed_db
 from uploads.interface.http.router import router as uploads_router
-from users.admin.list_router import router as users_list_router
-from users.admin.nodes_config_router import router as nodes_config_router
-from users.admin.platform_settings_router import router as platform_settings_router
-from users.router import router as users_router
+from users.interface.http.admin_list_router import router as users_list_router
+from users.interface.http.admin_nodes_config_router import router as nodes_config_router
+from users.interface.http.admin_platform_settings_router import router as platform_settings_router
+from users.interface.http.router import router as users_router
 
 configure_logging(
     log_level=settings.log_level, env=settings.env, logfire_token=settings.logfire_token

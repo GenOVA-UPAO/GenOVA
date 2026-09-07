@@ -8,8 +8,8 @@ FastAPI rechaza prefijo y ruta vacíos a la vez, así que cuelga directamente de
 
 from fastapi import APIRouter
 
-from users.admin.account_router import router as account_router
-from users.admin.profile_router import router as profile_router
+from users.interface.http.admin_account_router import router as account_router
+from users.interface.http.admin_profile_router import router as profile_router
 
 router = APIRouter(tags=["Admin · Usuarios"])
 router.include_router(profile_router)

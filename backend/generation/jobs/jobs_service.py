@@ -13,9 +13,9 @@ import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core.database import commit_or_500
 from core.text import smart_truncate
 from models import Ova, OvaJob, OvaJobResource
-from users.admin.helpers import commit_or_500
 
 logger = structlog.get_logger(__name__)
 

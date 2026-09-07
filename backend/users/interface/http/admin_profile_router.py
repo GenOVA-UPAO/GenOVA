@@ -11,7 +11,7 @@ from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
 from models import Role, User, UserRole
-from users.admin.helpers import (
+from users.application.admin_helpers import (
     assert_can_touch_target,
     commit_or_500,
     get_target_user,

@@ -325,6 +325,32 @@ type = "forbidden"
 source_modules = ["generation"]
 forbidden_modules = ["roles", "auth.infrastructure"]
 
+# --- users: pase estructural en capas (la extracción de cada router a casos de
+#     uso es un 2º pase, como en `auth`). ---
+
+[[tool.importlinter.contracts]]
+name = "users.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["users.domain"]
+forbidden_modules = [
+    "users.application", "users.infrastructure", "users.interface",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "users.infrastructure no depende de application ni interface"
+type = "forbidden"
+source_modules = ["users.infrastructure"]
+forbidden_modules = ["users.application", "users.interface"]
+
+[[tool.importlinter.contracts]]
+name = "users no depende de generation/scorm/rag/storage"
+type = "forbidden"
+source_modules = ["users"]
+forbidden_modules = ["generation", "scorm", "rag", "storage"]
+# `users.interface.http.admin_nodes_config_router` sí configura `prometheus.config`
+# (endpoint admin para tunear el motor de generación) — dependencia legítima.
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

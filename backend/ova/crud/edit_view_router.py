@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from core.database import get_db
+from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from models import OvaVersion, User
 from ova.crud.edit_helpers import (
@@ -18,7 +18,6 @@ from ova.crud.edit_helpers import (
     _version_to_dict,
 )
 from ova.crud.export_router import router as export_router
-from users.admin.helpers import commit_or_500
 
 logger = structlog.get_logger(__name__)
 

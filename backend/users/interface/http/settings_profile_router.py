@@ -7,7 +7,7 @@ from auth.dependencies import get_current_user
 from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from models import User
-from users.settings.account_router import router as account_router
+from users.interface.http.settings_account_router import router as account_router
 
 router = APIRouter(tags=["Perfil"])
 # Account-security endpoints (change password, delete) live in account_router;

@@ -13,7 +13,7 @@ from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from core.security import hash_password, verify_password
 from models import User, UserLink
-from users.settings.links_helpers import _new_code, _serialize
+from users.application.links_helpers import _new_code, _serialize
 
 router = APIRouter(tags=["Vinculaciones"])
 

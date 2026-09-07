@@ -14,7 +14,7 @@ from auth.infrastructure.cookies import clear_auth_cookie
 from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from core.security import hash_password, verify_password
-from users.settings.account_service import anonymize_and_deactivate
+from users.application.account_service import anonymize_and_deactivate
 
 router = APIRouter()
 

@@ -13,6 +13,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core.database import commit_or_500  # noqa: F401  (re-export; el original vive en el kernel)
 from models import Role, User, UserRole
 
 logger = structlog.get_logger(__name__)
@@ -53,19 +54,6 @@ def get_target_user(target_id: UUID, db: Session) -> User:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado.")
     return user
 
-
-def commit_or_500(db: Session, *, op: str) -> None:
-    """Commit and convert any DB failure into a generic 500. The exception
-    detail is logged but never sent to the client."""
-    try:
-        db.commit()
-    except Exception:
-        db.rollback()
-        logger.exception("admin DB write failed", op=op)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo completar la operación. Intenta de nuevo.",
-        ) from None
 
 
 def normalize_gender(raw: str | None) -> str | None:
