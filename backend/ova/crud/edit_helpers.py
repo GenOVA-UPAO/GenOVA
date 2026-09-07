@@ -31,7 +31,7 @@ def _get_active_version(ova_id, db: Session) -> OvaVersion | None:
 
 def _ensure_version_exists(ova: Ova, db: Session) -> OvaVersion:
     """Creates a v1 version for OVAs that pre-date the versioning feature."""
-    from scorm.service import DEFAULT_PHASES
+    from scorm import DEFAULT_PHASES
 
     version = OvaVersion(
         ova_id=ova.id,
@@ -166,7 +166,7 @@ def _rebuild_scorm_for_version(ova: Ova, version: OvaVersion, user_id: str) -> N
     Mutates ``ova.storage_key`` and ``ova.file_path`` in-place.
     Does **not** commit — the caller is responsible for ``commit_or_500``.
     """
-    from scorm.service import build_scorm_zip_bytes
+    from scorm import build_scorm_zip_bytes
 
     phases_data = [_phase_to_version_data(p) for p in version.phases]
     zip_bytes = build_scorm_zip_bytes(

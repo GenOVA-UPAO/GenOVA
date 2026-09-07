@@ -213,6 +213,19 @@ layers = [
     "uploads.domain",
 ]
 
+# --- scorm: dominio puro (ensamblado de paquetes SCORM, sin I/O ni orquestación) ---
+
+[[tool.importlinter.contracts]]
+name = "scorm.domain es puro (sin frameworks ni otros dominios)"
+type = "forbidden"
+source_modules = ["scorm.domain"]
+forbidden_modules = [
+    "scorm.interface",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+    "auth", "ova", "llm", "rag", "roles",
+    "users", "generation", "prometheus", "storage", "uploads",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

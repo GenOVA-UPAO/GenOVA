@@ -17,7 +17,7 @@ logger = structlog.get_logger(__name__)
 
 def _build_and_persist(ova, ova_id, new_version, version_num, phases_data, db):
     """Build SCORM zip and persist to storage or disk."""
-    from scorm.service import build_scorm_zip_bytes
+    from scorm import build_scorm_zip_bytes
     from storage import StorageError, is_configured, upload_zip
 
     zip_bytes = build_scorm_zip_bytes(

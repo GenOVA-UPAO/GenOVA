@@ -8,7 +8,7 @@ xAPI y la estructura cmi5.
 from io import BytesIO
 from zipfile import ZipFile
 
-from scorm.service import build_scorm_zip_bytes
+from scorm import build_scorm_zip_bytes
 
 
 def _zip():

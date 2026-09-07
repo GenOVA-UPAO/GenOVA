@@ -39,7 +39,7 @@ from ova.router import router as ova_router
 from rag.router import router as rag_router
 from roles.interface.http.router import router as roles_router
 from run_migrations import run_migrations
-from scorm.router import router as scorm_router
+from scorm.interface.http.router import router as scorm_router
 from seed import seed_db
 from uploads.interface.http.router import router as uploads_router
 from users.admin.list_router import router as users_list_router

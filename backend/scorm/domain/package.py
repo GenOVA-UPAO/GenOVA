@@ -1,15 +1,15 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from scorm.template_html import (
+from scorm.domain.templates.html import (
     build_index_html,
     build_manifest,
     phase_label,
     wrap_resource_html,
 )
-from scorm.template_scripts import build_app_js, build_scorm_js
-from scorm.template_style import build_styles_css
-from scorm.template_xapi import build_cmi5_xml, build_xapi_js
+from scorm.domain.templates.scripts import build_app_js, build_scorm_js
+from scorm.domain.templates.style import build_styles_css
+from scorm.domain.templates.xapi import build_cmi5_xml, build_xapi_js
 
 DEFAULT_PHASES = [
     {"type": "engage", "order": 1, "content": "Recurso de la fase ENGAGE no disponible."},

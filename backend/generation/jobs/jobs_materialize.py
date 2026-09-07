@@ -175,7 +175,7 @@ def _add_phases(db: Session, version_id, resources: list[OvaJobResource]) -> lis
 
 def _persist_scorm(ova: Ova, title: str, phases_data: list[dict], user_id: str) -> None:
     from ova.router import _persist_scorm_zip
-    from scorm.service import build_scorm_zip_bytes
+    from scorm import build_scorm_zip_bytes
 
     zip_bytes = build_scorm_zip_bytes(
         course_title=title,
