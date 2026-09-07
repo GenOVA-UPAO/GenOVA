@@ -283,6 +283,48 @@ layers = [
     "auth.domain",
 ]
 
+# --- prometheus / llm / generation: subdominios de soporte (tratamiento ligero).
+#     No adoptan la ceremonia hexagonal; se les fija el perímetro con contratos. ---
+
+[[tool.importlinter.contracts]]
+name = "prometheus (motor LangGraph) es un leaf: sin HTTP ni dominios superiores"
+type = "forbidden"
+source_modules = ["prometheus"]
+forbidden_modules = [
+    "fastapi", "starlette",
+    "auth", "users", "ova", "roles", "scorm", "uploads", "generation",
+]
+# El kernel `core` sí toca fastapi/starlette (commit_or_500, logging middleware);
+# lo que se prohíbe es que `prometheus` tenga acoplamiento HTTP propio.
+ignore_imports = [
+    "core.database -> fastapi",
+    "core.logging_setup -> starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "llm no depende de dominios superiores"
+type = "forbidden"
+source_modules = ["llm"]
+forbidden_modules = ["users", "ova", "roles", "scorm", "uploads", "generation"]
+
+[[tool.importlinter.contracts]]
+name = "las capas de utilidad de llm son framework-free"
+type = "forbidden"
+source_modules = [
+    "llm.providers", "llm.clients", "llm.images",
+    "llm.podcast", "llm.utils", "llm.ova_components",
+]
+forbidden_modules = ["fastapi", "starlette"]
+# `core.database` importa fastapi.HTTPException (commit_or_500); no es acoplamiento
+# HTTP propio de la capa de utilidad.
+ignore_imports = ["core.database -> fastapi"]
+
+[[tool.importlinter.contracts]]
+name = "generation no depende de roles ni de auth.infrastructure"
+type = "forbidden"
+source_modules = ["generation"]
+forbidden_modules = ["roles", "auth.infrastructure"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
