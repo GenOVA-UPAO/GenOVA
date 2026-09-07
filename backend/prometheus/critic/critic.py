@@ -13,6 +13,7 @@ import structlog
 
 from llm.router import generar_texto
 from llm.utils.themes import build_design_system
+from prometheus.critic.excerpt import build_excerpt
 
 logger = structlog.get_logger(__name__)
 
@@ -74,7 +75,7 @@ def critique_resource(
             phase=phase,
             rt=rt,
             concept=concept,
-            html_excerpt=html[:2000],
+            html_excerpt=build_excerpt(html),
         )
         + f"\n[DESIGN_SYSTEM]\n{ds}"
     )
