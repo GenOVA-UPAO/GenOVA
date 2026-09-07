@@ -175,3 +175,20 @@ class ChatPatchInput:
     status: str | None = None
     percentage: int | None = None
     resource_labels: tuple[str, ...] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class OvaListQuery:
+    actor: OvaActor
+    page: int
+    limit: int
+    search: str
+    status: str
+
+
+@dataclass(frozen=True, slots=True)
+class OvaListPage:
+    ovas: tuple[Ova, ...]
+    total_items: int
+    page: int
+    limit: int

@@ -4,12 +4,14 @@ from ova.application.use_cases.batch_move_ovas_to_trash import BatchMoveOvasToTr
 from ova.application.use_cases.batch_restore_ovas import BatchRestoreOvas
 from ova.application.use_cases.count_trashed_ovas import CountTrashedOvas
 from ova.application.use_cases.delete_ova import DeleteOva
+from ova.application.use_cases.download_ova import DownloadOva
 from ova.application.use_cases.duplicate_ova import DuplicateOva
 from ova.application.use_cases.edit_phases import EditPhases
 from ova.application.use_cases.edit_subelement import EditSubelement
 from ova.application.use_cases.edit_view import EditView
 from ova.application.use_cases.editor_chat import EditorChat
 from ova.application.use_cases.export_scorm import ExportScorm
+from ova.application.use_cases.list_ovas import ListOvas
 from ova.application.use_cases.list_trashed_ovas import ListTrashedOvas
 from ova.application.use_cases.permanently_delete_ova import PermanentlyDeleteOva
 from ova.application.use_cases.phase_versions import PhaseVersions
@@ -24,12 +26,14 @@ __all__ = [
     "AddPhase",
     "CountTrashedOvas",
     "DeleteOva",
+    "DownloadOva",
     "DuplicateOva",
     "EditPhases",
     "EditSubelement",
     "EditView",
     "EditorChat",
     "ExportScorm",
+    "ListOvas",
     "ListTrashedOvas",
     "PermanentlyDeleteOva",
     "PhaseVersions",

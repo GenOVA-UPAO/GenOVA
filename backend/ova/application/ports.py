@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol
 
+from ova.domain.catalog import OvaListFilter
 from ova.domain.chat import ChatMessage, ChatMessageDraft, ChatMessagePatch
 from ova.domain.editor import EditorMicroVersion, EditorOva, EditorPhase, EditorVersion
 from ova.domain.model import Ova, OvaDuplicateSource, OvaPhase
@@ -138,3 +139,7 @@ class ChatRepository(Protocol):
     def delete_message(self, ova_id: str, message_id: str) -> bool: ...
 
     def clear_messages(self, ova_id: str) -> int: ...
+
+
+class OvaCatalogRepository(Protocol):
+    def list_page(self, filters: OvaListFilter) -> tuple[tuple[Ova, ...], int]: ...
