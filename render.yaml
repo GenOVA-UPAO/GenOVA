@@ -14,7 +14,7 @@ services:
     name: genova-backend
     runtime: docker
     repo: https://github.com/GenOVA-UPAO/GenOVA
-    branch: develop
+    branch: main
     # El Dockerfile hace `COPY backend/...`, así que el contexto es la raíz del repo.
     dockerfilePath: ./backend/Dockerfile.prod
     dockerContext: .

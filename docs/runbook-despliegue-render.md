@@ -64,7 +64,8 @@ Ya existe `render.yaml` en la raíz del repo (Blueprint). Define el servicio Doc
 región `oregon`, plan `free`, health check `/health` y todas las variables.
 
 1. https://dashboard.render.com → **New → Blueprint**.
-2. Conecta la cuenta de GitHub y elige el repo **GenOVA-UPAO/GenOVA**, rama `develop`.
+2. Conecta la cuenta de GitHub y elige el repo **GenOVA-UPAO/GenOVA**, rama `main`
+   (tanto la rama del Blueprint como la de despliegue del servicio — ver `render.yaml`).
 3. Render detecta `render.yaml` y muestra el servicio `genova-backend`. **Apply**.
 4. Rellena las 10 variables marcadas `sync: false` en `render.yaml`. Todas salen
    **tal cual de tu `backend/.env` local** (ya actualizado con la BD nueva):
