@@ -1,10 +1,10 @@
-import contextlib
-import os
-
 from pydantic import BaseModel, Field
 
 from models import Ova
 from ova.application.access import _is_admin as _is_admin
+from ova.infrastructure.scorm_package_cleaner import delete_scorm_file
+
+_delete_scorm_file = delete_scorm_file
 
 VALID_STATUSES = {"borrador", "generando", "listo", "error"}
 
@@ -39,12 +39,6 @@ def _ova_to_dict(
             "full_name": ova.owner.full_name or ova.owner.email,
         }
     return data
-
-
-def _delete_scorm_file(file_path: str | None) -> None:
-    if file_path:
-        with contextlib.suppress(FileNotFoundError):
-            os.remove(file_path)
 
 
 class BatchIdsRequest(BaseModel):
