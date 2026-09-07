@@ -1,30 +1,30 @@
 """Auth router — login + mounted sub-routers (register, session, reset, verify,
-totp)."""
+totp).
 
-from datetime import UTC, datetime, timedelta
+El flujo de login está extraído a caso de uso (``auth.application.use_cases
+.LoginUser``); este router solo valida la petición, invoca el caso de uso y
+traduce el resultado/errores a HTTP. El resto de sub-routers sigue en pase
+estructural (2º pase pendiente).
+"""
 
 import structlog
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
-from auth.domain.email import normalize_email
-from auth.infrastructure.email_throttle import email_throttled
+from auth.application.dto import LoginInput
+from auth.container import AuthUseCases, build_auth
+from auth.domain.errors import AuthError
 from auth.infrastructure.jwt import issue_session_response
-from auth.infrastructure.totp_tickets import _issue_ticket
+from auth.interface.http.error_map import auth_error_to_response
 from auth.interface.http.register_router import router as register_router
 from auth.interface.http.reset_router import router as reset_router
 from auth.interface.http.session_router import router as session_router
 from auth.interface.http.totp_login_router import router as totp_login_router
 from auth.interface.http.totp_router import router as totp_router
 from auth.interface.http.verify_router import router as verify_router
-from core.config import settings
-from core.database import get_db
 from core.rate_limit import limiter
-from core.security import PASSWORD_MAX_LENGTH, verify_dummy, verify_password
-from models import User
+from core.security import PASSWORD_MAX_LENGTH
 
 router = APIRouter()
 logger = structlog.get_logger(__name__)
@@ -36,100 +36,33 @@ class LoginRequest(BaseModel):
     remember_me: bool = False
 
 
-def _as_utc(dt: datetime) -> datetime:
-    """Normaliza a tz-aware UTC. SQLite devuelve `DateTime(timezone=True)` naive
-    (mismo tratamiento que reset_router/verify_router)."""
-    return dt if dt.tzinfo is not None else dt.replace(tzinfo=UTC)
-
-
-def _is_locked(user: User) -> bool:
-    if not user.locked_until:
-        return False
-    return _as_utc(user.locked_until) > datetime.now(UTC)  # type: ignore[arg-type]
-
-
-def _invalid_credentials() -> JSONResponse:
-    return JSONResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        content={"error": "invalid_credentials", "message": "Credenciales inválidas."},
-    )
-
-
 @router.post(
     "/login", tags=["Autenticación"], summary="Iniciar sesión y recibir la cookie de sesión"
 )
 @limiter.limit("10/minute")
-def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
-    email = normalize_email(payload.email)
-
-    # El throttle por-email también es un rate limit: respeta RATE_LIMIT_ENABLED=0
-    # (CI/e2e/carga hacen decenas de logins seguidos con las cuentas seed).
-    if settings.rate_limit_enabled and email_throttled(email):
-        return JSONResponse(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            content={
-                "error": "too_many_attempts",
-                "message": "Demasiados intentos para esta cuenta. Espera un minuto.",
-            },
+def login(
+    request: Request,
+    payload: LoginRequest,
+    auth: AuthUseCases = Depends(build_auth),
+):
+    try:
+        result = auth.login_user.execute(
+            LoginInput(
+                email=payload.email,
+                password=payload.password,
+                remember_me=payload.remember_me,
+            )
         )
+    except AuthError as err:
+        return auth_error_to_response(err)
 
-    user = db.execute(select(User).where(User.email_normalized == email)).scalar_one_or_none()
-
-    if not user:
-        verify_dummy()
-        return _invalid_credentials()
-
-    if _is_locked(user):
-        remaining = int(
-            (_as_utc(user.locked_until) - datetime.now(UTC)).total_seconds() // 60  # type: ignore[operator]
-        )
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={
-                "error": "account_locked",
-                "message": "Cuenta bloqueada temporalmente. Intenta más tarde.",
-                "retry_after_minutes": max(1, remaining),
-            },
-        )
-
-    if not verify_password(payload.password, str(user.password_hash)):
-        user.failed_login_attempts += 1  # type: ignore[operator]
-        if user.failed_login_attempts >= 5:  # type: ignore[operator]
-            user.locked_until = datetime.now(UTC) + timedelta(minutes=15)  # type: ignore[assignment]
-            user.failed_login_attempts = 0  # type: ignore[assignment]
-        db.commit()
-        return _invalid_credentials()
-
-    if settings.email_verification_enabled and not user.email_verified:
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={
-                "error": "email_not_verified",
-                "message": "Verifica tu correo para iniciar sesión. Revisa tu bandeja o solicita un nuevo enlace.",
-            },
-        )
-
-    # Capturados antes del commit: expire_on_commit=True obligaría a recargar la
-    # fila para leer cualquiera de estos atributos después.
-    user_id, user_email = str(user.id), str(user.email)
-    totp_enabled = bool(user.totp_enabled)
-
-    # Solo se escribe si el login previo había dejado contadores sucios. En la ruta
-    # feliz habitual ambos ya están limpios y el COMMIT era un round-trip a Supabase
-    # que no cambiaba nada (RN-001).
-    if user.failed_login_attempts or user.locked_until is not None:
-        user.failed_login_attempts = 0  # type: ignore[assignment]
-        user.locked_until = None  # type: ignore[assignment]
-        db.commit()
-
-    if totp_enabled:
-        ticket = _issue_ticket(user_id, remember_me=payload.remember_me)
+    if result.totp_required:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
-            content={"totp_required": True, "ticket": ticket},
+            content={"totp_required": True, "ticket": result.totp_ticket},
         )
 
-    return issue_session_response(user_id, user_email, remember_me=payload.remember_me)
+    return issue_session_response(result.user_id, result.email, remember_me=result.remember_me)
 
 
 router.include_router(register_router)

@@ -256,32 +256,45 @@ layers = [
     "rag.domain",
 ]
 
-# --- auth: reorganización estructural en capas (la extracción de los flujos a
-#     casos de uso es un segundo pase; los routers todavía llevan la lógica). ---
+# --- auth: pase estructural en capas + flujo de login extraído a caso de uso
+#     (auth.application.use_cases.LoginUser). El resto de sub-routers sigue con
+#     la lógica en el router (2º pase en curso). ---
 
 [[tool.importlinter.contracts]]
 name = "auth.domain es puro (sin capas externas ni frameworks)"
 type = "forbidden"
 source_modules = ["auth.domain"]
 forbidden_modules = [
-    "auth.infrastructure", "auth.interface",
+    "auth.application", "auth.infrastructure", "auth.interface", "auth.container",
     "fastapi", "sqlalchemy", "pydantic", "starlette",
 ]
 
 [[tool.importlinter.contracts]]
-name = "auth.infrastructure no depende de la capa de interface"
+name = "auth.application no depende de infraestructura/interface ni frameworks"
 type = "forbidden"
-source_modules = ["auth.infrastructure"]
-forbidden_modules = ["auth.interface"]
+source_modules = ["auth.application"]
+forbidden_modules = [
+    "auth.infrastructure", "auth.interface", "auth.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
 
 [[tool.importlinter.contracts]]
-name = "auth: capas (interface -> infrastructure -> domain)"
+name = "auth.infrastructure no depende de application/interface/container"
+type = "forbidden"
+source_modules = ["auth.infrastructure"]
+forbidden_modules = ["auth.application", "auth.interface", "auth.container"]
+
+[[tool.importlinter.contracts]]
+name = "auth: capas (interface -> container -> application -> domain)"
 type = "layers"
 layers = [
     "auth.interface",
-    "auth.infrastructure",
+    "auth.container",
+    "auth.application",
     "auth.domain",
 ]
+# `auth.infrastructure` es capa lateral: solo la ven `container` e `interface`
+# (los sub-routers aún no migrados importan jwt/cookies/smtp directamente).
 
 # --- prometheus / llm / generation: subdominios de soporte (tratamiento ligero).
 #     No adoptan la ceremonia hexagonal; se les fija el perímetro con contratos. ---
