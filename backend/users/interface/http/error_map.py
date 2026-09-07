@@ -9,18 +9,26 @@ from __future__ import annotations
 from fastapi import HTTPException, status
 
 from users.domain.errors import (
+    AdminRoleAssignmentForbidden,
+    AdminRoleNotFound,
+    AdminTargetProtected,
     EmailAlreadyInUse,
     IncorrectAccountPassword,
     IncorrectCurrentPassword,
     InvalidGender,
     InvalidPhoneNumber,
     InvalidResourceConfigs,
+    InvalidRoleId,
+    InvalidUserId,
     PasswordConfirmationMismatch,
     PhoneNumberAlreadyInUse,
     ResourceConfigsNotSaved,
+    SelfDeactivationForbidden,
+    SelfRoleChangeForbidden,
     SoleAdminRemoval,
     UniversityIdAlreadyInUse,
     UserError,
+    UserNotFound,
     WeakNewPassword,
 )
 
@@ -37,6 +45,14 @@ _STATUS_BY_ERROR: dict[type[UserError], int] = {
     SoleAdminRemoval: status.HTTP_403_FORBIDDEN,
     InvalidResourceConfigs: status.HTTP_400_BAD_REQUEST,
     ResourceConfigsNotSaved: status.HTTP_500_INTERNAL_SERVER_ERROR,
+    InvalidUserId: status.HTTP_404_NOT_FOUND,
+    UserNotFound: status.HTTP_404_NOT_FOUND,
+    AdminTargetProtected: status.HTTP_403_FORBIDDEN,
+    SelfRoleChangeForbidden: status.HTTP_400_BAD_REQUEST,
+    SelfDeactivationForbidden: status.HTTP_400_BAD_REQUEST,
+    InvalidRoleId: status.HTTP_400_BAD_REQUEST,
+    AdminRoleNotFound: status.HTTP_404_NOT_FOUND,
+    AdminRoleAssignmentForbidden: status.HTTP_403_FORBIDDEN,
 }
 
 

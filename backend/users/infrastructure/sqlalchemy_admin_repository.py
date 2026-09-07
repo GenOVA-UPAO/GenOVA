@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
-from models import User, UserRole
-from users.domain.admin import AdminRoleSummary, AdminUserSummary
+from core.database import commit_or_500
+from models import Role, User, UserRole
+from users.domain.admin import (
+    AdminRoleSummary,
+    AdminRoleUpdateResult,
+    AdminUserSummary,
+    assert_can_touch_target,
+)
+from users.domain.errors import UserNotFound
 
 
 def _to_summary(u: User) -> AdminUserSummary:
@@ -50,3 +59,87 @@ class SqlAlchemyAdminUserRepository:
             .all()
         )
         return [_to_summary(u) for u in users_db]
+
+    def is_admin(self, user_id: UUID) -> bool:
+        role = (
+            self._db.execute(
+                select(Role).join(UserRole).where(UserRole.user_id == user_id)
+            )
+            .scalars()
+            .first()
+        )
+        return role is not None and role.name == "administrador"
+
+    def assert_can_touch_target(self, caller_id: UUID, target_id: UUID) -> None:
+        # Cortocircuito idéntico al helper original: la consulta del caller
+        # solo corre si el destino es administrador.
+        target_is_admin = self.is_admin(target_id)
+        caller_is_admin = self.is_admin(caller_id) if target_is_admin else False
+        assert_can_touch_target(caller_is_admin=caller_is_admin, target_is_admin=target_is_admin)
+
+    def get_target(self, user_id: UUID) -> None:
+        user = self._db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+        if not user:
+            raise UserNotFound()
+
+    def email_in_use(self, email: str, excluding_user_id: UUID) -> bool:
+        found = self._db.execute(
+            select(User.id).where(User.email == email, User.id != excluding_user_id)
+        ).first()
+        return found is not None
+
+    def phone_number_in_use(self, phone_number: str, excluding_user_id: UUID) -> bool:
+        found = self._db.execute(
+            select(User.id).where(User.phone_number == phone_number, User.id != excluding_user_id)
+        ).first()
+        return found is not None
+
+    def university_id_in_use(self, university_id: int, excluding_user_id: UUID) -> bool:
+        found = self._db.execute(
+            select(User.id).where(User.university_id == university_id, User.id != excluding_user_id)
+        ).first()
+        return found is not None
+
+    def update_profile(
+        self,
+        user_id: UUID,
+        *,
+        full_name: str,
+        email: str,
+        university_id: int | None,
+        gender: str | None,
+        phone_number: str | None,
+    ) -> None:
+        user = self._db.get(User, user_id)
+        user.full_name = full_name
+        user.email = email
+        user.university_id = university_id
+        user.gender = gender
+        user.phone_number = phone_number
+
+        commit_or_500(self._db, op="update_user_profile")
+
+    def get_role(self, role_id: UUID) -> AdminRoleSummary | None:
+        role = self._db.execute(select(Role).where(Role.id == role_id)).scalar_one_or_none()
+        if role is None:
+            return None
+        return AdminRoleSummary(id=str(role.id), name=role.name)
+
+    def replace_role(self, user_id: UUID, role_id: UUID) -> AdminRoleUpdateResult:
+        user = self._db.get(User, user_id)
+        role = self._db.get(Role, role_id)
+
+        self._db.execute(UserRole.__table__.delete().where(UserRole.user_id == user_id))
+        self._db.flush()
+        self._db.add(UserRole(user_id=user_id, role_id=role_id))
+        commit_or_500(self._db, op="update_user_role")
+
+        # Lecturas tras el commit: la sesión expira y recarga (igual que el
+        # acceso post-commit del router original).
+        return AdminRoleUpdateResult(
+            id=str(user.id),
+            email=user.email,
+            full_name=user.full_name,
+            role=AdminRoleSummary(id=str(role.id), name=role.name),
+            updated_at=user.updated_at.isoformat() if user.updated_at else None,
+        )

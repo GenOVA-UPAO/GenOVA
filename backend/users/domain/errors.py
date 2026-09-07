@@ -90,3 +90,52 @@ class ResourceConfigsNotSaved(UserError):
         self, detail: str = "No se pudo guardar la configuración. Intenta de nuevo."
     ) -> None:
         super().__init__(detail)
+
+
+class InvalidUserId(UserError):
+    def __init__(self, detail: str = "Usuario no encontrado (ID inválido).") -> None:
+        super().__init__(detail)
+
+
+class UserNotFound(UserError):
+    def __init__(self, detail: str = "Usuario no encontrado.") -> None:
+        super().__init__(detail)
+
+
+class AdminTargetProtected(UserError):
+    def __init__(
+        self,
+        detail: str = "Acceso denegado: No puedes modificar a un usuario administrador.",
+    ) -> None:
+        super().__init__(detail)
+
+
+class SelfRoleChangeForbidden(UserError):
+    def __init__(
+        self,
+        detail: str = "No puedes cambiar tu propio rol para prevenir la pérdida de acceso administrativo.",
+    ) -> None:
+        super().__init__(detail)
+
+
+class SelfDeactivationForbidden(UserError):
+    def __init__(self, detail: str = "No puedes desactivar tu propia cuenta.") -> None:
+        super().__init__(detail)
+
+
+class InvalidRoleId(UserError):
+    def __init__(self, detail: str = "El ID de rol especificado es inválido.") -> None:
+        super().__init__(detail)
+
+
+class AdminRoleNotFound(UserError):
+    def __init__(self, detail: str = "El rol especificado no existe.") -> None:
+        super().__init__(detail)
+
+
+class AdminRoleAssignmentForbidden(UserError):
+    def __init__(
+        self,
+        detail: str = "Acceso denegado: No tienes permisos para asignar el rol de administrador.",
+    ) -> None:
+        super().__init__(detail)

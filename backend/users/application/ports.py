@@ -6,7 +6,7 @@ from typing import Protocol
 from uuid import UUID
 
 from users.domain.account import UserAccount
-from users.domain.admin import AdminUserSummary
+from users.domain.admin import AdminRoleSummary, AdminRoleUpdateResult, AdminUserSummary
 from users.domain.profile import UserProfile
 
 
@@ -73,3 +73,24 @@ class AdminUserRepository(Protocol):
     def count_users(self) -> int: ...
 
     def list_page(self, offset: int, limit: int) -> list[AdminUserSummary]: ...
+
+    def is_admin(self, user_id: UUID) -> bool: ...
+
+    def assert_can_touch_target(self, caller_id: UUID, target_id: UUID) -> None: ...
+
+    def get_target(self, user_id: UUID) -> None: ...
+
+    def update_profile(
+        self,
+        user_id: UUID,
+        *,
+        full_name: str,
+        email: str,
+        university_id: int | None,
+        gender: str | None,
+        phone_number: str | None,
+    ) -> None: ...
+
+    def get_role(self, role_id: UUID) -> AdminRoleSummary | None: ...
+
+    def replace_role(self, user_id: UUID, role_id: UUID) -> AdminRoleUpdateResult: ...

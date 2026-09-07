@@ -56,3 +56,21 @@ class AdminUserPage:
 
     total_items: int
     users: list = field(default_factory=list)
+
+
+@dataclass(frozen=True, slots=True)
+class AdminUpdateProfileInput:
+    caller_id: UUID
+    user_id: str
+    full_name: str
+    email: str
+    university_id: int | None
+    gender: str | None
+    phone_number: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class AdminUpdateRoleInput:
+    caller_id: UUID
+    user_id: str
+    role_id: str

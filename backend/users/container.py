@@ -13,6 +13,8 @@ from sqlalchemy.orm import Session
 
 from core.database import get_db
 from users.application.use_cases import (
+    AdminUpdateProfile,
+    AdminUpdateRole,
     ChangePassword,
     DeleteAccount,
     GetResourceConfigs,
@@ -39,6 +41,8 @@ class UsersUseCases:
     get_resource_configs: GetResourceConfigs
     save_resource_configs: SaveResourceConfigs
     list_users: ListUsers
+    admin_update_profile: AdminUpdateProfile
+    admin_update_role: AdminUpdateRole
 
 
 def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
@@ -55,4 +59,6 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
         get_resource_configs=GetResourceConfigs(configs),
         save_resource_configs=SaveResourceConfigs(configs),
         list_users=ListUsers(admin),
+        admin_update_profile=AdminUpdateProfile(admin),
+        admin_update_role=AdminUpdateRole(admin),
     )
