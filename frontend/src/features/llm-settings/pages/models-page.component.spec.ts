@@ -197,7 +197,7 @@ describe("ModelsPageComponent", () => {
 
     expect(screen.getByText(/duplicados o vacíos/i)).toBeTruthy();
     const save = screen.getByRole("button", { name: "Guardar cambios" });
-    expect(save.disabled).toBe(true);
+    expect(save.getAttribute("disabled")).not.toBeNull();
   });
 
   it("shows credential subsections for admin", async () => {
