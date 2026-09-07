@@ -338,6 +338,22 @@ type = "forbidden"
 source_modules = ["generation"]
 forbidden_modules = ["roles", "auth.infrastructure"]
 
+[[tool.importlinter.contracts]]
+name = "generation solo toca la superficie pública de ova, nunca sus internos"
+type = "forbidden"
+source_modules = ["generation"]
+forbidden_modules = [
+    "ova.application", "ova.interface", "ova.infrastructure", "ova.domain",
+]
+# Solo imports DIRECTOS: el tránsito `generation -> ova -> ova.application` es el
+# uso previsto de la superficie publicada, no una violación.
+allow_indirect_imports = true
+# `generation -> ova` (el `__init__` publicado) sí es legítimo: regen/jobs son
+# operaciones sobre OVAs. `ova/__init__.py` re-exporta con `__getattr__` (PEP 562)
+# a propósito — el import ansioso de `ova.application` cicla con `models`
+# (su registro ORM importa `ova.infrastructure`, que ejecuta el `__init__` a mitad
+# de la carga de `models`, antes de que sus `from models import ...` resuelvan).
+
 # --- users: pase estructural en capas (la extracción de cada router a casos de
 #     uso es un 2º pase, como en `auth`). ---
 
@@ -383,6 +399,15 @@ name = "ova.infrastructure no depende de application ni interface"
 type = "forbidden"
 source_modules = ["ova.infrastructure"]
 forbidden_modules = ["ova.application", "ova.interface"]
+
+[[tool.importlinter.contracts]]
+name = "ova.application no depende de la capa de interface"
+type = "forbidden"
+source_modules = ["ova.application"]
+forbidden_modules = ["ova.interface"]
+# `forbidden_response` vive en `core.http_errors` y `_is_admin` en
+# `ova.application.access`; antes ambos colgaban de `ova.interface.http._shared`,
+# lo que invertía la capa.
 
 [[tool.importlinter.contracts]]
 name = "ova no depende de roles ni users"
