@@ -339,6 +339,46 @@ source_modules = ["generation"]
 forbidden_modules = ["roles", "auth.infrastructure"]
 
 [[tool.importlinter.contracts]]
+name = "generation.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["generation.domain"]
+forbidden_modules = [
+    "generation.application", "generation.infrastructure", "generation.interface",
+    "generation.container", "generation.jobs", "generation.regen",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "generation.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["generation.application"]
+forbidden_modules = [
+    "generation.infrastructure", "generation.interface", "generation.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "generation.infrastructure no depende de application/interface/container"
+type = "forbidden"
+source_modules = ["generation.infrastructure"]
+forbidden_modules = [
+    "generation.application", "generation.interface", "generation.container",
+]
+
+[[tool.importlinter.contracts]]
+name = "generation: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "generation.interface",
+    "generation.container",
+    "generation.application",
+    "generation.domain",
+]
+# `generation.jobs` y `generation.regen` quedan FUERA de las capas a propósito: son
+# los paquetes heredados que aún no han pasado el 2º pase (runner, materialize,
+# progress, queue, y todo regen). Entran cuando su ola los absorba.
+
+[[tool.importlinter.contracts]]
 name = "generation solo toca la superficie pública de ova, nunca sus internos"
 type = "forbidden"
 source_modules = ["generation"]
