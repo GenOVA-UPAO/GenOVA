@@ -11,6 +11,7 @@ import {
 
 import { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
 
+import { isResumableJob } from "../../lib/ova-job-view-model";
 import { OvaJobService } from "../../services/ova-job.service";
 import { CrearOvaPreviewPanelComponent } from "../creation/crear-ova-preview-panel.component";
 import { ProgressPanelComponent } from "../creation/progress-panel.component";
@@ -50,6 +51,8 @@ import { TotalFailurePanelComponent } from "../creation/total-failure-panel.comp
               [showCancel]="isGenerating"
               (onCancel)="job.cancel()"
               [isStalled]="job.isStalled()"
+              [resumableCount]="resumableCount()"
+              [resuming]="job.resuming()"
               (onResume)="job.retryAll()"
             ></gn-progress-panel>
           }
@@ -118,6 +121,13 @@ export class OvaGeneratingPanelComponent implements OnInit {
 
   get isTerminal() {
     return this.job.phase() === "terminal";
+  }
+
+  /** Pendientes + fallidos: lo que el backend reintentará al reanudar. 0 = no reanudable. */
+  resumableCount(): number {
+    const snapshot = this.job.job();
+    if (!isResumableJob(snapshot, snapshot?.resources || [])) return 0;
+    return this.job.viewModel().filter((r) => r.status === "pendiente" || r.status === "X").length;
   }
 
   activeId() {

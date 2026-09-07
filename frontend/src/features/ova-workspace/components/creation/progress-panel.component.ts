@@ -75,6 +75,30 @@ const TERMINAL = new Set(["done", "error", "canceled", "interrupted"]);
         </div>
       }
 
+      @if (showResumeBanner) {
+        <div class="rounded-lg border border-accent-brand/30 bg-accent-brand/10 p-3 text-xs">
+          <p class="font-medium text-foreground">
+            La generación se interrumpió a mitad: quedan {{ resumableCount() }} de
+            {{ viewModel().length }} por generar. Lo ya hecho se conserva — al reanudar solo se
+            regenera lo que falta.
+          </p>
+          <div class="mt-2">
+            <gn-button
+              variant="outline"
+              size="sm"
+              [disabled]="resuming()"
+              (onClick)="onResume.emit()"
+            >
+              @if (resuming()) {
+                Reanudando…
+              } @else {
+                Reanudar generación
+              }
+            </gn-button>
+          </div>
+        </div>
+      }
+
       <gn-creation-resource-list
         [viewModel]="viewModel()"
         [selectedIds]="selectedIds()"
@@ -109,6 +133,10 @@ export class ProgressPanelComponent {
   readonly activeId = input<string | null>(null);
   readonly showCancel = input(false);
   readonly isStalled = input(false);
+  /** Nº de recursos que faltan (pending/error): 0 oculta la reanudación. */
+  readonly resumableCount = input(0);
+  /** True mientras el POST de resume está en vuelo (el botón no se queda girando a ciegas). */
+  readonly resuming = input(false);
   readonly onToggle = output<string>();
   readonly onRetryOne = output<string>();
   readonly onPreview = output<string>();
@@ -127,6 +155,11 @@ export class ProgressPanelComponent {
 
   get statusLabel() {
     return STATUS_LABEL[this.status] || this.status;
+  }
+
+  /** Barrido del backend deja el job en `interrupted` con recursos sin terminar. */
+  get showResumeBanner() {
+    return this.status === "interrupted" && this.resumableCount() > 0;
   }
 
   get failedCount() {
