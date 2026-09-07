@@ -26,6 +26,7 @@ from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
+from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
 from llm.catalog.catalog_router import router as agents_router
@@ -268,6 +269,7 @@ app.include_router(users_list_router, prefix="/api/users")
 app.include_router(uploads_router, prefix="/api/uploads")
 app.include_router(platform_settings_router, prefix="/api/admin")
 app.include_router(nodes_config_router, prefix="/api/admin")
+app.include_router(guardrails_router, prefix="/api/admin")
 
 # Alias heredados: el recurso vivía en /api/ova (singular) y los trabajos colgaban
 # de /api/ova/jobs. Se mantienen fuera del esquema para no romper clientes ya
