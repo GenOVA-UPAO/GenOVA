@@ -1,27 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Plan de pruebas de carga GenOVA para Apache JMeter (equivalente al locustfile.py).
-  Simula 25 usuarios concurrentes que: inician sesión (cookie httpOnly genova_token),
-  consultan /health, listan sus OVAs, registran cuentas nuevas y (opcional) encolan
-  una generación de OVA. Umbral formal: P90 <= 278 ms en endpoints no-LLM (RN-001).
-
-  Requiere el backend con RATE_LIMIT_ENABLED=0 y (para el encolado) LLM_FAKE=1.
-
-  Ejecución headless + reporte HTML:
-    jmeter -n -t tests/load/genova-loadtest.jmx -l tests/load/jmeter-result.jtl \
-           -e -o tests/load/jmeter-report -Jhost=localhost -Jport=8000
-
-  Variables (-J):
-    host (localhost)  port (8000)  users (25)  rampup (5)  duration (120)
-    email (user@genova.ai)  password (user1234password)  loadGeneration (false)
-
-  Nota: si el backend emite genova_token con Secure (COOKIE_SAMESITE=none), el
-  Cookie Manager no la reenvía sobre http://. El plan extrae el token del
-  Set-Cookie del login y lo manda en el header Cookie (paridad con locustfile).
--->
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="GenOVA - Prueba de carga" enabled="true">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="GenOVA - prueba de carga (API completa)" enabled="true">
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="Variables" enabled="true">
@@ -30,165 +10,405 @@
           <elementProp name="port" elementType="Argument"><stringProp name="Argument.name">port</stringProp><stringProp name="Argument.value">${__P(port,8000)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
           <elementProp name="email" elementType="Argument"><stringProp name="Argument.name">email</stringProp><stringProp name="Argument.value">${__P(email,user@genova.ai)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
           <elementProp name="password" elementType="Argument"><stringProp name="Argument.name">password</stringProp><stringProp name="Argument.value">${__P(password,user1234password)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="adminEmail" elementType="Argument"><stringProp name="Argument.name">adminEmail</stringProp><stringProp name="Argument.value">${__P(adminEmail,admin@genova.ai)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
+          <elementProp name="adminPassword" elementType="Argument"><stringProp name="Argument.name">adminPassword</stringProp><stringProp name="Argument.value">${__P(adminPassword,admin1234password)}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp>
         </collectionProp>
       </elementProp>
     </TestPlan>
     <hashTree>
-      <!-- Config: host/puerto por defecto de todas las peticiones -->
       <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
-        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-          <collectionProp name="Arguments.arguments"/>
-        </elementProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
         <stringProp name="HTTPSampler.domain">${host}</stringProp>
         <stringProp name="HTTPSampler.port">${port}</stringProp>
         <stringProp name="HTTPSampler.protocol">http</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout">20000</stringProp>
+        <stringProp name="HTTPSampler.response_timeout">90000</stringProp>
       </ConfigTestElement>
       <hashTree/>
-      <!-- Cookie Manager: guarda la cookie de sesión genova_token entre peticiones -->
       <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
         <collectionProp name="CookieManager.cookies"/>
         <boolProp name="CookieManager.clearEachIteration">false</boolProp>
       </CookieManager>
       <hashTree/>
-      <!-- Header Manager: JSON en el cuerpo de las peticiones -->
       <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
         <collectionProp name="HeaderManager.headers">
           <elementProp name="" elementType="Header"><stringProp name="Header.name">Content-Type</stringProp><stringProp name="Header.value">application/json</stringProp></elementProp>
+          <elementProp name="" elementType="Header"><stringProp name="Header.name">Accept</stringProp><stringProp name="Header.value">application/json</stringProp></elementProp>
           <elementProp name="" elementType="Header"><stringProp name="Header.name">Cookie</stringProp><stringProp name="Header.value">genova_token=${authToken}</stringProp></elementProp>
         </collectionProp>
       </HeaderManager>
       <hashTree/>
-      <!-- Grupo de hilos: 25 usuarios, ramp-up 5s, duración 120s -->
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Usuarios concurrentes" enabled="true">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
-          <boolProp name="LoopController.continue_forever">true</boolProp>
-          <intProp name="LoopController.loops">-1</intProp>
-        </elementProp>
-        <stringProp name="ThreadGroup.num_threads">${__P(users,25)}</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,5)}</stringProp>
-        <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">${__P(duration,120)}</stringProp>
-        <stringProp name="ThreadGroup.delay">0</stringProp>
-      </ThreadGroup>
-      <hashTree>
-        <!-- 1) Login (una vez por hilo al arrancar) -->
-        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only - Login" enabled="true"/>
-        <hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/login" enabled="true">
-            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-              <collectionProp name="Arguments.arguments">
-                <elementProp name="" elementType="HTTPArgument">
-                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                  <stringProp name="Argument.value">{"email":"${email}","password":"${password}"}</stringProp>
-                  <stringProp name="Argument.metadata">=</stringProp>
-                </elementProp>
-              </collectionProp>
-            </elementProp>
-            <stringProp name="HTTPSampler.path">/api/auth/login</stringProp>
-            <stringProp name="HTTPSampler.method">POST</stringProp>
-          </HTTPSamplerProxy>
-          <hashTree>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Login 200" enabled="true">
-              <collectionProp name="Asserion.test_strings"><stringProp name="49586">200</stringProp></collectionProp>
-              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
-              <boolProp name="Assertion.assume_success">false</boolProp>
-              <intProp name="Assertion.test_type">8</intProp>
-            </ResponseAssertion>
-            <hashTree/>
-            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract genova_token" enabled="true">
-              <stringProp name="RegexExtractor.useHeaders">true</stringProp>
-              <stringProp name="RegexExtractor.refname">authToken</stringProp>
-              <stringProp name="RegexExtractor.regex">genova_token=([^;]+)</stringProp>
-              <stringProp name="RegexExtractor.template">$1$</stringProp>
-              <stringProp name="RegexExtractor.default"></stringProp>
-              <stringProp name="RegexExtractor.match_number">1</stringProp>
-            </RegexExtractor>
-            <hashTree/>
-          </hashTree>
-        </hashTree>
-        <!-- 2) GET /health -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /health" enabled="true">
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-          <stringProp name="HTTPSampler.path">/health</stringProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-        <!-- 3) GET /api/ovas -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas" enabled="true">
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-            <collectionProp name="Arguments.arguments">
-              <elementProp name="page" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">page</stringProp>
-                <stringProp name="Argument.value">1</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-            </collectionProp>
-          </elementProp>
-          <stringProp name="HTTPSampler.path">/api/ovas</stringProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-        <!-- 4) POST /api/auth/register (email único con __UUID) -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/register" enabled="true">
-          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-            <collectionProp name="Arguments.arguments">
-              <elementProp name="" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{"full_name":"Usuario Carga","email":"jmeter_${__UUID()}@test.genova.ai","password":"carga1234pass"}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-            </collectionProp>
-          </elementProp>
-          <stringProp name="HTTPSampler.path">/api/auth/register</stringProp>
-          <stringProp name="HTTPSampler.method">POST</stringProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-        <!-- 5) POST /api/ova/jobs (encolado LLM) — desactivado por defecto -->
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/ova/jobs (encolado LLM)" enabled="${__P(loadGeneration,false)}">
-          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-            <collectionProp name="Arguments.arguments">
-              <elementProp name="" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{"prompt":"OVA de carga ${__UUID()}: tema de prueba de capacidad.","resources":[{"phase_type":"engage","resource_type":"Cómic Interactivo"},{"phase_type":"explore","resource_type":"Lectura Interactiva"}]}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-            </collectionProp>
-          </elementProp>
-          <stringProp name="HTTPSampler.path">/api/ova/jobs</stringProp>
-          <stringProp name="HTTPSampler.method">POST</stringProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-        <!-- Pausa entre iteraciones: 0.5-2.0 s (equivale a wait_time de Locust) -->
-        <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Think time 0.5-2s" enabled="true">
-          <stringProp name="ConstantTimer.delay">500</stringProp>
-          <stringProp name="RandomTimer.range">1500</stringProp>
-        </UniformRandomTimer>
-        <hashTree/>
-        <!-- Listeners de reporte -->
-        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
-          <boolProp name="ResultCollector.error_logging">false</boolProp>
-          <objProp><name>saveConfig</name><value class="SampleSaveConfiguration">
-            <time>true</time><latency>true</latency><success>true</success><label>true</label>
-            <code>true</code><threadName>true</threadName><threadCounts>true</threadCounts>
-            <bytes>true</bytes><responseData class="false"/></value></objProp>
-          <stringProp name="filename"></stringProp>
-        </ResultCollector>
-        <hashTree/>
-        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
-          <boolProp name="ResultCollector.error_logging">false</boolProp>
-          <objProp><name>saveConfig</name><value class="SampleSaveConfiguration">
-            <time>true</time><latency>true</latency><success>true</success><label>true</label>
-            <code>true</code><bytes>true</bytes></value></objProp>
-          <stringProp name="filename"></stringProp>
-        </ResultCollector>
-        <hashTree/>
-      </hashTree>
+<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Usuarios" enabled="true">
+  <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+  <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Iteraciones usuarios" enabled="true">
+    <boolProp name="LoopController.continue_forever">true</boolProp>
+    <stringProp name="LoopController.loops">-1</stringProp>
+  </elementProp>
+  <stringProp name="ThreadGroup.num_threads">${__P(users,8)}</stringProp>
+  <stringProp name="ThreadGroup.ramp_time">${__P(rampup,10)}</stringProp>
+  <boolProp name="ThreadGroup.scheduler">true</boolProp>
+  <stringProp name="ThreadGroup.duration">${__P(duration,120)}</stringProp>
+  <stringProp name="ThreadGroup.delay">0</stringProp>
+</ThreadGroup>
+<hashTree>
+<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only - preparacion" enabled="true"/>
+<hashTree>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/login (preparacion)" enabled="true">
+    <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+    <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments">
+      <elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp>
+      <stringProp name="Argument.value">{"email":"${email}","password":"${password}"}</stringProp>
+      <stringProp name="Argument.metadata">=</stringProp></elementProp>
+    </collectionProp></elementProp>
+    <stringProp name="HTTPSampler.path">/api/auth/login</stringProp>
+    <stringProp name="HTTPSampler.method">POST</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extraer genova_token" enabled="true">
+      <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+      <stringProp name="RegexExtractor.refname">authToken</stringProp>
+      <stringProp name="RegexExtractor.regex">genova_token=([^;]+)</stringProp>
+      <stringProp name="RegexExtractor.template">$1$</stringProp>
+      <stringProp name="RegexExtractor.default"></stringProp>
+      <stringProp name="RegexExtractor.match_number">1</stringProp>
+    </RegexExtractor>
+    <hashTree/>
+  </hashTree>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas (preparacion)" enabled="true">
+    <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+    <stringProp name="HTTPSampler.path">/api/ovas?page=1&amp;limit=2</stringProp>
+    <stringProp name="HTTPSampler.method">GET</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extraer ova_id" enabled="true">
+      <stringProp name="JSONPostProcessor.referenceNames">ova_id;ova_papelera</stringProp>
+      <stringProp name="JSONPostProcessor.jsonPathExprs">$.ovas[0].id;$.ovas[1].id</stringProp>
+      <stringProp name="JSONPostProcessor.match_numbers">1;1</stringProp>
+      <stringProp name="JSONPostProcessor.defaultValues">00000000-0000-0000-0000-000000000000;00000000-0000-0000-0000-000000000000</stringProp>
+    </JSONPostProcessor>
+    <hashTree/>
+  </hashTree>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/editar (preparacion)" enabled="true">
+    <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+    <stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/editar</stringProp>
+    <stringProp name="HTTPSampler.method">GET</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extraer fase y version" enabled="true">
+      <stringProp name="JSONPostProcessor.referenceNames">fase_id;version_id</stringProp>
+      <stringProp name="JSONPostProcessor.jsonPathExprs">$.current_version.phases[0].id;$.version_history[0].id</stringProp>
+      <stringProp name="JSONPostProcessor.match_numbers">1;1</stringProp>
+      <stringProp name="JSONPostProcessor.defaultValues">00000000-0000-0000-0000-000000000000;00000000-0000-0000-0000-000000000000</stringProp>
+    </JSONPostProcessor>
+    <hashTree/>
+  </hashTree>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/auth/me (preparacion)" enabled="true">
+    <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+    <stringProp name="HTTPSampler.path">/api/auth/me</stringProp>
+    <stringProp name="HTTPSampler.method">GET</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extraer user_id" enabled="true">
+      <stringProp name="JSONPostProcessor.referenceNames">user_id</stringProp>
+      <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+      <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+      <stringProp name="JSONPostProcessor.defaultValues">00000000-0000-0000-0000-000000000000</stringProp>
+    </JSONPostProcessor>
+    <hashTree/>
+  </hashTree>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="x12 lecturas" enabled="true"><boolProp name="LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">12</stringProp></LoopController>
+<hashTree>
+<RandomController guiclass="RandomControlGui" testclass="RandomController" testname="Lecturas" enabled="true"><intProp name="InterleaveControl.style">1</intProp></RandomController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /health" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/health</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/health" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/health</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/db/health" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/db/health</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/agents/health" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/agents/health</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/health" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/health</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/rag/health" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/rag/health</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/scorm/health" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/scorm/health</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/uploads/health" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/uploads/health</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/auth/me" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/auth/me</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/me/api-keys" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/me/api-keys</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/me/enabled-models" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/me/enabled-models</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/me/image-models" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/me/image-models?provider=siliconflow</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/me/llm-settings" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/me/llm-settings</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/me/ova-settings" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/me/ova-settings</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/me/resource-configs" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/me/resource-configs</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/agents/engage/recursos" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/agents/engage/recursos</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/agents/explore/recursos" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/agents/explore/recursos</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/agents/explain/recursos" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/agents/explain/recursos</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/agents/elaborate/recursos" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/agents/elaborate/recursos</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/agents/evaluate/recursos" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/agents/evaluate/recursos</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/jobs" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/jobs?ova_id=${ova_id}</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/jobs/{id}" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/jobs/00000000-0000-0000-0000-000000000000</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/jobs/{id}/resources/{id}/content" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/regenerar/{id}/progress" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/regenerar/00000000-0000-0000-0000-000000000000/progress</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas?page=1&amp;limit=10</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas (buscar)" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas?page=1&amp;limit=10&amp;search=carga</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/llm-options" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/llm-options</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/editar" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/editar</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/versiones" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/versiones</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/versiones/diff" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/versiones/diff?v1=${version_id}&amp;v2=${version_id}</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/fases/{fase_id}/versiones" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/fases/${fase_id}/versiones</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/chat" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/chat</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/papelera" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/papelera?page=1&amp;limit=10</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/papelera/count" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/papelera/count</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/download" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/download</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/export-scorm" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/export-scorm</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/scorm" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/scorm</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/uploads/temp" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/uploads/temp</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/rag/chunks/by-upload/{id}" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/rag/chunks/by-upload/00000000-0000-0000-0000-000000000000</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="x4 escrituras idempotentes" enabled="true"><boolProp name="LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">4</stringProp></LoopController>
+<hashTree>
+<RandomController guiclass="RandomControlGui" testclass="RandomController" testname="Escrituras idempotentes" enabled="true"><intProp name="InterleaveControl.style">1</intProp></RandomController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH /api/users/me" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"full_name":"Usuario de prueba","email":"${email}"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/users/me</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH /api/users/me/theme" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"colorMode":"light","designMode":"default","palette":{}}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/users/me/theme</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH /api/ovas/{ova_id}/metadata" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"title":"[carga] OVA de referencia","description":"Prueba de capacidad"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/metadata</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH /api/ovas/{ova_id}/fases/{fase_id}" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"content":"&lt;h2&gt;Engage&lt;/h2&gt;&lt;p&gt;Contenido bajo carga.&lt;/p&gt;"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/fases/${fase_id}</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/forgot-password" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"email":"${email}"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/auth/forgot-password</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/resend-verification" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"email":"${email}"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/auth/resend-verification</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/verify-email" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"token":"token-de-carga-invalido"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/auth/verify-email</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/reset-password" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"token":"token-de-carga-invalido","new_password":"Carga1234abc"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/auth/reset-password</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="x3 sesion" enabled="true"><boolProp name="LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">3</stringProp></LoopController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/login" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"email":"${email}","password":"${password}"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/auth/login</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="x2 ciclo de papelera" enabled="true"><boolProp name="LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">2</stringProp></LoopController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/ovas/lote/papelera" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"ova_ids":["${ova_papelera}"]}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/ovas/lote/papelera</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/ovas/lote/restaurar" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"ova_ids":["${ova_papelera}"]}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/ovas/lote/restaurar</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DELETE /api/ovas/{ova_id}" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_papelera}</stringProp><stringProp name="HTTPSampler.method">DELETE</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH /api/ovas/{ova_id}/restaurar" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_papelera}/restaurar</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="x2 chat" enabled="true"><boolProp name="LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">2</stringProp></LoopController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/ovas/{ova_id}/chat" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"role":"user","kind":"message","text":"[carga] mensaje bajo carga"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/chat</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/chat (tras enviar)" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/chat</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="x1 altas" enabled="true"><boolProp name="LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">1</stringProp></LoopController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/register" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"full_name":"[carga] Usuario","email":"jmeter_${__UUID()}@test.genova.ai","password":"carga1234pass"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/auth/register</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/ovas/save" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"prompt":"[carga] OVA ${__UUID()}","phases":[{"type":"engage","order":1,"content":"&lt;p&gt;Carga&lt;/p&gt;","title":"Engage"}],"upload_ids":[]}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/ovas/save</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/ovas/{ova_id}/duplicar" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/duplicar</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/ovas/{ova_id}/versiones/{version_id}/revert" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/versiones/${version_id}/revert</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+  <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Think time 0.5-2s usuarios" enabled="true">
+    <stringProp name="ConstantTimer.delay">500</stringProp>
+    <stringProp name="RandomTimer.range">1500</stringProp>
+  </UniformRandomTimer>
+  <hashTree/>
+  <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Solo 5xx es error usuarios" enabled="true">
+    <collectionProp name="Asserion.test_strings"><stringProp name="err5xx">^5[0-9][0-9]$</stringProp></collectionProp>
+    <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+    <boolProp name="Assertion.assume_success">true</boolProp>
+    <intProp name="Assertion.test_type">5</intProp>
+  </ResponseAssertion>
+  <hashTree/>
+</hashTree>
+<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Administradores" enabled="true">
+  <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+  <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Iteraciones admin" enabled="true">
+    <boolProp name="LoopController.continue_forever">true</boolProp>
+    <stringProp name="LoopController.loops">-1</stringProp>
+  </elementProp>
+  <stringProp name="ThreadGroup.num_threads">${__P(adminUsers,2)}</stringProp>
+  <stringProp name="ThreadGroup.ramp_time">${__P(rampup,10)}</stringProp>
+  <boolProp name="ThreadGroup.scheduler">true</boolProp>
+  <stringProp name="ThreadGroup.duration">${__P(duration,120)}</stringProp>
+  <stringProp name="ThreadGroup.delay">0</stringProp>
+</ThreadGroup>
+<hashTree>
+<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only - preparacion admin" enabled="true"/>
+<hashTree>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/auth/login (preparacion admin)" enabled="true">
+    <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+    <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments">
+      <elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp>
+      <stringProp name="Argument.value">{"email":"${adminEmail}","password":"${adminPassword}"}</stringProp>
+      <stringProp name="Argument.metadata">=</stringProp></elementProp>
+    </collectionProp></elementProp>
+    <stringProp name="HTTPSampler.path">/api/auth/login</stringProp>
+    <stringProp name="HTTPSampler.method">POST</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Admin - extraer genova_token" enabled="true">
+      <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+      <stringProp name="RegexExtractor.refname">authToken</stringProp>
+      <stringProp name="RegexExtractor.regex">genova_token=([^;]+)</stringProp>
+      <stringProp name="RegexExtractor.template">$1$</stringProp>
+      <stringProp name="RegexExtractor.default"></stringProp>
+      <stringProp name="RegexExtractor.match_number">1</stringProp>
+    </RegexExtractor>
+    <hashTree/>
+  </hashTree>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas (preparacion admin)" enabled="true">
+    <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+    <stringProp name="HTTPSampler.path">/api/ovas?page=1&amp;limit=2</stringProp>
+    <stringProp name="HTTPSampler.method">GET</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Admin - extraer ova_id" enabled="true">
+      <stringProp name="JSONPostProcessor.referenceNames">ova_id;ova_papelera</stringProp>
+      <stringProp name="JSONPostProcessor.jsonPathExprs">$.ovas[0].id;$.ovas[1].id</stringProp>
+      <stringProp name="JSONPostProcessor.match_numbers">1;1</stringProp>
+      <stringProp name="JSONPostProcessor.defaultValues">00000000-0000-0000-0000-000000000000;00000000-0000-0000-0000-000000000000</stringProp>
+    </JSONPostProcessor>
+    <hashTree/>
+  </hashTree>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/ovas/{ova_id}/editar (preparacion admin)" enabled="true">
+    <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+    <stringProp name="HTTPSampler.path">/api/ovas/${ova_id}/editar</stringProp>
+    <stringProp name="HTTPSampler.method">GET</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Admin - extraer fase y version" enabled="true">
+      <stringProp name="JSONPostProcessor.referenceNames">fase_id;version_id</stringProp>
+      <stringProp name="JSONPostProcessor.jsonPathExprs">$.current_version.phases[0].id;$.version_history[0].id</stringProp>
+      <stringProp name="JSONPostProcessor.match_numbers">1;1</stringProp>
+      <stringProp name="JSONPostProcessor.defaultValues">00000000-0000-0000-0000-000000000000;00000000-0000-0000-0000-000000000000</stringProp>
+    </JSONPostProcessor>
+    <hashTree/>
+  </hashTree>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/auth/me (preparacion admin)" enabled="true">
+    <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+    <stringProp name="HTTPSampler.path">/api/auth/me</stringProp>
+    <stringProp name="HTTPSampler.method">GET</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Admin - extraer user_id" enabled="true">
+      <stringProp name="JSONPostProcessor.referenceNames">user_id</stringProp>
+      <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+      <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+      <stringProp name="JSONPostProcessor.defaultValues">00000000-0000-0000-0000-000000000000</stringProp>
+    </JSONPostProcessor>
+    <hashTree/>
+  </hashTree>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="x10 lecturas admin" enabled="true"><boolProp name="LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">10</stringProp></LoopController>
+<hashTree>
+<RandomController guiclass="RandomControlGui" testclass="RandomController" testname="Lecturas del panel admin" enabled="true"><intProp name="InterleaveControl.style">1</intProp></RandomController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users?page=1&amp;limit=10</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/analytics" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/analytics</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/me/links" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/me/links</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/users/links/admin" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/users/links/admin</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/roles" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/roles</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/admin/llm-config" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/admin/llm-config</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/admin/nodes-config" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/admin/nodes-config</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/admin/platform-config" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/admin/platform-config</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /api/admin/registration-mode" enabled="true"><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp><stringProp name="HTTPSampler.path">/api/admin/registration-mode</stringProp><stringProp name="HTTPSampler.method">GET</stringProp></HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="x3 escrituras admin" enabled="true"><boolProp name="LoopController.continue_forever">false</boolProp><stringProp name="LoopController.loops">3</stringProp></LoopController>
+<hashTree>
+<RandomController guiclass="RandomControlGui" testclass="RandomController" testname="Escrituras admin" enabled="true"><intProp name="InterleaveControl.style">1</intProp></RandomController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PATCH /api/users/{user_id}/status" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"is_active":true}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/users/${user_id}/status</stringProp><stringProp name="HTTPSampler.method">PATCH</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/users/{user_id}/unlock" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/users/${user_id}/unlock</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/users/me/links/accept" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{"code":"CARGA0"}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/users/me/links/accept</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /api/users/me/links/code" enabled="true"><boolProp name="HTTPSampler.postBodyRaw">true</boolProp><elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="" elementType="HTTPArgument"><boolProp name="HTTPArgument.always_encode">false</boolProp><stringProp name="Argument.value">{}</stringProp><stringProp name="Argument.metadata">=</stringProp></elementProp></collectionProp></elementProp><stringProp name="HTTPSampler.path">/api/users/me/links/code</stringProp><stringProp name="HTTPSampler.method">POST</stringProp></HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+</hashTree>
+  <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Think time 0.5-2s admin" enabled="true">
+    <stringProp name="ConstantTimer.delay">500</stringProp>
+    <stringProp name="RandomTimer.range">1500</stringProp>
+  </UniformRandomTimer>
+  <hashTree/>
+  <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Solo 5xx es error admin" enabled="true">
+    <collectionProp name="Asserion.test_strings"><stringProp name="err5xx">^5[0-9][0-9]$</stringProp></collectionProp>
+    <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+    <boolProp name="Assertion.assume_success">true</boolProp>
+    <intProp name="Assertion.test_type">5</intProp>
+  </ResponseAssertion>
+  <hashTree/>
+</hashTree>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp><name>saveConfig</name><value class="SampleSaveConfiguration">
+          <time>true</time><latency>true</latency><success>true</success><label>true</label>
+          <code>true</code><threadName>true</threadName><threadCounts>true</threadCounts>
+          <bytes>true</bytes><responseData class="false"/></value></objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
     </hashTree>
   </hashTree>
 </jmeterTestPlan>

@@ -14,7 +14,7 @@ type Status = "verifying" | "success" | "error";
   selector: "gn-verify-email-page",
   imports: [RouterLink, ButtonComponent, IconComponent],
   template: `
-    <section
+    <main
       class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/40 p-4"
     >
       <div
@@ -56,7 +56,7 @@ type Status = "verifying" | "success" | "error";
           </p>
         }
       </div>
-    </section>
+    </main>
   `,
 })
 export class VerifyEmailPage implements OnInit {

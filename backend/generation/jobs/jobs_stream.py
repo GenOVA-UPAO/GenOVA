@@ -21,7 +21,7 @@ from generation.jobs.jobs_helpers import job_to_dict
 from generation.jobs.jobs_model import JOB_STREAM_TERMINAL
 from models import User
 
-router = APIRouter()
+router = APIRouter(tags=["Generación"])
 _POLL_SECONDS = 1.5
 _MAX_TICKS = 1200  # ~30 min safety cap (1200 * 1.5s) so a stuck job can't hold a conn forever
 
@@ -40,7 +40,7 @@ def _read_snapshot(job_id: uuid.UUID, user_id: uuid.UUID) -> dict | None:
         db.close()
 
 
-@router.get("/{job_id}/stream")
+@router.get("/{job_id}/stream", summary="Seguir el progreso del trabajo por SSE")
 async def stream_job(
     job_id: str,
     request: Request,

@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core.ids import is_uuid
 from models import Ova, OvaPhase, OvaVersion, User
 from ova.helpers import _is_admin, forbidden_response
 from storage import StorageError, is_configured, upload_zip
@@ -103,9 +104,13 @@ def _resolve_ova(ova_id: str, current_user: User, db: Session):
     Returns ``(ova, None)`` on success, or ``(None, JSONResponse)`` on error.
     Callers should ``return err`` immediately when the second element is truthy.
     """
-    ova = db.execute(
-        select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
-    ).scalar_one_or_none()
+    ova = (
+        db.execute(
+            select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
+        ).scalar_one_or_none()
+        if is_uuid(ova_id)
+        else None
+    )
     if not ova:
         return None, JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -133,7 +138,10 @@ def _load_version_with_phases(version_id: str, ova_id: str, db: Session) -> dict
     """Load a version and its phases for side-by-side diff comparison.
 
     Returns ``{"version": ..., "phases": [...]}`` or ``None`` if not found.
+    An id that is not a UUID is treated as "not found" instead of reaching the DB.
     """
+    if not is_uuid(version_id) or not is_uuid(ova_id):
+        return None
     ver = db.execute(
         select(OvaVersion).where(OvaVersion.id == version_id, OvaVersion.ova_id == ova_id)
     ).scalar_one_or_none()

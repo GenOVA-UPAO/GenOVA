@@ -12,7 +12,7 @@ from core.database import get_db
 from core.rate_limit import limiter
 from models import User
 
-router = APIRouter()
+router = APIRouter(tags=["Ajustes de usuario"])
 logger = structlog.get_logger(__name__)
 
 _VALID_KEY = re.compile(r"^(engage|explore|explain|elaborate|evaluate):([1-9]|10)$")
@@ -44,12 +44,12 @@ class ResourceConfigsUpdate(BaseModel):
     configs: dict
 
 
-@router.get("/me/resource-configs")
+@router.get("/me/resource-configs", summary="Obtener la configuración de recursos")
 def get_resource_configs(current_user: User = Depends(get_current_user)):
     return {"configs": current_user.resource_configs or {}}
 
 
-@router.put("/me/resource-configs")
+@router.put("/me/resource-configs", summary="Actualizar la configuración de recursos")
 @limiter.limit("30/minute")
 def put_resource_configs(
     request: Request,

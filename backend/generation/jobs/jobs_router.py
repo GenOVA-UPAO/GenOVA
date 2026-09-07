@@ -32,11 +32,11 @@ from generation.jobs.jobs_router_helpers import (
 )
 from models import User
 
-router = APIRouter()
+router = APIRouter(tags=["Generación"])
 logger = structlog.get_logger(__name__)
 
 
-@router.post("")
+@router.post("", summary="Encolar un trabajo de generación de OVA")
 @limiter.limit("10/minute")
 def start_job(
     request: Request,
@@ -77,7 +77,7 @@ def start_job(
     )
 
 
-@router.get("")
+@router.get("", summary="Buscar un trabajo por criterios")
 def find_job(
     ova_id: str,
     current_user: User = Depends(get_current_user),
@@ -94,7 +94,7 @@ def find_job(
     return job_to_dict(job, resources)
 
 
-@router.get("/{job_id}")
+@router.get("/{job_id}", summary="Consultar el estado de un trabajo")
 def get_job_status(
     job_id: str,
     current_user: User = Depends(get_current_user),
@@ -111,7 +111,10 @@ def get_job_status(
     return job_to_dict(job, resources)
 
 
-@router.get("/{job_id}/resources/{resource_id}/content")
+@router.get(
+    "/{job_id}/resources/{resource_id}/content",
+    summary="Obtener el contenido de un recurso generado",
+)
 def get_resource_content(
     job_id: str,
     resource_id: str,
@@ -146,7 +149,7 @@ def get_resource_content(
     }
 
 
-@router.post("/{job_id}/cancel")
+@router.post("/{job_id}/cancel", summary="Cancelar un trabajo en curso")
 @limiter.limit("10/minute")
 def cancel_job(
     request: Request,
@@ -161,7 +164,7 @@ def cancel_job(
     return _cancel_or_409(db, parsed, current_user.id)
 
 
-@router.post("/{job_id}/resume")
+@router.post("/{job_id}/resume", summary="Reanudar un trabajo interrumpido")
 @limiter.limit("10/minute")
 def resume_job(
     request: Request,

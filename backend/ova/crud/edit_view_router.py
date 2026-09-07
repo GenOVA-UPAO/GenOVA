@@ -27,7 +27,7 @@ router = APIRouter()
 router.include_router(export_router)
 
 
-@router.get("/{ova_id}/editar")
+@router.get("/{ova_id}/editar", tags=["OVA · CRUD"], summary="Obtener la OVA para el editor")
 def get_ova_editor(
     ova_id: str,
     current_user: User = Depends(get_current_user),
@@ -61,7 +61,11 @@ def get_ova_editor(
     }
 
 
-@router.get("/{ova_id}/versiones")
+@router.get(
+    "/{ova_id}/versiones",
+    tags=["OVA · Fases y versiones"],
+    summary="Listar las versiones de la OVA",
+)
 def list_ova_versions(
     ova_id: str,
     current_user: User = Depends(get_current_user),
@@ -79,7 +83,11 @@ def list_ova_versions(
     }
 
 
-@router.post("/{ova_id}/versiones/{version_id}/revert")
+@router.post(
+    "/{ova_id}/versiones/{version_id}/revert",
+    tags=["OVA · Fases y versiones"],
+    summary="Revertir la OVA a una versión anterior",
+)
 @limiter.limit("10/minute")
 def revert_to_version(
     request: Request,
@@ -138,7 +146,11 @@ def revert_to_version(
     }
 
 
-@router.get("/{ova_id}/versiones/diff")
+@router.get(
+    "/{ova_id}/versiones/diff",
+    tags=["OVA · Fases y versiones"],
+    summary="Comparar dos versiones de la OVA",
+)
 def get_version_diff(
     ova_id: str,
     v1: str,

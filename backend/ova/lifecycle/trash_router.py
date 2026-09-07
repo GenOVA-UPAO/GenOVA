@@ -11,10 +11,10 @@ from models import Ova, User
 from ova.helpers import _delete_scorm_file, _is_admin, _ova_to_dict, forbidden_response
 from ova.lifecycle.trash_batch_router import router as trash_batch_router
 
-router = APIRouter()
+router = APIRouter(tags=["OVA · Papelera"])
 
 
-@router.get("/papelera/count")
+@router.get("/papelera/count", summary="Contar las OVA en la papelera")
 def count_trashed_ovas(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -27,7 +27,7 @@ def count_trashed_ovas(
     return {"count": count}
 
 
-@router.get("/papelera")
+@router.get("/papelera", summary="Listar las OVA en la papelera")
 def list_trashed_ovas(
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=10, ge=1, le=100),
@@ -60,7 +60,7 @@ def list_trashed_ovas(
 router.include_router(trash_batch_router)
 
 
-@router.patch("/{ova_id}/restaurar")
+@router.patch("/{ova_id}/restaurar", summary="Restaurar una OVA de la papelera")
 @limiter.limit("30/minute")
 def restore_ova(
     request: Request,
@@ -90,7 +90,7 @@ def restore_ova(
     return {"message": "OVA restaurado correctamente.", "id": str(ova.id)}
 
 
-@router.delete("/{ova_id}/permanente")
+@router.delete("/{ova_id}/permanente", summary="Eliminar una OVA de forma permanente")
 @limiter.limit("20/minute")
 def permanent_delete_ova(
     request: Request,

@@ -1,0 +1,832 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1784742396096,556,POST /api/auth/login (preparacion),200,OK,Usuarios 1-1,text,true,,1127,298,8,10,http://localhost:8000/api/auth/login,552,0,21
+1784742396173,534,POST /api/auth/login (preparacion),200,OK,Usuarios 1-2,text,true,,1127,298,9,11,http://localhost:8000/api/auth/login,534,0,1
+1784742396283,527,POST /api/auth/login (preparacion),200,OK,Usuarios 1-3,text,true,,1127,298,9,12,http://localhost:8000/api/auth/login,527,0,1
+1784742396364,527,POST /api/auth/login (preparacion),200,OK,Usuarios 1-5,text,true,,1127,298,9,12,http://localhost:8000/api/auth/login,527,0,1
+1784742396543,523,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-1,text,true,,1131,300,3,13,http://localhost:8000/api/auth/login,523,0,1
+1784742396867,526,POST /api/auth/login (preparacion),200,OK,Usuarios 1-6,text,true,,1127,298,11,14,http://localhost:8000/api/auth/login,525,0,1
+1784742396866,532,POST /api/auth/login (preparacion),200,OK,Usuarios 1-4,text,true,,1127,298,11,14,http://localhost:8000/api/auth/login,532,0,1
+1784742397392,412,GET /api/ovas (preparacion),200,OK,Usuarios 1-2,text,true,,1106,519,13,17,http://localhost:8000/api/ovas?page=1&limit=2,412,0,1
+1784742397428,407,GET /api/ovas (preparacion),200,OK,Usuarios 1-3,text,true,,1106,519,13,17,http://localhost:8000/api/ovas?page=1&limit=2,407,0,1
+1784742397386,527,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-2,text,true,,1131,300,4,17,http://localhost:8000/api/auth/login,527,0,1
+1784742397703,405,GET /api/ovas (preparacion),200,OK,Usuarios 1-5,text,true,,1106,519,14,18,http://localhost:8000/api/ovas?page=1&limit=2,405,0,1
+1784742397703,528,POST /api/auth/login (preparacion),200,OK,Usuarios 1-7,text,true,,1127,298,15,19,http://localhost:8000/api/auth/login,528,0,1
+1784742397807,526,POST /api/auth/login (preparacion),200,OK,Usuarios 1-10,text,true,,1127,298,15,19,http://localhost:8000/api/auth/login,526,0,1
+1784742397836,526,POST /api/auth/login (preparacion),200,OK,Usuarios 1-8,text,true,,1127,298,15,19,http://localhost:8000/api/auth/login,526,0,1
+1784742398164,407,GET /api/ovas (preparacion),200,OK,Usuarios 1-4,text,true,,1106,519,16,20,http://localhost:8000/api/ovas?page=1&limit=2,407,0,1
+1784742398172,406,GET /api/ovas (preparacion),200,OK,Usuarios 1-6,text,true,,1106,519,16,20,http://localhost:8000/api/ovas?page=1&limit=2,405,0,1
+1784742398301,409,GET /api/ovas (preparacion),200,OK,Usuarios 1-1,text,true,,1106,519,17,21,http://localhost:8000/api/ovas?page=1&limit=2,409,0,1
+1784742398280,529,POST /api/auth/login (preparacion),200,OK,Usuarios 1-9,text,true,,1127,298,17,22,http://localhost:8000/api/auth/login,529,0,1
+1784742398317,522,POST /api/auth/login (preparacion),200,OK,Usuarios 1-11,text,true,,1127,298,17,22,http://localhost:8000/api/auth/login,522,0,0
+1784742398387,526,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-3,text,true,,1131,300,5,22,http://localhost:8000/api/auth/login,526,0,0
+1784742398423,525,POST /api/auth/login (preparacion),200,OK,Usuarios 1-13,text,true,,1127,298,18,23,http://localhost:8000/api/auth/login,525,0,1
+1784742398731,525,POST /api/auth/login (preparacion),200,OK,Usuarios 1-14,text,true,,1127,298,19,24,http://localhost:8000/api/auth/login,525,0,1
+1784742398872,405,GET /api/ovas (preparacion admin),200,OK,Administradores 2-1,text,true,,1279,521,5,24,http://localhost:8000/api/ovas?page=1&limit=2,405,0,1
+1784742398801,527,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-4,text,true,,1131,300,5,24,http://localhost:8000/api/auth/login,527,0,1
+1784742398823,528,POST /api/auth/login (preparacion),200,OK,Usuarios 1-12,text,true,,1127,298,19,24,http://localhost:8000/api/auth/login,527,0,1
+1784742398970,406,GET /api/ovas (preparacion),200,OK,Usuarios 1-7,text,true,,1106,519,19,24,http://localhost:8000/api/ovas?page=1&limit=2,406,0,1
+1784742399147,413,GET /api/ovas (preparacion),200,OK,Usuarios 1-10,text,true,,1106,519,20,25,http://localhost:8000/api/ovas?page=1&limit=2,413,0,1
+1784742399144,416,GET /api/ovas (preparacion admin),200,OK,Administradores 2-2,text,true,,1279,521,5,25,http://localhost:8000/api/ovas?page=1&limit=2,416,0,1
+1784742398996,709,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-5,text,true,,1093,548,21,26,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,709,0,0
+1784742399342,407,GET /api/ovas (preparacion),200,OK,Usuarios 1-8,text,true,,1106,519,21,26,http://localhost:8000/api/ovas?page=1&limit=2,407,0,1
+1784742399433,406,GET /api/ovas (preparacion admin),200,OK,Administradores 2-3,text,true,,1279,521,6,27,http://localhost:8000/api/ovas?page=1&limit=2,406,0,0
+1784742399313,702,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-6,text,true,,1093,548,22,28,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,702,0,1
+1784742399405,711,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-1,text,true,,1093,548,22,28,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,711,0,0
+1784742399803,408,GET /api/ovas (preparacion),200,OK,Usuarios 1-9,text,true,,1106,519,23,29,http://localhost:8000/api/ovas?page=1&limit=2,408,0,1
+1784742399550,714,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-2,text,true,,1093,548,23,29,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,714,0,1
+1784742399583,712,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-3,text,true,,1093,548,23,29,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,711,0,1
+1784742399887,412,GET /api/ovas (preparacion),200,OK,Usuarios 1-11,text,true,,1106,519,23,29,http://localhost:8000/api/ovas?page=1&limit=2,412,0,1
+1784742399806,527,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-5,text,true,,1131,300,6,29,http://localhost:8000/api/auth/login,527,0,1
+1784742399709,704,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-4,text,true,,1093,548,23,29,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,704,0,1
+1784742399996,524,POST /api/auth/login (preparacion),200,OK,Usuarios 1-15,text,true,,1127,298,24,30,http://localhost:8000/api/auth/login,524,0,0
+1784742400040,527,POST /api/auth/login (preparacion),200,OK,Usuarios 1-16,text,true,,1127,298,24,30,http://localhost:8000/api/auth/login,526,0,1
+1784742400238,406,GET /api/ovas (preparacion),200,OK,Usuarios 1-13,text,true,,1106,519,24,30,http://localhost:8000/api/ovas?page=1&limit=2,406,0,1
+1784742400255,409,GET /api/ovas (preparacion),200,OK,Usuarios 1-12,text,true,,1106,519,24,30,http://localhost:8000/api/ovas?page=1&limit=2,409,0,0
+1784742400337,526,POST /api/auth/login (preparacion),200,OK,Usuarios 1-21,text,true,,1127,298,25,32,http://localhost:8000/api/auth/login,526,0,1
+1784742400602,404,GET /api/ovas (preparacion),200,OK,Usuarios 1-14,text,true,,1106,519,26,33,http://localhost:8000/api/ovas?page=1&limit=2,404,0,1
+1784742400545,523,POST /api/auth/login (preparacion),200,OK,Usuarios 1-19,text,true,,1127,298,26,33,http://localhost:8000/api/auth/login,523,0,1
+1784742400555,533,POST /api/auth/login (preparacion),200,OK,Usuarios 1-22,text,true,,1127,298,26,33,http://localhost:8000/api/auth/login,533,0,1
+1784742400409,707,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-8,text,true,,1093,548,26,33,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,707,0,0
+1784742400074,1057,POST /api/auth/login (preparacion),200,OK,Usuarios 1-17,text,true,,1128,298,26,33,http://localhost:8000/api/auth/login,1057,0,0
+1784742400569,711,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-3,text,true,,1093,550,7,34,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,711,0,1
+1784742400782,524,POST /api/auth/login (preparacion),200,OK,Usuarios 1-18,text,true,,1127,298,27,34,http://localhost:8000/api/auth/login,524,0,1
+1784742400258,1211,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-1,text,true,,1094,550,7,35,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1211,0,1
+1784742400941,610,GET /api/auth/me (preparacion),200,OK,Usuarios 1-5,text,true,,753,507,28,35,http://localhost:8000/api/auth/me,610,0,1
+1784742400850,707,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-7,text,true,,1093,548,28,35,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,707,0,1
+1784742400851,708,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-2,text,true,,1093,550,7,35,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,708,0,1
+1784742401030,606,GET /api/auth/me (preparacion),200,OK,Usuarios 1-6,text,true,,753,507,28,35,http://localhost:8000/api/auth/me,606,0,1
+1784742401103,710,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-11,text,true,,1093,548,29,37,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,709,0,0
+1784742401261,605,GET /api/auth/me (preparacion),200,OK,Usuarios 1-2,text,true,,753,507,29,37,http://localhost:8000/api/auth/me,605,0,1
+1784742401268,608,GET /api/auth/me (preparacion),200,OK,Usuarios 1-1,text,true,,753,507,29,37,http://localhost:8000/api/auth/me,608,0,1
+1784742401380,536,POST /api/auth/login (preparacion),200,OK,Usuarios 1-20,text,true,,1127,298,29,37,http://localhost:8000/api/auth/login,536,0,1
+1784742401499,420,GET /api/ovas (preparacion),200,OK,Usuarios 1-16,text,true,,1106,519,29,37,http://localhost:8000/api/ovas?page=1&limit=2,420,0,1
+1784742401312,610,GET /api/auth/me (preparacion),200,OK,Usuarios 1-3,text,true,,753,507,29,37,http://localhost:8000/api/auth/me,610,0,0
+1784742401110,911,GET /api/ovas (preparacion admin),200,OK,Administradores 2-4,text,true,,1279,521,8,38,http://localhost:8000/api/ovas?page=1&limit=2,911,0,0
+1784742401356,716,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-12,text,true,,1093,548,30,38,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,716,0,1
+1784742401583,526,POST /api/auth/login (preparacion),200,OK,Usuarios 1-25,text,true,,1127,298,30,38,http://localhost:8000/api/auth/login,526,0,0
+1784742401158,1027,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-6,text,true,,1132,300,8,38,http://localhost:8000/api/auth/login,1027,0,1
+1784742401051,1206,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-10,text,true,,1094,548,31,39,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1206,0,0
+1784742402083,406,GET /api/ovas (preparacion),200,OK,Usuarios 1-19,text,true,,1106,519,32,40,http://localhost:8000/api/ovas?page=1&limit=2,406,0,1
+1784742401803,714,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-14,text,true,,1093,548,32,40,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,714,0,1
+1784742401624,909,GET /api/ovas (preparacion admin),200,OK,Administradores 2-5,text,true,,1279,521,8,40,http://localhost:8000/api/ovas?page=1&limit=2,909,0,1
+1784742402066,529,POST /api/auth/login (preparacion),200,OK,Usuarios 1-26,text,true,,1127,298,32,40,http://localhost:8000/api/auth/login,528,0,1
+1784742402025,601,GET /api/auth/me (preparacion),200,OK,Usuarios 1-4,text,true,,753,507,32,40,http://localhost:8000/api/auth/me,601,0,0
+1784742401610,1034,POST /api/auth/login (preparacion),200,OK,Usuarios 1-23,text,true,,1128,298,32,40,http://localhost:8000/api/auth/login,1034,0,1
+1784742402130,524,POST /api/auth/login (preparacion),200,OK,Usuarios 1-24,text,true,,1127,298,32,40,http://localhost:8000/api/auth/login,524,0,1
+1784742402318,407,GET /api/ovas (preparacion),200,OK,Usuarios 1-15,text,true,,1106,519,33,41,http://localhost:8000/api/ovas?page=1&limit=2,407,0,1
+1784742402041,706,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-9,text,true,,1093,548,33,41,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,705,0,0
+1784742402205,611,GET /api/auth/me (preparacion),200,OK,Usuarios 1-7,text,true,,753,507,33,42,http://localhost:8000/api/auth/me,611,0,0
+1784742402327,614,GET /api/auth/me (preparacion),200,OK,Usuarios 1-8,text,true,,753,507,34,43,http://localhost:8000/api/auth/me,613,0,2
+1784742402537,406,GET /api/users/me/image-models,200,OK,Usuarios 1-3,text,true,,406,542,34,43,http://localhost:8000/api/users/me/image-models?provider=siliconflow,406,0,1
+1784742402450,524,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-8,text,true,,1131,300,9,43,http://localhost:8000/api/auth/login,524,0,1
+1784742402584,409,GET /api/ovas (preparacion),200,OK,Usuarios 1-18,text,true,,1106,519,34,43,http://localhost:8000/api/ovas?page=1&limit=2,409,0,0
+1784742402396,609,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-3,text,true,,880,509,9,43,http://localhost:8000/api/auth/me,609,0,1
+1784742402608,413,GET /api/ovas (preparacion),200,OK,Usuarios 1-17,text,true,,1106,519,34,43,http://localhost:8000/api/ovas?page=1&limit=2,413,0,0
+1784742403023,4,GET /api/ovas/health,200,OK,Usuarios 1-5,text,true,,396,511,34,43,http://localhost:8000/api/ovas/health,4,0,1
+1784742402759,407,GET /api/ovas (preparacion),200,OK,Usuarios 1-20,text,true,,1106,519,34,43,http://localhost:8000/api/ovas?page=1&limit=2,407,0,1
+1784742402658,525,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-7,text,true,,1131,300,9,43,http://localhost:8000/api/auth/login,525,0,0
+1784742402679,528,POST /api/auth/login (preparacion),200,OK,Usuarios 1-27,text,true,,1127,298,35,44,http://localhost:8000/api/auth/login,528,0,1
+1784742402503,713,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-13,text,true,,1093,548,35,44,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,713,0,1
+1784742402810,409,GET /api/ovas (preparacion),200,OK,Usuarios 1-21,text,true,,1106,519,35,44,http://localhost:8000/api/ovas?page=1&limit=2,409,0,0
+1784742402854,411,GET /api/ovas (preparacion),200,OK,Usuarios 1-22,text,true,,1106,519,35,44,http://localhost:8000/api/ovas?page=1&limit=2,411,0,1
+1784742402827,522,POST /api/auth/login (preparacion),200,OK,Usuarios 1-29,text,true,,1127,298,35,44,http://localhost:8000/api/auth/login,521,0,1
+1784742402902,606,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-2,text,true,,880,509,9,45,http://localhost:8000/api/auth/me,606,0,1
+1784742403239,304,GET /api/users/me/enabled-models,200,OK,Usuarios 1-6,text,true,,632,523,36,45,http://localhost:8000/api/users/me/enabled-models,304,0,1
+1784742403135,529,POST /api/auth/login (preparacion),200,OK,Usuarios 1-31,text,true,,1127,298,36,45,http://localhost:8000/api/auth/login,529,0,0
+1784742403476,304,GET /api/users/me/enabled-models,200,OK,Usuarios 1-1,text,true,,632,523,37,46,http://localhost:8000/api/users/me/enabled-models,304,0,1
+1784742403533,307,GET /api/users/me/ova-settings,200,OK,Usuarios 1-2,text,true,,650,521,37,47,http://localhost:8000/api/users/me/ova-settings,307,0,1
+1784742403251,612,GET /api/auth/me (preparacion),200,OK,Usuarios 1-11,text,true,,753,507,37,47,http://localhost:8000/api/auth/me,612,0,2
+1784742403261,613,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-1,text,true,,880,509,10,47,http://localhost:8000/api/auth/me,613,0,1
+1784742403385,524,POST /api/auth/login (preparacion),200,OK,Usuarios 1-28,text,true,,1127,298,37,47,http://localhost:8000/api/auth/login,524,0,1
+1784742403559,411,GET /api/ovas (preparacion admin),200,OK,Administradores 2-6,text,true,,1279,521,10,48,http://localhost:8000/api/ovas?page=1&limit=2,411,0,1
+1784742403452,525,POST /api/auth/login (preparacion),200,OK,Usuarios 1-32,text,true,,1127,298,38,48,http://localhost:8000/api/auth/login,525,0,1
+1784742403381,608,GET /api/auth/me (preparacion),200,OK,Usuarios 1-9,text,true,,753,507,38,48,http://localhost:8000/api/auth/me,608,0,0
+1784742403329,707,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-5,text,true,,1093,550,10,48,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,707,0,1
+1784742403457,609,GET /api/auth/me (preparacion),200,OK,Usuarios 1-12,text,true,,753,507,38,48,http://localhost:8000/api/auth/me,609,0,1
+1784742404064,11,GET /api/scorm/health,200,OK,Usuarios 1-4,text,true,,398,512,38,48,http://localhost:8000/api/scorm/health,11,0,1
+1784742403582,528,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-9,text,true,,1131,300,10,48,http://localhost:8000/api/auth/login,528,0,0
+1784742403704,408,GET /api/ovas (preparacion),200,OK,Usuarios 1-25,text,true,,1106,519,38,48,http://localhost:8000/api/ovas?page=1&limit=2,408,0,1
+1784742403448,704,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-16,text,true,,1093,548,38,48,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,704,0,1
+1784742403658,509,GET /api/ovas/{ova_id}/chat,200,OK,Usuarios 1-5,text,true,,383,546,38,48,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,509,0,1
+1784742403940,410,GET /api/ovas (preparacion),200,OK,Usuarios 1-27,text,true,,1106,519,39,49,http://localhost:8000/api/ovas?page=1&limit=2,410,0,1
+1784742403642,712,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-4,text,true,,1093,550,10,49,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,712,0,1
+1784742403852,524,POST /api/auth/login (preparacion),200,OK,Usuarios 1-30,text,true,,1127,298,39,49,http://localhost:8000/api/auth/login,524,0,0
+1784742404460,4,GET /api/agents/explore/recursos,200,OK,Usuarios 1-8,text,true,,1396,523,40,50,http://localhost:8000/api/agents/explore/recursos,4,0,1
+1784742403887,604,GET /api/auth/me (preparacion),200,OK,Usuarios 1-14,text,true,,753,507,40,50,http://localhost:8000/api/auth/me,604,0,1
+1784742404015,526,POST /api/auth/login (preparacion),200,OK,Usuarios 1-34,text,true,,1127,298,40,50,http://localhost:8000/api/auth/login,526,0,1
+1784742403878,703,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-17,text,true,,1093,548,40,50,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,703,0,1
+1784742404602,5,GET /api/agents/explain/recursos,200,OK,Usuarios 1-7,text,true,,1376,523,40,50,http://localhost:8000/api/agents/explain/recursos,5,0,1
+1784742404211,407,GET /api/roles,200,OK,Administradores 2-2,text,true,,3476,507,10,50,http://localhost:8000/api/roles,407,0,1
+1784742404027,612,GET /api/auth/me (preparacion),200,OK,Usuarios 1-10,text,true,,753,507,40,50,http://localhost:8000/api/auth/me,612,0,1
+1784742404268,407,GET /api/ovas (preparacion),200,OK,Usuarios 1-31,text,true,,1106,519,40,50,http://localhost:8000/api/ovas?page=1&limit=2,407,0,1
+1784742404066,614,GET /api/auth/me (preparacion),200,OK,Usuarios 1-13,text,true,,753,507,40,50,http://localhost:8000/api/auth/me,614,0,0
+1784742404202,673,POST /api/auth/login (preparacion),200,OK,Usuarios 1-33,text,true,,1127,298,41,52,http://localhost:8000/api/auth/login,672,0,0
+1784742404384,491,GET /api/ovas (preparacion admin),200,OK,Administradores 2-7,text,true,,1279,521,11,52,http://localhost:8000/api/ovas?page=1&limit=2,491,0,1
+1784742404088,789,GET /api/ovas/{ova_id}/export-scorm,200,OK,Usuarios 1-6,text,true,,1052,554,41,52,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/export-scorm,789,0,0
+1784742404389,584,GET /api/ovas (preparacion),200,OK,Usuarios 1-26,text,true,,1106,519,42,53,http://localhost:8000/api/ovas?page=1&limit=2,584,0,0
+1784742404426,552,GET /api/ovas/papelera/count,200,OK,Usuarios 1-3,text,true,,379,519,42,53,http://localhost:8000/api/ovas/papelera/count,552,0,1
+1784742404423,555,GET /api/ovas (preparacion),200,OK,Usuarios 1-23,text,true,,1106,519,42,53,http://localhost:8000/api/ovas?page=1&limit=2,555,0,0
+1784742404591,470,GET /api/ovas (preparacion),200,OK,Usuarios 1-24,text,true,,1106,519,42,53,http://localhost:8000/api/ovas?page=1&limit=2,470,0,1
+1784742404620,543,GET /api/ovas (preparacion),200,OK,Usuarios 1-28,text,true,,1106,519,42,53,http://localhost:8000/api/ovas?page=1&limit=2,543,0,1
+1784742404449,823,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-18,text,true,,1093,548,43,54,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,823,0,0
+1784742404418,857,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-15,text,true,,1093,548,43,54,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,857,0,1
+1784742403932,1343,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-19,text,true,,1094,548,43,54,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1343,0,1
+1784742404648,637,POST /api/auth/login (preparacion),200,OK,Usuarios 1-35,text,true,,1127,298,43,54,http://localhost:8000/api/auth/login,637,0,1
+1784742404681,700,GET /api/users/links/admin,200,OK,Administradores 2-1,text,true,,15474,519,11,54,http://localhost:8000/api/users/links/admin,700,0,1
+1784742404572,810,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-6,text,true,,1093,550,11,54,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,809,0,1
+1784742404963,424,GET /api/jobs/{id},404,Not Found,Usuarios 1-11,text,true,,431,541,43,54,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,423,0,1
+1784742404784,618,POST /api/auth/login (preparacion),200,OK,Usuarios 1-38,text,true,,1127,298,43,54,http://localhost:8000/api/auth/login,618,0,1
+1784742404878,526,POST /api/auth/login (preparacion),200,OK,Usuarios 1-36,text,true,,1127,298,43,54,http://localhost:8000/api/auth/login,526,0,1
+1784742405081,409,GET /api/users/me/image-models,200,OK,Usuarios 1-5,text,true,,406,542,44,55,http://localhost:8000/api/users/me/image-models?provider=siliconflow,409,0,1
+1784742404685,897,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-20,text,true,,1093,548,44,55,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,897,0,1
+1784742405175,410,GET /api/jobs/{id},404,Not Found,Usuarios 1-14,text,true,,431,541,44,55,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,410,0,1
+1784742404851,738,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-22,text,true,,1093,548,44,55,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,738,0,1
+1784742405614,6,GET /api/agents/engage/recursos,200,OK,Usuarios 1-13,text,true,,1389,522,44,55,http://localhost:8000/api/agents/engage/recursos,6,0,1
+1784742405119,527,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-10,text,true,,1131,300,11,55,http://localhost:8000/api/auth/login,527,0,1
+1784742404655,1025,GET /api/ovas (preparacion admin),200,OK,Administradores 2-8,text,true,,1280,521,11,55,http://localhost:8000/api/ovas?page=1&limit=2,1025,0,1
+1784742405329,364,GET /api/users/me/enabled-models,200,OK,Usuarios 1-12,text,true,,632,523,45,56,http://localhost:8000/api/users/me/enabled-models,364,0,1
+1784742405239,540,GET /api/ovas/papelera,200,OK,Usuarios 1-7,text,true,,431,529,45,56,http://localhost:8000/api/ovas/papelera?page=1&limit=10,540,0,1
+1784742405324,464,GET /api/ovas/{ova_id}/regenerar/{id}/progress,404,Not Found,Usuarios 1-2,text,true,,448,597,45,57,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/regenerar/00000000-0000-0000-0000-000000000000/progress,464,0,1
+1784742405341,453,GET /api/ovas (preparacion),200,OK,Usuarios 1-29,text,true,,1106,519,45,57,http://localhost:8000/api/ovas?page=1&limit=2,453,0,1
+1784742405173,716,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-21,text,true,,1093,548,45,57,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,716,0,0
+1784742405171,718,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-27,text,true,,1093,548,45,57,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,718,0,1
+1784742405352,542,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,200,OK,Usuarios 1-1,text,true,,439,594,45,57,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/fases/2dc07137-623b-4f84-80b1-7c09dc16a6d0/versiones,542,0,1
+1784742405509,409,GET /api/ovas (preparacion),200,OK,Usuarios 1-32,text,true,,1106,519,45,57,http://localhost:8000/api/ovas?page=1&limit=2,409,0,1
+1784742405207,805,GET /api/ovas/{ova_id}/versiones/diff,200,OK,Usuarios 1-10,text,true,,1146,636,46,58,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones/diff?v1=22538e4f-ede1-43a9-aadb-b4b15e50ab00&v2=22538e4f-ede1-43a9-aadb-b4b15e50ab00,805,0,1
+1784742405605,409,GET /api/users/me/image-models,200,OK,Usuarios 1-8,text,true,,406,542,46,58,http://localhost:8000/api/users/me/image-models?provider=siliconflow,409,0,1
+1784742405523,528,POST /api/auth/login (preparacion),200,OK,Usuarios 1-37,text,true,,1127,298,46,58,http://localhost:8000/api/auth/login,528,0,1
+1784742404947,1119,GET /api/users/links/admin,200,OK,Administradores 2-3,text,true,,15475,519,12,58,http://localhost:8000/api/users/links/admin,1119,0,1
+1784742406056,12,GET /api/scorm/health,200,OK,Usuarios 1-6,text,true,,398,512,46,58,http://localhost:8000/api/scorm/health,12,0,0
+1784742405615,462,GET /api/ovas/papelera/count,200,OK,Usuarios 1-4,text,true,,379,519,46,58,http://localhost:8000/api/ovas/papelera/count,462,0,1
+1784742405657,433,GET /api/ovas (preparacion),200,OK,Usuarios 1-34,text,true,,1106,519,46,58,http://localhost:8000/api/ovas?page=1&limit=2,433,0,1
+1784742405396,697,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-4,text,true,,880,509,12,58,http://localhost:8000/api/auth/me,697,0,0
+1784742405664,434,GET /api/rag/chunks/by-upload/{id},200,OK,Usuarios 1-9,text,true,,380,557,46,58,http://localhost:8000/api/rag/chunks/by-upload/00000000-0000-0000-0000-000000000000,434,0,0
+1784742405540,613,GET /api/auth/me (preparacion),200,OK,Usuarios 1-17,text,true,,753,507,46,58,http://localhost:8000/api/auth/me,613,0,1
+1784742405562,710,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-31,text,true,,1093,548,47,59,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,710,0,1
+1784742405681,677,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-5,text,true,,880,509,12,59,http://localhost:8000/api/auth/me,677,0,1
+1784742405992,410,GET /api/jobs/{id},404,Not Found,Usuarios 1-3,text,true,,431,541,47,59,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,410,0,0
+1784742405838,564,POST /api/auth/login (preparacion),200,OK,Usuarios 1-39,text,true,,1127,298,47,59,http://localhost:8000/api/auth/login,564,0,0
+1784742406039,418,GET /api/ovas (preparacion admin),200,OK,Administradores 2-9,text,true,,1279,521,12,60,http://localhost:8000/api/ovas?page=1&limit=2,418,0,1
+1784742406041,418,GET /api/ovas (preparacion),200,OK,Usuarios 1-35,text,true,,1106,519,48,60,http://localhost:8000/api/ovas?page=1&limit=2,418,0,1
+1784742405724,770,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-28,text,true,,1093,548,48,60,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,770,0,1
+1784742405894,613,GET /api/auth/me (preparacion),200,OK,Usuarios 1-16,text,true,,753,507,48,60,http://localhost:8000/api/auth/me,613,0,1
+1784742405831,729,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-25,text,true,,1093,548,48,60,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,729,0,1
+1784742405988,627,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-6,text,true,,880,509,12,60,http://localhost:8000/api/auth/me,627,0,1
+1784742406097,554,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-11,text,true,,1131,300,12,60,http://localhost:8000/api/auth/login,554,0,1
+1784742406679,5,GET /api/ovas/health,200,OK,Usuarios 1-13,text,true,,396,511,49,61,http://localhost:8000/api/ovas/health,5,0,1
+1784742406112,576,POST /api/auth/login (preparacion),200,OK,Usuarios 1-41,text,true,,1127,298,49,61,http://localhost:8000/api/auth/login,576,0,1
+1784742406696,5,GET /api/agents/health,200,OK,Usuarios 1-11,text,true,,399,513,49,61,http://localhost:8000/api/agents/health,5,0,1
+1784742406278,441,GET /api/jobs,404,Not Found,Usuarios 1-12,text,true,,446,548,49,61,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,441,0,1
+1784742406174,547,POST /api/auth/login (preparacion),200,OK,Usuarios 1-40,text,true,,1127,298,49,61,http://localhost:8000/api/auth/login,547,0,1
+1784742406283,438,GET /api/ovas (preparacion admin),200,OK,Administradores 2-10,text,true,,1279,521,12,61,http://localhost:8000/api/ovas?page=1&limit=2,438,0,0
+1784742406775,11,GET /api/agents/evaluate/recursos,200,OK,Usuarios 1-5,text,true,,1427,524,49,62,http://localhost:8000/api/agents/evaluate/recursos,10,0,1
+1784742406057,730,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-24,text,true,,1093,548,49,62,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,729,0,2
+1784742406179,612,GET /api/auth/me (preparacion),200,OK,Usuarios 1-15,text,true,,753,507,49,62,http://localhost:8000/api/auth/me,612,0,1
+1784742406077,743,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-26,text,true,,1093,548,49,62,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,743,0,1
+1784742406358,508,GET /api/ovas (preparacion),200,OK,Usuarios 1-30,text,true,,1106,519,49,62,http://localhost:8000/api/ovas?page=1&limit=2,508,0,1
+1784742406208,714,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-7,text,true,,1093,550,13,62,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,714,0,0
+1784742406229,737,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-8,text,true,,1093,550,13,63,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,737,0,1
+1784742406979,5,GET /api/agents/explain/recursos,200,OK,Usuarios 1-4,text,true,,1376,523,50,63,http://localhost:8000/api/agents/explain/recursos,5,0,1
+1784742406560,466,GET /api/users/me/resource-configs,200,OK,Usuarios 1-2,text,true,,382,525,50,63,http://localhost:8000/api/users/me/resource-configs,466,0,7
+1784742406561,506,GET /api/ovas (preparacion),200,OK,Usuarios 1-38,text,true,,1106,519,50,63,http://localhost:8000/api/ovas?page=1&limit=2,506,0,1
+1784742406493,600,POST /api/auth/login (preparacion),200,OK,Usuarios 1-43,text,true,,1127,298,50,63,http://localhost:8000/api/auth/login,600,0,2
+1784742406365,748,GET /api/auth/me (preparacion),200,OK,Usuarios 1-20,text,true,,753,507,50,63,http://localhost:8000/api/auth/me,748,0,0
+1784742406348,767,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-23,text,true,,1093,548,50,63,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,767,0,1
+1784742406541,576,POST /api/auth/login (preparacion),200,OK,Usuarios 1-42,text,true,,1127,298,50,63,http://localhost:8000/api/auth/login,576,0,1
+1784742406495,685,GET /api/auth/me (preparacion),200,OK,Usuarios 1-18,text,true,,753,507,50,63,http://localhost:8000/api/auth/me,685,0,1
+1784742406644,547,GET /api/ovas (preparacion),200,OK,Usuarios 1-33,text,true,,1106,519,51,64,http://localhost:8000/api/ovas?page=1&limit=2,547,0,0
+1784742406430,782,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-29,text,true,,1093,548,51,64,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,782,0,1
+1784742406675,555,GET /api/ovas (preparacion),200,OK,Usuarios 1-37,text,true,,1106,519,51,64,http://localhost:8000/api/ovas?page=1&limit=2,555,0,1
+1784742406599,679,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-12,text,true,,1131,300,13,64,http://localhost:8000/api/auth/login,679,0,2
+1784742406651,699,POST /api/auth/login (preparacion),200,OK,Usuarios 1-44,text,true,,1127,298,51,64,http://localhost:8000/api/auth/login,699,0,0
+1784742406686,744,GET /api/auth/me,200,OK,Usuarios 1-8,text,true,,753,507,51,64,http://localhost:8000/api/auth/me,744,0,1
+1784742407427,7,GET /api/health,200,OK,Usuarios 1-9,text,true,,430,506,52,65,http://localhost:8000/api/health,7,0,1
+1784742406774,721,GET /api/auth/me (preparacion),200,OK,Usuarios 1-31,text,true,,753,507,52,65,http://localhost:8000/api/auth/me,721,0,1
+1784742406853,644,POST /api/auth/login (preparacion),200,OK,Usuarios 1-45,text,true,,1127,298,52,65,http://localhost:8000/api/auth/login,644,0,1
+1784742407022,477,GET /api/users/me/enabled-models,200,OK,Usuarios 1-14,text,true,,632,523,52,65,http://localhost:8000/api/users/me/enabled-models,477,0,1
+1784742407499,4,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-1,text,true,,1395,525,52,65,http://localhost:8000/api/agents/elaborate/recursos,4,0,1
+1784742406987,538,GET /api/ovas (preparacion),200,OK,Usuarios 1-36,text,true,,1106,519,52,65,http://localhost:8000/api/ovas?page=1&limit=2,538,0,1
+1784742406814,721,GET /api/users/links/admin,200,OK,Administradores 2-4,text,true,,15474,519,13,65,http://localhost:8000/api/users/links/admin,721,0,1
+1784742406999,580,GET /api/ovas (preparacion),200,OK,Usuarios 1-39,text,true,,1106,519,52,65,http://localhost:8000/api/ovas?page=1&limit=2,579,0,1
+1784742406801,793,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-34,text,true,,1093,548,52,65,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,793,0,1
+1784742406913,760,GET /api/auth/me (preparacion),200,OK,Usuarios 1-19,text,true,,753,507,52,65,http://localhost:8000/api/auth/me,760,0,1
+1784742407373,332,GET /api/users/me/api-keys,200,OK,Usuarios 1-17,text,true,,617,517,53,66,http://localhost:8000/api/users/me/api-keys,332,0,1
+1784742406553,1173,GET /api/users/analytics,200,OK,Administradores 2-2,text,true,,3448,517,13,66,http://localhost:8000/api/users/analytics,1173,0,1
+1784742407168,568,POST /api/auth/login (preparacion),200,OK,Usuarios 1-47,text,true,,1127,298,53,66,http://localhost:8000/api/auth/login,568,0,1
+1784742407763,4,GET /api/agents/explore/recursos,200,OK,Usuarios 1-20,text,true,,1396,523,53,66,http://localhost:8000/api/agents/explore/recursos,4,0,1
+1784742406956,819,GET /api/admin/llm-config,200,OK,Administradores 2-1,text,true,,2005,518,13,66,http://localhost:8000/api/admin/llm-config,819,0,1
+1784742407371,434,GET /api/ovas,200,OK,Usuarios 1-7,text,true,,3803,520,53,67,http://localhost:8000/api/ovas?page=1&limit=10,433,0,1
+1784742407270,617,GET /api/auth/me (preparacion),200,OK,Usuarios 1-28,text,true,,753,507,53,67,http://localhost:8000/api/auth/me,617,0,0
+1784742407088,823,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-35,text,true,,1093,548,53,67,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,823,0,1
+1784742407935,3,GET /api/agents/explore/recursos,200,OK,Usuarios 1-10,text,true,,1396,523,54,68,http://localhost:8000/api/agents/explore/recursos,3,0,1
+1784742407352,610,GET /api/auth/me (preparacion),200,OK,Usuarios 1-27,text,true,,753,507,54,68,http://localhost:8000/api/auth/me,610,0,1
+1784742407353,613,GET /api/auth/me,200,OK,Usuarios 1-5,text,true,,753,507,54,68,http://localhost:8000/api/auth/me,612,0,1
+1784742407673,309,GET /api/admin/llm-config,200,OK,Administradores 2-5,text,true,,2005,518,14,68,http://localhost:8000/api/admin/llm-config,308,0,1
+1784742407984,7,GET /api/agents/engage/recursos,200,OK,Usuarios 1-18,text,true,,1389,522,54,68,http://localhost:8000/api/agents/engage/recursos,7,0,1
+1784742407677,331,GET /api/uploads/temp,200,OK,Usuarios 1-13,text,true,,380,512,54,68,http://localhost:8000/api/uploads/temp,331,0,1
+1784742407467,598,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-15,text,true,,1046,550,54,68,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,598,0,1
+1784742407681,391,GET /api/users/me/ova-settings,200,OK,Usuarios 1-16,text,true,,650,521,54,68,http://localhost:8000/api/users/me/ova-settings,391,0,1
+1784742407572,552,POST /api/auth/login (preparacion),200,OK,Usuarios 1-48,text,true,,1127,298,54,68,http://localhost:8000/api/auth/login,552,0,1
+1784742407393,764,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-30,text,true,,1093,548,54,68,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,764,0,1
+1784742407535,676,GET /api/auth/me (preparacion),200,OK,Usuarios 1-25,text,true,,753,507,55,69,http://localhost:8000/api/auth/me,676,0,1
+1784742407572,639,GET /api/auth/me (preparacion),200,OK,Usuarios 1-22,text,true,,753,507,55,69,http://localhost:8000/api/auth/me,639,0,1
+1784742408239,3,GET /health,200,OK,Usuarios 1-3,text,true,,416,502,55,69,http://localhost:8000/health,3,0,1
+1784742407804,467,GET /api/ovas (preparacion),200,OK,Usuarios 1-40,text,true,,1106,519,55,69,http://localhost:8000/api/ovas?page=1&limit=2,467,0,1
+1784742407925,387,GET /api/users/me/enabled-models,200,OK,Usuarios 1-4,text,true,,632,523,55,69,http://localhost:8000/api/users/me/enabled-models,387,0,0
+1784742407586,740,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-32,text,true,,1093,548,55,69,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,740,0,1
+1784742407755,577,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-13,text,true,,1131,300,14,69,http://localhost:8000/api/auth/login,577,0,1
+1784742407615,722,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-10,text,true,,1093,550,14,69,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,722,0,1
+1784742407691,685,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-7,text,true,,880,509,14,69,http://localhost:8000/api/auth/me,685,0,1
+1784742407992,390,GET /api/users/me/resource-configs,200,OK,Usuarios 1-11,text,true,,382,525,55,69,http://localhost:8000/api/users/me/resource-configs,390,0,1
+1784742407767,662,GET /api/auth/me (preparacion),200,OK,Usuarios 1-26,text,true,,753,507,55,69,http://localhost:8000/api/auth/me,662,0,1
+1784742407804,625,POST /api/auth/login (preparacion),200,OK,Usuarios 1-46,text,true,,1127,298,55,69,http://localhost:8000/api/auth/login,625,0,1
+1784742407796,657,GET /api/auth/me (preparacion),200,OK,Usuarios 1-21,text,true,,753,507,56,70,http://localhost:8000/api/auth/me,657,0,1
+1784742407889,613,GET /api/users/me/links,200,OK,Administradores 2-3,text,true,,15474,516,14,70,http://localhost:8000/api/users/me/links,613,0,1
+1784742408041,517,GET /api/users/me/resource-configs,200,OK,Usuarios 1-6,text,true,,382,525,56,70,http://localhost:8000/api/users/me/resource-configs,517,0,0
+1784742408027,542,GET /api/ovas (preparacion admin),200,OK,Administradores 2-11,text,true,,1279,521,14,70,http://localhost:8000/api/ovas?page=1&limit=2,542,0,1
+1784742408034,590,GET /api/ovas (preparacion admin),200,OK,Administradores 2-12,text,true,,1279,521,14,70,http://localhost:8000/api/ovas?page=1&limit=2,590,0,0
+1784742407995,635,POST /api/auth/login (preparacion),200,OK,Usuarios 1-49,text,true,,1127,298,56,70,http://localhost:8000/api/auth/login,635,0,1
+1784742408061,653,GET /api/ovas (preparacion),200,OK,Usuarios 1-41,text,true,,1106,519,57,71,http://localhost:8000/api/ovas?page=1&limit=2,653,0,1
+1784742407965,798,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-37,text,true,,1093,548,57,71,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,798,0,1
+1784742407985,785,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-33,text,true,,1093,548,57,71,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,784,0,1
+1784742408029,742,GET /api/auth/me (preparacion),200,OK,Usuarios 1-23,text,true,,753,507,57,71,http://localhost:8000/api/auth/me,742,0,2
+1784742408150,661,GET /api/ovas (preparacion),200,OK,Usuarios 1-43,text,true,,1106,519,57,72,http://localhost:8000/api/ovas?page=1&limit=2,660,0,0
+1784742408476,351,GET /api/users/me/resource-configs,200,OK,Usuarios 1-27,text,true,,382,525,57,72,http://localhost:8000/api/users/me/resource-configs,351,0,0
+1784742408053,781,POST /api/auth/login (preparacion),200,OK,Usuarios 1-51,text,true,,1127,298,57,72,http://localhost:8000/api/auth/login,781,0,0
+1784742408387,500,GET /api/ovas (preparacion),200,OK,Usuarios 1-44,text,true,,1106,519,57,72,http://localhost:8000/api/ovas?page=1&limit=2,500,0,1
+1784742408171,763,GET /api/users/me/links,200,OK,Administradores 2-6,text,true,,15474,516,15,73,http://localhost:8000/api/users/me/links,763,0,0
+1784742408435,504,GET /api/ovas (preparacion),200,OK,Usuarios 1-47,text,true,,1106,519,58,73,http://localhost:8000/api/ovas?page=1&limit=2,504,0,0
+1784742408929,12,GET /api/agents/explain/recursos,200,OK,Usuarios 1-11,text,true,,1376,523,58,73,http://localhost:8000/api/agents/explain/recursos,12,0,1
+1784742408242,715,POST /api/auth/login (preparacion),200,OK,Usuarios 1-52,text,true,,1127,298,58,73,http://localhost:8000/api/auth/login,715,0,1
+1784742408340,637,GET /api/users/me/links,200,OK,Administradores 2-4,text,true,,15474,516,15,73,http://localhost:8000/api/users/me/links,637,0,0
+1784742408500,506,GET /api/ovas/{ova_id}/regenerar/{id}/progress,404,Not Found,Usuarios 1-12,text,true,,448,597,58,73,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/regenerar/00000000-0000-0000-0000-000000000000/progress,506,0,1
+1784742408103,967,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-38,text,true,,1093,548,58,73,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,967,0,1
+1784742408488,588,POST /api/auth/login (preparacion),200,OK,Usuarios 1-53,text,true,,1127,298,58,73,http://localhost:8000/api/auth/login,587,0,1
+1784742408302,848,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-9,text,true,,1093,550,15,73,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,848,0,0
+1784742408592,643,GET /api/ovas (preparacion),200,OK,Usuarios 1-45,text,true,,1106,519,59,74,http://localhost:8000/api/ovas?page=1&limit=2,642,0,1
+1784742408538,699,GET /api/ovas/papelera,200,OK,Usuarios 1-13,text,true,,431,529,59,74,http://localhost:8000/api/ovas/papelera?page=1&limit=10,699,0,0
+1784742408503,763,GET /api/users,200,OK,Administradores 2-2,text,true,,4286,523,15,74,http://localhost:8000/api/users?page=1&limit=10,763,0,0
+1784742408723,548,GET /api/users/me/image-models,200,OK,Usuarios 1-2,text,true,,406,542,59,74,http://localhost:8000/api/users/me/image-models?provider=siliconflow,548,0,1
+1784742408527,748,GET /api/auth/me (preparacion),200,OK,Usuarios 1-29,text,true,,753,507,59,74,http://localhost:8000/api/auth/me,748,0,0
+1784742408923,368,GET /api/users/me/resource-configs,200,OK,Usuarios 1-14,text,true,,382,525,59,74,http://localhost:8000/api/users/me/resource-configs,367,0,1
+1784742408908,411,GET /api/ovas (preparacion admin),200,OK,Administradores 2-13,text,true,,1279,521,15,74,http://localhost:8000/api/ovas?page=1&limit=2,411,0,0
+1784742408552,780,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-8,text,true,,880,509,15,74,http://localhost:8000/api/auth/me,780,0,0
+1784742408840,503,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-1,text,true,,440,596,59,74,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,502,0,0
+1784742408814,533,GET /api/jobs/{id},404,Not Found,Usuarios 1-3,text,true,,431,541,59,74,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,533,0,1
+1784742408678,712,POST /api/auth/login (preparacion),200,OK,Usuarios 1-50,text,true,,1127,298,59,74,http://localhost:8000/api/auth/login,712,0,1
+1784742409042,406,GET /api/users/me/ova-settings,200,OK,Usuarios 1-9,text,true,,650,521,60,75,http://localhost:8000/api/users/me/ova-settings,406,0,1
+1784742408978,476,GET /api/users/me/llm-settings,200,OK,Usuarios 1-31,text,true,,26960,521,60,75,http://localhost:8000/api/users/me/llm-settings,476,0,0
+1784742408657,815,GET /api/auth/me (preparacion),200,OK,Usuarios 1-24,text,true,,753,507,60,75,http://localhost:8000/api/auth/me,815,0,0
+1784742408985,487,GET /api/ovas (preparacion),200,OK,Usuarios 1-42,text,true,,1106,519,60,75,http://localhost:8000/api/ovas?page=1&limit=2,487,0,0
+1784742409572,4,GET /api/agents/explain/recursos,200,OK,Usuarios 1-10,text,true,,1376,523,60,75,http://localhost:8000/api/agents/explain/recursos,4,0,0
+1784742409074,506,GET /api/admin/platform-config,200,OK,Administradores 2-1,text,true,,728,523,15,75,http://localhost:8000/api/admin/platform-config,505,0,1
+1784742408952,679,GET /api/auth/me (preparacion),200,OK,Usuarios 1-34,text,true,,753,507,60,75,http://localhost:8000/api/auth/me,678,0,1
+1784742409143,507,GET /api/uploads/temp,200,OK,Usuarios 1-19,text,true,,380,512,60,75,http://localhost:8000/api/uploads/temp,507,0,1
+1784742409133,608,GET /api/ovas/papelera,200,OK,Usuarios 1-8,text,true,,431,529,61,76,http://localhost:8000/api/ovas/papelera?page=1&limit=10,608,0,1
+1784742409245,511,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,200,OK,Usuarios 1-21,text,true,,439,594,61,76,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/fases/2dc07137-623b-4f84-80b1-7c09dc16a6d0/versiones,511,0,1
+1784742409183,586,GET /api/users/me/image-models,200,OK,Usuarios 1-17,text,true,,406,542,61,76,http://localhost:8000/api/users/me/image-models?provider=siliconflow,586,0,1
+1784742409023,752,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-39,text,true,,1093,548,61,76,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,752,0,1
+1784742409140,643,GET /api/ovas (preparacion),200,OK,Usuarios 1-48,text,true,,1106,519,61,76,http://localhost:8000/api/ovas?page=1&limit=2,642,0,1
+1784742409258,533,GET /api/db/health,200,OK,Usuarios 1-28,text,true,,431,509,61,77,http://localhost:8000/api/db/health,533,0,1
+1784742409842,6,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-15,text,true,,1395,525,61,77,http://localhost:8000/api/agents/elaborate/recursos,6,0,0
+1784742409444,431,GET /api/ovas/llm-options,200,OK,Usuarios 1-26,text,true,,6892,516,61,77,http://localhost:8000/api/ovas/llm-options,431,0,0
+1784742409218,660,GET /api/users/me/links,200,OK,Administradores 2-3,text,true,,15474,516,16,77,http://localhost:8000/api/users/me/links,659,0,0
+1784742409430,702,POST /api/auth/login (preparacion),200,OK,Usuarios 1-57,text,true,,1127,298,62,78,http://localhost:8000/api/auth/login,702,0,1
+1784742409432,700,POST /api/auth/login (preparacion),200,OK,Usuarios 1-55,text,true,,1127,298,62,78,http://localhost:8000/api/auth/login,700,0,1
+1784742409154,979,GET /api/users/links/admin,200,OK,Administradores 2-7,text,true,,15474,519,16,78,http://localhost:8000/api/users/links/admin,979,0,0
+1784742409441,692,GET /api/ovas (preparacion),200,OK,Usuarios 1-51,text,true,,1106,519,62,78,http://localhost:8000/api/ovas?page=1&limit=2,692,0,0
+1784742409422,787,GET /api/auth/me (preparacion),200,OK,Usuarios 1-30,text,true,,753,507,63,79,http://localhost:8000/api/auth/me,787,0,0
+1784742409279,937,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-36,text,true,,1093,548,63,79,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,936,0,1
+1784742409333,887,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-10,text,true,,880,509,16,79,http://localhost:8000/api/auth/me,887,0,1
+1784742409409,812,GET /api/auth/me (preparacion),200,OK,Usuarios 1-33,text,true,,753,507,63,79,http://localhost:8000/api/auth/me,812,0,0
+1784742409312,911,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-11,text,true,,1093,550,16,79,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,911,0,0
+1784742409501,726,GET /api/users/me/enabled-models,200,OK,Usuarios 1-16,text,true,,632,523,63,79,http://localhost:8000/api/users/me/enabled-models,726,0,1
+1784742409465,969,POST /api/auth/login (preparacion),200,OK,Usuarios 1-54,text,true,,1127,298,64,80,http://localhost:8000/api/auth/login,969,0,0
+1784742410438,4,GET /api/ovas/health,200,OK,Usuarios 1-14,text,true,,396,511,64,80,http://localhost:8000/api/ovas/health,4,0,0
+1784742410462,4,GET /api/ovas/health,200,OK,Usuarios 1-21,text,true,,396,511,64,80,http://localhost:8000/api/ovas/health,4,0,0
+1784742409462,1045,GET /api/auth/me (preparacion),200,OK,Usuarios 1-35,text,true,,754,507,64,80,http://localhost:8000/api/auth/me,1045,0,1
+1784742409542,1000,POST /api/auth/login (preparacion),200,OK,Usuarios 1-56,text,true,,1127,298,64,80,http://localhost:8000/api/auth/login,1000,0,0
+1784742409515,1030,GET /api/ovas/papelera,200,OK,Usuarios 1-4,text,true,,432,529,64,80,http://localhost:8000/api/ovas/papelera?page=1&limit=10,1030,0,1
+1784742409863,744,GET /api/uploads/temp,200,OK,Usuarios 1-5,text,true,,380,512,64,80,http://localhost:8000/api/uploads/temp,744,0,1
+1784742409459,1159,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-12,text,true,,1094,550,16,80,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1159,0,1
+1784742409637,998,GET /api/auth/me,200,OK,Usuarios 1-20,text,true,,753,507,64,80,http://localhost:8000/api/auth/me,998,0,0
+1784742409849,800,GET /api/admin/platform-config,200,OK,Administradores 2-5,text,true,,728,523,16,80,http://localhost:8000/api/admin/platform-config,799,0,1
+1784742409674,978,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-14,text,true,,1131,300,16,80,http://localhost:8000/api/auth/login,978,0,0
+1784742409893,821,GET /api/jobs,404,Not Found,Usuarios 1-27,text,true,,446,548,65,81,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,821,0,0
+1784742409557,1157,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-41,text,true,,1094,548,65,81,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1157,0,1
+1784742409635,1083,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-43,text,true,,1094,548,65,81,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1083,0,1
+1784742409667,1064,GET /api/auth/me (preparacion),200,OK,Usuarios 1-32,text,true,,754,507,65,81,http://localhost:8000/api/auth/me,1064,0,0
+1784742409896,843,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-3,text,true,,440,596,65,81,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,843,0,0
+1784742409923,825,GET /api/users/me/enabled-models,200,OK,Usuarios 1-18,text,true,,632,523,65,81,http://localhost:8000/api/users/me/enabled-models,825,0,1
+1784742409851,907,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-15,text,true,,1131,300,16,81,http://localhost:8000/api/auth/login,907,0,1
+1784742410790,5,GET /api/agents/health,200,OK,Usuarios 1-33,text,true,,399,513,65,82,http://localhost:8000/api/agents/health,5,0,1
+1784742409796,1019,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-7,text,true,,1047,550,65,82,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,1019,0,1
+1784742409815,1038,GET /api/users,200,OK,Administradores 2-6,text,true,,4287,523,17,82,http://localhost:8000/api/users?page=1&limit=10,1038,0,1
+1784742410843,12,GET /api/uploads/health,200,OK,Usuarios 1-1,text,true,,400,514,65,82,http://localhost:8000/api/uploads/health,11,0,1
+1784742409905,1030,POST /api/auth/login (preparacion),200,OK,Usuarios 1-59,text,true,,1128,298,66,83,http://localhost:8000/api/auth/login,1030,0,1
+1784742410025,984,GET /api/ovas/llm-options,200,OK,Usuarios 1-25,text,true,,6892,516,66,83,http://localhost:8000/api/ovas/llm-options,984,0,1
+1784742409979,1067,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-22,text,true,,440,596,66,83,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,1067,0,1
+1784742410039,1014,GET /api/ovas (preparacion),200,OK,Usuarios 1-50,text,true,,1106,519,66,83,http://localhost:8000/api/ovas?page=1&limit=2,1014,0,1
+1784742410262,860,GET /api/ovas/llm-options,200,OK,Usuarios 1-19,text,true,,6892,516,66,83,http://localhost:8000/api/ovas/llm-options,860,0,0
+1784742410110,1026,GET /api/ovas (preparacion),200,OK,Usuarios 1-46,text,true,,1106,519,66,83,http://localhost:8000/api/ovas?page=1&limit=2,1026,0,1
+1784742409915,1233,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-45,text,true,,1094,548,66,83,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1233,0,1
+1784742409952,1201,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-6,text,true,,1047,550,66,83,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,1201,0,1
+1784742410420,738,GET /api/uploads/temp,200,OK,Usuarios 1-10,text,true,,380,512,66,83,http://localhost:8000/api/uploads/temp,738,0,1
+1784742409972,1240,GET /api/auth/me (preparacion),200,OK,Usuarios 1-37,text,true,,754,507,67,84,http://localhost:8000/api/auth/me,1240,0,1
+1784742410299,922,GET /api/ovas (preparacion),200,OK,Usuarios 1-53,text,true,,1106,519,67,84,http://localhost:8000/api/ovas?page=1&limit=2,922,0,0
+1784742410386,855,GET /api/ovas (preparacion),200,OK,Usuarios 1-49,text,true,,1106,519,67,84,http://localhost:8000/api/ovas?page=1&limit=2,855,0,1
+1784742410067,1252,GET /api/auth/me (preparacion),200,OK,Usuarios 1-38,text,true,,754,507,67,84,http://localhost:8000/api/auth/me,1252,0,1
+1784742411333,4,GET /health,200,OK,Usuarios 1-9,text,true,,416,502,67,84,http://localhost:8000/health,3,0,0
+1784742411403,6,GET /api/agents/health,200,OK,Usuarios 1-27,text,true,,399,513,67,84,http://localhost:8000/api/agents/health,6,0,1
+1784742410487,925,GET /api/jobs/{id},404,Not Found,Usuarios 1-11,text,true,,431,541,67,84,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,925,0,1
+1784742410340,1084,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-9,text,true,,881,509,17,84,http://localhost:8000/api/auth/me,1084,0,1
+1784742410136,1324,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-40,text,true,,1094,548,68,85,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1324,0,0
+1784742410530,932,GET /api/ovas (buscar),200,OK,Usuarios 1-29,text,true,,3803,533,68,85,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,932,0,0
+1784742410204,1279,GET /api/ovas/{ova_id}/export-scorm,200,OK,Usuarios 1-23,text,true,,1053,554,68,85,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/export-scorm,1279,0,1
+1784742410450,1034,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-15,,true,,862,547,68,85,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,1034,0,0
+1784742410380,1162,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-44,text,true,,1094,548,68,85,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1162,0,1
+1784742410619,1050,GET /api/ovas/papelera,200,OK,Usuarios 1-13,text,true,,432,529,68,85,http://localhost:8000/api/ovas/papelera?page=1&limit=10,1050,0,0
+1784742410703,966,GET /api/jobs,404,Not Found,Usuarios 1-34,text,true,,446,548,68,85,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,966,0,1
+1784742410676,993,GET /api/ovas (preparacion),200,OK,Usuarios 1-52,text,true,,1106,519,68,85,http://localhost:8000/api/ovas?page=1&limit=2,993,0,0
+1784742410835,837,GET /api/users/me/ova-settings,200,OK,Usuarios 1-31,text,true,,650,521,68,85,http://localhost:8000/api/users/me/ova-settings,837,0,1
+1784742410622,1141,GET /api/users/links/admin,200,OK,Administradores 2-4,text,true,,15475,519,17,86,http://localhost:8000/api/users/links/admin,1141,0,0
+1784742410558,1254,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-13,text,true,,1094,550,18,87,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1254,0,1
+1784742410624,1200,GET /api/auth/me,200,OK,Usuarios 1-8,text,true,,754,507,69,87,http://localhost:8000/api/auth/me,1200,0,0
+1784742410927,900,GET /api/users/me/ova-settings,200,OK,Usuarios 1-12,text,true,,650,521,69,87,http://localhost:8000/api/users/me/ova-settings,899,0,0
+1784742410810,1027,GET /api/users/me/links,200,OK,Administradores 2-10,text,true,,15475,516,18,87,http://localhost:8000/api/users/me/links,1026,0,0
+1784742410801,1038,POST /api/auth/login (preparacion),200,OK,Usuarios 1-62,text,true,,1128,298,69,87,http://localhost:8000/api/auth/login,1038,0,0
+1784742410781,1093,GET /api/users,200,OK,Administradores 2-2,text,true,,4287,523,18,87,http://localhost:8000/api/users?page=1&limit=10,1093,0,1
+1784742411918,6,GET /api/agents/engage/recursos,200,OK,Usuarios 1-3,text,true,,1389,522,69,87,http://localhost:8000/api/agents/engage/recursos,6,0,0
+1784742410643,1300,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-47,text,true,,1094,548,70,88,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1300,0,0
+1784742410854,1095,POST /api/auth/login (preparacion),200,OK,Usuarios 1-60,text,true,,1128,298,70,88,http://localhost:8000/api/auth/login,1095,0,1
+1784742411998,4,GET /api/scorm/health,200,OK,Usuarios 1-30,text,true,,398,512,70,88,http://localhost:8000/api/scorm/health,4,0,1
+1784742410421,1603,GET /api/users/analytics,200,OK,Administradores 2-8,text,true,,3448,517,18,88,http://localhost:8000/api/users/analytics,1603,0,0
+1784742410881,1157,POST /api/auth/login (preparacion),200,OK,Usuarios 1-58,text,true,,1128,298,70,88,http://localhost:8000/api/auth/login,1157,0,0
+1784742412097,3,GET /api/agents/engage/recursos,200,OK,Usuarios 1-18,text,true,,1389,522,70,88,http://localhost:8000/api/agents/engage/recursos,3,0,0
+1784742411020,1084,POST /api/auth/login (preparacion),200,OK,Usuarios 1-61,text,true,,1128,298,70,88,http://localhost:8000/api/auth/login,1084,0,1
+1784742411111,1054,GET /api/ovas (preparacion),200,OK,Usuarios 1-56,text,true,,1107,519,70,88,http://localhost:8000/api/ovas?page=1&limit=2,1054,0,0
+1784742411287,887,GET /api/users/me/image-models,200,OK,Usuarios 1-24,text,true,,406,542,70,88,http://localhost:8000/api/users/me/image-models?provider=siliconflow,887,0,1
+1784742411240,934,GET /api/jobs/{id},404,Not Found,Usuarios 1-28,text,true,,431,541,70,88,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,934,0,1
+1784742412250,7,GET /api/agents/evaluate/recursos,200,OK,Usuarios 1-4,text,true,,1427,524,71,89,http://localhost:8000/api/agents/evaluate/recursos,7,0,0
+1784742411000,1273,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-51,text,true,,1094,548,71,89,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1272,0,1
+1784742411194,1092,POST /api/auth/login (preparacion),200,OK,Usuarios 1-63,text,true,,1128,298,71,89,http://localhost:8000/api/auth/login,1092,0,1
+1784742411092,1203,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-42,text,true,,1094,548,71,89,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1203,0,0
+1784742411425,888,GET /api/ovas (preparacion),200,OK,Usuarios 1-54,text,true,,1106,519,71,89,http://localhost:8000/api/ovas?page=1&limit=2,887,0,1
+1784742411429,898,GET /api/ovas (preparacion admin),200,OK,Administradores 2-15,text,true,,1279,521,18,89,http://localhost:8000/api/ovas?page=1&limit=2,898,0,1
+1784742411489,842,GET /api/roles,200,OK,Administradores 2-1,text,true,,3476,507,18,89,http://localhost:8000/api/roles,842,0,1
+1784742411492,854,GET /api/ovas/{ova_id}/regenerar/{id}/progress,404,Not Found,Usuarios 1-32,text,true,,448,597,71,89,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/regenerar/00000000-0000-0000-0000-000000000000/progress,854,0,0
+1784742411094,1256,GET /api/ovas/{ova_id}/editar,200,OK,Usuarios 1-2,text,true,,1094,548,71,89,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1256,0,1
+1784742412352,3,GET /api/scorm/health,200,OK,Usuarios 1-35,text,true,,398,512,71,89,http://localhost:8000/api/scorm/health,3,0,1
+1784742412396,4,GET /api/scorm/health,200,OK,Usuarios 1-21,text,true,,398,512,71,89,http://localhost:8000/api/scorm/health,4,0,0
+1784742411526,919,GET /api/ovas (preparacion),200,OK,Usuarios 1-55,text,true,,1106,519,72,90,http://localhost:8000/api/ovas?page=1&limit=2,919,0,1
+1784742411517,981,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-17,text,true,,1131,300,18,90,http://localhost:8000/api/auth/login,981,0,1
+1784742412510,4,GET /api/agents/evaluate/recursos,200,OK,Usuarios 1-19,text,true,,1427,524,72,90,http://localhost:8000/api/agents/evaluate/recursos,4,0,0
+1784742411510,1037,GET /api/users/links/admin,200,OK,Administradores 2-6,text,true,,15475,519,18,90,http://localhost:8000/api/users/links/admin,1037,0,1
+1784742411376,1197,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-48,text,true,,1094,548,72,90,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1197,0,0
+1784742411617,994,GET /api/ovas (buscar),200,OK,Usuarios 1-33,text,true,,3803,533,72,90,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,994,0,0
+1784742410964,1702,GET /api/users/analytics,200,OK,Administradores 2-7,text,true,,3448,517,18,90,http://localhost:8000/api/users/analytics,1702,0,0
+1784742411592,1080,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-12,text,true,,881,509,18,90,http://localhost:8000/api/auth/me,1080,0,1
+1784742411634,1044,GET /api/jobs,404,Not Found,Usuarios 1-26,text,true,,447,548,72,90,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,1044,0,1
+1784742411666,1015,GET /api/ovas,200,OK,Usuarios 1-1,text,true,,3803,520,72,90,http://localhost:8000/api/ovas?page=1&limit=10,1015,0,14
+1784742412707,7,GET /api/agents/evaluate/recursos,200,OK,Usuarios 1-11,text,true,,1427,524,73,91,http://localhost:8000/api/agents/evaluate/recursos,7,0,0
+1784742411903,813,GET /api/users/me/resource-configs,200,OK,Usuarios 1-38,text,true,,382,525,73,91,http://localhost:8000/api/users/me/resource-configs,813,0,0
+1784742411602,1136,GET /api/auth/me,200,OK,Usuarios 1-17,text,true,,754,507,73,91,http://localhost:8000/api/auth/me,1136,0,0
+1784742411607,1133,GET /api/auth/me (preparacion),200,OK,Usuarios 1-39,text,true,,754,507,73,91,http://localhost:8000/api/auth/me,1133,0,0
+1784742412778,5,GET /health,200,OK,Usuarios 1-15,text,true,,416,502,73,91,http://localhost:8000/health,5,0,0
+1784742411897,906,GET /api/ovas (preparacion admin),200,OK,Administradores 2-14,text,true,,1279,521,19,92,http://localhost:8000/api/ovas?page=1&limit=2,906,0,0
+1784742411971,866,GET /api/rag/chunks/by-upload/{id},200,OK,Usuarios 1-16,text,true,,380,557,73,92,http://localhost:8000/api/rag/chunks/by-upload/00000000-0000-0000-0000-000000000000,866,0,1
+1784742411776,1100,GET /api/auth/me (preparacion),200,OK,Usuarios 1-45,text,true,,754,507,73,92,http://localhost:8000/api/auth/me,1100,0,1
+1784742411854,1037,GET /api/users/me/links,200,OK,Administradores 2-3,text,true,,15475,516,19,92,http://localhost:8000/api/users/me/links,1037,0,1
+1784742411783,1118,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-16,text,true,,1132,300,19,92,http://localhost:8000/api/auth/login,1118,0,1
+1784742411982,996,POST /api/auth/login (preparacion),200,OK,Usuarios 1-66,text,true,,1127,298,74,93,http://localhost:8000/api/auth/login,996,0,1
+1784742412048,930,GET /api/ovas (preparacion),200,OK,Usuarios 1-57,text,true,,1106,519,74,93,http://localhost:8000/api/ovas?page=1&limit=2,930,0,1
+1784742412006,973,GET /api/ovas/papelera,200,OK,Usuarios 1-29,text,true,,431,529,74,93,http://localhost:8000/api/ovas/papelera?page=1&limit=10,973,0,0
+1784742412192,819,GET /api/users/me/resource-configs,200,OK,Usuarios 1-14,text,true,,382,525,74,93,http://localhost:8000/api/users/me/resource-configs,819,0,0
+1784742411915,1119,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-11,text,true,,881,509,19,93,http://localhost:8000/api/auth/me,1119,0,0
+1784742412256,823,GET /api/admin/llm-config,200,OK,Administradores 2-5,text,true,,2005,518,19,93,http://localhost:8000/api/admin/llm-config,823,0,1
+1784742412176,907,GET /api/users/me/llm-settings,200,OK,Usuarios 1-34,text,true,,26960,521,74,93,http://localhost:8000/api/users/me/llm-settings,907,0,1
+1784742412303,893,GET /api/jobs,404,Not Found,Usuarios 1-5,text,true,,446,548,75,94,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,893,0,0
+1784742412069,1183,GET /api/auth/me (preparacion),200,OK,Usuarios 1-40,text,true,,754,507,75,94,http://localhost:8000/api/auth/me,1183,0,1
+1784742412049,1272,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-50,text,true,,1094,548,75,94,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1272,0,0
+1784742412335,1027,POST /api/auth/login (preparacion),200,OK,Usuarios 1-64,text,true,,1128,298,75,94,http://localhost:8000/api/auth/login,1027,0,0
+1784742412201,1169,GET /api/auth/me (preparacion),200,OK,Usuarios 1-36,text,true,,754,507,75,94,http://localhost:8000/api/auth/me,1168,0,0
+1784742413229,146,GET /api/health,200,OK,Usuarios 1-30,text,true,,432,506,75,94,http://localhost:8000/api/health,146,0,1
+1784742413314,68,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-31,text,true,,1396,525,75,94,http://localhost:8000/api/agents/elaborate/recursos,68,0,1
+1784742412342,1102,GET /api/auth/me,200,OK,Usuarios 1-20,text,true,,754,507,76,95,http://localhost:8000/api/auth/me,1102,0,1
+1784742412522,978,POST /api/auth/login (preparacion),200,OK,Usuarios 1-69,text,true,,1127,298,76,95,http://localhost:8000/api/auth/login,977,0,0
+1784742412537,975,POST /api/auth/login (preparacion),200,OK,Usuarios 1-70,text,true,,1127,298,76,95,http://localhost:8000/api/auth/login,975,0,1
+1784742412319,1204,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-53,text,true,,1094,548,76,95,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1204,0,0
+1784742412549,976,POST /api/auth/login (preparacion),200,OK,Usuarios 1-65,text,true,,1127,298,76,95,http://localhost:8000/api/auth/login,976,0,0
+1784742412471,1075,GET /api/auth/me (preparacion),200,OK,Usuarios 1-41,text,true,,754,507,76,95,http://localhost:8000/api/auth/me,1075,0,1
+1784742412500,1057,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-13,text,true,,881,509,19,95,http://localhost:8000/api/auth/me,1057,0,1
+1784742412318,1279,GET /api/ovas/{ova_id}/versiones/diff,200,OK,Usuarios 1-22,text,true,,1147,636,76,95,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones/diff?v1=22538e4f-ede1-43a9-aadb-b4b15e50ab00&v2=22538e4f-ede1-43a9-aadb-b4b15e50ab00,1279,0,0
+1784742412552,1058,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-37,,true,,862,547,76,95,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,1058,0,1
+1784742413711,6,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-35,text,true,,1395,525,77,96,http://localhost:8000/api/agents/elaborate/recursos,6,0,1
+1784742412700,1027,GET /api/ovas (preparacion),200,OK,Usuarios 1-59,text,true,,1107,519,77,96,http://localhost:8000/api/ovas?page=1&limit=2,1027,0,0
+1784742412607,1141,GET /api/users,200,OK,Administradores 2-10,text,true,,4287,523,19,96,http://localhost:8000/api/users?page=1&limit=10,1141,0,1
+1784742412658,1100,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-6,,true,,862,547,77,96,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,1100,0,0
+1784742413752,9,GET /health,200,OK,Usuarios 1-17,text,true,,416,502,77,96,http://localhost:8000/health,9,0,1
+1784742412727,1043,GET /api/jobs,404,Not Found,Usuarios 1-10,text,true,,447,548,77,96,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,1043,0,0
+1784742412612,1188,GET /api/auth/me (preparacion),200,OK,Usuarios 1-43,text,true,,754,507,77,97,http://localhost:8000/api/auth/me,1188,0,0
+1784742412790,1035,GET /api/ovas (preparacion),200,OK,Usuarios 1-60,text,true,,1107,519,77,97,http://localhost:8000/api/ovas?page=1&limit=2,1035,0,1
+1784742413828,4,GET /api/agents/explain/recursos,200,OK,Usuarios 1-11,text,true,,1376,523,77,97,http://localhost:8000/api/agents/explain/recursos,4,0,1
+1784742412608,1230,GET /api/ovas/{ova_id}/export-scorm,200,OK,Usuarios 1-7,text,true,,1053,554,77,97,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/export-scorm,1230,0,0
+1784742412610,1244,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-46,text,true,,1094,548,77,97,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1244,0,0
+1784742412681,1187,GET /api/auth/me (preparacion),200,OK,Usuarios 1-44,text,true,,754,507,77,97,http://localhost:8000/api/auth/me,1187,0,0
+1784742412813,1061,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-27,text,true,,441,596,77,97,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,1061,0,0
+1784742413882,4,GET /api/agents/health,200,OK,Usuarios 1-32,text,true,,399,513,77,97,http://localhost:8000/api/agents/health,4,0,1
+1784742412791,1194,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,200,OK,Usuarios 1-12,text,true,,440,594,78,98,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/fases/2dc07137-623b-4f84-80b1-7c09dc16a6d0/versiones,1194,0,1
+1784742412842,1158,GET /api/db/health,200,OK,Usuarios 1-25,text,true,,432,509,78,98,http://localhost:8000/api/db/health,1158,0,0
+1784742413006,997,GET /api/admin/llm-config,200,OK,Administradores 2-2,text,true,,2005,518,20,98,http://localhost:8000/api/admin/llm-config,996,0,1
+1784742413053,967,GET /api/admin/llm-config,200,OK,Administradores 2-9,text,true,,2005,518,20,98,http://localhost:8000/api/admin/llm-config,967,0,0
+1784742412842,1178,GET /api/users/me/image-models,200,OK,Usuarios 1-9,text,true,,407,542,78,98,http://localhost:8000/api/users/me/image-models?provider=siliconflow,1178,0,1
+1784742412943,1107,GET /api/db/health,200,OK,Usuarios 1-18,text,true,,432,509,78,98,http://localhost:8000/api/db/health,1107,0,1
+1784742412822,1246,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-18,text,true,,1132,300,20,98,http://localhost:8000/api/auth/login,1245,0,1
+1784742414067,7,GET /api/agents/health,200,OK,Usuarios 1-4,text,true,,399,513,78,98,http://localhost:8000/api/agents/health,7,0,1
+1784742412882,1239,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,200,OK,Usuarios 1-13,text,true,,440,594,78,98,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/fases/2dc07137-623b-4f84-80b1-7c09dc16a6d0/versiones,1239,0,1
+1784742412907,1223,GET /api/ovas/{ova_id}/versiones,200,OK,Usuarios 1-8,text,true,,622,551,78,98,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones,1223,0,0
+1784742413064,1086,GET /api/rag/health,200,OK,Usuarios 1-28,text,true,,458,510,78,98,http://localhost:8000/api/rag/health,1085,0,1
+1784742414177,10,GET /api/agents/explain/recursos,200,OK,Usuarios 1-1,text,true,,1376,523,79,99,http://localhost:8000/api/agents/explain/recursos,10,0,0
+1784742412991,1201,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-3,text,true,,1047,550,79,99,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,1201,0,0
+1784742413158,1174,GET /api/ovas/papelera/count,200,OK,Usuarios 1-23,text,true,,380,519,79,99,http://localhost:8000/api/ovas/papelera/count,1174,0,1
+1784742413052,1300,POST /api/auth/login (preparacion),200,OK,Usuarios 1-67,text,true,,1128,298,79,99,http://localhost:8000/api/auth/login,1300,0,1
+1784742413178,1217,GET /api/ovas (preparacion),200,OK,Usuarios 1-63,text,true,,1107,519,79,99,http://localhost:8000/api/ovas?page=1&limit=2,1217,0,1
+1784742414323,76,GET /api/agents/engage/recursos,200,OK,Usuarios 1-26,text,true,,1390,522,79,99,http://localhost:8000/api/agents/engage/recursos,76,0,1
+1784742413212,1247,GET /api/ovas (preparacion),200,OK,Usuarios 1-61,text,true,,1107,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,1247,0,0
+1784742413076,1385,GET /api/auth/me (preparacion),200,OK,Usuarios 1-47,text,true,,754,507,80,100,http://localhost:8000/api/auth/me,1385,0,0
+1784742413245,1276,GET /api/ovas (preparacion),200,OK,Usuarios 1-62,text,true,,1107,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,1275,0,2
+1784742413242,1331,POST /api/auth/login (preparacion),200,OK,Usuarios 1-68,text,true,,1128,298,80,100,http://localhost:8000/api/auth/login,1331,0,0
+1784742413118,1477,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-52,text,true,,1094,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1477,0,0
+1784742414504,102,GET /api/scorm/health,200,OK,Usuarios 1-44,text,true,,399,512,80,100,http://localhost:8000/api/scorm/health,102,0,0
+1784742413126,1480,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-49,text,true,,1094,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1480,0,0
+1784742413687,988,GET /api/admin/platform-config,200,OK,Administradores 2-4,text,true,,728,523,20,100,http://localhost:8000/api/admin/platform-config,988,0,1
+1784742413194,1513,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-56,text,true,,1094,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1513,0,1
+1784742414566,142,GET /health,200,OK,Usuarios 1-16,text,true,,418,502,80,100,http://localhost:8000/health,142,0,1
+1784742413610,1423,GET /api/auth/me,200,OK,Usuarios 1-33,text,true,,754,507,80,100,http://localhost:8000/api/auth/me,1422,0,0
+1784742413462,1570,GET /api/auth/me (preparacion),200,OK,Usuarios 1-42,text,true,,754,507,80,100,http://localhost:8000/api/auth/me,1570,0,1
+1784742413715,1329,POST /api/auth/login (preparacion),200,OK,Usuarios 1-71,text,true,,1128,298,80,100,http://localhost:8000/api/auth/login,1329,0,1
+1784742413354,1690,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-54,text,true,,1094,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1690,0,1
+1784742413865,1196,GET /api/rag/health,200,OK,Usuarios 1-24,text,true,,458,510,80,100,http://localhost:8000/api/rag/health,1196,0,1
+1784742413688,1429,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-14,text,true,,1094,550,20,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1429,0,1
+1784742414738,381,GET /api/ovas/health,200,OK,Usuarios 1-17,text,true,,398,511,80,100,http://localhost:8000/api/ovas/health,381,0,2
+1784742413929,1205,GET /api/jobs,404,Not Found,Usuarios 1-19,text,true,,447,548,80,100,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,1205,0,0
+1784742414751,386,GET /api/health,200,OK,Usuarios 1-34,text,true,,432,506,80,100,http://localhost:8000/api/health,386,0,2
+1784742413926,1220,GET /api/ovas (preparacion admin),200,OK,Administradores 2-17,text,true,,1280,521,20,100,http://localhost:8000/api/ovas?page=1&limit=2,1220,0,0
+1784742415067,83,GET /api/agents/evaluate/recursos,200,OK,Usuarios 1-3,text,true,,1428,524,80,100,http://localhost:8000/api/agents/evaluate/recursos,83,0,1
+1784742413839,1394,GET /api/ovas/papelera,200,OK,Usuarios 1-45,text,true,,432,529,80,100,http://localhost:8000/api/ovas/papelera?page=1&limit=10,1394,0,1
+1784742413783,1524,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-15,text,true,,1094,550,20,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,1524,0,0
+1784742413739,1610,GET /api/ovas/{ova_id}/versiones/diff,200,OK,Usuarios 1-21,text,true,,1147,636,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones/diff?v1=22538e4f-ede1-43a9-aadb-b4b15e50ab00&v2=22538e4f-ede1-43a9-aadb-b4b15e50ab00,1610,0,0
+1784742413940,1518,GET /api/auth/me (preparacion),200,OK,Usuarios 1-48,text,true,,754,507,80,100,http://localhost:8000/api/auth/me,1517,0,1
+1784742414569,1050,GET /api/ovas/{ova_id}/regenerar/{id}/progress,404,Not Found,Usuarios 1-36,text,true,,449,597,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/regenerar/00000000-0000-0000-0000-000000000000/progress,1050,0,1
+1784742414060,1602,POST /api/auth/login (preparacion),200,OK,Usuarios 1-72,text,true,,1128,298,80,100,http://localhost:8000/api/auth/login,1602,0,1
+1784742413169,2499,GET /api/users/analytics,200,OK,Administradores 2-6,text,true,,3448,517,20,100,http://localhost:8000/api/users/analytics,2499,0,1
+1784742413960,1762,GET /api/admin/registration-mode,200,OK,Administradores 2-8,text,true,,416,525,20,100,http://localhost:8000/api/admin/registration-mode,1762,0,1
+1784742414039,1727,GET /api/rag/health,200,OK,Usuarios 1-40,text,true,,458,510,80,100,http://localhost:8000/api/rag/health,1727,0,1
+1784742414037,1736,GET /api/ovas (preparacion),200,OK,Usuarios 1-58,text,true,,1107,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,1736,0,1
+1784742413960,1894,GET /api/auth/me (preparacion),200,OK,Usuarios 1-51,text,true,,754,507,80,100,http://localhost:8000/api/auth/me,1894,0,1
+1784742415462,393,GET /api/agents/evaluate/recursos,200,OK,Usuarios 1-41,text,true,,1429,524,80,100,http://localhost:8000/api/agents/evaluate/recursos,393,0,0
+1784742414041,1828,GET /api/ovas (preparacion),200,OK,Usuarios 1-69,text,true,,1107,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,1828,0,1
+1784742414047,2131,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-55,text,true,,1094,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,2131,0,1
+1784742414148,2035,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-30,text,true,,1047,550,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,2035,0,0
+1784742414112,2112,GET /api/auth/me,200,OK,Usuarios 1-2,text,true,,754,507,80,100,http://localhost:8000/api/auth/me,2112,0,0
+1784742414235,2003,POST /api/auth/login (preparacion),200,OK,Usuarios 1-73,text,true,,1128,298,80,100,http://localhost:8000/api/auth/login,2003,0,1
+1784742413211,3054,GET /api/admin/nodes-config,200,OK,Administradores 2-7,text,true,,2686,520,20,100,http://localhost:8000/api/admin/nodes-config,3054,0,0
+1784742414279,2010,POST /api/auth/login (preparacion),200,OK,Usuarios 1-75,text,true,,1128,298,80,100,http://localhost:8000/api/auth/login,2010,0,1
+1784742414352,1990,POST /api/auth/login (preparacion),200,OK,Usuarios 1-74,text,true,,1128,298,80,100,http://localhost:8000/api/auth/login,1990,0,1
+1784742415781,603,GET /api/agents/engage/recursos,200,OK,Usuarios 1-9,text,true,,1391,522,80,100,http://localhost:8000/api/agents/engage/recursos,603,0,1
+1784742414163,2326,GET /api/users/me/image-models,200,OK,Usuarios 1-39,text,true,,407,542,80,100,http://localhost:8000/api/users/me/image-models?provider=siliconflow,2326,0,0
+1784742415496,996,GET /health,200,OK,Usuarios 1-7,text,true,,418,502,80,100,http://localhost:8000/health,996,0,1
+1784742414021,2475,GET /api/users/links/admin,200,OK,Administradores 2-1,text,true,,15475,519,20,100,http://localhost:8000/api/users/links/admin,2475,0,1
+1784742414228,2403,GET /api/ovas (preparacion),200,OK,Usuarios 1-70,text,true,,1107,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,2403,0,0
+1784742414673,2378,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-19,text,true,,1132,300,20,100,http://localhost:8000/api/auth/login,2378,0,1
+1784742414088,2967,GET /api/rag/chunks/by-upload/{id},200,OK,Usuarios 1-5,text,true,,381,557,80,100,http://localhost:8000/api/rag/chunks/by-upload/00000000-0000-0000-0000-000000000000,2966,0,1
+1784742414379,3280,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-57,text,true,,1094,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,3279,0,1
+1784742413782,4279,GET /api/admin/nodes-config,200,OK,Administradores 2-5,text,true,,2686,520,20,100,http://localhost:8000/api/admin/nodes-config,4279,0,0
+1784742414465,3599,GET /api/rag/health,200,OK,Usuarios 1-29,text,true,,458,510,80,100,http://localhost:8000/api/rag/health,3599,0,0
+1784742414527,3841,GET /api/ovas (buscar),200,OK,Usuarios 1-10,text,true,,3804,533,80,100,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,3841,0,1
+1784742414008,4566,GET /api/users/me/enabled-models,200,OK,Usuarios 1-14,text,true,,633,523,80,100,http://localhost:8000/api/users/me/enabled-models,4565,0,1
+1784742415863,2712,GET /api/health,200,OK,Usuarios 1-47,text,true,,433,506,80,100,http://localhost:8000/api/health,2712,0,0
+1784742414954,30720,GET /api/ovas/papelera/count,500,Internal Server Error,Usuarios 1-22,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,519,80,100,http://localhost:8000/api/ovas/papelera/count,30720,0,1
+1784742415000,30674,GET /api/users/me/api-keys,500,Internal Server Error,Usuarios 1-18,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,517,80,100,http://localhost:8000/api/users/me/api-keys,30674,0,1
+1784742414221,31465,GET /api/admin/platform-config,200,OK,Administradores 2-11,text,true,,730,523,20,100,http://localhost:8000/api/admin/platform-config,31465,0,0
+1784742414584,31102,GET /api/users/me/image-models,200,OK,Usuarios 1-12,text,true,,408,542,80,100,http://localhost:8000/api/users/me/image-models?provider=siliconflow,31101,0,1
+1784742415042,30959,GET /api/ovas/{ova_id}/chat,500,Internal Server Error,Usuarios 1-6,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,546,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,30959,0,1
+1784742415065,30936,GET /api/auth/me (preparacion),500,Internal Server Error,Usuarios 1-53,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,30936,0,0
+1784742414949,31057,POST /api/auth/login (preparacion),500,Internal Server Error,Usuarios 1-77,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,298,80,100,http://localhost:8000/api/auth/login,31052,0,2
+1784742414606,31413,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,200,OK,Usuarios 1-25,text,true,,441,594,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/fases/2dc07137-623b-4f84-80b1-7c09dc16a6d0/versiones,31413,0,1
+1784742414582,31437,GET /api/auth/me (preparacion),200,OK,Usuarios 1-46,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,31437,0,1
+1784742415138,31222,GET /api/ovas (buscar),500,Internal Server Error,Usuarios 1-37,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,533,80,100,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,31222,0,1
+1784742415247,31113,GET /api/auth/me (preparacion),500,Internal Server Error,Usuarios 1-50,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,31113,0,1
+1784742415256,31104,GET /api/ovas/{ova_id}/editar (preparacion),500,Internal Server Error,Usuarios 1-61,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,31104,0,0
+1784742417009,29354,GET /api/agents/engage/recursos,200,OK,Usuarios 1-39,text,true,,1393,522,80,100,http://localhost:8000/api/agents/engage/recursos,29354,0,1
+1784742417053,29320,GET /api/agents/engage/recursos,200,OK,Usuarios 1-48,text,true,,1393,522,80,100,http://localhost:8000/api/agents/engage/recursos,29320,0,1
+1784742414067,32318,GET /api/users/analytics,200,OK,Administradores 2-3,text,true,,3449,517,20,100,http://localhost:8000/api/users/analytics,32318,0,1
+1784742414234,32152,GET /api/admin/registration-mode,200,OK,Administradores 2-13,text,true,,417,525,20,100,http://localhost:8000/api/admin/registration-mode,32152,0,0
+1784742414701,31685,GET /api/ovas (preparacion admin),200,OK,Administradores 2-16,text,true,,1281,521,20,100,http://localhost:8000/api/ovas?page=1&limit=2,31685,0,0
+1784742415285,31611,GET /api/jobs/{id}/resources/{id}/content,500,Internal Server Error,Usuarios 1-16,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,596,80,100,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,31611,0,0
+1784742415375,31521,POST /api/auth/login (preparacion),500,Internal Server Error,Usuarios 1-80,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,298,80,100,http://localhost:8000/api/auth/login,31521,0,1
+1784742415300,31596,GET /api/admin/platform-config,500,Internal Server Error,Administradores 2-2,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,523,20,100,http://localhost:8000/api/admin/platform-config,31596,0,0
+1784742415319,31577,GET /api/auth/me (preparacion),500,Internal Server Error,Usuarios 1-49,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,31577,0,0
+1784742415269,31627,GET /api/ovas/{ova_id}/editar (preparacion),500,Internal Server Error,Usuarios 1-63,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,31627,0,1
+1784742414513,32385,GET /api/uploads/temp,200,OK,Usuarios 1-38,text,true,,382,512,80,100,http://localhost:8000/api/uploads/temp,32385,0,1
+1784742414866,32057,GET /api/users/me/api-keys,200,OK,Usuarios 1-1,text,true,,619,517,80,100,http://localhost:8000/api/users/me/api-keys,32056,0,1
+1784742414685,32242,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-15,,true,,863,547,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,32242,0,1
+1784742414845,32192,GET /api/ovas (buscar),200,OK,Usuarios 1-4,text,true,,3805,533,80,100,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,32192,0,1
+1784742414756,32281,GET /api/ovas/{ova_id}/regenerar/{id}/progress,404,Not Found,Usuarios 1-20,text,true,,450,597,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/regenerar/00000000-0000-0000-0000-000000000000/progress,32281,0,1
+1784742414792,32245,GET /api/ovas (preparacion),200,OK,Usuarios 1-64,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,32245,0,1
+1784742414844,32194,POST /api/auth/login (preparacion),200,OK,Usuarios 1-76,text,true,,1129,298,80,100,http://localhost:8000/api/auth/login,32193,0,1
+1784742415410,31629,POST /api/auth/login (preparacion),500,Internal Server Error,Usuarios 1-79,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,298,80,100,http://localhost:8000/api/auth/login,31629,0,1
+1784742415597,31911,GET /api/ovas/{ova_id}/editar,500,Internal Server Error,Usuarios 1-28,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,31911,0,1
+1784742415563,31945,GET /api/ovas/{ova_id}/export-scorm,500,Internal Server Error,Usuarios 1-23,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,554,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/export-scorm,31945,0,0
+1784742415562,31946,GET /api/auth/me (preparacion),500,Internal Server Error,Usuarios 1-52,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,31946,0,0
+1784742415556,31952,GET /api/ovas (preparacion),500,Internal Server Error,Usuarios 1-71,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,31952,0,0
+1784742420294,27215,GET /api/agents/explore/recursos,200,OK,Usuarios 1-47,text,true,,1400,523,80,100,http://localhost:8000/api/agents/explore/recursos,27215,0,1
+1784742414925,32585,GET /api/rag/health,200,OK,Usuarios 1-35,text,true,,459,510,80,100,http://localhost:8000/api/rag/health,32585,0,1
+1784742416975,30550,GET /api/agents/health,200,OK,Usuarios 1-51,text,true,,403,513,80,100,http://localhost:8000/api/agents/health,30550,0,0
+1784742414632,32906,GET /api/admin/platform-config,200,OK,Administradores 2-12,text,true,,730,523,20,100,http://localhost:8000/api/admin/platform-config,32906,0,1
+1784742414877,32661,GET /api/ovas (preparacion),200,OK,Usuarios 1-66,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,32661,0,1
+1784742414877,32662,GET /api/ovas/{ova_id}/export-scorm,200,OK,Usuarios 1-8,text,true,,1054,554,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/export-scorm,32662,0,1
+1784742415511,32028,POST /api/auth/login (preparacion),200,OK,Usuarios 1-78,text,true,,1129,298,80,100,http://localhost:8000/api/auth/login,32028,0,1
+1784742417213,30328,GET /api/scorm/health,200,OK,Usuarios 1-7,text,true,,402,512,80,100,http://localhost:8000/api/scorm/health,30328,0,0
+1784742415700,31848,POST /api/auth/login (preparacion admin),200,OK,Administradores 2-20,text,true,,1133,300,20,100,http://localhost:8000/api/auth/login,31848,0,1
+1784742414925,32695,GET /api/ovas (preparacion admin),200,OK,Administradores 2-18,text,true,,1281,521,20,100,http://localhost:8000/api/ovas?page=1&limit=2,32695,0,1
+1784742415149,32773,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-59,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,32773,0,0
+1784742415257,32726,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-27,,true,,863,547,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,32726,0,0
+1784742415201,32824,GET /api/jobs,404,Not Found,Usuarios 1-31,text,true,,448,548,80,100,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,32824,0,1
+1784742446600,1526,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-12,text,true,,1398,525,80,100,http://localhost:8000/api/agents/elaborate/recursos,1525,0,1
+1784742415479,32814,GET /api/ovas (preparacion),200,OK,Usuarios 1-65,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,32814,0,1
+1784742415657,32735,GET /api/ovas/papelera/count,200,OK,Usuarios 1-13,text,true,,381,519,80,100,http://localhost:8000/api/ovas/papelera/count,32735,0,1
+1784742447283,1113,GET /api/agents/explain/recursos,200,OK,Usuarios 1-37,text,true,,1378,523,80,100,http://localhost:8000/api/agents/explain/recursos,1113,0,0
+1784742414601,33799,GET /api/users/analytics,200,OK,Administradores 2-9,text,true,,3449,517,20,100,http://localhost:8000/api/users/analytics,33799,0,1
+1784742447698,704,GET /api/agents/explain/recursos,200,OK,Usuarios 1-6,text,true,,1378,523,80,100,http://localhost:8000/api/agents/explain/recursos,704,0,1
+1784742415503,32930,GET /api/ovas/papelera,200,OK,Usuarios 1-43,text,true,,433,529,80,100,http://localhost:8000/api/ovas/papelera?page=1&limit=10,32930,0,1
+1784742415535,32999,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-62,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,32999,0,0
+1784742415897,32902,GET /api/ovas (preparacion),200,OK,Usuarios 1-67,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,32902,0,0
+1784742415259,33549,GET /api/users/me/links,200,OK,Administradores 2-10,text,true,,15476,516,20,100,http://localhost:8000/api/users/me/links,33549,0,1
+1784742415802,33010,GET /api/auth/me,200,OK,Usuarios 1-32,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,33010,0,1
+1784742415926,32887,GET /api/ovas,200,OK,Usuarios 1-44,text,true,,3805,520,80,100,http://localhost:8000/api/ovas?page=1&limit=10,32887,0,1
+1784742415819,32996,GET /api/auth/me (preparacion),200,OK,Usuarios 1-56,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,32996,0,1
+1784742415753,33082,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-60,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,33082,0,0
+1784742415844,32995,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-15,text,true,,882,509,20,100,http://localhost:8000/api/auth/me,32995,0,1
+1784742415904,33004,GET /api/ovas/{ova_id}/regenerar/{id}/progress,404,Not Found,Usuarios 1-26,text,true,,450,597,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/regenerar/00000000-0000-0000-0000-000000000000/progress,33004,0,1
+1784742447177,1738,GET /api/ovas (preparacion),401,Unauthorized,Usuarios 1-77,text,true,,437,230,80,100,http://localhost:8000/api/ovas?page=1&limit=2,1738,0,1
+1784742415936,32984,GET /api/jobs,404,Not Found,Usuarios 1-24,text,true,,448,548,80,100,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,32984,0,0
+1784742415683,33240,GET /api/roles,200,OK,Administradores 2-4,text,true,,3478,507,20,100,http://localhost:8000/api/roles,33240,0,1
+1784742447624,1379,GET /api/ovas (preparacion),401,Unauthorized,Usuarios 1-80,text,true,,437,230,80,100,http://localhost:8000/api/ovas?page=1&limit=2,1379,0,1
+1784742448495,703,GET /api/agents/explore/recursos,200,OK,Usuarios 1-23,text,true,,1398,523,80,100,http://localhost:8000/api/agents/explore/recursos,703,0,1
+1784742415810,33395,GET /api/rag/chunks/by-upload/{id},200,OK,Usuarios 1-11,text,true,,382,557,80,100,http://localhost:8000/api/rag/chunks/by-upload/00000000-0000-0000-0000-000000000000,33395,0,1
+1784742416091,33116,GET /api/ovas/papelera/count,200,OK,Usuarios 1-21,text,true,,381,519,80,100,http://localhost:8000/api/ovas/papelera/count,33116,0,1
+1784742448667,548,GET /api/agents/evaluate/recursos,200,OK,Usuarios 1-49,text,true,,1429,524,80,100,http://localhost:8000/api/agents/evaluate/recursos,547,0,1
+1784742416211,33110,GET /api/ovas (buscar),200,OK,Usuarios 1-34,text,true,,3805,533,80,100,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,33110,0,1
+1784742416232,33092,GET /api/ovas (preparacion),200,OK,Usuarios 1-72,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,33092,0,1
+1784742448718,691,GET /api/agents/explore/recursos,200,OK,Usuarios 1-38,text,true,,1398,523,80,100,http://localhost:8000/api/agents/explore/recursos,691,0,1
+1784742416103,33416,GET /api/auth/me,200,OK,Usuarios 1-42,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,33416,0,0
+1784742416313,33299,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,200,OK,Usuarios 1-3,text,true,,441,594,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/fases/2dc07137-623b-4f84-80b1-7c09dc16a6d0/versiones,33299,0,0
+1784742448241,1374,GET /api/scorm/health,200,OK,Usuarios 1-1,text,true,,401,512,80,100,http://localhost:8000/api/scorm/health,1374,0,0
+1784742448293,1529,GET /api/ovas (preparacion),401,Unauthorized,Usuarios 1-79,text,true,,437,230,80,100,http://localhost:8000/api/ovas?page=1&limit=2,1529,0,1
+1784742417903,59744,GET /api/ovas (preparacion),500,Internal Server Error,Usuarios 1-75,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,59744,0,1
+1784742417895,59868,GET /api/auth/me,500,Internal Server Error,Usuarios 1-2,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,59868,0,1
+1784742418045,59921,GET /api/ovas/{ova_id}/chat,500,Internal Server Error,Usuarios 1-9,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,546,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,59921,0,1
+1784742417966,60001,GET /api/ovas (preparacion),500,Internal Server Error,Usuarios 1-74,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,60001,0,1
+1784742418178,59892,GET /api/auth/me (preparacion),500,Internal Server Error,Usuarios 1-57,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,59892,0,1
+1784742449022,29060,GET /api/agents/engage/recursos,200,OK,Usuarios 1-8,text,true,,1393,522,80,100,http://localhost:8000/api/agents/engage/recursos,29060,0,1
+1784742418251,60047,GET /api/jobs/{id}/resources/{id}/content,500,Internal Server Error,Usuarios 1-5,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,596,80,100,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,60047,0,1
+1784742418595,59703,GET /api/ovas/{ova_id}/editar (preparacion),500,Internal Server Error,Usuarios 1-70,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,59703,0,1
+1784742416393,61908,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-17,,true,,863,547,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,61908,0,0
+1784742416472,61835,GET /api/ovas,200,OK,Usuarios 1-40,text,true,,3805,520,80,100,http://localhost:8000/api/ovas?page=1&limit=10,61835,0,1
+1784742416538,61769,GET /api/ovas (preparacion),200,OK,Usuarios 1-68,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,61769,0,0
+1784742416580,61947,GET /api/auth/me,200,OK,Usuarios 1-33,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,61946,0,1
+1784742419733,58795,GET /api/admin/llm-config,500,Internal Server Error,Administradores 2-5,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,518,20,100,http://localhost:8000/api/admin/llm-config,58795,0,1
+1784742418878,59650,GET /api/ovas (preparacion admin),500,Internal Server Error,Administradores 2-19,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,521,20,100,http://localhost:8000/api/ovas?page=1&limit=2,59650,0,1
+1784742420244,58480,GET /api/jobs/{id},500,Internal Server Error,Usuarios 1-10,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,541,80,100,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,58480,0,0
+1784742419855,58869,GET /api/jobs/{id},500,Internal Server Error,Usuarios 1-29,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,541,80,100,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,58869,0,1
+1784742416960,61778,GET /api/ovas (preparacion),200,OK,Usuarios 1-73,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,61778,0,1
+1784742416809,61930,GET /api/ovas/{ova_id}/chat,200,OK,Usuarios 1-19,text,true,,385,546,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,61929,0,1
+1784742416857,61894,GET /api/ovas (buscar),200,OK,Usuarios 1-45,text,true,,3805,533,80,100,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,61894,0,1
+1784742416608,62143,GET /api/auth/me (preparacion),200,OK,Usuarios 1-54,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,62143,0,1
+1784742416790,61961,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-14,text,true,,882,509,20,100,http://localhost:8000/api/auth/me,61961,0,0
+1784742416851,61901,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-58,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,61901,0,1
+1784742416984,61770,GET /api/ovas/{ova_id}/versiones/diff,200,OK,Usuarios 1-36,text,true,,1148,636,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones/diff?v1=22538e4f-ede1-43a9-aadb-b4b15e50ab00&v2=22538e4f-ede1-43a9-aadb-b4b15e50ab00,61770,0,1
+1784742416820,61934,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-17,text,true,,1095,550,20,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,61934,0,0
+1784742449607,29151,GET /api/agents/engage/recursos,200,OK,Usuarios 1-56,text,true,,1393,522,80,100,http://localhost:8000/api/agents/engage/recursos,29151,0,0
+1784742450054,28707,GET /api/agents/explore/recursos,200,OK,Usuarios 1-26,text,true,,1400,523,80,100,http://localhost:8000/api/agents/explore/recursos,28707,0,1
+1784742450475,28291,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-3,text,true,,1399,525,80,100,http://localhost:8000/api/agents/elaborate/recursos,28291,0,1
+1784742449063,29707,GET /health,200,OK,Usuarios 1-51,text,true,,420,502,80,100,http://localhost:8000/health,29707,0,1
+1784742419364,59406,GET /api/rag/health,200,OK,Usuarios 1-14,text,true,,460,510,80,100,http://localhost:8000/api/rag/health,59406,0,1
+1784742416369,62597,GET /api/users/links/admin,200,OK,Administradores 2-6,text,true,,15476,519,20,100,http://localhost:8000/api/users/links/admin,62597,0,1
+1784742417207,61944,GET /api/ovas/llm-options,200,OK,Usuarios 1-41,text,true,,6894,516,80,100,http://localhost:8000/api/ovas/llm-options,61944,0,0
+1784742449765,29387,GET /api/ovas/{ova_id}/editar (preparacion),401,Unauthorized,Usuarios 1-80,text,true,,438,259,80,100,http://localhost:8000/api/ovas/00000000-0000-0000-0000-000000000000/editar,29387,0,0
+1784742447863,31464,GET /api/auth/me (preparacion),500,Internal Server Error,Usuarios 1-63,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,31464,0,0
+1784742417275,62063,GET /api/ovas/{ova_id}/chat,200,OK,Usuarios 1-30,text,true,,385,546,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,62063,0,1
+1784742447967,31492,GET /api/admin/llm-config,500,Internal Server Error,Administradores 2-13,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,518,20,100,http://localhost:8000/api/admin/llm-config,31492,0,1
+1784742450307,29163,GET /api/agents/health,200,OK,Usuarios 1-24,text,true,,403,513,80,100,http://localhost:8000/api/agents/health,29163,0,1
+1784742417670,61806,GET /api/auth/me (preparacion),200,OK,Usuarios 1-55,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,61806,0,1
+1784742417294,62182,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-69,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,62182,0,0
+1784742448076,31612,GET /api/rag/chunks/by-upload/{id},500,Internal Server Error,Usuarios 1-52,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,557,80,100,http://localhost:8000/api/rag/chunks/by-upload/00000000-0000-0000-0000-000000000000,31612,0,0
+1784742448018,31670,GET /api/ovas/{ova_id}/versiones,500,Internal Server Error,Usuarios 1-35,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,551,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones,31670,0,0
+1784742450773,28916,GET /api/scorm/health,200,OK,Usuarios 1-32,text,true,,402,512,80,100,http://localhost:8000/api/scorm/health,28916,0,0
+1784742450376,29313,GET /api/ovas/{ova_id}/editar (preparacion),401,Unauthorized,Usuarios 1-79,text,true,,438,259,80,100,http://localhost:8000/api/ovas/00000000-0000-0000-0000-000000000000/editar,29313,0,0
+1784742448217,31684,GET /api/roles,500,Internal Server Error,Administradores 2-12,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,20,100,http://localhost:8000/api/roles,31684,0,0
+1784742448214,31687,GET /api/uploads/temp,500,Internal Server Error,Usuarios 1-20,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,512,80,100,http://localhost:8000/api/uploads/temp,31687,0,1
+1784742450755,29147,GET /api/agents/health,200,OK,Usuarios 1-44,text,true,,403,513,80,100,http://localhost:8000/api/agents/health,29147,0,1
+1784742451056,28851,GET /api/agents/health,200,OK,Usuarios 1-21,text,true,,403,513,80,100,http://localhost:8000/api/agents/health,28851,0,1
+1784742450824,29086,GET /api/ovas/{ova_id}/editar (preparacion),401,Unauthorized,Usuarios 1-77,text,true,,438,259,80,100,http://localhost:8000/api/ovas/00000000-0000-0000-0000-000000000000/editar,29086,0,1
+1784742448355,31675,GET /api/ovas/{ova_id}/editar (preparacion),500,Internal Server Error,Usuarios 1-71,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,548,80,100,http://localhost:8000/api/ovas/00000000-0000-0000-0000-000000000000/editar,31675,0,1
+1784742417059,62974,GET /api/users,200,OK,Administradores 2-7,text,true,,4288,523,20,100,http://localhost:8000/api/users?page=1&limit=10,62974,0,1
+1784742446891,33257,GET /api/ovas/papelera/count,200,OK,Usuarios 1-46,text,true,,381,519,80,100,http://localhost:8000/api/ovas/papelera/count,33257,0,0
+1784742446633,33524,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-18,text,true,,1048,550,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,33524,0,0
+1784742446952,33304,GET /api/auth/me (preparacion),200,OK,Usuarios 1-61,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,33304,0,1
+1784742447562,32697,GET /api/users/me/api-keys,200,OK,Usuarios 1-22,text,true,,619,517,80,100,http://localhost:8000/api/users/me/api-keys,32697,0,1
+1784742447385,32876,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-25,text,true,,442,596,80,100,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,32876,0,1
+1784742447456,32908,GET /api/users/me/llm-settings,200,OK,Usuarios 1-16,text,true,,26962,521,80,100,http://localhost:8000/api/users/me/llm-settings,32908,0,1
+1784742479407,962,GET /api/agents/engage/recursos,200,OK,Usuarios 1-19,text,true,,1391,522,80,100,http://localhost:8000/api/agents/engage/recursos,962,0,1
+1784742447739,32633,GET /api/rag/health,200,OK,Usuarios 1-50,text,true,,459,510,80,100,http://localhost:8000/api/rag/health,32633,0,1
+1784742447734,32738,GET /api/ovas (preparacion),200,OK,Usuarios 1-76,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,32738,0,1
+1784742447970,32506,GET /api/users/me/image-models,200,OK,Usuarios 1-39,text,true,,408,542,80,100,http://localhost:8000/api/users/me/image-models?provider=siliconflow,32506,0,0
+1784742446990,33494,GET /api/ovas/{ova_id}/export-scorm,200,OK,Usuarios 1-53,text,true,,1054,554,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/export-scorm,33494,0,0
+1784742480067,420,GET /api/agents/explain/recursos,200,OK,Usuarios 1-14,text,true,,1378,523,80,100,http://localhost:8000/api/agents/explain/recursos,420,0,1
+1784742446904,33676,GET /api/roles,200,OK,Administradores 2-3,text,true,,3478,507,20,100,http://localhost:8000/api/roles,33676,0,1
+1784742447652,33017,GET /api/admin/registration-mode,200,OK,Administradores 2-11,text,true,,417,525,20,100,http://localhost:8000/api/admin/registration-mode,33017,0,0
+1784742448280,32485,GET /api/ovas (preparacion admin),200,OK,Administradores 2-20,text,true,,1281,521,20,100,http://localhost:8000/api/ovas?page=1&limit=2,32484,0,1
+1784742447676,33192,GET /api/admin/registration-mode,200,OK,Administradores 2-2,text,true,,417,525,20,100,http://localhost:8000/api/admin/registration-mode,33192,0,0
+1784742447805,33159,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-16,text,true,,1095,550,20,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,33159,0,0
+1784742480439,534,GET /api/agents/engage/recursos,200,OK,Usuarios 1-20,text,true,,1391,522,80,100,http://localhost:8000/api/agents/engage/recursos,534,0,0
+1784742479701,1277,GET /api/health,200,OK,Usuarios 1-29,text,true,,433,506,80,100,http://localhost:8000/api/health,1276,0,0
+1784742479763,1217,GET /health,200,OK,Usuarios 1-45,text,true,,419,502,80,100,http://localhost:8000/health,1217,0,1
+1784742479769,1303,GET /api/scorm/health,200,OK,Usuarios 1-51,text,true,,401,512,80,100,http://localhost:8000/api/scorm/health,1303,0,1
+1784742448286,32791,GET /api/ovas/papelera/count,200,OK,Usuarios 1-48,text,true,,381,519,80,100,http://localhost:8000/api/ovas/papelera/count,32791,0,1
+1784742416449,64635,GET /api/admin/nodes-config,200,OK,Administradores 2-8,text,true,,2687,520,20,100,http://localhost:8000/api/admin/nodes-config,64634,0,0
+1784742448184,32983,GET /api/ovas/{ova_id}/versiones/diff,200,OK,Usuarios 1-7,text,true,,1148,636,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones/diff?v1=22538e4f-ede1-43a9-aadb-b4b15e50ab00&v2=22538e4f-ede1-43a9-aadb-b4b15e50ab00,32983,0,0
+1784742448366,33015,GET /api/ovas/{ova_id}/chat,200,OK,Usuarios 1-28,text,true,,385,546,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,33015,0,0
+1784742449298,32087,GET /api/db/health,200,OK,Usuarios 1-31,text,true,,433,509,80,100,http://localhost:8000/api/db/health,32087,0,1
+1784742448486,33005,GET /api/users/me/llm-settings,200,OK,Usuarios 1-15,text,true,,26962,521,80,100,http://localhost:8000/api/users/me/llm-settings,33005,0,1
+1784742448695,32923,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-12,text,true,,1048,550,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,32923,0,1
+1784742449999,31620,GET /api/db/health,200,OK,Usuarios 1-6,text,true,,433,509,80,100,http://localhost:8000/api/db/health,31620,0,1
+1784742448871,32951,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,200,OK,Usuarios 1-4,text,true,,441,594,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/fases/2dc07137-623b-4f84-80b1-7c09dc16a6d0/versiones,32951,0,0
+1784742448699,33210,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-47,text,true,,1048,550,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,33210,0,1
+1784742417490,64423,GET /api/users/analytics,200,OK,Administradores 2-1,text,true,,3449,517,20,100,http://localhost:8000/api/users/analytics,64423,0,1
+1784742480399,1514,GET /api/auth/me (preparacion),401,Unauthorized,Usuarios 1-80,text,true,,437,218,80,100,http://localhost:8000/api/auth/me,1514,0,1
+1784742449281,32644,GET /api/ovas/papelera/count,200,OK,Usuarios 1-27,text,true,,381,519,80,100,http://localhost:8000/api/ovas/papelera/count,32644,0,1
+1784742448820,33170,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-64,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,33170,0,1
+1784742449229,32800,GET /api/ovas (preparacion),200,OK,Usuarios 1-78,text,true,,1108,519,80,100,http://localhost:8000/api/ovas?page=1&limit=2,32800,0,1
+1784742480550,1485,GET /api/ovas/health,200,OK,Usuarios 1-24,text,true,,399,511,80,100,http://localhost:8000/api/ovas/health,1484,0,0
+1784742480485,1550,GET /api/auth/me (preparacion),401,Unauthorized,Usuarios 1-77,text,true,,437,218,80,100,http://localhost:8000/api/auth/me,1550,0,0
+1784742449010,33117,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-66,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,33117,0,0
+1784742480665,1469,GET /api/agents/health,200,OK,Usuarios 1-44,text,true,,402,513,80,100,http://localhost:8000/api/agents/health,1469,0,1
+1784742481569,570,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-20,text,true,,1397,525,80,100,http://localhost:8000/api/agents/elaborate/recursos,570,0,0
+1784742449400,32817,GET /api/ovas/{ova_id}/regenerar/{id}/progress,404,Not Found,Usuarios 1-13,text,true,,450,597,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/regenerar/00000000-0000-0000-0000-000000000000/progress,32817,0,1
+1784742480725,1500,GET /health,200,OK,Usuarios 1-18,text,true,,419,502,80,100,http://localhost:8000/health,1500,0,1
+1784742448980,33251,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-18,text,true,,1095,550,20,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,33251,0,1
+1784742481655,653,GET /api/agents/engage/recursos,200,OK,Usuarios 1-48,text,true,,1391,522,80,100,http://localhost:8000/api/agents/engage/recursos,653,0,0
+1784742481693,639,GET /api/agents/engage/recursos,200,OK,Usuarios 1-21,text,true,,1391,522,80,100,http://localhost:8000/api/agents/engage/recursos,639,0,1
+1784742449348,32991,GET /api/auth/me (preparacion),200,OK,Usuarios 1-59,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,32991,0,0
+1784742481802,541,GET /api/agents/engage/recursos,200,OK,Usuarios 1-19,text,true,,1391,522,80,100,http://localhost:8000/api/agents/engage/recursos,541,0,0
+1784742481802,541,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-14,text,true,,1397,525,80,100,http://localhost:8000/api/agents/elaborate/recursos,541,0,0
+1784742449316,33082,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-65,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,33082,0,0
+1784742480956,1444,GET /api/agents/health,200,OK,Usuarios 1-55,text,true,,402,513,80,100,http://localhost:8000/api/agents/health,1444,0,1
+1784742449535,32998,GET /api/ovas/{ova_id}/editar,200,OK,Usuarios 1-43,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,32998,0,1
+1784742449961,32581,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-72,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,32581,0,1
+1784742481309,1336,GET /api/scorm/health,200,OK,Usuarios 1-25,text,true,,401,512,80,100,http://localhost:8000/api/scorm/health,1336,0,1
+1784742450221,32439,GET /api/ovas/papelera/count,200,OK,Usuarios 1-37,text,true,,381,519,80,100,http://localhost:8000/api/ovas/papelera/count,32439,0,1
+1784742449936,32725,GET /api/auth/me (preparacion),200,OK,Usuarios 1-62,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,32725,0,0
+1784742481353,1315,GET /api/health,200,OK,Usuarios 1-53,text,true,,433,506,80,100,http://localhost:8000/api/health,1315,0,0
+1784742481358,1310,GET /api/auth/me (preparacion),401,Unauthorized,Usuarios 1-79,text,true,,437,218,80,100,http://localhost:8000/api/auth/me,1310,0,0
+1784742450186,32657,GET /api/ovas/papelera,200,OK,Usuarios 1-49,text,true,,433,529,80,100,http://localhost:8000/api/ovas/papelera?page=1&limit=10,32656,0,2
+1784742481531,1330,GET /api/ovas/health,200,OK,Usuarios 1-29,text,true,,399,511,80,100,http://localhost:8000/api/ovas/health,1330,0,1
+1784742450121,32820,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-67,text,true,,1095,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,32820,0,0
+1784742450607,32340,GET /api/users/me/ova-settings,200,OK,Usuarios 1-34,text,true,,652,521,80,100,http://localhost:8000/api/users/me/ova-settings,32340,0,1
+1784742450212,32750,GET /api/ovas/papelera/count,200,OK,Usuarios 1-42,text,true,,381,519,80,100,http://localhost:8000/api/ovas/papelera/count,32750,0,1
+1784742450564,32403,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-38,text,true,,442,596,80,100,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,32403,0,1
+1784742450038,33331,GET /api/users,200,OK,Administradores 2-4,text,true,,4288,523,20,100,http://localhost:8000/api/users?page=1&limit=10,33331,0,0
+1784742450290,33161,GET /api/ovas/papelera,200,OK,Usuarios 1-23,text,true,,433,529,80,100,http://localhost:8000/api/ovas/papelera?page=1&limit=10,33161,0,0
+1784742450746,32885,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-11,text,true,,1048,550,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,32884,0,0
+1784742482081,1551,GET /api/agents/health,200,OK,Usuarios 1-16,text,true,,402,513,80,100,http://localhost:8000/api/agents/health,1551,0,1
+1784742450823,33051,GET /api/auth/me (preparacion),200,OK,Usuarios 1-60,text,true,,755,507,80,100,http://localhost:8000/api/auth/me,33051,0,0
+1784742478295,5637,GET /api/ovas/{ova_id}/editar (preparacion),404,Not Found,Usuarios 1-75,text,true,,428,548,80,100,http://localhost:8000/api/ovas/00000000-0000-0000-0000-000000000000/editar,5637,0,2
+1784742478530,5448,GET /api/jobs/{id},404,Not Found,Usuarios 1-9,text,true,,432,541,80,100,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,5447,0,1
+1784742451176,32812,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-1,,true,,863,547,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,32812,0,0
+1784742482937,1141,GET /api/agents/explore/recursos,200,OK,Usuarios 1-77,text,true,,1399,234,80,100,http://localhost:8000/api/agents/explore/recursos,1141,0,0
+1784742478847,5235,GET /api/ovas (buscar),200,OK,Usuarios 1-5,text,true,,3804,533,80,100,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,5235,0,0
+1784742450481,33610,GET /api/admin/platform-config,200,OK,Administradores 2-15,text,true,,730,523,20,100,http://localhost:8000/api/admin/platform-config,33610,0,1
+1784742449307,34931,GET /api/users/analytics,200,OK,Administradores 2-9,text,true,,3449,517,20,100,http://localhost:8000/api/users/analytics,34931,0,1
+1784742479326,4954,GET /api/jobs/{id},404,Not Found,Usuarios 1-40,text,true,,432,541,80,100,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,4954,0,1
+1784742479067,5272,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-2,,true,,862,547,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,5272,0,1
+1784742479209,5133,GET /api/ovas/{ova_id}/editar (preparacion),404,Not Found,Usuarios 1-74,text,true,,428,548,80,100,http://localhost:8000/api/ovas/00000000-0000-0000-0000-000000000000/editar,5133,0,1
+1784742483662,683,GET /api/agents/engage/recursos,200,OK,Usuarios 1-59,text,true,,1391,522,80,100,http://localhost:8000/api/agents/engage/recursos,683,0,1
+1784742479016,5365,GET /api/auth/me (preparacion),200,OK,Usuarios 1-70,text,true,,754,507,80,100,http://localhost:8000/api/auth/me,5365,0,0
+1784742479383,5183,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-8,text,true,,1047,550,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,5183,0,1
+1784742479500,5143,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-73,text,true,,1094,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,5143,0,1
+1784742480743,31593,GET /api/ovas/{ova_id}/versiones/diff,500,Internal Server Error,Usuarios 1-3,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,636,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones/diff?v1=22538e4f-ede1-43a9-aadb-b4b15e50ab00&v2=22538e4f-ede1-43a9-aadb-b4b15e50ab00,31593,0,1
+1784742480911,31541,GET /api/roles,500,Internal Server Error,Administradores 2-12,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,20,100,http://localhost:8000/api/roles,31541,0,1
+1784742479632,32828,GET /api/users/me/resource-configs,200,OK,Usuarios 1-17,text,true,,384,525,80,100,http://localhost:8000/api/users/me/resource-configs,32828,0,0
+1784742481021,31777,GET /api/ovas/{ova_id}/editar,500,Internal Server Error,Usuarios 1-46,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,31777,0,1
+1784742481124,31674,GET /api/users/me/api-keys,500,Internal Server Error,Usuarios 1-30,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,517,80,100,http://localhost:8000/api/users/me/api-keys,31674,0,1
+1784742481014,31784,GET /api/auth/me (preparacion),500,Internal Server Error,Usuarios 1-71,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,31784,0,1
+1784742481139,31765,GET /api/ovas/{ova_id}/download,500,Internal Server Error,Usuarios 1-50,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,550,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,31765,0,1
+1784742479329,33579,GET /api/ovas/llm-options,200,OK,Usuarios 1-33,text,true,,6894,516,80,100,http://localhost:8000/api/ovas/llm-options,33579,0,1
+1784742483302,29612,GET /api/scorm/health,200,OK,Usuarios 1-53,text,true,,402,512,80,100,http://localhost:8000/api/scorm/health,29612,0,1
+1784742479644,33270,GET /api/ovas/{ova_id}/editar (preparacion admin),404,Not Found,Administradores 2-19,text,true,,429,550,20,100,http://localhost:8000/api/ovas/00000000-0000-0000-0000-000000000000/editar,33270,0,1
+1784742481482,31741,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,500,Internal Server Error,Usuarios 1-35,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,594,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/fases/2dc07137-623b-4f84-80b1-7c09dc16a6d0/versiones,31741,0,1
+1784742481171,32052,GET /api/auth/me (preparacion),500,Internal Server Error,Usuarios 1-69,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,80,100,http://localhost:8000/api/auth/me,32052,0,1
+1784742481461,31764,GET /api/ovas/{ova_id}/editar (preparacion),500,Internal Server Error,Usuarios 1-76,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,548,80,100,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,31764,0,0
+1784742481486,31874,GET /api/users/me/api-keys,500,Internal Server Error,Usuarios 1-52,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,517,79,99,http://localhost:8000/api/users/me/api-keys,31874,0,0
+1784742483615,29746,GET /api/users/me/resource-configs,401,Unauthorized,Usuarios 1-79,text,true,,438,236,79,99,http://localhost:8000/api/users/me/resource-configs,29746,0,0
+1784742484330,29039,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-55,text,true,,1399,525,78,98,http://localhost:8000/api/agents/elaborate/recursos,29039,0,0
+1784742479770,33605,GET /api/auth/me,200,OK,Usuarios 1-41,text,true,,755,507,77,97,http://localhost:8000/api/auth/me,33605,0,0
+1784742479764,33611,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-68,text,true,,1095,548,77,97,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,33611,0,0
+1784742481785,32326,GET /api/users/me/links,500,Internal Server Error,Administradores 2-11,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,516,20,96,http://localhost:8000/api/users/me/links,32326,0,0
+1784742481759,32352,GET /api/users/links/admin,500,Internal Server Error,Administradores 2-3,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,519,20,96,http://localhost:8000/api/users/links/admin,32352,0,0
+1784742481705,32407,GET /api/users/me/image-models,500,Internal Server Error,Usuarios 1-22,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,542,76,94,http://localhost:8000/api/users/me/image-models?provider=siliconflow,32407,0,0
+1784742481857,32255,GET /api/users/me/links,500,Internal Server Error,Administradores 2-7,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,516,18,94,http://localhost:8000/api/users/me/links,32255,0,1
+1784742483682,30431,GET /api/ovas/health,200,OK,Usuarios 1-48,text,true,,400,511,75,92,http://localhost:8000/api/ovas/health,30431,0,1
+1784742479822,34297,GET /api/ovas/papelera/count,200,OK,Usuarios 1-57,text,true,,381,519,74,91,http://localhost:8000/api/ovas/papelera/count,34297,0,0
+1784742483784,30343,GET /api/ovas,401,Unauthorized,Usuarios 1-80,text,true,,438,231,73,90,http://localhost:8000/api/ovas?page=1&limit=10,30343,0,1
+1784742481967,32279,GET /api/jobs/{id},500,Internal Server Error,Usuarios 1-45,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,541,72,89,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000,32278,0,0
+1784742479530,34733,GET /api/users/me/links,200,OK,Administradores 2-14,text,true,,15476,516,17,88,http://localhost:8000/api/users/me/links,34733,0,1
+1784742480207,34056,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-56,text,true,,442,596,71,88,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,34056,0,0
+1784742479888,34375,GET /api/auth/me,200,OK,Usuarios 1-54,text,true,,755,507,71,88,http://localhost:8000/api/auth/me,34375,0,0
+1784742479602,34662,GET /api/users,200,OK,Administradores 2-6,text,true,,4288,523,16,86,http://localhost:8000/api/users?page=1&limit=10,34662,0,1
+1784742480445,33821,GET /api/auth/me (preparacion),200,OK,Usuarios 1-58,text,true,,755,507,69,84,http://localhost:8000/api/auth/me,33821,0,0
+1784742481999,32404,GET /api/users/me/resource-configs,500,Internal Server Error,Usuarios 1-7,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,525,68,83,http://localhost:8000/api/users/me/resource-configs,32403,0,1
+1784742450752,63775,GET /api/users/analytics,200,OK,Administradores 2-10,text,true,,3449,517,15,82,http://localhost:8000/api/users/analytics,63775,0,1
+1784742482354,32173,GET /api/auth/me,500,Internal Server Error,Usuarios 1-4,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,507,67,82,http://localhost:8000/api/auth/me,32173,0,1
+1784742485975,28565,GET /api/agents/engage/recursos,200,OK,Usuarios 1-8,text,true,,1393,522,66,80,http://localhost:8000/api/agents/engage/recursos,28565,0,1
+1784742480720,33828,GET /api/users/me/ova-settings,200,OK,Usuarios 1-36,text,true,,652,521,65,79,http://localhost:8000/api/users/me/ova-settings,33828,0,1
+1784742484487,30062,GET /api/ovas/health,200,OK,Usuarios 1-37,text,true,,400,511,64,78,http://localhost:8000/api/ovas/health,30062,0,1
+1784742479663,34892,GET /api/users,200,OK,Administradores 2-5,text,true,,4288,523,14,77,http://localhost:8000/api/users?page=1&limit=10,34892,0,1
+1784742479886,34669,GET /api/rag/chunks/by-upload/{id},200,OK,Usuarios 1-10,text,true,,382,557,63,76,http://localhost:8000/api/rag/chunks/by-upload/00000000-0000-0000-0000-000000000000,34669,0,1
+1784742484549,30007,GET /api/agents/health,200,OK,Usuarios 1-49,text,true,,403,513,62,75,http://localhost:8000/api/agents/health,30007,0,0
+1784742482547,32162,GET /api/users/me/image-models,500,Internal Server Error,Usuarios 1-31,text,false,Test failed: code expected not to match /^5[0-9][0-9]$/,193,542,61,74,http://localhost:8000/api/users/me/image-models?provider=siliconflow,32162,0,0
+1784742480242,34468,GET /api/uploads/temp,200,OK,Usuarios 1-26,text,true,,382,512,60,73,http://localhost:8000/api/uploads/temp,34468,0,1
+1784742480717,34003,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-17,text,true,,882,509,13,72,http://localhost:8000/api/auth/me,34003,0,1
+1784742485178,29549,GET /api/ovas/papelera,401,Unauthorized,Usuarios 1-77,text,true,,438,240,59,71,http://localhost:8000/api/ovas/papelera?page=1&limit=10,29549,0,1
+1784742480730,34010,GET /api/ovas/{ova_id}/chat,200,OK,Usuarios 1-63,text,true,,385,546,58,70,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,34010,0,0
+1784742481451,33494,GET /api/ovas/{ova_id}/editar (preparacion admin),200,OK,Administradores 2-20,text,true,,1095,550,12,69,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,33494,0,1
+1784742513677,1293,GET /api/agents/elaborate/recursos,200,OK,Usuarios 1-71,text,true,,1397,525,57,68,http://localhost:8000/api/agents/elaborate/recursos,1293,0,0
+1784742485862,29109,GET /api/health,200,OK,Usuarios 1-60,text,true,,434,506,56,67,http://localhost:8000/api/health,29109,0,1
+1784742480572,34400,GET /api/ovas/llm-options,200,OK,Usuarios 1-32,text,true,,6894,516,55,66,http://localhost:8000/api/ovas/llm-options,34400,0,1
+1784742482195,32955,GET /api/users/me/resource-configs,200,OK,Usuarios 1-61,text,true,,384,525,54,65,http://localhost:8000/api/users/me/resource-configs,32955,0,1
+1784742482542,32640,GET /api/users/me/llm-settings,200,OK,Usuarios 1-24,text,true,,26962,521,53,64,http://localhost:8000/api/users/me/llm-settings,32640,0,0
+1784742482096,33159,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-39,,true,,863,547,52,63,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,33159,0,1
+1784742482888,32370,GET /api/ovas,200,OK,Usuarios 1-51,text,true,,3805,520,51,62,http://localhost:8000/api/ovas?page=1&limit=10,32370,0,1
+1784742483823,31437,GET /api/db/health,200,OK,Usuarios 1-42,text,true,,433,509,50,61,http://localhost:8000/api/db/health,31437,0,1
+1784742483057,32405,GET /api/ovas/{ova_id}/chat,200,OK,Usuarios 1-12,text,true,,385,546,49,60,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,32405,0,0
+1784742513980,1486,GET /api/scorm/health,200,OK,Usuarios 1-52,text,true,,401,512,48,59,http://localhost:8000/api/scorm/health,1486,0,0
+1784742514129,1338,GET /api/ovas/health,200,OK,Usuarios 1-41,text,true,,399,511,47,58,http://localhost:8000/api/ovas/health,1338,0,0
+1784742482844,32635,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-16,text,true,,882,509,11,57,http://localhost:8000/api/auth/me,32635,0,1
+1784742482920,32639,GET /api/auth/me (preparacion),200,OK,Usuarios 1-64,text,true,,755,507,46,56,http://localhost:8000/api/auth/me,32638,0,1
+1784742483072,32513,GET /api/ovas/{ova_id}/versiones,200,OK,Usuarios 1-28,text,true,,623,551,45,55,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones,32513,0,0
+1784742482642,33043,GET /api/ovas/{ova_id}/versiones/diff,200,OK,Usuarios 1-6,text,true,,1148,636,44,54,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones/diff?v1=22538e4f-ede1-43a9-aadb-b4b15e50ab00&v2=22538e4f-ede1-43a9-aadb-b4b15e50ab00,33043,0,1
+1784742483050,32713,GET /api/ovas/{ova_id}/editar (preparacion),200,OK,Usuarios 1-78,text,true,,1095,548,43,53,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,32713,0,1
+1784742514324,1441,GET /api/agents/health,200,OK,Usuarios 1-46,text,true,,402,513,42,52,http://localhost:8000/api/agents/health,1441,0,1
+1784742481854,33937,GET /api/users,200,OK,Administradores 2-2,text,true,,4288,523,10,51,http://localhost:8000/api/users?page=1&limit=10,33937,0,1
+1784742483076,32820,GET /api/ovas,200,OK,Usuarios 1-44,text,true,,3805,520,41,50,http://localhost:8000/api/ovas?page=1&limit=10,32820,0,0
+1784742482907,32993,GET /api/uploads/temp,200,OK,Usuarios 1-15,text,true,,382,512,40,49,http://localhost:8000/api/uploads/temp,32993,0,1
+1784742483100,32906,GET /api/users/me/llm-settings,200,OK,Usuarios 1-27,text,true,,26962,521,39,48,http://localhost:8000/api/users/me/llm-settings,32906,0,0
+1784742483329,32877,GET /api/ovas/papelera,200,OK,Usuarios 1-13,text,true,,433,529,38,47,http://localhost:8000/api/ovas/papelera?page=1&limit=10,32877,0,2
+1784742483232,33038,GET /api/auth/me (preparacion),200,OK,Usuarios 1-66,text,true,,755,507,37,46,http://localhost:8000/api/auth/me,33038,0,1
+1784742483096,33205,GET /api/ovas/{ova_id}/versiones/diff,200,OK,Usuarios 1-20,text,true,,1148,636,36,45,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones/diff?v1=22538e4f-ede1-43a9-aadb-b4b15e50ab00&v2=22538e4f-ede1-43a9-aadb-b4b15e50ab00,33205,0,1
+1784742483755,32557,GET /api/users/me/resource-configs,200,OK,Usuarios 1-19,text,true,,384,525,35,44,http://localhost:8000/api/users/me/resource-configs,32557,0,1
+1784742483267,33050,GET /api/auth/me (preparacion),200,OK,Usuarios 1-65,text,true,,755,507,34,43,http://localhost:8000/api/auth/me,33050,0,1
+1784742483541,32777,GET /api/ovas/{ova_id}/chat,200,OK,Usuarios 1-43,text,true,,385,546,34,43,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,32777,0,1
+1784742483454,32867,GET /api/uploads/temp,200,OK,Usuarios 1-14,text,true,,382,512,32,41,http://localhost:8000/api/uploads/temp,32867,0,0
+1784742483674,32647,GET /api/users/me/llm-settings,200,OK,Usuarios 1-47,text,true,,26962,521,32,41,http://localhost:8000/api/users/me/llm-settings,32647,0,0
+1784742483112,33209,GET /api/admin/registration-mode,200,OK,Administradores 2-1,text,true,,417,525,9,39,http://localhost:8000/api/admin/registration-mode,33209,0,1
+1784742483621,32788,GET /api/auth/me (preparacion),200,OK,Usuarios 1-67,text,true,,755,507,30,38,http://localhost:8000/api/auth/me,32788,0,0
+1784742484196,32220,GET /api/jobs,404,Not Found,Usuarios 1-62,text,true,,448,548,29,37,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,32220,0,0
+1784742484118,32384,GET /api/ovas/{ova_id}/versiones,200,OK,Usuarios 1-18,text,true,,623,551,28,36,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/versiones,32384,0,0
+1784742484300,32275,GET /api/users/me/enabled-models,200,OK,Usuarios 1-34,text,true,,634,523,27,35,http://localhost:8000/api/users/me/enabled-models,32274,0,1
+1784742484183,32422,GET /api/auth/me (preparacion),200,OK,Usuarios 1-72,text,true,,755,507,26,34,http://localhost:8000/api/auth/me,32422,0,1
+1784742484292,32319,GET /api/ovas (buscar),200,OK,Usuarios 1-23,text,true,,3805,533,25,33,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,32319,0,0
+1784742483743,32931,GET /api/ovas/{ova_id}/editar,200,OK,Usuarios 1-25,text,true,,1095,548,24,32,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,32931,0,1
+1784742484434,32275,GET /api/ovas,200,OK,Usuarios 1-38,text,true,,3805,520,23,31,http://localhost:8000/api/ovas?page=1&limit=10,32275,0,1
+1784742484184,32539,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-18,text,true,,882,509,8,30,http://localhost:8000/api/auth/me,32539,0,0
+1784742484319,32493,GET /api/ovas/{ova_id}/download,200,OK,Usuarios 1-21,text,true,,1048,550,22,29,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/download,32493,0,1
+1784742484856,31959,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-29,text,true,,442,596,21,28,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,31959,0,0
+1784742485007,31820,GET /api/ovas/papelera/count,200,OK,Usuarios 1-5,text,true,,381,519,20,27,http://localhost:8000/api/ovas/papelera/count,31820,0,1
+1784742484911,31918,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-1,text,true,,442,596,19,26,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,31917,0,1
+1784742479988,36880,GET /api/admin/nodes-config,200,OK,Administradores 2-13,text,true,,2687,520,7,25,http://localhost:8000/api/admin/nodes-config,36880,0,0
+1784742484780,32122,GET /api/ovas/{ova_id}/chat,200,OK,Usuarios 1-9,text,true,,385,546,18,24,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/chat,32122,0,1
+1784742485240,31667,GET /api/users/me/ova-settings,200,OK,Usuarios 1-70,text,true,,652,521,17,23,http://localhost:8000/api/users/me/ova-settings,31667,0,1
+1784742485115,31843,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-11,,true,,863,547,16,22,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,31843,0,0
+1784742485089,31896,GET /api/users/me/links,200,OK,Administradores 2-15,text,true,,15476,516,6,21,http://localhost:8000/api/users/me/links,31896,0,0
+1784742485152,31875,GET /api/users/me/links,200,OK,Administradores 2-9,text,true,,15476,516,5,20,http://localhost:8000/api/users/me/links,31875,0,0
+1784742484977,32053,GET /api/auth/me (preparacion),200,OK,Usuarios 1-75,text,true,,755,507,15,19,http://localhost:8000/api/auth/me,32053,0,1
+1784742485660,31508,GET /api/ovas (buscar),200,OK,Usuarios 1-40,text,true,,3805,533,14,18,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,31508,0,1
+1784742485682,31531,GET /api/ovas/papelera/count,200,OK,Usuarios 1-59,text,true,,381,519,13,17,http://localhost:8000/api/ovas/papelera/count,31531,0,0
+1784742485653,31567,GET /api/ovas/papelera,200,OK,Usuarios 1-2,text,true,,433,529,12,16,http://localhost:8000/api/ovas/papelera?page=1&limit=10,31567,0,0
+1784742514187,3039,GET /api/users/me/resource-configs,200,OK,Usuarios 1-53,text,true,,383,525,11,15,http://localhost:8000/api/users/me/resource-configs,3039,0,0
+1784742513507,3723,POST /api/auth/verify-email,400,Bad Request,Usuarios 1-3,text,true,,471,573,10,14,http://localhost:8000/api/auth/verify-email,3723,0,1
+1784742513883,3349,GET /api/jobs,404,Not Found,Usuarios 1-50,text,true,,447,548,9,13,http://localhost:8000/api/jobs?ova_id=0a99c6f9-7d6b-4d6b-9966-8632104f472c,3349,0,1
+1784742514216,3054,GET /api/ovas/llm-options,200,OK,Usuarios 1-35,text,true,,6893,516,8,12,http://localhost:8000/api/ovas/llm-options,3054,0,1
+1784742485273,32011,GET /api/auth/me (preparacion),200,OK,Usuarios 1-74,text,true,,755,507,7,11,http://localhost:8000/api/auth/me,32011,0,0
+1784742485666,31721,GET /api/auth/me (preparacion),200,OK,Usuarios 1-73,text,true,,755,507,6,10,http://localhost:8000/api/auth/me,31721,0,0
+1784742485391,32019,GET /api/ovas/{ova_id}/editar,200,OK,Usuarios 1-16,text,true,,1095,548,5,9,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/editar,32019,0,0
+1784742481829,35587,GET /api/admin/nodes-config,200,OK,Administradores 2-8,text,true,,2687,520,4,8,http://localhost:8000/api/admin/nodes-config,35587,0,1
+1784742514003,3440,GET /api/ovas/{ova_id}/scorm,302,Found,Usuarios 1-17,,true,,862,547,4,7,http://localhost:8000/api/ovas/0a99c6f9-7d6b-4d6b-9966-8632104f472c/scorm,3440,0,1
+1784742514438,3043,GET /api/jobs/{id}/resources/{id}/content,404,Not Found,Usuarios 1-33,text,true,,441,596,3,6,http://localhost:8000/api/jobs/00000000-0000-0000-0000-000000000000/resources/00000000-0000-0000-0000-000000000000/content,3042,0,1
+1784742514342,3174,GET /api/users/me/links,200,OK,Administradores 2-12,text,true,,15475,516,3,5,http://localhost:8000/api/users/me/links,3174,0,0
+1784742514653,2930,GET /api/ovas (buscar),200,OK,Usuarios 1-30,text,true,,3804,533,2,4,http://localhost:8000/api/ovas?page=1&limit=10&search=carga,2930,0,1
+1784742514289,3317,GET /api/auth/me (preparacion),200,OK,Usuarios 1-76,text,true,,754,507,1,3,http://localhost:8000/api/auth/me,3317,0,0
+1784742485347,32264,GET /api/users/analytics,200,OK,Administradores 2-4,text,true,,3449,517,2,2,http://localhost:8000/api/users/analytics,32264,0,0
+1784742514453,3263,GET /api/auth/me (preparacion admin),200,OK,Administradores 2-19,text,true,,881,509,1,1,http://localhost:8000/api/auth/me,3263,0,1

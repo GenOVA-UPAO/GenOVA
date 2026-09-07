@@ -1,0 +1,3 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+PATCH,PATCH /api/ovas/{ova_id}/fases/{fase_id},"CatchResponseError('esperaba (200, 404, 409), llegó 500')",4,2026-07-22T17:17:08Z,2026-07-22T17:18:40Z
+POST,POST /api/ovas/{ova_id}/versiones/{version_id}/revert,"CatchResponseError('esperaba (200, 404, 409), llegó 500')",7,2026-07-22T17:17:16Z,2026-07-22T17:18:32Z

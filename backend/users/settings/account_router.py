@@ -25,7 +25,7 @@ class UserPasswordChange(BaseModel):
     confirm_password: str = Field(..., min_length=8, description="Confirmación de nueva contraseña")
 
 
-@router.post("/me/change-password")
+@router.post("/me/change-password", summary="Cambiar la contraseña propia")
 @limiter.limit("5/minute")
 def change_password(
     request: Request,
@@ -64,7 +64,7 @@ class UserDeleteRequest(BaseModel):
     password: str = Field(..., description="Contraseña actual para confirmar")
 
 
-@router.delete("/me")
+@router.delete("/me", summary="Eliminar la cuenta propia")
 @limiter.limit("5/minute")
 def delete_account(
     request: Request,

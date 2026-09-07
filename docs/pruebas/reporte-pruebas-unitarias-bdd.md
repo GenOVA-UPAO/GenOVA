@@ -69,7 +69,22 @@ integrado UI → API → BD.
 | Admin (LLM + nodos) | 2 | ✔ |
 | **Total** | **16 features · 63 escenarios · 196 steps** | **63 / 63 ✔** |
 
-### 4.3 Suite backend pytest-bdd ejecutada
+### 4.3 Suite de componentes ejecutada (Vitest + Testing Library)
+
+Prueban el componente Angular real montado en un DOM de pruebas (happy-dom),
+sin navegador ni backend, con `@testing-library/angular/zoneless`.
+
+| Área | Archivos de especificación | Casos |
+|---|---:|---:|
+| Workspace y editor de OVA (`features/ova-workspace/`) | 11 | 94 |
+| Núcleo y UI compartida (`core/`) | 6 | 30 |
+| Otras features (biblioteca, perfil, admin, auth) | 4 | 15 |
+| Aplicación (`app/`) | 1 | 1 |
+| **Total** | **22** | **140 / 140 ✔** |
+
+Comando: `pnpm --filter frontend test`.
+
+### 4.4 Suite backend pytest-bdd ejecutada
 
 | Módulo `step_defs` | Escenarios | Resultado |
 |---|---:|:--:|
@@ -119,9 +134,16 @@ Otros caminos de error cubiertos en unit/BDD:
 
 | Suite | Ejecutados | Pasan | Fallan | Duración |
 |---|---:|---:|---:|---:|
+| Vitest (componentes) | 140 | 140 | 0 | ~9.6 s |
 | cucumber-js unit | 63 | 63 | 0 | ~0.94 s |
-| pytest-bdd | 51 | 51 | 0 | ~16.1 s |
-| **Total** | **114** | **114** | **0** | — |
+| pytest-bdd | 51 | 51 | 0 | ~14.2 s |
+| **Total** | **254** | **254** | **0** | — |
+
+**Detalle caso por caso:** el [Anexo — Casos de prueba unitarios y BDD](anexo-pruebas-unitarias.md)
+recoge una ficha por cada uno de los 254 casos con su escenario, su código y la salida
+obtenida. Las tres suites se ejecutaron con reporteros en formato máquina (`json` de
+Vitest, `message` de Cucumber y `--junitxml` de pytest), de modo que la salida de cada
+ficha procede del ejecutor y no de una transcripción manual.
 
 ## 7. Evidencia visual
 
@@ -135,6 +157,9 @@ Logs de consola: `docs/assets/unit-bdd/cucumber-unit-log.txt`,
 ## 8. Cómo reproducir
 
 ```bash
+# Componentes Angular (Vitest + Testing Library)
+pnpm --filter frontend test
+
 # Frontend unit BDD (sin browser ni backend)
 pnpm test:unit
 

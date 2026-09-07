@@ -18,7 +18,7 @@ from core.rate_limit import limiter
 from core.security import PASSWORD_MAX_LENGTH, hash_password, password_complexity_ok
 from models import PlatformConfig, Role, User, UserRole
 
-router = APIRouter()
+router = APIRouter(tags=["Autenticación"])
 
 
 class RegisterRequest(BaseModel):
@@ -27,7 +27,7 @@ class RegisterRequest(BaseModel):
     full_name: str | None = Field(default=None, max_length=100)
 
 
-@router.post("/register")
+@router.post("/register", summary="Registrar una cuenta nueva")
 @limiter.limit("5/minute")
 def register(
     request: Request,

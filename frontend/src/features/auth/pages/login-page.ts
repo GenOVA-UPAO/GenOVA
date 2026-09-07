@@ -38,7 +38,7 @@ import { resendVerification } from "../services/verification";
           (onCancel)="totpTicket.set(null)"
         ></gn-totp-login-step>
       } @else {
-        <section
+        <main
           class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4"
         >
           <div
@@ -119,7 +119,7 @@ import { resendVerification } from "../services/verification";
               </p>
             </form>
           </div>
-        </section>
+        </main>
       }
     }
   `,

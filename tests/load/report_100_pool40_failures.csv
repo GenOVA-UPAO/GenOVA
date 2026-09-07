@@ -1,0 +1,15 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+DELETE,DELETE /api/ovas/{ova_id},"CatchResponseError('esperaba (200, 404), llegó 500')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+GET,GET /api/ovas/{ova_id}/fases/{fase_id}/versiones,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+GET,GET /api/ovas,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:13:18Z,2026-07-22T17:13:18Z
+DELETE,DELETE /api/ovas/{ova_id},"CatchResponseError('esperaba (200, 404), llegó 0')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+POST,POST /api/ovas/{ova_id}/chat,"CatchResponseError('esperaba (200, 201, 404, 409), llegó 500')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+POST,POST /api/auth/login (on_start),HTTPError('500 Server Error: Internal Server Error for url: POST /api/auth/login (on_start)'),6,2026-07-22T17:13:18Z,2026-07-22T17:13:20Z
+POST,POST /api/ovas/lote/restaurar,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+GET,GET /api/db/health,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:13:18Z,2026-07-22T17:13:18Z
+POST,POST /api/ovas/save,"CatchResponseError('esperaba (200, 201), llegó 500')",1,2026-07-22T17:13:18Z,2026-07-22T17:13:18Z
+PATCH,PATCH /api/ovas/{ova_id}/restaurar,"CatchResponseError('esperaba (200, 404), llegó 0')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+POST,POST /api/users/me/links/code,"CatchResponseError('esperaba (200, 201), llegó 500')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+POST,POST /api/auth/login,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+PATCH,PATCH /api/users/{user_id}/status,"CatchResponseError('esperaba (200,), llegó 500')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z
+DELETE,DELETE /api/users/me/links/{link_id},"CatchResponseError('esperaba (200, 204, 404), llegó 0')",1,2026-07-22T17:13:20Z,2026-07-22T17:13:20Z

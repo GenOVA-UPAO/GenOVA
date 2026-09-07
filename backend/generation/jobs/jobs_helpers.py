@@ -46,7 +46,7 @@ class ThemeRequest(BaseModel):
 
 
 class StartJobRequest(BaseModel):
-    """Body of POST /api/ova/jobs. All free-text inputs are length-capped (C4)."""
+    """Body of POST /api/jobs. All free-text inputs are length-capped (C4)."""
 
     prompt: str = Field(min_length=1, max_length=4000)
     upload_ids: list[str] = Field(default_factory=list, max_length=50)

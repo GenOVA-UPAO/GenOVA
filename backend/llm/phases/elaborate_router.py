@@ -33,15 +33,15 @@ def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
     return contexto
 
 
-@router.get("/recursos")
-def list_recursos():
+@router.get("/recursos", summary="Listar los recursos de la fase Elaborate")
+def list_elaborate_recursos():
     return {
         "fase": "ELABORATE",
         "recursos": [{"id": k, **v} for k, v in RECURSOS_META.items()],
     }
 
 
-@router.post("/generate")
+@router.post("/generate", summary="Generar un recurso de la fase Elaborate")
 @limiter.limit("5/minute")
 def generate_elaborate_resource(
     request: Request,

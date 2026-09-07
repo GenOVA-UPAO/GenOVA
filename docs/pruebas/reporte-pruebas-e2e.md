@@ -37,9 +37,10 @@ con **BDD (Gherkin)**, trazas, videos y reporte HTML.
 - **playwright-bdd** traduce los archivos `.feature` (Gherkin: `Dado/Cuando/Entonces`)
   a pruebas ejecutables; los *steps* viven en `tests/steps/e2e/`.
 - Cada escenario ejercita **selectores reales** de la UI (los mismos que la app).
-- **Evidencia automática:** reporte HTML, más *screenshot*, *trace* y *video*
-  retenidos automáticamente ante fallo (`screenshot: only-on-failure`,
-  `trace/video: retain-on-failure`).
+- **Evidencia automática:** reporte HTML y **grabación en vídeo de todos los
+  escenarios** (`video: 'on'`), más *screenshot* y *trace* retenidos ante fallo.
+  En CI el vídeo vuelve a `retain-on-failure` para no inflar los artefactos.
+  Las grabaciones de la última corrida están indexadas en la sección 10.
 - **Tags `@smoke`:** escenarios seguros que **no crean datos** (solo validaciones
   y navegación) — aptos para correr incluso contra el entorno de despliegue.
 - **Comando:** `pnpm --filter genova-tests test:e2e`
@@ -290,3 +291,65 @@ npx playwright test --config playwright.config.js --grep "Generación completa"
 - **Features (Gherkin):** [`tests/features/e2e/`](../../tests/features/e2e)
 - **Steps (Playwright):** [`tests/steps/e2e/`](../../tests/steps/e2e)
 - **Config:** [`tests/playwright.config.js`](../../tests/playwright.config.js)
+
+## 10. Grabaciones de las ejecuciones
+
+La corrida del 22/07/2026 ejecutó los **36 escenarios** y todos pasaron. Playwright grabó cada uno en vídeo (`video: 'on'` en `tests/playwright.config.js`); los archivos se conservan en `docs/pruebas/videos-e2e/` en formato WebM, reproducibles en cualquier navegador.
+
+El reparto entre camino correcto y camino de error es de **24 escenarios correctos** y **12 incorrectos**: cada historia con formulario se prueba tanto con datos válidos como con datos que la aplicación debe rechazar.
+
+***Tabla. Índice de grabaciones por escenario***
+
+| Historia | Escenario | Caso | Grabación |
+|---|---|---|---|
+| BU-001 | Al expirar la sesión una ruta protegida redirige al login | Correcto | [`BU-001_al-expirar-la-sesion-una-ruta-protegida-redirige-al-login.webm`](videos-e2e/BU-001_al-expirar-la-sesion-una-ruta-protegida-redirige-al-login.webm) |
+| BU-002 | Pasar de admin a usuario retira el panel de administración | Correcto | [`BU-002_pasar-de-admin-a-usuario-retira-el-panel-de-administracion.webm`](videos-e2e/BU-002_pasar-de-admin-a-usuario-retira-el-panel-de-administracion.webm) |
+| HU-001 | Contraseña sin números es rechazada por la validación | Incorrecto | [`HU-001_contrasena-sin-numeros-es-rechazada-por-la-validacion.webm`](videos-e2e/HU-001_contrasena-sin-numeros-es-rechazada-por-la-validacion.webm) |
+| HU-001 | Correo ya registrado es rechazado por el servidor | Incorrecto | [`HU-001_correo-ya-registrado-es-rechazado-por-el-servidor.webm`](videos-e2e/HU-001_correo-ya-registrado-es-rechazado-por-el-servidor.webm) |
+| HU-001 | Nombre sin letras es rechazado por la validación | Incorrecto | [`HU-001_nombre-sin-letras-es-rechazado-por-la-validacion.webm`](videos-e2e/HU-001_nombre-sin-letras-es-rechazado-por-la-validacion.webm) |
+| HU-001 | Registro exitoso completa el alta de la cuenta | Correcto | [`HU-001_registro-exitoso-completa-el-alta-de-la-cuenta.webm`](videos-e2e/HU-001_registro-exitoso-completa-el-alta-de-la-cuenta.webm) |
+| HU-002 | El botón Generar permanece deshabilitado sin prompt ni recursos | Incorrecto | [`HU-002_el-boton-generar-permanece-deshabilitado-sin-prompt-ni-recur.webm`](videos-e2e/HU-002_el-boton-generar-permanece-deshabilitado-sin-prompt-ni-recur.webm) |
+| HU-002 | Generación completa desde el formulario hasta el workspace | Correcto | [`HU-002_generacion-completa-desde-el-formulario-hasta-el-workspace.webm`](videos-e2e/HU-002_generacion-completa-desde-el-formulario-hasta-el-workspace.webm) |
+| HU-004 | El botón Descargar está habilitado para el OVA listo | Correcto | [`HU-004_el-boton-descargar-esta-habilitado-para-el-ova-listo.webm`](videos-e2e/HU-004_el-boton-descargar-esta-habilitado-para-el-ova-listo.webm) |
+| HU-004 | La descarga entrega un archivo zip | Correcto | [`HU-004_la-descarga-entrega-un-archivo-zip.webm`](videos-e2e/HU-004_la-descarga-entrega-un-archivo-zip.webm) |
+| HU-006 | La búsqueda por título encuentra el OVA propio | Correcto | [`HU-006_la-busqueda-por-titulo-encuentra-el-ova-propio.webm`](videos-e2e/HU-006_la-busqueda-por-titulo-encuentra-el-ova-propio.webm) |
+| HU-006 | Una cuenta nueva ve el estado vacío del historial | Incorrecto | [`HU-006_una-cuenta-nueva-ve-el-estado-vacio-del-historial.webm`](videos-e2e/HU-006_una-cuenta-nueva-ve-el-estado-vacio-del-historial.webm) |
+| HU-008 | Bloqueo tras intentos fallidos | Correcto | [`HU-008_bloqueo-tras-intentos-fallidos.webm`](videos-e2e/HU-008_bloqueo-tras-intentos-fallidos.webm) |
+| HU-008 | Cerrar sesión | Correcto | [`HU-008_cerrar-sesion.webm`](videos-e2e/HU-008_cerrar-sesion.webm) |
+| HU-008 | Credenciales inválidas | Incorrecto | [`HU-008_credenciales-invalidas.webm`](videos-e2e/HU-008_credenciales-invalidas.webm) |
+| HU-008 | Login exitoso | Correcto | [`HU-008_login-exitoso.webm`](videos-e2e/HU-008_login-exitoso.webm) |
+| HU-008 | Token expirado | Incorrecto | [`HU-008_token-expirado.webm`](videos-e2e/HU-008_token-expirado.webm) |
+| HU-010 | El login renderiza la pantalla de inicio de sesión | Correcto | [`HU-010_el-login-renderiza-la-pantalla-de-inicio-de-sesion.webm`](videos-e2e/HU-010_el-login-renderiza-la-pantalla-de-inicio-de-sesion.webm) |
+| HU-010 | Las rutas protegidas comparten Navbar y Sidebar | Correcto | [`HU-010_las-rutas-protegidas-comparten-navbar-y-sidebar.webm`](videos-e2e/HU-010_las-rutas-protegidas-comparten-navbar-y-sidebar.webm) |
+| HU-012 | Borrar definitivamente desde la papelera | Correcto | [`HU-012_borrar-definitivamente-desde-la-papelera.webm`](videos-e2e/HU-012_borrar-definitivamente-desde-la-papelera.webm) |
+| HU-012 | Mover a papelera y restaurar | Correcto | [`HU-012_mover-a-papelera-y-restaurar.webm`](videos-e2e/HU-012_mover-a-papelera-y-restaurar.webm) |
+| HU-012 | Una cuenta nueva ve la papelera vacía | Incorrecto | [`HU-012_una-cuenta-nueva-ve-la-papelera-vacia.webm`](videos-e2e/HU-012_una-cuenta-nueva-ve-la-papelera-vacia.webm) |
+| HU-013 | Duplicar crea una copia visible en el historial | Correcto | [`HU-013_duplicar-crea-una-copia-visible-en-el-historial.webm`](videos-e2e/HU-013_duplicar-crea-una-copia-visible-en-el-historial.webm) |
+| HU-015 | El perfil muestra los datos del usuario autenticado | Correcto | [`HU-015_el-perfil-muestra-los-datos-del-usuario-autenticado.webm`](videos-e2e/HU-015_el-perfil-muestra-los-datos-del-usuario-autenticado.webm) |
+| HU-018 | Acceso al panel de administración | Correcto | [`HU-018_acceso-al-panel-de-administracion.webm`](videos-e2e/HU-018_acceso-al-panel-de-administracion.webm) |
+| HU-018 | Acceso denegado a usuario sin rol administrador | Incorrecto | [`HU-018_acceso-denegado-a-usuario-sin-rol-administrador.webm`](videos-e2e/HU-018_acceso-denegado-a-usuario-sin-rol-administrador.webm) |
+| HU-018 | Crear un nuevo rol exitosamente | Correcto | [`HU-018_crear-un-nuevo-rol-exitosamente.webm`](videos-e2e/HU-018_crear-un-nuevo-rol-exitosamente.webm) |
+| HU-018 | Intentar crear un rol con nombre duplicado | Incorrecto | [`HU-018_intentar-crear-un-rol-con-nombre-duplicado.webm`](videos-e2e/HU-018_intentar-crear-un-rol-con-nombre-duplicado.webm) |
+| HU-018 | Intentar crear un rol con nombre vacío | Incorrecto | [`HU-018_intentar-crear-un-rol-con-nombre-vacio.webm`](videos-e2e/HU-018_intentar-crear-un-rol-con-nombre-vacio.webm) |
+| HU-018 | Ver lista de roles existentes | Correcto | [`HU-018_ver-lista-de-roles-existentes.webm`](videos-e2e/HU-018_ver-lista-de-roles-existentes.webm) |
+| HU-019 | Editar un rol personalizado renombrándolo | Correcto | [`HU-019_editar-un-rol-personalizado-renombrandolo.webm`](videos-e2e/HU-019_editar-un-rol-personalizado-renombrandolo.webm) |
+| HU-019 | Los roles de sistema no son editables | Incorrecto | [`HU-019_los-roles-de-sistema-no-son-editables.webm`](videos-e2e/HU-019_los-roles-de-sistema-no-son-editables.webm) |
+| HU-020 | Eliminar un rol personalizado sin usuarios | Correcto | [`HU-020_eliminar-un-rol-personalizado-sin-usuarios.webm`](videos-e2e/HU-020_eliminar-un-rol-personalizado-sin-usuarios.webm) |
+| HU-021 | El panel lista usuarios y permite buscar por email | Correcto | [`HU-021_el-panel-lista-usuarios-y-permite-buscar-por-email.webm`](videos-e2e/HU-021_el-panel-lista-usuarios-y-permite-buscar-por-email.webm) |
+| HU-025 | El botón Editar de la card abre el workspace del OVA | Correcto | [`HU-025_el-boton-editar-de-la-card-abre-el-workspace-del-ova.webm`](videos-e2e/HU-025_el-boton-editar-de-la-card-abre-el-workspace-del-ova.webm) |
+| HU-025 | El workspace lista los recursos generados de las fases | Correcto | [`HU-025_el-workspace-lista-los-recursos-generados-de-las-fases.webm`](videos-e2e/HU-025_el-workspace-lista-los-recursos-generados-de-las-fases.webm) |
+
+### 10.1 Requisito de entorno detectado en esta corrida
+
+La primera ejecución falló en 8 escenarios con el mensaje `Seed OVA superó los 90s sin llegar a done`. La causa no era la aplicación: los escenarios de SCORM, historial, papelera, duplicado y workspace siembran su OVA encolando un trabajo real y, con `REDIS_URL` configurado, ese trabajo va a la cola **arq**, que consume un **proceso worker aparte**. El backend por sí solo no la vacía.
+
+Con el worker levantado los 8 escenarios pasan. La suite completa necesita **tres procesos**, no dos:
+
+```bash
+# 1) backend
+LLM_FAKE=1 RATE_LIMIT_ENABLED=0 uvicorn main:app --port 8000     # en backend/
+# 2) worker de la cola de generación
+LLM_FAKE=1 arq worker.WorkerSettings                             # en backend/
+# 3) frontend + suite (Playwright levanta el frontend por su cuenta)
+pnpm --filter genova-tests test:e2e
+```

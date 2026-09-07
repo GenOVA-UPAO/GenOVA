@@ -28,7 +28,7 @@ from llm.catalog.model_catalog import (
 from llm.providers import TEXT_PROVIDERS
 from models import Role, User, UserRole
 
-router = APIRouter()
+router = APIRouter(tags=["Ajustes de usuario"])
 logger = structlog.get_logger(__name__)
 
 
@@ -59,7 +59,7 @@ class LlmSettingsUpdate(BaseModel):
     settings: dict
 
 
-@router.get("/me/llm-settings")
+@router.get("/me/llm-settings", summary="Obtener los ajustes de LLM propios")
 def get_llm_settings(
     request: Request,
     current_user: User = Depends(get_current_user),
@@ -145,7 +145,9 @@ def get_llm_settings(
     }
 
 
-@router.post("/me/llm-settings/refresh-catalog")
+@router.post(
+    "/me/llm-settings/refresh-catalog", summary="Refrescar el catálogo de modelos del usuario"
+)
 @limiter.limit("3/minute")
 def refresh_llm_catalog(
     request: Request,
@@ -161,7 +163,7 @@ def refresh_llm_catalog(
     return {"catalog_status": get_provider_status()}
 
 
-@router.put("/me/llm-settings")
+@router.put("/me/llm-settings", summary="Actualizar los ajustes de LLM propios")
 @limiter.limit("20/minute")
 def put_llm_settings(
     request: Request,

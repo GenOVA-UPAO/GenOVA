@@ -22,6 +22,27 @@
       "autoPort": false
     },
     {
+      "name": "backend-carga",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-ExecutionPolicy", "Bypass", "-File", "scripts/serve-load.ps1"],
+      "port": 8000,
+      "autoPort": false
+    },
+    {
+      "name": "backend-carga-pool",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-ExecutionPolicy", "Bypass", "-File", "scripts/serve-load-pool.ps1"],
+      "port": 8000,
+      "autoPort": false
+    },
+    {
+      "name": "backend-noreload",
+      "runtimeExecutable": "backend/.venv/Scripts/uvicorn.exe",
+      "runtimeArgs": ["main:app", "--port", "8000", "--app-dir", "backend"],
+      "port": 8000,
+      "autoPort": false
+    },
+    {
       "name": "deployed-proxy",
       "runtimeExecutable": "node",
       "runtimeArgs": ["scripts/preview-proxy.js"],

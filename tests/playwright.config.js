@@ -27,7 +27,10 @@ export default defineConfig({
     baseURL: process.env.BASE_URL || 'http://localhost:4200',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
-    video: 'retain-on-failure',
+    // Cada escenario deja su grabación en tests/test-results/<escenario>/video.webm:
+    // es la evidencia que acompaña al reporte de pruebas e2e. En CI se conserva
+    // solo la de los fallos para no inflar los artefactos de cada corrida.
+    video: process.env.CI ? 'retain-on-failure' : 'on',
     ...(external && {
       extraHTTPHeaders: {
         'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? '',

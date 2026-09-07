@@ -101,7 +101,16 @@ export class AuthService {
         const res = await apiFetch("/api/auth/me");
 
         if (res.status === 200) {
-          const user = (await res.json()) as MeUser;
+          // Defensa: un 200 con cuerpo no-JSON (p. ej. página de error HTML de un
+          // proxy/CDN, o el fallback SPA) haría que res.json() lanzara y rompiera
+          // la navegación del guard. Se trata como sesión no válida en vez de crashear.
+          const user = (await res.json().catch(() => null)) as MeUser | null;
+          if (!user || typeof user !== "object") {
+            clearCache();
+            this._user.set(null);
+            this._lastCheckAt = Date.now();
+            return null;
+          }
           writeCache(user);
           this._user.set(user);
           this._lastCheckAt = Date.now();

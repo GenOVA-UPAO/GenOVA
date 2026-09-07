@@ -1,0 +1,94 @@
+# render.yaml — Blueprint de despliegue del backend de GenOVA en Render.
+# Spec: https://render.com/docs/blueprint-spec
+#
+# Uso: Render Dashboard → New → Blueprint → conectar el repo GenOVA-UPAO/GenOVA.
+# Render lee este archivo, crea el servicio y pide en el dashboard los valores
+# marcados `sync: false` (secretos: no se commitean). El resto queda fijado aquí.
+#
+# Sustituye a `.railway/railway.ts` (Railway). NO se despliega Redis ni el worker
+# arq: sin REDIS_URL, la generación de OVA corre en un hilo dentro del proceso web
+# (backend/generation/jobs/jobs_router_helpers.py). Suficiente para este entorno.
+
+services:
+  - type: web
+    name: genova-backend
+    runtime: docker
+    repo: https://github.com/GenOVA-UPAO/GenOVA
+    branch: main
+    # El Dockerfile hace `COPY backend/...`, así que el contexto es la raíz del repo.
+    dockerfilePath: ./backend/Dockerfile.prod
+    dockerContext: .
+    # us-west: la más cercana a Supabase (aws-1-us-west-1) — minimiza la latencia
+    # backend↔BD, que es la ruta crítica. El frontend en Vercel se sirve por CDN.
+    region: oregon
+    plan: free
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+
+    envVars:
+      # ─── Núcleo (obligatorio) ───────────────────────────────────────────────
+      - key: ENV
+        value: production
+      # Supabase → Connection string → Transaction pooler (puerto 6543).
+      # Formato: postgresql+psycopg://postgres.<REF>:<PASSWORD>@<REGION>.pooler.supabase.com:6543/postgres?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # >=16 chars o el backend no arranca. Render genera uno aleatorio fuerte.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRES_MINUTES
+        value: "1440"
+      - key: AUTH_ACCEPT_BEARER
+        value: "0"
+      # Orígenes del frontend en Vercel (CSV). Obligatorio con ENV=production.
+      - key: CORS_ORIGINS
+        value: https://gen-ova-frontend.vercel.app
+      # Frontend y backend en dominios distintos → cookie cross-site.
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: LOG_LEVEL
+        value: INFO
+
+      # ─── Pool de BD — free tier de Supabase ────────────────────────────────
+      - key: DB_POOL_SIZE
+        value: "5"
+      - key: DB_MAX_OVERFLOW
+        value: "5"
+
+      # ─── Proveedores LLM (al menos GROQ u OPENROUTER para generar OVA) ──────
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENCODE_API_KEY
+        sync: false
+      # Requerido si RAG_EMBEDDER=gemini* (default). Sin él, pon RAG_DISABLED=1.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: APP_URL
+        value: https://gen-ova-frontend.vercel.app
+
+      # ─── Supabase Storage (persistencia de .zip SCORM) ─────────────────────
+      # Sin estas 3, el backend cae a disco local efímero (se pierde al redeploy).
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: scorm-packages
+
+      # ─── Imágenes (opcional) ──────────────────────────────────────────────
+      - key: HF_TOKEN
+        sync: false
+
+      # ─── SMTP — recuperación de contraseña (opcional) ──────────────────────
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "465"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false

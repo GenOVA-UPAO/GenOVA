@@ -21,16 +21,21 @@ router = APIRouter()
 logger = structlog.get_logger(__name__)
 
 
-@router.get("/health")
+@router.get("/health", tags=["Health"], summary="Estado del módulo de OVA")
 def ova_health() -> dict[str, str]:
     return {"module": "ova", "status": "ok"}
 
 
-@router.get("/llm-options")
-def list_llm_options() -> dict[str, list[dict]]:
+@router.get(
+    "/llm-options",
+    tags=["OVA · CRUD"],
+    summary="Listar los modelos LLM disponibles",
+    deprecated=True,
+)
+def list_llm_options(_: User = Depends(get_current_user)) -> dict[str, list[dict]]:
     """Deprecated: use GET /api/users/me/llm-settings for the catalog filtered
     by user-enabled models. This endpoint remains for backward compat; new code
-    should not use it."""
+    should not use it. Auth is required so the model catalog is not public."""
     return {"items": _enabled_llm_options()}
 
 
@@ -78,7 +83,7 @@ def _persist_scorm_zip(
     return None, file_path
 
 
-@router.post("/save")
+@router.post("/save", tags=["OVA · CRUD"], summary="Guardar una OVA generada")
 def save_ova(
     payload: SaveOvaRequest,
     current_user: User = Depends(get_current_user),
@@ -140,7 +145,9 @@ def save_ova(
     return {"ova_id": str(ova.id), "status": "listo"}
 
 
-@router.get("/{ova_id}/scorm")
+@router.get(
+    "/{ova_id}/scorm", tags=["SCORM y descargas"], summary="Descargar el paquete SCORM de la OVA"
+)
 def download_ova_scorm(
     ova_id: str,
     current_user: User = Depends(get_current_user),

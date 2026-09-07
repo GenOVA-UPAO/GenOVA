@@ -18,7 +18,7 @@ from rag.store import chunks_for_upload
 router = APIRouter()
 
 
-@router.get("/health")
+@router.get("/health", tags=["Health"], summary="Estado del módulo RAG")
 def rag_health(db: Session = Depends(get_db)) -> dict:
     embedder_name = os.getenv("RAG_EMBEDDER", "gemini").lower()
     try:
@@ -36,7 +36,11 @@ def rag_health(db: Session = Depends(get_db)) -> dict:
     }
 
 
-@router.get("/chunks/by-upload/{upload_id}")
+@router.get(
+    "/chunks/by-upload/{upload_id}",
+    tags=["Documentos y RAG"],
+    summary="Listar los chunks indexados de un documento",
+)
 def list_chunks_by_upload(
     upload_id: str,
     current_user: User = Depends(get_current_user),  # noqa: ARG001  (auth only)

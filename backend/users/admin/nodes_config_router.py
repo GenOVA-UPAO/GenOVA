@@ -9,11 +9,11 @@ from core.database import get_db
 from core.rate_limit import limiter
 from models import PlatformConfig
 
-router = APIRouter()
+router = APIRouter(tags=["Admin · Plataforma"])
 logger = structlog.get_logger(__name__)
 
 
-@router.get("/nodes-config")
+@router.get("/nodes-config", summary="Obtener la configuración de nodos del motor")
 def get_nodes_config_endpoint(
     _admin: None = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -31,7 +31,7 @@ def get_nodes_config_endpoint(
     }
 
 
-@router.put("/nodes-config")
+@router.put("/nodes-config", summary="Actualizar la configuración de nodos del motor")
 @limiter.limit("10/minute")
 def put_nodes_config_endpoint(
     request: Request,

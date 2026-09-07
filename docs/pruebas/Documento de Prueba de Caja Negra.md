@@ -35,7 +35,7 @@ Pruebas de Caja Negra (funcionales)
 
 Se documenta lo que se probó (funcionalidad observable) sin mirar el código interno de los módulos, evaluando: las interfaces, la respuesta a las entradas del usuario, la integridad de los archivos generados (paquete SCORM), distintos escenarios válidos e inválidos, las respuestas de la aplicación y la secuencia de mensajes mostrados. Todas las capturas de este documento son **reales**, tomadas de la aplicación en ejecución con datos y sesiones vivas (no simuladas).
 
-Este documento amplía la versión previa de 8 escenarios a **13 escenarios**, ejecutados contra el stack **real** (proveedores LLM, base de datos y worker de generación activos).
+Este documento amplía la versión previa de 8 escenarios a **18 escenarios**, ejecutados contra el stack **real** (proveedores LLM, base de datos y worker de generación activos). Los escenarios 14 a 18 se añadieron el 22/07/2026 para cerrar los controles que no estaban cubiertos: restablecimiento de contraseña, verificación de correo, segundo factor, credenciales de proveedores y analítica.
 
 **Entorno de ejecución de las pruebas.** GenOVA es una aplicación web (no móvil). Las pruebas se ejecutaron contra el stack local con datos y sesiones reales:
 
@@ -617,6 +617,216 @@ Las capturas se generaron con el script `tests/capture-caja-negra-completa.mjs`,
 
 **Dependencias o relación con otros casos de prueba:** Requiere sesión con rol "administrador"; el control de acceso (condición 4) se relaciona con el Escenario 2 (autenticación por rol).
 
+# **Escenario 14: Restablecimiento de contraseña (formulario con token)**
+
+**Datos de Entrada:** Definición de la nueva contraseña desde el enlace de recuperación.
+
+**Entorno:** Módulo de restablecimiento (/reset-password), con los campos de nueva contraseña y confirmación, y el token que viaja en la URL.
+
+**Parámetros:**
+
+* Parámetro `token` de la URL  
+* Campo Nueva contraseña (#new_password)  
+* Campo Confirmar contraseña (#confirm_password)  
+  **Respuesta de otros módulos:** Se llama al módulo de autenticación (`backend/auth/reset_router.py`), que valida el token de un solo uso y su vigencia antes de reescribir el hash de la contraseña.  
+  **Condiciones iniciales:**  
+1. Se abrió /reset-password sin el parámetro token.  
+2. Con un token en la URL, se ingresó la contraseña "abc" en ambos campos.  
+3. Se ingresó una contraseña válida y una confirmación distinta.  
+4. Se ingresaron contraseña y confirmación válidas, con un token inválido.  
+   **Datos de Salida:**
+
+   **Resultados entregados:**  
+   Para la condición 1, la aplicación no muestra el formulario: informa que el enlace no incluye un token válido y ofrece solicitar uno nuevo. Para la condición 2, la política de contraseña rechaza el valor y el botón «Guardar contraseña» queda deshabilitado. Para la condición 3, marca el campo de confirmación y muestra «Las contraseñas no coinciden», sin enviar la petición. Para la condición 4, el formulario sí envía y es el backend quien rechaza el restablecimiento por token inválido o caducado.  
+   **Estado final de las variables:**  
+   Se adjuntan capturas de las pruebas:  
+1) Enlace sin token
+
+![](../assets/caja-negra-completa/esc14_01_sin_token.png)
+
+2) Contraseña que no cumple la política
+
+![](../assets/caja-negra-completa/esc14_02_password_debil.png)
+
+3) Confirmación distinta
+
+![](../assets/caja-negra-completa/esc14_03_no_coinciden.png)
+
+4) Token inválido rechazado por el servidor
+
+![](../assets/caja-negra-completa/esc14_04_token_invalido.png)
+
+**Método de Prueba:** Partición de equivalencia sobre el par (contraseña, confirmación) y tabla de decisiones sobre la validez del token.
+
+**Módulos:** Formulario reactivo (Signal Forms) de la vista de restablecimiento y router de auth del backend.
+
+**Hardware y Software:** Navegador de escritorio sobre Windows 11; frontend Angular en :4200, backend FastAPI en :8000.
+
+**Procedimientos o herramientas necesarios:** Abrir /reset-password con y sin token, completar los campos según la condición y pulsar «Guardar contraseña».
+
+**Dependencias o relación con otros casos de prueba:** Continúa el Escenario 3 (solicitud del correo de recuperación): allí se pide el enlace, aquí se usa.
+
+# **Escenario 15: Verificación de la cuenta por correo**
+
+**Datos de Entrada:** Activación de la cuenta desde el enlace de verificación.
+
+**Entorno:** Módulo de verificación (/verify-email), que actúa sobre el token recibido por correo sin intervención del usuario.
+
+**Parámetros:**
+
+* Parámetro `token` de la URL  
+  **Respuesta de otros módulos:** Se llama al módulo de autenticación (`backend/auth/verify_router.py`), que marca la cuenta como verificada si el token existe y no ha caducado.  
+  **Condiciones iniciales:**  
+1. Se abrió /verify-email sin el parámetro token.  
+2. Se abrió /verify-email con un token inexistente.  
+   **Datos de Salida:**
+
+   **Resultados entregados:**  
+   En ambas condiciones la aplicación muestra el estado «No se pudo verificar» con el motivo, sin activar ninguna cuenta y sin revelar si el token existió alguna vez.  
+   **Estado final de las variables:**  
+   Se adjuntan capturas de las pruebas:  
+1) Enlace sin token
+
+![](../assets/caja-negra-completa/esc15_01_sin_token.png)
+
+2) Token inválido o caducado
+
+![](../assets/caja-negra-completa/esc15_02_token_invalido.png)
+
+**Método de Prueba:** Tabla de decisiones sobre la presencia y validez del token.
+
+**Módulos:** Vista de verificación de correo y router de auth del backend.
+
+**Hardware y Software:** Navegador de escritorio sobre Windows 11; frontend Angular en :4200, backend FastAPI en :8000.
+
+**Procedimientos o herramientas necesarios:** Abrir /verify-email con y sin token y observar el estado que muestra la pantalla.
+
+**Dependencias o relación con otros casos de prueba:** Se relaciona con el Escenario 1 (registro), que es quien dispara el envío del correo.
+
+# **Escenario 16: Segundo factor de autenticación (2FA/TOTP)**
+
+**Datos de Entrada:** Alta del segundo factor desde el perfil del usuario.
+
+**Entorno:** Pestaña «Seguridad» del módulo perfil (/profile), tarjeta «Autenticación en 2 pasos (2FA)».
+
+**Parámetros:**
+
+* Acción «Activar 2FA»  
+* Campo Código de verificación (6 dígitos)  
+* Acción «Confirmar y activar»  
+  **Respuesta de otros módulos:** Se llama al módulo TOTP del backend (`backend/auth/totp_router.py`), que genera el secreto, la URI de aprovisionamiento y los códigos de respaldo, y valida el código antes de activar el segundo factor.  
+  **Condiciones iniciales:**  
+1. Con la cuenta sin 2FA, se abrió la pestaña Seguridad.  
+2. Se pulsó «Activar 2FA».  
+3. Se ingresó un código de 3 dígitos.  
+4. Se ingresó un código de 6 dígitos incorrecto.  
+   **Datos de Salida:**
+
+   **Resultados entregados:**  
+   Para la condición 1, la tarjeta muestra el 2FA desactivado y la acción para activarlo. Para la condición 2, la aplicación pasa al paso de configuración y muestra la URI de aprovisionamiento, la clave secreta y ocho códigos de respaldo de un solo uso. Para la condición 3, la validación exige seis dígitos y no envía la confirmación. Para la condición 4, el backend responde «Código incorrecto o expirado» y el 2FA permanece desactivado.  
+   **Estado final de las variables:**  
+   Se adjuntan capturas de las pruebas:  
+1) 2FA desactivado
+
+![](../assets/caja-negra-completa/esc16_01_estado_inicial.png)
+
+2) Secreto, URI y códigos de respaldo
+
+![](../assets/caja-negra-completa/esc16_02_alta_secreto.png)
+
+3) Código de 3 dígitos
+
+![](../assets/caja-negra-completa/esc16_03_codigo_corto.png)
+
+4) Código de 6 dígitos incorrecto
+
+![](../assets/caja-negra-completa/esc16_04_codigo_invalido.png)
+
+**Método de Prueba:** Partición de equivalencia sobre la longitud y validez del código, y tabla de decisiones sobre el estado del 2FA.
+
+**Módulos:** Tarjeta de configuración de TOTP del perfil, servicio TOTP del frontend y router de TOTP del backend.
+
+**Hardware y Software:** Navegador de escritorio sobre Windows 11; frontend Angular en :4200, backend FastAPI en :8000.
+
+**Procedimientos o herramientas necesarios:** Autenticarse, ir a /profile → Seguridad, pulsar «Activar 2FA» e ingresar códigos según la condición.
+
+**Dependencias o relación con otros casos de prueba:** Requiere sesión iniciada (Escenario 2). El secreto y los códigos de respaldo de la captura pertenecen a la cuenta de prueba y se regeneran en cada alta.
+
+# **Escenario 17: Credenciales de proveedores de IA**
+
+**Datos de Entrada:** Consulta de las claves de API configuradas.
+
+**Entorno:** Pestaña «Credenciales» del módulo Modelos (/models) y pestaña «Configuración» del perfil.
+
+**Parámetros:**
+
+* Estado de conexión por proveedor (Groq, OpenRouter, Gemini, …)  
+* Campos de clave de API  
+  **Respuesta de otros módulos:** Se llama a `backend/users/settings/api_keys_router.py` y a la configuración de plataforma, que devuelven el estado de cada proveedor sin exponer el valor de la clave.  
+  **Condiciones iniciales:**  
+1. Como administrador, se abrió /models → Credenciales.  
+2. Se abrió /profile → Configuración.  
+   **Datos de Salida:**
+
+   **Resultados entregados:**  
+   En ambas condiciones la aplicación muestra qué proveedores están conectados, pero nunca el valor de la clave: se presenta enmascarada. Guardar una clave no la devuelve al cliente en ninguna respuesta.  
+   **Estado final de las variables:**  
+   Se adjuntan capturas de las pruebas:  
+1) Credenciales por proveedor
+
+![](../assets/caja-negra-completa/esc17_01_pestana_credenciales.png)
+
+2) Claves propias en el perfil
+
+![](../assets/caja-negra-completa/esc17_02_claves_propias.png)
+
+**Método de Prueba:** Inspección de la interfaz contra el requisito de seguridad de no exponer secretos en el cliente.
+
+**Módulos:** Vistas de Modelos y Perfil, y routers de claves de API y configuración de plataforma.
+
+**Hardware y Software:** Navegador de escritorio sobre Windows 11; frontend Angular en :4200, backend FastAPI en :8000.
+
+**Procedimientos o herramientas necesarios:** Autenticarse como administrador y recorrer las dos pantallas donde se gestionan claves.
+
+**Dependencias o relación con otros casos de prueba:** Requiere rol administrador (Escenario 13).
+
+# **Escenario 18: Analítica de aprendizaje y control de acceso**
+
+**Datos de Entrada:** Consulta del panel de métricas agregadas.
+
+**Entorno:** Módulo Analítica (/analytics), disponible según el permiso del rol.
+
+**Parámetros:**
+
+* Ruta /analytics  
+* Rol de la cuenta autenticada  
+  **Respuesta de otros módulos:** Se llama a `backend/users/analytics/analytics_router.py`, que agrega las métricas de uso de la cuenta.  
+  **Condiciones iniciales:**  
+1. Se accedió a /analytics con una cuenta con permiso.  
+2. Se accedió a /analytics con una cuenta sin permiso.  
+   **Datos de Salida:**
+
+   **Resultados entregados:**  
+   Para la condición 1, la aplicación muestra el panel con las métricas agregadas. Para la condición 2, deniega el acceso y avisa al usuario, sin exponer datos de la métrica.  
+   **Estado final de las variables:**  
+   Se adjuntan capturas de las pruebas:  
+1) Panel de analítica
+
+![](../assets/caja-negra-completa/esc18_01_panel.png)
+
+2) Acceso denegado sin permiso
+
+![](../assets/caja-negra-completa/esc18_02_sin_permiso.png)
+
+**Método de Prueba:** Tabla de decisiones sobre el permiso del rol.
+
+**Módulos:** Vista de analítica, guard de ruta y router de analítica del backend.
+
+**Hardware y Software:** Navegador de escritorio sobre Windows 11; frontend Angular en :4200, backend FastAPI en :8000.
+
+**Procedimientos o herramientas necesarios:** Abrir /analytics con una cuenta con permiso y con otra sin él.
+
+**Dependencias o relación con otros casos de prueba:** Se relaciona con el Escenario 13 (control de acceso por rol).
 # **Listado técnico**
 
 ## **Archivos involucrados**
@@ -635,12 +845,22 @@ Las capturas se generaron con el script `tests/capture-caja-negra-completa.mjs`,
 
 ## **Hallazgos y correcciones aplicadas**
 
-Las tres observaciones de la primera corrida se corrigieron y re-verificaron:
+Las observaciones detectadas en las corridas se corrigieron y re-verificaron:
 
 * **[CORREGIDO] Validación de recurso por fase en el encolado (robustez).** Antes, al encolar un recurso con una combinación fase/tipo inválida (p. ej. "Lectura Interactiva" en la fase Engage, cuando ese tipo pertenece a Explore), el endpoint aceptaba la petición (HTTP 202) y el worker fallaba con `ValueError`, dejando el job "interrupted". Fix: se añadió el helper `resource_exists(phase, type)` (`backend/generation/jobs/jobs_materialize.py`) y un `model_validator` en `StartJobRequest` (`backend/generation/jobs/jobs_helpers.py`) que rechazan la combinación inválida con HTTP 422 ("Recurso no válido para la fase '…'.") antes de encolar. Verificado: inválida → 422, válida → 202.  
 * **[CORREGIDO] Generación fresca completa (Escenario 4).** La causa de que las generaciones nuevas no completaran era la presencia de workers `arq` duplicados/huérfanos de sesiones previas compitiendo por la misma cola. Con un único worker dedicado, una generación nueva completa correctamente (job `done`, OVA "listo", ~3 min): ver captura del Escenario 4 condición 5.  
 * **[CORREGIDO] Feedback del cambio de contraseña.** El botón "Actualizar Contraseña" quedaba en estado "Actualizando…" de forma indefinida. Causa: en `ProfilePageComponent` las banderas `isSaving/isChanging/isDeleting` eran propiedades planas; con OnPush + zoneless, mutarlas tras un `await` no dispara detección de cambios. Fix: se convirtieron a `signal()` en `frontend/src/features/profile/pages/profile-page.component.ts`. Verificado: el botón se restablece al terminar y el cambio se aplica (400 actual incorrecta / 200 éxito).  
+* **[CORREGIDO] El alta del 2FA no avanzaba (hallazgo del Escenario 16, 22/07/2026).** Al pulsar «Activar 2FA» la petición `POST /api/auth/totp/setup` respondía 200 con el secreto y los códigos de respaldo, pero la tarjeta seguía mostrando el estado inicial: el segundo factor era imposible de activar desde la interfaz. Misma causa que el punto anterior — en `TotpSetupCardComponent` el estado (`phase`, `setupData`, `backupCodes`, `serverError`, …) eran propiedades planas y, con OnPush + zoneless, mutarlas tras un `await` no marca la vista como sucia. Fix: convertidas a `signal()` en `frontend/src/features/profile/components/totp-setup-card.component.ts` y su plantilla. Verificado: la tarjeta pasa al paso de configuración y muestra URI, clave y códigos de respaldo; un código incorrecto devuelve «Código incorrecto o expirado».  
 * **Corrección previa verificada.** El subtítulo de la pantalla de login ya no muestra el texto heredado del dominio ("curso de ML"); ahora dice "Accede para crear y gestionar tus OVAs."  
+
+## **Control sin interfaz: vinculación docente-estudiante**
+
+La API de vinculaciones (`/api/users/me/links*`) está implementada y probada, pero
+**no tiene interfaz en esta versión**: `frontend/src/app/app.routes.ts` deja constancia
+de que la UI está diferida. Por eso no aparece como escenario de caja negra —no hay
+controles que validar en pantalla— y su verificación funcional se hizo por API, con
+evidencia en la sección 7 del Manual de Despliegue (pruebas de los 120 endpoints en
+Swagger).
 
 ## **Notas**
 

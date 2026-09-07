@@ -13,7 +13,7 @@ type Status = "idle" | "submitting" | "success" | "error";
   selector: "gn-forgot-password-page",
   imports: [FormField, RouterLink, ButtonComponent, HlmInput],
   template: `
-    <section
+    <main
       class="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4"
     >
       <div
@@ -82,7 +82,7 @@ type Status = "idle" | "submitting" | "success" | "error";
           </form>
         }
       </div>
-    </section>
+    </main>
   `,
 })
 export class ForgotPasswordPage {

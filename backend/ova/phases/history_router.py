@@ -18,7 +18,7 @@ router = APIRouter()
 logger = structlog.get_logger(__name__)
 
 
-@router.get("")
+@router.get("", tags=["OVA · CRUD"], summary="Listar las OVA del usuario")
 def list_ovas(
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=10, ge=1, le=100),
@@ -96,7 +96,7 @@ def list_ovas(
     }
 
 
-@router.get("/{ova_id}/download")
+@router.get("/{ova_id}/download", tags=["SCORM y descargas"], summary="Descargar la OVA")
 def download_ova(
     ova_id: str,
     current_user: User = Depends(get_current_user),

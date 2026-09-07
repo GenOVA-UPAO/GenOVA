@@ -43,7 +43,7 @@ async function login(page, email, pass) {
 
 async function seedOva(page) {
   const title = `OVA CN ${uid()}`;
-  const res = await page.request.post(`${BASE}/api/ova/jobs`, {
+  const res = await page.request.post(`${BASE}/api/jobs`, {
     data: {
       prompt: `${title}: redes de computadoras para principiantes, nivel universitario.`,
       resources: [
@@ -56,7 +56,7 @@ async function seedOva(page) {
   const { job_id } = await res.json();
   const deadline = Date.now() + 90000;
   for (;;) {
-    const poll = await page.request.get(`${BASE}/api/ova/jobs/${job_id}`);
+    const poll = await page.request.get(`${BASE}/api/jobs/${job_id}`);
     if (poll.ok()) {
       const j = await poll.json();
       if (j.status === "done") return { title, ovaId: j.ova_id };

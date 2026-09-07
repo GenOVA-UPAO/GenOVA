@@ -29,7 +29,11 @@ router = APIRouter()
 # ── Reorder phases ────────────────────────────────────────────────────────────
 
 
-@router.patch("/{ova_id}/fases/reorder")
+@router.patch(
+    "/{ova_id}/fases/reorder",
+    tags=["OVA · Fases y versiones"],
+    summary="Reordenar las fases de la OVA",
+)
 @limiter.limit("30/minute")
 def reorder_phases(
     request: Request,
@@ -83,7 +87,9 @@ def reorder_phases(
 # ── Delete phase ──────────────────────────────────────────────────────────────
 
 
-@router.delete("/{ova_id}/fases/{fase_id}")
+@router.delete(
+    "/{ova_id}/fases/{fase_id}", tags=["OVA · Fases y versiones"], summary="Eliminar una fase"
+)
 @limiter.limit("20/minute")
 def delete_phase(
     request: Request,
@@ -126,7 +132,11 @@ def delete_phase(
 # ── Save phase content ────────────────────────────────────────────────────────
 
 
-@router.patch("/{ova_id}/fases/{fase_id}")
+@router.patch(
+    "/{ova_id}/fases/{fase_id}",
+    tags=["OVA · Fases y versiones"],
+    summary="Guardar los cambios de una fase",
+)
 @limiter.limit("30/minute")
 def save_phase(
     request: Request,

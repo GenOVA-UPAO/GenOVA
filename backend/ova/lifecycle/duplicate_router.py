@@ -11,7 +11,7 @@ from core.rate_limit import limiter
 from models import Ova, OvaPhase, OvaVersion, User
 from ova.helpers import _is_admin, forbidden_response
 
-router = APIRouter()
+router = APIRouter(tags=["OVA · CRUD"])
 
 
 def _unique_copy_title(base_title: str, user_id, db: Session) -> str:
@@ -33,7 +33,7 @@ def _unique_copy_title(base_title: str, user_id, db: Session) -> str:
     return f"{base_title} (copia {int(time.time())})"
 
 
-@router.post("/{ova_id}/duplicar", status_code=201)
+@router.post("/{ova_id}/duplicar", status_code=201, summary="Duplicar una OVA")
 @limiter.limit("10/minute")
 def duplicate_ova(
     request: Request,

@@ -22,7 +22,7 @@ from core.rate_limit import limiter
 from core.security import hash_password, password_complexity_ok
 from models import PasswordResetToken, User
 
-router = APIRouter()
+router = APIRouter(tags=["Autenticación"])
 
 FRONTEND_URL = settings.frontend_url.rstrip("/")
 
@@ -43,7 +43,7 @@ def _err(code: str, message: str) -> JSONResponse:
     )
 
 
-@router.post("/forgot-password")
+@router.post("/forgot-password", summary="Solicitar recuperación de contraseña")
 @limiter.limit("5/minute")
 def forgot_password(
     request: Request,
@@ -74,13 +74,18 @@ def forgot_password(
 
     reset_link = f"{FRONTEND_URL}/reset-password?token={token_str}"
     dispatch_or_log(
-        background_tasks, send_reset_email, email, reset_link, user.full_name, "enlace de restablecimiento"
+        background_tasks,
+        send_reset_email,
+        email,
+        reset_link,
+        user.full_name,
+        "enlace de restablecimiento",
     )
 
     return response
 
 
-@router.post("/reset-password")
+@router.post("/reset-password", summary="Restablecer la contraseña con un token")
 @limiter.limit("10/minute")
 def reset_password(request: Request, payload: ResetPasswordSubmit, db: Session = Depends(get_db)):
     token_str = payload.token.strip()

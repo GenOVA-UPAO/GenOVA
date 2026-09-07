@@ -1,4 +1,4 @@
-@if (phase === "idle") {
+@if (phase() === "idle") {
   <div class="rounded-xl border border-border bg-card p-5 space-y-3">
     <div class="flex items-center gap-2">
       <gn-icon name="shield-slash" size="text-lg" class="text-muted-foreground" />
@@ -8,11 +8,11 @@
       Protege tu cuenta con un código de tu aplicación autenticadora (Google Authenticator, Authy,
       etc.).
     </p>
-    @if (serverError) {
+    @if (serverError()) {
       <div
         class="relative w-full rounded-lg border border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive p-4"
       >
-        <div class="text-sm [&_p]:leading-relaxed">{{ serverError }}</div>
+        <div class="text-sm [&_p]:leading-relaxed">{{ serverError() }}</div>
       </div>
     }
     <button
@@ -24,7 +24,7 @@
   </div>
 }
 
-@if (phase === "setup" && setupData) {
+@if (phase() === "setup" && setupData(); as datos) {
   <div class="rounded-xl border border-border bg-card p-5 space-y-4">
     <div class="flex items-center gap-2">
       <gn-icon name="shield-check" size="text-lg" class="text-accent-brand" />
@@ -40,18 +40,18 @@
       </p>
       <div class="flex items-center gap-1 overflow-hidden">
         <code class="text-[10px] break-all text-foreground flex-1">{{
-          setupData.provisioning_uri
+          datos.provisioning_uri
         }}</code>
         <button
-          (click)="copyToClipboard(setupData.provisioning_uri, 'uri')"
+          (click)="copyToClipboard(datos.provisioning_uri, 'uri')"
           class="ml-2 text-muted-foreground hover:text-foreground transition-colors"
           title="Copiar URI"
           aria-label="Copiar URI"
         >
-          @if (!copiedUri) {
+          @if (!copiedUri()) {
             <gn-icon name="copy" size="text-sm" />
           }
-          @if (copiedUri) {
+          @if (copiedUri()) {
             <gn-icon name="check" size="text-sm" class="text-success" />
           }
         </button>
@@ -60,29 +60,29 @@
         Clave secreta
       </p>
       <div class="flex items-center gap-1">
-        <code class="text-xs font-mono text-foreground">{{ setupData.secret }}</code>
+        <code class="text-xs font-mono text-foreground">{{ datos.secret }}</code>
         <button
-          (click)="copyToClipboard(setupData.secret, 'secret')"
+          (click)="copyToClipboard(datos.secret, 'secret')"
           class="ml-2 text-muted-foreground hover:text-foreground transition-colors"
           title="Copiar clave"
           aria-label="Copiar clave"
         >
-          @if (!copiedSecret) {
+          @if (!copiedSecret()) {
             <gn-icon name="copy" size="text-sm" />
           }
-          @if (copiedSecret) {
+          @if (copiedSecret()) {
             <gn-icon name="check" size="text-sm" class="text-success" />
           }
         </button>
       </div>
     </div>
-    @if (backupCodes) {
+    @if (backupCodes()) {
       <div class="rounded-lg border border-amber-500/30 bg-amber-50/10 p-3 space-y-1.5">
         <p class="text-[10px] font-semibold uppercase tracking-wide text-amber-600">
           Códigos de respaldo — guárdalos ahora, no se mostrarán de nuevo
         </p>
         <div class="grid grid-cols-4 gap-1">
-          @for (c of backupCodes; track c) {
+          @for (c of backupCodes(); track c) {
             <code class="text-xs font-mono bg-muted/60 rounded px-1.5 py-0.5 text-center">{{
               c
             }}</code>
@@ -106,18 +106,18 @@
           <p class="text-xs text-destructive">{{ confirmForm.code().errors()[0].message }}</p>
         }
       </div>
-      @if (serverError) {
+      @if (serverError()) {
         <div class="relative w-full rounded-lg border border-destructive/50 text-destructive p-4">
-          <div class="text-sm">{{ serverError }}</div>
+          <div class="text-sm">{{ serverError() }}</div>
         </div>
       }
       <div class="flex gap-2">
         <button
           type="submit"
-          [disabled]="isSubmitting || confirmForm().invalid()"
+          [disabled]="isSubmitting() || confirmForm().invalid()"
           class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground shadow hover:bg-primary/90 h-8 px-3 disabled:opacity-50"
         >
-          {{ isSubmitting ? "Verificando..." : "Confirmar y activar" }}
+          {{ isSubmitting() ? "Verificando..." : "Confirmar y activar" }}
         </button>
         <button
           type="button"
@@ -131,7 +131,7 @@
   </div>
 }
 
-@if (phase === "enabled") {
+@if (phase() === "enabled") {
   <div class="rounded-xl border border-green-500/30 bg-card p-5 space-y-3">
     <div class="flex items-center gap-2">
       <gn-icon name="shield-check" size="text-lg" class="text-success" />
@@ -157,17 +157,17 @@
       <button
         type="button"
         (click)="disable2fa()"
-        [disabled]="disabling || disableCode().length < 6"
+        [disabled]="disabling() || disableCode().length < 6"
         class="inline-flex items-center justify-center rounded-md text-sm font-medium bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 h-9 px-3 disabled:opacity-50"
       >
-        {{ disabling ? "Desactivando..." : "Desactivar 2FA" }}
+        {{ disabling() ? "Desactivando..." : "Desactivar 2FA" }}
       </button>
     </div>
-    @if (disableError) {
+    @if (disableError()) {
       <div
         class="relative w-full rounded-lg border border-destructive/50 text-destructive p-4 mt-3"
       >
-        <div class="text-sm">{{ disableError }}</div>
+        <div class="text-sm">{{ disableError() }}</div>
       </div>
     }
   </div>

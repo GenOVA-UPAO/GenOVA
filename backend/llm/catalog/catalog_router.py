@@ -7,13 +7,13 @@ from llm.phases.explain_router import router as explain_router
 from llm.phases.explore_router import router as explore_router
 
 router = APIRouter()
-router.include_router(engage_router, prefix="/engage", tags=["engage"])
-router.include_router(explore_router, prefix="/explore", tags=["explore"])
-router.include_router(explain_router, prefix="/explain", tags=["explain"])
-router.include_router(elaborate_router, prefix="/elaborate", tags=["elaborate"])
-router.include_router(evaluate_router, prefix="/evaluate", tags=["evaluate"])
+router.include_router(engage_router, prefix="/engage", tags=["Agentes 5E"])
+router.include_router(explore_router, prefix="/explore", tags=["Agentes 5E"])
+router.include_router(explain_router, prefix="/explain", tags=["Agentes 5E"])
+router.include_router(elaborate_router, prefix="/elaborate", tags=["Agentes 5E"])
+router.include_router(evaluate_router, prefix="/evaluate", tags=["Agentes 5E"])
 
 
-@router.get("/health", tags=["agents"])
+@router.get("/health", tags=["Health"], summary="Estado del módulo de agentes")
 def agents_health() -> dict[str, str]:
     return {"module": "agents", "status": "ok"}

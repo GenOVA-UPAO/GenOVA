@@ -49,7 +49,9 @@ def _invalid_credentials() -> JSONResponse:
     )
 
 
-@router.post("/login")
+@router.post(
+    "/login", tags=["Autenticación"], summary="Iniciar sesión y recibir la cookie de sesión"
+)
 @limiter.limit("10/minute")
 def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     email = normalize_email(payload.email)

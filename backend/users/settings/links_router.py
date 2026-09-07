@@ -13,10 +13,9 @@ from core.database import commit_or_500, get_db
 from core.rate_limit import limiter
 from core.security import hash_password, verify_password
 from models import User, UserLink
-from users.settings.links_admin_router import router as admin_router
 from users.settings.links_helpers import _new_code, _serialize
 
-router = APIRouter()
+router = APIRouter(tags=["Vinculaciones"])
 
 
 class InviteRequest(BaseModel):
@@ -27,7 +26,7 @@ class AcceptRequest(BaseModel):
     code: str
 
 
-@router.get("/me/links")
+@router.get("/me/links", summary="Listar los vínculos propios")
 def list_my_links(
     current_user: User = Depends(require_permission("users:link")), db: Session = Depends(get_db)
 ):
@@ -54,7 +53,11 @@ def list_my_links(
     }
 
 
-@router.post("/me/links/code", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/me/links/code",
+    status_code=status.HTTP_201_CREATED,
+    summary="Generar un código de vinculación",
+)
 @limiter.limit("5/minute")
 def create_link_code(
     request: Request,
@@ -72,7 +75,11 @@ def create_link_code(
     return {"link": _serialize(link, owner=current_user), "code": code}
 
 
-@router.post("/me/links/invite", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/me/links/invite",
+    status_code=status.HTTP_201_CREATED,
+    summary="Invitar por correo a vincularse",
+)
 @limiter.limit("5/minute")
 def invite_link(
     request: Request,
@@ -94,7 +101,7 @@ def invite_link(
     return {"link": _serialize(link, owner=current_user), "code": code}
 
 
-@router.post("/me/links/accept")
+@router.post("/me/links/accept", summary="Aceptar una vinculación con un código")
 @limiter.limit("10/minute")
 def accept_link(
     request: Request,
@@ -133,7 +140,7 @@ def accept_link(
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Codigo invalido o expirado.")
 
 
-@router.delete("/me/links/{link_id}")
+@router.delete("/me/links/{link_id}", summary="Eliminar un vínculo propio")
 def delete_my_link(
     link_id: UUID,
     current_user: User = Depends(require_permission("users:link")),
@@ -147,7 +154,7 @@ def delete_my_link(
     return {"status": "ok"}
 
 
-@router.post("/me/links/{link_id}/resend")
+@router.post("/me/links/{link_id}/resend", summary="Reenviar la invitación de un vínculo")
 @limiter.limit("3/minute")
 def resend_link(
     request: Request,
@@ -169,8 +176,3 @@ def resend_link(
     commit_or_500(db, "el reenvio")
     db.refresh(link)
     return {"link": _serialize(link, owner=current_user), "code": code}
-
-
-# Admin link-management endpoints live in links_admin_router; included here so
-# they keep the same path prefix without touching the users-router wiring.
-router.include_router(admin_router)

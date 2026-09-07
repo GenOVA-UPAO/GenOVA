@@ -25,12 +25,12 @@ router = APIRouter()
 logger = structlog.get_logger(__name__)
 
 
-@router.get("/health")
+@router.get("/health", tags=["Health"], summary="Estado del módulo de subidas")
 def uploads_health() -> dict[str, str]:
     return {"module": "uploads", "status": "ok"}
 
 
-@router.get("/temp")
+@router.get("/temp", tags=["Documentos y RAG"], summary="Listar los documentos temporales subidos")
 def list_temp_uploads(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, list[dict]]:
@@ -38,7 +38,7 @@ def list_temp_uploads(
     return {"items": uploads}
 
 
-@router.post("/temp")
+@router.post("/temp", tags=["Documentos y RAG"], summary="Subir documentos temporales")
 async def upload_temp_files(
     files: list[UploadFile] = File(default=[]),
     current_user: User = Depends(get_current_user),
@@ -126,9 +126,7 @@ async def upload_temp_files(
         # and never block the upload response.
         rag_status = {"status": "disabled", "chunks": 0}
         if rag_enabled():
-            storage_path = get_upload_storage_path(
-                created_item["upload_id"], str(current_user.id)
-            )
+            storage_path = get_upload_storage_path(created_item["upload_id"], str(current_user.id))
             if storage_path:
                 try:
                     rag_status = ingest_upload(
@@ -149,6 +147,7 @@ async def upload_temp_files(
 
         # Save RAG status to registry so it persists during file listing
         from ova.uploads.state import lock, registry
+
         with lock():
             if created_item["upload_id"] in registry():
                 registry()[created_item["upload_id"]]["rag_status"] = rag_status
@@ -163,7 +162,9 @@ async def upload_temp_files(
     }
 
 
-@router.delete("/temp/{upload_id}")
+@router.delete(
+    "/temp/{upload_id}", tags=["Documentos y RAG"], summary="Eliminar un documento temporal"
+)
 def delete_temp_upload(upload_id: str, current_user: User = Depends(get_current_user)):
     deleted = delete_user_upload(upload_id=upload_id, user_id=str(current_user.id))
     if not deleted:

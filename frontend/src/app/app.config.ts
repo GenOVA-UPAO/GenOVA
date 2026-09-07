@@ -7,13 +7,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from "@angular/core";
-import {
-  PreloadAllModules,
-  provideRouter,
-  TitleStrategy,
-  withComponentInputBinding,
-  withPreloading,
-} from "@angular/router";
+import { provideRouter, TitleStrategy, withComponentInputBinding } from "@angular/router";
 
 import { LLM_SETTINGS_MODAL } from "../core/lib/llm-settings-modal.token";
 import { captureException, isSentryEnabled } from "../core/lib/observability/sentry";
@@ -52,9 +46,12 @@ export const appConfig: ApplicationConfig = {
       // frames intermedios rotos. Se puede reintroducir en el futuro con
       // manejo correcto (guardas de transición en curso / skip en rutas
       // rápidas). Ver sdd/plans/2026-07-16-remediacion-auditoria-visual/tasks/T9.md.
-      // Preload all lazy routes during idle time → near-instant page-to-page
-      // navigation after first paint (chunks are already in cache).
-      withPreloading(PreloadAllModules),
+      //
+      // SIN preload de rutas: `PreloadAllModules` descargaba TODOS los chunks
+      // lazy (sentry, workspace, admin, …) inmediatamente tras el primer paint.
+      // En la simulación de Lighthouse (link 1.6 Mbps) esa avalancha saturaba la
+      // red y disparaba el LCP a ~11 s en todas las páginas (obs real: ~0.3 s).
+      // Con carga bajo demanda cada ruta trae su chunk al navegar (7–40 KB, rápido).
     ),
     // Las rutas declaran solo el nombre de página; la marca la añade la
     // estrategia (ver genova-title.strategy.ts).

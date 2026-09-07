@@ -73,7 +73,7 @@ export class AdminUsersService {
     this._error.set("");
 
     try {
-      const { ok, body } = await send(`/api/users/?page=${page}&limit=10`);
+      const { ok, body } = await send(`/api/users?page=${page}&limit=10`);
       if (!ok) throw new Error("No se pudo cargar la lista de usuarios.");
 
       this._users.set(body.users || []);
