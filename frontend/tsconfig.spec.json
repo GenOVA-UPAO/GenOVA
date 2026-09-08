@@ -12,5 +12,5 @@
       "@spartan-ng/helm/*": ["libs/ui/*/src/index.ts"]
     }
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts", "src/test-setup.ts"]
 }

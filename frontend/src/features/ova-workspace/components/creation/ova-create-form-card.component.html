@@ -40,9 +40,7 @@
           <li class="flex min-w-0 flex-1 items-center">
             <div
               class="flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center"
-              [attr.aria-current]="
-                stepResourcesDone() && !stepGenerateReady() ? 'step' : null
-              "
+              [attr.aria-current]="stepResourcesDone() && !stepGenerateReady() ? 'step' : null"
             >
               <span [class]="stepCircleClass(stepResourcesDone())" aria-hidden="true">2</span>
               <span [class]="stepLabelClass(stepResourcesDone())">2. Elige recursos</span>
@@ -190,13 +188,13 @@
             <span class="hidden sm:inline">Tema</span>
           </gn-button>
           <div class="flex-1"></div>
-          <gn-button
-            id="tour-crear-ova-generar"
-            (onClick)="generate.emit()"
-            [disabled]="!canGenerate()"
-          >
-            <gn-icon name="lightning" size="text-base" /> Generar OVA
-          </gn-button>
+          <!-- id en un span real: gn-button es display:contents y su
+               getBoundingClientRect() es 0×0 → el tour se posicionaba en (0,0). -->
+          <span id="tour-crear-ova-generar" class="inline-flex">
+            <gn-button (onClick)="generate.emit()" [disabled]="!canGenerate()">
+              <gn-icon name="lightning" size="text-base" /> Generar OVA
+            </gn-button>
+          </span>
         </div>
 
         @if (missingChars() > 0) {

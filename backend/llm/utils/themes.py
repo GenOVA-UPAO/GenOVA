@@ -142,7 +142,9 @@ def _interaction_block(color_mode: str) -> str:
         )
     return (
         "5) INTERACCIÓN\n"
-        "   - Botones: usa .ova-btn (primario) y .ova-btn--ghost (secundario); NO redefinas su CSS.\n"
+        "   - Botones: TODO botón de acción usa .ova-btn (primario) o .ova-btn--ghost (secundario).\n"
+        "     NO redefinas su CSS ni fijes padding/height/border/background propios en botones.\n"
+        "     Botones que aparecen juntos comparten tamaño (misma clase, sin anchos a medida).\n"
         "   - Opciones seleccionables: .ova-option + toggle de .is-selected/.is-correct/.is-wrong desde JS.\n"
         "   - Feedback: .ova-feedback--ok / .ova-feedback--bad (color + icono/emoji + texto).\n"
         "   - Progreso: <div class=\"ova-progress\"><span style=\"width:0%\"></span></div> y anima el width.\n"
