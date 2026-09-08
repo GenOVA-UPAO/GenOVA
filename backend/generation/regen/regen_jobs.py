@@ -34,6 +34,7 @@ def start_regen(
     phase_ids: list[str],
     total_phases: int,
     worker: Callable[[str, str], None],
+    instruction: str | None = None,
 ) -> str:
     """Mark the OVA as generating, register the job and spawn the worker thread.
 
@@ -52,6 +53,7 @@ def start_regen(
             "job_id": job_id,
             "ova_id": str(ova.id),
             "prompt": effective_prompt,
+            "instruction": instruction,
             "phase_ids": phase_ids,
             "total_phases": max(int(total_phases or 1), 1),
             "started_at": time.time(),
@@ -108,9 +110,7 @@ def recover_orphan_regen() -> int:
     try:
         stuck = (
             db.execute(
-                select(Ova).where(
-                    Ova.status == "generando", Ova.current_version_id.is_not(None)
-                )
+                select(Ova).where(Ova.status == "generando", Ova.current_version_id.is_not(None))
             )
             .scalars()
             .all()

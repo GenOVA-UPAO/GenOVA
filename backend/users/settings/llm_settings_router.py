@@ -21,6 +21,7 @@ from llm.catalog.model_catalog import (
     DEFAULTS,
     TIMEOUT_MAX,
     TIMEOUT_MIN,
+    default_catalog_floor,
     is_default_model,
     merge_with_defaults,
     sanitize_settings,
@@ -97,6 +98,14 @@ def get_llm_settings(
         fc_entry = full_by_key.get(key)
         if fc_entry and fc_entry.get("active"):
             filtered_catalog.setdefault(fc_entry["provider"], []).append(fc_entry)
+
+    # Step 3: floor — system defaults stay selectable even if a failed provider
+    # refresh marked them inactive (otherwise the dropdown comes up empty).
+    for provider, entries in default_catalog_floor().items():
+        seen = {m["model_id"] for m in filtered_catalog.get(provider, [])}
+        filtered_catalog.setdefault(provider, []).extend(
+            e for e in entries if e["model_id"] not in seen
+        )
 
     full = get_full_catalog_entries()
     search = (request.query_params.get("search") or "").strip().lower()

@@ -4,19 +4,16 @@ Replaces the previous simulated-content approach with actual calls to the
 ENGAGE/EXPLORE generation agents via `regen_agents.py`.
 """
 
-import os
 import time
-from concurrent.futures import ThreadPoolExecutor
 
 import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.database import SessionLocal
-from generation.regen.regen_agents import resolve_resource_type
+from generation.regen.regen_edit import regen_phases_parallel
 from generation.regen.regen_jobs import _regen_jobs, _regen_jobs_lock
 from generation.regen.regen_persist import _build_and_persist, _mark_ova_error
-from generation.regen.regen_pipelines import regenerate_phase_content
 from models import Ova, OvaPhase, OvaVersion
 from ova.crud.edit_helpers import _ensure_version_exists, _get_active_version
 
@@ -35,6 +32,7 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
             job["status"] = "generating"
 
         prompt = job["prompt"]
+        instruction = job.get("instruction") or None
         phase_ids_to_regen = set(job.get("phase_ids", []))
         regen_all = not phase_ids_to_regen
 
@@ -76,7 +74,9 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         # N phases × 2 LLM calls each — so the progress bar sat at 99% for
         # minutes. DB writes below stay in this thread, in phase order.
         to_regen = [p for p in current_phases if regen_all or str(p.id) in phase_ids_to_regen]
-        regen_content = _regen_phases_parallel(to_regen, prompt, llm_config, image_settings)
+        regen_content = regen_phases_parallel(
+            to_regen, prompt, instruction, llm_config, image_settings=image_settings
+        )
 
         new_phases_data = []
         for phase in current_phases:
@@ -141,58 +141,3 @@ def _owner_image_settings(db: Session, user_id) -> dict:
 
     user = db.get(User, user_id)
     return build_image_settings(user, db) if user else {}
-
-
-def _regen_phase(
-    phase: OvaPhase,
-    concept: str,
-    llm_config: dict | None = None,
-    image_settings: dict | None = None,
-) -> str | None:
-    """Call the real LLM agent for a single phase. Returns HTML or None."""
-    rtype = resolve_resource_type(phase)
-    if rtype is None:
-        logger.warning("skipping regen — unknown resource_type", phase_id=phase.id)
-        return None
-    logger.info(
-        "regenerating phase",
-        phase_type=phase.phase_type,
-        resource_type=rtype,
-        concept=concept[:60],
-    )
-    return regenerate_phase_content(
-        phase.phase_type, rtype, concept, llm_config, image_settings=image_settings
-    )
-
-
-def _regen_concurrency() -> int:
-    try:
-        return max(1, int(os.getenv("OVA_GEN_CONCURRENCY", "4")))
-    except ValueError:
-        return 4
-
-
-def _regen_phases_parallel(
-    phases: list[OvaPhase],
-    concept: str,
-    llm_config: dict | None,
-    image_settings: dict | None = None,
-) -> dict[str, str | None]:
-    """Regenerate `phases` concurrently, returning {phase_id: html|None}.
-
-    Each task is an isolated LLM call (no DB); a single phase's failure yields
-    None for that phase without aborting the rest. Caller writes the rows.
-    """
-    if not phases:
-        return {}
-    workers = min(_regen_concurrency(), len(phases))
-
-    def _one(phase: OvaPhase) -> tuple[str, str | None]:
-        try:
-            return str(phase.id), _regen_phase(phase, concept, llm_config, image_settings)
-        except Exception:
-            logger.exception("regen failed for phase", phase_id=phase.id)
-            return str(phase.id), None
-
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        return dict(pool.map(_one, phases))

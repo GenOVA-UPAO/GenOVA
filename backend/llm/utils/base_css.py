@@ -25,14 +25,17 @@ h1{font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;color:var(--primary);font-
 h2{font-size:clamp(1.3rem,3vw,1.6rem);line-height:1.2;color:var(--primary);font-weight:700}
 h3{font-size:clamp(1.1rem,2.5vw,1.3rem);line-height:1.25;font-weight:600}
 img,svg{max-width:100%;height:auto}
-button{font:inherit;cursor:pointer}
+button{font:inherit;cursor:pointer;min-height:44px;padding:10px 18px;border-radius:10px;
+font-weight:600;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;
+gap:8px;text-align:center}
+button:disabled{opacity:.55;cursor:not-allowed}
 :focus-visible{outline:3px solid var(--primary);outline-offset:2px}
 .ova-container{max-width:880px;margin-inline:auto;padding:var(--space-4)}
 .ova-card{background:var(--surface);border:1px solid var(--border);
 border-radius:var(--radius);box-shadow:var(--shadow);padding:var(--space-4)}
-.ova-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;
-font-weight:600;border:none;border-radius:10px;background:var(--accent);color:#fff;
-transition:all .2s ease}
+.ova-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+min-height:44px;padding:12px 20px;font-weight:600;border:none;border-radius:10px;
+background:var(--accent);color:#fff;transition:all .2s ease}
 .ova-btn:hover{background:var(--accent-hover);transform:translateY(-1px);
 box-shadow:0 8px 22px rgba(10,61,145,.16)}
 .ova-btn:active{transform:translateY(0)}
