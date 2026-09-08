@@ -77,10 +77,16 @@ def regenerate_ova(
                 },
             )
 
+    user_prompt = payload.prompt.strip() if payload.prompt and payload.prompt.strip() else None
+
+    # Edición puntual: hay recursos seleccionados + un mensaje de cambio. El
+    # mensaje es una INSTRUCCIÓN sobre el recurso actual, no el tema nuevo — se
+    # conserva el tema original del OVA para no reescribir título ni enfoque.
+    # "Regenerar OVA completo" (sin fase_ids) o sin mensaje = regen desde cero.
+    is_targeted_edit = bool(payload.fase_ids) and user_prompt is not None
+    instruction = user_prompt if is_targeted_edit else None
     effective_prompt = (
-        payload.prompt.strip()
-        if payload.prompt and payload.prompt.strip()
-        else active_version.prompt
+        active_version.prompt if is_targeted_edit else (user_prompt or active_version.prompt)
     )
 
     # Phases actually being regenerated: an explicit subset, else every phase of
@@ -97,7 +103,13 @@ def regenerate_ova(
         )
 
     job_id = start_regen(
-        db, ova, effective_prompt, payload.fase_ids, total_phases or 1, worker=_finalize_edit
+        db,
+        ova,
+        effective_prompt,
+        payload.fase_ids,
+        total_phases or 1,
+        worker=_finalize_edit,
+        instruction=instruction,
     )
 
     return JSONResponse(

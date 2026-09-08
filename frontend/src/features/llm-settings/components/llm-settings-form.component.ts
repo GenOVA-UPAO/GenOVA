@@ -48,6 +48,22 @@ export class LlmSettingsFormComponent {
     return Array.isArray(models) ? models : [];
   }
 
+  hasNoCatalog(): boolean {
+    return this.catalogProviders().every((p) => this.catalogModels(p).length === 0);
+  }
+
+  /** Current model is set but absent from the catalog (failed provider refresh):
+   * render it as an extra option so the select shows the real value. */
+  currentMissingFromCatalog(tipo: string): boolean {
+    const cur = this.store.settings()?.[tipo];
+    if (!cur?.provider || !cur?.model_id) return false;
+    return !this.catalogModels(cur.provider).some((m) => m.model_id === cur.model_id);
+  }
+
+  currentModelLabel(tipo: string): string {
+    return this.store.settings()?.[tipo]?.model_id ?? "";
+  }
+
   isProviderDown(provider: string): boolean {
     return this.store.catalogStatus()?.[provider]?.ok === false;
   }
