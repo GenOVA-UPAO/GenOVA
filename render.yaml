@@ -45,6 +45,10 @@ services:
       # Orígenes del frontend en Vercel (CSV). Obligatorio con ENV=production.
       - key: CORS_ORIGINS
         value: https://gen-ova-frontend.vercel.app
+      # Origen del frontend para construir enlaces (reset de contraseña,
+      # verificación de correo). Sin esto el backend avisa que apunta a localhost.
+      - key: FRONTEND_URL
+        value: https://gen-ova-frontend.vercel.app
       # Frontend y backend en dominios distintos → cookie cross-site.
       - key: COOKIE_SAMESITE
         value: none
