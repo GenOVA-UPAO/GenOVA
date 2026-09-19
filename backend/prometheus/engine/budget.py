@@ -5,16 +5,19 @@ y vuelve a refinar, así que un recurso patológico suma 6+ llamadas LLM de
 30-120s cada una. Este presupuesto corta refine/repair cuando se agota y se
 queda con el mejor HTML que haya.
 
-Default 90s: el 95% de recursos sanos termina en 24-60s y no se toca; 90s
-deja holgura para UNA ronda de refine en un generate de ~50s, y corta la
-segunda ronda + el regen de repair que inflaba un recurso a >10 min.
+Default 240s: con modelos pequeños y baratos (DeepSeek V4.1 Flash) el paso
+texto→JSON + HTML de un recurso ronda 90-180s, así que los 90s anteriores se
+agotaban antes del refinamiento y los defectos detectados (p. ej. JS roto) nunca
+se corregían. 240s dejan sitio para UNA ronda de refine y siguen cortando la
+segunda ronda + el regen de repair que inflaba un recurso a >10 min. Los
+recursos sanos no refinan, así que no pagan este margen.
 """
 
 from __future__ import annotations
 
 import time
 
-DEFAULT_RESOURCE_BUDGET_S = 90.0
+DEFAULT_RESOURCE_BUDGET_S = 240.0
 # No arrancar otra llamada LLM si queda menos que esto: una completion típica
 # ronda 30s y no vale la pena empezar una ronda que vamos a recortar.
 MIN_LLM_SLACK_S = 20.0
