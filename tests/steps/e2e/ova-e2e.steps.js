@@ -1,9 +1,12 @@
 // HU-002/003/004/006/012/013/025/030 e2e — ciclo de vida real del OVA en browser.
 // La generación usa el backend con LLM_FAKE=1 (HTML determinista, sin proveedores).
-import { expect, test } from '@playwright/test'
+// Ver tests/README.md: la suite completa requiere el backend levantado con LLM_FAKE=1
+// y, en local, E2E_API_ORIGIN apuntando a esa instancia.
+import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
 import {
+  apiOrigin,
   loginWithCredentials,
   ovaCard,
   ovaCards,
@@ -12,15 +15,13 @@ import {
   state,
   uniqueId,
 } from './_helpers.js'
+import { test } from './fixtures.js'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then } = createBdd(test)
 
 // ── Seeds ─────────────────────────────────────────────────────────────────────
 
 Given('tengo un OVA listo generado vía API con título único', async ({ page }) => {
-  // El backend local apunta a OpenRouter con presupuesto limitado: los seeds
-  // por POST /api/jobs quedan omitidos para no gastar cuota.
-  test.skip(true, 'Generación real de OVA deshabilitada (presupuesto LLM limitado)')
   state(page).ova = await seedOvaViaApi(page)
 })
 
@@ -29,7 +30,7 @@ Given('que estoy autenticado con una cuenta recién creada', async ({ page }) =>
   // Fixture de prueba local (no secreto de producción); armado para evitar
   // falsos positivos del scanner de secretos en el agente.
   const pass = ['clave', '1234', 'e2e'].join('')
-  const res = await page.request.post('/api/auth/register', {
+  const res = await page.request.post(`${apiOrigin()}/api/auth/register`, {
     data: { full_name: 'Cuenta E2E', email, password: pass },
   })
   // 200 = verificación deshabilitada (cookie de sesión directa); 201 = habilitada.
@@ -72,8 +73,6 @@ When('configuro recursos en al menos dos fases', async ({ page }) => {
 })
 
 When('inicio la generación del OVA', async ({ page }) => {
-  // "Generar OVA" dispara POST /api/jobs (generación LLM real): omitido.
-  test.skip(true, 'Generación real de OVA deshabilitada (presupuesto LLM limitado)')
   const generar = page.getByRole('button', { name: 'Generar OVA' })
   await expect(generar).toBeEnabled({ timeout: 10000 })
   await generar.click()

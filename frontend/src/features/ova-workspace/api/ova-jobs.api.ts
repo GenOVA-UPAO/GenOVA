@@ -6,7 +6,8 @@ import type { JobSnapshot } from "../lib/ova-job-view-model";
 export interface StartJobRequest {
   prompt: string;
   uploadIds?: string[];
-  resources: { phase_type: string; resource_type: string | number }[];
+  // La API valida el tipo como string; aceptarlo como number dejaba pasar un 422.
+  resources: { phase_type: string; resource_type: string }[];
   theme?: { color: string; design: string };
   resourceConfigs?: Record<string, Record<string, number>>;
 }

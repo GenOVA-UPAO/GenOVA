@@ -13,13 +13,22 @@ export function state(page) {
 }
 
 /**
+ * Origen de la API para las llamadas directas (page.request). Vacío = relativo,
+ * es decir same-origin a través del proxy de Vite. Ver fixtures.js: con
+ * E2E_API_ORIGIN, el navegador también apunta ahí.
+ */
+export function apiOrigin() {
+  return (process.env.E2E_API_ORIGIN ?? '').trim()
+}
+
+/**
  * Siembra un OVA terminado vía API usando la sesión (cookie) del page ya logueado.
  * Requiere backend con LLM_FAKE=1 para completar en segundos sin proveedores LLM.
  * Devuelve { title, jobId, ovaId }.
  */
 export async function seedOvaViaApi(page) {
   const title = `OVA e2e ${uniqueId()}`
-  const res = await page.request.post('/api/jobs', {
+  const res = await page.request.post(`${apiOrigin()}/api/jobs`, {
     data: {
       prompt: title,
       resources: [
@@ -35,7 +44,7 @@ export async function seedOvaViaApi(page) {
 
   const deadline = Date.now() + 90000
   for (;;) {
-    const poll = await page.request.get(`/api/jobs/${jobId}`)
+    const poll = await page.request.get(`${apiOrigin()}/api/jobs/${jobId}`)
     if (poll.ok()) {
       const job = await poll.json()
       if (job.status === 'done') return { title, jobId, ovaId: job.ova_id }

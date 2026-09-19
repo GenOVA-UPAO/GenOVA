@@ -54,7 +54,9 @@ export function useOvaCreation() {
       resourceConfigs: configs.data?.configs,
       uploadIds: (uploads.data ?? []).flatMap((file) => (file.uploadId ? [file.uploadId] : [])),
       resources: Object.entries(picks).flatMap(([phase, resources]) =>
-        resources.map((resource) => ({ phase_type: phase, resource_type: resource.id })),
+        // La API exige el tipo como texto: enviarlo como número devolvía 422 y
+        // la generación no arrancaba desde el formulario.
+        resources.map((resource) => ({ phase_type: phase, resource_type: String(resource.id) })),
       ),
     });
   };
