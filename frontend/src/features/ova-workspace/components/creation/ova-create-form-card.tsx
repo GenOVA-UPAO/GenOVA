@@ -28,7 +28,7 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">Crear nuevo OVA</h1>
         <p className="mt-1.5 text-sm font-medium text-muted-foreground">Describe el tema y configura los recursos a generar con IA</p>
       </header>
-      <CreationSteps onTour={props.onTour} />
+      <CreationSteps describeDone={missing === 0} resourcesDone={props.phases >= 2} generateReady={props.ready} onTour={props.onTour} />
       <section id="tour-crear-ova-prompt" className="overflow-hidden rounded-2xl border bg-card shadow-sm">
         <label htmlFor="ova-create-prompt" className="sr-only">
           Describe el tema del OVA

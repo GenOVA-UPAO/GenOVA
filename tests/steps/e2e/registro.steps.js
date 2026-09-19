@@ -7,10 +7,11 @@ import { uniqueId } from './_helpers.js'
 const { When, Then } = createBdd()
 
 async function fillRegister(page, name, email, password) {
-  await page.locator('#fullName').waitFor({ state: 'visible', timeout: 15000 })
-  await page.locator('#fullName').fill(name)
-  await page.locator('#email').fill(email)
-  await page.locator('#password').fill(password)
+  // React: labels asociados (Nombre completo / Correo / Contraseña).
+  await page.getByLabel('Nombre completo').waitFor({ state: 'visible', timeout: 15000 })
+  await page.getByLabel('Nombre completo').fill(name)
+  await page.getByLabel('Correo', { exact: true }).fill(email)
+  await page.getByLabel('Contraseña', { exact: true }).fill(password)
 }
 
 When(

@@ -25,53 +25,59 @@ export function WorkspaceOvaPanel({ ovaId, phases }: Readonly<{ ovaId: string; p
     workspace.reorder.mutate(reordered.map((phase, order) => ({ phase_id: phase.id, new_order: order })));
   };
   return (
-    <section className="min-w-0 space-y-4 p-4">
-      <WorkspacePanelToolbar ovaId={ovaId} />
-      <div className="flex gap-2" role="tablist" aria-label="Contenido del OVA">
-        <Button
-          role="tab"
-          aria-selected={tab === "preview"}
-          variant={tab === "preview" ? "default" : "outline"}
-          onClick={() => {
-            setTab("preview");
-          }}
-        >
-          Vista previa
-        </Button>
-        <Button
-          role="tab"
-          aria-selected={tab === "edit"}
-          variant={tab === "edit" ? "default" : "outline"}
-          onClick={() => {
-            setTab("edit");
-          }}
-        >
-          Editar
-        </Button>
+    <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
+      <div className="shrink-0 space-y-4 p-4">
+        <WorkspacePanelToolbar ovaId={ovaId} />
+        <div className="flex gap-2" role="tablist" aria-label="Contenido del OVA">
+          <Button
+            role="tab"
+            aria-selected={tab === "preview"}
+            variant={tab === "preview" ? "default" : "outline"}
+            onClick={() => {
+              setTab("preview");
+            }}
+          >
+            Vista previa
+          </Button>
+          <Button
+            role="tab"
+            aria-selected={tab === "edit"}
+            variant={tab === "edit" ? "default" : "outline"}
+            onClick={() => {
+              setTab("edit");
+            }}
+          >
+            Editar
+          </Button>
+        </div>
       </div>
-      <Suspense fallback={<p role="status">Cargando visor…</p>}>
-        {tab === "preview" ? (
-          <WorkspaceHtmlPreview phases={phases} />
-        ) : (
-          sectionTypes(phases).map((phaseType) => (
-            <WorkspaceResourceList
-              key={phaseType}
-              ovaId={ovaId}
-              phaseType={phaseType}
-              phases={phases.filter((phase) => phase.phase_type === phaseType)}
-              onReorder={(group) => {
-                handleGroupReorder(phaseType, group);
-              }}
-              onRegenerate={(phase) => {
-                regen.request.mutate({ prompt: "Regenerar recurso", phaseIds: [phase.id] });
-              }}
-            />
-          ))
-        )}
-      </Suspense>
-      {workspace.reorder.error && <p role="alert">{workspace.reorder.error.message}</p>}
-      {regen.busy && <p role="status">Regenerando… {regen.progress.percentage}%</p>}
-      {regen.request.error && <p role="alert">{regen.request.error.message}</p>}
+      <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+        <Suspense fallback={<p role="status">Cargando visor…</p>}>
+          {tab === "preview" ? (
+            <WorkspaceHtmlPreview phases={phases} />
+          ) : (
+            <div className="h-full min-h-0 space-y-4 overflow-y-auto px-4 pb-4">
+              {sectionTypes(phases).map((phaseType) => (
+                <WorkspaceResourceList
+                  key={phaseType}
+                  ovaId={ovaId}
+                  phaseType={phaseType}
+                  phases={phases.filter((phase) => phase.phase_type === phaseType)}
+                  onReorder={(group) => {
+                    handleGroupReorder(phaseType, group);
+                  }}
+                  onRegenerate={(phase) => {
+                    regen.request.mutate({ prompt: "Regenerar recurso", phaseIds: [phase.id] });
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </Suspense>
+      </div>
+      {workspace.reorder.error && <p role="alert" className="shrink-0 px-4 pb-2">{workspace.reorder.error.message}</p>}
+      {regen.busy && <p role="status" className="shrink-0 px-4 pb-2">Regenerando… {regen.progress.percentage}%</p>}
+      {regen.request.error && <p role="alert" className="shrink-0 px-4 pb-2">{regen.request.error.message}</p>}
     </section>
   );
 }

@@ -47,8 +47,8 @@ export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
       </div>
     );
   return (
-    <main className="flex min-h-full min-w-0 flex-col bg-background">
-      <header className="flex items-center gap-4 border-b bg-card p-4">
+    <main className="flex h-full min-h-0 min-w-0 flex-col bg-background">
+      <header className="flex shrink-0 items-center gap-4 border-b bg-card p-4">
         <Link to="/mis-ovas">← Mis OVAs</Link>
         <h1 className="min-w-0 flex-1 truncate font-display text-xl font-semibold" title={title}>
           {title}

@@ -41,12 +41,11 @@ export default defineConfig({
   reporter: [['html', { outputFolder: 'playwright-report' }]],
   webServer: external
     ? undefined
-    : {
+      : {
         command: 'pnpm --filter frontend dev',
         url: 'http://localhost:4200',
         reuseExistingServer: !process.env.CI,
-        // Angular CLI honors process.env.PORT; pin 4200 when backend sets PORT=8000 locally
-        env: { PORT: '4200' },
+        // Vite fija el puerto en frontend/vite.config.ts (strictPort 4200).
         timeout: 120000,
       },
 })

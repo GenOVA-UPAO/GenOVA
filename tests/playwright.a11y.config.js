@@ -15,7 +15,6 @@ export default defineConfig({
     command: 'pnpm --filter frontend dev',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env.CI,
-    env: { PORT: '4200' },
     timeout: 120000,
   },
 })

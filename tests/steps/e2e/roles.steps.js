@@ -43,14 +43,14 @@ When('hago click en {string}', async ({ page }, btnText) => {
 })
 
 When('ingreso el nombre {string}', async ({ page }, name) => {
-  const input = page.locator('input[type=text]').first()
+  const input = page.getByLabel('Nombre del rol')
   await input.waitFor({ state: 'visible', timeout: 10000 })
   await input.fill(name)
 })
 
 When('selecciono los permisos {string} y {string}', async ({ page }, _p1, _p2) => {
-  // El modal actual usa <input type="checkbox"> nativos (role-form-modal.component)
-  const checkboxes = page.locator('input[type=checkbox]')
+  // React: <input type="checkbox"> nativos dentro de <label> (role-permissions-fieldset).
+  const checkboxes = page.getByRole('checkbox')
   await checkboxes.nth(0).click()
   await checkboxes.nth(1).click()
 })
@@ -68,8 +68,12 @@ Then('debo ver el mensaje {string}', async ({ page }, msg) => {
 })
 
 Then('no debo ver el botón {string} para el rol {string}', async ({ page }, btn, role) => {
-  const row = page.locator(`tr:has-text("${role}")`)
-  const count = await row.getByRole('button', { name: btn }).count()
+  // React usa cards (div.glass-card), no filas <tr>.
+  const card = page
+    .getByText(role)
+    .first()
+    .locator('xpath=ancestor::div[contains(@class,"glass-card")][1]')
+  const count = await card.getByRole('button', { name: btn }).count()
   if (count > 0) throw new Error(`Button "${btn}" should not exist for "${role}"`)
 })
 

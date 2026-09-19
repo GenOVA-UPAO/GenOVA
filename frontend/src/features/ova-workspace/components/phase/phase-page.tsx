@@ -19,7 +19,8 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
   const [target, setTarget] = useState<Resource>();
   const preview = hovered ?? selected;
   return (
-    <main className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
+    <main className="h-full overflow-y-auto">
+      <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
       <header>
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">Fase {phase.toUpperCase()}</h1>
         <p className="mt-1.5 text-sm font-medium text-muted-foreground">{description}</p>
@@ -67,6 +68,7 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
           />
         </Suspense>
       )}
+      </div>
     </main>
   );
 }

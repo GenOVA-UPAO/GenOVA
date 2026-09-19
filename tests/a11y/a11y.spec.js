@@ -24,10 +24,13 @@ function seriousViolations(results) {
 
 async function login(page, email, pass) {
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.locator('#email, input[type=email]').first().fill(email)
-  await page.locator('#password input, input[type=password]').first().fill(pass)
+  await page.getByLabel('Correo', { exact: true }).fill(email)
+  await page.getByLabel('Contraseña', { exact: true }).fill(pass)
   await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 20000 })
+  // Predicado sobre pathname: /login?returnUrl=%2Fdashboard haría match con un regex.
+  await page.waitForURL((url) => /^\/(dashboard|mis-ovas|admin)(\/|$)/.test(url.pathname), {
+    timeout: 20000,
+  })
 }
 
 test.describe('Accesibilidad (axe-core, WCAG 2.0 A/AA)', () => {
@@ -39,7 +42,7 @@ test.describe('Accesibilidad (axe-core, WCAG 2.0 A/AA)', () => {
 
   test('registro no tiene violaciones serias', async ({ page }) => {
     await page.goto('/register', { waitUntil: 'domcontentloaded' })
-    await page.locator('#fullName').waitFor({ timeout: 15000 })
+    await page.getByLabel('Nombre completo').waitFor({ timeout: 15000 })
     expect(seriousViolations(await analyze(page))).toEqual([])
   })
 

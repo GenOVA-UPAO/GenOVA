@@ -50,9 +50,52 @@ export async function seedOvaViaApi(page) {
   }
 }
 
-/** Cards de Mis OVAs / Papelera que contienen el título dado (para conteos). */
+/**
+ * True si el pathname está dentro del área autenticada. Ojo: no usar
+ * `waitForURL(/dashboard/)` contra la URL completa — React añade
+ * `?returnUrl=%2Fdashboard` en /login y el regex haría match antes del login.
+ */
+export function isAuthedPath(pathname) {
+  return /^\/(dashboard|mis-ovas|admin)(\/|$)/.test(pathname)
+}
+
+/** Espera a que la navegación real (pathname) llegue al área autenticada. */
+export function waitForAuthedNavigation(page, timeout = 20000) {
+  return page.waitForURL((url) => isAuthedPath(url.pathname), { timeout })
+}
+
+/**
+ * Login por UI con reintento ante el throttle por email del backend
+ * (5 intentos/minuto con RATE_LIMIT_ENABLED=1, el default local). El reintento
+ * espera la ventana y vuelve a enviar, como haría la persona usuaria.
+ */
+export async function loginWithCredentials(page, email, password, timeout = 20000) {
+  await page.getByLabel('Correo', { exact: true }).fill(email)
+  await page.getByLabel('Contraseña', { exact: true }).fill(password)
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  try {
+    await waitForAuthedNavigation(page, timeout)
+  } catch (error) {
+    const throttled = await page
+      .getByText(/Demasiados intentos/)
+      .isVisible()
+      .catch(() => false)
+    if (!throttled) throw error
+    await page.waitForTimeout(61000)
+    await page.getByRole('button', { name: 'Entrar' }).click()
+    await waitForAuthedNavigation(page, timeout)
+  }
+}
+
+/**
+ * Cards de Mis OVAs / Papelera que contienen el título dado (para conteos).
+ * El DOM de React no usa elementos `gn-*`: se ancla en el h3 accesible con el
+ * título y se sube al contenedor de la card (única capa con `rounded-xl`).
+ */
 export function ovaCards(page, title) {
-  return page.locator('gn-ova-card, gn-trashed-ova-card').filter({ hasText: title })
+  return page
+    .getByRole('heading', { name: title, exact: true })
+    .locator('xpath=ancestor::div[contains(@class,"rounded-xl")][1]')
 }
 
 /** Primera card de Mis OVAs / Papelera que contiene el título dado. */
@@ -62,9 +105,8 @@ export function ovaCard(page, title) {
 
 /** Busca el título en el buscador de Mis OVAs y espera a que la card aparezca. */
 export async function searchOva(page, title) {
-  // El <input> real (no el host <gn-search-input>, que también refleja el
-  // atributo placeholder): apuntamos por rol para no chocar con strict mode.
-  const search = page.getByRole('textbox', { name: /Buscar por título/i })
+  // SearchInput de React: <input type="search"> con aria-label.
+  const search = page.getByRole('searchbox', { name: /Buscar por título/i })
   await search.waitFor({ state: 'visible', timeout: 15000 })
   await search.fill(title)
   await ovaCard(page, title).waitFor({ state: 'visible', timeout: 15000 })
