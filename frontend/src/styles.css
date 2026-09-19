@@ -3,12 +3,9 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css";
 
-@import "@spartan-ng/brain/hlm-tailwind-preset.css";
-@import "@angular/cdk/overlay-prebuilt.css";
-@import "driver.js/dist/driver.css";
-/* You can add global styles to this file, and also import other style files */
-
-@import "@phosphor-icons/web/regular";
+@import "tw-animate-css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/fraunces";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -65,11 +62,6 @@ body {
   min-height: 100vh;
   /* Colors come from the token-driven @layer base rule (bg-background / text-foreground). */
   -webkit-font-smoothing: antialiased;
-}
-
-gn-root {
-  display: block;
-  min-height: 100vh;
 }
 
 @theme inline {
@@ -185,8 +177,7 @@ gn-root {
     font-weight: 600;
     line-height: 1.08;
   }
-  gn-root {
-    display: block;
+  #root {
     height: 100%;
   }
 }
@@ -221,6 +212,15 @@ gn-root {
   }
 }
 
+@keyframes nav-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
 @keyframes fadeIn {
   0% {
     opacity: 0;
@@ -235,13 +235,9 @@ gn-root {
   *,
   ::before,
   ::after {
-    /* biome-ignore lint/complexity/noImportantStyles: el reset a11y debe vencer la especificidad de las utilidades de Tailwind */
     animation-duration: 0.01ms !important;
-    /* biome-ignore lint/complexity/noImportantStyles: idem */
     animation-iteration-count: 1 !important;
-    /* biome-ignore lint/complexity/noImportantStyles: idem */
     transition-duration: 0.01ms !important;
-    /* biome-ignore lint/complexity/noImportantStyles: idem */
     scroll-behavior: auto !important;
   }
 }

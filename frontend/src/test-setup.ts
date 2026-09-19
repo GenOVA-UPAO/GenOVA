@@ -61,3 +61,12 @@ for (const name of ["localStorage", "sessionStorage"] as const) {
     define(window, name, instance);
   }
 }
+
+import "@testing-library/jest-dom/vitest";
+
+import { cleanup } from "@testing-library/react";
+import { afterEach } from "vitest";
+
+afterEach(() => {
+  cleanup();
+});

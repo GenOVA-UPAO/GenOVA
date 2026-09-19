@@ -39,3 +39,11 @@ export const PROVIDER_META: Record<
     compat: false,
   },
 };
+
+export type ProviderMeta = (typeof PROVIDER_META)[string];
+
+/** Metadatos del proveedor, con un genérico para proveedores que el front aún no conoce. */
+export function providerMeta(provider: string): ProviderMeta {
+  if (Object.hasOwn(PROVIDER_META, provider)) return PROVIDER_META[provider];
+  return { label: provider, placeholder: "...", desc: "Proveedor genérico", compat: false };
+}

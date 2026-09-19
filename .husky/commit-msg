@@ -1,1 +1,7 @@
 pnpm exec commitlint --edit "$1"
+
+# Regla heredada de GestVet: los commits no llevan lineas Co-authored-by.
+if grep -Eiq '^[[:space:]]*co-authored-by:' "$1"; then
+  echo "Commit rechazado: GenOVA no permite lineas Co-authored-by." >&2
+  exit 1
+fi

@@ -11,7 +11,7 @@ const toFrontendRel = (files) =>
   files.map((f) => JSON.stringify(path.relative("frontend", f))).join(" ");
 
 export default {
-  "frontend/**/*.{ts,html}": (files) => [
+  "frontend/**/*.{ts,tsx}": (files) => [
     `pnpm --filter frontend exec eslint --fix --no-warn-ignored ${toFrontendRel(files)}`,
   ],
   "frontend/**/*.{css,json,md,yml,yaml}": (files) => [
