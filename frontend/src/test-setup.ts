@@ -70,3 +70,19 @@ import { afterEach } from "vitest";
 afterEach(() => {
   cleanup();
 });
+
+// jsdom has no ResizeObserver; Radix primitives (checkbox, select, tooltip) measure with it.
+class ResizeObserverStub {
+  observe(): void {
+    // no-op in tests
+  }
+  unobserve(): void {
+    // no-op in tests
+  }
+  disconnect(): void {
+    // no-op in tests
+  }
+}
+if (!("ResizeObserver" in globalThis)) {
+  Object.defineProperty(globalThis, "ResizeObserver", { value: ResizeObserverStub, writable: true });
+}
