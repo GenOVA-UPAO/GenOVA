@@ -50,6 +50,9 @@
               class="h-8 flex-1 min-w-0 text-xs rounded-md border border-border/50 bg-background/70 px-2"
             >
               <option value="">Elige un modelo</option>
+              @if (currentMissingFromCatalog(tipo)) {
+                <option [value]="currentValue(tipo)">{{ currentModelLabel(tipo) }} (actual)</option>
+              }
               @for (provider of catalogProviders(); track provider) {
                 <optgroup
                   [label]="
@@ -80,6 +83,22 @@
             </div>
           </div>
         </div>
+      </div>
+    }
+
+    @if (hasNoCatalog() && !readOnly()) {
+      <div
+        class="rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground"
+      >
+        No se pudo cargar el catálogo de modelos. Se usan los modelos por defecto del sistema.
+        <button
+          type="button"
+          (click)="store.retryRefresh()"
+          [disabled]="store.refreshingCatalog()"
+          class="font-semibold text-primary hover:underline disabled:opacity-50"
+        >
+          {{ store.refreshingCatalog() ? "Actualizando…" : "Reintentar" }}
+        </button>
       </div>
     }
 

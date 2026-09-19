@@ -45,6 +45,19 @@ def build_filtered_catalog(
     return filtered_catalog
 
 
+def apply_catalog_floor(
+    filtered_catalog: dict[str, list[dict]], floor: dict[str, list[dict]]
+) -> dict[str, list[dict]]:
+    """Step 3: floor — system defaults stay selectable even if a failed provider
+    refresh marked them inactive (otherwise the dropdown comes up empty)."""
+    for provider, entries in floor.items():
+        seen = {m["model_id"] for m in filtered_catalog.get(provider, [])}
+        filtered_catalog.setdefault(provider, []).extend(
+            e for e in entries if e["model_id"] not in seen
+        )
+    return filtered_catalog
+
+
 def filter_full_catalog(full: list[dict], search: str, category: str, model_type: str) -> list:
     if search:
         full = [

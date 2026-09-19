@@ -24,6 +24,7 @@ from llm.catalog.model_catalog import (
     DEFAULTS,
     TIMEOUT_MAX,
     TIMEOUT_MIN,
+    default_catalog_floor,
     merge_with_defaults,
     sanitize_settings,
 )
@@ -33,6 +34,7 @@ from users.application.dto import SaveLlmSettingsInput
 from users.container import UsersUseCases, build_users
 from users.domain.errors import UserError
 from users.domain.llm_settings import (
+    apply_catalog_floor,
     build_filtered_catalog,
     enabled_keys,
     filter_full_catalog,
@@ -76,8 +78,9 @@ def get_llm_settings(
     ek = _own_model_keys(current_user, has_key=has_key)
     default_keys = {(d["provider"], d["model_id"]) for d in DEFAULTS.values()}
 
-    filtered_catalog = build_filtered_catalog(
-        all_entries, get_full_catalog_entries(), ek, default_keys
+    filtered_catalog = apply_catalog_floor(
+        build_filtered_catalog(all_entries, get_full_catalog_entries(), ek, default_keys),
+        default_catalog_floor(),
     )
 
     full = get_full_catalog_entries()

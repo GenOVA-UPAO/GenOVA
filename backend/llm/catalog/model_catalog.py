@@ -52,6 +52,28 @@ def is_default_model(provider: str, model_id: str) -> bool:
     return (provider, model_id) in _DEFAULT_KEYS
 
 
+def default_catalog_floor() -> dict[str, list[dict]]:
+    """{provider: [entry]} for every system-default model.
+
+    The settings dropdown builds its options from the refreshed catalog. When a
+    provider refresh fails (missing API key, transient outage) its models are
+    marked inactive and the dropdown can come up empty — the user then sees
+    "Elige un modelo" with nothing to pick. These entries are the floor: the
+    system defaults are always valid to select (generation falls back to them
+    anyway), so they must always be offered.
+    """
+    by_key = {(e["provider"], e["model_id"]): e for e in CATALOG_ENTRIES}
+    floor: dict[str, list[dict]] = {}
+    for dflt in DEFAULTS.values():
+        base = by_key.get((dflt["provider"], dflt["model_id"])) or {
+            "provider": dflt["provider"],
+            "model_id": dflt["model_id"],
+            "label": dflt["model_id"],
+        }
+        floor.setdefault(dflt["provider"], []).append({**base, "active": True})
+    return floor
+
+
 # Per-call timeout bounds (seconds).
 TIMEOUT_MIN = 30.0
 TIMEOUT_MAX = 300.0
