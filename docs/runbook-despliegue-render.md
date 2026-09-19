@@ -123,6 +123,35 @@ El frontend Angular resuelve la URL del backend en build desde
    (borra cualquier valor viejo `*.up.railway.app`)
 3. **Deployments → … → Redeploy** el último de Production (sin cache).
 
+> ⚠️ **Vercel bloqueado por IP en algunas redes (Perú):** desde 2026 Vercel
+> sirve `*.vercel.app` desde un rango nuevo (`64.29.17.0/24`, `216.198.79.0/24`)
+> que varios ISP fijos peruanos y firewalls corporativos no rutean → la página da
+> `ERR_CONNECTION_TIMED_OUT`. Alternativa: **Cloudflare Pages** (ver Paso 2-bis).
+
+### Paso 2-bis — Alternativa: frontend en Cloudflare Pages
+
+Cloudflare Pages, con integración de Git (como Vercel):
+
+| Ajuste | Valor |
+|---|---|
+| Framework preset | `None` |
+| Build command | `pnpm install --frozen-lockfile=false && pnpm --filter frontend build` |
+| Build output directory | `frontend/dist/frontend-ng/browser` |
+| Root directory | `/` (raíz — es un workspace pnpm) |
+| **Deploy command** | *(vacío — Cloudflare despliega el output solo; NO poner `wrangler deploy`)* |
+
+Variables de entorno (Production):
+```
+GENOVA_API_BASE_PROD    = https://genova-backend-lbdr.onrender.com
+GENOVA_API_BASE_DEVELOP = https://genova-backend-lbdr.onrender.com
+ENABLE_EXPERIMENTAL_COREPACK = 1
+NODE_VERSION = 22
+```
+
+- SPA routing: lo cubre `frontend/public/_redirects` (`/* /index.html 200`), que
+  Angular copia a la raíz del build.
+- Añade el dominio de Pages a `CORS_ORIGINS` en Render (Paso 3).
+
 ---
 
 ## Paso 3 — Cuadrar CORS

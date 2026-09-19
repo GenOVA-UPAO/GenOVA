@@ -1,0 +1,3 @@
+# SPA fallback para Cloudflare Pages (deep links / recarga en /dashboard, etc.)
+# Vercel ignora este archivo (usa vercel.json). Angular copia public/ a la raiz del build.
+/*    /index.html    200
