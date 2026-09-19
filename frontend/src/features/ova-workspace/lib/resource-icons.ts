@@ -106,3 +106,13 @@ export const PHASE_ICON_BY_KEY: Record<string, string> = {
 export function phaseIconClass(phaseKey: string): string {
   return `ph ${PHASE_ICON_BY_KEY[phaseKey] ?? "ph-circle"}`;
 }
+
+/** Slug para <Icon name> a partir de la clase de resourceIconClass ("ph ph-x" → "ph-x"). */
+export function resourceIconName(tipo: string | undefined | null): string {
+  return resourceIconClass(tipo).slice(3);
+}
+
+/** Slug para <Icon name> de la fase ("ph-target" → "target"). */
+export function phaseIconName(phaseKey: string): string {
+  return (PHASE_ICON_BY_KEY[phaseKey] ?? "ph-circle").replace(/^ph-/, "");
+}

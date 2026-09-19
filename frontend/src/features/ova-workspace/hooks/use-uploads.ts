@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { fetchTemporaryFiles, removeTemporaryFile, uploadTemporaryFiles } from "../api/uploads.api";
+import { validateFileAdd } from "../lib/upload-chip-view-model";
 import type { UploadItem } from "../lib/upload-types";
 
 const uploadsKey = ["ova-temp-uploads"] as const;
@@ -14,6 +15,7 @@ function toUploadItem(item: { upload_id: string; filename: string; content_type:
 export function useOvaUploads() {
   const queryClient = useQueryClient();
   const [activeUploads, setActiveUploads] = useState(0);
+  const [uploadError, setUploadError] = useState('');
   const query = useQuery({ queryKey: uploadsKey, queryFn: fetchTemporaryFiles, select: (data) => (data.items ?? []).map(toUploadItem) });
   const upload = useMutation({
     mutationFn: uploadTemporaryFiles,
@@ -27,13 +29,19 @@ export function useOvaUploads() {
   const addFiles = async (files: FileList | File[]) => {
     const candidates = Array.from(files);
     const current = query.data?.length ?? 0;
-    const selected = candidates.slice(0, Math.max(0, MAX_UPLOAD_FILES - current));
-    setActiveUploads(selected.length);
-    for (const file of selected) {
-      await upload.mutateAsync([file]);
-      setActiveUploads((count) => count - 1);
+    const limitError = validateFileAdd(current + activeUploads, candidates.length);
+    setUploadError(limitError ?? '');
+    if (limitError) return;
+    setActiveUploads(candidates.length);
+    try {
+      const result = await upload.mutateAsync(candidates);
+      setUploadError(result.errors?.map((error) => error.message).join(' ') ?? '');
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Error al subir archivo.');
+    } finally {
+      setActiveUploads(0);
     }
   };
   const removeUpload = (clientId: string) => { remove.mutate(clientId); };
-  return { ...query, activeUploadsCount: activeUploads, addFiles, maxUploadFiles: MAX_UPLOAD_FILES, removeUpload, uploadError: upload.error?.message ?? "", uploading: activeUploads > 0 };
+  return { ...query, activeUploadsCount: activeUploads, addFiles, maxUploadFiles: MAX_UPLOAD_FILES, removeUpload, uploadError, uploading: activeUploads > 0 };
 }

@@ -1,0 +1,23 @@
+.gn-tour.driver-popover {
+  font-family: var(--font-sans);
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+.gn-tour .driver-popover-title {
+  font-family: var(--font-display);
+}
+.gn-tour .driver-popover-description,
+.gn-tour .driver-popover-footer {
+  font-family: var(--font-sans);
+}
+.gn-tour .driver-popover-next-btn {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  text-shadow: none;
+}
+.gn-tour .driver-popover-prev-btn {
+  background: var(--muted);
+  color: var(--foreground);
+  text-shadow: none;
+}

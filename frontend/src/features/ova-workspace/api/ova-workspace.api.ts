@@ -1,3 +1,4 @@
+import { triggerDownloadFromResponse } from "@/core/lib/download";
 import { apiFetch, apiJson, HttpError } from "@/core/lib/http";
 
 import type { RegenProgressDto } from "../lib/regen-poll";
@@ -29,4 +30,10 @@ export async function downloadOvaScorm(ovaId: string): Promise<Blob> {
     throw new HttpError("Error al exportar SCORM", { status: response.status });
   }
   return response.blob();
+}
+
+export async function exportOvaScorm(ovaId: string): Promise<void> {
+  const response = await apiFetch(`/api/ovas/${ovaId}/export-scorm`);
+  if (!response.ok) throw new HttpError('Error al exportar SCORM', { status: response.status });
+  await triggerDownloadFromResponse(response, `ova-${ovaId}.zip`);
 }

@@ -1,8 +1,16 @@
+import { lazy } from "react";
 import { Outlet, useMatches } from "react-router";
+
+import { LlmSettingsModalSlotProvider } from "@/core/lib/llm-settings-modal-slot";
 
 import type { RouteHandle } from "../router";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
+
+const LlmSettingsModal = lazy(async () => {
+  const mod = await import("@/features/llm-settings/components/llm-settings-modal");
+  return { default: mod.LlmSettingsModal };
+});
 
 /** id del <main> — destino del skip link. */
 export const MAIN_CONTENT_ID = "contenido-principal";
@@ -14,6 +22,7 @@ function useFullBleed(): boolean {
 export function AppLayout() {
   const fullBleed = useFullBleed();
   return (
+    <LlmSettingsModalSlotProvider Modal={LlmSettingsModal}>
     <div className="flex h-dvh flex-col bg-background text-foreground">
       <a
         href={`#${MAIN_CONTENT_ID}`}
@@ -47,5 +56,6 @@ export function AppLayout() {
         </main>
       </div>
     </div>
+    </LlmSettingsModalSlotProvider>
   );
 }

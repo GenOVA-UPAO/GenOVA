@@ -1,3 +1,14 @@
+import { useParams, useSearchParams } from "react-router";
+
+import { CreationProgress } from "../components/creation/creation-progress";
+import { OvaCreationView } from "../components/creation/ova-creation-view";
+import { OvaEditView } from "../components/editor/ova-edit-view";
+
 export function OvaWorkspacePage() {
-  return <h1 className="font-display text-3xl font-semibold sm:text-4xl">OvaWorkspacePage (en migración)</h1>;
+  const { id } = useParams();
+  const [params] = useSearchParams();
+  const jobId = params.get("jobId");
+  if (id) return <OvaEditView key={id} ovaId={id} />;
+  if (jobId) return <CreationProgress key={jobId} jobId={jobId} />;
+  return <OvaCreationView />;
 }

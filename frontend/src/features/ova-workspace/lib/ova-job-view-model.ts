@@ -52,6 +52,8 @@ export interface JobLike {
 }
 
 export interface JobSnapshot extends JobLike {
+  job_id?: string;
+  ova_id?: string;
   resources?: BackendResource[];
 }
 

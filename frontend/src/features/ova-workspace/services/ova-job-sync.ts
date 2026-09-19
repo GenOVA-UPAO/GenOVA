@@ -60,6 +60,7 @@ export class OvaJobSyncRunner {
           this.deps.onSnapshot(snapshot);
           if (jobOutcome(snapshot, this.deps.getViewModel()).isTerminal) {
             this.stop();
+            this.deps.onTerminal();
           }
         } catch {
           // malformed frame, polling will fix
@@ -102,6 +103,7 @@ export class OvaJobSyncRunner {
         this.deps.onSnapshot(snapshot);
         if (jobOutcome(snapshot, this.deps.getViewModel()).isTerminal) {
           this.stop();
+          this.deps.onTerminal();
         } else {
           const delay = this.deps.isStreaming() ? STREAM_HEARTBEAT_MS : POLL_MS;
           this.pollTimer = setTimeout(() => {

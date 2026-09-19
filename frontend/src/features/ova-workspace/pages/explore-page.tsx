@@ -1,3 +1,9 @@
+import { PhasePage } from "../components/phase/phase-page";
 export function ExplorePage() {
-  return <h1 className="font-display text-3xl font-semibold sm:text-4xl">ExplorePage (en migración)</h1>;
+  return (
+    <PhasePage
+      phase="explore"
+      description="Interactúa con simuladores y laboratorios para construir tus propias hipótesis antes de ver la teoría formal."
+    />
+  );
 }

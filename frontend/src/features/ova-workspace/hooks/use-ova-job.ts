@@ -16,6 +16,7 @@ function invalidateOva(queryClient: ReturnType<typeof useQueryClient>): Promise<
 export function useOvaJob(jobId: string | undefined) {
   const queryClient = useQueryClient();
   const [streaming, setStreaming] = useState(false);
+  const [revision, setRevision] = useState(0);
   const snapshotRef = useRef<JobSnapshot | undefined>(undefined);
   const query = useQuery({ queryKey: jobId ? ovaJobKey(jobId) : ["ova-job", "none"], queryFn: () => fetchOvaJob(jobId ?? ""), enabled: Boolean(jobId), refetchInterval: false });
   const streamingRef = useRef(false);
@@ -37,10 +38,10 @@ export function useOvaJob(jobId: string | undefined) {
     });
     runner.start(jobId);
     return () => { runner.stop(); };
-  }, [jobId, queryClient]);
+  }, [jobId, queryClient, revision]);
 
   const start = useMutation({ mutationFn: startOvaJob, onSuccess: () => { void invalidateOva(queryClient); } });
-  const resume = useMutation({ mutationFn: (ids?: string[]) => resumeOvaJob(jobId ?? "", ids), onSuccess: () => queryClient.invalidateQueries({ queryKey: jobId ? ovaJobKey(jobId) : ["ova-job"] }) });
+  const resume = useMutation({ mutationFn: (ids?: string[]) => resumeOvaJob(jobId ?? "", ids), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: jobId ? ovaJobKey(jobId) : ["ova-job"] }); setRevision((value) => value + 1); } });
   const cancel = useMutation({ mutationFn: () => cancelOvaJob(jobId ?? ""), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: jobId ? ovaJobKey(jobId) : ["ova-job"] }); await invalidateOva(queryClient); } });
   const resources = toResourceViewModel(query.data?.resources);
 
