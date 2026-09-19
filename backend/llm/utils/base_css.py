@@ -18,15 +18,16 @@ OVA_BASE_CSS = (
     + """
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scrollbar-color:var(--primary) var(--surface-tint);scrollbar-width:thin}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+body{font-family:var(--font-body);
 background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;
 font-size:clamp(.95rem,2vw,1.05rem)}
 ::selection{background:var(--accent-tint);color:var(--text)}
 h1,h2,h3{margin-block:var(--space-5) var(--space-2);text-wrap:balance}
 h1:first-child,h2:first-child,h3:first-child{margin-block-start:0}
-h1{font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;color:var(--primary);font-weight:700}
-h2{font-size:clamp(1.3rem,3vw,1.6rem);line-height:1.2;color:var(--primary);font-weight:700}
-h3{font-size:clamp(1.1rem,2.5vw,1.3rem);line-height:1.25;font-weight:600}
+h1{font-family:var(--font-display);font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;color:var(--primary);font-weight:700;letter-spacing:-.015em}
+h2{font-family:var(--font-display);font-size:clamp(1.3rem,3vw,1.6rem);line-height:1.2;color:var(--primary);font-weight:700;letter-spacing:-.01em}
+h3{font-family:var(--font-display);font-size:clamp(1.1rem,2.5vw,1.3rem);line-height:1.25;font-weight:600}
+code,kbd,samp,pre{font-family:var(--font-mono);font-size:.92em}
 p,li{max-inline-size:72ch;text-wrap:pretty}
 img,svg{max-width:100%;height:auto}
 button{font:inherit;cursor:pointer;min-height:44px;padding:10px 18px;border-radius:10px;
@@ -37,7 +38,12 @@ a{text-underline-offset:.16em;text-decoration-thickness:.08em}
 input,textarea{caret-color:var(--accent)}
 table,th,td,.ova-number,.ova-counter,.ova-timer,.ova-score,.ova-progress{font-variant-numeric:tabular-nums}
 @media (pointer:fine){::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:var(--surface-tint)}::-webkit-scrollbar-thumb{background:var(--primary);border:3px solid var(--surface-tint);border-radius:999px}}
-:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+/* Solo lo que el usuario puede enfocar con teclado: un contenedor con
+tabindex="-1" enfocado por JS (p. ej. la pregunta activa de un quiz) mostraba
+un recuadro azul que parecía un error de maquetación. */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,
+textarea:focus-visible,summary:focus-visible,[tabindex]:not([tabindex="-1"]):focus-visible
+{outline:3px solid var(--primary);outline-offset:2px}
 .ova-container{max-width:880px;margin-inline:auto;padding:var(--space-4)}
 .ova-card{background:var(--surface);border:1px solid var(--border);
 border-radius:var(--radius);box-shadow:var(--shadow);padding:var(--space-4)}

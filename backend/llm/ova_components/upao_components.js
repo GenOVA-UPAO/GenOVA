@@ -25,8 +25,10 @@
     radiusSm:  '8px',
     shadow:    '0 4px 20px rgba(10,61,145,.09)',
     shadowMd:  '0 8px 32px rgba(10,61,145,.14)',
-    fontDisp:  "Georgia, Cambria, 'Times New Roman', serif",
-    fontBody:  "'Trebuchet MS', 'Lucida Grande', system-ui, sans-serif",
+    // Misma familia que la hoja base (var(--font-*) con respaldo si el recurso
+    // se abre suelto, sin la hoja inyectada).
+    fontDisp:  "var(--font-display,system-ui),system-ui,sans-serif",
+    fontBody:  "var(--font-body,system-ui),system-ui,sans-serif",
     ease:      'cubic-bezier(.4,0,.2,1)',
   };
 
@@ -367,19 +369,19 @@
       const max   = this.getAttribute('max')   || '100';
       const label = this.getAttribute('label') || 'Puntuación';
       this.shadowRoot.innerHTML = this.css(`
-        .wrap{display:inline-flex;align-items:center;gap:12px;
+        .wrap{display:inline-flex;align-items:center;gap:14px;
           padding:10px 20px;border-radius:${T.radiusSm};background:${T.primary};color:#fff}
         .lbl{font-size:.72rem;font-weight:700;letter-spacing:.1em;
-          text-transform:uppercase;opacity:.75}
+          text-transform:uppercase;opacity:.8;white-space:nowrap}
+        .fig{display:flex;align-items:baseline;gap:2px}
         .val{font-family:${T.fontDisp};font-size:1.6rem;font-weight:700;
-          color:${T.accent};min-width:4ch;text-align:right;
-          animation:upao-count-up .25s ${T.ease}}
-        .max{font-size:.75rem;opacity:.6;margin-left:2px}
+          color:#fff;text-align:right;animation:upao-count-up .25s ${T.ease}}
+        .max{font-size:.85rem;font-weight:600;opacity:.75}
       `) + `
       <div class="wrap" role="status" aria-live="polite" aria-label="${label}: ${this._val} de ${max}">
-        <span>🏆</span>
-        <div><div class="lbl">${label}</div></div>
-        <div class="val" id="v">${this._val}</div><span class="max">/${max}</span>
+        <span aria-hidden="true">🏆</span>
+        <div class="lbl">${label}</div>
+        <div class="fig"><span class="val" id="v">${this._val}</span><span class="max">/ ${max}</span></div>
       </div>`;
       this.set = (n) => {
         this._val = n;

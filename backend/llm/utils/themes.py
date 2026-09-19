@@ -42,7 +42,13 @@ def _upao_root_vars() -> str:
         f"--text:{p['text']};--text-muted:{p['text_muted']};--border:{p['border']};"
         f"--success:{p['success']};--danger:{p['danger']};"
         f"--radius:{p['radius']};--shadow:{p['shadow']};"
-        "--space-1:8px;--space-2:12px;--space-3:16px;--space-4:24px;--space-5:32px;--space-6:48px}"
+        "--space-1:8px;--space-2:12px;--space-3:16px;--space-4:24px;--space-5:32px;--space-6:48px;"
+        # Una sola familia para el recurso y sus componentes: antes la hoja base
+        # usaba system-ui y upao_components.js Trebuchet/Georgia, así que un mismo
+        # recurso mezclaba tres tipografías.
+        '--font-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;'
+        '--font-display:var(--font-body);'
+        '--font-mono:ui-monospace,SFMono-Regular,"Cascadia Mono","Segoe UI Mono",Menlo,monospace}'
     )
 
 
@@ -234,6 +240,29 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
    - Usa marcadores 01/02/03 solo si el contenido es una secuencia real (pasos o línea de tiempo).
    - Bordes, divisores, numeración y etiquetas codifican información del contenido; nunca son decoración.
    - Agrupa por función pedagógica: prefiere pocas regiones fuertes a una rejilla uniforme de tarjetas intercambiables.
+
+6.b) PIEZA VISUAL PROPIA (OBLIGATORIA)
+   - Cada recurso incluye AL MENOS una pieza visual inline construida por ti —
+     esquema, diagrama, gráfico, mapa de relaciones, línea de tiempo o tabla
+     comparativa — que EXPLIQUE el concepto y que el alumno pueda leer sin el texto.
+   - Se hace con SVG inline (viewBox + preserveAspectRatio, sin dependencias) o
+     con la rejilla del recurso; nada de adornos ni de "imagen decorativa".
+   - Debe estar etiquetada (títulos de ejes, unidades, leyenda) y ser coherente con
+     los números del contenido: si el texto dice 12 V y 6 Ω, la figura dice lo mismo.
+   - Si el recurso es interactivo y sus valores cambian, la figura se actualiza con
+     ellos (mismo estado, sin duplicar la lógica).
+
+6.c) ANDAMIAJE PEDAGÓGICO (OBLIGATORIO)
+   - Abre con el objetivo de aprendizaje en una frase ("al terminar podrás …").
+   - Incluye al menos un EJEMPLO TRABAJADO paso a paso con los cálculos o el
+     razonamiento a la vista antes de pedirle al alumno que lo haga.
+   - La práctica lleva retroalimentación que explica POR QUÉ la respuesta es
+     correcta o incorrecta y qué revisar; nunca solo "correcto/incorrecto".
+   - Al menos una opción incorrecta de cada pregunta refleja un error conceptual
+     típico del tema, no un distractor al azar.
+   - Cierra consolidando: síntesis, regla o transferencia a otro caso.
+   - Nivel: el del curso indicado en el tema (por defecto universitario); usa la
+     notación, unidades y vocabulario propios de esa asignatura.
 
 7) ACCESIBILIDAD (WCAG 2.2 AA — OBLIGATORIO)
    - Contraste texto/fondo >= 4.5:1 (cuerpo) y >= 3:1 (títulos grandes y bordes de UI).
