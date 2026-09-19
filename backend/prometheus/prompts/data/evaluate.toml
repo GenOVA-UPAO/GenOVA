@@ -1,7 +1,7 @@
 [texto.1]
 defaults = { num_questions = 6 }
 template = '''
-[ROL] Diseniador de quizzes educativos de ML.
+[ROL] Diseniador de quizzes educativos del tema universitario.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Quiz de ${num_questions} preguntas sobre "${concept}": enunciado <=40 palabras, 4 opciones (A/B/C/D), respuesta_correcta, feedback_correcto e incorrecto <=20 palabras. Dificultad progresiva.
@@ -11,7 +11,7 @@ template = '''
 [texto.2]
 defaults = { num_criteria = 5 }
 template = '''
-[ROL] Diseniador de rubricas de autoevaluacion para ML.
+[ROL] Diseniador de rubricas de autoevaluacion del tema.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Rubrica con ${num_criteria} criterios sobre "${concept}". Cada uno: descripcion <=25 palabras, 3 niveles (inicial/en desarrollo/logrado) con descriptor <=30 palabras. Puntuacion 1-3. Reflexion final segun rango de puntaje.
@@ -21,7 +21,7 @@ template = '''
 [texto.4]
 defaults = { num_questions = 8 }
 template = '''
-[ROL] Examinador de conceptos de Machine Learning.
+[ROL] Examinador de conceptos universitarios.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Examen de ${num_questions} preguntas opcion multiple sobre "${concept}": enunciado <=40 palabras, 4 opciones, justificacion <=30 palabras. Distribucion balanceada entre conceptual, aplicacion, analisis y relacion.
@@ -41,7 +41,7 @@ template = '''
 [texto.7]
 defaults = { num_terms = 8 }
 template = '''
-[ROL] Creador de crucigramas educativos de ML.
+[ROL] Creador de crucigramas educativos del tema universitario.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Crucigrama de ${num_terms} terminos de "${concept}": numero, orientacion, longitud, pista <=25 palabras, respuesta. Cuadricula interconectada (>=4 cruces). Pistas ingeniosas pero justas.
@@ -51,7 +51,7 @@ template = '''
 [texto.8]
 defaults = { num_questions = 3 }
 template = '''
-[ROL] Evaluador de comprension profunda de ML.
+[ROL] Evaluador de comprension profunda del tema universitario.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] ${num_questions} preguntas de desarrollo sobre "${concept}": enunciado <=50 palabras (abierto), 3-4 criterios de evaluacion observables, respuesta_modelo <=80 palabras.

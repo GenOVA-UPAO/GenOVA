@@ -11,7 +11,7 @@ template = '''
 [texto.2]
 defaults = { num_steps = 5 }
 template = '''
-[ROL] Instructor de ejercicios practicos de ML.
+[ROL] Instructor de ejercicios practicos del tema universitario.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Ejercicio guiado de ${num_steps} pasos para aplicar "${concept}". Cada paso: instruccion <=35 palabras, pista opcional, resultado_esperado, validacion de logro.
@@ -21,7 +21,7 @@ template = '''
 [texto.3]
 defaults = { num_deliverables = 3 }
 template = '''
-[ROL] Diseniador de mini-proyectos de ML aplicado.
+[ROL] Diseniador de mini-proyectos aplicado al tema.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Mini-proyecto: objetivo 50 palabras, ${num_deliverables} entregables evaluables, dataset_sugerido 80 palabras (al menos 8 variables, 50 registros), rubrica con 4 criterios y 3 niveles cada uno (basico/competente/avanzado).
@@ -41,7 +41,7 @@ template = '''
 [texto.8]
 defaults = { num_problems = 4 }
 template = '''
-[ROL] Facilitador de resolucion de problemas de ML.
+[ROL] Facilitador de resolucion de problemas del tema universitario.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Mapa de ${num_problems} problemas donde "${concept}" es la solucion. Cada uno: contexto 40 palabras (sector+situacion), 3 sintomas observables, diagnostico (por que "${concept}"), solucion_recomendada 50 palabras.
@@ -51,7 +51,7 @@ template = '''
 [texto.10]
 defaults = { num_criteria = 4 }
 template = '''
-[ROL] Diseniador de retos de arquitectura de soluciones ML.
+[ROL] Diseniador de retos de arquitectura de soluciones del tema.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Reto de disenio: enunciado 80 palabras (cliente realista, problema, restricciones), ${num_criteria} criterios de disenio, guia_evaluacion con 3 niveles, solucion_referencia 100 palabras.

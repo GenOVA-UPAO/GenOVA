@@ -40,6 +40,8 @@ dependencies = [
     "langgraph-checkpoint-postgres==3.1.2",
     "langsmith==0.8.18",
     "pyotp==2.10.0",
+    # Parser JS (motor QuickJS) para detectar scripts rotos o truncados en los OVAs generados.
+    "quickjs==1.19.4",
 ]
 
 [project.optional-dependencies]

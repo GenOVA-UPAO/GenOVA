@@ -15,6 +15,8 @@ import re
 
 import structlog
 
+from prometheus.engine.js_check import script_syntax_errors
+
 logger = structlog.get_logger(__name__)
 
 _PLACEHOLDERS = (
@@ -64,6 +66,14 @@ def structural_defects(html: str) -> list[str]:
         defects.append(
             f'contiene texto placeholder ("{hit}") — reemplázalo por contenido '
             "pedagógico real y específico del concepto"
+        )
+    js_errors = script_syntax_errors(html)
+    if js_errors:
+        defects.append(
+            "el JavaScript tiene errores de sintaxis y el recurso no funciona ("
+            + "; ".join(js_errors)
+            + ") — reescribe el script completo y bien cerrado; si es muy largo, "
+            "simplifícalo en vez de cortarlo"
         )
     if len(html) < _MIN_HTML_CHARS or len(_visible_text(html).split()) * 6 < _MIN_VISIBLE_CHARS:
         defects.append(

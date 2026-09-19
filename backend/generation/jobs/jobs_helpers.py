@@ -21,11 +21,29 @@ _DEFAULT_PLAN = (("engage", 1), ("explore", 2), ("explain", 3), ("elaborate", 4)
 _PHASE_ORDER = {"engage": 1, "explore": 2, "explain": 3, "elaborate": 4, "evaluate": 5}
 
 
+def _resource_id(phase: str, resource_type: str) -> str:
+    """Normaliza el tipo de recurso a su id numérico ("1".."10")."""
+    from generation.jobs.jobs_materialize import resolve_resource_display
+
+    raw = resource_type.strip()
+    if raw.isdigit():
+        return raw
+    rid, _title, _emoji = resolve_resource_display(phase, raw)
+    return str(rid) if rid is not None else raw
+
+
 class ResourceRequest(BaseModel):
     """One chosen resource: which 5E phase and which resource type (id 1-10 or name)."""
 
     phase_type: str = Field(min_length=1, max_length=30)
     resource_type: str = Field(min_length=1, max_length=40)
+
+    @model_validator(mode="after")
+    def normalize_resource_id(self) -> "ResourceRequest":
+        """The API accepts the id or the name ("Cómic Interactivo"); everything
+        downstream (plan rows, params snapshot, engine) works with the id."""
+        self.resource_type = _resource_id(self.phase_type.strip().lower(), self.resource_type)
+        return self
 
 
 class ResumeRequest(BaseModel):

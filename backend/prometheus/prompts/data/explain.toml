@@ -31,7 +31,7 @@ template = '''
 [texto.6]
 defaults = { num_terms = 8 }
 template = '''
-[ROL] Lexicografo visual de conceptos de ML.
+[ROL] Lexicografo visual de conceptos del tema universitario.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Glosario de ${num_terms} terminos de "${concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras del mundo real.
@@ -51,7 +51,7 @@ template = '''
 [texto.9]
 defaults = { num_dimensions = 4 }
 template = '''
-[ROL] Analista comparativo de tecnologias de ML.
+[ROL] Analista comparativo de enfoques, métodos o tecnologías del tema.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Tabla comparativa de "${concept}" vs 3 conceptos relacionados. ${num_dimensions} dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.

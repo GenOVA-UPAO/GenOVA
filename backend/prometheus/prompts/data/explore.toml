@@ -21,7 +21,7 @@ template = '''
 [texto.4]
 defaults = { num_pauses = 3 }
 template = '''
-[ROL] Guionista pedagógico de visualización de ML.
+[ROL] Guionista pedagógico de visualización del tema universitario.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Guion de video de 120 s sobre "${concept}" con marcadores de tiempo cada 30 s y metáforas cotidianas, más ${num_pauses} preguntas de pausa activa distribuidas a lo largo del video que provoquen una predicción sin revelar la teoría.
@@ -61,7 +61,7 @@ template = '''
 [texto.9]
 defaults = { num_cards = 6 }
 template = '''
-[ROL] Facilitador de mapas mentales para el aprendizaje de ML.
+[ROL] Facilitador de mapas mentales para el aprendizaje del tema.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] ${num_cards} tarjetas que emparejan una pista_cotidiana con su nodo_tecnico real de "${concept}" (relación 1:1). Cada tarjeta: feedback_correcto (✓ y 1 línea de contexto), feedback_incorrecto (✗ y pista sin revelar). Una revelacion final de 90 palabras que integra los nodos en el marco conceptual de "${concept}".
