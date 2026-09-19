@@ -6,13 +6,13 @@ import { cn } from "@/core/lib/cn";
 
 // Panel lateral (drawer) sobre Radix Dialog: foco atrapado, Esc y clic fuera cierran.
 const sheetContentVariants = cva(
-  "fixed z-50 flex flex-col bg-background shadow-xl outline-none data-open:animate-in data-closed:animate-out",
+  "fixed z-50 flex flex-col bg-background shadow-xl outline-none data-[state=open]:animate-in data-[state=closed]:animate-out",
   {
     variants: {
       side: {
-        left: "inset-y-0 left-0 w-72 max-w-[85vw] data-open:slide-in-from-left data-closed:slide-out-to-left",
+        left: "inset-y-0 left-0 w-72 max-w-[85vw] data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left",
         right:
-          "inset-y-0 right-0 w-72 max-w-[85vw] data-open:slide-in-from-right data-closed:slide-out-to-right",
+          "inset-y-0 right-0 w-72 max-w-[85vw] data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right",
       },
     },
     defaultVariants: { side: "left" },
@@ -39,7 +39,7 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-40 bg-foreground/30 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-40 bg-foreground/30 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
         className,
       )}
       {...props}
