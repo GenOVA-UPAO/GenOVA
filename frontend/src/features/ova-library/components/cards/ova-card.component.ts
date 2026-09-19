@@ -8,8 +8,6 @@ import type { OvaListItem } from "@/features/ova-library/lib/types";
 
 import { OvaCardShellComponent } from "./ova-card-shell.component";
 
-export type { OvaJobInfo };
-
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "gn-ova-card",

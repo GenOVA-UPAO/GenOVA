@@ -3,6 +3,7 @@ import {
   type AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  computed,
   type ElementRef,
   inject,
   input,
@@ -14,7 +15,8 @@ import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { ModalDismissDirective } from "@/core/directives/modal-dismiss.directive";
 
-import { groupByProvider, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
+import { groupModels, sortModels } from "../lib/catalog-sort";
+import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 import { ConnectProviderModalComponent } from "./connect-provider-modal.component";
@@ -73,9 +75,20 @@ export class ManageModelsModalComponent implements AfterViewInit {
     this.observer.observe(el);
   }
 
-  grouped(): Record<string, CatalogModel[]> {
-    return groupByProvider(this.store.catalogFull());
-  }
+  /** Grupos a pintar: orden en cliente (catálogo ya completo si hay sort activo).
+   *
+   * `computed` y no un método: la plantilla llama a `grouped()` dos veces por
+   * ciclo de detección y aquí se ordenan y agrupan ~430 modelos.
+   */
+  readonly grouped = computed<{ key: string; label: string; models: CatalogModel[] }[]>(() => {
+    const ordenados = sortModels(this.store.catalogFull(), this.store.sortKey());
+    return groupModels(
+      ordenados,
+      this.store.groupBy(),
+      this.providerLabels,
+      this.store.sortKey() !== "default",
+    );
+  });
 
   onSearchChange(v: string): void {
     this.localSearch = v;
@@ -89,6 +102,13 @@ export class ManageModelsModalComponent implements AfterViewInit {
 
   async handleToggle(provider: string, modelId: string): Promise<void> {
     await this.store.toggleFavorite(provider, modelId);
+  }
+
+  clearFilters(): void {
+    this.localSearch = "";
+    this.store.handleSearch("");
+    this.store.handleCategory("all");
+    this.store.handleType("all");
   }
 
   dismissModal = (): void => {

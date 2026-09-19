@@ -2,6 +2,7 @@ import { computed, inject, Injectable, signal } from "@angular/core";
 
 import { toast } from "@/core/lib/toast";
 
+import type { GroupBy, SortKey } from "../lib/catalog-sort";
 import { CATEGORY_LABELS, TASK_LABELS, TYPE_LABELS } from "../lib/llm-settings-labels";
 import {
   addFallbackIn,
@@ -16,6 +17,8 @@ import type { CatalogModel, EnabledModel, LoadOpts } from "../lib/user-llm-setti
 import { UserLlmSettingsService } from "./user-llm-settings.service";
 
 const DEFAULT_TIMEOUT = 120;
+/** Máximo que acepta la API: mantiene orden y agrupación sobre todo el catálogo. */
+const CATALOG_PAGE_SIZE = 1000;
 
 // Estado en signals: la app es zoneless y los consumidores son OnPush — con
 // campos de clase mutados desde callbacks async, el modal quedaba en
@@ -50,6 +53,10 @@ export class UserLlmSettingsStore {
   readonly searchQuery = signal("");
   readonly categoryFilter = signal("all");
   readonly typeFilter = signal("all");
+  /** Orden del catálogo en cliente (ver loadAllSorted para el por qué). */
+  readonly sortKey = signal<SortKey>("default");
+  /** Criterio de agrupación visual del catálogo. */
+  readonly groupBy = signal<GroupBy>("provider");
 
   readonly taskLabels = TASK_LABELS;
   readonly categoryLabels = CATEGORY_LABELS;
@@ -74,7 +81,7 @@ export class UserLlmSettingsStore {
         category: c,
         type: t,
         page: reqPage,
-        page_size: 500,
+        page_size: CATALOG_PAGE_SIZE,
       });
       this.applyResponse(data, append);
     } catch (err) {
@@ -82,6 +89,24 @@ export class UserLlmSettingsStore {
     } finally {
       this.loading.set(false);
       this.loadingMore.set(false);
+    }
+    if (!append && this.sortKey() !== "default" && this.fullHasMore()) {
+      void this.loadAllPages();
+    }
+  }
+
+  /**
+   * Ordenar en CLIENTE exige tener el catálogo entero: el servidor pagina y
+   * ordenar una sola página daría un orden incorrecto en cuanto el catálogo
+   * supere una página. Tras un filtro del servidor (page 1), si hay más
+   * páginas y hay orden activo, se terminan de cargar de una vez. El guard
+   * evita recursión: el append entra por aquí con `append: true` y no re-dispara.
+   */
+  private async loadAllPages(): Promise<void> {
+    let guard = 0;
+    while (this.fullHasMore() && guard < 20) {
+      await this.load({ append: true, page: this.fullPage() + 1 });
+      guard++;
     }
   }
 
@@ -127,6 +152,22 @@ export class UserLlmSettingsStore {
   handleType(typeVal: string): void {
     this.typeFilter.set(typeVal);
     void this.load({ page: 1, type: typeVal });
+  }
+
+  /**
+   * Cambia el orden del catálogo. Como se ordena en CLIENTE (para no tocar el
+   * backend, que ya pagina), primero se asegura el catálogo completo si hay
+   * más de una página en el vuelo.
+   */
+  handleSort(key: SortKey): void {
+    this.sortKey.set(key);
+    if (key !== "default" && this.fullHasMore() && !this.loadingMore()) {
+      void this.loadAllPages();
+    }
+  }
+
+  handleGroup(group: GroupBy): void {
+    this.groupBy.set(group);
   }
 
   isDefaultModel(provider: string, modelId: string): boolean {

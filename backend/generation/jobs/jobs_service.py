@@ -13,9 +13,9 @@ import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from core.database import commit_or_500
 from core.text import smart_truncate
 from models import Ova, OvaJob, OvaJobResource
-from users.admin.helpers import commit_or_500
 
 logger = structlog.get_logger(__name__)
 
@@ -29,7 +29,9 @@ STALE_AFTER_SECONDS = 180
 # never even started stayed "queued" forever (GN-03).
 QUEUED_STALE_AFTER_SECONDS = 900
 _STALE_THRESHOLDS = {"running": STALE_AFTER_SECONDS, "queued": QUEUED_STALE_AFTER_SECONDS}
-_RESUMABLE_RESOURCE_STATUSES = ("pending", "error")
+# `degraded` = HTML conservado que no pasó el validador; reanudable sin
+# reutilizar `error` (fallo duro) ni `pending` (aún no intentado).
+_RESUMABLE_RESOURCE_STATUSES = ("pending", "error", "degraded")
 
 
 def _now() -> datetime:
@@ -141,7 +143,7 @@ def resource_ids_in_job(db: Session, job_id: uuid.UUID) -> set[uuid.UUID]:
 
 
 def resumable_resource_ids(db: Session, job_id: uuid.UUID) -> list[uuid.UUID]:
-    """IDs of resources eligible for resume — only pending/error, never done (R7)."""
+    """IDs of resources eligible for resume — pending/error/degraded, never done (R7)."""
     rows = (
         db.execute(
             select(OvaJobResource.id).where(
@@ -156,9 +158,10 @@ def resumable_resource_ids(db: Session, job_id: uuid.UUID) -> list[uuid.UUID]:
 
 
 def resumable_subset(db: Session, job_id: uuid.UUID, requested: list[uuid.UUID]) -> list[uuid.UUID]:
-    """Keep only the requested ids that are resumable (pending/error), dropping
-    `done` ones so a client subset never re-runs and overwrites good content
-    (R6/R7). Preserves the requested order. Ownership is validated by the caller.
+    """Keep only the requested ids that are resumable (pending/error/degraded),
+    dropping `done` ones so a client subset never re-runs and overwrites good
+    content (R6/R7). Preserves the requested order. Ownership is validated by
+    the caller.
     """
     eligible = set(resumable_resource_ids(db, job_id))
     return [rid for rid in requested if rid in eligible]
@@ -172,25 +175,52 @@ def mark_job_resuming(db: Session, job: OvaJob) -> None:
 
 
 def cancel_job(db: Session, job: OvaJob) -> None:
-    """Mark a queued/running job as canceled. The background thread checks status
-    in _finalize and skips persisting results if it finds 'canceled' (R1)."""
+    """Mark a queued/running job as canceled and release the Ova placeholder.
+
+    The background thread checks status in `_finalize` and skips persisting
+    results if it finds 'canceled' (R1). Without releasing the Ova here, the
+    row stayed at 'generando' forever because `_finalize` returns early and
+    `_sweep_if_stale` ignored terminal jobs.
+    """
     job.status = "canceled"
     job.finished_at = _now()
     commit_or_500(db, op="cancel_job")
+    from generation.jobs.jobs_progress import _release_ova_from_generating
+
+    try:
+        _release_ova_from_generating(db, job)
+    except Exception:
+        logger.exception("cancel_job failed to release OVA", job_id=job.id)
 
 
 def _sweep_if_stale(db: Session, job: OvaJob) -> None:
-    """Finalize a "running"/"queued" job whose progress went stale (R7, GN-03).
+    """Finalize a stale in-flight job, or release an Ova stuck on a terminal job.
 
-    Delegates to `_finish_job` — the same transition a normal completion uses —
-    instead of only flipping `OvaJob.status`, so the owning `Ova.status` also
-    leaves "generando" (materialized as "listo" if some resources finished, or
-    "error" otherwise). The old version just flipped the job row and left the
-    Ova stuck at "generando" forever, since only a real finish ever touched it.
+    Delegates in-flight stale jobs to `_finish_job` — the same transition a
+    normal completion uses — so the owning `Ova.status` also leaves "generando"
+    (materialized as "listo" if some resources finished, or "error" otherwise).
+    Jobs already terminal (`canceled`/`done`/`error`/`interrupted`) used to
+    return immediately (`threshold is None`) and left the Ova stuck; those are
+    reconciled via `repair_stuck_ova_if_needed` without changing job.status.
     Local import of `jobs_progress` avoids a circular import (it already reaches
     back into this module for `_now`). Best-effort: a failed sweep never breaks
     the read that triggered it.
     """
+    from generation.domain.lifecycle import JOB_TERMINAL
+    from generation.jobs.jobs_progress import (
+        _finish_job,
+        _has_done_resource,
+        repair_stuck_ova_if_needed,
+    )
+
+    if job.status in JOB_TERMINAL:
+        try:
+            repair_stuck_ova_if_needed(db, job)
+        except Exception:
+            db.rollback()
+            logger.exception("terminal job sweep failed to release OVA", job_id=job.id)
+        return
+
     threshold = _STALE_THRESHOLDS.get(job.status)
     if threshold is None:
         return
@@ -201,8 +231,6 @@ def _sweep_if_stale(db: Session, job: OvaJob) -> None:
         updated = updated.replace(tzinfo=UTC)
     if (_now() - updated).total_seconds() <= threshold:
         return
-
-    from generation.jobs.jobs_progress import _finish_job, _has_done_resource
 
     try:
         _finish_job(db, job, _has_done_resource(db, job.id))
@@ -221,6 +249,9 @@ def sweep_stale_jobs_for_ovas(db: Session, ova_ids: list[uuid.UUID]) -> None:
     (bounded by `limit`), so it stays a handful of jobs per call — no bulk
     UPDATE is needed since each job may need a different finalization (partial
     materialize vs. plain error) depending on its resources.
+
+    Includes terminal jobs: cancel/finish paths that skipped Ova materialization
+    otherwise leave the row at 'generando' forever.
     """
     if not ova_ids:
         return
@@ -228,7 +259,7 @@ def sweep_stale_jobs_for_ovas(db: Session, ova_ids: list[uuid.UUID]) -> None:
         jobs = (
             db.execute(
                 select(OvaJob)
-                .where(OvaJob.ova_id.in_(ova_ids), OvaJob.status.in_(("running", "queued")))
+                .where(OvaJob.ova_id.in_(ova_ids))
                 .order_by(OvaJob.created_at.desc())
             )
             .scalars()

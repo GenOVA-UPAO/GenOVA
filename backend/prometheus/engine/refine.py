@@ -47,6 +47,9 @@ def _refine_prompt(html: str, concept: str, issues: list[str], design_system: st
     issue_lines = "\n".join(f"- {i}" for i in issues)
     return f"""[ROL] Revisor y refinador de recursos educativos HTML5 interactivos.
 [CONCEPTO] "{concept}"
+[ANCLAJE] El recurso DEBE tratar únicamente "{concept}". El <h1> nombra ese tema;
+no cambies de dominio ni inventes otro (p.ej. machine learning / churn si el
+tema es historia, biología o matemáticas).
 [TAREA] Corrige EXACTAMENTE estos defectos del recurso, conservando todo el
 contenido pedagógico válido (no acortes, no inventes lorem):
 {issue_lines}
@@ -68,6 +71,7 @@ def apply_feedback(
     llm_config=None,
     enabled_models=None,
     theme=None,
+    deadline: float | None = None,
 ) -> str:
     """Re-generate HTML incorporating explicit feedback list.
 
@@ -85,6 +89,7 @@ def apply_feedback(
                 _CODE_MAX_TOKENS,
                 llm_config,
                 enabled_models,
+                deadline=deadline,
             )
         )
     except Exception:  # noqa: BLE001
@@ -95,7 +100,7 @@ def apply_feedback(
 _REFINE_MAX_ROUNDS = 2
 
 
-def _combined_issues(html: str, phase: str, rt: int) -> list[str]:
+def _combined_issues(html: str, phase: str, rt: int, concept: str) -> list[str]:
     """Señales de refinamiento unificadas para una sola pasada de feedback.
 
     Une los defectos ESTRUCTURALES (bloquean la completitud del recurso:
@@ -104,9 +109,9 @@ def _combined_issues(html: str, phase: str, rt: int) -> list[str]:
     separado `validate_and_improve` (estructurales) y `maybe_refine` (calidad),
     encadenando dos refinadores; ahora una ronda cubre todas las señales.
     """
-    from prometheus.engine.validate import structural_defects
+    from prometheus.engine.validate import resource_defects
 
-    return list(structural_defects(html)) + _quality_issues(html, phase, rt)
+    return list(resource_defects(html, concept)) + _quality_issues(html, phase, rt)
 
 
 def _accepts(refined: str, original: str, phase: str, rt: int) -> bool:
@@ -128,6 +133,7 @@ def refine_and_check(
     theme=None,
     *,
     max_rounds: int = _REFINE_MAX_ROUNDS,
+    deadline: float | None = None,
 ) -> tuple[str, list[str]]:
     """Compuerta de refinamiento fusionada (reemplaza maybe_refine + validate_and_improve).
 
@@ -140,23 +146,33 @@ def refine_and_check(
     No-op (0 llamadas LLM) cuando el refinamiento está deshabilitado (OVA_REFINE=0),
     el HTML está vacío o no hay defectos — el camino sano no paga refinamiento.
     Un recurso defectuoso hace como máximo `max_rounds` llamadas (antes hasta 3
-    entre las dos compuertas encadenadas).
+    entre las dos compuertas encadenadas). `deadline` (monotonic) corta rondas
+    extra cuando el presupuesto de reloj del recurso se agotó.
     """
-    from prometheus.engine.validate import structural_defects
+    from prometheus.engine.budget import can_spend
+    from prometheus.engine.validate import resource_defects
 
     if not html:
         return html, []
     if not _refine_enabled():
-        return html, structural_defects(html)
+        return html, resource_defects(html, concept)
 
     rounds = 0
     while rounds < max_rounds:
-        issues = _combined_issues(html, phase, rt)
+        issues = _combined_issues(html, phase, rt, concept)
         if not issues:
+            break
+        if not can_spend(deadline):
+            logger.info(
+                "refine skipped: resource budget exhausted",
+                phase=phase,
+                resource_type=rt,
+                round=rounds,
+            )
             break
         rounds += 1
         refined = apply_feedback(
-            html, concept, issues, phase, rt, llm_config, enabled_models, theme
+            html, concept, issues, phase, rt, llm_config, enabled_models, theme, deadline
         )
         if not _accepts(refined, html, phase, rt):
             logger.info("refine rejected: no improvement", phase=phase, resource_type=rt)
@@ -164,4 +180,4 @@ def refine_and_check(
         logger.info("refine accepted", phase=phase, resource_type=rt, round=rounds)
         html = refined
 
-    return html, structural_defects(html)
+    return html, resource_defects(html, concept)

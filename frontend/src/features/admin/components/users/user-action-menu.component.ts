@@ -5,7 +5,7 @@ import { HlmDropdownMenuItem, HlmDropdownMenuSeparator } from "@spartan-ng/helm/
 import { IconComponent } from "@/core/components/icon.component";
 
 import type { AdminUser } from "../../lib/types";
-import { isLockedOut } from "./statusHelpers";
+import { isLockedOut } from "./status-helpers";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

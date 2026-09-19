@@ -3,14 +3,14 @@ import { provideRouter } from "@angular/router";
 import { render, screen, waitFor } from "@testing-library/angular/zoneless";
 
 import { AuthService } from "@/core/auth/auth.service";
+import { PlatformApiKeysCardComponent } from "@/core/components/platform-api-keys-card.component";
+import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
 import { ManageModelsModalComponent } from "../components/manage-models-modal.component";
 import { ModelsMasterDetailComponent } from "../components/models-master-detail.component";
-import { PlatformApiKeysCardComponent } from "../components/platform-api-keys-card.component";
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
 import { PlatformNodesCardComponent } from "../components/platform-nodes-card.component";
 import { UserApiKeysCardComponent } from "../components/user-api-keys-card.component";
-import { PlatformSettingsService } from "../services/platform-settings.service";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 import { ModelsPageComponent } from "./models-page.component";
 
@@ -24,6 +24,7 @@ class StubMasterDetail {
   readonly adminModels = input<unknown[]>([]);
   readonly isAdmin = input(false);
   readonly adminSaving = input(false);
+  readonly chainIssues = input<unknown>({});
   readonly draftChange = output();
   readonly openCatalog = output();
 }
@@ -64,11 +65,14 @@ class StubNodes {}
 })
 class StubCaps {}
 
-function makeDirtyStore(dirtySig: ReturnType<typeof signal<boolean>>) {
+function makeDirtyStore(
+  dirtySig: ReturnType<typeof signal<boolean>>,
+  enabled: { provider: string; model_id: string }[] = [{ provider: "groq", model_id: "x" }],
+) {
   return {
     dirty: dirtySig,
     catalogStatus: signal({ groq: { ok: true }, openrouter: { ok: false } }),
-    enabledModels: signal([{ provider: "groq", model_id: "x" }]),
+    enabledModels: signal(enabled),
     fullTotal: signal(4),
     catalogFull: signal([]),
     defaults: signal({}),
@@ -134,13 +138,28 @@ describe("ModelsPageComponent", () => {
     expect(screen.getByRole("heading", { name: "Modelos de IA" })).toBeTruthy();
     expect(screen.queryByText("Configuración")).toBeNull();
     expect(screen.queryByText("Guardar plataforma")).toBeNull();
-    expect(screen.getByText("Proveedores conectados")).toBeTruthy();
-    expect(screen.getByText("Modelos favoritos")).toBeTruthy();
-    expect(screen.getByText("Cambios sin guardar")).toBeTruthy();
+    expect(screen.queryByText("Proveedores conectados")).toBeNull();
+    expect(screen.queryByText("Modelos favoritos")).toBeNull();
+    expect(screen.queryByText("Cambios sin guardar")).toBeNull();
+    expect(screen.getByText(/1 \/ 2 proveedores · 1 favorito/)).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Modelos$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Credenciales$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /Plataforma/i })).toBeTruthy();
     expect(screen.getByTestId("master-detail")).toBeTruthy();
+  });
+
+  it("says all models are available when the favorites list is empty", async () => {
+    const dirtySig = signal(false);
+    const store = makeDirtyStore(dirtySig, []);
+    const result = await render(ModelsPageComponent, {
+      providers: adminProviders(store),
+      importOverrides,
+    });
+    await result.fixture.whenStable();
+    result.fixture.detectChanges();
+    await waitFor(() => {
+      expect(screen.getByText(/Todos los modelos disponibles/)).toBeTruthy();
+    });
   });
 
   it("shows sticky save bar only when dirty", async () => {
@@ -161,6 +180,24 @@ describe("ModelsPageComponent", () => {
     await fixture.whenStable();
 
     expect(screen.queryByRole("button", { name: "Guardar cambios" })).toBeNull();
+  });
+
+  it("disables save while the chain has empty or duplicate models", async () => {
+    const { fixture } = await renderAdminPage(true);
+    const cmp = fixture.componentInstance;
+    cmp.adminTasks.set(["texto"]);
+    cmp.adminDraft.set({
+      texto: {
+        default: { provider: "groq", model_id: "llama" },
+        fallbacks: [{ provider: "", model_id: "" }],
+      },
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(screen.getByText(/duplicados o vacíos/i)).toBeTruthy();
+    const save = screen.getByRole("button", { name: "Guardar cambios" });
+    expect(save.getAttribute("disabled")).not.toBeNull();
   });
 
   it("shows credential subsections for admin", async () => {

@@ -10,7 +10,7 @@ from llm.images.image_providers import build_image_settings
 from models import User
 from prometheus.plans.generate import generate_resource
 from prometheus.prompts.engage_prompts import RECURSOS_META
-from rag.retriever import build_contexto_usuario, top_k
+from rag import build_contexto_usuario, top_k
 
 router = APIRouter()
 logger = structlog.get_logger(__name__)

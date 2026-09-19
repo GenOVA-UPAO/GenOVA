@@ -10,9 +10,9 @@ import {
 
 import { AuthService } from "@/core/auth/auth.service";
 import { IconComponent } from "@/core/components/icon.component";
+import { PlatformApiKeysCardComponent } from "@/core/components/platform-api-keys-card.component";
 import { toast } from "@/core/lib/toast";
 
-import { PlatformApiKeysCardComponent } from "../../llm-settings/components/platform-api-keys-card.component";
 import { DeleteAccountFormComponent } from "../components/delete-account-form.component";
 import { PasswordChangeFormComponent } from "../components/password-change-form.component";
 import { ProfileFormComponent } from "../components/profile-form.component";

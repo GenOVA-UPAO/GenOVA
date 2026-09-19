@@ -1,4 +1,4 @@
-import type { SettingsMap, TaskSetting } from "./llm-settings-mutations";
+import type { SettingsMap } from "./llm-settings-mutations";
 
 export interface EnabledModel {
   provider: string;
@@ -47,5 +47,3 @@ export interface LoadOpts {
   category?: string;
   type?: string;
 }
-
-export type { SettingsMap, TaskSetting };

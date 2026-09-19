@@ -176,6 +176,7 @@ def resource_to_dict(resource: OvaJobResource) -> dict:
         "status": resource.status,
         "attempts": resource.attempts,
         "error_id": str(resource.error_id) if resource.error_id else None,
+        "defect_reason": resource.defect_reason,
     }
 
 

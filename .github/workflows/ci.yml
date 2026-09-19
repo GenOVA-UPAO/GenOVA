@@ -43,6 +43,14 @@ jobs:
         run: python3 scripts/sync_deps.py --check
         working-directory: backend
 
+      - name: Fronteras de arquitectura (import-linter)
+        run: uv sync --extra dev && uv run lint-imports
+        working-directory: backend
+
+      - name: Tamaño de módulos (aviso)
+        run: uv run python scripts/check_module_size.py
+        working-directory: backend
+
   backend-bdd:
     name: Backend BDD (pytest-bdd)
     runs-on: ubuntu-latest

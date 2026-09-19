@@ -15,10 +15,10 @@ from sse_starlette.sse import EventSourceResponse
 from starlette.concurrency import run_in_threadpool
 
 from auth.dependencies import get_current_user
-from core.database import SessionLocal
-from generation.jobs import jobs_service
-from generation.jobs.jobs_helpers import job_to_dict
-from generation.jobs.jobs_model import JOB_STREAM_TERMINAL
+from generation.application.use_cases.get_job_status import GetJobStatus
+from generation.container import build_generation_stream
+from generation.domain.errors import JobNotFound
+from generation.domain.lifecycle import is_stream_terminal
 from models import User
 
 router = APIRouter(tags=["Generación"])
@@ -26,18 +26,13 @@ _POLL_SECONDS = 1.5
 _MAX_TICKS = 1200  # ~30 min safety cap (1200 * 1.5s) so a stuck job can't hold a conn forever
 
 
-def _read_snapshot(job_id: uuid.UUID, user_id: uuid.UUID) -> dict | None:
+def _read_snapshot(read_status: GetJobStatus, job_id: uuid.UUID, user_id: uuid.UUID) -> dict | None:
     """Fresh session per read: the runner writes from another thread/session, so a
     long-lived session here would never observe its committed progress."""
-    db = SessionLocal()
     try:
-        job = jobs_service.get_job(db, job_id, user_id)
-        if job is None:
-            return None
-        resources = jobs_service.list_resources(db, job.id)
-        return job_to_dict(job, resources)
-    finally:
-        db.close()
+        return read_status.execute(job_id, user_id).as_dict()
+    except JobNotFound:
+        return None
 
 
 @router.get("/{job_id}/stream", summary="Seguir el progreso del trabajo por SSE")
@@ -45,6 +40,7 @@ async def stream_job(
     job_id: str,
     request: Request,
     current_user: User = Depends(get_current_user),
+    read_status: GetJobStatus = Depends(build_generation_stream),
 ):
     """SSE: emit a `progress` event whenever the snapshot changes, then a final
     `done` event on a terminal status (done/error/canceled). 404 → one `error`."""
@@ -61,7 +57,9 @@ async def stream_job(
         for _ in range(_MAX_TICKS):
             if await request.is_disconnected():
                 break
-            snapshot = await run_in_threadpool(_read_snapshot, parsed, current_user.id)
+            snapshot = await run_in_threadpool(
+                _read_snapshot, read_status, parsed, current_user.id
+            )
             if snapshot is None:
                 yield {"event": "error", "data": json.dumps({"error": "job_not_found"})}
                 return
@@ -69,7 +67,7 @@ async def stream_job(
             if payload != last:
                 yield {"event": "progress", "data": payload}
                 last = payload
-            if snapshot["status"] in JOB_STREAM_TERMINAL:
+            if is_stream_terminal(snapshot["status"]):
                 yield {"event": "done", "data": payload}
                 return
             await asyncio.sleep(_POLL_SECONDS)

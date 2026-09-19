@@ -17,8 +17,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import structlog
 
-from generation.regen.regen_agents import resolve_resource_type
-from generation.regen.regen_pipelines import regenerate_phase_content
+from generation.infrastructure.regen_agents import resolve_resource_type
+from generation.infrastructure.regen_pipelines import regenerate_phase_content
 from llm.router import generar_texto
 from llm.utils.llm_helpers import _CODE_MAX_TOKENS
 from llm.utils.utils import strip_markdown

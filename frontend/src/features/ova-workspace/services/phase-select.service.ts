@@ -5,8 +5,6 @@ import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
 import { PHASE_SELECT_CFG, type PhaseResourceMap } from "../lib/phase-select.config";
 
-export { PHASE_SELECT_CFG as PHASE_SELECT_KEYS } from "../lib/phase-select.config";
-
 @Injectable({ providedIn: "root" })
 export class PhaseSelectService {
   async fetchAllPhaseResources(): Promise<PhaseResourceMap> {

@@ -132,5 +132,3 @@ export class OvaFiveEViewerComponent {
     this.activeIndex = i;
   }
 }
-
-export type { OvaContent };

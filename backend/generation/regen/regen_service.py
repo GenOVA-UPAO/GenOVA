@@ -11,11 +11,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.database import SessionLocal
+from generation.infrastructure.regen_persist import _build_and_persist, _mark_ova_error
 from generation.regen.regen_edit import regen_phases_parallel
 from generation.regen.regen_jobs import _regen_jobs, _regen_jobs_lock
-from generation.regen.regen_persist import _build_and_persist, _mark_ova_error
 from models import Ova, OvaPhase, OvaVersion
-from ova.crud.edit_helpers import _ensure_version_exists, _get_active_version
+from ova import ensure_version_exists, get_active_version
 
 logger = structlog.get_logger(__name__)
 
@@ -43,9 +43,9 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         llm_config = _owner_llm_config(db, ova.user_id)
         image_settings = _owner_image_settings(db, ova.user_id)
 
-        current_version = _get_active_version(ova_id, db)
+        current_version = get_active_version(ova_id, db)
         if not current_version:
-            current_version = _ensure_version_exists(ova, db)
+            current_version = ensure_version_exists(ova, db)
 
         current_phases = list(
             db.execute(

@@ -28,8 +28,8 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401
-from auth.router import router as auth_router  # noqa: E402
-from auth.throttle import _email_attempts  # noqa: E402
+from auth.infrastructure.email_throttle import _email_attempts  # noqa: E402
+from auth.interface.http.router import router as auth_router  # noqa: E402
 from core.database import get_db  # noqa: E402
 from core.rate_limit import limiter  # noqa: E402
 from core.security import hash_password  # noqa: E402

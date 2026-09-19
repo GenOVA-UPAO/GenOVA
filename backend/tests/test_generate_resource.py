@@ -84,3 +84,42 @@ def test_structural_defects_flow_to_result(monkeypatch):
     r = gen.generate_resource("evaluate", 1, "tema")
     # El defecto se reporta a `defects` para el routing a repair del workpool.
     assert any("placeholder" in d for d in r.defects)
+
+
+def test_final_sweep_replaces_markers_when_image_generation_is_disabled(monkeypatch):
+    marked_html = FULL_HTML.replace("</body>", '<img src="__IMG_4__"></body>')
+    monkeypatch.setattr(gen, "generar_texto", _fake_generar(html=marked_html))
+
+    result = gen.generate_resource("engage", 1, "tema", image_settings={}, refine=False)
+
+    assert "__IMG_4__" not in result.html
+    assert "data:image/svg+xml;base64," in result.html
+
+
+def test_final_sweep_replaces_markers_reintroduced_by_refinement(monkeypatch):
+    import prometheus.engine.refine as refine_mod
+
+    monkeypatch.setattr(gen, "generar_texto", _fake_generar())
+    monkeypatch.setattr(
+        refine_mod,
+        "refine_and_check",
+        lambda html, *args, **kwargs: (html.replace("</body>", '<img src="__IMG_8__"></body>'), []),
+    )
+
+    result = gen.generate_resource("evaluate", 1, "tema")
+
+    assert "__IMG_8__" not in result.html
+    assert "data:image/svg+xml;base64," in result.html
+
+
+def test_json_step_fuerza_thinking_off(monkeypatch):
+    calls = []
+
+    def fake(prompt, task, *a, **k):
+        calls.append(k)
+        return '{"contenido": "demo"}' if task == "texto" else FULL_HTML
+
+    monkeypatch.setattr(gen, "generar_texto", fake)
+    gen._parse_json_with_retry("prompt", "engage", 1, {}, [])
+    # Ambas llamadas (principal y reintento estricto) van sin thinking.
+    assert all(c.get("thinking") is False for c in calls)

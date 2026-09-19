@@ -1,4 +1,4 @@
-import type { UploadItem } from "../../lib/uploadTypes";
+import type { UploadItem } from "../../lib/upload-types";
 
 export interface UploadsPropBag {
   uploads: UploadItem[];

@@ -3,13 +3,14 @@ import { ChangeDetectionStrategy, Component, input, output } from "@angular/core
 
 import { IconComponent } from "@/core/components/icon.component";
 
+import type { SlotIssue } from "../lib/chain-validation";
 import {
   addFallback,
   type Entry,
   moveFallback,
   removeFallback,
   setFallback,
-} from "../lib/llmConfigDraft";
+} from "../lib/llm-config-draft";
 import { LlmModelSelectComponent } from "./llm-model-select.component";
 import { getModalitySymbol, TASK_DESCS, TASK_LABELS } from "./llm-task-row.helpers";
 
@@ -36,6 +37,7 @@ export class LlmTaskRowComponent {
     }[]
   >();
   readonly disabled = input(false);
+  readonly issues = input<SlotIssue[]>([]);
 
   readonly onChange = output<{
     default?: Entry;
@@ -54,6 +56,10 @@ export class LlmTaskRowComponent {
 
   get fallbacks(): Entry[] {
     return this.value().fallbacks ?? [];
+  }
+
+  issueAt(i: number): string | undefined {
+    return this.issues().find((issue) => issue.index === i)?.message;
   }
 
   getModality(f: Entry): string {

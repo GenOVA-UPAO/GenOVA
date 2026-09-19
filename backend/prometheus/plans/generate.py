@@ -65,13 +65,27 @@ def _design_system(theme: dict) -> str:
     return build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
 
 
-def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_models):
-    """Step-1 texto→JSON con un reintento estricto (robustez del camino HTTP)."""
-    raw = generar_texto(prompt, "texto", 8192, llm_config, enabled_models)
+def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_models, deadline=None):
+    """Step-1 texto→JSON con un reintento estricto (robustez del camino HTTP).
+
+    thinking=False explícito: el JSON son DATOS, no razonamiento. Con el
+    thinking auto del helper, deepseek gastaba ~40s en este paso y dejaba el
+    presupuesto de recurso sin margen para el HTML; sin thinking son ~11s con
+    el mismo JSON válido (medido, ver reporte). Explícito en vez de depender
+    del umbral numérico _THINK_OFF_MAX, que se rompe si alguien toca
+    max_tokens."""
+    from prometheus.engine.budget import can_spend
+
+    raw = generar_texto(
+        prompt, "texto", 8192, llm_config, enabled_models, deadline=deadline, thinking=False
+    )
     try:
         return parse_json(raw)
     except Exception:
         logger.warning("JSON parse failed, retrying strict", phase=phase, resource_type=rt)
+        if not can_spend(deadline):
+            logger.info("JSON retry skipped: resource budget exhausted", phase=phase, resource_type=rt)
+            return {"contenido": raw}
         retry = generar_texto(
             prompt + "\n\nIMPORTANTE: Responde SOLO con el JSON puro, sin texto "
             "adicional, sin markdown, sin explicaciones.",
@@ -79,6 +93,8 @@ def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_mode
             8192,
             llm_config,
             enabled_models,
+            deadline=deadline,
+            thinking=False,
         )
         try:
             return parse_json(retry)
@@ -87,7 +103,9 @@ def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_mode
             return {"contenido": retry}
 
 
-def _post_process(html, phase, rt, concept, theme, llm_config, enabled_models, refine):
+def _post_process(
+    html, phase, rt, concept, theme, llm_config, enabled_models, refine, deadline=None
+):
     """Cola común: validate_and_repair → base_css/components (upao) → refinamiento fusionado."""
     from llm.utils.html_validator import validate_and_repair
 
@@ -102,16 +120,26 @@ def _post_process(html, phase, rt, concept, theme, llm_config, enabled_models, r
         html = inject_components(html)
 
     if not refine:
-        from prometheus.engine.validate import structural_defects
+        from llm.images.image_placeholder import resolve_image_placeholders
+        from prometheus.engine.validate import resource_defects
 
-        return html, structural_defects(html)
+        html = resolve_image_placeholders(html)
+        return html, resource_defects(html, concept)
 
+    from llm.images.image_placeholder import resolve_image_placeholders
     from prometheus.engine.refine import refine_and_check
+    from prometheus.engine.validate import resource_defects
 
-    return refine_and_check(html, phase, rt, concept, llm_config, enabled_models, theme)
+    # The refiner can return entirely new HTML, including image markers that
+    # were already resolved before this pass. Sanitize its final output too.
+    html, _ = refine_and_check(
+        html, phase, rt, concept, llm_config, enabled_models, theme, deadline=deadline
+    )
+    html = resolve_image_placeholders(html)
+    return html, resource_defects(html, concept)
 
 
-def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models) -> ResourceResult:
+def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models, deadline=None) -> ResourceResult:
     from llm.podcast.podcast import build_podcast_html, podcast_audio_b64
 
     mono = generar_texto(
@@ -120,6 +148,7 @@ def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models) -> Re
         700,
         llm_config,
         enabled_models,
+        deadline=deadline,
     )
     audio_b64 = podcast_audio_b64(mono)
     # El player se ensambla de plantilla fija (sin design-system ni refinamiento).
@@ -127,7 +156,16 @@ def _gen_podcast(phase, rt, concept, contexto, llm_config, enabled_models) -> Re
 
 
 def _gen_direct_code(
-    phase, rt, concept, contexto, theme, resource_config, llm_config, enabled_models, refine
+    phase,
+    rt,
+    concept,
+    contexto,
+    theme,
+    resource_config,
+    llm_config,
+    enabled_models,
+    refine,
+    deadline=None,
 ) -> ResourceResult:
     html = strip_markdown(
         generar_texto(
@@ -138,10 +176,11 @@ def _gen_direct_code(
             _CODE_MAX_TOKENS,
             llm_config,
             enabled_models,
+            deadline=deadline,
         )
     )
     html, defects = _post_process(
-        html, phase, rt, concept, theme, llm_config, enabled_models, refine
+        html, phase, rt, concept, theme, llm_config, enabled_models, refine, deadline
     )
     return ResourceResult(html, defects, None)
 
@@ -157,6 +196,7 @@ def _gen_two_step(
     llm_config,
     enabled_models,
     refine,
+    deadline=None,
 ) -> ResourceResult:
     mod = _prompts(phase)
     json_data = _parse_json_with_retry(
@@ -165,17 +205,21 @@ def _gen_two_step(
         rt,
         llm_config,
         enabled_models,
+        deadline,
     )
 
     # Enriquecimiento con imágenes — solo engage tiene campos prompt_imagen.
     # enrich_with_images MUTA json_data (añade image_placeholder) y exige una lista.
     img_replacements: dict[str, str] = {}
     if phase == "engage" and image_settings:
-        from llm.images.image_enrich import enrich_with_images
+        from prometheus.engine.budget import can_spend
 
-        img_replacements = enrich_with_images(
-            json_data if isinstance(json_data, list) else [json_data], image_settings
-        )
+        if can_spend(deadline):
+            from llm.images.image_enrich import enrich_with_images
+
+            img_replacements = enrich_with_images(
+                json_data if isinstance(json_data, list) else [json_data], image_settings
+            )
 
     json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
     html = strip_markdown(
@@ -185,20 +229,17 @@ def _gen_two_step(
             _CODE_MAX_TOKENS,
             llm_config,
             enabled_models,
+            deadline=deadline,
         )
     )
 
     if img_replacements:
-        import re
+        from llm.images.image_placeholder import resolve_image_placeholders
 
-        from llm.images.image_placeholder import IMG_PLACEHOLDER
-
-        for placeholder, uri in img_replacements.items():
-            html = html.replace(placeholder, uri)
-        html = re.sub(r"__IMG_\d+__", IMG_PLACEHOLDER, html)
+        html = resolve_image_placeholders(html, img_replacements)
 
     html, defects = _post_process(
-        html, phase, rt, concept, theme, llm_config, enabled_models, refine
+        html, phase, rt, concept, theme, llm_config, enabled_models, refine, deadline
     )
     return ResourceResult(html, defects, json_data)
 
@@ -216,21 +257,37 @@ def generate_resource(
     resource_config: dict | None = None,
     contexto: str = "",
     refine: bool = True,
+    deadline: float | None = None,
 ) -> ResourceResult:
     """Genera UN recurso 5E con el pipeline completo. `plan` por defecto = plan
     canónico de `plan_map.plan_for`. `contexto` = RAG (los endpoints HTTP lo pasan;
-    batch/regen usan "")."""
+    batch/regen usan ""). `deadline` (monotonic) acota refine; si falta, se
+    abre un presupuesto de reloj propio (HTTP/regen)."""
+    import time
+
+    from prometheus.engine.budget import deadline_at
     from prometheus.plans.plan_map import DIRECT_CODE, PODCAST, plan_for
 
     n = int(rt)
     theme = theme or {}
     plan = plan or plan_for(phase, n)
+    if deadline is None:
+        deadline = deadline_at(time.monotonic())
 
     if plan == PODCAST:
-        return _gen_podcast(phase, n, concept, contexto, llm_config, enabled_models)
+        return _gen_podcast(phase, n, concept, contexto, llm_config, enabled_models, deadline)
     if plan == DIRECT_CODE:
         return _gen_direct_code(
-            phase, n, concept, contexto, theme, resource_config, llm_config, enabled_models, refine
+            phase,
+            n,
+            concept,
+            contexto,
+            theme,
+            resource_config,
+            llm_config,
+            enabled_models,
+            refine,
+            deadline,
         )
     return _gen_two_step(
         phase,
@@ -243,4 +300,5 @@ def generate_resource(
         llm_config,
         enabled_models,
         refine,
+        deadline,
     )

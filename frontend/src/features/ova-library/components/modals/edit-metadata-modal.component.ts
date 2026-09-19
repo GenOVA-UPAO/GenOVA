@@ -12,7 +12,7 @@ import { HlmInput } from "@spartan-ng/helm/input";
 
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import { DialogComponent } from "@/core/components/ui/dialog.component";
-import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
+import type { MetadataInput } from "@/features/ova-library/lib/metadata-schema";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

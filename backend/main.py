@@ -17,7 +17,7 @@ from sqlalchemy.exc import DataError
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
-from auth.router import router as auth_router
+from auth.interface.http.router import router as auth_router
 from core.config import settings
 from core.database import Base, engine
 from core.http_errors import data_error_handler
@@ -26,26 +26,27 @@ from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
+from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
 from llm.catalog.catalog_router import router as agents_router
-from ova.chat.router import router as ova_chat_router
-from ova.crud.edit_router import router as ova_edit_router
-from ova.crud.subelement_router import router as ova_subelement_router
-from ova.phases.add_phase_router import router as ova_add_phase_router
-from ova.phases.history_router import router as ova_history_router
-from ova.phases.phase_version_router import router as ova_phase_version_router
-from ova.router import router as ova_router
-from rag.router import router as rag_router
-from roles.router import router as roles_router
+from ova.interface.http.add_phase_router import router as ova_add_phase_router
+from ova.interface.http.chat_router import router as ova_chat_router
+from ova.interface.http.edit_router import router as ova_edit_router
+from ova.interface.http.history_router import router as ova_history_router
+from ova.interface.http.phase_version_router import router as ova_phase_version_router
+from ova.interface.http.router import router as ova_router
+from ova.interface.http.subelement_router import router as ova_subelement_router
+from rag.interface.http.router import router as rag_router
+from roles.interface.http.router import router as roles_router
 from run_migrations import run_migrations
-from scorm.router import router as scorm_router
+from scorm.interface.http.router import router as scorm_router
 from seed import seed_db
-from uploads.router import router as uploads_router
-from users.admin.list_router import router as users_list_router
-from users.admin.nodes_config_router import router as nodes_config_router
-from users.admin.platform_settings_router import router as platform_settings_router
-from users.router import router as users_router
+from uploads.interface.http.router import router as uploads_router
+from users.interface.http.admin_list_router import router as users_list_router
+from users.interface.http.admin_nodes_config_router import router as nodes_config_router
+from users.interface.http.admin_platform_settings_router import router as platform_settings_router
+from users.interface.http.router import router as users_router
 
 configure_logging(
     log_level=settings.log_level, env=settings.env, logfire_token=settings.logfire_token
@@ -71,7 +72,7 @@ def _background_rag_purge() -> None:
     try:
         from sqlalchemy.orm import Session
 
-        from rag.store import purge_expired
+        from rag import purge_expired
 
         with Session(engine) as session:
             removed = purge_expired(session)
@@ -85,7 +86,7 @@ def _background_auth_purge() -> None:
     try:
         from sqlalchemy.orm import Session
 
-        from auth.cleanup import purge_expired_auth
+        from auth.infrastructure.cleanup import purge_expired_auth
 
         with Session(engine) as session:
             removed = purge_expired_auth(session)
@@ -268,6 +269,7 @@ app.include_router(users_list_router, prefix="/api/users")
 app.include_router(uploads_router, prefix="/api/uploads")
 app.include_router(platform_settings_router, prefix="/api/admin")
 app.include_router(nodes_config_router, prefix="/api/admin")
+app.include_router(guardrails_router, prefix="/api/admin")
 
 # Alias heredados: el recurso vivía en /api/ova (singular) y los trabajos colgaban
 # de /api/ova/jobs. Se mantienen fuera del esquema para no romper clientes ya

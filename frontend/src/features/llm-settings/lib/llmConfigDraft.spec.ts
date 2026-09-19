@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { defaultGenerationEnabled, isMediaTask, toDraft, toPayload } from "./llmConfigDraft";
-import { includeSelectedInPool, modelsForTask } from "./task-model-pool";
+import { defaultGenerationEnabled, isMediaTask, toDraft, toPayload } from "./llm-config-draft";
+import { enabledOnly, includeSelectedInPool, modelsForTask } from "./task-model-pool";
 
 describe("llmConfigDraft media", () => {
   it("marks imagen/video as media; video generation defaults off", () => {
@@ -41,10 +41,14 @@ describe("modelsForTask", () => {
     { provider: "d", model_id: "4", category: "texto" },
   ];
 
-  it("filters by aptitudes; multimodal can appear in several tasks", () => {
+  it("imagen y video filtran de verdad: la aptitud es obligatoria", () => {
     expect(modelsForTask(catalog, "imagen").map((m) => m.model_id)).toEqual(["1", "2"]);
-    expect(modelsForTask(catalog, "texto").map((m) => m.model_id)).toEqual(["1", "4"]);
     expect(modelsForTask(catalog, "video").map((m) => m.model_id)).toEqual(["3"]);
+  });
+
+  it("las tareas de texto no excluyen a nadie: los aptos van primero", () => {
+    // "1" y "4" declaran texto; "2" y "3" no, pero siguen siendo ofrecibles.
+    expect(modelsForTask(catalog, "texto").map((m) => m.model_id)).toEqual(["1", "4", "2", "3"]);
   });
 });
 
@@ -59,8 +63,9 @@ describe("includeSelectedInPool", () => {
       },
       { provider: "groq", model_id: "llama", category: "texto", label: "Llama" },
     ];
+    // texto ya no excluye: el de categoria "codigo" tambien se ofrece, detras.
     const pool = modelsForTask(all, "texto");
-    expect(pool.map((m) => m.model_id)).toEqual(["llama"]);
+    expect(pool.map((m) => m.model_id)).toEqual(["llama", "deepseek/deepseek-v4-flash"]);
     const merged = includeSelectedInPool(pool, all, [
       { provider: "openrouter", model_id: "deepseek/deepseek-v4-flash" },
       { provider: "openrouter", model_id: "other/missing" },
@@ -70,5 +75,50 @@ describe("includeSelectedInPool", () => {
       "deepseek/deepseek-v4-flash",
       "other/missing",
     ]);
+  });
+});
+
+describe("enabledOnly", () => {
+  const A = { provider: "openrouter", model_id: "a", label: "A" };
+  const B = { provider: "openrouter", model_id: "b", label: "B" };
+  const C = { provider: "opencode", model_id: "a", label: "C" };
+
+  it("acota el catalogo a lo que el usuario activo", () => {
+    expect(enabledOnly([A, B, C], [B])).toEqual([B]);
+  });
+
+  it("no confunde el mismo model_id de proveedores distintos", () => {
+    expect(enabledOnly([A, B, C], [C])).toEqual([C]);
+  });
+
+  it("con la lista vacia devuelve el catalogo entero, no nada", () => {
+    expect(enabledOnly([A, B, C], [])).toEqual([A, B, C]);
+  });
+
+  it("ignora activados que ya no estan en el catalogo", () => {
+    expect(enabledOnly([A], [B])).toEqual([]);
+  });
+});
+
+describe("modelsForTask: aptitud obligatoria solo en media", () => {
+  const conCodigo = { provider: "p", model_id: "c", aptitudes: ["texto", "codigo"] };
+  const soloTexto = { provider: "p", model_id: "t", aptitudes: ["texto"] };
+  const imagen = { provider: "p", model_id: "i", aptitudes: ["imagen"] };
+
+  it("para codigo NO excluye a los que no declaran la aptitud", () => {
+    const out = modelsForTask([soloTexto, conCodigo], "codigo");
+    expect(out.map((m) => m.model_id)).toEqual(["c", "t"]);
+  });
+
+  it("para texto tampoco excluye, solo ordena", () => {
+    expect(modelsForTask([imagen, soloTexto], "texto").map((m) => m.model_id)).toEqual(["t", "i"]);
+  });
+
+  it("para imagen SI excluye: un modelo de texto no puede generar imagenes", () => {
+    expect(modelsForTask([soloTexto, imagen], "imagen").map((m) => m.model_id)).toEqual(["i"]);
+  });
+
+  it("para video tambien excluye", () => {
+    expect(modelsForTask([soloTexto, imagen], "video")).toEqual([]);
   });
 });

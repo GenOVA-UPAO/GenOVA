@@ -24,12 +24,14 @@ from llm.utils.llm_helpers import (
     _SEED_MODELOS,
     _VISION_MODEL,
     EmptyContentError,
+    LLMBudgetExhaustedError,
     _default_models,
     _fallback_chain,
     _resolve_primary,
     _retry_delay,
     effective_llm_config,
     with_model_thinking,
+    with_thinking_disabled,
 )
 
 # ── Re-export everything external callers depend on ───────────────────────────
@@ -38,6 +40,7 @@ from llm.utils.llm_helpers import (
 # caller needs to change its import path.
 __all__ = [
     "EmptyContentError",
+    "LLMBudgetExhaustedError",
     "_RECOVERABLE_ERRORS",
     "_SEED_FALLBACK_CHAIN",
     "_SEED_MODELOS",
@@ -62,6 +65,15 @@ __all__ = [
 ]
 
 logger = structlog.get_logger(__name__)
+
+# Un intento con menos margen que esto no merece arrancarse (budget.py usa el
+# mismo umbral para decidir si vale la pena otra llamada: MIN_LLM_SLACK_S=20).
+_MIN_ATTEMPT_S = 15.0
+# Tiempo reservado para el siguiente modelo de la cadena: un intento no puede
+# consumir el presupuesto entero — un modelo primario lento debe poder degradar
+# a un fallback rápido en vez de tumbar el recurso ("All LLM fallbacks failed"
+# sin haber probado ni un fallback). Reparto, no presupuesto total.
+_FALLBACK_MARGIN_S = 20.0
 
 
 def _ls_extra(client) -> dict:
@@ -129,20 +141,53 @@ def generar_texto(
     max_tokens: int = 8192,
     llm_config: dict | None = None,
     enabled_models: list | None = None,
+    *,
+    deadline: float | None = None,
+    thinking: bool | None = None,
 ) -> str:
     """Route a task to its model and walk the per-task fallback chain on any
     recoverable API error (rate-limit, 402 insufficient credit, provider 5xx,
     Crucible/sub-host failures). The chain ends in a Groq model that almost
     always responds within the free tier. `llm_config` carries per-user model/
     timeout overrides for the primary attempt. `enabled_models` restricts overrides
-    to models the user has explicitly enabled (system defaults always pass)."""
+    to models the user has explicitly enabled (system defaults always pass).
+    `deadline` (monotonic) corta fallbacks restantes y acota el timeout de cada
+    intento — reservando margen para el siguiente modelo cuando queda cadena,
+    de modo que un primario lento degrada a un fallback rápido en vez de
+    tumbar el recurso. `thinking=False` fuerza thinking off en todos los
+    modelos de la cadena (ruta de datos estructurados: el JSON no gana nada
+    con CoT y su latencia se come el presupuesto — medido: 39.7s → 11.5s con
+    el mismo JSON válido)."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
     chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea, llm_config)]
 
     last_err: Exception | None = None
     prev_provider: str | None = None
+    cut_by_budget = False
     for i, (proveedor, model_id, extra) in enumerate(chain):
         role = "primary" if i == 0 else f"fallback {i}/{len(chain) - 1}"
+        attempt_extra = extra
+        if thinking is False:
+            attempt_extra = with_thinking_disabled(proveedor, model_id, extra)
+        attempt_timeout = timeout
+        if deadline is not None:
+            left = deadline - time.monotonic()
+            if left < _MIN_ATTEMPT_S:
+                cut_by_budget = True
+                logger.info(
+                    "task chain cut: resource budget exhausted",
+                    tarea=tarea,
+                    role=role,
+                    attempts=i,
+                    models_not_tried=len(chain) - i,
+                )
+                break
+            # Reserva margen para el siguiente modelo: el intento actual no
+            # puede gastar el presupuesto entero si queda cadena por probar.
+            reserve = _FALLBACK_MARGIN_S if i < len(chain) - 1 else 0.0
+            attempt_timeout = min(
+                timeout or _LLM_TIMEOUT_S, max(left - reserve, _MIN_ATTEMPT_S)
+            )
         if i > 0:
             backoff = _retry_delay(last_err, prev_provider, proveedor, i)
             logger.info(
@@ -163,7 +208,7 @@ def generar_texto(
             model_id=model_id,
         )
         try:
-            content = _chat(proveedor, model_id, prompt, max_tokens, extra, timeout)
+            content = _chat(proveedor, model_id, prompt, max_tokens, attempt_extra, attempt_timeout)
             logger.info(
                 "task model ok",
                 tarea=tarea,
@@ -189,6 +234,15 @@ def generar_texto(
                 error_type=type(exc).__name__,
                 next_step=next_step,
             )
+    if cut_by_budget and last_err is None:
+        # La cadena se cortó por RELOJ, no por fallo de los modelos: error
+        # distinto para que el log diga la causa real (no "All LLM fallbacks
+        # failed" cuando los fallbacks ni se intentaron).
+        raise LLMBudgetExhaustedError(
+            f"Presupuesto del recurso agotado antes de probar la cadena "
+            f"(tarea={tarea}, intentos=0, sin probar: "
+            f"{[m for _, m, _ in chain]})"
+        )
     raise last_err or RuntimeError("All LLM fallbacks failed")
 
 
@@ -252,3 +306,5 @@ def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
         timeout=_LLM_TIMEOUT_S,
     )
     return response.choices[0].message.content
+
+

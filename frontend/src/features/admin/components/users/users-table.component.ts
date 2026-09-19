@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, Input, input } from "@angular/core";
 import { HlmDropdownMenu, HlmDropdownMenuTrigger } from "@spartan-ng/helm/dropdown-menu";
 
-import { getRoleColorClasses } from "../../lib/roleUtils";
+import { getRoleColorClasses } from "../../lib/role-utils";
 import type { AdminUser, Role } from "../../lib/types";
 import { UserStatusBadgeComponent } from "./status-badge.component";
 import { UserActionMenuComponent } from "./user-action-menu.component";

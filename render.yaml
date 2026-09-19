@@ -55,6 +55,14 @@ services:
       - key: LOG_LEVEL
         value: INFO
 
+      # NO configurar Redis: con un valor aquí arq encola los jobs, pero este Blueprint
+      # no crea worker y quedarían esperando para siempre. Vacío activa el hilo del servidor.
+      - key: REDIS_URL
+        value: ""
+      # Un recurso a la vez reduce los picos de RAM del proceso único del plan gratuito.
+      - key: OVA_GEN_CONCURRENCY
+        value: "1"
+
       # ─── Pool de BD — free tier de Supabase ────────────────────────────────
       - key: DB_POOL_SIZE
         value: "5"
@@ -85,6 +93,14 @@ services:
 
       # ─── Imágenes (opcional) ──────────────────────────────────────────────
       - key: HF_TOKEN
+        sync: false
+      - key: SILICONFLOW_API_KEY
+        sync: false
+      - key: RUNWARE_API_KEY
+        sync: false
+      - key: FALAI_API_KEY
+        sync: false
+      - key: CF_AI_API_KEY
         sync: false
 
       # ─── SMTP — recuperación de contraseña (opcional) ──────────────────────

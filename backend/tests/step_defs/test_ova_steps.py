@@ -26,7 +26,7 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 import models  # noqa: E402, F401
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
-from ova.phases.history_router import router as ova_history_router  # noqa: E402
+from ova.interface.http.history_router import router as ova_history_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_HISTORIAL = os.path.join(_FEATURES, "ova", "HU-006_historial.feature")

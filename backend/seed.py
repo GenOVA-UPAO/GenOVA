@@ -1,6 +1,6 @@
 from sqlalchemy import delete, select
 
-from auth.email_normalize import normalize_email
+from auth.domain.email import normalize_email
 from core.database import SessionLocal
 from core.security import hash_password
 from models import Role, User, UserRole

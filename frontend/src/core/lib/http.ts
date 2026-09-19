@@ -1,9 +1,5 @@
 import { AuthExpiredBus } from "./auth-expired-bus";
 
-// Re-export: los consumidores históricos (AuthService, guards) importan el bus
-// desde http.ts; el módulo puro existe para los tests unit sin Angular.
-export { AuthExpiredBus };
-
 /** Valores de `GENOVA_API_BASE_*` inyectados por scripts/run-with-api-env.mjs. */
 function buildApiBases(): { prod: string; develop: string } {
   // typeof es seguro si el build no paso --define (tests / ngc).

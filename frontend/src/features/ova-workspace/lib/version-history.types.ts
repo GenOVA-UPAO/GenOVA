@@ -1,7 +1,3 @@
-import type { OvaVersionRow } from "./ova-versioning";
-
-export type { OvaVersionRow };
-
 export interface VersionDiffPhase {
   id: string;
   phase_type: string;

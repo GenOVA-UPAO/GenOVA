@@ -60,3 +60,34 @@ def test_repair_marks_exhausted_on_second_failure(monkeypatch):
 
 def test_repair_noop_without_failures():
     assert repair_node(_state([])) == {}
+
+
+def test_repair_skips_llm_when_budget_exhausted(monkeypatch):
+    import prometheus.plans.generate as gen
+
+    called = []
+
+    def fake_generate(*a, **k):
+        called.append(1)
+        return gen.ResourceResult("<html>nuevo</html>", [], None)
+
+    monkeypatch.setattr(gen, "generate_resource", fake_generate)
+    monkeypatch.setattr(repair_mod, "_recursos_meta_for", lambda phase: {1: {"tipo": "Cómic"}})
+    out = repair_node(
+        _state(
+            [
+                {
+                    "phase": "engage",
+                    "resource_type": 1,
+                    "error": "defectos",
+                    "html": "<html>mejor intento</html>",
+                    "defects": ["contenido escaso"],
+                    "deadline": 0.0,
+                }
+            ]
+        )
+    )
+    assert called == []
+    assert out["results"][0]["html"] == "<html>mejor intento</html>"
+    assert out["results"][0]["defects"] == ["contenido escaso"]
+    assert out["errors"][0]["exhausted"] is True

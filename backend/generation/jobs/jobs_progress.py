@@ -12,6 +12,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.config import settings
+from generation.domain.execution import build_result_maps, finish_status
+from generation.domain.resource_outcome import (
+    MATERIALIZABLE_STATUSES,
+    defect_reason,
+    persist_status,
+)
 from generation.errors.error_log_service import log_generation_error
 from models import OvaJob, OvaJobResource
 
@@ -40,12 +46,54 @@ def _has_done_resource(db: Session, job_id: uuid.UUID) -> bool:
     )
 
 
+def _has_materializable_resource(db: Session, job_id: uuid.UUID) -> bool:
+    return (
+        db.execute(
+            select(OvaJobResource.id).where(
+                OvaJobResource.job_id == job_id,
+                OvaJobResource.status.in_(MATERIALIZABLE_STATUSES),
+            )
+        ).first()
+        is not None
+    )
+
+
+def _release_ova_from_generating(db: Session, job: OvaJob) -> None:
+    """Saca el placeholder de 'generando' sin tocar job.status.
+
+    Un job ya terminal (canceled/done/error/interrupted) no debe dejar el Ova
+    bloqueado en la biblioteca. Si hay recursos materializables se intenta
+    `_materialize`; si no hay, o si materializar no mueve el status, se marca
+    'error' para que el usuario pueda borrar.
+    """
+    if job.ova_id is None:
+        return
+    from models import Ova as _Ova
+
+    ova = db.get(_Ova, job.ova_id)
+    if ova is None or ova.status != "generando":
+        return
+    if _has_materializable_resource(db, job.id):
+        try:
+            _materialize(db, job)
+        except Exception:
+            db.rollback()
+            logger.exception("failed to materialize OVA on release", job_id=job.id)
+        ova = db.get(_Ova, job.ova_id)
+        if ova is None or ova.status != "generando":
+            return
+    ova.status = "error"
+    db.commit()
+
+
 def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
     from generation.jobs.jobs_service import _now
 
-    # "done" requires every resource to have reached a terminal state; resources
-    # still pending/running (graph aborted mid-flight) leave the job resumable as
-    # "interrupted" instead of silently shipping an incomplete OVA as finished.
+    db.refresh(job)
+    if job.status == "canceled":
+        _release_ova_from_generating(db, job)
+        return
+
     has_unfinished = (
         db.execute(
             select(OvaJobResource.id).where(
@@ -55,24 +103,10 @@ def _finish_job(db: Session, job: OvaJob, any_done: bool) -> None:
         ).first()
         is not None
     )
-    if has_unfinished:
-        job.status = "interrupted"
-    else:
-        job.status = "done" if any_done else "error"
+    job.status = finish_status(has_unfinished=has_unfinished, any_done=any_done)
     job.finished_at = _now()
     db.commit()
-    if any_done:
-        _materialize(db, job)
-    elif job.ova_id is not None:
-        try:
-            from models import Ova as _Ova
-
-            ova = db.get(_Ova, job.ova_id)
-            if ova is not None:
-                ova.status = "error"
-                db.commit()
-        except Exception:
-            logger.exception("failed to mark placeholder OVA as error", job_id=job.id)
+    _release_ova_from_generating(db, job)
 
 
 def _materialize(db: Session, job: OvaJob) -> None:
@@ -81,7 +115,10 @@ def _materialize(db: Session, job: OvaJob) -> None:
     done = list(
         db.execute(
             select(OvaJobResource)
-            .where(OvaJobResource.job_id == job.id, OvaJobResource.status == "done")
+            .where(
+                OvaJobResource.job_id == job.id,
+                OvaJobResource.status.in_(MATERIALIZABLE_STATUSES),
+            )
             .order_by(OvaJobResource.phase_order, OvaJobResource.resource_order)
         )
         .scalars()
@@ -91,18 +128,13 @@ def _materialize(db: Session, job: OvaJob) -> None:
 
 
 def repair_stuck_ova_if_needed(db: Session, job: OvaJob) -> None:
-    """Job `done`/`interrupted` but placeholder still `generando` → rematerialize."""
-    if job.status not in ("done", "interrupted") or job.ova_id is None:
-        return
-    if not _has_done_resource(db, job.id):
+    """Job terminal + placeholder aún `generando` → materializa o marca error."""
+    from generation.domain.lifecycle import JOB_TERMINAL
+
+    if job.status not in JOB_TERMINAL:
         return
     try:
-        from models import Ova as _Ova
-
-        ova = db.get(_Ova, job.ova_id)
-        if ova is None or ova.status != "generando":
-            return
-        _materialize(db, job)
+        _release_ova_from_generating(db, job)
     except Exception:
         logger.exception("stuck OVA rematerialize failed", job_id=job.id)
 
@@ -117,8 +149,25 @@ def _safe_mark_error(db: Session, job_id: uuid.UUID) -> None:
             job.status = "error"
             job.finished_at = _now()
             db.commit()
+            _release_ova_from_generating(db, job)
     except Exception:
         logger.exception("failed to mark job as error after crash", job_id=job_id)
+
+
+def _ensure_degraded_error(db: Session, job: OvaJob, res: OvaJobResource) -> None:
+    """Guarda el motivo en error_log (categoría validation) si aún no hay error_id."""
+    if res.error_id is not None:
+        return
+    eid = log_generation_error(
+        db,
+        message=res.defect_reason or "recurso generado con defectos estructurales",
+        error_category="validation",
+        user_id=job.user_id,
+        ova_id=job.ova_id,
+        job_id=job.id,
+        job_resource_id=res.id,
+    )
+    res.error_id = uuid.UUID(eid)
 
 
 def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list[dict]) -> None:
@@ -132,32 +181,24 @@ def _persist_results(db: Session, job: OvaJob, results: list[dict], errors: list
         .all()
     )
 
-    result_map = {}
-    for r in results:
-        phase = r.get("phase", "")
-        rt = r.get("resource_type", "")
-        key = f"{phase}:{rt}"
-        if key not in result_map:
-            result_map[key] = r
-        title = r.get("title", "")
-        if title and title != rt:
-            result_map.setdefault(f"{phase}:{title}", r)
-
-    exhausted_map = {
-        f"{e.get('phase', '')}:{e.get('title') or e.get('resource_type', '')}": e
-        for e in errors
-        if e.get("exhausted")
-    }
+    result_map, exhausted_map = build_result_maps(results, errors)
 
     for res in resources:
         if res.status == "done":
             continue
+        if res.status == "degraded":
+            _ensure_degraded_error(db, job, res)
+            continue
         key = f"{res.phase_type}:{res.resource_type}"
         r = result_map.get(key)
         if r and r.get("html"):
+            defects = list(r.get("defects") or [])
             res.content = r["html"]
-            res.status = "done"
+            res.status = persist_status(html=r["html"], defects=defects)
+            res.defect_reason = defect_reason(defects)
             res.attempts = (res.attempts or 0) + 1
+            if res.status == "degraded":
+                _ensure_degraded_error(db, job, res)
         elif key in exhausted_map:
             e = exhausted_map[key]
             eid = log_generation_error(

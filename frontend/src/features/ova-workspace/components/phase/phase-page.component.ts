@@ -23,8 +23,8 @@ import { PhaseGenerationService } from "../../services/phase-generation.service"
 import { PhaseSelectService } from "../../services/phase-select.service";
 import { ResourceConfigModalComponent } from "../modals/resource-config-modal.component";
 import { ResourcePreviewPanelComponent } from "../modals/resource-preview-panel.component";
-import { type OvaContent, OvaFiveEViewerComponent } from "../viewer/ova-five-e-viewer.component";
-import { buildPhaseDemoContent } from "../viewer/ova-five-e-viewer.helpers";
+import { OvaFiveEViewerComponent } from "../viewer/ova-five-e-viewer.component";
+import { buildPhaseDemoContent, type OvaContent } from "../viewer/ova-five-e-viewer.helpers";
 import { HtmlPreviewComponent } from "./html-preview.component";
 import { ResourceCardComponent } from "./resource-card.component";
 

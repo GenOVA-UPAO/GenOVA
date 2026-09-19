@@ -22,7 +22,7 @@ from sqlalchemy.exc import DataError  # noqa: E402
 
 from core.http_errors import data_error_handler  # noqa: E402
 from core.ids import is_uuid  # noqa: E402
-from ova.crud.edit_helpers import _load_version_with_phases, _resolve_ova  # noqa: E402
+from ova.application.edit_helpers import _load_version_with_phases, _resolve_ova  # noqa: E402
 
 UUID_VALIDO = "4cfbca92-0415-4f2c-8ddc-b4b6df1e8837"
 

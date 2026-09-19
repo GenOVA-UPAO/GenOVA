@@ -50,6 +50,7 @@ dev = [
     "pytest-cov>=5.0.0",
     "requests>=2.31.0",
     "beautifulsoup4>=4.12.0",
+    "import-linter>=2.0",
 ]
 
 [build-system]
@@ -69,14 +70,17 @@ extend-exclude = ["migrations", "scorm_output", "uploads", "venv", ".venv"]
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "W",   # pycodestyle warnings
-    "I",   # isort
-    "B",   # bugbear
-    "UP",  # pyupgrade
-    "S",   # bandit (security)
-    "SIM", # simplify
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "W",     # pycodestyle warnings
+    "I",     # isort
+    "B",     # bugbear
+    "UP",    # pyupgrade
+    "S",     # bandit (security)
+    "SIM",   # simplify
+    "C901",  # mccabe: función demasiado compleja
+    "PLR0912",  # pylint: demasiadas ramas
+    "PLR0915",  # pylint: demasiados statements (función haciendo demasiado)
 ]
 ignore = [
     "E501",   # handled by formatter
@@ -86,16 +90,500 @@ ignore = [
     "S110",   # try-except-pass acceptable in cleanup paths
 ]
 
+# Convenciones de tamaño (ver readme §Convenciones): función/método con demasiadas
+# responsabilidades = error. Umbrales alineados con el frontend (~30 líneas / ~10 de
+# complejidad). PLR0913 (nº de args) se activa por dominio al migrarlo — hoy es ruido
+# por la DI de FastAPI.
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-statements = 30
+max-branches = 12
+max-args = 6
+
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S", "E"]
+"tests/**" = ["S", "E", "C901", "PLR0912", "PLR0915"]
 "tools/**" = ["S"]
-"seed.py" = ["S105", "S106"]
+"scripts/**" = ["C901", "PLR0912", "PLR0915"]
+"seed.py" = ["S105", "S106", "PLR0915"]
+"run_migrations.py" = ["PLR0915"]
 "main.py" = ["E402"]
 "ova/history_router.py" = ["E402"]
+# Deuda de tamaño en dominios aún no migrados a hexagonal — cada línea se elimina
+# cuando su dominio pasa por el refactor (Fase 2). `roles/` ya migrado (Fase 1).
+"users/**" = ["C901", "PLR0912", "PLR0915"]
+"generation/**" = ["C901", "PLR0912", "PLR0915"]
+"llm/**" = ["C901", "PLR0912", "PLR0915"]
+# Subdominio de soporte (motor LangGraph): exento de las reglas de tamaño de función
+# por diseño (KISS) — ver readme §Convenciones.
+"prometheus/**" = ["C901", "PLR0912", "PLR0915"]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.importlinter]
+# Los módulos de dominio son paquetes top-level (pythonpath = "."), no `backend.*`.
+# `lint-imports` se ejecuta desde `backend/`.
+root_packages = [
+    "core", "auth", "ova", "llm", "rag", "roles",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads",
+]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "El kernel (core) no depende de ningún dominio"
+type = "forbidden"
+source_modules = ["core"]
+forbidden_modules = [
+    "auth", "ova", "llm", "rag", "roles",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads",
+]
+
+# --- roles: hexagonal estricto (piloto) ---
+
+[[tool.importlinter.contracts]]
+name = "roles.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["roles.domain"]
+forbidden_modules = [
+    "roles.application", "roles.infrastructure", "roles.interface", "roles.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "roles.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["roles.application"]
+forbidden_modules = [
+    "roles.infrastructure", "roles.interface", "roles.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "roles: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "roles.interface",
+    "roles.container",
+    "roles.application",
+    "roles.domain",
+]
+
+# --- storage: adaptador outbound puro (sin HTTP, sin ORM, sin dominios) ---
+
+[[tool.importlinter.contracts]]
+name = "storage es un adaptador outbound aislado"
+type = "forbidden"
+source_modules = ["storage"]
+forbidden_modules = [
+    "fastapi", "sqlalchemy", "starlette",
+    "auth", "ova", "llm", "rag", "roles",
+    "users", "scorm", "generation", "prometheus", "uploads",
+]
+
+# --- uploads: hexagonal estricto ---
+
+[[tool.importlinter.contracts]]
+name = "uploads.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["uploads.domain"]
+forbidden_modules = [
+    "uploads.application", "uploads.infrastructure", "uploads.interface", "uploads.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "uploads.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["uploads.application"]
+forbidden_modules = [
+    "uploads.infrastructure", "uploads.interface", "uploads.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette", "rag",
+]
+
+[[tool.importlinter.contracts]]
+name = "uploads: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "uploads.interface",
+    "uploads.container",
+    "uploads.application",
+    "uploads.domain",
+]
+
+# --- scorm: dominio puro (ensamblado de paquetes SCORM, sin I/O ni orquestación) ---
+
+[[tool.importlinter.contracts]]
+name = "scorm.domain es puro (sin frameworks ni otros dominios)"
+type = "forbidden"
+source_modules = ["scorm.domain"]
+forbidden_modules = [
+    "scorm.interface",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+    "auth", "ova", "llm", "rag", "roles",
+    "users", "generation", "prometheus", "storage", "uploads",
+]
+
+# --- rag: hexagonal estricto ---
+
+[[tool.importlinter.contracts]]
+name = "rag.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["rag.domain"]
+forbidden_modules = [
+    "rag.application", "rag.infrastructure", "rag.interface", "rag.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "rag.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["rag.application"]
+forbidden_modules = [
+    "rag.infrastructure", "rag.interface", "rag.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "rag: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "rag.interface",
+    "rag.container",
+    "rag.application",
+    "rag.domain",
+]
+
+# --- auth: pase estructural en capas + flujo de login extraído a caso de uso
+#     (auth.application.use_cases.LoginUser). El resto de sub-routers sigue con
+#     la lógica en el router (2º pase en curso). ---
+
+[[tool.importlinter.contracts]]
+name = "auth.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["auth.domain"]
+forbidden_modules = [
+    "auth.application", "auth.infrastructure", "auth.interface", "auth.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "auth.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["auth.application"]
+forbidden_modules = [
+    "auth.infrastructure", "auth.interface", "auth.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "auth.infrastructure no depende de application/interface/container"
+type = "forbidden"
+source_modules = ["auth.infrastructure"]
+forbidden_modules = ["auth.application", "auth.interface", "auth.container"]
+
+[[tool.importlinter.contracts]]
+name = "auth: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "auth.interface",
+    "auth.container",
+    "auth.application",
+    "auth.domain",
+]
+# `auth.infrastructure` es capa lateral: solo la ven `container` e `interface`
+# (los sub-routers aún no migrados importan jwt/cookies/smtp directamente).
+
+# --- prometheus / llm / generation: subdominios de soporte (tratamiento ligero).
+#     No adoptan la ceremonia hexagonal; se les fija el perímetro con contratos. ---
+
+[[tool.importlinter.contracts]]
+name = "prometheus (motor LangGraph) es un leaf: sin HTTP ni dominios superiores"
+type = "forbidden"
+source_modules = ["prometheus"]
+forbidden_modules = [
+    "fastapi", "starlette",
+    "auth", "users", "ova", "roles", "scorm", "uploads", "generation",
+]
+# El kernel `core` sí toca fastapi/starlette (commit_or_500, logging middleware);
+# lo que se prohíbe es que `prometheus` tenga acoplamiento HTTP propio.
+ignore_imports = [
+    "core.database -> fastapi",
+    "core.logging_setup -> starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "llm no depende de dominios superiores"
+type = "forbidden"
+source_modules = ["llm"]
+forbidden_modules = ["users", "ova", "roles", "scorm", "uploads", "generation"]
+
+[[tool.importlinter.contracts]]
+name = "las capas de utilidad de llm son framework-free"
+type = "forbidden"
+source_modules = [
+    "llm.providers", "llm.clients", "llm.images",
+    "llm.podcast", "llm.utils", "llm.ova_components",
+]
+forbidden_modules = ["fastapi", "starlette"]
+# `core.database` importa fastapi.HTTPException (commit_or_500); no es acoplamiento
+# HTTP propio de la capa de utilidad.
+ignore_imports = ["core.database -> fastapi"]
+
+[[tool.importlinter.contracts]]
+name = "generation no depende de roles ni de auth.infrastructure"
+type = "forbidden"
+source_modules = ["generation"]
+forbidden_modules = ["roles", "auth.infrastructure"]
+
+[[tool.importlinter.contracts]]
+name = "generation.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["generation.domain"]
+forbidden_modules = [
+    "generation.application", "generation.infrastructure", "generation.interface",
+    "generation.container", "generation.jobs", "generation.regen",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+    "prometheus", "llm",
+]
+# `prometheus` y `llm` se cierran ahora que el núcleo de ejecución pasó a capas:
+# las reglas puras del runner (seed_plan, build_graph_state, finish_status) y el
+# progreso de regen viven en domain y son solo stdlib. El motor LangGraph y el
+# cliente LLM quedan como adaptadores en `generation.infrastructure`.
+
+[[tool.importlinter.contracts]]
+name = "generation.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["generation.application"]
+forbidden_modules = [
+    "generation.infrastructure", "generation.interface", "generation.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "generation.infrastructure no depende de application/interface/container"
+type = "forbidden"
+source_modules = ["generation.infrastructure"]
+forbidden_modules = [
+    "generation.application", "generation.interface", "generation.container",
+]
+
+[[tool.importlinter.contracts]]
+name = "generation: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "generation.interface",
+    "generation.container",
+    "generation.application",
+    "generation.domain",
+]
+# `generation.jobs` y `generation.regen` quedan FUERA de las capas a propósito: son
+# los paquetes heredados que aún no han pasado el 2º pase (runner, materialize,
+# progress, queue, y todo regen). Entran cuando su ola los absorba.
+
+[[tool.importlinter.contracts]]
+name = "generation solo toca la superficie pública de ova, nunca sus internos"
+type = "forbidden"
+source_modules = ["generation"]
+forbidden_modules = [
+    "ova.application", "ova.interface", "ova.infrastructure", "ova.domain",
+]
+# Solo imports DIRECTOS: el tránsito `generation -> ova -> ova.application` es el
+# uso previsto de la superficie publicada, no una violación.
+allow_indirect_imports = true
+# `generation -> ova` (el `__init__` publicado) sí es legítimo: regen/jobs son
+# operaciones sobre OVAs. `ova/__init__.py` re-exporta con `__getattr__` (PEP 562)
+# a propósito — el import ansioso de `ova.application` cicla con `models`
+# (su registro ORM importa `ova.infrastructure`, que ejecuta el `__init__` a mitad
+# de la carga de `models`, antes de que sus `from models import ...` resuelvan).
+
+# --- users: 2º pase en curso. Perfil / seguridad de cuenta / configuración de
+#     recursos ya están extraídos a casos de uso; los 12 routers restantes (admin,
+#     analytics, links, llm-settings, api-keys) siguen con la lógica dentro y sus
+#     módulos de servicio heredados (`admin_helpers`, `analytics_service`,
+#     `dashboard_*`) todavía tocan fastapi/sqlalchemy. Por eso la pureza de
+#     `application` se exige sobre las partes ya migradas, no sobre el paquete
+#     entero: el contrato crece según avanzan las olas. ---
+
+[[tool.importlinter.contracts]]
+name = "users.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["users.domain"]
+forbidden_modules = [
+    "users.application", "users.infrastructure", "users.interface", "users.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "users.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["users.application"]
+forbidden_modules = [
+    "users.infrastructure", "users.interface", "users.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+# Los dos contratos acotados que hubo aquí se fusionan en este: al disolverse
+# `admin_helpers`, `analytics_service` y `dashboard_{estudiante,profesor}` no
+# queda ningún módulo de servicio heredado, así que la pureza ya se exige al
+# paquete entero. El acceso al ORM va por `models` desde infrastructure.
+
+[[tool.importlinter.contracts]]
+name = "users.infrastructure no depende de application/interface/container"
+type = "forbidden"
+source_modules = ["users.infrastructure"]
+forbidden_modules = ["users.application", "users.interface", "users.container"]
+
+[[tool.importlinter.contracts]]
+name = "users: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "users.interface",
+    "users.container",
+    "users.application",
+    "users.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "users no depende de ova/generation/scorm/rag/storage"
+type = "forbidden"
+source_modules = ["users"]
+forbidden_modules = ["ova", "generation", "scorm", "rag", "storage"]
+# Excepciones sancionadas (endpoints admin/settings que configuran el motor):
+#   users.interface.http.admin_nodes_config_router      -> prometheus.config
+#   users.interface.http.{admin_platform_settings,settings_*}_router -> llm.*
+#   users.interface.http.{admin_account,settings_account}_router -> auth.infrastructure
+# (contar OVAs en analytics pasa por `from models import Ova`, no por ova.*)
+
+# --- ova: pase estructural en capas (agregado central; 2º pase pendiente). ---
+
+[[tool.importlinter.contracts]]
+name = "ova.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["ova.domain"]
+forbidden_modules = [
+    "ova.application", "ova.infrastructure", "ova.interface",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "ova.infrastructure no depende de application/interface/container"
+type = "forbidden"
+source_modules = ["ova.infrastructure"]
+forbidden_modules = ["ova.application", "ova.interface", "ova.container"]
+
+[[tool.importlinter.contracts]]
+name = "ova.infrastructure no depende de generation"
+type = "forbidden"
+source_modules = ["ova.infrastructure"]
+forbidden_modules = ["generation"]
+# El barrido de jobs obsoletos (`sweep_stale_jobs_for_ovas`) se inyecta desde
+# `ova.container`, no se importa desde un repositorio. Cuando estuvo en
+# infraestructura cerró un ciclo de 5 saltos que cruzaba la frontera de dominio y
+# volvía: ova.infrastructure -> generation.jobs.* -> ova -> ova.application.
+
+[[tool.importlinter.contracts]]
+name = "ova.application no depende de la capa de interface"
+type = "forbidden"
+source_modules = ["ova.application"]
+forbidden_modules = ["ova.interface"]
+
+[[tool.importlinter.contracts]]
+name = "ova.application (parte migrada) no depende de infraestructura ni frameworks"
+type = "forbidden"
+source_modules = [
+    "ova.application.use_cases", "ova.application.ports", "ova.application.dto",
+]
+forbidden_modules = [
+    "ova.infrastructure", "ova.interface", "ova.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+# Acotado a lo migrado, igual que se hizo en `users`: los módulos de servicio
+# heredados de los 11 routers que faltan (`edit_helpers`, `edit_phase_ops`,
+# `llm_helpers`, `chat_service`) todavía tocan fastapi/sqlalchemy. El contrato
+# se ensancha cuando esas olas los absorban.
+
+[[tool.importlinter.contracts]]
+name = "ova: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "ova.interface",
+    "ova.container",
+    "ova.application",
+    "ova.domain",
+]
+# `forbidden_response` vive en `core.http_errors` y `_is_admin` en
+# `ova.application.access`; antes ambos colgaban de `ova.interface.http._shared`,
+# lo que invertía la capa.
+
+[[tool.importlinter.contracts]]
+name = "ova no depende de roles ni users"
+type = "forbidden"
+source_modules = ["ova"]
+forbidden_modules = ["roles", "users"]
+# `ova` sí alcanza `prometheus` transitivamente a través de `generation` (que usa
+# el motor de generación) — acoplamiento legítimo, no un import directo de `ova`.
+
+# =====================================================================
+# Fase 3 — contratos globales entre dominios
+# =====================================================================
+#
+# `models` (backend/models.py) NO está en `root_packages` a propósito: es el
+# registro agregado del ORM (re-exporta cada clase para poblar `Base.metadata`).
+# Al no ser paquete raíz, import-linter no atraviesa `from models import X`, así
+# que ese patrón NO acopla dominios entre sí a ojos de los contratos — es el
+# punto de corte sancionado para *entidades de persistencia*. Añadir `models` a
+# `root_packages` reacoplaría los 11 dominios de golpe: no hacerlo.
+#
+# `auth.dependencies` (guards FastAPI: get_current_user / require_admin /
+# require_permission) es una preocupación transversal de la capa `interface`,
+# como `core.database.get_db`. Cualquier `*.interface` puede importarlo; se
+# ignora ese edge en los contratos de independencia.
+#
+# El grafo de dominios NO es un conjunto plano de pares: es un DAG por capas con
+# `llm`+`prometheus` como subdominios de soporte mutuamente cíclicos. Por eso la
+# independencia se expresa como (a) un `independence` sobre la base que de verdad
+# no se toca, y (b) reglas direccionales `forbidden` "no mirar hacia arriba".
+
+# (a) La base es mutuamente independiente.
+[[tool.importlinter.contracts]]
+name = "Base independiente: auth / roles / scorm / storage / uploads"
+type = "independence"
+modules = ["auth", "roles", "scorm", "storage", "uploads"]
+ignore_imports = [
+    "roles.interface.http.router -> auth.dependencies",
+    "uploads.interface.http.router -> auth.dependencies",
+    "rag.interface.http.router -> auth.dependencies",
+]
+
+# (b) Reglas direccionales: los dominios de identidad/base no dependen de los
+#     dominios de producto/orquestación ni de los subdominios de soporte.
+[[tool.importlinter.contracts]]
+name = "auth y roles no dependen de ningún dominio superior"
+type = "forbidden"
+source_modules = ["auth", "roles"]
+forbidden_modules = [
+    "ova", "generation", "llm", "prometheus", "rag", "scorm", "storage", "uploads",
+]
+
+[[tool.importlinter.contracts]]
+name = "rag solo depende de llm (para visión/transcripción), no de dominios superiores"
+type = "forbidden"
+source_modules = ["rag"]
+forbidden_modules = [
+    "ova", "generation", "users", "roles", "prometheus", "scorm", "storage", "uploads",
+]
+
+[[tool.importlinter.contracts]]
+name = "uploads solo depende de rag (ingesta), no de dominios superiores"
+type = "forbidden"
+source_modules = ["uploads"]
+forbidden_modules = [
+    "ova", "generation", "prometheus", "users", "roles", "scorm", "storage",
+]
+# `llm` no se lista: uploads lo alcanza solo transitivamente vía `rag`
+# (rag.infrastructure.parsers usa visión/transcripción), que es un edge permitido.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

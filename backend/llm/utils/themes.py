@@ -138,7 +138,9 @@ def _interaction_block(color_mode: str) -> str:
             "     :focus-visible outline 3px solid color primario con offset 2px.\n"
             "   - Inputs/selectables: borde 2px, focus-visible cambia borde a primary.\n"
             "   - Estados de carga, completado y error VISUALMENTE distintos (color + icono/emoji).\n"
-            "   - Animaciones de entrada en elementos clave: opacity 0→1, translateY 8px→0, 300ms ease-out."
+            "   - Usa UN solo momento de movimiento intencional: responde a una acción del estudiante "
+            "(revelar respuesta, avanzar progreso o mostrar resultado). Si al quitarlo no pierde significado "
+            "ni feedback, quítalo; nunca animes la entrada de cada sección."
         )
     return (
         "5) INTERACCIÓN\n"
@@ -148,11 +150,13 @@ def _interaction_block(color_mode: str) -> str:
         "   - Opciones seleccionables: .ova-option + toggle de .is-selected/.is-correct/.is-wrong desde JS.\n"
         "   - Feedback: .ova-feedback--ok / .ova-feedback--bad (color + icono/emoji + texto).\n"
         "   - Progreso: <div class=\"ova-progress\"><span style=\"width:0%\"></span></div> y anima el width.\n"
-        "   - Animaciones de entrada en elementos clave: opacity 0→1, translateY 8px→0, 300ms ease-out."
+        "   - Usa UN solo momento de movimiento intencional: responde a una acción del estudiante "
+        "(revelar respuesta, avanzar progreso o mostrar resultado). Si al quitarlo no pierde significado "
+        "ni feedback, quítalo; nunca animes la entrada de cada sección."
     )
 
 
-_GOLDEN_SKELETON = """9) ESQUELETO DORADO (estructura de referencia — adapta el contenido, no el patrón):
+_GOLDEN_SKELETON = """10) ESQUELETO DORADO (estructura de referencia — adapta el contenido, no el patrón):
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -225,7 +229,13 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
 
 {_interaction_block(color_mode)}
 
-6) ACCESIBILIDAD (WCAG 2.2 AA — OBLIGATORIO)
+6) TIPOGRAFÍA Y ESTRUCTURA
+   - No acentúes una sola palabra del titular con cursiva, negrita o color distinto.
+   - Usa marcadores 01/02/03 solo si el contenido es una secuencia real (pasos o línea de tiempo).
+   - Bordes, divisores, numeración y etiquetas codifican información del contenido; nunca son decoración.
+   - Agrupa por función pedagógica: prefiere pocas regiones fuertes a una rejilla uniforme de tarjetas intercambiables.
+
+7) ACCESIBILIDAD (WCAG 2.2 AA — OBLIGATORIO)
    - Contraste texto/fondo >= 4.5:1 (cuerpo) y >= 3:1 (títulos grandes y bordes de UI).
    - Focus visible en TODO elemento interactivo (:focus-visible outline 3px, offset 2px). Nunca outline:none sin reemplazo.
    - Estructura semántica: un único <h1>, luego <h2>/<h3> en orden sin saltos; usa <main>, <nav>, <section>, <button>, <ul>/<ol>.
@@ -236,7 +246,7 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
    - Objetivos táctiles >= 24x24 CSS px (WCAG 2.5.8) con espacio entre ellos.
    - Respeta @media (prefers-reduced-motion: reduce) → animation:none; transition:none; scroll-behavior:auto.
 
-7) CALIDAD
+8) CALIDAD
    - Mínimo lo indicado por la tarea, sin sections vacías ni texto lorem.
    - JavaScript funcional REAL: ningún botón sin handler, ningún estado sin transición.
    - Limpieza: declara handlers con addEventListener, evita inline onclick=.
@@ -245,14 +255,22 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
      draggable="true" y handlers dragstart/dragend; las zonas destino tienen
      dragover (preventDefault) + drop.
    - Si el tipo requiere cronómetro: usa Date.now() o setInterval con cleanup.
-   - Si el tipo requiere visualización (gráfico, árbol, scatter): genera SVG real
-     con elementos visibles (no solo texto plano); usa viewBox + preserveAspectRatio.
+   - Para cambio en el tiempo usa línea/área; para magnitud ordenada, barras ordenadas o tabla.
+   - Para parte-todo usa barras apiladas solo si el denominador significa algo (nunca tarta decorativa);
+     para distribución, histograma/dot plot; para relación, scatter con escalas reales.
+   - Si importan más valores exactos que la forma, usa TABLA, no gráfico. Todo gráfico es SVG real
+     con elementos visibles (no solo texto plano), viewBox y preserveAspectRatio.
+   - Etiqueta unidades, rango temporal y fuente. No inventes datos para completar: si son ilustrativos, dilo.
+   - COPY: voz activa; el botón nombra lo que sucede al pulsarlo.
+   - Conserva el mismo nombre de la acción en todo el flujo.
+   - Los errores indican qué falló y cómo corregirlo, sin disculpas ni vaguedad.
+   - Un estado vacío invita a actuar; frases llanas y sin relleno: cada texto hace un solo trabajo.
    - Si el tipo usa cards/items en grid: usa CSS grid con minmax(min, 1fr) para
      que se reflowee en móvil sin overflow horizontal.
    - PROHIBIDO `width:` o `min-width:` en px > 320 sin un media query / clamp().
    - Texto en SVG: usa <text> con text-anchor + tamaño adaptado; nunca trunques.
 
-8) PROHIBIDO
+9) PROHIBIDO
    - Lorem ipsum / placeholder copy.
    - Imágenes externas (las que se inyectan ya vienen como data-URI).
    - Librerías JS/CSS externas.

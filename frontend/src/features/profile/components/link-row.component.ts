@@ -67,7 +67,9 @@ export class LinkRowComponent {
   readonly onResend = output<string>();
 
   get person() {
-    return this.link.linked || { email: this.link.invite_email };
+    // `linked` es objeto|null|undefined (nunca ""/0/false): ?? es equivalente
+    // y expresa "sin vinculo → stub de invitación".
+    return this.link.linked ?? { email: this.link.invite_email };
   }
 
   get isPending() {
@@ -86,6 +88,7 @@ export class LinkRowComponent {
 
   getEmail() {
     const p = this.person;
-    return p?.email || this.link.invite_email || "Sin email";
+    // Emails nunca son "" (validados en backend): ?? equivale y cubre null.
+    return p?.email ?? this.link.invite_email ?? "Sin email";
   }
 }

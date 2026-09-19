@@ -37,6 +37,7 @@ export class OvaJobService implements OnDestroy {
   private selectedFailedIdsState = signal<string[]>([]);
   private jobSnapshot = signal<JobSnapshot | null>(null);
   private streamingState = signal(false);
+  private resumingState = signal(false);
   private lastFingerprint = "";
   private lastProgressAtState = signal<number>(Date.now());
   jobId = this.jobIdState.asReadonly();
@@ -44,6 +45,7 @@ export class OvaJobService implements OnDestroy {
   error = this.errorState.asReadonly();
   selections = this.selectionsState.asReadonly();
   starting = this.startingState.asReadonly();
+  resuming = this.resumingState.asReadonly();
   viewModel = computed(() =>
     toResourceViewModel(this.jobSnapshot()?.resources || [], this.selectionsState()),
   );
@@ -135,11 +137,14 @@ export class OvaJobService implements OnDestroy {
     const id = this.jobIdState();
     if (!id) return;
     this.errorState.set("");
+    this.resumingState.set(true);
     try {
       await this.jobsApi.resumeJob(id, ids);
       this.syncRunner.pollNow(id);
     } catch (err: any) {
       this.errorState.set(err.message || "No se pudo reintentar la generación.");
+    } finally {
+      this.resumingState.set(false);
     }
   }
 

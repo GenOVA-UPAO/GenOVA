@@ -15,10 +15,10 @@ import { RouterModule } from "@angular/router";
 import { IconComponent } from "@/core/components/icon.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 
+import type { OvaVersionRow } from "../../lib/ova-versioning";
 import { resourceLabel } from "../../lib/resource-label";
 import type { PhaseWithContent } from "../../lib/types";
 import { buildUploadsPropBag } from "../../lib/upload-chip-view-model";
-import type { OvaVersionRow } from "../../lib/version-history.types";
 import { getSavedRatio } from "../../lib/workspace-utils";
 import { OvaUploadsService } from "../../services/ova-uploads.service";
 import { OvaWorkspaceService } from "../../services/ova-workspace.service";

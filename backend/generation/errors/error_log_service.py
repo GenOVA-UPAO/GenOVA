@@ -15,8 +15,8 @@ import uuid
 import structlog
 from sqlalchemy.orm import Session
 
+from core.database import commit_or_500
 from generation.errors.error_log_model import DEFAULT_CATEGORY, ERROR_CATEGORIES, OvaErrorLog
-from users.admin.helpers import commit_or_500
 
 logger = structlog.get_logger(__name__)
 

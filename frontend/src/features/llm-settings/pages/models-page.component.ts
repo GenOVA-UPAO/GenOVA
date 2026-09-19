@@ -9,6 +9,7 @@ import {
 import { Router } from "@angular/router";
 
 import { AuthService } from "@/core/auth/auth.service";
+import { PlatformApiKeysCardComponent } from "@/core/components/platform-api-keys-card.component";
 import { ButtonComponent } from "@/core/components/ui/button.component";
 import {
   TabsComponent,
@@ -17,16 +18,17 @@ import {
   TabsTriggerComponent,
 } from "@/core/components/ui/tabs.component";
 import { toast } from "@/core/lib/toast";
+import { PlatformSettingsService } from "@/core/services/platform-settings.service";
 
+import { GuardrailsCardComponent } from "../components/guardrails-card.component";
 import { ManageModelsModalComponent } from "../components/manage-models-modal.component";
 import { ModelsMasterDetailComponent } from "../components/models-master-detail.component";
-import { PlatformApiKeysCardComponent } from "../components/platform-api-keys-card.component";
 import { PlatformCapabilitiesCardComponent } from "../components/platform-capabilities-card.component";
 import { PlatformNodesCardComponent } from "../components/platform-nodes-card.component";
 import { UserApiKeysCardComponent } from "../components/user-api-keys-card.component";
-import { type Draft, toDraft, toPayload } from "../lib/llmConfigDraft";
+import { draftHasIssues, validateDraft } from "../lib/chain-validation";
+import { type Draft, toDraft, toPayload } from "../lib/llm-config-draft";
 import type { ChipModel } from "../lib/model-task-card.helpers";
-import { PlatformSettingsService } from "../services/platform-settings.service";
 import { UserLlmSettingsStore } from "../services/user-llm-settings.store";
 
 function canAccessModels(user: ReturnType<AuthService["user"]>): boolean {
@@ -46,6 +48,7 @@ function canAccessModels(user: ReturnType<AuthService["user"]>): boolean {
     PlatformApiKeysCardComponent,
     PlatformCapabilitiesCardComponent,
     PlatformNodesCardComponent,
+    GuardrailsCardComponent,
     UserApiKeysCardComponent,
     TabsComponent,
     TabsListComponent,
@@ -83,6 +86,21 @@ export class ModelsPageComponent implements OnInit {
     const entries = Object.values(status);
     return { ok: entries.filter((s) => s.ok).length, total: entries.length };
   });
+
+  readonly favoritesLabel = computed(() => {
+    const n = this.store.enabledModels().length;
+    if (n === 0) return "Todos los modelos disponibles";
+    return n === 1 ? "1 favorito" : `${n} favoritos`;
+  });
+
+  readonly headerStatus = computed(() => {
+    const { ok, total } = this.connectedProviders();
+    if (total === 0) return this.favoritesLabel();
+    return `${ok} / ${total} proveedores · ${this.favoritesLabel()}`;
+  });
+
+  readonly taskIssues = computed(() => validateDraft(this.adminDraft(), this.adminTasks()));
+  readonly chainInvalid = computed(() => draftHasIssues(this.adminDraft(), this.adminTasks()));
 
   async ngOnInit() {
     const user = (await this.auth.revalidate()) ?? this.auth.user();
@@ -156,12 +174,12 @@ export class ModelsPageComponent implements OnInit {
 
   private async saveAdminPlatform() {
     const draft = this.adminDraft();
-    if (!draft) return;
     await this.adminSettings.saveAdminLlmConfig(toPayload(draft, this.adminTasks()));
     this.adminBaseline.set(JSON.stringify(draft));
   }
 
   async saveAll() {
+    if (this.chainInvalid()) return;
     this.adminSaving.set(true);
     try {
       if (this.adminDirty()) await this.saveAdminPlatform();

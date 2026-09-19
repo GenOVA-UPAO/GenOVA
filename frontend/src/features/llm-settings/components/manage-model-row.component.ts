@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, input, output } from "@angul
 
 import { IconComponent } from "@/core/components/icon.component";
 
+import { formatContextLength } from "../lib/llm-catalog.utils";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 
 @Component({
@@ -75,6 +76,13 @@ import type { CatalogModel } from "../lib/user-llm-settings.types";
           pricingShort
         }}</span>
       }
+      @if (contextLabel) {
+        <span
+          class="shrink-0 text-[10px] text-muted-foreground/70 tabular-nums"
+          title="Contexto máximo (tokens)"
+          >{{ contextLabel }}</span
+        >
+      }
     </div>
   `,
 })
@@ -103,6 +111,10 @@ export class ManageModelRowComponent {
 
   get pricingShort(): string {
     return this.model.pricing?.replace(" por 1M tokens", "") ?? "—";
+  }
+
+  get contextLabel(): string | null {
+    return formatContextLength(this.model.context_length);
   }
 
   handleClick(): void {

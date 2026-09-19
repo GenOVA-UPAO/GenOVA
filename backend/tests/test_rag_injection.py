@@ -6,7 +6,7 @@ material subido por el usuario entre delimitadores y antepone una guardia para
 que el modelo lo trate como DATOS y nunca como instrucciones.
 """
 
-from rag.retriever import _CTX_CLOSE, _CTX_GUARD, _CTX_OPEN, build_contexto_usuario
+from rag.domain.context import _CTX_CLOSE, _CTX_GUARD, _CTX_OPEN, build_contexto_usuario
 
 
 def _chunk(content: str, filename: str = "doc.pdf") -> dict:

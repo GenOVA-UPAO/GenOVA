@@ -1,7 +1,8 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { Router } from "@angular/router";
 
-import { apiFetch, AuthExpiredBus } from "@/core/lib/http";
+import { AuthExpiredBus } from "@/core/lib/auth-expired-bus";
+import { apiFetch } from "@/core/lib/http";
 
 export interface MeUser {
   id?: string | number;

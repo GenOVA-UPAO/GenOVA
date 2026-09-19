@@ -48,7 +48,7 @@ def _retrieve_rag_context(prompt: str, upload_ids: list) -> str:
     if not upload_ids or not prompt.strip():
         return ""
     from core.database import SessionLocal
-    from rag.retriever import build_contexto_usuario, top_k
+    from rag import build_contexto_usuario, top_k
 
     db = SessionLocal()
     try:

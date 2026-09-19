@@ -3,10 +3,17 @@
 Domain models live co-located in their domain packages (screaming
 architecture). This module re-exports every model so that importing it
 populates ``Base.metadata`` in full for ``create_all()`` and the migration
-runner, and so legacy ``from models import X`` call sites keep working.
+runner, and so ``from models import X`` call sites keep working.
+
+Fase 3 — punto de corte sancionado: este módulo NO figura en
+``[tool.importlinter] root_packages``. import-linter no atraviesa
+``from models import X``, así que ese patrón no acopla dominios entre sí a
+ojos de los contratos de independencia: ``models`` es la superficie
+compartida para *entidades de persistencia*. Añadirlo a ``root_packages``
+reacoplaría los 11 dominios de golpe — no hacerlo.
 """
 
-from auth.models import (  # noqa: F401
+from auth.infrastructure.orm import (  # noqa: F401
     EmailVerificationToken,
     PasswordResetToken,
     RevokedToken,
@@ -20,12 +27,12 @@ from generation.jobs.jobs_model import (  # noqa: F401  — registers ova_jobs t
     OvaJobResource,
 )
 from llm.catalog.models import CatalogCache  # noqa: F401
-from ova.chat.models import OvaEditorChatMessage  # noqa: F401
-from ova.models import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
-from rag.models import RagChunk  # noqa: F401
-from roles.models import Role, UserRole  # noqa: F401
-from users.admin.models import PlatformConfig  # noqa: F401
-from users.models import User, UserLink  # noqa: F401
+from ova.infrastructure.orm import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
+from ova.infrastructure.orm_chat import OvaEditorChatMessage  # noqa: F401
+from rag.infrastructure.orm import RagChunk  # noqa: F401
+from roles.infrastructure.orm import Role, UserRole  # noqa: F401
+from users.infrastructure.orm import User, UserLink  # noqa: F401
+from users.infrastructure.orm_platform import PlatformConfig  # noqa: F401
 
 __all__ = [
     "CatalogCache",

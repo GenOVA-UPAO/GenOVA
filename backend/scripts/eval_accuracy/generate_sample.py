@@ -24,10 +24,13 @@ import uuid
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from core.database import SessionLocal  # noqa: E402
-from rag.chunker import chunk_text  # noqa: E402
-from rag.embedder import get_embedder  # noqa: E402
-from rag.retriever import build_contexto_usuario, top_k  # noqa: E402
-from rag.store import insert_chunks  # noqa: E402
+from rag import (  # noqa: E402
+    build_contexto_usuario,
+    chunk_text,  # noqa: E402
+    get_embedder,  # noqa: E402
+    insert_chunks,  # noqa: E402
+    top_k,
+)
 from scripts.eval_accuracy.__main__ import (  # noqa: E402
     DEFAULT_JUDGE_MODEL,
     DEFAULT_JUDGE_PROVIDER,

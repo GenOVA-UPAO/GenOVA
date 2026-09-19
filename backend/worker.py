@@ -16,10 +16,10 @@ import uuid
 
 import structlog
 from arq.connections import RedisSettings
+from generation.jobs.queue import redis_settings
 
 from core.config import settings
 from generation.jobs.jobs_runner import run_job
-from generation.jobs.queue import redis_settings
 
 # GN-05: en consolas Windows (cp1252) el logging de errores con caracteres no
 # mapeables moría con UnicodeEncodeError y enmascaraba el traceback real.

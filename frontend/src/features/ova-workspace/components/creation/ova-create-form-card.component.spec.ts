@@ -1,7 +1,7 @@
 import { Component, input, inputBinding, output, outputBinding } from "@angular/core";
 import { render, screen } from "@testing-library/angular/zoneless";
 
-import type { UploadsProps } from "../../lib/uploadTypes";
+import type { UploadsProps } from "../../lib/upload-types";
 import { OvaFilesModalComponent } from "../modals/ova-files-modal.component";
 import { OvaThemeModalComponent } from "../modals/ova-theme-modal.component";
 import { FileChipComponent } from "../shared/file-chip.component";

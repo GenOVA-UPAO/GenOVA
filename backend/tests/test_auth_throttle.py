@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import pytest  # noqa: E402
 
-from auth import throttle  # noqa: E402
+from auth.infrastructure import email_throttle as throttle  # noqa: E402
 
 
 @pytest.fixture

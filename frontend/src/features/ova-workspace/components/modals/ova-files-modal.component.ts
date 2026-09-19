@@ -9,7 +9,7 @@ import {
   DialogTitleComponent,
 } from "@/core/components/ui/dialog.component";
 
-import type { UploadItem } from "../../lib/uploadTypes";
+import type { UploadItem } from "../../lib/upload-types";
 import { FileChipComponent } from "../shared/file-chip.component";
 
 const ACCEPTED_LABEL = "PDF, DOCX, PPTX · MP3, WAV, M4A · JPG, PNG, WEBP";

@@ -12,6 +12,7 @@ template = '''
 defaults = { duration_seconds = 40 }
 template = '''
 [ROL] Guionista audiovisual de EdTech.
+[ALCANCE] No hay generador de video conectado. Entrega un storyboard de preproduccion y un prompt_video copiable para un generador externo; no describas ni propongas una simulacion, reproductor, avance o video incrustado.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Video de apertura de ${duration_seconds} s sobre "${concept}". Genera: guion_visual con marcadores de tiempo cada 10 s y metáforas cotidianas apropiadas al tema; narracion_voz ≤70 palabras que cierra con una pregunta abierta; prompt_video en inglés ≤90 palabras para un generador de video.
@@ -109,6 +110,7 @@ template = '''
 [OBJETIVO] Construir un recurso HTML5 interactivo sobre "${concept}" que enganche al estudiante. El HTML visible no debe mencionar fases 5E (ENGAGE/EXPLORE/…) ni "FASE ·".
 [DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
 ${data_json}
+[VIDEO] Si los datos contienen "prompt_video", el recurso es un storyboard, no un video generado. Presenta guion_visual, narracion_voz y el prompt copiable; nunca incluyas <video>, iframe, controles de reproductor ni texto como "Simulacion de video".
 [FORMATO] ${estilo}
 [REQUISITOS]
 - HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>.
