@@ -10,10 +10,11 @@ import { PlatformKeyRowHeader } from "./platform-key-row-header";
 
 interface PlatformKeyRowProps {
   provider: string;
-  maskedValue?: string;
+  maskedValue?: string | null;
 }
 
-export function PlatformKeyRow({ provider, maskedValue = "" }: Readonly<PlatformKeyRowProps>) {
+export function PlatformKeyRow({ provider, maskedValue }: Readonly<PlatformKeyRowProps>) {
+  const masked = maskedValue ?? "";
   const meta = providerMeta(provider);
   const inputRef = useRef<HTMLInputElement>(null);
   // null = sin editar: el input muestra la key enmascarada del servidor.
@@ -42,11 +43,11 @@ export function PlatformKeyRow({ provider, maskedValue = "" }: Readonly<Platform
 
   return (
     <div className="glass-card space-y-4 rounded-3xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/20">
-      <PlatformKeyRowHeader meta={meta} configured={maskedValue !== ""} />
+      <PlatformKeyRowHeader meta={meta} configured={masked !== ""} />
       <div className="flex flex-col gap-3 sm:flex-row">
         <PlatformKeyInput
           label={`API key de ${meta.label}`}
-          value={draft ?? maskedValue}
+          value={draft ?? masked}
           placeholder={meta.placeholder}
           editing={editing}
           ref={inputRef}
@@ -55,7 +56,7 @@ export function PlatformKeyRow({ provider, maskedValue = "" }: Readonly<Platform
         />
         <PlatformKeyActions
           editing={editing}
-          configured={maskedValue !== ""}
+          configured={masked !== ""}
           saving={save.isPending}
           canSave={trimmed !== ""}
           onSave={handleSave}

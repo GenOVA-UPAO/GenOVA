@@ -25,7 +25,7 @@ export function MobileDrawer({ open, onOpenChange }: Readonly<MobileDrawerProps>
         <div className="flex items-center justify-between border-b border-sidebar-border px-4 py-4">
           <NavbarBrand />
           <SheetClose
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             aria-label="Cerrar menú"
           >
             <Icon name="x" size="text-xl" />

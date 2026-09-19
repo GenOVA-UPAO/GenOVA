@@ -51,7 +51,7 @@ export function SearchInput({
             onValueChange("");
           }}
           aria-label="Limpiar búsqueda"
-          className="absolute top-1/2 right-2.5 z-10 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="absolute top-1/2 right-2.5 z-10 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <Icon name="x" size="text-base" />
         </button>

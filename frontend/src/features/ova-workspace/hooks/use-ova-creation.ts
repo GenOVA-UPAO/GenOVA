@@ -5,7 +5,17 @@ import { useNavigate } from "react-router";
 import { startOvaJob } from "../api/ova-jobs.api";
 import type { CreationModal } from "../components/creation/creation-toolbar";
 import { canCreate } from "../lib/creation-form";
-import { emptyPicks, type PhaseResourceMap, type ResourceConfigs } from "../lib/phase-select.config";
+import {
+  type EducationLevelId,
+  loadEducationLevel,
+  NIVEL_STORAGE_KEY,
+  promptWithLevel,
+} from "../lib/education-levels";
+import {
+  emptyPicks,
+  type PhaseResourceMap,
+  type ResourceConfigs,
+} from "../lib/phase-select.config";
 import type { OvaTheme } from "../lib/types";
 import { useResourceConfigs } from "./use-resource-configs";
 import { useOvaUploads } from "./use-uploads";
@@ -17,6 +27,7 @@ export function useOvaCreation() {
   const [prompt, setPrompt] = useState("");
   const [picks, setPicks] = useState(emptyPicks);
   const [theme, setTheme] = useState(DEFAULT_THEME);
+  const [nivel, setNivelState] = useState<EducationLevelId>(() => loadEducationLevel(localStorage));
   const [modal, setModal] = useState<CreationModal>();
   const [replay, setReplay] = useState(0);
   const uploads = useOvaUploads();
@@ -27,6 +38,10 @@ export function useOvaCreation() {
       void navigate(`/crear?jobId=${encodeURIComponent(job.job_id)}`);
     },
   });
+  const setNivel = (next: EducationLevelId) => {
+    setNivelState(next);
+    localStorage.setItem(NIVEL_STORAGE_KEY, next);
+  };
   const phases = Object.values(picks).filter((items) => items.length > 0).length;
   const total = Object.values(picks).flat().length;
   const busy = [start.isPending, uploads.uploading, configs.save.isPending].some(Boolean);
@@ -34,7 +49,7 @@ export function useOvaCreation() {
   const generate = () => {
     if (!ready) return;
     start.mutate({
-      prompt,
+      prompt: promptWithLevel(prompt, nivel),
       theme,
       resourceConfigs: configs.data?.configs,
       uploadIds: (uploads.data ?? []).flatMap((file) => (file.uploadId ? [file.uploadId] : [])),
@@ -55,5 +70,26 @@ export function useOvaCreation() {
     setReplay((value) => value + 1);
   };
   const error = start.error?.message ?? uploads.uploadError;
-  return { closeModal, configs, confirmSelections, error, generate, modal, openModal: setModal, phases, picks, prompt, ready, replay, replayTour, setPrompt, setTheme, theme, total, uploads };
+  return {
+    closeModal,
+    configs,
+    confirmSelections,
+    error,
+    generate,
+    modal,
+    nivel,
+    openModal: setModal,
+    phases,
+    picks,
+    prompt,
+    ready,
+    replay,
+    replayTour,
+    setNivel,
+    setPrompt,
+    setTheme,
+    theme,
+    total,
+    uploads,
+  };
 }

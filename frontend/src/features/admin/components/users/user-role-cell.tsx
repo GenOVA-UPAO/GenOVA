@@ -50,7 +50,7 @@ export function UserRoleCell({
           aria-label={roleSelectLabel(user)}
           disabled={isUpdating || disabled}
           className={cn(
-            "h-8 w-[170px] cursor-pointer rounded-xl border border-border/50 bg-background/50 px-3 text-[11px] font-bold tracking-wider uppercase shadow-sm backdrop-blur-md transition-colors hover:bg-accent/50 focus:outline-none disabled:opacity-50",
+            "h-8 w-[170px] cursor-pointer rounded-xl border border-border/50 bg-background/50 px-3 text-[11px] font-bold tracking-wider uppercase shadow-sm backdrop-blur-md transition-colors outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:opacity-50",
             roleColorClasses,
           )}
         >

@@ -1,5 +1,7 @@
 import { Link } from "react-router";
 
+import { Button } from "@/core/components/ui/button";
+
 export function NotFoundPage() {
   return (
     <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4 text-center">
@@ -10,12 +12,9 @@ export function NotFoundPage() {
       <p className="mb-8 text-muted-foreground">
         Lo sentimos, no pudimos encontrar la página que estás buscando.
       </p>
-      <Link
-        to="/"
-        className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-      >
-        Volver al inicio
-      </Link>
+      <Button asChild size="lg">
+        <Link to="/">Volver al inicio</Link>
+      </Button>
     </main>
   );
 }

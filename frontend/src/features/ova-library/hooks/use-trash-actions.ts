@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { ovaLibraryApi } from "../api/ova-library.api";
+import { ovaCountPhrase } from "../lib/ova-count";
 import { useOvaMutation } from "./use-ova-library";
 
 /** Maneja las acciones de restauración y borrado permanente en la papelera. */
@@ -47,7 +48,7 @@ export function useTrashActions() {
     setBulkLoading(true);
     try {
       await batchRestoreMutation.mutateAsync(ids);
-      toast.success(`${String(ids.length)} OVAs restaurados`);
+      toast.success(ovaCountPhrase(ids.length, "restaurado", "restaurados"));
       return true;
     } catch {
       toast.error("No se pudieron restaurar los OVAs");
@@ -61,7 +62,9 @@ export function useTrashActions() {
     setBulkLoading(true);
     try {
       await batchDeleteForeverMutation.mutateAsync(ids);
-      toast.success(`${String(ids.length)} OVAs eliminados definitivamente`);
+      toast.success(
+        ovaCountPhrase(ids.length, "eliminado definitivamente", "eliminados definitivamente"),
+      );
       return true;
     } catch {
       toast.error("No se pudieron eliminar los OVAs");

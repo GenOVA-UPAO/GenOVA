@@ -58,7 +58,7 @@ export function PlatformKeyInput({
         disabled={!editing}
         aria-label={show ? "Ocultar clave" : "Mostrar clave"}
         className={cn(
-          "absolute top-1/2 right-3 -translate-y-1/2",
+          "absolute top-1/2 right-3 -translate-y-1/2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
           editing
             ? "cursor-pointer text-primary hover:text-primary/80"
             : "text-muted-foreground/50",

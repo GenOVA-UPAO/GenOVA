@@ -33,7 +33,7 @@ export function ProfileHeader({ profile, role, isLoading }: Readonly<ProfileHead
             <div className="h-6 w-40 animate-pulse rounded-lg bg-muted/60" />
           ) : (
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-display text-xl font-bold text-foreground">
+              <h1 className="font-display text-3xl font-semibold sm:text-4xl">
                 {profile?.full_name ?? "Usuario"}
               </h1>
               <span

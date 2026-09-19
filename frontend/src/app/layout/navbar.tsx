@@ -29,7 +29,7 @@ export function Navbar() {
           onClick={() => {
             setDrawerOpen(true);
           }}
-          className="-ml-1 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent md:hidden"
+          className="-ml-1 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 md:hidden"
           aria-label="Abrir menú"
         >
           <Icon name="list" size="text-xl" />

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { ovaLibraryApi } from "../api/ova-library.api";
 import type { MetadataInput } from "../lib/metadata-schema";
+import { ovaCountPhrase } from "../lib/ova-count";
 import { useOvaMutation } from "./use-ova-library";
 
 /** Maneja las mutaciones y acciones de las tarjetas de OVA con sonner toasts. */
@@ -38,7 +39,7 @@ export function useOvaActions() {
     setBulkLoading(true);
     try {
       await bulkTrashMut.mutateAsync(ids);
-      toast.success(`${String(ids.length)} OVAs movidos a la papelera`);
+      toast.success(ovaCountPhrase(ids.length, "movido a la papelera", "movidos a la papelera"));
       return true;
     } catch {
       toast.error("No se pudieron mover los OVAs a la papelera");

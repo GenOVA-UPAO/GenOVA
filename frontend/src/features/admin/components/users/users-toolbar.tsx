@@ -33,12 +33,12 @@ export function UsersToolbar({
           onRoleFilterChange(event.target.value);
         }}
         aria-label="Filtrar usuarios por rol"
-        className="cursor-pointer rounded-2xl border border-border/50 bg-card/50 px-4 py-2.5 text-sm font-medium shadow-sm backdrop-blur-md transition-colors outline-none hover:bg-accent/50"
+        className="cursor-pointer rounded-2xl border border-border/50 bg-card/50 px-4 py-2.5 text-sm font-medium shadow-sm backdrop-blur-md transition-colors outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         <option value="all">Todos los roles</option>
         {roles.map((role) => (
           <option key={role.id} value={role.name?.toLowerCase() ?? ""}>
-            {role.name}
+            {role.name?.replaceAll("_", " ") ?? ""}
           </option>
         ))}
       </select>

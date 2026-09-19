@@ -1,7 +1,10 @@
 import { EXAMPLE_PROMPT } from "../../lib/creation-form";
+import type { EducationLevelId } from "../../lib/education-levels";
 import type { OvaTheme } from "../../lib/types";
 import type { UploadItem } from "../../lib/upload-types";
 import { FileChips } from "../shared/file-chips";
+import { CreationChips } from "./creation-chips";
+import { CreationHints } from "./creation-hints";
 import { CreationSteps } from "./creation-steps";
 import { type CreationModal, CreationToolbar } from "./creation-toolbar";
 
@@ -12,6 +15,8 @@ interface Props {
   phases: number;
   total: number;
   theme: OvaTheme;
+  nivel: EducationLevelId;
+  onNivelChange: (nivel: EducationLevelId) => void;
   files: UploadItem[];
   onRemove: (id: string) => void;
   onOpen: (modal: CreationModal) => void;
@@ -21,15 +26,24 @@ interface Props {
 }
 export function OvaCreateFormCard(props: Readonly<Props>) {
   const missing = Math.max(0, 10 - props.prompt.trim().length);
-  const theme = `Color: ${props.theme.color === "free" ? "Libre" : "UPAO"} · Diseño: ${props.theme.design === "free" ? "Libre" : "UPAO"}`;
   return (
     <div className="mx-auto w-full max-w-4xl space-y-5 px-4 py-8">
       <header className="text-center">
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">Crear nuevo OVA</h1>
-        <p className="mt-1.5 text-sm font-medium text-muted-foreground">Describe el tema y configura los recursos a generar con IA</p>
+        <p className="mt-1.5 text-sm font-medium text-muted-foreground">
+          Describe el tema y configura los recursos a generar con IA
+        </p>
       </header>
-      <CreationSteps describeDone={missing === 0} resourcesDone={props.phases >= 2} generateReady={props.ready} onTour={props.onTour} />
-      <section id="tour-crear-ova-prompt" className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+      <CreationSteps
+        describeDone={missing === 0}
+        resourcesDone={props.phases >= 2}
+        generateReady={props.ready}
+        onTour={props.onTour}
+      />
+      <section
+        id="tour-crear-ova-prompt"
+        className="overflow-hidden rounded-2xl border bg-card shadow-sm"
+      >
         <label htmlFor="ova-create-prompt" className="sr-only">
           Describe el tema del OVA
         </label>
@@ -64,29 +78,29 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
           <p className="text-xs">
             {props.total} recursos · {props.phases} fases
           </p>
-          <button
-            type="button"
-            className="rounded-full border bg-muted/60 px-3 py-1 text-xs"
-            onClick={() => {
+          <CreationChips
+            theme={props.theme}
+            nivel={props.nivel}
+            onOpenTheme={() => {
               props.onOpen("theme");
             }}
-          >
-            {theme}
-          </button>
+          />
         </div>
-        <CreationToolbar ready={props.ready} onOpen={props.onOpen} onGenerate={props.onGenerate} />
-        <div className="space-y-2 px-5 pb-3 text-xs text-muted-foreground">
-          {missing > 0 && <p>Faltan {missing} caracteres para generar</p>}
-          {props.phases < 2 && <p>Selecciona recursos en al menos 2 fases (falta {2 - props.phases})</p>}
-          {props.error && (
-            <p role="alert" aria-live="polite" className="text-destructive">
-              {props.error}
-            </p>
-          )}
-        </div>
+        <CreationToolbar
+          nivel={props.nivel}
+          onNivelChange={props.onNivelChange}
+          ready={props.ready}
+          onOpen={props.onOpen}
+          onGenerate={props.onGenerate}
+        />
+        <CreationHints missing={missing} phases={props.phases} error={props.error} />
       </section>
-      <p className="text-center text-xs text-muted-foreground sm:hidden">Pulsa Generar cuando termines</p>
-      <p className="hidden text-center text-xs text-muted-foreground sm:block">Ctrl+Enter para generar</p>
+      <p className="text-center text-xs text-muted-foreground sm:hidden">
+        Pulsa Generar cuando termines
+      </p>
+      <p className="hidden text-center text-xs text-muted-foreground sm:block">
+        Ctrl+Enter para generar
+      </p>
     </div>
   );
 }

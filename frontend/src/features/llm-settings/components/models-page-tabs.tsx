@@ -8,7 +8,7 @@ import { ModelsMasterDetail } from "./models-master-detail";
 import { ModelsPlatformTab } from "./models-platform-tab";
 
 const TAB_TRIGGER =
-  "inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold tracking-tight text-muted-foreground hover:text-foreground data-active:bg-card data-active:text-foreground data-active:shadow-sm data-active:ring-1 data-active:ring-border/60";
+  "inline-flex shrink-0 items-center justify-center rounded-xl px-3 py-2.5 text-sm font-semibold tracking-tight text-muted-foreground sm:px-5 hover:text-foreground data-active:bg-card data-active:text-foreground data-active:shadow-sm data-active:ring-1 data-active:ring-border/60";
 
 interface ModelsPageTabsProps {
   activeTab: string;
@@ -28,7 +28,7 @@ export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
   return (
     <Tabs value={props.activeTab} onValueChange={props.onTabChange} className="block space-y-5">
       <div className="flex justify-center">
-        <TabsList className="inline-flex h-auto w-fit max-w-full flex-wrap items-center justify-center gap-1 rounded-2xl border border-border/70 bg-muted/40 p-1.5 shadow-sm backdrop-blur-sm">
+        <TabsList className="inline-flex h-auto w-max max-w-full flex-nowrap items-center justify-start gap-1 overflow-x-auto rounded-2xl border border-border/70 bg-muted/40 p-1.5 shadow-sm backdrop-blur-sm group-data-horizontal/tabs:h-auto">
           <TabsTrigger value="models" className={TAB_TRIGGER}>
             Modelos
           </TabsTrigger>

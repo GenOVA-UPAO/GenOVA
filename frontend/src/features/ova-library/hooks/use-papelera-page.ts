@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { ovaNoun } from "../lib/ova-count";
 import type { OvaListItem } from "../lib/types";
 import { useTrashList } from "./use-ova-library";
 import { useTrashActions } from "./use-trash-actions";
@@ -55,8 +56,8 @@ export function usePapeleraPage() {
   const handleBulkPermanentDelete = () => {
     const ids = Array.from(selectedIds);
     setConfirmModal({
-      title: "Eliminar múltiples OVAs",
-      message: `¿Eliminar ${String(ids.length)} OVAs definitivamente?\nEsta acción no se puede deshacer.`,
+      title: ids.length === 1 ? "Eliminar OVA" : "Eliminar múltiples OVAs",
+      message: `¿Eliminar ${String(ids.length)} ${ovaNoun(ids.length)} definitivamente?\nEsta acción no se puede deshacer.`,
       confirmLabel: `Eliminar ${String(ids.length)}`,
       onConfirm: async () => {
         const ok = await actions.batchDeleteForever(ids);

@@ -19,6 +19,8 @@ export function OvaCreationView() {
         phases={creation.phases}
         total={creation.total}
         theme={creation.theme}
+        nivel={creation.nivel}
+        onNivelChange={creation.setNivel}
         files={creation.uploads.data ?? []}
         onRemove={creation.uploads.removeUpload}
         onOpen={creation.openModal}
@@ -37,9 +39,15 @@ export function OvaCreationView() {
           />
         )}
         {creation.modal === "theme" && (
-          <OvaThemeModal theme={creation.theme} onChange={creation.setTheme} onClose={creation.closeModal} />
+          <OvaThemeModal
+            theme={creation.theme}
+            onChange={creation.setTheme}
+            onClose={creation.closeModal}
+          />
         )}
-        {creation.modal === "files" && <OvaFilesModal uploads={creation.uploads} onClose={creation.closeModal} />}
+        {creation.modal === "files" && (
+          <OvaFilesModal uploads={creation.uploads} onClose={creation.closeModal} />
+        )}
       </Suspense>
     </main>
   );

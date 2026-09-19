@@ -13,7 +13,7 @@ interface ProfileTabsListProps {
 
 export function ProfileTabsList({ isAdmin }: Readonly<ProfileTabsListProps>) {
   return (
-    <TabsList className="h-auto w-fit max-w-full items-center gap-0.5 overflow-x-auto border border-border/60 bg-card p-1 shadow-sm">
+    <TabsList className="h-auto w-fit max-w-full items-center gap-0.5 overflow-x-auto border border-border/60 bg-card p-1 shadow-sm group-data-horizontal/tabs:h-auto">
       <TabsTrigger value="info" className={TRIGGER_CLASS}>
         <Icon name="user" size="text-xs" /> Información
       </TabsTrigger>

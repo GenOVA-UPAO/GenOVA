@@ -8,6 +8,8 @@ import {
   DialogTitle,
 } from "@/core/components/ui/dialog";
 
+import { ovaNoun } from "../../lib/ova-count";
+
 interface BulkTrashModalProps {
   count: number;
   isLoading?: boolean;
@@ -36,7 +38,9 @@ export function BulkTrashModal({
           <DialogDescription className="space-y-1">
             <span className="block text-sm text-muted-foreground">
               ¿Mover{" "}
-              <span className="font-semibold text-foreground">{count} OVAs</span>{" "}
+              <span className="font-semibold text-foreground">
+                {count} {ovaNoun(count)}
+              </span>{" "}
               a la papelera?
             </span>
             <span className="block text-xs text-muted-foreground/70">
