@@ -19,7 +19,10 @@ function apiBases(mode: string): { prod: string; develop: string } {
   return { prod, develop };
 }
 
-const BACKEND = "http://127.0.0.1:8000";
+// Destino del proxy en desarrollo. GENOVA_DEV_BACKEND permite levantar una
+// segunda instancia contra el backend determinista (LLM_FAKE=1) y probar la
+// generación de OVAs sin gastar créditos de un proveedor real.
+const BACKEND = process.env.GENOVA_DEV_BACKEND ?? "http://127.0.0.1:8000";
 
 const VENDOR_CHUNKS: [string[], string][] = [
   [["@sentry"], "vendor-sentry"],
