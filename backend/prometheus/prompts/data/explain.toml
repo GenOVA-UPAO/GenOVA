@@ -1,148 +1,136 @@
 [texto.1]
 defaults = { num_markers = 4 }
 template = '''
-[ROL] Guionista de videos educativos teoricos.
+[ROL] Guionista educativo.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Video teorico: guion_visual con ${num_markers} marcadores (cada 30 s) usando metaforas cotidianas; narracion_voz <=120 palabras tono divulgativo con pregunta reflexiva; prompt_video en ingles <=100 palabras para generador.
-[RESTRICCIONES] Sin formulas ni jerga densa. Metaforas visuales potentes.
+[TAREA] Storyboard: ${num_markers} marcadores cada 30 s; metáforas fieles, narración <=120 palabras con reflexión; prompt_video inglés <=100 palabras. Sin fórmulas ni jerga.
 [SALIDA] JSON puro con claves "guion_visual","narracion_voz","prompt_video".'''
 
 [texto.2]
 defaults = { num_sections = 3 }
 template = '''
-[ROL] Redactor academico de lecturas guiadas.
+[ROL] Redactor académico.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Lectura de 250 palabras: introduccion (caso real), desarrollo (${num_sections} ideas centrales de "${concept}" con ejemplo cada una), cierre (aplicaciones). ${num_sections} preguntas intercaladas con respuesta modelo.
-[RESTRICCIONES] Lenguaje accesible sin formulas. Cada idea central <=70 palabras.
+[TAREA] Lectura accesible de 250 palabras sin fórmulas: caso real, ${num_sections} ideas <=70 palabras con ejemplo razonado, pregunta y modelo; cierre de aplicaciones.
 [SALIDA] JSON puro con claves "introduccion","secciones" (array de ${num_sections} con idea,ejemplo,pregunta,respuesta),"cierre".'''
 
 [texto.4]
 defaults = { num_questions = 6 }
 template = '''
-[ROL] Curador de contenido educativo interactivo.
+[ROL] Curador educativo.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] FAQ de ${num_questions} preguntas genuinas sobre "${concept}". Cada una: pregunta en lenguaje estudiantil, respuesta <=60 palabras con analogia, etiqueta (principiante/intermedio/avanzado), categoria.
-[RESTRICCIONES] Preguntas genuinas no retoricas. Respuestas que iluminan sin clase magistral.
+[TAREA] ${num_questions} dudas genuinas: respuesta <=60 palabras con analogía razonada; categoría y nivel principiante/intermedio/avanzado. Lenguaje estudiantil.
 [SALIDA] JSON puro con clave "faqs": array de ${num_questions} objetos con "pregunta","respuesta","etiqueta","categoria".'''
 
 [texto.6]
 defaults = { num_terms = 8 }
 template = '''
-[ROL] Lexicografo visual de conceptos del tema universitario.
+[ROL] Lexicógrafo visual.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Glosario de ${num_terms} terminos de "${concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras del mundo real.
-[RESTRICCIONES] Definiciones autocontenidas. Iconos distintos entre si.
+[TAREA] ${num_terms} términos: nombre <=20 caracteres, definición autocontenida <=50 palabras, emoji distinto+descripción, ejemplo real razonado <=30 palabras.
 [SALIDA] JSON puro con clave "terminos": array de ${num_terms} objetos con "termino","definicion","icono_sugerido","ejemplo_concreto".'''
 
 [texto.7]
 defaults = { num_milestones = 5 }
 template = '''
-[ROL] Historiador de la ciencia de datos.
+[ROL] Historiador.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Timeline de ${num_milestones} hitos historicos reales de "${concept}". Cada hito: anio, titulo <=25 chars, descripcion 40 palabras tono cronica, dato_curioso, legado_actual 20 palabras.
-[RESTRICCIONES] Hechos verificables, sin mitos. Conexion logica entre hitos.
+[TAREA] ${num_milestones} hitos verificables conectados causalmente: año, título <=25 caracteres, crónica 40 palabras, curiosidad y legado actual 20 palabras. Sin mitos.
 [SALIDA] JSON puro con clave "hitos": array de ${num_milestones} objetos con "anio","titulo","descripcion","dato_curioso","legado_actual".'''
 
 [texto.9]
 defaults = { num_dimensions = 4 }
 template = '''
-[ROL] Analista comparativo de enfoques, métodos o tecnologías del tema.
+[ROL] Analista comparativo.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Tabla comparativa de "${concept}" vs 3 conceptos relacionados. ${num_dimensions} dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.
-[RESTRICCIONES] Comparaciones objetivas y medibles. Sin sesgo. Dimensiones que diferencien.
+[TAREA] Comparar con 3 conceptos relacionados en ${num_dimensions} dimensiones medibles: valores y balance razonado ventaja/desventaja, sin sesgo.
 [SALIDA] JSON puro con claves "dimensiones" (array de ${num_dimensions}) y "comparaciones" (array de 3 con concepto,valores,balance).'''
 
 [codigo.3]
 defaults = { num_nodes = 7 }
 template = '''
-[ROL] Desarrollador front-end de mapas conceptuales interactivos.
+[ROL] Diseñador de mapas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Mapa conceptual HTML5 donde el estudiante explore visualmente subtemas y relaciones de "${concept}".
-[TAREA] Grafo SVG con ${num_nodes} nodos clave de "${concept}", conexiones etiquetadas, nodos expandibles al clic con definicion breve, leyenda de colores y boton "Explorar todo". Nodos SVG reales con <text>.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
+[TAREA] Grafo SVG de "${concept}": ${num_nodes} nodos con text, conexiones etiquetadas, leyenda y "Explorar todo".
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de explicar relaciones; upao-figure: al menos un diagrama propio (el grafo); upao-node HTML fuera del SVG para detalles; upao-example: ejemplo trabajado de un recorrido; retroalimentación que explique el porqué de cada conexión; upao-summary: cierre que consolide relaciones. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al explorar todos los nodos.
+[SCORM] ${scorm}. Desbloquea upao-complete al explorar todos los nodos.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [codigo.5]
 defaults = { num_steps = 5 }
 template = '''
-[ROL] Desarrollador front-end de demostraciones animadas educativas.
+[ROL] Diseñador de demostraciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Demo animada HTML5 que ilustre paso a paso el funcionamiento de "${concept}".
-[TAREA] Animacion SVG/canvas con escena inicial, controles play/pause/step, ${num_steps} pasos progresivos, texto explicativo por paso y boton "Repetir". requestAnimationFrame.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
+[TAREA] Animación propia de "${concept}" con requestAnimationFrame, play/pause/step, ${num_steps} pasos y "Repetir".
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de explicar el proceso; upao-figure: al menos un diagrama propio animado; upao-example con upao-steps y ol/li: ejemplo trabajado; upao-status y retroalimentación que explique el porqué de cada cambio; upao-summary: cierre que consolide la secuencia. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() tras completar todos los pasos.
+[SCORM] ${scorm}. Desbloquea upao-complete tras todos los pasos.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [codigo.8]
 defaults = { num_blocks = 5 }
 template = '''
-[ROL] Desarrollador front-end de diagramas de framework educativo.
+[ROL] Diseñador de diagramas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Diagrama HTML5 que muestre la arquitectura o taxonomia de "${concept}" como framework visual.
-[TAREA] Diagrama SVG con ${num_blocks} bloques jerarquicos de "${concept}", flechas de flujo, tooltips al hover, zoom/reset y leyenda. SVG con viewBox + preserveAspectRatio.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
+[TAREA] SVG de "${concept}": ${num_blocks} bloques jerárquicos, flechas, leyenda, zoom/reset y tooltips accesibles por foco/clic.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de interpretar arquitectura; upao-figure: al menos un diagrama propio con viewBox; upao-example: ejemplo trabajado de flujo; retroalimentación que explique el porqué de la jerarquía; upao-summary: cierre que consolide función de bloques. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al explorar todos los tooltips.
+[SCORM] ${scorm}. Desbloquea upao-complete al explorar todos los tooltips.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [codigo.10]
 defaults = { num_sections = 5 }
 template = '''
-[ROL] Desarrollador front-end de infografias interactivas.
+[ROL] Diseñador de infografías.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Infografia HTML5 que comunique la esencia y datos clave de "${concept}".
-[TAREA] ${num_sections} secciones reveladas progresivamente con iconos SVG, dato impactante por seccion, barra de progreso y boton "Ver resumen" final. Animaciones de entrada.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
+[TAREA] Infografía de "${concept}": ${num_sections} secciones con datos clave y revelación progresiva.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de integrar ideas; upao-figure: al menos un diagrama propio informativo, no solo iconos; upao-example: ejemplo trabajado de aplicación; upao-reveal, upao-progress y retroalimentación que explique el porqué de cada dato; upao-summary: cierre que consolide ideas. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al llegar a la seccion final.
+[SCORM] ${scorm}. Desbloquea upao-complete en la sección final.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html]
 estilo_default = 'pagina educativa interactiva moderna'
 template = '''
-[ROL] Desarrollador front-end experto en recursos educativos interactivos.
+[ROL] Desarrollador educativo.
 [CURSO] ${curso}
-[OBJETIVO] Construir un recurso HTML5 sobre "${concept}" que explique con claridad. El HTML visible no debe mencionar fases 5E ni jerga interna.
-[DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
+[OBJETIVO] Explicar "${concept}".
+[DATOS] Conserva estos datos; deriva el apoyo didáctico sin añadir hechos:
 ${data_json}
 [FORMATO] ${estilo}
-[REQUISITOS] HTML5 autocontenido: CSS en <style>, JS en <script>. Minimo 300 lineas de calidad. Navegacion, filtros, feedback y animaciones funcionales. Paleta educativa clara.
+[COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje; upao-figure con al menos un diagrama propio; upao-example con ejemplo trabajado; retroalimentación que explique el porqué; upao-summary para cierre que consolide. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la exploracion.
+[SCORM] ${scorm}. Desbloquea upao-complete al completar la exploración.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html.estilos]
-1 = 'storyboard de video: guion visual con bloques temporales, narracion estilizada, prompt video en caja copiable'
-2 = 'lectura guiada: texto con secciones expandibles, preguntas con toggle de respuesta, disenio articulo academico'
-4 = 'FAQ interactivo: acordeon con tags de categoria, barra de filtro, contador de preguntas exploradas'
-6 = 'glosario visual: grid de tarjetas con emoji grande, definicion y ejemplo, filtro por categoria, expandir/colapsar'
-7 = 'timeline horizontal: un nodo conectado por cada hito del JSON, clic expande descripcion, barra de progreso, navegacion prev/next'
-9 = 'tabla comparativa: columnas responsivas, iconos ventaja/desventaja, tooltips, toggle de dimensiones'
+1 = 'Storyboard: upao-steps con ol/li temporal, narración y prompt copiable. Esquema del proceso para explicar teoría, metáfora razonada y síntesis; no fingir video.'
+2 = 'Lectura: upao-node, upao-question, upao-reveal y upao-progress. Esquema de ideas para explicar relaciones, ejemplos razonados y cierre con aplicaciones.'
+4 = 'FAQ: upao-node, filtros por categoría y upao-progress. Diagrama de dudas relacionadas; aclarar errores con contraejemplo y síntesis final.'
+6 = 'Glosario: upao-node por término, filtro y expandir/colapsar. Red semántica propia; distinguir términos con ejemplo y justificación; síntesis de relaciones.'
+7 = 'Timeline: upao-node por hito, upao-nav, upao-progress. Eje causal propio para explicar evolución, ejemplo de legado y cierre de continuidad/cambio.'
+9 = 'Tabla nativa con caption/th, toggle de dimensiones y tooltips. Diagrama comparativo para discriminar enfoques, elección resuelta con balance y cierre de criterios.'
 
 # F1.3 single-step: recursos de texto simple van directo a HTML (1 llamada LLM).
 [codigo.2]
 defaults = { num_sections = 3 }
 template = '''
-[ROL] Desarrollador front-end de lecturas guiadas academicas.
+[ROL] Diseñador de lecturas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Lectura guiada interactiva sobre "${concept}" en una pagina HTML.
-[TAREA] Redacta e implementa: introduccion con caso real; ${num_sections} secciones expandibles, cada una con una idea central (<=70 palabras) y un ejemplo; una pregunta por seccion con toggle "Mostrar respuesta" (respuesta modelo); cierre con aplicaciones. Diseno de articulo academico con progreso de lectura; se completa al abrir todas las secciones y respuestas.
-[RESTRICCIONES] Lenguaje accesible sin formulas. Total ~250 palabras de lectura.
-[REQUISITOS] HTML5+JS autocontenido y responsive.
+[TAREA] Lectura de ~250 palabras sin fórmulas: caso real, ${num_sections} ideas <=70 palabras con ejemplo, pregunta y respuesta modelo.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de explicar relaciones; upao-figure: al menos un diagrama propio de ideas; upao-node por sección, upao-example: ejemplo trabajado; upao-question, upao-reveal: retroalimentación que explique el porqué; upao-progress; upao-summary: cierre que consolide aplicaciones. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la lectura.
+[SCORM] ${scorm}. Desbloquea upao-complete al abrir todas las secciones y respuestas.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''

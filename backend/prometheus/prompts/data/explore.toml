@@ -71,65 +71,58 @@ template = '''
 [codigo.1]
 defaults = { num_iterations = 3 }
 template = '''
-[ROL] Desarrollador front-end de laboratorios virtuales interactivos.
+[ROL] Diseñador de laboratorios.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Un laboratorio virtual HTML5 donde el estudiante EXPLORA "${concept}" manipulando sus elementos y observando los resultados.
-[TAREA] Diseña la simulación más representativa de cómo funciona "${concept}": elige datos de ejemplo, controles y visualización (SVG o canvas) apropiados al tema. Debe permitir: (1) manipular entradas o parámetros, (2) ejecutar o iterar el proceso central de "${concept}", (3) ver el resultado actualizarse, (4) un botón que explica qué está ocurriendo. El estudiante debe completar al menos ${num_iterations} iteraciones para finalizar.
-[REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad. Datos de ejemplo hardcodeados como arrays JS.
+[TAREA] Laboratorio de "${concept}": datos JS locales, controles propios y visualización reactiva; al menos ${num_iterations} iteraciones.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de relacionar entradas y resultados; upao-figure: al menos un diagrama propio reactivo; upao-example: ejemplo trabajado de una iteración; upao-reveal: retroalimentación que explique el porqué; upao-status, upao-progress: iteraciones; upao-summary: cierre que consolide el patrón. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() tras ${num_iterations} iteraciones o al pulsar el botón explicativo.
+[SCORM] ${scorm}. Desbloquea upao-complete tras ${num_iterations} iteraciones.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [codigo.6]
 defaults = { num_zones = 3 }
 template = '''
-[ROL] Desarrollador front-end de simuladores paramétricos educativos.
+[ROL] Diseñador de simuladores.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Un simulador HTML5 centrado en UN parámetro clave de "${concept}" para que el estudiante descubra su efecto.
-[TAREA] Identifica el parámetro o variable más ilustrativo de "${concept}" y construye: (1) un slider o control para ese parámetro con un rango sensato, (2) un gráfico SVG que se actualiza en tiempo real (<100 ms), (3) ${num_zones} zonas o estados coloreados que indican el comportamiento (p. ej. correcto / límite / incorrecto), (4) un campo para la hipótesis del estudiante, (5) un botón "Revelar zona óptima".
-[REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad.
+[TAREA] Slider de un parámetro de "${concept}", rango sensato, SVG reactivo <100 ms, ${num_zones} zonas, campo de hipótesis y revelación de zona óptima.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de predecir efectos; upao-figure: al menos un diagrama propio del parámetro; upao-example: ejemplo trabajado de variación; upao-status: zonas con texto; upao-reveal: retroalimentación que explique el porqué; upao-summary: cierre que consolide hipótesis y resultado. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al revelar.
+[SCORM] ${scorm}. Desbloquea upao-complete al revelar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [codigo.10]
 defaults = { num_trials = 3 }
 template = '''
-[ROL] Desarrollador front-end de laboratorios de experimentación.
+[ROL] Diseñador de experimentos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Un laboratorio HTML5 donde el estudiante formula una hipótesis sobre "${concept}", experimenta y la contrasta.
-[TAREA] Construye: (1) una visualización de datos relevante a "${concept}" (scatter, curva u otra; datos hardcodeados como array JS), (2) controles para probar configuraciones, (3) métricas o indicadores visibles que cambian con cada prueba, (4) un campo de hipótesis, (5) un botón "Revelar" que muestra la configuración óptima y nombra el concepto técnico correcto. El estudiante debe realizar al menos ${num_trials} pruebas antes de revelar.
-[REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad.
+[TAREA] Datos JS locales de "${concept}", controles, métricas reactivas y campo de hipótesis. Revelar configuración óptima y concepto tras ${num_trials} pruebas.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de contrastar hipótesis; upao-figure: al menos un diagrama propio de resultados; upao-example: ejemplo trabajado de prueba; upao-status, upao-progress; upao-reveal: retroalimentación que explique el porqué; upao-summary: cierre que consolide evidencia y límites. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al revelar tras ${num_trials} pruebas.
+[SCORM] ${scorm}. Desbloquea upao-complete al revelar tras ${num_trials} pruebas.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html]
 estilo_default = 'página educativa interactiva moderna'
 template = '''
-[ROL] Desarrollador front-end experto en recursos educativos interactivos.
+[ROL] Desarrollador educativo.
 [CURSO] ${curso}
-[OBJETIVO] Construir un recurso HTML5 interactivo sobre "${concept}" para que el estudiante explore y descubra. El HTML visible no debe mencionar fases 5E ni jerga interna.
-[DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
+[OBJETIVO] Explorar "${concept}".
+[DATOS] Conserva estos datos; deriva el apoyo didáctico sin añadir hechos:
 ${data_json}
 [FORMATO] ${estilo}
-[REQUISITOS]
-- HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>.
-- Mínimo 320 líneas de calidad. Toda actividad debe ser funcional REAL (arrastre, navegación, feedback, puntuación, revelaciones).
-- Paleta según el tipo: lectura (clara periodística), chat socrático (clara académica), drag&drop (clara lúdica),
-  experimento (clara clínica), mapa mental (clara con acentos).
+[COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje; upao-figure con al menos un diagrama propio; upao-example con ejemplo trabajado análogo sin anticipar el descubrimiento; retroalimentación que explique el porqué; upao-summary para cierre que consolide. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la actividad principal.
+[SCORM] ${scorm}. Desbloquea upao-complete al completar la actividad.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html.estilos]
-2 = 'chat educativo: burbujas de DataGuide, campo de texto del estudiante, feedback revelado por turno, barra de progreso'
-3 = 'juego drag & drop: items arrastrables, zonas destino etiquetadas según las categorías del JSON, animación de arrastre, feedback inmediato, puntuación'
-4 = 'storyboard interactivo: guion por secciones, reproductor simulado con barra de progreso, overlay de pregunta de pausa'
-5 = "lectura interactiva: texto periodístico y tabla del conjunto de datos, pregunta destacada, botón 'Revelar patrón' animado"
-7 = "laboratorio EDA: tabla del dataset, gráfico scatter SVG, las preguntas secuenciales del JSON, botón 'Revelar' que colorea los grupos"
-8 = 'escenarios ejecutivos secuenciales: un botón por cada decisión del JSON, feedback animado, pantalla final con puntaje y mensaje'
-9 = 'mapa mental drag & drop: una pista y un nodo técnico por cada tarjeta del JSON, conexión por arrastre, feedback por par, revelación al completar'
+2 = 'Chat DataGuide: upao-question con textarea, upao-reveal y upao-progress; turnos propios. Inferir patrón ilustrado, justificar pistas sin dar respuesta y sintetizar hallazgos.'
+3 = 'Clasificar: upao-drag-item, upao-drop-zone, upao-status, upao-score. Diagrama de categorías, par resuelto análogo; explicar casos ambiguos y sintetizar criterio.'
+4 = 'Storyboard: upao-steps con ol/li temporal, upao-nav, upao-question con textarea y upao-reveal; pausas de predicción. Esquema causal, contrastar predicciones y consolidar evidencia.'
+5 = 'Lectura y tabla nativa: upao-question, upao-reveal para patrón. Gráfico del dataset para inferir tendencias; interpretar un dato y cerrar con límites.'
+7 = 'EDA: tabla nativa, scatter SVG propio; upao-steps con ol/li, upao-question, upao-reveal colorea grupos. Interpretar distribución y consolidar relaciones observadas.'
+8 = 'Roles: upao-question, upao-choice por escenario, upao-nav, upao-score. Diagrama de decisiones para comparar efectos, caso análogo y cierre según puntaje.'
+9 = 'Mapa mental: upao-drag-item, upao-drop-zone y upao-reveal final. Grafo propio con conexiones, asociación razonada análoga; explicar cada par e integrar nodos al cierre.'

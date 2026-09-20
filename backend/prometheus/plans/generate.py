@@ -266,10 +266,15 @@ def generate_resource(
     abre un presupuesto de reloj propio (HTTP/regen)."""
     import time
 
+    from core.config import settings
     from prometheus.engine.budget import deadline_at
     from prometheus.plans.plan_map import DIRECT_CODE, PODCAST, plan_for
 
     n = int(rt)
+    if settings.llm_fake:
+        from prometheus.engine.fake_invoke import fake_standalone_html
+
+        return ResourceResult(fake_standalone_html(concept, phase, n), [], {"contenido": concept})
     theme = theme or {}
     plan = plan or plan_for(phase, n)
     if deadline is None:
