@@ -11,7 +11,26 @@ application, NUNCA ova.interface (crearía un ciclo, porque
 ova.interface.http.edit_router importa generation.regen.regen_router).
 """
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    # Solo para los analizadores estáticos: declara los nombres que `__getattr__`
+    # resuelve en ejecución, para que `__all__` no exporte nombres «indefinidos»
+    # y los editores vean la firma real en vez de `Any`. No se ejecuta nunca, así
+    # que no reintroduce el ciclo con `models` descrito abajo.
+    from ova.application.edit_helpers import (
+        _ensure_version_exists,
+        _get_active_version,
+        _is_ova_owner,
+        _ova_output_dir,
+    )
+    from ova.application.scorm_persist import persist_scorm_zip
+    from ova.domain.editor import next_version_number
+
+    ensure_version_exists = _ensure_version_exists
+    get_active_version = _get_active_version
+    is_ova_owner = _is_ova_owner
+    ova_output_dir = _ova_output_dir
 
 __all__ = [
     "ensure_version_exists",
