@@ -17,6 +17,7 @@ __all__ = [
     "ensure_version_exists",
     "get_active_version",
     "is_ova_owner",
+    "next_version_number",
     "ova_output_dir",
     "persist_scorm_zip",
 ]
@@ -37,6 +38,8 @@ def __getattr__(name: str) -> Any:
         from ova.application.edit_helpers import _ova_output_dir as value
     elif name == "persist_scorm_zip":
         from ova.application.scorm_persist import persist_scorm_zip as value
+    elif name == "next_version_number":
+        from ova.domain.editor import next_version_number as value
     else:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
     return value

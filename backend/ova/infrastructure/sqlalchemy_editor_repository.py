@@ -11,7 +11,13 @@ from sqlalchemy.orm import Session
 from core.database import commit_or_500
 from core.ids import is_uuid
 from models import Ova, OvaPhase, OvaPhaseVersion, OvaVersion
-from ova.domain.editor import EditorMicroVersion, EditorOva, EditorPhase, EditorVersion
+from ova.domain.editor import (
+    EditorMicroVersion,
+    EditorOva,
+    EditorPhase,
+    EditorVersion,
+    next_version_number,
+)
 from storage import StorageError, is_configured, upload_zip
 
 logger = structlog.get_logger(__name__)
@@ -121,9 +127,14 @@ class SqlAlchemyOvaEditorRepository:
         if active_row is None:
             active_row = self._db.get(OvaVersion, active.id)
         active_row.is_active = False
+        numbers = tuple(
+            self._db.execute(
+                select(OvaVersion.version_number).where(OvaVersion.ova_id == ova.id)
+            ).scalars()
+        )
         row = OvaVersion(
             ova_id=ova.id,
-            version_number=active.version_number + 1,
+            version_number=next_version_number(numbers),
             prompt=active.prompt,
             is_active=True,
         )
@@ -198,11 +209,14 @@ class SqlAlchemyOvaEditorRepository:
         )
 
     def count_phases(self, version_id: str, phase_type: str) -> int:
-        return self._db.execute(
-            select(func.count(OvaPhase.id)).where(
-                OvaPhase.version_id == version_id, OvaPhase.phase_type == phase_type
-            )
-        ).scalar() or 0
+        return (
+            self._db.execute(
+                select(func.count(OvaPhase.id)).where(
+                    OvaPhase.version_id == version_id, OvaPhase.phase_type == phase_type
+                )
+            ).scalar()
+            or 0
+        )
 
     def next_phase_order(self, version_id: str, phase_type: str) -> int:
         highest = self._db.execute(
@@ -238,7 +252,9 @@ class SqlAlchemyOvaEditorRepository:
             .all()
         )
 
-    def get_version(self, version_id: str, ova_id: str, with_phases: bool = False) -> EditorVersion | None:
+    def get_version(
+        self, version_id: str, ova_id: str, with_phases: bool = False
+    ) -> EditorVersion | None:
         if not is_uuid(version_id) or not is_uuid(ova_id):
             return None
         row = self._db.execute(
@@ -250,7 +266,9 @@ class SqlAlchemyOvaEditorRepository:
         return self._version_state(row, with_phases=with_phases)
 
     def activate_version(self, ova_id: str, version_id: str) -> None:
-        rows = self._db.execute(select(OvaVersion).where(OvaVersion.ova_id == ova_id)).scalars().all()
+        rows = (
+            self._db.execute(select(OvaVersion).where(OvaVersion.ova_id == ova_id)).scalars().all()
+        )
         for row in rows:
             row.is_active = False
         self._db.flush()

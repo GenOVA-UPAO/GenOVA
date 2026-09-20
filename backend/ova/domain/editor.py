@@ -63,6 +63,15 @@ def phase_to_dict(phase: EditorPhase) -> dict:
     }
 
 
+def next_version_number(existing: tuple[int, ...]) -> int:
+    """Siguiente entero libre: max(existentes)+1, no active+1.
+
+    Tras un revert la activa puede ser v1 con v2 aún en el historial; active+1
+    reutiliza el 2 y el listado muestra dos filas «Versión 2».
+    """
+    return max(existing, default=0) + 1
+
+
 def version_to_dict(version: EditorVersion, include_phases: bool = False) -> dict:
     data = {
         "id": version.id,
