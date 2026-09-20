@@ -1,8 +1,10 @@
+import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
-import { loginWithCredentials } from './_helpers.js'
+import { isAuthedPath, loginWithCredentials, waitForAuthedNavigation } from './_helpers.js'
+import { test } from './fixtures.js'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then } = createBdd(test)
 
 // ── Auth HU-001: Registro ─────────────────────────────────────────────────────
 
@@ -40,9 +42,7 @@ Then('debo ver un mensaje indicando que el correo ya existe', async ({ page }) =
 })
 
 Then('no debo ser redirigido al dashboard', async ({ page }) => {
-  await page.waitForTimeout(500)
-  const url = page.url()
-  if (/dashboard/.test(url)) throw new Error('Should not be on dashboard')
+  await expect(page).toHaveURL((url) => !isAuthedPath(url.pathname), { timeout: 8000 })
 })
 
 // ── Auth HU-008: Login ────────────────────────────────────────────────────────
@@ -66,9 +66,7 @@ Then('debo recibir un error descriptivo', async ({ page }) => {
 })
 
 Then('no debo acceder al dashboard', async ({ page }) => {
-  await page.waitForTimeout(500)
-  const url = page.url()
-  if (/dashboard/.test(url)) throw new Error('Should not be on dashboard')
+  await expect(page).toHaveURL((url) => !isAuthedPath(url.pathname), { timeout: 8000 })
 })
 
 Given('que realizo 5 intentos fallidos consecutivos', async ({ page }) => {
@@ -100,8 +98,8 @@ Given(
 )
 
 Then('debo ver la opción {string} en el menú del panel', async ({ page }, option) => {
-  // El sidebar de React renombró la opción "Gestión de Roles" a "Roles"
-  // (nav-links.ts); el texto de la página sigue siendo "Gestión de Roles".
+  // El Gherkin nombra "Gestión de Roles" (h1 de la página). El ítem del
+  // sidebar, en Angular y en React (nav-links.ts), se llama "Roles".
   const label = option === 'Gestión de Roles' ? 'Roles' : option
   await page.getByRole('link', { name: label, exact: true }).first().waitFor({
     state: 'visible',
@@ -116,9 +114,9 @@ When('navega a {string}', async ({ page }, path) => {
 })
 
 Then('no debo ver el panel de administración', async ({ page }) => {
-  await page.waitForTimeout(3000)  // give AdminRoute time to check role
-  const count = await page.locator('text=Gestión de Roles').count()
-  if (count > 0) throw new Error('Should not see admin panel')
+  await waitForAuthedNavigation(page, 15000).catch(() => {})
+  await expect(page.getByRole('heading', { name: 'Gestión de Roles' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Roles', exact: true })).toHaveCount(0)
 })
 
 Given('que estoy en {string}', async ({ page }, path) => {
@@ -237,8 +235,8 @@ Then('aparece un modal con el texto {string}', async ({ page }, text) => {
   await page.waitForSelector(`text=${text}`, { timeout: 5000 })
 })
 
-Then('el OVA {string} desaparece de la lista', async ({ page }, _title) => {
-  await page.waitForTimeout(500)
+Then('el OVA {string} desaparece de la lista', async ({ page }, title) => {
+  await expect(page.getByRole('heading', { name: title, exact: true })).toHaveCount(0)
 })
 
 Then('al pasar el cursor muestra {string}', async () => {})

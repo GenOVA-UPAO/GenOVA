@@ -3,8 +3,9 @@ import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
 import { state, uniqueId } from './_helpers.js'
+import { test } from './fixtures.js'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then } = createBdd(test)
 
 // React mantiene `.glass-card` como contenedor de cada rol; se ancla desde el
 // nombre visible para no depender de clases de Angular/Spartan.

@@ -1,8 +1,10 @@
+import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
 import { loginWithCredentials, ovaCard } from './_helpers.js'
+import { test } from './fixtures.js'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then } = createBdd(test)
 
 Given('el usuario {string} está autenticado', async ({ page }, email) => {
   const isAdmin = email.includes('admin')
@@ -48,9 +50,8 @@ Then(
   }
 )
 
-Then('el OVA {string} desaparece de {string}', async ({ page }, _id, _path) => {
-  // Verify the card count changed — basic liveness check
-  await page.waitForTimeout(500)
+Then('el OVA {string} desaparece de {string}', async ({ page }, title, _path) => {
+  await expect(page.getByRole('heading', { name: title, exact: true })).toHaveCount(0)
 })
 
 // Metadata modal

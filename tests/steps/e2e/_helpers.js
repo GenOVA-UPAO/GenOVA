@@ -1,6 +1,8 @@
 // Helpers compartidos por los steps e2e. No define steps (playwright-bdd lo
 // importa por el glob steps/e2e/**/*.js pero solo exporta funciones).
 
+import { expect } from '@playwright/test'
+
 /** Sufijo único por ejecución+escenario para no colisionar datos en la DB de test. */
 export function uniqueId() {
   return `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`
@@ -42,21 +44,24 @@ export async function seedOvaViaApi(page) {
   }
   const { job_id: jobId } = await res.json()
 
-  const deadline = Date.now() + 90000
-  for (;;) {
-    const poll = await page.request.get(`${apiOrigin()}/api/jobs/${jobId}`)
-    if (poll.ok()) {
-      const job = await poll.json()
-      if (job.status === 'done') return { title, jobId, ovaId: job.ova_id }
-      if (job.status === 'error' || job.status === 'canceled') {
-        throw new Error(`Seed OVA terminó en estado "${job.status}" (¿backend sin LLM_FAKE=1?)`)
-      }
-    }
-    if (Date.now() > deadline) {
-      throw new Error('Seed OVA superó los 90s sin llegar a done (¿backend sin LLM_FAKE=1?)')
-    }
-    await page.waitForTimeout(1000)
-  }
+  let seeded
+  await expect
+    .poll(
+      async () => {
+        const poll = await page.request.get(`${apiOrigin()}/api/jobs/${jobId}`)
+        if (!poll.ok()) return false
+        const job = await poll.json()
+        if (job.status === 'error' || job.status === 'canceled') {
+          throw new Error(`Seed OVA terminó en estado "${job.status}" (¿backend sin LLM_FAKE=1?)`)
+        }
+        if (job.status !== 'done') return false
+        seeded = { title, jobId, ovaId: job.ova_id }
+        return true
+      },
+      { timeout: 90000, intervals: [1000] },
+    )
+    .toBe(true)
+  return seeded
 }
 
 /**
@@ -90,8 +95,15 @@ export async function loginWithCredentials(page, email, password, timeout = 2000
       .isVisible()
       .catch(() => false)
     if (!throttled) throw error
-    await page.waitForTimeout(61000)
-    await page.getByRole('button', { name: 'Entrar' }).click()
+    await expect
+      .poll(
+        async () => {
+          await page.getByRole('button', { name: 'Entrar' }).click()
+          return isAuthedPath(new URL(page.url()).pathname)
+        },
+        { timeout: 90000, intervals: [5000] },
+      )
+      .toBe(true)
     await waitForAuthedNavigation(page, timeout)
   }
 }

@@ -76,12 +76,16 @@ set "E2E_EXTERNAL=1" & set "BASE_URL=http://localhost:4300" & set "E2E_API_ORIGI
 ```
 
 - `E2E_EXTERNAL=1` desactiva el `webServer` de `tests/playwright.config.js`: la suite
-  usa el frontend ya levantado en `:4300`. (No usa secretos: el header de bypass de
-  Vercel solo se envía si existe `VERCEL_AUTOMATION_BYPASS_SECRET`.)
+  usa el frontend ya levantado en `:4300`. El header de bypass de Vercel solo se
+  envía si existe `VERCEL_AUTOMATION_BYPASS_SECRET` (contra un backend local esas
+  cabeceras rompen el preflight CORS de `/api/auth/me`).
 - `E2E_API_ORIGIN=http://localhost:8100` inyecta `window.__GENOVA_API_BASE__` para que
   el navegador llame a esa API (`tests/steps/e2e/fixtures.js`) y
   `seedOvaViaApi`/el registro por API usen el mismo origen. Sin `E2E_API_ORIGIN` el
   comportamiento es el de siempre: same-origin vía proxy de Vite.
+- Esa llamada es cross-origin (`:4300` → `:8100`). El backend tiene que listar el
+  origen del frontend en CORS: `CORS_ORIGINS=http://localhost:4300,http://127.0.0.1:4300`
+  (los defaults de `ENV=dev` cubren `:4200`, no `:4300`).
 - El frontend y el backend determinista comparten la BD de pruebas y los usuarios de
   siempre (`admin@genova.ai` / `admin1234password`).
 

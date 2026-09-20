@@ -1,8 +1,9 @@
 import { createBdd } from 'playwright-bdd'
 
 import { loginWithCredentials, waitForAuthedNavigation } from './_helpers.js'
+import { test } from './fixtures.js'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then } = createBdd(test)
 
 // React: <label htmlFor> + Input (Correo / Contraseña), sin wrappers Angular.
 const emailField = (page) => page.getByLabel('Correo', { exact: true })

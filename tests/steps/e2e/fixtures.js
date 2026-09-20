@@ -1,7 +1,11 @@
-// Fixtures compartidos de la suite e2e. Con E2E_API_ORIGIN definido, el
-// frontend llama a esa API (p.ej. un backend local con LLM_FAKE=1 en otro
-// puerto) en vez del proxy de Vite (/api -> 127.0.0.1:8000). Sin la variable,
-// el test es exactamente el de playwright-bdd (mismo-origen vía proxy).
+// Fixtures compartidos de la suite e2e. TODAS las step files deben usar
+// `createBdd(test)` de este módulo: si alguna llama `createBdd()` a secas,
+// Playwright no inyecta E2E_API_ORIGIN y el login cae en el proxy de Vite
+// (:8000, LLM de pago / apagado).
+//
+// Con E2E_API_ORIGIN el navegador llama a esa API (p.ej. LLM_FAKE=1 en :8100)
+// en vez del proxy. Eso es cross-origin (:4300 → :8100): el backend tiene que
+// listar el origen del frontend en CORS (dev defaults cubren :4200, no :4300).
 import { test as base } from 'playwright-bdd'
 
 const apiOrigin = (process.env.E2E_API_ORIGIN ?? '').trim()

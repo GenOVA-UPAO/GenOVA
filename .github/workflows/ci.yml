@@ -354,7 +354,11 @@ jobs:
           cat /tmp/backend.log
           exit 1
 
-      - run: pnpm test:e2e
+      # Playwright webServer (tests/playwright.config.js) levanta Vite
+      # (`pnpm --filter frontend dev` en :4200), no `ng serve`. El proxy de
+      # Vite reenvía /api → este backend (LLM_FAKE=1, RATE_LIMIT_ENABLED=0).
+      - name: E2E BDD (Vite + backend LLM_FAKE)
+        run: pnpm test:e2e
 
       # Auditoría de accesibilidad (axe-core, WCAG 2.0 A/AA) reutilizando el
       # mismo backend; el gate detecta violaciones serious/critical.

@@ -1,6 +1,9 @@
+import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
-const { Given, When, Then } = createBdd()
+import { test } from './fixtures.js'
+
+const { Given, When, Then } = createBdd(test)
 
 Given('que navego a {string}', async ({ page }, path) => {
   const resolved = path === '/admin' ? '/admin/roles' : path
@@ -56,7 +59,24 @@ When('selecciono los permisos {string} y {string}', async ({ page }, _p1, _p2) =
 })
 
 Then('el sistema debe crear el rol y retornar 201', async ({ page }) => {
-  await page.waitForTimeout(1000)
+  // 201 cierra el modal. Un 409 por un "docente" residual de otra corrida
+  // también deja el rol en la lista (el escenario siguiente lo afirma);
+  // se descarta el diálogo para no tapar el listado.
+  const duplicate = page.getByText(/Ya existe un rol con ese nombre/)
+  await expect
+    .poll(
+      async () => {
+        if (await duplicate.isVisible().catch(() => false)) return 'duplicate'
+        if ((await page.getByRole('dialog').count()) === 0) return 'created'
+        return 'pending'
+      },
+      { timeout: 15000, intervals: [250] },
+    )
+    .toMatch(/created|duplicate/)
+  if (await duplicate.isVisible().catch(() => false)) {
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+  }
 })
 
 Then('el nuevo rol {string} debe aparecer inmediatamente en la lista', async ({ page }, name) => {

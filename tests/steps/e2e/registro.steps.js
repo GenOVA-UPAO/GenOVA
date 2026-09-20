@@ -3,8 +3,9 @@ import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
 import { uniqueId } from './_helpers.js'
+import { test } from './fixtures.js'
 
-const { When, Then } = createBdd()
+const { When, Then } = createBdd(test)
 
 async function fillRegister(page, name, email, password) {
   // React: labels asociados (Nombre completo / Correo / Contraseña).
