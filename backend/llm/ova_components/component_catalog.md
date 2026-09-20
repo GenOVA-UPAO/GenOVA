@@ -133,13 +133,20 @@ Methods: `.go(n)` `.next()` `.prev()`
 Events: `upao-nav-change` → `{ index, prev }`
 
 ## upao-comic-panel
-Panel de viñeta de cómic.
+Panel de viñeta de cómic. **Dibuja tú la escena**: pon un `<svg slot="art">` dentro de la viñeta
+(el `viewBox` manda, sin `width`/`height` fijos). El texto de la viñeta es lo que **dice** el
+personaje, nunca una acotación del tipo "Escena: …".
 ```html
-<upao-comic-panel number="1" character="Max" img-src="__IMG_1__" img-alt="Robot pensativo">
+<upao-comic-panel number="1" character="Max" bubble-side="left">
+  <svg slot="art" viewBox="0 0 320 180" role="img" aria-label="Rejilla de píxeles con una flecha que no se tuerce">
+    <rect width="320" height="180" fill="#eef2ff"/>
+    <path d="M40 140 L280 40" stroke="#c0392b" stroke-width="6" marker-end="url(#a)"/>
+  </svg>
   ¿Sabes cuántos datos necesita aprender una IA?
 </upao-comic-panel>
 ```
-Attrs: `number` `character` `img-src` `img-alt` `bubble-side` (left|right)
+Attrs: `number` `character` `img-alt` `bubble-side` (left|right). `img-src` solo para un
+`__IMG_N__` real; sin `svg slot="art"` ni imagen, la viñeta queda con un hueco genérico.
 
 ## upao-podcast
 Reproductor de audio con onda animada.

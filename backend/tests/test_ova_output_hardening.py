@@ -59,3 +59,43 @@ def test_topic_drift_accepts_short_core_terms_and_lead():
     html = "<h1>La Ley de Ohm evitó un apagón</h1><p>El hospital recalculó resistencias.</p>"
     assert topic_drift_defect(html, prompt) is None
     assert topic_drift_defect("<h1>Churn en telecomunicaciones</h1>", prompt)
+
+
+def test_comic_sin_dibujo_propio_se_marca_como_defecto():
+    from prometheus.engine.validate import comic_defects
+
+    html = '<upao-comic-panel number="1" character="Max">¡Mira esta foto!</upao-comic-panel>'
+
+    defects = comic_defects(html)
+
+    assert any("dibujo" in d for d in defects)
+
+
+def test_comic_con_acotacion_en_vez_de_dialogo_se_marca_como_defecto():
+    from prometheus.engine.validate import comic_defects
+
+    html = (
+        '<upao-comic-panel number="1"><svg slot="art" viewBox="0 0 10 10"></svg>'
+        "Escena: Max señala una flecha roja.</upao-comic-panel>"
+    )
+
+    defects = comic_defects(html)
+
+    assert any("acotación" in d for d in defects)
+
+
+def test_comic_bien_hecho_no_genera_defectos():
+    from prometheus.engine.validate import comic_defects
+
+    html = (
+        '<upao-comic-panel number="1"><svg slot="art" viewBox="0 0 10 10"></svg>'
+        "Esta flecha no se tuerce al estirar la imagen.</upao-comic-panel>"
+    )
+
+    assert comic_defects(html) == []
+
+
+def test_html_sin_comic_no_activa_el_chequeo():
+    from prometheus.engine.validate import comic_defects
+
+    assert comic_defects("<section><p>Escena: nada que ver</p></section>") == []

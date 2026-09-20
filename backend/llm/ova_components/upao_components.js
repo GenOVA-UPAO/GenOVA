@@ -52,6 +52,14 @@
     G.document.head.appendChild(s);
   }
 
+  /* Solo se pinta un <img> si la fuente es realmente cargable: un token
+     inventado por el modelo ("image_placeholder") dejaría una imagen rota,
+     mientras que sin fuente el componente dibuja su propio hueco ilustrado. */
+  const usableSrc = value => {
+    const src = String(value ?? '').trim();
+    return /^(?:data:image\/|https?:\/\/|\/|\.\/)/i.test(src) ? src : '';
+  };
+
   /* ── Base class ─────────────────────────────────────────────────────── */
   class UE extends HTMLElement {
     constructor() { super(); this.attachShadow({ mode: 'open' }); }
@@ -472,8 +480,10 @@ ${s}
     connectedCallback() {
       const num    = this.getAttribute('number')      || '1';
       const char   = this.getAttribute('character')   || 'Max';
-      const src    = this.getAttribute('img-src')     || '';
+      const src    = usableSrc(this.getAttribute('img-src'));
       const alt    = this.getAttribute('img-alt')     || char;
+      // La viñeta puede traer su propio dibujo: <svg slot="art">…</svg>.
+      const hasArt = !!this.querySelector('[slot="art"]');
       const side   = this.getAttribute('bubble-side') || 'right';
       const left   = side === 'left';
       this.shadowRoot.innerHTML = this.css(`
@@ -488,6 +498,7 @@ ${s}
         .img-wrap{background:${T.surfTint};min-height:120px;display:flex;
           align-items:center;justify-content:center;border-bottom:2px solid ${T.border};overflow:hidden}
         .img-wrap img{max-width:100%;max-height:200px;object-fit:contain}
+        .img-wrap ::slotted([slot="art"]){display:block;width:100%;max-height:220px}
         .no-img{font-size:3rem;line-height:1;padding:24px;opacity:.3}
         .char-label{font-size:.7rem;font-weight:700;text-transform:uppercase;
           letter-spacing:.1em;color:${T.muted};padding:8px 14px 0}
@@ -507,7 +518,8 @@ ${s}
       <div class="panel" role="figure">
         <div class="num-badge" aria-label="Panel ${num}">${num}</div>
         <div class="img-wrap">
-          ${src ? `<img src="${src}" alt="${alt}" loading="lazy">` : `<div class="no-img" aria-hidden="true">🤖</div>`}
+          <slot name="art"></slot>
+          ${hasArt ? '' : src ? `<img src="${src}" alt="${alt}" loading="lazy">` : `<div class="no-img" aria-hidden="true">🤖</div>`}
         </div>
         <p class="char-label">${char}</p>
         <div class="bubble"><slot></slot></div>
