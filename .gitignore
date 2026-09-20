@@ -252,6 +252,12 @@ nul
 tests/.features-gen/
 tests/playwright-report/
 tests/playwright-report-a11y/
+# Informes generados por tests/run-lighthouse.mjs (se recrean con pnpm lighthouse)
+tests/lighthouse-reports/*.report.html
+tests/lighthouse-reports/*.report.json
+tests/lighthouse-reports/summary.json
+tests/lighthouse-reports/summary.md
+
 
 *.zip
 
@@ -293,3 +299,6 @@ tests/test-results/
 # Dashboards HTML de JMeter: 4 MB de jquery/bootstrap vendorizado por corrida.
 # Se regeneran desde el .jtl con:  jmeter -g tests/load/jmeter_<n>.jtl -o tests/load/jmeter-report-<n>
 tests/load/jmeter-report-*/
+
+# Evidencia visual generada localmente (capturas de recursos reinyectados).
+backend/tests/visual-output/

@@ -51,5 +51,25 @@ export const AVAILABLE_PERMISSIONS: Permission[] = [
     label: "Configurar modelos de la plataforma",
     desc: "Puede administrar los modelos de IA globales del sistema.",
   },
-  // users:link / users:link:admin: UI de /vinculacion diferida; permisos siguen en backend.
+  {
+    id: "users:link",
+    label: "Vincular usuarios",
+    desc: "Puede generar códigos para vincular alumnos a su cuenta.",
+  },
+  {
+    id: "users:link:admin",
+    label: "Administrar vínculos",
+    desc: "Puede administrar los vínculos entre docentes y alumnos.",
+  },
 ];
+
+export function getPermissionLabel(permId: string): string {
+  return AVAILABLE_PERMISSIONS.find((perm) => perm.id === permId)?.label ?? permId;
+}
+
+export function togglePermission(permissions: string[], permissionId: string): string[] {
+  if (permissions.includes(permissionId)) {
+    return permissions.filter((id) => id !== permissionId);
+  }
+  return [...permissions, permissionId];
+}

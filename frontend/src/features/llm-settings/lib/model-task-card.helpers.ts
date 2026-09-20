@@ -1,3 +1,5 @@
+import { firstNonBlank } from "@/core/lib/text";
+
 export const MODALITY_SYMBOLS: Record<string, string> = {
   text: "Aa",
   multimodal: "◆",
@@ -15,8 +17,7 @@ export interface ChipModel {
 export function chipLabel(f: { provider: string; model_id: string }, models: ChipModel[]): string {
   return (
     models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.label ??
-    f.model_id ??
-    "—"
+    f.model_id
   );
 }
 
@@ -24,12 +25,13 @@ export function chipModality(
   f: { provider: string; model_id: string },
   models: ChipModel[],
 ): string {
-  return (
-    models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.modality || "text"
-  );
+  const modality = models.find(
+    (m) => m.provider === f.provider && m.model_id === f.model_id,
+  )?.modality;
+  return firstNonBlank(modality) ?? "text";
 }
 
 export function lookupModalitySymbol(mod: string): string {
   // biome-ignore lint/complexity/useLiteralKeys: TS4111 — Record index signature requires bracket access
-  return MODALITY_SYMBOLS[mod] || MODALITY_SYMBOLS["text"];
+  return MODALITY_SYMBOLS[mod] || MODALITY_SYMBOLS.text;
 }

@@ -510,14 +510,9 @@ def construye_plan(ctx):
 @then("hay una fila por cada recurso elegido con su resource_type")
 def fila_por_recurso(plan):
     assert len(plan) == 6
-    assert [r["resource_type"] for r in plan] == [
-        "Cómic Interactivo",
-        "Micro-Podcast",
-        "5",
-        "Infografía Interactiva",
-        "Estudio de Caso",
-        "Rúbrica de Autoevaluación",
-    ]
+    # Los nombres se normalizan a su id: el motor indexa los recursos por id y
+    # un nombre llegaba hasta int(nombre) y tumbaba la generación.
+    assert [r["resource_type"] for r in plan] == ["1", "3", "5", "10", "1", "2"]
 
 
 @then("cada recurso conserva su fase y su orden dentro de la fase")

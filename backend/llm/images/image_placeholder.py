@@ -13,6 +13,30 @@ IMG_PLACEHOLDER = (
 
 _IMAGE_PLACEHOLDER_RE = re.compile(r"__IMG_\d+__")
 
+# El modelo no siempre respeta el token __IMG_N__ del catálogo: inventa
+# "image_placeholder", "IMAGE-PLACEHOLDER", "placeholder.png"… Si eso llega al
+# HTML el navegador pinta una imagen rota, así que se neutraliza aquí.
+_INVENTED_IMG_NAME = r"(?:[\w./-]*(?:image[_-]?placeholder|placeholder[_-]?image)[\w./-]*)"
+_INVENTED_IMG_SRC_RE = re.compile(
+    rf"""(?P<attr>\bimg-src\s*=\s*)(?P<q>["'])\s*{_INVENTED_IMG_NAME}\s*(?P=q)""",
+    re.IGNORECASE,
+)
+_INVENTED_SRC_RE = re.compile(
+    rf"""(?P<attr>\bsrc\s*=\s*)(?P<q>["'])\s*{_INVENTED_IMG_NAME}\s*(?P=q)""",
+    re.IGNORECASE,
+)
+
+
+def _neutralize_invented_tokens(html: str) -> str:
+    """Un `img-src` inventado se vacía (el componente ya dibuja su propio hueco);
+    un `src` suelto de `<img>` cae al SVG "Imagen no disponible"."""
+    html = _INVENTED_IMG_SRC_RE.sub(
+        lambda m: f'{m.group("attr")}{m.group("q")}{m.group("q")}', html
+    )
+    return _INVENTED_SRC_RE.sub(
+        lambda m: f'{m.group("attr")}{m.group("q")}{IMG_PLACEHOLDER}{m.group("q")}', html
+    )
+
 
 def resolve_image_placeholders(
     html: str, replacements: dict[str, str] | None = None
@@ -24,4 +48,5 @@ def resolve_image_placeholders(
     """
     for placeholder, uri in (replacements or {}).items():
         html = html.replace(placeholder, uri)
-    return _IMAGE_PLACEHOLDER_RE.sub(IMG_PLACEHOLDER, html)
+    html = _IMAGE_PLACEHOLDER_RE.sub(IMG_PLACEHOLDER, html)
+    return _neutralize_invented_tokens(html)

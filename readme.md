@@ -32,7 +32,7 @@ Git hooks vía **Husky** (`pnpm install` los activa con el script `prepare`):
 |---|---|
 | `pre-commit` | `lint-staged` — ESLint `--fix` + Prettier sobre los archivos **staged** del frontend |
 | `commit-msg` | `commitlint` — exige Conventional Commits (`tipo(scope): asunto`) |
-| `pre-push` | lint frontend + Vitest + `ruff` backend + **fronteras de arquitectura** (`lint-imports` + `check_module_size.py`); BDD del backend solo si responde en `:8000` |
+| `pre-push` | `pnpm lint` + `pnpm typecheck` + `pnpm test:vitest` + `ruff` backend + **fronteras de arquitectura** (`lint-imports` + `check_module_size.py`); BDD del backend solo si responde en `:8000` |
 
 Saltar un hook puntualmente: `git commit --no-verify` / `git push --no-verify`.
 
@@ -40,8 +40,10 @@ Ejecución manual de cualquiera de los pasos:
 
 ```bash
 pnpm lint                              # ESLint frontend
-pnpm --filter frontend test            # Vitest (componentes)
+pnpm typecheck                         # tsc -b --noEmit
+pnpm test:vitest                       # Vitest (componentes)
 pnpm test:unit                         # BDD unit (cucumber-js)
+pnpm test:e2e                          # Playwright-BDD (el job CI usa LLM_FAKE=1)
 cd backend && ruff check . && pytest   # lint + tests backend
 sh .husky/pre-push                     # la verificación completa de una vez
 ```
@@ -53,7 +55,7 @@ Smoke tests manuales (playwright-cli, bloques A–F):
 
 | Capa | Tecnología |
 |------|-----------|
-| Frontend | Angular 22 (standalone + OnPush + zoneless) + Tailwind CSS 4 + SpartanUI (helm vendored en `libs/ui`) + Signal Forms + Sonner. Tests de componente con Vitest + `@testing-library/angular` |
+| Frontend | React 19 (React Compiler) + Vite 8 + React Router 8 + Tailwind CSS 4 + TanStack Query 5 + Radix UI + Sonner. Tests de componente con Vitest + `@testing-library/react` |
 | Backend | FastAPI + SQLAlchemy 2 + Uvicorn + SlowAPI. SSE (`sse-starlette`) para progreso; cola durable **arq + Redis** (opcional) con worker separado; observabilidad **Logfire** (opt-in) + Sentry |
 | Base de datos | Supabase (PostgreSQL + pgvector) vía `psycopg` |
 | Storage | Supabase Storage (`scorm-packages`) — fallback automático a disco local |
@@ -102,6 +104,10 @@ AUTH_ACCEPT_BEARER=1   # default 1 (acepta); pon 0 en producción cuando estés 
 # Pool de conexiones (Supabase Transaction pooler, puerto 6543)
 DB_POOL_SIZE=10
 DB_MAX_OVERFLOW=10
+
+# Generación — solo CI / pruebas. Nunca en producción.
+# LLM_FAKE=1    # HTML determinista sin proveedores (jobs y POST /api/agents/*/generate)
+# OVA_RESOURCE_BUDGET_S=240   # techo de reloj por recurso (generate + refine + repair)
 ```
 
 > ⚠️ `JWT_SECRET` es obligatorio. El backend **falla al arrancar** si la variable está vacía, contiene un valor débil (`change-me`, `secret`, `test`, `changeme`) o tiene menos de 16 caracteres.
@@ -170,18 +176,18 @@ solos al arrancar el backend:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db backend
+# stack completo (incluye frontend en :4200):
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
-> ⚠️ **El servicio `frontend` de compose NO arranca hoy**: su `pnpm install`
-> dentro del contenedor falla con `ERR_PNPM_IGNORED_BUILDS`. El workaround que
-> funciona es levantar el frontend en el host, saltándose el envoltorio de pnpm:
->
-> ```bash
-> cd frontend && node scripts/run-with-api-env.mjs serve --host 0.0.0.0 --port 4200
-> ```
->
-> El proxy de `frontend/proxy.conf.json` ya apunta a `127.0.0.1:8000`, así que
-> con el backend de compose en marcha el frontend del host le habla sin tocar nada.
+En el contenedor, `GENOVA_DEV_BACKEND=http://backend:8000` hace que el proxy de
+Vite (`/api` y `/auth`) apunte al servicio `backend`. En el host, `pnpm dev`
+proxia por defecto a `http://127.0.0.1:8000`. Para un backend en otro puerto
+(p. ej. determinista `LLM_FAKE=1` en `:8100`):
+
+```bash
+GENOVA_DEV_BACKEND=http://127.0.0.1:8100 pnpm --filter frontend dev --port 4300
+```
 
 ### Sin Docker — Backend con `pip`
 
@@ -233,14 +239,16 @@ completa de variables de entorno está en `backend/.env.example` y `frontend/.en
 
 | Comando | Acción |
 |---------|--------|
-| `pnpm dev` | Frontend en modo desarrollo |
-| `pnpm build` | Build de producción del frontend |
-| `pnpm preview` | Previsualiza el build (`http://localhost:4173`) |
-| `pnpm lint` | ESLint sobre el frontend (typescript-eslint **type-checked strict** + angular-eslint + prettier; fronteras de features y anti-barrels en `error`; caps de tamaño en `warn`) |
-| `pnpm format` | Prettier sobre el frontend (vía eslint-plugin-prettier) |
+| `pnpm dev` | Frontend en modo desarrollo (`http://localhost:4200`, proxy `/api` y `/auth`) |
+| `pnpm build` | Build de producción del frontend (`frontend/dist/`) |
+| `pnpm --filter frontend preview` | Previsualiza el build (`http://localhost:4200`) |
+| `pnpm lint` | ESLint sobre el frontend (typescript-eslint **type-checked strict** + react + react-hooks + jsx-a11y + sonarjs + prettier; fronteras de features y anti-barrels en `error`; caps de tamaño y complejidad) |
+| `pnpm typecheck` | Chequeo de tipos TypeScript (`tsc -b --noEmit`) |
+| `pnpm format` | Prettier sobre el frontend |
+| `pnpm test:vitest` | Tests de componente (Vitest + Testing Library) |
 | `pnpm test:unit` | BDD unit (cucumber-js, sin browser/backend; corre TS vía `tsx`) |
-| `pnpm --filter frontend test` | Tests de componente (Vitest + Testing Library) |
-| `pnpm --filter frontend typecheck` | Chequeo de tipos Angular (`ngc --noEmit`, incluye templates) |
+| `pnpm test:e2e` | E2E (playwright-bdd). En CI el backend corre con `LLM_FAKE=1` |
+| `pnpm test:a11y` | Auditoría axe-core (WCAG 2.0 A/AA); el job `e2e` de CI la corre al final |
 | `pnpm dev:docker` | Levanta todo con Docker (dev) |
 | `pnpm prod:docker` | Levanta todo con Docker (prod) |
 
@@ -277,11 +285,16 @@ Override env para los tests manuales: `BASE`, `EMAIL`, `PASS`, `PHASE`, `TYPE`, 
 
 ```
 GenOVA/
-├── .github/                 # workflows CI (lint-frontend/lint-backend → backend-bdd + frontend-unit → e2e), dependabot, codeql
+├── .github/                 # CI: lint-frontend, typecheck-frontend, lint-backend, backend-bdd,
+│                            # api-contract, frontend-unit, frontend-vitest, security-audit, e2e
 ├── .husky/                  # git hooks: pre-commit (lint-staged), commit-msg (commitlint), pre-push
 ├── commitlint.config.mjs    # Conventional Commits
 ├── lint-staged.config.mjs   # ESLint --fix + Prettier sobre archivos staged del frontend
-├── frontend/                # Angular 22 (ESLint type-checked, caps de tamaño en warn)
+├── frontend/                # React 19 + Vite 8 (ESLint type-checked, React Compiler, fronteras de features)
+│   └── src/
+│       ├── app/             # router, layouts, loaders
+│       ├── core/            # auth, UI Radix, http (apiFetch/apiJson), tema
+│       └── features/        # auth, ova-library, ova-workspace, admin, profile, analytics, llm-settings
 ├── backend/                 # FastAPI
 │   ├── pyproject.toml       # uv + ruff + pytest + import-linter (~40 contratos)
 │   ├── requirements.txt     # pip (sincronizado con pyproject)
@@ -317,10 +330,10 @@ Lo que importa es **una sola responsabilidad por unidad**, no un límite de lín
 
 | Nivel | Regla | Umbral | Severidad |
 |---|---|---|---|
-| Función / método | ESLint `max-lines-per-function` · ruff `PLR0915` + `C901` | ~30 líneas / 30 statements / complejidad 10 | error (por dominio ya migrado); `warn` en el resto |
-| Nº de argumentos | ESLint `max-params` · ruff `PLR0913` | 4–6 | warn |
-| Clase | ESLint `max-classes-per-file` | 1 por archivo | error (frontend, tras Fase 4) |
-| Archivo / módulo | ESLint `max-lines` · `backend/scripts/check_module_size.py` | 400 | warn — dispara revisión, no rompe build |
+| Función / método | Frontend: ESLint `max-lines-per-function` + `complexity` · Backend: ruff `PLR0915` + `C901` | Frontend: 80 líneas / complejidad 10 · Backend: ~30 statements / complejidad 10 | error (frontend); backend `error` en dominios migrados, `warn` en el resto |
+| Nº de argumentos | ESLint `max-params` · ruff `PLR0913` | 4 (frontend, error) · 4–6 (backend, warn) | ver regla |
+| Componente / clase | `react/no-multi-comp` · ESLint `max-classes-per-file` | 1 por archivo | error (frontend) |
+| Archivo / módulo | ESLint `max-lines` (frontend) · `backend/scripts/check_module_size.py` | 250 (frontend, error) · 400 (backend, aviso) | frontend rompe lint; backend no bloquea build |
 
 Excepciones declaradas en `backend/pyproject.toml → per-file-ignores`: `tests/**`, `tools/**`,
 `scripts/**`, y los subdominios de soporte con tratamiento ligero (`prometheus/**`, `llm/**`,
@@ -392,31 +405,22 @@ Los routers consumen `Depends(build_<dominio>())`; los errores de dominio suben 
 |---|---|---|
 | `lint-imports` (import-linter) | ~40 contratos en `backend/pyproject.toml → [tool.importlinter]`: pureza de cada `domain/`, capas `interface → container → application → domain`, independencia entre dominios, perímetro de `prometheus`/`llm` | `pre-push`, CI (job `lint-backend`), ejecutable a mano desde `backend/` |
 | `eslint-plugin-boundaries` | frontend: `feature → core` / su propia feature (nunca otra feature), `core → core`, `app` → cualquiera — en `error` | `pnpm lint`, `pre-commit` (vía lint-staged), CI |
-| `eslint-plugin-no-barrel-files` | nada de `index.ts` que solo re-exporta; importar del módulo fuente (`@spartan-ng/helm/*` exentos) | ídem |
+| `eslint-plugin-no-barrel-files` | nada de `index.ts` que solo re-exporta; importar del módulo fuente | ídem |
 | `scripts/check_module_size.py` | ningún `.py` supera 400 líneas de código (aviso, no bloquea) | ídem |
 
-Los cuatro corren en `.husky/pre-push` y en `.github/workflows/ci.yml` (job `lint-backend`
-incluye import-linter y tamaño de módulos; `lint-frontend` corre `pnpm lint`).
+Los cuatro corren en `.husky/pre-push` y en `.github/workflows/ci.yml`
+(`lint-backend` incluye import-linter y tamaño de módulos; `lint-frontend` corre
+`pnpm lint`; `typecheck-frontend` y `frontend-vitest` son jobs paralelos).
 
 #### Frontend — features con fronteras enforced
 
 `eslint-plugin-boundaries` (en `error`): `feature → core` / su propia feature (nunca otra
 feature); `core → core` (nunca `feature`); `app → cualquiera`. Sin barrel files
-(`eslint-plugin-no-barrel-files`, hard error). La capa de servicios está separada de los
-componentes: `services/*.ts` hace `fetch` y mantiene estado con signals; los
-componentes/páginas standalone solo orquestan layout.
-
-Dos decisiones de lint documentadas en `frontend/eslint.config.mjs` porque lo contrario
-cambiaría comportamiento en silencio:
-
-- `prefer-nullish-coalescing` en **off**: se hizo la pasada dedicada de `||` → `??` y se
-  midió la regla activándola (136 flags). Sin `strictNullChecks` el type-checker considera
-  nullables todos los tipos y la regla marca también los fallbacks intencionales (mensajes
-  de error, defaults `|| 0`/`|| []`, y campos donde el backend envía `""` real por sus
-  serializadores `x or ""`). Activarla exigiría 130+ `eslint-disable`. Se revisita si se
-  activa `strictNullChecks`.
-- `no-unnecessary-condition` en **off**: contra payloads de API tipados flojo produce más
-  falsos positivos que señal.
+(`eslint-plugin-no-barrel-files`, hard error). La capa de acceso a datos (`api/*.api.ts` con
+`apiJson` y `hooks/use-*.ts` con TanStack Query) está separada de la presentación; los
+componentes solo orquestan interfaz y layout (`react/no-multi-comp`, un componente por archivo).
+Radix e iconos de Phosphor se consumen únicamente a través de `@/core/components/ui/*` y
+`<Icon name="..." />`.
 
 Mobile-first: alturas en `vh` con `min-h`/`max-h`, modales en bottom-sheet en mobile y
 centrados en `sm+`, tablas con `overflow-x-auto` y `min-w-[…]` por columna.
@@ -434,42 +438,59 @@ los importa.
 
 ## Funcionalidades principales
 
-- **Crear OVA**: prompt + (opcional) archivos de apoyo → elige hasta **4 recursos por fase** (ENGAGE + EXPLORE) → genera secuencialmente con reintentos automáticos individuales en el frontend y estados en vivo (`generando`, `reintentando`, `done`, `failed`) → validador de calidad HTML y auto-reparación estructural y de SCORM en el backend → guarda parciales (si algún recurso falla) y empaqueta todo en un único paquete SCORM con un recurso navegable por cada selección exitosa.
+- **Crear OVA**: prompt + nivel educativo + (opcional) archivos de apoyo → elige al menos **2 fases 5E** y hasta **4 recursos por fase** → genera en un work-pool con progreso en vivo por recurso → validación HTML/JS y auto-reparación en el backend → guarda parciales (si algún recurso falla) y empaqueta todo en un único paquete SCORM con un recurso navegable por cada selección exitosa.
 - **Mis OVAs**: listado con búsqueda/paginación, edición de fases, regeneración de fases con agentes LLM reales (a través de `resource_type_id` y título), versión activa y descarga SCORM, duplicar, mover a papelera.
 - **Papelera**: soft-delete con restauración individual o masiva.
 - **Perfil**: edición de datos personales (incluye `university_id`, `gender`, `phone_number`) y cambio de contraseña.
+- **Analítica**: `/analytics` — métricas de aprendizaje (API exige permiso `view_analytics`).
+- **Modelos de IA**: `/models` — catálogo, claves de proveedor y cadena de fallback.
 - **Administración (solo `administrador`)**:
   - `/admin/roles` — CRUD de roles y sus permisos (JSONB), con flujo de "eliminar y reasignar".
-  - `/admin/users` — listado de usuarios y asignación de roles.
+  - `/admin` — listado de usuarios y asignación de roles.
 
 ## Cómo funciona la generación (5E)
 
 GenOVA aplica la metodología **5E** completa (**ENGAGE, EXPLORE, EXPLAIN, ELABORATE,
 EVALUATE**), cada fase con **10 tipos de recurso** (cómic, podcast, gamificación, dilema
 ético, escape room, simulador…).
-El backend genera con LLMs reales en un pipeline `texto → JSON → HTML`, valida y auto-repara
-el HTML (incluye callbacks SCORM), recurre a una **cadena de fallback** entre proveedores
-(Groq + OpenRouter) y empaqueta todo en un único SCORM 1.2. Opcionalmente ancla la generación
-con **RAG** (archivos del usuario) e inserta imágenes (HF FLUX.1-schnell) y audio (TTS Groq).
+El backend genera los recursos en un work-pool (entrada única `generate_resource`) con
+un pipeline `texto → JSON → HTML`, valida y auto-repara el HTML (incluye callbacks SCORM)
+y comprueba la **sintaxis del JavaScript** inline con QuickJS. Si el modelo corta la
+salida por el tope de tokens (`finish_reason=length`), el router **continúa** hasta dos
+veces. Un **presupuesto de reloj por recurso** (default 240 s, `OVA_RESOURCE_BUDGET_S`)
+corta refine/repair cuando se agota y se queda con el mejor HTML. Con tema UPAO, el
+servidor inyecta la hoja base y la librería de **componentes UPAO** (`<upao-header>`,
+`<upao-card>`, `<upao-question>`, …) para que el modelo no reescriba el runtime.
+Recurre a una **cadena de fallback** entre proveedores (Groq + OpenRouter) y empaqueta
+todo en un único SCORM 1.2. Opcionalmente ancla la generación con **RAG** (archivos del
+usuario) e inserta imágenes (HF FLUX.1-schnell) y audio (TTS Groq).
+
+Para CI, e2e y pruebas sin gastar cuota: `LLM_FAKE=1` sustituye el grafo y
+`POST /api/agents/*/generate` por HTML determinista (nunca en producción). Detalle
+de cómo correr la suite local contra un backend fake en `:8100`: [`tests/README.md`](tests/README.md).
 
 ## Rutas del frontend
 
-Angular Router (`frontend/src/app/app.routes.ts`). Las rutas protegidas exigen sesión
-(`authGuard`); las admin exigen rol `administrador` (`adminGuard`).
+React Router 8 (`frontend/src/app/router.tsx`). Los loaders `requireAuth`,
+`requireGuest` y `requireAdmin` viven en `frontend/src/core/auth/guards.ts`.
+Hay redirecciones de URLs antiguas (`/crear-ova` → `/crear`, `/modelos` → `/models`,
+`/ova/:id/workspace` → `/workspace/:id`, etc.).
 
 | Ruta | Página | Acceso |
 |---|---|---|
-| `/login`, `/register` | Login / Registro | Público |
-| `/forgot-password`, `/reset-password`, `/verify-email` | Recuperación / verificación | Público |
-| `/dashboard` | Dashboard | Protegido |
+| `/login`, `/register` | Login / Registro | Guest (`requireGuest`; si hay sesión → `/dashboard`) |
+| `/forgot-password`, `/reset-password` | Recuperación de contraseña | Guest |
+| `/verify-email` | Verificación de correo | Público (sin redirect de guest) |
+| `/dashboard` | Dashboard | Protegido (`requireAuth`) |
 | `/crear` | Crear OVA (workspace en modo creación) | Protegido |
 | `/mis-ovas` | Mis OVAs (listado/búsqueda) | Protegido |
 | `/workspace/:id` | Workspace del OVA (edición) | Protegido |
 | `/papelera` | Papelera (soft-delete) | Protegido |
 | `/profile` | Perfil | Protegido |
+| `/analytics` | Analítica | Protegido (API: permiso `view_analytics`) |
 | `/models` | Catálogo y asignación de modelos LLM | Protegido |
-| `/explore`, `/engage/:id` | Playground público de fases 5E | Público |
-| `/admin` | Gestión de usuarios | Admin |
+| `/explore`, `/engage/:id` | Playground de fases 5E | Protegido |
+| `/admin` | Gestión de usuarios | Admin (`requireAdmin`) |
 | `/admin/roles` | CRUD de roles y permisos | Admin |
 
 ## Endurecimiento de seguridad
@@ -504,22 +525,31 @@ GET /api/uploads/health
 
 ## CI/CD
 
-Push o PR a `develop` / `main` dispara el pipeline en `.github/workflows/ci.yml`:
+Push o PR a `develop` / `main` dispara el pipeline en `.github/workflows/ci.yml`.
+Los jobs de lint, typecheck, tests y auditoría corren en paralelo; `e2e` espera
+a lint/typecheck/BDD/unitarios (no a `api-contract` ni `security-audit`):
 
 ```
-lint-frontend (pnpm lint) ─────────┐
-lint-backend (ruff + import-linter │
-  + tamaño de módulos) ────────────┼──→ e2e
-backend-bdd (pytest-bdd, coverage) │
-frontend-unit (cucumber-js BDD) ───┘
+lint-frontend (pnpm lint) ──────────────┐
+typecheck-frontend (pnpm typecheck) ────┤
+lint-backend (ruff + import-linter      │
+  + tamaño de módulos) ─────────────────┼──→ e2e (playwright-bdd, LLM_FAKE=1;
+backend-bdd (pytest-bdd, coverage) ─────┤     al final, a11y informativo)
+frontend-unit (cucumber-js BDD) ────────┤
+frontend-vitest (pnpm test:vitest) ─────┘
+
+api-contract (Schemathesis, continue-on-error)
+security-audit (pnpm audit --prod + pip-audit)
 ```
 
-Secrets requeridos en el repositorio CI:
+El job `e2e` (y `api-contract`) levantan un Postgres efímero con pgvector; no
+hace falta `TEST_DATABASE_URL` en ese workflow. Esos secretos sí los usa
+`.github/workflows/load-test.yml`.
 
-| Secret | Descripción |
-|---|---|
-| `TEST_DATABASE_URL` | PostgreSQL de test (no usar la BD de producción) |
-| `TEST_JWT_SECRET` | Secret JWT para los tests (mínimo 16 chars) |
+| Secret | Dónde | Descripción |
+|---|---|---|
+| `TEST_DATABASE_URL` | `load-test.yml` | PostgreSQL de test (no usar la BD de producción) |
+| `TEST_JWT_SECRET` | `load-test.yml` | Secret JWT para los tests (mínimo 16 chars) |
 
 ## Seed de desarrollo
 

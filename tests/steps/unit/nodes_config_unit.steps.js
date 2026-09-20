@@ -3,7 +3,6 @@ import { Given, When, Then } from '@cucumber/cucumber'
 import {
   criticRoundsVisible,
   hasUnsavedChanges,
-  isVideoResource,
 } from '../../../frontend/src/features/llm-settings/lib/nodes-config-draft'
 
 // Draft state helpers for PlatformNodesCard (no browser/backend).
@@ -46,14 +45,5 @@ Then('hasUnsavedChanges retorna true', function () {
   assert.equal(this.result, true)
 })
 
-When('verifico si {word} recurso id {int} es video', function (phase, id) {
-  this.result = isVideoResource(phase, id)
-})
 
-Then('isVideoResource retorna true', function () {
-  assert.equal(this.result, true)
-})
 
-Then('isVideoResource retorna false', function () {
-  assert.equal(this.result, false)
-})

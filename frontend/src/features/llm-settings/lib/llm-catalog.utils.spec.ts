@@ -18,6 +18,6 @@ describe("HU-034 catalog labels", () => {
   });
 
   it("has modality badge for video", () => {
-    expect(MODALITY_META["video"]?.label).toBe("Video");
+    expect(MODALITY_META.video.label).toBe("Video");
   });
 });

@@ -15,6 +15,28 @@ from users.domain.errors import (
 )
 from users.domain.profile import VALID_GENDERS
 
+SEARCH_MAX_LENGTH = 100
+# Mismo mapa en Python (normalizar el término) y en SQL translate (columnas).
+ACCENT_FROM = "áàäâãåéèëêíìïîóòöôõúùüûñçýÿÁÀÄÂÃÅÉÈËÊÍÌÏÎÓÒÖÔÕÚÙÜÛÑÇÝŸ"
+ACCENT_TO = "aaaaaaeeeeiiiiooooouuuuncyyAAAAAAEEEEIIIIOOOOOUUUUNCYY"
+_ACCENT_TABLE = str.maketrans(ACCENT_FROM, ACCENT_TO)
+
+
+def normalize_user_search(raw: str | None) -> str:
+    """Recorta, pliega acentos y minúsculas; limita longitud. Vacío = sin filtro."""
+    if raw is None:
+        return ""
+    folded = raw.strip().translate(_ACCENT_TABLE).lower()
+    return folded[:SEARCH_MAX_LENGTH]
+
+
+@dataclass(frozen=True, slots=True)
+class AdminUserListFilter:
+    """Criterios del listado admin: el SQL concreto vive en infraestructura."""
+
+    search: str = ""
+    role_id: UUID | None = None
+
 
 @dataclass(frozen=True, slots=True)
 class AdminRoleSummary:

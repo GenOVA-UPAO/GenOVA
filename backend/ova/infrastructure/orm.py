@@ -59,6 +59,7 @@ class OvaVersion(Base):
             unique=True,
             postgresql_where=text("is_active = TRUE"),
         ),
+        Index("uq_ova_version_number", "ova_id", "version_number", unique=True),
     )
 
     id = _pk_column()

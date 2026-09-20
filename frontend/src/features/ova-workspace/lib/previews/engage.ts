@@ -1,5 +1,7 @@
 import { preview, type ResourcePreviewInfo } from "./preview-types";
 
+const INTERACTIVE_HTML = "HTML + JS interactivo";
+
 export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "1": preview(
     "Cómic Interactivo",
@@ -25,7 +27,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "4": preview(
     "Juego de Gamificación",
     "Mini-juego HTML con puntos o retos sobre el concepto.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Meta clara del juego", "Feedback al acertar/fallar", "Puntuación o progreso"],
     "game",
   ),
@@ -60,14 +62,14 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "9": preview(
     "Escape Room Virtual",
     "Retos encadenados para “escapar” aplicando el concepto.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Pistas y acertijos", "Progreso por salas", "Desbloqueo final"],
     "decisions",
   ),
   "10": preview(
     "Simulador Intuitivo",
     "Controles simples para experimentar el concepto sin fórmulas.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Controles ajustables", "Resultado visual inmediato", "Insight guiado"],
     "lab",
   ),

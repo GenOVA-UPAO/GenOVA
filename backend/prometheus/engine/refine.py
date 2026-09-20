@@ -17,7 +17,7 @@ from llm.router import generar_texto
 from llm.utils.html_validator import validate_html
 from llm.utils.llm_helpers import _CODE_MAX_TOKENS
 from llm.utils.themes import build_design_system
-from llm.utils.utils import strip_markdown
+from llm.utils.utils import extract_html_document
 
 logger = structlog.get_logger(__name__)
 
@@ -82,7 +82,7 @@ def apply_feedback(
     theme = theme or {}
     ds = build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
     try:
-        return strip_markdown(
+        return extract_html_document(
             generar_texto(
                 _refine_prompt(html, concept, feedback, ds),
                 "codigo",

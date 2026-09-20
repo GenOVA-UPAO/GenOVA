@@ -1,3 +1,5 @@
+import { firstNonBlank } from "@/core/lib/text";
+
 /**
  * Restringe el catálogo a los modelos que el usuario activó en «Gestionar
  * modelos». Es lo que da sentido a ese interruptor: filtra lo que se puede
@@ -25,7 +27,7 @@ function tieneAptitud(m: { aptitudes?: string[]; category?: string }, task: stri
   const apt = m.aptitudes;
   if (Array.isArray(apt) && apt.length > 0) return apt.includes(task);
   // Catálogos antiguos sin `aptitudes`: cae a la categoría.
-  return (m.category || "") === task;
+  return (m.category ?? "") === task;
 }
 
 /**
@@ -73,11 +75,11 @@ export function includeSelectedInPool<T extends ModelRef>(
   const seen = new Set(pool.map(modelKey));
   const out = [...pool];
   for (const sel of selected) {
-    if (!sel?.provider || !sel?.model_id) continue;
+    if (!sel?.provider || !sel.model_id) continue;
     const key = modelKey(sel);
     if (seen.has(key)) continue;
     const found = all.find((m) => m.provider === sel.provider && m.model_id === sel.model_id);
-    const stub = { ...sel, label: sel.label || sel.model_id } as T;
+    const stub = { ...sel, label: firstNonBlank(sel.label) ?? sel.model_id } as T;
     out.push(found ?? stub);
     seen.add(key);
   }

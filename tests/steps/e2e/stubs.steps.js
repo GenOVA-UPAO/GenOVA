@@ -1,6 +1,10 @@
+import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
-const { Given, When, Then } = createBdd()
+import { isAuthedPath, loginWithCredentials, openLoginPage, waitForAuthedNavigation } from './_helpers.js'
+import { test } from './fixtures.js'
+
+const { Given, When, Then } = createBdd(test)
 
 // ── Auth HU-001: Registro ─────────────────────────────────────────────────────
 
@@ -8,23 +12,26 @@ When(
   'ingreso un correo válido y una contraseña alfanumérica de mínimo {int} caracteres',
   async ({ page }, _minLen) => {
     const uid = Date.now()
-  await page.locator('#email, input[type=email]').first().fill(`test_${uid}@test.com`)
-  await page.locator('#password input, input[type=password]').first().fill('newpass99x')
+  await page.getByLabel('Correo', { exact: true }).fill(`test_${uid}@test.com`)
+  await page.getByLabel('Contraseña', { exact: true }).fill('newpass99x')
   }
 )
 
 Then('el sistema debe crear la cuenta', async () => {})
 Then('los campos university_id, gender y phone_number deben crearse como NULL', async () => {})
 Then('debo recibir un JWT', async ({ page }) => {
-  const token = await page.evaluate(() => localStorage.getItem('genova_token'))
-  if (!token) throw new Error('JWT not found in localStorage')
+  // React guarda la sesión en la cookie httpOnly genova_token (no localStorage).
+  const cookies = await page.context().cookies()
+  if (!cookies.some((c) => c.name === 'genova_token')) {
+    throw new Error('genova_token cookie not found')
+  }
 })
 
 Given('que el correo {string} ya está registrado', async () => {})
 
 When('intento registrarme con ese correo', async ({ page }) => {
-  await page.locator('#email, input[type=email]').first().fill('user@genova.ai')
-  await page.locator('#password input, input[type=password]').first().fill('somepassword123')
+  await page.getByLabel('Correo', { exact: true }).fill('user@genova.ai')
+  await page.getByLabel('Contraseña', { exact: true }).fill('somepassword123')
 })
 
 Then('debo ver un mensaje indicando que el correo ya existe', async ({ page }) => {
@@ -35,34 +42,31 @@ Then('debo ver un mensaje indicando que el correo ya existe', async ({ page }) =
 })
 
 Then('no debo ser redirigido al dashboard', async ({ page }) => {
-  await page.waitForTimeout(500)
-  const url = page.url()
-  if (/dashboard/.test(url)) throw new Error('Should not be on dashboard')
+  await expect(page).toHaveURL((url) => !isAuthedPath(url.pathname), { timeout: 8000 })
 })
 
 // ── Auth HU-008: Login ────────────────────────────────────────────────────────
 
 When('ingreso un correo o contraseña inválidos', async ({ page }) => {
-  await page.locator('#email, input[type=email]').first().fill('noexiste@test.com')
-  await page.locator('#password input, input[type=password]').first().fill('wrongpass')
+  await page.getByLabel('Correo', { exact: true }).fill('noexiste@test.com')
+  await page.getByLabel('Contraseña', { exact: true }).fill('wrongpass')
 })
 
 Then('debo recibir un error descriptivo', async ({ page }) => {
-  // Wait for any visible error indicator
+  // waitForFunction recibe (fn, arg, options): sin el arg, el timeout se ignora.
   await page.waitForFunction(
     () => {
       const t = document.body.innerText.toLowerCase()
       return t.includes('inválid') || t.includes('incorrecto') || t.includes('no existe') ||
         !!document.querySelector('[role=alert], .error')
     },
+    undefined,
     { timeout: 8000 }
   )
 })
 
 Then('no debo acceder al dashboard', async ({ page }) => {
-  await page.waitForTimeout(500)
-  const url = page.url()
-  if (/dashboard/.test(url)) throw new Error('Should not be on dashboard')
+  await expect(page).toHaveURL((url) => !isAuthedPath(url.pathname), { timeout: 8000 })
 })
 
 Given('que realizo 5 intentos fallidos consecutivos', async ({ page }) => {
@@ -70,8 +74,8 @@ Given('que realizo 5 intentos fallidos consecutivos', async ({ page }) => {
 })
 
 When('intento iniciar sesión nuevamente', async ({ page }) => {
-  const emailInput = page.locator('#email, input[type=email]').first()
-  const passInput = page.locator('#password input, input[type=password]').first()
+  const emailInput = page.getByLabel('Correo', { exact: true })
+  const passInput = page.getByLabel('Contraseña', { exact: true })
   await emailInput.fill('lockout@test.com')
   await passInput.fill('wrongpass')
   const entrar = page.getByRole('button', { name: 'Entrar' })
@@ -94,7 +98,13 @@ Given(
 )
 
 Then('debo ver la opción {string} en el menú del panel', async ({ page }, option) => {
-  await page.waitForSelector(`text=${option}`, { timeout: 5000 })
+  // El Gherkin nombra "Gestión de Roles" (h1 de la página). El ítem del
+  // sidebar, en Angular y en React (nav-links.ts), se llama "Roles".
+  const label = option === 'Gestión de Roles' ? 'Roles' : option
+  await page.getByRole('link', { name: label, exact: true }).first().waitFor({
+    state: 'visible',
+    timeout: 5000,
+  })
 })
 
 When('navega a {string}', async ({ page }, path) => {
@@ -104,9 +114,9 @@ When('navega a {string}', async ({ page }, path) => {
 })
 
 Then('no debo ver el panel de administración', async ({ page }) => {
-  await page.waitForTimeout(3000)  // give AdminRoute time to check role
-  const count = await page.locator('text=Gestión de Roles').count()
-  if (count > 0) throw new Error('Should not see admin panel')
+  await waitForAuthedNavigation(page, 15000).catch(() => {})
+  await expect(page.getByRole('heading', { name: 'Gestión de Roles' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Roles', exact: true })).toHaveCount(0)
 })
 
 Given('que estoy en {string}', async ({ page }, path) => {
@@ -118,10 +128,10 @@ Given('que existe un rol con nombre {string}', async ({}, _name) => {})
 When('intento crear otro rol con el mismo nombre {string}', async ({ page }, name) => {
   await page.goto('/admin/roles')
   await page.getByRole('button', { name: 'Nuevo rol' }).click()
-  const input = page.locator('input[type=text]').first()
+  const input = page.getByLabel('Nombre del rol')
   await input.waitFor({ state: 'visible', timeout: 10000 })
   await input.fill(name)
-  await page.click('button[type=submit]')
+  await page.getByRole('button', { name: 'Crear rol' }).click()
 })
 
 Then('el sistema retorna 409', async () => {})
@@ -131,11 +141,11 @@ Then('el rol no debe duplicarse en la lista', async () => {})
 Given('que estoy en el formulario de creación de roles', async ({ page }) => {
   await page.goto('/admin/roles')
   await page.getByRole('button', { name: 'Nuevo rol' }).click()
-  await page.locator('input[type=text]').first().waitFor({ state: 'visible', timeout: 8000 })
+  await page.getByLabel('Nombre del rol').waitFor({ state: 'visible', timeout: 8000 })
 })
 
 When('dejo el campo nombre vacío', async ({ page }) => {
-  const input = page.locator('input[type=text]').first()
+  const input = page.getByLabel('Nombre del rol')
   await input.waitFor({ state: 'visible', timeout: 8000 })
   await input.fill('')
 })
@@ -150,12 +160,8 @@ Then('el formulario no debe enviarse al backend', async () => {})
 
 Given('el usuario {string} está autenticado con rol {string}', async ({ page }, email, role) => {
   const pass = role === 'administrador' ? 'admin1234password' : 'user1234password'
-  await page.goto('/login')
-  await page.locator('#email, input[type=email]').first().waitFor({ state: 'visible', timeout: 15000 })
-  await page.locator('#email, input[type=email]').first().fill(email)
-  await page.locator('#password input, input[type=password]').first().fill(pass)
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
+  await openLoginPage(page)
+  await loginWithCredentials(page, email, pass, 10000)
 })
 
 Given('existen los siguientes OVAs para {string}:', async () => {})
@@ -175,11 +181,13 @@ When('hago clic en {string} del OVA {string}', async ({ page }, btnText, _title)
 })
 
 When('escribo {string} en el campo de búsqueda', async ({ page }, text) => {
-  await page.fill('input[placeholder*=buscar], input[placeholder*=búsqueda], input[type=search]', text)
+  // SearchInput de React: <input type="search"> con aria-label.
+  await page.getByRole('searchbox').first().fill(text)
 })
 
 When('selecciono el filtro {string}', async ({ page }, filter) => {
-  await page.selectOption('select, [role=combobox]', { label: filter })
+  const select = page.getByLabel(/Filtrar por estado|Filtrar usuarios por rol/)
+  await select.selectOption({ label: filter })
 })
 
 When('confirmo la eliminación', async ({ page }) => {
@@ -187,14 +195,16 @@ When('confirmo la eliminación', async ({ page }) => {
 })
 
 Then('veo exactamente {int} cards de OVAs', async ({ page }, _n) => {
-  await page.waitForSelector('[data-testid=ova-card], .ova-card, article', { timeout: 8000 })
+  // React: las cards de OVA son divs con un <h3> accesible como título.
+  await page.getByRole('heading', { level: 3 }).first().waitFor({ state: 'visible', timeout: 8000 })
 })
 
 Then('están ordenados por fecha de creación descendente', async () => {})
 Then('cada card muestra título, fecha y badge de estado', async () => {})
 
 Then('veo {int} OVAs en la primera página', async ({ page }, _n) => {
-  await page.waitForSelector('[data-testid=ova-card], .ova-card, article', { timeout: 8000 })
+  // React: las cards de OVA son divs con un <h3> accesible como título.
+  await page.getByRole('heading', { level: 3 }).first().waitFor({ state: 'visible', timeout: 8000 })
 })
 
 Then('veo el control de paginación con {string}', async ({ page }, label) => {
@@ -202,7 +212,8 @@ Then('veo el control de paginación con {string}', async ({ page }, label) => {
 })
 
 Then('veo los {int} OVAs restantes', async ({ page }, _n) => {
-  await page.waitForSelector('[data-testid=ova-card], .ova-card, article', { timeout: 8000 })
+  // React: las cards de OVA son divs con un <h3> accesible como título.
+  await page.getByRole('heading', { level: 3 }).first().waitFor({ state: 'visible', timeout: 8000 })
 })
 
 Then('veo únicamente el OVA {string}', async ({ page }, title) => {
@@ -223,8 +234,8 @@ Then('aparece un modal con el texto {string}', async ({ page }, text) => {
   await page.waitForSelector(`text=${text}`, { timeout: 5000 })
 })
 
-Then('el OVA {string} desaparece de la lista', async ({ page }, _title) => {
-  await page.waitForTimeout(500)
+Then('el OVA {string} desaparece de la lista', async ({ page }, title) => {
+  await expect(page.getByRole('heading', { name: title, exact: true })).toHaveCount(0)
 })
 
 Then('al pasar el cursor muestra {string}', async () => {})
@@ -240,7 +251,8 @@ Then('veo el botón {string}', async ({ page }, label) => {
 })
 
 Then('ve OVAs de todos los usuarios', async ({ page }) => {
-  await page.waitForSelector('[data-testid=ova-card], .ova-card, article', { timeout: 8000 })
+  // React: las cards de OVA son divs con un <h3> accesible como título.
+  await page.getByRole('heading', { level: 3 }).first().waitFor({ state: 'visible', timeout: 8000 })
 })
 
 Then('cada card muestra el nombre del propietario', async () => {})
@@ -248,8 +260,12 @@ Then('cada card muestra el nombre del propietario', async () => {})
 // ── Auth HU-008: Token expiry ─────────────────────────────────────────────────
 
 Given('que tengo un token expirado en el cliente', async ({ page }) => {
+  // React: la sesión vive en la cookie httpOnly genova_token (no localStorage).
+  // Un valor inválido simula el token expirado sin tocar el backend.
   await page.goto('/login')
-  await page.evaluate(() => localStorage.setItem('genova_token', 'expired.fake.token'))
+  await page.context().addCookies([
+    { name: 'genova_token', value: 'expired.fake.token', url: new URL(page.url()).origin },
+  ])
 })
 
 When('intento acceder a una ruta protegida', async ({ page }) => {
@@ -261,17 +277,17 @@ Then('debo ser redirigido automáticamente al login', async ({ page }) => {
 })
 
 Given('que tengo una sesión activa', async ({ page }) => {
-  await page.goto('/login')
-  await page.locator('#email, input[type=email]').first().waitFor({ state: 'visible', timeout: 15000 })
-  await page.locator('#email, input[type=email]').first().fill('user@genova.ai')
-  await page.locator('#password input, input[type=password]').first().fill('user1234password')
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
+  await openLoginPage(page)
+  await loginWithCredentials(page, 'user@genova.ai', 'user1234password', 10000)
 })
 
 Then('el token debe eliminarse del cliente', async ({ page }) => {
-  const token = await page.evaluate(() => localStorage.getItem('genova_token'))
-  if (token) throw new Error('Token should have been removed')
+  // El logout revoca la cookie httpOnly; el Set-Cookie puede llegar un
+  // instante después de la navegación a /login.
+  await expect.poll(async () => {
+    const cookies = await page.context().cookies()
+    return cookies.some((c) => c.name === 'genova_token')
+  }, { timeout: 10000 }).toBe(false)
 })
 
 Then('debo ser redirigido al login', async ({ page }) => {

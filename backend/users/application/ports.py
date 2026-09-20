@@ -10,6 +10,7 @@ from users.domain.admin import (
     AdminRoleSummary,
     AdminRoleUpdateResult,
     AdminTargetSummary,
+    AdminUserListFilter,
     AdminUserSummary,
 )
 from users.domain.links import LinkParticipant, LinkRecord, LinkSnapshot
@@ -168,9 +169,11 @@ class ResourceConfigRepository(Protocol):
 class AdminUserRepository(Protocol):
     """Persistencia del cluster de administración de usuarios."""
 
-    def count_users(self) -> int: ...
+    def count_users(self, filters: AdminUserListFilter) -> int: ...
 
-    def list_page(self, offset: int, limit: int) -> list[AdminUserSummary]: ...
+    def list_page(
+        self, filters: AdminUserListFilter, offset: int, limit: int
+    ) -> list[AdminUserSummary]: ...
 
     def is_admin(self, user_id: UUID) -> bool: ...
 

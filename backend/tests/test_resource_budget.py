@@ -10,9 +10,9 @@ from prometheus.engine.budget import (
 )
 
 
-def test_default_es_90s_porque_no_toca_recursos_sanos():
-    assert DEFAULT_RESOURCE_BUDGET_S == 90.0
-    assert budget_seconds(None) == 90.0
+def test_default_es_240s_para_una_ronda_de_refine():
+    assert DEFAULT_RESOURCE_BUDGET_S == 240.0
+    assert budget_seconds(None) == 240.0
     assert budget_seconds(90) == 90.0
 
 

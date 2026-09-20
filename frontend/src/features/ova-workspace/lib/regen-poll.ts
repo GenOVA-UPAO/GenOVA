@@ -20,6 +20,30 @@ interface PollDeps {
   fetchProgress: (jobId: string) => Promise<RegenProgressDto>;
 }
 
+async function patchAssistantChat(
+  d: PollDeps,
+  patch: Partial<RegenChatMessage>,
+): Promise<void> {
+  const assistantId = d.getAssistantId();
+  if (assistantId) await d.patchChat(assistantId, patch);
+}
+
+async function handleTerminalProgress(
+  progress: RegenProgressDto,
+  d: PollDeps,
+  assistantId: string | null,
+): Promise<void> {
+  if (assistantId) {
+    await d.patchChat(
+      assistantId,
+      finishChatPatch(progress.status as "success" | "error", d.getAssistantLabels()),
+    );
+  }
+  d.onTerminal();
+  if (progress.status === "success") d.onSuccess();
+  else d.onError("La regeneración falló.");
+}
+
 /** Un tick de polling de regeneración; actualiza chat y reprograma si sigue. */
 export async function handleRegenPollTick(jobId: string, d: PollDeps): Promise<void> {
   if (!d.mounted()) return;
@@ -30,26 +54,19 @@ export async function handleRegenPollTick(jobId: string, d: PollDeps): Promise<v
     const stage = progress.stage ?? "";
     d.setProgress({ percentage, stage });
     const asstId = d.getAssistantId();
-    const labels = d.getAssistantLabels();
     if (asstId) await d.patchChat(asstId, progressChatPatch(percentage, stage));
 
     if (progress.status === "success" || progress.status === "error") {
-      if (asstId) await d.patchChat(asstId, finishChatPatch(progress.status, labels));
-      d.onTerminal();
-      if (progress.status === "success") d.onSuccess();
-      else d.onError("La regeneración falló.");
+      await handleTerminalProgress(progress, d, asstId);
       return;
     }
     d.schedule(jobId);
   } catch {
     if (!d.mounted()) return;
-    const asstId = d.getAssistantId();
-    if (asstId) {
-      await d.patchChat(asstId, {
-        status: "error",
-        text: "Error al consultar el progreso de regeneración.",
-      });
-    }
+    await patchAssistantChat(d, {
+      status: "error",
+      text: "Error al consultar el progreso de regeneración.",
+    });
     d.onTerminal();
     d.onError("Error al consultar el progreso de regeneración.");
   }

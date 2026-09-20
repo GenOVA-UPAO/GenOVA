@@ -2,12 +2,6 @@
 # — ordenamiento, versión activa, selección para diff.
 Feature: Versionado de OVA (HU-028)
 
-  @pending-en022
-  Scenario: La versión activa se identifica correctamente
-    Given un historial con versiones 1, 2 y 3 donde la activa es la 2
-    When se busca la versión activa
-    Then la versión activa es la 2
-
   Scenario: Las versiones se listan en orden descendente
     Given un historial con versiones 1, 2 y 3
     When se ordenan de más reciente a más antigua

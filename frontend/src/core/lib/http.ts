@@ -1,6 +1,7 @@
 import { AuthExpiredBus } from "./auth-expired-bus";
+import { firstNonBlank } from "./text";
 
-/** Valores de `GENOVA_API_BASE_*` inyectados por scripts/run-with-api-env.mjs. */
+/** Valores de `GENOVA_API_BASE_*` inyectados en build por vite.config.ts. */
 function buildApiBases(): { prod: string; develop: string } {
   // typeof es seguro si el build no paso --define (tests / ngc).
   return {
@@ -13,10 +14,10 @@ function resolveApiBase(): string {
   const { prod, develop } = buildApiBases();
   if (typeof window === "undefined") return prod;
 
-  const override = (window as unknown as Record<string, unknown>)["__GENOVA_API_BASE__"];
+  const override = (window as unknown as Record<string, unknown>).__GENOVA_API_BASE__;
   if (typeof override === "string" && override.length > 0) return override;
 
-  // Local: ng serve + proxy → same-origin (las URLs de .env no se usan aqui).
+  // Local: servidor de Vite + proxy → same-origin (las URLs de .env no se usan aqui).
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
     return location.origin;
   }
@@ -64,6 +65,16 @@ function isAuthEndpoint(path: string): boolean {
   return AUTH_PATHS.has(path) || path.startsWith("/api/auth/") || path.startsWith("/auth/");
 }
 
+function buildHeaders(init: RequestInit): Record<string, string> {
+  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
+  const initHeaders = (init.headers ?? {}) as Record<string, string>;
+  const baseHeaders: Record<string, string> = { "X-Requested-With": "XMLHttpRequest" };
+  if (init.body && !isFormData && !initHeaders["Content-Type"]) {
+    baseHeaders["Content-Type"] = "application/json";
+  }
+  return { ...baseHeaders, ...initHeaders };
+}
+
 /**
  * Standalone fetch wrapper — mirrors the React frontend's apiFetch().
  * Always sends credentials (httpOnly JWT cookie).
@@ -77,19 +88,15 @@ export async function apiFetch(
   const t = setTimeout(() => {
     ctrl.abort();
   }, timeoutMs);
-  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
-  const initHeaders = (init.headers as Record<string, string>) || {};
-  const baseHeaders: Record<string, string> = { "X-Requested-With": "XMLHttpRequest" };
-
-  if (init.body && !isFormData && !initHeaders["Content-Type"]) {
-    baseHeaders["Content-Type"] = "application/json";
-  }
-
-  const headers = { ...baseHeaders, ...initHeaders };
   const url = /^https?:/i.test(path) ? path : `${API_BASE}${path}`;
 
   try {
-    const res = await fetch(url, { ...init, headers, credentials: "include", signal: ctrl.signal });
+    const res = await fetch(url, {
+      ...init,
+      headers: buildHeaders(init),
+      credentials: "include",
+      signal: ctrl.signal,
+    });
 
     // 401 on protected endpoint → session expired; AuthGuard will redirect.
     if (res.status === 401 && !isAuthEndpoint(path)) {
@@ -99,6 +106,14 @@ export async function apiFetch(
     return res;
   } finally {
     clearTimeout(t);
+  }
+}
+
+async function readJsonBody(res: Response): Promise<JsonBody | null> {
+  try {
+    return (await res.json()) as JsonBody;
+  } catch {
+    return null;
   }
 }
 
@@ -112,17 +127,12 @@ export async function apiJson<T = unknown>(
   opts: { timeoutMs?: number; fallbackMsg?: string } = {},
 ): Promise<T> {
   const res = await apiFetch(path, init, opts);
-  let body: JsonBody | null = null;
-
-  try {
-    body = await res.json();
-  } catch {
-    /* no JSON body */
-  }
+  const body = await readJsonBody(res);
 
   if (!res.ok) {
-    const message = body?.message || body?.detail || opts.fallbackMsg || `HTTP ${res.status}`;
-    throw new HttpError(message, { status: res.status, code: body?.error || "", body });
+    const message =
+      firstNonBlank(body?.message, body?.detail, opts.fallbackMsg) ?? `HTTP ${String(res.status)}`;
+    throw new HttpError(message, { status: res.status, code: body?.error ?? "", body });
   }
 
   return (body ?? {}) as T;

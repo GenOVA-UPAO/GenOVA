@@ -127,7 +127,7 @@ describe("toGuardrailsPayload", () => {
       termsText: "a",
       model: { provider: "", modelId: "" },
     });
-    expect(payload["guardrail_moderation_model"]).toBe("");
+    expect(payload.guardrail_moderation_model).toBe("");
   });
 });
 

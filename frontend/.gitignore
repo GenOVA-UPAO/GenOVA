@@ -1,15 +1,18 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# Compiled output
+# Compiled output and caches
 /dist
 /tmp
-/out-tsc
-/bazel-out
+/.vite/
 
 # Node
 /node_modules
 npm-debug.log
 yarn-error.log
+
+# Local environment files
+.env.local
+.env.*.local
 
 # IDEs and editors
 .idea/
@@ -30,13 +33,9 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
-/.angular/cache
-.sass-cache/
 /connect.lock
 /coverage
 /libpeerconnection.log
-testem.log
-/typings
 __screenshots__/
 
 # System files

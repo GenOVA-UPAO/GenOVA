@@ -1,19 +1,8 @@
-# Cubre HU-024 a nivel unit (sin browser/backend): lógica de chips de adjuntos
-# y validación de límites — vive en frontend/src/lib/uploadChipViewModel.js.
+# Cubre HU-024 a nivel unit (sin browser/backend): validación del límite de
+# adjuntos — vive en frontend/src/features/ova-workspace/lib/upload-chip-view-model.ts.
+# El estado por archivo ya no se pinta en cada chip: el React muestra un único
+# aviso "Subiendo archivos…" mientras hay subidas en curso.
 Feature: Archivos contextuales estilo chat — viewmodel (HU-024)
-
-  @pending-en022
-  Scenario: Adjuntar un archivo crea un chip en estado "subiendo"
-    Given un estudiante sin archivos adjuntos
-    When adjunta un archivo llamado "apuntes.pdf" de 1200000 bytes
-    Then aparece un chip con nombre "apuntes.pdf"
-    And el estado del chip se describe como "subiendo"
-
-  @pending-en022
-  Scenario: El chip muestra "listo" tras subida exitosa
-    Given un chip con estado "success"
-    When se obtiene su etiqueta de estado
-    Then la etiqueta de estado es "listo"
 
   Scenario: Rechazo por exceder el límite de archivos
     Given un estudiante con 5 archivos adjuntos

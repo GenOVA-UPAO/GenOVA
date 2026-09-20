@@ -1,4 +1,4 @@
-type NodeFlags = Record<string, string | number>;
+type NodeFlags = Partial<Record<string, string | number>>;
 
 export const NODE_FLAG_DEFAULTS: NodeFlags = {
   ova_images: "1",
@@ -14,7 +14,7 @@ export function hasUnsavedChanges(
   rounds: number,
 ): boolean {
   if (!draft || !serverConfig) return false;
-  const serverRounds = serverConfig["ova_reflection_rounds"] ?? 1;
+  const serverRounds = serverConfig.ova_reflection_rounds ?? 1;
   if (rounds !== serverRounds) return true;
   for (const key of Object.keys(draft)) {
     if (String(draft[key]) !== String(serverConfig[key] ?? NODE_FLAG_DEFAULTS[key] ?? "")) {

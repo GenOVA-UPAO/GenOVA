@@ -6,7 +6,7 @@ export interface SlotIssue {
 }
 
 function entryKey(e: Entry | undefined): string | null {
-  if (!e?.provider || !e?.model_id) return null;
+  if (!e?.provider || !e.model_id) return null;
   return `${e.provider}::${e.model_id}`;
 }
 
@@ -18,7 +18,7 @@ export function validateTaskChain(task: TaskDraft | undefined): SlotIssue[] {
   const seen = new Set<string>();
   if (primaryKey) seen.add(primaryKey);
 
-  (task.fallbacks ?? []).forEach((f, i) => {
+  task.fallbacks.forEach((f, i) => {
     if (!f.provider || !f.model_id) {
       issues.push({ index: i, message: "Elige un modelo para este fallback." });
       return;

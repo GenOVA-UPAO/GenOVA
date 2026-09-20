@@ -8,7 +8,7 @@ export function formatSize(sizeBytes: number): string {
     return `${sizeInMb.toFixed(1)} MB`;
   }
 
-  return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
+  return `${String(Math.max(1, Math.round(sizeBytes / 1024)))} KB`;
 }
 
 export function getUploadBadge(upload: { status: string }): string {

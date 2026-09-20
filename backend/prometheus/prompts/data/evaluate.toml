@@ -1,82 +1,74 @@
 [texto.1]
 defaults = { num_questions = 6 }
 template = '''
-[ROL] Diseniador de quizzes educativos de ML.
+[ROL] Diseñador de quizzes.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Quiz de ${num_questions} preguntas sobre "${concept}": enunciado <=40 palabras, 4 opciones (A/B/C/D), respuesta_correcta, feedback_correcto e incorrecto <=20 palabras. Dificultad progresiva.
-[RESTRICCIONES] Opciones plausibles. Feedback que ensenie, no solo indique error.
+[TAREA] ${num_questions} preguntas progresivas: enunciado <=40 palabras, 4 opciones A/B/C/D plausibles, correcta, feedback de acierto/error <=20 palabras que explique el porqué.
 [SALIDA] JSON puro con clave "preguntas": array de ${num_questions} con "enunciado","opciones","correcta","feedback_correcto","feedback_incorrecto".'''
 
 [texto.2]
 defaults = { num_criteria = 5 }
 template = '''
-[ROL] Diseniador de rubricas de autoevaluacion para ML.
+[ROL] Diseñador de rúbricas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Rubrica con ${num_criteria} criterios sobre "${concept}". Cada uno: descripcion <=25 palabras, 3 niveles (inicial/en desarrollo/logrado) con descriptor <=30 palabras. Puntuacion 1-3. Reflexion final segun rango de puntaje.
-[RESTRICCIONES] Criterios auto-evaluables. Descriptores en primera persona ("Puedo...").
+[TAREA] ${num_criteria} criterios autoevaluables <=25 palabras; niveles inicial/en desarrollo/logrado (1-3 puntos), descriptores "Puedo..." <=30 palabras y reflexión por rango.
 [SALIDA] JSON puro con claves "criterios" (array de ${num_criteria}) y "reflexiones" (objeto con rangos).'''
 
 [texto.4]
 defaults = { num_questions = 8 }
 template = '''
-[ROL] Examinador de conceptos de Machine Learning.
+[ROL] Examinador.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Examen de ${num_questions} preguntas opcion multiple sobre "${concept}": enunciado <=40 palabras, 4 opciones, justificacion <=30 palabras. Distribucion balanceada entre conceptual, aplicacion, analisis y relacion.
-[RESTRICCIONES] Sin ambiguedades. Distractores verosimiles. Una sola correcta.
+[TAREA] ${num_questions} preguntas <=40 palabras; 4 opciones plausibles, una correcta y justificación <=30 palabras. Balance conceptual/aplicación/análisis/relación, sin ambigüedad.
 [SALIDA] JSON puro con clave "examen": array de ${num_questions} con "numero","enunciado","opciones","correcta","justificacion","tipo".'''
 
 [texto.6]
 defaults = { num_pairs = 6 }
 template = '''
-[ROL] Diseniador de ejercicios de asociacion conceptual.
+[ROL] Diseñador de asociaciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_pairs} parejas: columna A (definiciones), columna B (terminos de "${concept}"). Relacion 1:1. Cada pareja: feedback_acierto <=20 palabras, feedback_error <=20 palabras (pista sin revelar).
-[RESTRICCIONES] Sin ambiguedad. Terminos y definiciones precisos. Sin pistas en la redaccion.
+[TAREA] ${num_pairs} pares 1:1 definición-término, sin ambigüedad ni pistas. Feedback razonado de acierto/error <=20 palabras; error orienta sin revelar.
 [SALIDA] JSON puro con claves "columna_a" (array de ${num_pairs}) y "parejas" (array de ${num_pairs} con a_index,b_termino,feedback_acierto,feedback_error).'''
 
 [texto.7]
 defaults = { num_terms = 8 }
 template = '''
-[ROL] Creador de crucigramas educativos de ML.
+[ROL] Creador de crucigramas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Crucigrama de ${num_terms} terminos de "${concept}": numero, orientacion, longitud, pista <=25 palabras, respuesta. Cuadricula interconectada (>=4 cruces). Pistas ingeniosas pero justas.
-[RESTRICCIONES] Terminos reales. Sin abreviaturas.
+[TAREA] ${num_terms} términos reales sin abreviaturas: número, orientación, longitud, pista justa <=25 palabras y respuesta; cuadrícula con >=4 cruces.
 [SALIDA] JSON puro con clave "entradas": array de ${num_terms} con "numero","orientacion","longitud","pista","respuesta".'''
 
 [texto.8]
 defaults = { num_questions = 3 }
 template = '''
-[ROL] Evaluador de comprension profunda de ML.
+[ROL] Evaluador.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_questions} preguntas de desarrollo sobre "${concept}": enunciado <=50 palabras (abierto), 3-4 criterios de evaluacion observables, respuesta_modelo <=80 palabras.
-[RESTRICCIONES] No respondibles con si/no. Criterios evaluables objetivamente.
+[TAREA] ${num_questions} preguntas abiertas <=50 palabras (no sí/no), 3-4 criterios observables y modelo razonado <=80 palabras.
 [SALIDA] JSON puro con clave "preguntas": array de ${num_questions} con "enunciado","criterios","respuesta_modelo".'''
 
 [texto.10]
 defaults = { num_competencias = 3 }
 template = '''
-[ROL] Diseniador de diplomas y certificados educativos.
+[ROL] Diseñador de diplomas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Diploma de logro por "${concept}": titulo <=20 palabras, descripcion_logro <=50 palabras, ${num_competencias} competencias_adquiridas, firma_simulada, diseno_sugerido (paleta, iconos, tipografia).
-[RESTRICCIONES] Tono celebratorio profesional. Competencias medibles y reales.
+[TAREA] Diploma profesional: título <=20 palabras, logro <=50, ${num_competencias} competencias medibles, firma simulada y diseño sugerido (composición, no tokens).
 [SALIDA] JSON puro con claves "titulo","descripcion_logro","competencias" (array de ${num_competencias}),"firma","diseno_sugerido".'''
 
 [codigo.3]
 defaults = { time_seconds = 90, num_questions = 8 }
 template = '''
-[ROL] Desarrollador front-end de desafios cronometrados educativos.
+[ROL] Diseñador de desafíos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Desafio contrarreloj HTML5 que evalue dominio de "${concept}" bajo presion de tiempo.
-[TAREA] Cronometro regresivo ${time_seconds} s visible, ${num_questions} preguntas secuenciales de opcion multiple sobre "${concept}", puntuacion con bonus por velocidad, barra de progreso, pantalla final con puntaje y feedback por pregunta. Cronometro real setInterval.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas.
+[TAREA] Desafío de "${concept}": ${num_questions} preguntas, ${time_seconds} s, bonus por velocidad; gestionar avance y fin de tiempo con eventos.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de responder con precisión; upao-figure: al menos un diagrama propio de contexto; upao-example: ejemplo trabajado ajeno al test antes de iniciar; upao-timer, upao-question, upao-choice, upao-score, upao-progress; retroalimentación que explique el porqué; upao-summary: cierre que consolide errores. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete(puntaje_final) al terminar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
@@ -84,12 +76,11 @@ ${ds}
 [codigo.5]
 defaults = { num_sentences = 8 }
 template = '''
-[ROL] Desarrollador front-end de ejercicios de completar espacios.
+[ROL] Diseñador de ejercicios.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Ejercicio HTML5 de completar espacios que evalue vocabulario de "${concept}".
-[TAREA] ${num_sentences} oraciones sobre "${concept}" con espacio en blanco, validacion flexible (ignora mayusculas/acentos), feedback inmediato con correccion, barra de progreso, puntaje y boton "Reintentar". Validacion JS real.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 280 lineas.
+[TAREA] ${num_sentences} oraciones de "${concept}" con huecos; validación JS ignora mayúsculas/acentos; "Reintentar" reinicia estado.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de usar vocabulario; upao-figure: al menos un diagrama propio contextual; upao-example: ejemplo trabajado distinto; upao-question con input, upao-status, upao-score, upao-progress; retroalimentación que explique el porqué de correcciones; upao-summary: cierre que consolide términos. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete(puntaje_final) al completar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
@@ -97,12 +88,11 @@ ${ds}
 [codigo.9]
 defaults = { num_decisions = 3 }
 template = '''
-[ROL] Desarrollador front-end de simulaciones evaluativas.
+[ROL] Diseñador de simulaciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Simulacion evaluativa HTML5 donde el estudiante demuestre dominio practico de "${concept}".
-[TAREA] Escenario profesional concreto, ${num_decisions}-${num_decisions_plus1} decisiones evaluables mediante controles interactivos, evaluacion contra criterios objetivos de "${concept}", puntuacion con pesos, reporte final con fortalezas y areas de mejora.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas. Evaluacion real basada en criterios.
+[TAREA] Escenario profesional de "${concept}": ${num_decisions}-${num_decisions_plus1} decisiones, controles propios, evaluación real con criterios y pesos.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de demostrar decisiones fundadas; upao-figure: al menos un diagrama propio del escenario; upao-example: ejemplo trabajado ajeno a evaluación; upao-status, upao-score; retroalimentación que explique el porqué de cada valoración; upao-summary: cierre que consolide fortalezas y mejoras. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete(puntaje_final) al finalizar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
@@ -110,37 +100,35 @@ ${ds}
 [html]
 estilo_default = 'pagina educativa interactiva moderna'
 template = '''
-[ROL] Desarrollador front-end experto en recursos educativos interactivos.
+[ROL] Desarrollador educativo.
 [CURSO] ${curso}
-[OBJETIVO] Construir un recurso HTML5 sobre "${concept}" que evalue el aprendizaje. El HTML visible no debe mencionar fases 5E ni jerga interna.
-[DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
+[OBJETIVO] Evaluar "${concept}".
+[DATOS] Conserva estos datos; deriva el apoyo didáctico sin añadir hechos:
 ${data_json}
 [FORMATO] ${estilo}
-[REQUISITOS] HTML5 autocontenido: CSS en <style>, JS en <script>. Minimo 300 lineas de calidad. Evaluacion con puntuacion, feedback, navegacion y resultados funcionales. Paleta evaluativa clara.
+[COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje; upao-figure con al menos un diagrama propio; upao-example con ejemplo trabajado ajeno a ítems evaluados cuando aplique; retroalimentación que explique el porqué; upao-summary para cierre que consolide. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete(puntaje) al finalizar.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html.estilos]
-1 = 'quiz interactivo: preguntas secuenciales con botones de opcion, feedback animado, barra de progreso, pantalla de resultados con repaso'
-2 = 'rubrica interactiva: tabla de criterios con niveles seleccionables, puntuacion automatica, reflexion segun rango, disenio formulario'
-4 = 'examen formal: preguntas numeradas radiales, navegacion entre preguntas, pantalla de entrega con puntaje y revision'
-6 = 'relacionar conceptos: 2 columnas (definiciones + terminos arrastrables), conexiones visuales, contador de aciertos, feedback por pareja'
-7 = 'crucigrama interactivo: cuadricula SVG, teclado en pantalla, pistas laterales que se iluminan al completar, animacion de completado'
-8 = "preguntas de desarrollo: enunciados con campo expandible, criterios como checklist, respuesta modelo oculta tras boton 'Comparar'"
-10 = 'diploma de logro: certificado estilizado con borde SVG, concepto destacado, competencias en lista, paleta dorada/azul, boton descargar'
+1 = 'Quiz: upao-question, upao-choice, upao-progress, upao-score, upao-nav. Diagrama contextual para aplicar conceptos, ejemplo previo distinto, justificar distractores y repasar errores.'
+2 = 'Rúbrica: tabla nativa con niveles seleccionables, upao-score, upao-status. Diagrama de competencias para autoevaluar; ejemplo de evidencia, justificar nivel y cerrar con plan de mejora.'
+4 = 'Examen: upao-question con radios nativos editables y upao-nav; corrección solo al entregar, upao-score. Diagrama contextual para analizar; ejemplo no evaluado y revisión razonada final.'
+6 = 'Asociar: upao-drag-item, upao-drop-zone, upao-status, upao-score. Grafo propio contextual sin respuestas; ejemplo distinto, explicar pares y consolidar relaciones.'
+7 = 'Crucigrama: cuadrícula SVG y teclado propios, upao-status, upao-progress. Añadir esquema conceptual (la cuadrícula no basta), pista análoga resuelta, justificar términos y sintetizarlos.'
+8 = 'Desarrollo: upao-question con textarea, checklist y upao-reveal al comparar. Diagrama de argumentos para fundamentar; ejemplo distinto, explicar modelo y consolidar criterios.'
+10 = 'Diploma: lista de competencias, firma simulada y descarga window.print. Diagrama propio de competencias (no borde decorativo); reflexión justificada y transferencia, sin ejercicio resuelto artificial.'
 
 # F1.3 single-step: recursos de texto simple van directo a HTML (1 llamada LLM).
 [codigo.8]
 defaults = { num_questions = 3 }
 template = '''
-[ROL] Desarrollador front-end de evaluaciones de comprension profunda.
+[ROL] Diseñador de evaluaciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Actividad de ${num_questions} preguntas de desarrollo sobre "${concept}".
-[TAREA] Redacta e implementa: ${num_questions} preguntas abiertas (enunciado <=50 palabras, no respondibles con si/no), cada una con textarea de respuesta, checklist de 3-4 criterios de evaluacion observables y respuesta modelo (<=80 palabras) oculta tras boton "Comparar". Se completa al comparar todas.
-[RESTRICCIONES] Criterios evaluables objetivamente.
-[REQUISITOS] HTML5+JS autocontenido y responsive.
+[TAREA] ${num_questions} preguntas abiertas sobre "${concept}" (<=50 palabras), textarea, checklist de 3-4 criterios observables y modelo <=80 palabras al comparar.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de fundamentar respuestas; upao-figure: al menos un diagrama propio argumental; upao-example: ejemplo trabajado distinto; upao-question, upao-reveal: retroalimentación que explique el porqué del modelo; upao-summary: cierre que consolide criterios. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al comparar la ultima pregunta.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
@@ -148,12 +136,11 @@ ${ds}
 [codigo.10]
 defaults = { num_competencias = 3 }
 template = '''
-[ROL] Desarrollador front-end de diplomas y certificados educativos.
+[ROL] Diseñador de diplomas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Diploma de logro por completar el estudio de "${concept}".
-[TAREA] Redacta e implementa: certificado estilizado con borde SVG decorativo, titulo <=20 palabras, descripcion del logro <=50 palabras, lista de ${num_competencias} competencias adquiridas (medibles y reales), firma simulada, paleta dorada/azul y boton "Descargar" (window.print). Tono celebratorio profesional.
-[REQUISITOS] HTML5+JS autocontenido y responsive.
+[TAREA] Diploma de "${concept}": título <=20 palabras, logro <=50, ${num_competencias} competencias medibles, firma simulada, descarga window.print.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de transferir logros; upao-figure: al menos un diagrama propio de competencias, no borde decorativo; retroalimentación reflexiva que explique el porqué de su utilidad; upao-summary: cierre que consolide próximos usos. No aplica ejemplo trabajado artificial; upao-example solo si ilustra transferencia. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al renderizar el diploma.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''

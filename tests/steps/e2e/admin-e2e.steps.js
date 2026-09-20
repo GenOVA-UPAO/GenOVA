@@ -3,10 +3,17 @@ import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
 import { state, uniqueId } from './_helpers.js'
+import { test } from './fixtures.js'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then } = createBdd(test)
 
-const roleCard = (page, name) => page.locator('.glass-card').filter({ hasText: name }).first()
+// React mantiene `.glass-card` como contenedor de cada rol; se ancla desde el
+// nombre visible para no depender de clases de Angular/Spartan.
+const roleCard = (page, name) =>
+  page
+    .getByText(name, { exact: false })
+    .first()
+    .locator('xpath=ancestor::div[contains(@class,"glass-card")][1]')
 
 // ── Roles (HU-019 / HU-020) ──────────────────────────────────────────────────
 
@@ -14,7 +21,7 @@ Given('creo un rol único desde la interfaz', async ({ page }) => {
   const name = `rol-e2e-${uniqueId()}`
   state(page).roleName = name
   await page.getByRole('button', { name: 'Nuevo rol' }).click()
-  await page.locator('#role-name-input').fill(name)
+  await page.getByLabel('Nombre del rol').fill(name)
   await page.getByRole('button', { name: 'Crear rol' }).click()
   await expect(page.getByText(name).first()).toBeVisible({ timeout: 20000 })
 })
@@ -23,7 +30,7 @@ When('renombro ese rol añadiendo el sufijo {string}', async ({ page }, suffix) 
   const oldName = state(page).roleName
   const newName = `${oldName}${suffix}`
   await roleCard(page, oldName).getByRole('button', { name: 'Editar permisos' }).click()
-  await page.locator('#role-name-input').fill(newName)
+  await page.getByLabel('Nombre del rol').fill(newName)
   await page.getByRole('button', { name: 'Guardar cambios' }).click()
   state(page).roleName = newName
 })
@@ -53,8 +60,8 @@ Then('veo la pantalla de gestión de usuarios', async ({ page }) => {
 })
 
 When('busco el usuario {string} en la gestión de usuarios', async ({ page }, email) => {
-  // El <input> real por rol (el host gn-search-input también refleja placeholder).
-  const search = page.getByRole('textbox', { name: /Buscar por nombre o email/i })
+  // SearchInput de React: <input type="search"> con aria-label.
+  const search = page.getByRole('searchbox', { name: /Buscar por nombre o email/i })
   await search.waitFor({ state: 'visible', timeout: 15000 })
   await search.fill(email)
 })

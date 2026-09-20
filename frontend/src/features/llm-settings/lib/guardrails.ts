@@ -53,7 +53,7 @@ export function normalizeTerms(raw: string): string[] {
 
 /** Lista → textarea (una línea por término). */
 export function serializeTerms(terms: string[]): string {
-  return (terms || []).join("\n");
+  return terms.join("\n");
 }
 
 /** El backend puede mandar los términos como string con \n o como array. */
@@ -80,8 +80,8 @@ export function formatModerationModel(
   provider: string | undefined,
   modelId: string | undefined,
 ): string {
-  const p = (provider || "").trim();
-  const m = (modelId || "").trim();
+  const p = (provider ?? "").trim();
+  const m = (modelId ?? "").trim();
   if (!p || !m) return "";
   return `${p}/${m}`;
 }
@@ -94,11 +94,11 @@ export function parseGuardrailsConfig(raw: unknown): GuardrailsConfig | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
   return {
-    topicEnabled: asText(r["guardrail_topic_enabled"] ?? "0") === "1",
-    topicArea: asText(r["guardrail_topic_area"]),
-    moderationEnabled: asText(r["guardrail_moderation_enabled"] ?? "0") === "1",
-    terms: toTermsList(r["guardrail_moderation_terms"]),
-    moderationModel: asText(r["guardrail_moderation_model"]),
+    topicEnabled: asText(r.guardrail_topic_enabled ?? "0") === "1",
+    topicArea: asText(r.guardrail_topic_area),
+    moderationEnabled: asText(r.guardrail_moderation_enabled ?? "0") === "1",
+    terms: toTermsList(r.guardrail_moderation_terms),
+    moderationModel: asText(r.guardrail_moderation_model),
   };
 }
 
@@ -127,7 +127,7 @@ export function guardrailsHasChanges(
     config.topicArea.trim() !== draft.topicArea.trim() ||
     config.moderationEnabled !== draft.moderationEnabled ||
     JSON.stringify(config.terms) !== JSON.stringify(normalizeTerms(draft.termsText)) ||
-    config.moderationModel !== formatModerationModel(draft.model?.provider, draft.model?.modelId)
+    config.moderationModel !== formatModerationModel(draft.model.provider, draft.model.modelId)
   );
 }
 

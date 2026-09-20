@@ -50,46 +50,43 @@ export function setFallback(list: Entry[], i: number, provider: string, model_id
   return setAt(list, i, { provider, model_id });
 }
 
+function taskDraftFrom(cfg: EffectiveConfig, t: string): TaskDraft {
+  const generationEnabled = cfg.generation_enabled ?? {};
+  const base: TaskDraft = {
+    default: cfg.defaults?.[t] ?? emptyEntry(),
+    fallbacks: cfg.fallbacks?.[t] ?? [],
+  };
+  return isMediaTask(t) && t in generationEnabled
+    ? { ...base, generationEnabled: generationEnabled[t] }
+    : base;
+}
+
 export function toDraft(cfg: EffectiveConfig | null | undefined, tasks: string[]): Draft {
-  const defaults = cfg?.defaults ?? {};
-  const fallbacks = cfg?.fallbacks ?? {};
-  const generationEnabled = cfg?.generation_enabled ?? {};
   const draft: Draft = {};
-  for (const t of tasks) {
-    draft[t] = {
-      default: defaults[t] ?? emptyEntry(),
-      fallbacks: fallbacks[t] ?? [],
-      ...(isMediaTask(t) && t in generationEnabled
-        ? { generationEnabled: generationEnabled[t] }
-        : {}),
-    };
-  }
+  for (const t of tasks) draft[t] = taskDraftFrom(cfg ?? {}, t);
   return draft;
 }
+
+const isComplete = (e: Entry): boolean => Boolean(e.provider && e.model_id);
+
+const payloadEntry = (e: Entry): Entry => ({
+  provider: e.provider,
+  model_id: e.model_id,
+  extra: e.extra ?? {},
+});
 
 export function toPayload(draft: Draft | null | undefined, tasks: string[]): EffectiveConfig {
   const defaults: Record<string, Entry> = {};
   const fallbacks: Record<string, Entry[]> = {};
   const generationEnabled: Record<string, boolean> = {};
   for (const t of tasks) {
-    const d = draft?.[t]?.default;
-    if (d?.provider && d?.model_id) {
-      defaults[t] = {
-        provider: d.provider,
-        model_id: d.model_id,
-        extra: d.extra ?? {},
-      };
-    }
-    const fb = (draft?.[t]?.fallbacks ?? [])
-      .filter((f) => f.provider && f.model_id)
-      .map((f) => ({
-        provider: f.provider,
-        model_id: f.model_id,
-        extra: f.extra ?? {},
-      }));
+    const task = draft?.[t];
+    if (!task) continue;
+    if (isComplete(task.default)) defaults[t] = payloadEntry(task.default);
+    const fb = task.fallbacks.filter(isComplete).map(payloadEntry);
     if (fb.length) fallbacks[t] = fb;
-    if (isMediaTask(t) && typeof draft?.[t]?.generationEnabled === "boolean") {
-      generationEnabled[t] = draft[t].generationEnabled;
+    if (isMediaTask(t) && typeof task.generationEnabled === "boolean") {
+      generationEnabled[t] = task.generationEnabled;
     }
   }
   return {

@@ -1,10 +1,12 @@
 import { preview, type ResourcePreviewInfo } from "./preview-types";
 
+const INTERACTIVE_HTML = "HTML + JS interactivo";
+
 export const EXPLORE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "1": preview(
     "Simulador Virtual Lab",
     "Laboratorio HTML donde se manipulan variables y se observan resultados.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Variables controlables", "Registro de resultados", "Análisis guiado"],
     "lab",
   ),
@@ -18,7 +20,7 @@ export const EXPLORE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "3": preview(
     "Juego Drag & Drop",
     "Actividad de arrastrar elementos a categorías correctas.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Piezas arrastrables", "Zonas de destino", "Feedback al soltar"],
     "dragdrop",
   ),
@@ -39,7 +41,7 @@ export const EXPLORE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "6": preview(
     "Simulador de Slider",
     "Sliders que cambian un modelo o gráfico en vivo.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Uno o más sliders", "Visualización dinámica", "Conclusión guiada"],
     "lab",
   ),

@@ -52,6 +52,8 @@ export interface JobLike {
 }
 
 export interface JobSnapshot extends JobLike {
+  job_id?: string;
+  ova_id?: string;
   resources?: BackendResource[];
 }
 
@@ -73,7 +75,7 @@ const STATUS_MAP: Record<string, UiStatus> = {
 };
 
 export function mapResourceStatus(backendStatus: string): UiStatus {
-  return STATUS_MAP[backendStatus] || "pendiente";
+  return Object.hasOwn(STATUS_MAP, backendStatus) ? STATUS_MAP[backendStatus] : "pendiente";
 }
 
 /**
@@ -98,18 +100,57 @@ const PHASES = ["engage", "explore", "explain", "elaborate", "evaluate"];
 function buildLabelIndex(selections: Selections): Map<string, Partial<SelectionItem>> {
   const index = new Map<string, Partial<SelectionItem>>();
   for (const phase of PHASES) {
-    for (const r of selections[phase] || []) {
+    const resources = Object.hasOwn(selections, phase) ? selections[phase] : [];
+    for (const r of resources) {
       index.set(`${phase}:${String(r.id)}`, { tipo: r.tipo, emoji: r.emoji });
     }
   }
   return index;
 }
 
-/** Etiqueta cuando no hay catálogo ni tipo humanizable.
- * `resource_order` es por fase: sin el nombre de fase, dos "Recurso 1" colisionan. */
+// Etiqueta cuando no hay catálogo ni tipo humanizable.
+// `resource_order` es por fase: sin el nombre de fase, dos "Recurso 1" colisionan. 
 function fallbackResourceLabel(phase: string, resourceOrder: number): string {
   const phaseLabel = phaseMeta(phase).label || phase;
-  return `${phaseLabel} · ${resourceOrder + 1}`;
+  return `${phaseLabel} · ${String(resourceOrder + 1)}`;
+}
+
+function resourceViewModel(
+  resource: BackendResource,
+  labels: Map<string, Partial<SelectionItem>>,
+  seen: Map<string, number>,
+): ResourceVM {
+  const phase = resource.phase_type;
+  const selection = labels.get(`${phase}:${String(resource.resource_type)}`) ?? {};
+  const status = mapResourceStatus(resource.status);
+  const catalogTitle = (resource.title ?? "").trim();
+  const resourceType = humanizeResourceType(resource.resource_type);
+  const base = resourceBase(selection, catalogTitle, resourceType, resource);
+  const count = (seen.get(base) ?? 0) + 1;
+  seen.set(base, count);
+  return {
+    id: String(resource.id),
+    phase,
+    phaseLabel: phaseMeta(phase).label || phase,
+    label: count > 1 ? `${base} (${String(count)})` : base,
+    emoji: selection.emoji ?? resource.emoji ?? "",
+    status,
+    error_id: resource.error_id ?? null,
+    selectable: status === "X",
+  };
+}
+
+function resourceBase(
+  selection: Partial<SelectionItem>,
+  catalogTitle: string,
+  resourceType: string,
+  resource: BackendResource,
+): string {
+  const selectedType = selection.tipo?.trim();
+  if (selectedType) return selectedType;
+  if (catalogTitle) return catalogTitle;
+  if (resourceType) return resourceType;
+  return fallbackResourceLabel(resource.phase_type, resource.resource_order);
 }
 
 export function toResourceViewModel(
@@ -121,30 +162,7 @@ export function toResourceViewModel(
   return resources
     .slice()
     .sort((a, b) => a.phase_order - b.phase_order || a.resource_order - b.resource_order)
-    .map((r) => {
-      const phase = r.phase_type;
-      const meta = labels.get(`${phase}:${String(r.resource_type)}`) || {};
-      const status = mapResourceStatus(r.status);
-      const catalogTitle = (r.title ?? "").trim();
-      const humanized = humanizeResourceType(r.resource_type);
-      const base =
-        meta.tipo?.trim() ||
-        catalogTitle ||
-        humanized ||
-        fallbackResourceLabel(phase, r.resource_order);
-      const count = (seen.get(base) ?? 0) + 1;
-      seen.set(base, count);
-      return {
-        id: String(r.id),
-        phase,
-        phaseLabel: phaseMeta(phase).label || phase,
-        label: count > 1 ? `${base} (${count})` : base,
-        emoji: meta.emoji || r.emoji || "",
-        status,
-        error_id: r.error_id || null,
-        selectable: status === "X",
-      };
-    });
+    .map((resource) => resourceViewModel(resource, labels, seen));
 }
 
 export function failedResourceIds(viewModel: ResourceVM[] = []): string[] {
@@ -181,7 +199,7 @@ export const STALL_MS = 3 * 60 * 1000;
  * `_RESUMABLE_RESOURCE_STATUSES` en `jobs_service.py`. Lo ya "done" se
  * conserva; las filas nunca quedan en "running" (el grafo solo escribe
  * done/error/degraded por recurso), así que tras una caída a media generación
- * todo lo no terminado es exactamente lo reanudable.
+  * every unfinished resource is resumable.
  *
  * `degraded` = se generó HTML pero no pasó el validador. Se conserva el
  * contenido y el motivo (`defect_reason`), pero NO cuenta como terminado: es
@@ -192,7 +210,7 @@ export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "error", "degrade
 
 export function resumableResourceIds(snapshot: JobSnapshot | null | undefined): string[] {
   if (!snapshot) return [];
-  return (snapshot.resources || [])
+  return (snapshot.resources ?? [])
     .filter((r) => RESUMABLE_RESOURCE_STATUSES.has(r.status))
     .map((r) => String(r.id));
 }
@@ -222,7 +240,7 @@ export function isResumableJob(
  */
 export function resourcesFingerprint(snapshot: JobSnapshot | null | undefined): string {
   if (!snapshot) return "";
-  const parts = (snapshot.resources || []).map((r) => `${r.id}:${r.status}`);
+  const parts = (snapshot.resources ?? []).map((r) => `${String(r.id)}:${r.status}`);
   return `${snapshot.status ?? ""}|${parts.join(",")}`;
 }
 
@@ -230,7 +248,7 @@ export function jobOutcome(
   job: JobLike | null | undefined,
   viewModel: ResourceVM[] = [],
 ): JobOutcome {
-  const status = job?.status || "queued";
+  const status = job?.status ?? "queued";
   const anyDone = viewModel.some((r) => r.status === "check");
   return {
     isTerminal: TERMINAL.has(status),

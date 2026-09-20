@@ -3,7 +3,7 @@ import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { API_BASE } from "@/core/lib/http";
 import type { OvaJobsApiService } from "@/core/services/ova-jobs-api.service";
 
-import { jobOutcome, type JobSnapshot } from "../lib/ova-job-view-model";
+import { jobOutcome, type JobSnapshot,type toResourceViewModel } from "../lib/ova-job-view-model";
 
 export const POLL_MS = 2000;
 export const STREAM_HEARTBEAT_MS = 15000;
@@ -12,7 +12,7 @@ export interface OvaJobSyncDeps {
   jobsApi: OvaJobsApiService;
   onSnapshot: (snapshot: JobSnapshot) => void;
   onTerminal: () => void;
-  getViewModel: () => ReturnType<typeof import("../lib/ova-job-view-model").toResourceViewModel>;
+  getViewModel: () => ReturnType<typeof toResourceViewModel>;
   isStreaming: () => boolean;
   setStreaming: (value: boolean) => void;
 }
@@ -20,9 +20,7 @@ export interface OvaJobSyncDeps {
 export class OvaJobSyncRunner {
   private pollTimer: ReturnType<typeof setTimeout> | null = null;
   private sseCtrl: AbortController | null = null;
-  // Generación de polling: stop() no puede cancelar un getJobStatus en vuelo;
-  // si su .then resolvía tras el stop, reprogramaba el setTimeout y resucitaba
-  // el polling de un runner detenido (empujando snapshots stale al job nuevo).
+  // A generation counter prevents an in-flight request from reviving a stopped runner.
   private pollGen = 0;
 
   constructor(private deps: OvaJobSyncDeps) {}
@@ -62,6 +60,7 @@ export class OvaJobSyncRunner {
           this.deps.onSnapshot(snapshot);
           if (jobOutcome(snapshot, this.deps.getViewModel()).isTerminal) {
             this.stop();
+            this.deps.onTerminal();
           }
         } catch {
           // malformed frame, polling will fix
@@ -99,11 +98,12 @@ export class OvaJobSyncRunner {
     this.deps.jobsApi
       .getJobStatus(jobId)
       .then((raw) => {
-        if (gen !== this.pollGen) return; // stop()/start() ganó mientras volaba
+        if (gen !== this.pollGen) return;
         const snapshot = raw as JobSnapshot;
         this.deps.onSnapshot(snapshot);
         if (jobOutcome(snapshot, this.deps.getViewModel()).isTerminal) {
           this.stop();
+          this.deps.onTerminal();
         } else {
           const delay = this.deps.isStreaming() ? STREAM_HEARTBEAT_MS : POLL_MS;
           this.pollTimer = setTimeout(() => {

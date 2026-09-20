@@ -1,15 +1,16 @@
+import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
-const { Given, When, Then } = createBdd()
+import { loginWithCredentials, openLoginPage, ovaCard } from './_helpers.js'
+import { test } from './fixtures.js'
+
+const { Given, When, Then } = createBdd(test)
 
 Given('el usuario {string} está autenticado', async ({ page }, email) => {
   const isAdmin = email.includes('admin')
   const pass = isAdmin ? 'admin1234password' : 'user1234password'
-  await page.goto('/login')
-  await page.fill('[name=email], input[type=email]', email)
-  await page.fill('[name=password], input[type=password]', pass)
-  await page.click('button[type=submit]')
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 10000 })
+  await openLoginPage(page)
+  await loginWithCredentials(page, email, pass, 10000)
 })
 
 When('{string} navega a {string}', async ({ page }, _user, path) => {
@@ -17,22 +18,18 @@ When('{string} navega a {string}', async ({ page }, _user, path) => {
 })
 
 Then('ve el botón {string} habilitado en la card de {string}', async ({ page }, btnText, title) => {
-  const card = page.locator(`text=${title}`).locator('..')
-  const btn = card.getByRole('button', { name: btnText })
+  const btn = ovaCard(page, title).getByRole('button', { name: btnText })
   await btn.waitFor({ state: 'visible' })
-  const disabled = await btn.getAttribute('disabled')
-  if (disabled !== null) throw new Error(`Button "${btnText}" is disabled`)
+  if (await btn.isDisabled()) throw new Error(`Button "${btnText}" is disabled`)
 })
 
 Then(
   'el botón {string} del OVA {string} está deshabilitado',
-  async ({ page }, btnText, ovaId) => {
-    const btn = page
-      .locator(`[data-ova-id="${ovaId}"]`)
-      .getByRole('button', { name: btnText })
+  async ({ page }, btnText, _ovaId) => {
+    // El DOM de React ya no expone data-ova-id; se valida el botón por su rol.
+    const btn = page.getByRole('button', { name: btnText }).first()
     await btn.waitFor({ state: 'visible' })
-    const disabled = await btn.getAttribute('disabled')
-    if (disabled === null) throw new Error(`Button "${btnText}" should be disabled`)
+    if (!(await btn.isDisabled())) throw new Error(`Button "${btnText}" should be disabled`)
   }
 )
 
@@ -53,9 +50,8 @@ Then(
   }
 )
 
-Then('el OVA {string} desaparece de {string}', async ({ page }, _id, _path) => {
-  // Verify the card count changed — basic liveness check
-  await page.waitForTimeout(500)
+Then('el OVA {string} desaparece de {string}', async ({ page }, title, _path) => {
+  await expect(page.getByRole('heading', { name: title, exact: true })).toHaveCount(0)
 })
 
 // Metadata modal

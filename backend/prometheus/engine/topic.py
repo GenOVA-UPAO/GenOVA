@@ -62,6 +62,23 @@ _STOP = frozenset(
         "recurso",
         "introduccion",
         "actividad",
+        "les",
+        "sus",
+        "son",
+        "hay",
+        "fue",
+        "era",
+        "ser",
+        "eso",
+        "esa",
+        "ese",
+        "ver",
+        "uso",
+        "dos",
+        "tres",
+        "cada",
+        "nivel",
+        "tema",
     }
 )
 
@@ -72,7 +89,15 @@ def _fold(text: str) -> str:
 
 
 def significant_tokens(text: str) -> set[str]:
-    return {w for w in re.findall(r"[a-z0-9]+", _fold(text)) if len(w) >= 4 and w not in _STOP}
+    # 3 letras: "ley", "ohm", "adn", "pib" son núcleo del tema en muchos cursos.
+    return {w for w in re.findall(r"[a-z0-9]+", _fold(text)) if len(w) >= 3 and w not in _STOP}
+
+
+def _lead_text(html: str, limit: int = 800) -> str:
+    """Primer tramo del texto visible: el titular puede ser creativo (noticia,
+    cómic) y el tema aparece en la entradilla."""
+    body = re.sub(r"<(script|style|head)[\s\S]*?</\1>", " ", html, flags=re.I)
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body))[:limit]
 
 
 def _first_h1(html: str) -> str:
@@ -92,7 +117,7 @@ def topic_drift_defect(html: str, prompt: str) -> str | None:
     prompt_toks = significant_tokens(prompt)
     if len(prompt_toks) < 2:
         return None
-    title_toks = significant_tokens(title)
+    title_toks = significant_tokens(title) | significant_tokens(_lead_text(html))
     if not title_toks:
         return None
     if prompt_toks & title_toks:

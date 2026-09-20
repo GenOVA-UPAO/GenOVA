@@ -21,7 +21,8 @@ from generation.infrastructure.regen_agents import resolve_resource_type
 from generation.infrastructure.regen_pipelines import regenerate_phase_content
 from llm.router import generar_texto
 from llm.utils.llm_helpers import _CODE_MAX_TOKENS
-from llm.utils.utils import strip_markdown
+from llm.utils.ova_runtime import inject_runtime, strip_runtime
+from llm.utils.utils import extract_html_document
 
 logger = structlog.get_logger(__name__)
 
@@ -57,10 +58,13 @@ def edit_phase_content(
     instruction = (instruction or "").strip()
     if not instruction or not base_html:
         return None
+    # The model edits only the authored HTML; the shared runtime (~45 KB) is
+    # stripped first and re-injected after, so it is never rewritten or cut.
+    authored, had_css, had_components = strip_runtime(base_html)
     try:
-        new_html = strip_markdown(
+        new_html = extract_html_document(
             generar_texto(
-                _EDIT_PROMPT.format(concept=concept, instruction=instruction, html=base_html),
+                _EDIT_PROMPT.format(concept=concept, instruction=instruction, html=authored),
                 "codigo",
                 _CODE_MAX_TOKENS,
                 llm_config,
@@ -73,9 +77,10 @@ def edit_phase_content(
     if not new_html or _looks_truncated(new_html):
         logger.warning("edit produced truncated html; keeping original")
         return None
-    if len(new_html) < len(base_html) * 0.6:
+    if len(new_html) < len(authored) * 0.6:
         logger.warning("edit shrank resource too much; keeping original")
         return None
+    new_html = inject_runtime(new_html, css=had_css, components=had_components)
     return new_html
 
 

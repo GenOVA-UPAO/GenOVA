@@ -4,6 +4,9 @@ Sustituye a ``invoke_ova_generation`` cuando ``settings.llm_fake`` está activo:
 lee los OvaJobResource del job y devuelve HTML fijo por recurso, con la misma
 forma de estado final (``results``/``errors``) que produce el grafo real, para
 que ``_persist_results`` materialice el job como ``done`` en segundos.
+
+``generate_resource`` (POST /api/agents/*/generate) reutiliza ``stub_resource_html``
+vía ``fake_standalone_html`` para devolver el mismo contrato con runtime inyectado.
 Nunca activar en producción.
 """
 
@@ -32,7 +35,7 @@ def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer
             results.append(
                 {
                     "phase": res.phase_type,
-                    "html": _stub_html(concept, res.phase_type, res.resource_type),
+                    "html": stub_resource_html(concept, res.phase_type, res.resource_type),
                     "resource_type": res.resource_type,
                     "title": res.resource_type,
                 }
@@ -42,10 +45,19 @@ def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer
         db.close()
 
 
-def _stub_html(concept: str, phase: str, resource_type: str) -> str:
+def stub_resource_html(concept: str, phase: str, resource_type: str | int) -> str:
+    """HTML autorado determinista (sin runtime). Lo reutilizan batch y HTTP."""
     return (
         "<html><body>"
         f"<h1>{concept}</h1>"
         f"<p>Recurso de prueba ({phase} / {resource_type}) generado con LLM_FAKE=1.</p>"
         "</body></html>"
     )
+
+
+def fake_standalone_html(concept: str, phase: str, resource_type: str | int) -> str:
+    """Mismo stub con runtime UPAO, equivalente a ``generate_resource`` real."""
+    from llm.utils.ova_runtime import inject_runtime
+
+    authored = stub_resource_html(concept, phase, resource_type)
+    return inject_runtime(authored, css=True, components=True)

@@ -1,133 +1,123 @@
 [texto.1]
 defaults = { num_questions = 4 }
 template = '''
-[ROL] Redactor de casos de estudio para ciencias de datos.
+[ROL] Redactor de casos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Caso de estudio: narrativa 180 palabras (empresa ficticia, problema concreto, datos), ${num_questions} preguntas progresivas (observar->diagnosticar->proponer->evaluar), respuesta_modelo <=50 palabras cada una con razonamiento.
-[RESTRICCIONES] Sector reconocible. Datos plausibles. Preguntas que guien razonamiento.
+[TAREA] Caso plausible de 180 palabras: empresa ficticia, problema y datos; ${num_questions} preguntas de observación a evaluación, modelos razonados <=50 palabras.
 [SALIDA] JSON puro con claves "narrativa","preguntas" (array de ${num_questions} con pregunta,respuesta_modelo).'''
 
 [texto.2]
 defaults = { num_steps = 5 }
 template = '''
-[ROL] Instructor de ejercicios practicos de ML.
+[ROL] Instructor práctico.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Ejercicio guiado de ${num_steps} pasos para aplicar "${concept}". Cada paso: instruccion <=35 palabras, pista opcional, resultado_esperado, validacion de logro.
-[RESTRICCIONES] Pasos incrementales, sin saltos logicos. Completables sin frustracion.
+[TAREA] ${num_steps} pasos incrementales: instrucción <=35 palabras, pista, resultado y validación que explique por qué se logra. Sin saltos lógicos.
 [SALIDA] JSON puro con clave "pasos": array de ${num_steps} objetos con "numero","instruccion","pista","resultado_esperado","validacion".'''
 
 [texto.3]
 defaults = { num_deliverables = 3 }
 template = '''
-[ROL] Diseniador de mini-proyectos de ML aplicado.
+[ROL] Diseñador de proyectos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Mini-proyecto: objetivo 50 palabras, ${num_deliverables} entregables evaluables, dataset_sugerido 80 palabras (al menos 8 variables, 50 registros), rubrica con 4 criterios y 3 niveles cada uno (basico/competente/avanzado).
-[RESTRICCIONES] Entregables en 8-10 min. Dataset realista y descriptivo.
+[TAREA] Proyecto de 8-10 min: objetivo 50 palabras, ${num_deliverables} entregables, dataset plausible 80 palabras (>=8 variables, 50 registros), rúbrica de 4 criterios × 3 niveles (básico/competente/avanzado).
 [SALIDA] JSON puro con claves "objetivo","entregables" (array de ${num_deliverables}),"dataset_sugerido","rubrica".'''
 
 [texto.6]
 defaults = { num_decisions = 3 }
 template = '''
-[ROL] Diseniador de escenarios de decision ramificados.
+[ROL] Diseñador de escenarios.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Escenario ramificado de ${num_decisions} niveles aplicando "${concept}". Nivel 1: situacion 60 palabras + 2 opciones -> cada una lleva al siguiente nivel con nueva situacion + 2 opciones. Cada rama final: desenlace 40 palabras + leccion_aprendida conectada con "${concept}".
-[RESTRICCIONES] Decisiones no triviales. Todas las ramas pedagogicamente valiosas.
+[TAREA] Árbol de ${num_decisions} niveles: situación 60 palabras y 2 decisiones no triviales por nodo; hojas con desenlace 40 palabras y lección que justifique consecuencias.
 [SALIDA] JSON puro con estructura de arbol: "nodo_raiz" con situacion,opciones (array de 2 con siguiente_nodo,desenlace,leccion_aprendida).'''
 
 [texto.8]
 defaults = { num_problems = 4 }
 template = '''
-[ROL] Facilitador de resolucion de problemas de ML.
+[ROL] Facilitador de problemas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Mapa de ${num_problems} problemas donde "${concept}" es la solucion. Cada uno: contexto 40 palabras (sector+situacion), 3 sintomas observables, diagnostico (por que "${concept}"), solucion_recomendada 50 palabras.
-[RESTRICCIONES] Sectores diversos (salud, finanzas, retail, industria). Sintomas sin jerga experta.
+[TAREA] ${num_problems} problemas de sectores diversos: contexto 40 palabras, 3 síntomas sin jerga, diagnóstico justificado y solución 50 palabras aplicando el concepto.
 [SALIDA] JSON puro con clave "problemas": array de ${num_problems} con "contexto","sintomas" (array de 3),"diagnostico","solucion_recomendada".'''
 
 [texto.10]
 defaults = { num_criteria = 4 }
 template = '''
-[ROL] Diseniador de retos de arquitectura de soluciones ML.
+[ROL] Diseñador de retos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Reto de disenio: enunciado 80 palabras (cliente realista, problema, restricciones), ${num_criteria} criterios de disenio, guia_evaluacion con 3 niveles, solucion_referencia 100 palabras.
-[RESTRICCIONES] Fuerza trade-offs reales de "${concept}". Sin respuesta unica obvia.
+[TAREA] Reto: enunciado 80 palabras (cliente, problema, restricciones), ${num_criteria} criterios, guía de 3 niveles, solución razonada 100 palabras con trade-offs, sin óptimo obvio.
 [SALIDA] JSON puro con claves "enunciado","criterios" (array de ${num_criteria}),"guia_evaluacion","solucion_referencia".'''
 
 [codigo.4]
 defaults = { num_params = 3 }
 template = '''
-[ROL] Desarrollador front-end de simulaciones aplicadas interactivas.
+[ROL] Diseñador de simulaciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Simulacion HTML5 donde el estudiante aplique "${concept}" en un escenario realista.
-[TAREA] Entorno simulado con escenario empresarial concreto, ${num_params}-${num_params_plus1} parametros ajustables, visualizacion SVG/canvas reactiva, metricas visibles y boton "Aplicar" que ejecuta "${concept}". Iterar al menos 3 veces para descubrir patrones.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas. Visualizacion <100 ms.
+[TAREA] Aplicar "${concept}" en escenario realista: ${num_params}-${num_params_plus1} parámetros, métricas y visualización <100 ms; 3 iteraciones.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de optimizar decisiones; upao-figure: al menos un diagrama propio reactivo; upao-example: ejemplo trabajado de ajuste; upao-status, upao-progress y retroalimentación que explique el porqué del resultado; upao-summary: cierre que consolide patrones. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() tras 3 iteraciones.
+[SCORM] ${scorm}. Desbloquea upao-complete tras 3 iteraciones.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [codigo.5]
 defaults = { num_questions = 3 }
 template = '''
-[ROL] Desarrollador front-end de dashboards de analisis de datos.
+[ROL] Diseñador de dashboards.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Dashboard HTML5 donde el estudiante analice datos de "${concept}" y extraiga conclusiones.
-[TAREA] Dataset hardcodeado de 15-20 registros, tabla filtrable/ordenable, 2 graficos SVG (scatter/bar/line) que reaccionan a filtros, ${num_questions} preguntas con selector, boton "Revelar insight". Graficos SVG reales.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas.
+[TAREA] Dashboard de "${concept}": 15-20 registros locales, tabla filtrable/ordenable, 2 gráficos SVG reactivos y ${num_questions} preguntas.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de extraer conclusiones; upao-figure: al menos un diagrama propio (ambos gráficos); upao-example: ejemplo trabajado de lectura; upao-question, upao-choice y upao-reveal: retroalimentación que explique el porqué del insight; upao-summary: cierre que consolide evidencia. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al responder las ${num_questions} preguntas.
+[SCORM] ${scorm}. Desbloquea upao-complete al responder las ${num_questions} preguntas.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [codigo.7]
 defaults = { num_exercises = 3 }
 template = '''
-[ROL] Desarrollador front-end de laboratorios de codigo interactivo.
+[ROL] Diseñador de laboratorios de código.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Lab de codigo HTML5 donde el estudiante experimente con "${concept}" escribiendo pseudocodigo.
-[TAREA] Editor simplificado (textarea), ${num_exercises} ejercicios crecientes sobre "${concept}" con codigo inicial incompleto, boton "Ejecutar" que valida contra solucion esperada, feedback visual, "Ver solucion" tras 2 intentos. Validacion JS real.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas.
+[TAREA] ${num_exercises} ejercicios de pseudocódigo de "${concept}": textarea, código incompleto, "Ejecutar" con validación JS real; solución tras 2 intentos.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de implementar lógica; upao-figure: al menos un diagrama propio de flujo; upao-example con upao-steps y ol/li: ejemplo trabajado distinto; upao-status, upao-reveal: retroalimentación que explique el porqué del error; upao-summary: cierre que consolide algoritmo. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar los ${num_exercises} ejercicios.
+[SCORM] ${scorm}. Desbloquea upao-complete al completar ${num_exercises} ejercicios.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [codigo.9]
 defaults = { num_turns = 6 }
 template = '''
-[ROL] Desarrollador front-end de juegos de estrategia educativos.
+[ROL] Diseñador de estrategia.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Juego de estrategia HTML5 por turnos que modele la logica de "${concept}" como mecanica.
-[TAREA] Tablero/escenario con ${num_turns} turnos de decision, oponente automatico basado en "${concept}", puntuacion que refleje calidad de decisiones, pantalla final con analisis y consejos. IA oponente funcional.
-[REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas.
+[TAREA] Tablero de ${num_turns} turnos con oponente automático funcional basado en "${concept}"; puntuar calidad de decisiones.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de planificar estrategia; upao-figure: al menos un diagrama propio del tablero; upao-example: ejemplo trabajado de turno; upao-score, upao-status y retroalimentación que explique el porqué de consecuencias; upao-summary: cierre que consolide estrategia y mejoras. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al terminar la partida.
+[SCORM] ${scorm}. Desbloquea upao-complete al terminar la partida.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html]
 estilo_default = 'pagina educativa interactiva moderna'
 template = '''
-[ROL] Desarrollador front-end experto en recursos educativos interactivos.
+[ROL] Desarrollador educativo.
 [CURSO] ${curso}
-[OBJETIVO] Construir un recurso HTML5 sobre "${concept}" para aplicar y practicar. El HTML visible no debe mencionar fases 5E ni jerga interna.
-[DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
+[OBJETIVO] Aplicar "${concept}".
+[DATOS] Conserva estos datos; deriva el apoyo didáctico sin añadir hechos:
 ${data_json}
 [FORMATO] ${estilo}
-[REQUISITOS] HTML5 autocontenido: CSS en <style>, JS en <script>. Minimo 300 lineas de calidad. Checklists, revelaciones, navegacion y feedback funcionales. Paleta con acentos de accion.
+[COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje; upao-figure con al menos un diagrama propio; upao-example con ejemplo trabajado análogo antes de practicar; retroalimentación que explique el porqué; upao-summary para cierre que consolide. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la actividad principal.
+[SCORM] ${scorm}. Desbloquea upao-complete al completar la actividad.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html.estilos]
-1 = 'estudio de caso: narrativa destacada, preguntas secuenciales con campo de respuesta y toggle de modelo, barra de progreso, disenio periodistico'
-2 = 'ejercicio guiado: pasos numerados, cada uno expandible con pista y validacion, indicador de paso actual, boton siguiente'
-3 = 'mini-proyecto: panel de objetivo, tarjetas de entregables con checklist, dataset colapsable, rubrica interactiva con niveles desplegables'
-6 = 'escenario ramificado: tarjeta de situacion con un botón por cada opción del JSON, transicion animada entre niveles, desenlace con leccion destacada'
-8 = 'mapa de problemas: grid con una tarjeta por cada problema del JSON, expandibles con sintomas+diagnostico+solucion, iconos coloreados'
-10 = 'reto de disenio: enunciado en panel, criterios en checklist, rubrica en acordeon, solucion oculta tras boton con delay'
+1 = 'Caso: narrativa, upao-question con textarea, upao-reveal del modelo y upao-progress. Diagrama causal para diagnosticar; caso análogo resuelto y cierre de transferencia.'
+2 = 'Ejercicio: upao-node por paso desplegable, upao-steps con ol/li para solución, upao-reveal, upao-status, upao-nav. Diagrama del procedimiento para aplicarlo; justificar validación y consolidar método.'
+3 = 'Proyecto: checklists nativas de entregables, dataset en details, rúbrica en upao-node, upao-status. Diagrama del plan para diseñar entregables; ejemplo parcial y cierre contra criterios.'
+6 = 'Ramificación: botones nativos, árbol y transiciones propios, upao-status, upao-reveal. Diagrama de consecuencias para decidir; ejemplo ajeno a ramas, justificar desenlaces y lección final.'
+8 = 'Problemas: upao-node y upao-reveal por diagnóstico/solución. Grafo síntoma-causa para diagnosticar, caso análogo trabajado y síntesis de criterios.'
+10 = 'Diseño: checklist, rúbrica en upao-node, upao-reveal de referencia tras propuesta. Esquema de arquitectura para justificar trade-offs; ejemplo parcial y cierre de mejoras.'

@@ -112,6 +112,24 @@ def test_final_sweep_replaces_markers_reintroduced_by_refinement(monkeypatch):
     assert "data:image/svg+xml;base64," in result.html
 
 
+def test_llm_fake_skips_providers_and_injects_runtime(monkeypatch):
+    from core.config import settings
+
+    monkeypatch.setattr(settings, "llm_fake", True)
+    calls: list[object] = []
+    monkeypatch.setattr(gen, "generar_texto", lambda *a, **k: calls.append(1) or "no-llm")
+
+    result = gen.generate_resource("explore", 1, "Fotosíntesis")
+
+    assert calls == []
+    assert "Fotosíntesis" in result.html
+    assert "explore" in result.html
+    assert 'id="ova-base"' in result.html
+    assert "UPAO Components v" in result.html
+    assert result.raw_json == {"contenido": "Fotosíntesis"}
+    assert result.defects == []
+
+
 def test_json_step_fuerza_thinking_off(monkeypatch):
     calls = []
 

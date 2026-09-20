@@ -2,14 +2,27 @@ def build_scorm_js() -> str:
     return """(function (global) {
   let api = null
 
+  function safeApi(win) {
+    try {
+      return win.API || null
+    } catch (error) {
+      // Ventana de otro origen: su API no es legible, seguir con la cadena.
+      return null
+    }
+  }
+
   function findApi(win) {
     let current = win
     let attempts = 0
     while (current && attempts < 500) {
-      if (current.API) {
-        return current.API
+      const found = safeApi(current)
+      if (found) {
+        return found
       }
       attempts += 1
+      if (current.parent === current) {
+        return null
+      }
       current = current.parent
     }
     return null
@@ -29,44 +42,44 @@ def build_scorm_js() -> str:
     return api
   }
 
-  function initialize() {
+  function call(method, args) {
     const handle = getApi()
-    if (!handle) {
+    if (!handle || typeof handle[method] !== 'function') {
       return false
     }
-    return handle.LMSInitialize('') === 'true'
+    try {
+      return handle[method].apply(handle, args) === 'true'
+    } catch (error) {
+      return false
+    }
+  }
+
+  function initialize() {
+    return call('LMSInitialize', [''])
   }
 
   function getValue(element) {
     const handle = getApi()
-    if (!handle) {
+    if (!handle || typeof handle.LMSGetValue !== 'function') {
       return ''
     }
-    return handle.LMSGetValue(element)
+    try {
+      return handle.LMSGetValue(element) || ''
+    } catch (error) {
+      return ''
+    }
   }
 
   function setValue(element, value) {
-    const handle = getApi()
-    if (!handle) {
-      return false
-    }
-    return handle.LMSSetValue(element, value) === 'true'
+    return call('LMSSetValue', [element, String(value)])
   }
 
   function commit() {
-    const handle = getApi()
-    if (!handle) {
-      return false
-    }
-    return handle.LMSCommit('') === 'true'
+    return call('LMSCommit', [''])
   }
 
   function finish() {
-    const handle = getApi()
-    if (!handle) {
-      return false
-    }
-    return handle.LMSFinish('') === 'true'
+    return call('LMSFinish', [''])
   }
 
   global.GenovaScorm = {
@@ -121,7 +134,9 @@ def build_app_js() -> str:
   }
 
   function maybeComplete() {
-    if (tabs.length && Object.keys(visited).length >= tabs.length) {
+    // Un OVA de un solo recurso no se completa al abrirlo: el estudiante debe
+    // usar el botón explícito. Con varios recursos, visitarlos todos completa.
+    if (tabs.length > 1 && Object.keys(visited).length >= tabs.length) {
       markComplete()
     }
   }

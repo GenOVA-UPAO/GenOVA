@@ -1,29 +1,9 @@
 import assert from 'node:assert/strict'
 import { Given, When, Then } from '@cucumber/cucumber'
-import {
-  findActiveVersion as findActive,
-  sortVersionsDesc as sortDesc,
-} from '../../../frontend/src/features/ova-workspace/lib/ova-versioning'
+import { sortVersionsDesc as sortDesc } from '../../../frontend/src/features/ova-workspace/lib/ova-versioning'
 
 // HU-028 unit coverage — importa la lógica real de ovaVersioning (usada por
 // VersionHistoryPanel). Sin browser/backend.
-
-// ── Active version ───────────────────────────────────────────────────────────
-Given('un historial con versiones {int}, {int} y {int} donde la activa es la {int}', function (v1, v2, v3, active) {
-  this.versions = [
-    { id: `id${v1}`, version_number: v1, is_active: v1 === active },
-    { id: `id${v2}`, version_number: v2, is_active: v2 === active },
-    { id: `id${v3}`, version_number: v3, is_active: v3 === active },
-  ]
-})
-
-When('se busca la versión activa', function () {
-  this.activeVersion = findActive(this.versions)
-})
-
-Then('la versión activa es la {int}', function (expected) {
-  assert.equal(this.activeVersion?.version_number, expected)
-})
 
 // ── Sort ─────────────────────────────────────────────────────────────────────
 Given('un historial con versiones {int}, {int} y {int}', function (v1, v2, v3) {

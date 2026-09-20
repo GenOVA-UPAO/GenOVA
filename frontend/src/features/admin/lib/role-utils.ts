@@ -1,5 +1,7 @@
+const MUTED_ROLE_CLASSES = "bg-muted text-muted-foreground border-border";
+
 export function getRoleColorClasses(roleName: string | null | undefined): string {
-  if (!roleName) return "bg-muted text-muted-foreground border-border";
+  if (!roleName) return MUTED_ROLE_CLASSES;
 
   const normalizedRole = roleName.toLowerCase().trim();
 
@@ -13,10 +15,7 @@ export function getRoleColorClasses(roleName: string | null | undefined): string
     case "estudiante":
     case "student":
       return "bg-primary/5 text-primary border-primary/15";
-    case "usuario":
-    case "user":
-      return "bg-muted text-muted-foreground border-border";
     default:
-      return "bg-muted text-muted-foreground border-border";
+      return MUTED_ROLE_CLASSES;
   }
 }

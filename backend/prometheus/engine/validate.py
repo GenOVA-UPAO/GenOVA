@@ -15,6 +15,8 @@ import re
 
 import structlog
 
+from prometheus.engine.js_check import script_syntax_errors
+
 logger = structlog.get_logger(__name__)
 
 _PLACEHOLDERS = (
@@ -65,6 +67,14 @@ def structural_defects(html: str) -> list[str]:
             f'contiene texto placeholder ("{hit}") — reemplázalo por contenido '
             "pedagógico real y específico del concepto"
         )
+    js_errors = script_syntax_errors(html)
+    if js_errors:
+        defects.append(
+            "el JavaScript tiene errores de sintaxis y el recurso no funciona ("
+            + "; ".join(js_errors)
+            + ") — reescribe el script completo y bien cerrado; si es muy largo, "
+            "simplifícalo en vez de cortarlo"
+        )
     if len(html) < _MIN_HTML_CHARS or len(_visible_text(html).split()) * 6 < _MIN_VISIBLE_CHARS:
         defects.append(
             "contenido escaso para un recurso educativo — desarrolla el contenido "
@@ -73,11 +83,36 @@ def structural_defects(html: str) -> list[str]:
     return defects
 
 
+_COMIC_PANEL_RE = re.compile(r"<upao-comic-panel\b[\s\S]*?</upao-comic-panel>", re.I)
+_STAGE_DIRECTION_RE = re.compile(r">\s*(?:escena|viñeta|imagen|ilustración)\s*:", re.I)
+
+
+def comic_defects(html: str) -> list[str]:
+    """Una viñeta sin dibujo propio, o cuyo texto es una acotación para un
+    ilustrador en vez del diálogo del personaje, no enseña nada."""
+    panels = _COMIC_PANEL_RE.findall(html)
+    if not panels:
+        return []
+    defects: list[str] = []
+    sin_dibujo = [p for p in panels if 'slot="art"' not in p and "slot='art'" not in p]
+    if sin_dibujo:
+        defects.append(
+            f"{len(sin_dibujo)} de {len(panels)} viñetas no traen su dibujo: cada "
+            "<upao-comic-panel> debe incluir un <svg slot=\"art\" viewBox=...> propio"
+        )
+    if any(_STAGE_DIRECTION_RE.search(p) for p in panels):
+        defects.append(
+            "hay viñetas cuyo texto es una acotación («Escena: …») en vez de lo que "
+            "dice el personaje: escribe el diálogo y dibuja la escena en el svg"
+        )
+    return defects
+
+
 def resource_defects(html: str, prompt: str = "") -> list[str]:
-    """Defectos de routing a repair: estructurales ∪ deriva de tema."""
+    """Defectos de routing a repair: estructurales ∪ cómic ∪ deriva de tema."""
     from prometheus.engine.topic import topic_drift_defect
 
-    defects = structural_defects(html)
+    defects = structural_defects(html) + comic_defects(html)
     drift = topic_drift_defect(html, prompt)
     if drift:
         defects.append(drift)

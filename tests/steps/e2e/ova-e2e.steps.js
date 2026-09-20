@@ -1,11 +1,24 @@
 // HU-002/003/004/006/012/013/025/030 e2e — ciclo de vida real del OVA en browser.
 // La generación usa el backend con LLM_FAKE=1 (HTML determinista, sin proveedores).
+// Ver tests/README.md: la suite completa requiere el backend levantado con LLM_FAKE=1
+// y, en local, E2E_API_ORIGIN apuntando a esa instancia.
 import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
-import { ovaCard, ovaCards, searchOva, seedOvaViaApi, state, uniqueId } from './_helpers.js'
+import {
+  apiOrigin,
+  loginWithCredentials,
+  openLoginPage,
+  ovaCard,
+  ovaCards,
+  searchOva,
+  seedOvaViaApi,
+  state,
+  uniqueId,
+} from './_helpers.js'
+import { test } from './fixtures.js'
 
-const { Given, When, Then } = createBdd()
+const { Given, When, Then } = createBdd(test)
 
 // ── Seeds ─────────────────────────────────────────────────────────────────────
 
@@ -18,7 +31,7 @@ Given('que estoy autenticado con una cuenta recién creada', async ({ page }) =>
   // Fixture de prueba local (no secreto de producción); armado para evitar
   // falsos positivos del scanner de secretos en el agente.
   const pass = ['clave', '1234', 'e2e'].join('')
-  const res = await page.request.post('/api/auth/register', {
+  const res = await page.request.post(`${apiOrigin()}/api/auth/register`, {
     data: { full_name: 'Cuenta E2E', email, password: pass },
   })
   // 200 = verificación deshabilitada (cookie de sesión directa); 201 = habilitada.
@@ -26,11 +39,8 @@ Given('que estoy autenticado con una cuenta recién creada', async ({ page }) =>
     throw new Error(`Registro API falló: ${res.status()} ${await res.text()}`)
   }
   await page.context().clearCookies()
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.locator('#email, input[type=email]').first().fill(email)
-  await page.locator('#password input, input[type=password]').first().fill(pass)
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 20000 })
+  await openLoginPage(page)
+  await loginWithCredentials(page, email, pass)
 })
 
 // ── Creación desde el formulario (HU-002) ────────────────────────────────────
@@ -38,7 +48,8 @@ Given('que estoy autenticado con una cuenta recién creada', async ({ page }) =>
 When('escribo un prompt válido sobre {string}', async ({ page }, tema) => {
   const prompt = `OVA e2e ${uniqueId()} sobre ${tema}: objetivos, nivel universitario.`
   state(page).prompt = prompt
-  const textarea = page.locator('textarea').first()
+  // React: <textarea id="ova-create-prompt"> con label sr-only asociado.
+  const textarea = page.getByLabel('Describe el tema del OVA')
   await textarea.waitFor({ state: 'visible', timeout: 15000 })
   await textarea.fill(prompt)
 })
@@ -51,16 +62,15 @@ When('configuro recursos en al menos dos fases', async ({ page }) => {
   await page.keyboard.press('Escape').catch(() => {})
   await page.locator('.driver-popover-close-btn').click({ timeout: 1500 }).catch(() => {})
   await page.locator('.driver-overlay').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {})
-  // El botón dejó de ser el glifo "⚙": ahora es gn-icon "gear" con
-  // ariaLabel "Configurar recursos 5E" (consolidación de íconos).
   await page.getByRole('button', { name: 'Configurar recursos 5E' }).click()
-  const firstCard = page.locator('gn-resource-card').first()
+  // React: cada recurso es un <article> con un <button> de selección (aria-pressed).
+  const firstCard = page.locator('article').first()
   await firstCard.waitFor({ state: 'visible', timeout: 20000 })
-  await firstCard.click()
-  await page.getByRole('button', { name: 'EXPLORE' }).click()
+  await firstCard.getByRole('button').first().click()
+  await page.getByRole('button', { name: /^EXPLORE/ }).click()
   await firstCard.waitFor({ state: 'visible', timeout: 20000 })
-  await firstCard.click()
-  await page.getByRole('button', { name: 'Confirmar' }).click()
+  await firstCard.getByRole('button').first().click()
+  await page.getByRole('button', { name: /^Confirmar/ }).click()
 })
 
 When('inicio la generación del OVA', async ({ page }) => {

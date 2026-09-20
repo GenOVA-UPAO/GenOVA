@@ -21,7 +21,7 @@ let seq = 0;
 
 export function newChatId(prefix: string): string {
   seq += 1;
-  return `${prefix}-${Date.now()}-${seq}`;
+  return `${prefix}-${String(Date.now())}-${String(seq)}`;
 }
 
 /** UUID v4 for persistence keys (backend PK). */
@@ -100,7 +100,7 @@ export function progressChatPatch(percentage: number, stage: string): Partial<Re
 export function formatChatTarget(resourceLabels?: string[]): string {
   if (!resourceLabels?.length) return "al OVA completo";
   if (resourceLabels.length === 1) return `a «${resourceLabels[0]}»`;
-  return `a ${resourceLabels.length} recursos (${resourceLabels.join(", ")})`;
+  return `a ${String(resourceLabels.length)} recursos (${resourceLabels.join(", ")})`;
 }
 
 export function finishChatPatch(
@@ -133,7 +133,7 @@ export function selectionToggleMessage(label: string, selected: boolean): RegenC
 export function selectionAllMessage(labels: string[], allSelected: boolean): RegenChatMessage {
   if (allSelected) {
     return systemChatMessage(
-      `Seleccionados todos los recursos (${labels.length}): ${labels.join(", ")}`,
+      `Seleccionados todos los recursos (${String(labels.length)}): ${labels.join(", ")}`,
       {
         kind: "selection_all",
         resourceLabels: labels,
@@ -155,11 +155,11 @@ export function fromApiMessage(raw: {
 }): RegenChatMessage {
   return {
     id: raw.id,
-    role: (raw.role as RegenChatRole) || "system",
-    kind: (raw.kind as RegenChatKind) || "message",
-    text: raw.text || "",
+    role: raw.role ? (raw.role as RegenChatRole) : "system",
+    kind: raw.kind ? (raw.kind as RegenChatKind) : "message",
+    text: raw.text,
     createdAt: raw.created_at ? Date.parse(raw.created_at) : Date.now(),
-    status: (raw.status as RegenChatStatus) || undefined,
+    status: raw.status ? (raw.status as RegenChatStatus) : undefined,
     percentage: raw.percentage ?? undefined,
     resourceLabels: raw.resource_labels?.length ? raw.resource_labels : undefined,
   };

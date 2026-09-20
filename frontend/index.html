@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GenOVA</title>
+    <meta
+      name="description"
+      content="GenOVA — plataforma UPAO para generar Objetos Virtuales de Aprendizaje (OVA) asistidos por IA, con exportación a SCORM."
+    />
+    <meta name="theme-color" content="#0a3d91" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <!-- Warm the TLS handshake to the production API before the first request. -->
+    <link rel="preconnect" href="https://genova-backend-lbdr.onrender.com" crossorigin />
+    <script>
+      // Apply the saved theme before first paint (no light→dark flash).
+      try {
+        var t = localStorage.getItem("genova.theme");
+        if (t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme: dark)").matches))
+          document.documentElement.classList.add("dark");
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Splash estático pre-hidratación: pinta con el CSS (antes de React)
+           y desaparece al montar la app. Misma marca visual que AppSplash. -->
+      <div class="flex h-full items-center justify-center" role="status" aria-label="Cargando">
+        <div class="size-8 animate-spin rounded-full border-4 border-muted border-t-primary"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

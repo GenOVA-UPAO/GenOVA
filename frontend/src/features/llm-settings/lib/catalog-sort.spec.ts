@@ -49,7 +49,7 @@ describe("sortModels", () => {
     const z = M({ model_id: "zz", label: "Zeta" });
     const alpha = M({ model_id: "aa", label: "Alfa" });
     const sinLabel = M({ model_id: "mm", label: undefined });
-    expect(sortModels([z, alpha, sinLabel], "name-asc").map((m) => m.label || m.model_id)).toEqual([
+    expect(sortModels([z, alpha, sinLabel], "name-asc").map((m) => m.label ?? m.model_id)).toEqual([
       "Alfa",
       "mm",
       "Zeta",
@@ -85,7 +85,7 @@ describe("modalityBucket", () => {
     expect(modalityBucket("text+image+file+video->text")).toBe("imagen");
     expect(modalityBucket("text+image+file+audio->text")).toBe("imagen");
     expect(modalityBucket("text+file->text")).toBe("archivos");
-    expect(modalityBucket(undefined)).toBe("otra");
+    expect(modalityBucket()).toBe("otra");
     expect(modalityBucket("video->text")).toBe("video");
     expect(modalityBucket("text+image+audio+video->text")).toBe("imagen");
     expect(modalityBucket("text+audio->text+audio")).toBe("audio");

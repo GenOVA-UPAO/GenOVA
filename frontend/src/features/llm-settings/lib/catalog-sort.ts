@@ -1,3 +1,5 @@
+import { firstNonBlank } from "@/core/lib/text";
+
 import type { CatalogModel } from "./user-llm-settings.types";
 
 /**
@@ -6,7 +8,7 @@ import type { CatalogModel } from "./user-llm-settings.types";
  * Lógica pura (sin componentes, sin store): se testea en catalog-sort.spec.ts.
  *
  * DECISIÓN DE ORDENACIÓN CON PAGINACIÓN: el catálogo llega paginado del
- * servidor (page_size 1000, ~431 modelos hoy ⇒ todo entra en una petición).
+ * servidor (page_size 1000, ~431 modelos hoy ⇒ cabe entero en una petición).
  * Así el orden se aplica en cliente sobre el catálogo completo; si el catálogo
  * superase el máximo de la API habría que llevar el orden al servidor antes de
  * volver a paginar para no ordenar una página suelta.
@@ -43,11 +45,14 @@ export const GROUP_OPTIONS: { key: "provider" | "type" | "modality"; label: stri
 const priceOf = (m: CatalogModel): number | null =>
   m.pricing_detail?.output ?? (m.pricing_detail ? (m.pricing_detail.input ?? null) : null);
 
+/** Un label vacío cuenta como ausente: se ordena por model_id. */
+const displayName = (m: CatalogModel): string => firstNonBlank(m.label) ?? m.model_id;
+
 export function sortModels(models: CatalogModel[], sortKey: SortKey): CatalogModel[] {
   if (sortKey === "default") return models;
   const sorted = [...models];
   const byName = (a: CatalogModel, b: CatalogModel) =>
-    (a.label || a.model_id).localeCompare(b.label || b.model_id, "es");
+    displayName(a).localeCompare(displayName(b), "es");
 
   if (sortKey === "name-asc") {
     sorted.sort(byName);
@@ -126,12 +131,19 @@ export interface CatalogGroup {
   models: CatalogModel[];
 }
 
-const groupKeyOf = (m: CatalogModel, groupBy: GroupBy): string =>
-  groupBy === "provider"
-    ? m.provider || "unknown"
-    : groupBy === "type"
-      ? m.category || "otra"
-      : modalityBucket(m.modality);
+const orDefault = (value: string | undefined, fallback: string): string =>
+  firstNonBlank(value) ?? fallback;
+
+function groupKeyOf(m: CatalogModel, groupBy: GroupBy): string {
+  if (groupBy === "provider") return orDefault(m.provider, "unknown");
+  if (groupBy === "type") return orDefault(m.category, "otra");
+  return modalityBucket(m.modality);
+}
+
+function groupLabel(key: string, groupBy: GroupBy, labels: Record<string, string>): string {
+  const modalityLabel = groupBy === "modality" ? MODALITY_BUCKET_LABELS[key] : undefined;
+  return modalityLabel ?? orDefault(labels[key], key);
+}
 
 const sortGroupKeys = (a: CatalogGroup, b: CatalogGroup, groupBy: GroupBy): number => {
   if (groupBy === "modality") {
@@ -162,7 +174,7 @@ export function groupModels(
 
   const grouped = [...groups.entries()].map(([key, models]) => ({
     key,
-    label: (groupBy === "modality" ? MODALITY_BUCKET_LABELS[key] : null) || labels[key] || key,
+    label: groupLabel(key, groupBy, labels),
     models,
   }));
   return preserveModelOrder ? grouped : grouped.sort((a, b) => sortGroupKeys(a, b, groupBy));

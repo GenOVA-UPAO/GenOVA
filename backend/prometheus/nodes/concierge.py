@@ -156,14 +156,14 @@ def _intentions_to_phases(intentions: list[dict]) -> tuple[dict, list[str], int]
 
 
 def _llm_decompose(prompt: str) -> dict | None:
-    sys_prompt = f"""[ROL] Orquestador pedagógico de OVAs (metodología constructivista 5E) para un curso universitario de Machine Learning.
+    sys_prompt = f"""[ROL] Orquestador pedagógico de OVAs (metodología constructivista 5E) para cursos universitarios de cualquier asignatura (el tema lo define el usuario).
 [TAREA] Diseña la secuencia 5E para el concepto del usuario. Selecciona entre 2 y 4 recursos por fase (IDs numéricos del catálogo) que mejor enseñen ESE concepto concreto.
 
 Catálogo de recursos disponibles:
 {_RESOURCE_CATALOG}
 
 Objetivo pedagógico de cada fase (elige recursos que lo cumplan):
-- ENGAGE: despertar curiosidad y activar ideas previas, sin tecnicismos (cómic, juego, dilema, noticia, simulador intuitivo...).
+- ENGAGE: despertar curiosidad y activar ideas previas con un caso o pregunta real del tema (cómic, juego, dilema, noticia, simulador intuitivo...).
 - EXPLORE: que el estudiante manipule y descubra patrones antes de la teoría (lab, experimento, mapa mental, drag&drop...).
 - EXPLAIN: formalizar la teoría con claridad (video, lectura guiada, FAQ, diagrama, infografía...).
 - ELABORATE: aplicar a problemas reales y transferir (estudio de caso, mini-proyecto, simulación aplicada, reto...).

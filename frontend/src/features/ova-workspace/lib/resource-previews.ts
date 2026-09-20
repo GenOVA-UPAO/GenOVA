@@ -17,5 +17,6 @@ export function getResourcePreview(
   phaseKey: string,
   resourceId: string | number,
 ): ResourcePreviewInfo | null {
-  return PREVIEWS_BY_PHASE[phaseKey]?.[String(resourceId)] ?? null;
+  if (!Object.hasOwn(PREVIEWS_BY_PHASE, phaseKey)) return null;
+  return PREVIEWS_BY_PHASE[phaseKey][String(resourceId)] ?? null;
 }

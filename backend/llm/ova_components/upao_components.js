@@ -6,27 +6,30 @@
 
   /* ── Design tokens ─────────────────────────────────────────────────── */
   const T = {
-    primary:   '#0A3D91',
-    primaryHv: '#072C6B',
-    accent:    '#F47A20',
-    accentHv:  '#D9650F',
-    accentTint:'#FDEEE0',
-    bg:        '#F7F9FC',
-    surface:   '#FFFFFF',
-    surfTint:  '#EAF0FB',
-    text:      '#15233B',
-    muted:     '#5A6B85',
-    border:    '#E2E8F2',
-    success:   '#1B9C6B',
+    primary:   'var(--primary,#0A3D91)',
+    primaryHv: 'var(--primary-hover,#072C6B)',
+    accent:    'var(--accent,#F47A20)',
+    accentHv:  'var(--action-hover,#923B00)',
+    action:    'var(--action,#B84B00)',
+    accentTint:'var(--accent-tint,#FDEEE0)',
+    bg:        'var(--bg,#F7F9FC)',
+    surface:   'var(--surface,#FFFFFF)',
+    surfTint:  'var(--surface-tint,#EAF0FB)',
+    text:      'var(--text,#15233B)',
+    muted:     'var(--text-muted,#5A6B85)',
+    border:    'var(--border,#E2E8F2)',
+    success:   'var(--success,#146C49)',
     successBg: '#DCFCE7',
-    danger:    '#D64545',
+    danger:    'var(--danger,#B42332)',
     dangerBg:  '#FEE2E2',
-    radius:    '12px',
+    radius:    'var(--radius,12px)',
     radiusSm:  '8px',
-    shadow:    '0 4px 20px rgba(10,61,145,.09)',
+    shadow:    'var(--shadow,0 4px 20px rgba(10,61,145,.09))',
     shadowMd:  '0 8px 32px rgba(10,61,145,.14)',
-    fontDisp:  "Georgia, Cambria, 'Times New Roman', serif",
-    fontBody:  "'Trebuchet MS', 'Lucida Grande', system-ui, sans-serif",
+    // Misma familia que la hoja base (var(--font-*) con respaldo si el recurso
+    // se abre suelto, sin la hoja inyectada).
+    fontDisp:  "var(--font-display,system-ui),system-ui,sans-serif",
+    fontBody:  "var(--font-body,system-ui),system-ui,sans-serif",
     ease:      'cubic-bezier(.4,0,.2,1)',
   };
 
@@ -49,6 +52,14 @@
     G.document.head.appendChild(s);
   }
 
+  /* Solo se pinta un <img> si la fuente es realmente cargable: un token
+     inventado por el modelo ("image_placeholder") dejaría una imagen rota,
+     mientras que sin fuente el componente dibuja su propio hueco ilustrado. */
+  const usableSrc = value => {
+    const src = String(value ?? '').trim();
+    return /^(?:data:image\/|https?:\/\/|\/|\.\/)/i.test(src) ? src : '';
+  };
+
   /* ── Base class ─────────────────────────────────────────────────────── */
   class UE extends HTMLElement {
     constructor() { super(); this.attachShadow({ mode: 'open' }); }
@@ -59,7 +70,12 @@
     }
     css(s) {
       return `<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:host{display:block;font-family:${T.fontBody};color:${T.text};line-height:1.55}${s}</style>`;
+:host{display:block;min-width:0;font-family:${T.fontBody};color:${T.text};line-height:1.55;overflow-wrap:break-word}
+:host([hidden]),[hidden]{display:none!important}
+${s}
+:where(button,summary,a,[tabindex]):focus-visible{outline:3px solid ${T.primary};outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>`;
     }
   }
 
@@ -124,10 +140,10 @@
           color:#fff;font-family:${T.fontDisp};font-size:.9rem;font-weight:700;
           display:flex;align-items:center;justify-content:center;flex-shrink:0;
           transition:background .2s}
-        .wrap[open] .num{background:${T.accent}}
+        .wrap[open] .num{background:${T.action}}
         .titles{flex:1;min-width:0}
         .t-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;
-          text-transform:uppercase;color:${T.accent};margin-bottom:2px}
+          text-transform:uppercase;color:${T.action};margin-bottom:2px}
         .t-title{font-family:${T.fontDisp};font-weight:700;color:${T.primary};
           font-size:clamp(.95rem,2.5vw,1.1rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .chevron{transition:transform .25s ${T.ease};color:${T.muted};font-size:.8rem;flex-shrink:0}
@@ -192,7 +208,7 @@
         .btn.wrong .fb{display:block;background:${T.dangerBg};color:#991b1b}
         .status{font-size:1rem;margin-left:auto;flex-shrink:0}
       `) + `
-      <button class="btn" aria-label="Opción ${val}" data-group="${group}" data-correct="${correct}">
+      <button class="btn" type="button" data-group="${group}" data-correct="${correct}">
         <span class="badge">${val}</span>
         <div class="text">
           <span class="main-text"><slot></slot></span>
@@ -200,9 +216,17 @@
         </div>
         <span class="status" aria-hidden="true"></span>
       </button>`;
+      this.$('.btn').disabled = this.hasAttribute('disabled');
       this.$('.btn').addEventListener('click', () => {
         if (this.$('.btn').disabled) return;
-        document.querySelectorAll(`[data-group="${group}"]`).forEach(el => { el.disabled = true; });
+        // Shadow roots are not traversed by document.querySelectorAll.
+        const scope = this.closest('upao-question') || this.getRootNode();
+        scope.querySelectorAll('upao-choice').forEach(el => {
+          if ((el.getAttribute('group') || 'default') === group && el.shadowRoot) {
+            const button = el.shadowRoot.querySelector('button');
+            if (button) button.disabled = true;
+          }
+        });
         const btn = this.$('.btn');
         btn.disabled = true;
         if (correct) {
@@ -228,7 +252,7 @@
       const icon  = this.getAttribute('icon')  || '💡';
       this.shadowRoot.innerHTML = this.css(`
         .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;
-          background:${T.accent};color:#fff;border:none;border-radius:${T.radiusSm};
+          background:${T.action};color:#fff;border:none;border-radius:${T.radiusSm};
           font-family:${T.fontBody};font-size:.92rem;font-weight:600;cursor:pointer;
           transition:all .2s ${T.ease}}
         .btn:hover{background:${T.accentHv};transform:translateY(-1px)}
@@ -367,19 +391,19 @@
       const max   = this.getAttribute('max')   || '100';
       const label = this.getAttribute('label') || 'Puntuación';
       this.shadowRoot.innerHTML = this.css(`
-        .wrap{display:inline-flex;align-items:center;gap:12px;
+        .wrap{display:inline-flex;align-items:center;gap:14px;
           padding:10px 20px;border-radius:${T.radiusSm};background:${T.primary};color:#fff}
         .lbl{font-size:.72rem;font-weight:700;letter-spacing:.1em;
-          text-transform:uppercase;opacity:.75}
+          text-transform:uppercase;opacity:.8;white-space:nowrap}
+        .fig{display:flex;align-items:baseline;gap:2px}
         .val{font-family:${T.fontDisp};font-size:1.6rem;font-weight:700;
-          color:${T.accent};min-width:4ch;text-align:right;
-          animation:upao-count-up .25s ${T.ease}}
-        .max{font-size:.75rem;opacity:.6;margin-left:2px}
+          color:#fff;text-align:right;animation:upao-count-up .25s ${T.ease}}
+        .max{font-size:.85rem;font-weight:600;opacity:.75}
       `) + `
       <div class="wrap" role="status" aria-live="polite" aria-label="${label}: ${this._val} de ${max}">
-        <span>🏆</span>
-        <div><div class="lbl">${label}</div></div>
-        <div class="val" id="v">${this._val}</div><span class="max">/${max}</span>
+        <span aria-hidden="true">🏆</span>
+        <div class="lbl">${label}</div>
+        <div class="fig"><span class="val" id="v">${this._val}</span><span class="max">/ ${max}</span></div>
       </div>`;
       this.set = (n) => {
         this._val = n;
@@ -414,7 +438,7 @@
           font-weight:600;cursor:pointer;transition:all .2s ${T.ease};border:2px solid ${T.primary}}
         .btn.prev{background:transparent;color:${T.primary}}
         .btn.prev:hover:not([disabled]){background:${T.surfTint}}
-        .btn.next{background:${T.accent};color:#fff;border-color:${T.accent}}
+        .btn.next{background:${T.action};color:#fff;border-color:${T.action}}
         .btn.next:hover:not([disabled]){background:${T.accentHv};transform:translateY(-1px)}
         .btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
         .btn:focus-visible{outline:3px solid ${T.primary};outline-offset:2px}
@@ -456,8 +480,10 @@
     connectedCallback() {
       const num    = this.getAttribute('number')      || '1';
       const char   = this.getAttribute('character')   || 'Max';
-      const src    = this.getAttribute('img-src')     || '';
+      const src    = usableSrc(this.getAttribute('img-src'));
       const alt    = this.getAttribute('img-alt')     || char;
+      // La viñeta puede traer su propio dibujo: <svg slot="art">…</svg>.
+      const hasArt = !!this.querySelector('[slot="art"]');
       const side   = this.getAttribute('bubble-side') || 'right';
       const left   = side === 'left';
       this.shadowRoot.innerHTML = this.css(`
@@ -465,13 +491,14 @@
           border-radius:${T.radius};overflow:hidden;box-shadow:4px 4px 0 ${T.primary};
           animation:upao-scale .35s ${T.ease} both;position:relative}
         .num-badge{position:absolute;top:10px;left:10px;z-index:2;
-          background:${T.accent};color:#fff;font-family:${T.fontDisp};
+          background:${T.action};color:#fff;font-family:${T.fontDisp};
           font-weight:700;font-size:.8rem;width:28px;height:28px;border-radius:50%;
           display:flex;align-items:center;justify-content:center;
           border:2px solid #fff}
         .img-wrap{background:${T.surfTint};min-height:120px;display:flex;
           align-items:center;justify-content:center;border-bottom:2px solid ${T.border};overflow:hidden}
         .img-wrap img{max-width:100%;max-height:200px;object-fit:contain}
+        .img-wrap ::slotted([slot="art"]){display:block;width:100%;max-height:220px}
         .no-img{font-size:3rem;line-height:1;padding:24px;opacity:.3}
         .char-label{font-size:.7rem;font-weight:700;text-transform:uppercase;
           letter-spacing:.1em;color:${T.muted};padding:8px 14px 0}
@@ -491,7 +518,8 @@
       <div class="panel" role="figure">
         <div class="num-badge" aria-label="Panel ${num}">${num}</div>
         <div class="img-wrap">
-          ${src ? `<img src="${src}" alt="${alt}" loading="lazy">` : `<div class="no-img" aria-hidden="true">🤖</div>`}
+          <slot name="art"></slot>
+          ${hasArt ? '' : src ? `<img src="${src}" alt="${alt}" loading="lazy">` : `<div class="no-img" aria-hidden="true">🤖</div>`}
         </div>
         <p class="char-label">${char}</p>
         <div class="bubble"><slot></slot></div>
@@ -527,9 +555,9 @@
         .btn{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;
           border-radius:${T.radiusSm};font-family:${T.fontBody};font-size:.92rem;
           font-weight:600;cursor:pointer;transition:all .2s ${T.ease};border:none}
-        .btn.play{background:${T.accent};color:#fff}
+        .btn.play{background:${T.action};color:#fff}
         .btn.play:hover{background:${T.accentHv};transform:translateY(-1px)}
-        .btn.ghost{background:transparent;border:2px solid ${T.accent};color:${T.accent}}
+        .btn.ghost{background:transparent;border:2px solid ${T.action};color:${T.action}}
         .btn.ghost:hover{background:${T.accentTint}}
         .btn:focus-visible{outline:3px solid ${T.primary};outline-offset:2px}
         .track{height:6px;background:${T.surfTint};border-radius:3px;
@@ -701,7 +729,7 @@
         .wrap{text-align:center;padding:8px 0}
         .btn{display:inline-flex;align-items:center;gap:10px;
           padding:14px 32px;border-radius:${T.radiusSm};border:none;
-          background:${T.accent};color:#fff;font-family:${T.fontBody};
+          background:${T.action};color:#fff;font-family:${T.fontBody};
           font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.02em;
           transition:all .25s ${T.ease};box-shadow:0 4px 14px rgba(244,122,32,.35)}
         .btn:hover:not([disabled]){background:${T.accentHv};
@@ -742,6 +770,132 @@
     }
   }
 
+  /* Text attributes never become markup; rich content belongs in slots. */
+  const text = value => String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+  const PANEL_CSS = `
+    .panel{padding:clamp(16px,4vw,24px);background:${T.surface};border:1px solid ${T.border};border-radius:${T.radius}}
+    h2,legend{font-family:${T.fontDisp};font-size:clamp(1.1rem,3vw,1.35rem);line-height:1.3;color:${T.primary};font-weight:700}
+    h2{margin-bottom:12px}
+    .body{min-width:0}
+    ::slotted(*){max-width:100%}
+    ::slotted(p:last-child){margin-bottom:0}
+  `;
+
+  class UPAOHeader extends UE {
+    static get observedAttributes() { return ['eyebrow', 'title']; }
+    connectedCallback() { this.render(); }
+    attributeChangedCallback() { if (this.isConnected) this.render(); }
+    render() {
+      const eyebrow = text(this.getAttribute('eyebrow'));
+      const title = text(this.getAttribute('title'));
+      this.shadowRoot.innerHTML = this.css(`
+        header{padding-block:8px 20px;border-bottom:3px solid ${T.accent}}
+        .eyebrow{display:inline-block;padding:4px 10px;border-radius:999px;background:${T.accentTint};color:${T.accentHv};font-size:.78rem;font-weight:700;letter-spacing:.04em}
+        h1{font-family:${T.fontDisp};font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.2;letter-spacing:-.015em;color:${T.primary};text-wrap:balance;margin-block:12px}
+        ::slotted(*){max-width:72ch;margin-block:12px 0}
+      `) + `<header>${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ''}${title ? `<h1>${title}</h1>` : ''}<slot></slot></header>`;
+    }
+  }
+
+  class UPAOObjective extends UE {
+    connectedCallback() {
+      this.shadowRoot.innerHTML = this.css(PANEL_CSS + `
+        .panel{background:${T.surfTint};border-inline-start:4px solid ${T.primary}}
+        h2{font-size:1rem}
+      `) + `<section class="panel" aria-labelledby="heading"><h2 id="heading">Objetivo de aprendizaje</h2><slot></slot></section>`;
+    }
+  }
+
+  class UPAOSteps extends UE {
+    connectedCallback() {
+      this.shadowRoot.innerHTML = this.css(`
+        ::slotted(ol){padding-inline-start:1.8em;margin:0;display:grid;gap:16px}
+      `) + '<slot></slot>';
+    }
+  }
+
+  class UPAOExample extends UE {
+    static get observedAttributes() { return ['title']; }
+    connectedCallback() { this.render(); }
+    attributeChangedCallback() { if (this.isConnected) this.render(); }
+    render() {
+      this.shadowRoot.innerHTML = this.css(PANEL_CSS + `
+        .panel{border-inline-start:4px solid ${T.accent}}
+        ::slotted(*){margin-block:12px 0}
+      `) + `<section class="panel" aria-labelledby="heading"><h2 id="heading">${text(this.getAttribute('title') || 'Ejemplo trabajado')}</h2><div class="body"><slot></slot></div></section>`;
+    }
+  }
+
+  class UPAOFigure extends UE {
+    static get observedAttributes() { return ['caption']; }
+    connectedCallback() { this.render(); }
+    attributeChangedCallback() { if (this.isConnected) this.render(); }
+    render() {
+      this.shadowRoot.innerHTML = this.css(`
+        .visual{padding:clamp(12px,3vw,20px);background:${T.surface};border:1px solid ${T.border};border-radius:${T.radius}}
+        ::slotted(svg),::slotted(img){display:block;max-width:100%;height:auto;margin-inline:auto}
+        figcaption{margin-top:12px;font-size:.9rem;color:${T.muted};line-height:1.5}
+      `) + `<figure><div class="visual"><slot></slot></div><figcaption>${text(this.getAttribute('caption'))}</figcaption></figure>`;
+    }
+  }
+
+  class UPAOQuestion extends UE {
+    static get observedAttributes() { return ['number', 'prompt']; }
+    connectedCallback() { this.render(); }
+    attributeChangedCallback() { if (this.isConnected) this.render(); }
+    render() {
+      const number = this.getAttribute('number');
+      this.shadowRoot.innerHTML = this.css(PANEL_CSS + `
+        fieldset{min-inline-size:0;padding-top:16px}
+        legend{padding-inline:8px;font-size:1.05rem}
+        slot{display:grid;gap:12px}
+      `) + `<fieldset class="panel"><legend>${number ? `${text(number)}. ` : ''}${text(this.getAttribute('prompt') || 'Comprueba lo aprendido')}</legend><slot></slot></fieldset>`;
+    }
+  }
+
+  class UPAOSummary extends UE {
+    static get observedAttributes() { return ['title']; }
+    connectedCallback() { this.render(); }
+    attributeChangedCallback() { if (this.isConnected) this.render(); }
+    render() {
+      this.shadowRoot.innerHTML = this.css(PANEL_CSS + `
+        .panel{border-top:3px solid ${T.accent};background:${T.surfTint}}
+        .actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+        ::slotted([slot="actions"]){margin-top:16px;min-width:0;max-width:100%}
+      `) + `<section class="panel" aria-labelledby="heading"><h2 id="heading">${text(this.getAttribute('title') || 'Consolida lo aprendido')}</h2><div class="body"><slot></slot></div><div class="actions"><slot name="actions"></slot></div></section>`;
+    }
+  }
+
+  class UPAOStatus extends UE {
+    static get observedAttributes() { return ['state']; }
+    connectedCallback() { this.render(); }
+    attributeChangedCallback() { if (this.isConnected) this.render(); }
+    render() {
+      const states = {
+        info: [T.primary, T.surfTint, 'Información', 'i'],
+        success: [T.success, '#EAF7F1', 'Completado', '✓'],
+        warning: [T.accentHv, T.accentTint, 'Atención', '!'],
+        error: [T.danger, '#FBEDED', 'Error', '✗']
+      };
+      const state = this.getAttribute('state');
+      const [color, bg, label, icon] = Object.hasOwn(states, state) ? states[state] : states.info;
+      // Keep the live region and slot stable when only the state changes.
+      if (!this.$('.chip')) {
+        this.shadowRoot.innerHTML = this.css(`
+          :host{display:inline-block;vertical-align:middle}
+          .chip{display:inline-flex;align-items:baseline;gap:6px;padding:4px 10px;border:1px solid currentColor;border-radius:999px;font-size:.82rem;font-weight:600}
+          .sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+        `) + '<span class="chip" role="status"><span class="icon" aria-hidden="true"></span><span class="sr"></span><slot></slot></span>';
+      }
+      this.$('.chip').style.color = color;
+      this.$('.chip').style.background = bg;
+      this.$('.icon').textContent = icon;
+      this.$('.sr').textContent = label + ': ';
+    }
+  }
+
   /* ── Register all elements ──────────────────────────────────────────── */
   const DEFS = [
     ['upao-card',        UPAOCard],
@@ -757,6 +911,14 @@
     ['upao-drag-item',   UPAODragItem],
     ['upao-drop-zone',   UPAODropZone],
     ['upao-complete',    UPAOComplete],
+    ['upao-header',      UPAOHeader],
+    ['upao-objective',   UPAOObjective],
+    ['upao-steps',       UPAOSteps],
+    ['upao-example',     UPAOExample],
+    ['upao-figure',      UPAOFigure],
+    ['upao-question',    UPAOQuestion],
+    ['upao-summary',     UPAOSummary],
+    ['upao-status',      UPAOStatus],
   ];
   DEFS.forEach(([name, cls]) => {
     if (!G.customElements.get(name)) G.customElements.define(name, cls);

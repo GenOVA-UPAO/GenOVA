@@ -15,7 +15,7 @@ from generation.infrastructure.regen_persist import _build_and_persist, _mark_ov
 from generation.regen.regen_edit import regen_phases_parallel
 from generation.regen.regen_jobs import _regen_jobs, _regen_jobs_lock
 from models import Ova, OvaPhase, OvaVersion
-from ova import ensure_version_exists, get_active_version
+from ova import ensure_version_exists, get_active_version, next_version_number
 
 logger = structlog.get_logger(__name__)
 
@@ -57,7 +57,12 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
             .all()
         )
 
-        new_version_number = current_version.version_number + 1
+        existing_numbers = tuple(
+            db.execute(select(OvaVersion.version_number).where(OvaVersion.ova_id == ova_id))
+            .scalars()
+            .all()
+        )
+        new_version_number = next_version_number(existing_numbers)
         current_version.is_active = False
 
         new_version = OvaVersion(

@@ -88,15 +88,14 @@ def _ls_extra(client) -> dict:
     return {"langsmith_extra": {"parent": parent}} if parent is not None else {}
 
 
-def _chat(
+def _chat_once(
     provider: str,
     model_id: str,
-    prompt: str,
+    msgs: list[dict],
     max_tokens: int,
     extra: dict,
     timeout: float | None = None,
-) -> str:
-    msgs = [{"role": "user", "content": prompt}]
+) -> tuple[str, str | None]:
     key = _get_provider_key(provider)
     if provider == "groq":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
@@ -123,15 +122,54 @@ def _chat(
         )
     else:
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
-        client = traced_openai(openrouter_client.with_options(**opts) if opts else openrouter_client)
+        client = traced_openai(
+            openrouter_client.with_options(**opts) if opts else openrouter_client
+        )
         call_extra = with_model_thinking(provider, model_id, extra, max_tokens)
         r = client.chat.completions.create(
             model=model_id, messages=msgs, max_tokens=max_tokens, **call_extra, **_ls_extra(client)
         )
-    msg = r.choices[0].message if r.choices else None
-    content = (msg.content if msg else None) or None
+    choice = r.choices[0] if r.choices else None
+    content = (choice.message.content if choice and choice.message else None) or None
     if not content or not content.strip():
         raise EmptyContentError(f"Empty content from {provider}/{model_id}")
+    return content, getattr(choice, "finish_reason", None)
+
+
+# Continuación de salidas cortadas por el tope de tokens. Un recurso HTML largo
+# (datos + JS) superaba el máximo de salida efectivo del proveedor y llegaba
+# truncado a mitad del <script>: el recurso se veía bien pero no funcionaba.
+_MAX_CONTINUATIONS = 2
+_CONTINUE_PROMPT = (
+    "Tu respuesta se cortó por el límite de longitud. Continúa EXACTAMENTE desde el "
+    "último carácter que escribiste, sin repetir nada y sin comentarios ni markdown."
+)
+
+
+def _chat(
+    provider: str,
+    model_id: str,
+    prompt: str,
+    max_tokens: int,
+    extra: dict,
+    timeout: float | None = None,
+) -> str:
+    msgs = [{"role": "user", "content": prompt}]
+    content, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout)
+    for _ in range(_MAX_CONTINUATIONS):
+        if finish != "length":
+            break
+        logger.info("llm output truncated; continuing", provider=provider, model_id=model_id)
+        msgs = [
+            *msgs,
+            {"role": "assistant", "content": content},
+            {"role": "user", "content": _CONTINUE_PROMPT},
+        ]
+        try:
+            more, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout)
+        except EmptyContentError:
+            break
+        content += more
     return content
 
 
@@ -185,9 +223,7 @@ def generar_texto(
             # Reserva margen para el siguiente modelo: el intento actual no
             # puede gastar el presupuesto entero si queda cadena por probar.
             reserve = _FALLBACK_MARGIN_S if i < len(chain) - 1 else 0.0
-            attempt_timeout = min(
-                timeout or _LLM_TIMEOUT_S, max(left - reserve, _MIN_ATTEMPT_S)
-            )
+            attempt_timeout = min(timeout or _LLM_TIMEOUT_S, max(left - reserve, _MIN_ATTEMPT_S))
         if i > 0:
             backoff = _retry_delay(last_err, prev_provider, proveedor, i)
             logger.info(
@@ -306,5 +342,3 @@ def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
         timeout=_LLM_TIMEOUT_S,
     )
     return response.choices[0].message.content
-
-

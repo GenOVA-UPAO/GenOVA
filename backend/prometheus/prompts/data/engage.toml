@@ -92,58 +92,51 @@ template = '''
 [simulador]
 defaults = { num_controls = 1 }
 template = '''
-[ROL] Desarrollador front-end de simuladores educativos interactivos.
+[ROL] Diseñador de simuladores intuitivos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Un simulador HTML5 autocontenido que provoque curiosidad: el estudiante manipula algo y ve el efecto, descubriendo la intuición central de "${concept}". Sin menciones a fases 5E ni jerga interna en el HTML visible.
-[TAREA] Diseña la mecánica interactiva más apropiada para "${concept}" (slider, lienzo clicable, arrastre, botones...). Debe incluir: ${num_controls} control(es) manipulable(s), una visualización que reacciona en tiempo real (SVG o canvas), retroalimentación visual del estado, y un texto breve que interpreta lo que ocurre. Un botón de cierre ("¿Qué descubriste?") visible tras explorar.
-[REQUISITOS] HTML5 autocontenido con todo CSS y JS embebido. Mínimo 280 líneas de calidad sin secciones vacías. Paleta oscura elegante (educativa oscura). El control manipulable debe responder en <50ms a la interacción.
+[TAREA] ${num_controls} controles propios con respuesta <50 ms para descubrir causa y efecto en "${concept}".
+[COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje observable; upao-figure con al menos un diagrama propio reactivo; upao-example con ejemplo trabajado de manipulación; upao-status para estado y retroalimentación que explique el porqué; upao-summary para cierre que consolide lo descubierto. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al pulsar el botón de cierre.
+[SCORM] ${scorm}. upao-complete en el cierre, desbloqueado tras explorar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html]
 estilo_default = 'página educativa moderna e interactiva'
 template = '''
-[ROL] Desarrollador front-end experto en recursos educativos interactivos.
+[ROL] Desarrollador educativo.
 [CURSO] ${curso}
-[OBJETIVO] Construir un recurso HTML5 interactivo sobre "${concept}" que enganche al estudiante. El HTML visible no debe mencionar fases 5E (ENGAGE/EXPLORE/…) ni "FASE ·".
-[DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
+[OBJETIVO] Despertar curiosidad por "${concept}".
+[DATOS] Conserva estos datos; deriva de ellos el apoyo didáctico, sin añadir hechos:
 ${data_json}
-[VIDEO] Si los datos contienen "prompt_video", el recurso es un storyboard, no un video generado. Presenta guion_visual, narracion_voz y el prompt copiable; nunca incluyas <video>, iframe, controles de reproductor ni texto como "Simulacion de video".
+[VIDEO] Con "prompt_video": un storyboard, no un video generado. Guion, narración y prompt copiable; sin <video>, iframe, reproductor ni "Simulacion de video".
 [FORMATO] ${estilo}
-[REQUISITOS]
-- HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>.
-- Mínimo 280 líneas de calidad. Cada elemento debe ser funcional (navegación, botones, feedback, puntuación).
-- Paleta apropiada al tipo: cómic (clara vibrante), noticia (clara periodística), escape-room (oscura dramática),
-  podcast (UPAO: fondo claro #F7F9FC, primario #0A3D91, acento #F47A20), timeline (clara académica), juegos (clara con acentos).
+[COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje; upao-figure con al menos una figura/diagrama propio del contenido; upao-example para ejemplo trabajado cuando aplique; retroalimentación que explique el porqué; upao-summary para cierre que consolide. CSS/JS propio solo para la mecánica, sin redefinir tokens.
 ${ds}
-[IMAGENES] Si un item de los datos incluye un campo "image_placeholder" (por ejemplo "__IMG_1__"), úsalo literalmente como src del tag <img> correspondiente (por ejemplo: <img src="__IMG_1__" alt="...">). Si un item NO tiene "image_placeholder", NO inventes uno y NO incluyas <img> para ese item — renderiza solo texto. El servidor reemplaza los placeholders válidos por imágenes reales al renderizar.
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la actividad principal.
+[IMAGENES] Usa image_placeholder literalmente como src con alt; sin él, no inventes img ni placeholders: dibuja SVG propio.
+[SCORM] ${scorm}. Desbloquea upao-complete al completar la actividad.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html.estilos]
-1 = 'galería deslizable tipo cómic: tarjetas grandes de colores, bocadillos CSS, navegación prev/next con indicador de progreso'
-2 = 'storyboard vertical con marcadores de tiempo, narración en bloque de cita, prompt de video en una caja copiable'
-3 = 'reproductor de podcast con paleta UPAO (fondo #F7F9FC, textos #0A3D91, acentos #F47A20), visualizador de onda CSS animado y el monólogo en texto grande'
-4 = 'minijuego con cronómetro visual, panel de items cliqueables, puntuación dinámica y pantalla de resultados'
-5 = 'tarjeta periodística: caso narrativo, un botón de votación por cada opción del JSON, revelación animada de la reflexión post-voto'
-6 = 'periódico digital: titular bold, columna de noticia, pregunta de cierre resaltada, botón Continuar al final'
-7 = 'interfaz ejecutiva oscura: escenario narrativo, un botón por cada decisión del JSON, revelación animada del feedback'
-8 = 'timeline horizontal con un nodo clicable por cada hito del JSON que expande su información; se completa al abrirlos todos'
-9 = 'escape room: fondo oscuro, un candado SVG por cada acertijo del JSON que se abren progresivamente, un escenario por pantalla, botones A/B'
+1 = 'Cómic: upao-comic-panel, upao-nav, upao-progress. Relacionar analogía y concepto mediante esquema; explicar su límite al cierre.'
+2 = 'Storyboard: upao-steps con ol/li temporal, blockquote y copia del prompt. Interpretar metáfora mediante esquema; justificarla al cierre.'
+3 = 'Podcast: upao-podcast si hay audio, transcripción siempre. Explicar la analogía con esquema y ejemplo; reflexión justificada al cierre.'
+4 = 'Minijuego: upao-timer, upao-question, upao-choice, upao-score, upao-progress. Detectar patrón ilustrado; ronda resuelta previa; justificar aciertos y errores, repasar al cierre.'
+5 = 'Dilema: botones nativos de voto y upao-reveal posterior, sin correcto/incorrecto. Diagrama de consecuencias para argumentar; cierre con tensiones éticas razonadas.'
+6 = 'Noticia: analizar impacto con esquema causal y ejemplo del caso; upao-reveal explica la pregunta final y cierre con transferencia.'
+7 = 'Roles: botones de decisión y upao-reveal por opción. Diagrama de alternativas para anticipar efectos; justificar sin revelar solución; cierre reflexivo.'
+8 = 'Timeline: upao-node por hito, upao-nav, upao-progress; abrir todos. Esquema de evolución para relacionar hitos, ejemplo causal y síntesis de legado.'
+9 = 'Escape: candados SVG propios, upao-question, upao-choice, upao-status y upao-nav. Resolver lógica encadenada; ejemplo ajeno al acertijo, pistas causales y cierre con paralelismo.'
 
 # F1.3 single-step: recursos de texto simple van directo a HTML (1 llamada LLM).
 [codigo.6]
 defaults = { body_words = 90 }
 template = '''
-[ROL] Desarrollador front-end de piezas periodisticas educativas.
+[ROL] Periodista educativo.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Noticia ficticia plausible sobre un impacto real de "${concept}" como pagina HTML interactiva.
-[TAREA] Redacta e implementa en la MISMA pagina: titular <=12 palabras; subtitulo <=22 palabras; cuerpo de ${body_words} palabras (organizacion ficticia, caso concreto); pregunta de cierre <=12 palabras resaltada. Estilo periodico digital: titular bold, columna de noticia, boton "Continuar" al final que marca la actividad completada.
-[RESTRICCIONES] Sin terminos ultra-tecnicos. Tono de urgencia informativa que genera admiracion, no miedo.
-[REQUISITOS] HTML5+JS autocontenido y responsive.
+[TAREA] Noticia ficticia plausible: titular <=12 palabras, subtítulo <=22, cuerpo ${body_words} palabras, organización ficticia y pregunta final <=12. Admiración sin miedo ni jerga.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de analizar impacto; upao-figure: al menos un diagrama propio causal; upao-example: ejemplo trabajado del caso; upao-reveal: retroalimentación que explique el porqué; upao-summary: cierre que consolide impacto y límites. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. El boton "Continuar" llama _scormComplete().
+[SCORM] ${scorm}. upao-complete con label="Continuar".
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''

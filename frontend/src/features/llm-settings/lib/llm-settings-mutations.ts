@@ -55,10 +55,12 @@ export function setFallbackIn(
   s: SettingsMap | null,
   tipo: string,
   index: number,
-  provider: string,
-  modelId: string,
+  entry: ModelEntry,
 ): SettingsMap {
-  const fbs = setAt(getFallbacks(s, tipo), index, { provider, model_id: modelId });
+  const fbs = setAt(getFallbacks(s, tipo), index, {
+    provider: entry.provider,
+    model_id: entry.model_id,
+  });
   return withFallbacks(s, tipo, fbs);
 }
 

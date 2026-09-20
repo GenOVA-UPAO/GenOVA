@@ -39,3 +39,5 @@ python-pptx==1.0.2
 filetype==1.2.0
 # 2FA
 pyotp==2.10.0
+# Validación de sintaxis JS de los OVAs generados (motor QuickJS)
+quickjs==1.19.4

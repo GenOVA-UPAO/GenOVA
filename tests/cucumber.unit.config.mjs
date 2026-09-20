@@ -10,6 +10,8 @@ export default {
     // actual: validaciones puras (HU-001) + AuthExpiredBus (BU-001) abajo; el
     // flujo completo con cookie httpOnly corre en features/e2e/ (Playwright) y
     // el contrato del backend en backend/tests/step_defs/test_auth_steps.py.
+    // Ya no hay filtro por tags: los escenarios @pending-en022 describían
+    // comportamiento que el React sustituyó y se han retirado.
     join(__dir, 'features/auth/HU-001_validaciones-unit.feature'),
     join(__dir, 'features/auth/BU-001_expiracion-bus-unit.feature'),
     join(__dir, 'features/ova/HU-022_recursos-parciales.feature'),
@@ -30,6 +32,5 @@ export default {
     // feature verbatim asertaba contenido de archivos React ya eliminados.
   ],
   require: [join(__dir, 'steps/unit/**/*.js')],
-  tags: 'not @pending-en022',
   worldParameters: {},
 }

@@ -1,12 +1,9 @@
-import { Injectable } from "@angular/core";
-
-import { apiJson } from "../lib/http";
+import { apiJson } from "@/core/lib/http";
 
 /**
  * Cliente HTTP de jobs de generación de OVA. Vive en core porque lo consumen
- * ova-workspace (creación/edición) y ova-library (polling de progreso).
+ * ova-workspace (creación/edición) y ova-library (progreso de generación).
  */
-@Injectable({ providedIn: "root" })
 export class OvaJobsApiService {
   getJobStatus(jobId: string): Promise<unknown> {
     return apiJson(`/api/jobs/${jobId}`);
@@ -22,10 +19,7 @@ export class OvaJobsApiService {
 
   resumeJob(jobId: string, resourceIds?: string[]): Promise<unknown> {
     const body = resourceIds && resourceIds.length > 0 ? { resource_ids: resourceIds } : {};
-    return apiJson(`/api/jobs/${jobId}/resume`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    return apiJson(`/api/jobs/${jobId}/resume`, { method: "POST", body: JSON.stringify(body) });
   }
 
   cancelJob(jobId: string): Promise<{ job_id: string; status: string }> {
@@ -34,3 +28,5 @@ export class OvaJobsApiService {
     });
   }
 }
+
+export const ovaJobsApi = new OvaJobsApiService();

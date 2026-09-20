@@ -6,6 +6,7 @@ export default defineConfig({
   testDir: './a11y',
   timeout: 60000,
   workers: 1,
+  globalSetup: './a11y/global-setup.js',
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:4200',
     screenshot: 'only-on-failure',
@@ -15,7 +16,6 @@ export default defineConfig({
     command: 'pnpm --filter frontend dev',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env.CI,
-    env: { PORT: '4200' },
     timeout: 120000,
   },
 })

@@ -2,7 +2,9 @@
 import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
-const { When, Then } = createBdd()
+import { test } from './fixtures.js'
+
+const { When, Then } = createBdd(test)
 
 When('mi sesión expira', async ({ page }) => {
   // La sesión vive en la cookie httpOnly genova_token; el cache SWR del usuario

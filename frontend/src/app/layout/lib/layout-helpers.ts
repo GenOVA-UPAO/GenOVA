@@ -1,7 +1,8 @@
 import type { MeUser } from "@/core/auth/auth.service";
+import { firstNonBlank } from "@/core/lib/text";
 
 export function userInitials(user: MeUser | null): string {
-  const name = user?.full_name || user?.email || "Usuario";
+  const name = firstNonBlank(user?.full_name, user?.email) ?? "Usuario";
   return name
     .split(/\s|@/)
     .filter(Boolean)
