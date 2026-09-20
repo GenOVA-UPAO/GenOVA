@@ -252,6 +252,12 @@ nul
 tests/.features-gen/
 tests/playwright-report/
 tests/playwright-report-a11y/
+# Informes generados por tests/run-lighthouse.mjs (se recrean con pnpm lighthouse)
+tests/lighthouse-reports/*.report.html
+tests/lighthouse-reports/*.report.json
+tests/lighthouse-reports/summary.json
+tests/lighthouse-reports/summary.md
+
 
 *.zip
 

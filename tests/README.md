@@ -8,6 +8,7 @@
 | Unit BDD (cucumber-js) | `pnpm test:unit` | Steps unit puros (validadores, view-models, libs) contra `tests/steps/unit/**`. |
 | E2E (playwright-bdd) | `pnpm test:e2e` | `tests/features/e2e/*.feature`, `features/auth/HU-008_login.feature` y `features/roles/HU-018_crear-rol.feature`. |
 | A11y (axe-core) | `pnpm test:a11y` | Auditoría WCAG 2.0 A/AA; requiere el mismo backend/frontend que e2e. |
+| Lighthouse | `pnpm test:lighthouse` | Rendimiento (FCP/LCP/TBT/CLS) por ruta en móvil y escritorio, sobre build de producción con API stub. No necesita backend. |
 | Carga (JMeter/Locust) | ver `tests/load/` | Pruebas de carga contra un entorno propio. |
 | Smoke manual | `tests/playwright-smoke/SMOKE_TESTS.md` | Guion manual con playwright-cli contra develop/producción. |
 
@@ -86,6 +87,40 @@ set "E2E_EXTERNAL=1" & set "BASE_URL=http://localhost:4300" & set "E2E_API_ORIGI
 
 > Ojo: en un `.cmd`/`.bat`, invoca `pnpm` con `call` (es otro `.cmd`) y evita pasar
 > argumentos por `%*` si vienen de WSL; usa variables de entorno o un script por paso.
+
+### Lighthouse (rendimiento por página)
+
+`pnpm test:lighthouse` audita rutas del frontend en **build de producción**
+(`pnpm --filter frontend build` → `frontend/dist`) servidas por el propio runner
+con un server estático que replica el deploy real: gzip como nginx, caché
+inmutable en `/assets` y fallback SPA. El API está **stubeado** (`/api/auth/me`,
+`/api/ovas`, `/api/ovas/papelera/count`, `POST /api/auth/login`; el resto del API
+responde 404), así que las páginas autenticadas no dependen del backend. La
+"sesión" es la cookie de stub `genova_lh_auth=1`, que el runner envía solo en las
+rutas autenticadas vía `--extra-headers`: `/login` se audita como invitado y
+`/dashboard` como usuario con sesión (rol administrador).
+
+```bash
+cd tests
+pnpm test:lighthouse                      # /login y /dashboard (móvil + escritorio)
+pnpm test:lighthouse /mis-ovas /profile   # cualquier ruta del router
+node run-lighthouse.mjs --no-build        # reutiliza frontend/dist sin recompilar
+```
+
+- Cada ruta se audita dos veces: móvil (throttling por defecto de Lighthouse) y
+  escritorio (`--preset=desktop`). Las rutas de auth/explore se auditan sin
+  cookie; el resto se consideran autenticadas.
+- Salida en `tests/lighthouse-reports/`: `<ruta>-<mobile|desktop>.report.html`
+  y `.report.json` por cada combinación, `extra-headers.json` (cookie de stub) y
+  el resumen `summary.json` / `summary.md` con la tabla de métricas.
+- Requiere Chrome/Edge local. El runner detecta Chrome/Edge en sus rutas
+  estándar (Windows/macOS) y, en WSL/Linux, el Chromium de Playwright
+  (`~/.cache/ms-playwright/chromium-*/…`); si nada sirve, apunta `CHROME_PATH`.
+  Sin Chrome en WSL (caso habitual), corre por Windows:
+  `cmd.exe /c "node tests\run-lighthouse.mjs"`.
+- El server escucha en **:4201** (no pisa el `:4200` del dev server/e2e);
+  cambiable con `GENOVA_LH_PORT`. Si el puerto está ocupado el runner falla
+  avisando, para no auditar por error otro server.
 
 ### Verificación del backend
 
