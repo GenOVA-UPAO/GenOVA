@@ -2,6 +2,50 @@
 
 Custom Elements disponibles en todos los OVAs con tema UPAO.
 El script ya está inyectado — úsalos directamente en el HTML.
+No escribas su CSS/JS. Atributos = texto plano; contenido rico = HTML dentro del elemento.
+Los componentes heredan los tokens --primary, --font-body, etc. de la hoja base.
+Un solo h1: elige `upao-header` O `upao-card title`, no ambos.
+
+## upao-header
+Cabecera única del recurso (h1); eyebrow indica tipo de actividad, nunca fase 5E.
+`<upao-header eyebrow="SIMULADOR" title="Ley de Ohm"><p>Explora cómo cambia la corriente.</p></upao-header>`
+
+## upao-objective
+Objetivo inicial, una frase observable. Encabezado h2 automático.
+`<upao-objective>Al terminar podrás calcular I a partir de V y R.</upao-objective>`
+
+## upao-steps
+Secuencia visible, siempre con `ol/li` (conserva semántica de lista). Para pasos desplegables usa upao-node.
+`<upao-steps><ol><li>Reduce el paralelo.</li><li>Suma la resistencia en serie.</li></ol></upao-steps>`
+
+## upao-example
+Ejemplo resuelto ANTES de la práctica. `title` opcional (h2); muestra razonamiento, no solo respuesta.
+`<upao-example title="Ejemplo trabajado"><upao-steps><ol><li>V = 12 V, R = 6 Ω.</li><li>I = V/R = 2 A.</li></ol></upao-steps></upao-example>`
+
+## upao-figure
+Envuelve una imagen o SVG propio con epígrafe `caption`. SVG con title/desc o img con alt obligatorio.
+`<upao-figure caption="Figura 1. Circuito de 12 V."><img src="__IMG_1__" alt="Fuente de 12 V conectada a una resistencia de 6 Ω"></upao-figure>`
+
+## upao-question
+Una pregunta por fieldset, enunciado `prompt`, `number` opcional. Usa upao-choice dentro y group único por pregunta.
+`<upao-question number="1" prompt="¿Qué corriente circula?"><upao-choice group="q1" value="A" correct="true" feedback="I = 12/6 = 2 A.">2 A</upao-choice><upao-choice group="q1" value="B" correct="false" feedback="Divide V entre R; no los multipliques.">72 A</upao-choice></upao-question>`
+Una sola respuesta por grupo; evento upao-choice-selected. El recurso decide puntuación y avance.
+
+## upao-summary
+Cierre: síntesis o transferencia. `title` opcional (h2); slot `actions` para score, progreso o finalizar.
+`<upao-summary>En serie se conserva la corriente.<upao-score slot="actions" id="score" max="3"></upao-score><upao-complete slot="actions" locked></upao-complete></upao-summary>`
+Actualizar score/unlock desde la lógica del recurso; el contenedor no completa SCORM por sí solo.
+
+## upao-status
+Chip de estado con texto + icono, anunciado al cambiar. `state`: info (default), success, warning, error.
+`<upao-status state="success">Paso 2 completado</upao-status>`
+Actualiza `state` con setAttribute y el texto con textContent; no representa un botón.
+
+## HTML nativo ya estilizado
+Tablas: caption + th scope; envuelve tablas anchas para scroll local accesible:
+`<div class="ova-table-scroll" role="region" aria-label="Mediciones" tabindex="0"><table><caption>Mediciones (V)</caption><tr><th scope="col">Entrada</th><th scope="col">Salida</th></tr><tr><td>12</td><td>6</td></tr></table></div>`
+Listas ul/ol, citas blockquote/cite, código pre/code y details/summary no necesitan componentes nuevos.
+`.ova-container` limita ancho; `.ova-stack` separa bloques; `.ova-card` agrupa secciones sin otro h1.
 
 ## upao-card
 Contenedor principal con cabecera UPAO.
@@ -32,8 +76,9 @@ Opción de respuesta con feedback correcto/incorrecto.
   Machine Learning es programación manual
 </upao-choice>
 ```
-Attrs: `value` `correct` `feedback` `group`
+Attrs: `value` `correct` `feedback` `group` `disabled` (booleano inicial)
 Events: `upao-choice-selected` → `{ value, correct, group }`
+La selección bloquea su grupo; feedback explica por qué. Operable con Enter/Espacio.
 
 ## upao-reveal
 Contenido oculto que se revela al hacer clic.
@@ -130,42 +175,3 @@ Botón de finalización SCORM.
 Attrs: `label` `locked` `require-progress`
 Methods: `.unlock()`
 Events: `upao-completed` + llama `_scormComplete()` automáticamente
-
----
-
-## Ejemplo completo: Quiz de 3 preguntas
-
-```html
-<!DOCTYPE html><html lang="es"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Quiz · Machine Learning</title>
-</head><body style="background:#F7F9FC;padding:20px;max-width:700px;margin:0 auto">
-
-<upao-card eyebrow="QUIZ" title="Machine Learning" icon="🤖">
-  <upao-progress id="prog" current="0" total="3" show-fraction label="Respondidas"></upao-progress>
-
-  <div id="q1" style="margin-top:20px">
-    <p style="font-weight:600;margin-bottom:10px">1. ¿Qué es Machine Learning?</p>
-    <upao-choice value="A" correct="true" feedback="¡Correcto! Es aprendizaje automático." group="q1">Aprendizaje automático</upao-choice>
-    <upao-choice value="B" correct="false" feedback="Incorrecto. No es programación manual." group="q1" style="margin-top:8px">Programación manual</upao-choice>
-  </div>
-
-  <upao-reveal label="Ver siguiente pregunta" style="margin-top:16px">
-    <p style="font-weight:600;margin-bottom:10px">2. ¿Qué tipo de aprendizaje usa etiquetas?</p>
-    <upao-choice value="A" correct="true" feedback="¡Sí! Supervisado usa datos etiquetados." group="q2">Supervisado</upao-choice>
-    <upao-choice value="B" correct="false" feedback="No supervisado NO usa etiquetas." group="q2" style="margin-top:8px">No supervisado</upao-choice>
-  </upao-reveal>
-
-  <div style="margin-top:20px">
-    <upao-complete label="Finalizar Quiz →" locked require-progress="3"></upao-complete>
-  </div>
-</upao-card>
-
-<script>
-document.addEventListener('upao-choice-selected', () => {
-  document.getElementById('prog').increment();
-});
-</script>
-<!-- SCORM + upao_components.js se inyectan automáticamente -->
-</body></html>
-```

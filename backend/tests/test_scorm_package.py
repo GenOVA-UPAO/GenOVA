@@ -87,3 +87,76 @@ def test_full_document_resource_passes_through():
     z = ZipFile(BytesIO(build_scorm_zip_bytes(phases=phases)))
     res = z.read("resources/recurso_1.html").decode("utf-8")
     assert res == doc
+
+
+def test_manifest_declares_every_packaged_file():
+    """/imsmanifest.xml debe declarar todos los archivos del zip (xapi.js y
+    cmi5.xml se olvidaban: los LMS estrictos no los publican)."""
+    import xml.etree.ElementTree as ET
+
+    z = _zip()
+    manifest = ET.fromstring(z.read("imsmanifest.xml"))  # noqa: S314 — trusted
+    ns = {"cp": "http://www.imsproject.org/xsd/imscp_rootv1p1p2"}
+    declared = {el.get("href") for el in manifest.iter(f'{{{ns["cp"]}}}file')}
+    packaged = set(z.namelist()) - {"imsmanifest.xml"}
+    assert packaged == declared
+
+
+def test_manifest_escapes_titles_with_xml_specials():
+    import xml.etree.ElementTree as ET
+
+    title = "Ciencias & Tecnología <2026>"
+    xml = build_scorm_zip_bytes(course_title=title, module_title="Módulo & A")
+    manifest = ZipFile(BytesIO(xml)).read("imsmanifest.xml").decode("utf-8")
+    root = ET.fromstring(manifest)  # noqa: S314 — trusted
+    titles = [el.text for el in root.iter() if el.tag.endswith("title")]
+    assert title in titles
+    assert "&amp;" in manifest
+
+
+def test_index_and_nav_escape_user_titles():
+    title = "Ciencias & Tecnología <2026>"
+    phases = [{"type": "engage", "order": 1, "content": "x", "title": "A & B <C>"}]
+    z = ZipFile(BytesIO(build_scorm_zip_bytes(course_title=title, phases=phases)))
+    index = z.read("index.html").decode("utf-8")
+    assert "Ciencias &amp; Tecnología &lt;2026&gt;" in index
+    assert "A &amp; B &lt;C&gt;" in index
+    assert "<title>Ciencias & Tecnología <2026></title>" not in index
+
+
+def test_embedded_document_in_prose_is_extracted():
+    doc = "<!doctype html><html lang='es'><body><h1>Quiz</h1></body></html>"
+    content = f"Here is the quiz:\n```html\n{doc}\n```\nSome closing notes."
+    phases = [{"type": "evaluate", "order": 1, "content": content}]
+    z = ZipFile(BytesIO(build_scorm_zip_bytes(phases=phases)))
+    res = z.read("resources/recurso_1.html").decode("utf-8")
+    assert res == doc
+    assert "Here is the quiz" not in res
+
+
+def test_declared_hrefs_are_relative_and_present_in_zip():
+    import xml.etree.ElementTree as ET
+
+    z = _zip()
+    root = ET.fromstring(z.read("imsmanifest.xml"))  # noqa: S314 — trusted
+    names = set(z.namelist())
+    for el in root.iter():
+        href = el.get("href")
+        if not href:
+            continue
+        assert not href.startswith(("/", "http://", "https://")), href
+        assert href in names, f"referencia rota en el manifiesto: {href}"
+
+
+def test_scorm_js_survives_cross_origin_frames():
+    """La búsqueda del API no debe lanzar SecurityError con un padre en otro
+    origen: el shell seguiría funcionando en modo vista previa."""
+    js = _zip().read("resources/scorm.js").decode("utf-8")
+    assert "catch (error)" in js
+    assert "current.parent === current" in js
+
+
+def test_single_resource_ova_does_not_autocomplete_on_open():
+    js = _zip().read("resources/app.js").decode("utf-8")
+    assert "tabs.length > 1" in js
+
