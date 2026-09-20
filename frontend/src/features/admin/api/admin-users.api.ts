@@ -1,12 +1,21 @@
 import { apiJson } from "@/core/lib/http";
 
-import type { AdminUser, UserEditPayload, UsersPage } from "../lib/types";
+import { type AdminUser, ALL_ROLE_FILTER, type UserEditPayload, type UsersListParams, type UsersPage } from "../lib/types";
 
 const json = (body: unknown) => JSON.stringify(body);
+const SEARCH_MAX_LENGTH = 100;
 
-export async function fetchUsers(page: number): Promise<UsersPage> {
+export async function fetchUsers({
+  page,
+  search = "",
+  roleId = ALL_ROLE_FILTER,
+}: UsersListParams): Promise<UsersPage> {
+  const qs = new URLSearchParams({ page: String(page), limit: "10" });
+  const term = search.slice(0, SEARCH_MAX_LENGTH);
+  if (term !== "") qs.set("search", term);
+  if (roleId !== ALL_ROLE_FILTER) qs.set("role_id", roleId);
   const data = await apiJson<Partial<UsersPage>>(
-    `/api/users?page=${String(page)}&limit=10`,
+    `/api/users?${qs.toString()}`,
     {},
     { fallbackMsg: "No se pudo cargar la lista de usuarios." },
   );

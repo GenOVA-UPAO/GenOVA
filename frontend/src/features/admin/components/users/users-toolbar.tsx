@@ -1,6 +1,6 @@
 import { SearchInput } from "@/core/components/search-input";
 
-import type { Role } from "../../lib/types";
+import { ALL_ROLE_FILTER, type Role } from "../../lib/types";
 
 interface UsersToolbarProps {
   search: string;
@@ -35,9 +35,9 @@ export function UsersToolbar({
         aria-label="Filtrar usuarios por rol"
         className="cursor-pointer rounded-2xl border border-border/50 bg-card/50 px-4 py-2.5 text-sm font-medium shadow-sm backdrop-blur-md transition-colors outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring/50"
       >
-        <option value="all">Todos los roles</option>
+        <option value={ALL_ROLE_FILTER}>Todos los roles</option>
         {roles.map((role) => (
-          <option key={role.id} value={role.name?.toLowerCase() ?? ""}>
+          <option key={role.id} value={role.id}>
             {role.name?.replaceAll("_", " ") ?? ""}
           </option>
         ))}

@@ -1,13 +1,15 @@
 """Admin endpoint: paginated user listing."""
 
-from fastapi import APIRouter, Depends
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Query
 
 from auth.dependencies import require_permission
 from core.pagination import page_meta
 from models import User
 from users.application.dto import ListUsersInput
 from users.container import UsersUseCases, build_users
-from users.domain.admin import AdminUserSummary
+from users.domain.admin import SEARCH_MAX_LENGTH, AdminUserSummary
 
 router = APIRouter(tags=["Admin · Usuarios"])
 
@@ -30,17 +32,16 @@ def _serialize_user(u: AdminUserSummary) -> dict:
 
 @router.get("", summary="Listar los usuarios de la plataforma")
 def get_users(
-    page: int = 1,
-    limit: int = 10,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=100),
+    search: str = Query(default="", max_length=SEARCH_MAX_LENGTH),
+    role_id: UUID | None = Query(default=None),
     _: User = Depends(require_permission("manage_users")),
     users: UsersUseCases = Depends(build_users),
 ):
-    if page < 1:
-        page = 1
-    if limit < 1 or limit > 100:
-        limit = 10
-
-    result = users.list_users.execute(ListUsersInput(page=page, limit=limit))
+    result = users.list_users.execute(
+        ListUsersInput(page=page, limit=limit, search=search, role_id=role_id)
+    )
 
     return {
         **page_meta(result.total_items, page, limit),

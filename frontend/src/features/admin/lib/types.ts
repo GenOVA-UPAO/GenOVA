@@ -26,6 +26,14 @@ export interface UsersPage {
   total_items: number;
 }
 
+export const ALL_ROLE_FILTER = "all";
+
+export interface UsersListParams {
+  page: number;
+  search?: string;
+  roleId?: string;
+}
+
 export interface UserEditPayload {
   full_name: string;
   email: string;

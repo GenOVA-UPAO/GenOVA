@@ -50,6 +50,8 @@ class SaveResourceConfigsInput:
 class ListUsersInput:
     page: int
     limit: int
+    search: str = ""
+    role_id: UUID | None = None
 
 
 @dataclass(frozen=True, slots=True)

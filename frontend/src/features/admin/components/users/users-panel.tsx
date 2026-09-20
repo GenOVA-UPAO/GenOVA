@@ -14,9 +14,10 @@ interface UsersPanelProps {
   isCurrentUserAdmin: boolean;
   updatingUserId: string;
   searchQuery: string;
+  isFiltering: boolean;
   handlers: UsersHandlers;
   onRetry: () => void;
-  onClearSearch: () => void;
+  onClearFilters: () => void;
 }
 
 export function UsersPanel({
@@ -28,9 +29,10 @@ export function UsersPanel({
   isCurrentUserAdmin,
   updatingUserId,
   searchQuery,
+  isFiltering,
   handlers,
   onRetry,
-  onClearSearch,
+  onClearFilters,
 }: Readonly<UsersPanelProps>) {
   let content = (
     <UsersTable
@@ -49,7 +51,7 @@ export function UsersPanel({
   } else if (error !== "") {
     content = <QueryErrorState title="No se pudieron cargar los usuarios" onRetry={onRetry} />;
   } else if (users.length === 0) {
-    content = <UsersEmpty searchQuery={searchQuery} onClearSearch={onClearSearch} />;
+    content = <UsersEmpty isFiltering={isFiltering} onClearFilters={onClearFilters} />;
   }
 
   return (

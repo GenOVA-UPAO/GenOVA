@@ -56,15 +56,3 @@ export function usersPageSubtitle(
   if (hasError) return "No se pudo obtener el listado";
   return `${String(totalItems)} usuarios registrados en la plataforma`;
 }
-
-export function filterUsers(users: AdminUser[], search: string, roleFilter: string): AdminUser[] {
-  const term = search.toLowerCase();
-  return users.filter((user) => {
-    const roleName = user.role?.name.toLowerCase();
-    const matchRole = roleFilter === "all" || roleName === roleFilter;
-    const matchSearch =
-      (user.full_name ?? "").toLowerCase().includes(term) ||
-      user.email.toLowerCase().includes(term);
-    return matchRole && matchSearch;
-  });
-}

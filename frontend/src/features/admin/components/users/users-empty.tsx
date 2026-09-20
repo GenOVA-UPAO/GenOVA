@@ -2,21 +2,21 @@ import { EmptyState } from "@/core/components/empty-state";
 import { Button } from "@/core/components/ui/button";
 
 interface UsersEmptyProps {
-  searchQuery: string;
-  onClearSearch: () => void;
+  isFiltering: boolean;
+  onClearFilters: () => void;
 }
 
-/** Vacío de usuarios: sin registros o sin resultados de búsqueda. */
-export function UsersEmpty({ searchQuery, onClearSearch }: Readonly<UsersEmptyProps>) {
-  if (searchQuery !== "") {
+/** Vacío de usuarios: sin registros o sin coincidencias para el criterio. */
+export function UsersEmpty({ isFiltering, onClearFilters }: Readonly<UsersEmptyProps>) {
+  if (isFiltering) {
     return (
       <EmptyState
         className="border-0 bg-transparent"
         icon="magnifying-glass-minus"
         title="Sin resultados"
-        description={`No hay usuarios que coincidan con «${searchQuery}».`}
+        description="No hay coincidencias para ese criterio."
         action={
-          <Button variant="outline" onClick={onClearSearch}>
+          <Button variant="outline" onClick={onClearFilters}>
             Limpiar búsqueda
           </Button>
         }

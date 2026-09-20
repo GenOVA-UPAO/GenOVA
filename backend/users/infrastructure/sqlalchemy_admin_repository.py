@@ -15,10 +15,12 @@ from users.domain.admin import (
     AdminRoleSummary,
     AdminRoleUpdateResult,
     AdminTargetSummary,
+    AdminUserListFilter,
     AdminUserSummary,
     assert_can_touch_target,
 )
 from users.domain.errors import UserNotFound
+from users.infrastructure.admin_user_filters import apply_admin_user_filters
 
 
 def _to_summary(u: User) -> AdminUserSummary:
@@ -44,23 +46,22 @@ class SqlAlchemyAdminUserRepository:
     def __init__(self, db: Session) -> None:
         self._db = db
 
-    def count_users(self) -> int:
-        return self._db.execute(select(func.count(User.id))).scalar() or 0
+    def count_users(self, filters: AdminUserListFilter) -> int:
+        query = apply_admin_user_filters(select(func.count(User.id)), filters)
+        return self._db.execute(query).scalar() or 0
 
-    def list_page(self, offset: int, limit: int) -> list[AdminUserSummary]:
+    def list_page(
+        self, filters: AdminUserListFilter, offset: int, limit: int
+    ) -> list[AdminUserSummary]:
         # joinedload eliminates N+1: roles + role loaded in one JOIN query.
-        users_db = (
-            self._db.execute(
-                select(User)
-                .options(joinedload(User.roles).joinedload(UserRole.role))
-                .order_by(User.created_at.desc())
-                .offset(offset)
-                .limit(limit)
-            )
-            .unique()
-            .scalars()
-            .all()
+        query = (
+            apply_admin_user_filters(select(User), filters)
+            .options(joinedload(User.roles).joinedload(UserRole.role))
+            .order_by(User.created_at.desc())
+            .offset(offset)
+            .limit(limit)
         )
+        users_db = self._db.execute(query).unique().scalars().all()
         return [_to_summary(u) for u in users_db]
 
     def is_admin(self, user_id: UUID) -> bool:

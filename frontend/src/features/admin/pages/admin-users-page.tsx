@@ -1,6 +1,3 @@
-import { useState } from "react";
-
-import { useCurrentUser } from "@/core/auth/auth-store";
 import { Icon } from "@/core/components/icon";
 import { PageHeader } from "@/core/components/page-header";
 
@@ -8,43 +5,10 @@ import { EditUserModal } from "../components/users/edit-user-modal";
 import { UsersPagination } from "../components/users/users-pagination";
 import { UsersPanel } from "../components/users/users-panel";
 import { UsersToolbar } from "../components/users/users-toolbar";
-import { useRoles } from "../hooks/use-admin-roles";
-import { useAdminUsers } from "../hooks/use-admin-users";
-import { useAdminUsersController } from "../hooks/use-admin-users-controller";
-import { errorMessage } from "../lib/error-message";
-import type { AdminUser } from "../lib/types";
-import {
-  EMPTY_USERS_PAGE,
-  filterUsers,
-  resolveCurrentUserId,
-  usersPageSubtitle,
-} from "../lib/user-display";
+import { useAdminUsersPage } from "../hooks/use-admin-users-page";
 
 export function AdminUsersPage() {
-  const me = useCurrentUser();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-
-  const usersQuery = useAdminUsers(page);
-  const rolesQuery = useRoles();
-  const controller = useAdminUsersController(setEditingUser);
-
-  const usersData = usersQuery.data ?? EMPTY_USERS_PAGE;
-  const roles = rolesQuery.data ?? [];
-  const totalPages = usersData.total_pages;
-  const visibleUsers = filterUsers(usersData.users, search, roleFilter);
-  const currentUserId = resolveCurrentUserId(me);
-  const isCurrentUserAdmin = me?.role === "administrador";
-  const errorText = usersQuery.error
-    ? errorMessage(usersQuery.error, "Error al cargar usuarios.")
-    : "";
-  const subtitle = usersPageSubtitle(usersQuery.isLoading, errorText !== "", usersData.total_items);
-
-  const handlePageChange = (nextPage: number) => {
-    if (nextPage >= 1 && nextPage <= totalPages) setPage(nextPage);
-  };
+  const p = useAdminUsersPage();
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 pb-10">
@@ -55,45 +19,36 @@ export function AdminUsersPage() {
             Usuarios
           </span>
         }
-        subtitle={subtitle}
+        subtitle={p.subtitle}
       />
       <UsersToolbar
-        search={search}
-        onSearchChange={setSearch}
-        roleFilter={roleFilter}
-        onRoleFilterChange={setRoleFilter}
-        roles={roles}
+        search={p.search}
+        onSearchChange={p.onSearchChange}
+        roleFilter={p.roleFilter}
+        onRoleFilterChange={p.onRoleFilterChange}
+        roles={p.roles}
       />
       <UsersPanel
-        isLoading={usersQuery.isLoading}
-        error={errorText}
-        users={visibleUsers}
-        roles={roles}
-        currentUserId={currentUserId}
-        isCurrentUserAdmin={isCurrentUserAdmin}
-        updatingUserId={controller.updatingUserId}
-        searchQuery={search}
-        handlers={controller.handlers}
-        onRetry={() => {
-          void usersQuery.refetch();
-        }}
-        onClearSearch={() => {
-          setSearch("");
-        }}
+        isLoading={p.isLoading}
+        error={p.errorText}
+        users={p.users}
+        roles={p.roles}
+        currentUserId={p.currentUserId}
+        isCurrentUserAdmin={p.isCurrentUserAdmin}
+        updatingUserId={p.updatingUserId}
+        searchQuery={p.search}
+        isFiltering={p.isFiltering}
+        handlers={p.handlers}
+        onRetry={p.retry}
+        onClearFilters={p.onClearFilters}
       />
-      <UsersPagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
-      {editingUser !== null && (
+      <UsersPagination page={p.page} totalPages={p.totalPages} onPageChange={p.handlePageChange} />
+      {p.editingUser !== null && (
         <EditUserModal
-          user={editingUser}
-          isSubmitting={controller.isSavingEdit}
-          onClose={() => {
-            setEditingUser(null);
-          }}
-          onSave={(fields) => {
-            controller.saveEditedUser(editingUser.id, fields, () => {
-              setEditingUser(null);
-            });
-          }}
+          user={p.editingUser}
+          isSubmitting={p.isSavingEdit}
+          onClose={p.closeEdit}
+          onSave={p.saveEditedUser}
         />
       )}
     </div>
