@@ -82,7 +82,9 @@ describe("OvaCreateFormCard", () => {
   });
   it("wires tutorial, configuration buttons and accessible errors", () => {
     const { props } = setup({ error: "Error de generación" });
-    fireEvent.click(screen.getByRole("button", { name: "Ver tutorial" }));
+    const tutorial = screen.getByRole("button", { name: "Ver tutorial" });
+    expect(tutorial.querySelector("svg")).not.toBeNull();
+    fireEvent.click(tutorial);
     expect(props.onTour).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("button", { name: "Configurar recursos 5E" }));
     expect(props.onOpen).toHaveBeenCalledWith("resources");

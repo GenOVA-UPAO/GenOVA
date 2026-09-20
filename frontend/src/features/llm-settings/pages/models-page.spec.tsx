@@ -26,6 +26,7 @@ const store: LlmSettingsStore = {
   saving: false,
   dirty: false,
   error: "",
+  refetch: vi.fn(),
   catalogStatus: { groq: { ok: true }, openrouter: { ok: false } },
   refreshingCatalog: false,
   searchQuery: "",

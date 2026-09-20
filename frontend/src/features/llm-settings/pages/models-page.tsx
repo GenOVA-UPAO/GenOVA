@@ -1,3 +1,5 @@
+import { QueryErrorState } from "@/core/components/query-error-state";
+
 import { ManageModelsModal } from "../components/manage-models-modal";
 import { ModelsPageHeader } from "../components/models-page-header";
 import { ModelsPageTabs } from "../components/models-page-tabs";
@@ -8,6 +10,15 @@ import { useModelsPage } from "../hooks/use-models-page";
 export function ModelsPage() {
   const page = useModelsPage();
   if (page.blocked) return null;
+
+  if (page.store.error) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-6 pb-28 duration-300 animate-in fade-in">
+        <ModelsPageHeader />
+        <QueryErrorState title={page.store.error} onRetry={page.store.refetch} />
+      </div>
+    );
+  }
 
   return (
     <LlmSettingsContext.Provider value={page.store}>

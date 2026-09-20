@@ -25,6 +25,8 @@ export interface LlmSettingsStore {
   saving: boolean;
   dirty: boolean;
   error: string;
+  /** Reintenta la carga de la configuración (no el refresco del catálogo). */
+  refetch: () => void;
   catalogStatus: Record<string, CatalogStatusEntry> | null;
   refreshingCatalog: boolean;
   searchQuery: string;

@@ -28,6 +28,7 @@ export function useLlmSettingsStore(enabled = true): LlmSettingsStore {
     saving: draft.saving,
     dirty: draft.dirty,
     error: catalog.error,
+    refetch: catalog.refetch,
     catalogStatus: catalog.server.catalog_status ?? null,
     refreshingCatalog: catalog.refreshingCatalog,
     searchQuery: catalog.searchQuery,

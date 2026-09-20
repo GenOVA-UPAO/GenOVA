@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { refreshLlmCatalog } from "../api/llm-settings.api";
+import { dedupeCatalogModels, dedupeCatalogPage } from "../lib/dedupe-catalog";
 import type { LlmSettingsResponse } from "../lib/user-llm-settings.types";
 import { errorMessage } from "./error-message";
 import { llmSettingsKeys } from "./query-keys";
@@ -12,11 +13,11 @@ import { useLlmCatalogQuery } from "./use-llm-catalog-query";
 const EMPTY_RESPONSE: LlmSettingsResponse = {};
 
 export function firstSettingsPage(pages: LlmSettingsResponse[] | undefined): LlmSettingsResponse {
-  return pages?.[0] ?? EMPTY_RESPONSE;
+  return dedupeCatalogPage(pages?.[0] ?? EMPTY_RESPONSE);
 }
 
 export function flattenCatalog(pages: LlmSettingsResponse[] | undefined) {
-  return (pages ?? []).flatMap((page) => page.catalog_full ?? []);
+  return dedupeCatalogModels((pages ?? []).flatMap((page) => page.catalog_full ?? []));
 }
 
 export function useLlmCatalog(enabled: boolean) {
@@ -39,6 +40,9 @@ export function useLlmCatalog(enabled: boolean) {
     loading: query.isLoading,
     loadingMore: query.isFetchingNextPage,
     error: query.error ? errorMessage(query.error, "No se pudo cargar la configuración.") : "",
+    refetch: () => {
+      void query.refetch();
+    },
     searchQuery: filters.searchInput,
     categoryFilter: filters.categoryFilter,
     typeFilter: filters.typeFilter,

@@ -2,6 +2,7 @@ import {
   CheckCircleIcon,
   EnvelopeSimpleIcon,
   type Icon as PhosphorIcon,
+  QuestionIcon,
   WarningCircleIcon,
 } from "@phosphor-icons/react";
 
@@ -18,6 +19,7 @@ import {
 export const ICONS = {
   "check-circle": CheckCircleIcon,
   "envelope-simple": EnvelopeSimpleIcon,
+  question: QuestionIcon,
   "warning-circle": WarningCircleIcon,
 } satisfies Record<string, PhosphorIcon>;
 

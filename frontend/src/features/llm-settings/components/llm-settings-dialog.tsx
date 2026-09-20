@@ -53,7 +53,10 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
             {store.hasOwnLlmKey ? "Cancelar" : "Cerrar"}
           </Button>
           {store.hasOwnLlmKey ? (
-            <Button onClick={() => void handleSave()} disabled={store.saving || store.loading}>
+            <Button
+              onClick={() => void handleSave()}
+              disabled={store.saving || store.loading || store.error !== ""}
+            >
               {store.saving ? "Guardando…" : "Guardar"}
             </Button>
           ) : null}

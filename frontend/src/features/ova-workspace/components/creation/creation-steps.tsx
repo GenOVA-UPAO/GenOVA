@@ -1,3 +1,4 @@
+import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 interface Props {
@@ -58,7 +59,7 @@ export function CreationSteps({ describeDone, resourcesDone, generateReady, onTo
         title="Ver tutorial"
         onClick={onTour}
       >
-        ?
+        <Icon name="question" />
       </Button>
     </div>
   );

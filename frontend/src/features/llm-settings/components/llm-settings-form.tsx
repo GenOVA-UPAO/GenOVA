@@ -1,4 +1,5 @@
 import { Icon } from "@/core/components/icon";
+import { Button } from "@/core/components/ui/button";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { TASK_LABELS } from "../lib/llm-settings-labels";
@@ -12,6 +13,17 @@ export function LlmSettingsForm({ readOnly = false }: Readonly<{ readOnly?: bool
     const models = store.catalog[provider];
     return !Array.isArray(models) || models.length === 0;
   });
+
+  if (store.error) {
+    return (
+      <div className="flex flex-col items-center gap-2 py-8 text-center">
+        <p className="text-xs text-muted-foreground">{store.error}</p>
+        <Button variant="outline" size="sm" onClick={store.refetch}>
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
 
   if (store.loading || !store.settings) {
     return (

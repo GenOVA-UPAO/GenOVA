@@ -61,6 +61,7 @@ function stubStore(): LlmSettingsStore {
     saving: false,
     dirty: false,
     error: "",
+    refetch: vi.fn(),
     catalogStatus: null,
     refreshingCatalog: false,
     searchQuery: "",
