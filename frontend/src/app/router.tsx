@@ -6,6 +6,7 @@ import { AppSplash } from "./app-splash";
 import { pageLoaders } from "./pages";
 import { RootLayout } from "./root-layout";
 import { RouteError } from "./route-error";
+import { dashboardLoader } from "./route-prefetch";
 
 /** Route metadata: page title (suffixed with " · GenOVA") and full-bleed shell. */
 export interface RouteHandle {
@@ -71,6 +72,7 @@ export const routes: RouteObject[] = [
           {
             path: "dashboard",
             handle: { title: "Dashboard" },
+            loader: dashboardLoader,
             lazy: page(pageLoaders.dashboard, "DashboardPage"),
           },
           {

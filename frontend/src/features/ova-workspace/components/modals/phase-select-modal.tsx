@@ -65,7 +65,7 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
         }}
         preview={preview ?? selected.at(-1) ?? catalog.data?.[phase].at(0)}
       />
-      <footer className="flex justify-between">
+      <footer className="sticky bottom-0 z-10 -mx-4 -mb-4 flex justify-between border-t bg-popover px-4 py-3">
         <Button variant="ghost" onClick={onClose}>
           Cancelar
         </Button>

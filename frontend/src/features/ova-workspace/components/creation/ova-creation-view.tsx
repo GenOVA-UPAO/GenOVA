@@ -11,7 +11,7 @@ const CrearOvaTour = lazy(() => import("./crear-ova-tour"));
 export function OvaCreationView() {
   const creation = useOvaCreation();
   return (
-    <main className="flex min-h-full flex-col bg-background">
+    <div className="flex min-h-full flex-col bg-background">
       <OvaCreateFormCard
         prompt={creation.prompt}
         onPrompt={creation.setPrompt}
@@ -49,6 +49,6 @@ export function OvaCreationView() {
           <OvaFilesModal uploads={creation.uploads} onClose={creation.closeModal} />
         )}
       </Suspense>
-    </main>
+    </div>
   );
 }

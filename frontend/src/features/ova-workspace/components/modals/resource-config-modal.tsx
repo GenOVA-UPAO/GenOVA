@@ -25,10 +25,10 @@ export default function ResourceConfigModal({ phase, resourceId, config, onSave,
         }}
       >
         {getSchema(phase, resourceId).map((field) => (
-          <label key={field.key} className="block">
-            {field.label}
+          <label key={field.key} className="block space-y-1">
+            <span className="text-sm font-medium">{field.label}</span>
             <input
-              className="ml-3 rounded border p-2"
+              className="block w-full max-w-xs rounded border bg-background p-2"
               type="number"
               required
               min={field.min}

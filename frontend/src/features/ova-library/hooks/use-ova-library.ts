@@ -7,10 +7,14 @@ import {
 
 import { ovaLibraryApi,type OvaListParams } from "../api/ova-library.api";
 
-/** Query keys: every OVA list/count lives under ["ova"], so one invalidation refreshes all. */
+// Query keys: every OVA list/count lives under ["ova"], so one invalidation refreshes all.
+// La clave normaliza los params con sus defaults: sin esto, `{ page: 1 }` (dashboard)
+// y `{ page: 1, search: "", status: "" }` (mis-ovas) serían claves distintas y la
+// misma petición se repetiría entre pantallas. 
 export const ovaKeys = {
   all: ["ova"] as const,
-  list: (p: OvaListParams) => ["ova", "list", p] as const,
+  list: ({ page, search = "", status = "" }: OvaListParams) =>
+    ["ova", "list", { page, search, status }] as const,
   trash: (page: number) => ["ova", "trash", page] as const,
   trashCount: ["ova", "trash-count"] as const,
 };

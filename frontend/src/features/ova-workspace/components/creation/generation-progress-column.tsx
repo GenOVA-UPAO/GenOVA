@@ -73,7 +73,7 @@ export function GenerationProgressColumn({
           onResume={onRetryAll}
         />
       )}
-      {outcome.isTerminal && outcome.totalFail && (
+      {outcome.isTerminal && outcome.totalFail && job.data?.status !== "canceled" && (
         <TotalFailurePanel
           viewModel={job.resources}
           onRetryAll={onRetryAll}

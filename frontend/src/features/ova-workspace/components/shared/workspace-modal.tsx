@@ -10,10 +10,10 @@ export function WorkspaceModal({ title, children, onClose }: Readonly<{ title: s
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-5xl">
-        <DialogTitle>{title}</DialogTitle>
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-5xl">
+        <DialogTitle className="shrink-0">{title}</DialogTitle>
         <DialogDescription className="sr-only">{title}</DialogDescription>
-        {children}
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">{children}</div>
       </DialogContent>
     </Dialog>
   );

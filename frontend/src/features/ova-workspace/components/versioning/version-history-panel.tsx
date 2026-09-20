@@ -36,7 +36,7 @@ export default function VersionHistoryPanel({ ovaId, onClose }: Readonly<{ ovaId
           <li key={version.id} className="flex flex-wrap items-center gap-3 rounded border p-3">
             <input
               type="checkbox"
-              aria-label="Seleccionar para comparar"
+              aria-label={`Seleccionar versión ${String(version.version_number)} para comparar`}
               checked={selected.includes(version.id)}
               disabled={selected.length === 2 && !selected.includes(version.id)}
               onChange={(event) => {

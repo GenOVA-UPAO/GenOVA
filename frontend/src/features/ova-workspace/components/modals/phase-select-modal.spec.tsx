@@ -26,17 +26,17 @@ function setup() {
 describe("PhaseSelectModal", () => {
   it("previews the first resource by default and changes on hover", async () => {
     setup();
-    await screen.findByRole("button", { name: "Engage 1" });
+    await screen.findByRole("button", { name: "Seleccionar Engage 1" });
     expect(screen.getByLabelText("Esquema comic")).toBeVisible();
-    fireEvent.mouseEnter(screen.getByRole("button", { name: "Engage 2" }));
+    fireEvent.mouseEnter(screen.getByRole("button", { name: "Seleccionar Engage 2" }));
     expect(screen.getByLabelText("Esquema storyboard")).toBeVisible();
   });
   it("requires two phases and preserves picks across tabs", async () => {
     const { onConfirm } = setup();
-    fireEvent.click(await screen.findByRole("button", { name: "Engage 1" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Seleccionar Engage 1" }));
     expect(screen.getByRole("button", { name: "Confirmar (1)" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "EXPLORE (0)" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Laboratorio" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Seleccionar Laboratorio" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirmar (2)" }));
     expect(onConfirm).toHaveBeenCalledWith(
       expect.objectContaining({ engage: [{ id: "1", tipo: "Engage 1" }], explore: [{ id: "1", tipo: "Laboratorio" }] }),
@@ -45,12 +45,12 @@ describe("PhaseSelectModal", () => {
   });
   it("limits selection to four resources per phase", async () => {
     setup();
-    await screen.findByRole("button", { name: "Engage 1" });
-    for (const number of [1, 2, 3, 4]) fireEvent.click(screen.getByRole("button", { name: `Engage ${String(number)}` }));
+    await screen.findByRole("button", { name: "Seleccionar Engage 1" });
+    for (const number of [1, 2, 3, 4]) fireEvent.click(screen.getByRole("button", { name: `Seleccionar Engage ${String(number)}` }));
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Engage 5" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Seleccionar Engage 5" })).toBeDisabled();
     });
-    fireEvent.click(screen.getByRole("button", { name: "Engage 1" }));
-    expect(screen.getByRole("button", { name: "Engage 5" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Seleccionar Engage 1" }));
+    expect(screen.getByRole("button", { name: "Seleccionar Engage 5" })).toBeEnabled();
   });
 });

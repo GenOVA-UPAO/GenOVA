@@ -45,13 +45,13 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
             </section>
           )}
         </div>
-        <aside className="space-y-4">
+        <div className="space-y-4">
           <ResourcePreviewPanel phase={phase} resource={preview ?? resources.data?.[0]} />
           <section className="rounded-xl border bg-card p-5">
             <h2 className="font-display text-lg">Modelo 5E</h2>
             <p>Engage · Explore · Explain · Elaborate · Evaluate</p>
           </section>
-        </aside>
+        </div>
       </div>
       {target && (
         <Suspense>

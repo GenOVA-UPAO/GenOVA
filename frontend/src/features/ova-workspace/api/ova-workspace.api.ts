@@ -24,16 +24,20 @@ export function deleteOvaPhase(ovaId: string, phaseId: string): Promise<void> { 
 export function reorderOvaPhases(ovaId: string, reorders: unknown): Promise<void> { return apiJson(`/api/ovas/${ovaId}/fases/reorder`, { method: "PATCH", body: JSON.stringify({ reorders }) }); }
 export function fetchPhaseVersions(ovaId: string, phaseId: string): Promise<{ micro_versions?: PhaseMicroVersion[] }> { return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}/versiones`); }
 export function revertPhaseVersion(ovaId: string, phaseId: string, versionId: string): Promise<unknown> { return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}/versiones/${versionId}/revert`, { method: "POST" }); }
+async function scormExportError(response: Response): Promise<HttpError> {
+  const body = (await response.json().catch(() => null)) as { message?: string; detail?: string } | null;
+  const message = body?.message ?? body?.detail ?? "Error al exportar SCORM";
+  return new HttpError(message, { status: response.status, body });
+}
+
 export async function downloadOvaScorm(ovaId: string): Promise<Blob> {
   const response = await apiFetch(`/api/ovas/${ovaId}/export-scorm`);
-  if (!response.ok) {
-    throw new HttpError("Error al exportar SCORM", { status: response.status });
-  }
+  if (!response.ok) throw await scormExportError(response);
   return response.blob();
 }
 
 export async function exportOvaScorm(ovaId: string): Promise<void> {
   const response = await apiFetch(`/api/ovas/${ovaId}/export-scorm`);
-  if (!response.ok) throw new HttpError('Error al exportar SCORM', { status: response.status });
+  if (!response.ok) throw await scormExportError(response);
   await triggerDownloadFromResponse(response, `ova-${ovaId}.zip`);
 }

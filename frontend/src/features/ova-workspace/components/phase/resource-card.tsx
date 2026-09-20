@@ -18,6 +18,7 @@ export function ResourceCard({ resource, selected, disabled, onSelect, onPreview
         type="button"
         className="w-full text-left"
         disabled={disabled}
+        aria-label={`Seleccionar ${title}`}
         aria-pressed={selected}
         onClick={onSelect}
         onMouseEnter={onPreview}
@@ -30,7 +31,7 @@ export function ResourceCard({ resource, selected, disabled, onSelect, onPreview
       </button>
       <div className="flex flex-wrap gap-2">
         {onPreview && (
-          <Button size="sm" variant="ghost" onClick={onPreview}>
+          <Button size="sm" variant="ghost" onClick={onPreview} aria-label={`Vista previa ${title}`}>
             Vista previa
           </Button>
         )}
