@@ -24,4 +24,6 @@ COPY . .
 
 EXPOSE 4200
 
+# Vite dev server en 0.0.0.0:4200. Nota: vite.config.ts actualmente proxia
+# /api y /auth a http://127.0.0.1:8000 por defecto.
 CMD ["pnpm", "dev", "--host", "0.0.0.0", "--port", "4200"]
