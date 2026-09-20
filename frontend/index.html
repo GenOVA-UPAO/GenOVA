@@ -22,7 +22,13 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Splash estático pre-hidratación: pinta con el CSS (antes de React)
+           y desaparece al montar la app. Misma marca visual que AppSplash. -->
+      <div class="flex h-full items-center justify-center" role="status" aria-label="Cargando">
+        <div class="size-8 animate-spin rounded-full border-4 border-muted border-t-primary"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
