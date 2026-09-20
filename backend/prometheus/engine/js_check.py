@@ -16,7 +16,7 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-_SCRIPT = re.compile(r"<script(\s[^>]*)?>([\s\S]*?)</script>", re.I)
+_SCRIPT = re.compile(r"<script(\s[^>]*)?>([\s\S]*?)</script\s*>", re.I)
 # Runtime inyectado y snippet SCORM: código propio ya probado, no se revisa.
 _SKIP_MARKERS = ("UPAO Components v", "function _scormInit")
 _MAX_ERRORS = 3
