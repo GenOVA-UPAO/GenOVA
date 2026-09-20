@@ -166,9 +166,13 @@ else:
         "http://localhost:3000",
         "http://localhost:4173",
         "http://localhost:4200",
+        # :4300 es la segunda instancia de Vite que las suites e2e/QA levantan
+        # contra el backend determinista (LLM_FAKE=1).
+        "http://localhost:4300",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:4173",
         "http://127.0.0.1:4200",
+        "http://127.0.0.1:4300",
         *_extra,
     ]
 

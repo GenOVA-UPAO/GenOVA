@@ -9,9 +9,23 @@ import { authStore } from "./auth-store";
  */
 const REVALIDATE_MAX_AGE_MS = 3000;
 
+/**
+ * Si el backend no responde (red caída, CORS, 5xx) la sesión se da por ausente:
+ * la alternativa era que /login cayera en el error boundary y el usuario no
+ * tuviera siquiera el formulario para reintentar.
+ */
+async function currentUser(maxAgeMs = REVALIDATE_MAX_AGE_MS) {
+  try {
+    return await authStore.revalidate(maxAgeMs);
+  } catch (error) {
+    console.warn("No se pudo verificar la sesión:", error);
+    return null;
+  }
+}
+
 /** Always revalidates (short window) so role/permission changes apply without re-login. */
 export async function requireAuth({ request }: LoaderFunctionArgs) {
-  const user = await authStore.revalidate(REVALIDATE_MAX_AGE_MS);
+  const user = await currentUser();
   if (user) return null;
   const url = new URL(request.url);
   const returnUrl = url.pathname + url.search;
@@ -20,7 +34,7 @@ export async function requireAuth({ request }: LoaderFunctionArgs) {
 
 /** Signed-in users skip the auth pages. */
 export async function requireGuest() {
-  const user = authStore.getUser() ?? (await authStore.revalidate(REVALIDATE_MAX_AGE_MS));
+  const user = authStore.getUser() ?? (await currentUser());
   return user ? redirect("/dashboard") : null;
 }
 
