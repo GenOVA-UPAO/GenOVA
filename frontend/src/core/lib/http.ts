@@ -1,7 +1,7 @@
 import { AuthExpiredBus } from "./auth-expired-bus";
 import { firstNonBlank } from "./text";
 
-/** Valores de `GENOVA_API_BASE_*` inyectados por scripts/run-with-api-env.mjs. */
+/** Valores de `GENOVA_API_BASE_*` inyectados en build por vite.config.ts. */
 function buildApiBases(): { prod: string; develop: string } {
   // typeof es seguro si el build no paso --define (tests / ngc).
   return {
@@ -17,7 +17,7 @@ function resolveApiBase(): string {
   const override = (window as unknown as Record<string, unknown>).__GENOVA_API_BASE__;
   if (typeof override === "string" && override.length > 0) return override;
 
-  // Local: ng serve + proxy → same-origin (las URLs de .env no se usan aqui).
+  // Local: servidor de Vite + proxy → same-origin (las URLs de .env no se usan aqui).
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
     return location.origin;
   }
