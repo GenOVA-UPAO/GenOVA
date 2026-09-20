@@ -2,11 +2,20 @@
 
 | Suite | Comando | Qué cubre |
 |-------|---------|-----------|
+| Unit componentes (vitest) | `pnpm test:vitest` | Specs `frontend/src/**/*.spec.{ts,tsx}` (libs puras, hooks y componentes con Testing Library). |
+| Typecheck (tsc) | `pnpm typecheck` | `tsc -b --noEmit` sobre `frontend/` (proyecto React + Vite). |
+| Lint frontend | `pnpm lint` | ESLint del frontend (`frontend/eslint.config.js`). |
 | Unit BDD (cucumber-js) | `pnpm test:unit` | Steps unit puros (validadores, view-models, libs) contra `tests/steps/unit/**`. |
 | E2E (playwright-bdd) | `pnpm test:e2e` | `tests/features/e2e/*.feature`, `features/auth/HU-008_login.feature` y `features/roles/HU-018_crear-rol.feature`. |
 | A11y (axe-core) | `pnpm test:a11y` | Auditoría WCAG 2.0 A/AA; requiere el mismo backend/frontend que e2e. |
 | Carga (JMeter/Locust) | ver `tests/load/` | Pruebas de carga contra un entorno propio. |
 | Smoke manual | `tests/playwright-smoke/SMOKE_TESTS.md` | Guion manual con playwright-cli contra develop/producción. |
+
+Los tres primeros (vitest, typecheck, lint) y cucumber solo necesitan `pnpm install`:
+
+```bash
+pnpm lint && pnpm typecheck && pnpm test:vitest && pnpm test:unit
+```
 
 ## Suite E2E
 
@@ -36,41 +45,74 @@ LLM_FAKE. Si se lanza con otros tags contra un backend real, gastaría cuota LLM
 
 ### Correr la suite completa en local sin gastar cuota
 
-El backend local de `:8000` puede estar sin `LLM_FAKE` (proveedores reales). Para
-probar los escenarios de generación sin coste:
-
-1. Levanta una instancia aparte con `LLM_FAKE=1` en otro puerto (p. ej. `:8100`),
-   apuntando a la misma BD de pruebas.
-2. Exporta `E2E_API_ORIGIN=http://localhost:8100` antes de `pnpm test:e2e` (junto con
-   `BASE_URL` del frontend). `tests/steps/e2e/fixtures.js` inyecta
-   `window.__GENOVA_API_BASE__` para que el navegador llame a esa API, y
-   `seedOvaViaApi`/el registro por API usan el mismo origen. Sin `E2E_API_ORIGIN` el
-   comportamiento es el de siempre: same-origin vía proxy de Vite.
+El backend local de `:8000` suele estar conectado a proveedores reales. Para probar
+los escenarios de generación sin coste se levanta un stack aparte — backend
+determinista en `:8100` y frontend en `:4300` — y se apunta la suite ahí:
 
 ```bash
-# Windows (desde tests/): bddgen debe correr con la variable puesta
-set "E2E_API_ORIGIN=http://localhost:8100"
-set "BASE_URL=http://localhost:4200"
-pnpm test:e2e
+# 1) Backend determinista en :8100 (misma BD de pruebas y usuarios)
+cd backend
+LLM_FAKE=1 RATE_LIMIT_ENABLED=0 uv run uvicorn main:app --port 8100
+
+# 2) Frontend en :4300. GENOVA_DEV_BACKEND hace que el proxy de Vite apunte a
+#    :8100 (vite.config.ts); para la suite no es imprescindible porque
+#    E2E_API_ORIGIN inyecta la API directamente en el navegador.
+cd frontend
+GENOVA_DEV_BACKEND=http://127.0.0.1:8100 pnpm dev --port 4300
+
+# 3) Suite completa desde tests/ (:4300 no es el puerto del webServer, así que
+#    E2E_EXTERNAL=1 evita que Playwright levante otro Vite en :4200)
+cd tests
+E2E_EXTERNAL=1 BASE_URL=http://localhost:4300 E2E_API_ORIGIN=http://localhost:8100 pnpm test:e2e
 ```
+
+En Windows (cmd), los mismos pasos por línea:
+
+```bat
+set "LLM_FAKE=1" & set "RATE_LIMIT_ENABLED=0" & cd backend & uv run uvicorn main:app --port 8100
+set "GENOVA_DEV_BACKEND=http://127.0.0.1:8100" & cd frontend & pnpm dev --port 4300
+set "E2E_EXTERNAL=1" & set "BASE_URL=http://localhost:4300" & set "E2E_API_ORIGIN=http://localhost:8100" & cd tests & pnpm test:e2e
+```
+
+- `E2E_EXTERNAL=1` desactiva el `webServer` de `tests/playwright.config.js`: la suite
+  usa el frontend ya levantado en `:4300`. (No usa secretos: el header de bypass de
+  Vercel solo se envía si existe `VERCEL_AUTOMATION_BYPASS_SECRET`.)
+- `E2E_API_ORIGIN=http://localhost:8100` inyecta `window.__GENOVA_API_BASE__` para que
+  el navegador llame a esa API (`tests/steps/e2e/fixtures.js`) y
+  `seedOvaViaApi`/el registro por API usen el mismo origen. Sin `E2E_API_ORIGIN` el
+  comportamiento es el de siempre: same-origin vía proxy de Vite.
+- El frontend y el backend determinista comparten la BD de pruebas y los usuarios de
+  siempre (`admin@genova.ai` / `admin1234password`).
 
 > Ojo: en un `.cmd`/`.bat`, invoca `pnpm` con `call` (es otro `.cmd`) y evita pasar
 > argumentos por `%*` si vienen de WSL; usa variables de entorno o un script por paso.
 
-### Falla conocida del frontend (no arreglada aquí)
+### Verificación del backend
 
-- **Escenario**: `tests/features/e2e/HU-002_crear-ova.feature` → "Generación completa
-  desde el formulario hasta el workspace".
-- **Paso que falla**: `Then la generación redirige al workspace del OVA`
-  (`tests/steps/e2e/ova-e2e.steps.js:83`) → `TimeoutError: page.waitForURL:
-  Timeout 120000ms exceeded`.
-- **Causa**: el `POST /api/jobs` del formulario devuelve **422**. El frontend envía
-  `resources[].resource_type` como número (`1`) y el backend lo exige string
-  (`ResourceRequest.resource_type: str`). Payload observado:
-  `"resources":[{"phase_type":"engage","resource_type":1},…]`; respuesta:
-  `"Input should be a valid string"`. Origen:
-  `frontend/src/features/ova-workspace/hooks/use-ova-creation.ts:57`
-  (`resource_type: resource.id`, con `Resource.id: string | number`).
-- **Efecto**: crear un OVA desde `/crear` está roto contra este backend; los seeds por
-  API (que envían el nombre del recurso como string) sí funcionan. Reproducible
-  también contra el backend de `:8000`.
+```bash
+cd backend
+uv run ruff check .                        # lint (CI: uvx ruff check backend/)
+uv run lint-imports                        # fronteras de arquitectura
+uv run python scripts/check_module_size.py # tamaño de módulos (aviso)
+uv run pytest                              # suite completa (necesita DATABASE_URL)
+```
+
+### Equivalencia con CI
+
+| Job de `.github/workflows/ci.yml` | Comando local |
+|-----------------------------------|---------------|
+| `lint-frontend` | `pnpm lint` |
+| `typecheck-frontend` | `pnpm typecheck` |
+| `frontend-unit` (cucumber-js) | `pnpm test:unit` |
+| `frontend-vitest` | `pnpm test:vitest` |
+| `lint-backend` | `uvx ruff check backend/` + `uv run lint-imports` + `check_module_size.py` |
+| `backend-bdd` | `uv run pytest tests/step_defs/ …` con Postgres y `BASE=http://localhost:8000` |
+| `e2e` | `pnpm test:e2e` (backend `LLM_FAKE=1` en `:8000`) |
+| `api-contract` | Schemathesis contra `/openapi.json` |
+| `security-audit` | `pnpm audit --prod` + `uvx pip-audit` |
+
+### Estado
+
+36/36 escenarios pasan en local con backend `LLM_FAKE=1` (2026-09-19), incluido
+"Generación completa desde el formulario hasta el workspace" (HU-002) tras el fix
+`7f38a9b` que envía `resource_type` como string en `use-ova-creation.ts`.

@@ -6,8 +6,11 @@ set -e
 echo "[pre-push] Frontend: lint"
 pnpm lint
 
-echo "[pre-push] Frontend: tests unitarios"
-pnpm --filter frontend test --watch=false
+echo "[pre-push] Frontend: typecheck (tsc)"
+pnpm typecheck
+
+echo "[pre-push] Frontend: tests unitarios (vitest)"
+pnpm test:vitest
 
 echo "[pre-push] Backend: ruff"
 if python -c "import ruff" >/dev/null 2>&1; then

@@ -28,6 +28,21 @@ jobs:
 
       - run: pnpm lint
 
+  typecheck-frontend:
+    name: Typecheck Frontend (tsc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with: { node-version: 22, cache: pnpm }
+
+      - run: pnpm install
+
+      - run: pnpm typecheck
+
   lint-backend:
     name: Lint Backend
     runs-on: ubuntu-latest
@@ -226,6 +241,21 @@ jobs:
 
       - run: pnpm test:unit
 
+  frontend-vitest:
+    name: Frontend Unit (vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with: { node-version: 22, cache: pnpm }
+
+      - run: pnpm install
+
+      - run: pnpm test:vitest
+
   security-audit:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -253,7 +283,7 @@ jobs:
   e2e:
     name: E2E BDD (playwright-bdd)
     runs-on: ubuntu-latest
-    needs: [lint-frontend, lint-backend, backend-bdd, frontend-unit]
+    needs: [lint-frontend, typecheck-frontend, lint-backend, backend-bdd, frontend-unit, frontend-vitest]
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -276,8 +306,9 @@ jobs:
       BASE_URL: http://localhost:4200
       GROQ_API_KEY: dummy-ci-key-not-used-by-bdd-tests
       OPENROUTER_API_KEY: dummy-ci-key-not-used-by-bdd-tests
-      # La suite e2e ampliada genera OVAs reales: LLM_FAKE los completa en segundos
-      # sin proveedores, y el rate limit apagado evita 429 con ~20 logins seguidos.
+      # Los escenarios de generación (HU-002/004/006/012/013/025) corren con
+      # LLM_FAKE=1: OVAs deterministas en segundos sin proveedores LLM. El rate
+      # limit apagado evita 429 con ~30 logins seguidos.
       LLM_FAKE: '1'
       RATE_LIMIT_ENABLED: '0'
     steps:
