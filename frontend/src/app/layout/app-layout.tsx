@@ -39,11 +39,13 @@ export function AppLayout() {
         <Sidebar />
         <main
           id={MAIN_CONTENT_ID}
+          // Destino del enlace "Saltar al contenido": debe poder recibir foco por
+          // programa, pero no entrar en el orden de tabulación.
           tabIndex={-1}
           className={
             fullBleed
-              ? "flex min-h-0 flex-1 flex-col overflow-hidden outline-none"
-              : "min-h-0 min-w-0 flex-1 overflow-auto bg-muted/20 outline-none"
+              ? "flex min-h-0 flex-1 flex-col overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-inset"
+              : "min-h-0 min-w-0 flex-1 overflow-auto bg-muted/20 outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-inset"
           }
         >
           {fullBleed ? (

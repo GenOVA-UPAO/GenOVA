@@ -27,7 +27,7 @@ export function DeleteAccountCard({
           <Icon name="warning-circle" size="text-xl" />
           Zona de peligro
         </h2>
-        <p className="text-sm font-medium text-muted-foreground/80">
+        <p className="text-sm font-medium text-muted-foreground">
           Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate de estar seguro.
         </p>
       </div>

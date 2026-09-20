@@ -49,7 +49,7 @@ export function ProfileHeader({ profile, role, isLoading }: Readonly<ProfileHead
             </div>
           )}
           <p className="text-sm font-medium text-muted-foreground">{profile?.email ?? "—"}</p>
-          <p className="text-xs text-muted-foreground/60">
+          <p className="text-xs text-muted-foreground">
             Miembro desde {formatDate(profile?.created_at)}
           </p>
         </div>

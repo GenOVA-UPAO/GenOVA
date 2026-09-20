@@ -24,14 +24,17 @@ function apiBases(mode: string): { prod: string; develop: string } {
 // generación de OVAs sin gastar créditos de un proveedor real.
 const BACKEND = process.env.GENOVA_DEV_BACKEND ?? "http://127.0.0.1:8000";
 
+// Phosphor y radix quedan FUERA del splitting manual: forzarlos a un chunk único
+// hacía que el entry lo descargue entero aunque la ruta solo use 3-4 módulos;
+// Rolldown los reparte por grafo y cada ruta baja solo lo que usa.
 const VENDOR_CHUNKS: [string[], string][] = [
   [["@sentry"], "vendor-sentry"],
   [["driver.js"], "vendor-tour"],
-  [["@phosphor-icons"], "vendor-icons"],
-  [["radix-ui", "@radix-ui"], "vendor-radix"],
   [["react-router"], "vendor-router"],
   [["@tanstack"], "vendor-query"],
-  [["/react/", "/react-dom/", "scheduler"], "vendor-react"],
+  // "/react/" a secas coincide con `@phosphor-icons/react/dist/...`: hay que
+  // acotar al segmento node_modules/<pkg>/ para no arrastrar iconos aquí.
+  [["/node_modules/react/", "/node_modules/react-dom/", "/node_modules/scheduler/"], "vendor-react"],
 ];
 
 export default defineConfig(({ mode }) => {

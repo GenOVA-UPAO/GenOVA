@@ -29,7 +29,12 @@ export function GuardrailsTopicSection({
             dejar la app sin generar nada.
           </p>
         </div>
-        <FlagSwitch checked={draft.topicEnabled} disabled={saving} onToggle={onToggle} />
+        <FlagSwitch
+          checked={draft.topicEnabled}
+          disabled={saving}
+          label="Área temática permitida"
+          onToggle={onToggle}
+        />
       </div>
       {draft.topicEnabled ? (
         <div className="space-y-2 px-6 py-4">

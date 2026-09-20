@@ -14,7 +14,7 @@ export function ManageModelsSearchField({
       <Icon
         name="magnifying-glass"
         size="text-xs"
-        className="absolute top-1/2 left-2.5 -translate-y-1/2 text-muted-foreground/50"
+        className="absolute top-1/2 left-2.5 -translate-y-1/2 text-muted-foreground"
       />
       <input
         type="text"

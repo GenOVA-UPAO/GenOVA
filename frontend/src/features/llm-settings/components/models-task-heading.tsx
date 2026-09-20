@@ -31,7 +31,7 @@ export function ModelsTaskHeading({
           size="sm"
           checked={generationOn}
           disabled={adminSaving || !isAdmin}
-          aria-label={`Generación de ${label}${generationOn ? " activa" : " desactivada"}`}
+          label={`Generación de ${label}`}
           onToggle={onToggleGeneration}
         />
       ) : null}

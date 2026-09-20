@@ -7,7 +7,7 @@ interface RolePermissionsListProps {
 export function RolePermissionsList({ permissions }: Readonly<RolePermissionsListProps>) {
   if (permissions.length === 0) {
     return (
-      <span className="rounded-full bg-muted/30 px-3 py-1 text-xs font-bold text-muted-foreground/60">
+      <span className="rounded-full bg-muted/30 px-3 py-1 text-xs font-bold text-muted-foreground">
         Sin permisos asignados
       </span>
     );

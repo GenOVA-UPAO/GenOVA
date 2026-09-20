@@ -43,7 +43,7 @@ export function BulkTrashModal({
               </span>{" "}
               a la papelera?
             </span>
-            <span className="block text-xs text-muted-foreground/70">
+            <span className="block text-xs text-muted-foreground">
               Podrás restaurarlos desde la sección Papelera.
             </span>
           </DialogDescription>

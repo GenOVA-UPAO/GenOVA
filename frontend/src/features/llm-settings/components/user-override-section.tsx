@@ -26,7 +26,7 @@ export function UserOverrideSection({
   return (
     <div className="space-y-2.5 border-t border-dashed border-border/50 pt-3">
       <div className="flex items-center justify-between">
-        <p className="text-[9px] font-black tracking-[0.14em] text-muted-foreground/50 uppercase">
+        <p className="text-[9px] font-black tracking-[0.14em] text-muted-foreground uppercase">
           Tu modelo
         </p>
         <button
@@ -35,7 +35,7 @@ export function UserOverrideSection({
             store.resetTipo(task);
           }}
           disabled={userDisabled}
-          className="text-[9px] font-semibold text-muted-foreground/40 transition-colors hover:text-destructive disabled:opacity-30"
+          className="text-[9px] font-semibold text-muted-foreground transition-colors hover:text-destructive disabled:opacity-30"
         >
           Restaurar
         </button>
@@ -67,7 +67,7 @@ export function UserOverrideSection({
             className="h-8 w-14 rounded-md border border-border/50 bg-background/60 text-center text-xs"
             title={`Timeout: ${String(bounds[0])}–${String(bounds[1])} s`}
           />
-          <span className="text-[10px] text-muted-foreground/40">s</span>
+          <span className="text-[10px] text-muted-foreground">s</span>
         </div>
       </div>
       <UserFallbackEditor

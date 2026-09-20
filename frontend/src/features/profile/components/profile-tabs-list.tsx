@@ -5,6 +5,7 @@ import { cn } from "@/core/lib/cn";
 const TRIGGER_CLASS = cn(
   "shrink-0 gap-1.5 rounded-lg px-4 py-2 text-xs font-bold text-muted-foreground transition",
   "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm",
+  "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground",
 );
 
 interface ProfileTabsListProps {

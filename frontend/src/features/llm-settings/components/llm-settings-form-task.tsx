@@ -36,7 +36,7 @@ export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTa
                 store.resetTipo(tipo);
               }}
               disabled={store.saving}
-              className="text-[10px] text-muted-foreground/50 transition-colors hover:text-primary disabled:opacity-30"
+              className="text-[10px] text-muted-foreground transition-colors hover:text-primary disabled:opacity-30"
             >
               Restaurar
             </button>
@@ -46,6 +46,7 @@ export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTa
           <select
             value={current}
             disabled={locked}
+            aria-label={storeTaskLabel(tipo)}
             onChange={(event) => {
               const next = splitModelValue(event.target.value);
               store.setModel(tipo, next.provider, next.modelId);
@@ -80,7 +81,7 @@ export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTa
               className="h-8 w-14 rounded-md border border-border/50 bg-background/70 text-center text-xs"
               title={`Timeout: ${String(store.bounds[0])}–${String(store.bounds[1])} s`}
             />
-            <span className="text-[10px] text-muted-foreground/40">s</span>
+            <span className="text-[10px] text-muted-foreground">s</span>
           </div>
         </div>
       </div>

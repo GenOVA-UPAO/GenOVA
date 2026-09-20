@@ -39,7 +39,7 @@ export function TrashModal({
             <span className="block text-sm text-muted-foreground">
               ¿Mover a la papelera &quot;{ova.title ?? "OVA"}&quot;?
             </span>
-            <span className="block text-xs text-muted-foreground/70">
+            <span className="block text-xs text-muted-foreground">
               Podrás restaurarlo desde la sección Papelera.
             </span>
           </DialogDescription>

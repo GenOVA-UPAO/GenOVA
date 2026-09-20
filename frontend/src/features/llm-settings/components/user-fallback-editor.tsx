@@ -35,7 +35,7 @@ export function UserFallbackEditor({
       {fallbacks.map((item, index) =>
         item.provider && item.model_id ? null : (
           <div key={String(index)} className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-muted-foreground/50">#{index + 1}</span>
+            <span className="text-[10px] font-bold text-muted-foreground">#{index + 1}</span>
             <div className="flex-1">
               <LlmModelSelect
                 models={models}
@@ -67,7 +67,7 @@ export function UserFallbackEditor({
           store.addFallback(task);
         }}
         disabled={disabled}
-        className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground/50 transition-colors hover:text-primary"
+        className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-primary"
       >
         + Añadir respaldo
       </button>

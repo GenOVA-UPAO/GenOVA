@@ -38,7 +38,7 @@ export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
           {props.isAdmin ? (
             <TabsTrigger value="platform" className={TAB_TRIGGER}>
               Plataforma
-              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[9px] font-bold tracking-wider text-amber-700 uppercase ring-1 ring-amber-500/25 dark:text-amber-400">
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[9px] font-bold tracking-wider text-amber-800 uppercase ring-1 ring-amber-500/25 dark:text-amber-400">
                 Admin
               </span>
             </TabsTrigger>

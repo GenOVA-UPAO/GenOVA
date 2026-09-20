@@ -7,7 +7,7 @@ export function ModelsPageHeader({ status }: Readonly<{ status: string }>) {
         title="Modelos de IA"
         subtitle="Modelo primario, cadena de fallback y API keys por proveedor."
       />
-      <p className="pt-1 text-xs text-muted-foreground/80">{status}</p>
+      <p className="pt-1 text-xs text-muted-foreground">{status}</p>
     </div>
   );
 }

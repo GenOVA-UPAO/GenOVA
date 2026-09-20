@@ -25,7 +25,7 @@ export function ManageModelsFooter() {
   }
   if (store.catalogFull.length > 0) {
     return (
-      <p className="py-4 text-center text-[11px] text-muted-foreground/50">
+      <p className="py-4 text-center text-[11px] text-muted-foreground">
         {store.catalogFull.length} modelos en total
       </p>
     );

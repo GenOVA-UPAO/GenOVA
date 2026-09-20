@@ -35,7 +35,12 @@ export function UserStatusBadge({ user }: Readonly<UserStatusBadgeProps>) {
   }
 
   return (
-    <span className={cn(BADGE_CLASS, "bg-emerald-500/10 text-emerald-600 border-emerald-500/20")}>
+    <span
+      className={cn(
+        BADGE_CLASS,
+        "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400",
+      )}
+    >
       Activo
     </span>
   );

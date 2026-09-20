@@ -7,7 +7,7 @@ const SELECT_CLASS =
 
 interface ManageModelsSelectProps {
   value: string;
-  title?: string;
+  label: string;
   className?: string;
   children: ReactNode;
   onChange: (value: string) => void;
@@ -15,7 +15,7 @@ interface ManageModelsSelectProps {
 
 export function ManageModelsSelect({
   value,
-  title,
+  label,
   className,
   children,
   onChange,
@@ -23,7 +23,8 @@ export function ManageModelsSelect({
   return (
     <select
       value={value}
-      title={title}
+      aria-label={label}
+      title={label}
       className={cn(SELECT_CLASS, className)}
       onChange={(event) => {
         onChange(event.target.value);

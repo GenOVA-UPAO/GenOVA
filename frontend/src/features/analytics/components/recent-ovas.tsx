@@ -5,10 +5,10 @@ interface RecentOvasProps {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  listo: "bg-emerald-500/15 text-emerald-600",
-  generando: "bg-amber-500/15 text-amber-600",
-  borrador: "bg-slate-400/15 text-slate-500",
-  error: "bg-red-500/15 text-red-600",
+  listo: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  generando: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
+  borrador: "bg-slate-400/15 text-slate-700 dark:text-slate-300",
+  error: "bg-red-500/15 text-red-700 dark:text-red-400",
 };
 
 function getStatusBadge(status: string): string {

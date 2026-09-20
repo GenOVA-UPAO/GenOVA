@@ -19,7 +19,7 @@ export function PrimaryModelSelect({
   return (
     <div className="block space-y-3">
       <div className="flex items-center gap-2">
-        <span className="shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-widest text-emerald-600 uppercase">
+        <span className="shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-widest text-emerald-700 uppercase dark:text-emerald-400">
           Primario
         </span>
         <span className="text-xs font-bold text-foreground">Modelo principal</span>

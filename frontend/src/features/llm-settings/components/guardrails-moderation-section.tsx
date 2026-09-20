@@ -35,7 +35,12 @@ export function GuardrailsModerationSection({
             aplica la lista de términos. La lista es el suelo que siempre existe.
           </p>
         </div>
-        <FlagSwitch checked={draft.moderationEnabled} disabled={saving} onToggle={onToggle} />
+        <FlagSwitch
+          checked={draft.moderationEnabled}
+          disabled={saving}
+          label="Moderación"
+          onToggle={onToggle}
+        />
       </div>
       {draft.moderationEnabled ? (
         <div className="space-y-4 px-6 py-4">

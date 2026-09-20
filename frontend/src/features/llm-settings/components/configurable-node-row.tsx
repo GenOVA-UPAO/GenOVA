@@ -68,12 +68,17 @@ export function ConfigurableNodeRow({
           <span
             className={cn(
               "text-[10px] font-bold tracking-widest uppercase",
-              active ? "text-emerald-600" : "text-muted-foreground",
+              active ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground",
             )}
           >
             {active ? "Activo" : "Pausado"}
           </span>
-          <FlagSwitch checked={active} disabled={saving} onToggle={onToggle} />
+          <FlagSwitch
+            checked={active}
+            disabled={saving}
+            label={node.name}
+            onToggle={onToggle}
+          />
         </div>
       </div>
     </div>

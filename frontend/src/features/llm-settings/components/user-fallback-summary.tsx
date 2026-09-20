@@ -24,7 +24,7 @@ export function UserFallbackSummary({
   const store = useLlmSettings();
   if (fallbacks.length === 0) {
     return (
-      <div className="text-[10px] text-muted-foreground/40 italic">Sin cadena de respaldo personal</div>
+      <div className="text-[10px] text-muted-foreground italic">Sin cadena de respaldo personal</div>
     );
   }
   const visible = fallbacks.slice(0, 4);
@@ -34,7 +34,7 @@ export function UserFallbackSummary({
       {visible.map((item, index) => (
         <span key={String(index)} className="inline-flex items-center gap-1">
           {index > 0 ? (
-            <span className="text-[8px] font-black text-muted-foreground/30">→</span>
+            <span className="text-[8px] font-black text-muted-foreground">→</span>
           ) : null}
           <span
             className={`inline-flex items-center gap-1 rounded-full border py-0.5 pr-1 pl-2 text-[10px] font-semibold ${chip}`}

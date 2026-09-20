@@ -25,6 +25,7 @@ export function ManageModelRow({ model, locked, enabled, onToggle }: Readonly<Ma
         size="sm"
         checked={enabled}
         disabled={locked}
+        label={model.label ?? model.model_id}
         onToggle={() => {
           void onToggle(model.provider, model.model_id);
         }}
@@ -38,19 +39,19 @@ export function ManageModelRow({ model, locked, enabled, onToggle }: Readonly<Ma
             <Icon
               name="lock"
               size="text-[10px]"
-              className="shrink-0 text-muted-foreground/50"
+              className="shrink-0 text-muted-foreground"
               label="Modelo base del sistema"
             />
           ) : null}
         </div>
         {model.description ? (
-          <p className="mt-0.5 truncate text-[10px] text-muted-foreground/60">{model.description}</p>
+          <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{model.description}</p>
         ) : null}
       </div>
       <ModelPricingBadge free={free} variable={model.pricing === "Variable"} pricing={model.pricing} />
       {formatContextLength(model.context_length) ? (
         <span
-          className="shrink-0 text-[10px] text-muted-foreground/70 tabular-nums"
+          className="shrink-0 text-[10px] text-muted-foreground tabular-nums"
           title="Contexto máximo (tokens)"
         >
           {formatContextLength(model.context_length)}

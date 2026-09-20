@@ -31,7 +31,7 @@ export function ModelsReadOnlyTask({
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border/50 bg-muted/30 px-4 py-3">
-        <p className="text-[10px] font-bold tracking-wider text-muted-foreground/70 uppercase">
+        <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
           Plataforma UPAO
         </p>
         <p className="mt-1 text-sm font-semibold text-foreground">{subtitle}</p>

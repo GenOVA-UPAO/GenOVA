@@ -21,7 +21,7 @@ export function UserKeyRowHeader({
         className={cn(
           "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase",
           configured
-            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
+            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
             : "bg-muted text-muted-foreground",
         )}
       >

@@ -40,7 +40,7 @@ export function FallbackChain({
         Cadena de fallback
       </span>
       {fallbacks.length === 0 ? (
-        <p className="rounded-2xl border border-border/50 bg-muted/30 p-4 text-center text-xs font-medium text-muted-foreground/80 italic">
+        <p className="rounded-2xl border border-border/50 bg-muted/30 p-4 text-center text-xs font-medium text-muted-foreground italic">
           No hay modelos de respaldo configurados. Si el primario falla, se detendrá la tarea.
         </p>
       ) : null}

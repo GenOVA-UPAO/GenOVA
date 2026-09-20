@@ -35,10 +35,10 @@ export function ManageModelsList({ grouped }: Readonly<ManageModelsListProps>) {
       <div className="divide-y divide-border/30">
         {grouped.map((entry) => (
           <div key={entry.key} className="px-3 py-2">
-            <p className="mb-1 flex items-center gap-1.5 px-2 text-[9px] font-black tracking-[0.14em] text-muted-foreground/40 uppercase">
+            <p className="mb-1 flex items-center gap-1.5 px-2 text-[9px] font-black tracking-[0.14em] text-muted-foreground uppercase">
               {entry.label}
               {store.groupBy === "provider" && (entry.key === "groq" || entry.key === "huggingface") ? (
-                <span className="font-normal tracking-normal text-emerald-500 normal-case">
+                <span className="font-normal tracking-normal text-emerald-700 normal-case dark:text-emerald-400">
                   · gratuito
                 </span>
               ) : null}

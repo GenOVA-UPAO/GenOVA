@@ -25,7 +25,7 @@ export function ManageModelsToolbar(props: Readonly<ManageModelsToolbarProps>) {
       <ManageModelsSearchField value={props.localSearch} onSearch={props.onSearch} />
       <ManageModelsSelect
         value={orAll(props.typeFilter)}
-        title="Filtrar por tipo de modelo"
+        label="Filtrar por tipo de modelo"
         className="max-w-[130px]"
         onChange={props.onType}
       >
@@ -35,7 +35,11 @@ export function ManageModelsToolbar(props: Readonly<ManageModelsToolbarProps>) {
           </option>
         ))}
       </ManageModelsSelect>
-      <ManageModelsSelect value={orAll(props.categoryFilter)} onChange={props.onCategory}>
+      <ManageModelsSelect
+        value={orAll(props.categoryFilter)}
+        label="Filtrar por categoría"
+        onChange={props.onCategory}
+      >
         {props.categories.map((cat) => (
           <option key={cat} value={cat}>
             {CATEGORY_LABELS[cat] ?? cat}
@@ -44,7 +48,7 @@ export function ManageModelsToolbar(props: Readonly<ManageModelsToolbarProps>) {
       </ManageModelsSelect>
       <ManageModelsSelect
         value={props.sortKey}
-        title="Ordenar"
+        label="Ordenar"
         onChange={(value) => {
           props.onSort(value as SortKey);
         }}
@@ -57,7 +61,7 @@ export function ManageModelsToolbar(props: Readonly<ManageModelsToolbarProps>) {
       </ManageModelsSelect>
       <ManageModelsSelect
         value={props.groupBy}
-        title="Agrupar"
+        label="Agrupar"
         onChange={(value) => {
           props.onGroup(value as GroupBy);
         }}

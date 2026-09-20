@@ -4,7 +4,7 @@ interface FlagSwitchProps {
   checked: boolean;
   disabled?: boolean;
   onToggle: () => void;
-  "aria-label"?: string;
+  label: string;
   size?: "sm" | "md";
 }
 
@@ -21,7 +21,7 @@ export function FlagSwitch({
   checked,
   disabled = false,
   onToggle,
-  "aria-label": ariaLabel,
+  label,
   size = "md",
 }: Readonly<FlagSwitchProps>) {
   const s = SIZE[size];
@@ -30,7 +30,7 @@ export function FlagSwitch({
       type="button"
       role="switch"
       aria-checked={checked}
-      aria-label={ariaLabel}
+      aria-label={label}
       disabled={disabled}
       onClick={() => {
         if (!disabled) onToggle();

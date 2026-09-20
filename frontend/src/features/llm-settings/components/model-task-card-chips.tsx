@@ -21,7 +21,7 @@ export function ModelTaskCardChips({
   const list = fallbacks;
   if (list.length === 0) {
     return (
-      <div className="flex items-center gap-1.5 text-[10px] italic text-muted-foreground/40">
+      <div className="flex items-center gap-1.5 text-[10px] italic text-muted-foreground">
         <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/20" />
         Sin cadena de respaldo
       </div>
@@ -35,7 +35,7 @@ export function ModelTaskCardChips({
     <div className="flex flex-wrap items-center gap-0.5">
       {visible.map((item, index) => (
         <span key={`${item.provider}:${item.model_id}:${String(index)}`} className="inline-flex items-center gap-1">
-          {index > 0 ? <span className="text-[8px] font-black text-muted-foreground/30">→</span> : null}
+          {index > 0 ? <span className="text-[8px] font-black text-muted-foreground">→</span> : null}
           <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${chip}`}>
             <span className={`text-[9px] ${num}`}>{lookupModalitySymbol(chipModality(item, models))}</span>
             <span className="max-w-[80px] truncate">{chipLabel(item, models)}</span>

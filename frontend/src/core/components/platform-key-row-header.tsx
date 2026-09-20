@@ -29,7 +29,7 @@ export function PlatformKeyRowHeader({ meta, configured }: Readonly<PlatformKeyR
         className={cn(
           "shrink-0 rounded-full border px-3 py-1 text-[10px] font-bold tracking-widest uppercase shadow-sm",
           configured
-            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
+            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
             : "border-border/50 bg-muted text-muted-foreground",
         )}
       >

@@ -47,7 +47,7 @@ export function CapabilityRow({
       </div>
       <div className="flex shrink-0 items-center gap-3">
         {cap.always_on ? (
-          <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold tracking-widest text-emerald-600 uppercase shadow-sm">
+          <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold tracking-widest text-emerald-700 uppercase shadow-sm dark:text-emerald-400">
             Siempre activo
           </span>
         ) : (
@@ -55,12 +55,17 @@ export function CapabilityRow({
             <span
               className={cn(
                 "text-[10px] font-bold tracking-widest uppercase",
-                active ? "text-emerald-600" : "text-muted-foreground",
+                active ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground",
               )}
             >
               {active ? "Activo" : "Pausado"}
             </span>
-            <FlagSwitch checked={active} disabled={saving} onToggle={onToggle} />
+            <FlagSwitch
+              checked={active}
+              disabled={saving}
+              label={cap.name}
+              onToggle={onToggle}
+            />
           </>
         )}
       </div>

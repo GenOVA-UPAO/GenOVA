@@ -35,13 +35,18 @@ export function LlmSettingsModalSlotProvider({
   Modal,
 }: Readonly<{ children: ReactNode; Modal: ModalComponent }>) {
   const [open, setOpen] = useState(false);
-  const element = (
+  // everOpened: el chunk del modal solo se descarga la primera vez que se abre,
+  // no en cada página autenticada (mismo patrón que ThemeModal en el navbar);
+  // después queda montado para conservar la animación de cierre.
+  const [everOpened, setEverOpened] = useState(false);
+  const element = everOpened ? (
     <Suspense fallback={null}>
       <Modal open={open} onOpenChange={setOpen} />
     </Suspense>
-  );
+  ) : null;
   const api: LlmSettingsModalApi = {
     open: () => {
+      setEverOpened(true);
       setOpen(true);
     },
     close: () => {

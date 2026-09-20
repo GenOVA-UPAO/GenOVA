@@ -33,7 +33,7 @@ export function AlwaysOnNodeRow({ node, warning = false }: Readonly<AlwaysOnNode
           {node.description ?? "Nodo base del sistema."}
         </p>
       </div>
-      <span className="mr-2 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold tracking-widest text-emerald-600 uppercase shadow-sm">
+      <span className="mr-2 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold tracking-widest text-emerald-700 uppercase shadow-sm dark:text-emerald-400">
         Siempre activo
       </span>
     </div>

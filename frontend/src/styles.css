@@ -34,7 +34,9 @@ naranja como acento puntual. Brand chrome ≠ paleta de contenido OVA. */
   conserva el naranja de marca y pasa el umbral en los usos de texto pequeño/negrita. */
   --accent-brand: oklch(0.46 0.19 52);
   --accent-brand-foreground: oklch(0.99 0.005 85);
-  --destructive: oklch(0.577 0.245 27.325);
+  /* Rojo destructivo en el tono AA: el default (0.577) fallaba 4.5:1 como texto
+  sobre los tintes bg-destructive/5-20 (hallazgo axe-core). */
+  --destructive: oklch(0.505 0.213 27.518);
   /* Éxito — verde con matiz cálido, único token de estado positivo (C6). */
   --success: oklch(0.55 0.15 150);
   --border: oklch(0.9 0.01 85);
@@ -130,7 +132,8 @@ body {
   --accent-foreground: oklch(0.97 0.01 85);
   --accent-brand: oklch(0.76 0.16 55);
   --accent-brand-foreground: oklch(0.18 0.03 264);
-  --destructive: oklch(0.704 0.191 22.216);
+  /* Más claro que el default (0.704) para pasar AA como texto sobre sus tintes. */
+  --destructive: oklch(0.808 0.114 19.571);
   --success: oklch(0.72 0.15 150);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);

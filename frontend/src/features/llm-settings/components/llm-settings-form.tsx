@@ -51,7 +51,7 @@ export function LlmSettingsForm({ readOnly = false }: Readonly<{ readOnly?: bool
           </button>
         </div>
       ) : null}
-      <p className="px-0.5 text-[10px] text-muted-foreground/50">
+      <p className="px-0.5 text-[10px] text-muted-foreground">
         Timeout: {store.bounds[0]}–{store.bounds[1]} s · aplica a todos tus OVAs
       </p>
     </div>

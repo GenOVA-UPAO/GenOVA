@@ -63,14 +63,14 @@ export function ConnectProviderModal({
                 </div>
                 <p className="text-xs leading-relaxed text-muted-foreground">{provider.desc}</p>
               </div>
-              <span className="mt-1 shrink-0 text-muted-foreground/30 transition-colors group-hover:text-primary">
+              <span className="mt-1 shrink-0 text-muted-foreground transition-colors group-hover:text-primary">
                 →
               </span>
             </button>
           ))}
         </div>
         <div className="mx-4 mb-4 flex items-start gap-2 rounded-lg border border-border/40 bg-muted/30 px-3 py-2.5">
-          <Icon name="info" size="text-xs" className="mt-0.5 shrink-0 text-muted-foreground/60" />
+          <Icon name="info" size="text-xs" className="mt-0.5 shrink-0 text-muted-foreground" />
           <p className="text-[11px] leading-relaxed text-muted-foreground">
             Para acceder a modelos de
             <span className="font-semibold text-foreground"> Anthropic, OpenAI, Google, Mistral</span> y
