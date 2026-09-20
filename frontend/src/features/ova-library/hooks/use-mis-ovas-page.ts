@@ -34,6 +34,12 @@ export function useMisOvasPage() {
 
   const handleSearchChange = (val: string) => { setSearch(val); setPage(1); setSelectedIds(new Set()); };
   const handleStatusChange = (val: string) => { setStatusFilter(val); setPage(1); setSelectedIds(new Set()); };
+  const handleClearFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setPage(1);
+    setSelectedIds(new Set());
+  };
   const handleToggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -63,7 +69,7 @@ export function useMisOvasPage() {
 
   return {
     page, setPage, totalItems, totalPages,
-    search, handleSearchChange, statusFilter, handleStatusChange, debouncedSearch,
+    search, handleSearchChange, statusFilter, handleStatusChange, handleClearFilters, debouncedSearch,
     selectedIds, setSelectedIds, handleToggleSelect, allSelected,
     ovaToTrash, setOvaToTrash, handleConfirmTrash,
     showBulkModal, setShowBulkModal, handleConfirmBulkTrash,

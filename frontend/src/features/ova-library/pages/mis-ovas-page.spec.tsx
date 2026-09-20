@@ -135,4 +135,39 @@ describe("MisOvasPage", () => {
     );
     expect(toast.success).toHaveBeenCalledWith("OVA movido a la papelera");
   });
+
+  it("muestra el estado vacío con acción para crear un OVA", async () => {
+    vi.mocked(ovaLibraryApi.list).mockResolvedValue({
+      ovas: [],
+      total_items: 0,
+      total_pages: 1,
+    });
+
+    renderWithProviders(<MisOvasPage />);
+
+    expect(await screen.findByText("Aún no has creado ningún OVA")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Crear mi primer OVA/ })).toHaveAttribute(
+      "href",
+      "/crear",
+    );
+  });
+
+  it("muestra el error en español y reintenta con refetch", async () => {
+    vi.mocked(ovaLibraryApi.list).mockRejectedValue(new Error("ECONNREFUSED"));
+
+    const user = userEvent.setup();
+    renderWithProviders(<MisOvasPage />);
+
+    expect(await screen.findByText("No se pudo cargar el historial de OVAs")).toBeInTheDocument();
+    expect(screen.queryByText("ECONNREFUSED")).not.toBeInTheDocument();
+
+    vi.mocked(ovaLibraryApi.list).mockResolvedValue({
+      ovas: [],
+      total_items: 0,
+      total_pages: 1,
+    });
+    await user.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(await screen.findByText("Aún no has creado ningún OVA")).toBeInTheDocument();
+  });
 });

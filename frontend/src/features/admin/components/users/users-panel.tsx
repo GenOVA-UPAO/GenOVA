@@ -1,6 +1,8 @@
-import { Button } from "@/core/components/ui/button";
+import { QueryErrorState } from "@/core/components/query-error-state";
 
 import type { AdminUser, Role, UsersHandlers } from "../../lib/types";
+import { UsersEmpty } from "./users-empty";
+import { UsersSkeleton } from "./users-skeleton";
 import { UsersTable } from "./users-table";
 
 interface UsersPanelProps {
@@ -14,6 +16,7 @@ interface UsersPanelProps {
   searchQuery: string;
   handlers: UsersHandlers;
   onRetry: () => void;
+  onClearSearch: () => void;
 }
 
 export function UsersPanel({
@@ -27,6 +30,7 @@ export function UsersPanel({
   searchQuery,
   handlers,
   onRetry,
+  onClearSearch,
 }: Readonly<UsersPanelProps>) {
   let content = (
     <UsersTable
@@ -41,25 +45,11 @@ export function UsersPanel({
   );
 
   if (isLoading) {
-    content = (
-      <div className="flex h-[400px] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary shadow-sm" />
-          <p className="text-sm font-bold text-muted-foreground">Cargando usuarios...</p>
-        </div>
-      </div>
-    );
+    content = <UsersSkeleton />;
   } else if (error !== "") {
-    content = (
-      <div className="flex h-[400px] items-center justify-center bg-destructive/5 p-6 text-center">
-        <div className="max-w-md space-y-4">
-          <p className="text-sm font-bold text-destructive">{error}</p>
-          <Button variant="outline" onClick={onRetry}>
-            Reintentar
-          </Button>
-        </div>
-      </div>
-    );
+    content = <QueryErrorState title="No se pudieron cargar los usuarios" onRetry={onRetry} />;
+  } else if (users.length === 0) {
+    content = <UsersEmpty searchQuery={searchQuery} onClearSearch={onClearSearch} />;
   }
 
   return (

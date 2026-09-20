@@ -1,4 +1,8 @@
-import { lazy } from "react";
+// Iconos del shell: se asignan al registro al evaluar el módulo (antes del
+// primer render del layout), evitando el flash "?" en navbar/sidebar.
+import "@/core/components/icon-registry-shell";
+
+import { lazy, Suspense } from "react";
 import { Outlet, useMatches } from "react-router";
 
 import { LlmSettingsModalSlotProvider } from "@/core/lib/llm-settings-modal-slot";
@@ -10,6 +14,13 @@ import { Sidebar } from "./sidebar";
 const LlmSettingsModal = lazy(async () => {
   const mod = await import("@/features/llm-settings/components/llm-settings-modal");
   return { default: mod.LlmSettingsModal };
+});
+
+// El Toaster se trae aparte: sonner pesa ~14 kB gzip y los toasts ya emitidos
+// quedan en el store de sonner, se muestran al montar el Toaster.
+const LazyToaster = lazy(async () => {
+  const mod = await import("sonner");
+  return { default: mod.Toaster };
 });
 
 /** id del <main> — destino del skip link. */
@@ -58,6 +69,9 @@ export function AppLayout() {
           )}
         </main>
       </div>
+      <Suspense fallback={null}>
+        <LazyToaster position="top-right" richColors closeButton />
+      </Suspense>
     </div>
     </LlmSettingsModalSlotProvider>
   );

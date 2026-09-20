@@ -1,3 +1,5 @@
+import type { OvaListItem } from "../lib/types";
+
 export interface AdminCard {
   to: string;
   icon: string;
@@ -26,6 +28,18 @@ export const STATUS_STYLE: Record<string, string> = {
   borrador: "bg-amber-500/15 text-amber-800 dark:text-amber-400 border border-amber-500/20",
   error: "bg-destructive/15 text-destructive border border-destructive/20",
 };
+
+export function getDashboardStats(ovas: OvaListItem[], total: number) {
+  const readyCount = ovas.filter((o) => o.status === "listo").length;
+  const activeCount = ovas.filter((o) => o.status === "generando").length;
+  const totalCount = total > 0 ? total : ovas.length;
+  return { readyCount, activeCount, totalCount };
+}
+
+export function getUserFirstName(fullName?: string): string {
+  if (!fullName) return "Usuario";
+  return fullName.split(" ")[0] ?? "Usuario";
+}
 
 export function formatDate(value: string | undefined): string {
   if (!value) return "Sin fecha";

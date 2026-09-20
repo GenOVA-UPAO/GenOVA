@@ -3,7 +3,10 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/core/components/page-header";
+import { QueryErrorState } from "@/core/components/query-error-state";
 
+import { AnalyticsEmpty } from "../components/analytics-empty";
+import { AnalyticsSkeleton } from "../components/analytics-skeleton";
 import { RecentOvas } from "../components/recent-ovas";
 import { StatCards } from "../components/stat-cards";
 import { StatusBreakdown } from "../components/status-breakdown";
@@ -12,7 +15,7 @@ import { isForbiddenError, useAnalytics } from "../hooks/use-analytics";
 
 export function AnalyticsPage() {
   const navigate = useNavigate();
-  const { data, error, isLoading } = useAnalytics();
+  const { data, error, isLoading, refetch } = useAnalytics();
   const isForbidden = isForbiddenError(error);
 
   useEffect(() => {
@@ -30,11 +33,7 @@ export function AnalyticsPage() {
     return (
       <div className="mx-auto max-w-7xl space-y-6 pb-12 animate-in fade-in duration-300">
         <PageHeader title="Analítica de aprendizaje" subtitle="Cargando métricas…" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" data-testid="analytics-skeleton">
-          <div className="h-24 animate-pulse rounded-2xl bg-muted/50" />
-          <div className="h-24 animate-pulse rounded-2xl bg-muted/50" />
-          <div className="h-24 animate-pulse rounded-2xl bg-muted/50" />
-        </div>
+        <AnalyticsSkeleton />
       </div>
     );
   }
@@ -43,18 +42,27 @@ export function AnalyticsPage() {
     return (
       <div className="mx-auto max-w-7xl space-y-6 pb-12 animate-in fade-in duration-300">
         <PageHeader title="Analítica de aprendizaje" />
-        <div
-          role="alert"
-          className="rounded-2xl border border-destructive/40 bg-destructive/5 p-5 text-sm text-destructive"
-        >
-          No se pudieron cargar las analíticas. Intenta de nuevo más tarde.
-        </div>
+        <QueryErrorState
+          title="No se pudieron cargar las analíticas"
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       </div>
     );
   }
 
   if (!data) {
-    return null;
+    return (
+      <div className="mx-auto max-w-7xl space-y-6 pb-12 animate-in fade-in duration-300">
+        <PageHeader title="Analítica de aprendizaje" />
+        <AnalyticsEmpty
+          onRetry={() => {
+            void refetch();
+          }}
+        />
+      </div>
+    );
   }
 
   const scopeLabel =

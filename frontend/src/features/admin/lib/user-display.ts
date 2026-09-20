@@ -47,6 +47,16 @@ export function roleSelectLabel(user: AdminUser): string {
   return `Rol de ${displayName(user) ?? user.email}`;
 }
 
+export function usersPageSubtitle(
+  isLoading: boolean,
+  hasError: boolean,
+  totalItems: number,
+): string {
+  if (isLoading) return "Cargando usuarios…";
+  if (hasError) return "No se pudo obtener el listado";
+  return `${String(totalItems)} usuarios registrados en la plataforma`;
+}
+
 export function filterUsers(users: AdminUser[], search: string, roleFilter: string): AdminUser[] {
   const term = search.toLowerCase();
   return users.filter((user) => {

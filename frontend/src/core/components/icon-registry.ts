@@ -1,77 +1,24 @@
 import {
-  CaretRightIcon,
-  ChartBarIcon,
   CheckCircleIcon,
-  CircleIcon,
-  ClockIcon,
   EnvelopeSimpleIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  FolderIcon,
-  GearIcon,
-  HouseIcon,
   type Icon as PhosphorIcon,
-  ListIcon,
-  MagnifyingGlassIcon,
-  MonitorIcon,
-  MoonIcon,
-  PaletteIcon,
-  PlusIcon,
-  PlusSquareIcon,
-  RobotIcon,
-  ShieldCheckIcon,
-  ShieldIcon,
-  SidebarIcon,
-  SidebarSimpleIcon,
-  SignOutIcon,
-  SunIcon,
-  TrashIcon,
-  UserCircleIcon,
-  UsersIcon,
   WarningCircleIcon,
-  WarningIcon,
-  XIcon,
 } from "@phosphor-icons/react";
 
 /**
  * Explicit name → component map: only these icons end up in the bundle
  * (the Angular app shipped the whole Phosphor web font for ~100 glyphs).
  *
- * Subset eager ("shell"): auth, layout y dashboard. El resto vive en
- * icon-registry-lazy y se fusiona aquí vía loadFullIconRegistry().
+ * Tres niveles para mantener el entry pequeño:
+ *  - eager (este módulo, chunk inicial): solo lo que pintan las rutas guest.
+ *  - icon-registry-shell (import estático del layout autenticado): iconos de
+ *    navbar/sidebar, asignados al módulo evaluarse (sin flash de "?").
+ *  - icon-registry-lazy: el resto, diferido hasta idle/primera necesidad.
  */
 export const ICONS = {
-  "caret-right": CaretRightIcon,
-  "chart-bar": ChartBarIcon,
-  circle: CircleIcon,
   "check-circle": CheckCircleIcon,
-  clock: ClockIcon,
   "envelope-simple": EnvelopeSimpleIcon,
-  eye: EyeIcon,
-  "eye-slash": EyeSlashIcon,
-  folder: FolderIcon,
-  gear: GearIcon,
-  house: HouseIcon,
-  list: ListIcon,
-  "magnifying-glass": MagnifyingGlassIcon,
-  monitor: MonitorIcon,
-  moon: MoonIcon,
-  palette: PaletteIcon,
-  plus: PlusIcon,
-  "plus-square": PlusSquareIcon,
-  robot: RobotIcon,
-  shield: ShieldIcon,
-  "shield-check": ShieldCheckIcon,
-  sidebar: SidebarIcon,
-  "sidebar-simple": SidebarSimpleIcon,
-  "sign-out": SignOutIcon,
-  sun: SunIcon,
-  trash: TrashIcon,
-  "user-circle": UserCircleIcon,
-  users: UsersIcon,
-  warning: WarningIcon,
   "warning-circle": WarningCircleIcon,
-  x: XIcon,
 } satisfies Record<string, PhosphorIcon>;
 
 let lazyIconsPromise: Promise<void> | null = null;

@@ -1,5 +1,5 @@
+import { QueryErrorState } from "@/core/components/query-error-state";
 import { SkeletonGrid } from "@/core/components/skeleton-grid";
-import { Button } from "@/core/components/ui/button";
 
 import type { OvaJobInfo } from "../lib/job-types";
 import type { OvaListItem } from "../lib/types";
@@ -23,6 +23,7 @@ interface MisOvasGridProps {
   onDuplicate: (id: string) => void;
   onResume: (id: string) => void;
   onRetry: () => void;
+  onClearFilters: () => void;
 }
 
 /** Renderiza el estado de carga, error, vacío o la grilla de tarjetas de OVA. */
@@ -43,28 +44,16 @@ export function MisOvasGrid({
   onDuplicate,
   onResume,
   onRetry,
+  onClearFilters,
 }: Readonly<MisOvasGridProps>) {
   if (isLoading) return <SkeletonGrid count={6} />;
 
   if (error) {
-    return (
-      <div className="flex h-64 items-center justify-center p-6 text-center">
-        <div className="space-y-4">
-          <p className="inline-block rounded-lg bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive">
-            No se pudo cargar el historial de OVAs.
-          </p>
-          <div>
-            <Button variant="outline" onClick={onRetry}>
-              Reintentar conexión
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    return <QueryErrorState title="No se pudo cargar el historial de OVAs" onRetry={onRetry} />;
   }
 
   if (ovas.length === 0) {
-    return <MisOvasEmpty isFiltering={isFiltering} />;
+    return <MisOvasEmpty isFiltering={isFiltering} onClearFilters={onClearFilters} />;
   }
 
   return (

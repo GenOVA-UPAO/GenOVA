@@ -6,16 +6,22 @@ import { Button } from "@/core/components/ui/button";
 
 interface MisOvasEmptyProps {
   isFiltering: boolean;
+  onClearFilters: () => void;
 }
 
 /** Estado vacío para la grilla de Mis OVAs (con o sin filtros activos). */
-export function MisOvasEmpty({ isFiltering }: Readonly<MisOvasEmptyProps>) {
+export function MisOvasEmpty({ isFiltering, onClearFilters }: Readonly<MisOvasEmptyProps>) {
   if (isFiltering) {
     return (
       <EmptyState
         icon="magnifying-glass-minus"
         title="Sin resultados para tu búsqueda"
         description="Prueba con otros términos de búsqueda o cambia el filtro de estado actual."
+        action={
+          <Button variant="outline" onClick={onClearFilters}>
+            Limpiar filtros
+          </Button>
+        }
       />
     );
   }

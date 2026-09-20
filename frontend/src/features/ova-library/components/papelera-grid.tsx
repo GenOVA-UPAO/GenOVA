@@ -1,4 +1,8 @@
+import { Link } from "react-router";
+
 import { EmptyState } from "@/core/components/empty-state";
+import { QueryErrorState } from "@/core/components/query-error-state";
+import { SkeletonGrid } from "@/core/components/skeleton-grid";
 import { Button } from "@/core/components/ui/button";
 
 import type { OvaListItem } from "../lib/types";
@@ -31,27 +35,11 @@ export function PapeleraGrid({
   onRetry,
 }: Readonly<PapeleraGridProps>) {
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-          <p className="text-xs text-muted-foreground">Cargando papelera...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonGrid count={6} label="Cargando papelera" />;
   }
 
   if (error) {
-    return (
-      <div className="flex h-64 items-center justify-center p-6 text-center">
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-destructive">No se pudo cargar la papelera.</p>
-          <Button variant="outline" size="sm" onClick={onRetry}>
-            Reintentar
-          </Button>
-        </div>
-      </div>
-    );
+    return <QueryErrorState title="No se pudo cargar la papelera" onRetry={onRetry} />;
   }
 
   if (ovas.length === 0) {
@@ -60,6 +48,11 @@ export function PapeleraGrid({
         icon="trash"
         title="Tu papelera está vacía"
         description="Los OVAs que muevas a la papelera aparecerán aquí."
+        action={
+          <Button asChild variant="outline">
+            <Link to="/mis-ovas">Ir a Mis OVAs</Link>
+          </Button>
+        }
       />
     );
   }

@@ -96,4 +96,36 @@ describe("PapeleraPage", () => {
     );
     expect(toast.success).toHaveBeenCalledWith("OVA restaurado");
   });
+
+  it("muestra el estado vacío con enlace a Mis OVAs", async () => {
+    vi.mocked(ovaLibraryApi.trash).mockResolvedValue({
+      ovas: [],
+      total_items: 0,
+      total_pages: 1,
+    });
+
+    renderWithProviders(<PapeleraPage />);
+
+    expect(await screen.findByText("Tu papelera está vacía")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ir a Mis OVAs" })).toHaveAttribute("href", "/mis-ovas");
+  });
+
+  it("muestra el error en español y reintenta con refetch", async () => {
+    vi.mocked(ovaLibraryApi.trash).mockRejectedValue(new Error("socket hang up"));
+
+    const user = userEvent.setup();
+    renderWithProviders(<PapeleraPage />);
+
+    expect(await screen.findByText("No se pudo cargar la papelera")).toBeInTheDocument();
+    expect(screen.queryByText("socket hang up")).not.toBeInTheDocument();
+
+    vi.mocked(ovaLibraryApi.trash).mockResolvedValue({
+      ovas: [],
+      total_items: 0,
+      total_pages: 1,
+    });
+    await user.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(await screen.findByText("Tu papelera está vacía")).toBeInTheDocument();
+  });
 });

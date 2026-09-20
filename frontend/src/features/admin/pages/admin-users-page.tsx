@@ -13,7 +13,12 @@ import { useAdminUsers } from "../hooks/use-admin-users";
 import { useAdminUsersController } from "../hooks/use-admin-users-controller";
 import { errorMessage } from "../lib/error-message";
 import type { AdminUser } from "../lib/types";
-import { EMPTY_USERS_PAGE, filterUsers, resolveCurrentUserId } from "../lib/user-display";
+import {
+  EMPTY_USERS_PAGE,
+  filterUsers,
+  resolveCurrentUserId,
+  usersPageSubtitle,
+} from "../lib/user-display";
 
 export function AdminUsersPage() {
   const me = useCurrentUser();
@@ -35,6 +40,7 @@ export function AdminUsersPage() {
   const errorText = usersQuery.error
     ? errorMessage(usersQuery.error, "Error al cargar usuarios.")
     : "";
+  const subtitle = usersPageSubtitle(usersQuery.isLoading, errorText !== "", usersData.total_items);
 
   const handlePageChange = (nextPage: number) => {
     if (nextPage >= 1 && nextPage <= totalPages) setPage(nextPage);
@@ -49,7 +55,7 @@ export function AdminUsersPage() {
             Usuarios
           </span>
         }
-        subtitle={`${String(usersData.total_items)} usuarios registrados en la plataforma`}
+        subtitle={subtitle}
       />
       <UsersToolbar
         search={search}
@@ -70,6 +76,9 @@ export function AdminUsersPage() {
         handlers={controller.handlers}
         onRetry={() => {
           void usersQuery.refetch();
+        }}
+        onClearSearch={() => {
+          setSearch("");
         }}
       />
       <UsersPagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />

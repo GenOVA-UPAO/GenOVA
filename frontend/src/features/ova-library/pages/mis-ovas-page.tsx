@@ -82,6 +82,7 @@ export function MisOvasPage() {
         onDuplicate={(id) => { void p.actions.duplicateOva(id); }}
         onResume={(id) => { void p.resume(id); }}
         onRetry={() => { void p.refetch(); }}
+        onClearFilters={p.handleClearFilters}
       />
 
       {showContent && (

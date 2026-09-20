@@ -1,67 +1,73 @@
 import { useState } from "react";
 
-import { PlatformApiKeysCard } from "@/core/components/platform-api-keys-card";
-import { Tabs, TabsContent } from "@/core/components/ui/tabs";
+import { EmptyState } from "@/core/components/empty-state";
+import { QueryErrorState } from "@/core/components/query-error-state";
+import { Button } from "@/core/components/ui/button";
 
-import { DeleteAccountCard } from "../components/delete-account-card";
-import { PasswordChangeForm } from "../components/password-change-form";
-import { ProfileForm } from "../components/profile-form";
 import { ProfileHeader } from "../components/profile-header";
 import { ProfileSkeleton } from "../components/profile-skeleton";
-import { ProfileTabsList } from "../components/profile-tabs-list";
-import { TotpSetupCard } from "../components/totp-setup-card";
+import { ProfileWorkspace } from "../components/profile-workspace";
 import { useProfile } from "../hooks/use-profile";
 import { useProfileActions } from "../hooks/use-profile-actions";
 
 const TAB_INFO = "info";
 const TAB_CONFIG = "config";
-const TAB_SECURITY = "security";
 
 export function ProfilePage() {
   const profileQuery = useProfile();
   const actions = useProfileActions();
   const [tab, setTab] = useState(TAB_INFO);
+  const retry = () => {
+    void profileQuery.refetch();
+  };
+
+  if (profileQuery.isError) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 pb-12">
+        <QueryErrorState title="No se pudo cargar el perfil" onRetry={retry} />
+      </div>
+    );
+  }
+
+  if (profileQuery.isLoading) {
+    const pendingRole = "usuario";
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 pb-12">
+        <ProfileHeader profile={null} role={pendingRole} isLoading />
+        <ProfileSkeleton />
+      </div>
+    );
+  }
 
   const profile = profileQuery.data ?? null;
-  const role = profile?.role ?? "usuario";
-  const isAdmin = role === "administrador";
-  const activeTab = tab === TAB_CONFIG && !isAdmin ? TAB_INFO : tab;
+  if (profile === null) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 pb-12">
+        <EmptyState
+          icon="users-three"
+          title="No hay datos de perfil"
+          description="Vuelve a cargar tu información para continuar."
+          action={
+            <Button variant="outline" onClick={retry}>
+              Reintentar
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  const role = profile.role ?? "usuario";
+  const activeTab = tab === TAB_CONFIG && role !== "administrador" ? TAB_INFO : tab;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-12">
-      <ProfileHeader profile={profile} role={role} isLoading={profileQuery.isLoading} />
-      {profileQuery.isLoading ? (
-        <ProfileSkeleton />
-      ) : (
-        <Tabs value={activeTab} onValueChange={setTab} className="flex-col space-y-5">
-          <ProfileTabsList isAdmin={isAdmin} />
-          <TabsContent value={TAB_INFO} className="mt-0">
-            <ProfileForm
-              profile={profile}
-              isSubmitting={actions.isSavingProfile}
-              onSave={actions.handleSaveProfile}
-            />
-          </TabsContent>
-          {isAdmin && (
-            <TabsContent value={TAB_CONFIG} className="mt-0 space-y-5">
-              <PlatformApiKeysCard />
-            </TabsContent>
-          )}
-          <TabsContent value={TAB_SECURITY} className="mt-0 space-y-5">
-            <TotpSetupCard totpEnabled={profile?.totp_enabled === true} />
-            <PasswordChangeForm
-              isSubmitting={actions.isChangingPassword}
-              onSave={actions.handleChangePassword}
-            />
-            <DeleteAccountCard
-              isSubmitting={actions.isDeletingAccount}
-              serverError={actions.deleteError}
-              onDelete={actions.handleDeleteAccount}
-              onDismissError={actions.resetDeleteError}
-            />
-          </TabsContent>
-        </Tabs>
-      )}
+      <ProfileWorkspace
+        profile={profile}
+        activeTab={activeTab}
+        onTabChange={setTab}
+        actions={actions}
+      />
     </div>
   );
 }

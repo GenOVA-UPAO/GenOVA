@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -95,18 +96,36 @@ describe("AnalyticsPage", () => {
     expect(screen.getByTestId("analytics-skeleton")).toBeInTheDocument();
   });
 
-  it("muestra el mensaje de error cuando la petición falla con un error genérico", () => {
+  it("muestra el mensaje de error cuando la petición falla con un error genérico", async () => {
+    const refetch = vi.fn();
     vi.mocked(useAnalytics).mockReturnValue({
       data: undefined,
       error: new Error("Error de conexión"),
       isLoading: false,
+      refetch,
     } as unknown as ReturnType<typeof useAnalytics>);
 
     renderPage();
 
-    expect(
-      screen.getByText("No se pudieron cargar las analíticas. Intenta de nuevo más tarde."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No se pudieron cargar las analíticas")).toBeInTheDocument();
+    expect(screen.queryByText("Error de conexión")).not.toBeInTheDocument();
+
+    await userEvent.setup().click(screen.getByRole("button", { name: "Reintentar" }));
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it("muestra el estado vacío cuando no hay datos de analítica", () => {
+    vi.mocked(useAnalytics).mockReturnValue({
+      data: undefined,
+      error: null,
+      isLoading: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useAnalytics>);
+
+    renderPage();
+
+    expect(screen.getByText("Aún no hay analíticas")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reintentar" })).toBeInTheDocument();
   });
 
   it("redirige a /dashboard y muestra toast de error si el backend responde 403", () => {

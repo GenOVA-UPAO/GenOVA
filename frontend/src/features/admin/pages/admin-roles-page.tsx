@@ -32,6 +32,7 @@ export function AdminRolesPage() {
         error={controller.error}
         roles={controller.roles}
         onRetry={controller.retry}
+        onCreate={controller.openCreate}
         onEdit={controller.openEdit}
         onDelete={controller.requestDelete}
       />

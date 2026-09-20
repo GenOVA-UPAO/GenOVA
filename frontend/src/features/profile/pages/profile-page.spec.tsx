@@ -31,10 +31,16 @@ const PROFILE: MockProfile = {
   totp_enabled: false,
 };
 
-function mockProfile(data: MockProfile) {
+function mockProfile(
+  data: MockProfile | undefined,
+  extra: Partial<{ isLoading: boolean; isError: boolean; refetch: () => void }> = {},
+) {
   vi.mocked(useProfile).mockReturnValue({
     data,
     isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+    ...extra,
   } as unknown as ReturnType<typeof useProfile>);
 }
 
@@ -98,6 +104,27 @@ describe("ProfilePage", () => {
     expect(screen.getByLabelText("Teléfono de contacto")).toHaveValue("");
     expect(screen.getByLabelText("Sexo / Género")).toHaveValue("otro");
     expect(screen.queryByDisplayValue("null")).not.toBeInTheDocument();
+  });
+
+  it("muestra el error en español y reintenta con refetch", async () => {
+    const refetch = vi.fn();
+    mockProfile(undefined, { isError: true, refetch });
+
+    const user = userEvent.setup();
+    render(<ProfilePage />);
+
+    expect(screen.getByText("No se pudo cargar el perfil")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Reintentar" }));
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it("muestra el estado vacío cuando no hay datos de perfil", () => {
+    mockProfile(undefined);
+
+    render(<ProfilePage />);
+
+    expect(screen.getByText("No hay datos de perfil")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reintentar" })).toBeInTheDocument();
   });
 
   it("muestra las pestañas en una fila superior, no como columna lateral", () => {

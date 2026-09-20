@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Outlet, useMatches, useNavigate } from "react-router";
-import { Toaster } from "sonner";
 
 import { authStore } from "@/core/auth/auth-store";
 import { useThemeEffect } from "@/core/theme/theme";
@@ -38,7 +37,6 @@ export function RootLayout() {
     <>
       <NavigationProgress />
       <Outlet />
-      <Toaster position="top-right" richColors closeButton />
     </>
   );
 }
