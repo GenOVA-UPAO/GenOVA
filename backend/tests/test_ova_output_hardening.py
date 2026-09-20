@@ -39,10 +39,11 @@ def test_js_check_flags_truncated_script_only():
     assert errors and errors[0].startswith("script 1")
 
 
-def test_js_check_reads_scripts_closed_with_spaces():
-    """El modelo cierra a veces con `</script >`: el bloque no debe escaparse."""
-    broken = DOC.replace("var a = 1;", "var a = ").replace("</script>", "</script >")
-    assert script_syntax_errors(broken)
+def test_js_check_reads_scripts_closed_loosely():
+    """El cierre admite espacios y basura tipo atributo: el bloque no debe escaparse."""
+    for close in ("</script >", '</script foo="bar">', "</script\n bar>"):
+        broken = DOC.replace("var a = 1;", "var a = ").replace("</script>", close)
+        assert script_syntax_errors(broken), close
 
 
 def test_js_check_skips_injected_runtime():

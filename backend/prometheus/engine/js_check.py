@@ -16,7 +16,9 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-_SCRIPT = re.compile(r"<script(\s[^>]*)?>([\s\S]*?)</script\s*>", re.I)
+# La etiqueta de cierre admite basura tipo atributo antes del `>`
+# (`</script foo="bar">`): el navegador la cierra igual, así que aquí también.
+_SCRIPT = re.compile(r"<script(\s[^>]*)?>([\s\S]*?)</script(\s[^>]*)?>", re.I)
 # Runtime inyectado y snippet SCORM: código propio ya probado, no se revisa.
 _SKIP_MARKERS = ("UPAO Components v", "function _scormInit")
 _MAX_ERRORS = 3
