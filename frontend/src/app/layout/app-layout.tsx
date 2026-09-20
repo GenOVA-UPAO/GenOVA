@@ -39,9 +39,10 @@ export function AppLayout() {
         <Sidebar />
         <main
           id={MAIN_CONTENT_ID}
-          // Destino del enlace "Saltar al contenido": debe poder recibir foco por
-          // programa, pero no entrar en el orden de tabulación.
-          tabIndex={-1}
+          // Es el contenedor con scroll: necesita foco por teclado cuando la
+          // página no tiene elementos focusables (axe scrollable-region-focusable).
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- contenedor con scroll: foco por teclado (axe scrollable-region-focusable)
+          tabIndex={0}
           className={
             fullBleed
               ? "flex min-h-0 flex-1 flex-col overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-inset"
