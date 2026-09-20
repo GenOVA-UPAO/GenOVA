@@ -12,31 +12,47 @@ pnpm typecheck
 echo "[pre-push] Frontend: tests unitarios (vitest)"
 pnpm test:vitest
 
+# Cómo ejecutar las herramientas del backend. Desde WSL el venv suele ser de
+# Windows (backend/.venv/Scripts) y `uv run` a secas intenta recrearlo: el push
+# se quedaba colgado sin imprimir nada. Se prueba el intérprete del venv, luego
+# el del sistema y por último uv --no-sync; si ninguno tiene la herramienta se
+# avisa y se omite (CI vuelve a ejecutar estas comprobaciones en cada PR).
+backend_py=""
+for candidate in backend/.venv/bin/python backend/.venv/Scripts/python.exe; do
+  if [ -x "$candidate" ] && "$candidate" -c "import sys" >/dev/null 2>&1; then
+    backend_py="$candidate"
+    break
+  fi
+done
+
+# run_backend_tool <módulo> <mensaje> -- <argumentos...>
+run_backend_tool() {
+  module="$1"
+  shift
+  if [ -n "$backend_py" ] && ( cd backend && "../$backend_py" -c "import $module" ) >/dev/null 2>&1; then
+    ( cd backend && "../$backend_py" -m "$module" "$@" )
+  elif python -c "import $module" >/dev/null 2>&1; then
+    ( cd backend && python -m "$module" "$@" )
+  elif command -v uv >/dev/null 2>&1 && ( cd backend && uv run --no-sync python -c "import $module" ) >/dev/null 2>&1; then
+    ( cd backend && uv run --no-sync python -m "$module" "$@" )
+  else
+    echo "[pre-push] $module no disponible en el entorno — se omite (CI lo comprueba igualmente)"
+    echo "[pre-push] recupéralo con: cd backend && uv sync --extra dev"
+  fi
+}
+
 echo "[pre-push] Backend: ruff"
-if python -c "import ruff" >/dev/null 2>&1; then
-  ( cd backend && python -m ruff check . )
-elif command -v uv >/dev/null 2>&1; then
-  ( cd backend && uv run ruff check . )
-else
-  echo "[pre-push] ruff/uv no disponible — se omite el lint de backend"
-fi
+run_backend_tool ruff check .
 
 echo "[pre-push] Backend: fronteras de arquitectura (import-linter) + tamaño de módulos"
-if command -v lint-imports >/dev/null 2>&1; then
-  ( cd backend && lint-imports && python scripts/check_module_size.py )
-elif command -v uv >/dev/null 2>&1; then
-  ( cd backend && uv run lint-imports && uv run python scripts/check_module_size.py )
-else
-  echo "[pre-push] import-linter/uv no disponible — se omite el chequeo de arquitectura"
+run_backend_tool importlinter.cli lint
+if [ -n "$backend_py" ]; then
+  ( cd backend && "../$backend_py" scripts/check_module_size.py )
 fi
 
 echo "[pre-push] Backend: BDD (solo si el backend responde en :8000)"
 if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
-  if python -c "import pytest" >/dev/null 2>&1; then
-    ( cd backend && python -m pytest tests/step_defs/ -q )
-  elif command -v uv >/dev/null 2>&1; then
-    ( cd backend && uv run pytest tests/step_defs/ -q )
-  fi
+  run_backend_tool pytest tests/step_defs/ -q
 else
   echo "[pre-push] backend no está en :8000 — se omiten los BDD (igual que verify.ps1)"
 fi
