@@ -1,5 +1,6 @@
 import type { useOvaJob } from "../../hooks/use-ova-job";
 import { isResumableJob } from "../../lib/ova-job-view-model";
+import { CanceledJobBanner } from "./canceled-job-banner";
 import { ProgressPanel } from "./progress-panel";
 import { TotalFailurePanel } from "./total-failure-panel";
 
@@ -31,6 +32,15 @@ function activePreviewId(job: ReturnType<typeof useOvaJob>, pinnedId: string | n
   return job.resources.find((resource) => resource.status === "check")?.id ?? null;
 }
 
+function outcomeKind(
+  outcome: ReturnType<typeof useOvaJob>["outcome"],
+  status: string | undefined,
+): "canceled" | "totalFail" | null {
+  if (!outcome.isTerminal) return null;
+  if (status === "canceled") return "canceled";
+  return outcome.totalFail ? "totalFail" : null;
+}
+
 export function GenerationProgressColumn({
   job,
   stalled,
@@ -47,6 +57,7 @@ export function GenerationProgressColumn({
   const activeId = activePreviewId(job, pinnedId);
   const outcome = job.outcome;
   const resumable = resumableCount(job);
+  const kind = outcomeKind(outcome, job.data?.status);
   return (
     <>
       {!outcome.isTerminal && job.resources.length === 0 && (
@@ -73,7 +84,8 @@ export function GenerationProgressColumn({
           onResume={onRetryAll}
         />
       )}
-      {outcome.isTerminal && outcome.totalFail && job.data?.status !== "canceled" && (
+      {kind === "canceled" && <CanceledJobBanner />}
+      {kind === "totalFail" && (
         <TotalFailurePanel
           viewModel={job.resources}
           onRetryAll={onRetryAll}

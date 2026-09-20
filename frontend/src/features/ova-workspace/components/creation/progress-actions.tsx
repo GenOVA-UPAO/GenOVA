@@ -20,7 +20,7 @@ export function ProgressActions({ job }: Readonly<{ job: ReturnType<typeof useOv
           Cancelar generación
         </Button>
       )}
-      {job.outcome.isTerminal && ids.length > 0 && (
+      {job.outcome.isTerminal && ids.length > 0 && !job.outcome.totalFail && (
         <Button
           disabled={job.resume.isPending}
           onClick={() => {

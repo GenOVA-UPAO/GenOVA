@@ -1,13 +1,20 @@
 import { useState } from "react";
 
-import { Button } from "@/core/components/ui/button";
-
 import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaUploads } from "../../hooks/use-uploads";
+import { labelsForPhaseIds } from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
 import { ChatComposer } from "./chat-composer";
 import { ChatHistory } from "./chat-history";
+import { ChatRegenToolbar } from "./chat-regen-toolbar";
 import { ChatResourceSelect } from "./chat-resource-select";
+
+function composerPlaceholder(selecting: boolean, count: number): string {
+  if (selecting && count > 0) {
+    return `Cambio para ${String(count)} recurso${count !== 1 ? "s" : ""}…`;
+  }
+  return "Escribe un cambio o mejora para el OVA…";
+}
 
 export function WorkspaceChatPanel({ ovaId, phases }: Readonly<{ ovaId: string; phases: PhaseWithContent[] }>) {
   const [prompt, setPrompt] = useState("");
@@ -16,7 +23,13 @@ export function WorkspaceChatPanel({ ovaId, phases }: Readonly<{ ovaId: string; 
   const uploads = useOvaUploads();
   const regen = useChatRegeneration(ovaId);
   const submit = (all = false) => {
-    if (!regen.busy) regen.request.mutate({ prompt: all ? "Regenerar OVA completo" : prompt, phaseIds: all ? [] : selected });
+    if (regen.busy) return;
+    const phaseIds = all ? [] : selected;
+    regen.request.mutate({
+      prompt: all ? "Regenerar OVA completo" : prompt,
+      phaseIds,
+      resourceLabels: labelsForPhaseIds(phases, phaseIds),
+    });
   };
   const error = regen.request.error?.message ?? regen.error ?? uploads.uploadError;
   return (
@@ -32,26 +45,17 @@ export function WorkspaceChatPanel({ ovaId, phases }: Readonly<{ ovaId: string; 
             regen.chat.clear.mutate();
           }}
         />
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            disabled={regen.busy}
-            onClick={() => {
-              submit(true);
-            }}
-          >
-            Regenerar OVA completo
-          </Button>
-          <Button
-            variant="outline"
-            aria-pressed={selecting}
-            onClick={() => {
-              setSelecting(!selecting);
-            }}
-          >
-            Seleccionar recursos
-          </Button>
-        </div>
+        <ChatRegenToolbar
+          busy={regen.busy}
+          selecting={selecting}
+          selectedCount={selected.length}
+          onRegenAll={() => {
+            submit(true);
+          }}
+          onToggleSelect={() => {
+            setSelecting(!selecting);
+          }}
+        />
         {selecting && (
           <ChatResourceSelect
             phases={phases}
@@ -74,6 +78,7 @@ export function WorkspaceChatPanel({ ovaId, phases }: Readonly<{ ovaId: string; 
           }}
           busy={regen.busy}
           uploads={uploads}
+          placeholder={composerPlaceholder(selecting, selected.length)}
         />
         {regen.busy && (
           <p role="status">

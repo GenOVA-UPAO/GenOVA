@@ -14,6 +14,7 @@ export function ChatResourceSelect({ phases, selected, onToggle, onSelectAll }: 
   return (
     <fieldset className="space-y-2">
       <legend>Recursos a regenerar</legend>
+      <p className="text-xs text-muted-foreground">El prompt aplicará solo a los recursos marcados.</p>
       <Button
         variant="ghost"
         size="sm"

@@ -9,7 +9,7 @@ export function CreationStatusBadge({ resource }: Readonly<{ resource: ResourceV
       className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${markClass(resource.status)}`}
       aria-label={resourceStatusLabel(resource.status)}
     >
-      {resource.status === "check" && <Icon name="check" size="text-sm" />}
+      {resource.status === "check" && <Icon name="check-circle" size="text-sm" />}
       {resource.status === "X" && <Icon name="x" size="text-sm" />}
       {(resource.status === "pendiente" || resource.status === "generando") && (
         <span className="inline-flex items-center gap-[3px]" aria-hidden="true">

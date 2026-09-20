@@ -1,4 +1,4 @@
-import { apiJson } from "@/core/lib/http";
+import { apiJson, HttpError } from "@/core/lib/http";
 import { ovaJobsApi } from "@/core/services/ova-jobs-api.service";
 
 import type { JobSnapshot } from "../lib/ova-job-view-model";
@@ -54,6 +54,15 @@ export function resumeOvaJob(jobId: string, resourceIds?: string[]): Promise<Job
   return ovaJobsApi.resumeJob(jobId, resourceIds) as Promise<JobAck>;
 }
 
-export function cancelOvaJob(jobId: string): Promise<JobAck> {
-  return ovaJobsApi.cancelJob(jobId);
+export async function cancelOvaJob(jobId: string): Promise<JobAck> {
+  try {
+    return await ovaJobsApi.cancelJob(jobId);
+  } catch (error) {
+    // 409 = el job ya terminó (done/error/canceled). No es un fallo de usuario:
+    // el panel debe refrescar el estado real, no pintar un error rojo.
+    if (error instanceof HttpError && error.status === 409) {
+      return { job_id: jobId, status: "already_terminal" };
+    }
+    throw error;
+  }
 }

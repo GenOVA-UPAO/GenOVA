@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { useGeneratePhaseResource, usePhaseResources } from "../../hooks/use-phase-resources";
 import { useResourceConfigs } from "../../hooks/use-resource-configs";
@@ -18,8 +18,12 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
   const [hovered, setHovered] = useState<Resource>();
   const [target, setTarget] = useState<Resource>();
   const preview = hovered ?? selected;
+  useEffect(() => {
+    if (!generation.data) return;
+    document.getElementById("phase-resource-preview")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [generation.data]);
   return (
-    <main className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto">
       <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
       <header>
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">Fase {phase.toUpperCase()}</h1>
@@ -39,7 +43,7 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
           />
           <PhaseConceptForm phase={phase} resource={selected} generation={generation} />
           {generation.data && (
-            <section className="space-y-4 rounded-xl border bg-card p-5">
+            <section id="phase-resource-preview" className="space-y-4 rounded-xl border bg-card p-5">
               <h2 className="font-semibold">3. Vista previa</h2>
               <HtmlPreview result={generation.data} />
             </section>
@@ -69,6 +73,6 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
         </Suspense>
       )}
       </div>
-    </main>
+    </div>
   );
 }

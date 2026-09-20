@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { triggerOvaRegeneration } from "../api/ova-workspace.api";
-import { assistantRunningMessage, type RegenChatMessage,userChatMessage } from "../lib/regen-chat";
+import { assistantRunningMessage, type RegenChatMessage, userChatMessage } from "../lib/regen-chat";
 import { useRegenerationProgress } from "./use-regeneration-progress";
 import { useWorkspaceChat } from "./use-workspace-chat";
 
@@ -12,9 +12,9 @@ export function useChatRegeneration(ovaId: string) {
   const [jobId, setJobId] = useState<string>();
   const patch = chat.patch.mutateAsync;
   const progress = useRegenerationProgress(ovaId, jobId, assistant, patch);
-  const request = useMutation({ mutationFn: async ({ prompt, phaseIds }: { prompt: string; phaseIds: string[] }) => {
-    await chat.append.mutateAsync(userChatMessage(prompt));
-    const running = assistantRunningMessage();
+  const request = useMutation({ mutationFn: async ({ prompt, phaseIds, resourceLabels }: { prompt: string; phaseIds: string[]; resourceLabels?: string[] }) => {
+    await chat.append.mutateAsync(userChatMessage(prompt, { resourceLabels }));
+    const running = assistantRunningMessage(undefined, resourceLabels);
     await chat.append.mutateAsync(running);
     try {
       const ack = await triggerOvaRegeneration(ovaId, { prompt, phaseIds });

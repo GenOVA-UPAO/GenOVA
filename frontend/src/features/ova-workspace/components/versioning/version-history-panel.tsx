@@ -5,10 +5,11 @@ import { Button } from "@/core/components/ui/button";
 
 import { fetchVersionDiff, revertOvaVersion } from "../../api/ova-workspace.api";
 import { ovaWorkspaceKey, useOvaWorkspace } from "../../hooks/use-ova-workspace";
-import { type OvaVersionRow, sortVersionsDesc } from "../../lib/ova-versioning";
+import { orderedVersionIds, type OvaVersionRow, sortVersionsDesc } from "../../lib/ova-versioning";
 import { WorkspaceModal } from "../shared/workspace-modal";
 import { RevertConfirm } from "./revert-confirm";
 import { VersionDiff } from "./version-diff";
+import { VersionHistoryList } from "./version-history-list";
 
 export default function VersionHistoryPanel({ ovaId, onClose }: Readonly<{ ovaId: string; onClose: () => void }>) {
   const workspace = useOvaWorkspace(ovaId);
@@ -16,7 +17,12 @@ export default function VersionHistoryPanel({ ovaId, onClose }: Readonly<{ ovaId
   const versions = sortVersionsDesc(workspace.data?.version_history as OvaVersionRow[] | undefined);
   const [selected, setSelected] = useState<string[]>([]);
   const [target, setTarget] = useState<string>();
-  const diff = useMutation({ mutationFn: () => fetchVersionDiff(ovaId, selected[0], selected[1]) });
+  const diff = useMutation({
+    mutationFn: () => {
+      const [older, newer] = orderedVersionIds(selected, versions);
+      return fetchVersionDiff(ovaId, older, newer);
+    },
+  });
   const revert = useMutation({
     mutationFn: (id: string) => revertOvaVersion(ovaId, id),
     onSuccess: async () => {
@@ -31,31 +37,12 @@ export default function VersionHistoryPanel({ ovaId, onClose }: Readonly<{ ovaId
   };
   return (
     <WorkspaceModal title="Historial de versiones" onClose={onClose}>
-      <ul className="space-y-3">
-        {versions.map((version) => (
-          <li key={version.id} className="flex flex-wrap items-center gap-3 rounded border p-3">
-            <input
-              type="checkbox"
-              aria-label={`Seleccionar versión ${String(version.version_number)} para comparar`}
-              checked={selected.includes(version.id)}
-              disabled={selected.length === 2 && !selected.includes(version.id)}
-              onChange={(event) => {
-                toggle(version.id, event.target.checked);
-              }}
-            />
-            <span>Versión {version.version_number}</span>
-            <Button
-              variant="outline"
-              disabled={version.is_active}
-              onClick={() => {
-                setTarget(version.id);
-              }}
-            >
-              Restaurar
-            </Button>
-          </li>
-        ))}
-      </ul>
+      <VersionHistoryList
+        versions={versions}
+        selected={selected}
+        onToggle={toggle}
+        onRestore={setTarget}
+      />
       <Button
         disabled={selected.length !== 2 || diff.isPending}
         onClick={() => {

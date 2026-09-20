@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { useFailedSelection } from "../../hooks/use-failed-selection";
 import { useJobStall } from "../../hooks/use-job-stall";
 import { useOvaJob } from "../../hooks/use-ova-job";
+import { statusLabel } from "../../lib/progress-view-model";
 import { GenerationProgressColumn } from "./generation-progress-column";
 import { ProgressActions } from "./progress-actions";
 
@@ -21,9 +22,12 @@ export function CreationProgress({ jobId, onReady }: Readonly<{ jobId: string; o
   const selection = useFailedSelection(job.resources);
   const stalled = useJobStall(job.data, job.isStreaming);
   const error = job.error ?? job.resume.error ?? job.cancel.error;
+  const title = job.outcome.isTerminal
+    ? statusLabel(job.data?.status ?? "error")
+    : "Generando tu OVA";
   return (
     <section className="mx-auto w-full max-w-4xl space-y-6 p-6">
-      <h1 className="font-display text-3xl font-semibold sm:text-4xl">Generando tu OVA</h1>
+      <h1 className="font-display text-3xl font-semibold sm:text-4xl">{title}</h1>
       <div className="space-y-3">
         <GenerationProgressColumn
           job={job}

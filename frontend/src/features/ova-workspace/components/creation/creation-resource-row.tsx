@@ -36,12 +36,12 @@ export function CreationResourceRow({ resource, selected, active, onToggle, onRe
             className={`flex-1 min-w-0 inline-flex items-center gap-1.5 text-left text-sm text-foreground hover:text-primary ${active ? "font-semibold text-primary" : ""}`}
           >
             {icon}
-            <span className="truncate">{resource.label}</span>
+            <span className="truncate" title={resource.label}>{resource.label}</span>
           </button>
         ) : (
           <span className="flex-1 min-w-0 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
             {icon}
-            <span className="truncate">{resource.label}</span>
+            <span className="truncate" title={resource.label}>{resource.label}</span>
           </span>
         )}
         {resource.status === "X" && (

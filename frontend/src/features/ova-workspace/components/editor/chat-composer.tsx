@@ -11,8 +11,9 @@ interface Props {
   onSubmit: () => void;
   busy: boolean;
   uploads: ReturnType<typeof useOvaUploads>;
+  placeholder?: string;
 }
-export function ChatComposer({ prompt, onPrompt, onSubmit, busy, uploads }: Readonly<Props>) {
+export function ChatComposer({ prompt, onPrompt, onSubmit, busy, uploads, placeholder }: Readonly<Props>) {
   const fileInput = useRef<HTMLInputElement>(null);
   const disabled = busy || !prompt.trim() || uploads.uploading;
   return (
@@ -22,6 +23,7 @@ export function ChatComposer({ prompt, onPrompt, onSubmit, busy, uploads }: Read
         id="chat-prompt"
         className="w-full rounded-lg border bg-background p-3"
         rows={5}
+        placeholder={placeholder ?? "Escribe un cambio o mejora para el OVA…"}
         value={prompt}
         onChange={(event) => {
           onPrompt(event.target.value);
