@@ -8,6 +8,7 @@ import { createBdd } from 'playwright-bdd'
 import {
   apiOrigin,
   loginWithCredentials,
+  openLoginPage,
   ovaCard,
   ovaCards,
   searchOva,
@@ -38,7 +39,7 @@ Given('que estoy autenticado con una cuenta recién creada', async ({ page }) =>
     throw new Error(`Registro API falló: ${res.status()} ${await res.text()}`)
   }
   await page.context().clearCookies()
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
+  await openLoginPage(page)
   await loginWithCredentials(page, email, pass)
 })
 

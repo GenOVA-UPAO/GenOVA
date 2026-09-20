@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
-import { isAuthedPath, loginWithCredentials, waitForAuthedNavigation } from './_helpers.js'
+import { isAuthedPath, loginWithCredentials, openLoginPage, waitForAuthedNavigation } from './_helpers.js'
 import { test } from './fixtures.js'
 
 const { Given, When, Then } = createBdd(test)
@@ -160,8 +160,7 @@ Then('el formulario no debe enviarse al backend', async () => {})
 
 Given('el usuario {string} está autenticado con rol {string}', async ({ page }, email, role) => {
   const pass = role === 'administrador' ? 'admin1234password' : 'user1234password'
-  await page.goto('/login')
-  await page.getByLabel('Correo', { exact: true }).waitFor({ state: 'visible', timeout: 15000 })
+  await openLoginPage(page)
   await loginWithCredentials(page, email, pass, 10000)
 })
 
@@ -278,17 +277,17 @@ Then('debo ser redirigido automáticamente al login', async ({ page }) => {
 })
 
 Given('que tengo una sesión activa', async ({ page }) => {
-  await page.goto('/login')
-  await page.getByLabel('Correo', { exact: true }).waitFor({ state: 'visible', timeout: 15000 })
+  await openLoginPage(page)
   await loginWithCredentials(page, 'user@genova.ai', 'user1234password', 10000)
 })
 
 Then('el token debe eliminarse del cliente', async ({ page }) => {
-  // El logout revoca la cookie httpOnly de sesión.
-  const cookies = await page.context().cookies()
-  if (cookies.some((c) => c.name === 'genova_token')) {
-    throw new Error('genova_token cookie should have been removed')
-  }
+  // El logout revoca la cookie httpOnly; el Set-Cookie puede llegar un
+  // instante después de la navegación a /login.
+  await expect.poll(async () => {
+    const cookies = await page.context().cookies()
+    return cookies.some((c) => c.name === 'genova_token')
+  }, { timeout: 10000 }).toBe(false)
 })
 
 Then('debo ser redirigido al login', async ({ page }) => {

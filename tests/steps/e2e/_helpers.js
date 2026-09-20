@@ -79,6 +79,16 @@ export function waitForAuthedNavigation(page, timeout = 20000) {
 }
 
 /**
+ * Abre /login y espera el formulario. Se exige el formulario a la primera: si
+ * el loader de `requireGuest` volviera a tirar ante un 5xx/CORS, la pantalla
+ * caería en RouteError y este paso debe fallar, no recuperarse en silencio.
+ */
+export async function openLoginPage(page, timeout = 30000) {
+  await page.goto('/login', { waitUntil: 'domcontentloaded' })
+  await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ state: 'visible', timeout })
+}
+
+/**
  * Login por UI con reintento ante el throttle por email del backend
  * (5 intentos/minuto con RATE_LIMIT_ENABLED=1, el default local). El reintento
  * espera la ventana y vuelve a enviar, como haría la persona usuaria.

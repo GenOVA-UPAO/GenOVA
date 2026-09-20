@@ -1,6 +1,6 @@
 import { createBdd } from 'playwright-bdd'
 
-import { loginWithCredentials, waitForAuthedNavigation } from './_helpers.js'
+import { loginWithCredentials, openLoginPage, waitForAuthedNavigation } from './_helpers.js'
 import { test } from './fixtures.js'
 
 const { Given, When, Then } = createBdd(test)
@@ -10,8 +10,7 @@ const emailField = (page) => page.getByLabel('Correo', { exact: true })
 const passwordField = (page) => page.getByLabel('Contraseña', { exact: true })
 
 Given('que estoy en la página de login', async ({ page }) => {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ state: 'visible', timeout: 30000 })
+  await openLoginPage(page)
 })
 
 Given('que estoy en la página de registro', async ({ page }) => {
@@ -74,9 +73,8 @@ Given(
     // (p.ej. admin en el Background y luego "usuario"), /login redirige o el
     // cache de sessionStorage envenena el rol y AdminRoute se cuelga en CI.
     await page.context().clearCookies()
-    await page.goto('/login', { waitUntil: 'domcontentloaded' })
+    await openLoginPage(page)
     await page.evaluate(() => window.sessionStorage.clear())
-    await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ state: 'visible', timeout: 30000 })
     await loginWithCredentials(page, email, pass)
   }
 )

@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
 
-import { loginWithCredentials, ovaCard } from './_helpers.js'
+import { loginWithCredentials, openLoginPage, ovaCard } from './_helpers.js'
 import { test } from './fixtures.js'
 
 const { Given, When, Then } = createBdd(test)
@@ -9,7 +9,7 @@ const { Given, When, Then } = createBdd(test)
 Given('el usuario {string} está autenticado', async ({ page }, email) => {
   const isAdmin = email.includes('admin')
   const pass = isAdmin ? 'admin1234password' : 'user1234password'
-  await page.goto('/login')
+  await openLoginPage(page)
   await loginWithCredentials(page, email, pass, 10000)
 })
 
