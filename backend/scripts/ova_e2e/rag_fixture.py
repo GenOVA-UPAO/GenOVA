@@ -44,8 +44,10 @@ def make_sample_pdf(topic: str) -> bytes:
     objs = [
         b"<</Type/Catalog/Pages 2 0 R>>",
         b"<</Type/Pages/Kids[3 0 R]/Count 1>>",
+        # El `+` es explícito a propósito: dos literales seguidos en una lista
+        # se leen como una coma olvidada (y así lo avisa CodeQL).
         b"<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]"
-        b"/Resources<</Font<</F1 5 0 R>>>>/Contents 4 0 R>>",
+        + b"/Resources<</Font<</F1 5 0 R>>>>/Contents 4 0 R>>",
         b"<</Length " + str(len(content)).encode() + b">>\nstream\n" + content + b"\nendstream",
         b"<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>",
     ]

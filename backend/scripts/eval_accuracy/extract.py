@@ -82,6 +82,7 @@ def extract_claims(
     prompt = _EXTRACT_PROMPT.format(texto=texto, max_claims=max_claims, concepto=concepto)
     # Reintento con backoff: un corte por rate-limit dejaba el recurso entero sin
     # afirmaciones y lo sacaba de la muestra sin dejar rastro en el resumen.
+    data: object | None = None
     for attempt in range(3):
         try:
             raw = generar_texto_with_model(prompt, model_id, provider, max_tokens=2048)
