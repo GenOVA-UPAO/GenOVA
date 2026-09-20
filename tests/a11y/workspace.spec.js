@@ -1,6 +1,6 @@
-// Auditoría de ova-workspace: NO se corrige nada aquí (carpeta ocupada por otro
-// agente). El tour de driver.js de /crear deja una violación critical que solo
-// puede arreglarse dentro de la feature, así que queda un skip documentado.
+// Auditoría de ova-workspace. El tour de driver.js dejaba dos violaciones
+// (aria-expanded sobre un <section> y el contador sin contraste); ya corregidas
+// en la feature, así que el escenario con el tour activo vuelve a auditarse.
 import { expect, test } from '@playwright/test'
 
 import { USER_STATE } from './global-setup.js'
@@ -37,12 +37,10 @@ for (const mode of MODES) {
       await expectNoSerious(page, 'crear')
     })
 
-    test.skip('crear OVA con el tour activo', async ({ page }) => {
-      // Skip documentado (arreglo dentro de src/features/ova-workspace, fuera de alcance):
-      // 1. aria-allowed-attr [critical] en section#tour-crear-ova-prompt: driver.js
-      //    añade aria-expanded="true" a un <section> no interactivo.
-      // 2. color-contrast [serious] en .driver-popover-progress-text (tema oscuro):
-      //    #727272 sobre #121824 = 3.69:1.
+    test('crear OVA con el tour activo', async ({ page }) => {
+      // Regresión: driver.js ponía aria-expanded en section#tour-crear-ova-prompt
+      // (aria-allowed-attr, critical) y el contador del popover se quedaba en
+      // 3.69:1 sobre el tema oscuro.
       await gotoApp(page, '/crear')
       await expectNoSerious(page, 'crear con tour')
     })

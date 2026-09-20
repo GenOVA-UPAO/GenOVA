@@ -21,3 +21,8 @@
   color: var(--foreground);
   text-shadow: none;
 }
+/* driver.js pinta el contador con un gris fijo (#727272) que sobre el popover
+   oscuro se queda en 3.69:1. Se usa el token del tema, que sí contrasta. */
+.gn-tour .driver-popover-progress-text {
+  color: var(--muted-foreground);
+}

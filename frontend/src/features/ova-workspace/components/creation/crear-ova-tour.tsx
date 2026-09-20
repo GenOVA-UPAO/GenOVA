@@ -46,6 +46,11 @@ export default function CrearOvaTour({ replay }: Readonly<{ replay: number }>) {
           },
         },
       ],
+      // driver.js marca el elemento resaltado con aria-expanded, que no es
+      // válido en un <section> (axe: aria-allowed-attr) y no aporta nada aquí.
+      onHighlighted: (element?: Element) => {
+        element?.removeAttribute("aria-expanded");
+      },
       onDestroyed: () => {
         try {
           localStorage.setItem(key, "1");
