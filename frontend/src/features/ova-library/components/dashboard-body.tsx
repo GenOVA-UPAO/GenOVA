@@ -3,7 +3,6 @@ import { Link } from "react-router";
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
-import { useGeneratingJobs } from "../hooks/use-generating-jobs";
 import type { OvaListItem } from "../lib/types";
 import { getDashboardStats } from "../pages/dashboard-page.helpers";
 import { DashboardAdminPanel } from "./dashboard-admin-panel";
@@ -19,7 +18,7 @@ interface DashboardBodyProps {
 /** Contenido del dashboard cuando la lista de OVAs ya cargó. */
 export function DashboardBody({ ovas, total, isAdmin }: Readonly<DashboardBodyProps>) {
   const recentOvas = ovas.slice(0, 4);
-  const { hasActiveJobs } = useGeneratingJobs(ovas);
+  const hasActiveJobs = ovas.some((ova) => ova.status === "generando");
   const { readyCount, activeCount, totalCount } = getDashboardStats(ovas, total);
 
   return (
