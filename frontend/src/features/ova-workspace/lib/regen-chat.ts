@@ -41,6 +41,38 @@ export function labelsForPhaseIds(
   return labels.length ? labels : undefined;
 }
 
+export interface RegenPayload {
+  /** Instrucción que recibe el backend. Vacía = regenerar desde cero. */
+  prompt: string;
+  /** Lo que se lee en el historial del chat. */
+  historyText: string;
+  phaseIds: string[];
+  resourceLabels?: string[];
+}
+
+/**
+ * Payload de un botón de regenerar. Su etiqueta es solo texto para el
+ * historial: si viajara como `prompt`, el backend la trataría como un cambio
+ * que aplicar al OVA —así acabó el OVA de la Ley de Ohm tratando sobre cómo
+ * regenerar un OVA—, de modo que el `prompt` va vacío.
+ */
+export function buttonRegenPayload(
+  phases: PhaseWithContent[],
+  label: string,
+  phaseIds: string[],
+): RegenPayload {
+  return { prompt: "", historyText: label, phaseIds, resourceLabels: labelsForPhaseIds(phases, phaseIds) };
+}
+
+/** Payload de un mensaje escrito en el chat: el texto es la instrucción. */
+export function messageRegenPayload(
+  phases: PhaseWithContent[],
+  message: string,
+  phaseIds: string[],
+): RegenPayload {
+  return { prompt: message, historyText: message, phaseIds, resourceLabels: labelsForPhaseIds(phases, phaseIds) };
+}
+
 export function userChatMessage(
   text: string,
   opts: { kind?: RegenChatKind; resourceLabels?: string[] } = {},

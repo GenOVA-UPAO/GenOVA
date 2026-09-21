@@ -1,13 +1,14 @@
 import { useState } from "react";
 
+import { Icon } from "@/core/components/icon";
+
 import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaUploads } from "../../hooks/use-uploads";
-import { labelsForPhaseIds } from "../../lib/regen-chat";
+import { buttonRegenPayload, messageRegenPayload, type RegenPayload } from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
 import { ChatComposer } from "./chat-composer";
 import { ChatHistory } from "./chat-history";
-import { ChatRegenToolbar } from "./chat-regen-toolbar";
-import { ChatResourceSelect } from "./chat-resource-select";
+import { ChatPanelHeader } from "./chat-panel-header";
 
 function composerPlaceholder(selecting: boolean, count: number): string {
   if (selecting && count > 0) {
@@ -16,26 +17,50 @@ function composerPlaceholder(selecting: boolean, count: number): string {
   return "Escribe un cambio o mejora para el OVA…";
 }
 
-export function WorkspaceChatPanel({ ovaId, phases }: Readonly<{ ovaId: string; phases: PhaseWithContent[] }>) {
+function withToggledId(list: string[], id: string): string[] {
+  return list.includes(id) ? list.filter((v) => v !== id) : [...list, id];
+}
+
+export function WorkspaceChatPanel({
+  ovaId,
+  phases,
+}: Readonly<{ ovaId: string; phases: PhaseWithContent[] }>) {
   const [prompt, setPrompt] = useState("");
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const uploads = useOvaUploads();
   const regen = useChatRegeneration(ovaId);
-  const submit = (all = false) => {
-    if (regen.busy) return;
-    const phaseIds = all ? [] : selected;
-    regen.request.mutate({
-      prompt: all ? "Regenerar OVA completo" : prompt,
-      phaseIds,
-      resourceLabels: labelsForPhaseIds(phases, phaseIds),
-    });
+
+  const submit = (payload: RegenPayload) => {
+    if (!regen.busy) {
+      regen.request.mutate(payload);
+    }
   };
+
   const error = regen.request.error?.message ?? regen.error ?? uploads.uploadError;
+
   return (
     <aside className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r bg-card/30">
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
-        <h2 className="font-display text-xl">Instrucciones</h2>
+      <ChatPanelHeader
+        busy={regen.busy}
+        selecting={selecting}
+        selected={selected}
+        phases={phases}
+        onRegenAll={() => {
+          submit(buttonRegenPayload(phases, "Regenerar OVA completo", []));
+        }}
+        onToggleSelect={() => {
+          setSelecting(!selecting);
+        }}
+        onToggleResource={(id) => {
+          setSelected(withToggledId(selected, id));
+        }}
+        onSelectAllResources={() => {
+          setSelected(phases.map((p) => p.id));
+        }}
+      />
+
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
         <ChatHistory
           messages={regen.chat.data ?? []}
           onRemove={(id) => {
@@ -44,48 +69,36 @@ export function WorkspaceChatPanel({ ovaId, phases }: Readonly<{ ovaId: string; 
           onClear={() => {
             regen.chat.clear.mutate();
           }}
-        />
-        <ChatRegenToolbar
-          busy={regen.busy}
-          selecting={selecting}
-          selectedCount={selected.length}
-          onRegenAll={() => {
-            submit(true);
-          }}
-          onToggleSelect={() => {
-            setSelecting(!selecting);
+          onSelectPrompt={(text) => {
+            setPrompt(text);
           }}
         />
-        {selecting && (
-          <ChatResourceSelect
-            phases={phases}
-            selected={selected}
-            onToggle={(id, checked) => {
-              setSelected(checked ? [...selected, id] : selected.filter((value) => value !== id));
-            }}
-            onSelectAll={() => {
-              setSelected(phases.map((phase) => phase.id));
-            }}
-          />
-        )}
       </div>
-      <div className="shrink-0 space-y-4 border-t p-4">
+
+      <div className="shrink-0 space-y-3 border-t bg-background/50 p-4">
         <ChatComposer
           prompt={prompt}
           onPrompt={setPrompt}
           onSubmit={() => {
-            submit();
+            submit(messageRegenPayload(phases, prompt, selected));
           }}
           busy={regen.busy}
           uploads={uploads}
           placeholder={composerPlaceholder(selecting, selected.length)}
         />
         {regen.busy && (
-          <p role="status">
-            {regen.progress.stage} {regen.progress.percentage}%
+          <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Icon name="spinner" className="animate-spin text-primary" />
+            <span>
+              {regen.progress.stage} {String(regen.progress.percentage)}%
+            </span>
           </p>
         )}
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <p role="alert" className="text-xs text-destructive">
+            {error}
+          </p>
+        )}
       </div>
     </aside>
   );

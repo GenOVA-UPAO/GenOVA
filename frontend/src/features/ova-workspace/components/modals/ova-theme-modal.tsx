@@ -22,26 +22,34 @@ function themeTitle(draft: OvaTheme): string {
 export default function OvaThemeModal({ theme, onChange, onClose }: Readonly<Props>) {
   const [draft, setDraft] = useState<OvaTheme>(theme);
   return (
-    <WorkspaceModal title="Tema visual del OVA" onClose={onClose}>
-      <p className="-mt-2 text-[10px] text-muted-foreground">{themeTitle(draft)}</p>
-      <div className="flex gap-4">
+    <WorkspaceModal
+      title="Tema visual del OVA"
+      description={themeTitle(draft)}
+      size="md"
+      onClose={onClose}
+      footer={
+        <div className="flex items-center justify-between gap-3">
+          <Button variant="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            className="min-w-36"
+            onClick={() => {
+              onChange(draft);
+              onClose();
+            }}
+          >
+            Aplicar tema
+          </Button>
+        </div>
+      }
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <div className="min-w-0 flex-1">
           <OvaThemeSelector theme={draft} onChange={setDraft} />
         </div>
-        <div className="hidden sm:block">
-          <OvaThemePreview draft={draft} />
-        </div>
-      </div>
-      <div className="border-t border-border pt-4">
-        <Button
-          className="w-full"
-          onClick={() => {
-            onChange(draft);
-            onClose();
-          }}
-        >
-          Aplicar tema
-        </Button>
+        <OvaThemePreview draft={draft} />
       </div>
     </WorkspaceModal>
   );

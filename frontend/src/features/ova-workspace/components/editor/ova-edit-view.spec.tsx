@@ -97,8 +97,10 @@ describe("OvaEditView event wiring", () => {
   it("regenerates only the requested phase", async () => {
     await setup();
     fireEvent.click(screen.getAllByRole("button", { name: "Regenerar recurso" })[0]);
+    // La etiqueta del botón no viaja como prompt: el backend la aplicaría como
+    // un cambio sobre el HTML actual en vez de regenerar el recurso.
     await waitFor(() => {
-      expect(api.triggerOvaRegeneration).toHaveBeenCalledWith("ova-1", { phaseIds: ["a"], prompt: "Regenerar recurso" });
+      expect(api.triggerOvaRegeneration).toHaveBeenCalledWith("ova-1", { phaseIds: ["a"], prompt: "" });
     });
   });
   it("adds a resource from its phase section", async () => {

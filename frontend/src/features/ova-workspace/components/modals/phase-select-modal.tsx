@@ -1,18 +1,17 @@
 import { lazy, Suspense, useState } from "react";
 
-import { Button } from "@/core/components/ui/button";
-
 import { useAllPhaseResources } from "../../hooks/use-phase-resources";
 import type { Resource } from "../../lib/ova-types";
 import {
   MAX_PER_PHASE,
-  PHASE_SELECT_CFG,
   type PhaseResourceMap,
   type ResourceConfigs,
   toggleSelection,
 } from "../../lib/phase-select.config";
 import { WorkspaceModal } from "../shared/workspace-modal";
+import { PhaseSelectFooter } from "./phase-select-footer";
 import { PhaseSelectGrid } from "./phase-select-grid";
+import { PhaseSelectTabs } from "./phase-select-tabs";
 
 const ResourceConfigModal = lazy(() => import("./resource-config-modal"));
 
@@ -32,28 +31,19 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
   const catalog = useAllPhaseResources();
   const selected = draft[phase] ?? [];
   const count = Object.values(draft).flat().length;
-  const valid = Object.values(draft).filter((items) => items.length > 0).length >= 2;
+  const phases = Object.values(draft).filter((items) => items.length > 0).length;
   return (
-    <WorkspaceModal title="Configurar recursos 5E" onClose={onClose}>
-      <nav className="flex flex-wrap gap-2" aria-label="Fases">
-        {PHASE_SELECT_CFG.map((item) => (
-          <Button
-            key={item.key}
-            variant={phase === item.key ? "default" : "outline"}
-            onClick={() => {
-              setPhase(item.key);
-              setPreview(undefined);
-            }}
-          >
-            {item.label} ({draft[item.key].length})
-          </Button>
-        ))}
-      </nav>
-      <p>Hasta {MAX_PER_PHASE} recursos por fase. Selecciona al menos 2 fases.</p>
+    <WorkspaceModal title="Configurar recursos 5E" size="xl" description="Elige qué recursos generará la IA en cada fase de aprendizaje." onClose={onClose}
+      footer={<PhaseSelectFooter count={count} phases={phases} onClose={onClose} onConfirm={() => { onConfirm(draft, settings); }} />}
+    >
+      <PhaseSelectTabs phase={phase} picks={draft} onChange={(key) => { setPhase(key); setPreview(undefined); }} />
+      <p className="text-xs text-muted-foreground">Hasta {MAX_PER_PHASE} recursos por fase. Selecciona al menos 2 fases.</p>
       <PhaseSelectGrid
         phase={phase}
         items={catalog.data?.[phase] ?? []}
         isPending={catalog.isPending}
+        isFetching={catalog.isFetching}
+        isError={catalog.isError}
         selected={selected}
         onSelect={(resource) => {
           setDraft({ ...draft, [phase]: toggleSelection(selected, resource) });
@@ -65,19 +55,6 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
         }}
         preview={preview ?? selected.at(-1) ?? catalog.data?.[phase].at(0)}
       />
-      <footer className="sticky bottom-0 z-10 -mx-4 -mb-4 flex justify-between border-t bg-popover px-4 py-3">
-        <Button variant="ghost" onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button
-          disabled={!valid}
-          onClick={() => {
-            onConfirm(draft, settings);
-          }}
-        >
-          Confirmar ({count})
-        </Button>
-      </footer>
       {target && (
         <Suspense>
           <ResourceConfigModal

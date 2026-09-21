@@ -10,22 +10,30 @@ interface Props {
 }
 
 const SEGMENT_BASE =
-  "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
+  "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
 
 function segmentClass(active: boolean): string {
   return active
-    ? `${SEGMENT_BASE} bg-background text-foreground shadow-sm ring-1 ring-primary/30`
-    : `${SEGMENT_BASE} text-muted-foreground hover:text-foreground hover:bg-background/60`;
+    ? `${SEGMENT_BASE} bg-primary text-primary-foreground shadow-sm`
+    : `${SEGMENT_BASE} text-muted-foreground hover:bg-background/70 hover:text-foreground`;
+}
+
+function swatchDots() {
+  const upao = ["#0A3D91", "#F47A20", "#FFFFFF"];
+  return (
+    <span className="flex items-center gap-1" aria-hidden="true">
+      {upao.map((color) => (
+        <span key={color} className="h-3 w-3 rounded-full ring-1 ring-black/20" style={{ backgroundColor: color }} />
+      ))}
+    </span>
+  );
 }
 
 export function OvaThemeAxis({ label, hint, value, withSwatches, disabled, onChange }: Readonly<Props>) {
   return (
-    <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-2">
-        <p className="text-xs font-medium text-foreground">{label}</p>
-        <p className="text-[10px] text-muted-foreground">{hint}</p>
-      </div>
-      <div role="radiogroup" className="flex gap-1 rounded-lg bg-muted/50 p-1">
+    <div className="space-y-1.5">
+      <p className="text-sm font-semibold text-foreground">{label}</p>
+      <div role="radiogroup" aria-label={label} className="flex gap-1 rounded-lg border border-border bg-muted/60 p-1">
         <button
           type="button"
           role="radio"
@@ -37,15 +45,9 @@ export function OvaThemeAxis({ label, hint, value, withSwatches, disabled, onCha
             onChange("upao");
           }}
         >
-          <Icon name="square-half" size="text-sm" className="shrink-0" />
+          <Icon name="square-half" size="text-base" className="shrink-0" />
           <span>UPAO</span>
-          {withSwatches && (
-            <span className="flex items-center gap-0.5" aria-hidden="true">
-              <span className="h-2.5 w-2.5 rounded-full ring-1 ring-black/10" style={{ backgroundColor: "#0A3D91" }} />
-              <span className="h-2.5 w-2.5 rounded-full ring-1 ring-black/10" style={{ backgroundColor: "#F47A20" }} />
-              <span className="h-2.5 w-2.5 rounded-full ring-1 ring-black/10" style={{ backgroundColor: "#FFFFFF" }} />
-            </span>
-          )}
+          {withSwatches && swatchDots()}
         </button>
         <button
           type="button"
@@ -58,10 +60,11 @@ export function OvaThemeAxis({ label, hint, value, withSwatches, disabled, onCha
             onChange("free");
           }}
         >
-          <Icon name="sparkle" size="text-sm" className="shrink-0" />
+          <Icon name="sparkle" size="text-base" className="shrink-0" />
           <span>Libre</span>
         </button>
       </div>
+      <p className="text-xs text-muted-foreground">{hint}</p>
     </div>
   );
 }

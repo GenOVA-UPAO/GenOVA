@@ -50,6 +50,18 @@ describe("DashboardPage", () => {
     vi.clearAllMocks();
   });
 
+  it("pinta el saludo mientras la lista sigue cargando", async () => {
+    vi.mocked(ovaLibraryApi.list).mockReturnValue(new Promise(() => undefined));
+
+    renderPage();
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: /Bienvenido/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Cargando resumen")).toBeInTheDocument();
+    expect(screen.queryByText("Crea tu primer OVA")).not.toBeInTheDocument();
+  });
+
   it("muestra el estado vacío con acción para crear un OVA", async () => {
     vi.mocked(ovaLibraryApi.list).mockResolvedValue({
       ovas: [],
