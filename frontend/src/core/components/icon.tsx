@@ -1,9 +1,15 @@
 import { type Icon as PhosphorIcon, type IconWeight, QuestionIcon } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import { cn } from "@/core/lib/cn";
 
-import { type IconName, ICONS, loadFullIconRegistry } from "./icon-registry";
+import {
+  getIconRegistryVersion,
+  type IconName,
+  ICONS,
+  loadFullIconRegistry,
+  subscribeIconRegistry,
+} from "./icon-registry";
 
 interface IconProps {
   /** Phosphor slug, with or without the legacy `ph-` prefix (e.g. "gear", "ph-gear"). */
@@ -16,24 +22,30 @@ interface IconProps {
   label?: string;
 }
 
+/**
+ * La versión entra como argumento para que la búsqueda dependa de ella: sin
+ * eso el React Compiler la memoiza solo por `slug` y un icono que se pidió
+ * antes de que llegara el registro diferido se queda en "?" para siempre.
+ */
+function isRegistered(slug: string, registryVersion: number): boolean {
+  return registryVersion >= 0 && Object.hasOwn(ICONS, slug);
+}
+
 export function Icon({ name, weight = "regular", size, className, label }: Readonly<IconProps>) {
   const slug = name.startsWith("ph-") ? name.slice(3) : name;
-  const known = Object.hasOwn(ICONS, slug);
-  const [, bump] = useState(0);
+  const registryVersion = useSyncExternalStore(
+    subscribeIconRegistry,
+    getIconRegistryVersion,
+    getIconRegistryVersion,
+  );
+  const known = isRegistered(slug, registryVersion);
 
-  // Los iconos fuera del subset eager llegan con el registro diferido; el "?"
-  // es el mismo fallback visual de un nombre desconocido y se resuelve en cuanto
-  // el chunk termina de cargar.
+  // Los iconos fuera del subset eager llegan con el registro diferido. Mientras
+  // tanto se pinta el mismo "?" que un nombre desconocido; al cargar, la
+  // suscripción de arriba vuelve a pintar el componente con el glifo real.
   useEffect(() => {
-    if (known) return;
-    let alive = true;
-    void loadFullIconRegistry().then(() => {
-      if (alive) bump((n) => n + 1);
-    });
-    return () => {
-      alive = false;
-    };
-  }, [known, slug]);
+    if (!known) void loadFullIconRegistry();
+  }, [known]);
 
   const Glyph: PhosphorIcon = known ? ICONS[slug as IconName] : QuestionIcon;
   return (
