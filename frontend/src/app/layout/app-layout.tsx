@@ -63,7 +63,7 @@ export function AppLayout() {
           {fullBleed ? (
             <Outlet />
           ) : (
-            <div className="mx-auto w-full max-w-7xl animate-in p-4 duration-300 fade-in slide-in-from-bottom-2 sm:p-6 lg:p-8">
+            <div className="mx-auto w-full max-w-7xl animate-in p-4 duration-300 slide-in-from-bottom-2 sm:p-6 lg:p-8">
               <Outlet />
             </div>
           )}
