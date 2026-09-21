@@ -1,5 +1,6 @@
 import { useRef } from "react";
 
+import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 import type { useOvaUploads } from "../../hooks/use-uploads";
@@ -13,16 +14,27 @@ interface Props {
   uploads: ReturnType<typeof useOvaUploads>;
   placeholder?: string;
 }
-export function ChatComposer({ prompt, onPrompt, onSubmit, busy, uploads, placeholder }: Readonly<Props>) {
+
+export function ChatComposer({
+  prompt,
+  onPrompt,
+  onSubmit,
+  busy,
+  uploads,
+  placeholder,
+}: Readonly<Props>) {
   const fileInput = useRef<HTMLInputElement>(null);
   const disabled = busy || !prompt.trim() || uploads.uploading;
+
   return (
-    <div className="space-y-3">
-      <label htmlFor="chat-prompt">Describe los cambios que deseas</label>
+    <div className="space-y-2.5">
+      <label htmlFor="chat-prompt" className="text-xs font-semibold text-foreground">
+        Describe los cambios que deseas
+      </label>
       <textarea
         id="chat-prompt"
-        className="w-full rounded-lg border bg-background p-3"
-        rows={5}
+        className="min-h-[96px] max-h-[220px] w-full resize-y rounded-xl border border-input bg-background p-3 text-sm placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+        rows={3}
         placeholder={placeholder ?? "Escribe un cambio o mejora para el OVA…"}
         value={prompt}
         onChange={(event) => {
@@ -50,20 +62,35 @@ export function ChatComposer({ prompt, onPrompt, onSubmit, busy, uploads, placeh
         }}
       />
       <FileChips files={uploads.data ?? []} onRemove={uploads.removeUpload} />
-      <div className="flex gap-2">
+      <div className="flex items-center justify-between gap-2 pt-0.5">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label="Adjuntar archivo de apoyo"
+            disabled={uploads.uploading}
+            onClick={() => {
+              fileInput.current?.click();
+            }}
+          >
+            <Icon name="paperclip" className="size-3.5" />
+            <span>Adjuntar</span>
+          </Button>
+          <span className="select-none text-[11px] text-muted-foreground">
+            Ctrl+Enter para enviar
+          </span>
+        </div>
         <Button
-          variant="outline"
-          aria-label="Adjuntar archivo de apoyo"
-          disabled={uploads.uploading}
-          onClick={() => fileInput.current?.click()}
+          variant="default"
+          size="sm"
+          disabled={disabled}
+          onClick={onSubmit}
+          className="gap-1.5 px-3 font-medium shadow-2xs"
         >
-          Adjuntar
-        </Button>
-        <Button disabled={disabled} onClick={onSubmit}>
-          Enviar
+          <Icon name="paper-plane-tilt" className="size-3.5" />
+          <span>Enviar</span>
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground">Ctrl+Enter para enviar</p>
     </div>
   );
 }
