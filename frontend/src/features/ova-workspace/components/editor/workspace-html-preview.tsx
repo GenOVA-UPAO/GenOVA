@@ -37,17 +37,19 @@ export default function WorkspaceHtmlPreview({ phases }: Readonly<{ phases: Phas
   const [activeId, setActiveId] = useState<string | null>(null);
   const active = (activeId ? phases.find((phase) => phase.id === activeId) : undefined) ?? phases.at(0);
   return (
-    <section role="presentation" className="flex h-full min-h-0 flex-col">
-      <WorkspacePreviewTabs phases={phases} labels={uniqueLabels(phases)} activeId={active?.id ?? null} onSelect={setActiveId} />
-      <div className="min-h-0 flex-1 overflow-hidden">
-        <HtmlPreviewFrame
-          html={active?.content ?? ""}
-          className="block h-full min-h-0 w-full border-0"
-          height={null}
-          title={active?.title ?? "Vista previa del recurso"}
-        />
+    <section role="presentation" className="flex h-full min-h-0 flex-col bg-muted/20 p-0 sm:p-3">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-y border-border bg-card sm:rounded-xl sm:border sm:shadow-sm">
+        <WorkspacePreviewTabs phases={phases} labels={uniqueLabels(phases)} activeId={active?.id ?? null} onSelect={setActiveId} />
+        <div className="min-h-0 flex-1 overflow-hidden bg-background">
+          <HtmlPreviewFrame
+            html={active?.content ?? ""}
+            className="block h-full min-h-0 w-full border-0"
+            height={null}
+            title={active?.title ?? "Vista previa del recurso"}
+          />
+        </div>
+        <WorkspacePreviewFooter active={active} />
       </div>
-      <WorkspacePreviewFooter active={active} />
     </section>
   );
 }
