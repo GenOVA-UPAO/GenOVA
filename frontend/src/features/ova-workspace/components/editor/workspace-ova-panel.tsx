@@ -4,7 +4,7 @@ import { Button } from "@/core/components/ui/button";
 
 import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
-import { labelsForPhaseIds } from "../../lib/regen-chat";
+import { buttonRegenPayload } from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
 import { WorkspacePanelToolbar } from "./workspace-panel-toolbar";
 import { WorkspaceResourceList } from "./workspace-resource-list";
@@ -68,11 +68,7 @@ export function WorkspaceOvaPanel({ ovaId, phases }: Readonly<{ ovaId: string; p
                     handleGroupReorder(phaseType, group);
                   }}
                   onRegenerate={(phase) => {
-                    regen.request.mutate({
-                      prompt: "Regenerar recurso",
-                      phaseIds: [phase.id],
-                      resourceLabels: labelsForPhaseIds(phases, [phase.id]),
-                    });
+                    regen.request.mutate(buttonRegenPayload(phases, "Regenerar recurso", [phase.id]));
                   }}
                 />
               ))}

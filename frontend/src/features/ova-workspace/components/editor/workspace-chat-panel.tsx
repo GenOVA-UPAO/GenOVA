@@ -4,7 +4,7 @@ import { Icon } from "@/core/components/icon";
 
 import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaUploads } from "../../hooks/use-uploads";
-import { labelsForPhaseIds } from "../../lib/regen-chat";
+import { buttonRegenPayload, messageRegenPayload, type RegenPayload } from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
 import { ChatComposer } from "./chat-composer";
 import { ChatHistory } from "./chat-history";
@@ -21,20 +21,6 @@ function withToggledId(list: string[], id: string): string[] {
   return list.includes(id) ? list.filter((v) => v !== id) : [...list, id];
 }
 
-function createRegenPayload(
-  all: boolean,
-  prompt: string,
-  selected: string[],
-  phases: PhaseWithContent[],
-) {
-  const phaseIds = all ? [] : selected;
-  return {
-    prompt: all ? "Regenerar OVA completo" : prompt,
-    phaseIds,
-    resourceLabels: labelsForPhaseIds(phases, phaseIds),
-  };
-}
-
 export function WorkspaceChatPanel({
   ovaId,
   phases,
@@ -45,9 +31,9 @@ export function WorkspaceChatPanel({
   const uploads = useOvaUploads();
   const regen = useChatRegeneration(ovaId);
 
-  const submit = (all = false) => {
+  const submit = (payload: RegenPayload) => {
     if (!regen.busy) {
-      regen.request.mutate(createRegenPayload(all, prompt, selected, phases));
+      regen.request.mutate(payload);
     }
   };
 
@@ -61,7 +47,7 @@ export function WorkspaceChatPanel({
         selected={selected}
         phases={phases}
         onRegenAll={() => {
-          submit(true);
+          submit(buttonRegenPayload(phases, "Regenerar OVA completo", []));
         }}
         onToggleSelect={() => {
           setSelecting(!selecting);
@@ -94,7 +80,7 @@ export function WorkspaceChatPanel({
           prompt={prompt}
           onPrompt={setPrompt}
           onSubmit={() => {
-            submit();
+            submit(messageRegenPayload(phases, prompt, selected));
           }}
           busy={regen.busy}
           uploads={uploads}

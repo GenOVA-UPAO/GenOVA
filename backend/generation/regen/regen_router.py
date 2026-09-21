@@ -10,7 +10,7 @@ from core.http_errors import forbidden_response
 from core.rate_limit import limiter
 from generation.regen.regen_jobs import regen_progress_dto, start_regen
 from generation.regen.regen_service import _finalize_edit
-from models import Ova, OvaPhase, User
+from models import Ova, OvaPhase, OvaVersion, User
 from ova import ensure_version_exists, get_active_version, is_ova_owner
 
 router = APIRouter(tags=["Generación"])
@@ -19,6 +19,23 @@ router = APIRouter(tags=["Generación"])
 class RegenRequest(BaseModel):
     prompt: str | None = None
     fase_ids: list[str] = Field(default_factory=list)
+
+
+def _original_topic(ova_id: str, fallback: str | None, db: Session) -> str | None:
+    """Tema con el que se creó el OVA: el prompt de su primera versión.
+
+    Las regeneraciones crean la v2 en adelante y nunca tocan la v1, así que es
+    la única fuente del tema que no puede haberse contaminado. Leerla de ahí, y
+    no de la versión activa, también cura los OVAs cuya versión activa guardó
+    como tema un mensaje del chat antes de este arreglo.
+    """
+    first = db.execute(
+        select(OvaVersion.prompt)
+        .where(OvaVersion.ova_id == ova_id)
+        .order_by(OvaVersion.version_number)
+        .limit(1)
+    ).scalar_one_or_none()
+    return first or fallback
 
 
 @router.post("/{ova_id}/regenerar", summary="Regenerar los recursos de una OVA")
@@ -75,15 +92,16 @@ def regenerate_ova(
 
     user_prompt = payload.prompt.strip() if payload.prompt and payload.prompt.strip() else None
 
-    # Edición puntual: hay recursos seleccionados + un mensaje de cambio. El
-    # mensaje es una INSTRUCCIÓN sobre el recurso actual, no el tema nuevo — se
-    # conserva el tema original del OVA para no reescribir título ni enfoque.
-    # "Regenerar OVA completo" (sin fase_ids) o sin mensaje = regen desde cero.
-    is_targeted_edit = bool(payload.fase_ids) and user_prompt is not None
-    instruction = user_prompt if is_targeted_edit else None
-    effective_prompt = (
-        active_version.prompt if is_targeted_edit else (user_prompt or active_version.prompt)
-    )
+    # El mensaje del chat es SIEMPRE una instrucción sobre el OVA, nunca el tema.
+    # Antes, sin recursos seleccionados, el mensaje sustituía al tema: el botón
+    # "Regenerar OVA completo" mandaba su propia etiqueta y el OVA de la Ley de
+    # Ohm pasaba a tratar sobre cómo regenerar un OVA. El tema se fija al crear
+    # el OVA y ninguna regeneración lo cambia:
+    #   - sin mensaje         → se regenera desde cero sobre el tema original;
+    #   - con mensaje         → se aplica el cambio partiendo del HTML actual;
+    #   - con fase_ids        → solo a esos recursos; sin ellos, a todos.
+    instruction = user_prompt
+    effective_prompt = _original_topic(ova_id, active_version.prompt, db)
 
     # Phases actually being regenerated: an explicit subset, else every phase of
     # the active version ("Regenerar OVA completo"). Used to pace the progress
