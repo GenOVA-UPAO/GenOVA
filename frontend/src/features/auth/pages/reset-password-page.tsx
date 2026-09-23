@@ -38,7 +38,14 @@ export function ResetPasswordPage() {
   });
 
   return (
-    <AuthCard title="Nueva contraseña" subtitle="Ingresa y confirma tu nueva contraseña.">
+    <AuthCard
+      title={token ? "Nueva contraseña" : "Enlace incompleto"}
+      subtitle={
+        token
+          ? "Elige una contraseña nueva para tu cuenta."
+          : "Al enlace le falta el código de restablecimiento. Puede haberse cortado al copiarlo."
+      }
+    >
       <ResetPasswordBody
         token={token}
         status={status}
