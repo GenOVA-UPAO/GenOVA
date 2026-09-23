@@ -10,13 +10,13 @@ export function NavSection({ title, collapsed, children }: Readonly<NavSectionPr
   return (
     <div>
       {collapsed ? (
-        <div className="pt-3" aria-hidden="true" />
+        <div className="mx-2 my-3 border-t border-sidebar-border" aria-hidden="true" />
       ) : (
-        <p className="px-2 pt-4 pb-1.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
+        <p className="px-3 pt-5 pb-1.5 text-xs font-medium text-muted-foreground">
           {title}
         </p>
       )}
-      <ul className="space-y-1">{children}</ul>
+      <ul className="space-y-0.5">{children}</ul>
     </div>
   );
 }

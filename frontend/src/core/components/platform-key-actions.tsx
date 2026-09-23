@@ -20,11 +20,12 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
     return (
       <div className="flex gap-2">
         <Button
-          className={`${ACTION_CLASS} font-bold`}
+          className={ACTION_CLASS}
           onClick={props.onSave}
-          disabled={saving || !props.canSave}
+          loading={saving}
+          disabled={!props.canSave}
         >
-          {saving ? "..." : "Guardar"}
+          Guardar
         </Button>
         <Button variant="outline" className={ACTION_CLASS} onClick={props.onCancel}>
           Cancelar
@@ -36,7 +37,7 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
     <div className="flex gap-2">
       <Button
         variant={configured ? "outline" : "default"}
-        className={configured ? ACTION_CLASS : `${ACTION_CLASS} font-bold`}
+        className={ACTION_CLASS}
         onClick={props.onEdit}
         disabled={saving}
       >

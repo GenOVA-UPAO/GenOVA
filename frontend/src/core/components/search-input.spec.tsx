@@ -25,7 +25,7 @@ describe("SearchInput", () => {
   it("uses the given aria-label and default placeholder", () => {
     render(<Harness />);
     const input = screen.getByRole("searchbox", { name: "Buscar OVAs" });
-    expect(input).toHaveAttribute("placeholder", "Buscar...");
+    expect(input).toHaveAttribute("placeholder", "Buscar…");
   });
 
   it("emits every change and hides the clear button while empty", async () => {

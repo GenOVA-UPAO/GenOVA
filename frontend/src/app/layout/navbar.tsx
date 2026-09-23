@@ -7,6 +7,7 @@ import { Icon } from "@/core/components/icon";
 import { prefetchRoute } from "../pages";
 import { NavbarBrand } from "./brand";
 import { MobileDrawer } from "./mobile-drawer";
+import { SidebarToggle } from "./sidebar-toggle";
 import { UserMenu } from "./user-menu";
 
 // "Apariencia" (tema del contenido OVA) is rarely opened: load it on demand.
@@ -23,17 +24,18 @@ export function Navbar() {
 
   return (
     <header className="z-50 border-b border-border bg-card">
-      <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+      <div className="flex h-14 items-center gap-2 px-3 sm:gap-3 sm:px-4">
         <button
           type="button"
           onClick={() => {
             setDrawerOpen(true);
           }}
-          className="-ml-1 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 md:hidden"
+          className="-ml-1 inline-flex size-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 md:hidden"
           aria-label="Abrir menú"
         >
           <Icon name="list" size="text-xl" />
         </button>
+        <SidebarToggle />
         <NavbarBrand />
         <div className="flex-1" />
         <Link
@@ -41,7 +43,7 @@ export function Navbar() {
           onMouseEnter={() => {
             prefetchRoute("/crear");
           }}
-          className="hidden items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:flex"
+          className="hidden h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none sm:inline-flex"
         >
           <Icon name="plus" size="text-base" />
           Crear OVA

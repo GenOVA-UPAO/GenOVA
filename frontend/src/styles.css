@@ -45,6 +45,8 @@ naranja como acento puntual. Brand chrome ≠ paleta de contenido OVA. */
   --destructive: oklch(0.505 0.213 27.518);
   /* Éxito — verde con matiz cálido, único token de estado positivo (C6). */
   --success: oklch(0.55 0.15 150);
+  /* Verde de texto sobre tintes claros (badges «Listo»): 0.55 no llega a 4.5:1 en 12px. */
+  --success-strong: oklch(0.42 0.12 150);
   --border: oklch(0.9 0.01 85);
   --input: oklch(0.9 0.01 85);
   --ring: oklch(0.4 0.15 264);
@@ -97,6 +99,7 @@ body {
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -141,6 +144,7 @@ body {
   /* Más claro que el default (0.704) para pasar AA como texto sobre sus tintes. */
   --destructive: oklch(0.808 0.114 19.571);
   --success: oklch(0.72 0.15 150);
+  --success-strong: oklch(0.8 0.14 150);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.72 0.12 264);
@@ -177,6 +181,33 @@ body {
   }
   html {
     @apply font-sans;
+    /* Scrollbars, autofill y controles nativos siguen al tema de la app. */
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  /* Sin el retardo de doble toque en móviles. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+  /* Windows pinta los <select> nativos en claro aunque la página esté en oscuro. */
+  select,
+  option {
+    background-color: var(--card);
+    color: var(--foreground);
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
   /* Page titles get the editorial display serif; smaller headings stay sans. */
   h1,

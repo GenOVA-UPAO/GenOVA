@@ -18,9 +18,9 @@ import { hasPermission, userInitials } from "./lib/layout-helpers";
 
 const THEME_ICON: Record<ThemeMode, string> = { light: "sun", dark: "moon", system: "monitor" };
 const THEME_LABEL: Record<ThemeMode, string> = {
-  light: "Tema: Claro",
-  dark: "Tema: Oscuro",
-  system: "Tema: Sistema",
+  light: "Tema: claro",
+  dark: "Tema: oscuro",
+  system: "Tema: sistema",
 };
 
 interface UserMenuProps {
@@ -60,7 +60,7 @@ export function UserMenu({ onOpenAppearance }: Readonly<UserMenuProps>) {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/profile">
-            <Icon name="user-circle" size="text-base" /> Mi Perfil
+            <Icon name="user-circle" size="text-base" /> Mi perfil
           </Link>
         </DropdownMenuItem>
         {hasPermission(user, "view_analytics") && (

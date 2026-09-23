@@ -35,7 +35,7 @@ export function ConfirmModal({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogContent className="gap-0 bg-card p-6 sm:max-w-sm">
+      <AlertDialogContent className="gap-0 bg-card p-6 sm:max-w-md">
         <AlertDialogTitle className="text-lg font-semibold tracking-tight">
           {title}
         </AlertDialogTitle>
@@ -53,13 +53,13 @@ export function ConfirmModal({
             Cancelar
           </Button>
           <Button
-            variant={danger ? "destructive" : "default"}
+            variant={danger ? "danger" : "default"}
             size="lg"
             className="flex-1"
             onClick={onConfirm}
             loading={isLoading}
           >
-            {isLoading ? "Procesando..." : confirmLabel}
+            {isLoading ? "Procesando…" : confirmLabel}
           </Button>
         </div>
       </AlertDialogContent>

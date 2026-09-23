@@ -42,7 +42,7 @@ describe("ConfirmModal", () => {
 
   it("blocks both buttons and Escape while loading", async () => {
     const { onCancel } = setup({ isLoading: true });
-    expect(screen.getByRole("button", { name: "Procesando..." })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Procesando…" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Cancelar" })).toBeDisabled();
     await userEvent.keyboard("{Escape}");
     expect(onCancel).not.toHaveBeenCalled();

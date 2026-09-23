@@ -57,12 +57,12 @@ export function NavItem({
         <span className="relative inline-flex shrink-0">
           <Icon name={NAV_ICON[icon] ?? "circle"} className="text-[18px]" />
           {collapsed && hasBadge && (
-            <span className="absolute -top-1 -right-1 size-2 rounded-full bg-destructive ring-2 ring-sidebar" />
+            <span className="absolute -top-1 -right-1 size-2 rounded-full bg-muted-foreground ring-2 ring-sidebar" />
           )}
         </span>
         <span className={cn("flex-1 truncate", collapsed && "sr-only")}>{label}</span>
         {!collapsed && hasBadge && (
-          <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
+          <span className="min-w-5 rounded-full bg-muted px-1.5 py-0.5 text-center text-[11px] font-medium text-muted-foreground tabular-nums">
             {badge}
           </span>
         )}

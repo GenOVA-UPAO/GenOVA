@@ -10,6 +10,8 @@ interface EmptyStateProps {
   description?: ReactNode;
   /** Acción principal (p. ej. un botón "Crear OVA"). */
   action?: ReactNode;
+  /** `danger` tiñe el icono de rojo: para estados de error, no de vacío. */
+  tone?: "default" | "danger";
   className?: string;
 }
 
@@ -18,23 +20,29 @@ export function EmptyState({
   title,
   description,
   action,
+  tone = "default",
   className,
 }: Readonly<EmptyStateProps>) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card/50 px-6 py-12 text-center",
+        "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card/60 px-6 py-14 text-center",
         className,
       )}
     >
-      <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Icon name={icon} size="text-3xl" />
+      <div
+        className={cn(
+          "mb-2 flex size-12 items-center justify-center rounded-full",
+          tone === "danger" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary",
+        )}
+      >
+        <Icon name={icon} size="text-2xl" />
       </div>
       <h2 className="font-display text-lg font-semibold">{title}</h2>
       {description !== undefined && (
-        <p className="max-w-md text-sm text-muted-foreground">{description}</p>
+        <p className="max-w-md text-sm text-pretty text-muted-foreground">{description}</p>
       )}
-      {action !== undefined && <div className="pt-2">{action}</div>}
+      {action !== undefined && <div className="pt-3">{action}</div>}
     </div>
   );
 }

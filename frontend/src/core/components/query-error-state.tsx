@@ -12,6 +12,7 @@ export function QueryErrorState({ title, onRetry }: Readonly<QueryErrorStateProp
     <div role="alert">
       <EmptyState
         icon="warning-circle"
+        tone="danger"
         title={title}
         description="Comprueba tu conexión e inténtalo de nuevo."
         action={
