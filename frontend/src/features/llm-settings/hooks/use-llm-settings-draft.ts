@@ -25,7 +25,8 @@ export function useLlmSettingsDraft(
   const [draft, setDraft] = useState<SettingsMap | null>(null);
   const [dirty, setDirty] = useState(false);
   const settings = dirty ? draft : (server.settings ?? null);
-  const defaults = server.defaults ?? {};
+  // «Usar el de la plataforma» vuelve al modelo del admin, no a la semilla.
+  const defaults = server.platform?.defaults ?? server.defaults ?? {};
 
   function update(next: SettingsMap): void {
     setDraft(next);

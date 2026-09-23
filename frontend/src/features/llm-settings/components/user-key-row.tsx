@@ -5,6 +5,7 @@ import { Input } from "@/core/components/ui/input";
 
 import { errorMessage } from "../hooks/error-message";
 import { useUserApiKeys } from "../hooks/use-user-api-keys";
+import { UserKeyRemove } from "./user-key-remove";
 import { UserKeyRowActions } from "./user-key-row-actions";
 import { UserKeyRowHeader } from "./user-key-row-header";
 
@@ -22,7 +23,7 @@ export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>)
   const configured = Boolean(maskedValue);
 
   return (
-    <li className="space-y-3 px-4 py-3.5">
+    <li className="space-y-3 px-4 py-3.5" data-key-row={provider}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <UserKeyRowHeader provider={provider} configured={configured} />
         {configured && !state.editing ? (
@@ -41,6 +42,7 @@ export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>)
             onSave={() => undefined}
           />
         )}
+        {configured && !state.editing ? <UserKeyRemove provider={provider} label={meta.label} /> : null}
       </div>
       {state.editing ? (
         <div className="space-y-2">

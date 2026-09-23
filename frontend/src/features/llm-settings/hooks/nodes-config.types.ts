@@ -1,3 +1,5 @@
+import { withNodeCopy } from "../lib/node-copy";
+
 export interface EngineNode {
   id: string;
   name: string;
@@ -19,5 +21,10 @@ export interface NodesConfigResponse {
 
 export function asNodesConfig(raw: unknown): NodesConfigResponse {
   if (!raw || typeof raw !== "object") return {};
-  return raw;
+  const data = raw as NodesConfigResponse;
+  return {
+    ...data,
+    nodes: data.nodes?.map(withNodeCopy),
+    capabilities: data.capabilities?.map(withNodeCopy),
+  };
 }

@@ -1,3 +1,4 @@
+import type { EffectiveConfig } from "./llm-config-draft";
 import type { SettingsMap } from "./llm-settings-mutations";
 
 export interface EnabledModel {
@@ -30,6 +31,8 @@ export interface LlmSettingsResponse {
   catalog_all?: CatalogModel[];
   enabled_models?: EnabledModel[];
   defaults?: Record<string, EnabledModel>;
+  /** Config efectiva de la plataforma (semilla ⊕ admin): lo que se usa sin clave propia. */
+  platform?: EffectiveConfig;
   timeout_bounds?: number[];
   catalog_full?: CatalogModel[];
   full_total?: number;

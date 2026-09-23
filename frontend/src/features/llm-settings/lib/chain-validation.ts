@@ -3,6 +3,8 @@ import type { Draft, Entry, TaskDraft } from "./llm-config-draft";
 export interface SlotIssue {
   index: number;
   message: string;
+  /** `empty`: fila recién añadida sin modelo (pista, no error); `duplicate`: error. */
+  kind: "empty" | "duplicate";
 }
 
 function entryKey(e: Entry | undefined): string | null {
@@ -20,16 +22,16 @@ export function validateTaskChain(task: TaskDraft | undefined): SlotIssue[] {
 
   task.fallbacks.forEach((f, i) => {
     if (!f.provider || !f.model_id) {
-      issues.push({ index: i, message: "Elige un modelo para este fallback." });
+      issues.push({ index: i, message: "Elige un modelo o quita esta fila.", kind: "empty" });
       return;
     }
     const key = `${f.provider}::${f.model_id}`;
     if (primaryKey && key === primaryKey) {
-      issues.push({ index: i, message: "Este modelo ya es el primario." });
+      issues.push({ index: i, message: "Este modelo ya es el principal.", kind: "duplicate" });
       return;
     }
     if (seen.has(key)) {
-      issues.push({ index: i, message: "Este modelo ya está en la cadena." });
+      issues.push({ index: i, message: "Este modelo ya está en la lista de respaldo.", kind: "duplicate" });
       return;
     }
     seen.add(key);

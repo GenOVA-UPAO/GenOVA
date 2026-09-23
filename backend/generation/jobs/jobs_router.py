@@ -28,6 +28,7 @@ from generation.jobs.jobs_router_helpers import (
 from generation.jobs.jobs_router_helpers import (
     _resolve_resume_targets as _impl_resolve_resume_targets,
 )
+from llm.utils.user_overrides import honored_overrides
 from models import User
 
 router = APIRouter(tags=["Generación"])
@@ -58,7 +59,11 @@ def start_job(
                 resources=[r.model_dump() for r in payload.resources],
                 theme=payload.theme.model_dump(),
                 resource_configs=dict(payload.resource_configs),
-                llm_settings=current_user.llm_settings or {},
+                llm_settings=honored_overrides(
+                    current_user.llm_settings,
+                    current_user.user_api_keys,
+                    is_admin=bool(getattr(current_user, "admin_flag_cached", False)),
+                ),
                 enabled_models=current_user.enabled_models or [],
                 ova_settings=current_user.ova_settings or {},
                 user_api_keys=current_user.user_api_keys or {},

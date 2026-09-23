@@ -60,7 +60,7 @@ export function DeleteRoleModal({
         />
         <FormErrorAlert message={serverError} />
         <DialogFooter>
-          <Button variant="ghost" onClick={onCancel} disabled={isDeleting}>
+          <Button variant="outline" onClick={onCancel} disabled={isDeleting}>
             Cancelar
           </Button>
           <Button

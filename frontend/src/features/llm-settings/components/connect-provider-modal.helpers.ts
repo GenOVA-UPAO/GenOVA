@@ -22,7 +22,7 @@ export const PROVIDERS: ProviderOption[] = [
   {
     id: "openrouter",
     label: "OpenRouter",
-    desc: "Acceso a +300 modelos: Claude, GPT-4o, Gemini, DeepSeek y más.",
+    desc: "Cientos de modelos con una sola clave: Claude, GPT, Gemini, DeepSeek y más.",
     badge: "Recomendado",
     badgeColor: "bg-primary/10 text-primary",
     icon: "◎",

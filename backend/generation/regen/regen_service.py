@@ -132,11 +132,27 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
 
 
 def _owner_llm_config(db: Session, user_id) -> dict:
-    """Load the OVA owner's per-type LLM overrides (empty = system defaults)."""
-    from models import User
+    """Elecciones de modelo del dueño del OVA que se respetan (vacío = config
+    de la plataforma): solo las que paga su propia clave, salvo el admin."""
+    from sqlalchemy import select
+
+    from llm.utils.user_overrides import honored_overrides
+    from models import Role, User, UserRole
 
     user = db.get(User, user_id)
-    return (user.llm_settings if user else None) or {}
+    if not user:
+        return {}
+    is_admin = (
+        db.execute(
+            select(UserRole)
+            .join(Role)
+            .where(UserRole.user_id == user.id, Role.name == "administrador")
+        )
+        .scalars()
+        .first()
+        is not None
+    )
+    return honored_overrides(user.llm_settings, user.user_api_keys, is_admin=is_admin)
 
 
 def _owner_image_settings(db: Session, user_id) -> dict:

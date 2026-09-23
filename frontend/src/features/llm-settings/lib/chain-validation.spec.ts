@@ -26,13 +26,13 @@ describe("validateTaskChain", () => {
         ...llama,
         fallbacks: [{ provider: "", model_id: "" }],
       }),
-    ).toEqual([{ index: 0, message: "Elige un modelo para este fallback." }]);
+    ).toEqual([{ index: 0, message: "Elige un modelo o quita esta fila.", kind: "empty" }]);
     expect(
       validateTaskChain({
         ...llama,
         fallbacks: [{ provider: "groq", model_id: "" }],
       }),
-    ).toEqual([{ index: 0, message: "Elige un modelo para este fallback." }]);
+    ).toEqual([{ index: 0, message: "Elige un modelo o quita esta fila.", kind: "empty" }]);
   });
 
   it("flags a fallback that repeats the primary", () => {
@@ -41,7 +41,7 @@ describe("validateTaskChain", () => {
         ...llama,
         fallbacks: [{ provider: "groq", model_id: "llama" }],
       }),
-    ).toEqual([{ index: 0, message: "Este modelo ya es el primario." }]);
+    ).toEqual([{ index: 0, message: "Este modelo ya es el principal.", kind: "duplicate" }]);
   });
 
   it("flags the later duplicate in the chain, not the first", () => {
@@ -53,7 +53,7 @@ describe("validateTaskChain", () => {
           { provider: "openrouter", model_id: "gpt" },
         ],
       }),
-    ).toEqual([{ index: 1, message: "Este modelo ya está en la cadena." }]);
+    ).toEqual([{ index: 1, message: "Este modelo ya está en la lista de respaldo.", kind: "duplicate" }]);
   });
 });
 
@@ -67,7 +67,7 @@ describe("validateDraft", () => {
       },
     };
     expect(validateDraft(draft, ["texto", "codigo"])).toEqual({
-      codigo: [{ index: 0, message: "Elige un modelo para este fallback." }],
+      codigo: [{ index: 0, message: "Elige un modelo o quita esta fila.", kind: "empty" }],
     });
     expect(draftHasIssues(draft, ["texto", "codigo"])).toBe(true);
     expect(draftHasIssues(draft, ["texto"])).toBe(false);

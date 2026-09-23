@@ -59,3 +59,53 @@ def test_sin_key_propia_el_modelo_del_administrador_sigue_permitido():
 def test_enabled_models_vacio_o_ausente_no_revienta():
     assert _own_model_keys(_User([]), has_key=True) == set()
     assert _own_model_keys(_User(None), has_key=True) == set()
+
+
+def test_la_vista_del_usuario_recibe_la_configuracion_efectiva_de_la_plataforma(monkeypatch):
+    """Sin clave propia se genera con la config del admin, no con la semilla:
+    `platform` es lo que la vista de solo lectura debe mostrar."""
+    import llm.router
+    from users.interface.http.settings_llm_settings_router import _platform_config
+
+    efectiva = {
+        "defaults": {"texto": {"provider": "openrouter", "model_id": "admin/elegido", "extra": {}}},
+        "fallbacks": {"texto": [{"provider": "openrouter", "model_id": "admin/respaldo", "extra": {}}]},
+        "generation_enabled": {"imagen": True},
+    }
+    monkeypatch.setattr(llm.router, "effective_llm_config", lambda: efectiva)
+    assert _platform_config() == efectiva
+
+
+def test_la_vista_marca_la_eleccion_propia_y_en_el_resto_muestra_la_plataforma():
+    from users.interface.http.settings_llm_settings_router import settings_view
+
+    merged = {
+        "texto": {"provider": "openrouter", "model_id": "mio/elegido", "timeout_s": 90, "fallbacks": []},
+        "codigo": {**DEFAULTS["codigo"], "timeout_s": 120, "fallbacks": []},
+    }
+    honored = {"texto": {"provider": "openrouter", "model_id": "mio/elegido"}}
+    platform = {"codigo": {"provider": "openrouter", "model_id": "admin/codigo"}}
+    view = settings_view(merged, honored, platform)
+    assert view["texto"]["override"] is True
+    assert view["texto"]["model_id"] == "mio/elegido"
+    assert view["codigo"]["override"] is False
+    assert view["codigo"]["model_id"] == "admin/codigo"
+
+
+def test_no_se_puede_guardar_un_modelo_de_un_proveedor_sin_clave_propia():
+    from users.interface.http.settings_llm_settings_router import _providers_without_own_key
+
+    class _U:
+        admin_flag_cached = False
+        user_api_keys = {"openrouter": "sk-or-x"}
+
+    clean = {
+        "texto": {
+            "provider": "openrouter",
+            "model_id": "a",
+            "fallbacks": [{"provider": "groq", "model_id": "b"}],
+        }
+    }
+    assert _providers_without_own_key(clean, _U()) == ["groq"]
+    _U.admin_flag_cached = True
+    assert _providers_without_own_key(clean, _U()) == []

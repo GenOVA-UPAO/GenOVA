@@ -11,6 +11,11 @@ export interface TaskSetting {
   model_id?: string;
   timeout_s?: number;
   fallbacks?: ModelEntry[];
+  /**
+   * true = elección propia del usuario (se paga con su clave). false = sigue al
+   * modelo de la plataforma: no se envía al guardar, así el admin puede cambiarlo.
+   */
+  override?: boolean;
 }
 
 export type SettingsMap = Record<string, TaskSetting>;
@@ -23,7 +28,7 @@ function getFallbacks(s: SettingsMap | null, tipo: string): ModelEntry[] {
 
 function withFallbacks(s: SettingsMap | null, tipo: string, fbs: ModelEntry[]): SettingsMap {
   const base = s ?? {};
-  return { ...base, [tipo]: { ...base[tipo], fallbacks: fbs } };
+  return { ...base, [tipo]: { ...base[tipo], fallbacks: fbs, override: true } };
 }
 
 export function setModelIn(
@@ -33,22 +38,48 @@ export function setModelIn(
   modelId: string,
 ): SettingsMap {
   const base = s ?? {};
-  return { ...base, [tipo]: { ...base[tipo], provider, model_id: modelId } };
+  return { ...base, [tipo]: { ...base[tipo], provider, model_id: modelId, override: true } };
 }
 
 export function setTimeoutIn(s: SettingsMap | null, tipo: string, timeoutS: number): SettingsMap {
   const base = s ?? {};
-  return { ...base, [tipo]: { ...base[tipo], timeout_s: timeoutS } };
+  return { ...base, [tipo]: { ...base[tipo], timeout_s: timeoutS, override: true } };
 }
 
+/** Deja de usar una elección propia: la tarea vuelve a seguir a la plataforma. */
 export function resetTipoIn(
   s: SettingsMap | null,
   tipo: string,
-  defaults: Record<string, Partial<TaskSetting>>,
+  platformDefaults: Record<string, Partial<TaskSetting>>,
   timeout: number,
 ): SettingsMap {
   const base = s ?? {};
-  return { ...base, [tipo]: { ...defaults[tipo], timeout_s: timeout } };
+  const platform = Object.hasOwn(platformDefaults, tipo) ? platformDefaults[tipo] : {};
+  return {
+    ...base,
+    [tipo]: {
+      provider: platform.provider,
+      model_id: platform.model_id,
+      timeout_s: timeout,
+      fallbacks: [],
+      override: false,
+    },
+  };
+}
+
+/** Payload del PUT: solo las elecciones propias, sin el campo `override`. */
+export function overridesPayload(s: SettingsMap): SettingsMap {
+  const out: SettingsMap = {};
+  for (const [tipo, entry] of Object.entries(s)) {
+    if (entry.override !== true) continue;
+    out[tipo] = {
+      provider: entry.provider,
+      model_id: entry.model_id,
+      timeout_s: entry.timeout_s,
+      fallbacks: entry.fallbacks,
+    };
+  }
+  return out;
 }
 
 export function setFallbackIn(

@@ -6,6 +6,7 @@ import { useCurrentUser, useIsAdmin } from "@/core/auth/auth-store";
 
 import { draftHasIssues, validateDraft } from "../lib/chain-validation";
 import type { Draft } from "../lib/llm-config-draft";
+import { openKeyRow } from "../lib/open-key-row";
 import { canAccessModels } from "./can-access-models";
 import { errorMessage } from "./error-message";
 import { connectedProviders, favoritesLabel, headerStatusText } from "./header-status";
@@ -47,9 +48,10 @@ export function useModelsPage() {
     onDraftChange: (next: Draft) => {
       admin.setDraft(next);
     },
-    goToApiKeys: () => {
+    goToApiKeys: (provider?: string) => {
       setManageOpen(false);
       setActiveTab("credentials");
+      if (provider) openKeyRow(provider);
     },
     discard: () => {
       admin.discard();

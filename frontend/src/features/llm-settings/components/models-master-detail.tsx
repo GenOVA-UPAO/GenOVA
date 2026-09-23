@@ -68,6 +68,7 @@ export function ModelsMasterDetail({
           onSelect={(task) => {
             setSelectedTask(task);
             setMobileShowDetail(true);
+            revealPanel(task);
           }}
         />
         <ModelsTaskPanel
@@ -140,4 +141,18 @@ function toggleGeneration(
     generationEnabled: task !== "video",
   };
   onDraftChange({ ...draft, [task]: { ...prev, generationEnabled: !current } });
+}
+
+/**
+ * En móvil el panel sustituye a la lista, pero quedaba bajo el aviso de
+ * proveedores y fuera de pantalla: se lleva a la vista y se le da el foco.
+ */
+function revealPanel(task: string) {
+  if (typeof window.matchMedia !== "function") return;
+  if (window.matchMedia("(min-width: 768px)").matches) return;
+  requestAnimationFrame(() => {
+    const panel = document.getElementById(`task-panel-${task}`);
+    panel?.scrollIntoView({ block: "start", behavior: "smooth" });
+    panel?.focus({ preventScroll: true });
+  });
 }

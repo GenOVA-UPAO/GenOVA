@@ -32,7 +32,7 @@ export function ManageModelsSelect({
       <SelectTrigger
         aria-label={label}
         title={label}
-        className={cn("h-9 w-full min-w-0 sm:w-44 max-sm:h-11", className)}
+        className={cn("h-9 w-full min-w-0 max-sm:h-11", className)}
       >
         <SelectValue />
       </SelectTrigger>

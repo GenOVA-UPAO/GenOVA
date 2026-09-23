@@ -14,7 +14,7 @@ export function RoleFormActions({
 }: Readonly<RoleFormActionsProps>) {
   return (
     <DialogFooter>
-      <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
+      <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
         Cancelar
       </Button>
       <Button type="submit" loading={isSubmitting}>

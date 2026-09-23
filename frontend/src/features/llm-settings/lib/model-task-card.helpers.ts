@@ -1,5 +1,7 @@
 import { firstNonBlank } from "@/core/lib/text";
 
+import { modelDisplayName } from "./model-name";
+
 export const MODALITY_SYMBOLS: Record<string, string> = {
   text: "Aa",
   multimodal: "◆",
@@ -15,10 +17,8 @@ export interface ChipModel {
 }
 
 export function chipLabel(f: { provider: string; model_id: string }, models: ChipModel[]): string {
-  return (
-    models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.label ??
-    f.model_id
-  );
+  const label = models.find((m) => m.provider === f.provider && m.model_id === f.model_id)?.label;
+  return modelDisplayName(label, f.model_id);
 }
 
 export function chipModality(

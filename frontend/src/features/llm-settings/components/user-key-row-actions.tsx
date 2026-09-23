@@ -20,11 +20,11 @@ export function UserKeyRowActions({
   if (editing) {
     return (
       <div className="flex gap-2">
-        <Button className="max-sm:h-11 max-sm:flex-1" loading={saving} onClick={onSave}>
-          Guardar
-        </Button>
-        <Button variant="ghost" className="max-sm:h-11 max-sm:flex-1" onClick={onCancel}>
+        <Button variant="outline" className="max-sm:h-11 max-sm:flex-1" onClick={onCancel}>
           Cancelar
+        </Button>
+        <Button className="max-sm:h-11 max-sm:flex-1" loading={saving} onClick={onSave}>
+          Guardar clave
         </Button>
       </div>
     );

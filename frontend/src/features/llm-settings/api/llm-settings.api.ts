@@ -1,6 +1,6 @@
 import { apiJson } from "@/core/lib/http";
 
-import type { SettingsMap } from "../lib/llm-settings-mutations";
+import { overridesPayload, type SettingsMap } from "../lib/llm-settings-mutations";
 import type { EnabledModel, LlmSettingsResponse } from "../lib/user-llm-settings.types";
 
 export interface LlmSettingsParams {
@@ -46,7 +46,7 @@ export function getLlmSettings(params: LlmSettingsParams = {}): Promise<LlmSetti
 export function saveLlmSettings(settings: SettingsMap): Promise<LlmSettingsResponse> {
   return apiJson(
     "/api/users/me/llm-settings",
-    { method: "PUT", body: json({ settings }) },
+    { method: "PUT", body: json({ settings: overridesPayload(settings) }) },
     { fallbackMsg: "No se pudo guardar la configuración." },
   );
 }

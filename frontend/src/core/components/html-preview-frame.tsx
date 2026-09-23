@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+import { cn } from "@/core/lib/cn";
 
 interface HtmlPreviewFrameProps {
   html?: string;
@@ -19,6 +21,10 @@ export function HtmlPreviewFrame({
   title = "Vista previa del recurso",
 }: Readonly<HtmlPreviewFrameProps>) {
   const frameRef = useRef<HTMLIFrameElement>(null);
+  // HTML ya pintado. Mientras no coincide, el iframe muestra un fondo pulsante:
+  // un OVA pesa decenas de kB y el hueco en blanco parecía una versión vacía.
+  const [loadedHtml, setLoadedHtml] = useState<string | null>(null);
+  const loading = html !== "" && loadedHtml !== html;
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -39,9 +45,14 @@ export function HtmlPreviewFrame({
     <iframe
       ref={frameRef}
       title={title}
-      className={className}
+      className={cn(className, loading && "animate-pulse bg-muted")}
       style={height === null ? undefined : { height }}
       sandbox="allow-scripts"
+      aria-busy={loading || undefined}
+      onLoad={(event) => {
+        // El about:blank inicial también dispara load: solo cuenta el Blob.
+        if (event.currentTarget.src.startsWith("blob:")) setLoadedHtml(html);
+      }}
     />
   );
 }
