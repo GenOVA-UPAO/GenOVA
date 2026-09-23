@@ -35,7 +35,9 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
         <DialogHeader className="pr-8">
           <DialogTitle>Configuración de IA</DialogTitle>
           <DialogDescription>
-            Modelo y tiempo máximo de espera de cada tarea al generar tus OVAs.
+            {store.hasOwnLlmKey
+              ? "Modelo y tiempo máximo de espera de cada tarea al generar tus OVAs."
+              : "Modelos con los que la IA genera tus OVAs."}
             {showModelsLink ? (
               <>
                 {" "}
@@ -58,7 +60,13 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
           <LlmSettingsForm readOnly={!store.hasOwnLlmKey} />
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={() => { onOpenChange(false); }} disabled={store.saving}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              onOpenChange(false);
+            }}
+            disabled={store.saving}
+          >
             {store.hasOwnLlmKey ? "Cancelar" : "Cerrar"}
           </Button>
           {store.hasOwnLlmKey ? (

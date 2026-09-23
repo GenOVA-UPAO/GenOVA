@@ -5,6 +5,7 @@ import { Skeleton } from "@/core/components/ui/skeleton";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { TASK_LABELS } from "../lib/llm-settings-labels";
 import { LlmSettingsFormTask } from "./llm-settings-form-task";
+import { LlmSettingsPlatformTask } from "./llm-settings-platform-task";
 
 export function LlmSettingsForm({ readOnly = false }: Readonly<{ readOnly?: boolean }>) {
   const store = useLlmSettings();
@@ -47,9 +48,13 @@ export function LlmSettingsForm({ readOnly = false }: Readonly<{ readOnly?: bool
         </p>
       ) : null}
       <ul className="divide-y divide-border">
-        {taskKeys.map((tipo) => (
-          <LlmSettingsFormTask key={tipo} tipo={tipo} locked={locked} />
-        ))}
+        {taskKeys.map((tipo) =>
+          readOnly ? (
+            <LlmSettingsPlatformTask key={tipo} tipo={tipo} label={TASK_LABELS[tipo] ?? tipo} />
+          ) : (
+            <LlmSettingsFormTask key={tipo} tipo={tipo} locked={locked} />
+          ),
+        )}
       </ul>
       {noCatalog && !readOnly ? (
         <div className="flex flex-col gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-sm text-muted-foreground sm:flex-row sm:items-center">
@@ -68,10 +73,12 @@ export function LlmSettingsForm({ readOnly = false }: Readonly<{ readOnly?: bool
           </Button>
         </div>
       ) : null}
-      <p className="text-xs text-muted-foreground">
-        El tiempo máximo de espera va de {store.bounds[0]} a {store.bounds[1]} segundos y se aplica
-        a todos tus OVAs.
-      </p>
+      {readOnly ? null : (
+        <p className="text-xs text-muted-foreground">
+          El tiempo máximo de espera va de {store.bounds[0]} a {store.bounds[1]} segundos y se
+          aplica a todos tus OVAs.
+        </p>
+      )}
     </div>
   );
 }

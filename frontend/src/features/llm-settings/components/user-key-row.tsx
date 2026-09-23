@@ -5,6 +5,7 @@ import { Input } from "@/core/components/ui/input";
 
 import { errorMessage } from "../hooks/error-message";
 import { useUserApiKeys } from "../hooks/use-user-api-keys";
+import { UserKeyRemove } from "./user-key-remove";
 import { UserKeyRowActions } from "./user-key-row-actions";
 import { UserKeyRowHeader } from "./user-key-row-header";
 
@@ -41,6 +42,7 @@ export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>)
             onSave={() => undefined}
           />
         )}
+        {configured && !state.editing ? <UserKeyRemove provider={provider} label={meta.label} /> : null}
       </div>
       {state.editing ? (
         <div className="space-y-2">
