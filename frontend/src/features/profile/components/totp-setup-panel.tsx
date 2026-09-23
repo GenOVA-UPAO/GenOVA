@@ -7,10 +7,10 @@ import { describedBy } from "../lib/described-by";
 import { totpCodeError } from "../lib/totp-code";
 import type { SetupData } from "../lib/types";
 import { BackupCodesBox } from "./backup-codes-box";
-import { CopyField } from "./copy-field";
 import { ErrorAlert } from "./error-alert";
 import { FormField } from "./form-field";
 import { ProfileSection } from "./profile-section";
+import { TotpEnrollment } from "./totp-enrollment";
 
 interface TotpSetupPanelProps {
   data: SetupData;
@@ -46,18 +46,7 @@ export function TotpSetupPanel({
       title="Configura tu app autenticadora"
       description="Añade GenOVA a tu app autenticadora y confirma con el código que genera."
     >
-      <ol className="list-inside list-decimal space-y-1.5 text-sm text-muted-foreground">
-        <li>Abre la app y añade una cuenta con la URI o la clave secreta de abajo.</li>
-        <li>Escribe el código de 6 dígitos que aparece en la app.</li>
-      </ol>
-      <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-3">
-        <CopyField
-          label="URI de aprovisionamiento"
-          value={data.provisioning_uri}
-          ariaLabel="Copiar URI"
-        />
-        <CopyField label="Clave secreta" value={data.secret} ariaLabel="Copiar clave" mono />
-      </div>
+      <TotpEnrollment uri={data.provisioning_uri} secret={data.secret} />
       <BackupCodesBox codes={data.backup_codes} />
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="sm:w-56">
