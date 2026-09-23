@@ -1,10 +1,11 @@
-import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
+import { useOwnKeyModels } from "../hooks/use-own-key-providers";
 import type { ChipModel } from "../lib/model-task-card.helpers";
 import { LlmModelSelect } from "./llm-model-select";
 import { UserFallbackEditor } from "./user-fallback-editor";
+import { UserOverrideHeader } from "./user-override-header";
 
 interface UserOverrideSectionProps {
   task: string;
@@ -22,35 +23,27 @@ export function UserOverrideSection({
   bounds = [30, 300],
 }: Readonly<UserOverrideSectionProps>) {
   const store = useLlmSettings();
-  const userSettings = store.settings?.[task];
-  const userModels: ChipModel[] = store.catalogEnabled;
-  const userFallbacks = userSettings?.fallbacks ?? [];
+  const userSettings = store.settings?.[task] ?? {};
+  // Solo modelos de proveedores con clave propia: lo que elige se paga con ella.
+  const userModels: ChipModel[] = useOwnKeyModels(store.catalogEnabled);
+  const userFallbacks = userSettings.fallbacks ?? [];
 
   return (
     <div className="space-y-3 border-t border-border pt-5">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <p className="text-sm font-medium">Tu modelo</p>
-          <p className="text-xs text-muted-foreground">Se usa en lugar del de la plataforma.</p>
-        </div>
-        <Button
-          variant="ghost"
-          size="xs"
-          className="text-muted-foreground"
-          disabled={userDisabled}
-          onClick={() => {
-            store.resetTipo(task);
-          }}
-        >
-          Restaurar predeterminado
-        </Button>
-      </div>
+      <UserOverrideHeader
+        isOverride={userSettings.override === true}
+        disabled={userDisabled}
+        onUsePlatform={() => {
+          store.resetTipo(task);
+        }}
+      />
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
           <LlmModelSelect
             models={userModels}
-            provider={userSettings?.provider}
-            modelId={userSettings?.model_id}
+            provider={userSettings.provider}
+            modelId={userSettings.model_id}
+            currentLabel={catalogLabel(store.catalogFull, userSettings.provider, userSettings.model_id)}
             disabled={userDisabled}
             ariaLabel={`Mi modelo ${task}`}
             onChange={(ev) => {
@@ -63,7 +56,7 @@ export function UserOverrideSection({
             type="number"
             min={bounds[0]}
             max={bounds[1]}
-            value={userSettings?.timeout_s ?? ""}
+            value={userSettings.timeout_s ?? ""}
             disabled={userDisabled}
             aria-label={`Tiempo máximo de espera, de ${String(bounds[0])} a ${String(bounds[1])} segundos`}
             onChange={(event) => {
@@ -77,6 +70,10 @@ export function UserOverrideSection({
           </span>
         </div>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Aparecen los modelos activados de los proveedores con tu clave. Activa más en «Abrir
+        catálogo».
+      </p>
       <UserFallbackEditor
         fallbacks={userFallbacks}
         models={userModels}
@@ -87,4 +84,13 @@ export function UserOverrideSection({
       />
     </div>
   );
+}
+
+/** Nombre del modelo en el catálogo completo (el de la plataforma puede no estar activado). */
+function catalogLabel(
+  catalog: readonly { provider: string; model_id: string; label?: string }[],
+  provider: string | undefined,
+  modelId: string | undefined,
+): string | undefined {
+  return catalog.find((m) => m.provider === provider && m.model_id === modelId)?.label;
 }

@@ -13,6 +13,8 @@ interface LlmModelSelectProps {
   modelId?: string;
   disabled?: boolean;
   invalid?: boolean;
+  /** Nombre del modelo actual cuando no está en `models` (p. ej. el de la plataforma). */
+  currentLabel?: string;
   ariaLabel: string;
   onChange: (next: { provider: string; modelId: string }) => void;
 }
@@ -27,12 +29,13 @@ export function LlmModelSelect({
   modelId,
   disabled = false,
   invalid = false,
+  currentLabel,
   ariaLabel,
   onChange,
 }: Readonly<LlmModelSelectProps>) {
   const current = joinModelValue(provider, modelId);
   // El elegido va primero: con cientos de modelos no aparecía al abrir la lista.
-  const options = withCurrentStub(models, provider, modelId)
+  const options = withCurrentStub(models, { provider, modelId, label: currentLabel })
     .map((model) => toOption(model, joinModelValue(model.provider, model.model_id)))
     .sort((a, b) => Number(b.value === current) - Number(a.value === current));
   const selected = options.find((option) => option.value === current);
@@ -72,12 +75,12 @@ export function LlmModelSelect({
 
 function withCurrentStub(
   models: SearchableModel[],
-  provider: string | undefined,
-  modelId: string | undefined,
+  current: { provider?: string; modelId?: string; label?: string },
 ): SearchableModel[] {
+  const { provider, modelId, label } = current;
   if (!provider || !modelId) return models;
   if (models.some((model) => model.provider === provider && model.model_id === modelId)) {
     return models;
   }
-  return [{ provider, model_id: modelId, label: modelId }, ...models];
+  return [{ provider, model_id: modelId, label: label ?? modelId }, ...models];
 }

@@ -29,6 +29,7 @@ from llm.catalog.model_catalog import (
     sanitize_settings,
 )
 from llm.providers import TEXT_PROVIDERS
+from llm.utils.user_overrides import honored_overrides, own_key_providers
 from models import User
 from users.application.dto import SaveLlmSettingsInput
 from users.container import UsersUseCases, build_users
@@ -99,7 +100,7 @@ def get_llm_settings(
     all_providers, all_types = providers_and_types(all_entries_active)
 
     return {
-        "settings": merge_with_defaults(current_user.llm_settings, extra_keys=ek),
+        "settings": _settings_view(current_user, ek),
         "has_own_llm_key": has_key,
         "catalog": filtered_catalog,
         "catalog_all": [e for e in all_entries if e.get("active")],
@@ -156,6 +157,15 @@ def put_llm_settings(
         clean = sanitize_settings(payload.settings, extra_keys=ek)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
+    missing = _providers_without_own_key(clean, current_user)
+    if missing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Añade tu clave de {', '.join(missing)} en Credenciales para usar sus modelos: "
+                "los modelos que elijas se pagan con tu propia clave."
+            ),
+        )
 
     try:
         saved = users.save_llm_settings.execute(
@@ -164,7 +174,7 @@ def put_llm_settings(
     except UserError as err:
         raise to_http_exception(err) from None
 
-    return {"settings": merge_with_defaults(saved, extra_keys=ek)}
+    return {"settings": _settings_view(current_user, ek, stored=saved)}
 
 
 def _platform_config() -> dict:
@@ -172,3 +182,50 @@ def _platform_config() -> dict:
     from llm.router import effective_llm_config
 
     return effective_llm_config()
+
+
+def _is_admin(user: User) -> bool:
+    return bool(getattr(user, "admin_flag_cached", False))
+
+
+def _providers_without_own_key(clean: dict, user: User) -> list[str]:
+    """Proveedores elegidos (principal o respaldo) sin clave propia del usuario."""
+    if _is_admin(user):
+        return []
+    own = own_key_providers(user.user_api_keys)
+    chosen = {e["provider"] for e in clean.values()} | {
+        f["provider"] for e in clean.values() for f in e.get("fallbacks", [])
+    }
+    return sorted(chosen - own)
+
+
+def _settings_view(
+    user: User, extra_keys: set[tuple[str, str]], stored: dict | None = None
+) -> dict:
+    """Ajustes por tarea para la UI, con `override` = elección propia vigente."""
+    settings = user.llm_settings if stored is None else stored
+    honored = honored_overrides(settings, user.user_api_keys, is_admin=_is_admin(user))
+    return settings_view(
+        merge_with_defaults(honored, extra_keys=extra_keys),
+        honored,
+        (_platform_config().get("defaults") or {}),
+    )
+
+
+def settings_view(merged: dict, honored: dict, platform_defaults: dict) -> dict:
+    """Marca qué tareas tienen elección propia y, en las demás, muestra el modelo
+    de la plataforma (config del admin), no la semilla: antes la UI enseñaba la
+    semilla como si fuera la elección del usuario y al guardar quedaba fijada."""
+    view: dict[str, dict] = {}
+    for tipo, entry in merged.items():
+        own = honored.get(tipo) or {}
+        is_override = (own.get("provider"), own.get("model_id")) == (
+            entry["provider"],
+            entry["model_id"],
+        )
+        item = dict(entry, override=is_override)
+        platform = platform_defaults.get(tipo) or {}
+        if not is_override and platform.get("provider") and platform.get("model_id"):
+            item.update(provider=platform["provider"], model_id=platform["model_id"], fallbacks=[])
+        view[tipo] = item
+    return view

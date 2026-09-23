@@ -26,7 +26,7 @@ export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTa
     <li className="space-y-2 py-3.5 first:pt-0 last:pb-0">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium">{label}</span>
-        {locked ? null : (
+        {!locked && cur.override === true ? (
           <Button
             variant="ghost"
             size="xs"
@@ -36,9 +36,12 @@ export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTa
               store.resetTipo(tipo);
             }}
           >
-            Restaurar predeterminado
+            Usar el de la plataforma
           </Button>
-        )}
+        ) : null}
+        {!locked && cur.override !== true ? (
+          <span className="text-xs text-muted-foreground">De la plataforma</span>
+        ) : null}
       </div>
       <div className="flex items-center gap-2">
         <LlmSettingsModelSelect tipo={tipo} label={label} locked={locked} />
