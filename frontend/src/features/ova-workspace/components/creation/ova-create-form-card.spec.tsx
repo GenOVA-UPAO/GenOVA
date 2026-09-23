@@ -50,9 +50,9 @@ describe("OvaCreateFormCard", () => {
     const { props } = setup();
     fireEvent.click(screen.getByRole("button", { name: "Usar ejemplo de prompt" }));
     expect(props.onPrompt).toHaveBeenCalledWith(EXAMPLE_PROMPT);
-    expect(EXAMPLE_PROMPT).toMatch(/Tema:.*machine learning/);
+    expect(EXAMPLE_PROMPT).toMatch(/^Aprendizaje supervisado.*machine learning/);
     expect(EXAMPLE_PROMPT).toMatch(/Objetivos:/);
-    expect(EXAMPLE_PROMPT).toMatch(/Nivel educativo: Universitario/);
+    expect(EXAMPLE_PROMPT).not.toMatch(/Nivel educativo/i);
   });
   it("keeps generate disabled for short prompts and insufficient phases", () => {
     setup({ prompt: "corto", phases: 1 });

@@ -4,7 +4,7 @@ export type EducationLevelId =
 export interface EducationLevel {
   id: EducationLevelId;
   label: string;
-  /** Texto que se antepone al prompt: `Nivel educativo: <promptText>.` */
+  /** Texto que se añade al prompt: `Nivel educativo: <promptText>.` */
   promptText: string;
 }
 
@@ -38,12 +38,14 @@ export function loadEducationLevel(storage: Pick<Storage, "getItem">): Education
 }
 
 /**
- * Antepone la línea de nivel al prompt, salvo que el usuario ya la haya
- * escrito (comparación sin distinción de mayúsculas).
+ * Añade la línea de nivel al final del prompt, salvo que el usuario ya la haya
+ * escrito (comparación sin distinción de mayúsculas). Va al final porque el
+ * backend titula el OVA con el inicio del prompt: antepuesta, todos los OVAs
+ * nuevos se llamaban «Nivel educativo: universitario (ciclos iniciales)…».
  */
 export function promptWithLevel(prompt: string, level: EducationLevelId): string {
   const text = prompt.trim();
   if (/nivel educativo/i.test(text)) return text;
   const line = `Nivel educativo: ${educationLevel(level).promptText}.`;
-  return text.length > 0 ? `${line}\n\n${text}` : line;
+  return text.length > 0 ? `${text}\n\n${line}` : line;
 }

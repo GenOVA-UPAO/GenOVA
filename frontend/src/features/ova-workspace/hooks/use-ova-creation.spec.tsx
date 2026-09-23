@@ -51,7 +51,7 @@ describe("useOvaCreation", () => {
     vi.clearAllMocks();
     localStorage.clear();
   });
-  it("prepends the default education level line to the prompt sent to the API", async () => {
+  it("appends the default education level line to the prompt sent to the API", async () => {
     const { result } = setup();
     act(() => {
       result.current.setPrompt("Tema: la fotosíntesis");
@@ -62,7 +62,7 @@ describe("useOvaCreation", () => {
       await Promise.resolve();
     });
     expect(sentPayload()).toMatchObject({
-      prompt: "Nivel educativo: universitario (ciclos iniciales).\n\nTema: la fotosíntesis",
+      prompt: "Tema: la fotosíntesis\n\nNivel educativo: universitario (ciclos iniciales).",
     });
   });
   it("uses the chosen level and remembers it in localStorage", async () => {
@@ -78,7 +78,7 @@ describe("useOvaCreation", () => {
       await Promise.resolve();
     });
     expect(sentPayload()).toMatchObject({
-      prompt: "Nivel educativo: posgrado.\n\nTema: topología de redes",
+      prompt: "Tema: topología de redes\n\nNivel educativo: posgrado.",
     });
   });
   it("does not duplicate the level when the prompt already states it, ignoring case", async () => {
