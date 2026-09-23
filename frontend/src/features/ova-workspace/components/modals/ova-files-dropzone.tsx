@@ -4,7 +4,7 @@ import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 const ACCEPTED_ATTR = ".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.webp";
-const ACCEPTED_LABEL = "PDF, DOCX, PPTX · MP3, WAV, M4A · JPG, PNG, WEBP";
+const ACCEPTED_LABEL = "PDF, DOCX, PPTX, MP3, WAV, M4A, JPG, PNG o WEBP";
 
 interface Props {
   count: number;
@@ -19,12 +19,12 @@ export function OvaFilesDropzone({ count, max, uploading, onFiles }: Readonly<Pr
   const full = count >= max;
   const disabled = uploading || full;
 
-  let headline = "Arrastra tus archivos o pulsa para buscarlos";
+  let headline = "Arrastra archivos aquí o haz clic para elegirlos";
   if (dragging) headline = "Suelta aquí";
   else if (full) headline = "Límite alcanzado";
   else if (uploading) headline = "Subiendo archivos…";
 
-  let stateClass = "cursor-pointer border-border hover:border-primary/50 hover:bg-accent/30";
+  let stateClass = "cursor-pointer border-border hover:border-primary/50 hover:bg-primary/5";
   if (dragging) stateClass = "border-primary bg-primary/5";
   else if (disabled) stateClass = "cursor-not-allowed border-border/60 opacity-70";
 
@@ -32,7 +32,7 @@ export function OvaFilesDropzone({ count, max, uploading, onFiles }: Readonly<Pr
     <label
       htmlFor="reference-files"
       className={cn(
-        "flex flex-col items-center gap-2.5 rounded-xl border-2 border-dashed px-6 py-8 text-center transition duration-200 select-none",
+        "flex flex-col items-center gap-2 rounded-xl border-2 border-dashed px-6 py-7 text-center transition-colors duration-200 select-none",
         "has-[:focus-visible]:border-primary has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50",
         stateClass,
       )}
@@ -57,9 +57,8 @@ export function OvaFilesDropzone({ count, max, uploading, onFiles }: Readonly<Pr
       />
       <span className="space-y-1">
         <span className="block text-sm font-semibold">{headline}</span>
-        {!disabled && <span className="block text-xs text-muted-foreground">o haz clic para seleccionar</span>}
-        <span id="reference-files-hint" className="block text-[11px] text-muted-foreground/70">
-          {ACCEPTED_LABEL} · Máx. {String(max)} archivos
+        <span id="reference-files-hint" className="block text-xs text-muted-foreground">
+          {ACCEPTED_LABEL}. Máximo {String(max)} archivos.
         </span>
       </span>
       <input

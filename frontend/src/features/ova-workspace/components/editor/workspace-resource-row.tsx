@@ -27,42 +27,46 @@ interface Props {
 export function WorkspaceResourceRow({ phase, index, total, ovaId, dragging, dragProps, onMove, onRegenerate }: Readonly<Props>) {
   const name = resourceLabel(phase);
   return (
-    <li className={`flex items-stretch gap-1 ${dragging ? "opacity-50" : ""}`} {...dragProps}>
-      <div className="flex flex-col justify-center gap-0.5">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="text-muted-foreground"
-          disabled={index === 0}
-          aria-label={`Subir ${name}`}
-          onClick={() => {
-            onMove(index, -1);
-          }}
-        >
-          <Icon name="caret-up" size="text-xs" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="text-muted-foreground"
-          disabled={index === total - 1}
-          aria-label={`Bajar ${name}`}
-          onClick={() => {
-            onMove(index, 1);
-          }}
-        >
-          <Icon name="caret-down" size="text-xs" />
-        </Button>
-      </div>
-      <div className="min-w-0 flex-1">
-        <WorkspacePhaseItem
-          ovaId={ovaId}
-          phase={phase}
-          onRegenerate={() => {
-            onRegenerate(phase);
-          }}
-        />
-      </div>
+    <li className={dragging ? "opacity-50" : undefined} {...dragProps}>
+      <WorkspacePhaseItem
+        ovaId={ovaId}
+        phase={phase}
+        onRegenerate={() => {
+          onRegenerate(phase);
+        }}
+        reorder={
+          total > 1 && (
+            <span className="flex shrink-0 items-center">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground"
+                disabled={index === 0}
+                aria-label={`Subir ${name}`}
+                title="Subir"
+                onClick={() => {
+                  onMove(index, -1);
+                }}
+              >
+                <Icon name="caret-up" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground"
+                disabled={index === total - 1}
+                aria-label={`Bajar ${name}`}
+                title="Bajar"
+                onClick={() => {
+                  onMove(index, 1);
+                }}
+              >
+                <Icon name="caret-down" />
+              </Button>
+            </span>
+          )
+        }
+      />
     </li>
   );
 }

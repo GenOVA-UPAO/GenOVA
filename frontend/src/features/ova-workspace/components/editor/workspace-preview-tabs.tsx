@@ -11,31 +11,35 @@ interface Props {
 
 function tabClass(active: boolean): string {
   return cn(
-    "relative shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    "relative inline-flex h-11 max-w-60 shrink-0 items-center px-3 text-sm whitespace-nowrap transition-colors duration-150",
+    "outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+    "after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition-colors",
     active
-      ? "bg-background font-semibold text-foreground shadow-sm ring-1 ring-border after:absolute after:inset-x-2 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-primary"
-      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+      ? "font-semibold text-foreground after:bg-primary"
+      : "font-medium text-muted-foreground after:bg-transparent hover:text-foreground",
   );
 }
 
+/** Pestañas de recursos del visor: subrayado primario en la activa, scroll horizontal si no caben. */
 export function WorkspacePreviewTabs({ phases, labels, activeId, onSelect }: Readonly<Props>) {
   return (
-    <nav aria-label="Recursos del OVA" className="min-w-0 shrink-0 border-b border-border bg-muted/30">
-      <div className="flex gap-1 overflow-x-auto overscroll-x-contain px-3 py-2 [scrollbar-width:thin]">
+    <nav aria-label="Recursos del OVA" className="min-w-0 shrink-0 border-b border-border">
+      <div className="flex overflow-x-auto overscroll-x-contain px-1 [scrollbar-width:thin]">
         {phases.map((phase) => {
           const active = phase.id === activeId;
+          const label = labels.get(phase.id) ?? phase.phase_type;
           return (
             <button
               key={phase.id}
               type="button"
               aria-current={active ? "true" : undefined}
+              title={label}
               onClick={() => {
                 onSelect(phase.id);
               }}
               className={tabClass(active)}
             >
-              {labels.get(phase.id) ?? phase.phase_type}
+              <span className="truncate">{label}</span>
             </button>
           );
         })}

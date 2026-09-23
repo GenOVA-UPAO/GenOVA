@@ -69,7 +69,7 @@ describe("OvaEditView event wiring", () => {
   });
   it("saves edited phase content", async () => {
     await setup();
-    fireEvent.change(screen.getAllByLabelText("Contenido de fase")[0], { target: { value: "<p>Editado</p>" } });
+    fireEvent.change(screen.getAllByLabelText("Código HTML del recurso")[0], { target: { value: "<p>Editado</p>" } });
     fireEvent.click(screen.getAllByRole("button", { name: "Guardar cambios" })[0]);
     await waitFor(() => {
       expect(api.saveOvaPhase).toHaveBeenCalledWith("ova-1", "a", "<p>Editado</p>");

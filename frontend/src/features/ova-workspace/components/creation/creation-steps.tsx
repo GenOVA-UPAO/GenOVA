@@ -1,66 +1,74 @@
 import { Icon } from "@/core/components/icon";
-import { Button } from "@/core/components/ui/button";
+import { cn } from "@/core/lib/cn";
 
 interface Props {
   describeDone: boolean;
   resourcesDone: boolean;
   generateReady: boolean;
-  onTour: () => void;
 }
 
-const ITEM = "flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center";
+type StepState = "done" | "current" | "upcoming";
 
-/** Círculo numerado del paso: primario cuando está cumplido, pulsante si pulsa. */
-function circleClass(active: boolean, pulse = false): string {
-  const base = "flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold shadow-sm transition-colors";
-  if (pulse) return `${base} border-primary bg-primary text-primary-foreground animate-pulse`;
-  if (active) return `${base} border-primary bg-primary/10 text-primary`;
-  return `${base} border-border bg-muted/50 text-muted-foreground`;
+const STEPS = ["Describe", "Elige recursos", "Genera"] as const;
+
+/** El paso actual es el primero sin cumplir; «Genera» pasa a actual cuando lo demás está listo. */
+function stepStates(describeDone: boolean, resourcesDone: boolean): StepState[] {
+  const done = [describeDone, resourcesDone, false];
+  const current = done.findIndex((value) => !value);
+  return done.map((value, index) => {
+    if (value) return "done";
+    return index === current ? "current" : "upcoming";
+  });
 }
 
-function labelClass(active: boolean, pulse = false): string {
-  if (pulse) return "text-xs font-semibold text-primary animate-pulse";
-  if (active) return "text-xs font-medium text-foreground";
-  return "text-xs font-medium text-muted-foreground";
+function circleClass(state: StepState): string {
+  const base = "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors duration-200";
+  if (state === "done") return cn(base, "border-primary bg-primary text-primary-foreground");
+  if (state === "current") return cn(base, "border-primary bg-background text-primary ring-3 ring-primary/15");
+  return cn(base, "border-border bg-background text-muted-foreground");
 }
 
-function lineClass(active: boolean): string {
-  return active ? "mb-5 h-px w-6 shrink-0 bg-primary/50 sm:w-10" : "mb-5 h-px w-6 shrink-0 bg-border sm:w-10";
-}
-
-export function CreationSteps({ describeDone, resourcesDone, generateReady, onTour }: Readonly<Props>) {
+function stepMarker(state: StepState, index: number) {
   return (
-    <div className="relative px-1 pt-1">
-      <ol aria-label="Pasos para crear un OVA" className="mx-auto flex w-full max-w-md items-center justify-center sm:max-w-lg">
-        <li className="flex min-w-0 flex-1 items-center" aria-current={describeDone && !resourcesDone ? "step" : undefined}>
-          <div className={ITEM}>
-            <span className={circleClass(describeDone)} aria-hidden="true">1</span>
-            <span className={labelClass(describeDone)}>1. Describe</span>
-          </div>
-          <span className={lineClass(describeDone)} aria-hidden="true" />
-        </li>
-        <li className="flex min-w-0 flex-1 items-center" aria-current={resourcesDone && !generateReady ? "step" : undefined}>
-          <div className={ITEM}>
-            <span className={circleClass(resourcesDone)} aria-hidden="true">2</span>
-            <span className={labelClass(resourcesDone)}>2. Elige recursos</span>
-          </div>
-          <span className={lineClass(resourcesDone)} aria-hidden="true" />
-        </li>
-        <li className={ITEM} aria-current={generateReady ? "step" : undefined}>
-          <span className={circleClass(generateReady, generateReady)} aria-hidden="true">3</span>
-          <span className={labelClass(generateReady, generateReady)}>3. Genera</span>
-        </li>
-      </ol>
-      <Button
-        className="absolute top-0 right-0"
-        variant="ghost"
-        size="icon-sm"
-        aria-label="Ver tutorial"
-        title="Ver tutorial"
-        onClick={onTour}
-      >
-        <Icon name="question" />
-      </Button>
-    </div>
+    <span className={circleClass(state)} aria-hidden="true">
+      {state === "done" ? <Icon name="check" weight="bold" className="size-3.5" /> : index + 1}
+    </span>
+  );
+}
+
+/** Progreso de la creación en tres pasos; el número vive solo en el círculo. */
+export function CreationSteps({ describeDone, resourcesDone, generateReady }: Readonly<Props>) {
+  const states = stepStates(describeDone, resourcesDone);
+  return (
+    <ol aria-label="Pasos para crear un OVA" className="flex items-center gap-2 sm:gap-3">
+      {STEPS.map((label, index) => {
+        const state = states[index];
+        return (
+          <li
+            key={label}
+            aria-current={state === "current" ? "step" : undefined}
+            className="flex min-w-0 items-center gap-2 sm:gap-3 [&:not(:last-child)]:flex-1"
+          >
+            {stepMarker(state, index)}
+            <span
+              className={cn(
+                "shrink-0 whitespace-nowrap text-sm",
+                state === "upcoming" ? "text-muted-foreground" : "font-medium text-foreground",
+                index === 2 && generateReady && "text-primary",
+              )}
+            >
+              {label}
+              {state === "done" && <span className="sr-only"> (completado)</span>}
+            </span>
+            {index < STEPS.length - 1 && (
+              <span
+                aria-hidden="true"
+                className={cn("h-px min-w-2 flex-1", state === "done" ? "bg-primary/50" : "bg-border")}
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }

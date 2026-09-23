@@ -11,11 +11,8 @@ export function OvaThemePreview({ draft }: Readonly<{ draft: OvaTheme }>) {
   const freeDesign = draft.design === "free";
   return (
     <div className="w-full max-w-xs space-y-2 sm:w-64 sm:shrink-0">
-      <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        <Icon name="presentation-chart" size="text-sm" className="shrink-0" />
-        Vista previa
-      </p>
-      <figure className="overflow-hidden rounded-xl border border-border bg-background text-left shadow-md">
+      <p className="text-sm font-medium text-foreground">Vista previa</p>
+      <figure className="overflow-hidden rounded-xl border border-border bg-background text-left">
         <div
           className="flex items-center justify-between gap-2 px-3.5 py-3 transition-colors duration-300"
           style={{ background: primary }}
@@ -54,7 +51,7 @@ export function OvaThemePreview({ draft }: Readonly<{ draft: OvaTheme }>) {
               ¿Qué es una red neuronal?
             </p>
             <span
-              className="flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide"
+              className="flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[7px] font-bold"
               style={{ background: `${accent}26`, color: primary }}
             >
               <Icon name={freeDesign ? "sparkle" : "square-half"} size="text-[9px]" className="shrink-0" />

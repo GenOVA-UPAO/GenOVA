@@ -18,7 +18,7 @@ function baseLabel(phase: PhaseWithContent): string {
   if (title) return title;
   const meta = phaseMeta(phase.phase_type);
   const type = humanizeResourceType(phase.resource_type as string | number | undefined);
-  return type ? `${meta.label} — ${type}` : meta.label || phase.phase_type;
+  return type ? `${meta.label}: ${type}` : meta.label || phase.phase_type;
 }
 
 function uniqueLabels(phases: PhaseWithContent[]): Map<string, string> {
@@ -37,8 +37,8 @@ export default function WorkspaceHtmlPreview({ phases }: Readonly<{ phases: Phas
   const [activeId, setActiveId] = useState<string | null>(null);
   const active = (activeId ? phases.find((phase) => phase.id === activeId) : undefined) ?? phases.at(0);
   return (
-    <section role="presentation" className="flex h-full min-h-0 flex-col bg-muted/20 p-0 sm:p-3">
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-y border-border bg-card sm:rounded-xl sm:border sm:shadow-sm">
+    <section role="presentation" className="flex h-full min-h-0 flex-col bg-muted/30 p-0 sm:p-3">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-card sm:rounded-xl sm:border sm:border-border">
         <WorkspacePreviewTabs phases={phases} labels={uniqueLabels(phases)} activeId={active?.id ?? null} onSelect={setActiveId} />
         <div className="min-h-0 flex-1 overflow-hidden bg-background">
           <HtmlPreviewFrame
@@ -48,7 +48,11 @@ export default function WorkspaceHtmlPreview({ phases }: Readonly<{ phases: Phas
             title={active?.title ?? "Vista previa del recurso"}
           />
         </div>
-        <WorkspacePreviewFooter active={active} />
+        <WorkspacePreviewFooter
+          active={active}
+          position={active ? phases.indexOf(active) + 1 : 0}
+          total={phases.length}
+        />
       </div>
     </section>
   );

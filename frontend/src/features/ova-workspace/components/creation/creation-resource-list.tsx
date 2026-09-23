@@ -19,10 +19,10 @@ export function CreationResourceList({ groups, selectedIds, activeId, onToggle, 
     <div className="space-y-4">
       {groups.map((group) => (
         <div key={group.phase}>
-          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            <Icon name={phaseIconName(group.phase)} size="text-xs" /> {group.phaseLabel}
-          </p>
-          <ul className="space-y-1.5">
+          <h3 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+            <Icon name={phaseIconName(group.phase)} className="size-3.5" /> {group.phaseLabel}
+          </h3>
+          <ul className="divide-y divide-border rounded-lg border border-border">
             {group.items.map((resource) => (
               <CreationResourceRow
                 key={resource.id}

@@ -14,8 +14,8 @@ const SEGMENT_BASE =
 
 function segmentClass(active: boolean): string {
   return active
-    ? `${SEGMENT_BASE} bg-primary text-primary-foreground shadow-sm`
-    : `${SEGMENT_BASE} text-muted-foreground hover:bg-background/70 hover:text-foreground`;
+    ? `${SEGMENT_BASE} bg-background font-semibold text-foreground shadow-xs ring-1 ring-border dark:bg-input/60`
+    : `${SEGMENT_BASE} text-muted-foreground hover:text-foreground`;
 }
 
 function swatchDots() {
@@ -32,8 +32,8 @@ function swatchDots() {
 export function OvaThemeAxis({ label, hint, value, withSwatches, disabled, onChange }: Readonly<Props>) {
   return (
     <div className="space-y-1.5">
-      <p className="text-sm font-semibold text-foreground">{label}</p>
-      <div role="radiogroup" aria-label={label} className="flex gap-1 rounded-lg border border-border bg-muted/60 p-1">
+      <p id={`theme-axis-${label}`} className="text-sm font-medium text-foreground">{label}</p>
+      <div role="radiogroup" aria-labelledby={`theme-axis-${label}`} className="flex gap-1 rounded-lg bg-muted p-1">
         <button
           type="button"
           role="radio"

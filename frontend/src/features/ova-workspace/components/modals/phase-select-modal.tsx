@@ -3,7 +3,6 @@ import { lazy, Suspense, useState } from "react";
 import { useAllPhaseResources } from "../../hooks/use-phase-resources";
 import type { Resource } from "../../lib/ova-types";
 import {
-  MAX_PER_PHASE,
   type PhaseResourceMap,
   type ResourceConfigs,
   toggleSelection,
@@ -33,11 +32,10 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
   const count = Object.values(draft).flat().length;
   const phases = Object.values(draft).filter((items) => items.length > 0).length;
   return (
-    <WorkspaceModal title="Configurar recursos 5E" size="xl" description="Elige qué recursos generará la IA en cada fase de aprendizaje." onClose={onClose}
+    <WorkspaceModal title="Configurar recursos 5E" size="xl" description="Elige qué recursos generará la IA en cada fase. Necesitas al menos 2 fases." onClose={onClose}
       footer={<PhaseSelectFooter count={count} phases={phases} onClose={onClose} onConfirm={() => { onConfirm(draft, settings); }} />}
     >
       <PhaseSelectTabs phase={phase} picks={draft} onChange={(key) => { setPhase(key); setPreview(undefined); }} />
-      <p className="text-xs text-muted-foreground">Hasta {MAX_PER_PHASE} recursos por fase. Selecciona al menos 2 fases.</p>
       <PhaseSelectGrid
         phase={phase}
         items={catalog.data?.[phase] ?? []}
@@ -60,6 +58,7 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
           <ResourceConfigModal
             phase={phase}
             resourceId={String(target.id)}
+            resourceName={target.tipo}
             config={settings[`${phase}:${String(target.id)}`]}
             onSave={(value) => {
               setSettings({ ...settings, [`${phase}:${String(target.id)}`]: value });

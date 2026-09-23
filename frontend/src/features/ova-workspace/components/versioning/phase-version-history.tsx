@@ -1,19 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
 import { Button } from "@/core/components/ui/button";
 
 import { fetchPhaseVersions, revertPhaseVersion } from "../../api/ova-workspace.api";
 import { ovaWorkspaceKey } from "../../hooks/use-ova-workspace";
 import type { PhaseMicroVersion } from "../../lib/version-history.types";
+import { ModalActions } from "../shared/modal-actions";
 import { WorkspaceModal } from "../shared/workspace-modal";
+import { PhaseVersionBody } from "./phase-version-body";
 
-export default function PhaseVersionHistory({
-  ovaId,
-  phaseId,
-  onClose,
-}: Readonly<{ ovaId: string; phaseId: string; onClose: () => void }>) {
+interface Props {
+  ovaId: string;
+  phaseId: string;
+  resourceName?: string;
+  onClose: () => void;
+}
+
+export default function PhaseVersionHistory({ ovaId, phaseId, resourceName, onClose }: Readonly<Props>) {
   const client = useQueryClient();
   const [selected, setSelected] = useState<PhaseMicroVersion>();
   const versions = useQuery({ queryKey: ["ova-phase-versions", ovaId, phaseId], queryFn: () => fetchPhaseVersions(ovaId, phaseId) });
@@ -25,38 +29,40 @@ export default function PhaseVersionHistory({
       onClose();
     },
   });
+  const items = versions.data?.micro_versions ?? [];
+  const status = selected ? `Versión ${String(selected.minor_number)} seleccionada` : "Elige una versión para restaurarla.";
+  const description = resourceName ? `Versiones anteriores de «${resourceName}».` : undefined;
   return (
-    <WorkspaceModal title="Versiones del recurso" onClose={onClose}>
-      {versions.isPending && <p role="status">Cargando versiones…</p>}
-      <ul className="space-y-2">
-        {versions.data?.micro_versions?.map((version) => (
-          <li key={version.id}>
+    <WorkspaceModal
+      title="Versiones del recurso"
+      description={description}
+      size="xl"
+      onClose={onClose}
+      footer={
+        <ModalActions status={items.length > 0 && status}>
+          <Button variant="outline" onClick={onClose}>{items.length > 0 ? "Cancelar" : "Cerrar"}</Button>
+          {items.length > 0 && (
             <Button
-              variant="outline"
+              disabled={!selected}
+              loading={revert.isPending}
               onClick={() => {
-                setSelected(version);
+                if (selected) revert.mutate(selected.id);
               }}
             >
-              Versión {version.minor_number}
+              Restaurar esta versión
             </Button>
-          </li>
-        ))}
-      </ul>
-      {selected && (
-        <section className="space-y-3">
-          <HtmlPreviewFrame html={selected.content} />
-          <Button
-            disabled={revert.isPending}
-            onClick={() => {
-              revert.mutate(selected.id);
-            }}
-          >
-            Restaurar esta versión
-          </Button>
-        </section>
-      )}
-      {versions.error && <p role="alert">{versions.error.message}</p>}
-      {revert.error && <p role="alert">{revert.error.message}</p>}
+          )}
+        </ModalActions>
+      }
+    >
+      <PhaseVersionBody
+        pending={versions.isPending}
+        error={versions.error}
+        items={items}
+        selected={selected}
+        onSelect={setSelected}
+      />
+      {revert.error && <p role="alert" className="text-sm text-destructive">{revert.error.message}</p>}
     </WorkspaceModal>
   );
 }

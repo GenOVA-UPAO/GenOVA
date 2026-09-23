@@ -53,7 +53,7 @@ const MARK_CLS: Record<string, string> = {
   X: "text-destructive border-destructive/40 bg-destructive/10",
   generando: "text-primary border-primary/30 bg-primary/10",
   pendiente: "text-muted-foreground border-border bg-muted/60",
-  check: "text-emerald-600 border-emerald-500/40 bg-emerald-500/10 dark:text-emerald-400",
+  check: "text-success-strong border-success/40 bg-success/10 dark:text-success",
 };
 
 export function markClass(status: string): string {

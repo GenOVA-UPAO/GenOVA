@@ -5,6 +5,7 @@ import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 import type { PreviewResult } from "../../lib/ova-types";
+import { SegmentedTabs } from "../shared/segmented-tabs";
 import { HtmlCodeView } from "./html-code-view";
 
 interface Props {
@@ -30,33 +31,22 @@ export function HtmlPreview({ result }: Readonly<Props>) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            {result.emoji} {result.tipo} — <span className="text-primary">{result.concepto}</span>
+            {result.tipo}: <span className="text-primary">{result.concepto}</span>
           </p>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Icon name="clock-counter-clockwise" size="text-xs" /> {result.duracion} · Interactividad: {result.interactividad}
+            <Icon name="clock-counter-clockwise" size="text-xs" /> {result.duracion}. Interactividad {(result.interactividad ?? "").toLowerCase()}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant={view === "preview" ? "default" : "secondary"}
-              onClick={() => {
-                setView("preview");
-              }}
-            >
-              Vista previa
-            </Button>
-            <Button
-              size="sm"
-              variant={view === "code" ? "default" : "secondary"}
-              onClick={() => {
-                setView("code");
-              }}
-            >
-              Código
-            </Button>
-          </div>
+          <SegmentedTabs
+            label="Vista del recurso"
+            value={view}
+            onChange={setView}
+            options={[
+              { value: "preview", label: "Vista previa" },
+              { value: "code", label: "Código" },
+            ]}
+          />
           <Button
             onClick={() => {
               downloadHtml(result);
@@ -66,7 +56,7 @@ export function HtmlPreview({ result }: Readonly<Props>) {
           </Button>
         </div>
       </div>
-      <div className="overflow-hidden rounded-xl border border-border shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-border">
         <HtmlPreviewFrame
           html={result.html_content}
           className={`block h-[60vh] max-h-[640px] min-h-[240px] w-full border-0 ${view === "code" ? "hidden" : ""}`}

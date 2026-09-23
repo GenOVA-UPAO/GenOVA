@@ -9,11 +9,11 @@ export function TotalFailurePanel({
   const errorId = viewModel.find((resource) => resource.error_id)?.error_id;
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
         <p className="font-semibold text-destructive">No se pudo generar el OVA</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Lo sentimos, hubo un error generando los recursos. Ningún recurso se completó, por lo que
-          no se guardó ningún OVA.
+          Ningún recurso se completó, así que no se guardó el OVA. Puedes reintentar la generación
+          con la misma configuración.
           {errorId && (
             <span className="mt-1 block text-xs">
               Error ID: <span className="font-mono">{errorId}</span>
@@ -22,7 +22,6 @@ export function TotalFailurePanel({
         </p>
       </div>
       <Button
-        variant="destructive"
         onClick={onRetryAll}
       >
         Reintentar generación

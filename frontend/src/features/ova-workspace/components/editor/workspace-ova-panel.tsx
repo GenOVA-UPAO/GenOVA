@@ -1,12 +1,12 @@
 import { lazy, Suspense, useState } from "react";
 
-import { Button } from "@/core/components/ui/button";
+import { Icon } from "@/core/components/icon";
 
 import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import { buttonRegenPayload } from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
-import { WorkspacePanelToolbar } from "./workspace-panel-toolbar";
+import { SegmentedTabs } from "../shared/segmented-tabs";
 import { WorkspaceResourceList } from "./workspace-resource-list";
 
 const WorkspaceHtmlPreview = lazy(() => import("./workspace-html-preview"));
@@ -17,7 +17,7 @@ const sectionTypes = (phases: PhaseWithContent[]): string[] => {
 };
 
 export function WorkspaceOvaPanel({ ovaId, phases }: Readonly<{ ovaId: string; phases: PhaseWithContent[] }>) {
-  const [tab, setTab] = useState("preview");
+  const [tab, setTab] = useState<"preview" | "edit">("preview");
   const workspace = useOvaWorkspace(ovaId);
   const regen = useChatRegeneration(ovaId);
   const handleGroupReorder = (phaseType: string, group: PhaseWithContent[]) => {
@@ -27,37 +27,26 @@ export function WorkspaceOvaPanel({ ovaId, phases }: Readonly<{ ovaId: string; p
   };
   return (
     <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-      <div className="shrink-0 space-y-4 p-4">
-        <WorkspacePanelToolbar ovaId={ovaId} />
-        <div className="flex gap-2" role="tablist" aria-label="Contenido del OVA">
-          <Button
-            role="tab"
-            aria-selected={tab === "preview"}
-            variant={tab === "preview" ? "default" : "outline"}
-            onClick={() => {
-              setTab("preview");
-            }}
-          >
-            Vista previa
-          </Button>
-          <Button
-            role="tab"
-            aria-selected={tab === "edit"}
-            variant={tab === "edit" ? "default" : "outline"}
-            onClick={() => {
-              setTab("edit");
-            }}
-          >
-            Editar
-          </Button>
-        </div>
+      <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-3 sm:px-4">
+        <SegmentedTabs
+          label="Contenido del OVA"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "preview", label: "Vista previa", icon: "eye", controls: "workspace-ova-content" },
+            { value: "edit", label: "Editar", icon: "pencil-simple", controls: "workspace-ova-content" },
+          ]}
+        />
+        <p className="hidden truncate text-xs text-muted-foreground lg:block">
+          {tab === "preview" ? "Así lo verán tus estudiantes." : "Edita, reordena o regenera cada recurso."}
+        </p>
       </div>
-      <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
-        <Suspense fallback={<p role="status">Cargando visor…</p>}>
+      <div id="workspace-ova-content" className="min-h-0 min-w-0 flex-1 overflow-hidden">
+        <Suspense fallback={<p role="status" className="p-4 text-sm text-muted-foreground">Cargando visor…</p>}>
           {tab === "preview" ? (
             <WorkspaceHtmlPreview phases={phases} />
           ) : (
-            <div className="h-full min-h-0 space-y-4 overflow-y-auto px-4 pb-4">
+            <div className="h-full min-h-0 space-y-6 overflow-y-auto p-3 sm:p-4">
               {sectionTypes(phases).map((phaseType) => (
                 <WorkspaceResourceList
                   key={phaseType}
@@ -76,9 +65,14 @@ export function WorkspaceOvaPanel({ ovaId, phases }: Readonly<{ ovaId: string; p
           )}
         </Suspense>
       </div>
-      {workspace.reorder.error && <p role="alert" className="shrink-0 px-4 pb-2">{workspace.reorder.error.message}</p>}
-      {regen.busy && <p role="status" className="shrink-0 px-4 pb-2">Regenerando… {regen.progress.percentage}%</p>}
-      {regen.request.error && <p role="alert" className="shrink-0 px-4 pb-2">{regen.request.error.message}</p>}
+      {workspace.reorder.error && <p role="alert" className="shrink-0 border-t border-border px-4 py-2 text-sm text-destructive">{workspace.reorder.error.message}</p>}
+      {regen.busy && (
+        <p role="status" className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-2 text-sm text-muted-foreground">
+          <Icon name="spinner" className="size-4 animate-spin text-primary" />
+          Regenerando recurso… {regen.progress.percentage}%
+        </p>
+      )}
+      {regen.request.error && <p role="alert" className="shrink-0 border-t border-border px-4 py-2 text-sm text-destructive">{regen.request.error.message}</p>}
     </section>
   );
 }
