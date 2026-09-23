@@ -4,22 +4,37 @@ import { EmptyState } from "@/core/components/empty-state";
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
+import { statusLabel } from "../pages/mis-ovas-page.helpers";
+
 interface MisOvasEmptyProps {
-  isFiltering: boolean;
+  search: string;
+  status: string;
   onClearFilters: () => void;
 }
 
-/** Estado vacío para la grilla de Mis OVAs (con o sin filtros activos). */
-export function MisOvasEmpty({ isFiltering, onClearFilters }: Readonly<MisOvasEmptyProps>) {
-  if (isFiltering) {
+function noResultsDescription(search: string, status: string): string {
+  const byStatus = status === "all" ? "" : ` en estado «${statusLabel(status)}»`;
+  if (search) return `No hay OVAs${byStatus} cuyo título contenga «${search}».`;
+  return `No hay OVAs${byStatus}.`;
+}
+
+function clearLabel(search: string, status: string): string {
+  if (status === "all") return "Limpiar búsqueda";
+  return search ? "Limpiar filtros" : "Ver todos los estados";
+}
+
+/** Estado vacío de la biblioteca: sin OVAs todavía o sin resultados para el filtro. */
+export function MisOvasEmpty({ search, status, onClearFilters }: Readonly<MisOvasEmptyProps>) {
+  const trimmed = search.trim();
+  if (trimmed !== "" || status !== "all") {
     return (
       <EmptyState
         icon="magnifying-glass-minus"
-        title="Sin resultados para tu búsqueda"
-        description="Prueba con otros términos de búsqueda o cambia el filtro de estado actual."
+        title="Sin resultados"
+        description={noResultsDescription(trimmed, status)}
         action={
           <Button variant="outline" onClick={onClearFilters}>
-            Limpiar filtros
+            {clearLabel(trimmed, status)}
           </Button>
         }
       />
@@ -29,9 +44,9 @@ export function MisOvasEmpty({ isFiltering, onClearFilters }: Readonly<MisOvasEm
     <EmptyState
       icon="folder"
       title="Aún no has creado ningún OVA"
-      description="Empieza generando tu primer objeto virtual de aprendizaje. Nuestro asistente de IA te guiará en el proceso."
+      description="Describe un tema y el asistente generará tu primer objeto virtual de aprendizaje, listo para editar y descargar."
       action={
-        <Button asChild className="gap-1.5 shadow-sm">
+        <Button asChild>
           <Link to="/crear">
             <Icon name="plus" size="text-base" />
             Crear mi primer OVA

@@ -6,25 +6,25 @@ interface ThemeDesignPickerProps {
   onSelectDesignMode: (mode: string) => void;
 }
 
-/** Selector de modo de diseño/plantilla para el modal de temas. */
+/** Selector del diseño (plantilla) de los OVAs. */
 export function ThemeDesignPicker({
   designMode,
   onSelectDesignMode,
 }: Readonly<ThemeDesignPickerProps>) {
   return (
-    <div className="space-y-1.5">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-        Diseño / Plantilla
-      </p>
+    <fieldset className="space-y-2">
+      <legend className="mb-2 text-sm font-medium text-foreground">Diseño</legend>
       {DESIGN_MODES.map((m) => (
         <ThemeRadioOption
           key={m.key}
+          name="theme-design-mode"
+          value={m.key}
           label={m.label}
           desc={m.desc}
           checked={designMode === m.key}
-          onClick={() => { onSelectDesignMode(m.key); }}
+          onSelect={onSelectDesignMode}
         />
       ))}
-    </div>
+    </fieldset>
   );
 }

@@ -31,10 +31,10 @@ export function ThemeMiniPreview({
   const isTabbed = designMode !== "ai";
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border shadow-md">
+    <div aria-hidden="true" className="overflow-hidden rounded-xl border border-border">
       <div style={{ background: primary }} className="px-3 py-2.5">
         <div className="text-[9px] font-bold text-white">Fotosíntesis y el Ciclo</div>
-        <div className="mt-0.5 text-[7px] text-white/60">Biología — 2° año · UPAO 2026</div>
+        <div className="mt-0.5 text-[7px] text-white/60">Biología · 2.° año</div>
       </div>
       {isTabbed && (
         <div className="flex border-b border-border bg-muted/30">

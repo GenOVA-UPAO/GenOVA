@@ -1,113 +1,54 @@
+import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
+import { OvaCardPrimaryAction } from "./ova-card-primary-action";
+
 interface OvaCardActionsProps {
+  ovaId: string;
   isGenerating: boolean;
   isReady: boolean;
-  isMoving?: boolean;
+  isInterrupted?: boolean;
   isDownloading?: boolean;
   isDuplicating?: boolean;
-  onEdit: () => void;
-  onEditMetadata: () => void;
-  onDuplicate: () => void;
   onDownload: () => void;
-  onMoveToTrash: () => void;
+  onResume?: (id: string) => void;
 }
 
-interface ActionFlagsInput {
-  isGenerating: boolean;
-  isReady: boolean;
-  isMoving?: boolean;
-  isDownloading?: boolean;
-  isDuplicating?: boolean;
-}
+const ACTION_CLASS = "max-sm:h-11";
 
-function computeActionLabels(isMoving?: boolean, isDownloading?: boolean, isDuplicating?: boolean) {
-  return {
-    duplicateLabel: isDuplicating ? "Duplicando..." : "Duplicar",
-    downloadLabel: isDownloading ? "Descargando..." : "Descargar",
-    trashLabel: isMoving ? "Moviendo..." : "A papelera",
-    trashAriaLabel: isMoving ? "Moviendo a papelera" : "Enviar a papelera",
-  };
-}
-
-function computeDisabledFlags(input: ActionFlagsInput) {
-  const isBusy = Boolean(input.isDownloading) || Boolean(input.isDuplicating);
-  return {
-    disabledGeneral: input.isGenerating || Boolean(input.isDuplicating),
-    disabledDownload: !input.isReady || isBusy,
-    disabledTrash: input.isGenerating || Boolean(input.isMoving) || Boolean(input.isDuplicating),
-  };
-}
-
-/** Botones de acción principales de la tarjeta de OVA. */
+/** Acciones visibles de la tarjeta: la principal y, si el OVA está listo, «Descargar». */
 export function OvaCardActions({
+  ovaId,
   isGenerating,
   isReady,
-  isMoving,
+  isInterrupted,
   isDownloading,
   isDuplicating,
-  onEdit,
-  onEditMetadata,
-  onDuplicate,
   onDownload,
-  onMoveToTrash,
+  onResume,
 }: Readonly<OvaCardActionsProps>) {
-  const disabled = computeDisabledFlags({ isGenerating, isReady, isMoving, isDownloading, isDuplicating });
-  const labels = computeActionLabels(isMoving, isDownloading, isDuplicating);
-
   return (
-    <>
-      <div className="grid w-full grid-cols-2 gap-1.5">
+    <div className="flex flex-wrap items-center gap-2">
+      <OvaCardPrimaryAction
+        ovaId={ovaId}
+        isGenerating={isGenerating}
+        isInterrupted={Boolean(isInterrupted)}
+        className={ACTION_CLASS}
+        onResume={onResume}
+      />
+      {isReady && (
         <Button
-          variant="outline"
-          size="sm"
-          className="w-full min-w-0 truncate border-primary/30 text-primary hover:bg-primary/5"
-          disabled={disabled.disabledGeneral}
-          onClick={onEdit}
-        >
-          Editar
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full min-w-0 truncate border-primary/30 text-primary hover:bg-primary/5"
-          disabled={disabled.disabledGeneral}
-          onClick={onEditMetadata}
-        >
-          Metadatos
-        </Button>
-      </div>
-
-      <div className="grid w-full grid-cols-2 gap-1.5">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full min-w-0 truncate"
-          disabled={disabled.disabledGeneral}
-          onClick={onDuplicate}
-        >
-          {labels.duplicateLabel}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full min-w-0 truncate"
-          disabled={disabled.disabledDownload}
+          variant="ghost"
+          className={ACTION_CLASS}
+          title="Descargar el paquete SCORM (.zip)"
+          loading={isDownloading}
+          disabled={isDuplicating}
           onClick={onDownload}
         >
-          {labels.downloadLabel}
+          {!isDownloading && <Icon name="download-simple" size="text-base" />}
+          {isDownloading ? "Descargando..." : "Descargar"}
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="col-span-2 w-full min-w-0 truncate border-destructive/30 text-destructive hover:bg-destructive/5"
-          disabled={disabled.disabledTrash}
-          onClick={onMoveToTrash}
-          aria-label={labels.trashAriaLabel}
-        >
-          {labels.trashLabel}
-        </Button>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

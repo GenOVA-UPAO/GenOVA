@@ -1,40 +1,42 @@
 import { cn } from "@/core/lib/cn";
 
 interface ThemeRadioOptionProps {
+  name: string;
+  value: string;
   label: string;
   desc: string;
   checked?: boolean;
-  onClick?: () => void;
+  onSelect: (value: string) => void;
 }
 
-/** Opción seleccionable tipo radio para la configuración del tema. */
+/** Opción de un grupo de radios nativo (flechas del teclado incluidas) con descripción. */
 export function ThemeRadioOption({
+  name,
+  value,
   label,
   desc,
   checked = false,
-  onClick,
+  onSelect,
 }: Readonly<ThemeRadioOptionProps>) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <label
       className={cn(
-        "flex w-full cursor-pointer items-start gap-2.5 rounded-xl border p-2.5 text-left transition",
-        checked ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+        "grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 rounded-lg border p-3 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+        checked ? "border-primary bg-primary/5" : "border-border hover:bg-muted/60",
       )}
     >
-      <div
-        className={cn(
-          "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border-2",
-          checked ? "border-primary" : "border-muted-foreground/40",
-        )}
-      >
-        {checked && <div className="size-2 rounded-full bg-primary" />}
-      </div>
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-foreground">{label}</p>
-        <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">{desc}</p>
-      </div>
-    </button>
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={() => {
+          onSelect(value);
+        }}
+        className="row-span-2 mt-0.5 size-4 accent-primary outline-none"
+      />
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className="text-xs leading-snug text-muted-foreground">{desc}</span>
+    </label>
   );
 }

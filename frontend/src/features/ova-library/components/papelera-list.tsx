@@ -1,42 +1,47 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router";
 
 import { EmptyState } from "@/core/components/empty-state";
 import { QueryErrorState } from "@/core/components/query-error-state";
-import { SkeletonGrid } from "@/core/components/skeleton-grid";
 import { Button } from "@/core/components/ui/button";
+import { cn } from "@/core/lib/cn";
 
 import type { OvaListItem } from "../lib/types";
-import { TrashedOvaCard } from "./cards/trashed-ova-card";
+import { TrashedOvaRow } from "./cards/trashed-ova-row";
+import { PapeleraSkeleton } from "./papelera-skeleton";
 
-interface PapeleraGridProps {
+interface PapeleraListProps {
   isLoading: boolean;
+  isStale?: boolean;
   error: unknown;
   ovas: OvaListItem[];
   selectedIds: Set<string>;
   restoringId: string | null;
   deletingId: string | null;
+  /** Cabecera con selección múltiple, dentro del mismo contenedor. */
+  toolbar: ReactNode;
   onToggleSelect: (id: string) => void;
   onRestore: (id: string) => void;
   onPermanentDelete: (ova: OvaListItem) => void;
   onRetry: () => void;
 }
 
-/** Renderiza el estado de carga, error, vacío o las tarjetas de la papelera. */
-export function PapeleraGrid({
+/** Estado de carga, error, vacío o la lista de OVAs de la papelera. */
+export function PapeleraList({
   isLoading,
+  isStale = false,
   error,
   ovas,
   selectedIds,
   restoringId,
   deletingId,
+  toolbar,
   onToggleSelect,
   onRestore,
   onPermanentDelete,
   onRetry,
-}: Readonly<PapeleraGridProps>) {
-  if (isLoading) {
-    return <SkeletonGrid count={6} label="Cargando papelera" />;
-  }
+}: Readonly<PapeleraListProps>) {
+  if (isLoading) return <PapeleraSkeleton />;
 
   if (error) {
     return <QueryErrorState title="No se pudo cargar la papelera" onRetry={onRetry} />;
@@ -58,10 +63,18 @@ export function PapeleraGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {ovas.map((ova) => (
-        <div key={ova.id} className="animate-in zoom-in-95 duration-300">
-          <TrashedOvaCard
+    <section
+      aria-label="OVAs en la papelera"
+      className="overflow-clip rounded-xl border border-border bg-card"
+    >
+      {toolbar}
+      <ul
+        aria-busy={isStale}
+        className={cn("divide-y divide-border transition-opacity duration-150", isStale && "opacity-60")}
+      >
+        {ovas.map((ova) => (
+          <TrashedOvaRow
+            key={ova.id}
             ova={ova}
             isSelected={selectedIds.has(ova.id)}
             isRestoring={restoringId === ova.id}
@@ -70,8 +83,8 @@ export function PapeleraGrid({
             onRestore={onRestore}
             onPermanentDelete={onPermanentDelete}
           />
-        </div>
-      ))}
-    </div>
+        ))}
+      </ul>
+    </section>
   );
 }

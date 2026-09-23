@@ -119,14 +119,20 @@ export async function loginWithCredentials(page, email, password, timeout = 2000
 }
 
 /**
- * Cards de Mis OVAs / Papelera que contienen el título dado (para conteos).
- * El DOM de React no usa elementos `gn-*`: se ancla en el h3 accesible con el
- * título y se sube al contenedor de la card (única capa con `rounded-xl`).
+ * Cards de Mis OVAs / filas de la Papelera que contienen el título dado (para
+ * conteos). Se ancla en el h3 accesible con el título y se sube al contenedor
+ * marcado con `data-testid="ova-card"` (tarjeta en Mis OVAs, fila en Papelera).
  */
 export function ovaCards(page, title) {
   return page
     .getByRole('heading', { name: title, exact: true })
-    .locator('xpath=ancestor::div[contains(@class,"rounded-xl")][1]')
+    .locator('xpath=ancestor::*[@data-testid="ova-card"][1]')
+}
+
+/** Abre el menú «Más acciones» de una card y pulsa la opción indicada. */
+export async function cardMenuAction(page, card, action) {
+  await card.getByRole('button', { name: /^Más acciones/ }).click()
+  await page.getByRole('menuitem', { name: action }).click()
 }
 
 /** Primera card de Mis OVAs / Papelera que contiene el título dado. */
