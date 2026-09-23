@@ -1,4 +1,4 @@
-import { cn } from "@/core/lib/cn";
+import { Switch } from "@/core/components/ui/switch";
 
 interface RegistrationModeCardProps {
   tesis: boolean;
@@ -6,40 +6,39 @@ interface RegistrationModeCardProps {
   onToggle: () => void;
 }
 
-const TESIS_DESC = 'Nuevos registros reciben el rol "Usuarios Prueba" automáticamente.';
-const OPEN_DESC = 'Nuevos registros reciben el rol "usuario" (acceso completo).';
+const TESIS_DESC =
+  "Activado: las cuentas que se registren reciben el rol «Usuarios prueba», pensado para los participantes del estudio. Sus permisos se ajustan en la lista de roles.";
+const OPEN_DESC =
+  "Desactivado: las cuentas que se registren reciben el rol «Usuario», con acceso completo. Actívalo durante el estudio de tesis.";
 
+/** Rol que reciben las cuentas nuevas (modo tesis) explicado junto al interruptor. */
 export function RegistrationModeCard({
   tesis,
   saving,
   onToggle,
 }: Readonly<RegistrationModeCardProps>) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background p-4">
-      <div>
-        <p className="text-sm font-semibold text-foreground">Modo tesis</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">{tesis ? TESIS_DESC : OPEN_DESC}</p>
+    <section
+      aria-labelledby="registration-mode-title"
+      className="flex items-start justify-between gap-6 rounded-xl border border-border bg-card px-5 py-4"
+    >
+      <div className="min-w-0 space-y-1">
+        <h2 id="registration-mode-title" className="text-base font-semibold">
+          Modo tesis
+        </h2>
+        <p id="registration-mode-desc" className="max-w-prose text-sm text-muted-foreground">
+          {tesis ? TESIS_DESC : OPEN_DESC}
+        </p>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={tesis}
+      <Switch
+        checked={tesis}
+        onCheckedChange={onToggle}
         aria-label="Modo tesis"
+        aria-describedby="registration-mode-desc"
+        aria-busy={saving || undefined}
         disabled={saving}
-        onClick={onToggle}
-        className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none",
-          tesis ? "cursor-pointer bg-primary" : "bg-input",
-          saving ? "cursor-wait opacity-60" : "cursor-pointer",
-        )}
-      >
-        <span
-          className={cn(
-            "block size-5 rounded-full bg-white shadow-lg transition-transform duration-200",
-            tesis ? "translate-x-5" : "translate-x-0",
-          )}
-        />
-      </button>
-    </div>
+        className="mt-0.5 disabled:cursor-wait"
+      />
+    </section>
   );
 }

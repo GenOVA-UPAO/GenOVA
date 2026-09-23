@@ -1,5 +1,6 @@
 import {
   AlertDialog,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogTitle,
@@ -13,6 +14,8 @@ interface ConfirmModalProps {
   message: string;
   confirmLabel: string;
   isLoading?: boolean;
+  /** Texto del botón mientras se procesa («Eliminando…»). */
+  loadingLabel?: string;
   danger?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -24,6 +27,7 @@ export function ConfirmModal({
   message,
   confirmLabel,
   isLoading = false,
+  loadingLabel = "Procesando…",
   danger = true,
   onConfirm,
   onCancel,
@@ -43,15 +47,11 @@ export function ConfirmModal({
           {message}
         </AlertDialogDescription>
         <div className="flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:gap-3">
-          <Button
-            variant="outline"
-            size="lg"
-            className="flex-1"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          {/* AlertDialogCancel: Radix le da el foco inicial (con un Button normal
+          el foco se quedaba detrás del modal). Cierra vía onOpenChange → onCancel. */}
+          <AlertDialogCancel size="lg" className="flex-1" disabled={isLoading}>
             Cancelar
-          </Button>
+          </AlertDialogCancel>
           <Button
             variant={danger ? "danger" : "default"}
             size="lg"
@@ -59,7 +59,7 @@ export function ConfirmModal({
             onClick={onConfirm}
             loading={isLoading}
           >
-            {isLoading ? "Procesando…" : confirmLabel}
+            {isLoading ? loadingLabel : confirmLabel}
           </Button>
         </div>
       </AlertDialogContent>

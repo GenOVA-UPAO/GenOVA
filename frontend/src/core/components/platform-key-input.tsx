@@ -1,13 +1,12 @@
 import { type Ref, useId, useState } from "react";
 
 import { Icon } from "@/core/components/icon";
-import { cn } from "@/core/lib/cn";
+import { Input } from "@/core/components/ui/input";
 
 interface PlatformKeyInputProps {
   label: string;
   value: string;
   placeholder: string;
-  editing: boolean;
   ref: Ref<HTMLInputElement>;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -17,7 +16,6 @@ export function PlatformKeyInput({
   label,
   value,
   placeholder,
-  editing,
   ref,
   onChange,
   onSubmit,
@@ -26,46 +24,38 @@ export function PlatformKeyInput({
   const [show, setShow] = useState(false);
 
   return (
-    <div className="relative flex-1">
-      <label htmlFor={inputId} className="sr-only">
+    <div className="flex-1 space-y-1.5">
+      <label htmlFor={inputId} className="text-xs text-muted-foreground">
         {label}
       </label>
-      <input
-        id={inputId}
-        ref={ref}
-        type={show ? "text" : "password"}
-        value={value}
-        placeholder={placeholder}
-        readOnly={!editing}
-        onChange={(e) => {
-          onChange(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && editing) onSubmit();
-        }}
-        className={cn(
-          "w-full rounded-xl border border-border/50 px-4 py-2.5 pr-10 font-mono text-xs transition outline-none",
-          editing
-            ? "bg-background shadow-sm focus:ring-2 focus:ring-primary/20"
-            : "bg-muted/30 text-muted-foreground",
-        )}
-      />
-      <button
-        type="button"
-        onClick={() => {
-          setShow((v) => !v);
-        }}
-        disabled={!editing}
-        aria-label={show ? "Ocultar clave" : "Mostrar clave"}
-        className={cn(
-          "absolute top-1/2 right-3 -translate-y-1/2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-          editing
-            ? "cursor-pointer text-primary hover:text-primary/80"
-            : "text-muted-foreground",
-        )}
-      >
-        <Icon name={show ? "eye" : "eye-slash"} size="text-base" />
-      </button>
+      <div className="relative">
+        <Input
+          id={inputId}
+          ref={ref}
+          type={show ? "text" : "password"}
+          autoComplete="off"
+          spellCheck={false}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => {
+            onChange(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onSubmit();
+          }}
+          className="pr-10 font-mono text-xs max-sm:h-11"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setShow((v) => !v);
+          }}
+          aria-label={show ? "Ocultar clave" : "Mostrar clave"}
+          className="absolute top-1/2 right-1.5 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          <Icon name={show ? "eye-slash" : "eye"} size="text-base" />
+        </button>
+      </div>
     </div>
   );
 }

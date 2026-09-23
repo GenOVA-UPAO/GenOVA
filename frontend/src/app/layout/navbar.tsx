@@ -10,7 +10,7 @@ import { MobileDrawer } from "./mobile-drawer";
 import { SidebarToggle } from "./sidebar-toggle";
 import { UserMenu } from "./user-menu";
 
-// "Apariencia" (tema del contenido OVA) is rarely opened: load it on demand.
+// «Estilo de mis OVAs» (tema del contenido OVA) is rarely opened: load it on demand.
 const ThemeModal = lazy(() =>
   import("@/features/ova-library/components/modals/theme-modal").then((m) => ({
     default: m.ThemeModal,

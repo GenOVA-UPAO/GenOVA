@@ -19,7 +19,7 @@ export function hasPermission(user: MeUser | null, permission: string): boolean 
 
 export function navLinkClasses(isActive: boolean): string {
   const base =
-    "relative flex h-9 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+    "relative flex h-11 w-full items-center md:h-9 gap-3 rounded-lg px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
   return isActive
     ? `${base} bg-primary/10 text-primary before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-primary dark:bg-primary/15`
     : `${base} text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground`;

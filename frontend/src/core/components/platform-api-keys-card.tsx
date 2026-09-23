@@ -1,21 +1,17 @@
-import { Icon } from "@/core/components/icon";
-
 import { PlatformApiKeysList } from "./platform-api-keys-list";
 
+/** Claves de proveedores que usa toda la plataforma (solo administradores). */
 export function PlatformApiKeysCard() {
   return (
-    <section className="glass-card space-y-6 rounded-3xl p-6 sm:p-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="font-display text-xl font-bold text-foreground">API Keys de plataforma</h2>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">
-            Keys globales usadas cuando los usuarios no tienen la suya propia. Solo admins pueden
-            modificarlas.
-          </p>
-        </div>
-        <div className="hidden text-primary sm:block">
-          <Icon name="robot" size="text-3xl" />
-        </div>
+    <section className="space-y-4" aria-labelledby="claves-plataforma">
+      <div>
+        <h2 id="claves-plataforma" className="text-base font-semibold text-foreground">
+          Claves de la plataforma
+        </h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Se usan cuando un usuario no tiene su propia clave para ese proveedor. Solo los
+          administradores pueden cambiarlas.
+        </p>
       </div>
       <PlatformApiKeysList />
     </section>
