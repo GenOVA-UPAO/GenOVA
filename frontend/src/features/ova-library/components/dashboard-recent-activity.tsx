@@ -2,10 +2,11 @@ import { Link } from "react-router";
 
 import { EmptyState } from "@/core/components/empty-state";
 import { Icon } from "@/core/components/icon";
+import { OvaStatusBadge } from "@/core/components/ova-status-badge";
 import { Button } from "@/core/components/ui/button";
 
 import type { OvaListItem } from "../lib/types";
-import { formatDate, STATUS_STYLE } from "../pages/dashboard-page.helpers";
+import { formatDate } from "../pages/dashboard-page.helpers";
 
 interface DashboardRecentActivityProps {
   recentOvas: OvaListItem[];
@@ -18,9 +19,7 @@ function resolveOwnerName(ova: OvaListItem): string {
 }
 
 function resolveDateLabel(ova: OvaListItem): string {
-  const created = ova.created_at;
-  const updated = ova.updated_at;
-  return formatDate((created ?? updated) as string | undefined);
+  return formatDate((ova.updated_at ?? ova.created_at) as string | undefined);
 }
 
 /** Lista de actividad reciente del dashboard con fallback a EmptyState. */
@@ -33,9 +32,9 @@ export function DashboardRecentActivity({
       <EmptyState
         icon="plus"
         title="Crea tu primer OVA"
-        description="Describe un tema y la inteligencia artificial generará todo el contenido educativo de acuerdo a la metodología 5E."
+        description="Describe un tema y GenOVA generará los recursos de cada fase del modelo 5E. Luego podrás revisarlos, ajustarlos y exportarlos a SCORM."
         action={
-          <Button asChild className="gap-1.5 shadow-sm">
+          <Button asChild size="lg">
             <Link to="/crear">
               <Icon name="plus" size="text-base" />
               Comenzar ahora
@@ -47,46 +46,35 @@ export function DashboardRecentActivity({
   }
 
   return (
-    <div className="space-y-3">
+    <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
       {recentOvas.map((ova) => {
-        const ownerName = resolveOwnerName(ova);
-        const style = STATUS_STYLE[ova.status ?? ""] ?? "bg-muted text-muted-foreground";
-
+        const ownerName = isAdmin ? resolveOwnerName(ova) : "";
+        const title = ova.title ?? "Sin título";
         return (
-          <div
-            key={ova.id}
-            className="group flex items-center gap-4 rounded-2xl border border-border/50 bg-card/60 px-5 py-4 backdrop-blur-sm transition hover:border-primary/30"
-          >
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Icon name="folder" size="text-xl" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-foreground transition-colors group-hover:text-primary">
-                {ova.title ?? "Sin título"}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {resolveDateLabel(ova)}
-                {isAdmin && ownerName && (
-                  <span className="ml-2 text-accent-brand"> · {ownerName}</span>
-                )}
-              </p>
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${style}`}
+          <li key={ova.id}>
+            <Link
+              to={`/workspace/${ova.id}`}
+              className="group flex items-center gap-3 px-4 py-3.5 transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset sm:gap-4 sm:px-5"
             >
-              {ova.status ?? "borrador"}
-            </span>
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex hover:bg-primary/10 hover:text-primary"
-            >
-              <Link to={`/workspace/${ova.id}`}>Editar</Link>
-            </Button>
-          </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-foreground" title={title}>
+                  {title}
+                </p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  {resolveDateLabel(ova)}
+                  {ownerName !== "" && ` · ${ownerName}`}
+                </p>
+              </div>
+              <OvaStatusBadge status={ova.status} />
+              <Icon
+                name="caret-right"
+                size="text-base"
+                className="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+              />
+            </Link>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }

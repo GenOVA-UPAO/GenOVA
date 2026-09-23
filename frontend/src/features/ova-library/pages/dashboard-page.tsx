@@ -31,7 +31,7 @@ export function DashboardPage() {
   }
 
   return (
-    <section className="mx-auto max-w-7xl space-y-10">
+    <section className="mx-auto max-w-7xl space-y-8">
       <DashboardHeader firstName={firstName} />
       {content}
     </section>
