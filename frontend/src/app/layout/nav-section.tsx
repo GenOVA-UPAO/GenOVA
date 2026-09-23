@@ -12,9 +12,7 @@ export function NavSection({ title, collapsed, children }: Readonly<NavSectionPr
       {collapsed ? (
         <div className="mx-2 my-3 border-t border-sidebar-border" aria-hidden="true" />
       ) : (
-        <p className="px-3 pt-5 pb-1.5 text-xs font-medium text-muted-foreground">
-          {title}
-        </p>
+        <p className="px-3 pt-5 pb-1.5 text-xs font-medium text-muted-foreground">{title}</p>
       )}
       <ul className="space-y-0.5">{children}</ul>
     </div>
