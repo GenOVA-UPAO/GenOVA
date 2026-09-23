@@ -12,19 +12,19 @@ interface Props {
 
 export function ChatEmptyState({ onSelectPrompt }: Readonly<Props>) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center p-4 text-center">
-      <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
-        <Icon name="sparkle" className="size-5" />
-      </div>
-      <h3 className="mt-3 font-display text-sm font-semibold text-foreground">
+    <div className="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
+      <span className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Icon name="chat-text" className="size-5" />
+      </span>
+      <h3 className="mt-3 font-display text-base font-semibold text-foreground">
         ¿Cómo deseas mejorar este OVA?
       </h3>
-      <p className="mt-1 max-w-[260px] text-xs text-muted-foreground">
-        Escribe abajo tus instrucciones de cambio o regenera el OVA según tus necesidades.
+      <p className="mt-1 max-w-64 text-sm text-muted-foreground">
+        Escribe abajo qué quieres cambiar. La IA lo aplicará y quedará una nueva versión.
       </p>
       {onSelectPrompt && (
-        <div className="mt-4 flex w-full max-w-[280px] flex-col gap-1.5">
-          <span className="text-[11px] font-medium text-muted-foreground">Ideas de prompt:</span>
+        <div className="mt-5 flex w-full max-w-72 flex-col gap-1.5">
+          <p className="text-xs font-medium text-muted-foreground">Prueba con:</p>
           {PROMPT_SUGGESTIONS.map((suggestion) => (
             <button
               key={suggestion}
@@ -32,9 +32,9 @@ export function ChatEmptyState({ onSelectPrompt }: Readonly<Props>) {
               onClick={() => {
                 onSelectPrompt(suggestion);
               }}
-              className="rounded-lg border border-border/60 bg-background/60 px-2.5 py-1.5 text-left text-xs text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+              className="rounded-lg border border-border bg-background px-3 py-2 text-left text-sm text-foreground transition-colors duration-150 outline-none hover:border-primary/40 hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring"
             >
-              «{suggestion}»
+              {suggestion}
             </button>
           ))}
         </div>

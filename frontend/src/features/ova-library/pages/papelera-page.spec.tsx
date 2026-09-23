@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router";
@@ -127,5 +127,28 @@ describe("PapeleraPage", () => {
     await user.click(screen.getByRole("button", { name: "Reintentar" }));
 
     expect(await screen.findByText("Tu papelera está vacía")).toBeInTheDocument();
+  });
+
+  it("elimina definitivamente tras una confirmación destructiva", async () => {
+    vi.mocked(ovaLibraryApi.trash).mockResolvedValue({
+      ovas: MOCK_TRASH_OVAS,
+      total_items: 1,
+      total_pages: 1,
+    });
+    vi.mocked(ovaLibraryApi.deleteForever).mockResolvedValue({ message: "ok" });
+
+    const user = userEvent.setup();
+    renderWithProviders(<PapeleraPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Eliminar definitivamente" }));
+    const dialog = await screen.findByRole("alertdialog", { name: "Eliminar definitivamente" });
+    expect(dialog).toHaveTextContent("Esta acción no se puede deshacer.");
+
+    await act(async () => {
+      await user.click(within(dialog).getByRole("button", { name: "Eliminar definitivamente" }));
+    });
+
+    expect(ovaLibraryApi.deleteForever).toHaveBeenCalledWith("ova-trash-1");
+    expect(toast.success).toHaveBeenCalledWith("OVA eliminado definitivamente");
   });
 });

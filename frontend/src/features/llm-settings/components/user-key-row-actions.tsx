@@ -1,10 +1,9 @@
-import { cn } from "@/core/lib/cn";
+import { Button } from "@/core/components/ui/button";
 
 interface UserKeyRowActionsProps {
   editing: boolean;
   configured: boolean;
   saving: boolean;
-  canSave: boolean;
   onStart: () => void;
   onCancel: () => void;
   onSave: () => void;
@@ -14,7 +13,6 @@ export function UserKeyRowActions({
   editing,
   configured,
   saving,
-  canSave,
   onStart,
   onCancel,
   onSave,
@@ -22,32 +20,18 @@ export function UserKeyRowActions({
   if (editing) {
     return (
       <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={saving || !canSave}
-          className="h-9 rounded-md bg-primary px-3 text-xs font-bold text-primary-foreground disabled:opacity-50"
-        >
-          {saving ? "..." : "Guardar"}
-        </button>
-        <button type="button" onClick={onCancel} className="h-9 rounded-md border px-3 text-xs">
+        <Button className="max-sm:h-11 max-sm:flex-1" loading={saving} onClick={onSave}>
+          Guardar
+        </Button>
+        <Button variant="ghost" className="max-sm:h-11 max-sm:flex-1" onClick={onCancel}>
           Cancelar
-        </button>
+        </Button>
       </div>
     );
   }
   return (
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={onStart}
-        className={cn(
-          "h-9 rounded-md px-3 text-xs font-bold",
-          configured ? "border" : "bg-primary text-primary-foreground",
-        )}
-      >
-        {configured ? "Cambiar" : "Configurar"}
-      </button>
-    </div>
+    <Button variant="outline" className="shrink-0 max-sm:h-11" onClick={onStart}>
+      {configured ? "Cambiar clave" : "Añadir clave"}
+    </Button>
   );
 }

@@ -1,5 +1,7 @@
 import type { EngineNode } from "../hooks/nodes-config.types";
 import { CapabilityRow } from "./capability-row";
+import { SectionError } from "./section-error";
+import { SettingListSkeleton } from "./setting-list-skeleton";
 
 interface CapabilitiesBodyProps {
   loading: boolean;
@@ -23,22 +25,13 @@ export function CapabilitiesBody({
   onToggle,
 }: Readonly<CapabilitiesBodyProps>) {
   if (loading || !ready) {
-    return (
-      <div className="space-y-3">
-        <div className="h-16 animate-pulse rounded-2xl bg-muted" />
-        <div className="h-16 animate-pulse rounded-2xl bg-muted" />
-      </div>
-    );
+    return <SettingListSkeleton rows={2} />;
   }
   if (error) {
-    return (
-      <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm font-bold text-destructive">
-        {error}
-      </p>
-    );
+    return <SectionError message={error} />;
   }
   return (
-    <div className="glass-card overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+    <ul className="divide-y divide-border rounded-xl border border-border bg-card">
       {capabilities.map((cap) => (
         <CapabilityRow
           key={cap.id}
@@ -51,6 +44,6 @@ export function CapabilitiesBody({
           }}
         />
       ))}
-    </div>
+    </ul>
   );
 }

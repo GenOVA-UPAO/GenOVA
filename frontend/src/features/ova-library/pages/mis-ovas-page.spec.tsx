@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router";
@@ -59,12 +59,16 @@ function createTestQueryClient() {
   });
 }
 
-function renderWithProviders(ui: ReactNode, queryClient = createTestQueryClient()) {
+function renderWithProviders(
+  ui: ReactNode,
+  queryClient = createTestQueryClient(),
+  initialEntries = ["/mis-ovas"],
+) {
   return {
     queryClient,
     ...render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>{ui}</MemoryRouter>
+        <MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter>
       </QueryClientProvider>,
     ),
   };
@@ -119,12 +123,13 @@ describe("MisOvasPage", () => {
 
     expect(await screen.findByText("Álgebra Lineal")).toBeInTheDocument();
 
-    const trashButtons = screen.getAllByRole("button", { name: "Enviar a papelera" });
-    await user.click(trashButtons[0]);
+    await user.click(screen.getByRole("button", { name: "Más acciones para Álgebra Lineal" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Mover a la papelera" }));
 
-    expect(screen.getByText('¿Mover a la papelera "Álgebra Lineal"?')).toBeInTheDocument();
+    const dialog = await screen.findByRole("dialog", { name: "Mover a la papelera" });
+    expect(dialog).toHaveTextContent("«Álgebra Lineal» se moverá a la papelera.");
 
-    const confirmButton = screen.getByRole("button", { name: "Mover" });
+    const confirmButton = within(dialog).getByRole("button", { name: "Mover a la papelera" });
     await act(async () => {
       await user.click(confirmButton);
     });
@@ -158,7 +163,7 @@ describe("MisOvasPage", () => {
     const user = userEvent.setup();
     renderWithProviders(<MisOvasPage />);
 
-    expect(await screen.findByText("No se pudo cargar el historial de OVAs")).toBeInTheDocument();
+    expect(await screen.findByText("No se pudo cargar la biblioteca de OVAs")).toBeInTheDocument();
     expect(screen.queryByText("ECONNREFUSED")).not.toBeInTheDocument();
 
     vi.mocked(ovaLibraryApi.list).mockResolvedValue({
@@ -169,5 +174,44 @@ describe("MisOvasPage", () => {
     await user.click(screen.getByRole("button", { name: "Reintentar" }));
 
     expect(await screen.findByText("Aún no has creado ningún OVA")).toBeInTheDocument();
+  });
+
+  it("toma el filtro de estado del parámetro ?estado= de la URL", async () => {
+    vi.mocked(ovaLibraryApi.list).mockResolvedValue({
+      ovas: [MOCK_OVAS[0]],
+      total_items: 1,
+      total_pages: 1,
+    });
+
+    renderWithProviders(<MisOvasPage />, createTestQueryClient(), ["/mis-ovas?estado=listo"]);
+
+    expect(await screen.findByText("Álgebra Lineal")).toBeInTheDocument();
+    expect(ovaLibraryApi.list).toHaveBeenCalledWith(expect.objectContaining({ status: "listo" }));
+  });
+
+  it("sin resultados ofrece limpiar la búsqueda", async () => {
+    vi.mocked(ovaLibraryApi.list).mockResolvedValue({ ovas: [], total_items: 0, total_pages: 1 });
+
+    renderWithProviders(<MisOvasPage />, createTestQueryClient(), ["/mis-ovas?estado=error"]);
+
+    expect(await screen.findByText("Sin resultados")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver todos los estados" })).toBeInTheDocument();
+  });
+
+  it("con selección muestra la barra de acciones masivas", async () => {
+    vi.mocked(ovaLibraryApi.list).mockResolvedValue({
+      ovas: MOCK_OVAS,
+      total_items: 2,
+      total_pages: 1,
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<MisOvasPage />);
+
+    await user.click(await screen.findByRole("checkbox", { name: "Seleccionar todos en esta página" }));
+
+    expect(screen.getByText("2 seleccionados")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Mover a la papelera" }));
+    expect(await screen.findByRole("dialog", { name: "Mover 2 OVAs a la papelera" })).toBeInTheDocument();
   });
 });

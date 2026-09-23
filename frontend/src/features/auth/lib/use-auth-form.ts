@@ -29,6 +29,18 @@ export function useAuthForm<T extends StringMap>(schema: z.ZodType<T>, initial: 
     setTouched((current) => ({ ...current, [name]: true }));
   }
 
+  /**
+   * Al enviar un formulario inválido: marca todos los campos para que se vean sus
+   * errores y lleva el foco al primero (el botón de envío ya no se deshabilita).
+   */
+  function revealErrors(formEl?: HTMLFormElement | null) {
+    const all = Object.fromEntries(Object.keys(values).map((k) => [k, true]));
+    setTouched(all as Partial<Record<keyof T, boolean>>);
+    requestAnimationFrame(() => {
+      formEl?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    });
+  }
+
   function errorFor(name: keyof T): string | undefined {
     return touched[name] ? errors[name] : undefined;
   }
@@ -50,5 +62,5 @@ export function useAuthForm<T extends StringMap>(schema: z.ZodType<T>, initial: 
     };
   }
 
-  return { values, setField, touch, errorFor, invalid, isValid: parsed.success, bind };
+  return { values, setField, touch, revealErrors, errorFor, invalid, isValid: parsed.success, bind };
 }

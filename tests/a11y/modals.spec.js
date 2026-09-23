@@ -10,9 +10,17 @@ async function expectNoSerious(page, pantalla) {
   expect(seriousViolations(results), `serious/critical en ${pantalla}`).toEqual([])
 }
 
-/** Primer botón habilitado con ese texto exacto (evita tarjetas generando). */
-function enabledButton(page, name) {
-  return page.locator('button:not([disabled])').filter({ hasText: name }).first()
+/**
+ * Abre el menú «Más acciones» de la primera tarjeta lista (con «Descargar»; las
+ * que se están generando tienen las opciones deshabilitadas) y pulsa la opción.
+ */
+async function readyCardMenuAction(page, action) {
+  const card = page
+    .locator('[data-testid="ova-card"]')
+    .filter({ has: page.getByRole('button', { name: 'Descargar' }) })
+    .first()
+  await card.getByRole('button', { name: /^Más acciones/ }).click()
+  await page.getByRole('menuitem', { name: action }).click()
 }
 
 /** Abre el catálogo de modelos y espera a que monte. */
@@ -34,7 +42,7 @@ for (const mode of MODES) {
 
       test('modal de metadatos no tiene violaciones serias', async ({ page }) => {
         await gotoApp(page, '/mis-ovas', 'Biblioteca de OVAs')
-        await enabledButton(page, 'Metadatos').click()
+        await readyCardMenuAction(page, 'Editar título y descripción')
         await openDialog(page)
         await expectNoSerious(page, 'modal metadatos')
         await closeDialog(page)
@@ -42,7 +50,7 @@ for (const mode of MODES) {
 
       test('modal de confirmar papelera no tiene violaciones serias', async ({ page }) => {
         await gotoApp(page, '/mis-ovas', 'Biblioteca de OVAs')
-        await enabledButton(page, 'A papelera').click()
+        await readyCardMenuAction(page, 'Mover a la papelera')
         await openDialog(page)
         await expectNoSerious(page, 'modal confirmar papelera')
         await closeDialog(page)
@@ -54,8 +62,8 @@ for (const mode of MODES) {
 
       test('modal de editar usuario no tiene violaciones serias', async ({ page }) => {
         await gotoApp(page, '/admin', 'Usuarios')
-        await page.getByRole('button', { name: /Acción/ }).first().click()
-        await page.getByRole('menuitem', { name: 'Editar Perfil' }).click()
+        await page.getByRole('button', { name: /^Más acciones para/ }).first().click()
+        await page.getByRole('menuitem', { name: 'Editar perfil' }).click()
         await openDialog(page)
         await expectNoSerious(page, 'modal editar usuario')
         await closeDialog(page)

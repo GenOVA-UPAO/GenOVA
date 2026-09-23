@@ -1,4 +1,5 @@
 import { Icon } from "@/core/components/icon";
+import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
 
 interface ChainIconButtonProps {
@@ -17,20 +18,20 @@ export function ChainIconButton({
   icon,
 }: Readonly<ChainIconButtonProps>) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="icon"
       title={label}
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "rounded-xl border p-1.5 shadow-sm transition-colors disabled:opacity-30",
-        danger
-          ? "ml-1 border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10"
-          : "border-border/50 bg-card/50 text-muted-foreground hover:bg-accent hover:text-foreground",
+        "text-muted-foreground max-sm:size-11",
+        danger && "hover:bg-destructive/10 hover:text-destructive",
       )}
     >
       <Icon name={icon} size="text-base" />
-    </button>
+    </Button>
   );
 }

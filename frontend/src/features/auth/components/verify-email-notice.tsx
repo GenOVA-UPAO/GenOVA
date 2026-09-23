@@ -54,7 +54,7 @@ export function VerifyEmailNotice({ email, onResend }: Readonly<VerifyEmailNotic
         disabled={status === "sending"}
         loading={status === "sending"}
       >
-        {status === "sending" ? "Reenviando..." : "Reenviar enlace"}
+        {status === "sending" ? "Reenviando…" : "Reenviar enlace"}
       </Button>
       <p className="mt-5 text-sm text-muted-foreground">
         <Link to="/login" className={AUTH_LINK_CLASS}>

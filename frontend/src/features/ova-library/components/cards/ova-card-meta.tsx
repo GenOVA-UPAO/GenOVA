@@ -1,36 +1,32 @@
-import { cn } from "@/core/lib/cn";
-
 interface OvaCardMetaProps {
-  description?: string;
   ownerName?: string;
-  dateText?: string | null;
-  dateClassName?: string;
+  /** Fecha ISO para `<time dateTime>`. */
+  dateTime?: unknown;
+  /** Texto visible de la fecha, ya formateado. */
+  dateText: string;
+  /** Prefijo opcional de la fecha ("Eliminado el"). */
+  datePrefix?: string;
 }
 
-/** Metadatos secundarios (descripción, autor y fecha) para la tarjeta de OVA. */
+/** Línea de metadatos de una tarjeta o fila de OVA: autor · fecha. */
 export function OvaCardMeta({
-  description,
   ownerName,
+  dateTime,
   dateText,
-  dateClassName,
+  datePrefix,
 }: Readonly<OvaCardMetaProps>) {
+  if (!ownerName && !dateText) return null;
+  const iso = typeof dateTime === "string" ? dateTime : undefined;
+
   return (
-    <>
-      {description && (
-        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-          {description}
-        </p>
-      )}
-      {ownerName && (
-        <p className="mt-1.5 text-xs text-muted-foreground">
-          Por: <span className="font-medium text-foreground">{ownerName}</span>
-        </p>
-      )}
+    <p className="truncate text-xs text-muted-foreground">
+      {ownerName && <span className="font-medium text-foreground/80">{ownerName}</span>}
+      {ownerName && dateText && <span aria-hidden="true"> · </span>}
       {dateText && (
-        <p className={cn("mt-1.5 text-xs", dateClassName)}>
-          {dateText}
-        </p>
+        <time dateTime={iso}>
+          {datePrefix ? `${datePrefix} ${dateText}` : dateText}
+        </time>
       )}
-    </>
+    </p>
   );
 }

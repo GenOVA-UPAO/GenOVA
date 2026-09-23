@@ -26,7 +26,11 @@ export function SidebarMenu({ collapsed = false, onNavigate }: Readonly<SidebarM
     <div className="flex min-h-0 flex-1 flex-col">
       <nav
         aria-label="Navegación principal"
-        className={cn("flex-1 overflow-y-auto pb-3", collapsed ? "px-1.5" : "px-2")}
+        // Plegado, la primera sección no necesita separador encima.
+        className={cn(
+          "flex-1 overflow-y-auto pb-3 [&>div:first-child>[aria-hidden]]:invisible",
+          collapsed ? "px-1.5" : "px-2",
+        )}
       >
         <NavSection title="Principal" collapsed={collapsed}>
           {navigationLinks.map((l) => (

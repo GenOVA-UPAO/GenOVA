@@ -1,4 +1,14 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
+import { cn } from "@/core/lib/cn";
+
 import { joinModelValue, splitModelValue } from "../hooks/model-value";
+import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 
 interface SelectModel {
   provider: string;
@@ -11,6 +21,7 @@ interface LlmModelSelectProps {
   provider?: string;
   modelId?: string;
   disabled?: boolean;
+  invalid?: boolean;
   ariaLabel: string;
   onChange: (next: { provider: string; modelId: string }) => void;
 }
@@ -20,6 +31,7 @@ export function LlmModelSelect({
   provider,
   modelId,
   disabled = false,
+  invalid = false,
   ariaLabel,
   onChange,
 }: Readonly<LlmModelSelectProps>) {
@@ -27,25 +39,34 @@ export function LlmModelSelect({
   const display = withCurrentStub(models, provider, modelId);
 
   return (
-    <select
-      aria-label={ariaLabel}
+    <Select
+      value={current === "" ? undefined : current}
       disabled={disabled}
-      value={current}
-      onChange={(event) => {
-        onChange(splitModelValue(event.target.value));
+      onValueChange={(value) => {
+        onChange(splitModelValue(value));
       }}
-      className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
     >
-      <option value="">— elegir modelo —</option>
-      {display.map((model) => {
-        const value = joinModelValue(model.provider, model.model_id);
-        return (
-          <option key={value} value={value}>
-            {(model.label ?? model.model_id) + " · " + model.provider}
-          </option>
-        );
-      })}
-    </select>
+      <SelectTrigger
+        aria-label={ariaLabel}
+        aria-invalid={invalid || undefined}
+        className={cn("w-full max-sm:h-11", invalid && "border-destructive")}
+      >
+        <SelectValue placeholder="Elige un modelo" />
+      </SelectTrigger>
+      <SelectContent position="popper" align="start" className="max-h-80">
+        {display.map((model) => {
+          const value = joinModelValue(model.provider, model.model_id);
+          return (
+            <SelectItem key={value} value={value}>
+              <span className="min-w-0 truncate">{model.label ?? model.model_id}</span>
+              <span className="shrink-0 text-muted-foreground">
+                {PROVIDER_LABELS[model.provider] ?? model.provider}
+              </span>
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
   );
 }
 

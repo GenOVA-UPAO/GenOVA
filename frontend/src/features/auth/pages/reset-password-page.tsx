@@ -19,8 +19,12 @@ export function ResetPasswordPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
-  const onSubmit = onFormSubmit(async () => {
-    if (!token || !form.isValid) return;
+  const onSubmit = onFormSubmit(async (formEl) => {
+    if (!token) return;
+    if (!form.isValid) {
+      form.revealErrors(formEl);
+      return;
+    }
     setStatus("submitting");
     setMessage("");
     try {
@@ -34,7 +38,14 @@ export function ResetPasswordPage() {
   });
 
   return (
-    <AuthCard title="Nueva contraseña" subtitle="Ingresa y confirma tu nueva contraseña.">
+    <AuthCard
+      title={token ? "Nueva contraseña" : "Enlace incompleto"}
+      subtitle={
+        token
+          ? "Elige una contraseña nueva para tu cuenta."
+          : "Al enlace le falta el código de restablecimiento. Puede haberse cortado al copiarlo."
+      }
+    >
       <ResetPasswordBody
         token={token}
         status={status}

@@ -1,31 +1,40 @@
 import type { ReactNode } from "react";
 
-import { AUTH_EYEBROW } from "../lib/auth-copy";
+import { AuthBrandPanel } from "./auth-brand-panel";
 
 interface AuthCardProps {
   title: string;
   children: ReactNode;
   subtitle?: string;
+  /** Contexto corto sobre el título (p. ej. «Verificación en 2 pasos»). */
   eyebrow?: string;
 }
 
-export function AuthCard({
-  title,
-  children,
-  subtitle,
-  eyebrow = AUTH_EYEBROW,
-}: Readonly<AuthCardProps>) {
+/**
+ * Marco de las pantallas de acceso. `body` no hace scroll (lo gestiona el layout de
+ * la app), así que esta vista lleva su propio contenedor con scroll: sin él, el
+ * registro quedaba cortado en móviles bajos.
+ */
+export function AuthCard({ title, children, subtitle, eyebrow }: Readonly<AuthCardProps>) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary p-4">
-      <div className="w-full max-w-md rounded-2xl border border-border border-t-2 border-t-accent-brand bg-card p-7 shadow-lg">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-brand">
-          {eyebrow}
-        </p>
-        <h1 className="font-display mt-2 text-3xl font-semibold">{title}</h1>
-        {subtitle ? (
-          <p className="mt-2 text-sm font-medium text-muted-foreground">{subtitle}</p>
-        ) : null}
-        {children}
+    <main className="grid h-dvh overflow-y-auto bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      <AuthBrandPanel />
+      <div className="flex min-h-full items-center justify-center px-5 py-10 sm:px-10">
+        <div className="w-full max-w-[400px]">
+          <p className="font-display text-xl font-semibold tracking-tight lg:hidden">
+            Gen<span className="text-primary">OVA</span>
+          </p>
+          {eyebrow !== undefined && (
+            <p className="mt-8 text-sm font-medium text-primary lg:mt-0">{eyebrow}</p>
+          )}
+          <h1
+            className={`font-display text-3xl font-semibold tracking-tight ${eyebrow === undefined ? "mt-8 lg:mt-0" : "mt-1.5"}`}
+          >
+            {title}
+          </h1>
+          {subtitle ? <p className="mt-2 text-sm text-pretty text-muted-foreground">{subtitle}</p> : null}
+          {children}
+        </div>
       </div>
     </main>
   );

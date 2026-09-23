@@ -47,11 +47,7 @@ for (const mode of MODES) {
 
     test('editor de OVA no tiene violaciones serias', async ({ page }) => {
       await gotoApp(page, '/mis-ovas', 'Biblioteca de OVAs')
-      await page
-        .locator('button:not([disabled])')
-        .filter({ hasText: /^Editar$/ })
-        .first()
-        .click()
+      await page.getByRole('link', { name: 'Editar', exact: true }).first().click()
       await page.waitForURL(/\/workspace\//, { timeout: 15000 })
       await page.locator('h1').first().waitFor({ timeout: 20000 })
       await expectNoSerious(page, 'editor')

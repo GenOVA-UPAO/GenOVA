@@ -1,21 +1,25 @@
-const MUTED_ROLE_CLASSES = "bg-muted text-muted-foreground border-border";
+/**
+ * Nombre legible de un rol: los roles se guardan como identificadores
+ * («usuarios_prueba», «administrador») y la interfaz los muestra en mayúscula
+ * de oración («Usuarios prueba», «Administrador»).
+ */
+export function formatRoleName(roleName: string | null | undefined): string {
+  if (!roleName) return "Sin rol";
+  const spaced = roleName.replaceAll("_", " ").trim();
+  if (spaced === "") return "Sin rol";
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
 
-export function getRoleColorClasses(roleName: string | null | undefined): string {
-  if (!roleName) return MUTED_ROLE_CLASSES;
+/**
+ * Descripción de rol lista para mostrar: algunas del seed usan « — » como
+ * separador; se muestra con dos puntos para mantener un texto llano.
+ */
+export function formatRoleDescription(description: string | null | undefined): string {
+  if (!description) return "";
+  return description.replaceAll(" — ", ": ").replaceAll(" – ", ": ").trim();
+}
 
-  const normalizedRole = roleName.toLowerCase().trim();
-
-  switch (normalizedRole) {
-    case "administrador":
-    case "admin":
-      return "bg-primary/10 text-primary border-primary/20";
-    case "profesor":
-    case "teacher":
-      return "bg-accent-brand/10 text-accent-brand border-accent-brand/25";
-    case "estudiante":
-    case "student":
-      return "bg-primary/5 text-primary border-primary/15";
-    default:
-      return MUTED_ROLE_CLASSES;
-  }
+export function roleUserCountLabel(count: number): string {
+  if (count === 0) return "Sin usuarios";
+  return count === 1 ? "1 usuario" : `${String(count)} usuarios`;
 }

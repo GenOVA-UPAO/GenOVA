@@ -1,5 +1,6 @@
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
+import { Skeleton } from "@/core/components/ui/skeleton";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { TASK_LABELS } from "../lib/llm-settings-labels";
@@ -16,9 +17,9 @@ export function LlmSettingsForm({ readOnly = false }: Readonly<{ readOnly?: bool
 
   if (store.error) {
     return (
-      <div className="flex flex-col items-center gap-2 py-8 text-center">
-        <p className="text-xs text-muted-foreground">{store.error}</p>
-        <Button variant="outline" size="sm" onClick={store.refetch}>
+      <div role="alert" className="flex flex-col items-center gap-3 py-8 text-center">
+        <p className="text-sm text-muted-foreground">{store.error}</p>
+        <Button variant="outline" onClick={store.refetch}>
           Reintentar
         </Button>
       </div>
@@ -27,44 +28,49 @@ export function LlmSettingsForm({ readOnly = false }: Readonly<{ readOnly?: bool
 
   if (store.loading || !store.settings) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+      <div className="space-y-4 py-2" role="status" aria-busy="true" aria-label="Cargando ajustes">
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       {readOnly ? (
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-          <Icon name="lock" size="text-xs" className="text-muted-foreground" />
-          <p className="text-xs text-muted-foreground">
-            Configurado por el administrador.
-            <span className="font-semibold text-foreground"> Añade una API key</span> en Mi Perfil →
-            API Keys para personalizar.
-          </p>
-        </div>
+        <p className="flex items-start gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-sm text-muted-foreground">
+          <Icon name="lock" size="text-sm" className="mt-0.5 shrink-0" />
+          Los elige el administrador. Para personalizarlos, añade tu clave API en Modelos de IA,
+          pestaña Credenciales.
+        </p>
       ) : null}
-      {taskKeys.map((tipo) => (
-        <LlmSettingsFormTask key={tipo} tipo={tipo} locked={locked} />
-      ))}
+      <ul className="divide-y divide-border">
+        {taskKeys.map((tipo) => (
+          <LlmSettingsFormTask key={tipo} tipo={tipo} locked={locked} />
+        ))}
+      </ul>
       {noCatalog && !readOnly ? (
-        <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
-          No se pudo cargar el catálogo de modelos. Se usan los modelos por defecto del sistema.{" "}
-          <button
-            type="button"
+        <div className="flex flex-col gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-sm text-muted-foreground sm:flex-row sm:items-center">
+          <p className="flex-1">
+            No se pudo cargar el catálogo de modelos. Mientras tanto se usan los del sistema.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            loading={store.refreshingCatalog}
             onClick={() => {
               void store.retryRefresh();
             }}
-            disabled={store.refreshingCatalog}
-            className="font-semibold text-primary hover:underline disabled:opacity-50"
           >
-            {store.refreshingCatalog ? "Actualizando…" : "Reintentar"}
-          </button>
+            Reintentar
+          </Button>
         </div>
       ) : null}
-      <p className="px-0.5 text-[10px] text-muted-foreground">
-        Timeout: {store.bounds[0]}–{store.bounds[1]} s · aplica a todos tus OVAs
+      <p className="text-xs text-muted-foreground">
+        El tiempo máximo de espera va de {store.bounds[0]} a {store.bounds[1]} segundos y se aplica
+        a todos tus OVAs.
       </p>
     </div>
   );

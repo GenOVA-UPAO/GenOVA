@@ -14,9 +14,9 @@ export const PROVIDERS: ProviderOption[] = [
   {
     id: "groq",
     label: "Groq",
-    desc: "Modelos LLaMA y Qwen gratuitos — sin costo por token.",
+    desc: "Modelos LLaMA y Qwen gratuitos, sin costo por token.",
     badge: "Gratuito",
-    badgeColor: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+    badgeColor: "bg-success/12 text-success-strong",
     iconName: "lightning",
   },
   {

@@ -2,11 +2,11 @@ import { cn } from "@/core/lib/cn";
 import { ovaStatusLabel } from "@/core/lib/ova-status";
 
 const STATUS_CLASS: Partial<Record<string, string>> = {
-  generando: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  error: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-  listo: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  generando: "bg-primary/10 text-primary",
+  error: "bg-destructive/10 text-destructive",
+  listo: "bg-success/12 text-success-strong",
 };
-const DEFAULT_CLASS = "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
+const DEFAULT_CLASS = "bg-muted text-muted-foreground ring-1 ring-border ring-inset";
 
 interface OvaStatusBadgeProps {
   status?: string | null;
@@ -17,7 +17,7 @@ export function OvaStatusBadge({ status, className }: Readonly<OvaStatusBadgePro
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold",
+        "inline-flex h-5 items-center rounded-full px-2 text-xs font-medium whitespace-nowrap",
         STATUS_CLASS[status ?? ""] ?? DEFAULT_CLASS,
         className,
       )}

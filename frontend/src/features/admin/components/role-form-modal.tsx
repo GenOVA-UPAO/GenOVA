@@ -10,28 +10,25 @@ import {
 
 import type { RoleFormPayload } from "../api/admin-roles.api";
 import { togglePermission } from "../lib/permissions";
+import { formatRoleName } from "../lib/role-utils";
 import type { Role } from "../lib/types";
 import { FormErrorAlert } from "./form-error-alert";
 import { RoleFormActions } from "./role-form-actions";
 import { RoleFormFields } from "./role-form-fields";
 import { RolePermissionsFieldset } from "./role-permissions-fieldset";
 
-const LABEL_CLASS = "text-xs font-bold uppercase tracking-wider text-muted-foreground";
-
 function modalTitle(editingRole: Role | null): string {
-  if (editingRole === null) return "Crear nuevo rol";
-  return `Editar rol: ${editingRole.name ?? ""}`;
+  if (editingRole === null) return "Nuevo rol";
+  return `Editar rol «${formatRoleName(editingRole.name)}»`;
 }
 
 function modalDescription(editingRole: Role | null): string {
-  if (editingRole === null) {
-    return "Elige un nombre único y asigna los permisos necesarios para este perfil.";
-  }
-  return "Ajusta el nombre y la selección de permisos para este perfil del sistema.";
+  if (editingRole === null) return "Ponle un nombre y marca lo que podrán hacer sus usuarios.";
+  return "Cambia el nombre o los permisos. Los usuarios con este rol verán el cambio al instante.";
 }
 
 function submitLabel(isEdit: boolean, isSubmitting: boolean): string {
-  if (isSubmitting) return isEdit ? "Guardando..." : "Creando...";
+  if (isSubmitting) return isEdit ? "Guardando…" : "Creando…";
   return isEdit ? "Guardar cambios" : "Crear rol";
 }
 
@@ -53,21 +50,20 @@ export function RoleFormModal({
   const [name, setName] = useState(editingRole?.name ?? "");
   const [description, setDescription] = useState(editingRole?.description ?? "");
   const [permissions, setPermissions] = useState<string[]>(editingRole?.permissions ?? []);
-  const [formError, setFormError] = useState("");
-  const error = formError !== "" ? formError : serverError;
+  const [nameError, setNameError] = useState("");
 
   const handleSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedName = name.trim();
     if (trimmedName === "") {
-      setFormError("El nombre del rol es obligatorio.");
+      setNameError("Escribe un nombre para el rol.");
       return;
     }
     if (trimmedName.length > 64) {
-      setFormError("El nombre del rol no debe superar los 64 caracteres.");
+      setNameError("El nombre no puede superar los 64 caracteres.");
       return;
     }
-    setFormError("");
+    setNameError("");
     onSubmit({ name: trimmedName, description, permissions });
   };
 
@@ -91,17 +87,18 @@ export function RoleFormModal({
         >
           <RoleFormFields
             name={name}
+            nameError={nameError}
             description={description}
             disabled={isSubmitting}
             onNameChange={(value) => {
               setName(value);
-              if (formError !== "") setFormError("");
+              if (nameError !== "") setNameError("");
             }}
             onDescriptionChange={setDescription}
           />
 
-          <div className="space-y-2">
-            <p className={LABEL_CLASS}>Permisos del rol</p>
+          <fieldset className="space-y-2">
+            <legend className="mb-2 text-sm font-medium">Permisos</legend>
             <RolePermissionsFieldset
               permissions={permissions}
               disabled={isSubmitting}
@@ -109,13 +106,12 @@ export function RoleFormModal({
                 setPermissions((current) => togglePermission(current, permissionId));
               }}
             />
-          </div>
+          </fieldset>
 
-          <FormErrorAlert message={error} />
+          <FormErrorAlert message={serverError} />
 
           <RoleFormActions
             isSubmitting={isSubmitting}
-            canSubmit={name.trim() !== ""}
             submitLabel={submitLabel(editingRole !== null, isSubmitting)}
             onCancel={onClose}
           />

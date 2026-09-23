@@ -12,7 +12,7 @@ interface AuthSuccessPanelProps {
 
 export function AuthSuccessPanel({ message, href, actionLabel }: Readonly<AuthSuccessPanelProps>) {
   return (
-    <div className="mt-6 space-y-4">
+    <div className="mt-8 space-y-5">
       <ServerAlert tone="success">{message}</ServerAlert>
       <Button asChild className="w-full">
         <Link to={href}>{actionLabel}</Link>

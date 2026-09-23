@@ -88,11 +88,11 @@ Then('debo ver el mensaje {string}', async ({ page }, msg) => {
 })
 
 Then('no debo ver el botón {string} para el rol {string}', async ({ page }, btn, role) => {
-  // React usa cards (div.glass-card), no filas <tr>.
+  // Cada rol es una fila `[data-testid="role-row"]` de la lista, no un <tr>.
   const card = page
-    .getByText(role)
+    .getByTestId('role-row')
+    .filter({ has: page.getByRole('heading', { name: new RegExp(`^${role}$`, 'i') }) })
     .first()
-    .locator('xpath=ancestor::div[contains(@class,"glass-card")][1]')
   const count = await card.getByRole('button', { name: btn }).count()
   if (count > 0) throw new Error(`Button "${btn}" should not exist for "${role}"`)
 })

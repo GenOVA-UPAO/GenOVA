@@ -16,7 +16,7 @@ export function FallbackActions({
   onRemove,
 }: Readonly<FallbackActionsProps>) {
   return (
-    <div className="flex shrink-0 items-center justify-end gap-2 sm:ml-2">
+    <div className="flex shrink-0 items-center justify-end gap-1">
       <ChainIconButton
         label="Subir"
         disabled={disabled || index === 0}

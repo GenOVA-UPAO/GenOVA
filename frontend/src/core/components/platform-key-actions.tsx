@@ -6,49 +6,46 @@ interface PlatformKeyActionsProps {
   configured: boolean;
   saving: boolean;
   canSave: boolean;
+  label: string;
   onSave: () => void;
   onCancel: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-const ACTION_CLASS = "h-9 w-full sm:w-auto";
-
 export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
-  const { editing, configured, saving } = props;
+  const { editing, configured, saving, label } = props;
   if (editing) {
     return (
-      <div className="flex gap-2">
-        <Button
-          className={`${ACTION_CLASS} font-bold`}
-          onClick={props.onSave}
-          disabled={saving || !props.canSave}
-        >
-          {saving ? "..." : "Guardar"}
-        </Button>
-        <Button variant="outline" className={ACTION_CLASS} onClick={props.onCancel}>
+      <div className="flex gap-2 sm:self-end">
+        <Button variant="outline" className="flex-1 sm:flex-none" onClick={props.onCancel}>
           Cancelar
+        </Button>
+        <Button
+          className="flex-1 sm:flex-none"
+          onClick={props.onSave}
+          loading={saving}
+          disabled={!props.canSave}
+        >
+          Guardar clave
         </Button>
       </div>
     );
   }
   return (
-    <div className="flex gap-2">
-      <Button
-        variant={configured ? "outline" : "default"}
-        className={configured ? ACTION_CLASS : `${ACTION_CLASS} font-bold`}
-        onClick={props.onEdit}
-        disabled={saving}
-      >
+    <div className="flex shrink-0 gap-2">
+      <Button variant="outline" size="sm" onClick={props.onEdit} disabled={saving}>
         {configured ? "Cambiar" : "Configurar"}
       </Button>
       {configured && (
         <Button
-          variant="outline"
-          className={`${ACTION_CLASS} border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive`}
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           onClick={props.onDelete}
           disabled={saving}
-          aria-label="Eliminar clave"
+          aria-label={`Eliminar clave de ${label}`}
+          title="Eliminar clave"
         >
           <Icon name="trash" size="text-base" />
         </Button>

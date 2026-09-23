@@ -16,14 +16,13 @@ export function PrimaryModelSelect({
   disabled,
   onChange,
 }: Readonly<PrimarySelectProps>) {
+  const labelId = `primary-model-${task}`;
   return (
-    <div className="block space-y-3">
-      <div className="flex items-center gap-2">
-        <span className="shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-widest text-emerald-700 uppercase dark:text-emerald-400">
-          Primario
-        </span>
-        <span className="text-xs font-bold text-foreground">Modelo principal</span>
-      </div>
+    <div className="space-y-2">
+      <p id={labelId} className="text-sm font-medium">
+        Modelo principal
+      </p>
+      <p className="text-xs text-muted-foreground">Se usa siempre que responda.</p>
       <LlmModelSelect
         models={models}
         provider={value.default.provider}

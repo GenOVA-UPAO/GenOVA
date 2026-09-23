@@ -40,32 +40,27 @@ export function ProgressPanel(props: Readonly<Props>) {
   const done = doneCount(props.viewModel);
   const failed = failedCount(props.viewModel);
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-background p-4 shadow-sm sm:p-5">
+    <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-xs sm:p-5">
       <div>
-        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <div className="flex items-center justify-between gap-2 text-sm">
           <span className="font-medium text-foreground">{statusLabel(status)}</span>
-          <div className="flex items-center gap-2">
-            {!terminal && props.showCancel && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs text-muted-foreground"
-                onClick={props.onCancel}
-              >
-                Cancelar
-              </Button>
-            )}
-            <span className="text-xs font-semibold text-muted-foreground">
-              {done}/{String(props.viewModel.length)} listos
-            </span>
-          </div>
+          <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
+            {done} de {String(props.viewModel.length)} listos
+          </span>
         </div>
         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className={`h-full rounded-full transition-[width] duration-500 ${failed > 0 ? "bg-accent-brand" : "bg-primary"}`}
-            style={{ width: `${String(progressPct(props.viewModel))}%` }}
+            className={`h-full w-full origin-left rounded-full transition-transform duration-500 ${failed > 0 ? "bg-accent-brand" : "bg-primary"}`}
+            style={{ transform: `scaleX(${String(progressPct(props.viewModel) / 100)})` }}
           />
         </div>
+        {!terminal && props.showCancel && (
+          <div className="mt-1 flex justify-end">
+            <Button variant="ghost" size="xs" className="-mr-2 text-muted-foreground" onClick={props.onCancel}>
+              Cancelar generación
+            </Button>
+          </div>
+        )}
       </div>
       <ProgressBanners
         isStalled={props.isStalled}
@@ -95,13 +90,18 @@ export function ProgressPanel(props: Readonly<Props>) {
             Seleccionar todos los fallidos
           </Button>
           <Button
-            variant="destructive"
             size="sm"
+            aria-describedby={props.selectedIds.length === 0 ? "retry-selected-hint" : undefined}
             disabled={props.selectedIds.length === 0}
             onClick={props.onRetrySelected}
           >
             Reintentar seleccionados ({props.selectedIds.length})
           </Button>
+          {props.selectedIds.length === 0 && (
+            <p id="retry-selected-hint" className="text-xs text-muted-foreground">
+              Marca los recursos que quieras reintentar.
+            </p>
+          )}
         </div>
       )}
     </div>

@@ -27,7 +27,7 @@ export default function CrearOvaTour({ replay }: Readonly<{ replay: number }>) {
           element: "#tour-crear-ova-prompt",
           popover: {
             title: "Describe tu tema",
-            description: "Escribe el tema, objetivos y nivel educativo. También puedes usar el ejemplo.",
+            description: "Escribe el tema, los objetivos y el nivel. Si quieres ver cómo se hace, pulsa «Usar ejemplo».",
           },
         },
         {
@@ -35,14 +35,14 @@ export default function CrearOvaTour({ replay }: Readonly<{ replay: number }>) {
           popover: {
             title: "Elige recursos",
             description:
-              "Pulsa Recursos para abrir el selector por fase. Debes elegir al menos un recurso en al menos 2 fases. Archivos y Tema son opcionales.",
+              "Pulsa Recursos para elegir qué generará la IA en cada fase. Necesitas recursos en al menos 2 fases. Archivos, Tema y Nivel educativo son opcionales.",
           },
         },
         {
           element: "#tour-crear-ova-generar",
           popover: {
             title: "Genera el OVA",
-            description: "Generar se habilita cuando el prompt es válido y hay recursos en al menos 2 fases.",
+            description: "«Generar OVA» se activa cuando la descripción tiene al menos 10 caracteres y hay recursos en 2 fases. Si falta algo, lo verás junto al botón.",
           },
         },
       ],

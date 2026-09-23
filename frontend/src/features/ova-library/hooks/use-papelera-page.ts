@@ -1,8 +1,10 @@
 import { useState } from "react";
 
 import { ovaNoun } from "../lib/ova-count";
+import { pageMeta } from "../lib/page-meta";
 import type { OvaListItem } from "../lib/types";
 import { useTrashList } from "./use-ova-library";
+import { useOvaSelection } from "./use-ova-selection";
 import { useTrashActions } from "./use-trash-actions";
 
 export interface ConfirmModalState {
@@ -12,88 +14,92 @@ export interface ConfirmModalState {
   onConfirm: () => Promise<void>;
 }
 
+const IRREVERSIBLE = "Esta acción no se puede deshacer.";
+const DELETE_FOREVER = "Eliminar definitivamente";
+
 /** Hook de estado y acciones para la página de Papelera. */
 export function usePapeleraPage() {
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
 
-  const { data, isLoading, error, refetch } = useTrashList(page);
-  const ovas = data?.ovas ?? [];
-  const totalItems = data?.total_items ?? 0;
-  const totalPages = data?.total_pages ?? 1;
+  const { data, isLoading, isPlaceholderData, error, refetch } = useTrashList(page);
+  const { ovas, totalItems, totalPages } = pageMeta(data);
+  if (data && !isPlaceholderData && page > totalPages) setPage(totalPages);
 
+  const selection = useOvaSelection(ovas.map((o) => o.id));
   const actions = useTrashActions();
 
-  const handleToggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  const confirmThen = (state: Omit<ConfirmModalState, "onConfirm">, run: () => Promise<boolean>) => {
+    setConfirmModal({
+      ...state,
+      onConfirm: async () => {
+        if (await run()) setConfirmModal(null);
+      },
     });
   };
 
   const handlePermanentDelete = (ova: OvaListItem) => {
-    setConfirmModal({
-      title: "Eliminar definitivamente",
-      message: `¿Eliminar "${ova.title ?? "OVA"}" de forma permanente?\nEsta acción no se puede deshacer.`,
-      confirmLabel: "Eliminar",
-      onConfirm: async () => {
-        const ok = await actions.permanentDeleteOva(ova.id);
-        if (ok) {
-          setSelectedIds((prev) => {
-            const next = new Set(prev);
-            next.delete(ova.id);
-            return next;
-          });
-          setConfirmModal(null);
-        }
+    confirmThen(
+      {
+        title: DELETE_FOREVER,
+        message: `Se eliminará «${ova.title ?? "OVA"}» de forma permanente. ${IRREVERSIBLE}`,
+        confirmLabel: DELETE_FOREVER,
       },
-    });
+      async () => {
+        const ok = await actions.permanentDeleteOva(ova.id);
+        if (ok) selection.remove(ova.id);
+        return ok;
+      },
+    );
   };
 
   const handleBulkPermanentDelete = () => {
-    const ids = Array.from(selectedIds);
-    setConfirmModal({
-      title: ids.length === 1 ? "Eliminar OVA" : "Eliminar múltiples OVAs",
-      message: `¿Eliminar ${String(ids.length)} ${ovaNoun(ids.length)} definitivamente?\nEsta acción no se puede deshacer.`,
-      confirmLabel: `Eliminar ${String(ids.length)}`,
-      onConfirm: async () => {
-        const ok = await actions.batchDeleteForever(ids);
-        if (ok) {
-          setSelectedIds(new Set());
-          setConfirmModal(null);
-        }
+    const ids = Array.from(selection.selectedIds);
+    confirmThen(
+      {
+        title: `Eliminar ${String(ids.length)} ${ovaNoun(ids.length)} definitivamente`,
+        message: `Se eliminarán de forma permanente. ${IRREVERSIBLE}`,
+        confirmLabel: DELETE_FOREVER,
       },
-    });
+      async () => {
+        const ok = await actions.batchDeleteForever(ids);
+        if (ok) selection.clear();
+        return ok;
+      },
+    );
+  };
+
+  const handleEmptyTrash = () => {
+    confirmThen(
+      {
+        title: "Vaciar la papelera",
+        message: `Se eliminarán de forma permanente ${String(totalItems)} ${ovaNoun(totalItems)}. ${IRREVERSIBLE}`,
+        confirmLabel: "Vaciar papelera",
+      },
+      async () => {
+        const ok = await actions.emptyTrash();
+        if (ok) { selection.clear(); setPage(1); }
+        return ok;
+      },
+    );
   };
 
   const handleRestoreOva = (id: string) => {
-    void actions.restoreOva(id).then((ok) => {
-      if (ok) {
-        setSelectedIds((prev) => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
-        });
-      }
-    });
+    void actions.restoreOva(id).then((ok) => { if (ok) selection.remove(id); });
   };
 
   const handleBatchRestore = () => {
-    void actions.batchRestore(Array.from(selectedIds)).then((ok) => {
-      if (ok) setSelectedIds(new Set());
+    void actions.batchRestore(Array.from(selection.selectedIds)).then((ok) => {
+      if (ok) selection.clear();
     });
   };
 
-  const allSelected = ovas.length > 0 && ovas.every((o) => selectedIds.has(o.id));
+  const handlePageChange = (next: number) => { setPage(next); selection.clear(); };
 
   return {
-    page, setPage, totalItems, totalPages,
-    selectedIds, setSelectedIds, handleToggleSelect, allSelected,
-    confirmModal, setConfirmModal, handlePermanentDelete, handleBulkPermanentDelete,
+    page, handlePageChange, totalItems, totalPages, selection,
+    confirmModal, setConfirmModal, handlePermanentDelete, handleBulkPermanentDelete, handleEmptyTrash,
     handleRestoreOva, handleBatchRestore,
-    ovas, actions, isLoading, error, refetch,
+    ovas, actions, isLoading, isStale: isPlaceholderData, error, refetch,
   };
 }

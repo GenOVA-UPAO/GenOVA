@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-import { Icon } from "@/core/components/icon";
-
 import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaUploads } from "../../hooks/use-uploads";
 import { buttonRegenPayload, messageRegenPayload, type RegenPayload } from "../../lib/regen-chat";
@@ -9,6 +7,8 @@ import type { PhaseWithContent } from "../../lib/types";
 import { ChatComposer } from "./chat-composer";
 import { ChatHistory } from "./chat-history";
 import { ChatPanelHeader } from "./chat-panel-header";
+import { ChatResourceSelect } from "./chat-resource-select";
+import { ChatScopeToggle } from "./chat-scope-toggle";
 
 function composerPlaceholder(selecting: boolean, count: number): string {
   if (selecting && count > 0) {
@@ -30,75 +30,73 @@ export function WorkspaceChatPanel({
   const [selected, setSelected] = useState<string[]>([]);
   const uploads = useOvaUploads();
   const regen = useChatRegeneration(ovaId);
-
-  const submit = (payload: RegenPayload) => {
+  // Regenerar crea una versión nueva con ids nuevos: la selección solo cuenta
+  // los recursos que siguen existiendo. Al cerrar el selector, vuelve al OVA entero.
+  const live = selected.filter((id) => phases.some((phase) => phase.id === id));
+  const scopeIds = selecting ? live : [];
+  const submit = (payload: RegenPayload, onSent?: () => void) => {
     if (!regen.busy) {
-      regen.request.mutate(payload);
+      regen.request.mutate(payload, { onSuccess: onSent });
     }
   };
-
   const error = regen.request.error?.message ?? regen.error ?? uploads.uploadError;
 
   return (
-    <aside className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r bg-card/30">
+    <aside aria-label="Panel de instrucciones" className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r border-border bg-card">
       <ChatPanelHeader
         busy={regen.busy}
-        selecting={selecting}
-        selected={selected}
-        phases={phases}
         onRegenAll={() => {
           submit(buttonRegenPayload(phases, "Regenerar OVA completo", []));
         }}
-        onToggleSelect={() => {
-          setSelecting(!selecting);
-        }}
-        onToggleResource={(id) => {
-          setSelected(withToggledId(selected, id));
-        }}
-        onSelectAllResources={() => {
-          setSelected(phases.map((p) => p.id));
-        }}
       />
-
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
-        <ChatHistory
-          messages={regen.chat.data ?? []}
-          onRemove={(id) => {
-            regen.chat.remove.mutate(id);
-          }}
-          onClear={() => {
-            regen.chat.clear.mutate();
-          }}
-          onSelectPrompt={(text) => {
-            setPrompt(text);
-          }}
-        />
-      </div>
-
-      <div className="shrink-0 space-y-3 border-t bg-background/50 p-4">
+      <ChatHistory
+        messages={regen.chat.data ?? []}
+        onRemove={(id) => {
+          regen.chat.remove.mutate(id);
+        }}
+        onClear={() => {
+          regen.chat.clear.mutate();
+        }}
+        onSelectPrompt={setPrompt}
+      />
+      <div className="shrink-0 space-y-2 border-t border-border bg-background/60 p-3 sm:p-4">
         <ChatComposer
+          error={error}
           prompt={prompt}
           onPrompt={setPrompt}
           onSubmit={() => {
-            submit(messageRegenPayload(phases, prompt, selected));
+            submit(messageRegenPayload(phases, prompt, scopeIds), () => {
+              setPrompt("");
+            });
           }}
           busy={regen.busy}
           uploads={uploads}
-          placeholder={composerPlaceholder(selecting, selected.length)}
+          placeholder={composerPlaceholder(selecting, live.length)}
+          scope={
+            <ChatScopeToggle
+              selecting={selecting}
+              count={live.length}
+              onToggle={() => {
+                setSelecting(!selecting);
+              }}
+            />
+          }
+          picker={
+            selecting && (
+              <ChatResourceSelect
+                id="chat-resource-select"
+                phases={phases}
+                selected={live}
+                onToggle={(id) => {
+                  setSelected(withToggledId(live, id));
+                }}
+                onSelectAll={() => {
+                  setSelected(phases.map((p) => p.id));
+                }}
+              />
+            )
+          }
         />
-        {regen.busy && (
-          <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Icon name="spinner" className="animate-spin text-primary" />
-            <span>
-              {regen.progress.stage} {String(regen.progress.percentage)}%
-            </span>
-          </p>
-        )}
-        {error && (
-          <p role="alert" className="text-xs text-destructive">
-            {error}
-          </p>
-        )}
       </div>
     </aside>
   );

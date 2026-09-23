@@ -4,26 +4,35 @@ import { Icon } from "@/core/components/icon";
 
 import { ADMIN_CARDS } from "../pages/dashboard-page.helpers";
 
-/** Panel de accesos directos de administración en el dashboard. */
+/** Accesos directos de administración en el dashboard. */
 export function DashboardAdminPanel() {
   return (
-    <div className="rounded-2xl border border-border/50 bg-card/60 p-6 backdrop-blur-sm">
-      <h2 className="px-1 font-display text-xl font-semibold">Panel de administración</h2>
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <section aria-labelledby="accesos-admin">
+      <h2 id="accesos-admin" className="mb-3 text-lg font-semibold tracking-tight">
+        Administración
+      </h2>
+      <div className="grid gap-3 sm:grid-cols-2">
         {ADMIN_CARDS.map((card) => (
           <Link
             key={card.title}
             to={card.to}
-            className="group rounded-xl border border-border/50 bg-background/50 p-5 transition hover:border-primary/50 hover:bg-primary/5 hover:shadow-md"
+            className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors outline-none hover:border-primary/40 hover:bg-primary/5 focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <div className="mb-4 inline-flex rounded-lg bg-muted p-2.5 text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Icon name={card.icon} size="text-xl" />
-            </div>
-            <p className="text-sm font-bold text-foreground">{card.title}</p>
-            <p className="mt-1 text-xs font-medium text-muted-foreground">{card.desc}</p>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-foreground">{card.title}</span>
+              <span className="block text-xs text-muted-foreground">{card.desc}</span>
+            </span>
+            <Icon
+              name="caret-right"
+              size="text-base"
+              className="text-muted-foreground transition-transform group-hover:translate-x-0.5"
+            />
           </Link>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

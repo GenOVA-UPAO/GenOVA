@@ -1,70 +1,51 @@
+import { OvaStatusBadge } from "@/core/components/ova-status-badge";
+
 import type { RecentOva } from "../lib/types";
+import { AnalyticsPanel } from "./analytics-panel";
 
 interface RecentOvasProps {
   ovas: RecentOva[];
-}
-
-const STATUS_BADGE: Record<string, string> = {
-  listo: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
-  generando: "bg-amber-500/15 text-amber-800 dark:text-amber-400",
-  borrador: "bg-slate-400/15 text-slate-700 dark:text-slate-300",
-  error: "bg-red-500/15 text-red-700 dark:text-red-400",
-};
-
-function getStatusBadge(status: string): string {
-  return STATUS_BADGE[status] ?? "bg-muted text-muted-foreground";
+  className?: string;
 }
 
 function formatDate(iso?: string): string {
-  if (!iso) {
-    return "—";
-  }
-  try {
-    return new Date(iso).toLocaleDateString("es-PE", {
-      day: "2-digit",
-      month: "short",
-    });
-  } catch {
-    return "—";
-  }
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("es-PE", { day: "numeric", month: "short" }).replace(".", "");
 }
 
-export function RecentOvas({ ovas }: Readonly<RecentOvasProps>) {
+export function RecentOvas({ ovas, className }: Readonly<RecentOvasProps>) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold">Actividad reciente</h2>
-
+    <AnalyticsPanel title="Actividad reciente" className={className}>
       {ovas.length === 0 ? (
-        <p className="text-xs text-muted-foreground">Sin OVAs recientes.</p>
+        <p className="text-sm text-muted-foreground">
+          Todavía no se ha creado ningún OVA. La actividad aparecerá aquí.
+        </p>
       ) : (
-        <ul className="divide-y divide-border/50">
+        <ul className="divide-y divide-border">
           {ovas.map((o) => {
             const title = o.title && o.title.length > 0 ? o.title : "Sin título";
             return (
-              <li key={o.id} className="flex items-center gap-3 py-2">
+              <li key={o.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium" title={title}>
                     {title}
                   </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {o.owner_name}
-                  </p>
+                  <p className="truncate text-xs text-muted-foreground">{o.owner_name}</p>
                 </div>
-                <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${getStatusBadge(
-                    o.status,
-                  )}`}
+                <OvaStatusBadge status={o.status} className="shrink-0" />
+                <time
+                  dateTime={o.created_at}
+                  className="w-12 shrink-0 text-right text-xs text-muted-foreground tabular-nums"
                 >
-                  {o.status}
-                </span>
-                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                   {formatDate(o.created_at)}
-                </span>
+                </time>
               </li>
             );
           })}
         </ul>
       )}
-    </div>
+    </AnalyticsPanel>
   );
 }

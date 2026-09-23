@@ -3,11 +3,11 @@
 import "@/core/components/icon-registry-shell";
 
 import { lazy, Suspense } from "react";
-import { Outlet, useMatches } from "react-router";
+import { Outlet } from "react-router";
 
 import { LlmSettingsModalSlotProvider } from "@/core/lib/llm-settings-modal-slot";
 
-import type { RouteHandle } from "../router";
+import { useFullBleed } from "./lib/use-full-bleed";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
 
@@ -25,10 +25,6 @@ const LazyToaster = lazy(async () => {
 
 /** id del <main> — destino del skip link. */
 export const MAIN_CONTENT_ID = "contenido-principal";
-
-function useFullBleed(): boolean {
-  return useMatches().some((m) => (m.handle as RouteHandle | undefined)?.fullBleed);
-}
 
 export function AppLayout() {
   const fullBleed = useFullBleed();

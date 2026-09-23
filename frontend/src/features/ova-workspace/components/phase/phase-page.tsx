@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { useGeneratePhaseResource, usePhaseResources } from "../../hooks/use-phase-resources";
 import { useResourceConfigs } from "../../hooks/use-resource-configs";
 import type { Resource } from "../../lib/ova-types";
+import { phaseMeta } from "../../lib/phase-meta";
 import { ResourcePreviewPanel } from "../modals/resource-preview-panel";
 import { HtmlPreview } from "./html-preview";
 import { PhaseConceptForm } from "./phase-concept-form";
@@ -26,7 +27,7 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
     <div className="h-full overflow-y-auto">
       <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
       <header>
-        <h1 className="font-display text-3xl font-semibold sm:text-4xl">Fase {phase.toUpperCase()}</h1>
+        <h1 className="font-display text-3xl font-semibold sm:text-4xl">Fase {phaseMeta(phase).label || phase}</h1>
         <p className="mt-1.5 text-sm font-medium text-muted-foreground">{description}</p>
       </header>
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -43,7 +44,7 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
           />
           <PhaseConceptForm phase={phase} resource={selected} generation={generation} />
           {generation.data && (
-            <section id="phase-resource-preview" className="space-y-4 rounded-xl border bg-card p-5">
+            <section id="phase-resource-preview" className="space-y-4 rounded-xl border border-border bg-card p-5">
               <h2 className="font-semibold">3. Vista previa</h2>
               <HtmlPreview result={generation.data} />
             </section>
@@ -51,9 +52,11 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
         </div>
         <div className="space-y-4">
           <ResourcePreviewPanel phase={phase} resource={preview ?? resources.data?.[0]} />
-          <section className="rounded-xl border bg-card p-5">
-            <h2 className="font-display text-lg">Modelo 5E</h2>
-            <p>Engage · Explore · Explain · Elaborate · Evaluate</p>
+          <section className="rounded-xl border border-border bg-card p-5">
+            <h2 className="text-sm font-semibold">Modelo 5E</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Enganche, exploración, explicación, elaboración y evaluación.
+            </p>
           </section>
         </div>
       </div>
@@ -62,6 +65,7 @@ export function PhasePage({ phase, description }: Readonly<{ phase: string; desc
           <ResourceConfigModal
             phase={phase}
             resourceId={String(target.id)}
+            resourceName={target.tipo}
             config={configs.data?.configs?.[`${phase}:${String(target.id)}`]}
             onSave={(value) => {
               configs.save.mutate({ ...configs.data?.configs, [`${phase}:${String(target.id)}`]: value });

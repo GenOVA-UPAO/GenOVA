@@ -1,3 +1,5 @@
+import { Icon } from "@/core/components/icon";
+
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import {
   chipLabel,
@@ -24,43 +26,41 @@ export function UserFallbackSummary({
   const store = useLlmSettings();
   if (fallbacks.length === 0) {
     return (
-      <div className="text-[10px] text-muted-foreground italic">Sin cadena de respaldo personal</div>
+      <p className="text-xs text-muted-foreground">Aún no tienes modelos de respaldo propios.</p>
     );
   }
   const visible = fallbacks.slice(0, 4);
   const overflow = Math.max(0, fallbacks.length - 4);
   return (
-    <div className="flex flex-wrap items-center gap-0.5">
+    <ol aria-label="Tus modelos de respaldo" className="flex flex-wrap items-center gap-1.5">
       {visible.map((item, index) => (
-        <span key={String(index)} className="inline-flex items-center gap-1">
-          {index > 0 ? (
-            <span className="text-[8px] font-black text-muted-foreground">→</span>
-          ) : null}
-          <span
-            className={`inline-flex items-center gap-1 rounded-full border py-0.5 pr-1 pl-2 text-[10px] font-semibold ${chip}`}
-          >
-            <span className={`text-[9px] ${num}`}>
-              {lookupModalitySymbol(chipModality(item, models))}
-            </span>
-            <span className="max-w-[70px] truncate">{chipLabel(item, models)}</span>
-            <button
-              type="button"
-              aria-label={`Quitar ${chipLabel(item, models)}`}
-              onClick={() => {
-                store.removeFallback(task, index);
-              }}
-              className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-destructive/10 hover:text-destructive"
-            >
-              ×
-            </button>
+        <li
+          key={String(index)}
+          className={`inline-flex items-center gap-1 rounded-full border py-0.5 pr-0.5 pl-2.5 text-xs ${chip}`}
+        >
+          <span className={num} aria-hidden="true">
+            {lookupModalitySymbol(chipModality(item, models))}
           </span>
-        </span>
+          <span className="max-w-40 truncate" title={chipLabel(item, models)}>
+            {index + 1}. {chipLabel(item, models)}
+          </span>
+          <button
+            type="button"
+            aria-label={`Quitar ${chipLabel(item, models)}`}
+            onClick={() => {
+              store.removeFallback(task, index);
+            }}
+            className="inline-flex size-6 items-center justify-center rounded-full transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <Icon name="x" size="text-xs" />
+          </button>
+        </li>
       ))}
       {overflow > 0 ? (
-        <span className="inline-flex items-center rounded-full border border-border/50 bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground">
-          +{overflow}
-        </span>
+        <li className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+          y {overflow} más
+        </li>
       ) : null}
-    </div>
+    </ol>
   );
 }

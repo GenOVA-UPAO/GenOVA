@@ -1,5 +1,7 @@
 import { Icon } from "@/core/components/icon";
+import { cn } from "@/core/lib/cn";
 
+import { phaseMeta } from "../../lib/phase-meta";
 import { PHASE_SELECT_CFG, type PhaseResourceMap } from "../../lib/phase-select.config";
 
 interface Props {
@@ -8,22 +10,48 @@ interface Props {
   onChange: (phase: string) => void;
 }
 
+function tabClass(active: boolean): string {
+  return cn(
+    "flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 sm:flex-1",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    active ? "bg-background text-foreground shadow-xs dark:bg-input/60" : "text-muted-foreground hover:text-foreground",
+  );
+}
+
+/** Conmutador de fases 5E: nombre en español y cuántos recursos lleva elegidos cada una. */
 export function PhaseSelectTabs({ phase, picks, onChange }: Readonly<Props>) {
   return (
-    <nav className="grid grid-cols-2 gap-2 rounded-xl bg-muted/50 p-2 sm:grid-cols-5" aria-label="Fases">
-      {PHASE_SELECT_CFG.map((item) => (
-        <button
-          key={item.key}
-          type="button"
-          aria-pressed={phase === item.key}
-          onClick={() => { onChange(item.key); }}
-          className={`flex min-h-12 items-center justify-center gap-2 rounded-lg border px-2 py-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${phase === item.key ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-transparent text-foreground hover:bg-background"}`}
-        >
-          <Icon name={item.icon} size="text-base" />
-          <span>{item.label} ({picks[item.key].length})</span>
-          {picks[item.key].length > 0 && <Icon name="check-circle" weight="fill" />}
-        </button>
-      ))}
+    <nav aria-label="Fases" className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none]">
+      <div className="flex w-max min-w-full gap-1 rounded-lg bg-muted p-1">
+        {PHASE_SELECT_CFG.map((item) => {
+          const count = picks[item.key].length;
+          const label = phaseMeta(item.key).label;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              aria-pressed={phase === item.key}
+              aria-label={`${label} (${String(count)})`}
+              onClick={() => {
+                onChange(item.key);
+              }}
+              className={tabClass(phase === item.key)}
+            >
+              <Icon name={item.icon} className="size-4" />
+              <span>{label}</span>
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "min-w-5 rounded-full px-1.5 text-center text-xs tabular-nums",
+                  count > 0 ? "bg-primary text-primary-foreground" : "bg-foreground/5 text-muted-foreground",
+                )}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 }

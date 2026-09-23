@@ -15,7 +15,8 @@ export interface OvaListPage {
   total_items?: number;
 }
 
-const PAGE_SIZE = "10";
+// 12 llena filas completas de 1, 2, 3 o 4 tarjetas.
+const PAGE_SIZE = "12";
 const json = (body: unknown) => JSON.stringify(body);
 
 export const ovaLibraryApi = {
@@ -30,6 +31,16 @@ export const ovaLibraryApi = {
     return apiJson(`/api/ovas/papelera?${qs.toString()}`);
   },
   trashCount: (): Promise<{ count: number }> => apiJson("/api/ovas/papelera/count"),
+  /** Ids de todos los OVAs de la papelera (recorre las páginas de 100 en 100). */
+  async trashIds(): Promise<string[]> {
+    const ids: string[] = [];
+    for (let page = 1; ; page++) {
+      const qs = new URLSearchParams({ page: String(page), limit: "100" });
+      const data = await apiJson<OvaListPage>(`/api/ovas/papelera?${qs.toString()}`);
+      ids.push(...(data.ovas ?? []).map((o) => o.id));
+      if (page >= (data.total_pages ?? 1)) return ids;
+    }
+  },
   moveToTrash: (id: string) => apiJson(`/api/ovas/${id}`, { method: "DELETE" }),
   restore: (id: string) => apiJson(`/api/ovas/${id}/restaurar`, { method: "PATCH" }),
   deleteForever: (id: string) => apiJson(`/api/ovas/${id}/permanente`, { method: "DELETE" }),

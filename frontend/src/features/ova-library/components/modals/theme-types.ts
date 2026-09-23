@@ -11,14 +11,14 @@ export interface ThemeState {
 }
 
 export const COLOR_MODES = [
-  { key: "ai", label: "IA elige", desc: "La IA selecciona colores según el contenido del OVA" },
-  { key: "upao", label: "Paleta UPAO", desc: "Azul institucional #0A3D91 + naranja #F47A20" },
-  { key: "custom", label: "Personalizado", desc: "Escoge tu propia combinación de colores" },
+  { key: "ai", label: "IA elige", desc: "La IA elige los colores según el tema del OVA" },
+  { key: "upao", label: "Paleta UPAO", desc: "Azul institucional y naranja de la UPAO" },
+  { key: "custom", label: "Personalizado", desc: "Elige una de las combinaciones de colores" },
 ] as const;
 
 export const DESIGN_MODES = [
-  { key: "ai", label: "IA elige", desc: "La IA decide layout, tipografía y estructura" },
-  { key: "upao", label: "Plantilla UPAO", desc: "Estructura académica con navegación 5E en tabs" },
+  { key: "ai", label: "IA elige", desc: "La IA decide la disposición, la tipografía y la estructura" },
+  { key: "upao", label: "Plantilla UPAO", desc: "Estructura académica con las fases 5E en pestañas" },
   { key: "custom", label: "Mis plantillas", desc: "Usa una plantilla guardada o crea una nueva" },
 ] as const;
 

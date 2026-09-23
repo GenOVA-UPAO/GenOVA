@@ -4,17 +4,25 @@ import { Button } from "@/core/components/ui/button";
 
 export function NotFoundPage() {
   return (
-    <main className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4 text-center">
-      <h1 className="mb-4 text-6xl font-extrabold tracking-tight text-primary">404</h1>
-      <h2 className="mb-2 font-display text-2xl font-semibold tracking-tight">
-        Página no encontrada
-      </h2>
-      <p className="mb-8 text-muted-foreground">
-        Lo sentimos, no pudimos encontrar la página que estás buscando.
+    <main className="flex h-dvh flex-col items-center justify-center overflow-y-auto px-5 text-center">
+      <p className="mb-10 font-display text-xl font-semibold tracking-tight">
+        Gen<span className="text-primary">OVA</span>
       </p>
-      <Button asChild size="lg">
-        <Link to="/">Volver al inicio</Link>
-      </Button>
+      <h1 className="font-display text-7xl font-semibold tracking-tight text-primary tabular-nums">
+        404
+      </h1>
+      <h2 className="mt-3 text-xl font-semibold tracking-tight">Esta página no existe</h2>
+      <p className="mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
+        El enlace puede estar mal escrito o la página ya no está disponible.
+      </p>
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Button asChild size="lg">
+          <Link to="/dashboard">Volver al inicio</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline">
+          <Link to="/mis-ovas">Ver mis OVAs</Link>
+        </Button>
+      </div>
     </main>
   );
 }

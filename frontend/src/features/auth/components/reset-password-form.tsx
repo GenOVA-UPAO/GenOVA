@@ -23,12 +23,11 @@ export function ResetPasswordForm({
   onSubmit,
 }: Readonly<ResetPasswordFormProps>) {
   return (
-    <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
+    <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
       <AuthField id="new_password" label="Nueva contraseña" error={form.errorFor("new_password")}>
         <PasswordInput
           id="new_password"
           autoComplete="new-password"
-          placeholder="••••••••"
           {...form.bind("new_password")}
         />
       </AuthField>
@@ -36,13 +35,12 @@ export function ResetPasswordForm({
         <PasswordInput
           id="confirm_password"
           autoComplete="new-password"
-          placeholder="••••••••"
           {...form.bind("confirm_password")}
         />
       </AuthField>
       {error ? <ServerAlert>{error}</ServerAlert> : null}
-      <Button type="submit" className="w-full" loading={submitting} disabled={!form.isValid || submitting}>
-        {submitting ? "Guardando..." : "Guardar contraseña"}
+      <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
+        {submitting ? "Guardando…" : "Guardar contraseña"}
       </Button>
     </form>
   );

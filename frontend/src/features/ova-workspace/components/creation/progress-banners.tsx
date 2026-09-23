@@ -25,9 +25,9 @@ export function ProgressBanners({
   return (
     <>
       {isStalled && (
-        <div className="rounded-lg border border-accent-brand/30 bg-accent-brand/10 p-3 text-xs">
+        <div className="rounded-lg border border-border bg-muted/50 p-3 text-sm">
           <p className="font-medium text-foreground">
-            La generación lleva un rato sin actividad — puedes seguir esperando, reanudar o cancelar.
+            La generación lleva un rato sin actividad. Puedes seguir esperando, reanudarla o cancelarla.
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
@@ -51,10 +51,10 @@ export function ProgressBanners({
         </div>
       )}
       {showResume && (
-        <div className="rounded-lg border border-accent-brand/30 bg-accent-brand/10 p-3 text-xs">
+        <div className="rounded-lg border border-border bg-muted/50 p-3 text-sm">
           <p className="font-medium text-foreground">
             La generación se interrumpió a mitad: quedan {resumableCount} de {total} por generar. Lo
-            ya hecho se conserva — al reanudar solo se regenera lo que falta.
+            ya hecho se conserva y al reanudar solo se genera lo que falta.
           </p>
           <div className="mt-2">
             <Button

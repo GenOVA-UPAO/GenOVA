@@ -1,4 +1,3 @@
-import { Icon } from "@/core/components/icon";
 import { PageHeader } from "@/core/components/page-header";
 
 import { EditUserModal } from "../components/users/edit-user-modal";
@@ -11,16 +10,8 @@ export function AdminUsersPage() {
   const p = useAdminUsersPage();
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-10">
-      <PageHeader
-        title={
-          <span className="flex items-center gap-3">
-            <Icon name="users-three" size="text-3xl" className="text-primary" />
-            Usuarios
-          </span>
-        }
-        subtitle={p.subtitle}
-      />
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHeader title="Usuarios" subtitle={p.subtitle} />
       <UsersToolbar
         search={p.search}
         onSearchChange={p.onSearchChange}
@@ -36,7 +27,6 @@ export function AdminUsersPage() {
         currentUserId={p.currentUserId}
         isCurrentUserAdmin={p.isCurrentUserAdmin}
         updatingUserId={p.updatingUserId}
-        searchQuery={p.search}
         isFiltering={p.isFiltering}
         handlers={p.handlers}
         onRetry={p.retry}

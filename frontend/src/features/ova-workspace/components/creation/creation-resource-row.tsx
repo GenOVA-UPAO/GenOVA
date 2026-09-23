@@ -17,12 +17,12 @@ interface Props {
 export function CreationResourceRow({ resource, selected, active, onToggle, onRetry, onPreview }: Readonly<Props>) {
   const icon = <Icon name={resourceIconName(resource.label)} className="shrink-0" size="text-sm" />;
   return (
-    <li className="rounded-lg border border-border bg-background px-3 py-2">
+    <li className="px-3 py-2">
       <div className="flex items-center gap-2.5">
         {resource.status === "X" && (
           <input
             type="checkbox"
-            className="shrink-0"
+            className="size-4 shrink-0 accent-primary"
             checked={selected}
             onChange={onToggle}
             aria-label={`Seleccionar ${resource.label}`}
@@ -48,7 +48,7 @@ export function CreationResourceRow({ resource, selected, active, onToggle, onRe
           <Button
             variant="outline"
             size="sm"
-            className="shrink-0 border-destructive/30 text-destructive"
+            className="shrink-0"
             onClick={onRetry}
           >
             Reintentar
@@ -57,8 +57,8 @@ export function CreationResourceRow({ resource, selected, active, onToggle, onRe
       </div>
       {resource.status === "X" && (
         <p className="mt-1.5 pl-8 text-xs text-destructive">
-          Lo sentimos, hubo un error generando el recurso.
-          {resource.error_id && <span className="font-mono"> Error ID: {resource.error_id}</span>}
+          No se pudo generar este recurso.
+          {resource.error_id && <span className="text-muted-foreground"> Error ID: <span className="font-mono">{resource.error_id}</span></span>}
         </p>
       )}
     </li>

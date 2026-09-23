@@ -18,9 +18,9 @@ import { hasPermission, userInitials } from "./lib/layout-helpers";
 
 const THEME_ICON: Record<ThemeMode, string> = { light: "sun", dark: "moon", system: "monitor" };
 const THEME_LABEL: Record<ThemeMode, string> = {
-  light: "Tema: Claro",
-  dark: "Tema: Oscuro",
-  system: "Tema: Sistema",
+  light: "Modo claro",
+  dark: "Modo oscuro",
+  system: "Modo del sistema",
 };
 
 interface UserMenuProps {
@@ -60,7 +60,7 @@ export function UserMenu({ onOpenAppearance }: Readonly<UserMenuProps>) {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/profile">
-            <Icon name="user-circle" size="text-base" /> Mi Perfil
+            <Icon name="user-circle" size="text-base" /> Mi perfil
           </Link>
         </DropdownMenuItem>
         {hasPermission(user, "view_analytics") && (
@@ -71,7 +71,7 @@ export function UserMenu({ onOpenAppearance }: Readonly<UserMenuProps>) {
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onSelect={onOpenAppearance}>
-          <Icon name="palette" size="text-base" /> Apariencia
+          <Icon name="palette" size="text-base" /> Estilo de mis OVAs
         </DropdownMenuItem>
         <DropdownMenuItem
           // Keep the menu open so the user can cycle several times.

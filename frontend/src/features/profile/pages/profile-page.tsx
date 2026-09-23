@@ -23,7 +23,7 @@ export function ProfilePage() {
 
   if (profileQuery.isError) {
     return (
-      <div className="mx-auto max-w-3xl space-y-6 pb-12">
+      <div className="mx-auto max-w-7xl space-y-6">
         <QueryErrorState title="No se pudo cargar el perfil" onRetry={retry} />
       </div>
     );
@@ -32,7 +32,7 @@ export function ProfilePage() {
   if (profileQuery.isLoading) {
     const pendingRole = "usuario";
     return (
-      <div className="mx-auto max-w-3xl space-y-6 pb-12">
+      <div className="mx-auto max-w-7xl space-y-6">
         <ProfileHeader profile={null} role={pendingRole} isLoading />
         <ProfileSkeleton />
       </div>
@@ -42,7 +42,7 @@ export function ProfilePage() {
   const profile = profileQuery.data ?? null;
   if (profile === null) {
     return (
-      <div className="mx-auto max-w-3xl space-y-6 pb-12">
+      <div className="mx-auto max-w-7xl space-y-6">
         <EmptyState
           icon="users-three"
           title="No hay datos de perfil"
@@ -61,7 +61,7 @@ export function ProfilePage() {
   const activeTab = tab === TAB_CONFIG && role !== "administrador" ? TAB_INFO : tab;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 pb-12">
+    <div className="mx-auto max-w-7xl space-y-6">
       <ProfileWorkspace
         profile={profile}
         activeTab={activeTab}

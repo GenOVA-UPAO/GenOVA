@@ -1,28 +1,31 @@
-import { cn } from "@/core/lib/cn";
+import { Link } from "react-router";
 
 interface DashboardStatCardProps {
   label: string;
-  value: number;
-  sub: string;
-  tone: string;
+  /** `undefined` mientras carga: se reserva el hueco para no mover el layout. */
+  value: number | undefined;
+  hint: string;
+  to: string;
 }
 
-/** Tarjeta individual de métrica en el dashboard principal. */
-export function DashboardStatCard({
-  label,
-  value,
-  sub,
-  tone,
-}: Readonly<DashboardStatCardProps>) {
+/** Métrica del resumen: número grande, etiqueta y enlace a la biblioteca. */
+export function DashboardStatCard({ label, value, hint, to }: Readonly<DashboardStatCardProps>) {
   return (
-    <div className="rounded-2xl border border-border/50 bg-background/50 p-6 shadow-sm transition-all hover:border-primary/20 hover:shadow-md">
-      <p className="text-sm font-semibold text-muted-foreground">{label}</p>
-      <p className={cn("mt-2 font-display text-4xl font-bold", tone)}>
-        {value}
-      </p>
-      <p className="mt-2 text-xs font-medium text-muted-foreground">
-        {sub}
-      </p>
-    </div>
+    <Link
+      to={to}
+      className="group flex min-w-0 flex-col gap-1 px-3 py-4 transition-colors outline-none first:rounded-l-xl last:rounded-r-xl hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 sm:px-6 sm:py-5"
+    >
+      <span className="truncate text-xs text-muted-foreground sm:text-sm">{label}</span>
+      {value === undefined ? (
+        <span className="my-1 h-7 w-10 animate-pulse rounded-md bg-muted sm:h-9" aria-hidden="true" />
+      ) : (
+        <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums sm:text-4xl">
+          {value}
+        </span>
+      )}
+      <span className="hidden text-xs text-muted-foreground group-hover:text-foreground sm:block">
+        {hint}
+      </span>
+    </Link>
   );
 }

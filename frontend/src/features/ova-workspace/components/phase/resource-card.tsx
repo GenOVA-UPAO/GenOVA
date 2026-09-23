@@ -13,7 +13,7 @@ interface Props {
 export function ResourceCard({ resource, selected, disabled, onSelect, onPreview, onConfigure }: Readonly<Props>) {
   const title = resource.tipo ?? String(resource.id);
   return (
-    <article className={`space-y-3 rounded-xl border p-4 ${selected ? "border-primary bg-primary/5" : "bg-card"}`}>
+    <article className={`space-y-3 rounded-xl border p-4 ${selected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border bg-card"}`}>
       <button
         type="button"
         className="w-full text-left"
@@ -25,9 +25,9 @@ export function ResourceCard({ resource, selected, disabled, onSelect, onPreview
         onFocus={onPreview}
       >
         <h3 className="line-clamp-2 font-semibold" title={title}>
-          {resource.emoji} {title}
+          {title}
         </h3>
-        <p className="text-xs text-muted-foreground">{resource.interactividad}</p>
+        {resource.interactividad && <p className="text-xs text-muted-foreground">Interactividad {resource.interactividad.toLowerCase()}</p>}
       </button>
       <div className="flex flex-wrap gap-2">
         {onPreview && (

@@ -1,9 +1,20 @@
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
 
 import type { UserFormValues } from "../../lib/user-form";
 
-const LABEL_CLASS = "text-xs font-bold uppercase tracking-wider text-muted-foreground";
+const GENDER_OPTIONS = [
+  { value: "masculino", label: "Masculino" },
+  { value: "femenino", label: "Femenino" },
+  { value: "otro", label: "Otro o sin especificar" },
+];
 
 interface EditUserContactFieldsProps {
   values: UserFormValues;
@@ -18,39 +29,44 @@ export function EditUserContactFields({
 }: Readonly<EditUserContactFieldsProps>) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div className="space-y-1.5">
-        <Label htmlFor="edit-gender" className={LABEL_CLASS}>
-          Sexo / Género
-        </Label>
-        <select
-          id="edit-gender"
+      <div className="space-y-2">
+        <Label htmlFor="edit-gender">Sexo</Label>
+        <Select
           value={values.gender}
           disabled={disabled}
-          onChange={(event) => {
-            onChange("gender", event.target.value);
+          onValueChange={(value) => {
+            onChange("gender", value);
           }}
-          className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:h-8"
         >
-          <option value="masculino">Masculino</option>
-          <option value="femenino">Femenino</option>
-          <option value="otro">Otro</option>
-        </select>
+          <SelectTrigger id="edit-gender" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            {GENDER_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="edit-phone" className={LABEL_CLASS}>
-          Teléfono
-        </Label>
+      <div className="space-y-2">
+        <Label htmlFor="edit-phone">Teléfono</Label>
         <Input
           id="edit-phone"
           type="tel"
-          placeholder="Ej: +51987285992"
+          autoComplete="off"
+          aria-describedby="edit-phone-help"
           value={values.phone_number}
           disabled={disabled}
           onChange={(event) => {
             onChange("phone_number", event.target.value);
           }}
         />
+        <p id="edit-phone-help" className="text-xs text-muted-foreground">
+          Con prefijo de país, p. ej. +51987285992.
+        </p>
       </div>
     </div>
   );

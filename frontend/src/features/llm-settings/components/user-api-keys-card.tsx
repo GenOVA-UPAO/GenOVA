@@ -1,59 +1,42 @@
 import { PROVIDER_META } from "@/core/components/platform-key-meta";
+import { Skeleton } from "@/core/components/ui/skeleton";
 
 import { errorMessage } from "../hooks/error-message";
 import { useUserApiKeys } from "../hooks/use-user-api-keys";
-import { UserKeyRow } from "./user-key-row";
+import { UserKeyProviderGroup } from "./user-key-provider-group";
 
 const LLM_PROVIDERS = ["groq", "openrouter", "opencode"];
 const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
 
-export function UserApiKeysCard({ compact = false }: Readonly<{ compact?: boolean }>) {
+/** Claves API propias del usuario, agrupadas por tipo de proveedor. */
+export function UserApiKeysCard() {
   const { apiKeys, loading, error } = useUserApiKeys();
   const llm = LLM_PROVIDERS.filter((id) => Object.hasOwn(PROVIDER_META, id));
   const img = IMG_PROVIDERS.filter((id) => Object.hasOwn(PROVIDER_META, id));
-  const errText = error ? errorMessage(error, "No se pudo cargar.") : null;
+  const errText = error ? errorMessage(error, "No se pudieron cargar tus claves.") : null;
+
+  if (loading) {
+    return (
+      <div className="space-y-2" role="status" aria-busy="true" aria-label="Cargando claves">
+        <Skeleton className="h-16 w-full rounded-xl" />
+        <Skeleton className="h-16 w-full rounded-xl" />
+        <Skeleton className="h-16 w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  if (errText) {
+    return (
+      <p role="alert" className="text-sm text-destructive">
+        {errText}
+      </p>
+    );
+  }
 
   return (
-    <section
-      className={
-        compact
-          ? "space-y-4 rounded-xl border border-border bg-background p-4 shadow-sm"
-          : "space-y-6 rounded-xl border border-border bg-background p-6 shadow-sm"
-      }
-    >
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">Mis API Keys</h2>
-        <p className="text-sm text-muted-foreground">
-          Tus keys tienen prioridad sobre las de la plataforma. Déjalas vacías para usar las
-          predeterminadas.
-        </p>
-      </div>
-      {loading ? (
-        <div className="space-y-3">
-          <div className="h-10 animate-pulse rounded-lg bg-muted" />
-          <div className="h-10 animate-pulse rounded-lg bg-muted" />
-          <div className="h-10 animate-pulse rounded-lg bg-muted" />
-        </div>
-      ) : null}
-      {errText ? <p className="text-sm text-destructive">{errText}</p> : null}
-      {!loading && !errText ? (
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold tracking-wide text-muted-foreground uppercase">LLM</h3>
-            {llm.map((id) => (
-              <UserKeyRow key={id} provider={id} maskedValue={apiKeys[id]} />
-            ))}
-          </div>
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
-              Imagen / video
-            </h3>
-            {img.map((id) => (
-              <UserKeyRow key={id} provider={id} maskedValue={apiKeys[id]} />
-            ))}
-          </div>
-        </div>
-      ) : null}
-    </section>
+    <div className="space-y-6">
+      <UserKeyProviderGroup title="Modelos de texto" providers={llm} apiKeys={apiKeys} />
+      <UserKeyProviderGroup title="Imagen y video" providers={img} apiKeys={apiKeys} />
+    </div>
   );
 }

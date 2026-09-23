@@ -44,9 +44,9 @@ export function ProfileWorkspace({
   return (
     <>
       <ProfileHeader profile={profile} role={role} isLoading={false} />
-      <Tabs value={activeTab} onValueChange={onTabChange} className="flex-col space-y-5">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="flex-col gap-6">
         <ProfileTabsList isAdmin={isAdmin} />
-        <TabsContent value={TAB_INFO} className="mt-0">
+        <TabsContent value={TAB_INFO} className="max-w-3xl">
           <ProfileForm
             profile={profile}
             isSubmitting={actions.isSavingProfile}
@@ -54,11 +54,11 @@ export function ProfileWorkspace({
           />
         </TabsContent>
         {isAdmin && (
-          <TabsContent value={TAB_CONFIG} className="mt-0 space-y-5">
+          <TabsContent value={TAB_CONFIG} className="max-w-3xl space-y-6">
             <PlatformApiKeysCard />
           </TabsContent>
         )}
-        <TabsContent value={TAB_SECURITY} className="mt-0 space-y-5">
+        <TabsContent value={TAB_SECURITY} className="max-w-3xl space-y-6">
           <TotpSetupCard totpEnabled={profile.totp_enabled === true} />
           <PasswordChangeForm
             isSubmitting={actions.isChangingPassword}

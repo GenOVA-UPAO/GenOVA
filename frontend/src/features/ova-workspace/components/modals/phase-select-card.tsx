@@ -1,5 +1,6 @@
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
+import { cn } from "@/core/lib/cn";
 
 import type { Resource } from "../../lib/ova-types";
 import { resourceIconName } from "../../lib/resource-icons";
@@ -14,10 +15,20 @@ interface Props {
   onConfigure: () => void;
 }
 
+/**
+ * Tarjeta seleccionable: el botón invisible cubre toda la tarjeta (aria-pressed)
+ * y las acciones secundarias quedan por encima con `pointer-events-auto`.
+ */
 export function PhaseSelectCard({ resource, selected, disabled, onSelect, onPreview, onOpenPreview, onConfigure }: Readonly<Props>) {
   const title = resource.tipo ?? String(resource.id);
   return (
-    <article className={`relative flex flex-col rounded-xl border-2 transition-colors ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"}`}>
+    <article
+      className={cn(
+        "relative flex flex-col rounded-xl border bg-card transition-colors duration-150",
+        selected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/40",
+        disabled && "opacity-60",
+      )}
+    >
       <button
         type="button"
         aria-label={`Seleccionar ${title}`}
@@ -26,27 +37,30 @@ export function PhaseSelectCard({ resource, selected, disabled, onSelect, onPrev
         onClick={onSelect}
         onFocus={onPreview}
         onMouseEnter={onPreview}
-        className="absolute inset-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="absolute inset-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed"
       />
-      <div className="pointer-events-none flex flex-1 flex-col gap-3 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Icon name={resourceIconName(resource.tipo)} size="text-2xl" />
-          </span>
-          <span className={`flex items-center gap-1 text-xs font-medium ${selected ? "text-primary" : "text-muted-foreground"}`}>
-            <Icon name={selected ? "check-circle" : "circle"} size="text-lg" weight={selected ? "fill" : "regular"} />
-            {selected ? "Seleccionado" : "Sin seleccionar"}
-          </span>
+      <div className="pointer-events-none flex flex-1 items-start gap-3 p-4 pb-2">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Icon name={resourceIconName(resource.tipo)} className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <h4 className="text-sm leading-snug font-semibold" title={title}>{title}</h4>
+          {resource.interactividad && <p className="text-xs text-muted-foreground">Interactividad {resource.interactividad.toLowerCase()}</p>}
+          {disabled && <p className="text-xs text-muted-foreground">Límite de la fase alcanzado</p>}
         </div>
-        <h3 className="font-display text-sm font-semibold leading-snug" title={title}>{title}</h3>
-        {resource.interactividad && <p className="w-fit rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">Interactividad: {resource.interactividad}</p>}
-        {disabled && <p className="text-xs text-muted-foreground">Límite de esta fase alcanzado</p>}
+        <Icon
+          name={selected ? "check-circle" : "circle"}
+          weight={selected ? "fill" : "regular"}
+          className={cn("size-5 shrink-0", selected ? "text-primary" : "text-muted-foreground/60")}
+        />
       </div>
       <div className="pointer-events-none flex flex-wrap items-center gap-1 px-3 pb-3">
-        <Button className="pointer-events-auto relative" size="sm" variant="outline" onClick={onConfigure} aria-label={`Configurar ${title}`}>
-          <Icon name="gear" /> Configurar
+        <Button className="pointer-events-auto relative" size="sm" variant="ghost" onClick={onConfigure} aria-label={`Configurar ${title}`}>
+          <Icon name="sliders-horizontal" />
+          Configurar
         </Button>
-        <Button className="pointer-events-auto relative text-xs text-muted-foreground" size="sm" variant="ghost" onClick={onOpenPreview} aria-label={`Vista previa ${title}`}>
+        <Button className="pointer-events-auto relative lg:hidden" size="sm" variant="ghost" onClick={onOpenPreview} aria-label={`Vista previa ${title}`}>
+          <Icon name="eye" />
           Vista previa
         </Button>
       </div>

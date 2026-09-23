@@ -1,12 +1,11 @@
-import { Icon } from "@/core/components/icon";
 import { TabsList, TabsTrigger } from "@/core/components/ui/tabs";
-import { cn } from "@/core/lib/cn";
 
-const TRIGGER_CLASS = cn(
-  "shrink-0 gap-1.5 rounded-lg px-4 py-2 text-xs font-bold text-muted-foreground transition",
-  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm",
-  "dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground",
-);
+// Pestañas de sección en línea (las mismas que Modelos de IA). Radix marca la
+// activa con `data-state="active"`, así que el subrayado se ancla a ese atributo.
+const LIST_CLASS =
+  "h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-border bg-transparent p-0";
+const TRIGGER_CLASS =
+  "relative h-11 flex-none rounded-md px-3 text-foreground/65 hover:text-foreground data-[state=active]:text-foreground after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary after:opacity-0 after:transition-opacity data-[state=active]:after:opacity-100 dark:text-muted-foreground dark:data-[state=active]:text-foreground";
 
 interface ProfileTabsListProps {
   isAdmin: boolean;
@@ -14,17 +13,17 @@ interface ProfileTabsListProps {
 
 export function ProfileTabsList({ isAdmin }: Readonly<ProfileTabsListProps>) {
   return (
-    <TabsList className="h-auto w-fit max-w-full items-center gap-0.5 overflow-x-auto border border-border/60 bg-card p-1 shadow-sm group-data-horizontal/tabs:h-auto">
+    <TabsList variant="line" className={LIST_CLASS}>
       <TabsTrigger value="info" className={TRIGGER_CLASS}>
-        <Icon name="user" size="text-xs" /> Información
+        Información
       </TabsTrigger>
       {isAdmin && (
         <TabsTrigger value="config" className={TRIGGER_CLASS}>
-          <Icon name="sliders-horizontal" size="text-xs" /> Configuración
+          Configuración
         </TabsTrigger>
       )}
       <TabsTrigger value="security" className={TRIGGER_CLASS}>
-        <Icon name="lock" size="text-xs" /> Seguridad
+        Seguridad
       </TabsTrigger>
     </TabsList>
   );

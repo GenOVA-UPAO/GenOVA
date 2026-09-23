@@ -24,14 +24,12 @@ export function CopyField({ label, value, ariaLabel, mono = false }: Readonly<Co
 
   return (
     <div>
-      <p className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-        {label}
-      </p>
-      <div className="flex items-center gap-1 overflow-hidden">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <div className="flex items-start gap-2">
         <code
           className={cn(
-            "flex-1 break-all text-foreground",
-            mono ? "font-mono text-xs" : "text-[10px]",
+            "min-w-0 flex-1 pt-1.5 text-xs [overflow-wrap:anywhere] text-foreground",
+            mono && "font-mono",
           )}
         >
           {value}
@@ -39,9 +37,9 @@ export function CopyField({ label, value, ariaLabel, mono = false }: Readonly<Co
         <button
           type="button"
           onClick={copy}
-          className="ml-2 text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           title={ariaLabel}
-          aria-label={ariaLabel}
+          aria-label={copied ? "Copiado" : ariaLabel}
         >
           <Icon
             name={copied ? "check" : "copy"}

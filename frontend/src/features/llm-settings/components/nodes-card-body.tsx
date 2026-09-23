@@ -4,6 +4,8 @@ import { criticRoundsVisible } from "../lib/nodes-config-draft";
 import { AlwaysOnNodeRow } from "./always-on-node-row";
 import { ConfigurableNodeRow } from "./configurable-node-row";
 import { EngineNodeGroup } from "./engine-node-group";
+import { SectionError } from "./section-error";
+import { SettingListSkeleton } from "./setting-list-skeleton";
 
 interface NodesCardBodyProps {
   loading: boolean;
@@ -27,24 +29,14 @@ export function NodesCardBody({
   nodes,
 }: Readonly<NodesCardBodyProps>) {
   if (loading || !ready) {
-    return (
-      <div className="space-y-3">
-        <div className="h-16 animate-pulse rounded-2xl bg-muted" />
-        <div className="h-16 animate-pulse rounded-2xl bg-muted" />
-        <div className="h-16 animate-pulse rounded-2xl bg-muted" />
-      </div>
-    );
+    return <SettingListSkeleton rows={3} />;
   }
   if (error) {
-    return (
-      <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm font-bold text-destructive">
-        {error}
-      </p>
-    );
+    return <SectionError message={error} />;
   }
   return (
     <div className="space-y-6">
-      <EngineNodeGroup title={`Configurables (${String(configurable.length)})`}>
+      <EngineNodeGroup title="Se pueden pausar">
         {configurable.map((node) => (
           <ConfigurableNodeRow
             key={node.id}
@@ -60,7 +52,7 @@ export function NodesCardBody({
           />
         ))}
       </EngineNodeGroup>
-      <EngineNodeGroup title={`Siempre activos (${String(alwaysOn.length + (videoNode ? 1 : 0))})`}>
+      <EngineNodeGroup title="Siempre activos">
         {alwaysOn.map((node) => (
           <AlwaysOnNodeRow key={node.id} node={node} />
         ))}

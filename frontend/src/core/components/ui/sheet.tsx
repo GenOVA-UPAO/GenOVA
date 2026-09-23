@@ -62,7 +62,7 @@ function SheetContent({
       <SheetOverlay className={overlayClassName} />
       <SheetPrimitive.Content
         data-slot="sheet-content"
-        className={cn(sheetContentVariants({ side }), className)}
+        className={cn(sheetContentVariants({ side }), "overscroll-contain", className)}
         {...props}
       >
         {children}

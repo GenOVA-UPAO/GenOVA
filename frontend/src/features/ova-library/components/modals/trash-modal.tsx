@@ -15,52 +15,42 @@ interface TrashModalProps {
   isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Dónde dejar el foco al cerrar (por defecto, lo decide Radix). */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
-/** Modal de confirmación para enviar un OVA individual a la papelera. */
+/** Confirmación para mover un OVA a la papelera (reversible desde Papelera). */
 export function TrashModal({
   ova,
   isLoading = false,
   onConfirm,
   onCancel,
+  onCloseAutoFocus,
 }: Readonly<TrashModalProps>) {
   const handleOpenChange = (open: boolean) => {
-    if (!open && !isLoading) {
-      onCancel();
-    }
+    if (!open && !isLoading) onCancel();
   };
 
   return (
     <Dialog open onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-sm" showCloseButton={!isLoading}>
-        <DialogHeader>
+      <DialogContent
+        className="sm:max-w-md"
+        showCloseButton={!isLoading}
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
+        <DialogHeader className="pr-8">
           <DialogTitle>Mover a la papelera</DialogTitle>
-          <DialogDescription className="space-y-1">
-            <span className="block text-sm text-muted-foreground">
-              ¿Mover a la papelera &quot;{ova.title ?? "OVA"}&quot;?
-            </span>
-            <span className="block text-xs text-muted-foreground">
-              Podrás restaurarlo desde la sección Papelera.
-            </span>
+          <DialogDescription>
+            <span className="font-medium break-words text-foreground">«{ova.title ?? "OVA"}»</span>{" "}
+            se moverá a la papelera. Podrás restaurarlo desde Papelera cuando quieras.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="pt-2">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button
-            variant="destructive"
-            className="flex-1"
-            onClick={onConfirm}
-            loading={isLoading}
-            disabled={isLoading}
-          >
-            {isLoading ? "Moviendo..." : "Mover"}
+          <Button variant="danger" onClick={onConfirm} loading={isLoading}>
+            {isLoading ? "Moviendo..." : "Mover a la papelera"}
           </Button>
         </DialogFooter>
       </DialogContent>

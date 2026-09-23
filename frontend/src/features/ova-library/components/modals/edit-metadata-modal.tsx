@@ -9,11 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/core/components/ui/dialog";
-import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 import { Textarea } from "@/core/components/ui/textarea";
 
 import { type MetadataInput, metadataSchema } from "../../lib/metadata-schema";
+import { MetadataTitleField } from "./metadata-title-field";
 
 interface EditMetadataModalProps {
   initial: {
@@ -23,14 +23,19 @@ interface EditMetadataModalProps {
   isLoading?: boolean;
   onSave: (data: MetadataInput) => void;
   onCancel: () => void;
+  /** Dónde dejar el foco al cerrar (por defecto, lo decide Radix). */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
-/** Modal para editar título y descripción de un OVA con validación Zod. */
+const TITLE_MAX = 100;
+
+/** Modal para editar el título y la descripción de un OVA (validación con Zod). */
 export function EditMetadataModal({
   initial,
   isLoading = false,
   onSave,
   onCancel,
+  onCloseAutoFocus,
 }: Readonly<EditMetadataModalProps>) {
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initial.description ?? "");
@@ -49,50 +54,48 @@ export function EditMetadataModal({
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open && !isLoading) onCancel(); }}>
-      <DialogContent className="sm:max-w-md" showCloseButton={!isLoading}>
-        <DialogHeader>
-          <DialogTitle>Editar metadatos</DialogTitle>
-          <DialogDescription>Actualiza el título y descripción del OVA.</DialogDescription>
+      <DialogContent
+        className="sm:max-w-lg"
+        showCloseButton={!isLoading}
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
+        <DialogHeader className="pr-8">
+          <DialogTitle>Editar título y descripción</DialogTitle>
+          <DialogDescription>Así aparece el OVA en tu biblioteca.</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="metadata-title">Título *</Label>
-            <Input
-              id="metadata-title"
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                if (error) setError(null);
-              }}
-              placeholder="Ej. Regresión lineal aplicada"
-              disabled={isLoading}
-              aria-invalid={Boolean(error)}
-            />
-            <p className="text-[11px] text-muted-foreground">{String(title.length)}/100</p>
-            {error && <p className="text-xs font-medium text-destructive">{error}</p>}
-          </div>
+        <form onSubmit={handleSubmit} noValidate className="grid gap-5">
+          <MetadataTitleField
+            value={title}
+            maxLength={TITLE_MAX}
+            error={error}
+            disabled={isLoading}
+            onChange={(value) => {
+              setTitle(value);
+              if (error) setError(null);
+            }}
+          />
 
-          <div className="space-y-1.5">
-            <Label htmlFor="metadata-description">Descripción</Label>
+          <div className="grid gap-2">
+            <Label htmlFor="metadata-description">
+              Descripción <span className="font-normal text-muted-foreground">(opcional)</span>
+            </Label>
             <Textarea
               id="metadata-description"
               rows={4}
               value={description}
               onChange={(e) => { setDescription(e.target.value); }}
-              placeholder="Opcional"
               disabled={isLoading}
               className="resize-none"
             />
           </div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" className="flex-1" onClick={onCancel} disabled={isLoading}>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1" loading={isLoading} disabled={isLoading}>
-              {isLoading ? "Guardando..." : "Guardar"}
+            <Button type="submit" loading={isLoading}>
+              {isLoading ? "Guardando..." : "Guardar cambios"}
             </Button>
           </DialogFooter>
         </form>

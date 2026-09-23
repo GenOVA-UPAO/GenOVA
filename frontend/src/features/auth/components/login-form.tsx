@@ -25,8 +25,11 @@ export function LoginForm({ onUnverified, onTotp }: Readonly<LoginFormProps>) {
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const onSubmit = onFormSubmit(async () => {
-    if (!form.isValid) return;
+  const onSubmit = onFormSubmit(async (formEl) => {
+    if (!form.isValid) {
+      form.revealErrors(formEl);
+      return;
+    }
     setServerError("");
     setSubmitting(true);
     try {

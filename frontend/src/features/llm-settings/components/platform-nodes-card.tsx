@@ -1,6 +1,7 @@
 import { useNodesConfig } from "../hooks/use-nodes-config";
 import { hasUnsavedChanges } from "../lib/nodes-config-draft";
 import { NodesCardBody } from "./nodes-card-body";
+import { PlatformSection } from "./platform-section";
 import { SaveCardButton } from "./save-card-button";
 
 export function PlatformNodesCard() {
@@ -13,14 +14,11 @@ export function PlatformNodesCard() {
   const hasChanges = hasUnsavedChanges(nodes.draft, nodes.data.config, nodes.rounds);
 
   return (
-    <section className="glass-card space-y-6 rounded-3xl p-6 sm:p-8" data-testid="platform-nodes">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div>
-          <h2 className="font-display text-xl font-bold text-foreground">Nodos del orquestador</h2>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">
-            Activa o desactiva agentes del grafo de generación. Los cambios aplican en ~30s.
-          </p>
-        </div>
+    <PlatformSection
+      testId="platform-nodes"
+      title="Nodos del orquestador"
+      description="Activa o pausa los agentes que intervienen al generar un OVA. Los cambios tardan unos 30 segundos en aplicarse."
+      action={
         <SaveCardButton
           disabled={!hasChanges}
           saving={nodes.saving}
@@ -32,7 +30,8 @@ export function PlatformNodesCard() {
             );
           }}
         />
-      </div>
+      }
+    >
       <NodesCardBody
         loading={nodes.loading}
         error={nodes.error}
@@ -43,6 +42,6 @@ export function PlatformNodesCard() {
         videoWarning={videoWarning}
         nodes={nodes}
       />
-    </section>
+    </PlatformSection>
   );
 }

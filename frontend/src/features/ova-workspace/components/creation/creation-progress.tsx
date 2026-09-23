@@ -26,8 +26,15 @@ export function CreationProgress({ jobId, onReady }: Readonly<{ jobId: string; o
     ? statusLabel(job.data?.status ?? "error")
     : "Generando tu OVA";
   return (
-    <section className="mx-auto w-full max-w-4xl space-y-6 p-6">
-      <h1 className="font-display text-3xl font-semibold sm:text-4xl">{title}</h1>
+    <section className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8 sm:px-6">
+      <header>
+        <h1 className="font-display text-3xl font-semibold sm:text-4xl">{title}</h1>
+        <p className="mt-1.5 text-sm font-medium text-muted-foreground">
+          {job.outcome.isTerminal
+            ? "Revisa el resultado de cada recurso."
+            : "Puedes salir de esta página: la generación continúa y el OVA aparecerá en Mis OVAs."}
+        </p>
+      </header>
       <div className="space-y-3">
         <GenerationProgressColumn
           job={job}
@@ -49,7 +56,7 @@ export function CreationProgress({ jobId, onReady }: Readonly<{ jobId: string; o
             job.cancel.mutate();
           }}
         />
-        {error && <p role="alert">{error.message}</p>}
+        {error && <p role="alert" className="text-sm text-destructive">{error.message}</p>}
       </div>
       <ProgressActions job={job} />
     </section>

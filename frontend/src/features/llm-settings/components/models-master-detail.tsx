@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 import type { AdminCatalogItem } from "../hooks/admin-llm-view";
@@ -40,26 +41,23 @@ export function ModelsMasterDetail({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <CatalogStatusAlert
-            catalogStatus={store.catalogStatus}
-            refreshing={store.refreshingCatalog}
-            onRetry={() => {
-              void store.retryRefresh();
-            }}
-          />
-        </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onOpenCatalog}
-          className="shrink-0 gap-1.5 text-xs font-bold"
-        >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted-foreground">
+          Elige una tarea para ver su modelo principal y sus modelos de respaldo.
+        </p>
+        <Button variant="outline" onClick={onOpenCatalog} className="shrink-0 max-sm:h-11">
+          <Icon name="squares-four" size="text-sm" />
           Abrir catálogo
         </Button>
       </div>
-      <div className="grid overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm md:grid-cols-[260px_1fr]">
+      <CatalogStatusAlert
+        catalogStatus={store.catalogStatus}
+        refreshing={store.refreshingCatalog}
+        onRetry={() => {
+          void store.retryRefresh();
+        }}
+      />
+      <div className="grid overflow-hidden rounded-xl border border-border bg-card md:grid-cols-[260px_1fr]">
         <ModelsTaskNav
           tasks={tasks}
           selectedTask={selectedTask}

@@ -37,7 +37,7 @@ describe("AdminRolesPage", () => {
 
     const toggle = screen.getByRole("switch", { name: "Modo tesis" });
     expect(toggle).toHaveAttribute("aria-checked", "true");
-    expect(screen.getByText(/Usuarios Prueba/)).toBeInTheDocument();
+    expect(screen.getByText(/«Usuarios prueba»/)).toBeInTheDocument();
   });
 
   it("al desactivar el Modo tesis cambia el rol de registro a usuario", async () => {

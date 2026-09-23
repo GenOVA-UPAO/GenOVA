@@ -40,8 +40,9 @@ describe("OvaCreateFormCard", () => {
   it("shows required steps and accessible toolbar labels", () => {
     setup();
     expect(screen.getByLabelText("Pasos para crear un OVA")).toBeVisible();
-    for (const text of ["1. Describe", "2. Elige recursos", "3. Genera"])
+    for (const text of ["Describe", "Elige recursos", "Genera"])
       expect(screen.getByText(text)).toBeVisible();
+    expect(screen.queryByText("1. Describe")).not.toBeInTheDocument();
     for (const name of ["Configurar recursos 5E", "Archivos de referencia", "Tema visual"])
       expect(screen.getByRole("button", { name })).toBeVisible();
   });
@@ -49,15 +50,18 @@ describe("OvaCreateFormCard", () => {
     const { props } = setup();
     fireEvent.click(screen.getByRole("button", { name: "Usar ejemplo de prompt" }));
     expect(props.onPrompt).toHaveBeenCalledWith(EXAMPLE_PROMPT);
-    expect(EXAMPLE_PROMPT).toMatch(/Tema:.*machine learning/);
+    expect(EXAMPLE_PROMPT).toMatch(/^Aprendizaje supervisado.*machine learning/);
     expect(EXAMPLE_PROMPT).toMatch(/Objetivos:/);
-    expect(EXAMPLE_PROMPT).toMatch(/Nivel educativo: Universitario/);
+    expect(EXAMPLE_PROMPT).not.toMatch(/Nivel educativo/i);
   });
   it("keeps generate disabled for short prompts and insufficient phases", () => {
     setup({ prompt: "corto", phases: 1 });
     expect(screen.getByText("Faltan 5 caracteres para generar")).toBeVisible();
-    expect(screen.getByText("Selecciona recursos en al menos 2 fases (falta 1)")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Generar OVA" })).toBeDisabled();
+    const generate = screen.getByRole("button", { name: "Generar OVA" });
+    expect(generate).toBeDisabled();
+    expect(generate).toHaveAccessibleDescription(
+      "Para generar, completa la descripción y elige recursos en 1 fase más.",
+    );
     expect(canCreate("         ", 2, false)).toBe(false);
     expect(canCreate("Tema completo", 1, false)).toBe(false);
     expect(canCreate("Tema completo", 2, true)).toBe(false);
@@ -80,6 +84,21 @@ describe("OvaCreateFormCard", () => {
     expect(anchor?.tagName).toBe("SPAN");
     expect(anchor).toHaveClass("inline-flex");
   });
+  it("shows neutral guidance first and turns it into an error after trying to generate", () => {
+    setup({ prompt: "corto", phases: 2 });
+    const help = screen.getByText("Faltan 5 caracteres para generar");
+    expect(help).not.toHaveClass("text-destructive");
+    fireEvent.keyDown(screen.getByLabelText("Describe el tema del OVA"), { key: "Enter", ctrlKey: true });
+    expect(help).toHaveClass("text-destructive");
+    expect(screen.getByLabelText("Describe el tema del OVA")).toHaveAttribute("aria-invalid", "true");
+  });
+  it("does not show errors before the user interacts", () => {
+    setup();
+    expect(screen.queryByText(/Faltan \d+ caracteres/)).not.toBeInTheDocument();
+    const reason = screen.getByText("Para generar, describe el tema y elige recursos en al menos 2 fases.");
+    expect(reason.closest("p")).not.toHaveClass("text-destructive");
+    expect(screen.getByLabelText("Describe el tema del OVA")).not.toHaveAttribute("aria-invalid");
+  });
   it("wires tutorial, configuration buttons and accessible errors", () => {
     const { props } = setup({ error: "Error de generación" });
     const tutorial = screen.getByRole("button", { name: "Ver tutorial" });
@@ -94,13 +113,13 @@ describe("OvaCreateFormCard", () => {
       "focus-visible:ring-ring",
     );
   });
-  it("shows the chosen level in the chip next to the theme chip and in the select", () => {
+  it("shows the chosen level only in the labelled select", () => {
     setup({ nivel: "posgrado" });
-    expect(screen.getByText("Nivel: Posgrado")).toBeVisible();
+    expect(screen.queryByText("Nivel: Posgrado")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Nivel educativo")).toHaveTextContent("Posgrado");
     expect(screen.getByLabelText("Nivel educativo")).not.toHaveTextContent("Secundaria");
   });
-  it("changes the level from the select and reflects it in the chip", async () => {
+  it("changes the level from the select", async () => {
     const user = userEvent.setup();
     let nivel: EducationLevelId = "universitario-inicial";
     const onNivelChange = vi.fn((next: EducationLevelId) => {
@@ -111,7 +130,6 @@ describe("OvaCreateFormCard", () => {
     await user.click(screen.getByRole("option", { name: "Secundaria" }));
     expect(props.onNivelChange).toHaveBeenCalledWith("secundaria");
     rerender(<OvaCreateFormCard {...props} nivel={nivel} />);
-    expect(screen.getByText("Nivel: Secundaria")).toBeVisible();
     expect(screen.getByLabelText("Nivel educativo")).toHaveTextContent("Secundaria");
   });
 });

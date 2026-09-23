@@ -13,16 +13,16 @@ function storageWith(value: string | null) {
 }
 
 describe("promptWithLevel", () => {
-  it("prepends the level line to the user prompt", () => {
+  it("appends the level line after the user prompt so the title keeps the topic", () => {
     expect(promptWithLevel("Tema: la fotosíntesis", "universitario-inicial")).toBe(
-      "Nivel educativo: universitario (ciclos iniciales).\n\nTema: la fotosíntesis",
+      "Tema: la fotosíntesis\n\nNivel educativo: universitario (ciclos iniciales).",
     );
   });
 
   it("maps every level to its own Spanish prompt text", () => {
     for (const level of EDUCATION_LEVELS) {
       expect(promptWithLevel("Tema: la fotosíntesis", level.id)).toBe(
-        `Nivel educativo: ${level.promptText}.\n\nTema: la fotosíntesis`,
+        `Tema: la fotosíntesis\n\nNivel educativo: ${level.promptText}.`,
       );
     }
   });

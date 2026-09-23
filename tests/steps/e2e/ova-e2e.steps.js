@@ -7,6 +7,7 @@ import { createBdd } from 'playwright-bdd'
 
 import {
   apiOrigin,
+  cardMenuAction,
   loginWithCredentials,
   openLoginPage,
   ovaCard,
@@ -67,7 +68,7 @@ When('configuro recursos en al menos dos fases', async ({ page }) => {
   const firstCard = page.locator('article').first()
   await firstCard.waitFor({ state: 'visible', timeout: 20000 })
   await firstCard.getByRole('button').first().click()
-  await page.getByRole('button', { name: /^EXPLORE/ }).click()
+  await page.getByRole('button', { name: /^Exploración/ }).click()
   await firstCard.waitFor({ state: 'visible', timeout: 20000 })
   await firstCard.getByRole('button').first().click()
   await page.getByRole('button', { name: /^Confirmar/ }).click()
@@ -124,7 +125,7 @@ Then('se descarga un archivo zip del OVA', async ({ page }) => {
 
 When('duplico el OVA sembrado desde su card', async ({ page }) => {
   const card = ovaCard(page, state(page).ova.title)
-  await card.getByRole('button', { name: 'Duplicar' }).click()
+  await cardMenuAction(page, card, 'Duplicar')
 })
 
 Then('aparece la copia del OVA sembrado en la lista', async ({ page }) => {
@@ -137,8 +138,8 @@ Then('aparece la copia del OVA sembrado en la lista', async ({ page }) => {
 
 When('muevo el OVA sembrado a la papelera', async ({ page }) => {
   const card = ovaCard(page, state(page).ova.title)
-  await card.getByRole('button', { name: 'Papelera' }).click()
-  await page.getByRole('button', { name: 'Mover', exact: true }).click()
+  await cardMenuAction(page, card, 'Mover a la papelera')
+  await page.getByRole('dialog').getByRole('button', { name: 'Mover a la papelera' }).click()
 })
 
 Then('el OVA sembrado ya no aparece en Mis OVAs', async ({ page }) => {
@@ -163,8 +164,8 @@ Then('el OVA sembrado vuelve a Mis OVAs', async ({ page }) => {
 When('borro definitivamente el OVA sembrado desde la papelera', async ({ page }) => {
   await page.goto('/papelera')
   const card = ovaCard(page, state(page).ova.title)
-  await card.getByRole('button', { name: 'Borrar definitivamente' }).click()
-  await page.getByRole('button', { name: 'Eliminar', exact: true }).click()
+  await card.getByRole('button', { name: 'Eliminar definitivamente' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar definitivamente' }).click()
 })
 
 Then('el OVA sembrado ya no aparece en la papelera', async ({ page }) => {
@@ -175,7 +176,7 @@ Then('el OVA sembrado ya no aparece en la papelera', async ({ page }) => {
 
 When('abro el workspace del OVA sembrado desde su card', async ({ page }) => {
   const card = ovaCard(page, state(page).ova.title)
-  await card.getByRole('button', { name: 'Editar' }).click()
+  await card.getByRole('link', { name: 'Editar', exact: true }).click()
   await page.waitForURL(/\/workspace\//, { timeout: 30000 })
 })
 

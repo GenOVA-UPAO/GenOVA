@@ -1,65 +1,43 @@
-import type { MetadataInput } from "../lib/metadata-schema";
-import type { OvaListItem } from "../lib/types";
+import type { useMisOvasPage } from "../hooks/use-mis-ovas-page";
+import { focusCardMenu } from "../lib/focus-card-menu";
 import { BulkTrashModal } from "./modals/bulk-trash-modal";
 import { EditMetadataModal } from "./modals/edit-metadata-modal";
 import { TrashModal } from "./modals/trash-modal";
 
 interface MisOvasModalsProps {
-  ovaToTrash: OvaListItem | null;
-  movingId: string | null;
-  showBulkModal: boolean;
-  selectedCount: number;
-  bulkLoading: boolean;
-  editingOva: OvaListItem | null;
-  metadataSaving: boolean;
-  onCloseTrash: () => void;
-  onConfirmTrash: () => void;
-  onCloseBulkTrash: () => void;
-  onConfirmBulkTrash: () => void;
-  onCloseEditMetadata: () => void;
-  onSaveMetadata: (meta: MetadataInput) => void;
+  page: ReturnType<typeof useMisOvasPage>;
 }
 
-/** Agrupa los modales de la página de Mis OVAs (papelera individual, masiva y edición de metadatos). */
-export function MisOvasModals({
-  ovaToTrash,
-  movingId,
-  showBulkModal,
-  selectedCount,
-  bulkLoading,
-  editingOva,
-  metadataSaving,
-  onCloseTrash,
-  onConfirmTrash,
-  onCloseBulkTrash,
-  onConfirmBulkTrash,
-  onCloseEditMetadata,
-  onSaveMetadata,
-}: Readonly<MisOvasModalsProps>) {
+/** Modales de Mis OVAs: mover a la papelera (uno o varios) y editar título y descripción. */
+export function MisOvasModals({ page: p }: Readonly<MisOvasModalsProps>) {
+  const { ovaToTrash, editingOva, actions } = p;
+
   return (
     <>
       {ovaToTrash && (
         <TrashModal
           ova={ovaToTrash}
-          isLoading={movingId === ovaToTrash.id}
-          onConfirm={onConfirmTrash}
-          onCancel={onCloseTrash}
+          isLoading={actions.movingId === ovaToTrash.id}
+          onConfirm={() => { void p.handleConfirmTrash(); }}
+          onCancel={() => { p.setOvaToTrash(null); }}
+          onCloseAutoFocus={focusCardMenu(ovaToTrash.id)}
         />
       )}
-      {showBulkModal && (
+      {p.showBulkModal && (
         <BulkTrashModal
-          count={selectedCount}
-          isLoading={bulkLoading}
-          onConfirm={onConfirmBulkTrash}
-          onCancel={onCloseBulkTrash}
+          count={p.selection.selectedIds.size}
+          isLoading={actions.bulkLoading}
+          onConfirm={() => { void p.handleConfirmBulkTrash(); }}
+          onCancel={() => { p.setShowBulkModal(false); }}
         />
       )}
       {editingOva && (
         <EditMetadataModal
           initial={{ title: editingOva.title ?? "", description: editingOva.description }}
-          isLoading={metadataSaving}
-          onSave={onSaveMetadata}
-          onCancel={onCloseEditMetadata}
+          isLoading={actions.metadataSaving}
+          onSave={p.handleSaveMetadata}
+          onCancel={() => { p.setEditingOva(null); }}
+          onCloseAutoFocus={focusCardMenu(editingOva.id)}
         />
       )}
     </>

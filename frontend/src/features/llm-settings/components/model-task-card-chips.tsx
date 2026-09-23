@@ -21,10 +21,7 @@ export function ModelTaskCardChips({
   const list = fallbacks;
   if (list.length === 0) {
     return (
-      <div className="flex items-center gap-1.5 text-[10px] italic text-muted-foreground">
-        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/20" />
-        Sin cadena de respaldo
-      </div>
+      <p className="text-xs text-muted-foreground">Sin modelos de respaldo.</p>
     );
   }
 
@@ -32,21 +29,25 @@ export function ModelTaskCardChips({
   const overflow = Math.max(0, list.length - 4);
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5">
+    <ol aria-label="Modelos de respaldo" className="flex flex-wrap items-center gap-1.5">
       {visible.map((item, index) => (
-        <span key={`${item.provider}:${item.model_id}:${String(index)}`} className="inline-flex items-center gap-1">
-          {index > 0 ? <span className="text-[8px] font-black text-muted-foreground">→</span> : null}
-          <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${chip}`}>
-            <span className={`text-[9px] ${num}`}>{lookupModalitySymbol(chipModality(item, models))}</span>
-            <span className="max-w-[80px] truncate">{chipLabel(item, models)}</span>
+        <li
+          key={`${item.provider}:${item.model_id}:${String(index)}`}
+          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs ${chip}`}
+        >
+          <span className={num} aria-hidden="true">
+            {lookupModalitySymbol(chipModality(item, models))}
           </span>
-        </span>
+          <span className="max-w-40 truncate" title={chipLabel(item, models)}>
+            {index + 1}. {chipLabel(item, models)}
+          </span>
+        </li>
       ))}
       {overflow > 0 ? (
-        <span className="inline-flex items-center rounded-full border border-border/50 bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground">
-          +{overflow}
-        </span>
+        <li className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+          y {overflow} más
+        </li>
       ) : null}
-    </div>
+    </ol>
   );
 }

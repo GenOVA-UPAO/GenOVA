@@ -1,35 +1,32 @@
 import { ConfirmModal } from "@/core/components/confirm-modal";
+import { Icon } from "@/core/components/icon";
 import { PageHeader } from "@/core/components/page-header";
-import { Badge } from "@/core/components/ui/badge";
+import { Button } from "@/core/components/ui/button";
 
 import { OvaListPagination } from "../components/cards/ova-list-pagination";
-import { PapeleraGrid } from "../components/papelera-grid";
-import { PapeleraSelectAll } from "../components/papelera-select-all";
-import { PapeleraSelectionBar } from "../components/papelera-selection-bar";
+import { PapeleraBulkActions } from "../components/papelera-bulk-actions";
+import { PapeleraList } from "../components/papelera-list";
+import { SelectionToolbar } from "../components/selection-toolbar";
 import { usePapeleraPage } from "../hooks/use-papelera-page";
+import { ovaNoun } from "../lib/ova-count";
 
 /** Página de gestión de la papelera con restauración y borrado permanente. */
 export function PapeleraPage() {
   const p = usePapeleraPage();
+  const { selection } = p;
   const showContent = !p.isLoading && !p.error;
-  const isModalBusy = p.actions.bulkLoading || Boolean(p.actions.deletingId);
-
-  const headerBadge =
-    showContent && p.totalItems > 0 ? (
-      <Badge variant="destructive">
-        {String(p.totalItems)} OVA{p.totalItems > 1 ? "s" : ""} en papelera
-      </Badge>
-    ) : undefined;
+  const hasItems = showContent && p.totalItems > 0;
+  const busy = p.actions.bulkLoading || Boolean(p.actions.deletingId);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="mx-auto max-w-7xl space-y-6">
       {p.confirmModal && (
         <ConfirmModal
           title={p.confirmModal.title}
           message={p.confirmModal.message}
           confirmLabel={p.confirmModal.confirmLabel}
           danger
-          isLoading={isModalBusy}
+          isLoading={busy}
           onConfirm={() => { void p.confirmModal?.onConfirm(); }}
           onCancel={() => { p.setConfirmModal(null); }}
         />
@@ -38,41 +35,60 @@ export function PapeleraPage() {
       <PageHeader
         title="Papelera"
         subtitle="OVAs movidos a la papelera. Restáuralos o elimínalos definitivamente."
-        actions={headerBadge}
+        actions={
+          hasItems ? (
+            <Button
+              variant="outline"
+              className="text-destructive hover:text-destructive"
+              onClick={p.handleEmptyTrash}
+              disabled={busy}
+            >
+              <Icon name="trash" size="text-base" />
+              Vaciar papelera
+            </Button>
+          ) : undefined
+        }
       />
 
-      {showContent && p.ovas.length > 0 && (
-        <PapeleraSelectAll
-          allSelected={p.allSelected}
-          onSelectAllChange={(checked) => {
-            p.setSelectedIds(checked ? new Set(p.ovas.map((o) => o.id)) : new Set());
-          }}
-        />
-      )}
-
-      <PapeleraSelectionBar
-        selectedCount={p.selectedIds.size}
-        isLoading={p.actions.bulkLoading}
-        onClearSelection={() => { p.setSelectedIds(new Set()); }}
-        onBulkRestore={p.handleBatchRestore}
-        onBulkDelete={p.handleBulkPermanentDelete}
-      />
-
-      <PapeleraGrid
+      <PapeleraList
         isLoading={p.isLoading}
+        isStale={p.isStale}
         error={p.error}
         ovas={p.ovas}
-        selectedIds={p.selectedIds}
+        selectedIds={selection.selectedIds}
         restoringId={p.actions.restoringId}
         deletingId={p.actions.deletingId}
-        onToggleSelect={p.handleToggleSelect}
+        onToggleSelect={selection.toggle}
         onRestore={p.handleRestoreOva}
         onPermanentDelete={p.handlePermanentDelete}
         onRetry={() => { void p.refetch(); }}
+        toolbar={
+          <SelectionToolbar
+            variant="inset"
+            allSelected={selection.allSelected}
+            selectedCount={selection.selectedIds.size}
+            summary={`${String(p.totalItems)} ${ovaNoun(p.totalItems)} en papelera`}
+            disabled={p.actions.bulkLoading}
+            onSelectAllChange={selection.selectAll}
+            onClearSelection={selection.clear}
+            actions={
+              <PapeleraBulkActions
+                disabled={p.actions.bulkLoading}
+                onRestore={p.handleBatchRestore}
+                onDelete={p.handleBulkPermanentDelete}
+              />
+            }
+          />
+        }
       />
 
       {showContent && (
-        <OvaListPagination currentPage={p.page} totalPages={p.totalPages} onPageChange={p.setPage} />
+        <OvaListPagination
+          label="Paginación de la papelera"
+          currentPage={p.page}
+          totalPages={p.totalPages}
+          onPageChange={p.handlePageChange}
+        />
       )}
     </div>
   );

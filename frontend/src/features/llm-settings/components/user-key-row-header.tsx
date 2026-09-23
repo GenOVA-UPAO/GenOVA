@@ -1,5 +1,4 @@
 import { PROVIDER_META } from "@/core/components/platform-key-meta";
-import { cn } from "@/core/lib/cn";
 
 export function UserKeyRowHeader({
   provider,
@@ -12,21 +11,19 @@ export function UserKeyRowHeader({
     compat: false,
   };
   return (
-    <div className="flex items-start justify-between gap-3">
-      <div>
-        <p className="text-sm font-semibold">{meta.label}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">{meta.desc}</p>
-      </div>
-      <span
-        className={cn(
-          "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase",
-          configured
-            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-            : "bg-muted text-muted-foreground",
+    <div className="min-w-0 flex-1">
+      <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+        <span className="text-sm font-medium">{meta.label}</span>
+        {configured ? (
+          <span className="inline-flex items-center gap-1.5 text-xs text-success-strong">
+            <span aria-hidden="true" className="size-1.5 rounded-full bg-success" />
+            Conectado
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Sin configurar</span>
         )}
-      >
-        {configured ? "Conectado" : "Sin configurar"}
-      </span>
+      </p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{meta.desc}</p>
     </div>
   );
 }

@@ -55,11 +55,11 @@ export default function CrearOvaPreviewPanel({ jobId, viewModel, pinnedId, onPin
         <PreviewPanelBody active={active} loading={content.isPending} html={html} />
       </div>
       {active && (
-        <div className="flex min-w-0 shrink-0 items-center gap-2 border-t border-border bg-muted/20 px-3 py-1">
-          <span className="shrink-0 rounded border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
-            {phaseMeta(active.phase).label || active.phase}
+        <div className="flex min-w-0 shrink-0 items-center gap-2 border-t border-border px-3 py-2 text-xs text-muted-foreground">
+          <span className={`shrink-0 rounded-full border px-2 py-0.5 font-medium ${phaseMeta(active.phase).badge}`}>
+            Fase: {phaseMeta(active.phase).label || active.phase}
           </span>
-          <span className="truncate text-xs text-muted-foreground">{active.label}</span>
+          <span className="truncate">{active.label}</span>
         </div>
       )}
     </section>

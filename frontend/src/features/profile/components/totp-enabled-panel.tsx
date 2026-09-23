@@ -3,9 +3,13 @@ import { useState } from "react";
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
-import { Label } from "@/core/components/ui/label";
 
+import { describedBy } from "../lib/described-by";
 import { ErrorAlert } from "./error-alert";
+import { FormField } from "./form-field";
+import { ProfileSection } from "./profile-section";
+
+const CODE_HINT = "El código de 6 dígitos que muestra tu app autenticadora.";
 
 interface TotpEnabledPanelProps {
   serverError: string;
@@ -19,46 +23,48 @@ export function TotpEnabledPanel({
   onDisable,
 }: Readonly<TotpEnabledPanelProps>) {
   const [code, setCode] = useState("");
+  const [tried, setTried] = useState(false);
+  const codeError = tried && code.length < 6 ? "Escribe los 6 dígitos del código." : undefined;
 
   return (
-    <div className="space-y-3 rounded-xl border border-green-500/30 bg-card p-5">
-      <div className="flex items-center gap-2">
-        <span className="text-success">
-          <Icon name="shield-check" size="text-lg" />
-        </span>
-        <h3 className="text-sm font-semibold">Autenticación en 2 pasos activada</h3>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Tu cuenta está protegida. Para desactivar, confirma con un código de tu autenticador.
+    <ProfileSection
+      title="Verificación en dos pasos"
+      description="Para desactivarla, confirma con un código de tu app autenticadora."
+    >
+      <p className="flex items-center gap-2 text-sm font-medium text-success-strong">
+        <Icon name="shield-check" size="text-lg" /> Activada: tu cuenta pide un código al entrar.
       </p>
-      <div className="flex items-end gap-2">
-        <div className="max-w-[160px] flex-1 space-y-1">
-          <Label htmlFor="disable-code" className="text-xs font-medium">
-            Código actual
-          </Label>
-          <Input
-            id="disable-code"
-            type="text"
-            inputMode="numeric"
-            placeholder="123456"
-            maxLength={6}
-            value={code}
-            onChange={(event) => {
-              setCode(event.target.value);
-            }}
-          />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <div className="sm:w-56">
+          <FormField id="disable-code" label="Código actual" hint={CODE_HINT} error={codeError}>
+            <Input
+              id="disable-code"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              aria-invalid={codeError ? true : undefined}
+              aria-describedby={describedBy("disable-code", codeError, CODE_HINT)}
+              onChange={(event) => {
+                setCode(event.target.value);
+              }}
+            />
+          </FormField>
         </div>
         <Button
           variant="destructive"
-          disabled={isDisabling || code.length < 6}
+          className="max-sm:h-11 sm:mt-6"
+          loading={isDisabling}
           onClick={() => {
-            onDisable(code);
+            setTried(true);
+            if (code.length === 6) onDisable(code);
           }}
         >
-          {isDisabling ? "Desactivando..." : "Desactivar 2FA"}
+          Desactivar
         </Button>
       </div>
       <ErrorAlert message={serverError} />
-    </div>
+    </ProfileSection>
   );
 }

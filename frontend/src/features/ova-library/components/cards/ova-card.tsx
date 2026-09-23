@@ -1,11 +1,18 @@
-import { useNavigate } from "react-router";
+import { Checkbox } from "@/core/components/ui/checkbox";
+import { cn } from "@/core/lib/cn";
 
 import type { OvaJobInfo } from "../../lib/job-types";
+import {
+  formatShortDate,
+  meaningfulDescription,
+  ownerNameOf,
+  visibleVersion,
+} from "../../lib/ova-card-format";
 import type { OvaListItem } from "../../lib/types";
 import { OvaCardActions } from "./ova-card-actions";
 import { OvaCardBadges } from "./ova-card-badges";
-import { OvaCardShell } from "./ova-card-shell";
-import { OvaGeneratingAction } from "./ova-generating-action";
+import { OvaCardMenu } from "./ova-card-menu";
+import { OvaCardMeta } from "./ova-card-meta";
 
 interface OvaCardProps {
   ova: OvaListItem;
@@ -22,16 +29,11 @@ interface OvaCardProps {
   onResume?: (id: string) => void;
 }
 
-function formatDate(date: unknown): string {
-  if (!date) return "";
-  return new Date(date as string).toLocaleDateString("es-PE");
-}
-
-/** Tarjeta interactiva de OVA en la biblioteca con acciones completas. */
+/** Tarjeta de un OVA en la biblioteca: estado, título, autor/fecha y acciones. */
 export function OvaCard({
   ova,
   job,
-  isSelected,
+  isSelected = false,
   isMoving,
   isDownloading,
   isDuplicating,
@@ -42,47 +44,69 @@ export function OvaCard({
   onEditMetadata,
   onResume,
 }: Readonly<OvaCardProps>) {
-  const navigate = useNavigate();
   const isGenerating = ova.status === "generando";
-  const isReady = ova.status === "listo";
-
-  const extraBadges = (
-    <OvaCardBadges
-      versionNumber={ova.version_number}
-      isGenerating={isGenerating}
-      job={job}
-    />
-  );
+  const title = ova.title?.trim() ? ova.title : "Sin título";
+  const description = meaningfulDescription(ova);
 
   return (
-    <OvaCardShell
-      ova={ova}
-      isSelected={isSelected}
-      checkboxDisabled={isGenerating}
-      dateValue={formatDate(ova.created_at)}
-      onToggleSelect={onToggleSelect}
-      extraBadges={extraBadges}
+    <div
+      data-testid="ova-card"
+      data-ova-id={ova.id}
+      className={cn(
+        "flex h-full flex-col rounded-xl border bg-card p-4 transition-colors",
+        isSelected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-foreground/20",
+        isMoving && "opacity-60",
+      )}
     >
-      {isGenerating && (
-        <OvaGeneratingAction
+      <div className="flex items-center gap-3">
+        <Checkbox
+          checked={isSelected}
+          disabled={isGenerating}
+          onCheckedChange={() => onToggleSelect?.(ova.id)}
+          aria-label={`Seleccionar ${title}`}
+        />
+        <div className="min-w-0 flex-1">
+          <OvaCardBadges status={ova.status} version={visibleVersion(ova)} job={job} />
+        </div>
+        <OvaCardMenu
+          title={title}
+          isGenerating={isGenerating}
+          isMoving={isMoving}
+          isDuplicating={isDuplicating}
+          onEditMetadata={() => onEditMetadata?.(ova)}
+          onDuplicate={() => onDuplicate?.(ova.id)}
+          onMoveToTrash={() => onMoveToTrash?.(ova)}
+        />
+      </div>
+
+      <div className="mt-2 flex-1 space-y-1.5">
+        <h3 className="line-clamp-2 text-base leading-snug font-semibold text-foreground" title={title}>
+          {title}
+        </h3>
+        {description && (
+          <p className="line-clamp-2 text-sm text-muted-foreground" title={description}>
+            {description}
+          </p>
+        )}
+        <OvaCardMeta
+          ownerName={ownerNameOf(ova)}
+          dateTime={ova.created_at}
+          dateText={formatShortDate(ova.created_at)}
+        />
+      </div>
+
+      <div className="mt-4 border-t border-border pt-3">
+        <OvaCardActions
           ovaId={ova.id}
+          isGenerating={isGenerating}
+          isReady={ova.status === "listo"}
           isInterrupted={job?.isInterrupted}
+          isDownloading={isDownloading}
+          isDuplicating={isDuplicating}
+          onDownload={() => onDownload?.({ id: ova.id, title: ova.title ?? "" })}
           onResume={onResume}
         />
-      )}
-
-      <OvaCardActions
-        isGenerating={isGenerating}
-        isReady={isReady}
-        isMoving={isMoving}
-        isDownloading={isDownloading}
-        isDuplicating={isDuplicating}
-        onEdit={() => void navigate(`/workspace/${ova.id}`)}
-        onEditMetadata={() => onEditMetadata?.(ova)}
-        onDuplicate={() => onDuplicate?.(ova.id)}
-        onDownload={() => onDownload?.({ id: ova.id, title: ova.title ?? "" })}
-        onMoveToTrash={() => onMoveToTrash?.(ova)}
-      />
-    </OvaCardShell>
+      </div>
+    </div>
   );
 }

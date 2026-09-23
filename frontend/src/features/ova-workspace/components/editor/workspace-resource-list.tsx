@@ -43,26 +43,30 @@ export function WorkspaceResourceList({ phases, phaseType, ovaId, onReorder, onR
   };
   return (
     <section aria-labelledby={heading} className="space-y-2">
-      <div className="flex items-center justify-between gap-2 px-0.5">
-        <h2 id={heading} className="text-xs font-semibold tracking-wide text-foreground">
+      <div className="flex items-center justify-between gap-2">
+        <h2 id={heading} className="text-sm font-semibold text-foreground">
           {label}
+          <span className="ml-2 text-xs font-normal tabular-nums text-muted-foreground">
+            {phases.length} de {MAX_PHASES_PER_TYPE}
+          </span>
         </h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-xs text-muted-foreground"
-          disabled={full}
-          aria-label={full ? "Máximo de recursos alcanzado en esta sección" : `Añadir recurso a ${label}`}
-          title={full ? `Máximo ${String(MAX_PHASES_PER_TYPE)} recursos por sección` : "Añadir recurso"}
-          onClick={() => {
-            setAdding(true);
-          }}
-        >
-          <Icon name="plus" size="text-xs" />
-          Añadir
-        </Button>
+        {full ? (
+          <span className="text-xs text-muted-foreground">Máximo de recursos alcanzado</span>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`Añadir recurso a ${label}`}
+            onClick={() => {
+              setAdding(true);
+            }}
+          >
+            <Icon name="plus" />
+            Añadir recurso
+          </Button>
+        )}
       </div>
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {phases.map((phase, index) => (
           <WorkspaceResourceRow
             key={phase.id}

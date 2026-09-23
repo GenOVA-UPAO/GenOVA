@@ -16,7 +16,7 @@ interface MisOvasFilterBarProps {
   onStatusChange: (status: string) => void;
 }
 
-/** Barra de filtros de búsqueda y estado para la biblioteca de OVAs. */
+/** Búsqueda por título y filtro por estado de la biblioteca de OVAs. */
 export function MisOvasFilterBar({
   search,
   onSearchChange,
@@ -24,25 +24,20 @@ export function MisOvasFilterBar({
   onStatusChange,
 }: Readonly<MisOvasFilterBarProps>) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border/50 bg-card/60 p-4 backdrop-blur-sm sm:flex-row">
+    <div role="search" className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <SearchInput
-        className="flex-1"
+        className="flex-1 sm:max-w-md"
         value={search}
         onValueChange={onSearchChange}
-        placeholder="Buscar por título de la OVA..."
+        placeholder="Buscar por título"
         ariaLabel="Buscar por título de la OVA"
-        inputClassName="border-muted bg-background/50 h-10 shadow-inner focus-visible:ring-primary/30"
       />
-
       <label htmlFor="mis-ovas-status-filter" className="sr-only">
         Filtrar por estado
       </label>
       <Select value={status} onValueChange={onStatusChange}>
-        <SelectTrigger
-          id="mis-ovas-status-filter"
-          className="h-10 w-full border-muted bg-background/50 font-medium sm:w-48"
-        >
-          <SelectValue placeholder="Todos" />
+        <SelectTrigger id="mis-ovas-status-filter" className="w-full sm:w-48">
+          <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {STATUS_OPTIONS.map((opt) => (

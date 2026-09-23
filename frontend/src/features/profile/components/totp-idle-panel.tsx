@@ -1,7 +1,7 @@
-import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 import { ErrorAlert } from "./error-alert";
+import { ProfileSection } from "./profile-section";
 
 interface TotpIdlePanelProps {
   serverError: string;
@@ -11,19 +11,14 @@ interface TotpIdlePanelProps {
 
 export function TotpIdlePanel({ serverError, isStarting, onStart }: Readonly<TotpIdlePanelProps>) {
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2">
-        <Icon name="shield-slash" size="text-lg" className="text-muted-foreground" />
-        <h3 className="text-sm font-semibold">Autenticación en 2 pasos (2FA)</h3>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Protege tu cuenta con un código de tu aplicación autenticadora (Google Authenticator, Authy,
-        etc.).
-      </p>
+    <ProfileSection
+      title="Verificación en dos pasos"
+      description="Además de tu contraseña, al entrar se te pedirá un código de una app autenticadora como Google Authenticator o Authy."
+    >
       <ErrorAlert message={serverError} />
-      <Button size="sm" loading={isStarting} onClick={onStart}>
-        Activar 2FA
+      <Button variant="outline" className="max-sm:h-11 max-sm:w-full" loading={isStarting} onClick={onStart}>
+        Activar verificación en dos pasos
       </Button>
-    </div>
+    </ProfileSection>
   );
 }

@@ -1,18 +1,23 @@
 import { QueryErrorState } from "@/core/components/query-error-state";
-import { SkeletonGrid } from "@/core/components/skeleton-grid";
+import { cn } from "@/core/lib/cn";
 
 import type { OvaJobInfo } from "../lib/job-types";
+import { OVA_GRID_CLASS } from "../lib/ova-grid";
 import type { OvaListItem } from "../lib/types";
 import { OvaCard } from "./cards/ova-card";
+import { OvaCardSkeletonGrid } from "./cards/ova-card-skeleton";
 import { MisOvasEmpty } from "./mis-ovas-empty";
 
 interface MisOvasGridProps {
   isLoading: boolean;
+  /** Mostrando la página anterior mientras llega la nueva. */
+  isStale?: boolean;
   error: unknown;
   ovas: OvaListItem[];
   jobs: Record<string, OvaJobInfo>;
   selectedIds: Set<string>;
-  isFiltering: boolean;
+  search: string;
+  status: string;
   movingId: string | null;
   downloadingId: string | null;
   duplicatingId: string | null;
@@ -26,14 +31,16 @@ interface MisOvasGridProps {
   onClearFilters: () => void;
 }
 
-/** Renderiza el estado de carga, error, vacío o la grilla de tarjetas de OVA. */
+/** Renderiza el estado de carga, error, vacío o la rejilla de tarjetas de OVA. */
 export function MisOvasGrid({
   isLoading,
+  isStale = false,
   error,
   ovas,
   jobs,
   selectedIds,
-  isFiltering,
+  search,
+  status,
   movingId,
   downloadingId,
   duplicatingId,
@@ -46,35 +53,39 @@ export function MisOvasGrid({
   onRetry,
   onClearFilters,
 }: Readonly<MisOvasGridProps>) {
-  if (isLoading) return <SkeletonGrid count={6} />;
+  if (isLoading) return <OvaCardSkeletonGrid />;
 
   if (error) {
-    return <QueryErrorState title="No se pudo cargar el historial de OVAs" onRetry={onRetry} />;
+    return <QueryErrorState title="No se pudo cargar la biblioteca de OVAs" onRetry={onRetry} />;
   }
 
   if (ovas.length === 0) {
-    return <MisOvasEmpty isFiltering={isFiltering} onClearFilters={onClearFilters} />;
+    return <MisOvasEmpty search={search} status={status} onClearFilters={onClearFilters} />;
   }
 
   return (
-    <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+    <div
+      aria-busy={isStale}
+      className={cn(OVA_GRID_CLASS, "transition-opacity duration-150", isStale && "opacity-60")}
+    >
       {ovas.map((ova) => (
-        <div key={ova.id} className="h-full animate-in zoom-in-95 duration-300">
-          <OvaCard
-            ova={ova}
-            job={jobs[ova.id]}
-            isSelected={selectedIds.has(ova.id)}
-            isMoving={movingId === ova.id}
-            isDownloading={downloadingId === ova.id}
-            isDuplicating={duplicatingId === ova.id}
-            onToggleSelect={onToggleSelect}
-            onMoveToTrash={onMoveToTrash}
-            onDownload={({ id, title }) => { onDownload(id, title); }}
-            onDuplicate={onDuplicate}
-            onEditMetadata={onEditMetadata}
-            onResume={onResume}
-          />
-        </div>
+        <OvaCard
+          key={ova.id}
+          ova={ova}
+          job={jobs[ova.id]}
+          isSelected={selectedIds.has(ova.id)}
+          isMoving={movingId === ova.id}
+          isDownloading={downloadingId === ova.id}
+          isDuplicating={duplicatingId === ova.id}
+          onToggleSelect={onToggleSelect}
+          onMoveToTrash={onMoveToTrash}
+          onDownload={({ id, title }) => {
+            onDownload(id, title);
+          }}
+          onDuplicate={onDuplicate}
+          onEditMetadata={onEditMetadata}
+          onResume={onResume}
+        />
       ))}
     </div>
   );

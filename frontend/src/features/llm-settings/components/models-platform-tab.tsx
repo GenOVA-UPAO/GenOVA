@@ -4,7 +4,7 @@ import { PlatformNodesCard } from "./platform-nodes-card";
 
 export function ModelsPlatformTab() {
   return (
-    <div className="mt-0 space-y-6">
+    <div className="max-w-4xl space-y-10">
       <GuardrailsCard />
       <PlatformNodesCard />
       <PlatformCapabilitiesCard />

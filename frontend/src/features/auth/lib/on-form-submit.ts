@@ -1,9 +1,9 @@
 import type { SyntheticEvent } from "react";
 
-export function onFormSubmit(submit: () => Promise<void>) {
+export function onFormSubmit(submit: (formEl: HTMLFormElement) => Promise<void>) {
   return (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    void submit();
+    void submit(event.currentTarget);
   };
 }
 

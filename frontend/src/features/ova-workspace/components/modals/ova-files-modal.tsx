@@ -1,22 +1,32 @@
 import { Icon } from "@/core/components/icon";
 import { Alert, AlertDescription } from "@/core/components/ui/alert";
+import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
 
 import type { useOvaUploads } from "../../hooks/use-uploads";
 import { FileChips } from "../shared/file-chips";
+import { ModalActions } from "../shared/modal-actions";
 import { WorkspaceModal } from "../shared/workspace-modal";
 import { OvaFilesDropzone } from "./ova-files-dropzone";
 import { OvaFilesEmpty } from "./ova-files-empty";
 
-export default function OvaFilesModal({ uploads, onClose }: Readonly<{ uploads: ReturnType<typeof useOvaUploads>; onClose: () => void }>) {
+export default function OvaFilesModal({
+  uploads,
+  onClose,
+}: Readonly<{ uploads: ReturnType<typeof useOvaUploads>; onClose: () => void }>) {
   const files = uploads.data ?? [];
   const full = files.length >= uploads.maxUploadFiles;
   return (
     <WorkspaceModal
       title="Archivos de referencia"
-      description={`Hasta ${String(uploads.maxUploadFiles)} archivos de referencia.`}
+      description="La IA usará estos archivos como contexto al generar el OVA. Son opcionales."
       size="sm"
       onClose={onClose}
+      footer={
+        <ModalActions>
+          <Button onClick={onClose}>Listo</Button>
+        </ModalActions>
+      }
     >
       <OvaFilesDropzone
         count={files.length}
@@ -41,15 +51,24 @@ export default function OvaFilesModal({ uploads, onClose }: Readonly<{ uploads: 
           <AlertDescription>{uploads.uploadError}</AlertDescription>
         </Alert>
       )}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-medium text-muted-foreground">Archivos adjuntos</p>
-          <p className={cn("text-xs font-semibold tabular-nums", full && "text-primary")}>
-            {files.length} de {uploads.maxUploadFiles}
-          </p>
-        </div>
-        {files.length === 0 ? <OvaFilesEmpty /> : <FileChips files={files} onRemove={uploads.removeUpload} />}
-      </section>
+      {files.length === 0 ? (
+        <OvaFilesEmpty />
+      ) : (
+        <section className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-medium">Archivos adjuntos</h3>
+            <p
+              className={cn(
+                "text-xs tabular-nums text-muted-foreground",
+                full && "font-medium text-foreground",
+              )}
+            >
+              {files.length} de {uploads.maxUploadFiles}
+            </p>
+          </div>
+          <FileChips files={files} onRemove={uploads.removeUpload} />
+        </section>
+      )}
     </WorkspaceModal>
   );
 }

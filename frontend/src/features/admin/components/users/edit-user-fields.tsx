@@ -1,10 +1,7 @@
-import { Icon } from "@/core/components/icon";
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 
 import type { UserFormErrors, UserFormValues } from "../../lib/user-form";
-
-const LABEL_CLASS = "text-xs font-bold uppercase tracking-wider text-muted-foreground";
 
 interface EditUserFieldsProps {
   values: UserFormValues;
@@ -21,60 +18,64 @@ export function EditUserFields({
 }: Readonly<EditUserFieldsProps>) {
   return (
     <>
-      <div className="space-y-1.5">
-        <Label htmlFor="edit-full-name" className={LABEL_CLASS}>
-          Nombre Completo
-        </Label>
+      <div className="space-y-2">
+        <Label htmlFor="edit-full-name">Nombre completo</Label>
         <Input
           id="edit-full-name"
           type="text"
-          placeholder="Ej: Juan Pérez"
+          autoComplete="off"
           value={values.full_name}
           disabled={disabled}
+          aria-invalid={errors.full_name !== undefined || undefined}
+          aria-describedby={errors.full_name !== undefined ? "edit-full-name-error" : undefined}
           onChange={(event) => {
             onChange("full_name", event.target.value);
           }}
         />
         {errors.full_name !== undefined && (
-          <p className="text-xs text-destructive">{errors.full_name}</p>
+          <p id="edit-full-name-error" className="text-xs text-destructive">
+            {errors.full_name}
+          </p>
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="edit-email" className={LABEL_CLASS}>
-          Correo Electrónico
-        </Label>
+      <div className="space-y-2">
+        <Label htmlFor="edit-email">Correo electrónico</Label>
         <Input
           id="edit-email"
           type="email"
-          placeholder="ejemplo@correo.com"
+          autoComplete="off"
           value={values.email}
           disabled={disabled}
+          aria-invalid={errors.email !== undefined || undefined}
+          aria-describedby={errors.email !== undefined ? "edit-email-error" : undefined}
           onChange={(event) => {
             onChange("email", event.target.value);
           }}
         />
-        {errors.email !== undefined && <p className="text-xs text-destructive">{errors.email}</p>}
+        {errors.email !== undefined && (
+          <p id="edit-email-error" className="text-xs text-destructive">
+            {errors.email}
+          </p>
+        )}
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="edit-uni-id" className={LABEL_CLASS}>
-          Código Universitario (UPAO)
-        </Label>
+      <div className="space-y-2">
+        <Label htmlFor="edit-uni-id">Código universitario (UPAO)</Label>
         <Input
           id="edit-uni-id"
           type="text"
           inputMode="numeric"
-          placeholder="Ej: 257022"
+          autoComplete="off"
+          aria-describedby="edit-uni-id-help"
           value={values.university_id}
           disabled={disabled}
           onChange={(event) => {
             onChange("university_id", event.target.value);
           }}
         />
-        <p className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
-          <Icon name="info" size="text-xs" />
-          Se autocompletará con ceros a la izquierda a 9 dígitos.
+        <p id="edit-uni-id-help" className="text-xs text-muted-foreground">
+          Solo números. Al guardar se completa con ceros a la izquierda hasta 9 dígitos.
         </p>
       </div>
     </>

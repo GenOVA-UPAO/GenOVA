@@ -27,10 +27,11 @@ export function ModelsTaskNav({
   return (
     <div
       className={cn(
-        "flex flex-row gap-1 overflow-x-auto border-b border-border/60 p-2 md:flex md:flex-col md:overflow-visible md:border-r md:border-b-0",
+        "flex flex-col gap-1 border-b border-border p-2 md:border-r md:border-b-0",
         hidden && "max-md:hidden",
       )}
       role="tablist"
+      aria-orientation="vertical"
       aria-label="Tipos de tarea"
     >
       {tasks.map((task) => (

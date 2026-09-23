@@ -1,49 +1,47 @@
-import type { PhaseWithContent } from "../../lib/types";
-import { ChatRegenToolbar } from "./chat-regen-toolbar";
-import { ChatResourceSelect } from "./chat-resource-select";
+import { useState } from "react";
+
+import { ConfirmModal } from "@/core/components/confirm-modal";
+import { Icon } from "@/core/components/icon";
+import { Button } from "@/core/components/ui/button";
+import { cn } from "@/core/lib/cn";
 
 interface Props {
   busy: boolean;
-  selecting: boolean;
-  selected: string[];
-  phases: PhaseWithContent[];
   onRegenAll: () => void;
-  onToggleSelect: () => void;
-  onToggleResource: (id: string, checked: boolean) => void;
-  onSelectAllResources: () => void;
 }
 
-export function ChatPanelHeader({
-  busy,
-  selecting,
-  selected,
-  phases,
-  onRegenAll,
-  onToggleSelect,
-  onToggleResource,
-  onSelectAllResources,
-}: Readonly<Props>) {
+/** Cabecera del panel: mismo alto que la barra del visor para que ambas columnas alineen. */
+export function ChatPanelHeader({ busy, onRegenAll }: Readonly<Props>) {
+  const [confirm, setConfirm] = useState(false);
   return (
-    <div className="shrink-0 space-y-3 border-b bg-muted/10 p-4">
-      <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">
-        Instrucciones
-      </h2>
-      <ChatRegenToolbar
-        busy={busy}
-        selecting={selecting}
-        selectedCount={selected.length}
-        onRegenAll={onRegenAll}
-        onToggleSelect={onToggleSelect}
-      />
-      {selecting && (
-        <div className="max-h-48 overflow-y-auto rounded-lg border border-border/70 bg-background/50 p-3">
-          <ChatResourceSelect
-            phases={phases}
-            selected={selected}
-            onToggle={onToggleResource}
-            onSelectAll={onSelectAllResources}
-          />
-        </div>
+    <div className="flex h-12 shrink-0 items-center justify-end gap-2 border-b border-border px-4 md:justify-between">
+      {/* En móvil el conmutador de vista ya dice «Instrucciones». */}
+      <h2 className="sr-only text-sm font-semibold text-foreground md:not-sr-only">Instrucciones</h2>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={busy}
+        onClick={() => {
+          setConfirm(true);
+        }}
+      >
+        <Icon name="arrow-clockwise" className={cn(busy && "animate-spin")} />
+        Regenerar OVA completo
+      </Button>
+      {confirm && (
+        <ConfirmModal
+          title="¿Regenerar el OVA completo?"
+          message="La IA volverá a crear todos los recursos desde cero. La versión actual quedará guardada en el historial de versiones."
+          confirmLabel="Regenerar OVA"
+          danger={false}
+          onConfirm={() => {
+            setConfirm(false);
+            onRegenAll();
+          }}
+          onCancel={() => {
+            setConfirm(false);
+          }}
+        />
       )}
     </div>
   );

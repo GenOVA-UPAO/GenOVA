@@ -12,11 +12,10 @@ interface Props {
 export function OvaThemeSelector({ theme, disabled, onChange }: Readonly<Props>) {
   const withFree = theme.color === "free" || theme.design === "free";
   return (
-    <section className="space-y-4 rounded-xl border border-border bg-card p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tema del OVA</p>
+    <section aria-label="Tema del OVA" className="space-y-5">
       <OvaThemeAxis
         label="Color"
-        hint="paleta de los recursos"
+        hint="Paleta de colores de los recursos."
         value={theme.color}
         withSwatches
         disabled={disabled}
@@ -26,7 +25,7 @@ export function OvaThemeSelector({ theme, disabled, onChange }: Readonly<Props>)
       />
       <OvaThemeAxis
         label="Diseño"
-        hint="estructura del recurso"
+        hint="Estructura y maquetación de cada recurso."
         value={theme.design}
         disabled={disabled}
         onChange={(design) => {

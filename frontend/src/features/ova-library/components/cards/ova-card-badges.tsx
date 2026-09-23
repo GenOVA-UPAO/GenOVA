@@ -1,30 +1,27 @@
-import { Badge } from "@/core/components/ui/badge";
+import { OvaStatusBadge } from "@/core/components/ova-status-badge";
 
 import type { OvaJobInfo } from "../../lib/job-types";
 
 interface OvaCardBadgesProps {
-  versionNumber?: unknown;
-  isGenerating?: boolean;
+  status?: string;
+  version: number | null;
   job?: OvaJobInfo;
 }
 
-/** Badges de versión y progreso de generación para OvaCard. */
-export function OvaCardBadges({
-  versionNumber,
-  isGenerating,
-  job,
-}: Readonly<OvaCardBadgesProps>) {
+/** Estado, versión y progreso de generación en una sola línea. */
+export function OvaCardBadges({ status, version, job }: Readonly<OvaCardBadgesProps>) {
+  const progress = status === "generando" ? job?.progress : null;
+
   return (
-    <div className="flex items-center gap-1">
-      {Boolean(versionNumber) && (
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
-          v{String(versionNumber)}
-        </Badge>
+    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+      <OvaStatusBadge status={status} />
+      {progress && (
+        <span className="text-xs font-medium text-primary tabular-nums">
+          {progress.done} de {progress.total} recursos
+        </span>
       )}
-      {isGenerating && job?.progress && (
-        <Badge variant="outline" className="border-primary/30 text-[10px] text-primary">
-          {job.progress.done}/{job.progress.total}
-        </Badge>
+      {version !== null && (
+        <span className="text-xs text-muted-foreground tabular-nums">Versión {version}</span>
       )}
     </div>
   );

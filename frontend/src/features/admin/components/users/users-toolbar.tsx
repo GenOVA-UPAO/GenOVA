@@ -1,5 +1,13 @@
 import { SearchInput } from "@/core/components/search-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
 
+import { formatRoleName } from "../../lib/role-utils";
 import { ALL_ROLE_FILTER, type Role } from "../../lib/types";
 
 interface UsersToolbarProps {
@@ -23,25 +31,26 @@ export function UsersToolbar({
         className="flex-1"
         value={search}
         onValueChange={onSearchChange}
-        placeholder="Buscar por nombre o email..."
+        placeholder="Buscar por nombre o email"
         ariaLabel="Buscar por nombre o email"
-        inputClassName="rounded-2xl border-border/50 bg-card/50 py-2.5 font-medium shadow-sm backdrop-blur-md focus:ring-2 focus:ring-primary/20"
+        inputClassName="h-10 max-md:h-11"
       />
-      <select
-        value={roleFilter}
-        onChange={(event) => {
-          onRoleFilterChange(event.target.value);
-        }}
-        aria-label="Filtrar usuarios por rol"
-        className="cursor-pointer rounded-2xl border border-border/50 bg-card/50 px-4 py-2.5 text-sm font-medium shadow-sm backdrop-blur-md transition-colors outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring/50"
-      >
-        <option value={ALL_ROLE_FILTER}>Todos los roles</option>
-        {roles.map((role) => (
-          <option key={role.id} value={role.id}>
-            {role.name?.replaceAll("_", " ") ?? ""}
-          </option>
-        ))}
-      </select>
+      <Select value={roleFilter} onValueChange={onRoleFilterChange}>
+        <SelectTrigger
+          aria-label="Filtrar usuarios por rol"
+          className="h-10 w-full sm:w-52 max-md:h-11"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent position="popper" align="end">
+          <SelectItem value={ALL_ROLE_FILTER}>Todos los roles</SelectItem>
+          {roles.map((role) => (
+            <SelectItem key={role.id} value={role.id}>
+              {formatRoleName(role.name)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

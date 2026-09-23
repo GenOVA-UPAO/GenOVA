@@ -29,13 +29,13 @@ export function LoginFormFields(props: Readonly<LoginFormFieldsProps>) {
   const { form, rememberMe, onRemember, serverError, expired, submitting, onSubmit } = props;
   return (
     <AuthCard title="Iniciar sesión" subtitle="Accede para crear y gestionar tus OVAs.">
-      <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
+      <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
         {expired ? <ServerAlert tone="info">{SESSION_EXPIRED_NOTICE}</ServerAlert> : null}
         <AuthField id="email" label="Correo" error={form.errorFor("email")}>
-          <Input id="email" type="email" autoComplete="email" placeholder="estudiante@genova.ai" {...form.bind("email")} />
+          <Input id="email" type="email" autoComplete="email" placeholder="nombre@upao.edu.pe" {...form.bind("email")} />
         </AuthField>
         <AuthField id="password" label="Contraseña" error={form.errorFor("password")}>
-          <PasswordInput id="password" autoComplete="current-password" placeholder="••••••••" {...form.bind("password")} />
+          <PasswordInput id="password" autoComplete="current-password" {...form.bind("password")} />
         </AuthField>
         {serverError ? <ServerAlert>{serverError}</ServerAlert> : null}
         <div className="flex items-center justify-between gap-3">
@@ -44,10 +44,10 @@ export function LoginFormFields(props: Readonly<LoginFormFieldsProps>) {
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
-        <Button type="submit" className="w-full" loading={submitting} disabled={!form.isValid || submitting}>
-          {submitting ? "Ingresando..." : "Entrar"}
+        <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
+          {submitting ? "Ingresando…" : "Entrar"}
         </Button>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="pt-2 text-center text-sm text-muted-foreground">
           ¿No tienes cuenta?{" "}
           <Link to="/register" className={AUTH_LINK_CLASS}>
             Crear cuenta

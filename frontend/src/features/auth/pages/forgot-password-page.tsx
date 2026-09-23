@@ -17,8 +17,11 @@ export function ForgotPasswordPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
-  const onSubmit = onFormSubmit(async () => {
-    if (!form.isValid) return;
+  const onSubmit = onFormSubmit(async (formEl) => {
+    if (!form.isValid) {
+      form.revealErrors(formEl);
+      return;
+    }
     setStatus("submitting");
     setMessage("");
     try {

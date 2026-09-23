@@ -16,8 +16,14 @@ export function displayName(user: AdminUser): string | null {
   return user.full_name;
 }
 
+/** Iniciales de nombre y apellido («Estudiante Prueba» → «EP»); sin nombre, del email. */
 export function getUserInitials(user: AdminUser): string {
-  return (displayName(user) ?? user.email).slice(0, 2).toUpperCase();
+  const name = displayName(user);
+  if (name === null) return user.email.slice(0, 2).toUpperCase();
+  const words = name.trim().split(/\s+/);
+  const first = words[0]?.charAt(0) ?? "";
+  const last = words.length > 1 ? (words.at(-1)?.charAt(0) ?? "") : (words[0]?.charAt(1) ?? "");
+  return `${first}${last}`.toUpperCase();
 }
 
 export function hasUniversityId(user: AdminUser): boolean {
@@ -29,6 +35,14 @@ export function hasUniversityId(user: AdminUser): boolean {
 export function formatUniversityId(value: number | string | null | undefined): string {
   if (value === null || value === undefined || value === "") return "--";
   return String(value).padStart(9, "0");
+}
+
+/** Línea secundaria de la fila: código UPAO y teléfono, solo si existen. */
+export function userContactLine(user: AdminUser): string {
+  const parts: string[] = [];
+  if (hasUniversityId(user)) parts.push(`Código ${formatUniversityId(user.university_id)}`);
+  if (hasPhone(user)) parts.push(user.phone_number ?? "");
+  return parts.join(" · ");
 }
 
 export function hasPhone(user: AdminUser): boolean {
@@ -54,5 +68,6 @@ export function usersPageSubtitle(
 ): string {
   if (isLoading) return "Cargando usuarios…";
   if (hasError) return "No se pudo obtener el listado";
+  if (totalItems === 1) return "1 usuario registrado en la plataforma";
   return `${String(totalItems)} usuarios registrados en la plataforma`;
 }

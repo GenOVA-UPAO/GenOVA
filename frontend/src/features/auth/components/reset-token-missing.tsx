@@ -2,18 +2,20 @@ import { Link } from "react-router";
 
 import { Button } from "@/core/components/ui/button";
 
-import { ServerAlert } from "./server-alert";
+import { AUTH_LINK_CLASS, BACK_TO_LOGIN } from "../lib/auth-copy";
 
+/** Sin token en la URL: el título ya explica el problema, aquí solo la salida. */
 export function ResetTokenMissing() {
   return (
-    <div className="mt-6 space-y-4">
-      <ServerAlert>Enlace inválido o incompleto</ServerAlert>
-      <p className="text-sm text-muted-foreground">
-        El enlace de restablecimiento no incluye un token válido. Solicita uno nuevo para continuar.
-      </p>
-      <Button asChild className="w-full">
-        <Link to="/forgot-password">Solicitar nuevo enlace</Link>
+    <div className="mt-8 space-y-5">
+      <Button asChild size="lg" className="w-full">
+        <Link to="/forgot-password">Pedir un enlace nuevo</Link>
       </Button>
+      <p className="text-center text-sm">
+        <Link to="/login" className={AUTH_LINK_CLASS}>
+          {BACK_TO_LOGIN}
+        </Link>
+      </p>
     </div>
   );
 }

@@ -1,12 +1,14 @@
+import { AnalyticsPanel } from "./analytics-panel";
+
 interface StatusBreakdownProps {
   byStatus: Record<string, number>;
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  listo: { label: "Listos", color: "bg-emerald-500" },
-  generando: { label: "Generando", color: "bg-amber-500" },
-  borrador: { label: "Borradores", color: "bg-slate-400" },
-  error: { label: "Con error", color: "bg-red-500" },
+  listo: { label: "Listos", color: "bg-success" },
+  generando: { label: "Generando", color: "bg-primary" },
+  borrador: { label: "Borradores", color: "bg-muted-foreground/50" },
+  error: { label: "Con error", color: "bg-destructive" },
 };
 
 export function StatusBreakdown({ byStatus }: Readonly<StatusBreakdownProps>) {
@@ -20,33 +22,33 @@ export function StatusBreakdown({ byStatus }: Readonly<StatusBreakdownProps>) {
   });
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold">OVAs por estado</h2>
-      <div className="space-y-3">
+    <AnalyticsPanel title="OVAs por estado">
+      <ul className="space-y-3.5">
         {statusEntries.map((item) => (
-          <div key={item.key}>
-            <div className="mb-1 flex items-center justify-between text-xs">
-              <span className="font-medium text-foreground">{item.meta.label}</span>
-              <span className="tabular-nums text-muted-foreground">
-                {item.n} · {item.pct}%
+          <li key={item.key}>
+            <div className="mb-1.5 flex items-baseline justify-between gap-2 text-sm">
+              <span>{item.meta.label}</span>
+              <span className="tabular-nums">
+                <span className="font-medium">{item.n}</span>
+                <span className="ml-1.5 text-xs text-muted-foreground">{item.pct} %</span>
               </span>
             </div>
             <div
-              className="h-2 w-full overflow-hidden rounded-full bg-muted"
+              className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
               role="progressbar"
               aria-valuenow={item.pct}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={`${item.meta.label}: ${item.pct.toString()}%`}
+              aria-label={`${item.meta.label}: ${item.pct.toString()} %`}
             >
               <div
-                className={`h-full ${item.meta.color}`}
+                className={`h-full rounded-full ${item.meta.color}`}
                 style={{ width: `${item.pct.toString()}%` }}
               />
             </div>
-          </div>
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </AnalyticsPanel>
   );
 }
