@@ -111,6 +111,10 @@ def get_llm_settings(
         "categories": ["all", "recommended"] + all_providers,
         "types": ["all"] + all_types,
         "defaults": DEFAULTS,
+        # Lo que de verdad se usa sin clave propia (semilla ⊕ config del admin):
+        # la vista de solo lectura mostraba `defaults`, la semilla fija, y el
+        # usuario veía otro modelo y «sin respaldos» cuando el admin sí los tenía.
+        "platform": _platform_config(),
         "enabled_models": current_user.enabled_models or [],
         "timeout_bounds": [TIMEOUT_MIN, TIMEOUT_MAX],
         "catalog_status": get_provider_status(),
@@ -161,3 +165,10 @@ def put_llm_settings(
         raise to_http_exception(err) from None
 
     return {"settings": merge_with_defaults(saved, extra_keys=ek)}
+
+
+def _platform_config() -> dict:
+    """Modelos por tarea y respaldos efectivos (solo ids de modelo, sin claves)."""
+    from llm.router import effective_llm_config
+
+    return effective_llm_config()

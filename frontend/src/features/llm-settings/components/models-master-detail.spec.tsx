@@ -54,6 +54,7 @@ function stubStore(): LlmSettingsStore {
     types: [],
     enabledModels: [],
     defaults: {},
+    platform: null,
     bounds: [30, 300],
     hasOwnLlmKey: false,
     loading: false,

@@ -21,6 +21,7 @@ export function useLlmSettingsStore(enabled = true): LlmSettingsStore {
     types: catalog.server.types ?? [],
     enabledModels: favorites.enabledModels,
     defaults: catalog.server.defaults ?? {},
+    platform: catalog.server.platform ?? null,
     bounds: draft.bounds,
     hasOwnLlmKey: catalog.server.has_own_llm_key ?? false,
     loading: catalog.loading,

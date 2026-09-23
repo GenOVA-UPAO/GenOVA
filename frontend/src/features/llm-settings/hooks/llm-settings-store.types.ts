@@ -1,4 +1,5 @@
 import type { GroupBy, SortKey } from "../lib/catalog-sort";
+import type { EffectiveConfig } from "../lib/llm-config-draft";
 import type { SettingsMap } from "../lib/llm-settings-mutations";
 import type { CatalogModel, EnabledModel } from "../lib/user-llm-settings.types";
 
@@ -18,6 +19,7 @@ export interface LlmSettingsStore {
   types: string[];
   enabledModels: EnabledModel[];
   defaults: Record<string, EnabledModel>;
+  platform: EffectiveConfig | null;
   bounds: number[];
   hasOwnLlmKey: boolean;
   loading: boolean;

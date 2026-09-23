@@ -59,3 +59,18 @@ def test_sin_key_propia_el_modelo_del_administrador_sigue_permitido():
 def test_enabled_models_vacio_o_ausente_no_revienta():
     assert _own_model_keys(_User([]), has_key=True) == set()
     assert _own_model_keys(_User(None), has_key=True) == set()
+
+
+def test_la_vista_del_usuario_recibe_la_configuracion_efectiva_de_la_plataforma(monkeypatch):
+    """Sin clave propia se genera con la config del admin, no con la semilla:
+    `platform` es lo que la vista de solo lectura debe mostrar."""
+    import llm.router
+    from users.interface.http.settings_llm_settings_router import _platform_config
+
+    efectiva = {
+        "defaults": {"texto": {"provider": "openrouter", "model_id": "admin/elegido", "extra": {}}},
+        "fallbacks": {"texto": [{"provider": "openrouter", "model_id": "admin/respaldo", "extra": {}}]},
+        "generation_enabled": {"imagen": True},
+    }
+    monkeypatch.setattr(llm.router, "effective_llm_config", lambda: efectiva)
+    assert _platform_config() == efectiva

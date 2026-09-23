@@ -18,12 +18,19 @@ export interface ModelOption {
 export const MAX_VISIBLE_OPTIONS = 80;
 
 export function toOption(model: SearchableModel, value: string): ModelOption {
+  const providerLabel = PROVIDER_LABELS[model.provider] ?? model.provider;
   return {
     value,
-    name: modelDisplayName(model.label, model.model_id),
+    name: withoutProviderSuffix(modelDisplayName(model.label, model.model_id), providerLabel),
     provider: model.provider,
-    providerLabel: PROVIDER_LABELS[model.provider] ?? model.provider,
+    providerLabel,
   };
+}
+
+/** «DeepSeek V4 Flash (OpenRouter)» junto a la etiqueta «OpenRouter» lo repetía. */
+function withoutProviderSuffix(name: string, providerLabel: string): string {
+  const suffix = ` (${providerLabel})`;
+  return name.toLowerCase().endsWith(suffix.toLowerCase()) ? name.slice(0, -suffix.length) : name;
 }
 
 /** Busca por nombre, id o proveedor; todas las palabras deben aparecer. */

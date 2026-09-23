@@ -28,3 +28,11 @@ describe("filterOptions", () => {
     expect(result.total).toBe(200);
   });
 });
+
+describe("toOption", () => {
+  it("no repite el proveedor que ya se muestra aparte", () => {
+    expect(toOption({ provider: "openrouter", model_id: "x", label: "DeepSeek V4 Flash (OpenRouter)" }, "v").name).toBe(
+      "DeepSeek V4 Flash",
+    );
+  });
+});

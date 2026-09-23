@@ -19,6 +19,7 @@ const store: LlmSettingsStore = {
   types: [],
   enabledModels: [{ provider: "groq", model_id: "x" }],
   defaults: {},
+  platform: null,
   bounds: [30, 300],
   hasOwnLlmKey: false,
   loading: false,
@@ -127,7 +128,7 @@ describe("ModelsPage", () => {
     expect(screen.queryByText("Proveedores conectados")).toBeNull();
     expect(screen.queryByText("Modelos favoritos")).toBeNull();
     expect(screen.queryByText("Cambios sin guardar")).toBeNull();
-    expect(screen.getByText(/1 de 2 proveedores conectados · 1 modelo favorito/)).toBeTruthy();
+    expect(screen.getByText(/1 de 2 proveedores conectados · 1 modelo activado/)).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Modelos$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Credenciales$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /Plataforma/i })).toBeTruthy();
@@ -137,7 +138,7 @@ describe("ModelsPage", () => {
   it("says all models are available when the favorites list is empty", () => {
     store.enabledModels = [];
     renderPage();
-    expect(screen.getByText(/todos los modelos del catálogo/i)).toBeTruthy();
+    expect(screen.getByText(/muestran todo el catálogo/i)).toBeTruthy();
   });
 
   it("shows sticky save bar only when dirty", () => {

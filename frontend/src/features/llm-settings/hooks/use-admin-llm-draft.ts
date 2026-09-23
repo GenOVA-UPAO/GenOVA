@@ -25,6 +25,7 @@ export function useAdminLlmDraft(store: LlmSettingsStore, isAdmin: boolean) {
     raw: query.data,
     catalogFull: store.catalogFull,
     defaults: store.defaults,
+    platform: store.platform,
   });
   const draft = localDraft === undefined ? view.draft : localDraft;
 

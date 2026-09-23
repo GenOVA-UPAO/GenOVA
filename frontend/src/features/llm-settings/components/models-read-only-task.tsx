@@ -30,17 +30,17 @@ export function ModelsReadOnlyTask({
   const subtitle = platformSubtitle(task, draft, adminModels, defaults);
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <p className="text-sm font-medium">Modelo de la plataforma</p>
-        <p className="text-sm text-foreground">{subtitle}</p>
-        <div>
-          <ModelTaskCardChips
-            fallbacks={draft?.fallbacks ?? []}
-            models={adminModels}
-            chip={chip}
-            num={num}
-          />
+      <div className="space-y-4 rounded-lg border border-border px-4 py-3.5">
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Modelo principal</p>
+          <p className="text-sm text-foreground">{subtitle}</p>
         </div>
+        <ModelTaskCardChips
+          fallbacks={draft?.fallbacks ?? []}
+          models={adminModels}
+          chip={chip}
+          num={num}
+        />
       </div>
       {hasOwnLlmKey ? (
         <UserOverrideSection

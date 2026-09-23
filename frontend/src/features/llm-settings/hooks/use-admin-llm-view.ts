@@ -1,4 +1,4 @@
-import type { Draft } from "../lib/llm-config-draft";
+import type { Draft, EffectiveConfig } from "../lib/llm-config-draft";
 import type { CatalogModel, EnabledModel } from "../lib/user-llm-settings.types";
 import {
   activeCatalog,
@@ -23,6 +23,7 @@ interface BuildArgs {
   raw: unknown;
   catalogFull: CatalogModel[];
   defaults: Record<string, EnabledModel>;
+  platform: EffectiveConfig | null;
 }
 
 export function buildAdminView(args: BuildArgs): AdminView {
@@ -34,7 +35,11 @@ export function buildAdminView(args: BuildArgs): AdminView {
     return {
       tasks: fallbackTasks,
       models: activeCatalog(args.catalogFull),
-      draft: draftFromDefaults(fallbackTasks, args.defaults),
+      // Sin permisos de admin se muestra la config efectiva de la plataforma; la
+      // semilla (`defaults`) solo si el backend aún no la envía.
+      draft: args.platform
+        ? draftFromAdminConfig(args.platform, fallbackTasks)
+        : draftFromDefaults(fallbackTasks, args.defaults),
     };
   }
   if (args.isError) {

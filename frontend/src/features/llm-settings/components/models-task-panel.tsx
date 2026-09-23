@@ -38,8 +38,9 @@ export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
   const meta = taskMeta(props.task);
   return (
     <div
-      className={cn("min-w-0 space-y-6 p-5 sm:p-6 md:block", props.hidden && "max-md:hidden")}
+      className={cn("min-w-0 scroll-mt-20 space-y-6 p-5 outline-none sm:p-6 md:block", props.hidden && "max-md:hidden")}
       role="tabpanel"
+      tabIndex={-1}
       id={`task-panel-${props.task}`}
       aria-labelledby={`task-tab-${props.task}`}
     >
