@@ -148,6 +148,7 @@ function toggleGeneration(
  * proveedores y fuera de pantalla: se lleva a la vista y se le da el foco.
  */
 function revealPanel(task: string) {
+  if (typeof window.matchMedia !== "function") return;
   if (window.matchMedia("(min-width: 768px)").matches) return;
   requestAnimationFrame(() => {
     const panel = document.getElementById(`task-panel-${task}`);
