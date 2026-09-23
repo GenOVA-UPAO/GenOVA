@@ -19,22 +19,12 @@ const ThemeModal = lazy(() =>
 
 export function Navbar() {
   const user = useCurrentUser();
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [themeModalOpen, setThemeModalOpen] = useState(false);
 
   return (
     <header className="z-50 border-b border-border bg-card">
       <div className="flex h-14 items-center gap-2 px-3 sm:gap-3 sm:px-4">
-        <button
-          type="button"
-          onClick={() => {
-            setDrawerOpen(true);
-          }}
-          className="-ml-1 inline-flex size-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 md:hidden"
-          aria-label="Abrir menú"
-        >
-          <Icon name="list" size="text-xl" />
-        </button>
+        <MobileDrawer />
         <SidebarToggle />
         <NavbarBrand />
         <div className="flex-1" />
@@ -65,7 +55,6 @@ export function Navbar() {
           />
         </Suspense>
       )}
-      <MobileDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
     </header>
   );
 }
