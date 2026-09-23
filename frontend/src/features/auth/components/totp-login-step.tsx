@@ -22,8 +22,11 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const onSubmit = onFormSubmit(async () => {
-    if (!form.isValid) return;
+  const onSubmit = onFormSubmit(async (formEl) => {
+    if (!form.isValid) {
+      form.revealErrors(formEl);
+      return;
+    }
     setServerError("");
     setSubmitting(true);
     try {
@@ -46,7 +49,7 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
       title="Código de autenticación"
       subtitle="Abre tu aplicación autenticadora e ingresa el código de 6 dígitos. También puedes usar un código de respaldo."
     >
-      <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
+      <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
         <AuthField id="code" label="Código" error={form.errorFor("code")}>
           <Input
             id="code"
@@ -58,8 +61,8 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
           />
         </AuthField>
         {serverError ? <ServerAlert>{serverError}</ServerAlert> : null}
-        <Button type="submit" className="w-full" loading={submitting} disabled={!form.isValid || submitting}>
-          {submitting ? "Verificando..." : "Verificar"}
+        <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
+          {submitting ? "Verificando…" : "Verificar"}
         </Button>
         <button
           type="button"

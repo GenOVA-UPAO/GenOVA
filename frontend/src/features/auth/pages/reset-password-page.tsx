@@ -19,8 +19,12 @@ export function ResetPasswordPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
-  const onSubmit = onFormSubmit(async () => {
-    if (!token || !form.isValid) return;
+  const onSubmit = onFormSubmit(async (formEl) => {
+    if (!token) return;
+    if (!form.isValid) {
+      form.revealErrors(formEl);
+      return;
+    }
     setStatus("submitting");
     setMessage("");
     try {

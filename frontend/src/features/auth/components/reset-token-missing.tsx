@@ -6,7 +6,7 @@ import { ServerAlert } from "./server-alert";
 
 export function ResetTokenMissing() {
   return (
-    <div className="mt-6 space-y-4">
+    <div className="mt-8 space-y-5">
       <ServerAlert>Enlace inválido o incompleto</ServerAlert>
       <p className="text-sm text-muted-foreground">
         El enlace de restablecimiento no incluye un token válido. Solicita uno nuevo para continuar.

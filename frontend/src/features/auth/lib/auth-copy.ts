@@ -1,5 +1,5 @@
-export const AUTH_EYEBROW = "GenOVA · UPAO";
-export const AUTH_LINK_CLASS = "font-medium text-foreground hover:underline";
+export const AUTH_LINK_CLASS =
+  "rounded-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
 export const BACK_TO_LOGIN = "Volver a iniciar sesión";
 export const CONNECT_ERROR = "No se pudo conectar con el servidor. Intenta de nuevo.";
 export const EMAIL_FORMAT_ERROR = "Ingresa un correo con formato válido.";

@@ -26,7 +26,7 @@ export function ForgotPasswordForm({
   onSubmit,
 }: Readonly<ForgotPasswordFormProps>) {
   return (
-    <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
+    <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
       <AuthField id="email" label="Correo" error={form.errorFor("email")}>
         <Input
           id="email"
@@ -40,8 +40,8 @@ export function ForgotPasswordForm({
         />
       </AuthField>
       {error ? <ServerAlert>{error}</ServerAlert> : null}
-      <Button type="submit" className="w-full" loading={submitting} disabled={!form.isValid || submitting}>
-        {submitting ? "Enviando..." : "Enviar enlace"}
+      <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
+        {submitting ? "Enviando…" : "Enviar enlace"}
       </Button>
       <p className="mt-4 text-center text-sm text-muted-foreground">
         ¿Recordaste tu contraseña?{" "}
