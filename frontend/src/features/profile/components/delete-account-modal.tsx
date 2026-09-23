@@ -75,7 +75,7 @@ export function DeleteAccountModal({
           </div>
           <ErrorAlert message={serverError} />
           <DialogFooter className="gap-2">
-            <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
             <Button type="submit" variant="danger" loading={isSubmitting}>

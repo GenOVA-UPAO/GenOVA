@@ -78,11 +78,11 @@ export function TotpSetupPanel({
         </div>
         <ErrorAlert message={serverError} />
         <div className="flex flex-col-reverse gap-2 sm:flex-row">
+          <Button type="button" variant="outline" className="max-sm:h-11" onClick={onCancel}>
+            Cancelar
+          </Button>
           <Button type="submit" className="max-sm:h-11" loading={isSubmitting}>
             Confirmar y activar
-          </Button>
-          <Button type="button" variant="ghost" className="max-sm:h-11" onClick={onCancel}>
-            Cancelar
           </Button>
         </div>
       </form>

@@ -6,7 +6,7 @@ interface ThemeMiniPreviewProps {
   palette: Palette | null;
 }
 
-const TABS = ["Engage", "Explore", "Explain", "Evaluate"];
+const TABS = ["Enganche", "Exploración", "Explicación", "Evaluación"];
 
 function resolveColors(colorMode: string, palette: Palette | null) {
   if (colorMode === "upao") {

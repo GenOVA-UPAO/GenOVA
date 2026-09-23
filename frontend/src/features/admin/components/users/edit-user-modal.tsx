@@ -75,7 +75,7 @@ export function EditUserModal({
           />
           <EditUserContactFields values={values} disabled={isSubmitting} onChange={handleChange} />
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
             <Button type="submit" loading={isSubmitting}>
