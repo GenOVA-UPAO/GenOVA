@@ -8,7 +8,8 @@ export function ManageModelsHeader({ onConnect }: Readonly<{ onConnect: () => vo
       <div className="min-w-0 space-y-1">
         <DialogTitle>Gestionar modelos</DialogTitle>
         <DialogDescription>
-          Los modelos que actives aparecen en las listas de la pestaña Modelos.
+          Los modelos que actives aparecen en las listas de la pestaña Modelos. Precios en USD
+          por millón de tokens (entrada / salida).
         </DialogDescription>
       </div>
       <Button variant="outline" onClick={onConnect} className="shrink-0 max-sm:h-11">

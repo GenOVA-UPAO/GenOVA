@@ -143,7 +143,7 @@ describe("ModelsPage", () => {
   it("shows sticky save bar only when dirty", () => {
     const { rerender } = renderPage();
     expect(screen.queryByRole("button", { name: "Guardar cambios" })).toBeNull();
-    expect(screen.queryByText(/cambios sin guardar en la asignación/i)).toBeNull();
+    expect(screen.queryByText(/Tienes cambios sin guardar/i)).toBeNull();
 
     store.dirty = true;
     rerender(
@@ -152,7 +152,7 @@ describe("ModelsPage", () => {
       </MemoryRouter>,
     );
     expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeTruthy();
-    expect(screen.getByText(/cambios sin guardar en la asignación/i)).toBeTruthy();
+    expect(screen.getByText(/Tienes cambios sin guardar/i)).toBeTruthy();
 
     store.dirty = false;
     rerender(
@@ -173,7 +173,7 @@ describe("ModelsPage", () => {
       },
     };
     renderPage();
-    expect(screen.getByText(/duplicados o vacíos/i)).toBeTruthy();
+    expect(screen.getByText(/respaldos vacíos y evita repetir/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeDisabled();
   });
 

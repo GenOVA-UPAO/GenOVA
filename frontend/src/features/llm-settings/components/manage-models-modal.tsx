@@ -16,7 +16,11 @@ interface ManageModelsModalProps {
   onGoToApiKeys: (provider?: string) => void;
 }
 
-export function ManageModelsModal({ open, onClose, onGoToApiKeys }: Readonly<ManageModelsModalProps>) {
+export function ManageModelsModal({
+  open,
+  onClose,
+  onGoToApiKeys,
+}: Readonly<ManageModelsModalProps>) {
   const store = useLlmSettings();
   const [connectOpen, setConnectOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState("");
@@ -35,7 +39,10 @@ export function ManageModelsModal({ open, onClose, onGoToApiKeys }: Readonly<Man
         if (!next) onClose();
       }}
     >
-      <DialogContent className="flex max-h-[90dvh] w-[min(920px,calc(100vw-2rem))] flex-col gap-0 overflow-hidden p-0 sm:max-w-[920px]">
+      <DialogContent
+        className="flex max-h-[90dvh] w-[min(920px,calc(100vw-2rem))] flex-col gap-0 overflow-hidden p-0 sm:max-w-[920px]"
+        onOpenAutoFocus={focusSearch}
+      >
         <ManageModelsHeader
           onConnect={() => {
             setConnectOpen(true);
@@ -86,4 +93,12 @@ export function ManageModelsModal({ open, onClose, onGoToApiKeys }: Readonly<Man
       />
     </Dialog>
   );
+}
+
+/** Se abre para buscar: el foco va al buscador, no a «Conectar proveedor». */
+function focusSearch(event: Event) {
+  event.preventDefault();
+  (event.currentTarget as HTMLElement)
+    .querySelector<HTMLInputElement>("input[type=search]")
+    ?.focus();
 }

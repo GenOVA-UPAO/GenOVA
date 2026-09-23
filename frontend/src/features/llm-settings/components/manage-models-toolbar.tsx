@@ -21,8 +21,9 @@ interface ManageModelsToolbarProps {
 
 export function ManageModelsToolbar(props: Readonly<ManageModelsToolbarProps>) {
   return (
-    <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-border px-5 py-3 sm:flex sm:flex-wrap sm:items-center">
-      <div className="col-span-2 sm:flex-1">
+    // Búsqueda en su propia fila: junto a los cuatro filtros quedaba en «Buscar m…».
+    <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-border px-5 py-3 sm:grid-cols-4">
+      <div className="col-span-2 sm:col-span-4">
         <ManageModelsSearchField value={props.localSearch} onSearch={props.onSearch} />
       </div>
       <ManageModelsSelect

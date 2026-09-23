@@ -1,6 +1,7 @@
 import { Icon } from "@/core/components/icon";
 
 import { formatContextLength } from "../lib/llm-catalog.utils";
+import { modelDisplayName } from "../lib/model-name";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 import { FlagSwitch } from "./flag-switch";
 import { ModelPricingBadge } from "./model-pricing-badge";
@@ -19,13 +20,13 @@ export function ManageModelRow({ model, locked, enabled, onToggle }: Readonly<Ma
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors ${locked ? "" : "hover:bg-muted/50"}`}
+      className={`flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors [contain-intrinsic-size:auto_3.5rem] [content-visibility:auto] ${locked ? "" : "hover:bg-muted/50"}`}
     >
       <FlagSwitch
         size="sm"
         checked={enabled}
         disabled={locked}
-        label={model.label ?? model.model_id}
+        label={modelDisplayName(model.label, model.model_id)}
         onToggle={() => {
           void onToggle(model.provider, model.model_id);
         }}
@@ -33,7 +34,7 @@ export function ManageModelRow({ model, locked, enabled, onToggle }: Readonly<Ma
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <span className="truncate text-sm font-medium text-foreground">
-            {model.label ?? model.model_id}
+            {modelDisplayName(model.label, model.model_id)}
           </span>
           {locked ? (
             <span

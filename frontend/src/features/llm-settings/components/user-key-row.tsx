@@ -22,7 +22,7 @@ export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>)
   const configured = Boolean(maskedValue);
 
   return (
-    <li className="space-y-3 px-4 py-3.5">
+    <li className="space-y-3 px-4 py-3.5" data-key-row={provider}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <UserKeyRowHeader provider={provider} configured={configured} />
         {configured && !state.editing ? (

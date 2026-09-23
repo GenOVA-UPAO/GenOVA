@@ -17,13 +17,23 @@ export function UnsavedChangesBar({
     <div
       role="region"
       aria-label="Cambios sin guardar"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-4 py-3 backdrop-blur sm:px-6"
+      // Sticky dentro del contenido: como `fixed` cruzaba la ventana entera y tapaba el
+      // pie del menú lateral.
+      className="sticky bottom-4 z-30 rounded-xl border border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur"
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground" role="status">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="flex items-center gap-2 text-sm text-foreground" role="status">
+          <span
+            aria-hidden="true"
+            className={
+              chainInvalid
+                ? "size-2 rounded-full bg-destructive"
+                : "size-2 rounded-full bg-accent-brand"
+            }
+          />
           {chainInvalid
-            ? "Corrige los modelos duplicados o vacíos para guardar."
-            : "Tienes cambios sin guardar en la asignación."}
+            ? "Completa o quita los respaldos vacíos y evita repetir modelos para guardar."
+            : "Tienes cambios sin guardar."}
         </p>
         <div className="flex items-center gap-2">
           <Button variant="ghost" className="max-sm:h-11 max-sm:flex-1" onClick={onDiscard}>

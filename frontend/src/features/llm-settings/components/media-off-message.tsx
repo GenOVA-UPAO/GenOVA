@@ -5,8 +5,8 @@ export function MediaOffMessage({ task }: Readonly<{ task: string }>) {
       data-testid="media-gen-off"
     >
       {task === "video"
-        ? "Generación de video desactivada: solo se producen prompts / guiones."
-        : "Generación de imagen desactivada: el OVA no pedirá imágenes AI."}
+        ? "La generación de video está desactivada: los OVAs incluyen solo el guion. Los modelos de abajo se usarán cuando la actives."
+        : "La generación de imágenes está desactivada: los OVAs no piden imágenes a la IA. Los modelos de abajo se usarán cuando la actives."}
     </p>
   );
 }

@@ -11,6 +11,7 @@ import {
 import { joinModelValue, splitModelValue } from "../hooks/model-value";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { formatContextLength, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
+import { modelDisplayName } from "../lib/model-name";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 
 interface LlmSettingsModelSelectProps {
@@ -49,7 +50,7 @@ export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSett
             </SelectLabel>
             {catalogModels(store.catalog, provider).map((model) => (
               <SelectItem key={model.model_id} value={joinModelValue(provider, model.model_id)}>
-                <span className="min-w-0 truncate">{model.label ?? model.model_id}</span>
+                <span className="min-w-0 truncate">{modelDisplayName(model.label, model.model_id)}</span>
                 <span className="shrink-0 text-muted-foreground in-data-[slot=select-trigger]:hidden">
                   {modelMeta(model)}
                 </span>

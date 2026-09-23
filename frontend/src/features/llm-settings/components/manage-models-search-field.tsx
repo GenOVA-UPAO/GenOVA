@@ -11,10 +11,10 @@ export function ManageModelsSearchField({
 }: Readonly<ManageModelsSearchFieldProps>) {
   return (
     <SearchInput
-      className="min-w-0 basis-full sm:basis-auto sm:flex-1"
+      className="min-w-0"
       value={value}
       onValueChange={onSearch}
-      placeholder="Buscar modelo"
+      placeholder="Buscar por nombre, proveedor o descripción…"
       ariaLabel="Buscar modelo"
       inputClassName="h-9 max-sm:h-11"
     />

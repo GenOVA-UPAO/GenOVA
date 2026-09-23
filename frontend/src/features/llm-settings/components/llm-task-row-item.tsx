@@ -31,7 +31,10 @@ export function LlmTaskRowItem({
   onMove,
   onRemove,
 }: Readonly<LlmTaskRowItemProps>) {
-  const issue = issues.find((item) => item.index === index)?.message;
+  const slotIssue = issues.find((item) => item.index === index);
+  const issue = slotIssue?.message;
+  // Una fila recién añadida sin modelo no es un error: es el siguiente paso.
+  const isError = slotIssue?.kind === "duplicate";
   const found = models.find((m) => m.provider === entry.provider && m.model_id === entry.model_id);
   const modality = found?.modality ?? "text";
 
@@ -39,7 +42,7 @@ export function LlmTaskRowItem({
     <li
       className={cn(
         "flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:gap-3",
-        issue && "bg-destructive/5",
+        isError && "bg-destructive/5",
       )}
     >
       <FallbackIndex index={index} modality={modality} />
@@ -49,14 +52,17 @@ export function LlmTaskRowItem({
           provider={entry.provider}
           modelId={entry.model_id}
           disabled={disabled}
-          invalid={issue !== undefined}
-          ariaLabel={`Fallback ${String(index + 1)} de ${task}`}
+          invalid={isError}
+          ariaLabel={`Respaldo ${String(index + 1)} de ${task}`}
           onChange={(next) => {
             onChange(next.provider, next.modelId);
           }}
         />
         {issue ? (
-          <p className="mt-1.5 text-xs text-destructive" role="alert">
+          <p
+            className={cn("mt-1.5 text-xs", isError ? "text-destructive" : "text-muted-foreground")}
+            role={isError ? "alert" : undefined}
+          >
             {issue}
           </p>
         ) : null}

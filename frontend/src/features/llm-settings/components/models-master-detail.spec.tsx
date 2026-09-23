@@ -152,7 +152,7 @@ describe("ModelsMasterDetail", () => {
     const user = userEvent.setup();
     renderDetail({ tasks: ["video"], adminModels: [] });
     await user.click(screen.getByRole("tab", { name: /Video/i }));
-    expect(screen.getByTestId("media-gen-off").textContent).toMatch(/prompts/i);
+    expect(screen.getByTestId("media-gen-off").textContent).toMatch(/solo el guion/i);
     expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("false");
   });
 
