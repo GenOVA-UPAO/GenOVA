@@ -12,7 +12,7 @@ const PHASES = [
  */
 export function AuthBrandPanel() {
   return (
-    <aside className="relative hidden overflow-hidden bg-primary text-primary-foreground lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-10 xl:px-16">
+    <aside className="relative hidden overflow-hidden bg-brand-surface text-brand-surface-foreground lg:flex lg:flex-col lg:justify-between lg:px-12 lg:py-10 xl:px-16">
       <p className="font-display text-2xl font-semibold tracking-tight">GenOVA</p>
       <div className="max-w-lg">
         <h2 className="font-display text-4xl leading-[1.1] font-semibold tracking-tight xl:text-[2.75rem]">
@@ -23,19 +23,19 @@ export function AuthBrandPanel() {
             <li key={phase.name} className="grid grid-cols-[2rem_1fr] gap-x-3">
               <span
                 aria-hidden="true"
-                className="flex size-7 items-center justify-center rounded-full border border-primary-foreground/30 text-xs font-semibold tabular-nums"
+                className="flex size-7 items-center justify-center rounded-full border border-brand-surface-foreground/30 text-xs font-semibold tabular-nums"
               >
                 {index + 1}
               </span>
               <p className="text-sm leading-snug">
                 <span className="font-semibold">{phase.name}.</span>{" "}
-                <span className="text-primary-foreground/75">{phase.text}</span>
+                <span className="text-brand-surface-foreground/75">{phase.text}</span>
               </p>
             </li>
           ))}
         </ol>
       </div>
-      <p className="text-xs text-primary-foreground/65">
+      <p className="text-xs text-brand-surface-foreground/65">
         Universidad Privada Antenor Orrego · Exporta a SCORM 1.2 para tu aula virtual
       </p>
     </aside>
