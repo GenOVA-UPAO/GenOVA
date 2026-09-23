@@ -1,6 +1,6 @@
 import type { AuthMessageData } from "@/core/auth/auth.service";
 
-import { LOGIN_FAILED } from "./auth-copy";
+import { LOGIN_FAILED, TOO_MANY_ATTEMPTS } from "./auth-copy";
 
 export type LoginOutcome =
   | { kind: "totp"; ticket: string }
@@ -8,6 +8,15 @@ export type LoginOutcome =
   | { kind: "ok" }
   | { kind: "locked"; minutes: number }
   | { kind: "error"; message: string };
+
+/**
+ * El límite por IP (slowapi) responde 429 sin `message`: sin esto se veía el
+ * genérico «No se pudo iniciar sesión» y nadie sabía que bastaba con esperar.
+ */
+function errorMessage(status: number, data: AuthMessageData): string {
+  const fallback = status === 429 ? TOO_MANY_ATTEMPTS : LOGIN_FAILED;
+  return data.message ?? fallback;
+}
 
 export function loginOutcome(status: number, data: AuthMessageData): LoginOutcome {
   if (data.totp_required && data.ticket) return { kind: "totp", ticket: data.ticket };
@@ -18,7 +27,7 @@ export function loginOutcome(status: number, data: AuthMessageData): LoginOutcom
   if (status === 403 && data.retry_after_minutes) {
     return { kind: "locked", minutes: data.retry_after_minutes };
   }
-  return { kind: "error", message: data.message ?? LOGIN_FAILED };
+  return { kind: "error", message: errorMessage(status, data) };
 }
 
 export function loginErrorMessage(outcome: LoginOutcome): string {

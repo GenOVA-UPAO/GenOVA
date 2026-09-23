@@ -108,7 +108,13 @@ export async function loginWithCredentials(page, email, password, timeout = 2000
     await expect
       .poll(
         async () => {
-          await page.getByRole('button', { name: 'Entrar' }).click()
+          // Si el reintento anterior ya entró, no hay botón «Entrar» que pulsar:
+          // un click sin timeout se quedaba esperando hasta agotar el sondeo.
+          if (isAuthedPath(new URL(page.url()).pathname)) return true
+          await page
+            .getByRole('button', { name: 'Entrar' })
+            .click({ timeout: 4000 })
+            .catch(() => {})
           return isAuthedPath(new URL(page.url()).pathname)
         },
         { timeout: 90000, intervals: [5000] },
