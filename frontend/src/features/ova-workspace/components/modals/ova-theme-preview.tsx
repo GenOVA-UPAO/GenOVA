@@ -48,7 +48,7 @@ export function OvaThemePreview({ draft }: Readonly<{ draft: OvaTheme }>) {
         <div className="space-y-2 bg-background p-3.5">
           <div className="flex items-center justify-between gap-2">
             <p className="text-[9px] font-bold leading-none" style={{ color: primary }}>
-              ¿Qué es una red neuronal?
+              ¿Qué dice la ley de Ohm?
             </p>
             <span
               className="flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[7px] font-bold"

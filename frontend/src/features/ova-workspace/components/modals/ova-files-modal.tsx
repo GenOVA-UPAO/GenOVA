@@ -10,7 +10,10 @@ import { WorkspaceModal } from "../shared/workspace-modal";
 import { OvaFilesDropzone } from "./ova-files-dropzone";
 import { OvaFilesEmpty } from "./ova-files-empty";
 
-export default function OvaFilesModal({ uploads, onClose }: Readonly<{ uploads: ReturnType<typeof useOvaUploads>; onClose: () => void }>) {
+export default function OvaFilesModal({
+  uploads,
+  onClose,
+}: Readonly<{ uploads: ReturnType<typeof useOvaUploads>; onClose: () => void }>) {
   const files = uploads.data ?? [];
   const full = files.length >= uploads.maxUploadFiles;
   return (
@@ -48,15 +51,24 @@ export default function OvaFilesModal({ uploads, onClose }: Readonly<{ uploads: 
           <AlertDescription>{uploads.uploadError}</AlertDescription>
         </Alert>
       )}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-medium">Archivos adjuntos</h3>
-          <p className={cn("text-xs tabular-nums text-muted-foreground", full && "font-medium text-foreground")}>
-            {files.length} de {uploads.maxUploadFiles}
-          </p>
-        </div>
-        {files.length === 0 ? <OvaFilesEmpty /> : <FileChips files={files} onRemove={uploads.removeUpload} />}
-      </section>
+      {files.length === 0 ? (
+        <OvaFilesEmpty />
+      ) : (
+        <section className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-medium">Archivos adjuntos</h3>
+            <p
+              className={cn(
+                "text-xs tabular-nums text-muted-foreground",
+                full && "font-medium text-foreground",
+              )}
+            >
+              {files.length} de {uploads.maxUploadFiles}
+            </p>
+          </div>
+          <FileChips files={files} onRemove={uploads.removeUpload} />
+        </section>
+      )}
     </WorkspaceModal>
   );
 }
