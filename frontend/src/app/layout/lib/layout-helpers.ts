@@ -26,7 +26,7 @@ export function navLinkClasses(isActive: boolean): string {
 }
 
 export function profileLinkClasses(isActive: boolean): string {
-  return `flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${
+  return `flex items-center gap-3 rounded-lg px-2 py-2 transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 ${
     isActive ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-sidebar-accent"
   }`;
 }

@@ -5,7 +5,7 @@ export function NavbarBrand() {
     <Link
       to="/dashboard"
       aria-label="GenOVA"
-      className="font-display text-lg font-semibold tracking-tight text-foreground"
+      className="rounded-md font-display text-lg font-semibold tracking-tight text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       Gen<span className="text-primary">OVA</span>
     </Link>
