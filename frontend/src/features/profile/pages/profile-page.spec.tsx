@@ -72,11 +72,11 @@ describe("ProfilePage", () => {
     const user = userEvent.setup();
     render(<ProfilePage />);
 
-    const nameInput = screen.getByLabelText("Nombre Completo");
+    const nameInput = screen.getByLabelText("Nombre completo");
     await user.clear(nameInput);
     await user.type(nameInput, "Docente Actualizado");
 
-    await user.click(screen.getByRole("button", { name: "Guardar Cambios" }));
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
 
     await waitFor(() => {
       expect(handleSaveProfile).toHaveBeenCalledTimes(1);
@@ -100,9 +100,11 @@ describe("ProfilePage", () => {
 
     render(<ProfilePage />);
 
-    expect(screen.getByLabelText("Código Universitario (UPAO)")).toHaveValue("");
+    expect(screen.getByLabelText("Código universitario (UPAO)")).toHaveValue("");
     expect(screen.getByLabelText("Teléfono de contacto")).toHaveValue("");
-    expect(screen.getByLabelText("Sexo / Género")).toHaveValue("otro");
+    expect(screen.getByRole("combobox", { name: "Sexo" })).toHaveTextContent(
+      "Otro o prefiero no decirlo",
+    );
     expect(screen.queryByDisplayValue("null")).not.toBeInTheDocument();
   });
 

@@ -24,20 +24,25 @@ export function ModelsTaskTab({ task, selected, subtitle, onSelect }: Readonly<M
         onSelect(task);
       }}
       className={cn(
-        "flex w-full min-w-[9.5rem] items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-left transition-colors hover:bg-muted/60 md:min-w-0",
-        selected && "border-border bg-muted",
+        "relative flex w-full min-w-[9.5rem] items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none md:min-w-0",
+        selected &&
+          "bg-primary/8 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-primary hover:bg-primary/8 dark:bg-primary/15",
       )}
-      style={selected ? { boxShadow: "inset 3px 0 0 var(--primary, #0A3D91)" } : undefined}
     >
       <span
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted/50 text-[11px] font-bold"
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
+          selected ? "bg-primary/10 text-primary dark:bg-primary/20" : "bg-muted text-muted-foreground",
+        )}
         aria-hidden="true"
       >
         {meta.iconName ? <Icon name={meta.iconName} size="text-sm" /> : meta.icon}
       </span>
       <span className="min-w-0">
-        <span className="block text-sm font-semibold text-foreground">{meta.label}</span>
-        <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{subtitle}</span>
+        <span className="block text-sm font-medium text-foreground">{meta.label}</span>
+        <span className="mt-0.5 block truncate text-xs text-muted-foreground" title={subtitle}>
+          {subtitle}
+        </span>
       </span>
     </button>
   );

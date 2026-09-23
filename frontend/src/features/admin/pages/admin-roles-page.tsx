@@ -12,12 +12,12 @@ export function AdminRolesPage() {
   const controller = useAdminRolesController();
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-10">
+    <div className="mx-auto max-w-7xl space-y-6">
       <PageHeader
-        title="Gestión de Roles"
-        subtitle="Define los conjuntos de permisos y configuraciones de acceso para los diferentes perfiles del sistema."
+        title="Gestión de roles"
+        subtitle="Decide qué puede hacer cada perfil de usuario en GenOVA."
         actions={
-          <Button onClick={controller.openCreate}>
+          <Button onClick={controller.openCreate} className="max-md:h-11">
             <Icon name="plus" size="text-base" /> Nuevo rol
           </Button>
         }

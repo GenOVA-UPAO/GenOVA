@@ -19,7 +19,7 @@ export function ManageModelRow({ model, locked, enabled, onToggle }: Readonly<Ma
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${locked ? "opacity-60" : "hover:bg-muted/40"}`}
+      className={`flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors ${locked ? "" : "hover:bg-muted/50"}`}
     >
       <FlagSwitch
         size="sm"
@@ -32,26 +32,29 @@ export function ManageModelRow({ model, locked, enabled, onToggle }: Readonly<Ma
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="truncate text-xs font-medium text-foreground">
+          <span className="truncate text-sm font-medium text-foreground">
             {model.label ?? model.model_id}
           </span>
           {locked ? (
-            <Icon
-              name="lock"
-              size="text-[10px]"
-              className="shrink-0 text-muted-foreground"
-              label="Modelo base del sistema"
-            />
+            <span
+              className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground"
+              title="Modelo base del sistema: siempre está activo"
+            >
+              <Icon name="lock" size="text-xs" />
+              <span className="max-sm:sr-only">Modelo base</span>
+            </span>
           ) : null}
         </div>
         {model.description ? (
-          <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{model.description}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground" title={model.description}>
+            {model.description}
+          </p>
         ) : null}
       </div>
       <ModelPricingBadge free={free} variable={model.pricing === "Variable"} pricing={model.pricing} />
       {formatContextLength(model.context_length) ? (
         <span
-          className="shrink-0 text-[10px] text-muted-foreground tabular-nums"
+          className="hidden w-16 shrink-0 text-right text-xs text-muted-foreground tabular-nums sm:inline"
           title="Contexto máximo (tokens)"
         >
           {formatContextLength(model.context_length)}

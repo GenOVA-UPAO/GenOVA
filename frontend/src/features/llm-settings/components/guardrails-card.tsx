@@ -1,11 +1,12 @@
-import { Icon } from "@/core/components/icon";
-
 import { useGuardrails } from "../hooks/use-guardrails";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { guardrailsHasChanges } from "../lib/guardrails";
 import { GuardrailsModerationSection } from "./guardrails-moderation-section";
 import { GuardrailsTopicSection } from "./guardrails-topic-section";
+import { PlatformSection } from "./platform-section";
 import { SaveCardButton } from "./save-card-button";
+import { SectionError } from "./section-error";
+import { SettingListSkeleton } from "./setting-list-skeleton";
 
 export function GuardrailsCard() {
   const { loading, error, config, draft, saving, setDraft, save } = useGuardrails();
@@ -13,16 +14,10 @@ export function GuardrailsCard() {
   const hasChanges = draft ? guardrailsHasChanges(config, draft) : false;
 
   return (
-    <section className="glass-card space-y-6 rounded-3xl p-6 sm:p-8">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div>
-          <h2 className="flex items-center gap-2 font-display text-xl font-bold text-foreground">
-            <Icon name="shield" size="text-lg" className="text-primary" /> Guardrails de generación
-          </h2>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">
-            Aplican a los prompts de todo el que genere un OVA en la plataforma.
-          </p>
-        </div>
+    <PlatformSection
+      title="Filtros de contenido"
+      description="Se aplican a los prompts de cualquier persona que genere un OVA en la plataforma."
+      action={
         <SaveCardButton
           disabled={!hasChanges}
           saving={saving}
@@ -30,20 +25,12 @@ export function GuardrailsCard() {
             void save();
           }}
         />
-      </div>
-      {loading ? (
-        <div className="space-y-3">
-          <div className="h-20 animate-pulse rounded-2xl bg-muted" />
-          <div className="h-28 animate-pulse rounded-2xl bg-muted" />
-        </div>
-      ) : null}
-      {error ? (
-        <p className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm font-bold text-destructive">
-          {error}
-        </p>
-      ) : null}
+      }
+    >
+      {loading ? <SettingListSkeleton rows={2} /> : null}
+      {error ? <SectionError message={error} /> : null}
       {!loading && !error && draft ? (
-        <div className="space-y-6">
+        <ul className="divide-y divide-border rounded-xl border border-border bg-card">
           <GuardrailsTopicSection
             draft={draft}
             saving={saving}
@@ -68,8 +55,8 @@ export function GuardrailsCard() {
               setDraft({ ...draft, model });
             }}
           />
-        </div>
+        </ul>
       ) : null}
-    </section>
+    </PlatformSection>
   );
 }

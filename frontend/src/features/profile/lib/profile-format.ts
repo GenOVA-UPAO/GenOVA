@@ -24,6 +24,13 @@ export function formatDate(isoString?: string | null): string {
   });
 }
 
+/** Rol legible: «administrador» → «Administrador», «usuarios_prueba» → «Usuarios prueba». */
+export function formatRole(role: string): string {
+  const spaced = role.replaceAll("_", " ").trim();
+  if (spaced === "") return "Usuario";
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
 function resolveGender(value: string | null | undefined): string {
   if (value !== null && value !== undefined && value !== "") return value;
   return "otro";

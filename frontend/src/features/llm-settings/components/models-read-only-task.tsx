@@ -30,12 +30,10 @@ export function ModelsReadOnlyTask({
   const subtitle = platformSubtitle(task, draft, adminModels, defaults);
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border/50 bg-muted/30 px-4 py-3">
-        <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-          Plataforma UPAO
-        </p>
-        <p className="mt-1 text-sm font-semibold text-foreground">{subtitle}</p>
-        <div className="mt-2">
+      <div className="space-y-2">
+        <p className="text-sm font-medium">Modelo de la plataforma</p>
+        <p className="text-sm text-foreground">{subtitle}</p>
+        <div>
           <ModelTaskCardChips
             fallbacks={draft?.fallbacks ?? []}
             models={adminModels}
@@ -54,8 +52,8 @@ export function ModelsReadOnlyTask({
         />
       ) : (
         <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
-          Configuración de plataforma en solo lectura. Añade una API key en Credenciales para
-          personalizar tus modelos.
+          Esta configuración la define el administrador. Añade tu clave API en Credenciales para
+          elegir tus propios modelos.
         </p>
       )}
     </div>

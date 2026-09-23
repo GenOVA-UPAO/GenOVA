@@ -1,10 +1,10 @@
 import { EmptyState } from "@/core/components/empty-state";
 import { QueryErrorState } from "@/core/components/query-error-state";
-import { SkeletonGrid } from "@/core/components/skeleton-grid";
 import { Button } from "@/core/components/ui/button";
 
 import type { Role } from "../lib/types";
 import { RoleList } from "./role-list";
+import { RolesSkeleton } from "./roles-skeleton";
 
 interface RolesPanelProps {
   isLoading: boolean;
@@ -26,14 +26,7 @@ export function RolesPanel({
   onDelete,
 }: Readonly<RolesPanelProps>) {
   if (isLoading) {
-    return (
-      <SkeletonGrid
-        count={3}
-        className="sm:grid-cols-1 lg:grid-cols-1"
-        itemClassName="h-36"
-        label="Cargando roles"
-      />
-    );
+    return <RolesSkeleton />;
   }
 
   if (error !== "") {
@@ -45,12 +38,8 @@ export function RolesPanel({
       <EmptyState
         icon="shield-check"
         title="Aún no hay roles"
-        description="Crea el primer conjunto de permisos para los perfiles del sistema."
-        action={
-          <Button onClick={onCreate}>
-            Nuevo rol
-          </Button>
-        }
+        description="Crea un rol para decidir qué puede hacer cada perfil de usuario."
+        action={<Button onClick={onCreate}>Nuevo rol</Button>}
       />
     );
   }

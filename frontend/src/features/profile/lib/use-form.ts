@@ -45,10 +45,17 @@ export function useForm<T extends Record<keyof T, string>>(schema: z.ZodType<T>,
     };
   }
 
+  /** Marca todos los campos como tocados (al enviar) para mostrar sus errores. */
+  function touchAll() {
+    const all: Partial<Record<keyof T, boolean>> = {};
+    for (const key of Object.keys(values) as (keyof T)[]) all[key] = true;
+    setTouched(all);
+  }
+
   function reset(next: T) {
     setValues(next);
     setTouched({});
   }
 
-  return { values, errorFor, isValid: parsed.success, bind, reset, setField, touch };
+  return { values, errorFor, isValid: parsed.success, bind, reset, setField, touch, touchAll };
 }

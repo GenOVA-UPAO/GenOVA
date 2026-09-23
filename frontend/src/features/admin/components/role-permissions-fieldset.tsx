@@ -14,13 +14,13 @@ export function RolePermissionsFieldset({
   onToggle,
 }: Readonly<RolePermissionsFieldsetProps>) {
   return (
-    <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+    <div className="max-h-64 divide-y divide-border overflow-y-auto rounded-lg border border-border">
       {AVAILABLE_PERMISSIONS.map((permission) => {
         const checked = permissions.includes(permission.id);
         return (
           <label
             key={permission.id}
-            className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-muted/20 p-3 transition-colors hover:bg-muted/40"
+            className="flex cursor-pointer items-start gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50"
           >
             <span className="relative mt-0.5 flex items-center justify-center">
               <input
@@ -41,7 +41,7 @@ export function RolePermissionsFieldset({
               )}
             </span>
             <span className="flex flex-col">
-              <span className="text-sm font-semibold">{permission.label}</span>
+              <span className="text-sm font-medium">{permission.label}</span>
               <span className="mt-0.5 text-xs text-muted-foreground">{permission.desc}</span>
             </span>
           </label>

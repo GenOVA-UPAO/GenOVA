@@ -11,13 +11,12 @@ export function UsersEmpty({ isFiltering, onClearFilters }: Readonly<UsersEmptyP
   if (isFiltering) {
     return (
       <EmptyState
-        className="border-0 bg-transparent"
         icon="magnifying-glass-minus"
         title="Sin resultados"
         description="No hay coincidencias para ese criterio."
         action={
           <Button variant="outline" onClick={onClearFilters}>
-            Limpiar búsqueda
+            Quitar filtros
           </Button>
         }
       />
@@ -26,7 +25,6 @@ export function UsersEmpty({ isFiltering, onClearFilters }: Readonly<UsersEmptyP
 
   return (
     <EmptyState
-      className="border-0 bg-transparent"
       icon="users-three"
       title="No hay usuarios"
       description="Cuando se registren en la plataforma aparecerán aquí."

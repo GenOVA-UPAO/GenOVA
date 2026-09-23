@@ -4,6 +4,7 @@ import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -55,15 +56,16 @@ export function EditUserModal({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
+      <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Editar Perfil: {user.full_name ?? user.email}</DialogTitle>
+          <DialogTitle>Editar perfil</DialogTitle>
+          <DialogDescription>{user.full_name ?? user.email}</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(event) => {
             handleSubmit(event);
           }}
-          className="space-y-4"
+          className="space-y-5"
         >
           <EditUserFields
             values={values}
@@ -73,11 +75,11 @@ export function EditUserModal({
           />
           <EditUserContactFields values={values} disabled={isSubmitting} onChange={handleChange} />
           <DialogFooter>
-            <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
               Cancelar
             </Button>
             <Button type="submit" loading={isSubmitting}>
-              Guardar Cambios
+              Guardar cambios
             </Button>
           </DialogFooter>
         </form>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useModalDismiss } from "@/core/hooks/use-modal-dismiss";
+import { Dialog, DialogContent } from "@/core/components/ui/dialog";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { groupModels, sortModels } from "../lib/catalog-sort";
@@ -20,7 +20,6 @@ export function ManageModelsModal({ open, onClose, onGoToApiKeys }: Readonly<Man
   const store = useLlmSettings();
   const [connectOpen, setConnectOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState("");
-  useModalDismiss(onClose, open);
 
   const grouped = groupModels(
     sortModels(store.catalogFull, store.sortKey),
@@ -29,23 +28,15 @@ export function ManageModelsModal({ open, onClose, onGoToApiKeys }: Readonly<Man
     store.sortKey !== "default",
   );
 
-  if (!open) return null;
-
   return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4"
-      onClick={onClose}
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
     >
-      <div
-        role="presentation"
-        className="relative flex max-h-[90vh] w-[min(920px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
-      >
+      <DialogContent className="flex max-h-[90dvh] w-[min(920px,calc(100vw-2rem))] flex-col gap-0 overflow-hidden p-0 sm:max-w-[920px]">
         <ManageModelsHeader
-          onClose={onClose}
           onConnect={() => {
             setConnectOpen(true);
           }}
@@ -82,7 +73,7 @@ export function ManageModelsModal({ open, onClose, onGoToApiKeys }: Readonly<Man
             store.handleType("all");
           }}
         />
-      </div>
+      </DialogContent>
       <ConnectProviderModal
         open={connectOpen}
         onClose={() => {
@@ -93,6 +84,6 @@ export function ManageModelsModal({ open, onClose, onGoToApiKeys }: Readonly<Man
           onGoToApiKeys(provider);
         }}
       />
-    </div>
+    </Dialog>
   );
 }

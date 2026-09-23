@@ -13,7 +13,7 @@ export function ModelsPage() {
 
   if (page.store.error) {
     return (
-      <div className="mx-auto max-w-7xl space-y-6 pb-28 duration-300 animate-in fade-in">
+      <div className="mx-auto max-w-7xl space-y-6 pb-28">
         <ModelsPageHeader />
         <QueryErrorState title={page.store.error} onRetry={page.store.refetch} />
       </div>
@@ -22,7 +22,7 @@ export function ModelsPage() {
 
   return (
     <LlmSettingsContext.Provider value={page.store}>
-      <div className="mx-auto max-w-7xl space-y-6 pb-28 duration-300 animate-in fade-in">
+      <div className="mx-auto max-w-7xl space-y-6 pb-28">
         <ModelsPageHeader status={page.headerStatus} />
         <ModelsPageTabs
           activeTab={page.activeTab}

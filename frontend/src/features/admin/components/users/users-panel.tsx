@@ -13,7 +13,6 @@ interface UsersPanelProps {
   currentUserId: string;
   isCurrentUserAdmin: boolean;
   updatingUserId: string;
-  searchQuery: string;
   isFiltering: boolean;
   handlers: UsersHandlers;
   onRetry: () => void;
@@ -28,7 +27,6 @@ export function UsersPanel({
   currentUserId,
   isCurrentUserAdmin,
   updatingUserId,
-  searchQuery,
   isFiltering,
   handlers,
   onRetry,
@@ -41,7 +39,6 @@ export function UsersPanel({
       currentUserId={currentUserId}
       isCurrentUserAdmin={isCurrentUserAdmin}
       updatingUserId={updatingUserId}
-      searchQuery={searchQuery}
       handlers={handlers}
     />
   );
@@ -49,14 +46,10 @@ export function UsersPanel({
   if (isLoading) {
     content = <UsersSkeleton />;
   } else if (error !== "") {
-    content = <QueryErrorState title="No se pudieron cargar los usuarios" onRetry={onRetry} />;
+    return <QueryErrorState title="No se pudieron cargar los usuarios" onRetry={onRetry} />;
   } else if (users.length === 0) {
-    content = <UsersEmpty isFiltering={isFiltering} onClearFilters={onClearFilters} />;
+    return <UsersEmpty isFiltering={isFiltering} onClearFilters={onClearFilters} />;
   }
 
-  return (
-    <div className="glass-card overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
-      {content}
-    </div>
-  );
+  return <div className="overflow-hidden rounded-xl border border-border bg-card">{content}</div>;
 }

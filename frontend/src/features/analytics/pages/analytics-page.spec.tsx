@@ -157,8 +157,8 @@ describe("AnalyticsPage", () => {
     expect(screen.getByText("42")).toBeInTheDocument();
     expect(screen.getByText("Usuarios")).toBeInTheDocument();
     expect(screen.getByText("15")).toBeInTheDocument();
-    expect(screen.getByText("Alcance")).toBeInTheDocument();
-    expect(screen.getByText("Global")).toBeInTheDocument();
+    expect(screen.getByText("Listos para usar")).toBeInTheDocument();
+    expect(screen.getByText("48 % del total")).toBeInTheDocument();
 
     expect(screen.getByText("OVAs por estado")).toBeInTheDocument();
     expect(screen.getByText("Listos")).toBeInTheDocument();
@@ -176,7 +176,7 @@ describe("AnalyticsPage", () => {
     expect(screen.getByText("Sin título")).toBeInTheDocument();
   });
 
-  it("muestra el alcance de cohorte y alumnos vinculados cuando el scope no es platform", () => {
+  it("muestra alumnos vinculados cuando el scope no es platform", () => {
     const cohortData: AnalyticsData = {
       ...MOCK_ANALYTICS_PLATFORM,
       scope: "teacher",
@@ -197,6 +197,7 @@ describe("AnalyticsPage", () => {
     expect(screen.getByText("Métricas de tus alumnos vinculados.")).toBeInTheDocument();
     expect(screen.getByText("Alumnos vinculados")).toBeInTheDocument();
     expect(screen.getByText("35")).toBeInTheDocument();
-    expect(screen.getByText("Cohorte")).toBeInTheDocument();
+    expect(screen.getByText("Listos para usar")).toBeInTheDocument();
+    expect(screen.getByText("48 % del total")).toBeInTheDocument();
   });
 });

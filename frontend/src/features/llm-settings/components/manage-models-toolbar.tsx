@@ -21,57 +21,41 @@ interface ManageModelsToolbarProps {
 
 export function ManageModelsToolbar(props: Readonly<ManageModelsToolbarProps>) {
   return (
-    <div className="flex items-center gap-2 border-b border-border/40 bg-background px-4 py-3">
-      <ManageModelsSearchField value={props.localSearch} onSearch={props.onSearch} />
+    <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-border px-5 py-3 sm:flex sm:flex-wrap sm:items-center">
+      <div className="col-span-2 sm:flex-1">
+        <ManageModelsSearchField value={props.localSearch} onSearch={props.onSearch} />
+      </div>
       <ManageModelsSelect
         value={orAll(props.typeFilter)}
         label="Filtrar por tipo de modelo"
-        className="max-w-[130px]"
+        options={props.types.map((type) => ({ value: type, label: TYPE_LABELS[type] ?? type }))}
         onChange={props.onType}
-      >
-        {props.types.map((type) => (
-          <option key={type} value={type}>
-            {TYPE_LABELS[type] ?? type}
-          </option>
-        ))}
-      </ManageModelsSelect>
+      />
       <ManageModelsSelect
         value={orAll(props.categoryFilter)}
         label="Filtrar por categoría"
+        options={props.categories.map((cat) => ({
+          value: cat,
+          label: CATEGORY_LABELS[cat] ?? cat,
+        }))}
         onChange={props.onCategory}
-      >
-        {props.categories.map((cat) => (
-          <option key={cat} value={cat}>
-            {CATEGORY_LABELS[cat] ?? cat}
-          </option>
-        ))}
-      </ManageModelsSelect>
+      />
       <ManageModelsSelect
         value={props.sortKey}
         label="Ordenar"
+        options={SORT_OPTIONS.map((opt) => ({ value: opt.key, label: opt.label }))}
         onChange={(value) => {
           props.onSort(value as SortKey);
         }}
-      >
-        {SORT_OPTIONS.map((opt) => (
-          <option key={opt.key} value={opt.key}>
-            {opt.label}
-          </option>
-        ))}
-      </ManageModelsSelect>
+      />
       <ManageModelsSelect
         value={props.groupBy}
         label="Agrupar"
+        options={GROUP_OPTIONS.map((opt) => ({ value: opt.key, label: opt.label }))}
         onChange={(value) => {
           props.onGroup(value as GroupBy);
         }}
-      >
-        {GROUP_OPTIONS.map((opt) => (
-          <option key={opt.key} value={opt.key}>
-            {opt.label}
-          </option>
-        ))}
-      </ManageModelsSelect>
+      />
     </div>
   );
 }

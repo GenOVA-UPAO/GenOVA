@@ -1,9 +1,14 @@
-import { Icon } from "@/core/components/icon";
 import { Label } from "@/core/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
 
+import { formatRoleName, roleUserCountLabel } from "../lib/role-utils";
 import type { Role } from "../lib/types";
-
-const LABEL_CLASS = "text-xs font-bold uppercase tracking-wider text-muted-foreground";
 
 interface DeleteRoleBodyProps {
   role: Role;
@@ -24,49 +29,39 @@ export function DeleteRoleBody({
 
   if (userCount === 0) {
     return (
-      <div className="text-sm text-muted-foreground">
-        Esta acción es permanente e irreversible. Se borrarán todas las configuraciones del rol y no
-        hay usuarios asignados que se verán afectados.
-      </div>
+      <p className="text-sm text-muted-foreground">
+        Ningún usuario tiene este rol, así que nadie perderá acceso. Esta acción no se puede
+        deshacer.
+      </p>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-accent-brand/30 bg-accent-brand/10 p-4 text-sm text-accent-brand">
-        <div className="flex gap-2.5">
-          <Icon name="warning" size="text-lg" />
-          <div>
-            <p className="font-semibold">Reasignación requerida</p>
-            <p className="mt-0.5 text-xs text-accent-brand/90">
-              Este rol tiene <span className="font-bold">{userCount}</span> usuario(s) asignado(s).
-              Para eliminarlo, migra sus usuarios a otro rol activo.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="reassign-role-select" className={LABEL_CLASS}>
-          Reasignar usuarios a:
-        </Label>
-        <select
-          id="reassign-role-select"
-          value={reassignRoleId}
+      <p className="text-sm text-muted-foreground">
+        Este rol tiene {userCount === 1 ? "1 usuario asignado" : `${String(userCount)} usuarios asignados`}.
+        Elige a qué rol pasarán antes de eliminarlo. Esta acción no se puede deshacer.
+      </p>
+      <div className="space-y-2">
+        <Label htmlFor="reassign-role-select">Pasar sus usuarios a</Label>
+        <Select
+          value={reassignRoleId === "" ? undefined : reassignRoleId}
           disabled={isDeleting}
-          onChange={(event) => {
-            onReassignChange(event.target.value);
-          }}
-          className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+          onValueChange={onReassignChange}
         >
-          <option value="">-- Selecciona un rol de destino --</option>
-          {roles
-            .filter((candidate) => candidate.id !== role.id)
-            .map((candidate) => (
-              <option key={candidate.id} value={candidate.id}>
-                {candidate.name} ({candidate.user_count ?? 0} usuarios)
-              </option>
-            ))}
-        </select>
+          <SelectTrigger id="reassign-role-select" className="w-full">
+            <SelectValue placeholder="Elige un rol" />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            {roles
+              .filter((candidate) => candidate.id !== role.id)
+              .map((candidate) => (
+                <SelectItem key={candidate.id} value={candidate.id}>
+                  {formatRoleName(candidate.name)} ({roleUserCountLabel(candidate.user_count ?? 0).toLowerCase()})
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

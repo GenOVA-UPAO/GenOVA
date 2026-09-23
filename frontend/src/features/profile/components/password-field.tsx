@@ -1,7 +1,7 @@
-import { Label } from "@/core/components/ui/label";
 import { PasswordInput } from "@/core/components/ui/password-input";
 
-const LABEL_CLASS = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
+import { describedBy } from "../lib/described-by";
+import { FormField } from "./form-field";
 
 interface PasswordFieldProps {
   id: string;
@@ -9,6 +9,7 @@ interface PasswordFieldProps {
   value: string;
   error?: string;
   hint?: string;
+  autoComplete: "current-password" | "new-password";
   disabled: boolean;
   onChange: (value: string) => void;
   onBlur: () => void;
@@ -20,29 +21,25 @@ export function PasswordField({
   value,
   error,
   hint,
+  autoComplete,
   disabled,
   onChange,
   onBlur,
 }: Readonly<PasswordFieldProps>) {
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id} className={LABEL_CLASS}>
-        {label}
-      </Label>
+    <FormField id={id} label={label} hint={hint} error={error}>
       <PasswordInput
         id={id}
-        placeholder="••••••••"
         value={value}
         disabled={disabled}
-        autoComplete="new-password"
+        autoComplete={autoComplete}
         aria-invalid={error !== undefined ? true : undefined}
+        aria-describedby={describedBy(id, error, hint)}
         onChange={(event) => {
           onChange(event.target.value);
         }}
         onBlur={onBlur}
       />
-      {hint !== undefined && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {error !== undefined && <p className="text-xs font-medium text-destructive">{error}</p>}
-    </div>
+    </FormField>
   );
 }

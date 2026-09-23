@@ -127,7 +127,7 @@ describe("ModelsPage", () => {
     expect(screen.queryByText("Proveedores conectados")).toBeNull();
     expect(screen.queryByText("Modelos favoritos")).toBeNull();
     expect(screen.queryByText("Cambios sin guardar")).toBeNull();
-    expect(screen.getByText(/1 \/ 2 proveedores · 1 favorito/)).toBeTruthy();
+    expect(screen.getByText(/1 de 2 proveedores conectados · 1 modelo favorito/)).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Modelos$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Credenciales$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /Plataforma/i })).toBeTruthy();
@@ -137,7 +137,7 @@ describe("ModelsPage", () => {
   it("says all models are available when the favorites list is empty", () => {
     store.enabledModels = [];
     renderPage();
-    expect(screen.getByText(/Todos los modelos disponibles/)).toBeTruthy();
+    expect(screen.getByText(/todos los modelos del catálogo/i)).toBeTruthy();
   });
 
   it("shows sticky save bar only when dirty", () => {
@@ -182,7 +182,6 @@ describe("ModelsPage", () => {
     renderPage();
     await user.click(screen.getByRole("tab", { name: /^Credenciales$/i }));
     expect(screen.getByText("Tus claves")).toBeTruthy();
-    expect(screen.getByText("Claves de la plataforma")).toBeTruthy();
     expect(screen.getByTestId("user-keys")).toBeTruthy();
     expect(screen.getByTestId("platform-keys")).toBeTruthy();
   });

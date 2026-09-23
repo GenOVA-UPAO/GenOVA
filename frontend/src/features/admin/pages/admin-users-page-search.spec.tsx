@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apiJson } from "@/core/lib/http";
 
@@ -53,6 +53,17 @@ const SERVER_SEARCH_USERS = {
   total_pages: 1,
 };
 
+beforeAll(() => {
+  // jsdom no implementa Pointer Events ni scrollIntoView; Radix Select los usa.
+  for (const name of ["hasPointerCapture", "releasePointerCapture", "setPointerCapture"] as const) {
+    Object.defineProperty(Element.prototype, name, { configurable: true, value: vi.fn() });
+  }
+  Object.defineProperty(Element.prototype, "scrollIntoView", {
+    configurable: true,
+    value: vi.fn(),
+  });
+});
+
 function createTestQueryClient() {
   return new QueryClient({
     defaultOptions: {
@@ -99,7 +110,7 @@ describe("AdminUsersPage búsqueda en servidor", () => {
 
     expect(await screen.findByText("from-server@example.com")).toBeInTheDocument();
     expect(screen.queryByText("alice@example.com")).not.toBeInTheDocument();
-    expect(screen.getByText("1 usuarios registrados en la plataforma")).toBeInTheDocument();
+    expect(screen.getByText("1 usuario registrado en la plataforma")).toBeInTheDocument();
     expect(screen.queryByText("Sin resultados")).not.toBeInTheDocument();
   });
 
@@ -108,7 +119,8 @@ describe("AdminUsersPage búsqueda en servidor", () => {
     renderPage(<AdminUsersPage />);
     expect(await screen.findByText("alice@example.com")).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText("Filtrar usuarios por rol"), ADMIN_ROLE_ID);
+    await user.click(screen.getByRole("combobox", { name: "Filtrar usuarios por rol" }));
+    await user.click(await screen.findByRole("option", { name: "Administrador" }));
 
     await waitFor(() => {
       expect(apiJson).toHaveBeenCalledWith(

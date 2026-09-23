@@ -31,7 +31,7 @@ export function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl space-y-6 pb-12 animate-in fade-in duration-300">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader title="Analítica de aprendizaje" subtitle="Cargando métricas…" />
         <AnalyticsSkeleton />
       </div>
@@ -40,7 +40,7 @@ export function AnalyticsPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl space-y-6 pb-12 animate-in fade-in duration-300">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader title="Analítica de aprendizaje" />
         <QueryErrorState
           title="No se pudieron cargar las analíticas"
@@ -54,7 +54,7 @@ export function AnalyticsPage() {
 
   if (!data) {
     return (
-      <div className="mx-auto max-w-7xl space-y-6 pb-12 animate-in fade-in duration-300">
+      <div className="mx-auto max-w-7xl space-y-6">
         <PageHeader title="Analítica de aprendizaje" />
         <AnalyticsEmpty
           onRetry={() => {
@@ -65,23 +65,18 @@ export function AnalyticsPage() {
     );
   }
 
-  const scopeLabel =
-    data.scope === "platform" ? "toda la plataforma" : "tus alumnos vinculados";
+  const scopeLabel = data.scope === "platform" ? "toda la plataforma" : "tus alumnos vinculados";
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-12 animate-in fade-in duration-300">
-      <PageHeader
-        title="Analítica de aprendizaje"
-        subtitle={`Métricas de ${scopeLabel}.`}
-      />
-
-      <div className="space-y-6">
-        <StatCards totals={data.totals} scope={data.scope} />
-        <div className="grid gap-6 md:grid-cols-2">
+    <div className="mx-auto max-w-7xl space-y-6">
+      <PageHeader title="Analítica de aprendizaje" subtitle={`Métricas de ${scopeLabel}.`} />
+      <StatCards data={data} />
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <RecentOvas ovas={data.recent_ovas} className="max-lg:order-last" />
+        <div className="min-w-0 space-y-6">
           <StatusBreakdown byStatus={data.ova_by_status} />
           <TopCreators creators={data.top_creators} />
         </div>
-        <RecentOvas ovas={data.recent_ovas} />
       </div>
     </div>
   );

@@ -1,15 +1,16 @@
 import { type SyntheticEvent, useState } from "react";
 
-import { Icon } from "@/core/components/icon";
-import { Button, Spinner } from "@/core/components/ui/button";
+import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
-import { Label } from "@/core/components/ui/label";
 
+import { describedBy } from "../lib/described-by";
 import { totpCodeError } from "../lib/totp-code";
 import type { SetupData } from "../lib/types";
 import { BackupCodesBox } from "./backup-codes-box";
 import { CopyField } from "./copy-field";
 import { ErrorAlert } from "./error-alert";
+import { FormField } from "./form-field";
+import { ProfileSection } from "./profile-section";
 
 interface TotpSetupPanelProps {
   data: SetupData;
@@ -38,19 +39,18 @@ export function TotpSetupPanel({
     onConfirm(code);
   };
 
+  const fieldError = showError ? error : undefined;
+
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2">
-        <span className="text-accent-brand">
-          <Icon name="shield-check" size="text-lg" />
-        </span>
-        <h3 className="text-sm font-semibold">Configura tu autenticador</h3>
-      </div>
-      <ol className="list-inside list-decimal space-y-2 text-xs text-muted-foreground">
-        <li>Abre tu app autenticadora y escanea el código QR (o copia la clave manualmente).</li>
-        <li>Ingresa el código de 6 dígitos que genera la app para confirmar.</li>
+    <ProfileSection
+      title="Configura tu app autenticadora"
+      description="Añade GenOVA a tu app autenticadora y confirma con el código que genera."
+    >
+      <ol className="list-inside list-decimal space-y-1.5 text-sm text-muted-foreground">
+        <li>Abre la app y añade una cuenta con la URI o la clave secreta de abajo.</li>
+        <li>Escribe el código de 6 dígitos que aparece en la app.</li>
       </ol>
-      <div className="space-y-2 rounded-lg bg-muted/40 p-3">
+      <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-3">
         <CopyField
           label="URI de aprovisionamiento"
           value={data.provisioning_uri}
@@ -59,34 +59,33 @@ export function TotpSetupPanel({
         <CopyField label="Clave secreta" value={data.secret} ariaLabel="Copiar clave" mono />
       </div>
       <BackupCodesBox codes={data.backup_codes} />
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="code">Código de verificación</Label>
-          <Input
-            id="code"
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            placeholder="123456"
-            value={code}
-            aria-invalid={showError ? true : undefined}
-            onChange={(event) => {
-              setCode(event.target.value);
-            }}
-          />
-          {showError && <p className="text-xs text-destructive">{error}</p>}
+      <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <div className="sm:w-56">
+          <FormField id="code" label="Código de verificación" error={fieldError}>
+            <Input
+              id="code"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={code}
+              aria-invalid={showError ? true : undefined}
+              aria-describedby={describedBy("code", fieldError)}
+              onChange={(event) => {
+                setCode(event.target.value);
+              }}
+            />
+          </FormField>
         </div>
         <ErrorAlert message={serverError} />
-        <div className="flex gap-2">
-          <Button type="submit" size="sm" disabled={isSubmitting || code === ""}>
-            {isSubmitting && <Spinner />}
-            {isSubmitting ? "Verificando..." : "Confirmar y activar"}
+        <div className="flex flex-col-reverse gap-2 sm:flex-row">
+          <Button type="submit" className="max-sm:h-11" loading={isSubmitting}>
+            Confirmar y activar
           </Button>
-          <Button type="button" size="sm" variant="ghost" onClick={onCancel}>
+          <Button type="button" variant="ghost" className="max-sm:h-11" onClick={onCancel}>
             Cancelar
           </Button>
         </div>
       </form>
-    </div>
+    </ProfileSection>
   );
 }

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { getLlmSettings } from "../api/llm-settings.api";
 import { LlmSettingsContext } from "../hooks/use-llm-settings";
@@ -19,6 +20,17 @@ const FLASH = {
   model_id: "deepseek/deepseek-v4-flash",
   label: "DeepSeek V4 Flash (OpenRouter)",
 };
+
+beforeAll(() => {
+  // jsdom no implementa Pointer Events ni scrollIntoView; Radix Select los usa.
+  for (const name of ["hasPointerCapture", "releasePointerCapture", "setPointerCapture"] as const) {
+    Object.defineProperty(Element.prototype, name, { configurable: true, value: vi.fn() });
+  }
+  Object.defineProperty(Element.prototype, "scrollIntoView", {
+    configurable: true,
+    value: vi.fn(),
+  });
+});
 
 function Harness() {
   const store = useLlmSettingsStore();
@@ -57,11 +69,10 @@ describe("LlmSettingsForm", () => {
 
     renderForm();
 
-    const select = await screen.findByLabelText("Texto");
-    const values = Array.from(select.querySelectorAll("option")).map((option) => option.value);
-    expect(
-      values.filter((value) => value === "openrouter::deepseek/deepseek-v4-flash"),
-    ).toHaveLength(1);
-    expect(new Set(values).size).toBe(values.length);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("combobox", { name: "Texto" }));
+    const names = (await screen.findAllByRole("option")).map((option) => option.textContent);
+    expect(names.filter((name) => name.startsWith("DeepSeek V4 Flash"))).toHaveLength(1);
+    expect(new Set(names).size).toBe(names.length);
   });
 });

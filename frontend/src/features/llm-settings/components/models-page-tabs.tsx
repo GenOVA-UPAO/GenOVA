@@ -6,9 +6,8 @@ import type { Draft } from "../lib/llm-config-draft";
 import { ModelsCredentialsTab } from "./models-credentials-tab";
 import { ModelsMasterDetail } from "./models-master-detail";
 import { ModelsPlatformTab } from "./models-platform-tab";
-
-const TAB_TRIGGER =
-  "inline-flex shrink-0 items-center justify-center rounded-xl px-3 py-2.5 text-sm font-semibold tracking-tight text-muted-foreground sm:px-5 hover:text-foreground data-active:bg-card data-active:text-foreground data-active:shadow-sm data-active:ring-1 data-active:ring-border/60";
+import { ModelsTabSkeleton } from "./models-tab-skeleton";
+import { SECTION_TABS_LIST, SECTION_TABS_TRIGGER } from "./section-tabs";
 
 interface ModelsPageTabsProps {
   activeTab: string;
@@ -26,33 +25,23 @@ interface ModelsPageTabsProps {
 
 export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
   return (
-    <Tabs value={props.activeTab} onValueChange={props.onTabChange} className="block space-y-5">
-      <div className="flex justify-center">
-        <TabsList className="inline-flex h-auto w-max max-w-full flex-nowrap items-center justify-start gap-1 overflow-x-auto rounded-2xl border border-border/70 bg-muted/40 p-1.5 shadow-sm backdrop-blur-sm group-data-horizontal/tabs:h-auto">
-          <TabsTrigger value="models" className={TAB_TRIGGER}>
-            Modelos
+    <Tabs value={props.activeTab} onValueChange={props.onTabChange} className="flex-col gap-6">
+      <TabsList variant="line" className={SECTION_TABS_LIST}>
+        <TabsTrigger value="models" className={SECTION_TABS_TRIGGER}>
+          Modelos
+        </TabsTrigger>
+        <TabsTrigger value="credentials" className={SECTION_TABS_TRIGGER}>
+          Credenciales
+        </TabsTrigger>
+        {props.isAdmin ? (
+          <TabsTrigger value="platform" className={SECTION_TABS_TRIGGER}>
+            Plataforma
           </TabsTrigger>
-          <TabsTrigger value="credentials" className={TAB_TRIGGER}>
-            Credenciales
-          </TabsTrigger>
-          {props.isAdmin ? (
-            <TabsTrigger value="platform" className={TAB_TRIGGER}>
-              Plataforma
-              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[9px] font-bold tracking-wider text-amber-800 uppercase ring-1 ring-amber-500/25 dark:text-amber-400">
-                Admin
-              </span>
-            </TabsTrigger>
-          ) : null}
-        </TabsList>
-      </div>
-      <TabsContent value="models" className="mt-0 block space-y-6">
+        ) : null}
+      </TabsList>
+      <TabsContent value="models" className="block space-y-6">
         {props.adminLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="h-44 animate-pulse rounded-2xl bg-muted" />
-            <div className="h-44 animate-pulse rounded-2xl bg-muted" />
-            <div className="h-44 animate-pulse rounded-2xl bg-muted" />
-            <div className="h-44 animate-pulse rounded-2xl bg-muted" />
-          </div>
+          <ModelsTabSkeleton />
         ) : (
           <ModelsMasterDetail
             tasks={props.tasks}
@@ -66,11 +55,11 @@ export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
           />
         )}
       </TabsContent>
-      <TabsContent value="credentials" className="mt-0 block space-y-6">
+      <TabsContent value="credentials" className="block space-y-6">
         <ModelsCredentialsTab isAdmin={props.isAdmin} />
       </TabsContent>
       {props.isAdmin ? (
-        <TabsContent value="platform" className="mt-0 block space-y-6">
+        <TabsContent value="platform" className="block space-y-6">
           <ModelsPlatformTab />
         </TabsContent>
       ) : null}

@@ -1,6 +1,7 @@
 import type { EngineNode } from "../hooks/nodes-config.types";
 import { useNodesConfig } from "../hooks/use-nodes-config";
 import { CapabilitiesBody } from "./capabilities-body";
+import { PlatformSection } from "./platform-section";
 import { SaveCardButton } from "./save-card-button";
 
 export function PlatformCapabilitiesCard() {
@@ -11,14 +12,11 @@ export function PlatformCapabilitiesCard() {
   const hasChanges = capabilityDirty(configurable, nodes.draft, nodes.data.config);
 
   return (
-    <section className="glass-card space-y-6 rounded-3xl p-6 sm:p-8" data-testid="platform-capabilities">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div>
-          <h2 className="font-display text-xl font-bold text-foreground">Capacidades de generación</h2>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">
-            Módulos auxiliares invocados por los agentes durante la generación.
-          </p>
-        </div>
+    <PlatformSection
+      testId="platform-capabilities"
+      title="Capacidades de generación"
+      description="Módulos auxiliares que los agentes usan mientras generan un OVA."
+      action={
         <SaveCardButton
           disabled={!hasChanges}
           saving={nodes.saving}
@@ -26,7 +24,8 @@ export function PlatformCapabilitiesCard() {
             void nodes.save(capabilityPayload(configurable, nodes.draft), "Capacidades guardadas.");
           }}
         />
-      </div>
+      }
+    >
       <CapabilitiesBody
         loading={nodes.loading}
         error={nodes.error}
@@ -37,7 +36,7 @@ export function PlatformCapabilitiesCard() {
         videoWarning={videoWarning}
         onToggle={nodes.toggleFlag}
       />
-    </section>
+    </PlatformSection>
   );
 }
 

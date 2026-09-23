@@ -13,11 +13,11 @@ export function ManageModelsFooter() {
   }
   if (store.fullHasMore) {
     return (
-      <div className="flex flex-col items-center gap-1.5 border-t border-border/30 py-5">
-        <p className="text-[11px] text-muted-foreground">
+      <div className="flex flex-col items-center gap-2 py-5">
+        <p className="text-xs text-muted-foreground">
           Mostrando {store.catalogFull.length} de {store.fullTotal} modelos
         </p>
-        <Button size="sm" variant="outline" onClick={store.loadMore} className="text-xs font-bold">
+        <Button variant="outline" onClick={store.loadMore}>
           Cargar más modelos
         </Button>
       </div>
@@ -25,7 +25,7 @@ export function ManageModelsFooter() {
   }
   if (store.catalogFull.length > 0) {
     return (
-      <p className="py-4 text-center text-[11px] text-muted-foreground">
+      <p className="py-4 text-center text-xs text-muted-foreground">
         {store.catalogFull.length} modelos en total
       </p>
     );

@@ -24,10 +24,10 @@ export interface CatalogSortOption {
 
 export const SORT_OPTIONS: CatalogSortOption[] = [
   { key: "default", label: "Orden por defecto" },
-  { key: "price-asc", label: "Precio salida ↑" },
-  { key: "price-desc", label: "Precio salida ↓" },
-  { key: "name-asc", label: "Nombre A-Z" },
-  { key: "context-desc", label: "Contexto ↓" },
+  { key: "price-asc", label: "Más baratos primero" },
+  { key: "price-desc", label: "Más caros primero" },
+  { key: "name-asc", label: "Nombre (A-Z)" },
+  { key: "context-desc", label: "Más contexto primero" },
 ];
 
 export const GROUP_OPTIONS: { key: "provider" | "type" | "modality"; label: string }[] = [

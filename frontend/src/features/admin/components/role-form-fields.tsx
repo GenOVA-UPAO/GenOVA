@@ -2,10 +2,9 @@ import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 import { Textarea } from "@/core/components/ui/textarea";
 
-const LABEL_CLASS = "text-xs font-bold uppercase tracking-wider text-muted-foreground";
-
 interface RoleFormFieldsProps {
   name: string;
+  nameError: string;
   description: string;
   disabled: boolean;
   onNameChange: (value: string) => void;
@@ -14,6 +13,7 @@ interface RoleFormFieldsProps {
 
 export function RoleFormFields({
   name,
+  nameError,
   description,
   disabled,
   onNameChange,
@@ -21,29 +21,35 @@ export function RoleFormFields({
 }: Readonly<RoleFormFieldsProps>) {
   return (
     <>
-      <div className="space-y-1.5">
-        <Label htmlFor="role-name-input" className={LABEL_CLASS}>
-          Nombre del rol
-        </Label>
+      <div className="space-y-2">
+        <Label htmlFor="role-name-input">Nombre del rol</Label>
         <Input
           id="role-name-input"
           type="text"
-          placeholder="Ej. docente, supervisor..."
+          autoComplete="off"
           value={name}
           disabled={disabled}
+          aria-invalid={nameError !== "" || undefined}
+          aria-describedby={nameError !== "" ? "role-name-error" : "role-name-help"}
           onChange={(event) => {
             onNameChange(event.target.value);
           }}
         />
+        {nameError !== "" ? (
+          <p id="role-name-error" className="text-xs text-destructive">
+            {nameError}
+          </p>
+        ) : (
+          <p id="role-name-help" className="text-xs text-muted-foreground">
+            Un nombre corto y único, por ejemplo «docente».
+          </p>
+        )}
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="role-description-input" className={LABEL_CLASS}>
-          Descripción (Opcional)
-        </Label>
+      <div className="space-y-2">
+        <Label htmlFor="role-description-input">Descripción (opcional)</Label>
         <Textarea
           id="role-description-input"
-          placeholder="Breve descripción del propósito de este rol..."
           value={description}
           disabled={disabled}
           rows={2}

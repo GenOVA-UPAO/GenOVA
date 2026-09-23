@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 import { DeleteAccountModal } from "./delete-account-modal";
+import { ProfileSection } from "./profile-section";
 
 interface DeleteAccountCardProps {
   isSubmitting: boolean;
@@ -21,19 +21,14 @@ export function DeleteAccountCard({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="glass-card rounded-3xl border-destructive/20 bg-destructive/5 p-6 sm:p-8">
-      <div className="mb-4 flex flex-col gap-2 text-destructive">
-        <h2 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-          <Icon name="warning-circle" size="text-xl" />
-          Zona de peligro
-        </h2>
-        <p className="text-sm font-medium text-muted-foreground">
-          Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate de estar seguro.
-        </p>
-      </div>
-
+    <ProfileSection
+      tone="danger"
+      title="Eliminar cuenta"
+      description="Se desactiva tu cuenta y se anonimizan tus datos personales. Tus OVAs se conservan sin tu autoría. No se puede deshacer."
+    >
       <Button
         variant="destructive"
+        className="max-sm:h-11 max-sm:w-full"
         onClick={() => {
           setIsOpen(true);
         }}
@@ -52,6 +47,6 @@ export function DeleteAccountCard({
           }}
         />
       )}
-    </div>
+    </ProfileSection>
   );
 }

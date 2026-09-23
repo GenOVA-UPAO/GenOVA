@@ -1,11 +1,12 @@
 import type { SyntheticEvent } from "react";
 
-import { Button, Spinner } from "@/core/components/ui/button";
+import { Button } from "@/core/components/ui/button";
 
 import { passwordSchema } from "../lib/profile-schemas";
 import type { ChangePasswordValues } from "../lib/types";
 import { useForm } from "../lib/use-form";
 import { PasswordChangeFields } from "./password-change-fields";
+import { ProfileSection } from "./profile-section";
 
 const EMPTY_PASSWORD: ChangePasswordValues = {
   currentPassword: "",
@@ -23,26 +24,26 @@ export function PasswordChangeForm({ isSubmitting, onSave }: Readonly<PasswordCh
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!form.isValid) return;
+    if (!form.isValid) {
+      form.touchAll();
+      return;
+    }
     const saved = await onSave(form.values);
     if (saved) form.reset(EMPTY_PASSWORD);
   };
 
   return (
-    <div className="glass-card space-y-6 rounded-3xl p-6 sm:p-8">
+    <ProfileSection
+      title="Contraseña"
+      description="Usa una contraseña que no utilices en otros sitios."
+    >
       <form
+        noValidate
         onSubmit={(event) => {
           void handleSubmit(event);
         }}
-        className="space-y-6"
+        className="space-y-5"
       >
-        <div>
-          <h2 className="font-display text-lg font-bold text-foreground">Seguridad de la Cuenta</h2>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">
-            Actualiza tu contraseña periódicamente para mantener tu cuenta protegida.
-          </p>
-        </div>
-
         <PasswordChangeFields
           values={form.values}
           errorFor={form.errorFor}
@@ -50,14 +51,12 @@ export function PasswordChangeForm({ isSubmitting, onSave }: Readonly<PasswordCh
           onBlur={form.touch}
           disabled={isSubmitting}
         />
-
-        <div className="flex items-center justify-end border-t border-border pt-4">
-          <Button type="submit" disabled={isSubmitting || !form.isValid}>
-            {isSubmitting && <Spinner />}
-            {isSubmitting ? "Actualizando..." : "Actualizar Contraseña"}
+        <div className="flex justify-end border-t border-border pt-5">
+          <Button type="submit" className="max-sm:h-11 max-sm:w-full" loading={isSubmitting}>
+            Actualizar contraseña
           </Button>
         </div>
       </form>
-    </div>
+    </ProfileSection>
   );
 }

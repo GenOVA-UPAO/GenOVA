@@ -3,23 +3,21 @@ import { DialogFooter } from "@/core/components/ui/dialog";
 
 interface RoleFormActionsProps {
   isSubmitting: boolean;
-  canSubmit: boolean;
   submitLabel: string;
   onCancel: () => void;
 }
 
 export function RoleFormActions({
   isSubmitting,
-  canSubmit,
   submitLabel,
   onCancel,
 }: Readonly<RoleFormActionsProps>) {
   return (
     <DialogFooter>
-      <Button variant="ghost" onClick={onCancel} disabled={isSubmitting}>
+      <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
         Cancelar
       </Button>
-      <Button type="submit" loading={isSubmitting} disabled={!canSubmit}>
+      <Button type="submit" loading={isSubmitting}>
         {submitLabel}
       </Button>
     </DialogFooter>

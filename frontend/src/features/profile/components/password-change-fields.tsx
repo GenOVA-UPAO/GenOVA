@@ -17,10 +17,11 @@ export function PasswordChangeFields({
   disabled,
 }: Readonly<PasswordChangeFieldsProps>) {
   return (
-    <div className="grid grid-cols-1 gap-6">
+    <div className="grid grid-cols-1 gap-5">
       <PasswordField
         id="currentPassword"
-        label="Contraseña Actual"
+        label="Contraseña actual"
+        autoComplete="current-password"
         value={values.currentPassword}
         error={errorFor("currentPassword")}
         disabled={disabled}
@@ -33,10 +34,11 @@ export function PasswordChangeFields({
       />
       <PasswordField
         id="newPassword"
-        label="Nueva Contraseña"
+        label="Nueva contraseña"
+        autoComplete="new-password"
         value={values.newPassword}
         error={errorFor("newPassword")}
-        hint="Mínimo 8 caracteres alfanuméricos (letras y números)"
+        hint="Al menos 8 caracteres, con letras y números."
         disabled={disabled}
         onChange={(value) => {
           onChange("newPassword", value);
@@ -47,7 +49,8 @@ export function PasswordChangeFields({
       />
       <PasswordField
         id="confirmPassword"
-        label="Confirmar Nueva Contraseña"
+        label="Confirma la nueva contraseña"
+        autoComplete="new-password"
         value={values.confirmPassword}
         error={errorFor("confirmPassword")}
         disabled={disabled}

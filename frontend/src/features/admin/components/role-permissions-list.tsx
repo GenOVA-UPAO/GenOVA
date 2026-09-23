@@ -6,23 +6,19 @@ interface RolePermissionsListProps {
 
 export function RolePermissionsList({ permissions }: Readonly<RolePermissionsListProps>) {
   if (permissions.length === 0) {
-    return (
-      <span className="rounded-full bg-muted/30 px-3 py-1 text-xs font-bold text-muted-foreground">
-        Sin permisos asignados
-      </span>
-    );
+    return <p className="text-sm text-muted-foreground italic">Sin permisos asignados</p>;
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <ul aria-label="Permisos" className="flex flex-wrap gap-1.5">
       {permissions.map((permission) => (
-        <span
+        <li
           key={permission}
-          className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary shadow-sm"
+          className="rounded-full border border-border bg-background px-2.5 py-0.5 text-xs text-foreground/80"
         >
           {getPermissionLabel(permission)}
-        </span>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

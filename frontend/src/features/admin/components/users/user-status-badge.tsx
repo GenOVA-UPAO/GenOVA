@@ -1,46 +1,38 @@
 import { Icon } from "@/core/components/icon";
-import { cn } from "@/core/lib/cn";
 
 import type { AdminUser } from "../../lib/types";
 import { isLockedOut } from "./status-helpers";
-
-const BADGE_CLASS =
-  "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-sm";
 
 interface UserStatusBadgeProps {
   user: AdminUser;
 }
 
+/** Estado de la cuenta: texto con un punto de color que refuerza (no sustituye) el significado. */
 export function UserStatusBadge({ user }: Readonly<UserStatusBadgeProps>) {
-  const isLocked = isLockedOut(user);
-
   if (user.is_active !== true) {
     return (
-      <span className={cn(BADGE_CLASS, "bg-muted text-muted-foreground border-border")}>
+      <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+        <span aria-hidden="true" className="size-1.5 rounded-full bg-muted-foreground/50" />
         Inactivo
       </span>
     );
   }
 
-  if (isLocked) {
+  if (isLockedOut(user)) {
     const lockedUntil = user.locked_until ? new Date(user.locked_until) : null;
     return (
       <span
-        title={lockedUntil ? `Bloqueado hasta ${lockedUntil.toLocaleString("es-PE")}` : ""}
-        className={cn(BADGE_CLASS, "bg-destructive/10 text-destructive border-destructive/20")}
+        title={lockedUntil ? `Bloqueado hasta ${lockedUntil.toLocaleString("es-PE")}` : undefined}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-destructive"
       >
-        <Icon name="lock" size="text-xs" /> Bloqueado
+        <Icon name="lock" size="text-sm" /> Bloqueado
       </span>
     );
   }
 
   return (
-    <span
-      className={cn(
-        BADGE_CLASS,
-        "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400",
-      )}
-    >
+    <span className="inline-flex items-center gap-1.5 text-sm text-foreground">
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-success" />
       Activo
     </span>
   );

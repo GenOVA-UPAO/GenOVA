@@ -1,9 +1,23 @@
 import { Input } from "@/core/components/ui/input";
-import { Label } from "@/core/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/core/components/ui/select";
 
+import { describedBy } from "../lib/described-by";
 import type { ProfileFormValues } from "../lib/types";
+import { FormField } from "./form-field";
 
-const LABEL_CLASS = "text-xs font-bold uppercase tracking-wide text-muted-foreground";
+const PHONE_HINT = "Con prefijo de país, por ejemplo +51987285992.";
+
+const GENDER_OPTIONS = [
+  { value: "masculino", label: "Masculino" },
+  { value: "femenino", label: "Femenino" },
+  { value: "otro", label: "Otro o prefiero no decirlo" },
+];
 
 interface ProfileContactFieldsProps {
   values: ProfileFormValues;
@@ -20,39 +34,40 @@ export function ProfileContactFields({
   onBlur,
   disabled,
 }: Readonly<ProfileContactFieldsProps>) {
+  const phoneError = errorFor("phone_number");
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div className="space-y-1.5">
-        <Label htmlFor="gender" className={LABEL_CLASS}>
-          Sexo / Género
-        </Label>
-        <select
-          id="gender"
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <FormField id="gender" label="Sexo">
+        <Select
           value={values.gender}
           disabled={disabled}
-          onChange={(event) => {
-            onChange("gender", event.target.value);
+          onValueChange={(value) => {
+            onChange("gender", value);
           }}
-          className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus:ring-2 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:h-8"
         >
-          <option value="masculino">Masculino</option>
-          <option value="femenino">Femenino</option>
-          <option value="otro">Otro / No especificado</option>
-        </select>
-      </div>
+          <SelectTrigger id="gender" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            {GENDER_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="phoneNumber" className={LABEL_CLASS}>
-          Teléfono de contacto
-        </Label>
+      <FormField id="phoneNumber" label="Teléfono de contacto" hint={PHONE_HINT} error={phoneError}>
         <Input
           id="phoneNumber"
           type="tel"
           autoComplete="tel"
-          placeholder="Ej: +51987285992"
           value={values.phone_number}
           disabled={disabled}
-          aria-invalid={errorFor("phone_number") ? true : undefined}
+          aria-invalid={phoneError ? true : undefined}
+          aria-describedby={describedBy("phoneNumber", phoneError, PHONE_HINT)}
           onChange={(event) => {
             onChange("phone_number", event.target.value);
           }}
@@ -60,10 +75,7 @@ export function ProfileContactFields({
             onBlur("phone_number");
           }}
         />
-        {errorFor("phone_number") !== undefined && (
-          <p className="text-xs font-medium text-destructive">{errorFor("phone_number")}</p>
-        )}
-      </div>
+      </FormField>
     </div>
   );
 }

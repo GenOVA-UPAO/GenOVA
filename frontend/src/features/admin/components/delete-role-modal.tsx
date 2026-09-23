@@ -9,12 +9,13 @@ import {
   DialogTitle,
 } from "@/core/components/ui/dialog";
 
+import { formatRoleName } from "../lib/role-utils";
 import type { Role } from "../lib/types";
 import { DeleteRoleBody } from "./delete-role-body";
 import { FormErrorAlert } from "./form-error-alert";
 
 function confirmLabel(needsReassign: boolean, isDeleting: boolean): string {
-  if (isDeleting) return "Eliminando...";
+  if (isDeleting) return "Eliminando…";
   return needsReassign ? "Reasignar y eliminar" : "Eliminar rol";
 }
 
@@ -48,9 +49,7 @@ export function DeleteRoleModal({
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            ¿Eliminar rol: <span className="capitalize">{role.name}</span>?
-          </DialogTitle>
+          <DialogTitle>¿Eliminar el rol «{formatRoleName(role.name)}»?</DialogTitle>
         </DialogHeader>
         <DeleteRoleBody
           role={role}
@@ -65,7 +64,7 @@ export function DeleteRoleModal({
             Cancelar
           </Button>
           <Button
-            variant="destructive"
+            variant="danger"
             disabled={confirmDisabled}
             onClick={() => {
               onConfirm(needsReassign ? reassignRoleId : undefined);

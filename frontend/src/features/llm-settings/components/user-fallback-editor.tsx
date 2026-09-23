@@ -1,4 +1,5 @@
 import { Icon } from "@/core/components/icon";
+import { Button } from "@/core/components/ui/button";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import type { ChipModel } from "../lib/model-task-card.helpers";
@@ -35,7 +36,7 @@ export function UserFallbackEditor({
       {fallbacks.map((item, index) =>
         item.provider && item.model_id ? null : (
           <div key={String(index)} className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-muted-foreground">#{index + 1}</span>
+            <span className="w-5 text-sm text-muted-foreground tabular-nums">{index + 1}.</span>
             <div className="flex-1">
               <LlmModelSelect
                 models={models}
@@ -48,29 +49,32 @@ export function UserFallbackEditor({
                 }}
               />
             </div>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={`Quitar modelo de respaldo ${String(index + 1)}`}
+              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive max-sm:size-11"
               onClick={() => {
                 store.removeFallback(task, index);
               }}
               disabled={disabled}
-              className="rounded p-1 text-muted-foreground hover:text-destructive"
             >
-              <Icon name="trash" size="text-xs" />
-            </button>
+              <Icon name="trash" size="text-base" />
+            </Button>
           </div>
         ),
       )}
-      <button
-        type="button"
+      <Button
+        variant="outline"
+        size="sm"
+        className="max-sm:h-11"
         onClick={() => {
           store.addFallback(task);
         }}
         disabled={disabled}
-        className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-primary"
       >
-        + Añadir respaldo
-      </button>
+        <Icon name="plus" size="text-sm" /> Añadir modelo de respaldo
+      </Button>
     </div>
   );
 }

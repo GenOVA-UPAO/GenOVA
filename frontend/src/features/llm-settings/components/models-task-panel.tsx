@@ -1,3 +1,4 @@
+import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 import type { SlotIssue } from "../lib/chain-validation";
@@ -9,6 +10,10 @@ import { LlmTaskRow } from "./llm-task-row";
 import { MediaOffMessage } from "./media-off-message";
 import { ModelsReadOnlyTask } from "./models-read-only-task";
 import { ModelsTaskHeading } from "./models-task-heading";
+
+// Chips neutros: el color por tarea no aporta significado en la vista de solo lectura.
+const NEUTRAL_CHIP = "border-border bg-background text-foreground";
+const NEUTRAL_NUM = "text-muted-foreground";
 
 interface ModelsTaskPanelProps {
   task: string;
@@ -33,17 +38,17 @@ export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
   const meta = taskMeta(props.task);
   return (
     <div
-      className={cn("space-y-5 p-5 sm:p-6 md:block", props.hidden && "max-md:hidden")}
+      className={cn("min-w-0 space-y-6 p-5 sm:p-6 md:block", props.hidden && "max-md:hidden")}
       role="tabpanel"
       id={`task-panel-${props.task}`}
       aria-labelledby={`task-tab-${props.task}`}
     >
       <button
         type="button"
-        className="mb-1 inline-flex items-center gap-1 text-xs font-semibold text-primary md:hidden"
+        className="-ml-1 inline-flex h-11 items-center gap-1 rounded-lg px-1 text-sm font-medium text-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none md:hidden"
         onClick={props.onBack}
       >
-        ← Volver a la lista
+        <Icon name="caret-left" size="text-sm" /> Todas las tareas
       </button>
       <ModelsTaskHeading
         label={meta.label}
@@ -72,8 +77,8 @@ export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
           draft={props.selectedDraft}
           adminModels={props.adminModels}
           defaults={props.defaults}
-          chip={meta.chip}
-          num={meta.num}
+          chip={NEUTRAL_CHIP}
+          num={NEUTRAL_NUM}
           hasOwnLlmKey={props.hasOwnLlmKey}
           saving={props.saving}
           bounds={props.bounds}

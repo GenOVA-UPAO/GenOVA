@@ -1,28 +1,20 @@
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
+import { DialogDescription, DialogTitle } from "@/core/components/ui/dialog";
 
-export function ManageModelsHeader({
-  onClose,
-  onConnect,
-}: Readonly<{ onClose: () => void; onConnect: () => void }>) {
+export function ManageModelsHeader({ onConnect }: Readonly<{ onConnect: () => void }>) {
   return (
-    <div className="flex shrink-0 items-center justify-between border-b border-border/60 bg-muted/20 px-5 py-4">
-      <div className="gap-0.5">
-        <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
-          <Icon name="gear" size="text-base" className="text-primary" /> Gestionar modelos
-        </h2>
-        <p className="text-[11px] text-muted-foreground">
-          Activa los modelos que quieres usar en Asignación.
-        </p>
+    <div className="flex shrink-0 flex-col gap-3 border-b border-border px-5 pt-5 pb-4 pr-14 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0 space-y-1">
+        <DialogTitle>Gestionar modelos</DialogTitle>
+        <DialogDescription>
+          Los modelos que actives aparecen en las listas de la pestaña Modelos.
+        </DialogDescription>
       </div>
-      <div className="ml-4 flex shrink-0 items-center gap-2">
-        <Button size="sm" variant="outline" onClick={onConnect} className="gap-1.5 text-xs font-bold">
-          + Conectar proveedor
-        </Button>
-        <Button size="sm" variant="ghost" onClick={onClose} className="text-xs text-muted-foreground">
-          Cerrar
-        </Button>
-      </div>
+      <Button variant="outline" onClick={onConnect} className="shrink-0 max-sm:h-11">
+        <Icon name="plus" size="text-sm" />
+        Conectar proveedor
+      </Button>
     </div>
   );
 }

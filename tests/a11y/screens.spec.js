@@ -87,7 +87,7 @@ for (const mode of MODES) {
       })
 
       test('admin roles no tiene violaciones serias', async ({ page }) => {
-        await gotoApp(page, '/admin/roles', 'Gestión de Roles')
+        await gotoApp(page, '/admin/roles', 'Gestión de roles')
         await expectNoSerious(page, 'admin roles')
       })
     })

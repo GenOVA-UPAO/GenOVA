@@ -36,10 +36,10 @@ export function LlmTaskRowItem({
   const modality = found?.modality ?? "text";
 
   return (
-    <div
+    <li
       className={cn(
-        "flex flex-col gap-3 rounded-2xl border p-4 shadow-sm transition sm:flex-row sm:items-center",
-        issue ? "border-destructive bg-destructive/5" : rowTone(disabled),
+        "flex flex-col gap-2 p-3 sm:flex-row sm:items-start sm:gap-3",
+        issue && "bg-destructive/5",
       )}
     >
       <FallbackIndex index={index} modality={modality} />
@@ -49,13 +49,14 @@ export function LlmTaskRowItem({
           provider={entry.provider}
           modelId={entry.model_id}
           disabled={disabled}
+          invalid={issue !== undefined}
           ariaLabel={`Fallback ${String(index + 1)} de ${task}`}
           onChange={(next) => {
             onChange(next.provider, next.modelId);
           }}
         />
         {issue ? (
-          <p className="mt-1.5 text-xs font-medium text-destructive" role="alert">
+          <p className="mt-1.5 text-xs text-destructive" role="alert">
             {issue}
           </p>
         ) : null}
@@ -67,10 +68,6 @@ export function LlmTaskRowItem({
         onMove={onMove}
         onRemove={onRemove}
       />
-    </div>
+    </li>
   );
-}
-
-function rowTone(disabled: boolean): string {
-  return disabled ? "border-border/50 bg-muted/20" : "border-border bg-card/50 hover:bg-accent/30";
 }

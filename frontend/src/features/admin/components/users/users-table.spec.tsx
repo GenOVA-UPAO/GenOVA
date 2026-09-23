@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { AdminUser, Role, UsersHandlers } from "../../lib/types";
 import { UsersTable } from "./users-table";
@@ -19,6 +19,17 @@ const HANDLERS: UsersHandlers = {
   openEdit: vi.fn(),
 };
 
+beforeAll(() => {
+  // jsdom no implementa Pointer Events ni scrollIntoView; Radix Select los usa.
+  for (const name of ["hasPointerCapture", "releasePointerCapture", "setPointerCapture"] as const) {
+    Object.defineProperty(Element.prototype, name, { configurable: true, value: vi.fn() });
+  }
+  Object.defineProperty(Element.prototype, "scrollIntoView", {
+    configurable: true,
+    value: vi.fn(),
+  });
+});
+
 function renderTable(users: AdminUser[], isCurrentUserAdmin = false) {
   return render(
     <UsersTable
@@ -27,7 +38,6 @@ function renderTable(users: AdminUser[], isCurrentUserAdmin = false) {
       currentUserId="me-1"
       isCurrentUserAdmin={isCurrentUserAdmin}
       updatingUserId=""
-      searchQuery=""
       handlers={HANDLERS}
     />,
   );
@@ -50,31 +60,53 @@ const STUDENT: AdminUser = {
 };
 
 describe("UsersTable", () => {
-  it("muestra el rol real de cada usuario en el selector (no el primero de la lista)", () => {
+  it("muestra el rol real de cada usuario con su nombre legible (no el primero de la lista)", () => {
     renderTable([TEACHER]);
 
-    const select = screen.getByLabelText("Rol de Docente Uno");
-    expect(select).toHaveValue("role-teacher");
-    expect(select).not.toHaveValue("role-admin");
+    const select = screen.getByRole("combobox", { name: "Rol de Docente Uno" });
+    expect(select).toHaveTextContent("Profesor");
+    expect(select).not.toHaveTextContent("Administrador");
   });
 
   it("cada fila mantiene su propio rol seleccionado", () => {
     renderTable([TEACHER, STUDENT]);
 
-    expect(screen.getByLabelText("Rol de Docente Uno")).toHaveValue("role-teacher");
-    expect(screen.getByLabelText("Rol de Alumno Dos")).toHaveValue("role-student");
+    expect(screen.getByRole("combobox", { name: "Rol de Docente Uno" })).toHaveTextContent(
+      "Profesor",
+    );
+    expect(screen.getByRole("combobox", { name: "Rol de Alumno Dos" })).toHaveTextContent(
+      "Estudiante",
+    );
   });
 
   it("llama a handleRoleChange con el usuario y el rol elegido", async () => {
     const user = userEvent.setup();
     renderTable([TEACHER], true);
 
-    await user.selectOptions(screen.getByLabelText("Rol de Docente Uno"), "role-student");
+    await user.click(screen.getByRole("combobox", { name: "Rol de Docente Uno" }));
+    await user.click(await screen.findByRole("option", { name: "Estudiante" }));
 
     expect(HANDLERS.handleRoleChange).toHaveBeenCalledWith("u-1", "role-student");
   });
 
-  it("muestra '--' y nunca 'null' cuando el usuario no tiene código universitario", () => {
+  it("en la fila propia el rol y las acciones aparecen deshabilitados", () => {
+    renderTable([{ ...TEACHER, id: "me-1" }], true);
+
+    expect(screen.getByRole("combobox", { name: "Rol de Docente Uno" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Acciones no disponibles/ })).toBeDisabled();
+  });
+
+  it("ofrece las acciones de cada usuario en un menú «Más acciones»", async () => {
+    const user = userEvent.setup();
+    renderTable([TEACHER], true);
+
+    await user.click(screen.getByRole("button", { name: "Más acciones para Docente Uno" }));
+
+    expect(await screen.findByRole("menuitem", { name: "Editar perfil" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Desactivar cuenta" })).toBeInTheDocument();
+  });
+
+  it("sin código universitario no muestra relleno ni 'null'", () => {
     renderTable([
       {
         id: "u-3",
@@ -87,11 +119,12 @@ describe("UsersTable", () => {
       },
     ]);
 
-    expect(screen.getByText("--")).toBeInTheDocument();
+    expect(screen.queryByText("--")).not.toBeInTheDocument();
     expect(screen.queryByText(/null/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Código /)).not.toBeInTheDocument();
   });
 
-  it("muestra el teléfono solo cuando existe", () => {
+  it("muestra el código con ceros y el teléfono solo cuando existen", () => {
     renderTable([
       {
         id: "u-4",
@@ -99,12 +132,11 @@ describe("UsersTable", () => {
         full_name: "Con Código",
         role: { id: "role-teacher", name: "profesor" },
         is_active: true,
-        university_id: null,
+        university_id: 257022,
         phone_number: "+51987285992",
       },
     ]);
 
-    expect(screen.getByText("--")).toBeInTheDocument();
-    expect(screen.getByText("+51987285992")).toBeInTheDocument();
+    expect(screen.getByText("Código 000257022 · +51987285992")).toBeInTheDocument();
   });
 });

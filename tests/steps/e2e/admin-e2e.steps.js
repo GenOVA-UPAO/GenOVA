@@ -7,13 +7,13 @@ import { test } from './fixtures.js'
 
 const { Given, When, Then } = createBdd(test)
 
-// React mantiene `.glass-card` como contenedor de cada rol; se ancla desde el
-// nombre visible para no depender de clases de Angular/Spartan.
+// Cada rol es una fila `[data-testid="role-row"]` de la lista; se ancla desde el
+// nombre visible para no depender de clases de estilo.
 const roleCard = (page, name) =>
   page
     .getByText(name, { exact: false })
     .first()
-    .locator('xpath=ancestor::div[contains(@class,"glass-card")][1]')
+    .locator('xpath=ancestor::*[@data-testid="role-row"][1]')
 
 // ── Roles (HU-019 / HU-020) ──────────────────────────────────────────────────
 

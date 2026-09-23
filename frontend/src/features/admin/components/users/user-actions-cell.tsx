@@ -1,3 +1,5 @@
+import { Icon } from "@/core/components/icon";
+import { Button } from "@/core/components/ui/button";
 import { TableCell } from "@/core/components/ui/table";
 
 import type { AdminUser, UsersHandlers } from "../../lib/types";
@@ -5,27 +7,38 @@ import { UserActionMenu } from "./user-action-menu";
 
 interface UserActionsCellProps {
   user: AdminUser;
-  actionsDisabled: boolean;
+  /** Motivo por el que la fila no admite acciones; `null` si las admite. */
+  lockReason: string | null;
   handlers: UsersHandlers;
+  className?: string;
 }
 
 export function UserActionsCell({
   user,
-  actionsDisabled,
+  lockReason,
   handlers,
+  className,
 }: Readonly<UserActionsCellProps>) {
-  if (actionsDisabled) {
+  if (lockReason !== null) {
     return (
-      <TableCell className="pr-6 text-center">
-        <span className="rounded-md border border-border/50 bg-muted/50 px-2 py-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-          Protegido
+      <TableCell className={className}>
+        <span title={lockReason} className="inline-flex">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            disabled
+            aria-label={`Acciones no disponibles. ${lockReason}`}
+            className="max-md:size-10"
+          >
+            <Icon name="lock" size="text-base" />
+          </Button>
         </span>
       </TableCell>
     );
   }
 
   return (
-    <TableCell className="pr-6 text-center">
+    <TableCell className={className}>
       <UserActionMenu
         user={user}
         onEdit={() => {

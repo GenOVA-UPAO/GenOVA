@@ -1,38 +1,39 @@
 import type { Creator } from "../lib/types";
+import { AnalyticsPanel } from "./analytics-panel";
 
 interface TopCreatorsProps {
   creators: Creator[];
 }
 
+function ovaCountLabel(count: number): string {
+  return count === 1 ? "1 OVA" : `${String(count)} OVAs`;
+}
+
 export function TopCreators({ creators }: Readonly<TopCreatorsProps>) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold">Mayores creadores</h2>
-
+    <AnalyticsPanel title="Mayores creadores">
       {creators.length === 0 ? (
-        <p className="text-xs text-muted-foreground">Sin datos todavía.</p>
+        <p className="text-sm text-muted-foreground">
+          Aparecerán aquí cuando alguien cree su primer OVA.
+        </p>
       ) : (
-        <ul className="space-y-2">
+        <ol className="divide-y divide-border">
           {creators.map((c, i) => (
-            <li key={c.user_id} className="flex items-center gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+            <li key={c.user_id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+              <span className="w-4 shrink-0 text-sm text-muted-foreground tabular-nums">
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">
                   {c.name && c.name.length > 0 ? c.name : c.email}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {c.email}
-                </p>
+                <p className="truncate text-xs text-muted-foreground">{c.email}</p>
               </div>
-              <span className="shrink-0 text-sm font-bold tabular-nums">
-                {c.ova_count}
-              </span>
+              <span className="shrink-0 text-sm tabular-nums">{ovaCountLabel(c.ova_count)}</span>
             </li>
           ))}
-        </ul>
+        </ol>
       )}
-    </div>
+    </AnalyticsPanel>
   );
 }

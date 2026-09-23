@@ -9,10 +9,10 @@ interface RoleListProps {
 
 export function RoleList({ roles, onEdit, onDelete }: Readonly<RoleListProps>) {
   return (
-    <div className="grid gap-5">
+    <ul aria-label="Roles" className="divide-y divide-border rounded-xl border border-border bg-card">
       {roles.map((role) => (
         <RoleCard key={role.id} role={role} onEdit={onEdit} onDelete={onDelete} />
       ))}
-    </div>
+    </ul>
   );
 }
