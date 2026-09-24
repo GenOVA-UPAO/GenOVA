@@ -19,9 +19,11 @@ interface Props {
   ovaId: string;
   phases: PhaseWithContent[];
   regen: ChatRegeneration;
+  /** Solo la vista previa: el OVA es de otra persona. */
+  readOnly?: boolean;
 }
 
-export function WorkspaceOvaPanel({ ovaId, phases, regen }: Readonly<Props>) {
+export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Readonly<Props>) {
   const [tab, setTab] = useState<OvaPanelTab>("preview");
   // La edición se monta al abrirla y ya no se desmonta: cambiar a «Vista previa»
   // para comprobar algo no debe descartar el HTML que aún no se ha guardado.
@@ -42,7 +44,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen }: Readonly<Props>) {
   };
   return (
     <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-      <WorkspaceOvaPanelTabs tab={tab} onChange={changeTab} />
+      <WorkspaceOvaPanelTabs tab={tab} onChange={changeTab} readOnly={readOnly} />
       <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
         <div
           id="workspace-ova-preview"
@@ -89,7 +91,9 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen }: Readonly<Props>) {
             ))}
         </div>
       </div>
-      <WorkspaceRegenStatus regen={regen} reorderError={workspace.reorder.error?.message} />
+      {!readOnly && (
+        <WorkspaceRegenStatus regen={regen} reorderError={workspace.reorder.error?.message} />
+      )}
     </section>
   );
 }

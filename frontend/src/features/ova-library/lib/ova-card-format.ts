@@ -42,6 +42,16 @@ export function ownerNameOf(ova: OvaListItem): string {
   return owner?.full_name?.trim() ?? "";
 }
 
+/**
+ * ¿El OVA es de quien mira? Solo su autor lo modifica. La API manda `owner`
+ * únicamente al admin (que ve los de todos); sin él, el OVA es propio.
+ */
+export function isOwnOva(ova: OvaListItem, userId: string | number | undefined): boolean {
+  const owner = ova.owner as { id?: string | number } | undefined;
+  if (owner?.id === undefined) return true;
+  return String(owner.id) === String(userId);
+}
+
 /** Número de versión si es mayor que 1 (la v1 no aporta información). */
 export function visibleVersion(ova: OvaListItem): number | null {
   const version = Number(ova.version_number);

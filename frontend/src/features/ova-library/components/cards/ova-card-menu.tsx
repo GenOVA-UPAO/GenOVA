@@ -14,6 +14,8 @@ interface OvaCardMenuProps {
   isGenerating: boolean;
   isMoving?: boolean;
   isDuplicating?: boolean;
+  /** Solo el autor edita el título; el admin ve OVAs ajenos sin esa opción. */
+  canEdit?: boolean;
   onEditMetadata: () => void;
   onDuplicate: () => void;
   onMoveToTrash: () => void;
@@ -27,6 +29,7 @@ export function OvaCardMenu({
   isGenerating,
   isMoving = false,
   isDuplicating = false,
+  canEdit = true,
   onEditMetadata,
   onDuplicate,
   onMoveToTrash,
@@ -48,10 +51,12 @@ export function OvaCardMenu({
         </DropdownMenuTrigger>
       </Tooltip>
       <DropdownMenuContent align="end" className="w-60">
-        <DropdownMenuItem className={ITEM_CLASS} disabled={busy} onSelect={onEditMetadata}>
-          <Icon name="pencil-simple" size="text-base" />
-          Editar título y descripción
-        </DropdownMenuItem>
+        {canEdit && (
+          <DropdownMenuItem className={ITEM_CLASS} disabled={busy} onSelect={onEditMetadata}>
+            <Icon name="pencil-simple" size="text-base" />
+            Editar título y descripción
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem className={ITEM_CLASS} disabled={busy} onSelect={onDuplicate}>
           <Icon name="copy" size="text-base" />
           {isDuplicating ? "Duplicando..." : "Duplicar"}

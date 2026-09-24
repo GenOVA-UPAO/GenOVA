@@ -11,6 +11,7 @@ interface OvaCardActionsProps {
   isInterrupted?: boolean;
   isDownloading?: boolean;
   isDuplicating?: boolean;
+  canEdit?: boolean;
   onDownload: () => void;
   onResume?: (id: string) => void;
 }
@@ -25,6 +26,7 @@ export function OvaCardActions({
   isInterrupted,
   isDownloading,
   isDuplicating,
+  canEdit,
   onDownload,
   onResume,
 }: Readonly<OvaCardActionsProps>) {
@@ -34,6 +36,7 @@ export function OvaCardActions({
         ovaId={ovaId}
         isGenerating={isGenerating}
         isInterrupted={Boolean(isInterrupted)}
+        canEdit={canEdit}
         className={ACTION_CLASS}
         onResume={onResume}
       />

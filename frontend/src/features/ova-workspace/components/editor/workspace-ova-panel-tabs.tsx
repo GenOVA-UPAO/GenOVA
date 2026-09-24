@@ -1,3 +1,5 @@
+import { Icon } from "@/core/components/icon";
+
 import { SegmentedTabs } from "../shared/segmented-tabs";
 
 export type OvaPanelTab = "preview" | "edit";
@@ -5,10 +7,19 @@ export type OvaPanelTab = "preview" | "edit";
 interface Props {
   tab: OvaPanelTab;
   onChange: (tab: OvaPanelTab) => void;
+  /** Sin «Editar»: solo se puede ver el OVA. */
+  readOnly?: boolean;
 }
 
 /** Barra del panel del OVA: «Vista previa» / «Editar» y qué se hace en cada una. */
-export function WorkspaceOvaPanelTabs({ tab, onChange }: Readonly<Props>) {
+export function WorkspaceOvaPanelTabs({ tab, onChange, readOnly = false }: Readonly<Props>) {
+  if (readOnly)
+    return (
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3 text-sm font-medium sm:px-4">
+        <Icon name="eye" className="text-muted-foreground" />
+        Vista previa
+      </div>
+    );
   return (
     <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-3 sm:px-4">
       <SegmentedTabs

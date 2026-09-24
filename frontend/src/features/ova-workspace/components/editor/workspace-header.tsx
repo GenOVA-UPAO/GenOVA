@@ -14,6 +14,8 @@ interface Props {
   version: number | undefined;
   mobileView: WorkspaceMobileView;
   onMobileView: (view: WorkspaceMobileView) => void;
+  /** Solo lectura: no hay columna de instrucciones, así que no hay cambio de vista en móvil. */
+  readOnly?: boolean;
 }
 
 /**
@@ -27,6 +29,7 @@ export function WorkspaceHeader({
   version,
   mobileView,
   onMobileView,
+  readOnly = false,
 }: Readonly<Props>) {
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 py-2 sm:px-4 md:h-14 md:flex-nowrap md:py-0">
@@ -55,17 +58,19 @@ export function WorkspaceHeader({
           </span>
         )}
       </div>
-      <SegmentedTabs
-        label="Vista del workspace"
-        className="md:hidden"
-        value={mobileView}
-        onChange={onMobileView}
-        options={[
-          { value: "chat", label: "Instrucciones", controls: "workspace-chat-column" },
-          { value: "ova", label: "OVA", controls: "workspace-ova-column" },
-        ]}
-      />
-      <WorkspacePanelToolbar ovaId={ovaId} className="ml-auto shrink-0" />
+      {!readOnly && (
+        <SegmentedTabs
+          label="Vista del workspace"
+          className="md:hidden"
+          value={mobileView}
+          onChange={onMobileView}
+          options={[
+            { value: "chat", label: "Instrucciones", controls: "workspace-chat-column" },
+            { value: "ova", label: "OVA", controls: "workspace-ova-column" },
+          ]}
+        />
+      )}
+      <WorkspacePanelToolbar ovaId={ovaId} readOnly={readOnly} className="ml-auto shrink-0" />
     </header>
   );
 }

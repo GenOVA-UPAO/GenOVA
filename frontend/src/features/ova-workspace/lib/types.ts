@@ -19,6 +19,8 @@ export interface OvaData {
     [key: string]: unknown;
   };
   version_history?: unknown[];
+  /** Solo quien creó el OVA lo modifica; el resto (el admin) lo ve en solo lectura. */
+  can_edit?: boolean;
   [key: string]: unknown;
 }
 

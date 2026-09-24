@@ -12,8 +12,9 @@ import { VersionHistoryList } from "./version-history-list";
 
 export default function VersionHistoryPanel({
   ovaId,
+  readOnly = false,
   onClose,
-}: Readonly<{ ovaId: string; onClose: () => void }>) {
+}: Readonly<{ ovaId: string; readOnly?: boolean; onClose: () => void }>) {
   const workspace = useOvaWorkspace(ovaId);
   const client = useQueryClient();
   const versions = sortVersionsDesc(workspace.data?.version_history as OvaVersionRow[] | undefined);
@@ -39,7 +40,7 @@ export default function VersionHistoryPanel({
   return (
     <WorkspaceModal
       title="Historial de versiones"
-      description="Compara dos versiones del OVA o restaura una anterior."
+      description={historyDescription(readOnly)}
       size={diff.data ? "xl" : "lg"}
       onClose={onClose}
       footer={
@@ -58,7 +59,7 @@ export default function VersionHistoryPanel({
         versions={versions}
         selected={selected}
         onToggle={toggle}
-        onRestore={setTarget}
+        onRestore={restoreHandler(readOnly, setTarget)}
       />
       {diff.data && (
         <div ref={diffRef} className="scroll-mt-2">
@@ -102,4 +103,17 @@ function useVersionCompare(ovaId: string, selected: string[], versions: OvaVersi
     },
   });
   return { diff, diffRef };
+}
+
+function historyDescription(readOnly: boolean): string {
+  if (readOnly) return "Compara dos versiones del OVA.";
+  return "Compara dos versiones del OVA o restaura una anterior.";
+}
+
+/** Sin «Restaurar» cuando el OVA es de otra persona. */
+function restoreHandler(
+  readOnly: boolean,
+  restore: (id: string) => void,
+): ((id: string) => void) | undefined {
+  return readOnly ? undefined : restore;
 }

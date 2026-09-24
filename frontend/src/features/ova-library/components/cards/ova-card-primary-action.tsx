@@ -7,6 +7,8 @@ interface OvaCardPrimaryActionProps {
   ovaId: string;
   isGenerating: boolean;
   isInterrupted: boolean;
+  /** OVA ajeno (el admin): se abre para verlo, no para editarlo. */
+  canEdit?: boolean;
   className?: string;
   onResume?: (id: string) => void;
 }
@@ -16,6 +18,7 @@ export function OvaCardPrimaryAction({
   ovaId,
   isGenerating,
   isInterrupted,
+  canEdit = true,
   className,
   onResume,
 }: Readonly<OvaCardPrimaryActionProps>) {
@@ -41,9 +44,19 @@ export function OvaCardPrimaryAction({
   return (
     <Button asChild variant="outline" className={className}>
       <Link to={workspaceUrl}>
-        <Icon name={isGenerating ? "clock" : "pencil-simple"} size="text-base" />
-        {isGenerating ? "Ver progreso" : "Editar"}
+        <Icon name={openIcon(isGenerating, canEdit)} size="text-base" />
+        {openLabel(isGenerating, canEdit)}
       </Link>
     </Button>
   );
+}
+
+function openLabel(isGenerating: boolean, canEdit: boolean): string {
+  if (isGenerating) return "Ver progreso";
+  return canEdit ? "Editar" : "Ver";
+}
+
+function openIcon(isGenerating: boolean, canEdit: boolean): string {
+  if (isGenerating) return "clock";
+  return canEdit ? "pencil-simple" : "eye";
 }

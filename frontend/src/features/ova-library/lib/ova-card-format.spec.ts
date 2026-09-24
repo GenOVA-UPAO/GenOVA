@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatShortDate,
+  isOwnOva,
   lastActivity,
   meaningfulDescription,
   relativeDate,
@@ -73,5 +74,16 @@ describe("relativeDate / lastActivity", () => {
   it("describe la fecha de la papelera sin decir «eliminado»", () => {
     const deleted = new Date(2026, 8, 22, 9, 0).toISOString();
     expect(trashedAt({ id: "a", deleted_at: deleted }, now)?.label).toBe("Movido a la papelera ayer");
+  });
+});
+
+describe("isOwnOva", () => {
+  const base = { id: "o1", title: "Ley de Ohm", status: "listo" };
+  it("sin autor en la respuesta, el OVA es propio", () => {
+    expect(isOwnOva(base, "u1")).toBe(true);
+  });
+  it("compara el autor con quien mira", () => {
+    expect(isOwnOva({ ...base, owner: { id: 7, full_name: "Ana" } }, "7")).toBe(true);
+    expect(isOwnOva({ ...base, owner: { id: 7, full_name: "Ana" } }, "admin")).toBe(false);
   });
 });

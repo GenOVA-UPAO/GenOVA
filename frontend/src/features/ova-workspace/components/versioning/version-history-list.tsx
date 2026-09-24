@@ -7,7 +7,8 @@ interface Props {
   versions: OvaVersionRow[];
   selected: string[];
   onToggle: (id: string, checked: boolean) => void;
-  onRestore: (id: string) => void;
+  /** Sin él no se ofrece «Restaurar» (solo lectura). */
+  onRestore?: (id: string) => void;
 }
 
 /** Versiones del OVA, de la más reciente a la más antigua, en un único contenedor. */
@@ -41,9 +42,10 @@ export function VersionHistoryList({ versions, selected, onToggle, onRestore }: 
               <span className="font-medium">Versión {version.version_number}</span>
               {date && <span className="text-xs text-muted-foreground">{date}</span>}
             </label>
-            {version.is_active ? (
+            {version.is_active && (
               <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success-strong">Actual</span>
-            ) : (
+            )}
+            {!version.is_active && onRestore && (
               <Button
                 variant="outline"
                 size="sm"

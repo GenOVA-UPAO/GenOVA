@@ -1,8 +1,10 @@
+import { useCurrentUser } from "@/core/auth/auth-store";
 import { Checkbox } from "@/core/components/ui/checkbox";
 import { cn } from "@/core/lib/cn";
 
 import type { OvaJobInfo } from "../../lib/job-types";
 import {
+  isOwnOva,
   lastActivity,
   meaningfulDescription,
   ownerNameOf,
@@ -48,6 +50,7 @@ export function OvaCard({
   const isGenerating = ova.status === "generando";
   const title = ova.title?.trim() ? ova.title : "Sin título";
   const description = meaningfulDescription(ova);
+  const canEdit = isOwnOva(ova, useCurrentUser()?.id);
 
   return (
     <div
@@ -74,6 +77,7 @@ export function OvaCard({
           isGenerating={isGenerating}
           isMoving={isMoving}
           isDuplicating={isDuplicating}
+          canEdit={canEdit}
           onEditMetadata={() => onEditMetadata?.(ova)}
           onDuplicate={() => onDuplicate?.(ova.id)}
           onMoveToTrash={() => onMoveToTrash?.(ova)}
@@ -98,6 +102,7 @@ export function OvaCard({
           isInterrupted={job?.isInterrupted}
           isDownloading={isDownloading}
           isDuplicating={isDuplicating}
+          canEdit={canEdit}
           onDownload={() => onDownload?.({ id: ova.id, title: ova.title ?? "" })}
           onResume={onResume}
         />

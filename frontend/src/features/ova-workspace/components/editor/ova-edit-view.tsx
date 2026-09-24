@@ -5,13 +5,10 @@ import { HttpError } from "@/core/lib/http";
 import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import type { PhaseWithContent } from "../../lib/types";
+import { OvaEditLayout } from "./ova-edit-layout";
 import { OvaGeneratingPanel } from "./ova-generating-panel";
-import { WorkspaceChatPanel } from "./workspace-chat-panel";
-import { WorkspaceHeader, type WorkspaceMobileView } from "./workspace-header";
 import { WorkspaceLoadError } from "./workspace-load-error";
-import { WorkspaceOvaPanel } from "./workspace-ova-panel";
 import { WorkspaceSkeleton } from "./workspace-skeleton";
-import { WorkspaceSplitView } from "./workspace-split-view";
 
 function errorStatus(error: Error | null): number {
   return error instanceof HttpError ? error.status : 0;
@@ -29,7 +26,6 @@ function showsGeneration(error: Error | null, awaitingReady: boolean, pending: b
 export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
   const workspace = useOvaWorkspace(ovaId);
   const regen = useChatRegeneration(ovaId);
-  const [mobileView, setMobileView] = useState<WorkspaceMobileView>("chat");
   const [awaitingReady, setAwaitingReady] = useState(false);
   const phases = (workspace.data?.current_version?.phases ?? []) as PhaseWithContent[];
   const title = workspace.data?.title ?? "Mi OVA";
@@ -55,19 +51,14 @@ export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
       />
     );
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col bg-background">
-      <WorkspaceHeader
-        ovaId={ovaId}
-        title={title}
-        version={workspace.data.current_version?.version_number}
-        mobileView={mobileView}
-        onMobileView={setMobileView}
-      />
-      <WorkspaceSplitView
-        mobileView={mobileView}
-        chat={<WorkspaceChatPanel phases={phases} regen={regen} />}
-        preview={<WorkspaceOvaPanel ovaId={ovaId} phases={phases} regen={regen} />}
-      />
-    </div>
+    <OvaEditLayout
+      ovaId={ovaId}
+      title={title}
+      version={workspace.data.current_version?.version_number}
+      // Un backend antiguo no manda `can_edit`: se asume que se puede editar.
+      readOnly={workspace.data.can_edit === false}
+      phases={phases}
+      regen={regen}
+    />
   );
 }

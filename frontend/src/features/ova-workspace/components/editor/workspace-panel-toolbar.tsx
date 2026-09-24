@@ -20,6 +20,8 @@ const VersionHistoryPanel = lazy(() => import("../versioning/version-history-pan
 
 interface Props {
   ovaId: string;
+  /** Sin «Restaurar» en el historial: el OVA es de otra persona. */
+  readOnly?: boolean;
   className?: string;
 }
 
@@ -28,7 +30,7 @@ interface Props {
  * van a la vista; en móvil se recogen en «Más acciones» y la principal
  * («Descargar SCORM») sigue siempre visible.
  */
-export function WorkspacePanelToolbar({ ovaId, className }: Readonly<Props>) {
+export function WorkspacePanelToolbar({ ovaId, readOnly = false, className }: Readonly<Props>) {
   const [history, setHistory] = useState(false);
   const settings = useLlmSettingsModal();
   const download = useScormDownload(ovaId);
@@ -92,6 +94,7 @@ export function WorkspacePanelToolbar({ ovaId, className }: Readonly<Props>) {
         <Suspense>
           <VersionHistoryPanel
             ovaId={ovaId}
+            readOnly={readOnly}
             onClose={() => {
               setHistory(false);
             }}
