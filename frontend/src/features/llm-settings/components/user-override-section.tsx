@@ -72,8 +72,8 @@ export function UserOverrideSection({
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        Aparecen los modelos activados de los proveedores con tu clave. Activa más en «Abrir
-        catálogo».
+        Aparecen los modelos de los proveedores con tu clave. Si activas algunos en «Abrir
+        catálogo», solo salen esos.
       </p>
       <UserFallbackEditor
         fallbacks={userFallbacks}

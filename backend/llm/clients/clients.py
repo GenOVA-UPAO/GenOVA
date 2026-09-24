@@ -3,6 +3,7 @@
 import contextlib
 import contextvars
 import time
+import uuid
 from threading import RLock
 
 import structlog
@@ -36,6 +37,36 @@ def _get_provider_key(provider: str) -> str | None:
     with _key_lock:
         _key_cache[provider] = (key, now)
     return key
+
+
+_user_key_cache: dict[str, tuple[dict[str, str], float]] = {}
+
+
+def get_user_keys(user_id: str) -> dict[str, str]:
+    """Claves propias del usuario (proveedor → clave), leídas de BD. TTL 30 s,
+    como las de plataforma: un job hace decenas de llamadas y no conviene una
+    consulta por llamada. Nunca se registran en logs."""
+    now = time.monotonic()
+    with _key_lock:
+        hit = _user_key_cache.get(user_id)
+        if hit and now - hit[1] < _KEY_TTL_S:
+            return hit[0]
+    from core.database import SessionLocal
+    from models import User
+
+    db = SessionLocal()
+    try:
+        user = db.get(User, uuid.UUID(user_id))
+        raw = (user.user_api_keys or {}) if user is not None else {}
+    except Exception:
+        logger.warning("user keys lookup failed", user_id=user_id)
+        raw = {}
+    finally:
+        db.close()
+    keys = {p: k.strip() for p, k in raw.items() if isinstance(k, str) and k.strip()}
+    with _key_lock:
+        _user_key_cache[user_id] = (keys, now)
+    return keys
 
 
 # Cap per-call wait so a stuck provider doesn't hang the request thread

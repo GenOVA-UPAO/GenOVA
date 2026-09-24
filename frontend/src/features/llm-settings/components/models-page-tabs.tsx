@@ -25,7 +25,7 @@ interface ModelsPageTabsProps {
   onDraftChange: (next: Draft) => void;
   onOpenCatalog: () => void;
   onConnectProvider: (provider: string) => void;
-  onGoToCredentials: () => void;
+  onGoToCredentials: (provider?: string) => void;
 }
 
 export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {

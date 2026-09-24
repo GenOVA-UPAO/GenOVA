@@ -60,6 +60,30 @@ _SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
 }
 
 
+# Autor del OVA en ejecución, dentro de `llm_config`: con él se buscan sus
+# claves propias en el momento de cada llamada. Solo viaja el id, nunca las
+# claves: el estado del grafo puede persistirse (OVA_PG_CHECKPOINT=1).
+OWNER_FIELD = "_owner_id"
+
+
+def with_owner(llm_config: dict | None, user_id: object) -> dict:
+    """Copia de `llm_config` que sabe de quién son las claves propias a usar."""
+    config = dict(llm_config or {})
+    if user_id:
+        config[OWNER_FIELD] = str(user_id)
+    return config
+
+
+def own_keys(llm_config: dict | None) -> dict[str, str]:
+    """Proveedor → clave propia del autor (vacío si no hay autor o no tiene)."""
+    owner = (llm_config or {}).get(OWNER_FIELD)
+    if not owner:
+        return {}
+    from llm.clients.clients import get_user_keys
+
+    return get_user_keys(str(owner))
+
+
 def _entry_tuple(e: dict) -> tuple | None:
     """{provider, model_id, extra} → (provider, model_id, extra) o None."""
     p, m = e.get("provider"), e.get("model_id")
@@ -233,7 +257,10 @@ def _resolve_primary(
     provider, model_id = cfg.get("provider"), cfg.get("model_id")
     timeout = clamp_timeout(cfg.get("timeout_s")) if cfg.get("timeout_s") is not None else None
 
-    if provider and model_id and is_valid_model(provider, model_id):
+    # Con clave propia el usuario elige en el catálogo de su proveedor, no en la
+    # lista curada: el guardado ya validó el modelo contra ese catálogo.
+    own = provider in own_keys(llm_config)
+    if provider and model_id and (own or is_valid_model(provider, model_id)):
         if enabled_models is None:
             return (provider, model_id, {}), timeout
         enabled_keys = {
@@ -243,6 +270,10 @@ def _resolve_primary(
         }
         key = (provider, model_id)
         if key in enabled_keys or is_default_model(provider, model_id):
+            return (provider, model_id, {}), timeout
+        # Sin ningún modelo activado de su proveedor, se le ofrece la lista
+        # entera (ver el catálogo por usuario): cualquiera de ella vale.
+        if own and not any(p == provider for p, _ in enabled_keys):
             return (provider, model_id, {}), timeout
     return default, timeout
 

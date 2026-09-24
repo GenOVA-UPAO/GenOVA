@@ -20,7 +20,8 @@ interface ModelsMasterDetailProps {
   onOpenCatalog: () => void;
   /** Lleva a la clave de plataforma del proveedor (solo administradores). */
   onConnectProvider: (provider: string) => void;
-  onGoToCredentials: () => void;
+  /** Sin proveedor, lleva a la primera clave; con él, a la fila de ese proveedor. */
+  onGoToCredentials: (provider?: string) => void;
 }
 
 export function ModelsMasterDetail({
@@ -46,6 +47,7 @@ export function ModelsMasterDetail({
         isAdmin={isAdmin}
         onOpenCatalog={onOpenCatalog}
         onConnectProvider={onConnectProvider}
+        onGoToOwnKey={onGoToCredentials}
       />
       <div className="grid overflow-hidden rounded-xl border border-border bg-card md:grid-cols-[260px_1fr]">
         <ModelsTaskNav
@@ -78,7 +80,9 @@ export function ModelsMasterDetail({
           onBack={() => {
             setMobileShowDetail(false);
           }}
-          onGoToCredentials={onGoToCredentials}
+          onGoToCredentials={() => {
+            onGoToCredentials();
+          }}
           onToggleGeneration={() => {
             toggleGeneration(draft, selectedTask, generationOn, onDraftChange);
           }}

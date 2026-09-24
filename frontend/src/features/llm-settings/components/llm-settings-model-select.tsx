@@ -11,10 +11,10 @@ import {
 import { joinModelValue, splitModelValue } from "../hooks/model-value";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { isAllowedProvider, useOwnKeyProviders } from "../hooks/use-own-key-providers";
-import { isProviderFailing } from "../lib/catalog-status";
 import { formatContextLength, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import { modelDisplayName } from "../lib/model-name";
 import { withoutProviderSuffix } from "../lib/model-search";
+import { isProviderDownForUser } from "../lib/own-catalog-status";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 
 interface LlmSettingsModelSelectProps {
@@ -67,7 +67,10 @@ export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSett
           .map((provider) => (
           <SelectGroup key={provider}>
             <SelectLabel>
-              {providerGroupLabel(provider, isProviderFailing(store.catalogStatus, provider))}
+              {providerGroupLabel(
+                provider,
+                isProviderDownForUser(store.catalogStatus, store.ownCatalogStatus, provider),
+              )}
             </SelectLabel>
             {catalogModels(store.catalog, provider).map((model) => (
               <SelectItem key={model.model_id} value={joinModelValue(provider, model.model_id)}>

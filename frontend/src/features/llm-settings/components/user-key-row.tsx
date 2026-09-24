@@ -4,6 +4,7 @@ import { providerMeta } from "@/core/components/platform-key-meta";
 
 import { errorMessage } from "../hooks/error-message";
 import { useUserApiKeys } from "../hooks/use-user-api-keys";
+import { type OwnCatalogStatus, ownKeyView } from "../lib/own-catalog-status";
 import { UserKeyInput } from "./user-key-input";
 import { UserKeyRemove } from "./user-key-remove";
 import { UserKeyRowActions } from "./user-key-row-actions";
@@ -12,9 +13,10 @@ import { UserKeyRowHeader } from "./user-key-row-header";
 interface UserKeyRowProps {
   provider: string;
   maskedValue?: string;
+  ownStatus?: OwnCatalogStatus | null;
 }
 
-export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>) {
+export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly<UserKeyRowProps>) {
   const { save } = useUserApiKeys();
   const inputRef = useRef<HTMLInputElement>(null);
   const startRef = useRef<HTMLButtonElement>(null);
@@ -32,7 +34,7 @@ export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>)
   return (
     <li className="space-y-3 px-4 py-3.5" data-key-row={provider}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <UserKeyRowHeader provider={provider} configured={configured} />
+        <UserKeyRowHeader provider={provider} view={ownKeyView(ownStatus, provider, configured)} />
         {configured && !state.editing ? (
           <code className="text-xs text-muted-foreground">{maskedValue}</code>
         ) : null}

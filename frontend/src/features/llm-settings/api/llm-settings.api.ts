@@ -2,6 +2,7 @@ import { apiJson } from "@/core/lib/http";
 
 import type { CatalogStatus } from "../lib/catalog-status";
 import { overridesPayload, type SettingsMap } from "../lib/llm-settings-mutations";
+import type { OwnCatalogStatus } from "../lib/own-catalog-status";
 import type { EnabledModel, LlmSettingsResponse } from "../lib/user-llm-settings.types";
 
 export interface LlmSettingsParams {
@@ -52,7 +53,12 @@ export function saveLlmSettings(settings: SettingsMap): Promise<LlmSettingsRespo
   );
 }
 
-export function refreshLlmCatalog(): Promise<{ catalog_status?: CatalogStatus }> {
+export interface RefreshCatalogResponse {
+  catalog_status?: CatalogStatus;
+  own_catalog_status?: OwnCatalogStatus | null;
+}
+
+export function refreshLlmCatalog(): Promise<RefreshCatalogResponse> {
   return apiJson(
     "/api/users/me/llm-settings/refresh-catalog",
     { method: "POST" },

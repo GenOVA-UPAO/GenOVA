@@ -8,6 +8,12 @@ import structlog
 
 from llm.catalog.catalog_pricing import format_pricing, format_pricing_detail
 from llm.catalog.model_catalog import CATALOG_ENTRIES
+from llm.catalog.provider_listing import (
+    list_groq_ids,
+    list_huggingface_ids,
+    list_opencode_ids,
+    log_listing_failure,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -75,15 +81,12 @@ def _fetch_groq() -> set[str] | None:
         logger.info("no API key configured — skipping model list fetch", provider="groq")
         raise ProviderNotConfiguredError("groq")
     try:
-        from groq import Groq
-
-        resp = Groq(api_key=api_key, max_retries=0).models.list()
-        ids = {m.id for m in resp.data if m.id}
-        logger.info("model list fetched", provider="groq", count=len(ids))
-        return ids
-    except Exception:
-        logger.exception("model list fetch failed", provider="groq")
+        ids = list_groq_ids(api_key)
+    except Exception as exc:
+        log_listing_failure("groq", exc)
         return None
+    logger.info("model list fetched", provider="groq", count=len(ids))
+    return ids
 
 
 def _merge_openrouter(api_models: dict[str, dict]) -> None:
@@ -129,15 +132,12 @@ def _fetch_opencode() -> set[str] | None:
         logger.info("no API key configured — skipping model list fetch", provider="opencode")
         raise ProviderNotConfiguredError("opencode")
     try:
-        from openai import OpenAI
-
-        resp = OpenAI(api_key=api_key, base_url="https://opencode.ai/zen/go/v1", max_retries=0, timeout=10.0).models.list()
-        ids = {m.id for m in resp.data if m.id}
-        logger.info("model list fetched", provider="opencode", count=len(ids))
-        return ids
-    except Exception:
-        logger.exception("model list fetch failed", provider="opencode")
+        ids = list_opencode_ids(api_key)
+    except Exception as exc:
+        log_listing_failure("opencode", exc)
         return None
+    logger.info("model list fetched", provider="opencode", count=len(ids))
+    return ids
 
 
 def _fetch_huggingface() -> set[str] | None:
@@ -147,21 +147,14 @@ def _fetch_huggingface() -> set[str] | None:
     if not api_key:
         logger.info("no API key — skipping text model fetch", provider="huggingface")
         raise ProviderNotConfiguredError("huggingface")
-
     try:
-        url = "https://huggingface.co/api/models"
-        resp = httpx.get(
-            url,
-            params={"inference": "warm", "pipeline_tag": "text-generation", "sort": "downloads", "limit": "100", "full": "false"},
-            timeout=10.0,
-        )
-        resp.raise_for_status()
-        ids = {m["id"] for m in resp.json() if m.get("id")}
-        logger.info("warm text models fetched", provider="huggingface", count=len(ids))
-        return ids
-    except Exception:
-        logger.exception("model list fetch failed", provider="huggingface")
+        # La lista es pública: la plataforma la pide sin cabecera, como antes.
+        ids = list_huggingface_ids()
+    except Exception as exc:
+        log_listing_failure("huggingface", exc)
         return None
+    logger.info("warm text models fetched", provider="huggingface", count=len(ids))
+    return ids
 
 
 def _merge_huggingface(available_ids: set[str]) -> None:

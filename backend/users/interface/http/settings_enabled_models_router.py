@@ -3,6 +3,9 @@ the user wants visible in their LLM settings dropdowns.
 
 GET returns the current list; PUT persists a new list, validated against the
 curated catalog. System default models can never be disabled.
+
+Con clave propia de un proveedor, se valida contra la lista que ese proveedor
+devuelve con la clave del usuario (puede tener modelos que la plataforma no ve).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -12,6 +15,7 @@ from auth.dependencies import get_current_user
 from core.rate_limit import limiter
 from llm.catalog.catalog_refresh import get_full_catalog_entries
 from llm.catalog.model_catalog import DEFAULTS
+from llm.catalog.user_catalog import load_user_catalog
 from models import User
 from users.application.dto import SaveEnabledModelsInput
 from users.container import UsersUseCases, build_users
@@ -26,12 +30,13 @@ class EnabledModelsUpdate(BaseModel):
     models: list[dict]
 
 
-def _validate_enabled_models(payload: list[dict]) -> list[dict]:
+def _validate_enabled_models(payload: list[dict], user: User | None = None) -> list[dict]:
     # `get_full_catalog_entries` se resuelve por el namespace de ESTE módulo a
     # propósito: un test hace monkeypatch del símbolo aquí.
-    return validate_enabled_models(
-        payload, full_entries=get_full_catalog_entries(), defaults=DEFAULTS.values()
-    )
+    full = get_full_catalog_entries()
+    if user is not None and not getattr(user, "admin_flag_cached", False):
+        full = load_user_catalog(user.id, user.user_api_keys).merge_full(full)
+    return validate_enabled_models(payload, full_entries=full, defaults=DEFAULTS.values())
 
 
 @router.get("/me/enabled-models", summary="Obtener los modelos habilitados")
@@ -50,7 +55,7 @@ def put_enabled_models(
     users: UsersUseCases = Depends(build_users),
 ):
     try:
-        clean = _validate_enabled_models(payload.models)
+        clean = _validate_enabled_models(payload.models, current_user)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
 

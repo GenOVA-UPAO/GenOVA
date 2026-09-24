@@ -4,13 +4,20 @@ import { Skeleton } from "@/core/components/ui/skeleton";
 
 import { errorMessage } from "../hooks/error-message";
 import { useUserApiKeys } from "../hooks/use-user-api-keys";
+import type { OwnCatalogStatus } from "../lib/own-catalog-status";
 import { UserKeyProviderGroup } from "./user-key-provider-group";
 
 const LLM_PROVIDERS = ["groq", "openrouter", "opencode"];
 const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
 
-/** Claves API propias del usuario, agrupadas por tipo de proveedor. */
-export function UserApiKeysCard() {
+/**
+ * Claves API propias del usuario, agrupadas por tipo de proveedor. `ownStatus`
+ * dice si la lista de modelos pedida con cada clave respondió (ausente para el
+ * admin, que usa las de la plataforma).
+ */
+export function UserApiKeysCard({
+  ownStatus = null,
+}: Readonly<{ ownStatus?: OwnCatalogStatus | null }>) {
   const { apiKeys, loading, error, refetch } = useUserApiKeys();
   const llm = LLM_PROVIDERS.filter((id) => Object.hasOwn(PROVIDER_META, id));
   const img = IMG_PROVIDERS.filter((id) => Object.hasOwn(PROVIDER_META, id));
@@ -40,7 +47,12 @@ export function UserApiKeysCard() {
 
   return (
     <div className="space-y-6">
-      <UserKeyProviderGroup title="Modelos de texto" providers={llm} apiKeys={apiKeys} />
+      <UserKeyProviderGroup
+        title="Modelos de texto"
+        providers={llm}
+        apiKeys={apiKeys}
+        ownStatus={ownStatus}
+      />
       <UserKeyProviderGroup title="Imagen y video" providers={img} apiKeys={apiKeys} />
     </div>
   );

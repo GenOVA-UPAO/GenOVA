@@ -30,6 +30,7 @@ from llm.utils.llm_helpers import (
     _resolve_primary,
     _retry_delay,
     effective_llm_config,
+    own_keys,
     with_model_thinking,
     with_thinking_disabled,
 )
@@ -95,8 +96,10 @@ def _chat_once(
     max_tokens: int,
     extra: dict,
     timeout: float | None = None,
+    key: str | None = None,
 ) -> tuple[str, str | None]:
-    key = _get_provider_key(provider)
+    # La clave propia del usuario, si la hay, va primero; si no, la de plataforma.
+    key = key or _get_provider_key(provider)
     if provider == "groq":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = groq_client.with_options(**opts) if opts else groq_client
@@ -153,9 +156,10 @@ def _chat(
     max_tokens: int,
     extra: dict,
     timeout: float | None = None,
+    key: str | None = None,
 ) -> str:
     msgs = [{"role": "user", "content": prompt}]
-    content, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout)
+    content, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key)
     for _ in range(_MAX_CONTINUATIONS):
         if finish != "length":
             break
@@ -166,7 +170,7 @@ def _chat(
             {"role": "user", "content": _CONTINUE_PROMPT},
         ]
         try:
-            more, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout)
+            more, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key)
         except EmptyContentError:
             break
         content += more
@@ -197,6 +201,7 @@ def generar_texto(
     con CoT y su latencia se come el presupuesto — medido: 39.7s → 11.5s con
     el mismo JSON válido)."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
+    user_keys = own_keys(llm_config)
     chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea, llm_config)]
 
     last_err: Exception | None = None
@@ -244,7 +249,15 @@ def generar_texto(
             model_id=model_id,
         )
         try:
-            content = _chat(proveedor, model_id, prompt, max_tokens, attempt_extra, attempt_timeout)
+            content = _chat(
+                proveedor,
+                model_id,
+                prompt,
+                max_tokens,
+                attempt_extra,
+                attempt_timeout,
+                user_keys.get(proveedor),
+            )
             logger.info(
                 "task model ok",
                 tarea=tarea,

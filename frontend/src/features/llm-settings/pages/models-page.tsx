@@ -41,9 +41,7 @@ export function ModelsPage() {
             page.setManageOpen(true);
           }}
           onConnectProvider={page.goToPlatformKey}
-          onGoToCredentials={() => {
-            page.goToApiKeys();
-          }}
+          onGoToCredentials={page.goToApiKeys}
         />
         <ManageModelsModal
           open={page.manageOpen}

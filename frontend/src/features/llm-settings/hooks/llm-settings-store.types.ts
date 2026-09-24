@@ -2,12 +2,15 @@ import type { GroupBy, SortKey } from "../lib/catalog-sort";
 import type { CatalogStatus } from "../lib/catalog-status";
 import type { EffectiveConfig } from "../lib/llm-config-draft";
 import type { SettingsMap } from "../lib/llm-settings-mutations";
+import type { OwnCatalogStatus } from "../lib/own-catalog-status";
 import type { CatalogModel, EnabledModel } from "../lib/user-llm-settings.types";
 
 export interface LlmSettingsStore {
   settings: SettingsMap | null;
   catalog: Record<string, CatalogModel[]>;
   catalogFull: CatalogModel[];
+  /** Catálogo curado completo, sin los filtros de «Abrir catálogo»: para nombres. */
+  catalogAll: CatalogModel[];
   catalogEnabled: CatalogModel[];
   fullTotal: number;
   fullHasMore: boolean;
@@ -26,6 +29,8 @@ export interface LlmSettingsStore {
   /** Reintenta la carga de la configuración (no el refresco del catálogo). */
   refetch: () => void;
   catalogStatus: CatalogStatus | null;
+  /** Estado de las listas pedidas con las claves propias (`null` para el admin). */
+  ownCatalogStatus: OwnCatalogStatus | null;
   refreshingCatalog: boolean;
   searchQuery: string;
   categoryFilter: string;

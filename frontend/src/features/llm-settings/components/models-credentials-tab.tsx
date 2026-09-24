@@ -1,8 +1,10 @@
 import { PlatformApiKeysCard } from "@/core/components/platform-api-keys-card";
 
+import { useLlmSettings } from "../hooks/use-llm-settings";
 import { UserApiKeysCard } from "./user-api-keys-card";
 
 export function ModelsCredentialsTab({ isAdmin }: Readonly<{ isAdmin: boolean }>) {
+  const store = useLlmSettings();
   return (
     <div className="max-w-4xl space-y-10">
       <section className="space-y-4">
@@ -13,7 +15,7 @@ export function ModelsCredentialsTab({ isAdmin }: Readonly<{ isAdmin: boolean }>
             cuenta. Donde no pongas la tuya, se usa la de la plataforma.
           </p>
         </div>
-        <UserApiKeysCard />
+        <UserApiKeysCard ownStatus={store.ownCatalogStatus} />
       </section>
       {isAdmin ? <PlatformApiKeysCard /> : null}
     </div>

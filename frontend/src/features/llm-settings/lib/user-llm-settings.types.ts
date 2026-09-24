@@ -1,6 +1,7 @@
 import type { CatalogStatus } from "./catalog-status";
 import type { EffectiveConfig } from "./llm-config-draft";
 import type { SettingsMap } from "./llm-settings-mutations";
+import type { OwnCatalogStatus } from "./own-catalog-status";
 
 export interface EnabledModel {
   provider: string;
@@ -42,6 +43,8 @@ export interface LlmSettingsResponse {
   categories?: string[];
   types?: string[];
   catalog_status?: CatalogStatus;
+  /** Listas pedidas con las claves propias del usuario (`null` para el admin). */
+  own_catalog_status?: OwnCatalogStatus | null;
 }
 
 export interface LoadOpts {
