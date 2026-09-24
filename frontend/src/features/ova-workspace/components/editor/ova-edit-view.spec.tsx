@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -47,7 +47,9 @@ async function setup() {
   // Precalienta el import diferido del modal: en frío tarda >1 s y el timeout
   // por defecto de findBy* se queda corto.
   await import("../modals/add-resource-modal");
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
   render(
     <QueryClientProvider client={client}>
       <MemoryRouter>
@@ -57,7 +59,7 @@ async function setup() {
   );
   await screen.findByText("OVA de prueba");
   fireEvent.click(screen.getByRole("tab", { name: "Editar" }));
-  await screen.findAllByRole("button", { name: "Guardar cambios" });
+  await screen.findAllByRole("button", { name: "Regenerar recurso" });
 }
 describe("OvaEditView event wiring", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -69,7 +71,10 @@ describe("OvaEditView event wiring", () => {
   });
   it("saves edited phase content", async () => {
     await setup();
-    fireEvent.change(screen.getAllByLabelText("Código HTML del recurso")[0], { target: { value: "<p>Editado</p>" } });
+    fireEvent.click(screen.getAllByRole("button", { name: "Editar código HTML" })[0]);
+    fireEvent.change(screen.getAllByLabelText("Código HTML del recurso")[0], {
+      target: { value: "<p>Editado</p>" },
+    });
     fireEvent.click(screen.getAllByRole("button", { name: "Guardar cambios" })[0]);
     await waitFor(() => {
       expect(api.saveOvaPhase).toHaveBeenCalledWith("ova-1", "a", "<p>Editado</p>");
@@ -79,7 +84,9 @@ describe("OvaEditView event wiring", () => {
     await setup();
     fireEvent.click(screen.getAllByRole("button", { name: "Eliminar recurso" })[0]);
     expect(api.deleteOvaPhase).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar eliminación" }));
+    fireEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", { name: "Eliminar recurso" }),
+    );
     await waitFor(() => {
       expect(api.deleteOvaPhase).toHaveBeenCalledWith("ova-1", "a");
     });
@@ -100,16 +107,43 @@ describe("OvaEditView event wiring", () => {
     // La etiqueta del botón no viaja como prompt: el backend la aplicaría como
     // un cambio sobre el HTML actual en vez de regenerar el recurso.
     await waitFor(() => {
-      expect(api.triggerOvaRegeneration).toHaveBeenCalledWith("ova-1", { phaseIds: ["a"], prompt: "" });
+      expect(api.triggerOvaRegeneration).toHaveBeenCalledWith("ova-1", {
+        phaseIds: ["a"],
+        prompt: "",
+      });
     });
   });
   it("adds a resource from its phase section", async () => {
     await setup();
     fireEvent.click(screen.getAllByRole("button", { name: "Añadir recurso a Enganche" })[0]);
-    fireEvent.change(await screen.findByLabelText("Instrucciones"), { target: { value: "Una lectura" } });
+    fireEvent.change(await screen.findByLabelText("Instrucciones"), {
+      target: { value: "Una lectura" },
+    });
     fireEvent.click(screen.getAllByRole("button", { name: "Añadir recurso" }).at(-1)!);
     await waitFor(() => {
       expect(api.addOvaPhase).toHaveBeenCalledWith("ova-1", "engage", "Una lectura");
     });
+  });
+  it("keeps unsaved HTML when switching to the preview and back", async () => {
+    await setup();
+    fireEvent.click(screen.getAllByRole("button", { name: "Editar código HTML" })[0]);
+    fireEvent.change(screen.getAllByLabelText("Código HTML del recurso")[0], {
+      target: { value: "<p>Borrador</p>" },
+    });
+    fireEvent.click(screen.getByRole("tab", { name: "Vista previa" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Editar" }));
+    expect(screen.getAllByLabelText("Código HTML del recurso")[0]).toHaveValue("<p>Borrador</p>");
+  });
+  it("walks through the resources with previous and next", async () => {
+    await setup();
+    fireEvent.click(screen.getByRole("tab", { name: "Vista previa" }));
+    expect(await screen.findByText("Recurso 1 de 2")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Recurso anterior" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Recurso siguiente" }));
+    expect(screen.getByText("Recurso 2 de 2")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Segundo recurso" })).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
   });
 });

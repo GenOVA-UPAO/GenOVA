@@ -6,6 +6,7 @@
 // Anything unknown falls back to 'pendiente'.
 
 import { phaseMeta } from "./phase-meta";
+import { resourceDisplayName } from "./resource-display-name";
 
 export type UiStatus = "pendiente" | "generando" | "check" | "X";
 
@@ -125,7 +126,7 @@ function resourceViewModel(
   const status = mapResourceStatus(resource.status);
   const catalogTitle = (resource.title ?? "").trim();
   const resourceType = humanizeResourceType(resource.resource_type);
-  const base = resourceBase(selection, catalogTitle, resourceType, resource);
+  const base = resourceDisplayName(resourceBase(selection, catalogTitle, resourceType, resource));
   const count = (seen.get(base) ?? 0) + 1;
   seen.set(base, count);
   return {

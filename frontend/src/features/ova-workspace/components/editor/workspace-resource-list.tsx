@@ -26,11 +26,19 @@ interface Props {
   phases: PhaseWithContent[];
   phaseType: string;
   ovaId: string;
+  busy: boolean;
   onReorder: (next: PhaseWithContent[]) => void;
   onRegenerate: (phase: PhaseWithContent) => void;
 }
 
-export function WorkspaceResourceList({ phases, phaseType, ovaId, onReorder, onRegenerate }: Readonly<Props>) {
+export function WorkspaceResourceList({
+  phases,
+  phaseType,
+  ovaId,
+  busy,
+  onReorder,
+  onRegenerate,
+}: Readonly<Props>) {
   const drag = usePhaseDrag(phases, onReorder);
   const [adding, setAdding] = useState(false);
   const label = phaseMeta(phaseType).label || phaseType;
@@ -47,7 +55,7 @@ export function WorkspaceResourceList({ phases, phaseType, ovaId, onReorder, onR
         <h2 id={heading} className="text-sm font-semibold text-foreground">
           {label}
           <span className="ml-2 text-xs font-normal tabular-nums text-muted-foreground">
-            {phases.length} de {MAX_PHASES_PER_TYPE}
+            {phases.length} de {MAX_PHASES_PER_TYPE} recursos
           </span>
         </h2>
         {full ? (
@@ -74,6 +82,7 @@ export function WorkspaceResourceList({ phases, phaseType, ovaId, onReorder, onR
             index={index}
             total={phases.length}
             ovaId={ovaId}
+            busy={busy}
             dragging={drag.dragging === index}
             dragProps={drag.liProps(index) as RowProps}
             onMove={move}

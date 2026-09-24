@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
+import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaUploads } from "../../hooks/use-uploads";
 import { buttonRegenPayload, messageRegenPayload, type RegenPayload } from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
@@ -22,14 +22,13 @@ function withToggledId(list: string[], id: string): string[] {
 }
 
 export function WorkspaceChatPanel({
-  ovaId,
   phases,
-}: Readonly<{ ovaId: string; phases: PhaseWithContent[] }>) {
+  regen,
+}: Readonly<{ phases: PhaseWithContent[]; regen: ChatRegeneration }>) {
   const [prompt, setPrompt] = useState("");
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const uploads = useOvaUploads();
-  const regen = useChatRegeneration(ovaId);
   // Regenerar crea una versión nueva con ids nuevos: la selección solo cuenta
   // los recursos que siguen existiendo. Al cerrar el selector, vuelve al OVA entero.
   const live = selected.filter((id) => phases.some((phase) => phase.id === id));
@@ -39,10 +38,14 @@ export function WorkspaceChatPanel({
       regen.request.mutate(payload, { onSuccess: onSent });
     }
   };
-  const error = regen.request.error?.message ?? regen.error ?? uploads.uploadError;
+  // Los fallos de la regeneración ya se leen en el hilo; aquí solo lo que no llegó a él.
+  const error = regen.composerError ?? uploads.uploadError;
 
   return (
-    <aside aria-label="Panel de instrucciones" className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r border-border bg-card">
+    <aside
+      aria-label="Panel de instrucciones"
+      className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r border-border bg-card"
+    >
       <ChatPanelHeader
         busy={regen.busy}
         onRegenAll={() => {

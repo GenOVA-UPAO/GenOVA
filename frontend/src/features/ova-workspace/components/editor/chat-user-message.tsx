@@ -1,4 +1,5 @@
 import type { RegenChatMessage } from "../../lib/regen-chat";
+import { resourceDisplayName } from "../../lib/resource-display-name";
 import { ChatDeleteButton } from "./chat-delete-button";
 
 interface Props {
@@ -22,7 +23,7 @@ export function ChatUserMessage({ message, onRemove }: Readonly<Props>) {
         <span className="sr-only">Tú: </span>
         <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-foreground">{message.text}</p>
         {labels.length > 0 && (
-          <p className="mt-1 text-xs text-muted-foreground">Aplicado a: {labels.join(", ")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">Aplicado a: {labels.map(resourceDisplayName).join(", ")}</p>
         )}
       </div>
     </li>

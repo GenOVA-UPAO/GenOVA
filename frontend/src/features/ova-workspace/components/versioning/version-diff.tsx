@@ -1,28 +1,36 @@
-import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
+import type { VersionDiffData, VersionDiffPhase } from "../../lib/version-history.types";
+import { VersionDiffCell } from "./version-diff-cell";
 
-import { phaseMeta } from "../../lib/phase-meta";
-import type { VersionDiffData } from "../../lib/version-history.types";
+type DiffSideData = VersionDiffData["v1"];
 
-/** Comparación lado a lado: la versión anterior a la izquierda, la posterior a la derecha. */
+function sideOf(data: DiffSideData): { number: string; phases: VersionDiffPhase[] } {
+  return { number: String(data?.version?.version_number ?? ""), phases: data?.phases ?? [] };
+}
+
+/**
+ * Comparación lado a lado, recurso por recurso: cada fila pone la versión
+ * anterior junto a la posterior para que se lean a la misma altura.
+ */
 export function VersionDiff({ data }: Readonly<{ data: VersionDiffData }>) {
+  const before = sideOf(data.v1);
+  const after = sideOf(data.v2);
+  const rows = Array.from(
+    { length: Math.max(before.phases.length, after.phases.length) },
+    (_, index) => index,
+  );
   return (
-    <section aria-label="Comparación de versiones" className="grid gap-4 border-t border-border pt-4 md:grid-cols-2">
-      {(
-        [
-          ["Anterior", data.v1],
-          ["Posterior", data.v2],
-        ] as const
-      ).map(([label, version]) => (
-        <div key={label} className="min-w-0 space-y-3">
-          <h3 className="text-sm font-semibold">
-            {label}: versión {version?.version?.version_number}
-          </h3>
-          {version?.phases?.map((phase) => (
-            <figure key={phase.id} className="space-y-1">
-              <figcaption className="text-xs text-muted-foreground">{phaseMeta(phase.phase_type).label || phase.phase_type}</figcaption>
-              <HtmlPreviewFrame html={phase.content} title={`${label}: ${phase.phase_type}`} height="35vh" />
-            </figure>
-          ))}
+    <section
+      aria-label="Comparación de versiones"
+      className="space-y-3 border-t border-border pt-4"
+    >
+      <div className="hidden grid-cols-2 gap-4 md:grid">
+        <h3 className="text-sm font-semibold">Anterior: versión {before.number}</h3>
+        <h3 className="text-sm font-semibold">Posterior: versión {after.number}</h3>
+      </div>
+      {rows.map((index) => (
+        <div key={index} className="grid gap-3 md:grid-cols-2 md:gap-4">
+          <VersionDiffCell side="Anterior" number={before.number} phase={before.phases.at(index)} />
+          <VersionDiffCell side="Posterior" number={after.number} phase={after.phases.at(index)} />
         </div>
       ))}
     </section>

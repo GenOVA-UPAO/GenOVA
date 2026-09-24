@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 import { cn } from "@/core/lib/cn";
 
 import type { PhaseWithContent } from "../../lib/types";
@@ -22,9 +24,22 @@ function tabClass(active: boolean): string {
 
 /** Pestañas de recursos del visor: subrayado primario en la activa, scroll horizontal si no caben. */
 export function WorkspacePreviewTabs({ phases, labels, activeId, onSelect }: Readonly<Props>) {
+  const strip = useRef<HTMLDivElement>(null);
+  // Con «Anterior/Siguiente» la pestaña activa puede quedar fuera de la franja (móvil).
+  useEffect(() => {
+    const node = strip.current;
+    const tab = node?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!node || !tab) return;
+    const right = tab.offsetLeft + tab.offsetWidth;
+    if (tab.offsetLeft < node.scrollLeft) node.scrollLeft = tab.offsetLeft;
+    else if (right > node.scrollLeft + node.clientWidth) node.scrollLeft = right - node.clientWidth;
+  }, [activeId]);
   return (
     <nav aria-label="Recursos del OVA" className="min-w-0 shrink-0 border-b border-border">
-      <div className="flex overflow-x-auto overscroll-x-contain px-1 [scrollbar-width:thin]">
+      <div
+        ref={strip}
+        className="relative flex overflow-x-auto overscroll-x-contain px-1 [scrollbar-width:thin]"
+      >
         {phases.map((phase) => {
           const active = phase.id === activeId;
           const label = labels.get(phase.id) ?? phase.phase_type;

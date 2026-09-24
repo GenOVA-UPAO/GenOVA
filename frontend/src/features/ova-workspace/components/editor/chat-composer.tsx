@@ -1,10 +1,11 @@
-import { type ReactNode, useRef } from "react";
+import type { ReactNode } from "react";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 import type { useOvaUploads } from "../../hooks/use-uploads";
 import { FileChips } from "../shared/file-chips";
+import { ChatAttachButton } from "./chat-attach-button";
 
 interface Props {
   prompt: string;
@@ -29,8 +30,17 @@ function hintText(busy: boolean, uploading: boolean, empty: boolean): string {
   return "Ctrl+Enter para aplicar";
 }
 
-export function ChatComposer({ prompt, onPrompt, onSubmit, busy, uploads, placeholder, scope, picker, error }: Readonly<Props>) {
-  const fileInput = useRef<HTMLInputElement>(null);
+export function ChatComposer({
+  prompt,
+  onPrompt,
+  onSubmit,
+  busy,
+  uploads,
+  placeholder,
+  scope,
+  picker,
+  error,
+}: Readonly<Props>) {
   const empty = !prompt.trim();
   const disabled = busy || empty || uploads.uploading;
   return (
@@ -65,38 +75,18 @@ export function ChatComposer({ prompt, onPrompt, onSubmit, busy, uploads, placeh
           }
         }}
       />
-      <input
-        ref={fileInput}
-        type="file"
-        className="hidden"
-        aria-label="Archivo de apoyo"
-        multiple
-        accept=".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.webp"
-        onChange={(event) => {
-          if (event.target.files) {
-            void uploads.addFiles(event.target.files);
-          }
-          event.target.value = "";
-        }}
-      />
       <FileChips files={uploads.data ?? []} onRemove={uploads.removeUpload} />
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Adjuntar archivo de apoyo"
-          title="Adjuntar archivo de apoyo"
-          disabled={uploads.uploading}
-          onClick={() => {
-            fileInput.current?.click();
-          }}
-        >
-          <Icon name="paperclip" />
-        </Button>
+        <ChatAttachButton uploads={uploads} />
         <p id={HINT_ID} aria-live="polite" className="min-w-0 flex-1 text-xs text-muted-foreground">
           {hintText(busy, uploads.uploading, empty)}
         </p>
-        <Button disabled={disabled} aria-describedby={HINT_ID} onClick={onSubmit}>
+        <Button
+          disabled={disabled}
+          aria-describedby={HINT_ID}
+          className="max-md:h-11"
+          onClick={onSubmit}
+        >
           <Icon name="paper-plane-tilt" />
           Aplicar cambios
         </Button>
