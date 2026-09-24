@@ -6,6 +6,8 @@ import { PlatformKeyInput } from "./platform-key-input";
 import { providerMeta } from "./platform-key-meta";
 import { PlatformKeyRowHeader } from "./platform-key-row-header";
 import { PlatformKeyRowMessages } from "./platform-key-row-messages";
+import { checkPlatformProvider, useProviderCheck } from "./platform-provider-check";
+import { ProviderCheckStatus } from "./platform-provider-check-status";
 import { usePlatformKeyDraft } from "./use-platform-key-draft";
 
 interface PlatformKeyRowProps {
@@ -23,8 +25,12 @@ export function PlatformKeyRow({
   const masked = maskedValue ?? "";
   const configured = masked !== "";
   const meta = providerMeta(provider);
+  const check = useProviderCheck(checkPlatformProvider);
+  // Al guardar una clave se comprueba al momento con el proveedor.
   const { inputRef, draft, setDraft, editing, missingKey, save, persist, saveDraft } =
-    usePlatformKeyDraft(provider);
+    usePlatformKeyDraft(provider, () => {
+      check.run(provider);
+    });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const errorId = `platform-key-error-${provider}`;
 
@@ -32,24 +38,21 @@ export function PlatformKeyRow({
     configured,
     serverKey,
     saving: save.isPending,
+    checking: check.checking,
     label: meta.label,
     onSave: saveDraft,
-    onCancel: () => {
-      setDraft(null);
-    },
-    onEdit: () => {
-      save.reset();
-      setDraft("");
-    },
-    onDelete: () => {
-      setConfirmDelete(true);
-    },
+    ...rowHandlers({ provider, check, save, setDraft, setConfirmDelete }),
   };
 
   return (
     <li className="space-y-3 px-4 py-3.5" data-platform-key-row={provider}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <PlatformKeyRowHeader meta={meta} configured={configured} serverKey={serverKey} />
+        <PlatformKeyRowHeader
+          meta={meta}
+          configured={configured}
+          serverKey={serverKey}
+          check={check}
+        />
         {configured && !editing && <code className="text-xs text-muted-foreground">{masked}</code>}
         {!editing && <PlatformKeyActions editing={false} {...actions} />}
       </div>
@@ -68,6 +71,7 @@ export function PlatformKeyRow({
           <PlatformKeyActions editing {...actions} />
         </div>
       )}
+      <ProviderCheckStatus check={check} />
       <PlatformKeyRowMessages
         missingKey={missingKey}
         errorId={errorId}
@@ -81,6 +85,7 @@ export function PlatformKeyRow({
         onConfirm={() => {
           persist("", () => {
             setConfirmDelete(false);
+            check.reset();
           });
         }}
         onCancel={() => {
@@ -89,4 +94,30 @@ export function PlatformKeyRow({
       />
     </li>
   );
+}
+
+interface RowHandlerArgs {
+  provider: string;
+  check: ReturnType<typeof useProviderCheck>;
+  save: ReturnType<typeof usePlatformKeyDraft>["save"];
+  setDraft: (value: string | null) => void;
+  setConfirmDelete: (open: boolean) => void;
+}
+
+function rowHandlers({ provider, check, save, setDraft, setConfirmDelete }: RowHandlerArgs) {
+  return {
+    onCheck: () => {
+      check.run(provider);
+    },
+    onCancel: () => {
+      setDraft(null);
+    },
+    onEdit: () => {
+      save.reset();
+      setDraft("");
+    },
+    onDelete: () => {
+      setConfirmDelete(true);
+    },
+  };
 }

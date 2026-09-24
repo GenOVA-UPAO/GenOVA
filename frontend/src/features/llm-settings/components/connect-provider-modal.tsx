@@ -1,3 +1,4 @@
+import { useIsAdmin } from "@/core/auth/auth-store";
 import { Icon } from "@/core/components/icon";
 import {
   Dialog,
@@ -20,6 +21,8 @@ export function ConnectProviderModal({
   onClose,
   onSelectProvider,
 }: Readonly<ConnectProviderModalProps>) {
+  // El admin conecta proveedores para toda la plataforma; un usuario, con su cuenta.
+  const isAdmin = useIsAdmin();
   return (
     <Dialog
       open={open}
@@ -31,8 +34,9 @@ export function ConnectProviderModal({
         <DialogHeader>
           <DialogTitle>Conectar proveedor</DialogTitle>
           <DialogDescription>
-            Elige el proveedor y pega tu clave API en Credenciales. Sus modelos se pagan con tu
-            cuenta.
+            {isAdmin
+              ? "Elige el proveedor y añade su clave de la plataforma en Credenciales. Al guardarla se comprueba y sus modelos quedan disponibles para todos."
+              : "Elige el proveedor y añade tu clave en Credenciales. Al guardarla se comprueba y sus modelos se pagan con tu cuenta."}
           </DialogDescription>
         </DialogHeader>
         <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
@@ -72,8 +76,8 @@ export function ConnectProviderModal({
         </ul>
         <p className="flex items-start gap-2 text-xs text-muted-foreground">
           <Icon name="info" size="text-sm" className="mt-px shrink-0" />
-          Para usar modelos de Anthropic, OpenAI, Google, Mistral y otros, conecta OpenRouter con
-          tu cuenta.
+          Para usar modelos de Anthropic, OpenAI, Google, Mistral y otros, conecta OpenRouter:
+          una sola clave da acceso a todos.
         </p>
       </DialogContent>
     </Dialog>

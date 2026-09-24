@@ -88,6 +88,12 @@ vi.mock("../components/models-master-detail", () => ({
   ModelsMasterDetail: () => createElement("div", { "data-testid": "master-detail" }),
 }));
 
+vi.mock("../hooks/use-config-apply", () => ({
+  useConfigApply: () => ({ refresh: vi.fn(), undo: vi.fn(), announce: vi.fn() }),
+}));
+
+vi.mock("../components/models-config-tools", () => import("./models-page-config-tools-stub"));
+
 vi.mock("../components/manage-models-modal", () => ({
   ManageModelsModal: () => null,
 }));
@@ -132,17 +138,19 @@ describe("ModelsPage", () => {
     expect(screen.queryByText("Proveedores conectados")).toBeNull();
     expect(screen.queryByText("Modelos favoritos")).toBeNull();
     expect(screen.queryByText("Cambios sin guardar")).toBeNull();
-    expect(screen.getByText(/1 de 2 proveedores conectados · 1 modelo activado/)).toBeTruthy();
+    expect(screen.getByText(/1 de 2 proveedores conectados · 1 modelo favorito/)).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Modelos$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Credenciales$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /Plataforma/i })).toBeTruthy();
     expect(screen.getByTestId("master-detail")).toBeTruthy();
+    // Perfiles e historial, en la cabecera: solo para el admin.
+    expect(screen.getByTestId("config-tools")).toBeTruthy();
   });
 
-  it("says all models are available when the favorites list is empty", () => {
+  it("only counts providers when there are no favorites", () => {
     store.enabledModels = [];
     renderPage();
-    expect(screen.getByText(/muestran todo el catálogo/i)).toBeTruthy();
+    expect(screen.getByText("1 de 2 proveedores conectados")).toBeTruthy();
   });
 
   it("shows sticky save bar only when dirty", () => {
@@ -188,9 +196,11 @@ describe("ModelsPage", () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole("tab", { name: /^Credenciales$/i }));
-    expect(screen.getByText("Tus claves")).toBeTruthy();
-    expect(screen.getByTestId("user-keys")).toBeTruthy();
-    expect(screen.getByTestId("platform-keys")).toBeTruthy();
+    // Para el admin, las de la plataforma van primero; las personales, después.
+    expect(screen.getByText("Tus claves personales")).toBeTruthy();
+    const platform = screen.getByTestId("platform-keys");
+    const personal = screen.getByTestId("user-keys");
+    expect(platform.compareDocumentPosition(personal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("mounts platform nodes card on Plataforma tab (not a metrics chart)", async () => {

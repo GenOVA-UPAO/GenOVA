@@ -4,14 +4,21 @@ import { toast } from "sonner";
 
 import { useCurrentUser, useIsAdmin } from "@/core/auth/auth-store";
 
+import type { ApplyConfigResponse } from "../api/model-tools.api";
 import { connectedProviders } from "../lib/catalog-status";
 import { blockingMessage, validateDraft } from "../lib/chain-validation";
 import type { Draft } from "../lib/llm-config-draft";
-import { focusFirstKeyRow, openKeyRow, openPlatformKeyRow } from "../lib/open-key-row";
+import {
+  focusFirstKeyRow,
+  focusFirstPlatformKeyRow,
+  openKeyRow,
+  openPlatformKeyRow,
+} from "../lib/open-key-row";
 import { canAccessModels } from "./can-access-models";
 import { errorMessage } from "./error-message";
 import { favoritesLabel, headerStatusText } from "./header-status";
 import { useAdminLlmDraft } from "./use-admin-llm-draft";
+import { useConfigApply } from "./use-config-apply";
 import { useLlmSettingsStore } from "./use-llm-settings-store";
 
 export function useModelsPage() {
@@ -22,6 +29,7 @@ export function useModelsPage() {
   const admin = useAdminLlmDraft(store, isAdmin);
   const [activeTab, setActiveTab] = useState("models");
   const [manageOpen, setManageOpen] = useState(false);
+  const feedback = useConfigApply();
 
   useEffect(() => {
     if (user && !canAccessModels(user)) {
@@ -69,7 +77,11 @@ export function useModelsPage() {
     goToApiKeys: (provider?: string) => {
       setManageOpen(false);
       setActiveTab("credentials");
-      if (provider) openKeyRow(provider);
+      // El admin conecta proveedores con las claves de la plataforma, no con las suyas.
+      if (provider) {
+        if (isAdmin) openPlatformKeyRow(provider);
+        else openKeyRow(provider);
+      } else if (isAdmin) focusFirstPlatformKeyRow();
       else focusFirstKeyRow();
     },
     goToPlatformKey: (provider: string) => {
@@ -80,7 +92,7 @@ export function useModelsPage() {
       admin.discard();
       store.discard();
     },
-    saveAll: () => saveAllChanges(chainInvalid, admin, store),
+    saveAll: () => saveAllChanges(chainInvalid, admin, store, feedback.announce),
   };
 }
 
@@ -88,15 +100,24 @@ async function saveAllChanges(
   chainInvalid: boolean,
   admin: ReturnType<typeof useAdminLlmDraft>,
   store: ReturnType<typeof useLlmSettingsStore>,
+  announce: ReturnType<typeof useConfigApply>["announce"],
 ): Promise<void> {
   if (chainInvalid) return;
   try {
-    if (admin.adminDirty) await admin.save();
+    const adminRes = admin.adminDirty ? await admin.save() : null;
     if (store.dirty) await store.save();
-    toast.success("Cambios guardados.");
+    // Con la config de plataforma, el aviso dice qué cambió y ofrece «Deshacer».
+    announce("Cambios guardados.", historyOf(adminRes));
   } catch (err) {
     toast.error(errorMessage(err, "No se pudo guardar."));
   }
+}
+
+function historyOf(res: unknown): Pick<ApplyConfigResponse, "history_entry"> {
+  if (res && typeof res === "object" && "history_entry" in res) {
+    return { history_entry: (res as ApplyConfigResponse).history_entry };
+  }
+  return { history_entry: null };
 }
 
 /**

@@ -1,12 +1,17 @@
 import { PROVIDER_META } from "@/core/components/platform-key-meta";
+import { hasCheck, type ProviderCheckState } from "@/core/components/platform-provider-check";
+import { ProviderCheckBadge } from "@/core/components/platform-provider-check-badge";
 
 import { ownKeyErrorText, type OwnKeyView } from "../lib/own-catalog-status";
 import { UserKeyState } from "./user-key-state";
 
+const NO_CHECK: ProviderCheckState = { checking: false, result: null, error: null };
+
 export function UserKeyRowHeader({
   provider,
   view,
-}: Readonly<{ provider: string; view: OwnKeyView }>) {
+  check = NO_CHECK,
+}: Readonly<{ provider: string; view: OwnKeyView; check?: ProviderCheckState }>) {
   const meta = PROVIDER_META[provider] ?? {
     label: provider,
     placeholder: "...",
@@ -17,7 +22,8 @@ export function UserKeyRowHeader({
     <div className="min-w-0 flex-1">
       <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
         <span className="text-sm font-medium">{meta.label}</span>
-        <UserKeyState view={view} />
+        {/* «Probar conexión» manda sobre el estado de la última carga. */}
+        {hasCheck(check) ? <ProviderCheckBadge check={check} /> : <UserKeyState view={view} />}
       </p>
       {view.kind === "error" ? (
         <p

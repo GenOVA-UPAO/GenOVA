@@ -8,7 +8,10 @@ interface PlatformKeyActionsProps {
   /** Sin clave guardada pero con una en el servidor: se puede sustituir, no quitar. */
   serverKey: boolean;
   saving: boolean;
+  /** «Probar conexión» en curso. */
+  checking: boolean;
   label: string;
+  onCheck: () => void;
   onSave: () => void;
   onCancel: () => void;
   onEdit: () => void;
@@ -29,9 +32,30 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
       </div>
     );
   }
+  const hasKey = configured || props.serverKey;
   return (
-    <div className="flex shrink-0 gap-2">
-      <Button variant="outline" size="sm" onClick={props.onEdit} disabled={saving}>
+    <div className="flex shrink-0 flex-wrap gap-2">
+      {hasKey && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="max-sm:h-11"
+          onClick={props.onCheck}
+          disabled={saving}
+          loading={props.checking}
+          aria-label={`Probar conexión con ${label}`}
+        >
+          Probar conexión
+        </Button>
+      )}
+      <Button
+        variant="outline"
+        size="sm"
+        className="max-sm:h-11"
+        data-key-edit=""
+        onClick={props.onEdit}
+        disabled={saving}
+      >
         {actionLabel(configured, props.serverKey)}
       </Button>
       {configured && (
@@ -39,7 +63,7 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
           <Button
             variant="ghost"
             size="icon-sm"
-            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive max-sm:size-11"
             onClick={props.onDelete}
             disabled={saving}
             aria-label={`Eliminar clave de ${label}`}

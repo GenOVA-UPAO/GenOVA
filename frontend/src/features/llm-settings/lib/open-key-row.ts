@@ -33,6 +33,11 @@ export function focusFirstKeyRow(): void {
   openRow(() => document.querySelector<HTMLElement>("[data-key-row]"), false);
 }
 
+/** Para el admin: foco en la primera fila de «Claves de la plataforma», sin abrirla. */
+export function focusFirstPlatformKeyRow(): void {
+  openRow(() => document.querySelector<HTMLElement>("[data-platform-key-row]"), false);
+}
+
 /** Las claves se piden al abrir Credenciales y a veces tardan segundos: se espera a que lleguen. */
 const WAIT_MS = 10_000;
 
@@ -40,7 +45,10 @@ function openRow(findRow: () => HTMLElement | null | undefined, open = true): vo
   const deadline = performance.now() + WAIT_MS;
   const tick = () => {
     const row = findRow();
-    const button = row?.querySelector<HTMLButtonElement>("button");
+    // El botón que abre el campo de la clave; si la fila no lo marca, el primero.
+    const button =
+      row?.querySelector<HTMLButtonElement>("button[data-key-edit]") ??
+      row?.querySelector<HTMLButtonElement>("button");
     if (row && button) {
       row.scrollIntoView({ block: "center" });
       if (open) button.click();

@@ -3,6 +3,8 @@ import { usePlatformConfig } from "@/core/hooks/use-platform-config";
 import { PROVIDER_META } from "./platform-key-meta";
 import { PlatformKeyRow } from "./platform-key-row";
 
+const TEXT_PROVIDERS = new Set(["groq", "openrouter", "opencode", "huggingface"]);
+
 const LIST_CLASS = "divide-y divide-border overflow-hidden rounded-xl border border-border bg-card";
 
 export function PlatformApiKeysList() {
@@ -36,16 +38,29 @@ export function PlatformApiKeysList() {
   const config = data.platform_config ?? {};
   const providers = data.providers ?? Object.keys(PROVIDER_META);
   const serverKeys = new Set(data.server_keys ?? []);
+  const text = providers.filter((p) => TEXT_PROVIDERS.has(p));
+  const media = providers.filter((p) => !TEXT_PROVIDERS.has(p));
+  const group = (title: string, ids: string[]) =>
+    ids.length === 0 ? null : (
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        <ul className={LIST_CLASS}>
+          {ids.map((p) => (
+            <PlatformKeyRow
+              key={p}
+              provider={p}
+              maskedValue={config[p]}
+              serverKey={serverKeys.has(p)}
+            />
+          ))}
+        </ul>
+      </div>
+    );
+  // Agrupadas como «Tus claves»: primero las de texto, que son las que eligen modelo.
   return (
-    <ul className={LIST_CLASS}>
-      {providers.map((p) => (
-        <PlatformKeyRow
-          key={p}
-          provider={p}
-          maskedValue={config[p]}
-          serverKey={serverKeys.has(p)}
-        />
-      ))}
-    </ul>
+    <div className="space-y-6">
+      {group("Modelos de texto", text)}
+      {group("Imagen y video", media)}
+    </div>
   );
 }

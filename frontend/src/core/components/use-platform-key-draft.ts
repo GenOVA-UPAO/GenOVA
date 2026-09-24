@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSavePlatformKey } from "@/core/hooks/use-platform-config";
 
 /** Borrador de la clave de un proveedor: `null` = sin editar (se ve la enmascarada). */
-export function usePlatformKeyDraft(provider: string) {
+export function usePlatformKeyDraft(provider: string, onKeySaved?: () => void) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [draft, setDraftState] = useState<string | null>(null);
   // «Guardar clave» no se deshabilita con el campo vacío: al pulsarlo se dice
@@ -41,7 +41,7 @@ export function usePlatformKeyDraft(provider: string) {
       inputRef.current?.focus();
       return;
     }
-    persist(trimmed);
+    persist(trimmed, onKeySaved);
   };
 
   return { inputRef, draft, setDraft, editing, missingKey, save, persist, saveDraft };

@@ -8,6 +8,11 @@ interface UserKeyRowActionsProps {
   editing: boolean;
   configured: boolean;
   saving: boolean;
+  /** «Probar conexión» (solo con clave guardada y fuera de edición). */
+  checking?: boolean;
+  /** Nombre del proveedor, para distinguir los «Probar conexión» de cada fila. */
+  label?: string;
+  onCheck?: () => void;
   onStart: () => void;
   onCancel: () => void;
   onSave: () => void;
@@ -18,6 +23,9 @@ export function UserKeyRowActions({
   editing,
   configured,
   saving,
+  checking = false,
+  label = "",
+  onCheck,
   onStart,
   onCancel,
   onSave,
@@ -35,8 +43,27 @@ export function UserKeyRowActions({
     );
   }
   return (
-    <Button ref={startRef} variant="outline" className="shrink-0 max-sm:h-11" onClick={onStart}>
-      {configured ? "Cambiar clave" : "Añadir clave"}
-    </Button>
+    <div className="flex shrink-0 flex-wrap gap-2">
+      {configured && onCheck ? (
+        <Button
+          variant="ghost"
+          className="max-sm:h-11"
+          loading={checking}
+          aria-label={label ? `Probar conexión con ${label}` : undefined}
+          onClick={onCheck}
+        >
+          Probar conexión
+        </Button>
+      ) : null}
+      <Button
+        ref={startRef}
+        variant="outline"
+        className="shrink-0 max-sm:h-11"
+        data-key-edit=""
+        onClick={onStart}
+      >
+        {configured ? "Cambiar clave" : "Añadir clave"}
+      </Button>
+    </div>
   );
 }

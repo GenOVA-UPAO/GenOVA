@@ -66,10 +66,11 @@ export function useAdminLlmDraft(store: LlmSettingsStore, isAdmin: boolean) {
   };
 }
 
+/** Devuelve la respuesta del backend: trae la entrada del historial para «Deshacer». */
 async function saveAdminDraft(
   draft: Draft | null,
   tasks: string[],
   mutateAsync: (payload: unknown) => Promise<unknown>,
-): Promise<void> {
-  await mutateAsync(toPayload(draft, tasks));
+): Promise<unknown> {
+  return mutateAsync(toPayload(draft, tasks));
 }

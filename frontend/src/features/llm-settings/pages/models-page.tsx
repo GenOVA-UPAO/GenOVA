@@ -1,6 +1,7 @@
 import { QueryErrorState } from "@/core/components/query-error-state";
 
 import { ManageModelsModal } from "../components/manage-models-modal";
+import { ModelsConfigTools } from "../components/models-config-tools";
 import { ModelsPageHeader } from "../components/models-page-header";
 import { ModelsPageTabs } from "../components/models-page-tabs";
 import { UnsavedChangesBar } from "../components/unsaved-changes-bar";
@@ -23,7 +24,18 @@ export function ModelsPage() {
   return (
     <LlmSettingsContext.Provider value={page.store}>
       <div className="mx-auto max-w-7xl space-y-6">
-        <ModelsPageHeader status={page.headerStatus} canEdit={page.canEdit} />
+        <ModelsPageHeader
+          status={page.headerStatus}
+          canEdit={page.canEdit}
+          actions={
+            page.isAdmin ? (
+              <ModelsConfigTools
+                dirty={page.admin.adminDirty}
+                onDiscardDraft={page.admin.discard}
+              />
+            ) : undefined
+          }
+        />
         <ModelsPageTabs
           activeTab={page.activeTab}
           onTabChange={page.setActiveTab}

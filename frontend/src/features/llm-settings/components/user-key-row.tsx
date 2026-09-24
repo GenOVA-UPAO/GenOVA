@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
 
 import { providerMeta } from "@/core/components/platform-key-meta";
+import { useProviderCheck } from "@/core/components/platform-provider-check";
+import { ProviderCheckStatus } from "@/core/components/platform-provider-check-status";
 
+import { checkOwnProvider } from "../api/model-tools.api";
 import { errorMessage } from "../hooks/error-message";
 import { useUserApiKeys } from "../hooks/use-user-api-keys";
 import { type OwnCatalogStatus, ownKeyView } from "../lib/own-catalog-status";
@@ -26,7 +29,11 @@ export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly
   const focusStart = () => {
     window.setTimeout(() => startRef.current?.focus(), 50);
   };
-  const state = useKeyDraft(focusStart);
+  const check = useProviderCheck(checkOwnProvider);
+  // Al guardar la clave se comprueba al momento con el proveedor.
+  const state = useKeyDraft(focusStart, () => {
+    check.run(provider);
+  });
   const meta = providerMeta(provider);
   const inputId = `user-key-${provider}`;
   const configured = Boolean(maskedValue);
@@ -34,7 +41,11 @@ export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly
   return (
     <li className="space-y-3 px-4 py-3.5" data-key-row={provider}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <UserKeyRowHeader provider={provider} view={ownKeyView(ownStatus, provider, configured)} />
+        <UserKeyRowHeader
+          provider={provider}
+          view={ownKeyView(ownStatus, provider, configured)}
+          check={check}
+        />
         {configured && !state.editing ? (
           <code className="text-xs text-muted-foreground">{maskedValue}</code>
         ) : null}
@@ -44,6 +55,11 @@ export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly
             editing={false}
             configured={configured}
             saving={state.saving}
+            checking={check.checking}
+            label={meta.label}
+            onCheck={() => {
+              check.run(provider);
+            }}
             onStart={() => {
               state.start();
               window.setTimeout(() => inputRef.current?.focus(), 50);
@@ -53,7 +69,14 @@ export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly
           />
         )}
         {configured && !state.editing ? (
-          <UserKeyRemove provider={provider} label={meta.label} onRemoved={focusStart} />
+          <UserKeyRemove
+            provider={provider}
+            label={meta.label}
+            onRemoved={() => {
+              check.reset();
+              focusStart();
+            }}
+          />
         ) : null}
       </div>
       {state.editing ? (
@@ -72,6 +95,7 @@ export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly
           onCancel={state.cancel}
         />
       ) : null}
+      <ProviderCheckStatus check={check} />
     </li>
   );
 }
@@ -84,7 +108,7 @@ function keyHint(label: string, placeholder: string): string {
   return prefix === "" ? `Clave API de ${label}` : `Clave API de ${label}. Empieza por ${prefix}`;
 }
 
-function useKeyDraft(onClose: () => void) {
+function useKeyDraft(onClose: () => void, onSaved: () => void) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
@@ -124,6 +148,7 @@ function useKeyDraft(onClose: () => void) {
         setEditing(false);
         setDraft("");
         onClose();
+        onSaved();
       } catch (err: unknown) {
         setRowError(errorMessage(err, "Error al guardar."));
       } finally {
