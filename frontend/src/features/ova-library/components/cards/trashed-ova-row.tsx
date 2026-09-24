@@ -1,7 +1,7 @@
 import { Checkbox } from "@/core/components/ui/checkbox";
 import { cn } from "@/core/lib/cn";
 
-import { formatShortDate, ownerNameOf } from "../../lib/ova-card-format";
+import { ownerNameOf, trashedAt } from "../../lib/ova-card-format";
 import type { OvaListItem } from "../../lib/types";
 import { OvaCardMeta } from "./ova-card-meta";
 import { TrashedOvaRowActions } from "./trashed-ova-row-actions";
@@ -46,12 +46,7 @@ export function TrashedOvaRow({
         <h3 className="line-clamp-2 text-sm font-medium text-foreground" title={title}>
           {title}
         </h3>
-        <OvaCardMeta
-          ownerName={ownerNameOf(ova)}
-          dateTime={ova.deleted_at}
-          dateText={formatShortDate(ova.deleted_at)}
-          datePrefix="Eliminado el"
-        />
+        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={trashedAt(ova)} />
       </div>
       <TrashedOvaRowActions
         isRestoring={isRestoring}

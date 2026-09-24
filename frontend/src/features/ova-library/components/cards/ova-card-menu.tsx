@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
+import { Tooltip } from "@/core/components/ui/tooltip";
 
 interface OvaCardMenuProps {
   title: string;
@@ -34,16 +35,18 @@ export function OvaCardMenu({
 
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="-my-2 -mr-2 shrink-0 text-foreground/70 max-sm:-my-3 max-sm:size-11"
-          aria-label={`Más acciones para ${title}`}
-        >
-          <Icon name="dots-three-vertical" weight="bold" className="size-5" />
-        </Button>
-      </DropdownMenuTrigger>
+      <Tooltip label="Más acciones" side="top">
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="-my-2 -mr-2 shrink-0 text-foreground/70 max-sm:-my-3 max-sm:size-11"
+            aria-label={`Más acciones para ${title}`}
+          >
+            <Icon name="dots-three-vertical" weight="bold" className="size-5" />
+          </Button>
+        </DropdownMenuTrigger>
+      </Tooltip>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuItem className={ITEM_CLASS} disabled={busy} onSelect={onEditMetadata}>
           <Icon name="pencil-simple" size="text-base" />

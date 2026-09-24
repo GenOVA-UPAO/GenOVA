@@ -44,7 +44,7 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
         title="Crear nuevo OVA"
         subtitle="Describe el tema y elige qué recursos generará la IA en cada fase del modelo 5E."
         actions={
-          <Button variant="ghost" size="sm" className="-ml-2.5 sm:ml-0" onClick={props.onTour}>
+          <Button variant="ghost" className="-ml-3 max-sm:h-11 sm:ml-0" onClick={props.onTour}>
             <Icon name="question" />
             Ver tutorial
           </Button>
@@ -55,7 +55,10 @@ export function OvaCreateFormCard(props: Readonly<Props>) {
         resourcesDone={props.phases >= 2}
         generateReady={props.ready}
       />
-      <section id="tour-crear-ova-prompt" className="rounded-xl border border-border bg-card shadow-xs">
+      <section
+        id="tour-crear-ova-prompt"
+        className="rounded-xl border border-border bg-card shadow-xs"
+      >
         <div className="space-y-3 p-4 sm:p-5">
           <CreationPromptField
             prompt={props.prompt}

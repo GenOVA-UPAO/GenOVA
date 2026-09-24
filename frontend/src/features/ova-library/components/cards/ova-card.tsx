@@ -3,7 +3,7 @@ import { cn } from "@/core/lib/cn";
 
 import type { OvaJobInfo } from "../../lib/job-types";
 import {
-  formatShortDate,
+  lastActivity,
   meaningfulDescription,
   ownerNameOf,
   visibleVersion,
@@ -13,6 +13,7 @@ import { OvaCardActions } from "./ova-card-actions";
 import { OvaCardBadges } from "./ova-card-badges";
 import { OvaCardMenu } from "./ova-card-menu";
 import { OvaCardMeta } from "./ova-card-meta";
+import { OvaCardTitle } from "./ova-card-title";
 
 interface OvaCardProps {
   ova: OvaListItem;
@@ -80,19 +81,13 @@ export function OvaCard({
       </div>
 
       <div className="mt-2 flex-1 space-y-1.5">
-        <h3 className="line-clamp-2 text-base leading-snug font-semibold text-foreground" title={title}>
-          {title}
-        </h3>
+        <OvaCardTitle ovaId={ova.id} title={title} />
         {description && (
           <p className="line-clamp-2 text-sm text-muted-foreground" title={description}>
             {description}
           </p>
         )}
-        <OvaCardMeta
-          ownerName={ownerNameOf(ova)}
-          dateTime={ova.created_at}
-          dateText={formatShortDate(ova.created_at)}
-        />
+        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={lastActivity(ova)} />
       </div>
 
       <div className="mt-4 border-t border-border pt-3">

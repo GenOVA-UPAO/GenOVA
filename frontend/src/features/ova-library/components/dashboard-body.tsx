@@ -39,7 +39,7 @@ export function DashboardBody({ ovas, total, isAdmin }: Readonly<DashboardBodyPr
         <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-card">
           <DashboardStatCard label="OVAs" value={total} hint="Toda tu biblioteca" to="/mis-ovas" />
           <DashboardStatCard
-            label="Listas"
+            label="Listos"
             value={counts.ready}
             hint="Preparadas para exportar"
             to="/mis-ovas?estado=listo"

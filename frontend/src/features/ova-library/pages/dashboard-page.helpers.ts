@@ -24,12 +24,3 @@ export function getUserFirstName(fullName?: string): string {
   if (!fullName) return "Usuario";
   return fullName.split(" ")[0] ?? "Usuario";
 }
-
-export function formatDate(value: string | undefined): string {
-  if (!value) return "Sin fecha";
-  return new Intl.DateTimeFormat("es-PE", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
-}

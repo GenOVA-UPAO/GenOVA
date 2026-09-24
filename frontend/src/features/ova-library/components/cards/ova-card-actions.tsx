@@ -1,5 +1,6 @@
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
 
 import { OvaCardPrimaryAction } from "./ova-card-primary-action";
 
@@ -37,17 +38,18 @@ export function OvaCardActions({
         onResume={onResume}
       />
       {isReady && (
-        <Button
-          variant="ghost"
-          className={ACTION_CLASS}
-          title="Descargar el paquete SCORM (.zip)"
-          loading={isDownloading}
-          disabled={isDuplicating}
-          onClick={onDownload}
-        >
-          {!isDownloading && <Icon name="download-simple" size="text-base" />}
-          {isDownloading ? "Descargando..." : "Descargar"}
-        </Button>
+        <Tooltip label="Paquete SCORM (.zip) para tu aula virtual" side="top">
+          <Button
+            variant="ghost"
+            className={ACTION_CLASS}
+            loading={isDownloading}
+            disabled={isDuplicating}
+            onClick={onDownload}
+          >
+            {!isDownloading && <Icon name="download-simple" size="text-base" />}
+            {isDownloading ? "Descargando..." : "Descargar"}
+          </Button>
+        </Tooltip>
       )}
     </div>
   );
