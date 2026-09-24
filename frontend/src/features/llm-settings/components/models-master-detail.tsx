@@ -4,7 +4,7 @@ import type { AdminCatalogItem } from "../hooks/admin-llm-view";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import type { SlotIssue } from "../lib/chain-validation";
 import { type Draft, isMediaTask, type TaskDraft } from "../lib/llm-config-draft";
-import { enabledOnly, includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";
+import { includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";
 import { ModelsOverviewBar } from "./models-overview-bar";
 import { ModelsTaskNav } from "./models-task-nav";
 import { ModelsTaskPanel } from "./models-task-panel";
@@ -70,7 +70,10 @@ export function ModelsMasterDetail({
           adminSaving={adminSaving}
           generationOn={generationOn}
           selectedDraft={selectedDraft}
-          poolModels={poolFor(selectedTask, adminModels, store.enabledModels, selectedDraft)}
+          poolModels={poolFor(selectedTask, adminModels, selectedDraft)}
+          draft={draft}
+          tasks={tasks}
+          onDraftChange={onDraftChange}
           adminModels={adminModels}
           issues={chainIssues[selectedTask] ?? []}
           defaults={store.defaults}
@@ -100,19 +103,16 @@ function generationEnabled(draft: TaskDraft | undefined, task: string): boolean 
   return task !== "video";
 }
 
-function poolFor(
-  task: string,
-  adminModels: AdminCatalogItem[],
-  enabled: { provider: string; model_id: string }[],
-  selected: TaskDraft | undefined,
-) {
-  const enabledPool = enabledOnly(adminModels, enabled);
-  const filtered = modelsForTask(enabledPool, task);
-  // Imagen y video no pueden caer a modelos de texto (fallarían al generar): si
-  // no hay ninguno activado, se ofrecen los aptos del catálogo completo.
-  const fallback = isMediaTask(task) ? modelsForTask(adminModels, task) : enabledPool;
-  const base = filtered.length ? filtered : fallback;
-  return includeSelectedInPool(base, adminModels, [selected?.default, ...(selected?.fallbacks ?? [])]);
+/**
+ * Modelos que se ofrecen para una tarea: el catálogo apto completo (los favoritos
+ * ya no filtran, solo salen primero). Imagen y video solo ofrecen los aptos:
+ * un modelo de texto ahí fallaría al generar.
+ */
+function poolFor(task: string, adminModels: AdminCatalogItem[], selected: TaskDraft | undefined) {
+  return includeSelectedInPool(modelsForTask(adminModels, task), adminModels, [
+    selected?.default,
+    ...(selected?.fallbacks ?? []),
+  ]);
 }
 
 function applyChain(

@@ -34,9 +34,23 @@ export function useLlmFavorites(serverEnabled: EnabledModel[]) {
     }
   }
 
+  /** Añade varios de una vez (sin quitar ninguno); no hace nada si ya estaban todos. */
+  async function addFavorites(models: EnabledModel[]): Promise<void> {
+    const current = [...enabledModels];
+    const next = withAdded(current, models);
+    if (next.length === current.length) return;
+    setOverride(next);
+    try {
+      await mutation.mutateAsync(next);
+    } catch {
+      setOverride(current);
+    }
+  }
+
   return {
     enabledModels,
     toggleFavorite,
+    addFavorites,
     isModelEnabled: (provider: string, modelId: string) =>
       enabledModels.some((item) => item.provider === provider && item.model_id === modelId),
   };
@@ -48,4 +62,14 @@ function nextEnabled(current: EnabledModel[], provider: string, modelId: string)
     return current.filter((item) => !(item.provider === provider && item.model_id === modelId));
   }
   return [...current, { provider, model_id: modelId }];
+}
+
+function withAdded(current: EnabledModel[], models: EnabledModel[]): EnabledModel[] {
+  const next = [...current];
+  for (const model of models) {
+    if (!model.provider || !model.model_id) continue;
+    if (next.some((item) => item.provider === model.provider && item.model_id === model.model_id)) continue;
+    next.push({ provider: model.provider, model_id: model.model_id });
+  }
+  return next;
 }

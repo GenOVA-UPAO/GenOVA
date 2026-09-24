@@ -1,67 +1,58 @@
-import type { GroupBy, SortKey } from "../lib/catalog-sort";
-import { GROUP_OPTIONS, SORT_OPTIONS } from "../lib/catalog-sort";
-import { CATEGORY_LABELS, TYPE_LABELS } from "../lib/llm-settings-labels";
+import type { CatalogBrowser } from "../hooks/use-catalog-browser";
+import { CATALOG_SORTS, type CatalogSort } from "../lib/catalog-browse";
+import { CatalogChips } from "./catalog-chips";
+import { CatalogResultCount } from "./catalog-result-count";
 import { ManageModelsSearchField } from "./manage-models-search-field";
 import { ManageModelsSelect } from "./manage-models-select";
 
 interface ManageModelsToolbarProps {
-  localSearch: string;
-  categoryFilter: string;
-  categories: string[];
-  typeFilter: string;
-  types: string[];
-  sortKey: SortKey;
-  groupBy: GroupBy;
-  onSearch: (value: string) => void;
-  onCategory: (value: string) => void;
-  onType: (value: string) => void;
-  onSort: (value: SortKey) => void;
-  onGroup: (value: GroupBy) => void;
+  browser: CatalogBrowser;
+  total: number;
 }
 
-export function ManageModelsToolbar(props: Readonly<ManageModelsToolbarProps>) {
+const ALL_PROVIDERS = "all";
+
+/** Búsqueda, proveedor y orden en una fila; los filtros rápidos, debajo. */
+export function ManageModelsToolbar({ browser, total }: Readonly<ManageModelsToolbarProps>) {
+  const { filters, setFilters } = browser;
+  const showProviders = browser.providers.length > 1;
   return (
-    // Búsqueda en su propia fila: junto a los cuatro filtros quedaba en «Buscar m…».
-    <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-border px-5 py-3 sm:grid-cols-4">
-      <div className="col-span-2 sm:col-span-4">
-        <ManageModelsSearchField value={props.localSearch} onSearch={props.onSearch} />
+    <div className="shrink-0 space-y-2.5 border-b border-border px-5 py-3">
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <ManageModelsSearchField
+          value={filters.query}
+          onSearch={(query) => {
+            setFilters({ query });
+          }}
+        />
+        <div className="grid grid-cols-1 gap-2 sm:flex sm:shrink-0">
+          {showProviders ? (
+            <ManageModelsSelect
+              value={filters.provider ?? ALL_PROVIDERS}
+              label="Filtrar por proveedor"
+              className="sm:w-48"
+              options={[
+                { value: ALL_PROVIDERS, label: "Todos los proveedores" },
+                ...browser.providers.map((p) => ({ value: p.id, label: p.label })),
+              ]}
+              onChange={(value) => {
+                setFilters({ provider: value === ALL_PROVIDERS ? null : value });
+              }}
+            />
+          ) : null}
+          <ManageModelsSelect
+            value={filters.sort}
+            label="Ordenar"
+            className="sm:w-56"
+            options={CATALOG_SORTS.map((opt) => ({ value: opt.key, label: opt.label }))}
+            onChange={(value) => {
+              setFilters({ sort: value as CatalogSort });
+            }}
+          />
+        </div>
       </div>
-      <ManageModelsSelect
-        value={orAll(props.typeFilter)}
-        label="Filtrar por tipo de modelo"
-        options={props.types.map((type) => ({ value: type, label: TYPE_LABELS[type] ?? type }))}
-        onChange={props.onType}
-      />
-      <ManageModelsSelect
-        value={orAll(props.categoryFilter)}
-        // El backend lo llama «categorías», pero son «Recomendados» y los proveedores.
-        label="Filtrar por proveedor"
-        options={props.categories.map((cat) => ({
-          value: cat,
-          label: CATEGORY_LABELS[cat] ?? cat,
-        }))}
-        onChange={props.onCategory}
-      />
-      <ManageModelsSelect
-        value={props.sortKey}
-        label="Ordenar"
-        options={SORT_OPTIONS.map((opt) => ({ value: opt.key, label: opt.label }))}
-        onChange={(value) => {
-          props.onSort(value as SortKey);
-        }}
-      />
-      <ManageModelsSelect
-        value={props.groupBy}
-        label="Agrupar"
-        options={GROUP_OPTIONS.map((opt) => ({ value: opt.key, label: opt.label }))}
-        onChange={(value) => {
-          props.onGroup(value as GroupBy);
-        }}
-      />
+      <CatalogChips browser={browser} />
+      <CatalogResultCount shown={browser.results.length} total={total} filtered={browser.filtered} onClear={browser.clear} />
     </div>
   );
-}
-
-function orAll(value: string): string {
-  return value.length > 0 ? value : "all";
 }

@@ -1,32 +1,42 @@
-import { useEffect, useId } from "react";
+import { type UIEvent, useEffect, useId } from "react";
 
 import { Icon } from "@/core/components/icon";
-import { cn } from "@/core/lib/cn";
 
-import type { useModelCombobox } from "../hooks/use-model-combobox";
+import type { ComboboxState } from "../hooks/use-model-combobox";
+import { type ModelOption, NO_FILTERS, optionProviders, type PickerSection } from "../lib/model-search";
 import { ModelComboboxFooter } from "./model-combobox-footer";
-
-type ComboboxState = ReturnType<typeof useModelCombobox>;
+import { ModelFilterChips } from "./model-filter-chips";
+import { ModelOptionRow } from "./model-option-row";
 
 interface ModelComboboxPanelProps {
   state: ComboboxState;
+  options: ModelOption[];
   current: string;
   label: string;
 }
 
-/** Buscador + lista de modelos (patrón combobox de ARIA con aria-activedescendant). */
-export function ModelComboboxPanel({ state, current, label }: Readonly<ModelComboboxPanelProps>) {
+/**
+ * Buscador, filtros rápidos y lista agrupada de modelos (patrón combobox de
+ * ARIA con aria-activedescendant). Solo se pintan las filas cercanas: con
+ * cientos de modelos, el resto aparece al bajar.
+ */
+export function ModelComboboxPanel({ state, options, current, label }: Readonly<ModelComboboxPanelProps>) {
   const listId = useId();
   const optionId = (index: number) => `${listId}-opt-${String(index)}`;
-  const activeId = state.visible.length > 0 ? optionId(state.active) : undefined;
+  const activeId = state.flat.length > 0 ? optionId(state.active) : undefined;
 
   useEffect(() => {
     if (activeId) document.getElementById(activeId)?.scrollIntoView({ block: "nearest" });
   }, [activeId]);
 
+  const onScroll = (event: UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    if (el.scrollTop + el.clientHeight > el.scrollHeight - 240) state.showMore();
+  };
+
   return (
-    <div className="flex max-h-[min(26rem,var(--radix-popover-content-available-height))] flex-col">
-      <div className="flex items-center gap-2 border-b border-border px-3">
+    <div className="flex max-h-[min(32rem,var(--radix-popover-content-available-height))] flex-col">
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-3">
         <Icon name="magnifying-glass" size="text-base" className="shrink-0 text-muted-foreground" />
         <input
           type="text"
@@ -38,53 +48,87 @@ export function ModelComboboxPanel({ state, current, label }: Readonly<ModelComb
           aria-autocomplete="list"
           autoComplete="off"
           spellCheck={false}
-          placeholder="Buscar por nombre o proveedor…"
+          placeholder="Buscar por nombre, proveedor o id…"
           value={state.query}
           onChange={(event) => {
             state.onQuery(event.target.value);
           }}
           onKeyDown={state.onKeyDown}
-          className="h-11 w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          className="h-11 w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground max-sm:text-base"
         />
       </div>
-      <ul
+      {options.length > 0 ? (
+        <ModelFilterChips
+          className="shrink-0 border-b border-border px-3 py-2"
+          filters={state.filters}
+          providers={optionProviders(options)}
+          onChange={state.setFilters}
+        />
+      ) : null}
+      <div
         id={listId}
         role="listbox"
         aria-label={label}
-        className={cn("min-h-0 flex-1 overflow-y-auto", state.visible.length > 0 && "p-1")}
+        onScroll={onScroll}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pb-1"
       >
-        {state.visible.map((option, index) => (
-          // El teclado lo gestiona el buscador (aria-activedescendant): las opciones no reciben foco.
-          // eslint-disable-next-line jsx-a11y/click-events-have-key-events -- patrón combobox de ARIA
-          <li
-            key={option.value}
-            id={optionId(index)}
-            role="option"
-            aria-selected={option.value === current}
-            onPointerMove={() => {
-              state.setActive(index);
-            }}
-            onClick={() => {
-              state.pick(option.value);
-            }}
-            className={cn(
-              "flex min-h-9 cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-              index === state.active && "bg-accent text-accent-foreground",
-            )}
-          >
-            <span className="min-w-0 flex-1 truncate" title={option.name}>
-              {option.name}
-            </span>
-            <span className="shrink-0 text-xs text-muted-foreground">{option.providerLabel}</span>
-            <Icon
-              name="check"
-              size="text-sm"
-              className={cn("shrink-0 text-primary", option.value !== current && "invisible")}
-            />
-          </li>
-        ))}
-      </ul>
-      <ModelComboboxFooter shown={state.visible.length} total={state.total} query={state.query} />
+        <PanelSections state={state} current={current} optionId={optionId} />
+      </div>
+      <ModelComboboxFooter
+        shown={state.flat.length}
+        total={state.total}
+        query={state.query}
+        filtered={state.flat.length < state.total}
+        onClearFilters={() => {
+          state.onQuery("");
+          state.setFilters(NO_FILTERS);
+        }}
+      />
     </div>
   );
+}
+
+interface PanelSectionsProps {
+  state: ComboboxState;
+  current: string;
+  optionId: (index: number) => string;
+}
+
+function PanelSections({ state, current, optionId }: Readonly<PanelSectionsProps>) {
+  let offset = 0;
+  const groups: { section: PickerSection; start: number }[] = [];
+  for (const section of state.sections) {
+    if (offset >= state.limit) break;
+    groups.push({ section, start: offset });
+    offset += section.options.length;
+  }
+  return groups.map(({ section, start }) => (
+    <div key={section.key} role="group" aria-labelledby={`${optionId(start)}-group`}>
+      <div
+        id={`${optionId(start)}-group`}
+        className="sticky top-0 z-10 flex items-baseline gap-1.5 bg-popover px-2.5 pt-2.5 pb-1 text-xs font-medium text-muted-foreground"
+      >
+        {section.label}
+        <span className="font-normal tabular-nums">{section.options.length}</span>
+      </div>
+      {section.options.slice(0, Math.max(state.limit - start, 0)).map((option, i) => {
+        const index = start + i;
+        return (
+          <ModelOptionRow
+            key={option.value}
+            id={optionId(index)}
+            option={option}
+            selected={option.value === current}
+            active={index === state.active}
+            onHover={() => {
+              if (index !== state.active) state.setActive(index);
+            }}
+            onPick={() => {
+              state.pick(option.value);
+            }}
+          />
+        );
+      })}
+    </div>
+  ));
 }

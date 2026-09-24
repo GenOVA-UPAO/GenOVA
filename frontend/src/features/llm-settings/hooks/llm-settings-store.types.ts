@@ -46,6 +46,8 @@ export interface LlmSettingsStore {
   isDefaultModel: (provider: string, modelId: string) => boolean;
   isModelEnabled: (provider: string, modelId: string) => boolean;
   toggleFavorite: (provider: string, modelId: string) => Promise<void>;
+  /** Añade favoritos sin quitar ninguno (lo que el usuario elige con su clave debe estarlo). */
+  addFavorites?: (models: EnabledModel[]) => Promise<void>;
   setModel: (tipo: string, provider: string, modelId: string) => void;
   setTipoTimeout: (tipo: string, timeoutS: number) => void;
   resetTipo: (tipo: string) => void;

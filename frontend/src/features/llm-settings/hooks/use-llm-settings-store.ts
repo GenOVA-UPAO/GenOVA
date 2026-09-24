@@ -47,6 +47,7 @@ export function useLlmSettingsStore(enabled = true): LlmSettingsStore {
     isDefaultModel: (provider, modelId) => isDefault(catalog.server.defaults ?? {}, provider, modelId),
     isModelEnabled: favorites.isModelEnabled,
     toggleFavorite: favorites.toggleFavorite,
+    addFavorites: favorites.addFavorites,
     setModel: draft.setModel,
     setTipoTimeout: draft.setTipoTimeout,
     resetTipo: draft.resetTipo,

@@ -26,7 +26,7 @@ async function readyCardMenuAction(page, action) {
 /** Abre el catálogo de modelos y espera a que monte. */
 async function openCatalog(page) {
   await page.getByRole('button', { name: 'Abrir catálogo' }).click()
-  await page.getByRole('heading', { name: 'Gestionar modelos' }).waitFor({ timeout: 10000 })
+  await page.getByRole('heading', { name: 'Catálogo de modelos' }).waitFor({ timeout: 10000 })
 }
 
 for (const mode of MODES) {
@@ -79,7 +79,7 @@ for (const mode of MODES) {
           await openCatalog(page)
         }
         await page.getByRole('button', { name: 'Cerrar', exact: true }).click()
-        await page.getByRole('heading', { name: 'Gestionar modelos' }).waitFor({ state: 'detached' })
+        await page.getByRole('heading', { name: 'Catálogo de modelos' }).waitFor({ state: 'detached' })
       })
     })
   })
