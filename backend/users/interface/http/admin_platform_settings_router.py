@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from auth.dependencies import require_admin
 from core.rate_limit import limiter
-from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS
+from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS, env_configured_providers
 from users.application.dto import SavePlatformKeysInput
 from users.container import UsersUseCases, build_users
 from users.domain.errors import UserError
@@ -30,7 +30,9 @@ def _bg_catalog_refresh() -> None:
 
     db = SessionLocal()
     try:
-        refresh_catalog(db)
+        # force: una clave recién puesta debe consultarse ya, aunque el último
+        # refresco completo sea de hace menos de un minuto.
+        refresh_catalog(db, force=True)
     finally:
         db.close()
 
@@ -44,6 +46,7 @@ def get_platform_config(
     return {
         "platform_config": users.get_platform_keys.execute(),
         "providers": list(ALL_PROVIDERS),
+        "server_keys": env_configured_providers(),
     }
 
 

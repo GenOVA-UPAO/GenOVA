@@ -34,12 +34,18 @@ _catalog: list[dict] = list(CATALOG_ENTRIES)
 _full_catalog: list[dict] = []  # populated on first refresh_catalog call
 _CL = RLock()
 
-# Per-provider health. source: api | cache | stale.
+# Per-provider health. source: api | cache | stale. `configured` is False when
+# the platform has no key for the provider (not connected, not a failure) and
+# None until the first refresh has checked it.
 _provider_status: dict[str, dict] = {
-    "openrouter": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
-    "groq": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
-    "opencode": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
-    "huggingface": {"ok": False, "checked_at": None, "last_success_at": None, "source": None},
+    provider: {
+        "ok": False,
+        "configured": None,
+        "checked_at": None,
+        "last_success_at": None,
+        "source": None,
+    }
+    for provider in ("openrouter", "groq", "opencode", "huggingface")
 }
 
 # Non-blocking guard against double-refresh on concurrent startup/retry.
@@ -68,7 +74,7 @@ def get_provider_status() -> dict[str, dict]:
         return {provider: dict(st) for provider, st in _provider_status.items()}
 
 
-def refresh_catalog(db=None) -> None:
+def refresh_catalog(db=None, *, force: bool = False) -> None:
     """Fetch provider APIs in parallel, merge into CATALOG_ENTRIES, rebuild CATALOG,
     optionally persist to cache, and update the in-memory copy.
 
@@ -80,6 +86,9 @@ def refresh_catalog(db=None) -> None:
     `db` is an optional SQLAlchemy Session — if provided, we read/write Supabase
     cache. Called from lifespan with a fresh session, from the admin endpoint,
     or from the user-facing retry endpoint.
+
+    `force` skips the "refreshed recently" shortcut: after a platform key
+    changes, the provider it connects must be fetched right away.
     """
     global _catalog, _full_catalog, _last_full_success
 
@@ -92,13 +101,13 @@ def refresh_catalog(db=None) -> None:
                 _last_full_success is not None
                 and monotonic() - _last_full_success < _FRESH_WINDOW_S
             )
-        if fresh:
+        if fresh and not force:
             logger.info("catalog refreshed recently — skipping", fresh_window_s=_FRESH_WINDOW_S)
             return
 
         # Fetch all providers in parallel (None = failed), falling back to the
         # Supabase cache for any that failed.
-        data, sources = _gather_provider_data(db, _CATALOG_REFRESH_TIMEOUT)
+        data, sources, configured = _gather_provider_data(db, _CATALOG_REFRESH_TIMEOUT)
         or_data, groq_ids = data["or_data"], data["groq_ids"]
         opencode_ids, hf_ids = data["opencode_ids"], data["hf_ids"]
         or_source, groq_source = sources["openrouter"], sources["groq"]
@@ -141,10 +150,13 @@ def refresh_catalog(db=None) -> None:
                 st = _provider_status[provider]
                 st["checked_at"] = now
                 st["ok"] = source is not None
+                st["configured"] = configured[provider]
                 st["source"] = source or "stale"
                 if source is not None:
                     st["last_success_at"] = now
-            if or_source == "api" and groq_source == "api":
+            # Fresh when every connected provider answered: a provider without
+            # a key never will, and must not force a refetch on every retry.
+            if all(sources[p] == "api" for p, has_key in configured.items() if has_key):
                 _last_full_success = monotonic()
         logger.info(
             "in-memory catalog updated",

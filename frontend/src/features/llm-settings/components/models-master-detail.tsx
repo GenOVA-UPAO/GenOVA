@@ -1,14 +1,11 @@
 import { useState } from "react";
 
-import { Icon } from "@/core/components/icon";
-import { Button } from "@/core/components/ui/button";
-
 import type { AdminCatalogItem } from "../hooks/admin-llm-view";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import type { SlotIssue } from "../lib/chain-validation";
 import { type Draft, isMediaTask, type TaskDraft } from "../lib/llm-config-draft";
 import { enabledOnly, includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";
-import { CatalogStatusAlert } from "./catalog-status-alert";
+import { ModelsOverviewBar } from "./models-overview-bar";
 import { ModelsTaskNav } from "./models-task-nav";
 import { ModelsTaskPanel } from "./models-task-panel";
 
@@ -21,6 +18,9 @@ interface ModelsMasterDetailProps {
   chainIssues: Record<string, SlotIssue[]>;
   onDraftChange: (next: Draft) => void;
   onOpenCatalog: () => void;
+  /** Lleva a la clave de plataforma del proveedor (solo administradores). */
+  onConnectProvider: (provider: string) => void;
+  onGoToCredentials: () => void;
 }
 
 export function ModelsMasterDetail({
@@ -32,30 +32,20 @@ export function ModelsMasterDetail({
   chainIssues,
   onDraftChange,
   onOpenCatalog,
+  onConnectProvider,
+  onGoToCredentials,
 }: Readonly<ModelsMasterDetailProps>) {
   const store = useLlmSettings();
   const [selectedTask, setSelectedTask] = useState(tasks[0] ?? "texto");
   const [mobileShowDetail, setMobileShowDetail] = useState(false);
   const selectedDraft = draft?.[selectedTask];
   const generationOn = generationEnabled(selectedDraft, selectedTask);
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Elige una tarea para ver su modelo principal y sus modelos de respaldo.
-        </p>
-        <Button variant="outline" onClick={onOpenCatalog} className="shrink-0 max-sm:h-11">
-          <Icon name="squares-four" size="text-sm" />
-          Abrir catálogo
-        </Button>
-      </div>
-      <CatalogStatusAlert
-        catalogStatus={store.catalogStatus}
-        refreshing={store.refreshingCatalog}
-        onRetry={() => {
-          void store.retryRefresh();
-        }}
+      <ModelsOverviewBar
+        isAdmin={isAdmin}
+        onOpenCatalog={onOpenCatalog}
+        onConnectProvider={onConnectProvider}
       />
       <div className="grid overflow-hidden rounded-xl border border-border bg-card md:grid-cols-[260px_1fr]">
         <ModelsTaskNav
@@ -88,6 +78,7 @@ export function ModelsMasterDetail({
           onBack={() => {
             setMobileShowDetail(false);
           }}
+          onGoToCredentials={onGoToCredentials}
           onToggleGeneration={() => {
             toggleGeneration(draft, selectedTask, generationOn, onDraftChange);
           }}
@@ -113,7 +104,10 @@ function poolFor(
 ) {
   const enabledPool = enabledOnly(adminModels, enabled);
   const filtered = modelsForTask(enabledPool, task);
-  const base = filtered.length ? filtered : enabledPool;
+  // Imagen y video no pueden caer a modelos de texto (fallarían al generar): si
+  // no hay ninguno activado, se ofrecen los aptos del catálogo completo.
+  const fallback = isMediaTask(task) ? modelsForTask(adminModels, task) : enabledPool;
+  const base = filtered.length ? filtered : fallback;
   return includeSelectedInPool(base, adminModels, [selected?.default, ...(selected?.fallbacks ?? [])]);
 }
 

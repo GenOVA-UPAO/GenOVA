@@ -42,6 +42,11 @@ export function useAdminLlmDraft(store: LlmSettingsStore, isAdmin: boolean) {
 
   return {
     loading,
+    /** La config de plataforma no cargó: sin esto se mostraba la vista de usuario con ids en crudo. */
+    error: isAdmin && query.isError,
+    retry: () => {
+      void query.refetch();
+    },
     tasks: view.tasks,
     models: view.models,
     draft,

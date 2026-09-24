@@ -102,6 +102,7 @@ describe("LlmSettingsForm", () => {
     const names = (await screen.findAllByRole("option")).map((option) => option.textContent);
     expect(names.some((name) => name.startsWith("Llama"))).toBe(true);
     expect(names.some((name) => name.startsWith("Otro"))).toBe(false);
-    expect(names.some((name) => name.startsWith("DeepSeek V4 Flash") && name.endsWith("· actual"))).toBe(true);
+    // El modelo en uso (de la plataforma) se nombra, no con su id en crudo.
+    expect(names.some((name) => name.startsWith("DeepSeek V4 Flash") && name.endsWith("en uso"))).toBe(true);
   });
 });

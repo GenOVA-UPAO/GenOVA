@@ -3,6 +3,7 @@ import { Input } from "@/core/components/ui/input";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { useOwnKeyModels } from "../hooks/use-own-key-providers";
 import type { ChipModel } from "../lib/model-task-card.helpers";
+import { taskMeta } from "../lib/task-meta";
 import { LlmModelSelect } from "./llm-model-select";
 import { UserFallbackEditor } from "./user-fallback-editor";
 import { UserOverrideHeader } from "./user-override-header";
@@ -45,7 +46,7 @@ export function UserOverrideSection({
             modelId={userSettings.model_id}
             currentLabel={catalogLabel(store.catalogFull, userSettings.provider, userSettings.model_id)}
             disabled={userDisabled}
-            ariaLabel={`Mi modelo ${task}`}
+            ariaLabel={`Tu modelo para ${taskMeta(task).label}`}
             onChange={(ev) => {
               store.setModel(task, ev.provider, ev.modelId);
             }}

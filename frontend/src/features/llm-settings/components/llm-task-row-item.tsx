@@ -2,6 +2,7 @@ import { cn } from "@/core/lib/cn";
 
 import type { SlotIssue } from "../lib/chain-validation";
 import type { Entry } from "../lib/llm-config-draft";
+import { taskMeta } from "../lib/task-meta";
 import { FallbackActions } from "./fallback-actions";
 import { FallbackIndex } from "./fallback-index";
 import { LlmModelSelect } from "./llm-model-select";
@@ -53,7 +54,7 @@ export function LlmTaskRowItem({
           modelId={entry.model_id}
           disabled={disabled}
           invalid={isError}
-          ariaLabel={`Respaldo ${String(index + 1)} de ${task}`}
+          ariaLabel={`Modelo de respaldo ${String(index + 1)} de ${taskMeta(task).label}`}
           onChange={(next) => {
             onChange(next.provider, next.modelId);
           }}

@@ -23,6 +23,12 @@ export const PROVIDER_META: Record<
     desc: "Modelos especializados en código",
     compat: true,
   },
+  huggingface: {
+    label: "HuggingFace",
+    placeholder: "hf_…",
+    desc: "Modelos abiertos alojados en HuggingFace",
+    compat: true,
+  },
   siliconflow: {
     label: "SiliconFlow",
     placeholder: "sk-…",
@@ -39,6 +45,12 @@ export const PROVIDER_META: Record<
     label: "fal.ai",
     placeholder: PASTE_HINT,
     desc: "Imagen, video y audio en la nube",
+    compat: false,
+  },
+  cloudflare: {
+    label: "Cloudflare Workers AI",
+    placeholder: PASTE_HINT,
+    desc: "Generación de imágenes con el plan gratuito de Cloudflare",
     compat: false,
   },
 };

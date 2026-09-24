@@ -28,7 +28,7 @@ export function toOption(model: SearchableModel, value: string): ModelOption {
 }
 
 /** «DeepSeek V4 Flash (OpenRouter)» junto a la etiqueta «OpenRouter» lo repetía. */
-function withoutProviderSuffix(name: string, providerLabel: string): string {
+export function withoutProviderSuffix(name: string, providerLabel: string): string {
   const suffix = ` (${providerLabel})`;
   return name.toLowerCase().endsWith(suffix.toLowerCase()) ? name.slice(0, -suffix.length) : name;
 }

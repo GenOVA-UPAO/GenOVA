@@ -3,6 +3,7 @@ import { Button } from "@/core/components/ui/button";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import type { ChipModel } from "../lib/model-task-card.helpers";
+import { taskMeta } from "../lib/task-meta";
 import { LlmModelSelect } from "./llm-model-select";
 import { UserFallbackSummary } from "./user-fallback-summary";
 
@@ -43,7 +44,7 @@ export function UserFallbackEditor({
                 provider={item.provider ? item.provider : undefined}
                 modelId={item.model_id ? item.model_id : undefined}
                 disabled={disabled}
-                ariaLabel={`Mi fallback ${String(index + 1)} ${task}`}
+                ariaLabel={`Tu modelo de respaldo ${String(index + 1)} para ${taskMeta(task).label}`}
                 onChange={(ev) => {
                   store.setFallback(task, index, ev.provider, ev.modelId);
                 }}

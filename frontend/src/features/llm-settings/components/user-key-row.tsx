@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 
 import { providerMeta } from "@/core/components/platform-key-meta";
-import { Input } from "@/core/components/ui/input";
 
 import { errorMessage } from "../hooks/error-message";
 import { useUserApiKeys } from "../hooks/use-user-api-keys";
+import { UserKeyInput } from "./user-key-input";
 import { UserKeyRemove } from "./user-key-remove";
 import { UserKeyRowActions } from "./user-key-row-actions";
 import { UserKeyRowHeader } from "./user-key-row-header";
@@ -17,7 +17,14 @@ interface UserKeyRowProps {
 export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>) {
   const { save } = useUserApiKeys();
   const inputRef = useRef<HTMLInputElement>(null);
-  const state = useKeyDraft();
+  const startRef = useRef<HTMLButtonElement>(null);
+  // Al cerrar el campo, el foco volvía a <body>: se devuelve al botón de la fila.
+  // Con timeout y no en el mismo frame: al quitar la clave, el diálogo de
+  // confirmación devuelve antes el foco a su botón (que ya no existe).
+  const focusStart = () => {
+    window.setTimeout(() => startRef.current?.focus(), 50);
+  };
+  const state = useKeyDraft(focusStart);
   const meta = providerMeta(provider);
   const inputId = `user-key-${provider}`;
   const configured = Boolean(maskedValue);
@@ -31,6 +38,7 @@ export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>)
         ) : null}
         {state.editing ? null : (
           <UserKeyRowActions
+            startRef={startRef}
             editing={false}
             configured={configured}
             saving={state.saving}
@@ -42,47 +50,31 @@ export function UserKeyRow({ provider, maskedValue }: Readonly<UserKeyRowProps>)
             onSave={() => undefined}
           />
         )}
-        {configured && !state.editing ? <UserKeyRemove provider={provider} label={meta.label} /> : null}
+        {configured && !state.editing ? (
+          <UserKeyRemove provider={provider} label={meta.label} onRemoved={focusStart} />
+        ) : null}
       </div>
       {state.editing ? (
-        <div className="space-y-2">
-          <label htmlFor={inputId} className="text-xs text-muted-foreground">
-            {keyHint(meta.label, meta.placeholder)}
-          </label>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Input
-              ref={inputRef}
-              id={inputId}
-              type="password"
-              autoComplete="off"
-              value={state.draft}
-              aria-invalid={state.rowError ? true : undefined}
-              onChange={(event) => {
-                state.setDraft(event.target.value);
-              }}
-              className="flex-1 font-mono text-xs max-sm:h-11"
-            />
-            <UserKeyRowActions
-              editing
-              configured={configured}
-              saving={state.saving}
-              onStart={state.start}
-              onCancel={state.cancel}
-              onSave={() => {
-                void state.persist(provider, save);
-              }}
-            />
-          </div>
-        </div>
-      ) : null}
-      {state.rowError ? (
-        <p role="alert" className="text-xs text-destructive">
-          {state.rowError}
-        </p>
+        <UserKeyInput
+          id={inputId}
+          label={keyHint(meta.label, meta.placeholder)}
+          inputRef={inputRef}
+          value={state.draft}
+          error={state.rowError}
+          saving={state.saving}
+          configured={configured}
+          onChange={state.setDraft}
+          onSave={() => {
+            void state.persist(provider, save);
+          }}
+          onCancel={state.cancel}
+        />
       ) : null}
     </li>
   );
 }
+
+const MIN_KEY_LENGTH = 8;
 
 function keyHint(label: string, placeholder: string): string {
   // Los placeholders con prefijo real acaban en «…» («gsk_…»); el resto es texto de ayuda.
@@ -90,7 +82,7 @@ function keyHint(label: string, placeholder: string): string {
   return prefix === "" ? `Clave API de ${label}` : `Clave API de ${label}. Empieza por ${prefix}`;
 }
 
-function useKeyDraft() {
+function useKeyDraft(onClose: () => void) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
@@ -110,10 +102,17 @@ function useKeyDraft() {
     cancel: () => {
       setEditing(false);
       setDraft("");
+      setRowError(null);
+      onClose();
     },
     persist: async (provider: string, save: ReturnType<typeof useUserApiKeys>["save"]) => {
       if (draft.trim() === "") {
         setRowError("Pega la clave antes de guardar.");
+        return;
+      }
+      // El backend lo rechaza igual, pero con «La API key para 'groq'…».
+      if (draft.trim().length < MIN_KEY_LENGTH) {
+        setRowError("La clave es demasiado corta. Comprueba que la has copiado entera.");
         return;
       }
       setSaving(true);
@@ -122,6 +121,7 @@ function useKeyDraft() {
         await save({ provider, key: draft.trim() });
         setEditing(false);
         setDraft("");
+        onClose();
       } catch (err: unknown) {
         setRowError(errorMessage(err, "Error al guardar."));
       } finally {

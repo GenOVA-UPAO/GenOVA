@@ -34,7 +34,8 @@ export function ManageModelsToolbar(props: Readonly<ManageModelsToolbarProps>) {
       />
       <ManageModelsSelect
         value={orAll(props.categoryFilter)}
-        label="Filtrar por categoría"
+        // El backend lo llama «categorías», pero son «Recomendados» y los proveedores.
+        label="Filtrar por proveedor"
         options={props.categories.map((cat) => ({
           value: cat,
           label: CATEGORY_LABELS[cat] ?? cat,

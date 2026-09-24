@@ -11,8 +11,10 @@ import {
 import { joinModelValue, splitModelValue } from "../hooks/model-value";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { isAllowedProvider, useOwnKeyProviders } from "../hooks/use-own-key-providers";
+import { isProviderFailing } from "../lib/catalog-status";
 import { formatContextLength, PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import { modelDisplayName } from "../lib/model-name";
+import { withoutProviderSuffix } from "../lib/model-search";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 
 interface LlmSettingsModelSelectProps {
@@ -48,7 +50,16 @@ export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSett
       <SelectContent position="popper" align="start" className="max-h-80">
         {missing ? (
           <SelectItem value={current}>
-            {currentLabel(store.catalog, cur.provider, cur.model_id)}
+            <span className="min-w-0 truncate">
+              {currentLabel(
+                [...catalogModels(store.catalog, cur.provider ?? ""), ...store.catalogFull],
+                cur.provider,
+                cur.model_id,
+              )}
+            </span>
+            <span className="shrink-0 text-muted-foreground in-data-[slot=select-trigger]:hidden">
+              en uso
+            </span>
           </SelectItem>
         ) : null}
         {Object.keys(store.catalog)
@@ -56,11 +67,17 @@ export function LlmSettingsModelSelect({ tipo, label, locked }: Readonly<LlmSett
           .map((provider) => (
           <SelectGroup key={provider}>
             <SelectLabel>
-              {providerGroupLabel(provider, store.catalogStatus?.[provider]?.ok === false)}
+              {providerGroupLabel(provider, isProviderFailing(store.catalogStatus, provider))}
             </SelectLabel>
             {catalogModels(store.catalog, provider).map((model) => (
               <SelectItem key={model.model_id} value={joinModelValue(provider, model.model_id)}>
-                <span className="min-w-0 truncate">{modelDisplayName(model.label, model.model_id)}</span>
+                <span className="min-w-0 truncate">
+                  {/* Ya van bajo la cabecera del proveedor: «(OpenRouter)» sobraba. */}
+                  {withoutProviderSuffix(
+                    modelDisplayName(model.label, model.model_id),
+                    PROVIDER_LABELS[provider] ?? provider,
+                  )}
+                </span>
                 <span className="shrink-0 text-muted-foreground in-data-[slot=select-trigger]:hidden">
                   {modelMeta(model)}
                 </span>
@@ -98,11 +115,16 @@ function modelMeta(model: CatalogModel): string {
     .join(" · ");
 }
 
+/**
+ * Nombre del modelo actual cuando no está entre los elegibles (p. ej. el de la
+ * plataforma). Se busca también en el catálogo completo: antes salía el id en
+ * crudo («deepseek/deepseek-v4.1-flash · actual»).
+ */
 function currentLabel(
-  catalog: Record<string, CatalogModel[]>,
+  models: readonly CatalogModel[],
   provider: string | undefined,
   modelId: string | undefined,
 ): string {
-  const model = catalogModels(catalog, provider ?? "").find((m) => m.model_id === modelId);
-  return `${modelDisplayName(model?.label, modelId ?? "")} · actual`;
+  const model = models.find((m) => m.provider === provider && m.model_id === modelId);
+  return modelDisplayName(model?.label, modelId ?? "");
 }

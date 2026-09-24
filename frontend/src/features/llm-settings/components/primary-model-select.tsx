@@ -1,4 +1,5 @@
 import type { TaskDraft } from "../lib/llm-config-draft";
+import { taskMeta } from "../lib/task-meta";
 import { LlmModelSelect } from "./llm-model-select";
 
 interface PrimarySelectProps {
@@ -28,7 +29,7 @@ export function PrimaryModelSelect({
         provider={value.default.provider}
         modelId={value.default.model_id}
         disabled={disabled}
-        ariaLabel={`Modelo primario de ${task}`}
+        ariaLabel={`Modelo principal de ${taskMeta(task).label}`}
         onChange={(next) => {
           onChange({
             ...value,

@@ -4,12 +4,13 @@ import { toast } from "sonner";
 
 import { useCurrentUser, useIsAdmin } from "@/core/auth/auth-store";
 
-import { draftHasIssues, validateDraft } from "../lib/chain-validation";
+import { connectedProviders } from "../lib/catalog-status";
+import { blockingMessage, validateDraft } from "../lib/chain-validation";
 import type { Draft } from "../lib/llm-config-draft";
-import { openKeyRow } from "../lib/open-key-row";
+import { focusFirstKeyRow, openKeyRow, openPlatformKeyRow } from "../lib/open-key-row";
 import { canAccessModels } from "./can-access-models";
 import { errorMessage } from "./error-message";
-import { connectedProviders, favoritesLabel, headerStatusText } from "./header-status";
+import { favoritesLabel, headerStatusText } from "./header-status";
 import { useAdminLlmDraft } from "./use-admin-llm-draft";
 import { useLlmSettingsStore } from "./use-llm-settings-store";
 
@@ -28,22 +29,39 @@ export function useModelsPage() {
     }
   }, [user, navigate]);
 
-  const { ok, total } = connectedProviders(store.catalogStatus);
-  const chainInvalid = draftHasIssues(admin.draft, admin.tasks);
+  const { connected, total } = connectedProviders(store.catalogStatus);
+  const taskIssues = validateDraft(admin.draft, admin.tasks);
+  const chainMessage = blockingMessage(taskIssues);
+  const chainInvalid = chainMessage !== null;
   const dirty = store.dirty || admin.adminDirty;
+  const canEdit = isAdmin || store.hasOwnLlmKey;
 
   return {
     store,
     isAdmin,
     blocked: Boolean(user && !canAccessModels(user)),
-    headerStatus: headerStatusText(ok, total, favoritesLabel(store.enabledModels.length)),
+    canEdit,
+    headerStatus: headerStatus({
+      isAdmin,
+      hasOwnKey: store.hasOwnLlmKey,
+      connected,
+      total,
+      favorites: store.enabledModels.length,
+    }),
     activeTab,
-    setActiveTab,
+    setActiveTab: (next: string) => {
+      // Al volver de Credenciales puede haber una clave nueva: el estado de los
+      // proveedores («Sin conectar: …») se vuelve a pedir.
+      if (next === "models" && activeTab === "credentials") {
+        store.refetch();
+      }
+      setActiveTab(next);
+    },
     manageOpen,
     setManageOpen,
     admin,
-    taskIssues: validateDraft(admin.draft, admin.tasks),
-    chainInvalid,
+    taskIssues,
+    chainMessage,
     dirty,
     onDraftChange: (next: Draft) => {
       admin.setDraft(next);
@@ -52,6 +70,11 @@ export function useModelsPage() {
       setManageOpen(false);
       setActiveTab("credentials");
       if (provider) openKeyRow(provider);
+      else focusFirstKeyRow();
+    },
+    goToPlatformKey: (provider: string) => {
+      setActiveTab("credentials");
+      openPlatformKeyRow(provider);
     },
     discard: () => {
       admin.discard();
@@ -74,4 +97,25 @@ async function saveAllChanges(
   } catch (err) {
     toast.error(errorMessage(err, "No se pudo guardar."));
   }
+}
+
+/**
+ * Los proveedores conectados son cosa de la plataforma (admin). A un docente
+ * solo le sirve saber cuántos modelos tiene activados, y solo si tiene clave.
+ */
+function headerStatus({
+  isAdmin,
+  hasOwnKey,
+  connected,
+  total,
+  favorites,
+}: {
+  isAdmin: boolean;
+  hasOwnKey: boolean;
+  connected: number;
+  total: number;
+  favorites: number;
+}): string | undefined {
+  if (isAdmin) return headerStatusText(connected, total, favoritesLabel(favorites));
+  return hasOwnKey ? favoritesLabel(favorites) : undefined;
 }

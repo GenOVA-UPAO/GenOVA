@@ -1,5 +1,3 @@
-import { Icon } from "@/core/components/icon";
-
 import type { EngineNode } from "../hooks/nodes-config.types";
 import { CapabilityControl } from "./capability-control";
 import { SettingRow } from "./setting-row";
@@ -25,10 +23,9 @@ export function CapabilityRow({
         <>
           {cap.name}
           {cap.role ? <span className="font-normal text-muted-foreground">{cap.role}</span> : null}
+          {/* Sin clave no es un fallo: la descripción ya dice que entrega el guion. */}
           {cap.id === "video" && videoWarning ? (
-            <span className="inline-flex items-center gap-1 font-normal text-accent-brand">
-              <Icon name="warning" size="text-sm" /> Falta su clave API
-            </span>
+            <span className="font-normal text-muted-foreground">Sin clave API</span>
           ) : null}
         </>
       }

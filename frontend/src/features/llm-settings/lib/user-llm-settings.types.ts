@@ -1,3 +1,4 @@
+import type { CatalogStatus } from "./catalog-status";
 import type { EffectiveConfig } from "./llm-config-draft";
 import type { SettingsMap } from "./llm-settings-mutations";
 
@@ -40,7 +41,7 @@ export interface LlmSettingsResponse {
   full_has_more?: boolean;
   categories?: string[];
   types?: string[];
-  catalog_status?: Record<string, { ok: boolean; last_success_at?: string }>;
+  catalog_status?: CatalogStatus;
 }
 
 export interface LoadOpts {

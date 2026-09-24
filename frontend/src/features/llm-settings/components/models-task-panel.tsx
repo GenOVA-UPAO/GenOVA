@@ -30,6 +30,7 @@ interface ModelsTaskPanelProps {
   saving: boolean;
   bounds: number[];
   onBack: () => void;
+  onGoToCredentials: () => void;
   onToggleGeneration: () => void;
   onChainChange: (next: TaskDraft) => void;
 }
@@ -83,6 +84,7 @@ export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
           hasOwnLlmKey={props.hasOwnLlmKey}
           saving={props.saving}
           bounds={props.bounds}
+          onGoToCredentials={props.onGoToCredentials}
         />
       )}
     </div>

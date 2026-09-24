@@ -11,6 +11,10 @@ vi.mock("./catalog-status-alert", () => ({
   CatalogStatusAlert: () => null,
 }));
 
+vi.mock("./unconnected-providers-note", () => ({
+  UnconnectedProvidersNote: () => null,
+}));
+
 vi.mock("./llm-task-row", () => ({
   LlmTaskRow: ({ task }: { task: string }) =>
     createElement("div", { "data-testid": "task-row" }, task),
@@ -110,6 +114,8 @@ function renderDetail(
         chainIssues={{}}
         onDraftChange={vi.fn()}
         onOpenCatalog={props.onOpenCatalog ?? vi.fn()}
+        onConnectProvider={props.onConnectProvider ?? vi.fn()}
+        onGoToCredentials={props.onGoToCredentials ?? vi.fn()}
       />
     </LlmSettingsContext.Provider>,
   );

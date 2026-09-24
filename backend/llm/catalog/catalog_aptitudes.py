@@ -25,7 +25,9 @@ _CATEGORY_APTITUDES: dict[str, tuple[str, ...]] = {
     "video": ("video",),
     "embedding": ("embedding",),
     "audio": ("audio",),
-    "multimodal": ("texto", "imagen"),  # refined by modality parsing
+    # Refined by modality parsing. Without it, only text: a model that *reads*
+    # images cannot fill the image task, which calls an image-generation API.
+    "multimodal": ("texto",),
 }
 
 
@@ -97,9 +99,12 @@ def aptitudes_for(
     if inns or outs:
         if "text" in inns or "text" in outs:
             apt.append("texto")
-        if "image" in inns or "image" in outs:
+        # Imagen y video son tareas de GENERAR: aceptar una imagen de entrada
+        # (modelos de visión como Claude Haiku o Gemini Flash) no basta, y
+        # ofrecerlos en esos selectores era ofrecer algo que iba a fallar.
+        if "image" in outs:
             apt.append("imagen")
-        if "video" in inns or "video" in outs:
+        if "video" in outs:
             apt.append("video")
         if "audio" in inns or "audio" in outs:
             apt.append("audio")

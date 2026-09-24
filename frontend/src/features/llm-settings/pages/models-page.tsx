@@ -23,12 +23,14 @@ export function ModelsPage() {
   return (
     <LlmSettingsContext.Provider value={page.store}>
       <div className="mx-auto max-w-7xl space-y-6">
-        <ModelsPageHeader status={page.headerStatus} />
+        <ModelsPageHeader status={page.headerStatus} canEdit={page.canEdit} />
         <ModelsPageTabs
           activeTab={page.activeTab}
           onTabChange={page.setActiveTab}
           isAdmin={page.isAdmin}
           adminLoading={page.admin.loading}
+          adminError={page.admin.error}
+          onAdminRetry={page.admin.retry}
           tasks={page.admin.tasks}
           draft={page.admin.draft}
           adminModels={page.admin.models}
@@ -37,6 +39,10 @@ export function ModelsPage() {
           onDraftChange={page.onDraftChange}
           onOpenCatalog={() => {
             page.setManageOpen(true);
+          }}
+          onConnectProvider={page.goToPlatformKey}
+          onGoToCredentials={() => {
+            page.goToApiKeys();
           }}
         />
         <ManageModelsModal
@@ -48,7 +54,7 @@ export function ModelsPage() {
         />
         {page.dirty ? (
           <UnsavedChangesBar
-            chainInvalid={page.chainInvalid}
+            blockingMessage={page.chainMessage}
             saving={page.admin.saving}
             onDiscard={page.discard}
             onSave={() => {

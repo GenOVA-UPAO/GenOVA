@@ -57,6 +57,8 @@ const store: LlmSettingsStore = {
 
 const admin = {
   loading: false,
+  error: false,
+  retry: vi.fn(),
   tasks: ["texto", "codigo"],
   models: [],
   draft: { texto: { default: { provider: "groq", model_id: "llama" }, fallbacks: [] } } as Draft,
@@ -174,7 +176,9 @@ describe("ModelsPage", () => {
       },
     };
     renderPage();
-    expect(screen.getByText(/respaldos vacíos y evita repetir/i)).toBeTruthy();
+    expect(
+      screen.getByText("Para guardar, elige un modelo o quita los respaldos vacíos en Texto."),
+    ).toBeTruthy();
     expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeDisabled();
   });
 

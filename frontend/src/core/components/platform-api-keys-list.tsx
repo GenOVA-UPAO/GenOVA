@@ -25,17 +25,26 @@ export function PlatformApiKeysList() {
   }
   if (error) {
     return (
-      <p role="alert" className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+      <p
+        role="alert"
+        className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive"
+      >
         No se pudieron cargar las claves: {error.message}
       </p>
     );
   }
   const config = data.platform_config ?? {};
   const providers = data.providers ?? Object.keys(PROVIDER_META);
+  const serverKeys = new Set(data.server_keys ?? []);
   return (
     <ul className={LIST_CLASS}>
       {providers.map((p) => (
-        <PlatformKeyRow key={p} provider={p} maskedValue={config[p]} />
+        <PlatformKeyRow
+          key={p}
+          provider={p}
+          maskedValue={config[p]}
+          serverKey={serverKeys.has(p)}
+        />
       ))}
     </ul>
   );

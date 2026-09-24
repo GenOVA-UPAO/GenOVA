@@ -20,7 +20,7 @@ export function UserKeyRowHeader({
             Conectado
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">Sin configurar</span>
+          <span className="text-xs text-muted-foreground">Sin conectar</span>
         )}
       </p>
       <p className="mt-0.5 text-xs text-muted-foreground">{meta.desc}</p>

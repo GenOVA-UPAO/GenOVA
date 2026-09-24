@@ -1,5 +1,3 @@
-import { Icon } from "@/core/components/icon";
-
 import type { EngineNode } from "../hooks/nodes-config.types";
 import { SettingRow } from "./setting-row";
 
@@ -14,11 +12,8 @@ export function AlwaysOnNodeRow({ node, warning = false }: Readonly<AlwaysOnNode
       title={
         <>
           {node.name}
-          {warning ? (
-            <span className="inline-flex items-center gap-1 font-normal text-accent-brand">
-              <Icon name="warning" size="text-sm" /> Falta su clave API
-            </span>
-          ) : null}
+          {/* Sin clave no es un fallo (sigue funcionando sin ella): se dice, sin alarma. */}
+          {warning ? <span className="font-normal text-muted-foreground">Sin clave API</span> : null}
         </>
       }
       description={node.description ?? "Nodo base del sistema."}

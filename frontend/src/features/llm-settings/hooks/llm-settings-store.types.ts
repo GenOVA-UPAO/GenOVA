@@ -1,12 +1,8 @@
 import type { GroupBy, SortKey } from "../lib/catalog-sort";
+import type { CatalogStatus } from "../lib/catalog-status";
 import type { EffectiveConfig } from "../lib/llm-config-draft";
 import type { SettingsMap } from "../lib/llm-settings-mutations";
 import type { CatalogModel, EnabledModel } from "../lib/user-llm-settings.types";
-
-export interface CatalogStatusEntry {
-  ok: boolean;
-  last_success_at?: string;
-}
 
 export interface LlmSettingsStore {
   settings: SettingsMap | null;
@@ -29,7 +25,7 @@ export interface LlmSettingsStore {
   error: string;
   /** Reintenta la carga de la configuración (no el refresco del catálogo). */
   refetch: () => void;
-  catalogStatus: Record<string, CatalogStatusEntry> | null;
+  catalogStatus: CatalogStatus | null;
   refreshingCatalog: boolean;
   searchQuery: string;
   categoryFilter: string;

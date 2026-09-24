@@ -30,7 +30,10 @@ export function ConnectProviderModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Conectar proveedor</DialogTitle>
-          <DialogDescription>Elige el proveedor cuya clave API quieres añadir.</DialogDescription>
+          <DialogDescription>
+            Elige el proveedor y pega tu clave API en Credenciales. Sus modelos se pagan con tu
+            cuenta.
+          </DialogDescription>
         </DialogHeader>
         <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
           {PROVIDERS.map((provider) => (
@@ -43,11 +46,7 @@ export function ConnectProviderModal({
                 className="group flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
               >
                 <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-base text-muted-foreground group-hover:text-primary">
-                  {provider.iconName ? (
-                    <Icon name={provider.iconName} size="text-base" />
-                  ) : (
-                    <span aria-hidden="true">{provider.icon}</span>
-                  )}
+                  <Icon name={provider.iconName} size="text-base" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">

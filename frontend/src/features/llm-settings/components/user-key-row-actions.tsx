@@ -1,6 +1,10 @@
+import type { Ref } from "react";
+
 import { Button } from "@/core/components/ui/button";
 
 interface UserKeyRowActionsProps {
+  /** Botón «Añadir/Cambiar clave»: recibe el foco al cancelar, guardar o quitar. */
+  startRef?: Ref<HTMLButtonElement>;
   editing: boolean;
   configured: boolean;
   saving: boolean;
@@ -10,6 +14,7 @@ interface UserKeyRowActionsProps {
 }
 
 export function UserKeyRowActions({
+  startRef,
   editing,
   configured,
   saving,
@@ -30,7 +35,7 @@ export function UserKeyRowActions({
     );
   }
   return (
-    <Button variant="outline" className="shrink-0 max-sm:h-11" onClick={onStart}>
+    <Button ref={startRef} variant="outline" className="shrink-0 max-sm:h-11" onClick={onStart}>
       {configured ? "Cambiar clave" : "Añadir clave"}
     </Button>
   );

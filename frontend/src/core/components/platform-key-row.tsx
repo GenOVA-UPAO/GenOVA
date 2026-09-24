@@ -5,29 +5,35 @@ import { PlatformKeyDeleteConfirm } from "./platform-key-delete-confirm";
 import { PlatformKeyInput } from "./platform-key-input";
 import { providerMeta } from "./platform-key-meta";
 import { PlatformKeyRowHeader } from "./platform-key-row-header";
+import { PlatformKeyRowMessages } from "./platform-key-row-messages";
 import { usePlatformKeyDraft } from "./use-platform-key-draft";
 
 interface PlatformKeyRowProps {
   provider: string;
   maskedValue?: string | null;
+  /** Hay clave en una variable de entorno del servidor (se usa si no se guarda otra). */
+  serverKey?: boolean;
 }
 
-export function PlatformKeyRow({ provider, maskedValue }: Readonly<PlatformKeyRowProps>) {
+export function PlatformKeyRow({
+  provider,
+  maskedValue,
+  serverKey = false,
+}: Readonly<PlatformKeyRowProps>) {
   const masked = maskedValue ?? "";
   const configured = masked !== "";
   const meta = providerMeta(provider);
-  const { inputRef, draft, setDraft, editing, trimmed, save, persist } = usePlatformKeyDraft(provider);
+  const { inputRef, draft, setDraft, editing, missingKey, save, persist, saveDraft } =
+    usePlatformKeyDraft(provider);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const errorId = `platform-key-error-${provider}`;
 
-  const handleSave = () => {
-    if (trimmed !== "") persist(trimmed);
-  };
   const actions = {
     configured,
+    serverKey,
     saving: save.isPending,
-    canSave: trimmed !== "",
     label: meta.label,
-    onSave: handleSave,
+    onSave: saveDraft,
     onCancel: () => {
       setDraft(null);
     },
@@ -41,9 +47,9 @@ export function PlatformKeyRow({ provider, maskedValue }: Readonly<PlatformKeyRo
   };
 
   return (
-    <li className="space-y-3 px-4 py-3.5">
+    <li className="space-y-3 px-4 py-3.5" data-platform-key-row={provider}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <PlatformKeyRowHeader meta={meta} configured={configured} />
+        <PlatformKeyRowHeader meta={meta} configured={configured} serverKey={serverKey} />
         {configured && !editing && <code className="text-xs text-muted-foreground">{masked}</code>}
         {!editing && <PlatformKeyActions editing={false} {...actions} />}
       </div>
@@ -54,17 +60,20 @@ export function PlatformKeyRow({ provider, maskedValue }: Readonly<PlatformKeyRo
             value={draft ?? ""}
             placeholder={meta.placeholder}
             ref={inputRef}
+            invalid={missingKey}
+            errorId={errorId}
             onChange={setDraft}
-            onSubmit={handleSave}
+            onSubmit={saveDraft}
           />
           <PlatformKeyActions editing {...actions} />
         </div>
       )}
-      {save.error && (
-        <p role="alert" className="text-xs text-destructive">
-          {save.error.message}
-        </p>
-      )}
+      <PlatformKeyRowMessages
+        missingKey={missingKey}
+        errorId={errorId}
+        providerLabel={meta.label}
+        saveError={save.error}
+      />
       <PlatformKeyDeleteConfirm
         open={confirmDelete}
         providerLabel={meta.label}

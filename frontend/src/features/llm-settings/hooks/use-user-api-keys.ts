@@ -13,9 +13,11 @@ export function useUserApiKeys() {
   const saveMutation = useMutation({
     mutationFn: ({ provider, key }: { provider: string; key: string }) =>
       saveUserApiKey(provider, key),
-    onSuccess: async (result) => {
+    onSuccess: (result) => {
       queryClient.setQueryData(llmSettingsKeys.apiKeys, result);
-      await queryClient.invalidateQueries({ queryKey: llmSettingsKeys.all });
+      // Sin esperar: la recarga de los ajustes tarda segundos y dejaba «Guardar
+      // clave» girando (y el aviso de «clave quitada») mucho después de hecho.
+      void queryClient.invalidateQueries({ queryKey: llmSettingsKeys.all });
     },
   });
 
@@ -23,6 +25,9 @@ export function useUserApiKeys() {
     apiKeys: query.data?.api_keys ?? {},
     loading: query.isLoading,
     error: query.error,
+    refetch: () => {
+      void query.refetch();
+    },
     save: saveMutation.mutateAsync,
     saving: saveMutation.isPending,
   };

@@ -47,7 +47,12 @@ export function ModelComboboxPanel({ state, current, label }: Readonly<ModelComb
           className="h-11 w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
-      <ul id={listId} role="listbox" aria-label={label} className="min-h-0 flex-1 overflow-y-auto p-1">
+      <ul
+        id={listId}
+        role="listbox"
+        aria-label={label}
+        className={cn("min-h-0 flex-1 overflow-y-auto", state.visible.length > 0 && "p-1")}
+      >
         {state.visible.map((option, index) => (
           // El teclado lo gestiona el buscador (aria-activedescendant): las opciones no reciben foco.
           // eslint-disable-next-line jsx-a11y/click-events-have-key-events -- patrón combobox de ARIA

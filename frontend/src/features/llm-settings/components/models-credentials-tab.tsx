@@ -9,8 +9,8 @@ export function ModelsCredentialsTab({ isAdmin }: Readonly<{ isAdmin: boolean }>
         <div>
           <h2 className="text-base font-semibold text-foreground">Tus claves</h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Tienen prioridad sobre las de la plataforma. Si un proveedor no tiene la tuya, se usa la
-            de la plataforma.
+            Con tu clave de un proveedor puedes elegir tus propios modelos, que se pagan con tu
+            cuenta. Donde no pongas la tuya, se usa la de la plataforma.
           </p>
         </div>
         <UserApiKeysCard />

@@ -2,6 +2,7 @@ import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
+import { TASK_LABELS } from "../lib/llm-settings-labels";
 import { LlmSettingsModelSelect } from "./llm-settings-model-select";
 
 interface LlmSettingsFormTaskProps {
@@ -9,17 +10,10 @@ interface LlmSettingsFormTaskProps {
   locked: boolean;
 }
 
-const TASK_NAMES: Record<string, string> = {
-  texto: "Texto",
-  codigo: "Código / HTML interactivo",
-  orquestador: "Orquestador",
-  razonamiento: "Razonamiento",
-};
-
 export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTaskProps>) {
   const store = useLlmSettings();
   const cur = store.settings?.[tipo] ?? {};
-  const label = TASK_NAMES[tipo] ?? tipo;
+  const label = TASK_LABELS[tipo] ?? tipo;
   const timeoutId = `llm-timeout-${tipo}`;
 
   return (

@@ -1,3 +1,5 @@
+import { Button } from "@/core/components/ui/button";
+
 import type { TaskDraft } from "../lib/llm-config-draft";
 import { chipLabel, type ChipModel } from "../lib/model-task-card.helpers";
 import type { EnabledModel } from "../lib/user-llm-settings.types";
@@ -14,6 +16,7 @@ interface ModelsReadOnlyTaskProps {
   hasOwnLlmKey: boolean;
   saving: boolean;
   bounds: number[];
+  onGoToCredentials: () => void;
 }
 
 export function ModelsReadOnlyTask({
@@ -26,6 +29,7 @@ export function ModelsReadOnlyTask({
   hasOwnLlmKey,
   saving,
   bounds,
+  onGoToCredentials,
 }: Readonly<ModelsReadOnlyTaskProps>) {
   const subtitle = platformSubtitle(task, draft, adminModels, defaults);
   return (
@@ -51,10 +55,15 @@ export function ModelsReadOnlyTask({
           bounds={bounds}
         />
       ) : (
-        <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
-          Esta configuración la define el administrador. Añade tu clave API en Credenciales para
-          elegir tus propios modelos.
-        </p>
+        <div className="flex flex-col gap-3 rounded-lg border border-dashed border-border px-4 py-3 sm:flex-row sm:items-center">
+          <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+            Esta configuración la define el administrador. Con tu propia clave API puedes elegir
+            otros modelos, que se pagan con tu cuenta.
+          </p>
+          <Button variant="outline" className="shrink-0 max-sm:h-11" onClick={onGoToCredentials}>
+            Añadir clave
+          </Button>
+        </div>
       )}
     </div>
   );

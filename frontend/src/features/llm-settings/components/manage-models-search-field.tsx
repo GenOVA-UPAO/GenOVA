@@ -14,7 +14,7 @@ export function ManageModelsSearchField({
       className="min-w-0"
       value={value}
       onValueChange={onSearch}
-      placeholder="Buscar por nombre, proveedor o descripción…"
+      placeholder="Buscar por nombre o descripción…"
       ariaLabel="Buscar modelo"
       inputClassName="h-9 max-sm:h-11"
     />

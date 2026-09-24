@@ -14,6 +14,36 @@ logger = structlog.get_logger(__name__)
 _OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
 
 
+class ProviderNotConfiguredError(Exception):
+    """The provider has no platform API key, so its model list is not fetched.
+
+    That is an expected state ("not connected"), not a failure: the refresh
+    reports it apart so the UI can offer to connect the provider instead of
+    warning that its catalog could not be fetched.
+    """
+
+
+def _platform_key(provider: str) -> str | None:
+    """Platform-level key for `provider` (platform_config → env var)."""
+    from core.database import SessionLocal
+    from llm.clients.key_resolver import resolve_key
+
+    db = SessionLocal()
+    try:
+        return resolve_key(provider, None, db)
+    finally:
+        db.close()
+
+
+def has_platform_key(provider: str) -> bool:
+    """True when the platform has a key for `provider`. Never raises."""
+    try:
+        return _platform_key(provider) is not None
+    except Exception:
+        logger.exception("platform key lookup failed", provider=provider)
+        return False
+
+
 def _fetch_openrouter() -> dict[str, dict] | None:
     """Fetch the full model list from OpenRouter. Returns {model_id: raw_entry},
     or None when the fetch failed (so the caller can fall back instead of
@@ -38,19 +68,12 @@ def _fetch_openrouter() -> dict[str, dict] | None:
 
 
 def _fetch_groq() -> set[str] | None:
-    """Fetch available Groq model ids. Resolves key via platform_config → env var."""
-    from core.database import SessionLocal
-    from llm.clients.key_resolver import resolve_key
-
-    db = SessionLocal()
-    try:
-        api_key = resolve_key("groq", None, db)
-    finally:
-        db.close()
-
+    """Fetch available Groq model ids. Resolves key via platform_config → env var.
+    Raises ProviderNotConfiguredError when there is no key."""
+    api_key = _platform_key("groq")
     if not api_key:
         logger.info("no API key configured — skipping model list fetch", provider="groq")
-        return None
+        raise ProviderNotConfiguredError("groq")
     try:
         from groq import Groq
 
@@ -99,19 +122,12 @@ def _merge_opencode(available_ids: set[str]) -> None:
 
 
 def _fetch_opencode() -> set[str] | None:
-    """Fetch OpenCode model ids. Resolves key via platform_config → env var."""
-    from core.database import SessionLocal
-    from llm.clients.key_resolver import resolve_key
-
-    db = SessionLocal()
-    try:
-        api_key = resolve_key("opencode", None, db)
-    finally:
-        db.close()
-
+    """Fetch OpenCode model ids. Resolves key via platform_config → env var.
+    Raises ProviderNotConfiguredError when there is no key."""
+    api_key = _platform_key("opencode")
     if not api_key:
         logger.info("no API key configured — skipping model list fetch", provider="opencode")
-        return None
+        raise ProviderNotConfiguredError("opencode")
     try:
         from openai import OpenAI
 
@@ -126,19 +142,11 @@ def _fetch_opencode() -> set[str] | None:
 
 def _fetch_huggingface() -> set[str] | None:
     """Fetch text-generation model IDs warm for HF Serverless Inference.
-    Returns None when no API key is configured."""
-    from core.database import SessionLocal
-    from llm.clients.key_resolver import resolve_key
-
-    db = SessionLocal()
-    try:
-        api_key = resolve_key("huggingface", None, db)
-    finally:
-        db.close()
-
+    Raises ProviderNotConfiguredError when there is no key."""
+    api_key = _platform_key("huggingface")
     if not api_key:
         logger.info("no API key — skipping text model fetch", provider="huggingface")
-        return None
+        raise ProviderNotConfiguredError("huggingface")
 
     try:
         url = "https://huggingface.co/api/models"
