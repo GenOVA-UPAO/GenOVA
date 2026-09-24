@@ -77,7 +77,7 @@ export function CreationPromptField({
           "outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring",
           "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/40",
         )}
-        placeholder="Ej.: Ley de Ohm para un primer curso de ingeniería. Objetivo: resolver circuitos en serie y paralelo."
+        placeholder="Ej.: Regresión lineal para un curso introductorio de machine learning. Objetivo: entrenar un modelo y evaluar sus predicciones."
         value={prompt}
         onChange={(event) => {
           onPrompt(event.target.value);

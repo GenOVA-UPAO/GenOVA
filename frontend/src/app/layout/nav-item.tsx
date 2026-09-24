@@ -1,4 +1,4 @@
-import { NavLink } from "react-router";
+import { NavLink, useMatch, useResolvedPath } from "react-router";
 
 import { Icon } from "@/core/components/icon";
 import { Tooltip } from "@/core/components/ui/tooltip";
@@ -41,7 +41,8 @@ export function NavItem({
     prefetchRoute(to);
   };
   const hasBadge = badge > 0;
-  const fullLabel = hasBadge ? `${label} (${String(badge)})` : label;
+  const isActive = useIsActive(to, end);
+  const fullLabel = labelWithCount(label, badge);
   return (
     <li>
       <Tooltip label={collapsed ? fullLabel : null}>
@@ -52,9 +53,7 @@ export function NavItem({
           onMouseEnter={prefetch}
           onFocus={prefetch}
           aria-label={fullLabel}
-          className={({ isActive }) =>
-            cn(navLinkClasses(isActive), collapsed && "justify-center px-2")
-          }
+          className={cn(navLinkClasses(isActive), collapsed && "justify-center px-2")}
         >
           <span className="relative inline-flex shrink-0">
             <Icon name={NAV_ICON[icon] ?? "circle"} className="text-[18px]" />
@@ -72,4 +71,19 @@ export function NavItem({
       </Tooltip>
     </li>
   );
+}
+
+/**
+ * Si el enlace está activo. La clase del enlace va como texto y no como función
+ * de NavLink: el Trigger del tooltip (Slot de Radix) no sabe combinar una
+ * función y la convertía en su código fuente, así que el menú plegado perdía
+ * el centrado y el estado activo.
+ */
+function useIsActive(to: string, end = false): boolean {
+  return useMatch({ path: useResolvedPath(to).pathname, end }) !== null;
+}
+
+/** «Papelera (3)»: el contador también en el nombre accesible y el tooltip. */
+function labelWithCount(label: string, badge: number): string {
+  return badge > 0 ? `${label} (${String(badge)})` : label;
 }

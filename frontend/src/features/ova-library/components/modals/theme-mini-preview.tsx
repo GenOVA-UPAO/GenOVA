@@ -33,8 +33,8 @@ export function ThemeMiniPreview({
   return (
     <div aria-hidden="true" className="overflow-hidden rounded-xl border border-border">
       <div style={{ background: primary }} className="px-3 py-2.5">
-        <div className="text-[9px] font-bold text-white">Fotosíntesis y el Ciclo</div>
-        <div className="mt-0.5 text-[7px] text-white/60">Biología · 2.° año</div>
+        <div className="text-[9px] font-bold text-white">Aprendizaje supervisado</div>
+        <div className="mt-0.5 text-[7px] text-white/60">Machine learning · 1.er ciclo</div>
       </div>
       {isTabbed && (
         <div className="flex border-b border-border bg-muted/30">

@@ -1,15 +1,33 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 import { useOvaCreation } from "../../hooks/use-ova-creation";
 import { OvaCreateFormCard } from "./ova-create-form-card";
 
-const PhaseSelectModal = lazy(() => import("../modals/phase-select-modal"));
-const OvaThemeModal = lazy(() => import("../modals/ova-theme-modal"));
-const OvaFilesModal = lazy(() => import("../modals/ova-files-modal"));
+const loadPhaseSelect = () => import("../modals/phase-select-modal");
+const loadTheme = () => import("../modals/ova-theme-modal");
+const loadFiles = () => import("../modals/ova-files-modal");
+const PhaseSelectModal = lazy(loadPhaseSelect);
+const OvaThemeModal = lazy(loadTheme);
+const OvaFilesModal = lazy(loadFiles);
 const CrearOvaTour = lazy(() => import("./crear-ova-tour"));
+
+/** Descarga los modales cuando la página ya se ha pintado: al abrirlos, están listos. */
+function usePrefetchModals() {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadPhaseSelect();
+      void loadTheme();
+      void loadFiles();
+    }, 1500);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
+}
 
 export function OvaCreationView() {
   const creation = useOvaCreation();
+  usePrefetchModals();
   return (
     <div className="flex min-h-full flex-col bg-background">
       <OvaCreateFormCard
@@ -28,7 +46,9 @@ export function OvaCreationView() {
         onTour={creation.replayTour}
         error={creation.error}
       />
-      <Suspense fallback={<p role="status">Cargando…</p>}>
+      {/* Sin texto de carga: el tutorial no ocupa sitio en la página y los
+          modales se descargan en segundo plano al entrar (ver abajo). */}
+      <Suspense fallback={null}>
         {!creation.modal && <CrearOvaTour replay={creation.replay} />}
         {creation.modal === "resources" && (
           <PhaseSelectModal
