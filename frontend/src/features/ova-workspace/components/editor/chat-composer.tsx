@@ -23,9 +23,10 @@ interface Props {
 
 const HINT_ID = "chat-prompt-hint";
 
-function hintText(busy: boolean, uploading: boolean, empty: boolean): string {
+function hintText(busy: boolean, uploading: boolean, indexing: boolean, empty: boolean): string {
   if (busy) return "Espera a que termine la regeneración en curso.";
   if (uploading) return "Subiendo archivos…";
+  if (indexing) return "Indexando archivos para que la IA pueda consultarlos…";
   if (empty) return "Escribe un cambio para poder aplicarlo.";
   return "Ctrl+Enter para aplicar";
 }
@@ -42,7 +43,8 @@ export function ChatComposer({
   error,
 }: Readonly<Props>) {
   const empty = !prompt.trim();
-  const disabled = busy || empty || uploads.uploading;
+  // Mientras un adjunto se indexa, aplicar el cambio lo dejaría fuera sin avisar.
+  const disabled = busy || empty || uploads.uploading || uploads.indexing;
   return (
     <div className="space-y-2">
       {error && (
@@ -75,11 +77,11 @@ export function ChatComposer({
           }
         }}
       />
-      <FileChips files={uploads.data ?? []} onRemove={uploads.removeUpload} />
+      <FileChips files={uploads.data} onRemove={uploads.removeUpload} />
       <div className="flex items-center gap-2">
         <ChatAttachButton uploads={uploads} />
         <p id={HINT_ID} aria-live="polite" className="min-w-0 flex-1 text-xs text-muted-foreground">
-          {hintText(busy, uploads.uploading, empty)}
+          {hintText(busy, uploads.uploading, uploads.indexing, empty)}
         </p>
         <Button
           disabled={disabled}

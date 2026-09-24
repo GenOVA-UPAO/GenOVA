@@ -32,6 +32,7 @@ def start_regen(
     total_phases: int,
     worker: Callable[[str, str], None],
     instruction: str | None = None,
+    attachments: list[dict] | None = None,
 ) -> str:
     """Mark the OVA as generating, register the job and spawn the worker thread.
 
@@ -51,6 +52,7 @@ def start_regen(
             "ova_id": str(ova.id),
             "prompt": effective_prompt,
             "instruction": instruction,
+            "attachments": list(attachments or []),
             "phase_ids": phase_ids,
             "total_phases": max(int(total_phases or 1), 1),
             "started_at": time.time(),
@@ -87,6 +89,9 @@ def regen_progress_dto(job_id: str, ova_id: str) -> dict | None:
         "percentage": percentage,
         "stage": resolve_regen_stage(100 if terminal else percentage),
         "new_version_number": job.get("new_version_number"),
+        # Qué material de referencia se consultó (None hasta que el worker lo
+        # recupera). El chat lo muestra al terminar.
+        "rag": job.get("rag"),
     }
 
 

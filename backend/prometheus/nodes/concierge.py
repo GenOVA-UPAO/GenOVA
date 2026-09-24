@@ -48,19 +48,21 @@ def _retrieve_rag_context(prompt: str, upload_ids: list) -> str:
     if not upload_ids or not prompt.strip():
         return ""
     from core.database import SessionLocal
-    from rag import build_contexto_usuario, top_k
+    from rag import retrieve_context
 
     db = SessionLocal()
     try:
-        chunks = top_k(db, prompt, [str(u) for u in upload_ids])
-        contexto = build_contexto_usuario(chunks)
+        # La propiedad de los documentos ya se filtró al crear el job
+        # (jobs_router): aquí solo llegan ids del dueño del OVA.
+        retrieved = retrieve_context(db, prompt, [str(u) for u in upload_ids])
         logger.info(
             "concierge RAG retrieved",
-            chunk_count=len(chunks),
-            context_chars=len(contexto),
+            chunk_count=retrieved.chunks,
+            context_chars=len(retrieved.contexto),
             uploads=len(upload_ids),
+            sources=[s["filename"] for s in retrieved.sources],
         )
-        return contexto
+        return retrieved.contexto
     except Exception:  # noqa: BLE001 — el RAG es best-effort (R4)
         logger.exception("concierge: fallo al recuperar contexto RAG; se genera sin anclaje")
         return ""

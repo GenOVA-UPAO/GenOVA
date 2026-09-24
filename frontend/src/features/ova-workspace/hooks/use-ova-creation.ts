@@ -35,6 +35,9 @@ export function useOvaCreation() {
   const start = useMutation({
     mutationFn: startOvaJob,
     onSuccess: (job) => {
+      // El backend ya ligó los archivos al OVA nuevo: salen de «Archivos» y no
+      // se cuelan en el siguiente OVA que se cree.
+      void uploads.refresh();
       void navigate(`/crear?jobId=${encodeURIComponent(job.job_id)}`);
     },
   });
@@ -44,7 +47,8 @@ export function useOvaCreation() {
   };
   const phases = Object.values(picks).filter((items) => items.length > 0).length;
   const total = Object.values(picks).flat().length;
-  const busy = [start.isPending, uploads.uploading, configs.save.isPending].some(Boolean);
+  // Crear mientras un archivo se indexa lo dejaría fuera del contexto sin avisar.
+  const busy = [start.isPending, uploads.uploading, uploads.indexing, configs.save.isPending].some(Boolean);
   const ready = canCreate(prompt, phases, busy);
   const generate = () => {
     if (!ready) return;
@@ -52,7 +56,7 @@ export function useOvaCreation() {
       prompt: promptWithLevel(prompt, nivel),
       theme,
       resourceConfigs: configs.data?.configs,
-      uploadIds: (uploads.data ?? []).flatMap((file) => (file.uploadId ? [file.uploadId] : [])),
+      uploadIds: uploads.uploadIds,
       resources: Object.entries(picks).flatMap(([phase, resources]) =>
         // La API exige el tipo como texto: enviarlo como número devolvía 422 y
         // la generación no arrancaba desde el formulario.

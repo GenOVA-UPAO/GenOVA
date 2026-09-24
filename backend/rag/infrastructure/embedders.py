@@ -14,6 +14,10 @@ needed.
 
 Set `RAG_EMBEDDER=local` to use sentence-transformers (only if Render RAM
 allows — ~120 MB extra footprint).
+
+`RAG_EMBEDDER=ollama` usa un servidor Ollama (`OLLAMA_URL`, por defecto
+http://localhost:11434) con `nomic-embed-text` (768 d): es la opción para
+desarrollo local sin clave de Gemini.
 """
 
 from __future__ import annotations
@@ -31,7 +35,7 @@ logger = structlog.get_logger(__name__)
 
 VECTOR_DIM = 768  # Matches the pgvector(768) column in migration 011.
 
-__all__ = ["Embedder", "EmbedderError", "get_embedder", "vector_dim"]
+__all__ = ["Embedder", "EmbedderError", "OllamaEmbedder", "get_embedder", "vector_dim"]
 
 
 class Embedder(ABC):
@@ -174,6 +178,64 @@ class LocalEmbedder(Embedder):
         return self.embed_batch([text])[0]
 
 
+class OllamaEmbedder(Embedder):
+    """Embeddings servidos por Ollama (`RAG_EMBEDDER=ollama`), pensado para
+    desarrollo local sin clave de Gemini: `nomic-embed-text` da vectores de 768 d,
+    la dimensión de la columna, así que no hace falta migrar el esquema.
+
+    `nomic-embed-text` es asimétrico: los documentos y las consultas llevan un
+    prefijo de tarea distinto (`search_document:` / `search_query:`); sin él la
+    recuperación pierde bastante precisión. Solo texto: los PDF, DOCX y PPTX pasan
+    por la extracción de texto de siempre.
+    """
+
+    name = "ollama"
+    dim = VECTOR_DIM
+    supports_multimodal = False
+    _BATCH = 32
+    _DOC_PREFIX = "search_document: "
+    _QUERY_PREFIX = "search_query: "
+
+    def __init__(self) -> None:
+        self._url = os.getenv("OLLAMA_URL", "http://localhost:11434").strip().rstrip("/")
+        self._model = os.getenv("RAG_OLLAMA_MODEL", "nomic-embed-text").strip()
+        self._timeout = float(os.getenv("RAG_OLLAMA_TIMEOUT_S", "60"))
+
+    def _call(self, texts: list[str]) -> list[list[float]]:
+        import httpx
+
+        try:
+            resp = httpx.post(
+                f"{self._url}/api/embed",
+                json={"model": self._model, "input": texts},
+                timeout=self._timeout,
+            )
+            resp.raise_for_status()
+            vectors = resp.json().get("embeddings") or []
+        except (httpx.HTTPError, ValueError) as exc:
+            raise EmbedderError(f"Ollama ({self._url}, {self._model}) no respondió: {exc}") from exc
+        if len(vectors) != len(texts):
+            raise EmbedderError(
+                f"Ollama devolvió {len(vectors)} embeddings para {len(texts)} textos"
+            )
+        if any(len(v) != self.dim for v in vectors):
+            raise EmbedderError(
+                f"El modelo {self._model} no da vectores de {self.dim} dimensiones; "
+                "usa nomic-embed-text u otro de 768 d"
+            )
+        return [list(map(float, v)) for v in vectors]
+
+    def embed_batch(self, texts: list[str]) -> list[list[float]]:
+        out: list[list[float]] = []
+        for i in range(0, len(texts), self._BATCH):
+            batch = texts[i : i + self._BATCH]
+            out.extend(self._call([self._DOC_PREFIX + t for t in batch]))
+        return out
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._call([self._QUERY_PREFIX + text])[0]
+
+
 _embedder: Embedder | None = None
 
 
@@ -183,7 +245,9 @@ def get_embedder() -> Embedder:
     if _embedder is not None:
         return _embedder
     choice = os.getenv("RAG_EMBEDDER", "gemini").strip().lower()
-    if choice == "local":
+    if choice == "ollama":
+        _embedder = OllamaEmbedder()
+    elif choice == "local":
         _embedder = LocalEmbedder()
     elif choice in ("gemini-001", "gemini-v1"):
         _embedder = GeminiV1Embedder()

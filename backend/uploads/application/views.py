@@ -16,4 +16,5 @@ def to_view(upload: TempUpload, rag_status: dict | None = None) -> UploadItemVie
         expires_at=upload.expires_at,
         confirmed_at=upload.confirmed_at,
         rag_status=rag_status if rag_status is not None else upload.rag_status,
+        ova_id=upload.ova_id,
     )

@@ -1,10 +1,15 @@
-"""Caso de uso: subir uno o varios documentos temporales (con ingesta RAG best-effort)."""
+"""Caso de uso: subir uno o varios documentos temporales.
+
+La ingesta RAG (parse → chunk → embed → pgvector) ya no se hace dentro de la
+petición: el archivo queda en `processing` y el adaptador HTTP lanza
+`IngestUpload` en segundo plano. Así el docente ve «subiendo» y luego
+«indexando» como estados distintos, y un PDF largo no deja la petición colgada
+mientras se calculan sus embeddings.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-
-import structlog
 
 from uploads.application.dto import (
     IncomingFile,
@@ -25,12 +30,8 @@ from uploads.domain.errors import (
 )
 from uploads.domain.policies import is_allowed_mime, magic_bytes_ok, safe_filename
 
-logger = structlog.get_logger(__name__)
-
 _RAG_DISABLED = RagStatus(status="disabled", chunks=0)
-_RAG_ERROR = RagStatus(
-    status="error", chunks=0, message="El archivo se subió pero no pudo indexarse para RAG."
-)
+_RAG_PROCESSING = RagStatus(status="processing", chunks=0)
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,9 +40,11 @@ class UploadFiles:
     rag: RagIngestionPort
     limits: UploadLimits
 
-    def execute(self, user_id: str, files: list[IncomingFile]) -> UploadOutcome:
+    def execute(
+        self, user_id: str, files: list[IncomingFile], ova_id: str | None = None
+    ) -> UploadOutcome:
         max_files = self.limits.max_files_per_request()
-        self._reject_batch(user_id, files, max_files)
+        self._reject_batch(user_id, files, max_files, ova_id)
 
         max_bytes = self.limits.max_file_size_bytes()
         max_mb = self.limits.max_file_size_mb()
@@ -49,25 +52,43 @@ class UploadFiles:
         errors: list[UploadFileError] = []
         for incoming in files:
             try:
-                items.append(self._process_file(user_id, incoming, max_bytes, max_mb))
+                items.append(self._process_file(user_id, incoming, max_bytes, max_mb, ova_id))
             except UploadError as err:
                 errors.append(
                     UploadFileError(
                         filename=incoming.filename or "archivo", error=err.code, message=str(err)
                     )
                 )
-        return UploadOutcome(items=items, errors=errors, max_files=max_files, max_size_mb=max_mb)
+        pending = [
+            v.upload_id for v in items if (v.rag_status or {}).get("status") == "processing"
+        ]
+        return UploadOutcome(
+            items=items,
+            errors=errors,
+            max_files=max_files,
+            max_size_mb=max_mb,
+            pending_ingestion=pending,
+        )
 
-    def _reject_batch(self, user_id: str, files: list[IncomingFile], max_files: int) -> None:
+    def _reject_batch(
+        self, user_id: str, files: list[IncomingFile], max_files: int, ova_id: str | None
+    ) -> None:
         if not files:
             raise FilesRequired()
         if len(files) > max_files:
             raise TooManyFiles(max_files)
-        if self.repo.count_active(user_id) + len(files) > max_files:
+        # El tope es por lista: los adjuntos del chat de un OVA no restan hueco al
+        # formulario de crear ni a los de otro OVA.
+        if self.repo.count_active(user_id, ova_id) + len(files) > max_files:
             raise TooManyFiles(max_files, total=True)
 
     def _process_file(
-        self, user_id: str, incoming: IncomingFile, max_bytes: int, max_mb: int
+        self,
+        user_id: str,
+        incoming: IncomingFile,
+        max_bytes: int,
+        max_mb: int,
+        ova_id: str | None,
     ) -> UploadItemView:
         mime = (incoming.content_type or "").strip().lower()
         if not is_allowed_mime(mime):
@@ -78,25 +99,8 @@ class UploadFiles:
             raise ContentMismatch()
 
         upload = self.repo.create(
-            user_id, safe_filename(incoming.filename), mime, incoming.content
+            user_id, safe_filename(incoming.filename), mime, incoming.content, ova_id=ova_id
         )
-        rag_status = self._ingest(user_id, upload.upload_id, upload.filename)
+        rag_status = _RAG_PROCESSING if self.rag.is_enabled() else _RAG_DISABLED
         self.repo.set_rag_status(upload.upload_id, rag_status.as_dict())
         return to_view(upload, rag_status=rag_status.as_dict())
-
-    def _ingest(self, user_id: str, upload_id: str, filename: str) -> RagStatus:
-        if not self.rag.is_enabled():
-            return _RAG_DISABLED
-        storage_path = self.repo.get_storage_path(upload_id, user_id)
-        if not storage_path:
-            return _RAG_DISABLED
-        try:
-            return self.rag.ingest(
-                user_id=user_id,
-                upload_id=upload_id,
-                storage_path=storage_path,
-                filename=filename or "archivo",
-            )
-        except Exception:  # noqa: BLE001 — RAG nunca bloquea el upload
-            logger.exception("RAG ingestion falló", filename=filename)
-            return _RAG_ERROR

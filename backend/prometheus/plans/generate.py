@@ -261,9 +261,10 @@ def generate_resource(
     deadline: float | None = None,
 ) -> ResourceResult:
     """Genera UN recurso 5E con el pipeline completo. `plan` por defecto = plan
-    canónico de `plan_map.plan_for`. `contexto` = RAG (los endpoints HTTP lo pasan;
-    batch/regen usan ""). `deadline` (monotonic) acota refine; si falta, se
-    abre un presupuesto de reloj propio (HTTP/regen)."""
+    canónico de `plan_map.plan_for`. `contexto` = bloque RAG ya formateado (lo pasan
+    el workpool, los endpoints HTTP y la regeneración; "" = sin material).
+    `deadline` (monotonic) acota refine; si falta, se abre un presupuesto de reloj
+    propio (HTTP/regen)."""
     import time
 
     from core.config import settings
@@ -274,7 +275,9 @@ def generate_resource(
     if settings.llm_fake:
         from prometheus.engine.fake_invoke import fake_standalone_html
 
-        return ResourceResult(fake_standalone_html(concept, phase, n), [], {"contenido": concept})
+        return ResourceResult(
+            fake_standalone_html(concept, phase, n, contexto), [], {"contenido": concept}
+        )
     theme = theme or {}
     plan = plan or plan_for(phase, n)
     if deadline is None:

@@ -31,6 +31,15 @@ describe("ova workspace API", () => {
     });
   });
 
+  it("sends the chat attachments as upload_ids", async () => {
+    vi.mocked(apiJson).mockResolvedValue({ job_id: "regen-2" });
+    await triggerOvaRegeneration("ova-1", { prompt: "Usa el apunte", uploadIds: ["up-1"] });
+    expect(apiJson).toHaveBeenCalledWith("/api/ovas/ova-1/regenerar", {
+      method: "POST",
+      body: JSON.stringify({ prompt: "Usa el apunte", fase_ids: [], upload_ids: ["up-1"] }),
+    });
+  });
+
   it("reads regeneration progress", async () => {
     vi.mocked(apiJson).mockResolvedValue({ percentage: 50, status: "running" });
     await fetchRegenerationProgress("ova-1", "regen-1");

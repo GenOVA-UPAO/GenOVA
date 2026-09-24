@@ -8,10 +8,18 @@ from uploads.application.dto import (
     UploadOutcome,
 )
 from uploads.application.ports import RagIngestionPort, TempUploadRepository, UploadLimits
-from uploads.application.use_cases import DeleteUpload, ListUploads, UploadFiles
+from uploads.application.use_cases import (
+    ClaimUploads,
+    DeleteUpload,
+    IngestUpload,
+    ListUploads,
+    UploadFiles,
+)
 
 __all__ = [
+    "ClaimUploads",
     "DeleteUpload",
+    "IngestUpload",
     "IncomingFile",
     "ListUploads",
     "RagIngestionPort",

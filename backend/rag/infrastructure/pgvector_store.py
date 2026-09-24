@@ -101,6 +101,48 @@ def tie_uploads_to_ova(db: Session, upload_ids: Sequence[str], ova_id: str) -> i
     return result.rowcount or 0
 
 
+def upload_ids_for_ova(db: Session, ova_id: str) -> list[str]:
+    """Documentos ligados a un OVA (los de su creación y los adjuntados después en
+    el chat del editor). Falla a [] sin lanzar: el RAG es best-effort."""
+    stmt = text(
+        """
+        SELECT DISTINCT upload_id::text AS upload_id
+        FROM rag_chunks
+        WHERE ova_id = CAST(:ova_id AS UUID)
+        """
+    )
+    try:
+        return [r[0] for r in db.execute(stmt, {"ova_id": str(ova_id)}).all()]
+    except Exception:
+        logger.exception("No se pudieron leer los documentos del OVA", ova_id=str(ova_id))
+        db.rollback()
+        return []
+
+
+def owned_upload_ids(db: Session, user_id: str, upload_ids: Sequence[str]) -> list[str]:
+    """Subconjunto de `upload_ids` con chunks del usuario. Sin este filtro, quien
+    conociera el id de un documento ajeno podía recuperar su contenido."""
+    if not upload_ids:
+        return []
+    stmt = text(
+        """
+        SELECT DISTINCT upload_id::text AS upload_id
+        FROM rag_chunks
+        WHERE user_id = CAST(:user_id AS UUID) AND upload_id::text IN :upload_ids
+        """
+    ).bindparams(bindparam("upload_ids", expanding=True))
+    try:
+        rows = db.execute(
+            stmt, {"user_id": str(user_id), "upload_ids": [str(u) for u in upload_ids]}
+        ).all()
+    except Exception:
+        logger.exception("No se pudo comprobar la propiedad de los documentos")
+        db.rollback()
+        return []
+    owned = {r[0] for r in rows}
+    return [str(u) for u in upload_ids if str(u) in owned]
+
+
 def purge_expired(db: Session) -> int:
     """Delete untied chunks past their expiry. Called at startup and optionally
     from a cron-style task."""

@@ -22,12 +22,14 @@ def regenerate_phase_content(
     llm_config: dict | None = None,
     enabled_models: list | None = None,
     image_settings: dict | None = None,
+    contexto: str = "",
 ) -> str | None:
     """Genera HTML fresco para un recurso con el pipeline unificado.
 
     `llm_config` son los overrides por-tipo del dueño del OVA (o None). `enabled_models`
     restringe los overrides a modelos habilitados. `image_settings` habilita imágenes
-    en engage. Devuelve el HTML o None si falla o la fase es desconocida.
+    en engage. `contexto` es el bloque RAG del material del OVA (o ""). Devuelve el
+    HTML o None si falla o la fase es desconocida.
     """
     if phase_type not in _VALID_PHASES:
         logger.warning("unknown phase_type for regen", phase_type=phase_type)
@@ -42,6 +44,7 @@ def regenerate_phase_content(
             llm_config=llm_config,
             enabled_models=enabled_models,
             image_settings=image_settings,
+            contexto=contexto,
         ).html
     except Exception:
         logger.exception(

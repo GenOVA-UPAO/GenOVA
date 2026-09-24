@@ -9,6 +9,7 @@ from core.database import get_db
 from core.http_errors import forbidden_response
 from core.rate_limit import limiter
 from generation.regen.regen_jobs import regen_progress_dto, start_regen
+from generation.regen.regen_rag import attach_to_ova
 from generation.regen.regen_service import _finalize_edit
 from models import Ova, OvaPhase, OvaVersion, User
 from ova import ensure_version_exists, get_active_version, is_ova_owner
@@ -19,6 +20,10 @@ router = APIRouter(tags=["Generación"])
 class RegenRequest(BaseModel):
     prompt: str | None = None
     fase_ids: list[str] = Field(default_factory=list)
+    # Archivos adjuntados con el clip del chat para ESTE cambio (HU-024). Se
+    # recuperan sus fragmentos relevantes (y los de los archivos que el OVA ya
+    # tenía) y se inyectan en el prompt de la regeneración.
+    upload_ids: list[str] = Field(default_factory=list, max_length=10)
 
 
 def _original_topic(ova_id: str, fallback: str | None, db: Session) -> str | None:
@@ -116,6 +121,15 @@ def regenerate_ova(
             .where(OvaPhase.version_id == active_version.id)
         )
 
+    # Los adjuntos pasan a ser material del OVA desde ya: salen de la lista del
+    # chat y sus chunks quedan atados al OVA (no caducan en 1 h y los próximos
+    # cambios también pueden consultarlos).
+    attachments = (
+        attach_to_ova(db, str(current_user.id), ova_id, payload.upload_ids)
+        if payload.upload_ids
+        else []
+    )
+
     job_id = start_regen(
         db,
         ova,
@@ -124,6 +138,7 @@ def regenerate_ova(
         total_phases or 1,
         worker=_finalize_edit,
         instruction=instruction,
+        attachments=attachments,
     )
 
     return JSONResponse(

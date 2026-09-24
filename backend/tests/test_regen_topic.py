@@ -114,8 +114,8 @@ def _regen(session, monkeypatch, ova, payload):
     """Llama al endpoint saltándose el rate limit y captura lo que se encola."""
     started = {}
 
-    def fake_start_regen(db, ova_, prompt, fase_ids, total, *, worker, instruction):
-        started.update(prompt=prompt, fase_ids=fase_ids, instruction=instruction)
+    def fake_start_regen(db, ova_, prompt, fase_ids, total, *, worker, instruction, **kwargs):
+        started.update(prompt=prompt, fase_ids=fase_ids, instruction=instruction, **kwargs)
         return "job-1"
 
     monkeypatch.setattr(regen_router, "start_regen", fake_start_regen)

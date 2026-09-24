@@ -25,12 +25,12 @@ export function useChatRegeneration(ovaId: string) {
   const [jobId, setJobId] = useState<string>();
   const patch = chat.patch.mutateAsync;
   const progress = useRegenerationProgress(ovaId, jobId, assistant, patch);
-  const request = useMutation({ mutationFn: async ({ prompt, historyText, phaseIds, resourceLabels }: RegenPayload) => {
+  const request = useMutation({ mutationFn: async ({ prompt, historyText, phaseIds, resourceLabels, uploadIds }: RegenPayload) => {
     await chat.append.mutateAsync(userChatMessage(historyText, { resourceLabels }));
     const running = assistantRunningMessage(undefined, resourceLabels);
     await chat.append.mutateAsync(running);
     try {
-      const ack = await triggerOvaRegeneration(ovaId, { prompt, phaseIds });
+      const ack = await triggerOvaRegeneration(ovaId, { prompt, phaseIds, uploadIds });
       setAssistant(running);
       setJobId(ack.job_id);
     } catch (error) {
@@ -43,7 +43,7 @@ export function useChatRegeneration(ovaId: string) {
   const busy = request.isPending || (active?.status === 'running' && !progress.error);
   // Solo los fallos que no llegaron al hilo (p. ej. no se pudo guardar el mensaje).
   const composerError = request.error instanceof RegenStartError ? undefined : request.error?.message;
-  return { chat, request, busy, composerError, runningLabels: active?.status === 'running' ? assistant?.resourceLabels : undefined, ...progress };
+  return { ovaId, chat, request, busy, composerError, runningLabels: active?.status === 'running' ? assistant?.resourceLabels : undefined, ...progress };
 }
 
 export type ChatRegeneration = ReturnType<typeof useChatRegeneration>;

@@ -21,7 +21,7 @@ export function OvaCreationView() {
         theme={creation.theme}
         nivel={creation.nivel}
         onNivelChange={creation.setNivel}
-        files={creation.uploads.data ?? []}
+        files={creation.uploads.data}
         onRemove={creation.uploads.removeUpload}
         onOpen={creation.openModal}
         onGenerate={creation.generate}

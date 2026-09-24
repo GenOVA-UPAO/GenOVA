@@ -14,6 +14,7 @@ from core.database import SessionLocal
 from generation.infrastructure.regen_persist import _build_and_persist, _mark_ova_error
 from generation.regen.regen_edit import regen_phases_parallel
 from generation.regen.regen_jobs import _regen_jobs, _regen_jobs_lock
+from generation.regen.regen_rag import build_regen_material
 from models import Ova, OvaPhase, OvaVersion
 from ova import ensure_version_exists, get_active_version, next_version_number
 
@@ -78,9 +79,20 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         # pure-LLM call with no DB access). Regen-all is otherwise sequential —
         # N phases × 2 LLM calls each — so the progress bar sat at 99% for
         # minutes. DB writes below stay in this thread, in phase order.
+        material = build_regen_material(
+            db, ova_id, job.get("attachments") or [], prompt, instruction
+        )
+        with _regen_jobs_lock:
+            job["rag"] = material.report
+
         to_regen = [p for p in current_phases if regen_all or str(p.id) in phase_ids_to_regen]
         regen_content = regen_phases_parallel(
-            to_regen, prompt, instruction, llm_config, image_settings=image_settings
+            to_regen,
+            prompt,
+            instruction,
+            llm_config,
+            image_settings=image_settings,
+            contexto=material.contexto,
         )
 
         new_phases_data = []
@@ -136,6 +148,7 @@ def _owner_llm_config(db: Session, user_id) -> dict:
     de la plataforma): solo las que paga su propia clave, salvo el admin."""
     from sqlalchemy import select
 
+    from llm.utils.llm_helpers import with_owner
     from llm.utils.user_overrides import honored_overrides
     from models import Role, User, UserRole
 
@@ -152,7 +165,11 @@ def _owner_llm_config(db: Session, user_id) -> dict:
         .first()
         is not None
     )
-    return honored_overrides(user.llm_settings, user.user_api_keys, is_admin=is_admin)
+    # Como en la generación inicial: el motor busca las claves propias por el
+    # autor para que sus elecciones se paguen con ellas (nunca viajan las claves).
+    return with_owner(
+        honored_overrides(user.llm_settings, user.user_api_keys, is_admin=is_admin), user.id
+    )
 
 
 def _owner_image_settings(db: Session, user_id) -> dict:

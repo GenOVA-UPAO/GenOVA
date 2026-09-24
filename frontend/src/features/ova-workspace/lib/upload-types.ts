@@ -1,7 +1,11 @@
 export interface RagStatus {
+  /** processing · indexed · skipped · failed · error · disabled */
   status?: string;
   chunks?: number;
+  /** Motivo legible (fallo de ingesta o documento truncado). */
   message?: string;
+  /** Código técnico del motivo. */
+  reason?: string;
 }
 
 export interface UploadItem {
