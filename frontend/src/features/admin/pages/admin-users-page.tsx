@@ -1,5 +1,6 @@
 import { PageHeader } from "@/core/components/page-header";
 
+import { DeactivateUserConfirm } from "../components/users/deactivate-user-confirm";
 import { EditUserModal } from "../components/users/edit-user-modal";
 import { UsersPagination } from "../components/users/users-pagination";
 import { UsersPanel } from "../components/users/users-panel";
@@ -39,6 +40,14 @@ export function AdminUsersPage() {
           isSubmitting={p.isSavingEdit}
           onClose={p.closeEdit}
           onSave={p.saveEditedUser}
+        />
+      )}
+      {p.pendingDeactivation !== null && (
+        <DeactivateUserConfirm
+          user={p.pendingDeactivation}
+          isDeactivating={p.isDeactivating}
+          onConfirm={p.confirmDeactivation}
+          onCancel={p.cancelDeactivation}
         />
       )}
     </div>

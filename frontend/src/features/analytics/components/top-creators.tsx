@@ -24,10 +24,13 @@ export function TopCreators({ creators }: Readonly<TopCreatorsProps>) {
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
+                {/* Sin nombre, el correo pasa a ser el título y no se repite debajo. */}
+                <p className="truncate text-sm font-medium" title={c.name ?? c.email}>
                   {c.name && c.name.length > 0 ? c.name : c.email}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">{c.email}</p>
+                {c.name && c.name.length > 0 ? (
+                  <p className="truncate text-xs text-muted-foreground">{c.email}</p>
+                ) : null}
               </div>
               <span className="shrink-0 text-sm tabular-nums">{ovaCountLabel(c.ova_count)}</span>
             </li>

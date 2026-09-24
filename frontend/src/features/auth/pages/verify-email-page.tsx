@@ -34,8 +34,11 @@ export function VerifyEmailPage() {
   if (status === "verifying") {
     return (
       <AuthStatusCard>
-        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary" />
-        <p className="text-sm text-muted-foreground">Verificando tu correo...</p>
+        <div
+          aria-hidden="true"
+          className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"
+        />
+        <p role="status" className="text-sm text-muted-foreground">Verificando tu correo…</p>
       </AuthStatusCard>
     );
   }

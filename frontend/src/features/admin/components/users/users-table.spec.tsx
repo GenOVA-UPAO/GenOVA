@@ -93,7 +93,10 @@ describe("UsersTable", () => {
     renderTable([{ ...TEACHER, id: "me-1" }], true);
 
     expect(screen.getByRole("combobox", { name: "Rol de Docente Uno" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /Acciones no disponibles/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Acciones no disponibles/ })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
   });
 
   it("ofrece las acciones de cada usuario en un menú «Más acciones»", async () => {

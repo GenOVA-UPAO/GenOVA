@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -17,10 +17,14 @@ vi.mock("../hooks/use-admin-roles", () => ({
   useRoles: () => ({ data: [], isLoading: false, error: null }),
 }));
 
+const deactivateUser = vi.fn();
+
 vi.mock("../hooks/use-admin-users-controller", () => ({
   useAdminUsersController: () => ({
     updatingUserId: "",
     isSavingEdit: false,
+    isDeactivating: false,
+    deactivateUser,
     handlers: {
       handleRoleChange: vi.fn(),
       handleToggleStatus: vi.fn(),
@@ -62,6 +66,36 @@ describe("AdminUsersPage", () => {
     expect(
       screen.getByText("Cuando se registren en la plataforma aparecerán aquí."),
     ).toBeInTheDocument();
+  });
+
+  it("pide confirmación antes de desactivar una cuenta", async () => {
+    mockUsersQuery({
+      data: {
+        users: [
+          {
+            id: "u-1",
+            email: "docente@upao.edu.pe",
+            full_name: "Docente Uno",
+            role: { id: "r-1", name: "profesor" },
+            is_active: true,
+          },
+        ],
+        total_pages: 1,
+        total_items: 1,
+      },
+    });
+    const user = userEvent.setup();
+    render(<AdminUsersPage />);
+
+    await user.click(screen.getByRole("button", { name: "Más acciones para Docente Uno" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Desactivar cuenta" }));
+
+    expect(deactivateUser).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole("alertdialog");
+    expect(dialog).toHaveTextContent("¿Desactivar la cuenta de Docente Uno?");
+
+    await user.click(within(dialog).getByRole("button", { name: "Desactivar cuenta" }));
+    expect(deactivateUser).toHaveBeenCalledWith("u-1", expect.any(Function));
   });
 
   it("muestra el error en español y reintenta con refetch", async () => {

@@ -7,10 +7,11 @@ interface ServerAlertProps {
   tone?: "error" | "success" | "info";
 }
 
+// Solo tokens del tema: el éxito usaba verdes de la paleta de Tailwind y el error
+// no se distinguía del fondo de la tarjeta.
 const TONE_CLASS = {
-  error: "",
-  success:
-    "border-green-200 bg-green-50 text-green-900 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-200",
+  error: "border-destructive/30 bg-destructive/10",
+  success: "border-success/30 bg-success/10 text-success-strong",
   info: "",
 } as const;
 

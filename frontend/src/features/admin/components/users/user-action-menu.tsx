@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
+import { Tooltip } from "@/core/components/ui/tooltip";
 
 import type { AdminUser } from "../../lib/types";
 import { displayName } from "../../lib/user-display";
@@ -31,16 +32,18 @@ export function UserActionMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={`Más acciones para ${displayName(user) ?? user.email}`}
-          className="max-md:size-10"
-        >
-          <Icon name="dots-three-vertical" size="text-lg" weight="bold" />
-        </Button>
-      </DropdownMenuTrigger>
+      <Tooltip label="Más acciones" side="left">
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Más acciones para ${displayName(user) ?? user.email}`}
+            className="max-md:size-11"
+          >
+            <Icon name="dots-three-vertical" size="text-lg" weight="bold" />
+          </Button>
+        </DropdownMenuTrigger>
+      </Tooltip>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem onSelect={onEdit}>
           <Icon name="pencil-simple" size="text-sm" /> Editar perfil

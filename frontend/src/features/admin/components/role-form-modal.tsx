@@ -10,12 +10,20 @@ import {
 
 import type { RoleFormPayload } from "../api/admin-roles.api";
 import { togglePermission } from "../lib/permissions";
-import { formatRoleName } from "../lib/role-utils";
+import { formatRoleDescription, formatRoleName } from "../lib/role-utils";
 import type { Role } from "../lib/types";
 import { FormErrorAlert } from "./form-error-alert";
 import { RoleFormActions } from "./role-form-actions";
 import { RoleFormFields } from "./role-form-fields";
 import { RolePermissionsFieldset } from "./role-permissions-fieldset";
+
+// El modo tesis asigna este rol a las cuentas nuevas buscándolo por su nombre.
+const TESIS_ROLE = "usuarios_prueba";
+
+function nameLockReason(editingRole: Role | null): string | null {
+  if (editingRole?.name !== TESIS_ROLE) return null;
+  return "El modo tesis asigna este rol por su nombre, así que no se puede cambiar.";
+}
 
 function modalTitle(editingRole: Role | null): string {
   if (editingRole === null) return "Nuevo rol";
@@ -24,7 +32,15 @@ function modalTitle(editingRole: Role | null): string {
 
 function modalDescription(editingRole: Role | null): string {
   if (editingRole === null) return "Ponle un nombre y marca lo que podrán hacer sus usuarios.";
-  return "Cambia el nombre o los permisos. Los usuarios con este rol verán el cambio al instante.";
+  const what = nameLockReason(editingRole) === null ? "el nombre" : "la descripción";
+  return `Cambia ${what} o los permisos. Los usuarios con este rol verán el cambio al instante.`;
+}
+
+function roleNameError(name: string): string {
+  const trimmed = name.trim();
+  if (trimmed === "") return "Escribe un nombre para el rol.";
+  if (trimmed.length > 64) return "El nombre no puede superar los 64 caracteres.";
+  return "";
 }
 
 function submitLabel(isEdit: boolean, isSubmitting: boolean): string {
@@ -48,23 +64,22 @@ export function RoleFormModal({
   onClose,
 }: Readonly<RoleFormModalProps>) {
   const [name, setName] = useState(editingRole?.name ?? "");
-  const [description, setDescription] = useState(editingRole?.description ?? "");
+  // Misma descripción que se ve en la lista (sin los « — » del seed).
+  const [description, setDescription] = useState(
+    formatRoleDescription(editingRole?.description),
+  );
   const [permissions, setPermissions] = useState<string[]>(editingRole?.permissions ?? []);
   const [nameError, setNameError] = useState("");
 
   const handleSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const trimmedName = name.trim();
-    if (trimmedName === "") {
-      setNameError("Escribe un nombre para el rol.");
+    const error = roleNameError(name);
+    setNameError(error);
+    if (error !== "") {
+      document.getElementById("role-name-input")?.focus();
       return;
     }
-    if (trimmedName.length > 64) {
-      setNameError("El nombre no puede superar los 64 caracteres.");
-      return;
-    }
-    setNameError("");
-    onSubmit({ name: trimmedName, description, permissions });
+    onSubmit({ name: name.trim(), description, permissions });
   };
 
   return (
@@ -74,12 +89,13 @@ export function RoleFormModal({
         if (!open && !isSubmitting) onClose();
       }}
     >
-      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[92dvh] overflow-y-auto overscroll-contain sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{modalTitle(editingRole)}</DialogTitle>
           <DialogDescription>{modalDescription(editingRole)}</DialogDescription>
         </DialogHeader>
         <form
+          noValidate
           onSubmit={(event) => {
             handleSubmit(event);
           }}
@@ -88,6 +104,7 @@ export function RoleFormModal({
           <RoleFormFields
             name={name}
             nameError={nameError}
+            nameLockReason={nameLockReason(editingRole)}
             description={description}
             disabled={isSubmitting}
             onNameChange={(value) => {
@@ -97,8 +114,8 @@ export function RoleFormModal({
             onDescriptionChange={setDescription}
           />
 
-          <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-medium">Permisos</legend>
+          <fieldset>
+            <legend className="mb-3 text-sm font-medium">Permisos</legend>
             <RolePermissionsFieldset
               permissions={permissions}
               disabled={isSubmitting}

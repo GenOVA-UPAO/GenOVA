@@ -7,7 +7,9 @@ export const profileSchema = z.object({
     .min(1, "El nombre completo es requerido.")
     .min(3, "El nombre debe tener al menos 3 caracteres."),
   email: z.email({ error: "Ingresa un correo electrónico válido." }),
-  university_id: z.string(),
+  university_id: z.string().refine((value) => /^\d*$/.test(value.trim()), {
+    message: "El código solo debe contener números.",
+  }),
   gender: z.string(),
   phone_number: z.string().refine((value) => value === "" || /^\+?\d+$/.test(value), {
     message: "El teléfono solo debe contener dígitos y el signo +.",

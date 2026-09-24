@@ -52,9 +52,19 @@ export function useAdminUsersController(onOpenEdit: (user: AdminUser) => void) {
     );
   };
 
+  const deactivateUser = (userId: string, onSuccess: () => void) => {
+    setUpdatingUserId(userId);
+    statusMutation.mutate(
+      { userId, isActive: false },
+      { onSuccess, onSettled: clearUpdating },
+    );
+  };
+
   return {
     updatingUserId,
     isSavingEdit: editMutation.isPending,
+    isDeactivating: statusMutation.isPending,
+    deactivateUser,
     handlers,
     saveEditedUser,
   };

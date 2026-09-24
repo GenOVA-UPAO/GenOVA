@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useProfile } from "../hooks/use-profile";
 import { ProfilePage } from "./profile-page";
 
-const handleSaveProfile = vi.fn().mockResolvedValue(true);
+const handleSaveProfile = vi.fn();
 
 interface MockProfile {
   id: string;
@@ -64,7 +64,8 @@ vi.mock("../hooks/use-profile-actions", () => ({
 
 describe("ProfilePage", () => {
   beforeEach(() => {
-    handleSaveProfile.mockClear();
+    handleSaveProfile.mockReset();
+    handleSaveProfile.mockResolvedValue(PROFILE);
     mockProfile(PROFILE);
   });
 
@@ -87,6 +88,36 @@ describe("ProfilePage", () => {
         email: "docente@upao.edu.pe",
       }),
     );
+  });
+
+  it("tras guardar muestra lo que devolvió el servidor, no los datos anteriores", async () => {
+    handleSaveProfile.mockResolvedValue({ ...PROFILE, phone_number: "+51999888777" });
+    const user = userEvent.setup();
+    render(<ProfilePage />);
+
+    const phoneInput = screen.getByLabelText("Teléfono de contacto");
+    await user.type(phoneInput, "+51999888777");
+    expect(screen.getByRole("button", { name: "Descartar cambios" })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: "Descartar cambios" })).not.toBeInTheDocument();
+    });
+    expect(phoneInput).toHaveValue("+51999888777");
+  });
+
+  it("al enviar con errores lleva el foco al primer campo inválido", async () => {
+    const user = userEvent.setup();
+    render(<ProfilePage />);
+
+    await user.clear(screen.getByLabelText("Nombre completo"));
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Nombre completo")).toHaveFocus();
+    });
+    expect(handleSaveProfile).not.toHaveBeenCalled();
   });
 
   it("normaliza los campos nulos del backend a cadenas vacías", () => {

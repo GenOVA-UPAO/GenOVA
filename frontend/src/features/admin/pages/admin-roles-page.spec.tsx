@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,7 +8,7 @@ const mutateMode = vi.fn();
 const refetchRoles = vi.fn();
 
 const rolesQuery = {
-  data: [] as { id: string; name: string }[],
+  data: [] as { id: string; name: string; user_count?: number }[],
   isLoading: false,
   error: null as Error | null,
   refetch: refetchRoles,
@@ -54,6 +54,36 @@ describe("AdminRolesPage", () => {
 
     expect(screen.getByText("Aún no hay roles")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /Nuevo rol/ }).length).toBeGreaterThan(0);
+  });
+
+  it("los roles del sistema no ofrecen editar ni eliminar y lo explican", () => {
+    rolesQuery.data = [
+      { id: "r-admin", name: "administrador" },
+      { id: "r-doc", name: "docente" },
+    ];
+    render(<AdminRolesPage />);
+
+    const [adminRow, docenteRow] = screen.getAllByTestId("role-row");
+    expect(within(adminRow).queryByRole("button")).not.toBeInTheDocument();
+    expect(within(adminRow).getByText("Sistema")).toBeInTheDocument();
+    expect(within(adminRow).getByText(/no se editan ni se eliminan/)).toBeInTheDocument();
+    expect(within(docenteRow).getByRole("button", { name: "Editar permisos" })).toBeInTheDocument();
+  });
+
+  it("al eliminar un rol con usuarios pide el rol de destino junto al selector", async () => {
+    rolesQuery.data = [
+      { id: "r-usr", name: "usuario" },
+      { id: "r-doc", name: "docente", user_count: 3 },
+    ];
+    const user = userEvent.setup();
+    render(<AdminRolesPage />);
+
+    await user.click(screen.getByRole("button", { name: "Eliminar" }));
+    const confirm = screen.getByRole("button", { name: "Reasignar y eliminar" });
+    expect(confirm).toBeEnabled();
+
+    await user.click(confirm);
+    expect(screen.getByText("Elige a qué rol pasarán sus usuarios.")).toBeInTheDocument();
   });
 
   it("muestra el error en español y reintenta con refetch", async () => {

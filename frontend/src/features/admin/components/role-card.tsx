@@ -1,9 +1,9 @@
 import { Badge } from "@/core/components/ui/badge";
-import { Button } from "@/core/components/ui/button";
 
 import { formatRoleDescription, formatRoleName, roleUserCountLabel } from "../lib/role-utils";
 import type { Role } from "../lib/types";
 import { isSystemRole } from "../pages/admin-roles-page.helpers";
+import { RoleCardActions } from "./role-card-actions";
 import { RolePermissionsList } from "./role-permissions-list";
 
 interface RoleCardProps {
@@ -35,28 +35,15 @@ export function RoleCard({ role, onEdit, onDelete }: Readonly<RoleCardProps>) {
         )}
         <RolePermissionsList permissions={role.permissions ?? []} />
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <Button
-          variant="outline"
-          className="max-md:h-11 max-md:flex-1"
-          onClick={() => {
-            onEdit(role);
-          }}
-        >
-          Editar permisos
-        </Button>
-        {!system && (
-          <Button
-            variant="ghost"
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive max-md:h-11"
-            onClick={() => {
-              onDelete(role);
-            }}
-          >
-            Eliminar
-          </Button>
-        )}
-      </div>
+      {/* El servidor rechaza cualquier cambio en los roles del sistema: en lugar de
+      ofrecer un formulario que siempre falla, se explica por qué no se edita. */}
+      {system ? (
+        <p className="text-sm text-muted-foreground md:max-w-52 md:text-right">
+          Los roles del sistema no se editan ni se eliminan.
+        </p>
+      ) : (
+        <RoleCardActions role={role} onEdit={onEdit} onDelete={onDelete} />
+      )}
     </li>
   );
 }

@@ -34,6 +34,17 @@ class SystemRoleProtected(RoleError):
         super().__init__(detail)
 
 
+class RoleNameLocked(RoleError):
+    def __init__(
+        self,
+        detail: str = (
+            "El nombre de este rol no se puede cambiar: el registro en modo tesis "
+            "lo usa para asignar las cuentas nuevas."
+        ),
+    ) -> None:
+        super().__init__(detail)
+
+
 class ReassignmentRequired(RoleError):
     def __init__(self, user_count: int) -> None:
         super().__init__(

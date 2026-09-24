@@ -1,6 +1,7 @@
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { TableCell } from "@/core/components/ui/table";
+import { Tooltip } from "@/core/components/ui/tooltip";
 
 import type { AdminUser, UsersHandlers } from "../../lib/types";
 import { UserActionMenu } from "./user-action-menu";
@@ -22,17 +23,19 @@ export function UserActionsCell({
   if (lockReason !== null) {
     return (
       <TableCell className={className}>
-        <span title={lockReason} className="inline-flex">
+        {/* aria-disabled en vez de disabled: sigue siendo enfocable y el tooltip
+        explica el motivo también con teclado. */}
+        <Tooltip label={lockReason} side="left">
           <Button
             variant="ghost"
             size="icon-sm"
-            disabled
+            aria-disabled="true"
             aria-label={`Acciones no disponibles. ${lockReason}`}
-            className="max-md:size-10"
+            className="cursor-default text-muted-foreground hover:bg-transparent hover:text-muted-foreground max-md:size-11"
           >
             <Icon name="lock" size="text-base" />
           </Button>
-        </span>
+        </Tooltip>
       </TableCell>
     );
   }

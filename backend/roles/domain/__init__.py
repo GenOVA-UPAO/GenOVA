@@ -7,14 +7,21 @@ from roles.domain.errors import (
     ReassignmentRequired,
     ReassignmentTargetNotFound,
     RoleError,
+    RoleNameLocked,
     RoleNotFound,
     SystemRoleProtected,
 )
 from roles.domain.model import Role, UserRoleLink
-from roles.domain.services import SYSTEM_ROLE_NAMES, is_system_role
+from roles.domain.services import (
+    NAME_LOCKED_ROLES,
+    SYSTEM_ROLE_NAMES,
+    is_name_locked,
+    is_system_role,
+)
 from roles.domain.value_objects import RoleName
 
 __all__ = [
+    "NAME_LOCKED_ROLES",
     "SYSTEM_ROLE_NAMES",
     "DuplicateRoleName",
     "InvalidReassignmentTarget",
@@ -24,8 +31,10 @@ __all__ = [
     "Role",
     "RoleError",
     "RoleName",
+    "RoleNameLocked",
     "RoleNotFound",
     "SystemRoleProtected",
     "UserRoleLink",
+    "is_name_locked",
     "is_system_role",
 ]

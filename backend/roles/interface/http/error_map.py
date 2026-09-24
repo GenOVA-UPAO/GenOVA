@@ -11,6 +11,7 @@ from roles.domain.errors import (
     ReassignmentRequired,
     ReassignmentTargetNotFound,
     RoleError,
+    RoleNameLocked,
     RoleNotFound,
     SystemRoleProtected,
 )
@@ -20,6 +21,7 @@ _STATUS_BY_ERROR: dict[type[RoleError], int] = {
     ReassignmentTargetNotFound: status.HTTP_404_NOT_FOUND,
     SystemRoleProtected: status.HTTP_403_FORBIDDEN,
     DuplicateRoleName: status.HTTP_409_CONFLICT,
+    RoleNameLocked: status.HTTP_409_CONFLICT,
     ReassignmentRequired: status.HTTP_409_CONFLICT,
     InvalidRoleName: status.HTTP_400_BAD_REQUEST,
     InvalidReassignmentTarget: status.HTTP_400_BAD_REQUEST,
