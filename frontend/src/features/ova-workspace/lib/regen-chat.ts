@@ -237,7 +237,7 @@ export function finishChatPatch(
   }
   return {
     status: "error",
-    text: `La regeneración falló ${target}. Puedes intentarlo de nuevo.`,
+    text: `No se pudieron aplicar los cambios ${target}. Puedes intentarlo de nuevo.`,
     resourceLabels,
   };
 }

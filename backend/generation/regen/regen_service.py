@@ -69,7 +69,10 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
             job["rag"] = material.report
 
         to_regen = [p for p in current_phases if regen_all or str(p.id) in phase_ids_to_regen]
-        # Sin transacción abierta mientras se espera al modelo.
+        # Sin transacción abierta mientras se espera al modelo. Sin expirar los
+        # objetos: los hilos de regen_phases_parallel leen las fases, y recargarlas
+        # usaría la misma sesión desde varios hilos (una sesión no es thread-safe).
+        db.expire_on_commit = False
         db.commit()
         regen_content = regen_phases_parallel(
             to_regen,
