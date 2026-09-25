@@ -47,6 +47,14 @@ class Embedder(ABC):
         """Embed a batch of texts. Returns vectors aligned with input order."""
 
 
+def _is_transient(exc: Exception) -> bool:
+    """¿Puede salir bien al repetir? Sí: red, 5xx, 408 y 429 (cuota por minuto)."""
+    if isinstance(exc, EmbedderError):
+        return False
+    code = getattr(exc, "code", None)  # google.genai.errors.APIError
+    return not (isinstance(code, int) and 400 <= code < 500 and code not in (408, 429))
+
+
 class _GeminiEmbedderBase(Embedder):
     """Shared core for Gemini embedding models (text input)."""
 
@@ -68,7 +76,11 @@ class _GeminiEmbedderBase(Embedder):
             from google.genai import types  # type: ignore
         except ImportError as exc:
             raise EmbedderError("google-genai is not installed (pip install google-genai)") from exc
-        self._client = genai.Client(api_key=api_key)
+        # GEMINI_API_BASE apunta el SDK a un servidor compatible (el OpenRouter
+        # simulado de scripts/fake_openrouter también responde como Gemini).
+        base = os.getenv("GEMINI_API_BASE", "").strip()
+        options = {"http_options": types.HttpOptions(base_url=base)} if base else {}
+        self._client = genai.Client(api_key=api_key, **options)
         self._types = types
 
     def _config(self, task_type: str) -> Any:
@@ -83,7 +95,17 @@ class _GeminiEmbedderBase(Embedder):
             contents=contents,
             config=self._config(task_type),
         )
-        return [list(item.values) for item in resp.embeddings]
+        vectors = [list(item.values) for item in resp.embeddings]
+        # Sin esta comprobación, un vector de otra dimensión (el API ignora
+        # `output_dimensionality`, o cambia el modelo) llegaba a pgvector: la
+        # ingesta acababa como `db_error` y la consulta vaciaba la búsqueda.
+        wrong = next((len(v) for v in vectors if len(v) != self.dim), None)
+        if wrong is not None:
+            raise EmbedderError(
+                f"{self.model_id} devolvió vectores de {wrong} dimensiones; "
+                f"la columna es de {self.dim}"
+            )
+        return vectors
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         if not texts:
@@ -107,6 +129,11 @@ class _GeminiEmbedderBase(Embedder):
                     out.extend(vectors)
                     break
                 except Exception as exc:
+                    # Un 4xx (clave inválida, petición mal formada) o un vector
+                    # inservible no cambian al repetir: se reintentaba 4 veces y
+                    # la subida esperaba 7 s para fallar igual.
+                    if not _is_transient(exc):
+                        raise EmbedderError(f"Gemini embedding failed: {exc}") from exc
                     delay = 2**attempt
                     logger.warning(
                         "Gemini embedding retry",

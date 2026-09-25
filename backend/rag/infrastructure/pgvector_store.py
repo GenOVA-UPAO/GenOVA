@@ -76,8 +76,15 @@ def insert_chunks(
              CAST(:embedding AS vector), :expires_at)
         """
     )
-    db.execute(stmt, rows)
-    db.commit()
+    try:
+        db.execute(stmt, rows)
+        db.commit()
+    except Exception:
+        # Sin rollback la sesión quedaba con la transacción abortada y todo lo
+        # que venía después con ella fallaba (en la ingesta en segundo plano,
+        # las demás subidas del mismo lote acababan también en `db_error`).
+        db.rollback()
+        raise
     return len(rows)
 
 
@@ -212,20 +219,24 @@ def _fetch_vector(
         """
     ).bindparams(bindparam("upload_ids", expanding=True))
     try:
-        # SET no acepta parámetros enlazados en PostgreSQL; constante interna.
-        db.execute(text(f"SET hnsw.ef_search = {int(_HNSW_EF_SEARCH)}"))
-        rows = (
-            db.execute(
-                stmt,
-                {
-                    "q": _vec_literal(query_embedding),
-                    "upload_ids": [str(u) for u in upload_ids],
-                    "ck": candidate_k,
-                },
+        # Cada rama en su SAVEPOINT: un error de PostgreSQL (p. ej. un vector de
+        # otra dimensión) abortaba la transacción entera, así que la rama léxica
+        # y todo lo que el llamador hacía después con la sesión fallaban también.
+        with db.begin_nested():
+            # SET no acepta parámetros enlazados en PostgreSQL; constante interna.
+            db.execute(text(f"SET hnsw.ef_search = {int(_HNSW_EF_SEARCH)}"))
+            rows = (
+                db.execute(
+                    stmt,
+                    {
+                        "q": _vec_literal(query_embedding),
+                        "upload_ids": [str(u) for u in upload_ids],
+                        "ck": candidate_k,
+                    },
+                )
+                .mappings()
+                .all()
             )
-            .mappings()
-            .all()
-        )
     except Exception:
         logger.exception("Fallo en retrieval vectorial de pgvector; rama vacía")
         return []
@@ -257,18 +268,19 @@ def _fetch_lexical(
         """
     ).bindparams(bindparam("upload_ids", expanding=True))
     try:
-        rows = (
-            db.execute(
-                stmt,
-                {
-                    "query_text": clean,
-                    "upload_ids": [str(u) for u in upload_ids],
-                    "ck": candidate_k,
-                },
+        with db.begin_nested():  # ver _fetch_vector
+            rows = (
+                db.execute(
+                    stmt,
+                    {
+                        "query_text": clean,
+                        "upload_ids": [str(u) for u in upload_ids],
+                        "ck": candidate_k,
+                    },
+                )
+                .mappings()
+                .all()
             )
-            .mappings()
-            .all()
-        )
     except Exception:
         logger.exception("Fallo en retrieval léxico de pgvector; rama vacía")
         return []
