@@ -21,6 +21,12 @@ cuántos avisos sustituyó y si queda alguien que aún pueda escribir uno.
 
 Los hilos viven en memoria: un reinicio los pierde. Al arrancar, la capa de
 generación busca los avisos pendientes y los reanuda con `resume`.
+
+Varios procesos (web y worker arrancan a la vez y los dos reanudan; o uno
+reanuda lo que el otro ya espera en caliente) no pueden esperar el mismo
+trabajo: antes de lanzar el hilo se reclama en un almacén compartido
+(`Claims`, que también inyecta la capa de generación). Si otro proceso lo tiene,
+este no hace nada: el otro entregará.
 """
 
 from __future__ import annotations
@@ -29,6 +35,7 @@ import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Protocol
 
 import structlog
 
@@ -72,15 +79,49 @@ class ApplyReport:
 # sumidero(job_id, started_at, fragmento_html) → ApplyReport
 Sink = Callable[[str, float, str], ApplyReport]
 
+
+class Claims(Protocol):
+    """Reclamo entre procesos: solo un proceso espera cada trabajo."""
+
+    def acquire(self, job_id: str) -> bool: ...
+    def release(self, job_id: str) -> None: ...
+
+
 _sink: Sink | None = None
+_claims: Claims | None = None
 _watching: set[str] = set()
 _lock = threading.Lock()
 
 
-def install_sink(sink: Sink | None) -> None:
-    """Registra quién mete el resultado en la base de datos (capa de generación)."""
-    global _sink
+def install_sink(sink: Sink | None, claims: Claims | None = None) -> None:
+    """Registra quién mete el resultado en la base de datos (capa de generación)
+    y, si hay varios procesos, el reclamo compartido de cada trabajo."""
+    global _sink, _claims
     _sink = sink
+    _claims = claims
+
+
+def _claim(job_id: str) -> bool:
+    """¿Puede este proceso esperar el trabajo? Si el almacén falla, sí: es peor
+    un video perdido que un sondeo duplicado."""
+    claims = _claims
+    if claims is None:
+        return True
+    try:
+        return claims.acquire(job_id)
+    except Exception:  # noqa: BLE001
+        logger.exception("late video claim failed; watching anyway", job_id=job_id)
+        return True
+
+
+def _release(job_id: str) -> None:
+    claims = _claims
+    if claims is None:
+        return
+    try:
+        claims.release(job_id)
+    except Exception:  # noqa: BLE001 — el reclamo caduca solo
+        logger.exception("late video claim release failed", job_id=job_id)
 
 
 def late_deadline(started_at: float) -> float:
@@ -115,6 +156,12 @@ def watch(pending: VideoPending, *, grace_s: float = NOT_FOUND_GRACE_S) -> bool:
             logger.warning("late video not watched: too many", job_id=pending.job_id)
             return False
         _watching.add(pending.job_id)
+    if not _claim(pending.job_id):
+        with _lock:
+            _watching.discard(pending.job_id)
+        # Otro proceso ya lo espera y entregará él: el aviso sigue siendo válido.
+        logger.info("late video watched by another process", job_id=pending.job_id)
+        return True
     threading.Thread(
         target=_run, args=(pending, grace_s), daemon=True, name="ova-video-late"
     ).start()
@@ -160,6 +207,7 @@ def _run(pending: VideoPending, grace_s: float) -> None:
         except Exception:  # noqa: BLE001
             logger.exception("late video fallback failed", job_id=pending.job_id)
     finally:
+        _release(pending.job_id)
         with _lock:
             _watching.discard(pending.job_id)
 

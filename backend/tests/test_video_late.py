@@ -357,6 +357,56 @@ class _NoThread:
         pass
 
 
+class _Claims:
+    """Reclamo entre procesos de prueba: `libre` decide si este proceso lo gana."""
+
+    def __init__(self, libre=True, boom=False):
+        self.libre, self.boom = libre, boom
+        self.acquired: list[str] = []
+        self.released: list[str] = []
+
+    def acquire(self, job_id):
+        if self.boom:
+            raise RuntimeError("bd caída")
+        if self.libre:
+            self.acquired.append(job_id)
+        return self.libre
+
+    def release(self, job_id):
+        self.released.append(job_id)
+
+
+def test_si_otro_proceso_lo_espera_no_se_lanza_otro_hilo(monkeypatch):
+    arrancados = []
+    monkeypatch.setattr(video_late.threading, "Thread", lambda **kw: arrancados.append(kw) or _NoThread())
+    video_late.install_sink(_Sink(), claims=_Claims(libre=False))
+    # True: el aviso sigue siendo válido porque otro proceso lo entregará.
+    assert video_late.watch(_pending("job-b")) is True
+    assert arrancados == [] and video_late.watching() == set()
+
+
+def test_el_reclamo_se_suelta_al_terminar_la_espera(monkeypatch):
+    monkeypatch.setattr(video_openrouter, "resume_openrouter_video", _resume_ok)
+    claims = _Claims()
+    arrancados = []
+    monkeypatch.setattr(video_late.threading, "Thread", lambda **kw: arrancados.append(kw) or _NoThread())
+    video_late.install_sink(_Sink([ApplyReport(1), ApplyReport(0), ApplyReport(0)]), claims=claims)
+    pending = _pending("job-c")
+    assert video_late.watch(pending) is True
+    assert claims.acquired == ["job-c"] and len(arrancados) == 1
+    video_late._run(pending, grace_s=0.0)
+    assert claims.released == ["job-c"] and video_late.watching() == set()
+
+
+def test_si_el_reclamo_falla_se_espera_igual(monkeypatch):
+    arrancados = []
+    monkeypatch.setattr(video_late.threading, "Thread", lambda **kw: arrancados.append(kw) or _NoThread())
+    video_late.install_sink(_Sink(), claims=_Claims(boom=True))
+    assert video_late.watch(_pending("job-d")) is True  # mejor duplicar que perder el video
+    assert len(arrancados) == 1
+    video_late._watching.clear()
+
+
 # ── Camino fake (LLM_FAKE=1) ───────────────────────────────────────────────────
 
 

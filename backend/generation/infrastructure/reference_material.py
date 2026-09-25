@@ -1,7 +1,7 @@
 """Adaptador de los archivos de referencia de un OVA (subidas temporales + RAG).
 
 Un archivo adjunto es del usuario si está en su lista de subidas temporales
-(este proceso) o si ya tiene chunks suyos en pgvector (sobrevive a un reinicio y
+(compartida entre procesos en Postgres) o si ya tiene chunks suyos en pgvector (sobrevive a un reinicio y
 a otros procesos). Ligarlo a un OVA hace dos cosas: sale de la lista temporal en
 la que se subió (para que no reaparezca en «Archivos» del siguiente OVA ni en el
 chat) y sus chunks quedan atados al OVA (no caducan y la regeneración los usa).

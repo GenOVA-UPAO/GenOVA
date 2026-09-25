@@ -22,6 +22,7 @@ import models  # noqa: E402, F401 — registra los modelos ORM
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
 from core.rate_limit import limiter  # noqa: E402
+from core.shared_throttle import MemoryWindow  # noqa: E402
 from llm.utils import llm_config_store, model_probe  # noqa: E402
 from llm.utils import llm_config_versions as versions  # noqa: E402
 from users.interface.http.admin_platform_settings_router import router as admin_router  # noqa: E402
@@ -217,7 +218,9 @@ def api(kv, monkeypatch):
             db.close()
 
     limiter.enabled = False
-    model_probe.probe_throttle.reset()
+    # El límite real vive en Redis/Postgres (compartido entre procesos); aquí,
+    # sin Postgres ni red, cuenta en memoria.
+    monkeypatch.setattr(model_probe.probe_throttle, "store", MemoryWindow())
     monkeypatch.setattr(model_probe.settings, "llm_fake", True)
     principal = {"p": _Principal(admin_uid)}
 

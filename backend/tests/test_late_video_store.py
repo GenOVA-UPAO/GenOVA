@@ -235,9 +235,49 @@ def test_un_aviso_simulado_se_reanuda_sin_clave(db, monkeypatch):
     assert (JOB, "sk-real") in reanudados
 
 
+class _Claims:
+    def __init__(self, held):
+        self.held = held
+        self.purged = False
+
+    def purge(self):
+        self.purged = True
+
+    def held_elsewhere(self, job_ids):
+        return {j: s for j, s in self.held.items() if j in job_ids}
+
+
+def test_no_se_reanuda_lo_que_ya_espera_otro_proceso(db, monkeypatch):
+    _ova(db, content=_html("fake-abc"), old_content=_html("fake-abc"))
+    reanudados, programados = [], []
+    monkeypatch.setattr(video_late, "resume", lambda marker, key: reanudados.append(marker.job_id) or True)
+    monkeypatch.setattr("llm.images.video_generation.key_for", lambda *a: "sk-real")
+    monkeypatch.setattr(late_video, "_claims", _Claims({JOB: 40.0}))
+    monkeypatch.setattr(late_video, "_schedule_recheck", lambda held, rounds: programados.append(held))
+
+    assert late_video.recover_late_videos() == 1  # solo el que nadie espera
+    assert reanudados == ["fake-abc"]
+    assert late_video._claims.purged
+    # Si el dueño murió, su reclamo caduca: se vuelve a mirar entonces.
+    assert programados == [{JOB: 40.0}]
+
+
+def test_al_caducar_el_reclamo_se_reanuda_lo_que_sigue_pendiente(db, monkeypatch):
+    _ova(db)
+    reanudados = []
+    monkeypatch.setattr(video_late, "resume", lambda marker, key: reanudados.append(marker.job_id) or True)
+    monkeypatch.setattr("llm.images.video_generation.key_for", lambda *a: "sk-real")
+    monkeypatch.setattr(late_video, "_claims", _Claims({}))
+    monkeypatch.setattr(late_video, "_schedule_recheck", lambda held, rounds: None)
+    late_video._recheck({JOB, "ya-entregado"}, rounds=0)
+    assert reanudados == [JOB]
+
+
 def test_el_sumidero_se_registra_en_video_late():
     late_video.install_late_video()
     try:
         assert video_late._sink is late_video.apply_late_video
+        assert video_late._claims is late_video._claims
     finally:
         video_late.install_sink(None)
+        late_video._claims = None

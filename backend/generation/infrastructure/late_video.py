@@ -19,6 +19,12 @@ viven en memoria y un reinicio los pierde. Se buscan los avisos pendientes y se
 reanuda cada uno resolviendo la clave por el dueño, como al encargarlo; el
 primer sondeo va aunque el tope ya pasara (el video está pagado y puede estar
 listo). Si no llega, queda el aviso definitivo.
+
+Varios procesos: la web y el worker ejecutan los dos `recover_late_videos`.
+Cada espera se reclama antes en `late_video_claims` (`late_video_claims.py`):
+un trabajo que otro proceso vivo ya espera no se reanuda aquí. Si el reclamo es
+de un proceso que murió sin soltarlo, caduca en segundos; por eso esos avisos se
+vuelven a mirar cuando caduque el reclamo (`_recheck`).
 """
 
 from __future__ import annotations
@@ -49,6 +55,12 @@ _RUNNING_JOB = ("queued", "running")
 _related: OrderedDict[str, tuple[set, set]] = OrderedDict()
 _related_lock = threading.Lock()
 _RELATED_MAX = 256
+
+# Reclamo compartido entre procesos (None con SQLite: un único proceso).
+_claims = None
+# Veces que se vuelve a mirar un aviso reclamado por otro proceso al arrancar.
+_RECHECK_ROUNDS = 3
+_RECHECK_MAX_WAIT_S = 900.0
 
 
 def _remember(job_id: str, jobs: set, ovas: set) -> tuple[set, set]:
@@ -158,10 +170,13 @@ def apply_late_video(job_id: str, started_at: float, fragment: str) -> ApplyRepo
 
 
 def install_late_video() -> None:
-    """Registra el sumidero en `video_late` (una vez por proceso, al arrancar)."""
+    """Registra el sumidero y el reclamo en `video_late` (una vez por proceso)."""
+    from generation.infrastructure.late_video_claims import make_claims
     from llm.images.video_late import install_sink
 
-    install_sink(apply_late_video)
+    global _claims
+    _claims = make_claims()
+    install_sink(apply_late_video, claims=_claims)
 
 
 def _scan_pending() -> dict[str, tuple[PendingMarker, uuid.UUID | None]]:
@@ -203,17 +218,72 @@ def _key(marker: PendingMarker, owner) -> str | None:
         return None
 
 
-def recover_late_videos() -> int:
-    """Reanuda los avisos pendientes que dejó un proceso anterior. Nunca lanza."""
+def _held_elsewhere(job_ids: list[str]) -> dict[str, float]:
+    """Avisos que otro proceso ya espera → segundos hasta que caduque su reclamo."""
+    if _claims is None or not job_ids:
+        return {}
+    try:
+        return _claims.held_elsewhere(job_ids)
+    except Exception:  # noqa: BLE001 — sin tabla/BD: `watch` decide (falla abierto)
+        logger.exception("late video claim lookup failed")
+        return {}
+
+
+def _resume_pending(only: set[str] | None = None) -> tuple[int, dict[str, float]]:
+    """Reanuda los avisos pendientes (de `only`, si se da) que nadie más espera.
+    → (reanudados, {job_id: segundos} de los que tiene otro proceso)."""
     from llm.images.video_late import resume
 
+    pending = _scan_pending()
+    if only is not None:
+        pending = {job: v for job, v in pending.items() if job in only}
+    held = _held_elsewhere(list(pending))
+    resumed = 0
+    for job_id, (marker, owner) in pending.items():
+        if job_id not in held:
+            resume(marker, _key(marker, owner))
+            resumed += 1
+    return resumed, held
+
+
+def _schedule_recheck(held: dict[str, float], rounds: int) -> None:
+    """Vuelve a mirar los avisos reclamados por otro proceso cuando caduque su
+    reclamo: si ese proceso murió, nadie más los reanudaría hasta otro reinicio."""
+    if not held or rounds <= 0:
+        return
+    wait = min(max(held.values()) + 5.0, _RECHECK_MAX_WAIT_S)
+    timer = threading.Timer(wait, _recheck, args=(set(held), rounds - 1))
+    timer.daemon = True
+    timer.start()
+
+
+def _recheck(job_ids: set[str], rounds: int) -> None:
     try:
-        pending = _scan_pending()
+        resumed, held = _resume_pending(job_ids)
+    except Exception:  # noqa: BLE001
+        logger.exception("late video recheck failed")
+        return
+    # Sin nada que reanudar es lo normal: el otro proceso ya lo entregó.
+    logger.info("late video recheck", jobs=len(job_ids), resumed=resumed, still_held=len(held))
+    _schedule_recheck(held, rounds)
+
+
+def recover_late_videos() -> int:
+    """Reanuda los avisos pendientes que dejó un proceso anterior. Nunca lanza.
+    Devuelve cuántos reanuda este proceso (no cuenta los que espera otro)."""
+    if _claims is not None:
+        try:
+            _claims.purge()
+        except Exception:  # noqa: BLE001 — limpieza, no bloquea la recuperación
+            logger.exception("late video claims purge failed")
+    try:
+        resumed, held = _resume_pending()
     except Exception:  # noqa: BLE001 — el arranque sigue aunque falle
         logger.exception("late video recovery scan failed (continuing)")
         return 0
-    for marker, owner in pending.values():
-        resume(marker, _key(marker, owner))
-    if pending:
-        logger.info("late videos resumed", count=len(pending))
-    return len(pending)
+    if resumed:
+        logger.info("late videos resumed", count=resumed)
+    if held:
+        logger.info("late videos watched by another process", count=len(held))
+        _schedule_recheck(held, _RECHECK_ROUNDS)
+    return resumed

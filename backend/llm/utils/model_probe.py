@@ -17,13 +17,12 @@ determinista (misma latencia y texto para el mismo modelo).
 
 import time
 import zlib
-from collections import deque
-from threading import Lock
 
 import httpx
 import structlog
 
 from core.config import settings
+from core.shared_throttle import MemoryWindow, SharedWindow, SlidingWindow
 
 logger = structlog.get_logger(__name__)
 
@@ -259,30 +258,27 @@ class ProbeThrottle:
 
     Va aparte del limitador por IP (que puede estar apagado en e2e) porque aquí
     lo que se limita es el gasto, no el abuso de la API.
+
+    La cuenta vive en `store`: la instancia del módulo usa el almacén compartido
+    (Redis o Postgres, `core.shared_throttle`), porque en memoria cada worker de
+    uvicorn llevaba la suya y con N workers el límite real era N veces mayor. Sin
+    `store` (tests) cuenta en memoria del proceso.
     """
 
-    def __init__(self, limit: int, window_s: float):
+    BUCKET = "model_probe"
+
+    def __init__(self, limit: int, window_s: float, store: SlidingWindow | None = None):
         self.limit = limit
         self.window_s = window_s
-        self._hits: dict[str, deque[float]] = {}
-        self._lock = Lock()
+        self.store: SlidingWindow = store if store is not None else MemoryWindow()
 
     def retry_after(self, who: str) -> int:
         """0 si puede probar ya (y lo anota); si no, segundos hasta poder."""
-        now = time.monotonic()
-        with self._lock:
-            hits = self._hits.setdefault(who, deque())
-            while hits and now - hits[0] >= self.window_s:
-                hits.popleft()
-            if len(hits) >= self.limit:
-                return max(1, int(self.window_s - (now - hits[0])) + 1)
-            hits.append(now)
-            return 0
+        return self.store.hit(self.BUCKET, who, self.limit, self.window_s)
 
     def reset(self) -> None:
-        with self._lock:
-            self._hits.clear()
+        self.store.reset(self.BUCKET)
 
 
 # 10 pruebas por minuto y persona: de sobra para comparar modelos a mano.
-probe_throttle = ProbeThrottle(limit=10, window_s=60.0)
+probe_throttle = ProbeThrottle(limit=10, window_s=60.0, store=SharedWindow())

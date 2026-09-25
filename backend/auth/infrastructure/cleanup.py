@@ -4,7 +4,8 @@ Keeps the JWT blocklist and the single-use token tables from growing without
 bound. A row in any of these is useless once `expires_at` is in the past:
 - jwt_blocklist: the token it revokes has itself expired, so re-issuing the jti
   would never validate anyway.
-- password_reset_tokens / email_verification_tokens: already past their TTL.
+- password_reset_tokens / email_verification_tokens / totp_login_tickets:
+  already past their TTL.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ _TABLES = (
     "jwt_blocklist",
     "password_reset_tokens",
     "email_verification_tokens",
+    "totp_login_tickets",
 )
 
 
