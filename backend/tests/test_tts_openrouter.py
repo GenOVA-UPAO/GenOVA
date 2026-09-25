@@ -89,3 +89,12 @@ def test_el_reproductor_usa_el_tipo_y_un_titulo_corto():
     assert 'src="data:audio/mpeg;base64,QUJD"' in html
     assert "<h2>Regresión logística para café</h2>" in html
     assert "Nivel educativo" not in html.split("<h2>")[1].split("</h2>")[0]
+
+
+def test_el_monologo_se_queda_sin_markdown():
+    texto = "**Árboles de decisión**\n\n# Intro\n- Un *nodo* decide.\nVer [la guía](http://x.org) y `gini`."
+    limpio = podcast.plain_monologue(texto)
+    assert "*" not in limpio and "#" not in limpio and "`" not in limpio
+    assert limpio.startswith("Árboles de decisión")
+    assert "Un nodo decide." in limpio
+    assert "la guía" in limpio and "http" not in limpio

@@ -7,6 +7,7 @@ audio cannot be generated.
 
 import base64
 import html
+import re
 
 import structlog
 
@@ -14,6 +15,22 @@ from llm.podcast.audio_helpers import generar_audio_tts
 from llm.utils.utils import SCORM_JS
 
 logger = structlog.get_logger(__name__)
+
+
+_MD_LINK = re.compile(r"\[([^\]]+)\]\([^)]*\)")
+_MD_EMPHASIS = re.compile(r"(\*\*|__|\*|`)")
+_MD_LINE_MARK = re.compile(r"^\s*(#{1,6}\s+|[-*+]\s+|>\s*)", re.M)
+
+
+def plain_monologue(text: str) -> str:
+    """El monólogo sin marcas de markdown.
+
+    Algunos modelos escriben **negritas**, # títulos o listas: el reproductor
+    mostraba los asteriscos y la voz los leía. Es texto para escuchar.
+    """
+    text = _MD_LINK.sub(r"\1", text or "")
+    text = _MD_LINE_MARK.sub("", text)
+    return _MD_EMPHASIS.sub("", text).strip()
 
 
 def podcast_audio(text: str) -> tuple[str, str] | None:

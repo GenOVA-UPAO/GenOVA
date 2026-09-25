@@ -143,7 +143,7 @@ def _post_process(
 def _gen_podcast(
     phase, rt, concept, contexto, llm_config, enabled_models, deadline=None
 ) -> ResourceResult:
-    from llm.podcast.podcast import build_podcast_html, podcast_audio
+    from llm.podcast.podcast import build_podcast_html, plain_monologue, podcast_audio
 
     mono = generar_texto(
         _prompts(phase).prompt_texto(rt, concept, contexto),
@@ -153,6 +153,7 @@ def _gen_podcast(
         enabled_models,
         deadline=deadline,
     )
+    mono = plain_monologue(mono)
     audio = podcast_audio(mono)
     # El player se ensambla de plantilla fija (sin design-system ni refinamiento).
     html = build_podcast_html(concept, mono, *(audio or (None,)))
@@ -244,6 +245,10 @@ def _gen_two_step(
     if img_replacements:
         from llm.images.image_placeholder import resolve_image_placeholders
 
+        if not any(token in html for token in img_replacements):
+            # Imágenes generadas (y pagadas) que el HTML no usa: el modelo omitió
+            # los marcadores __IMG_N__. Sin este aviso se perdían en silencio.
+            logger.warning("generated images unused by html", phase=phase, resource_type=rt, count=len(img_replacements))
         html = resolve_image_placeholders(html, img_replacements)
 
     html, defects = _post_process(
