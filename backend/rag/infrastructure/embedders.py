@@ -1,16 +1,28 @@
-"""Pluggable embedder. Default backend is Google's
-`gemini-embedding-2-preview` (via the new `google-genai` SDK), Matryoshka-
-truncated to 768-d so it fits the pgvector schema. Free tier rate limits
-identical or more generous than `gemini-embedding-001`.
+"""Pluggable embedder. Default backend is Google's `gemini-embedding-2`
+(estable; vía el SDK `google-genai`), truncado (Matryoshka) a 768 d para la
+columna de pgvector. `RAG_GEMINI_MODEL` cambia el id (p. ej. el antiguo
+`gemini-embedding-2-preview`); `RAG_EMBEDDER=gemini-001` usa `gemini-embedding-001`.
 
-Why v2-preview: it is **natively multimodal** — same model embeds text,
-images (PNG/JPEG), PDFs (up to 6 pages w/ OCR), audio and video. Replaces the
-need for separate Whisper transcription + vision captioning + PDF text
-extraction before the embedding step.
+Why v2: it is **natively multimodal** — same model embeds text, images
+(PNG/JPEG), PDFs (up to 6 pages w/ OCR), audio and video. Replaces the need for
+separate Whisper transcription + vision captioning + PDF text extraction before
+the embedding step.
 
-Note: `text-embedding-004` was deprecated 14-Jan-2026. The Preview model is
-in Public Preview status — fallback to v1 via `RAG_EMBEDDER=gemini-001` if
-needed.
+Diferencias de v2 que este módulo respeta (documentación de Gemini,
+ai.google.dev/gemini-api/docs/embeddings, sep-2026):
+
+- «With `gemini-embedding-2`, the `task_type` parameter is not supported.» La
+  tarea va como prefijo en el texto: documentos `title: none | text: …` y
+  consultas `task: search result | query: …`. Al archivo multimodal no se le
+  pone prefijo (la guía lo desaconseja para entradas multimodales). v1 sigue
+  con `task_type` (RETRIEVAL_DOCUMENT / RETRIEVAL_QUERY).
+- Varias partes en un mismo `Content` dan UN vector agregado; cada texto en su
+  propio `types.Content` da un vector por texto en una sola petición
+  (`batchEmbedContents`). Por eso los fragmentos van en lotes de Content.
+- Los espacios de v1 y v2 son incompatibles: cambiar de modelo o de prefijos
+  obliga a re-embeber. Cada fragmento guarda `embedding_model` (la
+  `fingerprint` del embedder) y `scripts/reindex_rag.py` re-embebe los que no
+  coinciden.
 
 Set `RAG_EMBEDDER=local` to use sentence-transformers (only if Render RAM
 allows — ~120 MB extra footprint).
@@ -23,13 +35,18 @@ desarrollo local sin clave de Gemini.
 from __future__ import annotations
 
 import os
-import time
 from abc import ABC, abstractmethod
 from typing import Any
 
 import structlog
 
 from rag.application.errors import EmbedderError
+from rag.infrastructure.embed_retry import (
+    RetryPolicy,
+    call_with_retry,
+    document_policy,
+    query_policy,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -42,17 +59,30 @@ class Embedder(ABC):
     name: str
     dim: int
 
+    @property
+    def fingerprint(self) -> str:
+        """Qué produjo los vectores (modelo, dimensión, formato de entrada). Se
+        guarda en cada fragmento: si cambia, sus vectores ya no son comparables
+        con las consultas nuevas y hay que reindexarlos."""
+        return f"{self.name}:{self.dim}"
+
     @abstractmethod
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Embed a batch of texts. Returns vectors aligned with input order."""
 
 
-def _is_transient(exc: Exception) -> bool:
-    """¿Puede salir bien al repetir? Sí: red, 5xx, 408 y 429 (cuota por minuto)."""
-    if isinstance(exc, EmbedderError):
-        return False
-    code = getattr(exc, "code", None)  # google.genai.errors.APIError
-    return not (isinstance(code, int) and 400 <= code < 500 and code not in (408, 429))
+# Formato de entrada de v2 (versionado: cambiarlo invalida los vectores guardados).
+_V2_SCHEME = "prefix-v1"
+_V2_DOC = "title: none | text: {}"
+_V2_QUERY = "task: search result | query: {}"
+
+
+def _batch_size() -> int:
+    # batchEmbedContents admite como mucho 100 peticiones por llamada.
+    try:
+        return max(1, min(100, int(os.getenv("RAG_GEMINI_BATCH", "32"))))
+    except ValueError:
+        return 32
 
 
 class _GeminiEmbedderBase(Embedder):
@@ -60,12 +90,8 @@ class _GeminiEmbedderBase(Embedder):
 
     name = "gemini"
     dim = VECTOR_DIM
-    model_id: str = "gemini-embedding-2-preview"
+    default_model: str = "gemini-embedding-2"
     supports_multimodal: bool = True
-    # ¿Una petición con N contents devuelve N embeddings? v2 NO: trata la lista
-    # como un único documento multi-parte y responde con un solo vector (ver
-    # GeminiEmbedder). v1 sí batchea de verdad.
-    supports_batch: bool = True
 
     def __init__(self) -> None:
         api_key = os.getenv("GEMINI_API_KEY", "").strip()
@@ -76,6 +102,10 @@ class _GeminiEmbedderBase(Embedder):
             from google.genai import types  # type: ignore
         except ImportError as exc:
             raise EmbedderError("google-genai is not installed (pip install google-genai)") from exc
+        self.model_id = os.getenv("RAG_GEMINI_MODEL", "").strip() or self.default_model
+        # Solo v2 es multimodal: con RAG_GEMINI_MODEL=gemini-embedding-001 los
+        # PDF/imágenes vuelven a la extracción de texto.
+        self.supports_multimodal = type(self).supports_multimodal and self.is_v2
         # GEMINI_API_BASE apunta el SDK a un servidor compatible (el OpenRouter
         # simulado de scripts/fake_openrouter también responde como Gemini).
         base = os.getenv("GEMINI_API_BASE", "").strip()
@@ -83,11 +113,27 @@ class _GeminiEmbedderBase(Embedder):
         self._client = genai.Client(api_key=api_key, **options)
         self._types = types
 
+    @property
+    def is_v2(self) -> bool:
+        # Mismo criterio que el SDK para tratar el modelo como v2.
+        return "gemini-embedding-2" in self.model_id
+
+    @property
+    def fingerprint(self) -> str:
+        scheme = _V2_SCHEME if self.is_v2 else "task_type"
+        return f"gemini:{self.model_id}:{self.dim}:{scheme}"
+
     def _config(self, task_type: str) -> Any:
-        return self._types.EmbedContentConfig(
-            task_type=task_type,
-            output_dimensionality=self.dim,
-        )
+        if self.is_v2:  # v2 no admite task_type: la tarea va en el prefijo
+            return self._types.EmbedContentConfig(output_dimensionality=self.dim)
+        return self._types.EmbedContentConfig(task_type=task_type, output_dimensionality=self.dim)
+
+    def _text_contents(self, texts: list[str], template: str) -> list:
+        """Un `Content` por texto: así v2 devuelve un vector por texto (varias
+        partes en un solo Content, o una lista de str, dan UN vector agregado)."""
+        fmt = template if self.is_v2 else "{}"
+        part = self._types.Part.from_text
+        return [self._types.Content(parts=[part(text=fmt.format(t))]) for t in texts]
 
     def _call(self, contents: list, task_type: str) -> list[list[float]]:
         resp = self._client.models.embed_content(
@@ -95,7 +141,11 @@ class _GeminiEmbedderBase(Embedder):
             contents=contents,
             config=self._config(task_type),
         )
-        vectors = [list(item.values) for item in resp.embeddings]
+        vectors = [list(item.values) for item in resp.embeddings or []]
+        if len(vectors) != len(contents):
+            raise EmbedderError(
+                f"{self.model_id} devolvió {len(vectors)} embeddings para {len(contents)} entradas"
+            )
         # Sin esta comprobación, un vector de otra dimensión (el API ignora
         # `output_dimensionality`, o cambia el modelo) llegaba a pgvector: la
         # ingesta acababa como `db_error` y la consulta vaciaba la búsqueda.
@@ -107,63 +157,41 @@ class _GeminiEmbedderBase(Embedder):
             )
         return vectors
 
+    def _call_retrying(self, contents: list, task_type: str, policy: RetryPolicy) -> list[list[float]]:
+        return call_with_retry(
+            lambda: self._call(contents, task_type),
+            policy=policy,
+            what=f"Gemini embedding ({self.model_id})",
+        )
+
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-        # Con `supports_batch=False` cada texto va en su propia petición: agrupar
-        # devolvía UN vector para todo el lote y luego `insert_chunks` reventaba con
-        # "chunks and embeddings must be the same length", así que la ingesta de
-        # cualquier documento de más de un chunk fallaba entera.
-        step = 32 if self.supports_batch else 1
+        # Lotes de Content: 100 fragmentos son 4 peticiones en vez de 100 (y
+        # 100 peticiones agotaban enseguida la cuota por minuto).
+        step = _batch_size()
+        policy = document_policy()
         out: list[list[float]] = []
         for i in range(0, len(texts), step):
-            batch = texts[i : i + step]
-            for attempt in range(4):
-                try:
-                    vectors = self._call(batch, "RETRIEVAL_DOCUMENT")
-                    if len(vectors) != len(batch):
-                        raise EmbedderError(
-                            f"{self.model_id} devolvió {len(vectors)} embeddings "
-                            f"para {len(batch)} textos"
-                        )
-                    out.extend(vectors)
-                    break
-                except Exception as exc:
-                    # Un 4xx (clave inválida, petición mal formada) o un vector
-                    # inservible no cambian al repetir: se reintentaba 4 veces y
-                    # la subida esperaba 7 s para fallar igual.
-                    if not _is_transient(exc):
-                        raise EmbedderError(f"Gemini embedding failed: {exc}") from exc
-                    delay = 2**attempt
-                    logger.warning(
-                        "Gemini embedding retry",
-                        attempt=attempt + 1,
-                        max_attempts=4,
-                        delay_s=delay,
-                        error=str(exc),
-                    )
-                    if attempt == 3:
-                        raise EmbedderError(f"Gemini embedding failed: {exc}") from exc
-                    time.sleep(delay)
+            contents = self._text_contents(texts[i : i + step], _V2_DOC)
+            out.extend(self._call_retrying(contents, "RETRIEVAL_DOCUMENT", policy))
         return out
 
     def embed_query(self, text: str) -> list[float]:
-        return self._call([text], "RETRIEVAL_QUERY")[0]
+        contents = self._text_contents([text], _V2_QUERY)
+        return self._call_retrying(contents, "RETRIEVAL_QUERY", query_policy())[0]
 
 
 class GeminiEmbedder(_GeminiEmbedderBase):
-    """Default: gemini-embedding-2-preview. Supports text + multimodal binary."""
+    """Default: gemini-embedding-2. Supports text + multimodal binary."""
 
-    model_id = "gemini-embedding-2-preview"
+    default_model = "gemini-embedding-2"
     supports_multimodal = True
-    # v2 produce UN embedding por petición aunque reciba varios contents (es la
-    # misma semántica que aprovecha embed_file para un PDF de varias páginas).
-    supports_batch = False
 
     def embed_file(self, data: bytes, mime_type: str) -> list[float]:
         """Embed a binary file (PDF, image, audio, video) directly. Returns
         ONE vector for the whole file — v2 produces a single embedding per
-        Part regardless of internal pages/frames.
+        Content regardless of internal pages/frames.
 
         Caller passes raw bytes + the IANA mime type. Caller is responsible
         for size limits (Gemini v2 caps: 6 imgs/req, 6 PDF pages/req,
@@ -172,14 +200,15 @@ class GeminiEmbedder(_GeminiEmbedderBase):
         if not self.supports_multimodal:
             raise EmbedderError("This embedder does not support multimodal input")
         part = self._types.Part.from_bytes(data=data, mime_type=mime_type)
-        return self._call([part], "RETRIEVAL_DOCUMENT")[0]
+        content = self._types.Content(parts=[part])
+        return self._call_retrying([content], "RETRIEVAL_DOCUMENT", document_policy())[0]
 
 
 class GeminiV1Embedder(_GeminiEmbedderBase):
-    """Stable fallback: gemini-embedding-001 (GA, text-only). Use when the v2
-    Preview is unstable. Set RAG_EMBEDDER=gemini-001 to activate."""
+    """Stable fallback: gemini-embedding-001 (GA, text-only, con task_type).
+    Set RAG_EMBEDDER=gemini-001 to activate."""
 
-    model_id = "gemini-embedding-001"
+    default_model = "gemini-embedding-001"
     supports_multimodal = False
 
 
@@ -194,6 +223,11 @@ class LocalEmbedder(Embedder):
             raise EmbedderError("sentence-transformers is not installed") from exc
         model_name = os.getenv("RAG_LOCAL_MODEL", "all-MiniLM-L6-v2")
         self._model = SentenceTransformer(model_name)
+        self._model_name = model_name
+
+    @property
+    def fingerprint(self) -> str:
+        return f"local:{self._model_name}:{self.dim}"
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         if not texts:
@@ -227,6 +261,10 @@ class OllamaEmbedder(Embedder):
         self._url = os.getenv("OLLAMA_URL", "http://localhost:11434").strip().rstrip("/")
         self._model = os.getenv("RAG_OLLAMA_MODEL", "nomic-embed-text").strip()
         self._timeout = float(os.getenv("RAG_OLLAMA_TIMEOUT_S", "60"))
+
+    @property
+    def fingerprint(self) -> str:
+        return f"ollama:{self._model}:{self.dim}:nomic-prefix"
 
     def _call(self, texts: list[str]) -> list[list[float]]:
         import httpx

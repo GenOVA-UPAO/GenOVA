@@ -24,5 +24,8 @@ class RagChunk(Base):
     chunk_index = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
     # embedding column is vector(768) — handled in raw SQL; not declared here.
+    # Qué embedder produjo el vector (Embedder.fingerprint); NULL = anterior a
+    # la migración 043. Distinto del embedder activo → hay que reindexar.
+    embedding_model = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)

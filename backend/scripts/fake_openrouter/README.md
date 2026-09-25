@@ -11,7 +11,7 @@ modelo local de Ollama; imágenes, video y voz se crean en la máquina.
 | `POST /api/v1/chat/completions` | Texto con el modelo de Ollama, sea cual sea el id pedido. Si `modalities` pide imagen, un PNG; si pide audio, voz en español (Piper) en streaming PCM16 24 kHz |
 | `POST /api/v1/images` | PNG generado en local |
 | `POST /api/v1/videos` → `GET /videos/{id}` → `GET /videos/{id}/content` | El ciclo real: envío, sondeo (2 veces «in_progress») y un MP4 H.264 con la duración, resolución y relación de aspecto pedidas |
-| `POST /v1beta/models/{modelo}:batchEmbedContents` y `:embedContent` | Embeddings con el formato de Gemini, calculados con `nomic-embed-text` (768 d, recortados a `outputDimensionality`). Como `gemini-embedding-2`, cada petición da un vector (varias partes se juntan en uno); un archivo (`inline_data`) se representa por su tipo MIME. Para usarlo: `RAG_EMBEDDER=gemini` (o `gemini-001`), `GEMINI_API_KEY` cualquiera y `GEMINI_API_BASE=http://localhost:8300` |
+| `POST /v1beta/models/{modelo}:batchEmbedContents` y `:embedContent` | Embeddings con el formato de Gemini, calculados con `nomic-embed-text` (768 d, recortados a `outputDimensionality`). Como `gemini-embedding-2`, cada `Content` de `requests` da su vector (varias partes dentro de un mismo Content se juntan en uno); en v2 se ignora `taskType` y mandan los prefijos del texto (`task: search result \| query: …` → consulta, `title: … \| text: …` → documento); un archivo (`inline_data`) se representa por su tipo MIME. Para usarlo: `RAG_EMBEDDER=gemini` (o `gemini-001`), `GEMINI_API_KEY` cualquiera y `GEMINI_API_BASE=http://localhost:8300` |
 | `GET` de catálogo (`/models`, `/images/models`, `/videos/models`, endpoints de imagen, `/key`) | Se reenvían a la API real, que no cobra, y se guardan 10 min |
 
 ## Puesta en marcha
@@ -66,4 +66,6 @@ modelo local de Ollama; imágenes, video y voz se crean en la máquina.
 | `FAKE_OR_FAIL_EMBED` | vacío | Código HTTP con el que fallan los embeddings, con el cuerpo de error de Google (`429`, `400`, `503`…; `1` = 500): prueba reintentos y errores |
 | `FAKE_OR_FAIL_EMBED_TIMES` | `0` | Con `FAKE_OR_FAIL_EMBED`, solo fallan las N primeras peticiones (0 = todas): prueba que un reintento se recupera |
 | `FAKE_OR_EMBED_DIM` | vacío | Fuerza la dimensión de los vectores (p. ej. `3072`), como un proveedor que ignora `outputDimensionality` |
+| `FAKE_OR_EMBED_RETRY_AFTER` | vacío | Con `FAKE_OR_FAIL_EMBED=429`, segundos que pide esperar (cabecera `Retry-After` y `RetryInfo.retryDelay`, como Google) |
+| `FAKE_OR_EMBED_BACKEND` | `ollama` | `hash`: embeddings sin Ollama (bolsa de palabras con *feature hashing*, 768 d): deterministas y con similitud léxica real, para probar ingesta/reindexado sin GPU |
 | `FAKE_OR_UPSTREAM` | `https://openrouter.ai/api/v1` | API real para el catálogo |

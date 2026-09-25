@@ -43,9 +43,13 @@ def insert_chunks(
     chunks: list[str],
     embeddings: list[list[float]],
     ttl_seconds: int = DEFAULT_TTL_SECONDS,
+    embedding_model: str | None = None,
 ) -> int:
     """Bulk-insert chunks. Returns count inserted. Raises ValueError on
-    chunk/embedding length mismatch."""
+    chunk/embedding length mismatch.
+
+    ``embedding_model`` es la `fingerprint` del embedder que produjo los
+    vectores; permite saber qué fragmentos hay que reindexar si cambia."""
     if len(chunks) != len(embeddings):
         raise ValueError("chunks and embeddings must be the same length")
     if not chunks:
@@ -63,29 +67,53 @@ def insert_chunks(
                 "chunk_index": i,
                 "content": chunk,
                 "embedding": _vec_literal(emb),
+                "embedding_model": embedding_model,
                 "expires_at": expires_at,
             }
         )
 
-    stmt = text(
-        """
-        INSERT INTO rag_chunks
-            (user_id, upload_id, source_filename, chunk_index, content, embedding, expires_at)
-        VALUES
-            (:user_id, :upload_id, :source_filename, :chunk_index, :content,
-             CAST(:embedding AS vector), :expires_at)
-        """
-    )
     try:
-        db.execute(stmt, rows)
+        db.execute(_INSERT_WITH_MODEL, rows)
         db.commit()
-    except Exception:
+    except Exception as exc:
         # Sin rollback la sesión quedaba con la transacción abortada y todo lo
         # que venía después con ella fallaba (en la ingesta en segundo plano,
         # las demás subidas del mismo lote acababan también en `db_error`).
         db.rollback()
-        raise
+        if "embedding_model" not in str(exc):
+            raise
+        # La migración 043 aún no se aplicó (p. ej. se saltó por un bloqueo al
+        # arrancar): se indexa igual, sin registrar el modelo; esos fragmentos
+        # cuentan como pendientes de reindexar (NULL).
+        logger.warning("rag_chunks sin columna embedding_model; falta la migración 043")
+        try:
+            db.execute(_INSERT_LEGACY, rows)
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
     return len(rows)
+
+
+_INSERT_WITH_MODEL = text(
+    """
+    INSERT INTO rag_chunks
+        (user_id, upload_id, source_filename, chunk_index, content, embedding,
+         embedding_model, expires_at)
+    VALUES
+        (:user_id, :upload_id, :source_filename, :chunk_index, :content,
+         CAST(:embedding AS vector), :embedding_model, :expires_at)
+    """
+)
+_INSERT_LEGACY = text(
+    """
+    INSERT INTO rag_chunks
+        (user_id, upload_id, source_filename, chunk_index, content, embedding, expires_at)
+    VALUES
+        (:user_id, :upload_id, :source_filename, :chunk_index, :content,
+         CAST(:embedding AS vector), :expires_at)
+    """
+)
 
 
 def tie_uploads_to_ova(db: Session, upload_ids: Sequence[str], ova_id: str) -> int:
@@ -334,6 +362,7 @@ class PgVectorChunkStore:
         chunks: list[str],
         embeddings: list[list[float]],
         ttl_seconds: int = DEFAULT_TTL_SECONDS,
+        embedding_model: str | None = None,
     ) -> int:
         return insert_chunks(
             self._db,
@@ -343,6 +372,7 @@ class PgVectorChunkStore:
             chunks=chunks,
             embeddings=embeddings,
             ttl_seconds=ttl_seconds,
+            embedding_model=embedding_model,
         )
 
     def search(

@@ -23,6 +23,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import sys
 import time
 import uuid
@@ -169,6 +170,9 @@ async def video_content(job_id: str):
 _FAIL_EMBED = os.getenv("FAKE_OR_FAIL_EMBED", "").strip()
 _FAIL_EMBED_TIMES = int(os.getenv("FAKE_OR_FAIL_EMBED_TIMES", "0") or 0)
 _EMBED_DIM = int(os.getenv("FAKE_OR_EMBED_DIM", "0") or 0)
+# FAKE_OR_EMBED_RETRY_AFTER=N: los 429 simulados piden esperar N s, como Google
+# (cabecera Retry-After y google.rpc.RetryInfo.retryDelay en el cuerpo).
+_EMBED_RETRY_AFTER = os.getenv("FAKE_OR_EMBED_RETRY_AFTER", "").strip()
 _GOOGLE_STATUS = {
     400: "INVALID_ARGUMENT",
     403: "PERMISSION_DENIED",
@@ -188,14 +192,37 @@ def _embed_error() -> JSONResponse | None:
     code = 500 if _FAIL_EMBED == "1" else int(_FAIL_EMBED)
     status = _GOOGLE_STATUS.get(code, "UNKNOWN")
     error = {"code": code, "message": f"fallo simulado ({status})", "status": status}
-    return JSONResponse({"error": error}, code)
+    headers = None
+    if code == 429 and _EMBED_RETRY_AFTER:
+        retry = {"@type": "type.googleapis.com/google.rpc.RetryInfo", "retryDelay": f"{_EMBED_RETRY_AFTER}s"}
+        error["details"] = [retry]
+        headers = {"Retry-After": _EMBED_RETRY_AFTER}
+    return JSONResponse({"error": error}, code, headers=headers)
 
 
-def _embed_text(request: dict) -> str:
+# gemini-embedding-2 no admite task_type: la tarea va como prefijo del texto
+# («task: search result | query: …» / «title: … | text: …»). Se traducen a los
+# prefijos de nomic-embed-text para que el vector refleje la misma asimetría.
+_V2_QUERY = re.compile(r"^task:\s*[^|]*\|\s*query:\s*", re.S)
+_V2_DOC = re.compile(r"^title:\s*([^|]*)\|\s*text:\s*", re.S)
+
+
+def _v2_text(text: str) -> str:
+    if m := _V2_QUERY.match(text):
+        return "search_query: " + text[m.end() :]
+    if m := _V2_DOC.match(text):
+        title = m.group(1).strip()
+        body = text[m.end() :]
+        return "search_document: " + (f"{title}\n{body}" if title and title != "none" else body)
+    return text  # sin instrucción de tarea: tal cual (peor recuperación, como en v2)
+
+
+def _embed_text(request: dict, v2: bool) -> str:
     """El texto de una petición de Gemini; los archivos se representan por su tipo.
 
     El SDK de Python manda `inline_data`/`mime_type` y el REST documentado
-    `inlineData`/`mimeType`: la API real acepta los dos.
+    `inlineData`/`mimeType`: la API real acepta los dos. En v2 se ignora
+    `taskType` (no lo admite) y manda el prefijo del texto; en v1, `taskType`.
     """
     parts = (request.get("content") or {}).get("parts") or []
     texts = []
@@ -203,8 +230,11 @@ def _embed_text(request: dict) -> str:
         blob = p.get("inlineData") or p.get("inline_data") or {}
         mime = blob.get("mimeType") or blob.get("mime_type") or "?"
         texts.append(p.get("text") or f"[archivo {mime}]")
+    joined = "\n".join(texts)
+    if v2:
+        return _v2_text(joined)
     prefix = "search_query: " if request.get("taskType") == "RETRIEVAL_QUERY" else "search_document: "
-    return prefix + "\n".join(texts)
+    return prefix + joined
 
 
 def _dimension(vector: list[float], request: dict) -> list[float]:
@@ -219,13 +249,16 @@ def _dimension(vector: list[float], request: dict) -> list[float]:
 async def gemini_embed(spec: str, request: Request):
     """Embeddings de Gemini (batchEmbedContents / embedContent) con nomic-embed-text.
 
-    Como gemini-embedding-2: una petición con varias partes da UN vector.
+    Como gemini-embedding-2: cada `Content` (cada elemento de `requests`) da su
+    vector, y varias partes dentro de un mismo Content se juntan en UNO.
     """
     if (error := _embed_error()) is not None:
         return error
     body = await request.json()
     requests = body.get("requests") or [body]
-    vectors = await ollama_proxy.embed([_embed_text(r) for r in requests])
+    v2 = "gemini-embedding-2" in spec
+    print(f"[fake-or] embed {spec.split(':')[0]}: {len(requests)} contents", flush=True)
+    vectors = await ollama_proxy.embed([_embed_text(r, v2) for r in requests])
     vectors = [_dimension(v, r) for v, r in zip(vectors, requests, strict=True)]
     if spec.endswith(":embedContent"):
         return {"embedding": {"values": vectors[0]}}
