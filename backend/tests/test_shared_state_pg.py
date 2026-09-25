@@ -76,8 +76,8 @@ def test_una_subida_la_ve_cualquier_proceso(user_id, tmp_path, monkeypatch):
     assert web_a.list_active(user_id) == [] and web_a.get(up.upload_id, user_id) is not None
     assert web_a.claim(str(uuid.uuid4()), [up.upload_id], ova) == []  # ajena
 
-    assert web_a.delete(up.upload_id, user_id) is True
-    assert web_b.delete(up.upload_id, user_id) is False
+    first, second = web_a.delete(up.upload_id, user_id), web_b.delete(up.upload_id, user_id)
+    assert first is True and second is False
     assert not (tmp_path / user_id / f"{up.upload_id}_apunte.pdf").exists()
 
 

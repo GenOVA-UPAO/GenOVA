@@ -23,7 +23,6 @@ from __future__ import annotations
 import base64
 import json
 import os
-import re
 import sys
 import time
 import uuid
@@ -203,16 +202,16 @@ def _embed_error() -> JSONResponse | None:
 # gemini-embedding-2 no admite task_type: la tarea va como prefijo del texto
 # («task: search result | query: …» / «title: … | text: …»). Se traducen a los
 # prefijos de nomic-embed-text para que el vector refleje la misma asimetría.
-_V2_QUERY = re.compile(r"^task:\s*[^|]*\|\s*query:\s*", re.S)
-_V2_DOC = re.compile(r"^title:\s*([^|]*)\|\s*text:\s*", re.S)
-
-
 def _v2_text(text: str) -> str:
-    if m := _V2_QUERY.match(text):
-        return "search_query: " + text[m.end() :]
-    if m := _V2_DOC.match(text):
-        title = m.group(1).strip()
-        body = text[m.end() :]
+    # Sin expresiones regulares: el texto viene de la petición y un patrón con
+    # \s* repetidos puede tardar de forma polinómica (CodeQL, ReDoS).
+    head, sep, rest = text.partition("|")
+    head, rest = head.strip(), rest.lstrip()
+    if sep and head.startswith("task:") and rest.startswith("query:"):
+        return "search_query: " + rest[len("query:") :].lstrip()
+    if sep and head.startswith("title:") and rest.startswith("text:"):
+        title = head[len("title:") :].strip()
+        body = rest[len("text:") :].lstrip()
         return "search_document: " + (f"{title}\n{body}" if title and title != "none" else body)
     return text  # sin instrucción de tarea: tal cual (peor recuperación, como en v2)
 
