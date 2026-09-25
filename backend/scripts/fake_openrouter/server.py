@@ -22,7 +22,6 @@ from __future__ import annotations
 import base64
 import json
 import os
-import re
 import sys
 import time
 import uuid
@@ -73,10 +72,16 @@ def _image_reply(body: dict) -> dict:
     }
 
 
+def _text_to_read(text: str) -> str:
+    """Lo que va entre <leer> y </leer> (el formato de tts_openrouter), o todo."""
+    start = text.find("<leer>")
+    end = text.find("</leer>", start + 6) if start != -1 else -1
+    return (text[start + 6 : end] if end != -1 else text).strip()
+
+
 def _audio_events(body: dict):
     text = _last_user_text(body)
-    match = re.search(r"<leer>(.*?)</leer>", text, re.S)
-    pcm = media.speech_pcm16_24k((match.group(1) if match else text).strip())
+    pcm = media.speech_pcm16_24k(_text_to_read(text))
     step = 24_000 * 2  # un segundo por evento
     for i in range(0, len(pcm), step):
         delta = {"audio": {"data": base64.b64encode(pcm[i : i + step]).decode()}}
@@ -156,11 +161,12 @@ async def video_content(job_id: str):
     return Response(mp4, media_type="video/mp4")
 
 
-@app.get("/api/v1/{path:path}")
-async def passthrough(path: str, request: Request):
-    """Catálogo y clave: la API real (gratis). Se guarda 10 min para no repetir."""
-    url = f"{UPSTREAM}/{path}" + (f"?{request.url.query}" if request.url.query else "")
-    auth = request.headers.get("authorization", "")
+# Solo estas rutas del catálogo van a la API real; la ruta pedida nunca forma la URL.
+_FIXED = {"models": "models", "key": "key", "images/models": "images/models", "videos/models": "videos/models"}
+
+
+async def _upstream(url: str, auth: str) -> Response:
+    """GET a la API real (gratis). Se guarda 10 min para no repetir."""
     key = f"{url}|{auth}"
     hit = _cache.get(key)
     if hit and hit[0] > time.monotonic():
@@ -171,6 +177,29 @@ async def passthrough(path: str, request: Request):
     if resp.status_code == 200:
         _cache[key] = (time.monotonic() + 600, 200, resp.content, kind)
     return Response(resp.content, resp.status_code, media_type=kind)
+
+
+async def _endpoints_url(model_id: str, auth: str) -> str | None:
+    """La ruta de endpoints de un modelo de imagen, tal como la da el listado real."""
+    listing = json.loads((await _upstream(f"{UPSTREAM}/images/models", auth)).body)
+    for entry in listing.get("data") or []:
+        if entry.get("id") == model_id:
+            return f"{UPSTREAM}/images/models/{entry['id']}/endpoints"
+    return None
+
+
+@app.get("/api/v1/{path:path}")
+async def passthrough(path: str, request: Request):
+    """Catálogo y clave: se reenvían a la API real, que no cobra."""
+    auth = request.headers.get("authorization", "")
+    fixed = _FIXED.get(path)
+    if fixed:
+        return await _upstream(f"{UPSTREAM}/{fixed}", auth)
+    if path.startswith("images/models/") and path.endswith("/endpoints"):
+        url = await _endpoints_url(path[len("images/models/") : -len("/endpoints")], auth)
+        if url:
+            return await _upstream(url, auth)
+    return JSONResponse({"error": {"message": f"ruta no simulada: {path}"}}, 404)
 
 
 if __name__ == "__main__":
