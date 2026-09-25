@@ -55,7 +55,7 @@ describe("PlatformKeyRow · probar conexión", () => {
     mocks.check.mockResolvedValue({ provider: "groq", code: "invalid_key", models: null });
     renderRow();
     expect(screen.queryByRole("button", { name: /Probar conexión/ })).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "Añadir clave" }));
+    await userEvent.click(screen.getByRole("button", { name: "Añadir clave de Groq" }));
     await userEvent.type(screen.getByLabelText("Nueva clave de Groq"), "gsk_nueva_clave_5678");
     await userEvent.click(screen.getByRole("button", { name: "Guardar clave" }));
     expect(mocks.save).toHaveBeenCalledWith("groq", "gsk_nueva_clave_5678");

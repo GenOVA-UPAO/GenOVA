@@ -11,11 +11,20 @@ import { type ProviderCheckState, providerCheckText } from "./platform-provider-
  * dice qué hacer.
  */
 export function ProviderCheckStatus({ check }: Readonly<{ check: ProviderCheckState }>) {
+  // Si solo hay texto para lectores de pantalla, la región no ocupa sitio: si
+  // no, el hueco de la fila crecía bajo «Conectado · N modelos».
+  const visible = visibleStatus(check);
   return (
-    <div role="status" aria-live="polite" className="empty:hidden">
+    <div role="status" aria-live="polite" className={visible ? undefined : "sr-only"}>
       {statusContent(check)}
     </div>
   );
+}
+
+function visibleStatus(check: ProviderCheckState): boolean {
+  if (check.checking) return false;
+  if (check.error) return true;
+  return check.result !== null && providerCheckText(check.result).tone !== "success";
 }
 
 function statusContent(check: ProviderCheckState): ReactNode {

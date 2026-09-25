@@ -73,6 +73,7 @@ function contextClass(context: string | null): string {
 function mobilePrice(facts: ModelFacts): string {
   const summary = priceSummary(facts);
   if (!summary) return "Precio sin dato";
-  if (facts.free || facts.variable) return summary;
+  // Imagen y video ya dicen su unidad («$0.039/imagen», «desde $0.05/s»).
+  if (facts.free || facts.variable || facts.media) return summary;
   return `${summary} por 1M tokens`;
 }

@@ -26,7 +26,7 @@ export function ModelSummaryCompact({ id, model, connection }: Readonly<ModelSum
   const facts = modelFacts(model);
   const context = formatContext(facts.context);
   const price = compactPrice(facts);
-  const problem = connection === "unconnected" || connection === "down";
+  const problem = connection === "unconnected" || connection === "down" || connection === "invalid";
   return (
     <p id={id} className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
       {price ? <span className="tabular-nums">{price}</span> : null}
@@ -38,7 +38,9 @@ export function ModelSummaryCompact({ id, model, connection }: Readonly<ModelSum
           title={CONNECTION_HINTS[connection]}
         >
           <Icon name="warning" size="text-xs" />
-          Proveedor {CONNECTION_LABELS[connection].toLowerCase()}
+          {connection === "invalid"
+            ? CONNECTION_LABELS.invalid
+            : `Proveedor ${CONNECTION_LABELS[connection].toLowerCase()}`}
         </span>
       ) : null}
     </p>

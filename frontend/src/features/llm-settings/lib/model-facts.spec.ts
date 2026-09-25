@@ -116,6 +116,15 @@ describe("shortDescription", () => {
     );
   });
 
+  it("no corta en abreviaturas como «a.k.a.» o «e.g.»", () => {
+    expect(
+      shortDescription('Gemini 2.5 Flash Image, a.k.a. "Nano Banana," is now available. More.'),
+    ).toBe('Gemini 2.5 Flash Image, a.k.a. "Nano Banana," is now available.');
+    expect(shortDescription("Good for many tasks, e.g. code and math. More.")).toBe(
+      "Good for many tasks, e.g. code and math.",
+    );
+  });
+
   it("corta en una palabra y marca el recorte", () => {
     const text = `${"word ".repeat(60)}end`;
     const out = shortDescription(text, 50);

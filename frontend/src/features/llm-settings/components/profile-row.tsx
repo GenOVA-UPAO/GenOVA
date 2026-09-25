@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
@@ -22,6 +24,13 @@ interface ProfileRowProps {
 export function ProfileRow(props: Readonly<ProfileRowProps>) {
   const { profile } = props;
   const inUse = profile.changes.length === 0;
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const wasRenaming = useRef(false);
+  useEffect(() => {
+    // Al guardar o cancelar el nombre, el campo desaparece: el foco vuelve a «Más acciones».
+    if (wasRenaming.current && !props.renaming) menuRef.current?.focus();
+    wasRenaming.current = props.renaming;
+  }, [props.renaming]);
   return (
     <li className="space-y-3 py-3.5" data-profile-row={profile.id}>
       <div className="flex items-center gap-2">
@@ -42,6 +51,7 @@ export function ProfileRow(props: Readonly<ProfileRowProps>) {
             variant="outline"
             size="sm"
             className="shrink-0 max-sm:h-11"
+            aria-label={`Aplicar el perfil ${profile.name}`}
             onClick={props.onApply}
           >
             Aplicar
@@ -49,6 +59,7 @@ export function ProfileRow(props: Readonly<ProfileRowProps>) {
         )}
         <ProfileRowMenu
           name={profile.name}
+          triggerRef={menuRef}
           onRename={props.onStartRename}
           onDelete={props.onDelete}
         />

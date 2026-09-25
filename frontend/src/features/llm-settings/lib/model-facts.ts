@@ -199,10 +199,15 @@ function trimPunctuation(text: string): string {
   return text.slice(0, end);
 }
 
-/** Primera frase de al menos 20 caracteres (un punto seguido de espacio; «V3.1» no corta). */
+/** Abreviaturas que acaban en punto sin acabar la frase: «a.k.a.», «e.g.», «etc.», «vs.». */
+const ABBREVIATION = /(?:^|[\s(])(?:(?:[a-z]\.){2,}|etc\.|vs\.|approx\.|incl\.)$/i;
+
+/** Primera frase de al menos 20 caracteres (un punto seguido de espacio; «V3.1» y «a.k.a.» no cortan). */
 function firstSentence(text: string): string | null {
   for (let i = 19; i < text.length - 1; i++) {
-    if (".!?".includes(text[i]) && text[i + 1] === " ") return text.slice(0, i + 1);
+    if (!".!?".includes(text[i]) || text[i + 1] !== " ") continue;
+    const sentence = text.slice(0, i + 1);
+    if (!ABBREVIATION.test(sentence)) return sentence;
   }
   return null;
 }

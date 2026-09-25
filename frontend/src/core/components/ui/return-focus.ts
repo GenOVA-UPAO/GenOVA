@@ -1,20 +1,26 @@
 import { useRef } from "react";
 
-// Capas efímeras: su foco no sirve como destino al cerrar un diálogo.
-const TRANSIENT = '[role="menu"],[role="listbox"],[role="dialog"],[role="alertdialog"]';
+const MENUS = '[role="menu"],[role="listbox"]';
+const DIALOGS = '[role="dialog"],[role="alertdialog"]';
 const FOCUSABLE = 'button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
 
 // Último control enfocado fuera de menús y diálogos. Un diálogo que se abre
 // desde un elemento de menú no puede volver a ese elemento (el menú ya se
 // cerró): vuelve al botón que abrió el menú.
 let lastStable: HTMLElement | null = null;
+// Último control enfocado fuera de menús, aunque esté dentro de un diálogo o
+// panel: un diálogo abierto desde un panel lateral (borrar un perfil desde su
+// menú) debe volver a ese panel, no a la página que queda detrás.
+let lastAny: HTMLElement | null = null;
 
 function remember(target: EventTarget | null) {
   if (!(target instanceof Element)) return;
   // Con ratón, algunos disparadores (el del menú de Radix) no llegan a
   // enfocarse: se recuerda el control pulsado.
   const control = target.closest<HTMLElement>(FOCUSABLE);
-  if (control !== null && control.closest(TRANSIENT) === null) lastStable = control;
+  if (control?.closest(MENUS) !== null) return;
+  lastAny = control;
+  if (control.closest(DIALOGS) === null) lastStable = control;
 }
 
 if (typeof document !== "undefined") {
@@ -36,14 +42,26 @@ if (typeof document !== "undefined") {
 
 function openerCandidate(): HTMLElement | null {
   const active = document.activeElement;
-  if (
-    active instanceof HTMLElement &&
-    active !== document.body &&
-    active.closest('[role="menu"],[role="listbox"]') === null
-  ) {
+  if (active instanceof HTMLElement && active !== document.body && active.closest(MENUS) === null) {
     return active;
   }
-  return lastStable;
+  return lastAny?.isConnected ? lastAny : lastStable;
+}
+
+/**
+ * Si el control de origen ya no existe (se borró la fila que lo tenía): el
+ * diálogo o panel que sigue abierto debajo, para no sacar el foco de él; si
+ * no queda ninguno, el último control de la página.
+ */
+function fallbackTarget(
+  closing: EventTarget | null,
+  stable: HTMLElement | null,
+): HTMLElement | null {
+  const open = [...document.querySelectorAll<HTMLElement>(DIALOGS)].filter(
+    (dialog) => dialog !== closing && dialog.dataset.state === "open",
+  );
+  if (open.length > 0) return open[open.length - 1];
+  return stable?.isConnected ? stable : null;
 }
 
 interface AutoFocusHandlers {
@@ -64,17 +82,22 @@ export function useReturnFocus({
   onCloseAutoFocus,
 }: AutoFocusHandlers): Required<AutoFocusHandlers> {
   const previous = useRef<HTMLElement | null>(null);
+  const stable = useRef<HTMLElement | null>(null);
   return {
     onOpenAutoFocus: (event) => {
       previous.current = openerCandidate();
+      stable.current = lastStable;
       onOpenAutoFocus?.(event);
     },
     onCloseAutoFocus: (event) => {
       onCloseAutoFocus?.(event);
       if (event.defaultPrevented) return;
-      const target = previous.current;
+      const opener = previous.current;
       previous.current = null;
-      if (target?.isConnected) {
+      const target = opener?.isConnected
+        ? opener
+        : fallbackTarget(event.currentTarget, stable.current);
+      if (target) {
         event.preventDefault();
         target.focus();
       }

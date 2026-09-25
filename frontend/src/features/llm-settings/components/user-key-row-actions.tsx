@@ -30,6 +30,7 @@ export function UserKeyRowActions({
   onCancel,
   onSave,
 }: Readonly<UserKeyRowActionsProps>) {
+  const startLabel = configured ? "Cambiar clave" : "Añadir clave";
   if (editing) {
     return (
       <div className="flex gap-2">
@@ -60,9 +61,10 @@ export function UserKeyRowActions({
         variant="outline"
         className="shrink-0 max-sm:h-11"
         data-key-edit=""
+        aria-label={label ? `${startLabel} de ${label}` : undefined}
         onClick={onStart}
       >
-        {configured ? "Cambiar clave" : "Añadir clave"}
+        {startLabel}
       </Button>
     </div>
   );

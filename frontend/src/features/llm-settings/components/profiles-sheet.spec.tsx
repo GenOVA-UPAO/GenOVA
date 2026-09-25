@@ -61,7 +61,7 @@ describe("ProfilesSheet", () => {
     expect(await screen.findByText("Económico")).toBeInTheDocument();
     expect(screen.getByText(/1 cambio respecto a la actual/)).toBeInTheDocument();
     expect(screen.getByText("En uso")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Aplicar" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: /^Aplicar/ })).toHaveLength(1);
   });
 
   it("aplica un perfil tras confirmar lo que cambia y ofrece deshacer", async () => {
@@ -78,7 +78,9 @@ describe("ProfilesSheet", () => {
       },
     });
     const { onDiscardDraft } = renderSheet();
-    await userEvent.click(await screen.findByRole("button", { name: "Aplicar" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Aplicar el perfil Económico" }),
+    );
     const dialog = await screen.findByRole("dialog", { name: "¿Aplicar «Económico»?" });
     expect(within(dialog).getByText("Claude Haiku 4.5")).toBeInTheDocument();
     expect(within(dialog).getByText(/Se descartarán tus cambios sin guardar/)).toBeInTheDocument();

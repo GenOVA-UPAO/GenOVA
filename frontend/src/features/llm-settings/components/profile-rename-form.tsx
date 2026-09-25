@@ -28,7 +28,7 @@ export function ProfileRenameForm({
   const shown = localError ?? error;
 
   useEffect(() => {
-    // Tras cerrarse el menú «Más acciones», que devuelve el foco a su botón.
+    // Tras cerrarse el menú «Más acciones» (que no le devuelve el foco a su botón).
     const timer = window.setTimeout(() => inputRef.current?.select(), 60);
     return () => {
       window.clearTimeout(timer);
@@ -43,6 +43,7 @@ export function ProfileRenameForm({
   return (
     <form
       className="grid gap-1.5"
+      data-local-escape=""
       onSubmit={(event) => {
         event.preventDefault();
         submit();

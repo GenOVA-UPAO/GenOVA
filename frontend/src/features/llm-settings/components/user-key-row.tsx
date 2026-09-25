@@ -31,9 +31,14 @@ export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly
   };
   const check = useProviderCheck(checkOwnProvider);
   // Al guardar la clave se comprueba al momento con el proveedor.
-  const state = useKeyDraft(focusStart, () => {
-    check.run(provider);
-  });
+  const state = useKeyDraft(
+    focusStart,
+    () => {
+      check.run(provider);
+    },
+    // Si falta la clave o no se pudo guardar, el foco vuelve al campo para corregirla.
+    () => inputRef.current?.focus(),
+  );
   const meta = providerMeta(provider);
   const inputId = `user-key-${provider}`;
   const configured = Boolean(maskedValue);
@@ -102,13 +107,22 @@ export function UserKeyRow({ provider, maskedValue, ownStatus = null }: Readonly
 
 const MIN_KEY_LENGTH = 8;
 
+function draftError(draft: string): string | null {
+  if (draft.trim() === "") return "Pega la clave antes de guardar.";
+  // El backend lo rechaza igual, pero con «La API key para 'groq'…».
+  if (draft.trim().length < MIN_KEY_LENGTH) {
+    return "La clave es demasiado corta. Comprueba que la has copiado entera.";
+  }
+  return null;
+}
+
 function keyHint(label: string, placeholder: string): string {
   // Los placeholders con prefijo real acaban en «…» («gsk_…»); el resto es texto de ayuda.
   const prefix = placeholder.endsWith("…") ? placeholder.slice(0, -1).trim() : "";
   return prefix === "" ? `Clave API de ${label}` : `Clave API de ${label}. Empieza por ${prefix}`;
 }
 
-function useKeyDraft(onClose: () => void, onSaved: () => void) {
+function useKeyDraft(onClose: () => void, onSaved: () => void, onInvalid: () => void) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
@@ -132,13 +146,10 @@ function useKeyDraft(onClose: () => void, onSaved: () => void) {
       onClose();
     },
     persist: async (provider: string, save: ReturnType<typeof useUserApiKeys>["save"]) => {
-      if (draft.trim() === "") {
-        setRowError("Pega la clave antes de guardar.");
-        return;
-      }
-      // El backend lo rechaza igual, pero con «La API key para 'groq'…».
-      if (draft.trim().length < MIN_KEY_LENGTH) {
-        setRowError("La clave es demasiado corta. Comprueba que la has copiado entera.");
+      const invalid = draftError(draft);
+      if (invalid) {
+        setRowError(invalid);
+        onInvalid();
         return;
       }
       setSaving(true);
@@ -151,6 +162,7 @@ function useKeyDraft(onClose: () => void, onSaved: () => void) {
         onSaved();
       } catch (err: unknown) {
         setRowError(errorMessage(err, "Error al guardar."));
+        onInvalid();
       } finally {
         setSaving(false);
       }

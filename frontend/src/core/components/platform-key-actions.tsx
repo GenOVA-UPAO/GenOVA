@@ -55,6 +55,11 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
         data-key-edit=""
         onClick={props.onEdit}
         disabled={saving}
+        aria-label={
+          configured
+            ? `Cambiar la clave de ${label}`
+            : `${actionLabel(configured, props.serverKey)} de ${label}`
+        }
       >
         {actionLabel(configured, props.serverKey)}
       </Button>

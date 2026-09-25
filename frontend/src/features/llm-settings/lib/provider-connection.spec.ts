@@ -21,6 +21,13 @@ describe("providerConnection", () => {
     expect(providerConnection(platform, { openrouter: { state: "error" } }, "openrouter")).toBe(
       "down",
     );
+    expect(
+      providerConnection(
+        platform,
+        { openrouter: { state: "error", error: "invalid_key" } },
+        "openrouter",
+      ),
+    ).toBe("invalid");
     expect(providerConnection(platform, { groq: { state: "not_connected" } }, "groq")).toBe(
       "unconnected",
     );

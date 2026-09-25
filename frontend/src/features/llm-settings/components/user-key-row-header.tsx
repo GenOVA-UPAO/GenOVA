@@ -27,7 +27,8 @@ export function UserKeyRowHeader({
         {/* «Probar conexión» manda sobre el estado de la última carga. */}
         {hasCheck(check) ? <ProviderCheckBadge check={check} /> : <UserKeyState view={view} />}
       </p>
-      {view.kind === "error" ? (
+      {/* Tras «Probar conexión», lo que falla ya lo dice la fila debajo: no se repite aquí. */}
+      {view.kind === "error" && !hasCheck(check) ? (
         <p
           className={
             view.code === "invalid_key"
