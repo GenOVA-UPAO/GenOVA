@@ -2,6 +2,7 @@ import type { ProviderMeta } from "./platform-key-meta";
 import { PlatformKeyState } from "./platform-key-state";
 import { hasCheck, type ProviderCheckState } from "./platform-provider-check";
 import { ProviderCheckBadge } from "./platform-provider-check-badge";
+import { ProviderCoverage } from "./provider-coverage";
 
 interface PlatformKeyRowHeaderProps {
   meta: ProviderMeta;
@@ -21,6 +22,7 @@ export function PlatformKeyRowHeader({
     <div className="min-w-0 flex-1">
       <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
         <span className="text-sm font-medium">{meta.label}</span>
+        <ProviderCoverage covers={meta.covers} />
         {hasCheck(check) ? (
           <ProviderCheckBadge check={check} />
         ) : (

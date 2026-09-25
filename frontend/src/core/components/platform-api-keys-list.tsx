@@ -1,9 +1,7 @@
 import { usePlatformConfig } from "@/core/hooks/use-platform-config";
 
-import { PROVIDER_META } from "./platform-key-meta";
+import { groupProviders, PROVIDER_META, RECOMMENDED_HINT } from "./platform-key-meta";
 import { PlatformKeyRow } from "./platform-key-row";
-
-const TEXT_PROVIDERS = new Set(["groq", "openrouter", "opencode", "huggingface"]);
 
 const LIST_CLASS = "divide-y divide-border overflow-hidden rounded-xl border border-border bg-card";
 
@@ -38,12 +36,14 @@ export function PlatformApiKeysList() {
   const config = data.platform_config ?? {};
   const providers = data.providers ?? Object.keys(PROVIDER_META);
   const serverKeys = new Set(data.server_keys ?? []);
-  const text = providers.filter((p) => TEXT_PROVIDERS.has(p));
-  const media = providers.filter((p) => !TEXT_PROVIDERS.has(p));
-  const group = (title: string, ids: string[]) =>
+  const groups = groupProviders(providers);
+  const group = (title: string, ids: string[], hint?: string) =>
     ids.length === 0 ? null : (
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        <div>
+          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+          {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+        </div>
         <ul className={LIST_CLASS}>
           {ids.map((p) => (
             <PlatformKeyRow
@@ -56,11 +56,12 @@ export function PlatformApiKeysList() {
         </ul>
       </div>
     );
-  // Agrupadas como «Tus claves»: primero las de texto, que son las que eligen modelo.
+  // OpenRouter primero: con una sola clave cubre texto, imagen y video.
   return (
     <div className="space-y-6">
-      {group("Modelos de texto", text)}
-      {group("Imagen y video", media)}
+      {group("Recomendado", groups.recommended, RECOMMENDED_HINT)}
+      {group("Otros proveedores de texto", groups.text)}
+      {group("Otros proveedores de imagen", groups.image)}
     </div>
   );
 }

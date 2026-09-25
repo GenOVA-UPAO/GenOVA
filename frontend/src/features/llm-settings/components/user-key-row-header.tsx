@@ -1,6 +1,7 @@
 import { PROVIDER_META } from "@/core/components/platform-key-meta";
 import { hasCheck, type ProviderCheckState } from "@/core/components/platform-provider-check";
 import { ProviderCheckBadge } from "@/core/components/platform-provider-check-badge";
+import { ProviderCoverage } from "@/core/components/provider-coverage";
 
 import { ownKeyErrorText, type OwnKeyView } from "../lib/own-catalog-status";
 import { UserKeyState } from "./user-key-state";
@@ -22,6 +23,7 @@ export function UserKeyRowHeader({
     <div className="min-w-0 flex-1">
       <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
         <span className="text-sm font-medium">{meta.label}</span>
+        <ProviderCoverage covers={meta.covers} />
         {/* «Probar conexión» manda sobre el estado de la última carga. */}
         {hasCheck(check) ? <ProviderCheckBadge check={check} /> : <UserKeyState view={view} />}
       </p>

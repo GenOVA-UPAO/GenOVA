@@ -45,7 +45,7 @@ export function PlatformKeyRow({
   };
 
   return (
-    <li className="space-y-3 px-4 py-3.5" data-platform-key-row={provider}>
+    <li className="flex flex-col gap-3 px-4 py-3.5" data-platform-key-row={provider}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <PlatformKeyRowHeader
           meta={meta}

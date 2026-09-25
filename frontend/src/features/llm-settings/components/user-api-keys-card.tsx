@@ -1,4 +1,8 @@
-import { PROVIDER_META } from "@/core/components/platform-key-meta";
+import {
+  groupProviders,
+  PROVIDER_META,
+  RECOMMENDED_HINT,
+} from "@/core/components/platform-key-meta";
 import { QueryErrorState } from "@/core/components/query-error-state";
 import { Skeleton } from "@/core/components/ui/skeleton";
 
@@ -7,8 +11,8 @@ import { useUserApiKeys } from "../hooks/use-user-api-keys";
 import type { OwnCatalogStatus } from "../lib/own-catalog-status";
 import { UserKeyProviderGroup } from "./user-key-provider-group";
 
-const LLM_PROVIDERS = ["groq", "openrouter", "opencode"];
-const IMG_PROVIDERS = ["siliconflow", "runware", "falai"];
+// Proveedores que admiten clave propia del usuario.
+const USER_PROVIDERS = ["openrouter", "groq", "opencode", "siliconflow", "runware", "falai"];
 
 /**
  * Claves API propias del usuario, agrupadas por tipo de proveedor. `ownStatus`
@@ -19,8 +23,7 @@ export function UserApiKeysCard({
   ownStatus = null,
 }: Readonly<{ ownStatus?: OwnCatalogStatus | null }>) {
   const { apiKeys, loading, error, refetch } = useUserApiKeys();
-  const llm = LLM_PROVIDERS.filter((id) => Object.hasOwn(PROVIDER_META, id));
-  const img = IMG_PROVIDERS.filter((id) => Object.hasOwn(PROVIDER_META, id));
+  const groups = groupProviders(USER_PROVIDERS.filter((id) => Object.hasOwn(PROVIDER_META, id)));
   const errText = error ? errorMessage(error, "No se pudieron cargar tus claves.") : null;
 
   if (loading) {
@@ -48,12 +51,23 @@ export function UserApiKeysCard({
   return (
     <div className="space-y-6">
       <UserKeyProviderGroup
-        title="Modelos de texto"
-        providers={llm}
+        title="Recomendado"
+        hint={RECOMMENDED_HINT}
+        providers={groups.recommended}
         apiKeys={apiKeys}
         ownStatus={ownStatus}
       />
-      <UserKeyProviderGroup title="Imagen y video" providers={img} apiKeys={apiKeys} />
+      <UserKeyProviderGroup
+        title="Otros proveedores de texto"
+        providers={groups.text}
+        apiKeys={apiKeys}
+        ownStatus={ownStatus}
+      />
+      <UserKeyProviderGroup
+        title="Otros proveedores de imagen"
+        providers={groups.image}
+        apiKeys={apiKeys}
+      />
     </div>
   );
 }

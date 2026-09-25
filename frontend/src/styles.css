@@ -170,6 +170,13 @@ body {
 }
 
 @layer base {
+  /* Edge pinta su propio botón de «mostrar contraseña» dentro del campo: con el
+     nuestro, las claves y contraseñas salían con dos ojos. */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
