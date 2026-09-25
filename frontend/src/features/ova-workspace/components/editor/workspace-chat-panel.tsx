@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
+import { useUndoableChatDelete } from "../../hooks/use-undoable-chat-delete";
 import { useOvaUploads } from "../../hooks/use-uploads";
 import {
   buttonRegenPayload,
@@ -35,6 +36,9 @@ export function WorkspaceChatPanel({
   const [selected, setSelected] = useState<string[]>([]);
   // Adjuntos del chat de ESTE OVA (no se mezclan con los de «Crear OVA»).
   const uploads = useOvaUploads(regen.ovaId);
+  const removal = useUndoableChatDelete((id) => {
+    regen.chat.remove.mutate(id);
+  });
   // Regenerar crea una versión nueva con ids nuevos: la selección solo cuenta
   // los recursos que siguen existiendo. Al cerrar el selector, vuelve al OVA entero.
   const live = selected.filter((id) => phases.some((phase) => phase.id === id));
@@ -59,10 +63,8 @@ export function WorkspaceChatPanel({
         }}
       />
       <ChatHistory
-        messages={regen.chat.data ?? []}
-        onRemove={(id) => {
-          regen.chat.remove.mutate(id);
-        }}
+        messages={(regen.chat.data ?? []).filter((m) => !removal.hidden.includes(m.id))}
+        onRemove={removal.request}
         onClear={() => {
           regen.chat.clear.mutate();
         }}
