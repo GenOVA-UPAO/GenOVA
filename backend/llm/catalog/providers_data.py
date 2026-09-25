@@ -73,6 +73,18 @@ CATALOG_ENTRIES = [
     },
     {
         "provider": "openrouter",
+        "model_id": "poolside/laguna-s-2.1:free",
+        "label": "Laguna S 2.1 (OpenRouter · free)",
+        "task": "codigo",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+        "modality": "text",
+        "notes": "Modelo de código de Poolside, gratis: respaldo de Código. "
+        "HTML/JS válido y buen español; razonamiento apagado por defecto.",
+    },
+    {
+        "provider": "openrouter",
         "model_id": "qwen/qwen3.8-27b:free",
         "label": "Qwen3.8 27B (OpenRouter · free)",
         "task": "codigo",

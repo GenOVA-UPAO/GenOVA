@@ -335,10 +335,13 @@ def generar_texto_with_model(
         )
         fb_key = _get_provider_key("openrouter")
         fb_client = openrouter_client.with_options(api_key=fb_key) if fb_key else openrouter_client
+        # El respaldo gratuito (Gemma 4) puede razonar y comerse el tope de
+        # tokens (aquí a veces solo 512): mismo ajuste que en generar_texto.
         response = fb_client.chat.completions.create(
             model=_FALLBACK_OR_MODEL,
             messages=msgs,
             max_tokens=max_tokens,
+            **with_model_thinking("openrouter", _FALLBACK_OR_MODEL, {}, max_tokens),
         )
         return response.choices[0].message.content
 

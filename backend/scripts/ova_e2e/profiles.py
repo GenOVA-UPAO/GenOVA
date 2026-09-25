@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 
 # Candidatos por tarea (se elige el primero que exista en el catálogo full).
 _OR_TEXTO = ["meta-llama/llama-3.3-70b-instruct", "google/gemma-4-31b-it:free"]
-_OR_CODIGO = ["deepseek/deepseek-chat-v3.1", "qwen/qwen3-coder", "qwen/qwen3.8-27b:free"]
+_OR_CODIGO = ["deepseek/deepseek-chat-v3.1", "qwen/qwen3-coder", "poolside/laguna-s-2.1:free"]
 
 # Perfil 'groq': todo en Groq (rápido) — aísla fallos de OpenCode/OpenRouter y
 # da un E2E verde veloz para validar materialización + SCORM.

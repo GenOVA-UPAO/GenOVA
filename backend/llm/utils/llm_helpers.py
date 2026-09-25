@@ -45,9 +45,15 @@ _FALLBACK_OR_MODEL = "google/gemma-4-31b-it:free"
 # almost always responds within free tier.
 _SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
-        # Qwen3 Coder gratuito ya no existe: Qwen3.8 27B es el `:free` de Qwen
-        # vigente, bueno en código y en español.
-        ("openrouter", "qwen/qwen3.8-27b:free", {}),
+        # Laguna S 2.1 (Poolside) es un modelo de código con 262k de contexto y
+        # 32k de salida (caben los 24k de _CODE_MAX_TOKENS). Medido en 2026-09
+        # con un quiz HTML en español: HTML completo, JS válido y sin mezclar
+        # inglés, en ~48 s y respondiendo siempre. Sustituye a Qwen3.8 27B
+        # :free, que no se conserva detrás: su único proveedor devolvía 429 en
+        # casi todos los intentos (1 de ~25), tardó 333 s y su JS no compilaba
+        # (comillas sin escapar). Un eslabón que casi nunca responde solo añade
+        # esperas antes de llegar a Gemma y a Groq.
+        ("openrouter", "poolside/laguna-s-2.1:free", {}),
         ("openrouter", _FALLBACK_OR_MODEL, {}),
         # Sustituye a Llama 3.3 70B (retirado). Qwen3.8 27B en Groq solo deja
         # 16k tokens de salida, menos que los 24k de _CODE_MAX_TOKENS.
@@ -177,6 +183,35 @@ _THINK_LARGE_MAX = 24000
 _CODE_MAX_TOKENS = 24000
 
 
+# Modelos de respaldo de OpenRouter que pueden razonar por defecto y en los que
+# ese razonamiento no compensa: son eslabones de rescate, donde importa
+# responder pronto, y el razonamiento cuenta contra `max_tokens` (puede dejar
+# el HTML a medias o `content` vacío). Los tres admiten apagarlo del todo
+# (`reasoning` está en su `supported_parameters` de GET /models). Medido con
+# los `:free` en 2026-09, mismo prompt con y sin el ajuste:
+#   - Laguna S 2.1: 1031 → 0 tokens de razonamiento, 41,7 → 14,3 s (en un quiz
+#     HTML: 803 → 0, 72 → 48 s, con HTML igual de válido).
+#   - Qwen3.8 27B: 821 → 0 tokens de razonamiento, 55,1 → 25,6 s.
+#   - Gemma 4: ya respondía sin razonar (0 → 0); se apaga igualmente porque su
+#     «thinking» es configurable y otro proveedor de la variante de pago
+#     podría activarlo.
+# Las respuestas sin razonamiento siguieron siendo correctas. Se comparan por
+# prefijo sin el sufijo `:free`: valen igual la variante gratuita y la de pago.
+_OR_REASONING_OFF_PREFIXES = (
+    "qwen/qwen3.8-27b",
+    "google/gemma-4-",
+    "poolside/laguna-",
+)
+
+
+def _or_reasoning_off(provider: str, model_id: str) -> bool:
+    """¿Es un modelo de OpenRouter al que se le apaga siempre el razonamiento?"""
+    if provider != "openrouter":
+        return False
+    base = (model_id or "").lower().removesuffix(":free")
+    return base.startswith(_OR_REASONING_OFF_PREFIXES)
+
+
 def with_model_thinking(provider: str, model_id: str, extra: dict, max_tokens: int) -> dict:
     """Budget-aware thinking for DeepSeek / MiniMax (avoids EmptyContentError).
 
@@ -185,10 +220,18 @@ def with_model_thinking(provider: str, model_id: str, extra: dict, max_tokens: i
     with ``reasoning.max_tokens=2048``, ``exclude=true``).
     Large (codigo ~32k): adaptive/low with ``reasoning.max_tokens=4096``.
 
+    Qwen3.8 27B, Gemma 4 y Laguna en OpenRouter: razonamiento apagado con
+    cualquier presupuesto (ver ``_OR_REASONING_OFF_PREFIXES``).
+
     Preserves an explicit ``extra_body`` from the caller.
     """
     call_extra = dict(extra or {})
     if "extra_body" in call_extra:
+        return call_extra
+    if _or_reasoning_off(provider, model_id):
+        # `enabled: false` es la forma genérica de OpenRouter de apagarlo del
+        # todo (no solo reducirlo); él lo traduce al parámetro de cada proveedor.
+        call_extra["extra_body"] = {"reasoning": {"enabled": False}}
         return call_extra
     mid = (model_id or "").lower()
     is_ds = "deepseek" in mid
