@@ -11,16 +11,15 @@ parte de ella («Incorrect API key provided: sk-…»), así que solo se anota e
 tipo de excepción y el código HTTP.
 """
 
-import os
 
 import httpx
 import structlog
 
+from core import openrouter
 from core.config import settings
 
 logger = structlog.get_logger(__name__)
 
-_OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
 _OPENCODE_API = "https://opencode.ai/zen/go/v1"
 _HF_MODELS_API = "https://huggingface.co/api/models"
 _TIMEOUT_S = 10.0
@@ -114,7 +113,7 @@ def check_openrouter_key(api_key: str) -> None:
     """OpenRouter publica su lista sin clave (la trae el refresco de plataforma):
     con la clave del usuario solo hace falta saber si es válida."""
     resp = httpx.get(
-        f"{_OR_API}/key",
+        openrouter.api_url("key"),
         headers={"Authorization": f"Bearer {api_key}"},
         timeout=_TIMEOUT_S,
     )

@@ -69,6 +69,9 @@ class Settings(BaseSettings):
     llm_timeout_s: float = 120.0
     groq_api_key: str = ""
     openrouter_api_key: str = ""
+    # Base de la API de OpenRouter. Cambiarla permite probar con un servidor
+    # compatible en local (scripts/fake_openrouter) sin gastar crédito.
+    openrouter_api_base: str = "https://openrouter.ai/api/v1"
     opencode_api_key: str = ""
     gemini_api_key: str = ""
     ova_enabled_llms: str = ""

@@ -10,6 +10,7 @@ import structlog
 from groq import Groq
 from openai import OpenAI
 
+from core import openrouter
 from core.config import settings
 
 logger = structlog.get_logger(__name__)
@@ -87,7 +88,7 @@ groq_client = Groq(api_key=settings.groq_api_key or "not-configured", timeout=_L
 # HTTP-Referer and X-Title are optional but enable app attribution in OR dashboard.
 openrouter_client = OpenAI(
     api_key=settings.openrouter_api_key or "not-configured",
-    base_url="https://openrouter.ai/api/v1",
+    base_url=openrouter.api_base(),
     default_headers={
         "HTTP-Referer": settings.app_url,
         "X-Title": "GenOVA",

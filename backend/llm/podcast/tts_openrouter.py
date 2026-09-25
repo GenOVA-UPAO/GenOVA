@@ -23,6 +23,8 @@ from array import array
 import httpx
 import structlog
 
+from core import openrouter
+
 logger = structlog.get_logger(__name__)
 
 _MODEL = os.getenv("OPENROUTER_TTS_MODEL", "openai/gpt-audio-mini")
@@ -97,7 +99,7 @@ def _stream_pcm(text: str, api_key: str) -> bytes:
     chunks: list[str] = []
     with httpx.stream(
         "POST",
-        "https://openrouter.ai/api/v1/chat/completions",
+        openrouter.api_url("chat/completions"),
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",

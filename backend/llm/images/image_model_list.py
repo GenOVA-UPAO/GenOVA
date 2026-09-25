@@ -7,6 +7,8 @@ Runware / fal.ai: curated lists (their APIs don't offer simple REST model listin
 import httpx
 import structlog
 
+from core import openrouter
+
 logger = structlog.get_logger(__name__)
 
 _SF_BASE = "https://api.siliconflow.cn/v1"
@@ -126,7 +128,7 @@ def _fetch_openrouter_image_models(api_key: str | None = None) -> list[dict]:
         headers["Authorization"] = f"Bearer {api_key}"
     try:
         resp = httpx.get(
-            "https://openrouter.ai/api/v1/images/models",
+            openrouter.api_url("images/models"),
             headers=headers,
             timeout=_SF_TIMEOUT,
         )

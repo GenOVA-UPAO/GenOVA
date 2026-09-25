@@ -23,15 +23,14 @@ import os
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from urllib.parse import urlsplit
 
 import httpx
 import structlog
 
+from core import openrouter
+
 logger = structlog.get_logger(__name__)
 
-_OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
-_OR_ORIGIN = "https://openrouter.ai"
 _HTTP_TIMEOUT_S = 30.0
 _FAILED = frozenset({"failed", "cancelled", "canceled", "expired", "error"})
 # Respuestas de sondeo que no dicen nada del trabajo: se reintenta.
@@ -39,14 +38,9 @@ _TRANSIENT_STATUS = frozenset({408, 425, 429, 500, 502, 503, 504})
 _VIDEO_TYPES = frozenset({"video/mp4", "video/webm"})
 
 
-def _trusted_hosts() -> frozenset[str]:
-    return frozenset(h for h in ("openrouter.ai", urlsplit(_OR_API).hostname) if h)
-
-
 def is_openrouter_url(url: str) -> bool:
     """True si `url` va a openrouter.ai (o a la base configurada) por HTTPS."""
-    parts = urlsplit(url or "")
-    return parts.scheme == "https" and (parts.hostname or "") in _trusted_hosts()
+    return openrouter.is_api_url(url)
 
 
 class VideoGenerationError(Exception):
@@ -107,7 +101,7 @@ def _check(resp: httpx.Response, step: str) -> dict:
 
 def _submit(job: VideoJob, api_key: str) -> dict:
     resp = httpx.post(
-        f"{_OR_API}/videos", headers=_headers(api_key), json=job_payload(job), timeout=_HTTP_TIMEOUT_S
+        openrouter.api_url("videos"), headers=_headers(api_key), json=job_payload(job), timeout=_HTTP_TIMEOUT_S
     )
     data = _check(resp, "submit")
     if not data.get("id"):
@@ -118,9 +112,9 @@ def _submit(job: VideoJob, api_key: str) -> dict:
 def _poll_url(status: dict) -> str:
     url = str(status.get("polling_url") or "")
     if url.startswith("/"):
-        url = f"{_OR_ORIGIN}{url}"
+        url = f"{openrouter.origin()}{url}"
     # El sondeo lleva la clave: solo hacia openrouter.ai.
-    return url if is_openrouter_url(url) else f"{_OR_API}/videos/{status['id']}"
+    return url if is_openrouter_url(url) else openrouter.api_url(f"videos/{status['id']}")
 
 
 def _wait(
@@ -163,9 +157,9 @@ def _poll_once(status: dict, api_key: str) -> dict:
 
 def _download(status: dict, api_key: str, max_bytes: int) -> tuple[bytes, str]:
     urls = status.get("unsigned_urls") or []
-    url = urls[0] if urls else f"{_OR_API}/videos/{status['id']}/content?index=0"
+    url = urls[0] if urls else openrouter.api_url(f"videos/{status['id']}/content?index=0")
     if url.startswith("/"):
-        url = f"{_OR_ORIGIN}{url}"
+        url = f"{openrouter.origin()}{url}"
     # La clave solo va a openrouter.ai; una URL firmada de otro dominio no la necesita.
     headers = {"Authorization": f"Bearer {api_key}"} if is_openrouter_url(url) else None
     chunks: list[bytes] = []

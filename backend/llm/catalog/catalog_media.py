@@ -19,12 +19,12 @@ una tarea que genera desde texto fallaría.
 
 from __future__ import annotations
 
-import os
 from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 import structlog
 
+from core import openrouter
 from llm.catalog.catalog_media_pricing import (
     image_media_pricing,
     pricing_label,
@@ -33,8 +33,6 @@ from llm.catalog.catalog_media_pricing import (
 
 logger = structlog.get_logger(__name__)
 
-_OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
-_OR_ORIGIN = "https://openrouter.ai"
 _TIMEOUT_S = 10.0
 _ENDPOINT_WORKERS = 8
 
@@ -75,7 +73,7 @@ def _get_json(url: str) -> dict | None:
 def _endpoints(model: dict) -> list[dict] | None:
     """Endpoints (con su precio) de un modelo de imagen; None si no se pudo pedir."""
     path = model.get("endpoints") or f"/api/v1/images/models/{model.get('id')}/endpoints"
-    data = _get_json(path if path.startswith("http") else f"{_OR_ORIGIN}{path}")
+    data = _get_json(path if path.startswith("http") else f"{openrouter.origin()}{path}")
     if data is None:
         return None
     endpoints = data.get("endpoints")
@@ -94,8 +92,8 @@ def fetch_openrouter_media() -> dict | None:
     `{"images": [...] | None, "videos": [...] | None}`: None en una clave quiere
     decir que ese listado falló (se conserva el anterior).
     """
-    images_raw = _get_json(f"{_OR_API}/images/models")
-    videos_raw = _get_json(f"{_OR_API}/videos/models")
+    images_raw = _get_json(openrouter.api_url("images/models"))
+    videos_raw = _get_json(openrouter.api_url("videos/models"))
     if images_raw is None and videos_raw is None:
         return None
     images = [m for m in (images_raw or {}).get("data") or [] if isinstance(m, dict) and m.get("id")]

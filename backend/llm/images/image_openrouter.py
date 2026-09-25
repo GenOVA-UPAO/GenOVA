@@ -7,6 +7,8 @@ import os
 import httpx
 import structlog
 
+from core import openrouter
+
 logger = structlog.get_logger(__name__)
 
 _TIMEOUT = 90.0
@@ -100,7 +102,7 @@ def _via_images(prompt: str, api_key: str, model: str, width: int, height: int) 
     ratio = _aspect_ratio(width, height, _allowed_ratios(model))
     if ratio:
         payload["aspect_ratio"] = ratio
-    data = _post("https://openrouter.ai/api/v1/images", api_key, payload).get("data") or []
+    data = _post(openrouter.api_url("images"), api_key, payload).get("data") or []
     b64 = (data[0] if data else {}).get("b64_json")
     if not b64:
         raise ImageRequestError(200, "la respuesta no trae imagen")
@@ -127,7 +129,7 @@ def _via_chat(prompt: str, api_key: str, model: str, width: int, height: int) ->
     ratio = _aspect_ratio(width, height, None)
     if ratio:
         payload["image_config"] = {"aspect_ratio": ratio}
-    choices = _post("https://openrouter.ai/api/v1/chat/completions", api_key, payload).get("choices") or []
+    choices = _post(openrouter.api_url("chat/completions"), api_key, payload).get("choices") or []
     images = ((choices[0].get("message") or {}).get("images") or []) if choices else []
     url = ((images[0] if images else {}).get("image_url") or {}).get("url")
     if not url:

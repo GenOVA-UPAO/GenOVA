@@ -1,11 +1,11 @@
 """Provider-specific helpers for catalog_refresh: fetch, merge, build, and
 cache logic for OpenRouter and Groq providers."""
 
-import os
 
 import httpx
 import structlog
 
+from core import openrouter
 from llm.catalog.catalog_pricing import format_pricing, format_pricing_detail
 from llm.catalog.model_catalog import CATALOG_ENTRIES
 from llm.catalog.provider_listing import (
@@ -17,7 +17,6 @@ from llm.catalog.provider_listing import (
 
 logger = structlog.get_logger(__name__)
 
-_OR_API = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
 
 
 class ProviderNotConfiguredError(Exception):
@@ -54,7 +53,7 @@ def _fetch_openrouter() -> dict[str, dict] | None:
     """Fetch the full model list from OpenRouter. Returns {model_id: raw_entry},
     or None when the fetch failed (so the caller can fall back instead of
     treating the provider as having zero models)."""
-    url = f"{_OR_API}/models"
+    url = openrouter.api_url("models")
     logger.info("fetching model list", provider="openrouter", url=url)
     try:
         resp = httpx.get(url, timeout=10.0)
