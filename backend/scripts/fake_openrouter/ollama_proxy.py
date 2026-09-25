@@ -14,6 +14,7 @@ import httpx
 
 OLLAMA = os.getenv("FAKE_OR_OLLAMA", "http://localhost:11435").rstrip("/")
 TEXT_MODEL = os.getenv("FAKE_OR_TEXT_MODEL", "qwen2.5-coder:7b")
+EMBED_MODEL = os.getenv("FAKE_OR_EMBED_MODEL", "nomic-embed-text")
 # El contexto de Ollama (OLLAMA_CONTEXT_LENGTH) limita prompt + respuesta.
 MAX_TOKENS = int(os.getenv("FAKE_OR_MAX_TOKENS", "10000"))
 _ALLOWED = ("messages", "temperature", "top_p", "stop", "response_format", "seed", "stream")
@@ -50,3 +51,11 @@ async def stream(body: dict):
         async for line in resp.aiter_lines():
             if line:
                 yield f"{line}\n\n"
+
+
+async def embed(texts: list[str]) -> list[list[float]]:
+    """Vectores de 768 d con nomic-embed-text (los que usa la tabla de pgvector)."""
+    async with httpx.AsyncClient(timeout=120) as client:
+        resp = await client.post(f"{OLLAMA}/api/embed", json={"model": EMBED_MODEL, "input": texts})
+        resp.raise_for_status()
+        return resp.json()["embeddings"]

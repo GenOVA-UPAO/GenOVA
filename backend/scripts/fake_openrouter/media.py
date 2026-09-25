@@ -106,8 +106,13 @@ def video_mp4(prompt: str, duration: int = 4, resolution: str = "480p", aspect_r
             str(out), (width, height), fps=fps, codec="libx264", pix_fmt_out="yuv420p", macro_block_size=2
         )
         writer.send(None)
+        noise = os.getenv("FAKE_OR_VIDEO_NOISE") == "1"
         for i in range(frames):
-            writer.send(_frame(prompt, width, height, i / frames).tobytes())
+            if noise:
+                # Ruido: no se comprime, para probar el tope de tamaño del backend.
+                writer.send(os.urandom(width * height * 3))
+            else:
+                writer.send(_frame(prompt, width, height, i / frames).tobytes())
         writer.close()
         return out.read_bytes()
 

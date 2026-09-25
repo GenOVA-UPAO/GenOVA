@@ -15,6 +15,7 @@ y el backend con OPENROUTER_API_BASE=http://localhost:8300/api/v1. Emula:
 - Cualquier otro GET (catálogo, /key) se reenvía a la API real, que no cobra.
 
 FAKE_OR_FAIL_MODELS="a/b,c/d" responde 402 a esos modelos, para probar respaldos.
+POST /v1beta/models/{m}:batchEmbedContents responde como Gemini (embeddings del RAG).
 """
 
 from __future__ import annotations
@@ -159,6 +160,76 @@ async def video_content(job_id: str):
         job.get("aspect_ratio") or "16:9",
     )
     return Response(mp4, media_type="video/mp4")
+
+
+# FAKE_OR_FAIL_EMBED=<código HTTP> hace fallar los embeddings (1 = 500), para
+# probar reintentos y errores; con FAKE_OR_FAIL_EMBED_TIMES=N solo fallan las N
+# primeras peticiones. FAKE_OR_EMBED_DIM fuerza la dimensión de la respuesta
+# (simula un proveedor que ignora `outputDimensionality`).
+_FAIL_EMBED = os.getenv("FAKE_OR_FAIL_EMBED", "").strip()
+_FAIL_EMBED_TIMES = int(os.getenv("FAKE_OR_FAIL_EMBED_TIMES", "0") or 0)
+_EMBED_DIM = int(os.getenv("FAKE_OR_EMBED_DIM", "0") or 0)
+_GOOGLE_STATUS = {
+    400: "INVALID_ARGUMENT",
+    403: "PERMISSION_DENIED",
+    404: "NOT_FOUND",
+    429: "RESOURCE_EXHAUSTED",
+    500: "INTERNAL",
+    503: "UNAVAILABLE",
+}
+_embed_failures = 0
+
+
+def _embed_error() -> JSONResponse | None:
+    global _embed_failures
+    if not _FAIL_EMBED or (_FAIL_EMBED_TIMES and _embed_failures >= _FAIL_EMBED_TIMES):
+        return None
+    _embed_failures += 1
+    code = 500 if _FAIL_EMBED == "1" else int(_FAIL_EMBED)
+    status = _GOOGLE_STATUS.get(code, "UNKNOWN")
+    error = {"code": code, "message": f"fallo simulado ({status})", "status": status}
+    return JSONResponse({"error": error}, code)
+
+
+def _embed_text(request: dict) -> str:
+    """El texto de una petición de Gemini; los archivos se representan por su tipo.
+
+    El SDK de Python manda `inline_data`/`mime_type` y el REST documentado
+    `inlineData`/`mimeType`: la API real acepta los dos.
+    """
+    parts = (request.get("content") or {}).get("parts") or []
+    texts = []
+    for p in parts:
+        blob = p.get("inlineData") or p.get("inline_data") or {}
+        mime = blob.get("mimeType") or blob.get("mime_type") or "?"
+        texts.append(p.get("text") or f"[archivo {mime}]")
+    prefix = "search_query: " if request.get("taskType") == "RETRIEVAL_QUERY" else "search_document: "
+    return prefix + "\n".join(texts)
+
+
+def _dimension(vector: list[float], request: dict) -> list[float]:
+    """Recorta a `outputDimensionality` (Matryoshka, como Gemini) o fuerza _EMBED_DIM."""
+    want = _EMBED_DIM or int(request.get("outputDimensionality") or 0)
+    if not want:
+        return vector
+    return (vector + [0.0] * want)[:want]
+
+
+@app.post("/v1beta/models/{spec}")
+async def gemini_embed(spec: str, request: Request):
+    """Embeddings de Gemini (batchEmbedContents / embedContent) con nomic-embed-text.
+
+    Como gemini-embedding-2: una petición con varias partes da UN vector.
+    """
+    if (error := _embed_error()) is not None:
+        return error
+    body = await request.json()
+    requests = body.get("requests") or [body]
+    vectors = await ollama_proxy.embed([_embed_text(r) for r in requests])
+    vectors = [_dimension(v, r) for v, r in zip(vectors, requests, strict=True)]
+    if spec.endswith(":embedContent"):
+        return {"embedding": {"values": vectors[0]}}
+    return {"embeddings": [{"values": v} for v in vectors]}
 
 
 # Solo estas rutas del catálogo van a la API real; la ruta pedida nunca forma la URL.
