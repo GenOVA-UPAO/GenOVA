@@ -35,6 +35,7 @@ def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer
     contexto = _fake_rag_context(initial_state, concept)
     image_settings = initial_state.get("image_settings") or {}
     llm_config = initial_state.get("llm_config") or {}
+    theme = initial_state.get("theme") or {}
     db = SessionLocal()
     try:
         resources = (
@@ -50,7 +51,10 @@ def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer
                 {
                     "phase": res.phase_type,
                     "html": with_fake_media(
-                        stub_resource_html(concept, res.phase_type, res.resource_type, contexto),
+                        _themed(
+                            stub_resource_html(concept, res.phase_type, res.resource_type, contexto),
+                            theme,
+                        ),
                         res.phase_type,
                         res.resource_type,
                         concept,
@@ -64,6 +68,18 @@ def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer
         return {"results": results, "errors": []}
     finally:
         db.close()
+
+
+def _themed(html: str, theme: dict) -> str:
+    """Runtime según el tema del job, como hace generate_resource en el motor real."""
+    from llm.utils.ova_runtime import inject_runtime
+
+    return inject_runtime(
+        html,
+        css=theme.get("color", "upao") != "free",
+        components=theme.get("design", "upao") == "upao",
+        palette=theme.get("palette") if theme.get("color") == "custom" else None,
+    )
 
 
 def _fake_rag_context(initial_state: dict, concept: str) -> str:

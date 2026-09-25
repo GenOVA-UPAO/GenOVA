@@ -4,10 +4,24 @@ import type { OvaTheme } from "../../lib/types";
 
 const UPAO_DOTS = ["#F47A20", "#FFFFFF", "#F47A20"] as const;
 
+/** «IA elige» no tiene colores fijos: la vista previa usa unos de ejemplo. */
+function previewColors(draft: OvaTheme): { primary: string; accent: string } {
+  if (draft.color === "custom" && draft.palette) {
+    return { primary: draft.palette.p, accent: draft.palette.a };
+  }
+  if (draft.color === "upao") return { primary: "#0A3D91", accent: "#F47A20" };
+  return { primary: "#6D28D9", accent: "#A78BFA" };
+}
+
+/** Texto legible sobre `hex`: los acentos claros (menta, lavanda) llevan texto oscuro. */
+function textOn(hex: string): string {
+  const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
+  return 0.299 * r + 0.587 * g + 0.114 * b > 140 ? "#15233B" : "#FFFFFF";
+}
+
 /** Miniatura aproximada de cómo se verá el tema en un recurso. */
 export function OvaThemePreview({ draft }: Readonly<{ draft: OvaTheme }>) {
-  const primary = draft.color === "upao" ? "#0A3D91" : "#6D28D9";
-  const accent = draft.color === "upao" ? "#F47A20" : "#A78BFA";
+  const { primary, accent } = previewColors(draft);
   const freeDesign = draft.design === "free";
   return (
     <div className="w-full max-w-xs space-y-2 sm:w-64 sm:shrink-0">
@@ -55,7 +69,7 @@ export function OvaThemePreview({ draft }: Readonly<{ draft: OvaTheme }>) {
               style={{ background: `${accent}26`, color: primary }}
             >
               <Icon name={freeDesign ? "sparkle" : "square-half"} size="text-[9px]" className="shrink-0" />
-              {freeDesign ? "Estructura libre" : "5E"}
+              {freeDesign ? "La IA elige" : "5E"}
             </span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-muted/70" />
@@ -65,7 +79,9 @@ export function OvaThemePreview({ draft }: Readonly<{ draft: OvaTheme }>) {
             className="mt-1.5 rounded-md py-1.5 text-center transition-colors duration-300"
             style={{ background: accent }}
           >
-            <p className="text-[8px] font-bold text-white">Continuar →</p>
+            <p className="text-[8px] font-bold" style={{ color: textOn(accent) }}>
+              Continuar →
+            </p>
           </div>
         </div>
         <figcaption className="border-t border-border px-3.5 py-2 text-center">

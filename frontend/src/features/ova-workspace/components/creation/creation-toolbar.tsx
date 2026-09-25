@@ -4,6 +4,7 @@ import { cn } from "@/core/lib/cn";
 
 import { selectionSummary } from "../../lib/creation-guidance";
 import type { EducationLevelId } from "../../lib/education-levels";
+import { themeSummary } from "../../lib/ova-theme";
 import type { OvaTheme } from "../../lib/types";
 import { CreationLevelSelect } from "./creation-level-select";
 
@@ -16,12 +17,6 @@ interface ToolbarProps {
   fileCount: number;
   theme: OvaTheme;
   onOpen: (modal: CreationModal) => void;
-}
-
-function themeValue(theme: OvaTheme): string {
-  if (theme.color === "upao" && theme.design === "upao") return "UPAO";
-  if (theme.color === "free" && theme.design === "free") return "Libre";
-  return "Mixto";
 }
 
 /** 36 px en escritorio; en móvil, 44 px y repartidos a lo ancho de la fila. */
@@ -94,7 +89,7 @@ export function CreationToolbar({
         <Icon name="palette" />
         Tema
         <span id="crear-theme-value" className="font-normal text-muted-foreground">
-          {themeValue(theme)}
+          {themeSummary(theme)}
         </span>
       </Button>
       <CreationLevelSelect value={nivel} onChange={onNivelChange} />

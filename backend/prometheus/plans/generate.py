@@ -60,9 +60,9 @@ class ResourceResult(NamedTuple):
 
 
 def _design_system(theme: dict) -> str:
-    from llm.utils.themes import build_design_system
+    from llm.utils.themes import theme_design_system
 
-    return build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
+    return theme_design_system(theme)
 
 
 def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_models, deadline=None):
@@ -129,8 +129,10 @@ def _post_process(
         )
     html = inject_runtime(
         html,
-        css=theme.get("color", "upao") == "upao",
+        # UPAO y la paleta del docente llevan la hoja base; «free» la escribe el modelo.
+        css=theme.get("color", "upao") != "free",
         components=theme.get("design", "upao") == "upao",
+        palette=theme.get("palette") if theme.get("color") == "custom" else None,
     )
     # The refiner can return image markers that were already resolved: always
     # resolve on the final document.

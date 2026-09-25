@@ -1,3 +1,5 @@
+import type { Palette } from "@/core/lib/ova-palettes";
+
 export interface Phase {
   id: string;
   [key: string]: unknown;
@@ -32,6 +34,9 @@ export interface ResourcePick {
 export type Selections = Record<string, ResourcePick[]>;
 
 export interface OvaTheme {
+  /** "upao" | "free" (la IA elige) | "custom" (la paleta del docente, en `palette`). */
   color: string;
+  /** "upao" | "free" (la IA elige). */
   design: string;
+  palette?: Palette | null;
 }

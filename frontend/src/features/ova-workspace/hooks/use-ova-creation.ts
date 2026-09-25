@@ -2,6 +2,8 @@ import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { authStore } from "@/core/auth/auth-store";
+
 import { startOvaJob } from "../api/ova-jobs.api";
 import type { CreationModal } from "../components/creation/creation-toolbar";
 import { canCreate } from "../lib/creation-form";
@@ -11,6 +13,7 @@ import {
   NIVEL_STORAGE_KEY,
   promptWithLevel,
 } from "../lib/education-levels";
+import { themeFromSettings } from "../lib/ova-theme";
 import {
   emptyPicks,
   type PhaseResourceMap,
@@ -20,13 +23,14 @@ import type { OvaTheme } from "../lib/types";
 import { useResourceConfigs } from "./use-resource-configs";
 import { useOvaUploads } from "./use-uploads";
 
-const DEFAULT_THEME: OvaTheme = { color: "upao", design: "upao" };
-
 export function useOvaCreation() {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [picks, setPicks] = useState(emptyPicks);
-  const [theme, setTheme] = useState(DEFAULT_THEME);
+  // Empieza con «Estilo de mis OVAs»; aquí se puede cambiar solo para este OVA.
+  const [theme, setTheme] = useState<OvaTheme>(() =>
+    themeFromSettings(authStore.getUser()?.theme_settings),
+  );
   const [nivel, setNivelState] = useState<EducationLevelId>(() => loadEducationLevel(localStorage));
   const [modal, setModal] = useState<CreationModal>();
   const [replay, setReplay] = useState(0);

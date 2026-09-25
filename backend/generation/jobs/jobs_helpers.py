@@ -52,15 +52,37 @@ class ResumeRequest(BaseModel):
     resource_ids: list[str] = Field(default_factory=list, max_length=50)
 
 
+_HEX_COLOR = r"^#[0-9a-fA-F]{6}$"
+
+
+class PaletteRequest(BaseModel):
+    """Paleta del docente: solo primario y acento; el resto se deriva (palette.py)."""
+
+    name: str = Field(default="", max_length=40)
+    primary: str = Field(pattern=_HEX_COLOR)
+    accent: str = Field(pattern=_HEX_COLOR)
+
+
 class ThemeRequest(BaseModel):
     """OVA content theme: two independent axes, both defaulting to the UPAO brand.
 
-    color  — "upao" (azul/naranja/blanco fijo) | "free" (the LLM picks a palette).
+    color  — "upao" (azul/naranja/blanco fijo) | "free" (the LLM picks a palette)
+             | "custom" (la paleta del docente, en `palette`).
     design — "upao" (plantilla estructurada) | "free" (the LLM picks the layout).
     """
 
-    color: Literal["upao", "free"] = "upao"
+    color: Literal["upao", "free", "custom"] = "upao"
     design: Literal["upao", "free"] = "upao"
+    palette: PaletteRequest | None = None
+
+    @model_validator(mode="after")
+    def _custom_needs_palette(self) -> "ThemeRequest":
+        # Sin paleta, «custom» no tiene colores que aplicar: se queda en UPAO.
+        if self.color == "custom" and self.palette is None:
+            self.color = "upao"
+        if self.color != "custom":
+            self.palette = None
+        return self
 
 
 class StartJobRequest(BaseModel):

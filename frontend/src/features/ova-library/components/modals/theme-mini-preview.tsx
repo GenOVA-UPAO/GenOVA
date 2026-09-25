@@ -1,4 +1,4 @@
-import type { Palette } from "./theme-types";
+import type { Palette } from "@/core/lib/ova-palettes";
 
 interface ThemeMiniPreviewProps {
   colorMode: string;

@@ -21,7 +21,7 @@ from generation.infrastructure.regen_agents import resolve_resource_type
 from generation.infrastructure.regen_pipelines import regenerate_phase_content
 from llm.router import generar_texto
 from llm.utils.llm_helpers import _CODE_MAX_TOKENS
-from llm.utils.ova_runtime import inject_runtime, strip_runtime
+from llm.utils.ova_runtime import inject_runtime, runtime_palette, strip_runtime, theme_of
 from llm.utils.utils import extract_html_document
 
 logger = structlog.get_logger(__name__)
@@ -106,7 +106,9 @@ def edit_phase_content(
     if len(new_html) < len(authored) * 0.6:
         logger.warning("edit shrank resource too much; keeping original")
         return None
-    new_html = inject_runtime(new_html, css=had_css, components=had_components)
+    new_html = inject_runtime(
+        new_html, css=had_css, components=had_components, palette=runtime_palette(base_html)
+    )
     return new_html
 
 
@@ -139,7 +141,15 @@ def _regen_one_phase(
         "regenerating phase", phase_type=phase.phase_type, resource_type=rtype, concept=concept[:60]
     )
     return regenerate_phase_content(
-        phase.phase_type, rtype, concept, llm_config, enabled_models, image_settings, contexto
+        phase.phase_type,
+        rtype,
+        concept,
+        llm_config,
+        enabled_models,
+        image_settings,
+        contexto,
+        # Mismo tema con el que se generó: colores libres o la paleta del docente.
+        theme=theme_of(phase.content or ""),
     )
 
 

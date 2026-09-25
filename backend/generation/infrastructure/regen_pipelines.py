@@ -23,6 +23,7 @@ def regenerate_phase_content(
     enabled_models: list | None = None,
     image_settings: dict | None = None,
     contexto: str = "",
+    theme: dict | None = None,
 ) -> str | None:
     """Genera HTML fresco para un recurso con el pipeline unificado.
 
@@ -45,6 +46,7 @@ def regenerate_phase_content(
             enabled_models=enabled_models,
             image_settings=image_settings,
             contexto=contexto,
+            theme=theme,
         ).html
     except Exception:
         logger.exception(
