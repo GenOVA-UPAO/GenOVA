@@ -70,8 +70,13 @@ def _release_ova_from_generating(db: Session, job: OvaJob) -> None:
         return
     from models import Ova as _Ova
 
-    ova = db.get(_Ova, job.ova_id)
+    # El runner (al terminar) y el stream de progreso (reparación) llegan aquí a
+    # la vez: sin bloquear la fila, los dos veían 'generando' y materializaban el
+    # OVA en paralelo → UniqueViolation uq_one_active_version_per_ova. Con FOR
+    # UPDATE el segundo espera y, al releer, ve que el primero ya lo resolvió.
+    ova = db.get(_Ova, job.ova_id, with_for_update=True, populate_existing=True)
     if ova is None or ova.status != "generando":
+        db.commit()  # libera el bloqueo sin perder cambios pendientes de quien llama
         return
     if _has_materializable_resource(db, job.id):
         try:
