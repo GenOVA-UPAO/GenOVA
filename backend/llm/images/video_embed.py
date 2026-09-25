@@ -47,11 +47,15 @@ def video_figure(data_uri: str, *, provider: str, model_id: str) -> str:
     )
 
 
-def inject_video(html: str, data_uri: str, *, provider: str, model_id: str) -> str:
-    """HTML con el video insertado tras la cabecera (o al abrir el body)."""
-    figure = video_figure(data_uri, provider=provider, model_id=model_id)
+def insert_block(html: str, block: str) -> str:
+    """`block` donde va el video: tras la cabecera (o al abrir el body)."""
     for pattern in (_HEADER_END, _BODY_OPEN):
         match = pattern.search(html or "")
         if match:
-            return html[: match.end()] + figure + html[match.end() :]
-    return figure + (html or "")
+            return html[: match.end()] + block + html[match.end() :]
+    return block + (html or "")
+
+
+def inject_video(html: str, data_uri: str, *, provider: str, model_id: str) -> str:
+    """HTML con el video insertado tras la cabecera (o al abrir el body)."""
+    return insert_block(html, video_figure(data_uri, provider=provider, model_id=model_id))

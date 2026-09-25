@@ -10,6 +10,11 @@ Para ensayar los respaldos sin clave real:
 - una clave que empieza por «fake-down» simula un proveedor caído;
 - `LLM_FAKE_MEDIA_FAIL_MODELS` (ids separados por comas) hace fallar esos
   modelos concretos.
+
+Para ensayar el video tardío: `LLM_FAKE_VIDEO_LATE_S=N` hace que el video no
+termine dentro del tope (el recurso sale con el aviso «en preparación») y
+«llegue» N segundos después de encargarlo. Si N pasa del tope tardío
+(`OVA_VIDEO_LATE_MAX_S`) no llega nunca y queda el aviso definitivo.
 Nunca activar en producción.
 """
 
@@ -52,6 +57,14 @@ def fake_image_data_uri(provider: str, model: str | None, width: int = 512, heig
         f'font-size="13" fill="#475569">{label}</text></svg>'
     )
     return "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode("ascii")
+
+
+def fake_video_late_s() -> float:
+    """Segundos hasta que «llega» un video simulado tardío (0 = llega a tiempo)."""
+    try:
+        return max(0.0, float(os.getenv("LLM_FAKE_VIDEO_LATE_S", "0") or 0))
+    except ValueError:
+        return 0.0
 
 
 @cache

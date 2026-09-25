@@ -3,8 +3,11 @@
 Con la tarea Video activa y con modelo, el video se encarga en cuanto existe el
 guion (JSON del paso de texto) y se genera EN PARALELO con el HTML del recurso:
 el sondeo tarda minutos y no debe sumarse al tiempo del LLM. Al terminar el
-HTML se espera al video (con su propio tope) y se inserta; si no llega, el
-recurso se queda con el guion, como sin video. Mientras tanto el latido del job
+HTML se espera al video (con su propio tope) y se inserta; si falla, el
+recurso se queda con el guion, como sin video. Si el tope llega con el trabajo
+aún en marcha (ya pagado), el recurso lleva el aviso «video en preparación» y el
+video se sigue esperando en segundo plano (`llm.images.video_late`), que lo pone
+en su sitio al llegar o deja el aviso definitivo si no llega. Mientras tanto el latido del job
 (`generation.infrastructure.heartbeat`, cada 30 s) evita que parezca colgado.
 """
 
@@ -56,12 +59,12 @@ def start_video(
 
 
 def attach_video(html: str, pending: Future | None) -> str:
-    """HTML con el video si llegó a tiempo; el mismo HTML si no."""
+    """HTML con el video si llegó a tiempo; con el aviso si aún se espera; el mismo si no."""
     if pending is None:
         return html
     try:
         from llm.images.video_embed import inject_video
-        from llm.images.video_generation import default_options
+        from llm.images.video_generation import VideoPending, default_options
 
         result = pending.result(timeout=default_options().timeout_s + _WAIT_SLACK_S)
     except Exception:  # noqa: BLE001 — tope o fallo: se queda el guion
@@ -70,4 +73,23 @@ def attach_video(html: str, pending: Future | None) -> str:
     if result is None:
         logger.info("no video generated; keeping the script")
         return html
+    if isinstance(result, VideoPending):
+        try:
+            return _with_placeholder(html, result)
+        except Exception:  # noqa: BLE001 — el aviso es opcional: nunca tumba el recurso
+            logger.exception("video placeholder failed; keeping the script")
+            return html
     return inject_video(html, result.data_uri, provider=result.provider, model_id=result.model_id)
+
+
+def _with_placeholder(html: str, pending) -> str:
+    """Aviso «en preparación» si el video se sigue esperando; definitivo si no."""
+    from llm.images.video_embed import insert_block
+    from llm.images.video_late import watch
+    from llm.images.video_placeholder import pending_placeholder, unavailable_placeholder
+
+    if watch(pending):
+        block = pending_placeholder(pending.job_id, pending.started_at, pending.provider, pending.model_id)
+    else:
+        block = unavailable_placeholder()
+    return insert_block(html, block)

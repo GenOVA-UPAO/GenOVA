@@ -8,8 +8,11 @@ entrada se resuelve como la del texto: la propia del autor del OVA
 variable de entorno (`resolve_key`). Hoy solo OpenRouter tiene Video API; una
 entrada de otro proveedor se salta.
 
-Si nada sale (sin clave, error, tope de espera, archivo demasiado grande) el
-resultado es None y el recurso se queda con su guion, como sin video. Nunca
+Si nada sale (sin clave, error, archivo demasiado grande) el resultado es None
+y el recurso se queda con su guion, como sin video. Si el tope de espera llega
+con el trabajo aún en marcha el resultado es `VideoPending`: el video ya está
+pagado, así que no se tira; se sigue esperando en segundo plano (`video_late`)
+y el recurso lleva mientras tanto un aviso de «video en preparación». Nunca
 lanza: un video no puede tumbar la generación del OVA.
 
 Coste: se piden los valores baratos por defecto (4 s, 480p, sin audio). Con los
@@ -25,7 +28,8 @@ import time
 import uuid
 from collections import OrderedDict
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
+from time import time as wall_time
 
 import structlog
 
@@ -34,6 +38,7 @@ from llm.images.media_models import media_params
 from llm.images.video_openrouter import (
     VideoGenerationError,
     VideoJob,
+    VideoStillPending,
     generate_openrouter_video,
 )
 
@@ -68,6 +73,25 @@ class VideoResult:
     size_bytes: int
     estimated_usd: float | None
     cost_usd: float | None
+
+
+@dataclass(frozen=True)
+class VideoPending:
+    """Trabajo de video pagado que no terminó dentro del tope: se sigue esperando.
+
+    `api_key` vive solo en memoria (la usa el sondeo tardío): no sale en el repr,
+    ni en el HTML, ni en los logs. `started_at` es hora de pared (epoch), para
+    poder calcular la caducidad tras un reinicio.
+    """
+
+    job_id: str
+    provider: str
+    model_id: str
+    started_at: float
+    api_key: str | None = field(default=None, repr=False)
+    polling_url: str | None = None
+    reuse_key: str | None = None
+    fake: bool = False
 
 
 def default_options() -> VideoOptions:
@@ -120,6 +144,19 @@ def _with_keys(chain: list[dict], llm_config: dict | None) -> list[dict]:
         ]
     finally:
         db.close()
+
+
+def key_for(provider: str, owner_id) -> str | None:
+    """Clave para seguir esperando un video ya encargado por `owner_id`.
+
+    Se resuelve igual que al encargarlo (propia, heredada, plataforma, entorno),
+    aunque la tarea Video se haya apagado después: el video ya está pagado.
+    """
+    from llm.utils.llm_helpers import OWNER_FIELD
+
+    config = {OWNER_FIELD: str(owner_id)} if owner_id else {}
+    entry = _with_keys([{"provider": provider, "model_id": ""}], config)[0]
+    return entry.get("api_key")
 
 
 # ── Parámetros por modelo ──────────────────────────────────────────────────────
@@ -187,11 +224,13 @@ def build_job(model: str, prompt: str, options: VideoOptions) -> tuple[VideoJob,
 
 # ── Caché ──────────────────────────────────────────────────────────────────────
 
-_cache: OrderedDict[str, tuple[float, VideoResult]] = OrderedDict()
+# Un VideoPending también se guarda: la reparación del mismo recurso pone el
+# mismo aviso (mismo trabajo) en vez de encargar y pagar otro video.
+_cache: OrderedDict[str, tuple[float, VideoResult | VideoPending]] = OrderedDict()
 _cache_lock = threading.Lock()
 
 
-def _cache_get(key: str | None) -> VideoResult | None:
+def _cache_get(key: str | None) -> VideoResult | VideoPending | None:
     if not key:
         return None
     with _cache_lock:
@@ -202,7 +241,7 @@ def _cache_get(key: str | None) -> VideoResult | None:
         return hit[1]
 
 
-def _cache_put(key: str | None, result: VideoResult) -> None:
+def _cache_put(key: str | None, result: VideoResult | VideoPending) -> None:
     if not key:
         return
     with _cache_lock:
@@ -210,6 +249,17 @@ def _cache_put(key: str | None, result: VideoResult) -> None:
         _cache.move_to_end(key)
         while len(_cache) > _CACHE_MAX:
             _cache.popitem(last=False)
+
+
+def settle_cached_video(key: str | None, result: VideoResult | None) -> None:
+    """El video tardío llegó (o no): la caché deja de dar el aviso pendiente."""
+    if not key:
+        return
+    if result is not None:
+        _cache_put(key, result)
+        return
+    with _cache_lock:
+        _cache.pop(key, None)
 
 
 def clear_video_cache() -> None:
@@ -231,8 +281,13 @@ def _one(
     options: VideoOptions,
     deadline: float,
     heartbeat: Callable[[], None] | None,
-) -> VideoResult | None:
-    from llm.images.media_fake import fake_failure, fake_media_enabled, fake_video_data_uri
+) -> VideoResult | VideoPending | None:
+    from llm.images.media_fake import (
+        fake_failure,
+        fake_media_enabled,
+        fake_video_data_uri,
+        fake_video_late_s,
+    )
 
     provider, model = entry.get("provider"), entry.get("model_id")
     api_key = entry.get("api_key")
@@ -244,11 +299,16 @@ def _one(
         if fake_failure(api_key, model):
             logger.info("fake video generation failed", provider=provider, model=model)
             return None
+        if fake_video_late_s() > 0:
+            # Simula un video que no termina dentro del tope (ver media_fake).
+            fake_id = f"fake-{uuid.uuid4().hex[:16]}"
+            return VideoPending(fake_id, provider, model, wall_time(), api_key, fake=True)
         uri = fake_video_data_uri()
         return VideoResult(uri, provider, model, job.duration, job.resolution, len(uri), estimate, 0.0)
     if not api_key:
         logger.warning("video generation skipped: no api_key", provider=provider, model=model)
         return None
+    started_at = wall_time()  # hora de pared: la caducidad sobrevive a un reinicio
     try:
         file = generate_openrouter_video(
             job,
@@ -258,6 +318,10 @@ def _one(
             max_bytes=options.max_bytes,
             heartbeat=heartbeat,
         )
+    except VideoStillPending as exc:
+        # Pagado y aún en marcha: no se tira, se sigue esperando en segundo plano.
+        logger.info("video still pending at deadline", provider=provider, model=model, job_id=exc.job_id)
+        return VideoPending(exc.job_id, provider, model, started_at, api_key, exc.polling_url)
     except VideoGenerationError as exc:
         logger.warning("video generation failed", provider=provider, model=model, error=str(exc)[:240])
         return None
@@ -287,13 +351,17 @@ def generate_video(
     options: VideoOptions | None = None,
     heartbeat: Callable[[], None] | None = None,
     reuse_key: str | None = None,
-) -> VideoResult | None:
-    """Primer video que salga de la cadena, dentro de un único tope de espera."""
+) -> VideoResult | VideoPending | None:
+    """Primer video que salga de la cadena, dentro de un único tope de espera.
+
+    Un trabajo que sigue en marcha al llegar el tope (`VideoPending`) cierra la
+    cadena: el tope ya se gastó y ese video está pagado.
+    """
     clean = " ".join((prompt or "").split())[:1500]
     if not clean or not chain:
         return None
     if (hit := _cache_get(reuse_key)) is not None:
-        logger.info("video reused", provider=hit.provider, model=hit.model_id)
+        logger.info("video reused", provider=hit.provider, model=hit.model_id, pending=isinstance(hit, VideoPending))
         return hit
     options = options or default_options()
     deadline = time.monotonic() + options.timeout_s
@@ -302,6 +370,8 @@ def generate_video(
             logger.info("video chain stopped: not enough time left", tried=i)
             break
         result = _one(entry, clean, options, deadline, heartbeat)
+        if isinstance(result, VideoPending):
+            result = replace(result, reuse_key=reuse_key)
         if result is not None:
             _cache_put(reuse_key, result)
             return result

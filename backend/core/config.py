@@ -126,6 +126,10 @@ class Settings(BaseSettings):
     ova_video_timeout_s: float = 240.0
     ova_video_poll_s: float = 10.0
     ova_video_max_mb: float = 8.0
+    # Video que sigue en marcha al agotar el tope: ya está pagado, así que se
+    # sigue esperando en segundo plano hasta este tope adicional y se mete en el
+    # recurso al llegar (mientras, el recurso lleva un aviso «en preparación»).
+    ova_video_late_max_s: float = 900.0
 
     # --- Supabase Storage ---
     supabase_url: str = ""

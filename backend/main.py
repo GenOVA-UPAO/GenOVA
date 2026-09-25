@@ -107,6 +107,17 @@ def _background_regen_recovery() -> None:
         logger.exception("Regen orphan recovery on startup failed (continuing).")
 
 
+def _background_late_video_recovery() -> None:
+    # Los videos tardíos se esperan en hilos en memoria: un reinicio los pierde
+    # y el recurso se quedaría con el aviso «en preparación» para siempre.
+    try:
+        from generation.infrastructure.late_video import recover_late_videos
+
+        recover_late_videos()
+    except Exception:
+        logger.exception("Late video recovery on startup failed (continuing).")
+
+
 def _background_catalog_refresh() -> None:
     try:
         from sqlalchemy.orm import Session
@@ -124,9 +135,14 @@ async def lifespan(_: FastAPI):
     run_migrations()
     Base.metadata.create_all(bind=engine)
     seed_db()
+    # El sumidero de los videos tardíos va antes de cualquier generación.
+    from generation.infrastructure.late_video import install_late_video
+
+    install_late_video()
     asyncio.create_task(asyncio.to_thread(_background_rag_purge))
     asyncio.create_task(asyncio.to_thread(_background_auth_purge))
     asyncio.create_task(asyncio.to_thread(_background_regen_recovery))
+    asyncio.create_task(asyncio.to_thread(_background_late_video_recovery))
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
     yield
 

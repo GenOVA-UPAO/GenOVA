@@ -110,8 +110,20 @@ def _find_orphans_to_requeue() -> list[tuple[uuid.UUID, list[uuid.UUID]]]:
         db.close()
 
 
+def _start_late_videos() -> None:
+    """Videos tardíos: el sumidero que los mete en la BD y los que dejó un reinicio."""
+    from generation.infrastructure.late_video import install_late_video, recover_late_videos
+
+    install_late_video()
+    recover_late_videos()
+
+
 async def resume_orphans(ctx) -> None:
     """F5.2 — al arrancar, re-encolar jobs huérfanos (running estancado / queued)."""
+    try:
+        await asyncio.to_thread(_start_late_videos)
+    except Exception:  # noqa: BLE001 — nunca impide arrancar el worker
+        logger.exception("late video startup failed")
     try:
         orphans = await asyncio.to_thread(_find_orphans_to_requeue)
     except Exception:  # noqa: BLE001 — el resume nunca impide arrancar el worker

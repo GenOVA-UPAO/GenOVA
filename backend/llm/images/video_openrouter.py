@@ -13,7 +13,10 @@ compara el host exacto, no el prefijo: «openrouter.ai.otro.com» no vale):
 nunca se registra ni se manda a una URL de descarga de otro dominio.
 
 El video ya está pagado cuando se sondea: un error pasajero de red o un 429/5xx
-en un sondeo no lo tira, se vuelve a sondear hasta el tope de espera.
+en un sondeo no lo tira, se vuelve a sondear hasta el tope de espera. Si el tope
+llega con el trabajo aún en marcha se lanza `VideoStillPending` con su id: el
+video se sigue esperando en segundo plano (`video_late`) con
+`resume_openrouter_video`, el mismo sondeo y la misma descarga.
 """
 
 from __future__ import annotations
@@ -45,6 +48,19 @@ def is_openrouter_url(url: str) -> bool:
 
 class VideoGenerationError(Exception):
     """El proveedor no generó el video (error, cancelación o tope de espera)."""
+
+
+class VideoStillPending(VideoGenerationError):
+    """Tope de espera agotado con el trabajo aún en marcha: se puede seguir esperando.
+
+    Solo lleva el id y la URL de sondeo del trabajo, nunca la clave.
+    """
+
+    def __init__(self, job_id: str, state: str, polling_url: str | None = None):
+        super().__init__(f"job {job_id}: sin terminar al agotar el tiempo ({state})")
+        self.job_id = job_id
+        self.state = state
+        self.polling_url = polling_url
 
 
 @dataclass(frozen=True)
@@ -134,7 +150,7 @@ def _wait(
         if state in _FAILED:
             raise VideoGenerationError(f"job {job_id}: {state} {status.get('error') or ''}".strip())
         if time.monotonic() + poll_s > deadline:
-            raise VideoGenerationError(f"job {job_id}: sin terminar al agotar el tiempo ({state})")
+            raise VideoStillPending(str(job_id), state, status.get("polling_url"))
         time.sleep(poll_s)
         if heartbeat is not None:
             heartbeat()
@@ -182,6 +198,17 @@ def _download(status: dict, api_key: str, max_bytes: int) -> tuple[bytes, str]:
     return b"".join(chunks), content_type
 
 
+def _finish(status: dict, api_key: str, max_bytes: int) -> VideoFile:
+    """Descarga el video de un trabajo completado y lo devuelve como data URI."""
+    content, content_type = _download(status, api_key, max_bytes)
+    if not content:
+        raise VideoGenerationError(f"job {status['id']}: video vacío")
+    usage = status.get("usage") or {}
+    cost = usage.get("cost") if isinstance(usage.get("cost"), (int, float)) else None
+    b64 = base64.b64encode(content).decode("ascii")
+    return VideoFile(f"data:{content_type};base64,{b64}", len(content), cost, str(status["id"]))
+
+
 def generate_openrouter_video(
     job: VideoJob,
     api_key: str,
@@ -191,14 +218,33 @@ def generate_openrouter_video(
     max_bytes: int,
     heartbeat: Callable[[], None] | None = None,
 ) -> VideoFile:
-    """Genera el video y lo devuelve como data URI. Lanza VideoGenerationError."""
+    """Genera el video y lo devuelve como data URI.
+
+    Lanza VideoGenerationError; VideoStillPending si el tope llega con el trabajo
+    aún en marcha (ya está pagado: se puede seguir esperando).
+    """
     status = _submit(job, api_key)
     logger.info("video job submitted", provider="openrouter", model=job.model, job_id=status["id"])
     status = _wait(status, api_key, deadline=deadline, poll_s=poll_s, heartbeat=heartbeat)
-    content, content_type = _download(status, api_key, max_bytes)
-    if not content:
-        raise VideoGenerationError(f"job {status['id']}: video vacío")
-    usage = status.get("usage") or {}
-    cost = usage.get("cost") if isinstance(usage.get("cost"), (int, float)) else None
-    b64 = base64.b64encode(content).decode("ascii")
-    return VideoFile(f"data:{content_type};base64,{b64}", len(content), cost, str(status["id"]))
+    return _finish(status, api_key, max_bytes)
+
+
+def resume_openrouter_video(
+    job_id: str,
+    api_key: str,
+    *,
+    deadline: float,
+    poll_s: float,
+    max_bytes: int,
+    polling_url: str | None = None,
+) -> VideoFile:
+    """Sigue esperando un trabajo ya enviado (video tardío o tras un reinicio).
+
+    Sondea una vez aunque el tope ya haya pasado: el video está pagado y puede
+    estar listo. Mismas protecciones que al generarlo (clave solo a la API,
+    tope de bytes, tipo de contenido). Lanza como `generate_openrouter_video`.
+    """
+    status = {"id": job_id, "status": "pending", "polling_url": polling_url}
+    status = _poll_once(status, api_key)
+    status = _wait(status, api_key, deadline=deadline, poll_s=poll_s, heartbeat=None)
+    return _finish(status, api_key, max_bytes)
