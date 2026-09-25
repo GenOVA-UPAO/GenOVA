@@ -58,6 +58,32 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
             .all()
         )
 
+        # Regenerate the selected phases concurrently (each _regen_phase is a
+        # pure-LLM call with no DB access). Regen-all is otherwise sequential —
+        # N phases × 2 LLM calls each — so the progress bar sat at 99% for
+        # minutes. DB writes below stay in this thread, in phase order.
+        material = build_regen_material(
+            db, ova_id, job.get("attachments") or [], prompt, instruction
+        )
+        with _regen_jobs_lock:
+            job["rag"] = material.report
+
+        to_regen = [p for p in current_phases if regen_all or str(p.id) in phase_ids_to_regen]
+        # Sin transacción abierta mientras se espera al modelo.
+        db.commit()
+        regen_content = regen_phases_parallel(
+            to_regen,
+            prompt,
+            instruction,
+            llm_config,
+            image_settings=image_settings,
+            contexto=material.contexto,
+        )
+
+        # La versión nueva se escribe cuando ya está el contenido: insertarla antes
+        # dejaba la transacción abierta durante las llamadas al modelo (minutos),
+        # con un bloqueo sobre la fila del OVA que hacía esperar a quien la leyera
+        # con FOR UPDATE (p. ej. GET /api/jobs).
         existing_numbers = tuple(
             db.execute(select(OvaVersion.version_number).where(OvaVersion.ova_id == ova_id))
             .scalars()
@@ -74,26 +100,6 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         )
         db.add(new_version)
         db.flush()
-
-        # Regenerate the selected phases concurrently (each _regen_phase is a
-        # pure-LLM call with no DB access). Regen-all is otherwise sequential —
-        # N phases × 2 LLM calls each — so the progress bar sat at 99% for
-        # minutes. DB writes below stay in this thread, in phase order.
-        material = build_regen_material(
-            db, ova_id, job.get("attachments") or [], prompt, instruction
-        )
-        with _regen_jobs_lock:
-            job["rag"] = material.report
-
-        to_regen = [p for p in current_phases if regen_all or str(p.id) in phase_ids_to_regen]
-        regen_content = regen_phases_parallel(
-            to_regen,
-            prompt,
-            instruction,
-            llm_config,
-            image_settings=image_settings,
-            contexto=material.contexto,
-        )
 
         new_phases_data = []
         for phase in current_phases:
