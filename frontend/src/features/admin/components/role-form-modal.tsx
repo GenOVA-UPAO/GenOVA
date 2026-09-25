@@ -12,16 +12,14 @@ import type { RoleFormPayload } from "../api/admin-roles.api";
 import { togglePermission } from "../lib/permissions";
 import { formatRoleDescription, formatRoleName } from "../lib/role-utils";
 import type { Role } from "../lib/types";
+import { isThesisRole } from "../pages/admin-roles-page.helpers";
 import { FormErrorAlert } from "./form-error-alert";
 import { RoleFormActions } from "./role-form-actions";
 import { RoleFormFields } from "./role-form-fields";
 import { RolePermissionsFieldset } from "./role-permissions-fieldset";
 
-// El modo tesis asigna este rol a las cuentas nuevas buscándolo por su nombre.
-const TESIS_ROLE = "usuarios_prueba";
-
 function nameLockReason(editingRole: Role | null): string | null {
-  if (editingRole?.name !== TESIS_ROLE) return null;
+  if (!isThesisRole(editingRole?.name)) return null;
   return "El modo tesis asigna este rol por su nombre, así que no se puede cambiar.";
 }
 

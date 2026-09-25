@@ -66,3 +66,14 @@ class ReassignmentTargetNotFound(RoleError):
         self, detail: str = "El rol de reasignación especificado no existe."
     ) -> None:
         super().__init__(detail)
+
+
+class RoleDeletionLocked(RoleError):
+    def __init__(
+        self,
+        detail: str = (
+            "Este rol no se puede eliminar: el registro en modo tesis lo asigna a "
+            "las cuentas nuevas."
+        ),
+    ) -> None:
+        super().__init__(detail)

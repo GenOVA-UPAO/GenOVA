@@ -59,3 +59,17 @@ def test_otros_roles_se_pueden_renombrar():
     role = Role(id=uuid4(), name="profesor", description="", permissions=[])
     use_case = UpdateRole(repo=_FakeRepo(role))
     assert use_case.execute(UpdateRoleInput(role_id=role.id, name="docente")).name == "docente"
+
+
+def test_eliminar_el_rol_de_tesis_se_rechaza():
+    """Sin él, el registro en modo tesis crearía cuentas sin ningún rol."""
+    from roles.application.dto import DeleteRoleInput
+    from roles.application.use_cases.delete_role import DeleteRole
+    from roles.domain.errors import RoleDeletionLocked
+
+    role = _tesis_role()
+    other = Role(id=uuid4(), name="usuario", description="", permissions=[])
+    with pytest.raises(RoleDeletionLocked):
+        DeleteRole(repo=_FakeRepo(role, other)).execute(
+            DeleteRoleInput(role_id=role.id, reassign_to_id=other.id)
+        )
