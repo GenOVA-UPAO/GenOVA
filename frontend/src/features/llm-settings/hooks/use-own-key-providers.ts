@@ -19,8 +19,16 @@ export function isAllowedProvider(allowed: Set<string> | null, provider: string)
   return allowed === null || allowed.has(provider);
 }
 
-/** Modelos elegibles por el usuario: solo los de proveedores con su clave. */
-export function useOwnKeyModels<T extends { provider: string }>(models: readonly T[]): T[] {
+/**
+ * Modelos elegibles por el usuario: solo los de proveedores con su clave. Los
+ * inactivos no: con la clave rechazada el catálogo trae los de la plataforma
+ * solo para poner nombre y precio a los que ya usa la configuración.
+ */
+export function useOwnKeyModels<T extends { provider: string; active?: boolean }>(
+  models: readonly T[],
+): T[] {
   const allowed = useOwnKeyProviders();
-  return models.filter((model) => isAllowedProvider(allowed, model.provider));
+  return models.filter(
+    (model) => model.active !== false && isAllowedProvider(allowed, model.provider),
+  );
 }

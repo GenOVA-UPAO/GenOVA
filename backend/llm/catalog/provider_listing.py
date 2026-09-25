@@ -75,11 +75,24 @@ def log_listing_failure(provider: str, exc: Exception, **context) -> None:
     )
 
 
-def list_groq_ids(api_key: str) -> set[str]:
+# Datos de cada modelo de Groq que usa el catálogo (su API los añade al formato
+# de OpenAI): con ellos se distinguen los de voz y transcripción de los de texto.
+_GROQ_META_FIELDS = ("name", "input_modalities", "output_modalities", "context_length", "context_window")
+
+
+def list_groq_ids(api_key: str) -> dict[str, dict]:
+    """Modelos de Groq: {id: datos}. Un dict se usa como el conjunto de ids de
+    antes (`in`, iterar) y además lleva nombre, modalidades y contexto."""
     from groq import Groq
 
     resp = Groq(api_key=api_key, max_retries=0, timeout=_TIMEOUT_S).models.list()
-    return {m.id for m in resp.data if m.id}
+    out: dict[str, dict] = {}
+    for m in resp.data:
+        if not m.id:
+            continue
+        raw = m.model_dump() if hasattr(m, "model_dump") else {}
+        out[m.id] = {k: raw[k] for k in _GROQ_META_FIELDS if raw.get(k) is not None}
+    return out
 
 
 def list_opencode_ids(api_key: str) -> set[str]:
@@ -159,8 +172,8 @@ def _fake_listing(provider: str, api_key: str) -> set[str] | None:
     return set(_FAKE_IDS.get(provider, ()))
 
 
-def list_models_with_key(provider: str, api_key: str) -> set[str] | None:
-    """Ids de modelos de `provider` visibles con `api_key`.
+def list_models_with_key(provider: str, api_key: str) -> set[str] | dict[str, dict] | None:
+    """Ids de modelos de `provider` visibles con `api_key` (Groq: {id: datos}).
 
     `None` significa «la lista es la pública de la plataforma» (OpenRouter): la
     clave es válida pero no cambia qué modelos hay. Lanza si la clave no sirve o

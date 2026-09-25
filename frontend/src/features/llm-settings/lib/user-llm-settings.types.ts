@@ -28,6 +28,8 @@ export interface CatalogModel {
   /** Solo los modelos de imagen y video: precio por imagen, megapíxel o segundo. */
   media_pricing?: MediaPricing | null;
   aptitudes?: string[];
+  /** `false`: no se puede elegir (p. ej. clave propia rechazada); sirve para nombrarlo. */
+  active?: boolean;
 }
 
 export interface LlmSettingsResponse {

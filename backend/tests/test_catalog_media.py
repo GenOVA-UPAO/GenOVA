@@ -227,7 +227,7 @@ def test_un_listado_caido_queda_en_none():
     assert build_media_entries(None) == {"image": None, "video": None}
 
 
-def test_la_fusion_conserva_aptitudes_y_contexto_del_chat():
+def test_la_fusion_conserva_contexto_y_aptitudes_no_de_texto_del_chat():
     chat = {
         "provider": "openrouter",
         "model_id": "google/gemini-2.5-flash-image",
@@ -251,7 +251,9 @@ def test_la_fusion_conserva_aptitudes_y_contexto_del_chat():
     merged = merge_media_entries([chat, otro], [media, nuevo])
 
     fused = merged[0]
-    assert fused["aptitudes"] == ["imagen", "texto", "vision"]
+    # Está en el listado de imágenes: su salida principal es la imagen. No hereda
+    # las aptitudes de texto del chat (salía en el selector de Código).
+    assert fused["aptitudes"] == ["imagen", "vision"]
     assert fused["context_length"] == 32768 and fused["curated"] is True
     assert fused["via_chat"] is True
     # El precio que se cobra por chat (image_output), no el del listado de /images.

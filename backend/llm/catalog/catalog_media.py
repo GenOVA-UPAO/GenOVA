@@ -25,6 +25,7 @@ import httpx
 import structlog
 
 from core import openrouter
+from llm.catalog.catalog_aptitudes import TEXT_TASKS
 from llm.catalog.catalog_media_pricing import (
     image_media_pricing,
     pricing_label,
@@ -243,8 +244,12 @@ def merge_media_entries(full: list[dict], media_rows: list[dict]) -> list[dict]:
     """Añade las filas de media al catálogo completo.
 
     Algunos modelos están en los dos listados (Gemini Image, GPT-5 Image): la
-    fila de media manda (categoría y precio por imagen), pero conserva las
-    aptitudes y el contexto de la de chat.
+    fila de media manda (categoría y precio por imagen) y conserva el contexto
+    de la de chat. No hereda sus aptitudes de texto: estar en el listado de
+    imágenes dice que su salida principal es la imagen, y ofrecer «Nano Banana»
+    en Código (con precio por imagen) era ofrecer un generador de imágenes para
+    escribir HTML. Un enrutador que solo está en el de chat (Auto Router) no
+    pasa por aquí y sigue siendo de texto.
     """
     index = {(e["provider"], e["model_id"]): i for i, e in enumerate(full)}
     out = list(full)
@@ -255,7 +260,9 @@ def merge_media_entries(full: list[dict], media_rows: list[dict]) -> list[dict]:
             continue
         chat = out[index[key]]
         aptitudes = list(row["aptitudes"])
-        aptitudes += [a for a in chat.get("aptitudes") or [] if a not in aptitudes]
+        aptitudes += [
+            a for a in chat.get("aptitudes") or [] if a not in aptitudes and a not in TEXT_TASKS
+        ]
         via_chat = _outputs_image(chat.get("modality"))
         out[index[key]] = {
             **row,

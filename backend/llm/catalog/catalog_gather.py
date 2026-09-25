@@ -101,7 +101,11 @@ def _persist_api_cache(db, sources: dict[str, str | None], data: dict) -> None:
     if sources["openrouter"] == "api" and data["or_data"]:
         save_to_cache(db, "openrouter", {"models": data["or_data"]})
     if sources["groq"] == "api" and data["groq_ids"]:
-        save_to_cache(db, "groq", {"models": list(data["groq_ids"])})
+        groq = data["groq_ids"]
+        # `meta` (nombre, modalidades, contexto) sirve para no volver a ofrecer
+        # los modelos de voz como de texto cuando el catálogo sale de la caché.
+        meta = dict(groq) if isinstance(groq, dict) else None
+        save_to_cache(db, "groq", {"models": list(groq), "meta": meta})
     if sources["opencode"] == "api" and data["opencode_ids"]:
         save_to_cache(db, "opencode", {"models": list(data["opencode_ids"])})
     if sources["huggingface"] == "api" and data["hf_ids"]:

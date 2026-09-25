@@ -15,6 +15,7 @@ export const TYPE_LABELS: Record<string, string> = {
   video: "Video",
   embedding: "Embedding",
   audio: "Audio",
+  moderacion: "Moderación",
 };
 
 export const CATEGORY_LABELS: Record<string, string> = {
@@ -35,4 +36,5 @@ export const CATEGORY_LABELS: Record<string, string> = {
   video: "Video",
   embedding: "Embedding",
   audio: "Audio",
+  moderacion: "Moderación",
 };

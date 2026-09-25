@@ -35,6 +35,30 @@ export function isProviderFailing(status: CatalogStatus | null | undefined, prov
   return failedProviders(status).includes(provider);
 }
 
+/** Lo que da `GET /admin/platform-config` y hace falta para contar claves. */
+export interface PlatformKeysSnapshot {
+  platform_config?: Record<string, string>;
+  providers?: string[];
+  server_keys?: string[];
+}
+
+/**
+ * Proveedores con clave de plataforma (guardada o del servidor), de todos los
+ * que lista Credenciales. La cabecera contaba solo los de catálogo de texto
+ * («2 de 4») mientras Credenciales ofrecía 8: parecía que faltaban proveedores.
+ * `null` sin datos (aún cargando o no es admin): se cuenta por el catálogo.
+ */
+export function platformKeyCount(
+  config: PlatformKeysSnapshot | null | undefined,
+): { connected: number; total: number } | null {
+  const providers = config?.providers ?? [];
+  if (providers.length === 0) return null;
+  const saved = config?.platform_config ?? {};
+  const server = new Set(config?.server_keys ?? []);
+  const connected = providers.filter((p) => Boolean(saved[p]) || server.has(p)).length;
+  return { connected, total: providers.length };
+}
+
 /** Cuántos proveedores tienen clave de plataforma, de cuántos hay. */
 export function connectedProviders(status: CatalogStatus | null | undefined): {
   connected: number;

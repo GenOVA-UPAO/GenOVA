@@ -76,6 +76,12 @@ vi.mock("@/core/auth/auth-store", () => ({
   useIsAdmin: () => true,
 }));
 
+const platformConfig: { data?: unknown } = {};
+
+vi.mock("@/core/hooks/use-platform-config", () => ({
+  usePlatformConfig: () => platformConfig,
+}));
+
 vi.mock("../hooks/use-llm-settings-store", () => ({
   useLlmSettingsStore: () => store,
 }));
@@ -151,6 +157,18 @@ describe("ModelsPage", () => {
     store.enabledModels = [];
     renderPage();
     expect(screen.getByText("1 de 2 proveedores conectados")).toBeTruthy();
+  });
+
+  it("cuenta los mismos proveedores que Credenciales cuando hay claves de plataforma", () => {
+    store.enabledModels = [];
+    platformConfig.data = {
+      providers: ["groq", "openrouter", "opencode", "runware"],
+      platform_config: { groq: "gsk_…1234", openrouter: "sk-or-…5678" },
+      server_keys: [],
+    };
+    renderPage();
+    expect(screen.getByText("2 de 4 proveedores conectados")).toBeTruthy();
+    platformConfig.data = undefined;
   });
 
   it("shows sticky save bar only when dirty", () => {

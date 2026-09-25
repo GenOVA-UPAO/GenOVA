@@ -133,8 +133,9 @@ def get_llm_settings(
     total = len(full)
     page_items = full[offset : offset + page_size]
 
-    all_entries_active = [e for e in merged_full if e.get("active")]
-    all_providers, all_types = providers_and_types(all_entries_active)
+    # Todas las filas, también las inactivas de una clave propia rechazada: se
+    # ven en el catálogo, así que su proveedor debe poder filtrarse.
+    all_providers, all_types = providers_and_types(merged_full)
 
     return {
         "settings": _settings_view(

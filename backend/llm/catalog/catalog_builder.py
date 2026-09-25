@@ -8,10 +8,48 @@ from llm.catalog.catalog_categorize import categorize_model
 from llm.catalog.catalog_pricing import format_pricing, format_pricing_detail
 from llm.catalog.model_catalog import CATALOG_ENTRIES
 
+# Groq no daba el contexto de cada modelo: sin sus datos se sigue suponiendo este.
+_GROQ_DEFAULT_CONTEXT = 128000
+
+
+def groq_modality(meta: dict | None) -> str:
+    """«text+image->text» a partir de las modalidades que declara Groq (o «text»)."""
+    meta = meta or {}
+    inputs = [str(m).lower() for m in meta.get("input_modalities") or []]
+    outputs = [str(m).lower() for m in meta.get("output_modalities") or []]
+    if not inputs and not outputs:
+        return "text"
+    return "+".join(inputs or ["text"]) + "->" + "+".join(outputs or ["text"])
+
+
+def _groq_row(model_id: str, meta: dict | None, curated: bool) -> dict:
+    """Fila de un modelo de Groq. Su API declara nombre, modalidades y contexto:
+    sin ellos, Orpheus (voz) y Whisper (transcripción) salían como modelos de
+    texto «de 128k» y con el id por nombre."""
+    meta = meta or {}
+    modality = groq_modality(meta)
+    context = meta.get("context_length") or meta.get("context_window")
+    return {
+        "provider": "groq",
+        "model_id": model_id,
+        "label": str(meta.get("name") or model_id),
+        "description": "",
+        "category": categorize_model(
+            {"id": model_id, "architecture": {"modality": modality}}, "groq"
+        ),
+        "modality": modality,
+        "pricing": None,
+        "pricing_detail": None,
+        "context_length": context if isinstance(context, int) else _GROQ_DEFAULT_CONTEXT,
+        "curated": curated,
+        "active": True,
+        "task": "texto" if curated else None,
+    }
+
 
 def _build_full_catalog(
     or_data: dict[str, dict],
-    groq_ids: set[str],
+    groq_ids: set[str] | dict[str, dict],
     opencode_ids: set[str] | None = None,
     hf_ids: set[str] | None = None,
 ) -> list[dict]:
@@ -39,21 +77,8 @@ def _build_full_catalog(
         })
 
     for model_id in groq_ids:
-        curated = ("groq", model_id) in curated_keys
-        result.append({
-            "provider": "groq",
-            "model_id": model_id,
-            "label": model_id,
-            "description": "",
-            "category": categorize_model({"id": model_id, "architecture": {"modality": "text"}}, "groq"),
-            "modality": "text",
-            "pricing": None,
-            "pricing_detail": None,
-            "context_length": 128000,
-            "curated": curated,
-            "active": True,
-            "task": "texto" if curated else None,
-        })
+        meta = groq_ids.get(model_id) if isinstance(groq_ids, dict) else None
+        result.append(_groq_row(model_id, meta, ("groq", model_id) in curated_keys))
 
     if opencode_ids is not None:
         curated_oc = {e["model_id"] for e in CATALOG_ENTRIES if e["provider"] == "opencode"}

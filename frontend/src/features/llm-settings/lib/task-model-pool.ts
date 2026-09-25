@@ -32,21 +32,27 @@ function tieneAptitud(m: { aptitudes?: string[]; category?: string }, task: stri
   return (m.category ?? "") === task;
 }
 
+/** Tareas que son variantes de escribir texto. */
+const TAREAS_DE_TEXTO = new Set(["texto", "codigo", "orquestador", "razonamiento"]);
+
 /**
- * Generadores de imagen o video que no escriben texto (Veo, FLUX, Recraft…):
- * en una tarea de texto fallarían siempre.
+ * Modelos que no escriben texto: generadores de imagen o video (Veo, FLUX,
+ * Nano Banana), voz (Orpheus), transcripción (Whisper) o clasificadores de
+ * seguridad (Prompt Guard). En una tarea de texto fallarían siempre. El backend
+ * ya les quita las aptitudes de texto: basta con que no tengan ninguna.
  */
-function soloGeneraMedia(m: { aptitudes?: string[]; category?: string }): boolean {
+function noEscribeTexto(m: { aptitudes?: string[]; category?: string }): boolean {
   const apt = m.aptitudes;
-  if (!Array.isArray(apt) || apt.length === 0) return APTITUD_OBLIGATORIA.has(m.category ?? "");
-  return apt.every((a) => APTITUD_OBLIGATORIA.has(a));
+  // Catálogos antiguos sin `aptitudes`: solo se reconocían los de imagen y video.
+  if (!Array.isArray(apt)) return APTITUD_OBLIGATORIA.has(m.category ?? "");
+  return !apt.some((a) => TAREAS_DE_TEXTO.has(a));
 }
 
 /**
  * Modelos ofrecibles para una tarea.
  *
  * Para imagen y vídeo se filtra de verdad. Para las tareas de texto solo se
- * quitan los generadores de imagen o video: solo 20 de los ~430 modelos del
+ * quitan los modelos que no escriben texto: solo 20 de los ~430 modelos del
  * catálogo declaran aptitud `codigo`, y generar HTML no requiere ninguna
  * capacidad especial, así que filtrar por ella dejaba el selector de Código con
  * un único modelo. Los que sí declaran la aptitud van primero, para que la
@@ -62,7 +68,7 @@ export function modelsForTask<T extends { aptitudes?: string[]; category?: strin
   const aptos: T[] = [];
   const resto: T[] = [];
   for (const m of models) {
-    if (soloGeneraMedia(m)) continue;
+    if (noEscribeTexto(m)) continue;
     (tieneAptitud(m, task) ? aptos : resto).push(m);
   }
   return [...aptos, ...resto];

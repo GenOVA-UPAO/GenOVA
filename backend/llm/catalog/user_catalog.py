@@ -62,6 +62,8 @@ class ProviderListing:
     ids: frozenset[str] | None  # None: lista pública de plataforma o sin datos
     error: str | None
     checked_at: str
+    # Datos por modelo cuando el proveedor los da (Groq: nombre, modalidades).
+    meta: dict[str, dict] | None = None
 
 
 @dataclass(frozen=True)
@@ -148,10 +150,15 @@ def _fetch_listing(
         log_listing_failure(provider, exc, user_id=user_id, scope="user")
         # Ante un fallo pasajero se conserva la última lista buena de esa misma
         # clave; con la clave rechazada no hay nada que ofrecer.
-        stale = previous.ids if previous is not None and code != INVALID_KEY else None
-        return ProviderListing("error", stale, code, _now_iso())
+        keep = previous is not None and code != INVALID_KEY
+        stale = previous.ids if keep else None
+        return ProviderListing("error", stale, code, _now_iso(), previous.meta if keep else None)
     return ProviderListing(
-        "connected", frozenset(ids) if ids is not None else None, None, _now_iso()
+        "connected",
+        frozenset(ids) if ids is not None else None,
+        None,
+        _now_iso(),
+        dict(ids) if isinstance(ids, dict) else None,
     )
 
 
@@ -218,22 +225,44 @@ def _fetch_many(user_id, keys: dict[str, str], *, force: bool) -> dict[str, Prov
         pool.shutdown(wait=False, cancel_futures=True)
 
 
-def _provider_entries(provider: str, ids) -> list[dict]:
-    if provider not in _DATA_ARG:
-        # OpenRouter con la clave rechazada: no hay modelos que ofrecer.
-        return []
-    args = {"or_data": {}, "groq_ids": set(), "opencode_ids": set(), "hf_ids": set()}
-    args[_DATA_ARG[provider]] = set(ids or ())
-    # Las APIs de Groq/OpenCode/HF solo dan el id: los curados traen su nombre.
+def _provider_entries(provider: str, listing: ProviderListing, platform_rows: list[dict]) -> list[dict]:
+    """Filas de `provider` para el usuario: las de su lista, con los datos del
+    catálogo de plataforma cuando el modelo ya está allí.
+
+    Las APIs de Groq/OpenCode/HF dan poco más que el id; la plataforma ya tiene
+    su nombre, precio y aptitudes. Sin esto el usuario veía «deepseek/…» donde
+    el administrador ve «DeepSeek V4 Flash»."""
+    if listing.ids is None or provider not in _DATA_ARG:
+        return _reference_rows(platform_rows)
+    known = {e["model_id"]: e for e in platform_rows}
+    rows = [{**known[mid], "active": True} for mid in listing.ids if mid in known]
+    unknown = [mid for mid in listing.ids if mid not in known]
+    if unknown:
+        args = {"or_data": {}, "groq_ids": set(), "opencode_ids": set(), "hf_ids": set()}
+        meta = listing.meta or {}
+        args[_DATA_ARG[provider]] = {mid: meta.get(mid) or {} for mid in unknown}
+        rows.extend(_build_full_catalog(**args))
+    # Los curados traen su nombre aunque la plataforma no liste el modelo.
     labels = {
         e["model_id"]: e["label"]
         for e in CATALOG_ENTRIES
         if e["provider"] == provider and e.get("label")
     }
     return [
-        {**e, "label": labels.get(e["model_id"], e["label"])}
-        for e in _build_full_catalog(**args)
+        {**e, "label": labels[e["model_id"]]}
+        if e["model_id"] in labels and e.get("label") in (None, "", e["model_id"])
+        else e
+        for e in rows
     ]
+
+
+def _reference_rows(platform_rows: list[dict]) -> list[dict]:
+    """Sin lista con la clave del usuario (rechazada, o el proveedor no respondió
+    y no hay una anterior) no hay modelos que elegir, pero las filas de la
+    plataforma se conservan inactivas: la UI saca de ellas el nombre, el precio y
+    las capacidades de los modelos que ya usa la configuración (antes mostraba
+    ids en todas partes, también en la de plataforma)."""
+    return [{**e, "active": False} for e in platform_rows]
 
 
 @dataclass(frozen=True)
@@ -261,7 +290,8 @@ class UserCatalog:
         replaced = self._replaced()
         merged = [e for e in platform_full if e["provider"] not in replaced]
         for provider in replaced:
-            merged.extend(_provider_entries(provider, self.listings[provider].ids))
+            platform_rows = [e for e in platform_full if e["provider"] == provider]
+            merged.extend(_provider_entries(provider, self.listings[provider], platform_rows))
         return _dedupe_and_sort(merged)
 
     def adjust_curated(self, curated: list[dict]) -> list[dict]:
@@ -299,7 +329,8 @@ class UserCatalog:
         """Estado por proveedor de texto: sin conectar, conectado o error."""
         counts: dict[str, int] = {}
         for e in merged_full:
-            if e["provider"] in self.listings:
+            # Las filas de referencia (inactivas) no son modelos que pueda elegir.
+            if e["provider"] in self.listings and e.get("active", True):
                 counts[e["provider"]] = counts.get(e["provider"], 0) + 1
         out: dict[str, dict] = {}
         for provider in LISTABLE_PROVIDERS:

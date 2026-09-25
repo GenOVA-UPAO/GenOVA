@@ -3,9 +3,10 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { useCurrentUser, useIsAdmin } from "@/core/auth/auth-store";
+import { usePlatformConfig } from "@/core/hooks/use-platform-config";
 
 import type { ApplyConfigResponse } from "../api/model-tools.api";
-import { connectedProviders } from "../lib/catalog-status";
+import { connectedProviders, platformKeyCount } from "../lib/catalog-status";
 import { blockingMessage, validateDraft } from "../lib/chain-validation";
 import type { Draft } from "../lib/llm-config-draft";
 import {
@@ -37,7 +38,10 @@ export function useModelsPage() {
     }
   }, [user, navigate]);
 
-  const { connected, total } = connectedProviders(store.catalogStatus);
+  const platformKeys = usePlatformConfig(isAdmin);
+  // Los mismos proveedores que lista Credenciales (se comparte la caché con ella).
+  const { connected, total } =
+    platformKeyCount(platformKeys.data) ?? connectedProviders(store.catalogStatus);
   const taskIssues = validateDraft(admin.draft, admin.tasks);
   const chainMessage = blockingMessage(taskIssues);
   const chainInvalid = chainMessage !== null;

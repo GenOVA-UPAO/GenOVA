@@ -113,8 +113,11 @@ _TEXT_TASKS = frozenset({"texto", "codigo", "orquestador", "razonamiento"})
 
 
 def _only_media(entry: dict) -> bool:
-    """Generador de imagen o video que no escribe texto (Veo, FLUX…): las tareas
-    del usuario son de texto, así que ofrecerlo sería ofrecer algo que falla."""
-    if not entry.get("media"):
-        return False
-    return not _TEXT_TASKS & set(entry.get("aptitudes") or [])
+    """Modelo que no escribe texto: generadores de imagen o video (Veo, FLUX…),
+    voz (Orpheus), transcripción (Whisper) o clasificadores (Prompt Guard). Las
+    tareas del usuario son de texto, así que ofrecerlo sería ofrecer algo que
+    falla. Filas sin `aptitudes` (catálogos antiguos): solo se descartan las de media."""
+    aptitudes = entry.get("aptitudes")
+    if aptitudes is None:
+        return bool(entry.get("media"))
+    return not _TEXT_TASKS & set(aptitudes)

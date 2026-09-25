@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { connectedProviders, failedProviders, unconnectedProviders } from "./catalog-status";
+import {
+  connectedProviders,
+  failedProviders,
+  platformKeyCount,
+  unconnectedProviders,
+} from "./catalog-status";
 
 const status = {
   openrouter: { ok: true, configured: true },
@@ -29,5 +34,29 @@ describe("catalog-status", () => {
   it("handles a missing status", () => {
     expect(failedProviders(null)).toEqual([]);
     expect(connectedProviders(undefined)).toEqual({ connected: 0, total: 0 });
+  });
+
+  it("cuenta las claves de plataforma sobre todos los proveedores de Credenciales", () => {
+    // La cabecera decía «2 de 4» (solo los de catálogo de texto) y Credenciales listaba 8.
+    const config = {
+      providers: [
+        "groq",
+        "openrouter",
+        "opencode",
+        "siliconflow",
+        "runware",
+        "falai",
+        "huggingface",
+        "cloudflare",
+      ],
+      platform_config: { groq: "gsk_…abcd", openrouter: "sk-or-…wxyz", opencode: "" },
+      server_keys: ["runware"],
+    };
+    expect(platformKeyCount(config)).toEqual({ connected: 3, total: 8 });
+  });
+
+  it("sin datos de plataforma no cuenta (se usa el estado del catálogo)", () => {
+    expect(platformKeyCount(undefined)).toBeNull();
+    expect(platformKeyCount({ providers: [] })).toBeNull();
   });
 });

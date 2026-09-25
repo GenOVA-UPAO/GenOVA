@@ -72,8 +72,8 @@ def _fetch_openrouter() -> dict[str, dict] | None:
     return models
 
 
-def _fetch_groq() -> set[str] | None:
-    """Fetch available Groq model ids. Resolves key via platform_config → env var.
+def _fetch_groq() -> dict[str, dict] | None:
+    """Fetch available Groq models ({id: datos}). Resolves key via platform_config → env var.
     Raises ProviderNotConfiguredError when there is no key."""
     api_key = _platform_key("groq")
     if not api_key:
@@ -180,6 +180,10 @@ def _load_cached(db, provider: str) -> dict | set | None:
     models = raw.get("models")
     if provider == "openrouter":
         return models if isinstance(models, dict) and models else None
-    if isinstance(models, (list, set)) and models:
-        return {str(m) for m in models}
-    return None
+    if not isinstance(models, (list, set)) or not models:
+        return None
+    meta = raw.get("meta")
+    if provider == "groq" and isinstance(meta, dict):
+        # Con los datos de cada modelo (cachés guardadas desde que Groq los da).
+        return {str(m): meta.get(m) if isinstance(meta.get(m), dict) else {} for m in models}
+    return {str(m) for m in models}

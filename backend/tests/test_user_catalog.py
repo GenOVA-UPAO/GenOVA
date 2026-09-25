@@ -68,6 +68,12 @@ def _ids(entries, provider):
     return {e["model_id"] for e in entries if e["provider"] == provider}
 
 
+def _active_ids(entries, provider):
+    """Los que se pueden elegir: con la clave rechazada quedan filas inactivas
+    de la plataforma, solo para nombrar los modelos que ya se usan."""
+    return {e["model_id"] for e in entries if e["provider"] == provider and e.get("active", True)}
+
+
 # ── Caché ──────────────────────────────────────────────────────────────────────
 
 
@@ -168,7 +174,7 @@ def test_clave_invalida_da_error_con_motivo_y_ningun_modelo(monkeypatch):
     uc = load_user_catalog("u1", {"groq": GROQ_KEY_A})
     merged = uc.merge_full(PLATFORM_FULL)
 
-    assert _ids(merged, "groq") == set()
+    assert _active_ids(merged, "groq") == set()
     status = uc.status(merged)
     assert status["groq"]["state"] == "error"
     assert status["groq"]["error"] == "invalid_key"
@@ -221,7 +227,9 @@ def test_openrouter_usa_la_lista_publica_y_con_clave_invalida_ninguna(monkeypatc
     user_catalog.clear_user_catalog_cache()
     monkeypatch.setattr(user_catalog, "list_models_with_key", _Lister(error=_http_error(401)))
     uc = load_user_catalog("u1", {"openrouter": "sk-or-v1-abcdef123456"})
-    assert _ids(uc.merge_full(PLATFORM_FULL), "openrouter") == set()
+    merged = uc.merge_full(PLATFORM_FULL)
+    assert _active_ids(merged, "openrouter") == set()
+    assert uc.status(merged)["openrouter"]["models"] == 0
 
 
 @pytest.mark.parametrize(
@@ -284,3 +292,90 @@ def test_los_modelos_curados_de_su_lista_llevan_su_nombre(lister):
     labels = {e["model_id"]: e["label"] for e in merged if e["provider"] == "groq"}
     assert labels["llama-3.3-70b-versatile"] == "Llama 3.3 70B (Groq)"
     assert labels["solo-de-a"] == "solo-de-a"
+
+
+# ── Nombres del catálogo de plataforma ─────────────────────────────────────────
+
+PLATFORM_NAMED = [
+    {
+        "provider": "openrouter",
+        "model_id": "deepseek/deepseek-v4.1-flash",
+        "label": "DeepSeek: DeepSeek V4.1 Flash",
+        "pricing": "$0.10/$0.40 por 1M tokens",
+        "aptitudes": ["texto", "orquestador", "razonamiento"],
+        "active": True,
+        "curated": True,
+    },
+    {
+        "provider": "groq",
+        "model_id": "openai/gpt-oss-120b",
+        "label": "GPT OSS 120B",
+        "category": "razonamiento",
+        "aptitudes": ["razonamiento", "texto"],
+        "active": True,
+        "curated": False,
+    },
+]
+
+
+def test_clave_rechazada_conserva_nombres_y_precios_de_la_plataforma(monkeypatch):
+    """Con la clave de OpenRouter rechazada la UI mostraba ids en todas partes
+    (también en la configuración de plataforma): el catálogo quedaba en ~12
+    modelos y sin los de OpenRouter no había de dónde sacar el nombre."""
+    monkeypatch.setattr(user_catalog, "list_models_with_key", _Lister(error=_http_error(401)))
+    uc = load_user_catalog("u1", {"openrouter": "sk-or-v1-abcdef123456"})
+    merged = uc.merge_full(PLATFORM_NAMED)
+
+    row = next(e for e in merged if e["model_id"] == "deepseek/deepseek-v4.1-flash")
+    assert row["label"] == "DeepSeek: DeepSeek V4.1 Flash"
+    assert row["pricing"] == "$0.10/$0.40 por 1M tokens"
+    # No se puede elegir: se pagaría con la clave rechazada.
+    assert row["active"] is False
+    assert uc.model_keys(merged) == set()
+    assert uc.status(merged)["openrouter"]["models"] == 0
+    # El catálogo de plataforma no se toca.
+    assert PLATFORM_NAMED[0]["active"] is True
+
+
+def test_proveedor_sin_respuesta_ni_lista_previa_conserva_los_nombres(monkeypatch):
+    monkeypatch.setattr(user_catalog, "list_models_with_key", _Lister(error=httpx.ConnectError("x")))
+    uc = load_user_catalog("u1", {"groq": GROQ_KEY_A})
+    merged = uc.merge_full(PLATFORM_NAMED)
+    row = next(e for e in merged if e["model_id"] == "openai/gpt-oss-120b")
+    assert (row["label"], row["active"]) == ("GPT OSS 120B", False)
+
+
+def test_la_lista_propia_toma_nombre_y_aptitudes_de_la_plataforma(monkeypatch):
+    lister = _Lister(by_key={GROQ_KEY_A: {"openai/gpt-oss-120b", "solo-del-usuario"}})
+    monkeypatch.setattr(user_catalog, "list_models_with_key", lister)
+    uc = load_user_catalog("u1", {"groq": GROQ_KEY_A})
+    merged = uc.merge_full(PLATFORM_NAMED)
+
+    known = next(e for e in merged if e["model_id"] == "openai/gpt-oss-120b")
+    assert known["label"] == "GPT OSS 120B"
+    assert known["category"] == "razonamiento" and known["active"] is True
+    only_user = next(e for e in merged if e["model_id"] == "solo-del-usuario")
+    assert only_user["label"] == "solo-del-usuario" and only_user["active"] is True
+    assert uc.status(merged)["groq"]["models"] == 2
+
+
+def test_la_lista_propia_de_groq_usa_sus_modalidades(monkeypatch):
+    """Groq declara modalidades por modelo: la voz (Orpheus) no se ofrece como
+    modelo de texto aunque la plataforma no tenga clave de Groq."""
+
+    def lister(provider, api_key):
+        return {
+            "canopylabs/orpheus-v1-english": {
+                "name": "Canopy Labs Orpheus V1 English",
+                "input_modalities": ["text"],
+                "output_modalities": ["speech"],
+                "context_length": 4000,
+            },
+        }
+
+    monkeypatch.setattr(user_catalog, "list_models_with_key", lister)
+    uc = load_user_catalog("u1", {"groq": GROQ_KEY_A})
+    row = next(e for e in uc.merge_full([]) if e["provider"] == "groq")
+    assert row["label"] == "Canopy Labs Orpheus V1 English"
+    assert row["category"] == "audio" and row["aptitudes"] == ["audio"]
+    assert row["context_length"] == 4000

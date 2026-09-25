@@ -5,6 +5,7 @@ import { useLlmSettings } from "../hooks/use-llm-settings";
 import { useOwnKeyModels } from "../hooks/use-own-key-providers";
 import { dedupeCatalogModels } from "../lib/dedupe-catalog";
 import { taskMeta } from "../lib/task-meta";
+import { modelsForTask } from "../lib/task-model-pool";
 import { LlmModelSelect } from "./llm-model-select";
 import { UserFallbackEditor } from "./user-fallback-editor";
 import { UserModelSummary } from "./user-model-summary";
@@ -30,7 +31,12 @@ export function UserOverrideSection({
   const favorites = useFavoriteActions();
   // Solo modelos de proveedores con clave propia: lo que elige se paga con ella.
   // Su catálogo completo (los favoritos salen primero); lo elegido se añade a favoritos.
-  const userModels = useOwnKeyModels(dedupeCatalogModels([...store.catalogEnabled, ...store.catalogFull]));
+  // Solo los aptos para la tarea: sin esto salían voz (Orpheus) o clasificadores
+  // (Prompt Guard) entre los modelos de texto.
+  const userModels = modelsForTask(
+    useOwnKeyModels(dedupeCatalogModels([...store.catalogEnabled, ...store.catalogFull])),
+    task,
+  );
   const userFallbacks = userSettings.fallbacks ?? [];
 
   return (
