@@ -27,7 +27,8 @@ _SEED_MODELOS: dict[str, tuple] = {
     "razonamiento": ("openrouter", "deepseek/deepseek-v4-flash", {}),
 }
 
-_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+# El modelo que describe las imágenes del RAG ya no es un id fijo (Groq retiró
+# el anterior): ver llm.utils.vision_models.
 
 _FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
 _FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"

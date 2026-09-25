@@ -22,7 +22,6 @@ from llm.utils.llm_helpers import (
     _RECOVERABLE_ERRORS,
     _SEED_FALLBACK_CHAIN,
     _SEED_MODELOS,
-    _VISION_MODEL,
     EmptyContentError,
     LLMBudgetExhaustedError,
     _default_models,
@@ -34,6 +33,7 @@ from llm.utils.llm_helpers import (
     with_model_thinking,
     with_thinking_disabled,
 )
+from llm.utils.vision_models import clean_description, vision_chain
 
 # ── Re-export everything external callers depend on ───────────────────────────
 # Tests, catalog_refresh, admin router, and all llm/*_router.py files import
@@ -45,7 +45,6 @@ __all__ = [
     "_RECOVERABLE_ERRORS",
     "_SEED_FALLBACK_CHAIN",
     "_SEED_MODELOS",
-    "_VISION_MODEL",
     "_chat",
     "_default_models",
     "_fallback_chain",
@@ -344,14 +343,53 @@ def generar_texto_with_model(
         return response.choices[0].message.content
 
 
+# Los modelos de Groq que razonan (Qwen) escriben su razonamiento antes de la
+# descripción y cuenta contra el tope: con 512 tokens podía no quedar nada.
+_VISION_GROQ_MIN_TOKENS = 2048
+
+
+def _vision_once(provider: str, model_id: str, messages: list[dict], max_tokens: int, key: str) -> str:
+    if provider == "groq":
+        response = groq_client.with_options(api_key=key).chat.completions.create(
+            model=model_id,
+            messages=messages,
+            max_completion_tokens=max(max_tokens, _VISION_GROQ_MIN_TOKENS),
+            timeout=_LLM_TIMEOUT_S,
+        )
+    else:
+        response = openrouter_client.with_options(api_key=key).chat.completions.create(
+            model=model_id,
+            messages=messages,
+            max_tokens=max_tokens,
+            timeout=_LLM_TIMEOUT_S,
+        )
+    return clean_description(response.choices[0].message.content)
+
+
 def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
-    """Multi-turn messages with image_url content blocks for RAG image analysis."""
-    key = _get_provider_key("groq")
-    client = groq_client.with_options(api_key=key) if key else groq_client
-    response = client.chat.completions.create(
-        model=_VISION_MODEL,
-        messages=messages,
-        max_completion_tokens=max_tokens,
-        timeout=_LLM_TIMEOUT_S,
-    )
-    return response.choices[0].message.content
+    """Describe una imagen (mensajes con bloques image_url) para el RAG.
+
+    Prueba la cadena de `vision_chain()` con las claves de plataforma hasta que
+    un modelo responde: un modelo retirado (404) o sin cuota pasa al siguiente.
+    """
+    last_err: Exception | None = None
+    for provider, model_id in vision_chain():
+        key = _get_provider_key(provider)
+        if not key:
+            continue
+        try:
+            text = _vision_once(provider, model_id, messages, max_tokens, key)
+        except _RECOVERABLE_ERRORS as exc:
+            logger.warning(
+                "vision model failed — trying next",
+                provider=provider,
+                model_id=model_id,
+                error_type=type(exc).__name__,
+                status=getattr(exc, "status_code", None),
+            )
+            last_err = exc
+            continue
+        if text:
+            return text
+        last_err = EmptyContentError(f"{provider}/{model_id} devolvió una descripción vacía")
+    raise last_err or RuntimeError("No hay ningún modelo de visión disponible")
