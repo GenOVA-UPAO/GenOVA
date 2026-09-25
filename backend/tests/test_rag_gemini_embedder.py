@@ -1,6 +1,7 @@
 """Embedder de Gemini sin red: base configurable, lotes, dimensiones y reintentos."""
 
 from types import SimpleNamespace
+from urllib.parse import urlsplit
 
 import pytest
 from google.genai import errors
@@ -59,7 +60,8 @@ def test_sin_gemini_api_base_usa_la_api_de_google(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "dummy-local")
     monkeypatch.delenv("GEMINI_API_BASE", raising=False)
     emb = GeminiEmbedder()
-    assert "googleapis.com" in emb._client._api_client._http_options.base_url
+    host = urlsplit(emb._client._api_client._http_options.base_url).hostname
+    assert host == "generativelanguage.googleapis.com"
 
 
 def test_v2_manda_una_peticion_por_texto(monkeypatch):
