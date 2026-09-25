@@ -3,19 +3,16 @@ import { SettingRow } from "./setting-row";
 
 interface AlwaysOnNodeRowProps {
   node: EngineNode;
-  warning?: boolean;
 }
 
-export function AlwaysOnNodeRow({ node, warning = false }: Readonly<AlwaysOnNodeRowProps>) {
+/**
+ * Nodo que no se puede pausar. El generador de video ya no pasa por aquí: su
+ * estado real (tarea Video de Modelos) lo pinta `CapabilityRow`.
+ */
+export function AlwaysOnNodeRow({ node }: Readonly<AlwaysOnNodeRowProps>) {
   return (
     <SettingRow
-      title={
-        <>
-          {node.name}
-          {/* Sin clave no es un fallo (sigue funcionando sin ella): se dice, sin alarma. */}
-          {warning ? <span className="font-normal text-muted-foreground">Sin clave API</span> : null}
-        </>
-      }
+      title={node.name}
       description={node.description ?? "Nodo base del sistema."}
       control={<span className="text-sm text-muted-foreground">Siempre activo</span>}
     />

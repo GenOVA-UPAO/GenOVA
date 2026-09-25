@@ -49,6 +49,11 @@ const MODEL_OUTCOMES: Record<string, TestOutcome> = {
     title: "Respondió vacío",
     hint: "El modelo gastó la respuesta en razonar y no devolvió texto. Úsalo solo con un respaldo.",
   },
+  not_testable: {
+    tone: "warning",
+    title: "Este modelo no se prueba aquí",
+    hint: "Probarlo generaría un video de pago. Actívalo y revisa el primer OVA que genere.",
+  },
 };
 
 const UNKNOWN_OUTCOME: TestOutcome = {
@@ -58,7 +63,9 @@ const UNKNOWN_OUTCOME: TestOutcome = {
 };
 
 export function modelTestOutcome(result: ModelTestResult): TestOutcome {
-  if (result.ok) return { tone: "success", title: "Responde", hint: "" };
+  if (result.ok) {
+    return { tone: "success", title: result.image ? "Genera imágenes" : "Responde", hint: "" };
+  }
   return MODEL_OUTCOMES[result.code] ?? UNKNOWN_OUTCOME;
 }
 

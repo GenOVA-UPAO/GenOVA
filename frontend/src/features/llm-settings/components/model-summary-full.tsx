@@ -6,6 +6,8 @@ import {
   formatUsd,
   type ModelFacts,
   modelFacts,
+  priceDescription,
+  priceSummary,
   type RichModel,
 } from "../lib/model-facts";
 import { CONNECTION_HINTS, type ProviderConnection } from "../lib/provider-connection";
@@ -24,20 +26,25 @@ export function ModelSummaryFull({ id, model, connection }: Readonly<ModelSummar
   const facts = modelFacts(model);
   const context = formatContext(facts.context);
   const hint = CONNECTION_HINTS[connection];
-  const items: { label: string; value: ReactNode }[] = [
-    {
-      label: "Proveedor",
-      value: (
-        <>
-          <span className="mr-1.5">{PROVIDER_LABELS[model.provider] ?? model.provider}</span>
-          <ConnectionLabel connection={connection} />
-        </>
-      ),
-    },
-    { label: "Entrada", value: priceValue(facts, facts.input) },
-    { label: "Salida", value: priceValue(facts, facts.output) },
-    { label: "Contexto", value: context ? `${context} tokens` : "Sin dato" },
-  ];
+  const provider = {
+    label: "Proveedor",
+    value: (
+      <>
+        <span className="mr-1.5">{PROVIDER_LABELS[model.provider] ?? model.provider}</span>
+        <ConnectionLabel connection={connection} />
+      </>
+    ),
+  };
+  // Imagen y video no cobran por tokens ni tienen contexto: su precio es por
+  // imagen o por segundo, y ocupa el hueco de entrada y salida.
+  const items: { label: string; value: ReactNode }[] = facts.media
+    ? [provider, { label: "Precio", value: mediaValue(facts) }]
+    : [
+        provider,
+        { label: "Entrada", value: priceValue(facts, facts.input) },
+        { label: "Salida", value: priceValue(facts, facts.output) },
+        { label: "Contexto", value: context ? `${context} tokens` : "Sin dato" },
+      ];
   return (
     <div id={id} className="space-y-2 rounded-lg bg-muted/50 px-3.5 py-3 dark:bg-muted/30">
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-4">
@@ -54,12 +61,17 @@ export function ModelSummaryFull({ id, model, connection }: Readonly<ModelSummar
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <ModelCapabilities capabilities={facts.capabilities} />
-          <span>Precios por millón de tokens</span>
+          {facts.media ? null : <span>Precios por millón de tokens</span>}
         </p>
         <ModelFavoriteToggle provider={model.provider} modelId={model.model_id} />
       </div>
     </div>
   );
+}
+
+function mediaValue(facts: ModelFacts): ReactNode {
+  if (facts.free) return <span className="text-success-strong">Gratis</span>;
+  return <span title={priceDescription(facts)}>{priceSummary(facts)}</span>;
 }
 
 function priceValue(facts: ModelFacts, value: number | null): ReactNode {

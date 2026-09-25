@@ -66,3 +66,15 @@ def test_titulo_largo_sin_punto_se_trunca_por_palabra():
 
 def test_titulo_vacio():
     assert ova_title("  \n ") == ""
+
+
+def test_titulo_largo_con_dos_puntos_usa_el_tema():
+    prompt = (
+        "Sobreajuste en regresión logística: por qué un modelo de clasificación de café "
+        "puede memorizar los datos. Objetivo: reconocer el sobreajuste."
+    )
+    assert ova_title(prompt) == "Sobreajuste en regresión logística"
+
+
+def test_titulo_corto_con_dos_puntos_se_conserva():
+    assert ova_title("Redes neuronales: introducción") == "Redes neuronales: introducción"

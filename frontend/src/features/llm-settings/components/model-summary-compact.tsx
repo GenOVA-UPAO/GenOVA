@@ -5,6 +5,7 @@ import {
   formatUsd,
   type ModelFacts,
   modelFacts,
+  priceDescription,
   type RichModel,
 } from "../lib/model-facts";
 import {
@@ -46,6 +47,7 @@ export function ModelSummaryCompact({ id, model, connection }: Readonly<ModelSum
 
 function compactPrice(facts: ModelFacts): string | null {
   if (facts.free) return "Gratis";
+  if (facts.media) return priceDescription(facts);
   if (facts.variable) return "Precio variable";
   if (facts.input === null || facts.output === null) return null;
   return `Entrada ${formatUsd(facts.input)}, salida ${formatUsd(facts.output)} por 1M tokens`;

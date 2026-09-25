@@ -7,6 +7,7 @@ via `get_catalog_entries()`.
 """
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from threading import Lock, RLock
 from time import monotonic
@@ -18,6 +19,14 @@ from llm.catalog.catalog_gather import (
     _dedupe_and_sort,
     _gather_provider_data,
     _persist_api_cache,
+)
+from llm.catalog.catalog_media import (
+    build_media_entries,
+    fetch_openrouter_media,
+    load_cached_media,
+    media_rows_of,
+    merge_media_entries,
+    save_media_cache,
 )
 from llm.catalog.catalog_refresh_providers import (
     _merge_groq,
@@ -106,8 +115,13 @@ def refresh_catalog(db=None, *, force: bool = False) -> None:
             return
 
         # Fetch all providers in parallel (None = failed), falling back to the
-        # Supabase cache for any that failed.
-        data, sources, configured = _gather_provider_data(db, _CATALOG_REFRESH_TIMEOUT)
+        # Supabase cache for any that failed. The OpenRouter image/video lists
+        # travel in their own thread: they are public and slower (one price
+        # request per image model).
+        with ThreadPoolExecutor(max_workers=1) as media_pool:
+            media_future = media_pool.submit(_fetch_media)
+            data, sources, configured = _gather_provider_data(db, _CATALOG_REFRESH_TIMEOUT)
+            media_raw, media_source = _media_result(media_future, db)
         or_data, groq_ids = data["or_data"], data["groq_ids"]
         opencode_ids, hf_ids = data["opencode_ids"], data["hf_ids"]
         or_source, groq_source = sources["openrouter"], sources["groq"]
@@ -139,6 +153,7 @@ def refresh_catalog(db=None, *, force: bool = False) -> None:
                 full.extend(e for e in _full_catalog if e["provider"] == "opencode")
             if hf_ids is None:
                 full.extend(e for e in _full_catalog if e["provider"] == "huggingface")
+            full = _with_media(full, _full_catalog, media_raw)
             full = _dedupe_and_sort(full)
             _full_catalog = full
             for provider, source in (
@@ -170,5 +185,43 @@ def refresh_catalog(db=None, *, force: bool = False) -> None:
                 _persist_api_cache(db, sources, data)
             except Exception:
                 logger.exception("failed to save catalog cache to DB")
+        if db is not None and media_source == "api":
+            try:
+                save_media_cache(db, media_raw)
+            except Exception:
+                logger.exception("failed to save media catalog cache to DB")
     finally:
         _refresh_lock.release()
+
+
+def _fetch_media() -> dict | None:
+    """Listados de imagen/video de OpenRouter (None si fallan). Nunca lanza."""
+    try:
+        return fetch_openrouter_media()
+    except Exception:
+        logger.exception("media model list fetch crashed", provider="openrouter")
+        return None
+
+
+def _media_result(future, db) -> tuple[dict | None, str | None]:
+    """(listados crudos, origen «api»|«cache»|None) con la caché como respaldo."""
+    try:
+        raw = future.result(timeout=_CATALOG_REFRESH_TIMEOUT + 15)
+    except Exception:
+        logger.exception("media model list fetch timed out", provider="openrouter")
+        raw = None
+    if raw is not None:
+        return raw, "api"
+    cached = load_cached_media(db)
+    return (cached, "cache") if cached is not None else (None, None)
+
+
+def _with_media(full: list[dict], previous: list[dict], media_raw: dict | None) -> list[dict]:
+    """Suma los modelos de imagen y video; el tipo cuyo listado falló conserva
+    las filas del refresco anterior en vez de desaparecer del selector."""
+    built = build_media_entries(media_raw)
+    rows: list[dict] = []
+    for kind in ("image", "video"):
+        fresh = built.get(kind)
+        rows.extend(fresh if fresh is not None else media_rows_of(previous, kind))
+    return merge_media_entries(full, rows)

@@ -6,12 +6,14 @@ import type { EffectiveConfig } from "../lib/llm-config-draft";
 /** Resultado de «Probar» un modelo (`POST …/test-model`). La clave nunca viene. */
 export interface ModelTestResult {
   ok: boolean;
-  /** `ok` | `no_key` | `invalid_key` | `no_credit` | `rate_limited` | `model_not_found` | `timeout` | `unreachable` | `empty` | `error`. */
+  /** `ok` | `no_key` | `invalid_key` | `no_credit` | `rate_limited` | `model_not_found` | `timeout` | `unreachable` | `empty` | `not_testable` | `error`. */
   code: string;
   provider: string;
   model_id: string;
   latency_ms: number | null;
   excerpt: string | null;
+  /** Modelos de imagen: la imagen de prueba generada (data URI). */
+  image?: string | null;
   /** Con qué clave se probó: la de la plataforma, la del servidor o la propia. */
   key_source?: "platform" | "server" | "own";
   simulated: boolean;

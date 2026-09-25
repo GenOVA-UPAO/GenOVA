@@ -16,13 +16,29 @@ from llm.utils.utils import SCORM_JS
 logger = structlog.get_logger(__name__)
 
 
-def podcast_audio_b64(text: str) -> str | None:
-    """Return the monologue narrated as a base64 WAV, or None if TTS fails."""
+def podcast_audio(text: str) -> tuple[str, str] | None:
+    """Monólogo narrado como (base64, tipo MIME), o None si no hay audio.
+
+    Primero OpenRouter: voz en español y MP3 ligero. Si no hay clave o falla,
+    Groq (Orpheus, solo inglés, WAV), como antes. Sin ninguno, solo texto.
+    """
+    from llm.clients.clients import _get_provider_key
+    from llm.podcast.tts_openrouter import synthesize_mp3
+
+    mp3 = synthesize_mp3(text, _get_provider_key("openrouter"))
+    if mp3:
+        return base64.b64encode(mp3).decode("ascii"), "audio/mpeg"
     try:
-        return base64.b64encode(generar_audio_tts(text)).decode("ascii")
+        return base64.b64encode(generar_audio_tts(text)).decode("ascii"), "audio/wav"
     except Exception as exc:
         logger.warning("podcast TTS failed, falling back to text-only", error=str(exc))
         return None
+
+
+def podcast_audio_b64(text: str) -> str | None:
+    """Compatibilidad: solo el base64 (el tipo puede ser MP3 o WAV)."""
+    audio = podcast_audio(text)
+    return audio[0] if audio else None
 
 
 _STYLE = """<style>
@@ -86,14 +102,18 @@ document.getElementById('status').textContent='✓ Completado';_scormComplete();
 """
 
 
-def build_podcast_html(concept: str, monologue: str, audio_b64: str | None) -> str:
-    safe_concept = html.escape(concept)
-    # Truncate long concept descriptions so the <h2> stays readable.
-    display_title = safe_concept[:90] + ("…" if len(safe_concept) > 90 else "")
+def build_podcast_html(
+    concept: str, monologue: str, audio_b64: str | None, mime: str = "audio/wav"
+) -> str:
+    from core.text import ova_title
+
+    # El concepto es el prompt entero («Tema. Objetivo: … Nivel educativo: …»):
+    # el título es su primera frase, como el del OVA.
+    display_title = html.escape(ova_title(concept, 90) or concept[:90])
     safe_monologue = html.escape(monologue).replace("\n", "<br>")
     if audio_b64:
         media = (
-            '<audio id="aud" preload="auto" src="data:audio/wav;base64,' + audio_b64 + '"></audio>'
+            f'<audio id="aud" preload="auto" src="data:{mime};base64,' + audio_b64 + '"></audio>'
             '<div class="controls">'
             '<button class="btn" id="play">▶ Reproducir</button>'
             '<button class="btn ghost" id="repeat">↺ Repetir</button></div>'
@@ -113,7 +133,7 @@ def build_podcast_html(concept: str, monologue: str, audio_b64: str | None) -> s
         '<meta charset="UTF-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1.0">'
         "<title>Micro-Podcast · "
-        + safe_concept
+        + display_title
         + "</title>"
         + _STYLE
         + '</head>\n<body><div class="card">'

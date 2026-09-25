@@ -42,6 +42,11 @@ TIMEOUT = "timeout"
 UNREACHABLE = "unreachable"
 EMPTY = "empty"
 UNKNOWN = "error"
+# Probar un modelo de video costaría un video: no se prueba desde aquí.
+NOT_TESTABLE = "not_testable"
+
+PROBE_IMAGE_PROMPT = "Icono plano y simple de un grano de café sobre fondo blanco."
+PROBE_IMAGE_SIZE = 512
 
 # Mensajes de 400 que en realidad dicen «ese modelo no existe» (OpenRouter
 # responde 400 «is not a valid model ID»; Groq y OpenAI, 404).
@@ -152,6 +157,12 @@ def probe_model(provider: str, model_id: str, api_key: str | None, *, key_source
         _log(result)
         return result
 
+    kind = _media_kind(provider, model_id)
+    if kind == "video" or (kind == "image" and provider != "openrouter"):
+        return _result(provider, model_id, NOT_TESTABLE, None, key_source=key_source)
+    if kind == "image":
+        return _probe_image(provider, model_id, api_key, key_source)
+
     from llm.router import _chat_once
     from llm.utils.llm_helpers import with_thinking_disabled
 
@@ -176,6 +187,44 @@ def probe_model(provider: str, model_id: str, api_key: str | None, *, key_source
     )
     _log(result)
     return result
+
+
+def _media_kind(provider: str, model_id: str) -> str | None:
+    """«image», «video» o None (modelo de texto) según el catálogo."""
+    from llm.images.media_models import media_entry
+
+    entry = media_entry(provider, model_id) or {}
+    kind = (entry.get("media") or {}).get("kind")
+    if kind in ("image", "video"):
+        return kind
+    aptitudes = entry.get("aptitudes") or []
+    if "imagen" in aptitudes and "texto" not in aptitudes:
+        return "image"
+    return None
+
+
+def _probe_image(provider: str, model_id: str, api_key: str, key_source: str) -> dict:
+    """Genera una imagen pequeña: la única forma de saber si el modelo y la clave
+    sirven (por chat no responde). Cuesta lo que una imagen (~$0,01-0,04)."""
+    from llm.images.image_openrouter import ImageRequestError, request_openrouter_image
+
+    started = time.monotonic()
+    try:
+        url = request_openrouter_image(
+            PROBE_IMAGE_PROMPT, api_key, PROBE_IMAGE_SIZE, PROBE_IMAGE_SIZE, model_id
+        )
+    except ImageRequestError as exc:
+        failure: Exception = exc
+    else:
+        latency = round((time.monotonic() - started) * 1000)
+        result = _result(provider, model_id, OK, latency, image=url, key_source=key_source)
+        _log(result)
+        return result
+    if isinstance(failure, ImageRequestError) and failure.status == 200:
+        return _result(provider, model_id, EMPTY, round((time.monotonic() - started) * 1000), key_source=key_source)
+    if isinstance(failure, ImageRequestError) and failure.timed_out:
+        return _result(provider, model_id, TIMEOUT, round((time.monotonic() - started) * 1000), key_source=key_source)
+    return _failed(provider, model_id, failure, started, key_source)
 
 
 def _failed(provider: str, model_id: str, exc: Exception, started: float, key_source: str) -> dict:

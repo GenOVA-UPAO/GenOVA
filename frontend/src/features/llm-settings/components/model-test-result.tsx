@@ -64,6 +64,13 @@ function outcome(result: ModelTestResult, onRetry: () => void): ReactNode {
         <Icon name={style.icon} size="text-base" className={`mt-0.5 shrink-0 ${style.className}`} />
         <span className="font-medium text-foreground">{headline(result.ok, title, latency)}</span>
       </p>
+      {result.ok && result.image ? (
+        <img
+          src={result.image}
+          alt="Imagen de prueba generada por el modelo"
+          className="size-32 rounded-lg border border-border object-cover"
+        />
+      ) : null}
       {result.ok && result.excerpt ? (
         <blockquote className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-[0.8125rem] break-words text-foreground">
           {result.excerpt}
@@ -76,9 +83,9 @@ function outcome(result: ModelTestResult, onRetry: () => void): ReactNode {
   );
 }
 
-/** «Responde en 812 ms» o «Clave no válida (tras 180 ms)». */
+/** «Responde en 812 ms», «Genera imágenes en 6,1 s» o «Clave no válida (tras 180 ms)». */
 function headline(ok: boolean, title: string, latency: string | null): string {
-  if (ok) return latency ? `Responde en ${latency}` : title;
+  if (ok) return latency ? `${title} en ${latency}` : title;
   return latency ? `${title} (tras ${latency})` : title;
 }
 

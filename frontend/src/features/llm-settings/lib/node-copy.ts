@@ -28,11 +28,17 @@ export const NODE_COPY: Partial<Record<string, { name: string; description: stri
   },
   images: {
     name: "Generador de imágenes",
-    description: "Crea las imágenes de los recursos de enganche y las incluye dentro del SCORM.",
+    description: "Crea las ilustraciones del cómic de enganche y las incluye dentro del SCORM.",
   },
   video: {
     name: "Generador de video",
-    description: "Crea los videos de los recursos. Sin clave API, entrega un guion para grabarlo.",
+    description:
+      "Crea un video corto para los recursos de video de enganche, exploración y explicación, y lo incluye en el SCORM. Si no puede, el recurso trae el guion para grabarlo.",
+  },
+  audio: {
+    name: "Narración de audio",
+    description:
+      "Pone voz al micro-podcast de enganche. Con clave de OpenRouter narra en español; solo con la de Groq, en inglés; sin ninguna, el recurso queda en texto.",
   },
   refine: {
     name: "Refinador estructural",

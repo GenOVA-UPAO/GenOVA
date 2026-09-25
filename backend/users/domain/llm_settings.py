@@ -99,8 +99,22 @@ def add_own_provider_pools(
         extra = [
             e
             for e in full_entries
-            if e.get("provider") == provider and e.get("active") and e["model_id"] not in seen
+            if e.get("provider") == provider
+            and e.get("active")
+            and e["model_id"] not in seen
+            and not _only_media(e)
         ]
         if extra:
             filtered_catalog.setdefault(provider, []).extend(extra)
     return filtered_catalog
+
+
+_TEXT_TASKS = frozenset({"texto", "codigo", "orquestador", "razonamiento"})
+
+
+def _only_media(entry: dict) -> bool:
+    """Generador de imagen o video que no escribe texto (Veo, FLUX…): las tareas
+    del usuario son de texto, así que ofrecerlo sería ofrecer algo que falla."""
+    if not entry.get("media"):
+        return False
+    return not _TEXT_TASKS & set(entry.get("aptitudes") or [])

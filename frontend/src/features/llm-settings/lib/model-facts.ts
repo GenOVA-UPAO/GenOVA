@@ -1,9 +1,20 @@
 /**
  * Lo que importa para elegir un modelo, leído del catálogo: precio de entrada y
- * de salida, contexto, si es gratis y qué sabe hacer además de texto.
+ * de salida, contexto, si es gratis y qué sabe hacer además de texto. Los que
+ * generan imagen o video traen otro precio (por imagen, por segundo): `media`.
  *
  * Lógica pura: se prueba en model-facts.spec.ts.
  */
+
+import {
+  isCheapMedia,
+  type MediaPrice,
+  mediaPrice,
+  mediaPriceDescription,
+  mediaPriceSummary,
+  type MediaPricing,
+  mediaSortPrice,
+} from "./media-price";
 
 export interface RichModel {
   provider: string;
@@ -16,6 +27,8 @@ export interface RichModel {
   category?: string | null;
   curated?: boolean;
   description?: string | null;
+  /** Solo los modelos de imagen y video. */
+  media_pricing?: MediaPricing | null;
 }
 
 export type Capability = "vision" | "reasoning" | "code";
@@ -30,6 +43,10 @@ export interface ModelFacts {
   context: number | null;
   capabilities: Capability[];
   recommended: boolean;
+  /** Precio por imagen o por segundo (modelos de imagen y video); `null` en los de texto. */
+  media: MediaPrice | null;
+  /** Generadores de imagen o video (no escriben texto); `null` en los de texto. */
+  generates: "image" | "video" | null;
 }
 
 export const CAPABILITY_LABELS: Record<Capability, string> = {
@@ -72,6 +89,13 @@ function inputKinds(modality: string | null | undefined): Set<string> {
   );
 }
 
+/** «text->image» → image; los de chat que además dibujan («text->text+image») no cuentan. */
+function generatesOf(model: RichModel): "image" | "video" | null {
+  const output = (model.modality ?? "").split("->")[1]?.trim();
+  if (output === "image" || output === "video") return output;
+  return null;
+}
+
 function capabilitiesOf(model: RichModel): Capability[] {
   const caps: Capability[] = [];
   if (inputKinds(model.modality).has("image")) caps.push("vision");
@@ -86,7 +110,13 @@ function capabilitiesOf(model: RichModel): Capability[] {
  */
 const FREE_TIER_PROVIDERS = new Set(["groq", "huggingface"]);
 
-function isFree(model: RichModel, input: number | null, output: number | null): boolean {
+function isFree(
+  model: RichModel,
+  input: number | null,
+  output: number | null,
+  media: MediaPrice | null,
+): boolean {
+  if (media) return media.usd === 0;
   if (model.pricing === "Gratuito" || (input === 0 && output === 0)) return true;
   return !model.pricing && !model.pricing_detail && FREE_TIER_PROVIDERS.has(model.provider);
 }
@@ -94,7 +124,8 @@ function isFree(model: RichModel, input: number | null, output: number | null): 
 export function modelFacts(model: RichModel): ModelFacts {
   const input = num(model.pricing_detail?.input);
   const output = num(model.pricing_detail?.output);
-  const free = isFree(model, input, output);
+  const media = mediaPrice(model.media_pricing);
+  const free = isFree(model, input, output, media);
   return {
     free,
     variable: model.pricing === "Variable",
@@ -103,11 +134,22 @@ export function modelFacts(model: RichModel): ModelFacts {
     context: positive(num(model.context_length)),
     capabilities: capabilitiesOf(model),
     recommended: model.curated === true,
+    media,
+    generates: generatesOf(model),
   };
 }
 
 export function isCheap(facts: ModelFacts): boolean {
-  return facts.free || (facts.output !== null && facts.output <= CHEAP_OUTPUT_MAX);
+  if (facts.free) return true;
+  if (facts.media) return isCheapMedia(facts.media);
+  return facts.output !== null && facts.output <= CHEAP_OUTPUT_MAX;
+}
+
+/** Precio con el que se ordena: salida por millón, o lo que cuesta una imagen / un segundo. */
+export function sortPrice(facts: ModelFacts): number | null {
+  if (facts.free) return 0;
+  if (facts.media) return mediaSortPrice(facts.media);
+  return facts.output;
 }
 
 /** «$0.09», «$2.00», «$0.0042»: dos decimales para que las columnas cuadren, sin perder los precios muy bajos. */
@@ -131,6 +173,7 @@ export function formatContext(tokens: number | null): string | null {
 /** Precio compacto para listas: «$0.09 / $0.18», «Gratis», «Variable» o `null`. */
 export function priceSummary(facts: ModelFacts): string | null {
   if (facts.free) return "Gratis";
+  if (facts.media) return mediaPriceSummary(facts.media);
   if (facts.variable) return "Variable";
   if (facts.input === null && facts.output === null) return null;
   const input = facts.input === null ? "?" : formatUsd(facts.input);
@@ -141,6 +184,7 @@ export function priceSummary(facts: ModelFacts): string | null {
 /** Lo mismo, dicho entero para lectores de pantalla y títulos. */
 export function priceDescription(facts: ModelFacts): string {
   if (facts.free) return "Gratis";
+  if (facts.media) return mediaPriceDescription(facts.media);
   if (facts.variable) return "Precio variable según el modelo que elija el enrutador";
   if (facts.input === null && facts.output === null) return "Precio no disponible";
   const input = facts.input === null ? "desconocida" : formatUsd(facts.input);

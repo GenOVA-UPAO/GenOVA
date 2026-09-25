@@ -112,6 +112,17 @@ class Settings(BaseSettings):
     # Techo de reloj por recurso (generate + refine + repair). 90s: los recursos
     # sanos (24-60s) no se cortan; el bucle patológico de refine+repair sí.
     ova_resource_budget_s: float = 240.0
+    # Video generado (tarea «Video» de /models, desactivada por defecto). Los
+    # valores por defecto son los baratos: 4 s a 480p sin audio (~0,10-0,20 $
+    # por video). Si el modelo no admite el valor pedido se usa el más cercano
+    # que sí admite. Pasado el tope de espera, o si pesa más del máximo, el
+    # recurso se queda con su guion, como sin video.
+    ova_video_duration_s: int = 4
+    ova_video_resolution: str = "480p"
+    ova_video_aspect_ratio: str = "16:9"
+    ova_video_timeout_s: float = 240.0
+    ova_video_poll_s: float = 10.0
+    ova_video_max_mb: float = 8.0
 
     # --- Supabase Storage ---
     supabase_url: str = ""

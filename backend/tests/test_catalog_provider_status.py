@@ -114,6 +114,9 @@ def isolated_refresh(monkeypatch):
     ):
         monkeypatch.setattr(catalog_refresh, name, lambda *_a: None)
     monkeypatch.setattr(catalog_refresh, "_build_full_catalog", lambda *_a: [])
+    # Los listados de imagen/video de OpenRouter son públicos: sin esto el test
+    # saldría a la red.
+    monkeypatch.setattr(catalog_refresh, "_fetch_media", lambda: None)
     monkeypatch.setattr(catalog_refresh, "_catalog", list(catalog_refresh._catalog))
     monkeypatch.setattr(catalog_refresh, "_full_catalog", list(catalog_refresh._full_catalog))
     monkeypatch.setattr(

@@ -11,7 +11,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from auth.dependencies import require_admin
 from core.database import get_db
 from core.rate_limit import limiter
-from models import PlatformConfig
 from users.domain.errors import NodesConfigNotSaved
 from users.domain.nodes_config import validate_node_updates
 from users.interface.http.error_map import to_http_exception
@@ -26,16 +25,9 @@ def get_nodes_config_endpoint(
     db=Depends(get_db),
 ):
     """Return node definitions + current configurable flags (admin-only)."""
-    from prometheus.config.nodes_config import CAPABILITIES, NODES, get_nodes_config
+    from prometheus.config.nodes_config import get_nodes_config
 
-    config = get_nodes_config()
-    video_configured = bool(db.get(PlatformConfig, "video_api_key"))
-    return {
-        "nodes": NODES,
-        "capabilities": CAPABILITIES,
-        "config": config,
-        "video_api_key_configured": video_configured,
-    }
+    return _payload(get_nodes_config(), db)
 
 
 @router.put("/nodes-config", summary="Actualizar la configuración de nodos del motor")
@@ -47,7 +39,7 @@ def put_nodes_config_endpoint(
     db=Depends(get_db),
 ):
     """Save configurable node flags (admin-only)."""
-    from prometheus.config.nodes_config import CAPABILITIES, NODES, save_nodes_config
+    from prometheus.config.nodes_config import save_nodes_config
 
     try:
         updates = validate_node_updates(payload)
@@ -60,10 +52,35 @@ def put_nodes_config_endpoint(
         logger.exception("nodes config write failed")
         raise to_http_exception(NodesConfigNotSaved()) from None
 
-    video_configured = bool(db.get(PlatformConfig, "video_api_key"))
+    return _payload(config, db)
+
+
+def _payload(config: dict, db) -> dict:
+    """Nodos, capacidades, flags y el estado REAL de imagen y video.
+
+    Imagen y video se encienden en /models (tareas Imagen y Video), no aquí:
+    `media_status` dice si se generan de verdad (interruptor, modelo y clave).
+    `video_api_key_configured` se mantiene por compatibilidad y ahora refleja si
+    hay clave de plataforma para la cadena de video (antes leía una clave
+    `video_api_key` que ningún código usaba).
+    """
+    from prometheus.config.nodes_config import CAPABILITIES, NODES
+
+    media = _safe_media_status(db)
     return {
         "nodes": NODES,
         "capabilities": CAPABILITIES,
         "config": config,
-        "video_api_key_configured": video_configured,
+        "media_status": media,
+        "video_api_key_configured": bool((media.get("video") or {}).get("has_key")),
     }
+
+
+def _safe_media_status(db) -> dict:
+    from llm.images.media_status import media_status
+
+    try:
+        return media_status(db)
+    except Exception:
+        logger.exception("media status failed")
+        return {}

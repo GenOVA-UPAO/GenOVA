@@ -7,6 +7,7 @@ import {
   modelFacts,
   priceDescription,
   type RichModel,
+  sortPrice,
 } from "./model-facts";
 import { modelDisplayName } from "./model-name";
 import { usageSummary } from "./model-usage";
@@ -108,10 +109,9 @@ function sectionOf(option: ModelOption, current: string): SectionKey {
   return "rest";
 }
 
-/** Precio de salida para ordenar; lo desconocido va al final. */
+/** Precio para ordenar (salida, o por imagen / segundo); lo desconocido va al final. */
 function outputPrice(option: ModelOption): number {
-  if (option.facts.free) return 0;
-  return option.facts.output ?? Number.POSITIVE_INFINITY;
+  return sortPrice(option.facts) ?? Number.POSITIVE_INFINITY;
 }
 
 /**

@@ -2,7 +2,7 @@ import { firstNonBlank } from "@/core/lib/text";
 
 import { sortModels } from "./catalog-sort";
 import { PROVIDER_LABELS } from "./llm-catalog.utils";
-import { type Capability, isCheap, modelFacts } from "./model-facts";
+import { type Capability, isCheap, modelFacts, sortPrice } from "./model-facts";
 import type { CatalogModel } from "./user-llm-settings.types";
 
 /**
@@ -104,10 +104,12 @@ function sortRecommended(
   return [...models].sort((a, b) => rank(a) - rank(b) || byName(a, b));
 }
 
-/** Precio de salida para ordenar: lo gratis cuenta como 0 aunque no traiga el detalle. */
+/**
+ * Precio para ordenar: salida por millón de tokens, o lo que cuesta una imagen o
+ * un segundo de video; lo gratis cuenta como 0 aunque no traiga el detalle.
+ */
 function outputPrice(model: CatalogModel): number | null {
-  const facts = modelFacts(model);
-  return facts.free ? 0 : facts.output;
+  return sortPrice(modelFacts(model));
 }
 
 /** Por precio de salida; el desconocido (Variable, sin dato) siempre al final. */

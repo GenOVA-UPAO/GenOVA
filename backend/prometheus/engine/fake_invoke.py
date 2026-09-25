@@ -28,10 +28,13 @@ from sqlalchemy import select
 def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer=None) -> dict:
     from core.database import SessionLocal
     from models import OvaJobResource
+    from prometheus.engine.fake_media import with_fake_media
 
     only_ids = initial_state.get("only_resource_ids")
     concept = (initial_state.get("prompt") or "").strip() or "OVA"
     contexto = _fake_rag_context(initial_state, concept)
+    image_settings = initial_state.get("image_settings") or {}
+    llm_config = initial_state.get("llm_config") or {}
     db = SessionLocal()
     try:
         resources = (
@@ -46,8 +49,13 @@ def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer
             results.append(
                 {
                     "phase": res.phase_type,
-                    "html": stub_resource_html(
-                        concept, res.phase_type, res.resource_type, contexto
+                    "html": with_fake_media(
+                        stub_resource_html(concept, res.phase_type, res.resource_type, contexto),
+                        res.phase_type,
+                        res.resource_type,
+                        concept,
+                        image_settings,
+                        llm_config,
                     ),
                     "resource_type": res.resource_type,
                     "title": res.resource_type,

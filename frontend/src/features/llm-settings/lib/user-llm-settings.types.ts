@@ -1,6 +1,7 @@
 import type { CatalogStatus } from "./catalog-status";
 import type { EffectiveConfig } from "./llm-config-draft";
 import type { SettingsMap } from "./llm-settings-mutations";
+import type { MediaPricing } from "./media-price";
 import type { OwnCatalogStatus } from "./own-catalog-status";
 
 export interface EnabledModel {
@@ -24,6 +25,9 @@ export interface CatalogModel {
     cache_write?: number;
   };
   description?: string;
+  /** Solo los modelos de imagen y video: precio por imagen, megapíxel o segundo. */
+  media_pricing?: MediaPricing | null;
+  aptitudes?: string[];
 }
 
 export interface LlmSettingsResponse {

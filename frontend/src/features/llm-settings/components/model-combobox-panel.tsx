@@ -4,6 +4,7 @@ import { Icon } from "@/core/components/icon";
 
 import type { ComboboxState } from "../hooks/use-model-combobox";
 import { type ModelOption, NO_FILTERS, optionProviders, type PickerSection } from "../lib/model-search";
+import { optionsPricing } from "../lib/options-pricing";
 import { ModelComboboxFooter } from "./model-combobox-footer";
 import { ModelFilterChips } from "./model-filter-chips";
 import { ModelOptionRow } from "./model-option-row";
@@ -24,6 +25,7 @@ export function ModelComboboxPanel({ state, options, current, label }: Readonly<
   const listId = useId();
   const optionId = (index: number) => `${listId}-opt-${String(index)}`;
   const activeId = state.flat.length > 0 ? optionId(state.active) : undefined;
+  const pricing = optionsPricing(options);
 
   useEffect(() => {
     if (activeId) document.getElementById(activeId)?.scrollIntoView({ block: "nearest" });
@@ -63,6 +65,7 @@ export function ModelComboboxPanel({ state, options, current, label }: Readonly<
           filters={state.filters}
           providers={optionProviders(options)}
           onChange={state.setFilters}
+          mediaOnly={pricing.mediaOnly}
         />
       ) : null}
       <div
@@ -79,6 +82,7 @@ export function ModelComboboxPanel({ state, options, current, label }: Readonly<
         total={state.total}
         query={state.query}
         filtered={state.flat.length < state.total}
+        priceNote={pricing.note}
         onClearFilters={() => {
           state.onQuery("");
           state.setFilters(NO_FILTERS);

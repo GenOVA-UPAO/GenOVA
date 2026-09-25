@@ -91,21 +91,42 @@ NODES = [
     },
 ]
 
+# Imagen y video no se encienden aquí: son las tareas «Imagen» y «Video» de
+# /models (modelo + interruptor `generation_enabled`); la narración depende solo
+# de las claves. `media_task` le dice a la UI de qué entrada leer el estado real
+# (`media_status` en /admin/nodes-config).
 CAPABILITIES = [
     {
         "id": "images",
         "name": "Generador de imágenes",
         "role": "Medios",
-        "always_on": True,
+        "always_on": False,
+        "media_task": "imagen",
         "description": "Genera imágenes AI para recursos engage y las embebe como data URIs en el SCORM.",
     },
     {
         "id": "video",
         "name": "Generador de Video",
         "role": "Medios",
-        "always_on": True,
-        "status_key": "video_api_key",
-        "description": "Recursos de video 5E. Sin API key → genera prompt copiable para el estudiante.",
+        "always_on": False,
+        "media_task": "video",
+        "description": (
+            "Genera un video corto para los recursos de video 5E con la tarea Video de "
+            "/models. Desactivado, sin modelo o si falla, entrega el guion y un prompt copiable."
+        ),
+    },
+    {
+        # Sin interruptor: el micro-podcast se narra con la clave que haya
+        # (OpenRouter en español; si no, Groq Orpheus en inglés; si no, solo texto).
+        "id": "audio",
+        "name": "Narración de audio",
+        "role": "Medios",
+        "always_on": False,
+        "media_task": "audio",
+        "description": (
+            "Narra el micro-podcast de enganche: en español con OpenRouter y, sin su "
+            "clave, en inglés con Groq Orpheus. Sin ninguna clave queda solo en texto."
+        ),
     },
     {
         "id": "refine",

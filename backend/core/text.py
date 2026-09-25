@@ -35,4 +35,8 @@ def ova_title(prompt: str, limit: int = 80) -> str:
     line = next((ln.strip() for ln in prompt.splitlines() if ln.strip()), "")
     first = _SENTENCE_END.split(line, maxsplit=1)[0].rstrip(".")
     title = first if len(first) >= _MIN_TITLE_SENTENCE else line
+    # «Tema: explicación larga…» → «Tema», si la frase no cabe entera.
+    head, colon, _rest = title.partition(":")
+    if colon and len(title) > limit and len(head.strip()) >= _MIN_TITLE_SENTENCE:
+        title = head.strip()
     return smart_truncate(title, limit)

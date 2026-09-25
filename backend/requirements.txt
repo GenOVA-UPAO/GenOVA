@@ -29,6 +29,10 @@ langsmith==0.8.18
 # AI SDKs
 openai==2.43.0
 groq==1.4.0
+# MP3 del micro-podcast (el TTS en streaming devuelve PCM crudo; ~7 veces menos que WAV)
+lameenc==1.8.4
+# Comprime a WebP las imágenes generadas (un PNG de Gemini pesa ~1,4 MB)
+pillow==12.2.0
 # Structured LLM output (Pydantic-validated JSON + auto-retry) — wraps openai/groq
 instructor==1.15.4
 supabase==2.31.0

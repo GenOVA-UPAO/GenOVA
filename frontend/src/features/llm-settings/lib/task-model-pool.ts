@@ -25,19 +25,32 @@ const APTITUD_OBLIGATORIA = new Set(["imagen", "video"]);
 
 function tieneAptitud(m: { aptitudes?: string[]; category?: string }, task: string): boolean {
   const apt = m.aptitudes;
-  if (Array.isArray(apt) && apt.length > 0) return apt.includes(task);
+  // Una lista vacía también decide: un modelo de video que necesita un video de
+  // entrada (editar, escalar) es de categoría «video» pero no genera desde texto.
+  if (Array.isArray(apt)) return apt.includes(task);
   // Catálogos antiguos sin `aptitudes`: cae a la categoría.
   return (m.category ?? "") === task;
 }
 
 /**
+ * Generadores de imagen o video que no escriben texto (Veo, FLUX, Recraft…):
+ * en una tarea de texto fallarían siempre.
+ */
+function soloGeneraMedia(m: { aptitudes?: string[]; category?: string }): boolean {
+  const apt = m.aptitudes;
+  if (!Array.isArray(apt) || apt.length === 0) return APTITUD_OBLIGATORIA.has(m.category ?? "");
+  return apt.every((a) => APTITUD_OBLIGATORIA.has(a));
+}
+
+/**
  * Modelos ofrecibles para una tarea.
  *
- * Para imagen y vídeo se filtra de verdad. Para las tareas de texto NO se
- * excluye a nadie: solo 20 de los ~430 modelos del catálogo declaran aptitud
- * `codigo`, y generar HTML no requiere ninguna capacidad especial, así que
- * filtrar por ella dejaba el selector de Código con un único modelo. Los que sí
- * declaran la aptitud van primero, para que la recomendación siga visible.
+ * Para imagen y vídeo se filtra de verdad. Para las tareas de texto solo se
+ * quitan los generadores de imagen o video: solo 20 de los ~430 modelos del
+ * catálogo declaran aptitud `codigo`, y generar HTML no requiere ninguna
+ * capacidad especial, así que filtrar por ella dejaba el selector de Código con
+ * un único modelo. Los que sí declaran la aptitud van primero, para que la
+ * recomendación siga visible.
  */
 export function modelsForTask<T extends { aptitudes?: string[]; category?: string }>(
   models: T[],
@@ -48,7 +61,10 @@ export function modelsForTask<T extends { aptitudes?: string[]; category?: strin
   }
   const aptos: T[] = [];
   const resto: T[] = [];
-  for (const m of models) (tieneAptitud(m, task) ? aptos : resto).push(m);
+  for (const m of models) {
+    if (soloGeneraMedia(m)) continue;
+    (tieneAptitud(m, task) ? aptos : resto).push(m);
+  }
   return [...aptos, ...resto];
 }
 
