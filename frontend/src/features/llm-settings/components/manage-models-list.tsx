@@ -60,7 +60,10 @@ export function ManageModelsList({ browser, usage }: Readonly<ManageModelsListPr
               base={base}
               favorite={base || store.isModelEnabled(model.provider, model.model_id)}
               usage={usage[key] ?? []}
-              onToggle={favorites.toggle}
+              onToggle={(provider, modelId) => {
+                browser.holdPlace(model);
+                return favorites.toggle(provider, modelId);
+              }}
             />
           );
         })}

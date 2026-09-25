@@ -15,6 +15,7 @@ import {
   openKeyRow,
   openPlatformKeyRow,
 } from "../lib/open-key-row";
+import { dismissPendingChangesToast } from "../lib/pending-changes-toast";
 import { canAccessModels } from "./can-access-models";
 import { errorMessage } from "./error-message";
 import { favoritesLabel, headerStatusText } from "./header-status";
@@ -93,6 +94,7 @@ export function useModelsPage() {
       openPlatformKeyRow(provider);
     },
     discard: () => {
+      dismissPendingChangesToast();
       admin.discard();
       store.discard();
     },
@@ -110,6 +112,7 @@ async function saveAllChanges(
   try {
     const adminRes = admin.adminDirty ? await admin.save() : null;
     if (store.dirty) await store.save();
+    dismissPendingChangesToast();
     // Con la config de plataforma, el aviso dice qué cambió y ofrece «Deshacer».
     announce("Cambios guardados.", historyOf(adminRes));
   } catch (err) {

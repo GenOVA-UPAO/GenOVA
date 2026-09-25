@@ -79,8 +79,9 @@ export function ApplyModelForm({
         />
       ) : null}
       <DialogFooter>
+        {/* En móvil el pie apila los botones al revés: el aviso va el último para quedar encima. */}
         {chosen.length === 0 ? (
-          <p className="text-xs text-muted-foreground sm:mr-auto sm:self-center">
+          <p className="text-xs text-muted-foreground max-sm:order-last sm:mr-auto sm:self-center">
             Marca al menos una tarea que cambie.
           </p>
         ) : null}

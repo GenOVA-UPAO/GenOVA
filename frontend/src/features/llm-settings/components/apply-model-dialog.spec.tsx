@@ -61,4 +61,25 @@ describe("ApplyModelDialog", () => {
     const [next] = onApply.mock.calls[0] as [Draft];
     expect(next.orquestador.fallbacks.map((f) => f.model_id)).toEqual(["v4"]);
   });
+
+  it("sin tareas marcadas, el aviso se lee antes que los botones y en móvil queda encima", async () => {
+    const user = userEvent.setup();
+    render(
+      <ApplyModelDialog
+        source="texto"
+        draft={draft}
+        tasks={["texto", "codigo"]}
+        models={models}
+        onApply={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    await user.click(screen.getByRole("checkbox", { name: /Código/ }));
+    const status = screen.getByText("Marca al menos una tarea que cambie.");
+    const apply = screen.getByRole("button", { name: "Aplicar" });
+    expect(apply).toBeDisabled();
+    expect(status.compareDocumentPosition(apply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // El pie apila al revés en móvil (flex-col-reverse): el último en orden sale arriba.
+    expect(status).toHaveClass("max-sm:order-last");
+  });
 });

@@ -1,5 +1,3 @@
-import { Input } from "@/core/components/ui/input";
-
 import { useFavoriteActions } from "../hooks/use-favorite-actions";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import { useOwnKeyModels } from "../hooks/use-own-key-providers";
@@ -7,6 +5,7 @@ import { dedupeCatalogModels } from "../lib/dedupe-catalog";
 import { taskMeta } from "../lib/task-meta";
 import { modelsForTask } from "../lib/task-model-pool";
 import { LlmModelSelect } from "./llm-model-select";
+import { TimeoutField } from "./timeout-field";
 import { UserFallbackEditor } from "./user-fallback-editor";
 import { UserModelSummary } from "./user-model-summary";
 import { UserOverrideHeader } from "./user-override-header";
@@ -48,7 +47,7 @@ export function UserOverrideSection({
           store.resetTipo(task);
         }}
       />
-      <div className="flex items-center gap-2">
+      <div className="flex items-end gap-2">
         <div className="min-w-0 flex-1">
           <LlmModelSelect
             models={userModels}
@@ -64,24 +63,17 @@ export function UserOverrideSection({
             }}
           />
         </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Input
-            type="number"
-            min={bounds[0]}
-            max={bounds[1]}
-            value={userSettings.timeout_s ?? ""}
-            disabled={userDisabled}
-            aria-label={`Tiempo máximo de espera, de ${String(bounds[0])} a ${String(bounds[1])} segundos`}
-            onChange={(event) => {
-              const val = Number(event.target.value);
-              if (!Number.isNaN(val)) store.setTipoTimeout(task, val);
-            }}
-            className="h-9 w-[4.5rem] px-1.5 text-center tabular-nums max-sm:h-11"
-          />
-          <span className="text-xs text-muted-foreground" aria-hidden="true">
-            s
-          </span>
-        </div>
+        <TimeoutField
+          id={`user-timeout-${task}`}
+          taskLabel={taskMeta(task).label}
+          value={userSettings.timeout_s}
+          min={bounds[0]}
+          max={bounds[1]}
+          disabled={userDisabled}
+          onChange={(seconds) => {
+            store.setTipoTimeout(task, seconds);
+          }}
+        />
       </div>
       <UserModelSummary
         id={`user-model-summary-${task}`}

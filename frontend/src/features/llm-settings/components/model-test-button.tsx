@@ -57,7 +57,13 @@ export function ModelTestButton({
           }}
         >
           <ModelTestIcon running={test.running} current={test.current} />
-          {test.running ? "Probando…" : "Probar"}
+          {/* Las dos etiquetas ocupan la misma celda: el botón no cambia de ancho al probar. */}
+          <span className="grid">
+            <span aria-hidden="true" className="invisible col-start-1 row-start-1">
+              Probando…
+            </span>
+            <span className="col-start-1 row-start-1">{test.running ? "Probando…" : "Probar"}</span>
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent

@@ -293,3 +293,23 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Con el panel lateral derecho abierto (Perfiles, Historial) los avisos no
+ * tapan su «Cerrar»: bajan por debajo de la cabecera del panel y, si hay sitio,
+ * se ponen a su izquierda. 28rem es el ancho del panel (models-side-sheet).
+ * Sonner fija los desplazamientos en línea: hace falta !important.
+ */
+body:has([data-slot="sheet-content"][data-side="right"][data-state="open"])
+  [data-sonner-toaster][data-x-position="right"][data-y-position="top"] {
+  --offset-top: 5.5rem !important;
+  --mobile-offset-top: 5.5rem !important;
+}
+
+@media (min-width: 56rem) {
+  body:has([data-slot="sheet-content"][data-side="right"][data-state="open"])
+    [data-sonner-toaster][data-x-position="right"][data-y-position="top"] {
+    --offset-top: 24px !important;
+    --offset-right: calc(28rem + 24px) !important;
+  }
+}

@@ -114,6 +114,14 @@ vi.mock("../components/platform-capabilities-card", () =>
   import("./models-page-capabilities-stub"),
 );
 
+const dismissPendingChangesToast = vi.fn();
+
+vi.mock("../lib/pending-changes-toast", () => ({
+  dismissPendingChangesToast: () => {
+    dismissPendingChangesToast();
+  },
+}));
+
 vi.mock("../components/guardrails-card", () => ({
   GuardrailsCard: () => null,
 }));
@@ -192,6 +200,17 @@ describe("ModelsPage", () => {
       </MemoryRouter>,
     );
     expect(screen.queryByRole("button", { name: "Guardar cambios" })).toBeNull();
+  });
+
+  it("al guardar o descartar cierra el aviso de «Guarda los cambios»", async () => {
+    const user = userEvent.setup();
+    dismissPendingChangesToast.mockClear();
+    store.dirty = true;
+    renderPage();
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
+    expect(dismissPendingChangesToast).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Descartar cambios" }));
+    expect(dismissPendingChangesToast).toHaveBeenCalledTimes(2);
   });
 
   it("disables save while the chain has empty or duplicate models", () => {

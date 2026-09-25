@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { toast } from "sonner";
 
 import type { SlotIssue } from "../lib/chain-validation";
 import { joinList } from "../lib/join-list";
 import { type Draft, isMediaTask, type TaskDraft } from "../lib/llm-config-draft";
 import type { RichModel } from "../lib/model-facts";
 import type { ChipModel } from "../lib/model-task-card.helpers";
+import { showPendingChangesToast } from "../lib/pending-changes-toast";
 import { taskMeta } from "../lib/task-meta";
 import { ApplyModelDialog } from "./apply-model-dialog";
 import { LlmTaskRow } from "./llm-task-row";
@@ -68,7 +68,7 @@ export function AdminTaskEditor({
         onApply={(next, changed) => {
           onDraftChange?.(next);
           setApplyFrom(null);
-          toast.success(appliedMessage(changed));
+          showPendingChangesToast(appliedMessage(changed));
         }}
       />
     </>

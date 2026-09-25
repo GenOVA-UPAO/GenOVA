@@ -85,6 +85,18 @@ describe("ModelTestButton", () => {
     expect(screen.queryByRole("button", { name: /Probar/ })).toBeNull();
   });
 
+  it("«Probando…» ocupa el mismo hueco que «Probar»: el botón no cambia de ancho", async () => {
+    testModel.mockReturnValue(new Promise<ModelTestResult>(() => undefined));
+    renderButton();
+    const button = screen.getByRole("button", { name: /Probar el modelo/ });
+    const reserved = () => button.querySelector('[aria-hidden="true"].invisible')?.textContent;
+    expect(reserved()).toBe("Probando…");
+    await userEvent.click(button);
+    expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button).toHaveTextContent(/Probando…Probando…/);
+    expect(reserved()).toBe("Probando…");
+  });
+
   it("un usuario prueba con su clave", async () => {
     auth.admin = false;
     own.providers = new Set(["groq"]);
