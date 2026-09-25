@@ -141,11 +141,9 @@ def check_openrouter_key(api_key: str) -> None:
 # API real, igual que sin LLM_FAKE.
 _FAKE_IDS: dict[str, tuple[str, ...]] = {
     "groq": (
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant",
         "openai/gpt-oss-120b",
         "openai/gpt-oss-20b",
-        "qwen/qwen3-32b",
+        "qwen/qwen3.8-27b",
         "moonshotai/kimi-k2-instruct",
         "meta-llama/llama-4-scout-17b-16e-instruct",
     ),

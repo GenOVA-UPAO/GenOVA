@@ -9,16 +9,16 @@ import json
 from dataclasses import dataclass, field
 
 # Candidatos por tarea (se elige el primero que exista en el catálogo full).
-_OR_TEXTO = ["meta-llama/llama-3.3-70b-instruct", "meta-llama/llama-3.3-70b-instruct:free"]
-_OR_CODIGO = ["deepseek/deepseek-chat-v3.1", "qwen/qwen3-coder", "qwen/qwen3-coder:free"]
+_OR_TEXTO = ["meta-llama/llama-3.3-70b-instruct", "google/gemma-4-31b-it:free"]
+_OR_CODIGO = ["deepseek/deepseek-chat-v3.1", "qwen/qwen3-coder", "qwen/qwen3.8-27b:free"]
 
 # Perfil 'groq': todo en Groq (rápido) — aísla fallos de OpenCode/OpenRouter y
 # da un E2E verde veloz para validar materialización + SCORM.
 _GROQ = {
-    "texto": {"provider": "groq", "model_id": "llama-3.3-70b-versatile"},
-    "codigo": {"provider": "groq", "model_id": "llama-3.3-70b-versatile"},
+    "texto": {"provider": "groq", "model_id": "openai/gpt-oss-120b"},
+    "codigo": {"provider": "groq", "model_id": "openai/gpt-oss-120b"},
     "orquestador": {"provider": "groq", "model_id": "openai/gpt-oss-120b"},
-    "razonamiento": {"provider": "groq", "model_id": "qwen/qwen3-32b"},
+    "razonamiento": {"provider": "groq", "model_id": "qwen/qwen3.8-27b"},
 }
 
 

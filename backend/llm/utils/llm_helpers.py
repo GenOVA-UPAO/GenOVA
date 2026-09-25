@@ -30,8 +30,14 @@ _SEED_MODELOS: dict[str, tuple] = {
 # El modelo que describe las imágenes del RAG ya no es un id fijo (Groq retiró
 # el anterior): ver llm.utils.vision_models.
 
-_FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
-_FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
+# Groq y OpenRouter retiran modelos sin aviso: un id que ya no ofrecen deja la
+# cadena sin ese eslabón (el refresco lo marca «model not found in API»).
+# Revisados contra GET /models en 2026-09: gpt-oss-20b es el modelo de chat más
+# rápido y barato que queda en Groq (sustituye a llama-3.1-8b-instant) y Gemma 4
+# 31B el `:free` general más estable de OpenRouter (sustituye al Llama 3.3 70B
+# gratuito, que ya no existe).
+_FALLBACK_GROQ_MODEL = "openai/gpt-oss-20b"
+_FALLBACK_OR_MODEL = "google/gemma-4-31b-it:free"
 
 # Per-task fallback chain — SEMILLA (el admin puede sobrescribirla por tarea).
 # Tried in order on any APIStatusError (rate-limit, 402 insufficient credit,
@@ -39,9 +45,13 @@ _FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 # almost always responds within free tier.
 _SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
-        ("openrouter", "qwen/qwen3-coder:free", {}),
+        # Qwen3 Coder gratuito ya no existe: Qwen3.8 27B es el `:free` de Qwen
+        # vigente, bueno en código y en español.
+        ("openrouter", "qwen/qwen3.8-27b:free", {}),
         ("openrouter", _FALLBACK_OR_MODEL, {}),
-        ("groq", "llama-3.3-70b-versatile", {}),
+        # Sustituye a Llama 3.3 70B (retirado). Qwen3.8 27B en Groq solo deja
+        # 16k tokens de salida, menos que los 24k de _CODE_MAX_TOKENS.
+        ("groq", "openai/gpt-oss-120b", {}),
     ],
     "texto": [
         ("openrouter", "deepseek/deepseek-chat-v3.1", {}),

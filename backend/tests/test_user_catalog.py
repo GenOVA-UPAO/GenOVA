@@ -42,7 +42,7 @@ class _Lister:
             raise self.error
         if provider == "openrouter":
             return None
-        return set(self.by_key.get(api_key, {"llama-3.3-70b-versatile"}))
+        return set(self.by_key.get(api_key, {"openai/gpt-oss-20b"}))
 
 
 @pytest.fixture(autouse=True)
@@ -56,7 +56,7 @@ def _clean_cache():
 def lister(monkeypatch):
     fake = _Lister(
         by_key={
-            GROQ_KEY_A: {"llama-3.3-70b-versatile", "solo-de-a"},
+            GROQ_KEY_A: {"openai/gpt-oss-20b", "solo-de-a"},
             GROQ_KEY_B: {"solo-de-b"},
         }
     )
@@ -122,7 +122,7 @@ def test_cada_usuario_ve_su_lista_y_la_de_plataforma_no_cambia(lister):
     a = load_user_catalog("u1", {"groq": GROQ_KEY_A}).merge_full(PLATFORM_FULL)
     b = load_user_catalog("u2", {"groq": GROQ_KEY_B}).merge_full(PLATFORM_FULL)
 
-    assert _ids(a, "groq") == {"llama-3.3-70b-versatile", "solo-de-a"}
+    assert _ids(a, "groq") == {"openai/gpt-oss-20b", "solo-de-a"}
     assert _ids(b, "groq") == {"solo-de-b"}
     # La lista de plataforma de Groq no se mezcla con la del usuario...
     assert "plataforma-groq" not in _ids(a, "groq")
@@ -151,7 +151,7 @@ def test_no_escribe_en_la_cache_de_plataforma(lister, monkeypatch):
 
 def test_curados_activos_segun_la_lista_del_usuario(lister):
     curated = [
-        {"provider": "groq", "model_id": "llama-3.3-70b-versatile", "active": False},
+        {"provider": "groq", "model_id": "openai/gpt-oss-20b", "active": False},
         {"provider": "groq", "model_id": "no-esta", "active": True},
         {"provider": "openrouter", "model_id": "x/modelo", "active": True},
     ]
@@ -184,7 +184,7 @@ def test_clave_invalida_da_error_con_motivo_y_ningun_modelo(monkeypatch):
 
 
 def test_fallo_pasajero_conserva_la_ultima_lista_buena(monkeypatch):
-    ok = _Lister(by_key={GROQ_KEY_A: {"llama-3.3-70b-versatile"}})
+    ok = _Lister(by_key={GROQ_KEY_A: {"openai/gpt-oss-20b"}})
     monkeypatch.setattr(user_catalog, "list_models_with_key", ok)
     load_user_catalog("u1", {"groq": GROQ_KEY_A})
 
@@ -193,7 +193,7 @@ def test_fallo_pasajero_conserva_la_ultima_lista_buena(monkeypatch):
     merged = uc.merge_full(PLATFORM_FULL)
 
     assert uc.status(merged)["groq"]["error"] == "unreachable"
-    assert _ids(merged, "groq") == {"llama-3.3-70b-versatile"}
+    assert _ids(merged, "groq") == {"openai/gpt-oss-20b"}
     assert uc.unverified_providers() == set()
 
 
@@ -270,7 +270,7 @@ def test_llm_fake_con_clave_fake_devuelve_una_lista_fija(monkeypatch):
     monkeypatch.setattr(settings, "llm_fake", True)
     listing = get_provider_listing("u1", "groq", "fake-groq-usuario")
     assert listing.state == "connected"
-    assert "llama-3.3-70b-versatile" in listing.ids
+    assert "openai/gpt-oss-20b" in listing.ids
     assert get_provider_listing("u1", "groq", "fake-groq-usuario").ids == listing.ids
 
     bad = get_provider_listing("u1", "opencode", "fake-invalid-clave")
@@ -290,7 +290,7 @@ def test_sin_llm_fake_una_clave_fake_va_a_la_api_real(monkeypatch):
 def test_los_modelos_curados_de_su_lista_llevan_su_nombre(lister):
     merged = load_user_catalog("u1", {"groq": GROQ_KEY_A}).merge_full(PLATFORM_FULL)
     labels = {e["model_id"]: e["label"] for e in merged if e["provider"] == "groq"}
-    assert labels["llama-3.3-70b-versatile"] == "Llama 3.3 70B (Groq)"
+    assert labels["openai/gpt-oss-20b"] == "GPT-OSS 20B (Groq)"
     assert labels["solo-de-a"] == "solo-de-a"
 
 

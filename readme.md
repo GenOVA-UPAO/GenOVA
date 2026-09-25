@@ -60,7 +60,7 @@ Smoke tests manuales (playwright-cli, bloques A–F):
 | Base de datos | Supabase (PostgreSQL + pgvector) vía `psycopg` |
 | Storage | Supabase Storage (`scorm-packages`) — fallback automático a disco local |
 | RAG | pgvector + Gemini `gemini-embedding-2-preview` (multimodal: texto + PDF + imagen + audio + video) |
-| LLMs | Groq SDK (Llama 3.3 70B, GPT-OSS 120B, Qwen3 32B, Whisper, Orpheus TTS) + OpenRouter (DeepSeek V4 Flash: free & paid fallback) con motor de validación y auto-reparación estructural de HTML |
+| LLMs | Groq SDK (GPT-OSS 120B/20B, Qwen3.8 27B, Whisper, Orpheus TTS) + OpenRouter (DeepSeek V4 Flash: free & paid fallback) con motor de validación y auto-reparación estructural de HTML |
 | Auth | JWT (HS256 con `iat`/`jti`/`iss`) + bcrypt + bloqueo por intentos fallidos |
 | Email | SMTP (Gmail por defecto) para restablecimiento de contraseña |
 | Empaquetado | pnpm workspaces · Backend con pip **o** uv |
@@ -92,7 +92,7 @@ GROQ_API_KEY=...
 OPENROUTER_API_KEY=...
 
 # Opcional — filtra qué modelos expone /api/ova/llm-options
-# IDs disponibles: groq-llama-3.3-70b, groq-gpt-oss-120b, groq-qwen3-32b, openrouter-deepseek-v4-flash
+# IDs disponibles: groq-gpt-oss-120b, groq-gpt-oss-20b, groq-qwen3.8-27b, openrouter-deepseek-v4-flash
 OVA_ENABLED_LLMS=
 
 # Producción — orígenes permitidos (CORS). Obligatorio si ENV=production.
