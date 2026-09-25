@@ -1,9 +1,12 @@
+import { useState } from "react";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { TableCell } from "@/core/components/ui/table";
 import { Tooltip } from "@/core/components/ui/tooltip";
 
 import type { AdminUser, UsersHandlers } from "../../lib/types";
+import { ResetEmailConfirm } from "./reset-email-confirm";
 import { UserActionMenu } from "./user-action-menu";
 
 interface UserActionsCellProps {
@@ -20,6 +23,7 @@ export function UserActionsCell({
   handlers,
   className,
 }: Readonly<UserActionsCellProps>) {
+  const [confirmReset, setConfirmReset] = useState(false);
   if (lockReason !== null) {
     return (
       <TableCell className={className}>
@@ -54,9 +58,21 @@ export function UserActionsCell({
           handlers.handleUnlockUser(user.id);
         }}
         onSendResetEmail={() => {
-          handlers.handleSendResetEmail(user.id);
+          setConfirmReset(true);
         }}
       />
+      {confirmReset && (
+        <ResetEmailConfirm
+          user={user}
+          onConfirm={() => {
+            setConfirmReset(false);
+            handlers.handleSendResetEmail(user.id);
+          }}
+          onCancel={() => {
+            setConfirmReset(false);
+          }}
+        />
+      )}
     </TableCell>
   );
 }
