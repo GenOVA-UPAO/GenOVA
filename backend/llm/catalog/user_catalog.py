@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import secrets
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeoutError
@@ -75,8 +76,15 @@ _cache_lock = RLock()
 _fetch_locks: dict[tuple[str, str], Lock] = {}
 
 
+# Sal aleatoria por proceso: la huella solo sirve para saber si la clave cambió
+# desde que se guardó el listado, y así no se puede comparar con otro proceso
+# ni deducir la clave por fuerza bruta a partir de la memoria.
+_FINGERPRINT_SALT = secrets.token_bytes(16)
+
+
 def _fingerprint(api_key: str) -> str:
-    return hashlib.sha256(api_key.encode()).hexdigest()[:16]
+    digest = hashlib.pbkdf2_hmac("sha256", api_key.encode(), _FINGERPRINT_SALT, 1_000)
+    return digest.hex()[:16]
 
 
 def _ttl(listing: ProviderListing) -> float:

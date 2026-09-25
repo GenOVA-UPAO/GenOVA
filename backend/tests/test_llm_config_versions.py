@@ -301,8 +301,10 @@ def test_profiles_api_flow(api):
 
     renamed = c.patch(f"/api/admin/llm-profiles/{profile['id']}", json={"name": "Calidad alta"})
     assert renamed.json()["profile"]["name"] == "Calidad alta"
-    assert c.delete(f"/api/admin/llm-profiles/{profile['id']}").status_code == 204
-    assert c.post(f"/api/admin/llm-profiles/{profile['id']}/apply").status_code == 404
+    deleted = c.delete(f"/api/admin/llm-profiles/{profile['id']}")
+    assert deleted.status_code == 204
+    gone = c.post(f"/api/admin/llm-profiles/{profile['id']}/apply")
+    assert gone.status_code == 404
 
 
 def test_apply_profile_flags_dropped_models(api):
