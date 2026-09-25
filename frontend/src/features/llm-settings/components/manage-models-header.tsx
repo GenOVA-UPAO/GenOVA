@@ -17,7 +17,9 @@ export function ManageModelsHeader({ isAdmin, onConnect }: Readonly<ManageModels
           <Icon name="star" weight="fill" size="text-xs" className="-mt-0.5 text-accent-brand" />: salen primero
           cuando eliges el modelo de una tarea.
           {isAdmin ? null : " Los que eliges con tu clave se añaden solos."}{" "}
-          <span className="max-sm:hidden">Precios en USD por millón de tokens.</span>
+          <span className="max-sm:hidden">
+            Precios en USD por millón de tokens; en imagen y video, por imagen o por segundo.
+          </span>
         </DialogDescription>
       </div>
       <Button variant="outline" onClick={onConnect} className="shrink-0 max-sm:h-11 max-sm:self-start">

@@ -1,3 +1,5 @@
+import { cn } from "@/core/lib/cn";
+
 import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
 import { formatContext, type ModelFacts, modelFacts, priceSummary, shortDescription } from "../lib/model-facts";
 import { modelDisplayName } from "../lib/model-name";
@@ -50,8 +52,21 @@ export function ManageModelRow({ model, base, favorite, usage, onToggle }: Reado
         ) : null}
       </div>
       <CatalogPriceCells facts={facts} />
-      <span className="hidden text-right text-sm text-foreground tabular-nums sm:block">{context ?? "Sin dato"}</span>
+      <span className={contextClass(context)}>{contextLabel(facts, context)}</span>
     </li>
+  );
+}
+
+/** Imagen y video no tienen ventana de contexto: «Sin dato» parecería un fallo. */
+function contextLabel(facts: ModelFacts, context: string | null): string {
+  if (context) return context;
+  return facts.media ? "No aplica" : "Sin dato";
+}
+
+function contextClass(context: string | null): string {
+  return cn(
+    "hidden text-right text-sm tabular-nums sm:block",
+    context ? "text-foreground" : "text-muted-foreground",
   );
 }
 
