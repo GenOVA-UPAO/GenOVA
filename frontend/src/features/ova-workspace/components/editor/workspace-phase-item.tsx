@@ -55,6 +55,7 @@ export function WorkspacePhaseItem({ ovaId, phase, busy, onRegenerate, reorder }
       )}
       <WorkspacePhaseActions
         editorId={editorId}
+        name={name}
         editing={editing}
         busy={busy}
         onToggleEditor={() => {

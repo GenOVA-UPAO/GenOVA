@@ -1,8 +1,12 @@
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
+import { RegenPhaseButton } from "./regen-phase-button";
+
 interface Props {
   editorId: string;
+  /** Nombre del recurso, para la confirmación de regenerar. */
+  name: string;
   editing: boolean;
   busy: boolean;
   onToggleEditor: () => void;
@@ -14,6 +18,7 @@ interface Props {
 /** Pie de un recurso en edición: el código a la izquierda; regenerar, versiones y eliminar a la derecha. */
 export function WorkspacePhaseActions({
   editorId,
+  name,
   editing,
   busy,
   onToggleEditor,
@@ -34,10 +39,7 @@ export function WorkspacePhaseActions({
         {editing ? "Ocultar código HTML" : "Editar código HTML"}
       </Button>
       <span className="flex flex-wrap items-center gap-1 sm:ml-auto">
-        <Button variant="ghost" size="sm" disabled={busy} onClick={onRegenerate}>
-          <Icon name="arrow-clockwise" />
-          Regenerar recurso
-        </Button>
+        <RegenPhaseButton name={name} busy={busy} onRegenerate={onRegenerate} />
         <Button variant="ghost" size="sm" onClick={onHistory}>
           <Icon name="clock-counter-clockwise" />
           Versiones del recurso
