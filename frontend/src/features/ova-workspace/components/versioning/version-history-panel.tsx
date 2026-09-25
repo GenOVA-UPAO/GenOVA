@@ -48,6 +48,7 @@ export default function VersionHistoryPanel({
           canCompare={versions.length > 1}
           selectedCount={selected.length}
           comparing={diff.isPending}
+          compared={Boolean(diff.data)}
           onCompare={() => {
             diff.mutate();
           }}

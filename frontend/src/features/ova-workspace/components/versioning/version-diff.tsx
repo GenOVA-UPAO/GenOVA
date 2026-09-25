@@ -1,5 +1,5 @@
 import type { VersionDiffData, VersionDiffPhase } from "../../lib/version-history.types";
-import { VersionDiffCell } from "./version-diff-cell";
+import { VersionDiffRow } from "./version-diff-row";
 
 type DiffSideData = VersionDiffData["v1"];
 
@@ -18,21 +18,34 @@ export function VersionDiff({ data }: Readonly<{ data: VersionDiffData }>) {
     { length: Math.max(before.phases.length, after.phases.length) },
     (_, index) => index,
   );
+  const changed = rows.filter(
+    (index) => before.phases.at(index)?.content !== after.phases.at(index)?.content,
+  ).length;
   return (
     <section
       aria-label="Comparación de versiones"
       className="space-y-3 border-t border-border pt-4"
     >
+      <p className="text-sm text-muted-foreground" aria-live="polite">
+        {changeSummary(changed, rows.length)}
+      </p>
       <div className="hidden grid-cols-2 gap-4 md:grid">
         <h3 className="text-sm font-semibold">Anterior: versión {before.number}</h3>
         <h3 className="text-sm font-semibold">Posterior: versión {after.number}</h3>
       </div>
       {rows.map((index) => (
-        <div key={index} className="grid gap-3 md:grid-cols-2 md:gap-4">
-          <VersionDiffCell side="Anterior" number={before.number} phase={before.phases.at(index)} />
-          <VersionDiffCell side="Posterior" number={after.number} phase={after.phases.at(index)} />
-        </div>
+        <VersionDiffRow
+          key={index}
+          before={{ number: before.number, phase: before.phases.at(index) }}
+          after={{ number: after.number, phase: after.phases.at(index) }}
+        />
       ))}
     </section>
   );
+}
+
+function changeSummary(changed: number, total: number): string {
+  if (changed === 0) return "Las dos versiones tienen el mismo contenido.";
+  const of = `${String(changed)} de ${String(total)} ${total === 1 ? "recurso" : "recursos"}`;
+  return changed === 1 ? `Cambió ${of}.` : `Cambiaron ${of}.`;
 }
