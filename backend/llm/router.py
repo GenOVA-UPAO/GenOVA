@@ -357,24 +357,29 @@ _VISION_GROQ_MIN_TOKENS = 640
 _VISION_GROQ_RATE_RETRIES = 2
 
 
+def _groq_vision(model_id: str, messages: list[dict], max_tokens: int, key: str):
+    """Llamada de visión a Groq; ante su límite por minuto espera y repite."""
+    for attempt in range(_VISION_GROQ_RATE_RETRIES + 1):
+        try:
+            return groq_client.with_options(api_key=key).chat.completions.create(
+                model=model_id,
+                messages=messages,
+                max_completion_tokens=max(max_tokens, _VISION_GROQ_MIN_TOKENS),
+                timeout=_LLM_TIMEOUT_S,
+            )
+        except GroqRateLimitError as exc:
+            # Límite por minuto, no cuota agotada: se espera lo que pide.
+            wait = rate_limit_wait(exc)
+            if wait is None or attempt == _VISION_GROQ_RATE_RETRIES:
+                raise
+            logger.info("vision: Groq rate limit — waiting", model_id=model_id, wait_s=wait)
+            time.sleep(wait)
+    raise RuntimeError("unreachable: el bucle devuelve o relanza")
+
+
 def _vision_once(provider: str, model_id: str, messages: list[dict], max_tokens: int, key: str) -> str:
     if provider == "groq":
-        for attempt in range(_VISION_GROQ_RATE_RETRIES + 1):
-            try:
-                response = groq_client.with_options(api_key=key).chat.completions.create(
-                    model=model_id,
-                    messages=messages,
-                    max_completion_tokens=max(max_tokens, _VISION_GROQ_MIN_TOKENS),
-                    timeout=_LLM_TIMEOUT_S,
-                )
-                break
-            except GroqRateLimitError as exc:
-                # Límite por minuto, no cuota agotada: se espera lo que pide.
-                wait = rate_limit_wait(exc)
-                if wait is None or attempt == _VISION_GROQ_RATE_RETRIES:
-                    raise
-                logger.info("vision: Groq rate limit — waiting", model_id=model_id, wait_s=wait)
-                time.sleep(wait)
+        response = _groq_vision(model_id, messages, max_tokens, key)
     else:
         response = openrouter_client.with_options(api_key=key).chat.completions.create(
             model=model_id,
