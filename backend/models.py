@@ -26,6 +26,7 @@ from generation.jobs.jobs_model import (  # noqa: F401  — registers ova_jobs t
     OvaJob,
     OvaJobResource,
 )
+from generation.regen.regen_job_model import RegenJob  # noqa: F401  — registers regen_jobs
 from llm.catalog.models import CatalogCache  # noqa: F401
 from ova.infrastructure.orm import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
 from ova.infrastructure.orm_chat import OvaEditorChatMessage  # noqa: F401
@@ -48,6 +49,7 @@ __all__ = [
     "PasswordResetToken",
     "PlatformConfig",
     "RagChunk",
+    "RegenJob",
     "RevokedToken",
     "Role",
     "Session",

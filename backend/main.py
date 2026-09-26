@@ -97,8 +97,8 @@ def _background_auth_purge() -> None:
 
 
 def _background_regen_recovery() -> None:
-    # Regen jobs live in an in-memory dict (one thread per regen); a restart
-    # loses them while ova.status stays "generando" in DB, bricking the OVA.
+    # Regeneraciones cuyo ejecutor murió (latido caducado en regen_jobs): se
+    # marcan interrumpidas y se libera el OVA. Las de otro proceso vivo no se tocan.
     try:
         from generation.regen.regen_jobs import recover_orphan_regen
 

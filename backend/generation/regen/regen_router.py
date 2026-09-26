@@ -8,9 +8,9 @@ from auth.dependencies import get_current_user
 from core.database import get_db
 from core.http_errors import forbidden_response
 from core.rate_limit import limiter
-from generation.regen.regen_jobs import regen_progress_dto, start_regen
+from generation.regen.regen_jobs import recover_orphan_regen, regen_progress_dto, start_regen
+from generation.regen.regen_launcher import launch_regen
 from generation.regen.regen_rag import attach_to_ova
-from generation.regen.regen_service import _finalize_edit
 from models import Ova, OvaPhase, OvaVersion, User
 from ova import ensure_version_exists, get_active_version, is_ova_owner
 
@@ -43,6 +43,15 @@ def _original_topic(ova_id: str, fallback: str | None, db: Session) -> str | Non
     return first or fallback
 
 
+def _still_generating(ova: Ova, db: Session) -> bool:
+    """«generando» de verdad, o una regeneración cuyo ejecutor murió (sin latido)
+    que se libera aquí mismo en vez de dejar el OVA bloqueado hasta un reinicio."""
+    if ova.current_version_id is None or not recover_orphan_regen(ova_id=ova.id):
+        return True
+    db.refresh(ova)
+    return ova.status == "generando"
+
+
 @router.post("/{ova_id}/regenerar", summary="Regenerar los recursos de una OVA")
 @limiter.limit("10/minute")
 def regenerate_ova(
@@ -65,7 +74,7 @@ def regenerate_ova(
     if not is_ova_owner(ova, current_user):
         return forbidden_response("No tienes permiso para editar este OVA.")
 
-    if ova.status == "generando":
+    if ova.status == "generando" and _still_generating(ova, db):
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content={
@@ -136,7 +145,7 @@ def regenerate_ova(
         effective_prompt,
         payload.fase_ids,
         total_phases or 1,
-        worker=_finalize_edit,
+        worker=launch_regen,
         instruction=instruction,
         attachments=attachments,
     )
