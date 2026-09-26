@@ -45,7 +45,10 @@ def magic_bytes_ok(declared_mime: str, content: bytes) -> bool:
     kind = filetype.guess(content)
     sniffed = kind.mime if kind else None
     if declared_mime in _OFFICE_ZIP_MIMES:
-        return sniffed == "application/zip"
+        # filetype >= 1.1 reconoce el tipo Office concreto (no solo el zip): antes
+        # solo se aceptaba "application/zip" y todo DOCX/PPTX real se rechazaba
+        # como «El contenido del archivo no coincide con su tipo declarado».
+        return sniffed in (declared_mime, "application/zip")
     if declared_mime == "application/pdf":
         return sniffed == "application/pdf"
     if declared_mime.startswith("image/"):
@@ -59,3 +62,26 @@ def magic_bytes_ok(declared_mime: str, content: bytes) -> bool:
 
 def safe_filename(raw: str | None) -> str:
     return Path(raw or "archivo").name
+
+
+_INGESTION_MESSAGES: dict[str, str] = {
+    "unsupported_type": "Este tipo de archivo no se puede leer como texto: no se usará como contexto.",
+    "empty_text": "No se encontró texto en el archivo (¿es un escaneo o una imagen?): no se usará "
+    "como contexto.",
+    "no_chunks": "No se encontró texto en el archivo: no se usará como contexto.",
+    "parse_error": "No se pudo leer el contenido del archivo: no se usará como contexto.",
+    "embedder_error": "El servicio de indexado falló al procesar el archivo: no se usará como "
+    "contexto. Prueba a subirlo de nuevo.",
+    "embedder_unavailable": "El servicio de indexado no está disponible ahora: el archivo no se "
+    "usará como contexto.",
+    "db_error": "No se pudo guardar el índice del archivo: no se usará como contexto.",
+}
+
+
+def ingestion_message(status: str, reason: str | None) -> str | None:
+    """Motivo legible de una ingesta que no dejó el archivo listo para el RAG."""
+    if status in ("indexed", "processing", "disabled"):
+        return None
+    return _INGESTION_MESSAGES.get(
+        reason or "", "El archivo se subió pero no pudo indexarse: no se usará como contexto."
+    )

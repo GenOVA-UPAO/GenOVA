@@ -25,19 +25,38 @@ const APTITUD_OBLIGATORIA = new Set(["imagen", "video"]);
 
 function tieneAptitud(m: { aptitudes?: string[]; category?: string }, task: string): boolean {
   const apt = m.aptitudes;
-  if (Array.isArray(apt) && apt.length > 0) return apt.includes(task);
+  // Una lista vacía también decide: un modelo de video que necesita un video de
+  // entrada (editar, escalar) es de categoría «video» pero no genera desde texto.
+  if (Array.isArray(apt)) return apt.includes(task);
   // Catálogos antiguos sin `aptitudes`: cae a la categoría.
   return (m.category ?? "") === task;
+}
+
+/** Tareas que son variantes de escribir texto. */
+const TAREAS_DE_TEXTO = new Set(["texto", "codigo", "orquestador", "razonamiento"]);
+
+/**
+ * Modelos que no escriben texto: generadores de imagen o video (Veo, FLUX,
+ * Nano Banana), voz (Orpheus), transcripción (Whisper) o clasificadores de
+ * seguridad (Prompt Guard). En una tarea de texto fallarían siempre. El backend
+ * ya les quita las aptitudes de texto: basta con que no tengan ninguna.
+ */
+function noEscribeTexto(m: { aptitudes?: string[]; category?: string }): boolean {
+  const apt = m.aptitudes;
+  // Catálogos antiguos sin `aptitudes`: solo se reconocían los de imagen y video.
+  if (!Array.isArray(apt)) return APTITUD_OBLIGATORIA.has(m.category ?? "");
+  return !apt.some((a) => TAREAS_DE_TEXTO.has(a));
 }
 
 /**
  * Modelos ofrecibles para una tarea.
  *
- * Para imagen y vídeo se filtra de verdad. Para las tareas de texto NO se
- * excluye a nadie: solo 20 de los ~430 modelos del catálogo declaran aptitud
- * `codigo`, y generar HTML no requiere ninguna capacidad especial, así que
- * filtrar por ella dejaba el selector de Código con un único modelo. Los que sí
- * declaran la aptitud van primero, para que la recomendación siga visible.
+ * Para imagen y vídeo se filtra de verdad. Para las tareas de texto solo se
+ * quitan los modelos que no escriben texto: solo 20 de los ~430 modelos del
+ * catálogo declaran aptitud `codigo`, y generar HTML no requiere ninguna
+ * capacidad especial, así que filtrar por ella dejaba el selector de Código con
+ * un único modelo. Los que sí declaran la aptitud van primero, para que la
+ * recomendación siga visible.
  */
 export function modelsForTask<T extends { aptitudes?: string[]; category?: string }>(
   models: T[],
@@ -48,7 +67,10 @@ export function modelsForTask<T extends { aptitudes?: string[]; category?: strin
   }
   const aptos: T[] = [];
   const resto: T[] = [];
-  for (const m of models) (tieneAptitud(m, task) ? aptos : resto).push(m);
+  for (const m of models) {
+    if (noEscribeTexto(m)) continue;
+    (tieneAptitud(m, task) ? aptos : resto).push(m);
+  }
   return [...aptos, ...resto];
 }
 

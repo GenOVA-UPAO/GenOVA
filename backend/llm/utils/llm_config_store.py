@@ -120,35 +120,45 @@ def effective_media_slice() -> tuple[dict, dict, dict]:
     return defaults, fallbacks, flags
 
 
-def load_stored() -> dict:
-    """Lee la config cruda de PlatformConfig (sin merge). {} si no existe."""
+def read_platform_json(key: str):
+    """Valor JSON guardado en PlatformConfig bajo `key` (None si no hay o falla)."""
     db = SessionLocal()
     try:
-        row = db.get(PlatformConfig, PLATFORM_KEY)
+        row = db.get(PlatformConfig, key)
         if not row or not row.value:
-            return {}
-        data = json.loads(row.value)
-        return data if isinstance(data, dict) else {}
+            return None
+        return json.loads(row.value)
     except Exception:
-        logger.exception("load platform config failed", key=PLATFORM_KEY)
-        return {}
+        logger.exception("load platform config failed", key=key)
+        return None
     finally:
         db.close()
+
+
+def write_platform_json(key: str, value) -> None:
+    """Guarda `value` como JSON en PlatformConfig bajo `key` (upsert)."""
+    db = SessionLocal()
+    try:
+        val = json.dumps(value, ensure_ascii=False)
+        row = db.get(PlatformConfig, key)
+        if row:
+            row.value = val
+        else:
+            db.add(PlatformConfig(key=key, value=val))
+        db.commit()
+    finally:
+        db.close()
+
+
+def load_stored() -> dict:
+    """Lee la config cruda de PlatformConfig (sin merge). {} si no existe."""
+    data = read_platform_json(PLATFORM_KEY)
+    return data if isinstance(data, dict) else {}
 
 
 def save_stored(clean: dict) -> None:
     """Persiste la config (ya saneada) e invalida el cache."""
-    db = SessionLocal()
-    try:
-        val = json.dumps(clean, ensure_ascii=False)
-        row = db.get(PlatformConfig, PLATFORM_KEY)
-        if row:
-            row.value = val
-        else:
-            db.add(PlatformConfig(key=PLATFORM_KEY, value=val))
-        db.commit()
-    finally:
-        db.close()
+    write_platform_json(PLATFORM_KEY, clean)
     invalidate()
 
 

@@ -150,20 +150,28 @@ def get_image_data_uri(
     width: int = 512,
     height: int = 512,
     model: str | None = None,
+    *,
+    hf_fallback: bool = True,
 ) -> str | None:
     """Generate an image for `prompt` using the specified provider.
 
-    Returns a base64 data URI or None on failure.
+    Returns a base64 data URI or None on failure. `hf_fallback=False` skips the
+    last-resort HuggingFace attempt: a caller walking a chain of models tries it
+    once, after the whole chain failed, not between two of its entries.
     """
     clean = (prompt or "").strip()
     if not clean:
         return None
+    from llm.images.media_fake import fake_media_enabled
+
+    if fake_media_enabled():
+        return _fake_image(provider, api_key, model, width, height)
     fn = _PROVIDERS.get(provider, _hf)
     if provider in _MODEL_PROVIDERS:
         result = fn(clean, api_key, width, height, model)
     else:
         result = fn(clean, api_key, width, height)
-    if result is None and provider != "huggingface":
+    if result is None and provider != "huggingface" and hf_fallback:
         # Fallback (audit 2026-07-06 #5): el provider elegido no está configurado
         # o falló (p.ej. cloudflare sin CF_ACCOUNT_ID) → intentar huggingface con
         # la key de plataforma antes de degradar a placeholder.
@@ -171,6 +179,28 @@ def get_image_data_uri(
         if result:
             logger.info("image provider failed; huggingface fallback succeeded", provider=provider)
     return result
+
+
+def _fake_image(
+    provider: str, api_key: str | None, model: str | None, width: int, height: int
+) -> str | None:
+    """LLM_FAKE: sin red; falla igual que en real si no hay clave (ver media_fake)."""
+    from llm.images.media_fake import fake_failure, fake_image_data_uri
+
+    if fake_failure(api_key, model):
+        logger.info("fake image generation failed", provider=provider, model=model)
+        return None
+    return fake_image_data_uri(provider, model, width, height)
+
+
+def hf_last_resort(prompt: str, width: int = 512, height: int = 512) -> str | None:
+    """Último intento con HuggingFace y la clave de plataforma (nunca con LLM_FAKE)."""
+    from llm.images.media_fake import fake_media_enabled
+
+    clean = (prompt or "").strip()
+    if not clean or fake_media_enabled():
+        return None
+    return _hf(clean, _platform_hf_key(), width, height)
 
 
 def _platform_hf_key() -> str | None:

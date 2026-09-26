@@ -1,14 +1,11 @@
 import { useState } from "react";
 
-import { Icon } from "@/core/components/icon";
-import { Button } from "@/core/components/ui/button";
-
 import type { AdminCatalogItem } from "../hooks/admin-llm-view";
 import { useLlmSettings } from "../hooks/use-llm-settings";
 import type { SlotIssue } from "../lib/chain-validation";
 import { type Draft, isMediaTask, type TaskDraft } from "../lib/llm-config-draft";
-import { enabledOnly, includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";
-import { CatalogStatusAlert } from "./catalog-status-alert";
+import { includeSelectedInPool, modelsForTask } from "../lib/task-model-pool";
+import { ModelsOverviewBar } from "./models-overview-bar";
 import { ModelsTaskNav } from "./models-task-nav";
 import { ModelsTaskPanel } from "./models-task-panel";
 
@@ -21,6 +18,10 @@ interface ModelsMasterDetailProps {
   chainIssues: Record<string, SlotIssue[]>;
   onDraftChange: (next: Draft) => void;
   onOpenCatalog: () => void;
+  /** Lleva a la clave de plataforma del proveedor (solo administradores). */
+  onConnectProvider: (provider: string) => void;
+  /** Sin proveedor, lleva a la primera clave; con él, a la fila de ese proveedor. */
+  onGoToCredentials: (provider?: string) => void;
 }
 
 export function ModelsMasterDetail({
@@ -32,30 +33,21 @@ export function ModelsMasterDetail({
   chainIssues,
   onDraftChange,
   onOpenCatalog,
+  onConnectProvider,
+  onGoToCredentials,
 }: Readonly<ModelsMasterDetailProps>) {
   const store = useLlmSettings();
   const [selectedTask, setSelectedTask] = useState(tasks[0] ?? "texto");
   const [mobileShowDetail, setMobileShowDetail] = useState(false);
   const selectedDraft = draft?.[selectedTask];
   const generationOn = generationEnabled(selectedDraft, selectedTask);
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Elige una tarea para ver su modelo principal y sus modelos de respaldo.
-        </p>
-        <Button variant="outline" onClick={onOpenCatalog} className="shrink-0 max-sm:h-11">
-          <Icon name="squares-four" size="text-sm" />
-          Abrir catálogo
-        </Button>
-      </div>
-      <CatalogStatusAlert
-        catalogStatus={store.catalogStatus}
-        refreshing={store.refreshingCatalog}
-        onRetry={() => {
-          void store.retryRefresh();
-        }}
+      <ModelsOverviewBar
+        isAdmin={isAdmin}
+        onOpenCatalog={onOpenCatalog}
+        onConnectProvider={onConnectProvider}
+        onGoToOwnKey={onGoToCredentials}
       />
       <div className="grid overflow-hidden rounded-xl border border-border bg-card md:grid-cols-[260px_1fr]">
         <ModelsTaskNav
@@ -78,7 +70,10 @@ export function ModelsMasterDetail({
           adminSaving={adminSaving}
           generationOn={generationOn}
           selectedDraft={selectedDraft}
-          poolModels={poolFor(selectedTask, adminModels, store.enabledModels, selectedDraft)}
+          poolModels={poolFor(selectedTask, adminModels, selectedDraft)}
+          draft={draft}
+          tasks={tasks}
+          onDraftChange={onDraftChange}
           adminModels={adminModels}
           issues={chainIssues[selectedTask] ?? []}
           defaults={store.defaults}
@@ -87,6 +82,9 @@ export function ModelsMasterDetail({
           bounds={store.bounds}
           onBack={() => {
             setMobileShowDetail(false);
+          }}
+          onGoToCredentials={() => {
+            onGoToCredentials();
           }}
           onToggleGeneration={() => {
             toggleGeneration(draft, selectedTask, generationOn, onDraftChange);
@@ -105,16 +103,16 @@ function generationEnabled(draft: TaskDraft | undefined, task: string): boolean 
   return task !== "video";
 }
 
-function poolFor(
-  task: string,
-  adminModels: AdminCatalogItem[],
-  enabled: { provider: string; model_id: string }[],
-  selected: TaskDraft | undefined,
-) {
-  const enabledPool = enabledOnly(adminModels, enabled);
-  const filtered = modelsForTask(enabledPool, task);
-  const base = filtered.length ? filtered : enabledPool;
-  return includeSelectedInPool(base, adminModels, [selected?.default, ...(selected?.fallbacks ?? [])]);
+/**
+ * Modelos que se ofrecen para una tarea: el catálogo apto completo (los favoritos
+ * ya no filtran, solo salen primero). Imagen y video solo ofrecen los aptos:
+ * un modelo de texto ahí fallaría al generar.
+ */
+function poolFor(task: string, adminModels: AdminCatalogItem[], selected: TaskDraft | undefined) {
+  return includeSelectedInPool(modelsForTask(adminModels, task), adminModels, [
+    selected?.default,
+    ...(selected?.fallbacks ?? []),
+  ]);
 }
 
 function applyChain(

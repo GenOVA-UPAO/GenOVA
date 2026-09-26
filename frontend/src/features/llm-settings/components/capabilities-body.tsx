@@ -1,4 +1,4 @@
-import type { EngineNode } from "../hooks/nodes-config.types";
+import type { EngineNode, NodesConfigResponse } from "../hooks/nodes-config.types";
 import { CapabilityRow } from "./capability-row";
 import { SectionError } from "./section-error";
 import { SettingListSkeleton } from "./setting-list-skeleton";
@@ -10,7 +10,7 @@ interface CapabilitiesBodyProps {
   capabilities: EngineNode[];
   draft: Record<string, string> | null;
   saving: boolean;
-  videoWarning: boolean;
+  mediaStatus: NodesConfigResponse["media_status"];
   onToggle: (flag: string) => void;
 }
 
@@ -21,11 +21,11 @@ export function CapabilitiesBody({
   capabilities,
   draft,
   saving,
-  videoWarning,
+  mediaStatus,
   onToggle,
 }: Readonly<CapabilitiesBodyProps>) {
   if (loading || !ready) {
-    return <SettingListSkeleton rows={2} />;
+    return <SettingListSkeleton rows={4} />;
   }
   if (error) {
     return <SectionError message={error} />;
@@ -38,7 +38,7 @@ export function CapabilitiesBody({
           cap={cap}
           active={draft?.[cap.flag] === "1"}
           saving={saving}
-          videoWarning={videoWarning}
+          media={cap.media_task ? mediaStatus?.[cap.media_task] : undefined}
           onToggle={() => {
             onToggle(cap.flag);
           }}

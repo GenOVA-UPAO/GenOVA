@@ -7,6 +7,7 @@ import {
   type ResourceConfigs,
   toggleSelection,
 } from "../../lib/phase-select.config";
+import { resourceDisplayName } from "../../lib/resource-display-name";
 import { WorkspaceModal } from "../shared/workspace-modal";
 import { PhaseSelectFooter } from "./phase-select-footer";
 import { PhaseSelectGrid } from "./phase-select-grid";
@@ -32,10 +33,30 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
   const count = Object.values(draft).flat().length;
   const phases = Object.values(draft).filter((items) => items.length > 0).length;
   return (
-    <WorkspaceModal title="Configurar recursos 5E" size="xl" description="Elige qué recursos generará la IA en cada fase. Necesitas al menos 2 fases." onClose={onClose}
-      footer={<PhaseSelectFooter count={count} phases={phases} onClose={onClose} onConfirm={() => { onConfirm(draft, settings); }} />}
+    <WorkspaceModal
+      title="Configurar recursos 5E"
+      size="xl"
+      description="Elige qué recursos generará la IA en cada fase. Necesitas al menos 2 fases."
+      onClose={onClose}
+      footer={
+        <PhaseSelectFooter
+          count={count}
+          phases={phases}
+          onClose={onClose}
+          onConfirm={() => {
+            onConfirm(draft, settings);
+          }}
+        />
+      }
     >
-      <PhaseSelectTabs phase={phase} picks={draft} onChange={(key) => { setPhase(key); setPreview(undefined); }} />
+      <PhaseSelectTabs
+        phase={phase}
+        picks={draft}
+        onChange={(key) => {
+          setPhase(key);
+          setPreview(undefined);
+        }}
+      />
       <PhaseSelectGrid
         phase={phase}
         items={catalog.data?.[phase] ?? []}
@@ -58,7 +79,7 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
           <ResourceConfigModal
             phase={phase}
             resourceId={String(target.id)}
-            resourceName={target.tipo}
+            resourceName={target.tipo ? resourceDisplayName(target.tipo) : undefined}
             config={settings[`${phase}:${String(target.id)}`]}
             onSave={(value) => {
               setSettings({ ...settings, [`${phase}:${String(target.id)}`]: value });

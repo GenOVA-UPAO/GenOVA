@@ -1,28 +1,159 @@
+/* Tutorial de /crear (driver.js) con la misma piel que los diálogos de la app:
+   tokens del tema, radios de la escala, botones de 36 px (44 px en móvil) y
+   foco visible. driver.js aplica `all: unset`, por eso los selectores llevan
+   la clase del popover delante. */
+body.driver-fade {
+  --driver-animation-duration: 0.2s;
+}
+
 .gn-tour.driver-popover {
   font-family: var(--font-sans);
   background: var(--popover);
   color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  padding: 20px;
+  min-width: 0;
+  width: min(22rem, calc(100vw - 32px));
+  max-width: none;
 }
+
 .gn-tour .driver-popover-title {
   font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  padding-right: 40px;
 }
-.gn-tour .driver-popover-description,
+
+.gn-tour .driver-popover-description {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+
+.gn-tour .driver-popover-title[style*="block"] + .driver-popover-description {
+  margin-top: 6px;
+}
+
 .gn-tour .driver-popover-footer {
   font-family: var(--font-sans);
+  margin-top: 20px;
+  gap: 12px;
 }
-.gn-tour .driver-popover-next-btn {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--primary);
-  text-shadow: none;
-}
-.gn-tour .driver-popover-prev-btn {
-  background: var(--muted);
-  color: var(--foreground);
-  text-shadow: none;
-}
+
 /* driver.js pinta el contador con un gris fijo (#727272) que sobre el popover
    oscuro se queda en 3.69:1. Se usa el token del tema, que sí contrasta. */
 .gn-tour .driver-popover-progress-text {
   color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gn-tour .driver-popover-navigation-btns {
+  gap: 8px;
+}
+
+.gn-tour .driver-popover-navigation-btns button + button {
+  margin-left: 0;
+}
+
+.gn-tour.driver-popover .driver-popover-footer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  text-shadow: none;
+  white-space: nowrap;
+  transition:
+    background-color 150ms,
+    transform 150ms;
+}
+
+.gn-tour.driver-popover .driver-popover-footer-btn:hover {
+  background: var(--muted);
+}
+
+.gn-tour.driver-popover .driver-popover-footer-btn:active {
+  transform: translateY(1px);
+}
+
+.gn-tour.driver-popover .driver-popover-next-btn {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.gn-tour.driver-popover .driver-popover-next-btn:hover {
+  background: color-mix(in oklch, var(--primary) 90%, transparent);
+}
+
+.gn-tour.driver-popover .driver-popover-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  color: var(--muted-foreground);
+  font-size: 1.5rem;
+  line-height: 1;
+  transition:
+    background-color 150ms,
+    color 150ms;
+}
+
+.gn-tour.driver-popover .driver-popover-close-btn:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.gn-tour.driver-popover .driver-popover-footer-btn:focus-visible,
+.gn-tour.driver-popover .driver-popover-close-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+
+/* La flecha usa el color del popover en claro y en oscuro (driver.js la pinta blanca). */
+.gn-tour .driver-popover-arrow-side-top {
+  border-top-color: var(--popover);
+}
+.gn-tour .driver-popover-arrow-side-bottom {
+  border-bottom-color: var(--popover);
+}
+.gn-tour .driver-popover-arrow-side-left {
+  border-left-color: var(--popover);
+}
+.gn-tour .driver-popover-arrow-side-right {
+  border-right-color: var(--popover);
+}
+
+@media (max-width: 639px) {
+  .gn-tour.driver-popover .driver-popover-footer-btn {
+    height: 44px;
+    padding: 0 16px;
+  }
+  .gn-tour.driver-popover .driver-popover-close-btn {
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+  }
+  .gn-tour .driver-popover-title {
+    padding-right: 44px;
+  }
 }

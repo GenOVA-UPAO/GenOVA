@@ -16,7 +16,7 @@ from core.config import settings
 from llm.router import generar_texto
 from llm.utils.html_validator import validate_html
 from llm.utils.llm_helpers import _CODE_MAX_TOKENS
-from llm.utils.themes import build_design_system
+from llm.utils.themes import theme_design_system
 from llm.utils.utils import extract_html_document
 
 logger = structlog.get_logger(__name__)
@@ -79,8 +79,7 @@ def apply_feedback(
     Generador-Crítico loop (EN-015) to apply critic feedback without the
     structural regression check — acceptance by puntaje is handled by the caller.
     """
-    theme = theme or {}
-    ds = build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
+    ds = theme_design_system(theme)
     try:
         return extract_html_document(
             generar_texto(

@@ -1,26 +1,33 @@
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
-import type { CatalogStatusEntry } from "../hooks/llm-settings-store.types";
-import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
-
-const listFormat = new Intl.ListFormat("es", { style: "long", type: "conjunction" });
+import { type CatalogStatus, failedProviders, providerLabel } from "../lib/catalog-status";
+import { joinList } from "../lib/join-list";
 
 interface CatalogStatusAlertProps {
-  catalogStatus: Record<string, CatalogStatusEntry> | null;
+  catalogStatus: CatalogStatus | null;
   refreshing: boolean;
+  /** Solo quien puede cambiar las claves de la plataforma recibe la pista de revisarlas. */
+  canFixKeys: boolean;
   onRetry: () => void;
 }
 
-/** Aviso cuando algún proveedor no devolvió su catálogo: qué pasó y cómo reintentar. */
+/**
+ * Aviso cuando un proveedor conectado no devolvió su catálogo. Los que no
+ * tienen clave no son un fallo: salen en `UnconnectedProvidersNote`.
+ */
 export function CatalogStatusAlert({
   catalogStatus,
   refreshing,
+  canFixKeys,
   onRetry,
 }: Readonly<CatalogStatusAlertProps>) {
-  const down = Object.entries(catalogStatus ?? {}).filter(([, status]) => !status.ok);
+  const down = failedProviders(catalogStatus);
   if (down.length === 0) return null;
-  const names = listFormat.format(down.map(([id]) => PROVIDER_LABELS[id] ?? id));
+  const names = joinList(down.map(providerLabel));
+  const hint = canFixKeys
+    ? "Vuelve a intentarlo; si sigue fallando, revisa su clave en Credenciales."
+    : "Vuelve a intentarlo en unos minutos.";
 
   return (
     <div
@@ -31,8 +38,8 @@ export function CatalogStatusAlert({
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-medium">No pudimos obtener los modelos de {names}</p>
         <p className="text-muted-foreground">
-          Sus modelos no aparecerán en las listas hasta que respondan. Revisa sus claves en
-          Credenciales o vuelve a intentarlo.
+          Pueden faltar en las listas hasta que {down.length === 1 ? "responda" : "respondan"}.{" "}
+          {hint}
         </p>
       </div>
       <Button

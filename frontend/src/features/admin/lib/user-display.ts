@@ -67,7 +67,7 @@ export function usersPageSubtitle(
   totalItems: number,
 ): string {
   if (isLoading) return "Cargando usuarios…";
-  if (hasError) return "No se pudo obtener el listado";
+  if (hasError) return "Cuentas registradas en la plataforma";
   if (totalItems === 1) return "1 usuario registrado en la plataforma";
   return `${String(totalItems)} usuarios registrados en la plataforma`;
 }

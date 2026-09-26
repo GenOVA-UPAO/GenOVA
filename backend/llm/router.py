@@ -22,7 +22,6 @@ from llm.utils.llm_helpers import (
     _RECOVERABLE_ERRORS,
     _SEED_FALLBACK_CHAIN,
     _SEED_MODELOS,
-    _VISION_MODEL,
     EmptyContentError,
     LLMBudgetExhaustedError,
     _default_models,
@@ -30,9 +29,11 @@ from llm.utils.llm_helpers import (
     _resolve_primary,
     _retry_delay,
     effective_llm_config,
+    own_keys,
     with_model_thinking,
     with_thinking_disabled,
 )
+from llm.utils.vision_models import clean_description, rate_limit_wait, vision_chain
 
 # ── Re-export everything external callers depend on ───────────────────────────
 # Tests, catalog_refresh, admin router, and all llm/*_router.py files import
@@ -44,7 +45,6 @@ __all__ = [
     "_RECOVERABLE_ERRORS",
     "_SEED_FALLBACK_CHAIN",
     "_SEED_MODELOS",
-    "_VISION_MODEL",
     "_chat",
     "_default_models",
     "_fallback_chain",
@@ -95,8 +95,10 @@ def _chat_once(
     max_tokens: int,
     extra: dict,
     timeout: float | None = None,
+    key: str | None = None,
 ) -> tuple[str, str | None]:
-    key = _get_provider_key(provider)
+    # La clave propia del usuario, si la hay, va primero; si no, la de plataforma.
+    key = key or _get_provider_key(provider)
     if provider == "groq":
         opts = {**({"api_key": key} if key else {}), **({"timeout": timeout} if timeout else {})}
         client = groq_client.with_options(**opts) if opts else groq_client
@@ -153,9 +155,10 @@ def _chat(
     max_tokens: int,
     extra: dict,
     timeout: float | None = None,
+    key: str | None = None,
 ) -> str:
     msgs = [{"role": "user", "content": prompt}]
-    content, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout)
+    content, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key)
     for _ in range(_MAX_CONTINUATIONS):
         if finish != "length":
             break
@@ -166,7 +169,7 @@ def _chat(
             {"role": "user", "content": _CONTINUE_PROMPT},
         ]
         try:
-            more, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout)
+            more, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key)
         except EmptyContentError:
             break
         content += more
@@ -197,6 +200,7 @@ def generar_texto(
     con CoT y su latencia se come el presupuesto — medido: 39.7s → 11.5s con
     el mismo JSON válido)."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
+    user_keys = own_keys(llm_config)
     chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea, llm_config)]
 
     last_err: Exception | None = None
@@ -244,7 +248,15 @@ def generar_texto(
             model_id=model_id,
         )
         try:
-            content = _chat(proveedor, model_id, prompt, max_tokens, attempt_extra, attempt_timeout)
+            content = _chat(
+                proveedor,
+                model_id,
+                prompt,
+                max_tokens,
+                attempt_extra,
+                attempt_timeout,
+                user_keys.get(proveedor),
+            )
             logger.info(
                 "task model ok",
                 tarea=tarea,
@@ -323,22 +335,85 @@ def generar_texto_with_model(
         )
         fb_key = _get_provider_key("openrouter")
         fb_client = openrouter_client.with_options(api_key=fb_key) if fb_key else openrouter_client
+        # El respaldo gratuito (Gemma 4) puede razonar y comerse el tope de
+        # tokens (aquí a veces solo 512): mismo ajuste que en generar_texto.
         response = fb_client.chat.completions.create(
             model=_FALLBACK_OR_MODEL,
             messages=msgs,
             max_tokens=max_tokens,
+            **with_model_thinking("openrouter", _FALLBACK_OR_MODEL, {}, max_tokens),
         )
         return response.choices[0].message.content
 
 
+# Tope de salida en Groq. Medido el 2026-09-25 (qwen/qwen3.8-27b, matriz de
+# confusión de prueba): 249-370 tokens de descripción, sin razonamiento ni
+# «<think>», en 1,1-3,2 s. Antes eran 2048 por si razonaba, pero su plan
+# gratuito reserva ese tope contra sus límites por minuto (8000 tokens en total
+# y 1000 de salida; con 900 la petición ya contaba 849 de salida): cuanto menor,
+# más imágenes seguidas caben antes del 429. 640 deja margen a las 250 palabras.
+_VISION_GROQ_MIN_TOKENS = 640
+# Esperas por 429 de Groq antes de pasar al respaldo de pago (ver rate_limit_wait).
+_VISION_GROQ_RATE_RETRIES = 2
+
+
+def _groq_vision(model_id: str, messages: list[dict], max_tokens: int, key: str):
+    """Llamada de visión a Groq; ante su límite por minuto espera y repite."""
+    for attempt in range(_VISION_GROQ_RATE_RETRIES + 1):
+        try:
+            return groq_client.with_options(api_key=key).chat.completions.create(
+                model=model_id,
+                messages=messages,
+                max_completion_tokens=max(max_tokens, _VISION_GROQ_MIN_TOKENS),
+                timeout=_LLM_TIMEOUT_S,
+            )
+        except GroqRateLimitError as exc:
+            # Límite por minuto, no cuota agotada: se espera lo que pide.
+            wait = rate_limit_wait(exc)
+            if wait is None or attempt == _VISION_GROQ_RATE_RETRIES:
+                raise
+            logger.info("vision: Groq rate limit — waiting", model_id=model_id, wait_s=wait)
+            time.sleep(wait)
+    raise RuntimeError("unreachable: el bucle devuelve o relanza")
+
+
+def _vision_once(provider: str, model_id: str, messages: list[dict], max_tokens: int, key: str) -> str:
+    if provider == "groq":
+        response = _groq_vision(model_id, messages, max_tokens, key)
+    else:
+        response = openrouter_client.with_options(api_key=key).chat.completions.create(
+            model=model_id,
+            messages=messages,
+            max_tokens=max_tokens,
+            timeout=_LLM_TIMEOUT_S,
+        )
+    return clean_description(response.choices[0].message.content)
+
+
 def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
-    """Multi-turn messages with image_url content blocks for RAG image analysis."""
-    key = _get_provider_key("groq")
-    client = groq_client.with_options(api_key=key) if key else groq_client
-    response = client.chat.completions.create(
-        model=_VISION_MODEL,
-        messages=messages,
-        max_completion_tokens=max_tokens,
-        timeout=_LLM_TIMEOUT_S,
-    )
-    return response.choices[0].message.content
+    """Describe una imagen (mensajes con bloques image_url) para el RAG.
+
+    Prueba la cadena de `vision_chain()` con las claves de plataforma hasta que
+    un modelo responde: un modelo retirado (404) o sin cuota pasa al siguiente.
+    """
+    last_err: Exception | None = None
+    for provider, model_id in vision_chain():
+        key = _get_provider_key(provider)
+        if not key:
+            continue
+        try:
+            text = _vision_once(provider, model_id, messages, max_tokens, key)
+        except _RECOVERABLE_ERRORS as exc:
+            logger.warning(
+                "vision model failed — trying next",
+                provider=provider,
+                model_id=model_id,
+                error_type=type(exc).__name__,
+                status=getattr(exc, "status_code", None),
+            )
+            last_err = exc
+            continue
+        if text:
+            return text
+        last_err = EmptyContentError(f"{provider}/{model_id} devolvió una descripción vacía")
+    raise last_err or RuntimeError("No hay ningún modelo de visión disponible")

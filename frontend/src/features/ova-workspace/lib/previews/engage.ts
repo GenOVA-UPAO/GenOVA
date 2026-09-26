@@ -7,7 +7,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Cómic Interactivo",
     "Página HTML con viñetas clicables y una pregunta final.",
     "HTML + CSS interactivo",
-    ["3–5 paneles secuenciales", "Narración del concepto", "Pregunta de reflexión al cierre"],
+    ["De 3 a 5 viñetas en secuencia", "Narración del concepto", "Pregunta de reflexión al cierre"],
     "comic",
   ),
   "2": preview(
@@ -35,7 +35,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Dilema Ético",
     "Escenario con opciones de decisión y consecuencias.",
     "HTML narrativo + elección",
-    ["Situación conflictiva", "2–3 opciones de acción", "Reflexión según la elección"],
+    ["Situación conflictiva", "2 o 3 opciones de acción", "Reflexión según la elección"],
     "decisions",
   ),
   "6": preview(

@@ -92,8 +92,8 @@ def main() -> int:
     parser.add_argument("--judge-model", default=DEFAULT_JUDGE_MODEL)
     parser.add_argument("--judge-provider", default=DEFAULT_JUDGE_PROVIDER)
     # 2 y no 8: con más paralelismo el juez agota el free tier de Groq, y el
-    # reintento cae en _FALLBACK_OR_MODEL, que ya no es gratuito (404) → los
-    # veredictos se pierden como errores y encogen el denominador.
+    # reintento caía en un _FALLBACK_OR_MODEL gratuito ya retirado (404) → los
+    # veredictos se perdían como errores y encogían el denominador.
     parser.add_argument("--concurrency", type=int, default=2)
     parser.add_argument("--user-id", default=None, help="uuid dueño de los chunks")
     parser.add_argument(

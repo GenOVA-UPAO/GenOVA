@@ -3,6 +3,8 @@ import { Textarea } from "@/core/components/ui/textarea";
 
 import type { GuardrailsDraft } from "../lib/guardrails";
 import { normalizeTerms } from "../lib/guardrails";
+import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
+import { modelDisplayName } from "../lib/model-name";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
 import { FlagSwitch } from "./flag-switch";
 import { LlmModelSelect } from "./llm-model-select";
@@ -51,7 +53,8 @@ export function GuardrailsModerationSection({
               onChange={(event) => {
                 onTerms(event.target.value);
               }}
-              className="font-mono"
+              // Crecía con cada término (27 líneas a la vista): se limita y hace scroll.
+              className="max-h-60 font-mono"
             />
             <p id="guardrail-terms-help" className="text-xs text-muted-foreground">
               {termCount === 1 ? "1 término" : `${String(termCount)} términos`}. Uno por línea; se
@@ -70,15 +73,23 @@ export function GuardrailsModerationSection({
           </div>
         </div>
       ) : null}
-      <p className="text-xs text-muted-foreground">{moderationStatus(draft, termCount)}</p>
+      <p className="text-xs text-muted-foreground">{moderationStatus(draft, termCount, models)}</p>
     </SettingRow>
   );
 }
 
-function moderationStatus(draft: GuardrailsDraft, termCount: number): string {
+function moderationStatus(
+  draft: GuardrailsDraft,
+  termCount: number,
+  models: readonly CatalogModel[],
+): string {
   if (!draft.moderationEnabled) return "Ahora: la moderación está desactivada.";
-  if (draft.model.provider && draft.model.modelId) {
-    return `Ahora: se modera con el modelo ${draft.model.modelId} (${draft.model.provider}).`;
+  const { provider, modelId } = draft.model;
+  if (provider && modelId) {
+    // Con su nombre, no con el id y el proveedor en crudo («… (openrouter)»).
+    const label = models.find((m) => m.provider === provider && m.model_id === modelId)?.label;
+    const name = modelDisplayName(label, modelId);
+    return `Ahora: se modera con ${name} (${PROVIDER_LABELS[provider] ?? provider}).`;
   }
   return `Ahora: se aplica la lista de términos (${String(termCount)}).`;
 }

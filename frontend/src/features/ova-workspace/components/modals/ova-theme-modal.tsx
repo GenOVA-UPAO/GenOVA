@@ -15,9 +15,10 @@ interface Props {
 }
 
 function themeTitle(draft: OvaTheme): string {
+  if (draft.color === "custom" && draft.palette) return `Paleta ${draft.palette.name}`;
   if (draft.color === "upao" && draft.design === "upao") return "Marca institucional UPAO";
-  if (draft.color === "free" && draft.design === "free") return "Estilo libre (IA elige)";
-  return "Personalizado";
+  if (draft.color === "free" && draft.design === "free") return "La IA elige colores y diseño";
+  return "Combinado";
 }
 
 export default function OvaThemeModal({ theme, onChange, onClose }: Readonly<Props>) {

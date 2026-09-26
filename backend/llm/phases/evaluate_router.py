@@ -6,10 +6,10 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from core.database import get_db
 from core.rate_limit import limiter
+from llm.phases._rag import retrieve_phase_context
 from models import User
 from prometheus.plans.generate import generate_resource
 from prometheus.prompts.evaluate_prompts import RECURSOS_META
-from rag import build_contexto_usuario, top_k
 
 router = APIRouter()
 logger = structlog.get_logger(__name__)
@@ -19,18 +19,6 @@ class GenerateEvaluateRequest(BaseModel):
     resource_type: int
     concept: str
     upload_ids: list[str] = Field(default_factory=list)
-
-
-def _retrieve_contexto(db: Session, query: str, upload_ids: list[str]) -> str:
-    if not upload_ids:
-        return ""
-    chunks = top_k(db, query, upload_ids)
-    contexto = build_contexto_usuario(chunks)
-    if contexto:
-        logger.info(
-            "RAG retrieved chunks", fase="EVALUATE", chunk_count=len(chunks), concept=query[:60]
-        )
-    return contexto
 
 
 @router.get("/recursos", summary="Listar los recursos de la fase Evaluate")
@@ -58,7 +46,9 @@ def generate_evaluate_resource(
         raise HTTPException(status_code=400, detail="El concepto debe tener al menos 3 caracteres.")
 
     meta = RECURSOS_META[n]
-    contexto = _retrieve_contexto(db, concept, payload.upload_ids)
+    contexto = retrieve_phase_context(
+        db, concept, payload.upload_ids, user_id=str(current_user.id), fase="EVALUATE"
+    )
 
     try:
         result = generate_resource("evaluate", n, concept, contexto=contexto)

@@ -71,6 +71,6 @@ export function useUnlockUser() {
 export function useSendResetEmail() {
   return useUsersMutation<string>(
     (userId) => sendUserResetEmail(userId),
-    "Correo de restablecimiento enviado.",
+    "Correo de restablecimiento en camino.",
   );
 }

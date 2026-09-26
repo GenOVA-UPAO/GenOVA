@@ -12,6 +12,7 @@ const store: LlmSettingsStore = {
   settings: {},
   catalog: {},
   catalogFull: [],
+  catalogAll: [],
   catalogEnabled: [],
   fullTotal: 4,
   fullHasMore: false,
@@ -29,6 +30,7 @@ const store: LlmSettingsStore = {
   error: "",
   refetch: vi.fn(),
   catalogStatus: { groq: { ok: true }, openrouter: { ok: false } },
+  ownCatalogStatus: null,
   refreshingCatalog: false,
   searchQuery: "",
   categoryFilter: "all",
@@ -57,6 +59,8 @@ const store: LlmSettingsStore = {
 
 const admin = {
   loading: false,
+  error: false,
+  retry: vi.fn(),
   tasks: ["texto", "codigo"],
   models: [],
   draft: { texto: { default: { provider: "groq", model_id: "llama" }, fallbacks: [] } } as Draft,
@@ -72,6 +76,12 @@ vi.mock("@/core/auth/auth-store", () => ({
   useIsAdmin: () => true,
 }));
 
+const platformConfig: { data?: unknown } = {};
+
+vi.mock("@/core/hooks/use-platform-config", () => ({
+  usePlatformConfig: () => platformConfig,
+}));
+
 vi.mock("../hooks/use-llm-settings-store", () => ({
   useLlmSettingsStore: () => store,
 }));
@@ -83,6 +93,12 @@ vi.mock("../hooks/use-admin-llm-draft", () => ({
 vi.mock("../components/models-master-detail", () => ({
   ModelsMasterDetail: () => createElement("div", { "data-testid": "master-detail" }),
 }));
+
+vi.mock("../hooks/use-config-apply", () => ({
+  useConfigApply: () => ({ refresh: vi.fn(), undo: vi.fn(), announce: vi.fn() }),
+}));
+
+vi.mock("../components/models-config-tools", () => import("./models-page-config-tools-stub"));
 
 vi.mock("../components/manage-models-modal", () => ({
   ManageModelsModal: () => null,
@@ -97,6 +113,14 @@ vi.mock("../components/platform-nodes-card", () => import("./models-page-nodes-s
 vi.mock("../components/platform-capabilities-card", () =>
   import("./models-page-capabilities-stub"),
 );
+
+const dismissPendingChangesToast = vi.fn();
+
+vi.mock("../lib/pending-changes-toast", () => ({
+  dismissPendingChangesToast: () => {
+    dismissPendingChangesToast();
+  },
+}));
 
 vi.mock("../components/guardrails-card", () => ({
   GuardrailsCard: () => null,
@@ -128,17 +152,31 @@ describe("ModelsPage", () => {
     expect(screen.queryByText("Proveedores conectados")).toBeNull();
     expect(screen.queryByText("Modelos favoritos")).toBeNull();
     expect(screen.queryByText("Cambios sin guardar")).toBeNull();
-    expect(screen.getByText(/1 de 2 proveedores conectados · 1 modelo activado/)).toBeTruthy();
+    expect(screen.getByText(/1 de 2 proveedores conectados · 1 modelo favorito/)).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Modelos$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /^Credenciales$/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /Plataforma/i })).toBeTruthy();
     expect(screen.getByTestId("master-detail")).toBeTruthy();
+    // Perfiles e historial, en la cabecera: solo para el admin.
+    expect(screen.getByTestId("config-tools")).toBeTruthy();
   });
 
-  it("says all models are available when the favorites list is empty", () => {
+  it("only counts providers when there are no favorites", () => {
     store.enabledModels = [];
     renderPage();
-    expect(screen.getByText(/muestran todo el catálogo/i)).toBeTruthy();
+    expect(screen.getByText("1 de 2 proveedores conectados")).toBeTruthy();
+  });
+
+  it("cuenta los mismos proveedores que Credenciales cuando hay claves de plataforma", () => {
+    store.enabledModels = [];
+    platformConfig.data = {
+      providers: ["groq", "openrouter", "opencode", "runware"],
+      platform_config: { groq: "gsk_…1234", openrouter: "sk-or-…5678" },
+      server_keys: [],
+    };
+    renderPage();
+    expect(screen.getByText("2 de 4 proveedores conectados")).toBeTruthy();
+    platformConfig.data = undefined;
   });
 
   it("shows sticky save bar only when dirty", () => {
@@ -164,6 +202,17 @@ describe("ModelsPage", () => {
     expect(screen.queryByRole("button", { name: "Guardar cambios" })).toBeNull();
   });
 
+  it("al guardar o descartar cierra el aviso de «Guarda los cambios»", async () => {
+    const user = userEvent.setup();
+    dismissPendingChangesToast.mockClear();
+    store.dirty = true;
+    renderPage();
+    await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
+    expect(dismissPendingChangesToast).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Descartar cambios" }));
+    expect(dismissPendingChangesToast).toHaveBeenCalledTimes(2);
+  });
+
   it("disables save while the chain has empty or duplicate models", () => {
     store.dirty = true;
     admin.tasks = ["texto"];
@@ -174,7 +223,9 @@ describe("ModelsPage", () => {
       },
     };
     renderPage();
-    expect(screen.getByText(/respaldos vacíos y evita repetir/i)).toBeTruthy();
+    expect(
+      screen.getByText("Para guardar, elige un modelo o quita los respaldos vacíos en Texto."),
+    ).toBeTruthy();
     expect(screen.getByRole("button", { name: "Guardar cambios" })).toBeDisabled();
   });
 
@@ -182,9 +233,11 @@ describe("ModelsPage", () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole("tab", { name: /^Credenciales$/i }));
-    expect(screen.getByText("Tus claves")).toBeTruthy();
-    expect(screen.getByTestId("user-keys")).toBeTruthy();
-    expect(screen.getByTestId("platform-keys")).toBeTruthy();
+    // Para el admin, las de la plataforma van primero; las personales, después.
+    expect(screen.getByText("Tus claves personales")).toBeTruthy();
+    const platform = screen.getByTestId("platform-keys");
+    const personal = screen.getByTestId("user-keys");
+    expect(platform.compareDocumentPosition(personal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("mounts platform nodes card on Plataforma tab (not a metrics chart)", async () => {

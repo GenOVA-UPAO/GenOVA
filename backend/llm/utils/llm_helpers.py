@@ -27,10 +27,17 @@ _SEED_MODELOS: dict[str, tuple] = {
     "razonamiento": ("openrouter", "deepseek/deepseek-v4-flash", {}),
 }
 
-_VISION_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+# El modelo que describe las imágenes del RAG ya no es un id fijo (Groq retiró
+# el anterior): ver llm.utils.vision_models.
 
-_FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
-_FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
+# Groq y OpenRouter retiran modelos sin aviso: un id que ya no ofrecen deja la
+# cadena sin ese eslabón (el refresco lo marca «model not found in API»).
+# Revisados contra GET /models en 2026-09: gpt-oss-20b es el modelo de chat más
+# rápido y barato que queda en Groq (sustituye a llama-3.1-8b-instant) y Gemma 4
+# 31B el `:free` general más estable de OpenRouter (sustituye al Llama 3.3 70B
+# gratuito, que ya no existe).
+_FALLBACK_GROQ_MODEL = "openai/gpt-oss-20b"
+_FALLBACK_OR_MODEL = "google/gemma-4-31b-it:free"
 
 # Per-task fallback chain — SEMILLA (el admin puede sobrescribirla por tarea).
 # Tried in order on any APIStatusError (rate-limit, 402 insufficient credit,
@@ -38,9 +45,19 @@ _FALLBACK_OR_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
 # almost always responds within free tier.
 _SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
     "codigo": [
-        ("openrouter", "qwen/qwen3-coder:free", {}),
+        # Laguna S 2.1 (Poolside) es un modelo de código con 262k de contexto y
+        # 32k de salida (caben los 24k de _CODE_MAX_TOKENS). Medido en 2026-09
+        # con un quiz HTML en español: HTML completo, JS válido y sin mezclar
+        # inglés, en ~48 s y respondiendo siempre. Sustituye a Qwen3.8 27B
+        # :free, que no se conserva detrás: su único proveedor devolvía 429 en
+        # casi todos los intentos (1 de ~25), tardó 333 s y su JS no compilaba
+        # (comillas sin escapar). Un eslabón que casi nunca responde solo añade
+        # esperas antes de llegar a Gemma y a Groq.
+        ("openrouter", "poolside/laguna-s-2.1:free", {}),
         ("openrouter", _FALLBACK_OR_MODEL, {}),
-        ("groq", "llama-3.3-70b-versatile", {}),
+        # Sustituye a Llama 3.3 70B (retirado). Qwen3.8 27B en Groq solo deja
+        # 16k tokens de salida, menos que los 24k de _CODE_MAX_TOKENS.
+        ("groq", "openai/gpt-oss-120b", {}),
     ],
     "texto": [
         ("openrouter", "deepseek/deepseek-chat-v3.1", {}),
@@ -58,6 +75,30 @@ _SEED_FALLBACK_CHAIN: dict[str, list[tuple[str, str, dict]]] = {
         ("groq", _FALLBACK_GROQ_MODEL, {}),
     ],
 }
+
+
+# Autor del OVA en ejecución, dentro de `llm_config`: con él se buscan sus
+# claves propias en el momento de cada llamada. Solo viaja el id, nunca las
+# claves: el estado del grafo puede persistirse (OVA_PG_CHECKPOINT=1).
+OWNER_FIELD = "_owner_id"
+
+
+def with_owner(llm_config: dict | None, user_id: object) -> dict:
+    """Copia de `llm_config` que sabe de quién son las claves propias a usar."""
+    config = dict(llm_config or {})
+    if user_id:
+        config[OWNER_FIELD] = str(user_id)
+    return config
+
+
+def own_keys(llm_config: dict | None) -> dict[str, str]:
+    """Proveedor → clave propia del autor (vacío si no hay autor o no tiene)."""
+    owner = (llm_config or {}).get(OWNER_FIELD)
+    if not owner:
+        return {}
+    from llm.clients.clients import get_user_keys
+
+    return get_user_keys(str(owner))
 
 
 def _entry_tuple(e: dict) -> tuple | None:
@@ -142,6 +183,35 @@ _THINK_LARGE_MAX = 24000
 _CODE_MAX_TOKENS = 24000
 
 
+# Modelos de respaldo de OpenRouter que pueden razonar por defecto y en los que
+# ese razonamiento no compensa: son eslabones de rescate, donde importa
+# responder pronto, y el razonamiento cuenta contra `max_tokens` (puede dejar
+# el HTML a medias o `content` vacío). Los tres admiten apagarlo del todo
+# (`reasoning` está en su `supported_parameters` de GET /models). Medido con
+# los `:free` en 2026-09, mismo prompt con y sin el ajuste:
+#   - Laguna S 2.1: 1031 → 0 tokens de razonamiento, 41,7 → 14,3 s (en un quiz
+#     HTML: 803 → 0, 72 → 48 s, con HTML igual de válido).
+#   - Qwen3.8 27B: 821 → 0 tokens de razonamiento, 55,1 → 25,6 s.
+#   - Gemma 4: ya respondía sin razonar (0 → 0); se apaga igualmente porque su
+#     «thinking» es configurable y otro proveedor de la variante de pago
+#     podría activarlo.
+# Las respuestas sin razonamiento siguieron siendo correctas. Se comparan por
+# prefijo sin el sufijo `:free`: valen igual la variante gratuita y la de pago.
+_OR_REASONING_OFF_PREFIXES = (
+    "qwen/qwen3.8-27b",
+    "google/gemma-4-",
+    "poolside/laguna-",
+)
+
+
+def _or_reasoning_off(provider: str, model_id: str) -> bool:
+    """¿Es un modelo de OpenRouter al que se le apaga siempre el razonamiento?"""
+    if provider != "openrouter":
+        return False
+    base = (model_id or "").lower().removesuffix(":free")
+    return base.startswith(_OR_REASONING_OFF_PREFIXES)
+
+
 def with_model_thinking(provider: str, model_id: str, extra: dict, max_tokens: int) -> dict:
     """Budget-aware thinking for DeepSeek / MiniMax (avoids EmptyContentError).
 
@@ -150,10 +220,18 @@ def with_model_thinking(provider: str, model_id: str, extra: dict, max_tokens: i
     with ``reasoning.max_tokens=2048``, ``exclude=true``).
     Large (codigo ~32k): adaptive/low with ``reasoning.max_tokens=4096``.
 
+    Qwen3.8 27B, Gemma 4 y Laguna en OpenRouter: razonamiento apagado con
+    cualquier presupuesto (ver ``_OR_REASONING_OFF_PREFIXES``).
+
     Preserves an explicit ``extra_body`` from the caller.
     """
     call_extra = dict(extra or {})
     if "extra_body" in call_extra:
+        return call_extra
+    if _or_reasoning_off(provider, model_id):
+        # `enabled: false` es la forma genérica de OpenRouter de apagarlo del
+        # todo (no solo reducirlo); él lo traduce al parámetro de cada proveedor.
+        call_extra["extra_body"] = {"reasoning": {"enabled": False}}
         return call_extra
     mid = (model_id or "").lower()
     is_ds = "deepseek" in mid
@@ -233,7 +311,10 @@ def _resolve_primary(
     provider, model_id = cfg.get("provider"), cfg.get("model_id")
     timeout = clamp_timeout(cfg.get("timeout_s")) if cfg.get("timeout_s") is not None else None
 
-    if provider and model_id and is_valid_model(provider, model_id):
+    # Con clave propia el usuario elige en el catálogo de su proveedor, no en la
+    # lista curada: el guardado ya validó el modelo contra ese catálogo.
+    own = provider in own_keys(llm_config)
+    if provider and model_id and (own or is_valid_model(provider, model_id)):
         if enabled_models is None:
             return (provider, model_id, {}), timeout
         enabled_keys = {
@@ -243,6 +324,10 @@ def _resolve_primary(
         }
         key = (provider, model_id)
         if key in enabled_keys or is_default_model(provider, model_id):
+            return (provider, model_id, {}), timeout
+        # Sin ningún modelo activado de su proveedor, se le ofrece la lista
+        # entera (ver el catálogo por usuario): cualquiera de ella vale.
+        if own and not any(p == provider for p, _ in enabled_keys):
             return (provider, model_id, {}), timeout
     return default, timeout
 

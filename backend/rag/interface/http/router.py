@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from auth.dependencies import get_current_user
 from core.database import get_db
 from models import User
-from rag.infrastructure.embedders import vector_dim
+from rag.infrastructure.embedders import EmbedderError, get_embedder, vector_dim
 from rag.infrastructure.pgvector_store import chunks_for_upload
 
 router = APIRouter()
@@ -27,11 +27,16 @@ def rag_health(db: Session = Depends(get_db)) -> dict:
         )
     except Exception:
         pgvector_ready = False
+    try:  # lo que se guarda en rag_chunks.embedding_model (ver scripts/reindex_rag.py)
+        embedding_model = get_embedder().fingerprint
+    except EmbedderError:
+        embedding_model = None
     return {
         "module": "rag",
         "status": "ok",
         "embedder": embedder_name,
         "vector_dim": vector_dim(),
+        "embedding_model": embedding_model,
         "pgvector_ready": pgvector_ready,
     }
 

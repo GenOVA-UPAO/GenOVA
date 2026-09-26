@@ -8,6 +8,7 @@ from ova.application.dto import AddPhaseInput
 from ova.application.ports import OvaEditorRepository
 from ova.domain.editor import MAX_PHASES_PER_TYPE, EditorPhase, placeholder_content
 from ova.domain.errors import OvaEditError, OvaForbidden, OvaGenerating, OvaNotFound
+from ova.domain.model import EDIT_FORBIDDEN, can_edit_ova
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,8 +26,8 @@ class AddPhase:
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
         # Este endpoint históricamente solo autorizaba al propietario, no al admin.
-        if ova.owner_id != data.actor.id:
-            raise OvaForbidden("Sin permisos.")
+        if not can_edit_ova(ova.owner_id, data.actor):
+            raise OvaForbidden(EDIT_FORBIDDEN)
         if ova.status == "generando":
             raise OvaGenerating("No se puede editar mientras genera.")
         version = self.repo.get_or_create_active_version(ova)

@@ -1,30 +1,51 @@
-import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
+import type { VersionDiffData, VersionDiffPhase } from "../../lib/version-history.types";
+import { VersionDiffRow } from "./version-diff-row";
 
-import { phaseMeta } from "../../lib/phase-meta";
-import type { VersionDiffData } from "../../lib/version-history.types";
+type DiffSideData = VersionDiffData["v1"];
 
-/** Comparación lado a lado: la versión anterior a la izquierda, la posterior a la derecha. */
+function sideOf(data: DiffSideData): { number: string; phases: VersionDiffPhase[] } {
+  return { number: String(data?.version?.version_number ?? ""), phases: data?.phases ?? [] };
+}
+
+/**
+ * Comparación lado a lado, recurso por recurso: cada fila pone la versión
+ * anterior junto a la posterior para que se lean a la misma altura.
+ */
 export function VersionDiff({ data }: Readonly<{ data: VersionDiffData }>) {
+  const before = sideOf(data.v1);
+  const after = sideOf(data.v2);
+  const rows = Array.from(
+    { length: Math.max(before.phases.length, after.phases.length) },
+    (_, index) => index,
+  );
+  const changed = rows.filter(
+    (index) => before.phases.at(index)?.content !== after.phases.at(index)?.content,
+  ).length;
   return (
-    <section aria-label="Comparación de versiones" className="grid gap-4 border-t border-border pt-4 md:grid-cols-2">
-      {(
-        [
-          ["Anterior", data.v1],
-          ["Posterior", data.v2],
-        ] as const
-      ).map(([label, version]) => (
-        <div key={label} className="min-w-0 space-y-3">
-          <h3 className="text-sm font-semibold">
-            {label}: versión {version?.version?.version_number}
-          </h3>
-          {version?.phases?.map((phase) => (
-            <figure key={phase.id} className="space-y-1">
-              <figcaption className="text-xs text-muted-foreground">{phaseMeta(phase.phase_type).label || phase.phase_type}</figcaption>
-              <HtmlPreviewFrame html={phase.content} title={`${label}: ${phase.phase_type}`} height="35vh" />
-            </figure>
-          ))}
-        </div>
+    <section
+      aria-label="Comparación de versiones"
+      className="space-y-3 border-t border-border pt-4"
+    >
+      <p className="text-sm text-muted-foreground" aria-live="polite">
+        {changeSummary(changed, rows.length)}
+      </p>
+      <div className="hidden grid-cols-2 gap-4 md:grid">
+        <h3 className="text-sm font-semibold">Anterior: versión {before.number}</h3>
+        <h3 className="text-sm font-semibold">Posterior: versión {after.number}</h3>
+      </div>
+      {rows.map((index) => (
+        <VersionDiffRow
+          key={index}
+          before={{ number: before.number, phase: before.phases.at(index) }}
+          after={{ number: after.number, phase: after.phases.at(index) }}
+        />
       ))}
     </section>
   );
+}
+
+function changeSummary(changed: number, total: number): string {
+  if (changed === 0) return "Las dos versiones tienen el mismo contenido.";
+  const of = `${String(changed)} de ${String(total)} ${total === 1 ? "recurso" : "recursos"}`;
+  return changed === 1 ? `Cambió ${of}.` : `Cambiaron ${of}.`;
 }

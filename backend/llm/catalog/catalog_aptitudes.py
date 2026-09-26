@@ -13,6 +13,7 @@ CANONICAL_TYPES = (
     "video",
     "embedding",
     "audio",
+    "moderacion",
 )
 
 # category → default aptitudes for assignment pools.
@@ -25,37 +26,56 @@ _CATEGORY_APTITUDES: dict[str, tuple[str, ...]] = {
     "video": ("video",),
     "embedding": ("embedding",),
     "audio": ("audio",),
-    "multimodal": ("texto", "imagen"),  # refined by modality parsing
+    # Clasificadores de seguridad (Llama Guard, Prompt Guard): solo sirven para
+    # moderar, no para escribir el contenido de un recurso.
+    "moderacion": ("moderacion",),
+    # Refined by modality parsing. Without it, only text: a model that *reads*
+    # images cannot fill the image task, which calls an image-generation API.
+    "multimodal": ("texto",),
 }
 
 
+# Salidas que equivalen a audio: Groq llama «speech» a la de sus modelos de voz.
+_AUDIO_OUTPUTS = frozenset({"audio", "speech"})
+# Aptitudes que son variantes de escribir texto (las tareas de generación).
+TEXT_TASKS = frozenset({"texto", "codigo", "orquestador", "razonamiento"})
+
+
+def split_modality(raw: str | None) -> tuple[set[str], set[str]]:
+    """«text+image->text» → ({text, image}, {text}). Sin flecha: salidas vacías."""
+    left, _, right = (raw or "").lower().strip().partition("->")
+    inputs = {p.strip() for p in left.replace("+", ",").split(",") if p.strip()}
+    outputs = {p.strip() for p in right.replace("+", ",").split(",") if p.strip()}
+    return inputs, outputs
+
+
 def _normalize_modality(raw: str | None) -> str:
-    """Collapse OpenRouter-style 'text+image->text' into a coarse modality key."""
+    """Collapse OpenRouter-style 'text+image->text' into a coarse modality key.
+
+    Manda la salida principal: un modelo que devuelve audio (voz, música) o que
+    no lee texto (transcripción) no sirve para una tarea de escribir texto
+    aunque su salida incluya «text» (gpt-audio, Lyria) o sea una transcripción
+    (Whisper). Antes caían en «multimodal» y se ofrecían como modelos de texto.
+    """
     if not raw:
         return "text"
     m = raw.lower().strip()
     if m in ("text", "multimodal", "image", "embedding", "audio", "video"):
         return m
-    # OpenRouter: "text+image->text", "text->image", "text->video", …
-    left, _, right = m.partition("->")
-    inputs = {p.strip() for p in left.replace("+", ",").split(",") if p.strip()}
-    outputs = (
-        {p.strip() for p in right.replace("+", ",").split(",") if p.strip()} if right else set()
-    )
+    inputs, outputs = split_modality(m)
     if "video" in outputs:
         return "video"
-    if "video" in inputs:
-        if "text" in inputs or "text" in outputs or len(inputs | outputs) > 1:
-            return "multimodal"
-        return "video"
-    if "image" in outputs and "text" not in outputs and len(outputs) <= 1:
-        return "image"
+    if _AUDIO_OUTPUTS & outputs:
+        return "audio"
     if "embedding" in outputs or "embeddings" in m:
         return "embedding"
-    if "audio" in inputs or "audio" in outputs:
-        if "text" in inputs or "text" in outputs:
-            return "multimodal"
-        return "audio"
+    if "image" in outputs and "text" not in outputs and len(outputs) <= 1:
+        return "image"
+    if inputs and "text" not in inputs:
+        # Solo lee audio (Whisper) o video: no puede seguir un prompt de texto.
+        return "audio" if "audio" in inputs else "multimodal"
+    if "video" in inputs or "audio" in inputs:
+        return "multimodal"
     if "image" in inputs or ("image" in outputs and "text" in outputs):
         return "multimodal"
     return "text"
@@ -97,9 +117,12 @@ def aptitudes_for(
     if inns or outs:
         if "text" in inns or "text" in outs:
             apt.append("texto")
-        if "image" in inns or "image" in outs:
+        # Imagen y video son tareas de GENERAR: aceptar una imagen de entrada
+        # (modelos de visión como Claude Haiku o Gemini Flash) no basta, y
+        # ofrecerlos en esos selectores era ofrecer algo que iba a fallar.
+        if "image" in outs:
             apt.append("imagen")
-        if "video" in inns or "video" in outs:
+        if "video" in outs:
             apt.append("video")
         if "audio" in inns or "audio" in outs:
             apt.append("audio")

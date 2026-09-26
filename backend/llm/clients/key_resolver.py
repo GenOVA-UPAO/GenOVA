@@ -73,6 +73,21 @@ def resolve_key(provider: str, user_api_keys: dict | None, db=None, user_id=None
     return os.getenv(ENV_VARS.get(provider, ""), "").strip() or None
 
 
+def resolve_platform_key(provider: str, db) -> tuple[str | None, str]:
+    """Clave de plataforma de `provider` y de dónde sale: («platform», la guardada
+    por un admin) o («server», la variable de entorno). Sin claves de usuario."""
+    try:
+        from models import PlatformConfig
+
+        row = db.get(PlatformConfig, _DB_KEY(provider)) if db is not None else None
+        if row and row.value.strip():
+            return row.value.strip(), "platform"
+    except Exception:
+        logger.warning("platform key lookup: DB error", provider=provider)
+    env = os.getenv(ENV_VARS.get(provider, ""), "").strip()
+    return (env or None), "server"
+
+
 def mask_key(key: str | None) -> str | None:
     """Return '••••••••XXXX' (last 4 chars visible) or None when key absent."""
     if not key or len(key) < 5:

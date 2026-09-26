@@ -4,7 +4,7 @@ import { describedBy } from "../lib/described-by";
 import type { ProfileFormValues } from "../lib/types";
 import { FormField } from "./form-field";
 
-const UNI_HINT = "Solo números. Al guardar se completa con ceros a la izquierda hasta 9 dígitos.";
+const UNI_HINT = "Solo números, sin espacios ni guiones.";
 
 interface ProfileIdentityFieldsProps {
   values: ProfileFormValues;
@@ -23,6 +23,7 @@ export function ProfileIdentityFields({
 }: Readonly<ProfileIdentityFieldsProps>) {
   const nameError = errorFor("full_name");
   const emailError = errorFor("email");
+  const uniError = errorFor("university_id");
 
   return (
     <>
@@ -62,7 +63,7 @@ export function ProfileIdentityFields({
         />
       </FormField>
 
-      <FormField id="universityId" label="Código universitario (UPAO)" hint={UNI_HINT}>
+      <FormField id="universityId" label="Código universitario (UPAO)" hint={UNI_HINT} error={uniError}>
         <Input
           id="universityId"
           type="text"
@@ -70,9 +71,13 @@ export function ProfileIdentityFields({
           autoComplete="off"
           value={values.university_id}
           disabled={disabled}
-          aria-describedby={describedBy("universityId", undefined, UNI_HINT)}
+          aria-invalid={uniError ? true : undefined}
+          aria-describedby={describedBy("universityId", uniError, UNI_HINT)}
           onChange={(event) => {
             onChange("university_id", event.target.value);
+          }}
+          onBlur={() => {
+            onBlur("university_id");
           }}
         />
       </FormField>

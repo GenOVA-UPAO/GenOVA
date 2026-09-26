@@ -20,3 +20,8 @@ export function getResourcePreview(
   if (!Object.hasOwn(PREVIEWS_BY_PHASE, phaseKey)) return null;
   return PREVIEWS_BY_PHASE[phaseKey][String(resourceId)] ?? null;
 }
+
+/** Nombres de todos los tipos de recurso del catálogo (tal como los envía el backend). */
+export function catalogResourceNames(): Set<string> {
+  return new Set(Object.values(PREVIEWS_BY_PHASE).flatMap((previews) => Object.values(previews).map((info) => info.label)));
+}

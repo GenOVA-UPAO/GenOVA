@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ovaNoun } from "../lib/ova-count";
+import { ovaCountPhrase, ovaNoun } from "../lib/ova-count";
 import { pageMeta } from "../lib/page-meta";
 import type { OvaListItem } from "../lib/types";
 import { useTrashList } from "./use-ova-library";
@@ -58,7 +58,7 @@ export function usePapeleraPage() {
     confirmThen(
       {
         title: `Eliminar ${String(ids.length)} ${ovaNoun(ids.length)} definitivamente`,
-        message: `Se eliminarán de forma permanente. ${IRREVERSIBLE}`,
+        message: `${ids.length === 1 ? "Se eliminará" : "Se eliminarán"} de forma permanente. ${IRREVERSIBLE}`,
         confirmLabel: DELETE_FOREVER,
       },
       async () => {
@@ -73,7 +73,7 @@ export function usePapeleraPage() {
     confirmThen(
       {
         title: "Vaciar la papelera",
-        message: `Se eliminarán de forma permanente ${String(totalItems)} ${ovaNoun(totalItems)}. ${IRREVERSIBLE}`,
+        message: `${ovaCountPhrase(totalItems, "se eliminará", "se eliminarán")} de forma permanente. ${IRREVERSIBLE}`,
         confirmLabel: "Vaciar papelera",
       },
       async () => {

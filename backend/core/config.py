@@ -69,6 +69,9 @@ class Settings(BaseSettings):
     llm_timeout_s: float = 120.0
     groq_api_key: str = ""
     openrouter_api_key: str = ""
+    # Base de la API de OpenRouter. Cambiarla permite probar con un servidor
+    # compatible en local (scripts/fake_openrouter) sin gastar crédito.
+    openrouter_api_base: str = "https://openrouter.ai/api/v1"
     opencode_api_key: str = ""
     gemini_api_key: str = ""
     ova_enabled_llms: str = ""
@@ -112,6 +115,21 @@ class Settings(BaseSettings):
     # Techo de reloj por recurso (generate + refine + repair). 90s: los recursos
     # sanos (24-60s) no se cortan; el bucle patológico de refine+repair sí.
     ova_resource_budget_s: float = 240.0
+    # Video generado (tarea «Video» de /models, desactivada por defecto). Los
+    # valores por defecto son los baratos: 4 s a 480p sin audio (~0,10-0,20 $
+    # por video). Si el modelo no admite el valor pedido se usa el más cercano
+    # que sí admite. Pasado el tope de espera, o si pesa más del máximo, el
+    # recurso se queda con su guion, como sin video.
+    ova_video_duration_s: int = 4
+    ova_video_resolution: str = "480p"
+    ova_video_aspect_ratio: str = "16:9"
+    ova_video_timeout_s: float = 240.0
+    ova_video_poll_s: float = 10.0
+    ova_video_max_mb: float = 8.0
+    # Video que sigue en marcha al agotar el tope: ya está pagado, así que se
+    # sigue esperando en segundo plano hasta este tope adicional y se mete en el
+    # recurso al llegar (mientras, el recurso lleva un aviso «en preparación»).
+    ova_video_late_max_s: float = 900.0
 
     # --- Supabase Storage ---
     supabase_url: str = ""

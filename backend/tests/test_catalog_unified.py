@@ -63,18 +63,38 @@ def test_multimodal_aptitudes_span_multiple_tasks():
     }
     apt = aptitudes_for("multimodal", "multimodal", raw)
     assert "texto" in apt
-    assert "imagen" in apt
+    # Leer imágenes no es generarlas: la tarea «imagen» llama a una API de generación.
+    assert "imagen" not in apt
+    image_out = {
+        "id": "image-model",
+        "architecture": {
+            "modality": "text+image->text+image",
+            "input_modalities": ["text", "image"],
+            "output_modalities": ["text", "image"],
+        },
+    }
     entries = [
         {
             "provider": "openrouter",
             "model_id": "vision-model",
             "category": "multimodal",
             "aptitudes": apt,
-        }
+        },
+        {
+            "provider": "openrouter",
+            "model_id": "image-model",
+            "category": "multimodal",
+            "aptitudes": aptitudes_for("multimodal", "multimodal", image_out),
+        },
     ]
-    assert len(models_apt_for_task(entries, "texto")) == 1
-    assert len(models_apt_for_task(entries, "imagen")) == 1
+    assert len(models_apt_for_task(entries, "texto")) == 2
+    assert [e["model_id"] for e in models_apt_for_task(entries, "imagen")] == ["image-model"]
     assert models_apt_for_task(entries, "video") == []
+
+
+def test_multimodal_without_architecture_is_text_only():
+    """Entradas curadas sin `architecture` (p. ej. modelos de visión de Groq)."""
+    assert aptitudes_for("multimodal", "multimodal") == ["texto"]
 
 
 def test_canonical_types_include_multimodal_embedding_audio_video():

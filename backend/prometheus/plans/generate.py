@@ -60,9 +60,9 @@ class ResourceResult(NamedTuple):
 
 
 def _design_system(theme: dict) -> str:
-    from llm.utils.themes import build_design_system
+    from llm.utils.themes import theme_design_system
 
-    return build_design_system(theme.get("color", "upao"), theme.get("design", "upao"))
+    return theme_design_system(theme)
 
 
 def _parse_json_with_retry(prompt: str, phase: str, rt, llm_config, enabled_models, deadline=None):
@@ -129,8 +129,10 @@ def _post_process(
         )
     html = inject_runtime(
         html,
-        css=theme.get("color", "upao") == "upao",
+        # UPAO y la paleta del docente llevan la hoja base; «free» la escribe el modelo.
+        css=theme.get("color", "upao") != "free",
         components=theme.get("design", "upao") == "upao",
+        palette=theme.get("palette") if theme.get("color") == "custom" else None,
     )
     # The refiner can return image markers that were already resolved: always
     # resolve on the final document.
@@ -141,7 +143,7 @@ def _post_process(
 def _gen_podcast(
     phase, rt, concept, contexto, llm_config, enabled_models, deadline=None
 ) -> ResourceResult:
-    from llm.podcast.podcast import build_podcast_html, podcast_audio_b64
+    from llm.podcast.podcast import build_podcast_html, plain_monologue, podcast_audio
 
     mono = generar_texto(
         _prompts(phase).prompt_texto(rt, concept, contexto),
@@ -151,9 +153,11 @@ def _gen_podcast(
         enabled_models,
         deadline=deadline,
     )
-    audio_b64 = podcast_audio_b64(mono)
+    mono = plain_monologue(mono)
+    audio = podcast_audio(mono)
     # El player se ensambla de plantilla fija (sin design-system ni refinamiento).
-    return ResourceResult(build_podcast_html(concept, mono, audio_b64), [], {"monologue": mono})
+    html = build_podcast_html(concept, mono, *(audio or (None,)))
+    return ResourceResult(html, [], {"monologue": mono})
 
 
 def _gen_direct_code(
@@ -199,6 +203,8 @@ def _gen_two_step(
     refine,
     deadline=None,
 ) -> ResourceResult:
+    from prometheus.plans.video_step import attach_video, start_video
+
     mod = _prompts(phase)
     json_data = _parse_json_with_retry(
         mod.prompt_texto(rt, concept, contexto, resource_config or {}),
@@ -208,9 +214,13 @@ def _gen_two_step(
         enabled_models,
         deadline,
     )
+    # Recursos de video con la tarea Video activa: el video se genera mientras
+    # se escribe el HTML (ver video_step).
+    pending_video = start_video(phase, rt, concept, json_data, llm_config)
 
     # Enriquecimiento con imágenes — solo engage tiene campos prompt_imagen.
-    # enrich_with_images MUTA json_data (añade image_placeholder) y exige una lista.
+    # enrich_with_images MUTA los elementos de json_data (añade image_placeholder);
+    # acepta el array que pide el prompt o un objeto que lo envuelva.
     img_replacements: dict[str, str] = {}
     if phase == "engage" and image_settings:
         from prometheus.engine.budget import can_spend
@@ -218,9 +228,7 @@ def _gen_two_step(
         if can_spend(deadline):
             from llm.images.image_enrich import enrich_with_images
 
-            img_replacements = enrich_with_images(
-                json_data if isinstance(json_data, list) else [json_data], image_settings
-            )
+            img_replacements = enrich_with_images(json_data, image_settings)
 
     json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
     html = extract_html_document(
@@ -237,12 +245,16 @@ def _gen_two_step(
     if img_replacements:
         from llm.images.image_placeholder import resolve_image_placeholders
 
+        if not any(token in html for token in img_replacements):
+            # Imágenes generadas (y pagadas) que el HTML no usa: el modelo omitió
+            # los marcadores __IMG_N__. Sin este aviso se perdían en silencio.
+            logger.warning("generated images unused by html", phase=phase, resource_type=rt, count=len(img_replacements))
         html = resolve_image_placeholders(html, img_replacements)
 
     html, defects = _post_process(
         html, phase, rt, concept, theme, llm_config, enabled_models, refine, deadline
     )
-    return ResourceResult(html, defects, json_data)
+    return ResourceResult(attach_video(html, pending_video), defects, json_data)
 
 
 def generate_resource(
@@ -261,9 +273,10 @@ def generate_resource(
     deadline: float | None = None,
 ) -> ResourceResult:
     """Genera UN recurso 5E con el pipeline completo. `plan` por defecto = plan
-    canónico de `plan_map.plan_for`. `contexto` = RAG (los endpoints HTTP lo pasan;
-    batch/regen usan ""). `deadline` (monotonic) acota refine; si falta, se
-    abre un presupuesto de reloj propio (HTTP/regen)."""
+    canónico de `plan_map.plan_for`. `contexto` = bloque RAG ya formateado (lo pasan
+    el workpool, los endpoints HTTP y la regeneración; "" = sin material).
+    `deadline` (monotonic) acota refine; si falta, se abre un presupuesto de reloj
+    propio (HTTP/regen)."""
     import time
 
     from core.config import settings
@@ -273,8 +286,11 @@ def generate_resource(
     n = int(rt)
     if settings.llm_fake:
         from prometheus.engine.fake_invoke import fake_standalone_html
+        from prometheus.engine.fake_media import with_fake_media
 
-        return ResourceResult(fake_standalone_html(concept, phase, n), [], {"contenido": concept})
+        html = fake_standalone_html(concept, phase, n, contexto)
+        html = with_fake_media(html, phase, n, concept, image_settings, llm_config)
+        return ResourceResult(html, [], {"contenido": concept})
     theme = theme or {}
     plan = plan or plan_for(phase, n)
     if deadline is None:

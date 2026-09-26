@@ -18,6 +18,11 @@ function tabClass(active: boolean): string {
   );
 }
 
+function recursosElegidos(count: number): string {
+  if (count === 0) return "ningún recurso elegido";
+  return count === 1 ? "1 recurso elegido" : `${String(count)} recursos elegidos`;
+}
+
 /** Conmutador de fases 5E: nombre en español y cuántos recursos lleva elegidos cada una. */
 export function PhaseSelectTabs({ phase, picks, onChange }: Readonly<Props>) {
   return (
@@ -31,7 +36,7 @@ export function PhaseSelectTabs({ phase, picks, onChange }: Readonly<Props>) {
               key={item.key}
               type="button"
               aria-pressed={phase === item.key}
-              aria-label={`${label} (${String(count)})`}
+              aria-label={`${label}: ${recursosElegidos(count)}`}
               onClick={() => {
                 onChange(item.key);
               }}

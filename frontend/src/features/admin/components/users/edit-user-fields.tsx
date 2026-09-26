@@ -1,7 +1,11 @@
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 
+import { fieldDescribedBy } from "../../lib/field-described-by";
 import type { UserFormErrors, UserFormValues } from "../../lib/user-form";
+import { FieldMessage } from "./field-message";
+
+const UNI_HINT = "Solo números, sin espacios ni guiones.";
 
 interface EditUserFieldsProps {
   values: UserFormValues;
@@ -27,16 +31,12 @@ export function EditUserFields({
           value={values.full_name}
           disabled={disabled}
           aria-invalid={errors.full_name !== undefined || undefined}
-          aria-describedby={errors.full_name !== undefined ? "edit-full-name-error" : undefined}
+          aria-describedby={fieldDescribedBy("edit-full-name", errors.full_name)}
           onChange={(event) => {
             onChange("full_name", event.target.value);
           }}
         />
-        {errors.full_name !== undefined && (
-          <p id="edit-full-name-error" className="text-xs text-destructive">
-            {errors.full_name}
-          </p>
-        )}
+        <FieldMessage id="edit-full-name" error={errors.full_name} />
       </div>
 
       <div className="space-y-2">
@@ -45,19 +45,16 @@ export function EditUserFields({
           id="edit-email"
           type="email"
           autoComplete="off"
+          spellCheck={false}
           value={values.email}
           disabled={disabled}
           aria-invalid={errors.email !== undefined || undefined}
-          aria-describedby={errors.email !== undefined ? "edit-email-error" : undefined}
+          aria-describedby={fieldDescribedBy("edit-email", errors.email)}
           onChange={(event) => {
             onChange("email", event.target.value);
           }}
         />
-        {errors.email !== undefined && (
-          <p id="edit-email-error" className="text-xs text-destructive">
-            {errors.email}
-          </p>
-        )}
+        <FieldMessage id="edit-email" error={errors.email} />
       </div>
 
       <div className="space-y-2">
@@ -67,16 +64,15 @@ export function EditUserFields({
           type="text"
           inputMode="numeric"
           autoComplete="off"
-          aria-describedby="edit-uni-id-help"
+          aria-invalid={errors.university_id !== undefined || undefined}
+          aria-describedby={fieldDescribedBy("edit-uni-id", errors.university_id, UNI_HINT)}
           value={values.university_id}
           disabled={disabled}
           onChange={(event) => {
             onChange("university_id", event.target.value);
           }}
         />
-        <p id="edit-uni-id-help" className="text-xs text-muted-foreground">
-          Solo números. Al guardar se completa con ceros a la izquierda hasta 9 dígitos.
-        </p>
+        <FieldMessage id="edit-uni-id" error={errors.university_id} hint={UNI_HINT} />
       </div>
     </>
   );

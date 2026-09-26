@@ -5,7 +5,7 @@ import type { RegenProgressDto } from "../lib/regen-poll";
 import type { OvaData, Phase } from "../lib/types";
 import type { PhaseMicroVersion, VersionDiffData } from "../lib/version-history.types";
 
-export interface RegenRequest { prompt?: string | null; phaseIds?: string[] }
+export interface RegenRequest { prompt?: string | null; phaseIds?: string[]; uploadIds?: string[] }
 export interface RegenAck { job_id: string }
 
 export function fetchOvaWorkspace(ovaId: string): Promise<OvaData> { return apiJson(`/api/ovas/${ovaId}/editar`); }
@@ -13,7 +13,7 @@ export function saveOvaPhase(ovaId: string, phaseId: string, content: string): P
   return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}`, { method: "PATCH", body: JSON.stringify({ content }) });
 }
 export function triggerOvaRegeneration(ovaId: string, request: RegenRequest = {}): Promise<RegenAck> {
-  return apiJson(`/api/ovas/${ovaId}/regenerar`, { method: "POST", body: JSON.stringify({ prompt: request.prompt ?? null, fase_ids: request.phaseIds ?? [] }) });
+  return apiJson(`/api/ovas/${ovaId}/regenerar`, { method: "POST", body: JSON.stringify({ prompt: request.prompt ?? null, fase_ids: request.phaseIds ?? [], ...(request.uploadIds?.length ? { upload_ids: request.uploadIds } : {}) }) });
 }
 export function fetchRegenerationProgress(ovaId: string, jobId: string): Promise<RegenProgressDto> { return apiJson(`/api/ovas/${ovaId}/regenerar/${jobId}/progress`); }
 export function fetchOvaVersions(ovaId: string): Promise<unknown> { return apiJson(`/api/ovas/${ovaId}/versiones`); }

@@ -9,13 +9,12 @@ Las clases .ova-* son el contrato con build_design_system(): si añades una
 clase aquí, documéntala allá para que el LLM la use.
 """
 
-from llm.utils.themes import _upao_root_vars
+from llm.utils.palette import normalize_palette
+from llm.utils.themes import _upao_root_vars, palette_root_vars
 
 _MARKER = 'id="ova-base"'
 
-OVA_BASE_CSS = (
-    _upao_root_vars()
-    + """
+_BASE_RULES = """
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scrollbar-color:var(--primary) var(--surface-tint);scrollbar-width:thin}
 body{font-family:var(--font-body);
@@ -115,14 +114,25 @@ margin-block:var(--space-3)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}
 html{scroll-behavior:auto}}
 """
-)
+
+OVA_BASE_CSS = _upao_root_vars() + _BASE_RULES
 
 
-def inject_base_css(html: str) -> str:
-    """Inserta la hoja base en <head>. Idempotente; no toca docs que ya la traen."""
+def inject_base_css(html: str, palette: dict | None = None) -> str:
+    """Inserta la hoja base en <head>. Idempotente; no toca docs que ya la traen.
+
+    Con `palette` (la del docente) las variables :root salen de ella, y la paleta
+    queda anotada en `data-palette` para que la regeneración la conserve.
+    """
     if _MARKER in html:
         return html
-    style = f'<style id="ova-base">{OVA_BASE_CSS}</style>'
+    clean = normalize_palette(palette)
+    if clean:
+        css = palette_root_vars(clean) + _BASE_RULES
+        mark = f' data-palette="{clean["primary"]},{clean["accent"]}"'
+    else:
+        css, mark = OVA_BASE_CSS, ""
+    style = f'<style id="ova-base"{mark}>{css}</style>'
     lower = html.lower()
     idx = lower.find("<head>")
     if idx != -1:

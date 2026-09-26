@@ -55,7 +55,7 @@ export default function AddResourceModal({ ovaId, phaseType, currentCount, onClo
             id="add-resource-prompt"
             rows={4}
             className="block w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-base leading-relaxed placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:text-sm"
-            placeholder="Ej.: un ejercicio práctico sobre circuitos en paralelo con su solución."
+            placeholder="Ej.: un ejercicio práctico sobre el sobreajuste con su solución."
             value={prompt}
             disabled={addPhase.isPending}
             onChange={(event) => {

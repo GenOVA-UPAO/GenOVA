@@ -25,6 +25,7 @@ from generation.application.use_cases import (
 from generation.infrastructure.image_settings import LlmImageSettingsResolver
 from generation.infrastructure.input_guardrail import InputGuardrailChecker
 from generation.infrastructure.job_launcher import ThreadOrQueueJobLauncher
+from generation.infrastructure.reference_material import ReferenceMaterialAdapter
 from generation.infrastructure.sqlalchemy_job_repository import (
     FreshSessionJobRepository,
     SqlAlchemyJobRepository,
@@ -50,6 +51,7 @@ def build_generation(db: Session = Depends(get_db)) -> GenerationUseCases:
             images=LlmImageSettingsResolver(db),
             launcher=launcher,
             guardrail=InputGuardrailChecker(),
+            references=ReferenceMaterialAdapter(db),
         ),
         get_job_status=GetJobStatus(repo=repo),
         find_job_by_ova=FindJobByOva(repo=repo),

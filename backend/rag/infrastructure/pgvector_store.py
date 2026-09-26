@@ -43,9 +43,13 @@ def insert_chunks(
     chunks: list[str],
     embeddings: list[list[float]],
     ttl_seconds: int = DEFAULT_TTL_SECONDS,
+    embedding_model: str | None = None,
 ) -> int:
     """Bulk-insert chunks. Returns count inserted. Raises ValueError on
-    chunk/embedding length mismatch."""
+    chunk/embedding length mismatch.
+
+    ``embedding_model`` es la `fingerprint` del embedder que produjo los
+    vectores; permite saber qué fragmentos hay que reindexar si cambia."""
     if len(chunks) != len(embeddings):
         raise ValueError("chunks and embeddings must be the same length")
     if not chunks:
@@ -63,22 +67,53 @@ def insert_chunks(
                 "chunk_index": i,
                 "content": chunk,
                 "embedding": _vec_literal(emb),
+                "embedding_model": embedding_model,
                 "expires_at": expires_at,
             }
         )
 
-    stmt = text(
-        """
-        INSERT INTO rag_chunks
-            (user_id, upload_id, source_filename, chunk_index, content, embedding, expires_at)
-        VALUES
-            (:user_id, :upload_id, :source_filename, :chunk_index, :content,
-             CAST(:embedding AS vector), :expires_at)
-        """
-    )
-    db.execute(stmt, rows)
-    db.commit()
+    try:
+        db.execute(_INSERT_WITH_MODEL, rows)
+        db.commit()
+    except Exception as exc:
+        # Sin rollback la sesión quedaba con la transacción abortada y todo lo
+        # que venía después con ella fallaba (en la ingesta en segundo plano,
+        # las demás subidas del mismo lote acababan también en `db_error`).
+        db.rollback()
+        if "embedding_model" not in str(exc):
+            raise
+        # La migración 043 aún no se aplicó (p. ej. se saltó por un bloqueo al
+        # arrancar): se indexa igual, sin registrar el modelo; esos fragmentos
+        # cuentan como pendientes de reindexar (NULL).
+        logger.warning("rag_chunks sin columna embedding_model; falta la migración 043")
+        try:
+            db.execute(_INSERT_LEGACY, rows)
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
     return len(rows)
+
+
+_INSERT_WITH_MODEL = text(
+    """
+    INSERT INTO rag_chunks
+        (user_id, upload_id, source_filename, chunk_index, content, embedding,
+         embedding_model, expires_at)
+    VALUES
+        (:user_id, :upload_id, :source_filename, :chunk_index, :content,
+         CAST(:embedding AS vector), :embedding_model, :expires_at)
+    """
+)
+_INSERT_LEGACY = text(
+    """
+    INSERT INTO rag_chunks
+        (user_id, upload_id, source_filename, chunk_index, content, embedding, expires_at)
+    VALUES
+        (:user_id, :upload_id, :source_filename, :chunk_index, :content,
+         CAST(:embedding AS vector), :expires_at)
+    """
+)
 
 
 def tie_uploads_to_ova(db: Session, upload_ids: Sequence[str], ova_id: str) -> int:
@@ -99,6 +134,48 @@ def tie_uploads_to_ova(db: Session, upload_ids: Sequence[str], ova_id: str) -> i
     )
     db.commit()
     return result.rowcount or 0
+
+
+def upload_ids_for_ova(db: Session, ova_id: str) -> list[str]:
+    """Documentos ligados a un OVA (los de su creación y los adjuntados después en
+    el chat del editor). Falla a [] sin lanzar: el RAG es best-effort."""
+    stmt = text(
+        """
+        SELECT DISTINCT upload_id::text AS upload_id
+        FROM rag_chunks
+        WHERE ova_id = CAST(:ova_id AS UUID)
+        """
+    )
+    try:
+        return [r[0] for r in db.execute(stmt, {"ova_id": str(ova_id)}).all()]
+    except Exception:
+        logger.exception("No se pudieron leer los documentos del OVA", ova_id=str(ova_id))
+        db.rollback()
+        return []
+
+
+def owned_upload_ids(db: Session, user_id: str, upload_ids: Sequence[str]) -> list[str]:
+    """Subconjunto de `upload_ids` con chunks del usuario. Sin este filtro, quien
+    conociera el id de un documento ajeno podía recuperar su contenido."""
+    if not upload_ids:
+        return []
+    stmt = text(
+        """
+        SELECT DISTINCT upload_id::text AS upload_id
+        FROM rag_chunks
+        WHERE user_id = CAST(:user_id AS UUID) AND upload_id::text IN :upload_ids
+        """
+    ).bindparams(bindparam("upload_ids", expanding=True))
+    try:
+        rows = db.execute(
+            stmt, {"user_id": str(user_id), "upload_ids": [str(u) for u in upload_ids]}
+        ).all()
+    except Exception:
+        logger.exception("No se pudo comprobar la propiedad de los documentos")
+        db.rollback()
+        return []
+    owned = {r[0] for r in rows}
+    return [str(u) for u in upload_ids if str(u) in owned]
 
 
 def purge_expired(db: Session) -> int:
@@ -170,20 +247,24 @@ def _fetch_vector(
         """
     ).bindparams(bindparam("upload_ids", expanding=True))
     try:
-        # SET no acepta parámetros enlazados en PostgreSQL; constante interna.
-        db.execute(text(f"SET hnsw.ef_search = {int(_HNSW_EF_SEARCH)}"))
-        rows = (
-            db.execute(
-                stmt,
-                {
-                    "q": _vec_literal(query_embedding),
-                    "upload_ids": [str(u) for u in upload_ids],
-                    "ck": candidate_k,
-                },
+        # Cada rama en su SAVEPOINT: un error de PostgreSQL (p. ej. un vector de
+        # otra dimensión) abortaba la transacción entera, así que la rama léxica
+        # y todo lo que el llamador hacía después con la sesión fallaban también.
+        with db.begin_nested():
+            # SET no acepta parámetros enlazados en PostgreSQL; constante interna.
+            db.execute(text(f"SET hnsw.ef_search = {int(_HNSW_EF_SEARCH)}"))
+            rows = (
+                db.execute(
+                    stmt,
+                    {
+                        "q": _vec_literal(query_embedding),
+                        "upload_ids": [str(u) for u in upload_ids],
+                        "ck": candidate_k,
+                    },
+                )
+                .mappings()
+                .all()
             )
-            .mappings()
-            .all()
-        )
     except Exception:
         logger.exception("Fallo en retrieval vectorial de pgvector; rama vacía")
         return []
@@ -215,18 +296,19 @@ def _fetch_lexical(
         """
     ).bindparams(bindparam("upload_ids", expanding=True))
     try:
-        rows = (
-            db.execute(
-                stmt,
-                {
-                    "query_text": clean,
-                    "upload_ids": [str(u) for u in upload_ids],
-                    "ck": candidate_k,
-                },
+        with db.begin_nested():  # ver _fetch_vector
+            rows = (
+                db.execute(
+                    stmt,
+                    {
+                        "query_text": clean,
+                        "upload_ids": [str(u) for u in upload_ids],
+                        "ck": candidate_k,
+                    },
+                )
+                .mappings()
+                .all()
             )
-            .mappings()
-            .all()
-        )
     except Exception:
         logger.exception("Fallo en retrieval léxico de pgvector; rama vacía")
         return []
@@ -280,6 +362,7 @@ class PgVectorChunkStore:
         chunks: list[str],
         embeddings: list[list[float]],
         ttl_seconds: int = DEFAULT_TTL_SECONDS,
+        embedding_model: str | None = None,
     ) -> int:
         return insert_chunks(
             self._db,
@@ -289,6 +372,7 @@ class PgVectorChunkStore:
             chunks=chunks,
             embeddings=embeddings,
             ttl_seconds=ttl_seconds,
+            embedding_model=embedding_model,
         )
 
     def search(

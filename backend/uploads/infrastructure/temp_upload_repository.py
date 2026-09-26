@@ -21,26 +21,58 @@ def _to_entity(item: dict) -> TempUpload:
         expires_at=item["expires_at"],
         confirmed_at=item.get("confirmed_at"),
         rag_status=item.get("rag_status"),
+        ova_id=item.get("ova_id"),
     )
 
 
 class InMemoryTempUploadRepository:
-    def count_active(self, user_id: str) -> int:
+    def count_active(self, user_id: str, ova_id: str | None = None) -> int:
         with store.lock():
             store.prune_expired_locked()
-            return sum(1 for it in store.registry().values() if self._is_active(it, user_id))
+            return sum(
+                1 for it in store.registry().values() if self._is_active(it, user_id, ova_id)
+            )
 
-    def list_active(self, user_id: str) -> list[TempUpload]:
+    def list_active(self, user_id: str, ova_id: str | None = None) -> list[TempUpload]:
         with store.lock():
             store.prune_expired_locked()
             items = [
-                _to_entity(it) for it in store.registry().values() if self._is_active(it, user_id)
+                _to_entity(it)
+                for it in store.registry().values()
+                if self._is_active(it, user_id, ova_id)
             ]
         items.sort(key=lambda u: u.created_at, reverse=True)
         return items
 
+    def get(self, upload_id: str, user_id: str) -> TempUpload | None:
+        with store.lock():
+            store.prune_expired_locked()
+            item = store.registry().get(upload_id)
+            if not item or item["user_id"] != user_id:
+                return None
+            return _to_entity(item)
+
+    def claim(self, user_id: str, upload_ids: list[str], ova_id: str) -> list[TempUpload]:
+        now = time.time()
+        claimed: list[TempUpload] = []
+        with store.lock():
+            store.prune_expired_locked()
+            for upload_id in dict.fromkeys(upload_ids):
+                item = store.registry().get(upload_id)
+                if not item or item["user_id"] != user_id:
+                    continue
+                item["confirmed_at"] = item.get("confirmed_at") or now
+                item["ova_id"] = ova_id
+                claimed.append(_to_entity(item))
+        return claimed
+
     def create(
-        self, user_id: str, filename: str, content_type: str, content: bytes
+        self,
+        user_id: str,
+        filename: str,
+        content_type: str,
+        content: bytes,
+        ova_id: str | None = None,
     ) -> TempUpload:
         upload_id = str(uuid.uuid4())
         created_at = time.time()
@@ -60,6 +92,7 @@ class InMemoryTempUploadRepository:
             "created_at": created_at,
             "expires_at": created_at + store.temp_ttl_seconds(),
             "confirmed_at": None,
+            "ova_id": ova_id,
         }
         with store.lock():
             store.prune_expired_locked()
@@ -91,5 +124,9 @@ class InMemoryTempUploadRepository:
                 item["rag_status"] = rag_status
 
     @staticmethod
-    def _is_active(item: dict, user_id: str) -> bool:
-        return item["user_id"] == user_id and item.get("confirmed_at") is None
+    def _is_active(item: dict, user_id: str, ova_id: str | None = None) -> bool:
+        return (
+            item["user_id"] == user_id
+            and item.get("confirmed_at") is None
+            and item.get("ova_id") == ova_id
+        )

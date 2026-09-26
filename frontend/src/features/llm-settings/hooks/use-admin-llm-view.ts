@@ -34,7 +34,10 @@ export function buildAdminView(args: BuildArgs): AdminView {
   if (!args.isAdmin) {
     return {
       tasks: fallbackTasks,
-      models: activeCatalog(args.catalogFull),
+      // Vista de solo lectura: los modelos sirven para nombrar los de la
+      // plataforma. Con la clave propia rechazada llegan inactivos, y quitarlos
+      // dejaba la configuración de plataforma con ids («deepseek/…») por nombre.
+      models: args.catalogFull,
       // Sin permisos de admin se muestra la config efectiva de la plataforma; la
       // semilla (`defaults`) solo si el backend aún no la envía.
       draft: args.platform

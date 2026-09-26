@@ -16,9 +16,10 @@ import uuid
 
 import structlog
 from arq.connections import RedisSettings
-from generation.jobs.queue import redis_settings
+from arq.worker import func
 
 from core.config import settings
+from generation.infrastructure.arq_queue import REGEN_TASK, redis_settings
 from generation.jobs.jobs_runner import run_job
 
 # GN-05: en consolas Windows (cp1252) el logging de errores con caracteres no
@@ -34,6 +35,15 @@ async def run_generation(ctx, job_id: str, only: list[str] | None = None) -> Non
     """arq task: delegate to the existing sync runner off the event loop."""
     only_uuids = [uuid.UUID(x) for x in only] if only else None
     await asyncio.to_thread(run_job, uuid.UUID(job_id), only_uuids)
+
+
+async def run_regen(ctx, job_id: str, ova_id: str) -> None:
+    """arq task: una regeneración del chat del editor (generation/regen). El
+    ejecutor la reclama en `regen_jobs` antes de trabajar, así que un reintento
+    o un segundo worker no la repiten."""
+    from generation.regen.regen_service import _finalize_edit
+
+    await asyncio.to_thread(_finalize_edit, job_id, ova_id)
 
 
 def _pending_resource_ids(db, job_id: uuid.UUID) -> list[uuid.UUID]:
@@ -110,8 +120,32 @@ def _find_orphans_to_requeue() -> list[tuple[uuid.UUID, list[uuid.UUID]]]:
         db.close()
 
 
+def _start_late_videos() -> None:
+    """Videos tardíos: el sumidero que los mete en la BD y los que dejó un reinicio."""
+    from generation.infrastructure.late_video import install_late_video, recover_late_videos
+
+    install_late_video()
+    recover_late_videos()
+
+
+def _recover_regen() -> None:
+    """Regeneraciones cuyo ejecutor murió (sin latido): se marcan interrumpidas
+    y se libera el OVA. Nunca toca las que otro proceso sigue ejecutando."""
+    from generation.regen.regen_jobs import recover_orphan_regen
+
+    recover_orphan_regen()
+
+
 async def resume_orphans(ctx) -> None:
     """F5.2 — al arrancar, re-encolar jobs huérfanos (running estancado / queued)."""
+    try:
+        await asyncio.to_thread(_start_late_videos)
+    except Exception:  # noqa: BLE001 — nunca impide arrancar el worker
+        logger.exception("late video startup failed")
+    try:
+        await asyncio.to_thread(_recover_regen)
+    except Exception:  # noqa: BLE001 — nunca impide arrancar el worker
+        logger.exception("regen recovery on worker startup failed")
     try:
         orphans = await asyncio.to_thread(_find_orphans_to_requeue)
     except Exception:  # noqa: BLE001 — el resume nunca impide arrancar el worker
@@ -125,7 +159,10 @@ async def resume_orphans(ctx) -> None:
 
 
 class WorkerSettings:
-    functions = [run_generation]
+    # Una regeneración no se reintenta sola: si el worker muere a mitad, la
+    # recuperación la marca interrumpida y el chat muestra el fallo; repetirla
+    # por detrás crearía una versión que el docente ya no espera.
+    functions = [run_generation, func(run_regen, name=REGEN_TASK, max_tries=1)]
     on_startup = resume_orphans
     # Default RedisSettings() keeps the module import-safe when REDIS_URL is unset
     # (e.g. tooling/CI); the worker is only ever launched with REDIS_URL configured.

@@ -1,6 +1,6 @@
 import { usePlatformConfig } from "@/core/hooks/use-platform-config";
 
-import { PROVIDER_META } from "./platform-key-meta";
+import { groupProviders, PROVIDER_META, RECOMMENDED_HINT } from "./platform-key-meta";
 import { PlatformKeyRow } from "./platform-key-row";
 
 const LIST_CLASS = "divide-y divide-border overflow-hidden rounded-xl border border-border bg-card";
@@ -25,18 +25,43 @@ export function PlatformApiKeysList() {
   }
   if (error) {
     return (
-      <p role="alert" className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+      <p
+        role="alert"
+        className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive"
+      >
         No se pudieron cargar las claves: {error.message}
       </p>
     );
   }
   const config = data.platform_config ?? {};
   const providers = data.providers ?? Object.keys(PROVIDER_META);
+  const serverKeys = new Set(data.server_keys ?? []);
+  const groups = groupProviders(providers);
+  const group = (title: string, ids: string[], hint?: string) =>
+    ids.length === 0 ? null : (
+      <div className="space-y-2">
+        <div>
+          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+          {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+        </div>
+        <ul className={LIST_CLASS}>
+          {ids.map((p) => (
+            <PlatformKeyRow
+              key={p}
+              provider={p}
+              maskedValue={config[p]}
+              serverKey={serverKeys.has(p)}
+            />
+          ))}
+        </ul>
+      </div>
+    );
+  // OpenRouter primero: con una sola clave cubre texto, imagen y video.
   return (
-    <ul className={LIST_CLASS}>
-      {providers.map((p) => (
-        <PlatformKeyRow key={p} provider={p} maskedValue={config[p]} />
-      ))}
-    </ul>
+    <div className="space-y-6">
+      {group("Recomendado", groups.recommended, RECOMMENDED_HINT)}
+      {group("Otros proveedores de texto", groups.text)}
+      {group("Otros proveedores de imagen", groups.image)}
+    </div>
   );
 }

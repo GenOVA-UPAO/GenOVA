@@ -21,7 +21,7 @@ from generation.infrastructure.regen_agents import resolve_resource_type
 from generation.infrastructure.regen_pipelines import regenerate_phase_content
 from llm.router import generar_texto
 from llm.utils.llm_helpers import _CODE_MAX_TOKENS
-from llm.utils.ova_runtime import inject_runtime, strip_runtime
+from llm.utils.ova_runtime import inject_runtime, runtime_palette, strip_runtime, theme_of
 from llm.utils.utils import extract_html_document
 
 logger = structlog.get_logger(__name__)
@@ -38,9 +38,22 @@ actual. No lo regeneres desde cero: parte del HTML de abajo y edítalo.
 - Mantén DOCTYPE, cierre correcto de etiquetas, interactividad con handlers JS
   reales (addEventListener), callbacks SCORM y CERO dependencias externas
   (CDN, fonts, jquery).
-[HTML_ACTUAL]
+{material}[HTML_ACTUAL]
 {html}
 [SALIDA] Solo el documento HTML completo y editado desde <!DOCTYPE html>, sin markdown."""
+
+
+_MATERIAL_BLOCK = """[MATERIAL DE REFERENCIA DEL DOCENTE]
+Fragmentos de los archivos del docente relevantes para este cambio. Cuando el
+cambio pida usar su material (datos, ejemplos, definiciones, terminología), tómalo
+de aquí con fidelidad y no inventes lo que el material ya dice.
+{contexto}
+[/MATERIAL DE REFERENCIA DEL DOCENTE]
+"""
+
+
+def _material_block(contexto: str) -> str:
+    return _MATERIAL_BLOCK.format(contexto=contexto.strip()) if contexto.strip() else ""
 
 
 def _looks_truncated(html: str) -> bool:
@@ -53,18 +66,31 @@ def edit_phase_content(
     base_html: str,
     llm_config: dict | None = None,
     enabled_models: list | None = None,
+    contexto: str = "",
 ) -> str | None:
-    """HTML editado con el cambio pedido, o None si falla o regresiona."""
+    """HTML editado con el cambio pedido, o None si falla o regresiona.
+    `contexto` es el bloque RAG (ya delimitado y con su guarda anti-inyección)."""
+    from core.config import settings
+
     instruction = (instruction or "").strip()
     if not instruction or not base_html:
         return None
+    if settings.llm_fake:
+        from prometheus.engine.fake_invoke import fake_edited_html
+
+        return fake_edited_html(base_html, instruction, contexto)
     # The model edits only the authored HTML; the shared runtime (~45 KB) is
     # stripped first and re-injected after, so it is never rewritten or cut.
     authored, had_css, had_components = strip_runtime(base_html)
     try:
         new_html = extract_html_document(
             generar_texto(
-                _EDIT_PROMPT.format(concept=concept, instruction=instruction, html=authored),
+                _EDIT_PROMPT.format(
+                    concept=concept,
+                    instruction=instruction,
+                    material=_material_block(contexto),
+                    html=authored,
+                ),
                 "codigo",
                 _CODE_MAX_TOKENS,
                 llm_config,
@@ -80,7 +106,9 @@ def edit_phase_content(
     if len(new_html) < len(authored) * 0.6:
         logger.warning("edit shrank resource too much; keeping original")
         return None
-    new_html = inject_runtime(new_html, css=had_css, components=had_components)
+    new_html = inject_runtime(
+        new_html, css=had_css, components=had_components, palette=runtime_palette(base_html)
+    )
     return new_html
 
 
@@ -98,11 +126,12 @@ def _regen_one_phase(
     llm_config: dict | None,
     enabled_models: list | None,
     image_settings: dict | None,
+    contexto: str = "",
 ) -> str | None:
     """Edita (si hay `instruction`) o regenera desde cero un recurso de fase."""
     if instruction:
         return edit_phase_content(
-            concept, instruction, phase.content or "", llm_config, enabled_models
+            concept, instruction, phase.content or "", llm_config, enabled_models, contexto
         )
     rtype = resolve_resource_type(phase)
     if rtype is None:
@@ -112,7 +141,15 @@ def _regen_one_phase(
         "regenerating phase", phase_type=phase.phase_type, resource_type=rtype, concept=concept[:60]
     )
     return regenerate_phase_content(
-        phase.phase_type, rtype, concept, llm_config, enabled_models, image_settings
+        phase.phase_type,
+        rtype,
+        concept,
+        llm_config,
+        enabled_models,
+        image_settings,
+        contexto,
+        # Mismo tema con el que se generó: colores libres o la paleta del docente.
+        theme=theme_of(phase.content or ""),
     )
 
 
@@ -123,6 +160,7 @@ def regen_phases_parallel(
     llm_config: dict | None,
     enabled_models: list | None = None,
     image_settings: dict | None = None,
+    contexto: str = "",
 ) -> dict[str, str | None]:
     """Edita/regenera `phases` en paralelo → {phase_id: html|None}.
 
@@ -136,7 +174,7 @@ def regen_phases_parallel(
     def _one(phase) -> tuple[str, str | None]:
         try:
             return str(phase.id), _regen_one_phase(
-                phase, concept, instruction, llm_config, enabled_models, image_settings
+                phase, concept, instruction, llm_config, enabled_models, image_settings, contexto
             )
         except Exception:
             logger.exception("regen failed for phase", phase_id=phase.id)

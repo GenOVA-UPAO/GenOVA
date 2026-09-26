@@ -55,5 +55,7 @@ def format_pricing_detail(pricing: dict | None) -> dict | None:
         "output":      _per_m(pricing.get("completion")),
         "cache_read":  _per_m(pricing.get("cache_read")),
         "cache_write": _per_m(pricing.get("cache_write")),
+        # Imágenes generadas por chat (Gemini Image, GPT Image): tarifa propia.
+        "image_output": _per_m(pricing.get("image_output")),
     }
     return result if any(v is not None for v in result.values()) else None

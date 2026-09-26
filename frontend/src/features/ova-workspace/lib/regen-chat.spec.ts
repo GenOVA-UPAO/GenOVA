@@ -1,12 +1,15 @@
 import {
   buttonRegenPayload,
+  chatAttachments,
   finishChatPatch,
   formatChatTarget,
   labelsForPhaseIds,
   messageRegenPayload,
   patchChatMessage,
+  ragReportText,
   selectionAllMessage,
   selectionToggleMessage,
+  splitAttachments,
   userChatMessage,
 } from "./regen-chat";
 
@@ -85,5 +88,67 @@ describe("regen-chat", () => {
     expect(selectionToggleMessage("Lab", true).text).toContain("seleccionado");
     expect(selectionAllMessage(["A", "B"], true).text).toContain("todos");
     expect(selectionAllMessage(["A", "B"], false).text).toContain("vació");
+  });
+});
+
+describe("adjuntos del chat (HU-024)", () => {
+  const phases = [{ id: "a", phase_type: "engage", title: "Cómic" }];
+
+  it("solo cuenta los archivos ya subidos", () => {
+    const attachments = chatAttachments([
+      { uploadId: "", filename: "subiendo.pdf" },
+      { uploadId: "u1", filename: "apunte.pdf" },
+    ]);
+    expect(attachments).toEqual({ ids: ["u1"], names: ["apunte.pdf"] });
+  });
+
+  it("el mensaje viaja limpio al backend y el historial muestra los adjuntos", () => {
+    const payload = messageRegenPayload(phases, "Usa el apunte", [], { ids: ["u1"], names: ["apunte.pdf"] });
+    expect(payload.prompt).toBe("Usa el apunte");
+    expect(payload.uploadIds).toEqual(["u1"]);
+    expect(splitAttachments(payload.historyText)).toEqual({ text: "Usa el apunte", attachments: ["apunte.pdf"] });
+  });
+
+  it("un mensaje sin adjuntos no cambia", () => {
+    expect(splitAttachments("Sube el contraste")).toEqual({ text: "Sube el contraste", attachments: [] });
+  });
+});
+
+describe("informe del material consultado", () => {
+  it("nombra los archivos usados y distingue los del OVA", () => {
+    const text = ragReportText({
+      status: "used",
+      sources: [
+        { filename: "apunte.pdf", chunks: 3, origin: "adjunto" },
+        { filename: "silabo.docx", chunks: 1, origin: "ova" },
+      ],
+      attachments: [{ filename: "apunte.pdf", used: true }],
+    });
+    expect(text).toBe("Material consultado: apunte.pdf (3 fragmentos), silabo.docx (1 fragmento, del OVA).");
+  });
+
+  it("no finge que se usó un adjunto con el RAG desactivado", () => {
+    const text = ragReportText({
+      status: "disabled",
+      sources: [],
+      attachments: [{ filename: "apunte.pdf", used: false, reason: "La búsqueda en archivos (RAG) está desactivada en este servidor." }],
+    });
+    expect(text).not.toContain("Material consultado");
+    expect(text).toContain("No se usó «apunte.pdf»: La búsqueda en archivos (RAG) está desactivada");
+  });
+
+  it("sin material no añade nada", () => {
+    expect(ragReportText({ status: "none", sources: [], attachments: [] })).toBe("");
+    expect(ragReportText(null)).toBe("");
+  });
+
+  it("el mensaje final lleva el informe debajo del «Listo»", () => {
+    const patch = finishChatPatch("success", undefined, {
+      status: "used",
+      sources: [{ filename: "apunte.pdf", chunks: 2, origin: "adjunto" }],
+    });
+    expect(patch.text).toBe(
+      "Listo. Los cambios ya están aplicados al OVA completo.\nMaterial consultado: apunte.pdf (2 fragmentos).",
+    );
   });
 });

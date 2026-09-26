@@ -14,7 +14,7 @@ const TAB_CONFIG = "config";
 const TAB_SECURITY = "security";
 
 interface ProfileActions {
-  handleSaveProfile: (values: ProfileFormValues) => Promise<boolean>;
+  handleSaveProfile: (values: ProfileFormValues) => Promise<ProfileData | null>;
   handleChangePassword: (values: ChangePasswordValues) => Promise<boolean>;
   handleDeleteAccount: (password: string) => void;
   isSavingProfile: boolean;

@@ -8,9 +8,7 @@ export function PlatformNodesCard() {
   const nodes = useNodesConfig();
   const list = nodes.data.nodes ?? [];
   const configurable = list.filter((item) => item.configurable);
-  const alwaysOn = list.filter((item) => item.always_on && item.id !== "video");
-  const videoNode = list.find((item) => item.id === "video");
-  const videoWarning = !nodes.data.video_api_key_configured;
+  const alwaysOn = list.filter((item) => item.always_on);
   const hasChanges = hasUnsavedChanges(nodes.draft, nodes.data.config, nodes.rounds);
 
   return (
@@ -38,8 +36,6 @@ export function PlatformNodesCard() {
         ready={Boolean(nodes.draft)}
         configurable={configurable}
         alwaysOn={alwaysOn}
-        videoNode={videoNode}
-        videoWarning={videoWarning}
         nodes={nodes}
       />
     </PlatformSection>

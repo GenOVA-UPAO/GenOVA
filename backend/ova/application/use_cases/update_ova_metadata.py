@@ -13,6 +13,7 @@ from ova.domain.errors import (
     OvaGenerating,
     OvaNotFound,
 )
+from ova.domain.model import EDIT_FORBIDDEN
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,8 +31,8 @@ class UpdateOvaMetadata:
         ova = self.repo.get_active(data.ova_id)
         if ova is None:
             raise OvaNotFound("OVA no encontrado o ya eliminado.")
-        if not ova.is_accessible_by(data.actor):
-            raise OvaForbidden("No tienes permiso para editar este OVA.")
+        if not ova.can_edit(data.actor):
+            raise OvaForbidden(EDIT_FORBIDDEN)
         if ova.status == "generando":
             raise OvaGenerating("No se puede editar el OVA mientras se está generando.")
 

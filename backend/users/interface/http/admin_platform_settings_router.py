@@ -9,14 +9,18 @@ and never logged.
 import threading
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request
 
 from auth.dependencies import require_admin
 from core.rate_limit import limiter
-from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS
+from llm.providers import ALL_PROVIDERS, TEXT_PROVIDERS, env_configured_providers
+from models import User
 from users.application.dto import SavePlatformKeysInput
 from users.container import UsersUseCases, build_users
 from users.domain.errors import UserError
+from users.interface.http.admin_llm_probe_router import router as probe_router
+from users.interface.http.admin_llm_versions_router import apply_config
+from users.interface.http.admin_llm_versions_router import router as versions_router
 from users.interface.http.error_map import to_http_exception
 
 router = APIRouter(tags=["Admin · Plataforma"])
@@ -30,7 +34,9 @@ def _bg_catalog_refresh() -> None:
 
     db = SessionLocal()
     try:
-        refresh_catalog(db)
+        # force: una clave recién puesta debe consultarse ya, aunque el último
+        # refresco completo sea de hace menos de un minuto.
+        refresh_catalog(db, force=True)
     finally:
         db.close()
 
@@ -44,6 +50,7 @@ def get_platform_config(
     return {
         "platform_config": users.get_platform_keys.execute(),
         "providers": list(ALL_PROVIDERS),
+        "server_keys": env_configured_providers(),
     }
 
 
@@ -91,25 +98,19 @@ def get_llm_config(_admin: None = Depends(require_admin)):
 def put_llm_config(
     request: Request,
     payload: dict,
-    _admin: None = Depends(require_admin),
+    admin: User = Depends(require_admin),
 ):
     """Persiste defaults/fallbacks por tarea (admin). Valida contra el catálogo;
-    entradas inválidas se descartan en silencio (nunca rompe la generación)."""
-    from llm.router import effective_llm_config
-    from llm.utils import llm_config_store
-    from llm.utils.llm_config_store import CONFIG_TASKS
+    entradas inválidas se descartan en silencio (nunca rompe la generación).
 
-    try:
-        clean = llm_config_store.sanitize_config(payload)
-        llm_config_store.save_stored(clean)
-    except Exception:
-        logger.exception("LLM model config write failed")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No se pudo guardar la configuración de modelos.",
-        ) from None
-
-    return {"config": effective_llm_config(), "tasks": list(CONFIG_TASKS)}
+    Si algo cambió, queda en el historial y la respuesta trae la entrada
+    (`history_entry`) para ofrecer «Deshacer»."""
+    result = apply_config(payload, admin, source="manual")
+    return {
+        "config": result["config"],
+        "tasks": result["tasks"],
+        "history_entry": result["history_entry"],
+    }
 
 
 @router.get("/registration-mode", summary="Obtener el modo de registro")
@@ -136,3 +137,8 @@ def put_registration_mode(
     """
     role_name = users.save_registration_mode.execute(payload.get("default_registration_role"))
     return {"default_registration_role": role_name}
+
+
+# Perfiles, historial y pruebas de modelo/proveedor: mismo prefijo `/api/admin`.
+router.include_router(versions_router)
+router.include_router(probe_router)

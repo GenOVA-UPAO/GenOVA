@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { getAdminLlmConfig, saveAdminLlmConfig } from "@/core/services/platform-settings.api";
 
+import { dedupeCatalogModels } from "../lib/dedupe-catalog";
 import type { Draft } from "../lib/llm-config-draft";
 import { toPayload } from "../lib/llm-config-draft";
 import type { LlmSettingsStore } from "./llm-settings-store.types";
@@ -23,7 +24,10 @@ export function useAdminLlmDraft(store: LlmSettingsStore, isAdmin: boolean) {
     loading,
     isError: query.isError,
     raw: query.data,
-    catalogFull: store.catalogFull,
+    // La página del catálogo trae los filtros de «Abrir catálogo»: sin sumar el
+    // curado completo, al cerrarlo con un filtro puesto los modelos de la
+    // plataforma se veían por su id en crudo.
+    catalogFull: dedupeCatalogModels([...store.catalogFull, ...store.catalogAll]),
     defaults: store.defaults,
     platform: store.platform,
   });
@@ -42,6 +46,11 @@ export function useAdminLlmDraft(store: LlmSettingsStore, isAdmin: boolean) {
 
   return {
     loading,
+    /** La config de plataforma no cargó: sin esto se mostraba la vista de usuario con ids en crudo. */
+    error: isAdmin && query.isError,
+    retry: () => {
+      void query.refetch();
+    },
     tasks: view.tasks,
     models: view.models,
     draft,
@@ -57,10 +66,11 @@ export function useAdminLlmDraft(store: LlmSettingsStore, isAdmin: boolean) {
   };
 }
 
+/** Devuelve la respuesta del backend: trae la entrada del historial para «Deshacer». */
 async function saveAdminDraft(
   draft: Draft | null,
   tasks: string[],
   mutateAsync: (payload: unknown) => Promise<unknown>,
-): Promise<void> {
-  await mutateAsync(toPayload(draft, tasks));
+): Promise<unknown> {
+  return mutateAsync(toPayload(draft, tasks));
 }

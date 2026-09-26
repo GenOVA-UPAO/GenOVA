@@ -4,7 +4,7 @@ import { authStore } from "@/core/auth/auth-store";
 import { queryClient } from "@/core/lib/query-client";
 
 import { errorMessage } from "../lib/error-message";
-import type { ChangePasswordValues, ProfileFormValues } from "../lib/types";
+import type { ChangePasswordValues, ProfileData, ProfileFormValues } from "../lib/types";
 import { useChangePassword, useDeleteAccount, useSaveProfile } from "./use-profile";
 
 export function useProfileActions() {
@@ -13,12 +13,12 @@ export function useProfileActions() {
   const changePassword = useChangePassword();
   const deleteAccount = useDeleteAccount();
 
-  const handleSaveProfile = async (values: ProfileFormValues): Promise<boolean> => {
+  /** Devuelve el perfil tal como quedó guardado, o `null` si falló. */
+  const handleSaveProfile = async (values: ProfileFormValues): Promise<ProfileData | null> => {
     try {
-      await saveProfile.mutateAsync(values);
-      return true;
+      return await saveProfile.mutateAsync(values);
     } catch {
-      return false;
+      return null;
     }
   };
 
@@ -36,7 +36,9 @@ export function useProfileActions() {
       onSuccess: () => {
         void authStore.logout().then(() => {
           queryClient.clear();
-          void navigate("/login", { replace: true });
+          // El login lo confirma con un aviso: las pantallas de acceso no tienen toasts
+          // y antes se aterrizaba ahí sin saber si la cuenta se había borrado.
+          void navigate("/login?deleted=1", { replace: true });
         });
       },
     });

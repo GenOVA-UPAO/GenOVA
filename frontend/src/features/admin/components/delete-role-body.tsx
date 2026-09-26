@@ -14,6 +14,7 @@ interface DeleteRoleBodyProps {
   role: Role;
   roles: Role[];
   reassignRoleId: string;
+  reassignError: string;
   isDeleting: boolean;
   onReassignChange: (value: string) => void;
 }
@@ -22,6 +23,7 @@ export function DeleteRoleBody({
   role,
   roles,
   reassignRoleId,
+  reassignError,
   isDeleting,
   onReassignChange,
 }: Readonly<DeleteRoleBodyProps>) {
@@ -29,7 +31,7 @@ export function DeleteRoleBody({
 
   if (userCount === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p id="delete-role-desc" className="text-sm text-muted-foreground">
         Ningún usuario tiene este rol, así que nadie perderá acceso. Esta acción no se puede
         deshacer.
       </p>
@@ -38,7 +40,7 @@ export function DeleteRoleBody({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
+      <p id="delete-role-desc" className="text-sm text-muted-foreground">
         Este rol tiene {userCount === 1 ? "1 usuario asignado" : `${String(userCount)} usuarios asignados`}.
         Elige a qué rol pasarán antes de eliminarlo. Esta acción no se puede deshacer.
       </p>
@@ -49,7 +51,12 @@ export function DeleteRoleBody({
           disabled={isDeleting}
           onValueChange={onReassignChange}
         >
-          <SelectTrigger id="reassign-role-select" className="w-full">
+          <SelectTrigger
+            id="reassign-role-select"
+            className="w-full"
+            aria-invalid={reassignError === "" ? undefined : true}
+            aria-describedby={reassignError === "" ? undefined : "reassign-role-error"}
+          >
             <SelectValue placeholder="Elige un rol" />
           </SelectTrigger>
           <SelectContent position="popper">
@@ -62,6 +69,11 @@ export function DeleteRoleBody({
               ))}
           </SelectContent>
         </Select>
+        {reassignError !== "" && (
+          <p id="reassign-role-error" className="text-xs text-destructive">
+            {reassignError}
+          </p>
+        )}
       </div>
     </div>
   );

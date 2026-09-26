@@ -1,3 +1,6 @@
+import { useRef } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
 
@@ -17,13 +20,36 @@ const HELP_ID = "ova-create-prompt-help";
 
 function helpText(prompt: string): string {
   const missing = missingPromptChars(prompt);
-  if (prompt.trim().length > 0 && missing > 0) return `Faltan ${String(missing)} caracteres para generar`;
+  if (prompt.trim().length > 0 && missing > 0)
+    return `Faltan ${String(missing)} caracteres para generar`;
   return "Incluye el tema, los objetivos de aprendizaje y el nivel. Mínimo 10 caracteres.";
 }
 
 /** Campo principal de /crear: label visible, ayuda debajo y error solo tras interactuar. */
-export function CreationPromptField({ prompt, onPrompt, showError, onBlur, onSubmitShortcut }: Readonly<Props>) {
+export function CreationPromptField({
+  prompt,
+  onPrompt,
+  showError,
+  onBlur,
+  onSubmitShortcut,
+}: Readonly<Props>) {
   const invalid = showError && missingPromptChars(prompt) > 0;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // El ejemplo sustituye lo escrito: si había texto propio, se ofrece deshacerlo.
+  const applyExample = () => {
+    const previous = prompt;
+    onPrompt(EXAMPLE_PROMPT);
+    textareaRef.current?.focus();
+    if (previous.trim() === "" || previous === EXAMPLE_PROMPT) return;
+    toast("Se reemplazó tu descripción por el ejemplo.", {
+      action: {
+        label: "Deshacer",
+        onClick: () => {
+          onPrompt(previous);
+        },
+      },
+    });
+  };
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
@@ -32,17 +58,16 @@ export function CreationPromptField({ prompt, onPrompt, showError, onBlur, onSub
         </label>
         <Button
           variant="link"
-          size="xs"
-          className="h-auto px-0"
+          size="sm"
+          className="-my-2 -mr-2.5 h-9 text-sm max-sm:h-11"
           aria-label="Usar ejemplo de prompt"
-          onClick={() => {
-            onPrompt(EXAMPLE_PROMPT);
-          }}
+          onClick={applyExample}
         >
           Usar ejemplo
         </Button>
       </div>
       <textarea
+        ref={textareaRef}
         id="ova-create-prompt"
         rows={5}
         aria-describedby={HELP_ID}
@@ -52,7 +77,7 @@ export function CreationPromptField({ prompt, onPrompt, showError, onBlur, onSub
           "outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring",
           "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/40",
         )}
-        placeholder="Ej.: Ley de Ohm para un primer curso de ingeniería. Objetivo: resolver circuitos en serie y paralelo."
+        placeholder="Ej.: Regresión lineal para un curso introductorio de machine learning. Objetivo: entrenar un modelo y evaluar sus predicciones."
         value={prompt}
         onChange={(event) => {
           onPrompt(event.target.value);
@@ -66,7 +91,10 @@ export function CreationPromptField({ prompt, onPrompt, showError, onBlur, onSub
         }}
       />
       <div className="flex items-start justify-between gap-3 text-xs">
-        <p id={HELP_ID} className={invalid ? "font-medium text-destructive" : "text-muted-foreground"}>
+        <p
+          id={HELP_ID}
+          className={invalid ? "font-medium text-destructive" : "text-muted-foreground"}
+        >
           {helpText(prompt)}
         </p>
         <p className="hidden shrink-0 text-muted-foreground sm:block">Ctrl+Enter para generar</p>

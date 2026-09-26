@@ -7,10 +7,18 @@ from dataclasses import dataclass
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from core.database import get_db
-from uploads.application.use_cases import DeleteUpload, ListUploads, UploadFiles
+from core.database import SessionLocal, get_db
+from uploads.application.dto import UploadItemView
+from uploads.application.use_cases import (
+    ClaimUploads,
+    DeleteUpload,
+    IngestUpload,
+    ListUploads,
+    UploadFiles,
+)
 from uploads.infrastructure.rag_ingestion import RagIngestionAdapter
 from uploads.infrastructure.settings import EnvUploadLimits
+from uploads.infrastructure.sql_temp_upload_repository import SqlTempUploadRepository
 from uploads.infrastructure.temp_upload_repository import InMemoryTempUploadRepository
 
 
@@ -21,10 +29,43 @@ class UploadsUseCases:
     delete_upload: DeleteUpload
 
 
+def _repo():
+    """El registro vive en Postgres para que todos los procesos (workers de
+    uvicorn, worker arq) vean las mismas subidas. Con SQLite (desarrollo de un
+    solo proceso, sin migraciones) sigue en memoria."""
+    from core.database import engine
+
+    if engine.dialect.name == "postgresql":
+        return SqlTempUploadRepository()
+    return InMemoryTempUploadRepository()
+
+
 def build_uploads(db: Session = Depends(get_db)) -> UploadsUseCases:
-    repo = InMemoryTempUploadRepository()
+    repo = _repo()
     return UploadsUseCases(
         list_uploads=ListUploads(repo),
         upload_files=UploadFiles(repo, RagIngestionAdapter(db), EnvUploadLimits()),
         delete_upload=DeleteUpload(repo),
     )
+
+
+def run_background_ingestion(user_id: str, upload_ids: list[str]) -> None:
+    """Indexa las subidas en segundo plano con su propia sesión: la de la
+    petición ya está cerrada cuando corren las BackgroundTasks."""
+    db = SessionLocal()
+    try:
+        use_case = IngestUpload(_repo(), RagIngestionAdapter(db))
+        for upload_id in upload_ids:
+            use_case.execute(user_id, upload_id)
+    finally:
+        db.close()
+
+
+def claim_uploads(user_id: str, upload_ids: list[str], ova_id: str) -> list[UploadItemView]:
+    return ClaimUploads(_repo()).execute(user_id, upload_ids, ova_id)
+
+
+def uploads_owned_by(user_id: str, upload_ids: list[str]) -> list[str]:
+    """Los ids que están en la lista de subidas del usuario (cualquier contexto)."""
+    repo = _repo()
+    return [u for u in upload_ids if repo.get(u, user_id) is not None]

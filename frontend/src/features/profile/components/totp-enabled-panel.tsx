@@ -2,68 +2,61 @@ import { useState } from "react";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
-import { Input } from "@/core/components/ui/input";
 
-import { describedBy } from "../lib/described-by";
 import { ErrorAlert } from "./error-alert";
-import { FormField } from "./form-field";
 import { ProfileSection } from "./profile-section";
-
-const CODE_HINT = "El código de 6 dígitos que muestra tu app autenticadora.";
+import { TotpDisableForm } from "./totp-disable-form";
 
 interface TotpEnabledPanelProps {
   serverError: string;
   isDisabling: boolean;
   onDisable: (code: string) => void;
+  onDismissError: () => void;
 }
 
+/**
+ * Estado «activada». Desactivar queda detrás de un botón: antes el campo de código
+ * y el botón rojo ocupaban la tarjeta como si fuera lo principal que hacer aquí.
+ */
 export function TotpEnabledPanel({
   serverError,
   isDisabling,
   onDisable,
+  onDismissError,
 }: Readonly<TotpEnabledPanelProps>) {
-  const [code, setCode] = useState("");
-  const [tried, setTried] = useState(false);
-  const codeError = tried && code.length < 6 ? "Escribe los 6 dígitos del código." : undefined;
+  const [showDisableForm, setShowDisableForm] = useState(false);
 
   return (
     <ProfileSection
       title="Verificación en dos pasos"
-      description="Para desactivarla, confirma con un código de tu app autenticadora."
+      description="Al entrar, además de tu contraseña, se te pide un código de tu app autenticadora."
     >
-      <p className="flex items-center gap-2 text-sm font-medium text-success-strong">
-        <Icon name="shield-check" size="text-lg" /> Activada: tu cuenta pide un código al entrar.
-      </p>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        <div className="sm:w-56">
-          <FormField id="disable-code" label="Código actual" hint={CODE_HINT} error={codeError}>
-            <Input
-              id="disable-code"
-              type="text"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              value={code}
-              aria-invalid={codeError ? true : undefined}
-              aria-describedby={describedBy("disable-code", codeError, CODE_HINT)}
-              onChange={(event) => {
-                setCode(event.target.value);
-              }}
-            />
-          </FormField>
-        </div>
-        <Button
-          variant="destructive"
-          className="max-sm:h-11 sm:mt-6"
-          loading={isDisabling}
-          onClick={() => {
-            setTried(true);
-            if (code.length === 6) onDisable(code);
-          }}
-        >
-          Desactivar
-        </Button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="flex items-center gap-2 text-sm font-medium text-success-strong">
+          <Icon name="shield-check" size="text-lg" /> Activada
+        </p>
+        {!showDisableForm && (
+          <Button
+            variant="outline"
+            className="max-sm:h-11 max-sm:w-full"
+            onClick={() => {
+              setShowDisableForm(true);
+            }}
+          >
+            Desactivar
+          </Button>
+        )}
       </div>
+      {showDisableForm && (
+        <TotpDisableForm
+          isDisabling={isDisabling}
+          onDisable={onDisable}
+          onCancel={() => {
+            setShowDisableForm(false);
+            onDismissError();
+          }}
+        />
+      )}
       <ErrorAlert message={serverError} />
     </ProfileSection>
   );

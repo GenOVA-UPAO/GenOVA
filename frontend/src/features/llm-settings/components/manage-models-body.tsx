@@ -1,39 +1,27 @@
-import { Skeleton } from "@/core/components/ui/skeleton";
-
-import type { CatalogGroup } from "../lib/catalog-sort";
+import type { CatalogBrowser } from "../hooks/use-catalog-browser";
+import { CatalogSkeleton } from "./catalog-skeleton";
 import { ManageModelsEmpty } from "./manage-models-empty";
 import { ManageModelsList } from "./manage-models-list";
 
 interface ManageModelsBodyProps {
   hasKey: boolean;
   loading: boolean;
-  groupedEmpty: boolean;
-  grouped: CatalogGroup[];
+  browser: CatalogBrowser;
+  usage: Record<string, string[]>;
   onAddKey: () => void;
-  onClear: () => void;
 }
 
-export function ManageModelsBody({
-  hasKey,
-  loading,
-  groupedEmpty,
-  grouped,
-  onAddKey,
-  onClear,
-}: Readonly<ManageModelsBodyProps>) {
-  if (!hasKey) return <ManageModelsEmpty kind="keys" onAddKey={onAddKey} onClearFilters={onClear} />;
-  if (loading) {
+export function ManageModelsBody({ hasKey, loading, browser, usage, onAddKey }: Readonly<ManageModelsBodyProps>) {
+  if (!hasKey) return <ManageModelsEmpty kind="keys" onAddKey={onAddKey} onClearFilters={browser.clear} />;
+  if (loading) return <CatalogSkeleton />;
+  if (browser.results.length === 0) {
     return (
-      <div className="space-y-3 p-5" role="status" aria-busy="true" aria-label="Cargando modelos">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
+      <ManageModelsEmpty
+        kind={browser.filtered ? "filters" : "catalog"}
+        onAddKey={onAddKey}
+        onClearFilters={browser.clear}
+      />
     );
   }
-  if (groupedEmpty) {
-    return <ManageModelsEmpty kind="filters" onAddKey={onAddKey} onClearFilters={onClear} />;
-  }
-  return <ManageModelsList grouped={grouped} />;
+  return <ManageModelsList browser={browser} usage={usage} />;
 }

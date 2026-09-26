@@ -78,3 +78,46 @@ def providers_and_types(active_entries: list[dict]) -> tuple[list[str], list[str
     all_providers = sorted({e.get("provider", "") for e in active_entries if e.get("provider")})
     all_types = sorted({e.get("category", "texto") for e in active_entries})
     return all_providers, all_types
+
+
+def add_own_provider_pools(
+    filtered_catalog: dict[str, list[dict]],
+    full_entries: list[dict],
+    own_providers: set[str],
+    enabled: set[tuple[str, str]],
+) -> dict[str, list[dict]]:
+    """Con clave propia de un proveedor, sus modelos se ofrecen para elegir.
+
+    Si el usuario ya activó modelos de ese proveedor en el catálogo, se ofrecen
+    solo esos (para eso sirve activarlos). Si no activó ninguno, se ofrece su
+    lista entera: con la clave recién puesta el selector no puede quedar vacío.
+    """
+    for provider in sorted(own_providers):
+        if any(key[0] == provider for key in enabled):
+            continue
+        seen = {m["model_id"] for m in filtered_catalog.get(provider, [])}
+        extra = [
+            e
+            for e in full_entries
+            if e.get("provider") == provider
+            and e.get("active")
+            and e["model_id"] not in seen
+            and not _only_media(e)
+        ]
+        if extra:
+            filtered_catalog.setdefault(provider, []).extend(extra)
+    return filtered_catalog
+
+
+_TEXT_TASKS = frozenset({"texto", "codigo", "orquestador", "razonamiento"})
+
+
+def _only_media(entry: dict) -> bool:
+    """Modelo que no escribe texto: generadores de imagen o video (Veo, FLUX…),
+    voz (Orpheus), transcripción (Whisper) o clasificadores (Prompt Guard). Las
+    tareas del usuario son de texto, así que ofrecerlo sería ofrecer algo que
+    falla. Filas sin `aptitudes` (catálogos antiguos): solo se descartan las de media."""
+    aptitudes = entry.get("aptitudes")
+    if aptitudes is None:
+        return bool(entry.get("media"))
+    return not _TEXT_TASKS & set(aptitudes)

@@ -1,6 +1,6 @@
 import type { AuthMessageData } from "@/core/auth/auth.service";
 
-import { LOGIN_FAILED, TOO_MANY_ATTEMPTS } from "./auth-copy";
+import { CONNECT_ERROR, LOGIN_FAILED, TOO_MANY_ATTEMPTS } from "./auth-copy";
 
 export type LoginOutcome =
   | { kind: "totp"; ticket: string }
@@ -14,8 +14,10 @@ export type LoginOutcome =
  * genérico «No se pudo iniciar sesión» y nadie sabía que bastaba con esperar.
  */
 function errorMessage(status: number, data: AuthMessageData): string {
-  const fallback = status === 429 ? TOO_MANY_ATTEMPTS : LOGIN_FAILED;
-  return data.message ?? fallback;
+  if (data.message) return data.message;
+  if (status === 429) return TOO_MANY_ATTEMPTS;
+  // Un 5xx (servidor caído o reiniciándose) no es culpa de los datos: se dice y se invita a reintentar.
+  return status >= 500 ? CONNECT_ERROR : LOGIN_FAILED;
 }
 
 export function loginOutcome(status: number, data: AuthMessageData): LoginOutcome {

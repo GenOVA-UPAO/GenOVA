@@ -7,6 +7,7 @@ from users.interface.http.settings_enabled_models_router import router as enable
 from users.interface.http.settings_links_admin_router import router as links_admin_router
 from users.interface.http.settings_links_router import router as links_router
 from users.interface.http.settings_llm_settings_router import router as llm_settings_router
+from users.interface.http.settings_model_test_router import router as model_test_router
 from users.interface.http.settings_ova_settings_router import router as ova_settings_router
 from users.interface.http.settings_profile_router import router as profile_router
 from users.interface.http.settings_resource_configs_router import router as resource_configs_router
@@ -15,6 +16,7 @@ router = APIRouter()
 
 router.include_router(profile_router)
 router.include_router(llm_settings_router)
+router.include_router(model_test_router)
 router.include_router(enabled_models_router)
 router.include_router(ova_settings_router)
 router.include_router(api_keys_router)

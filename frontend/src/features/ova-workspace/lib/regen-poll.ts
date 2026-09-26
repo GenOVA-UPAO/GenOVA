@@ -1,10 +1,12 @@
-import type { RegenChatMessage } from "./regen-chat";
+import type { RegenChatMessage, RegenRagReport } from "./regen-chat";
 import { finishChatPatch, progressChatPatch } from "./regen-chat";
 
 export interface RegenProgressDto {
   percentage?: number;
   stage?: string;
   status?: string;
+  /** Material de referencia consultado (null hasta que el backend lo recupera). */
+  rag?: RegenRagReport | null;
 }
 
 interface PollDeps {
@@ -36,7 +38,7 @@ async function handleTerminalProgress(
   if (assistantId) {
     await d.patchChat(
       assistantId,
-      finishChatPatch(progress.status as "success" | "error", d.getAssistantLabels()),
+      finishChatPatch(progress.status as "success" | "error", d.getAssistantLabels(), progress.rag),
     );
   }
   d.onTerminal();

@@ -26,6 +26,7 @@ from generation.jobs.jobs_progress import (
     _safe_mark_error,
     _start_job,
 )
+from llm.utils.llm_helpers import with_owner
 from models import OvaJob
 
 logger = structlog.get_logger(__name__)
@@ -72,7 +73,11 @@ def _load_for_run(job_id: uuid.UUID) -> tuple[str, dict | None]:
         if job is None:
             return "", None
         _start_job(db, job)
-        return job.prompt or "", dict(job.params or {})
+        params = dict(job.params or {})
+        # Las elecciones de modelo con clave propia se pagan con esa clave: el
+        # motor la busca por el autor del job (nunca se guarda en los params).
+        params["llm_config"] = with_owner(params.get("llm_config"), job.user_id)
+        return job.prompt or "", params
     finally:
         db.close()
 

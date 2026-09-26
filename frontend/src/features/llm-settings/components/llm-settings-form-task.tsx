@@ -1,26 +1,19 @@
 import { Button } from "@/core/components/ui/button";
-import { Input } from "@/core/components/ui/input";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
+import { TASK_LABELS } from "../lib/llm-settings-labels";
 import { LlmSettingsModelSelect } from "./llm-settings-model-select";
+import { TimeoutField } from "./timeout-field";
 
 interface LlmSettingsFormTaskProps {
   tipo: string;
   locked: boolean;
 }
 
-const TASK_NAMES: Record<string, string> = {
-  texto: "Texto",
-  codigo: "Código / HTML interactivo",
-  orquestador: "Orquestador",
-  razonamiento: "Razonamiento",
-};
-
 export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTaskProps>) {
   const store = useLlmSettings();
   const cur = store.settings?.[tipo] ?? {};
-  const label = TASK_NAMES[tipo] ?? tipo;
-  const timeoutId = `llm-timeout-${tipo}`;
+  const label = TASK_LABELS[tipo] ?? tipo;
 
   return (
     <li className="space-y-2 py-3.5 first:pt-0 last:pb-0">
@@ -43,26 +36,19 @@ export function LlmSettingsFormTask({ tipo, locked }: Readonly<LlmSettingsFormTa
           <span className="text-xs text-muted-foreground">De la plataforma</span>
         ) : null}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-end gap-2">
         <LlmSettingsModelSelect tipo={tipo} label={label} locked={locked} />
-        <div className="flex shrink-0 items-center gap-1.5">
-          <Input
-            id={timeoutId}
-            type="number"
-            min={store.bounds[0]}
-            max={store.bounds[1]}
-            value={cur.timeout_s ?? ""}
-            disabled={locked}
-            aria-label={`Tiempo máximo de espera de ${label}, en segundos`}
-            onChange={(event) => {
-              store.setTipoTimeout(tipo, Number(event.target.value));
-            }}
-            className="h-9 w-[4.5rem] px-1.5 text-center tabular-nums max-sm:h-11"
-          />
-          <span className="text-xs text-muted-foreground" aria-hidden="true">
-            s
-          </span>
-        </div>
+        <TimeoutField
+          id={`llm-timeout-${tipo}`}
+          taskLabel={label}
+          value={cur.timeout_s}
+          min={store.bounds[0]}
+          max={store.bounds[1]}
+          disabled={locked}
+          onChange={(seconds) => {
+            store.setTipoTimeout(tipo, seconds);
+          }}
+        />
       </div>
     </li>
   );

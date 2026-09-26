@@ -34,6 +34,17 @@ class SystemRoleProtected(RoleError):
         super().__init__(detail)
 
 
+class RoleNameLocked(RoleError):
+    def __init__(
+        self,
+        detail: str = (
+            "El nombre de este rol no se puede cambiar: el registro en modo tesis "
+            "lo usa para asignar las cuentas nuevas."
+        ),
+    ) -> None:
+        super().__init__(detail)
+
+
 class ReassignmentRequired(RoleError):
     def __init__(self, user_count: int) -> None:
         super().__init__(
@@ -53,5 +64,16 @@ class InvalidReassignmentTarget(RoleError):
 class ReassignmentTargetNotFound(RoleError):
     def __init__(
         self, detail: str = "El rol de reasignación especificado no existe."
+    ) -> None:
+        super().__init__(detail)
+
+
+class RoleDeletionLocked(RoleError):
+    def __init__(
+        self,
+        detail: str = (
+            "Este rol no se puede eliminar: el registro en modo tesis lo asigna a "
+            "las cuentas nuevas."
+        ),
     ) -> None:
         super().__init__(detail)

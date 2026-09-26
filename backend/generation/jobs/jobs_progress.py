@@ -58,6 +58,17 @@ def _has_materializable_resource(db: Session, job_id: uuid.UUID) -> bool:
     )
 
 
+def _stuck_generating(ova) -> bool:
+    """El OVA sigue en 'generando' por este job y no por una regeneración.
+
+    La generación inicial deja current_version_id en NULL hasta materializar (en
+    el mismo commit que cambia el estado). Con versión y en 'generando', lo que
+    está en marcha es una regeneración: repararlo la rompería, y comprobarlo con
+    FOR UPDATE esperaría a que termine.
+    """
+    return ova is not None and ova.status == "generando" and ova.current_version_id is None
+
+
 def _release_ova_from_generating(db: Session, job: OvaJob) -> None:
     """Saca el placeholder de 'generando' sin tocar job.status.
 
@@ -70,8 +81,15 @@ def _release_ova_from_generating(db: Session, job: OvaJob) -> None:
         return
     from models import Ova as _Ova
 
-    ova = db.get(_Ova, job.ova_id)
-    if ova is None or ova.status != "generando":
+    # El runner (al terminar) y el stream de progreso (reparación) llegan aquí a
+    # la vez: sin bloquear la fila, los dos veían 'generando' y materializaban el
+    # OVA en paralelo → UniqueViolation uq_one_active_version_per_ova. Con FOR
+    # UPDATE el segundo espera y, al releer, ve que el primero ya lo resolvió.
+    if not _stuck_generating(db.get(_Ova, job.ova_id)):
+        return
+    ova = db.get(_Ova, job.ova_id, with_for_update=True, populate_existing=True)
+    if not _stuck_generating(ova):
+        db.commit()  # libera el bloqueo sin perder cambios pendientes de quien llama
         return
     if _has_materializable_resource(db, job.id):
         try:

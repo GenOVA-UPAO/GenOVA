@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, Request
 
 from auth.dependencies import get_current_user
 from core.rate_limit import limiter
+from llm.catalog.user_catalog import invalidate_user_catalog
 from llm.providers import ALL_PROVIDERS
 from models import User
 from users.application.dto import SaveApiKeysInput
@@ -52,4 +53,7 @@ def put_api_keys(
     except UserError as err:
         raise to_http_exception(err) from None
 
+    # La lista de modelos de ese proveedor se pidió con la clave anterior (o no
+    # hay clave ya): se vuelve a pedir en la próxima carga.
+    invalidate_user_catalog(current_user.id, set(payload) & set(ALL_PROVIDERS))
     return {"api_keys": api_keys}

@@ -2,12 +2,25 @@ import { Button } from "@/core/components/ui/button";
 
 import { useLlmSettings } from "../hooks/use-llm-settings";
 
-export function ManageModelsFooter() {
+interface ManageModelsFooterProps {
+  /** Quedan filas por pintar de las ya cargadas. */
+  hasMoreRows: boolean;
+  onShowMore: () => void;
+}
+
+/**
+ * Pie de la lista: más filas (se pintan solas al bajar; el botón es para
+ * teclado y lectores de pantalla) o más páginas del servidor si el catálogo
+ * no cupo en una.
+ */
+export function ManageModelsFooter({ hasMoreRows, onShowMore }: Readonly<ManageModelsFooterProps>) {
   const store = useLlmSettings();
-  if (store.loadingMore) {
+  if (hasMoreRows) {
     return (
       <div className="flex justify-center py-4">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-primary" />
+        <Button variant="ghost" size="sm" className="text-muted-foreground max-sm:h-11" onClick={onShowMore}>
+          Mostrar más modelos
+        </Button>
       </div>
     );
   }
@@ -15,20 +28,13 @@ export function ManageModelsFooter() {
     return (
       <div className="flex flex-col items-center gap-2 py-5">
         <p className="text-xs text-muted-foreground">
-          Mostrando {store.catalogFull.length} de {store.fullTotal} modelos
+          Cargados {store.catalogFull.length} de {store.fullTotal} modelos
         </p>
-        <Button variant="outline" onClick={store.loadMore}>
+        <Button variant="outline" className="max-sm:h-11" loading={store.loadingMore} onClick={store.loadMore}>
           Cargar más modelos
         </Button>
       </div>
     );
   }
-  if (store.catalogFull.length > 0) {
-    return (
-      <p className="py-4 text-center text-xs text-muted-foreground">
-        {store.catalogFull.length} modelos en total
-      </p>
-    );
-  }
-  return null;
+  return <p className="py-4 text-center text-xs text-muted-foreground">No hay más modelos.</p>;
 }

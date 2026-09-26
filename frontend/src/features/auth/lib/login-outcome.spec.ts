@@ -1,4 +1,4 @@
-import { TOO_MANY_ATTEMPTS } from "./auth-copy";
+import { CONNECT_ERROR, TOO_MANY_ATTEMPTS } from "./auth-copy";
 import { applyLoginOutcome } from "./login-outcome";
 
 describe("applyLoginOutcome", () => {
@@ -9,5 +9,9 @@ describe("applyLoginOutcome", () => {
   it("respeta el mensaje del backend cuando el 429 lo trae", () => {
     const message = "Demasiados intentos para esta cuenta. Espera un minuto.";
     expect(applyLoginOutcome(429, { message })).toEqual({ error: message });
+  });
+
+  it("con el servidor caído (5xx sin mensaje) pide reintentar en vez del genérico", () => {
+    expect(applyLoginOutcome(502, {})).toEqual({ error: CONNECT_ERROR });
   });
 });

@@ -1,6 +1,6 @@
 export const TASK_LABELS: Record<string, string> = {
   texto: "Texto",
-  codigo: "Código / HTML interactivo",
+  codigo: "Código / HTML",
   orquestador: "Orquestador",
   razonamiento: "Razonamiento",
 };
@@ -15,10 +15,11 @@ export const TYPE_LABELS: Record<string, string> = {
   video: "Video",
   embedding: "Embedding",
   audio: "Audio",
+  moderacion: "Moderación",
 };
 
 export const CATEGORY_LABELS: Record<string, string> = {
-  all: "Todas las categorías",
+  all: "Todos los proveedores",
   recommended: "Recomendados",
   groq: "Groq",
   openrouter: "OpenRouter",
@@ -35,4 +36,5 @@ export const CATEGORY_LABELS: Record<string, string> = {
   video: "Video",
   embedding: "Embedding",
   audio: "Audio",
+  moderacion: "Moderación",
 };

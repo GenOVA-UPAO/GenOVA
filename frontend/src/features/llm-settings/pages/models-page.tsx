@@ -1,6 +1,7 @@
 import { QueryErrorState } from "@/core/components/query-error-state";
 
 import { ManageModelsModal } from "../components/manage-models-modal";
+import { ModelsConfigTools } from "../components/models-config-tools";
 import { ModelsPageHeader } from "../components/models-page-header";
 import { ModelsPageTabs } from "../components/models-page-tabs";
 import { UnsavedChangesBar } from "../components/unsaved-changes-bar";
@@ -23,12 +24,25 @@ export function ModelsPage() {
   return (
     <LlmSettingsContext.Provider value={page.store}>
       <div className="mx-auto max-w-7xl space-y-6">
-        <ModelsPageHeader status={page.headerStatus} />
+        <ModelsPageHeader
+          status={page.headerStatus}
+          canEdit={page.canEdit}
+          actions={
+            page.isAdmin ? (
+              <ModelsConfigTools
+                dirty={page.admin.adminDirty}
+                onDiscardDraft={page.admin.discard}
+              />
+            ) : undefined
+          }
+        />
         <ModelsPageTabs
           activeTab={page.activeTab}
           onTabChange={page.setActiveTab}
           isAdmin={page.isAdmin}
           adminLoading={page.admin.loading}
+          adminError={page.admin.error}
+          onAdminRetry={page.admin.retry}
           tasks={page.admin.tasks}
           draft={page.admin.draft}
           adminModels={page.admin.models}
@@ -38,6 +52,8 @@ export function ModelsPage() {
           onOpenCatalog={() => {
             page.setManageOpen(true);
           }}
+          onConnectProvider={page.goToPlatformKey}
+          onGoToCredentials={page.goToApiKeys}
         />
         <ManageModelsModal
           open={page.manageOpen}
@@ -48,7 +64,7 @@ export function ModelsPage() {
         />
         {page.dirty ? (
           <UnsavedChangesBar
-            chainInvalid={page.chainInvalid}
+            blockingMessage={page.chainMessage}
             saving={page.admin.saving}
             onDiscard={page.discard}
             onSave={() => {
