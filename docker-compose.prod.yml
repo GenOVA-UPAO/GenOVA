@@ -4,6 +4,10 @@ services:
       context: .
       dockerfile: backend/Dockerfile.prod
     container_name: genova-backend-prod
+    # Un solo proceso uvicorn (Dockerfile.prod). Si se sube a varios
+    # (WEB_CONCURRENCY>1), define REDIS_URL en backend/.env y añade un servicio
+    # redis y el worker arq (backend/Dockerfile.worker): sin Redis el límite por IP
+    # queda por proceso; con Redis y sin worker la generación se queda en cola.
     env_file:
       - ./backend/.env
     ports:

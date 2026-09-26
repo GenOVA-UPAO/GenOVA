@@ -32,10 +32,10 @@ from rag.infrastructure.pgvector_store import (
     chunks_for_upload,
     insert_chunks,
     owned_upload_ids,
-    purge_expired,
     tie_uploads_to_ova,
     upload_ids_for_ova,
 )
+from rag.infrastructure.pgvector_store import purge_expired as _purge_expired_chunks
 
 logger = structlog.get_logger(__name__)
 
@@ -88,6 +88,21 @@ def retrieve_context(
     except Exception:  # noqa: BLE001 — el RAG nunca tumba la generación
         logger.exception("RAG: fallo al recuperar contexto; se sigue sin anclaje")
         return RetrievedContext()
+
+
+def purge_expired(db: Session) -> int:
+    """Borra los fragmentos caducados sin OVA y devuelve cuántos.
+
+    El backend lo llama al arrancar (`main._background_rag_purge`, en un hilo),
+    así que de paso avisa si quedan fragmentos embebidos con otro modelo: tras
+    cambiar de embedder hay que reindexarlos (`rag.reindex_notice`). El aviso
+    solo cuenta y nunca lanza; va después de purgar para no contar lo borrado.
+    """
+    from rag.reindex_notice import warn_if_stale_embeddings
+
+    removed = _purge_expired_chunks(db)
+    warn_if_stale_embeddings(db)
+    return removed
 
 
 def ingest_upload(

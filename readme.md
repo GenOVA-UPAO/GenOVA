@@ -59,7 +59,7 @@ Smoke tests manuales (playwright-cli, bloques A–F):
 | Backend | FastAPI + SQLAlchemy 2 + Uvicorn + SlowAPI. SSE (`sse-starlette`) para progreso; cola durable **arq + Redis** (opcional) con worker separado; observabilidad **Logfire** (opt-in) + Sentry |
 | Base de datos | Supabase (PostgreSQL + pgvector) vía `psycopg` |
 | Storage | Supabase Storage (`scorm-packages`) — fallback automático a disco local |
-| RAG | pgvector + Gemini `gemini-embedding-2-preview` (multimodal: texto + PDF + imagen + audio + video) |
+| RAG | pgvector + Gemini `gemini-embedding-2` (multimodal: texto + PDF + imagen + audio + video) |
 | LLMs | Groq SDK (GPT-OSS 120B/20B, Qwen3.8 27B, Whisper, Orpheus TTS) + OpenRouter (DeepSeek V4 Flash: free & paid fallback) con motor de validación y auto-reparación estructural de HTML |
 | Auth | JWT (HS256 con `iat`/`jti`/`iss`) + bcrypt + bloqueo por intentos fallidos |
 | Email | SMTP (Gmail por defecto) para restablecimiento de contraseña |
@@ -135,7 +135,7 @@ RAG_EMBEDDER=gemini                # default; alternativas: gemini-001, local
 GEMINI_API_KEY=<google-ai-studio>  # free tier: 100 RPM, 1000 RPD por proyecto
 ```
 
-> Modelo usado: **`gemini-embedding-2-preview`** (Public Preview, Mar 2026).
+> Modelo usado: **`gemini-embedding-2`** (GA; `RAG_GEMINI_MODEL` lo cambia).
 > Natively multimodal — PDF/imagen/audio/video se embeben directos sin Whisper
 > ni vision por separado. Matryoshka truncado a 768-d para encajar en
 > `vector(768)`. Fallback estable: `RAG_EMBEDDER=gemini-001` (text-only GA),
@@ -144,6 +144,44 @@ GEMINI_API_KEY=<google-ai-studio>  # free tier: 100 RPM, 1000 RPD por proyecto
 Primer arranque: aplica migraciones automáticamente — incluye `CREATE EXTENSION vector`. Verifica con `GET /api/rag/health` → `{ pgvector_ready: true }`.
 
 Para desactivar RAG por completo: `RAG_DISABLED=1`.
+
+#### Reindexar embeddings del RAG
+
+**Qué:** cada fragmento guarda en `rag_chunks.embedding_model` qué embedder lo
+generó (migración 043; `NULL` = anterior a ella). Si cambia el modelo
+(`gemini-embedding-2-preview` → `gemini-embedding-2`, v1 → v2, `RAG_EMBEDDER`,
+`RAG_GEMINI_MODEL`), los vectores guardados quedan en otro espacio: la búsqueda
+vectorial devuelve ruido **sin dar error** (la rama léxica lo disimula).
+
+**Cuándo:** tras el primer despliegue con un embedder nuevo. El backend lo
+detecta al arrancar: en la purga de fragmentos caducados cuenta los desfasados y
+registra un warning `RAG: hay fragmentos embebidos con otro modelo…` con
+`stale`, `total`, `by_model` y el comando. Solo cuenta: no re-embebe en el
+arranque (costaría cuota y dinero y retrasaría el servicio). Con 0 desfasados no
+dice nada.
+
+**Cómo** (desde `backend/`, con las variables de producción: `DATABASE_URL`,
+`GEMINI_API_KEY`, `RAG_EMBEDDER`/`RAG_GEMINI_MODEL` iguales que el servicio). En el
+plan free de Render no hay *Shell*: se lanza en local apuntando a la BD de producción
+(`DATABASE_URL` del pooler de Supabase):
+
+```bash
+python scripts/reindex_rag.py                    # ensayo: cuenta por modelo, no escribe ni llama a Gemini
+python scripts/reindex_rag.py --apply --limit 50 # prueba corta
+python scripts/reindex_rag.py --apply            # todo; idempotente y reanudable
+```
+
+Confirma cada lote: si se corta (cuota, red), se relanza y sigue por lo que
+falte. **Verificar:** repetir el ensayo → `Desfasados: 0`, y
+`GET /api/rag/health` → `embedding_model` igual al «Embedder activo» del ensayo.
+
+**Cuánto cuesta:** re-embebe el texto guardado de cada fragmento (≤ 800
+caracteres, ~200–250 tokens). Con `gemini-embedding-2` en el nivel de pago, el
+texto cuesta 0,20 USD por millón de tokens: 1 000 fragmentos ≈ 0,25 M tokens ≈
+0,05 USD; 10 000 ≈ 0,50 USD. En el nivel gratuito no se paga, pero consume la
+cuota diaria (si se agota, el script se detiene y se relanza al día siguiente).
+Un archivo embebido como binario (PDF, imagen, audio) se re-embebe por su texto
+extraído o su descripción, no por el binario.
 
 ### SMTP (restablecimiento de contraseña)
 
@@ -234,6 +272,19 @@ Usa `docker-compose.prod.yml` con Nginx como gateway en el puerto `80`. Las ruta
 **Despliegue cloud**: la topología recomendada es **frontend → Vercel**, **backend → Render**
 y **BD/Storage → Supabase** (Transaction pooler 6543 + bucket `scorm-packages`). La referencia
 completa de variables de entorno está en `backend/.env.example` y `frontend/.env.example`.
+
+**Un proceso o varios (`REDIS_URL`)**: `render.yaml` despliega un solo proceso web sin
+Redis. Así, los límites por email del login y de «Probar un modelo» se comparten en
+Postgres (`throttle_hits`) y el límite por IP de SlowAPI, en memoria, es exacto. Con
+varios procesos (`WEB_CONCURRENCY>1`, `uvicorn --workers N`) o instancias, `REDIS_URL`
+es **obligatorio**: sin él el límite por IP real es N veces mayor (el backend avisa al
+arrancar con `ENV=production`: `rate limits per process`). Ojo: con `REDIS_URL` la
+generación de OVA se encola en arq, así que hay que desplegar también el worker
+(`backend/Dockerfile.worker`). En Render el Key Value tiene plan free, pero el worker no
+(bloque comentado al final de `render.yaml`).
+
+**Tras desplegar un cambio de embedder**: reindexar el RAG (ver «Reindexar embeddings del
+RAG»); el backend lo avisa en los logs del arranque.
 
 ## Scripts disponibles (raíz)
 

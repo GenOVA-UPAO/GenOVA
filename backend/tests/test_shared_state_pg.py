@@ -1,6 +1,6 @@
 """Estado compartido entre procesos en Postgres (migración 042).
 
-Subidas temporales, ventana deslizante de «Probar un modelo», reclamo de videos
+Subidas temporales, ventanas deslizantes («Probar un modelo», login por email), reclamo de videos
 tardíos y tickets del login con 2FA. Dos «procesos» se simulan con dos
 instancias (cada `LateVideoClaims` tiene su propio dueño); lo que comparten es
 la base de datos, igual que dos workers de uvicorn.
@@ -123,6 +123,33 @@ def test_el_limite_de_probar_se_comparte_entre_procesos():
         proceso_a.reset(bucket)
     assert proceso_b.hit(bucket, who, 3, 60) == 0
     proceso_b.reset(bucket)
+
+
+def test_el_limite_de_login_por_email_se_comparte_entre_procesos():
+    from auth.infrastructure.email_throttle import EMAIL_LOGIN_MAX, EmailLoginWindow, _subject
+    from core.shared_throttle import PostgresWindow
+
+    email = f"login-{uuid.uuid4().hex[:10]}@test.local"
+    proceso_a = EmailLoginWindow(store=PostgresWindow())
+    proceso_b = EmailLoginWindow(store=PostgresWindow())
+    try:
+        # Alternando procesos los intentos se suman en una sola cuenta.
+        for i in range(EMAIL_LOGIN_MAX):
+            assert (proceso_a if i % 2 else proceso_b).throttled(email) is False
+        assert proceso_a.throttled(email) is True
+        assert proceso_b.throttled(email) is True
+        with engine.connect() as conn:
+            filas = conn.execute(
+                text("SELECT count(*) FROM throttle_hits WHERE bucket = :b AND subject = :s"),
+                {"b": EmailLoginWindow.BUCKET, "s": _subject(email)},
+            ).scalar()
+        assert filas == EMAIL_LOGIN_MAX  # los rechazados no se apuntan
+    finally:
+        with engine.begin() as conn:
+            conn.execute(
+                text("DELETE FROM throttle_hits WHERE bucket = :b AND subject = :s"),
+                {"b": EmailLoginWindow.BUCKET, "s": _subject(email)},
+            )
 
 
 # ── Reclamo de videos tardíos ──────────────────────────────────────────────────
