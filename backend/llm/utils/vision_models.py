@@ -26,6 +26,7 @@ import re
 import structlog
 
 from llm.catalog.catalog_aptitudes import split_modality
+from llm.utils.llm_helpers import _retry_after_seconds
 
 logger = structlog.get_logger(__name__)
 
@@ -36,6 +37,13 @@ _MAX_GROQ = 2
 # Modelos que razonan en voz alta (Qwen en Groq) devuelven el razonamiento
 # entre estas etiquetas dentro del texto: no es parte de la descripción.
 _THINK_BLOCK = re.compile(r"<think>.*?(</think>|$)", re.DOTALL | re.IGNORECASE)
+# Plan gratuito de Groq, medido el 2026-09-25 con qwen/qwen3.8-27b: 8000 tokens
+# por minuto y una imagen pequeña ya son ~1835 de entrada (más el tope de
+# salida, que Groq reserva al admitir la petición). La tercera imagen seguida
+# daba 429 «try again in 18.72s» (Retry-After: 19) y saltaba al respaldo de
+# pago. La ingesta del RAG va en segundo plano: esperar ese rato y repetir sale
+# gratis. Más de esto ya no es un bache sino la cuota agotada: al siguiente.
+MAX_RATE_LIMIT_WAIT_S = 30.0
 
 
 def parse_chain(raw: str | None) -> list[tuple[str, str]]:
@@ -100,6 +108,15 @@ def vision_chain() -> list[tuple[str, str]]:
         # Todos los configurados caducaron: mejor los del catálogo que ninguno.
         return [(p, m) for p, m in _default_chain(catalog) if _listed(catalog, p, m)]
     return usable
+
+
+def rate_limit_wait(exc: Exception) -> float | None:
+    """Segundos a esperar antes de repetir tras un 429 con un Retry-After corto
+    (None si no lo trae o es demasiado largo)."""
+    wait = _retry_after_seconds(exc)
+    if wait is None or wait < 0 or wait > MAX_RATE_LIMIT_WAIT_S:
+        return None
+    return wait
 
 
 def clean_description(text: str | None) -> str:

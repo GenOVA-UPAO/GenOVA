@@ -33,7 +33,7 @@ from llm.utils.llm_helpers import (
     with_model_thinking,
     with_thinking_disabled,
 )
-from llm.utils.vision_models import clean_description, vision_chain
+from llm.utils.vision_models import clean_description, rate_limit_wait, vision_chain
 
 # ── Re-export everything external callers depend on ───────────────────────────
 # Tests, catalog_refresh, admin router, and all llm/*_router.py files import
@@ -346,19 +346,35 @@ def generar_texto_with_model(
         return response.choices[0].message.content
 
 
-# Los modelos de Groq que razonan (Qwen) escriben su razonamiento antes de la
-# descripción y cuenta contra el tope: con 512 tokens podía no quedar nada.
-_VISION_GROQ_MIN_TOKENS = 2048
+# Tope de salida en Groq. Medido el 2026-09-25 (qwen/qwen3.8-27b, matriz de
+# confusión de prueba): 249-370 tokens de descripción, sin razonamiento ni
+# «<think>», en 1,1-3,2 s. Antes eran 2048 por si razonaba, pero su plan
+# gratuito reserva ese tope contra sus límites por minuto (8000 tokens en total
+# y 1000 de salida; con 900 la petición ya contaba 849 de salida): cuanto menor,
+# más imágenes seguidas caben antes del 429. 640 deja margen a las 250 palabras.
+_VISION_GROQ_MIN_TOKENS = 640
+# Esperas por 429 de Groq antes de pasar al respaldo de pago (ver rate_limit_wait).
+_VISION_GROQ_RATE_RETRIES = 2
 
 
 def _vision_once(provider: str, model_id: str, messages: list[dict], max_tokens: int, key: str) -> str:
     if provider == "groq":
-        response = groq_client.with_options(api_key=key).chat.completions.create(
-            model=model_id,
-            messages=messages,
-            max_completion_tokens=max(max_tokens, _VISION_GROQ_MIN_TOKENS),
-            timeout=_LLM_TIMEOUT_S,
-        )
+        for attempt in range(_VISION_GROQ_RATE_RETRIES + 1):
+            try:
+                response = groq_client.with_options(api_key=key).chat.completions.create(
+                    model=model_id,
+                    messages=messages,
+                    max_completion_tokens=max(max_tokens, _VISION_GROQ_MIN_TOKENS),
+                    timeout=_LLM_TIMEOUT_S,
+                )
+                break
+            except GroqRateLimitError as exc:
+                # Límite por minuto, no cuota agotada: se espera lo que pide.
+                wait = rate_limit_wait(exc)
+                if wait is None or attempt == _VISION_GROQ_RATE_RETRIES:
+                    raise
+                logger.info("vision: Groq rate limit — waiting", model_id=model_id, wait_s=wait)
+                time.sleep(wait)
     else:
         response = openrouter_client.with_options(api_key=key).chat.completions.create(
             model=model_id,

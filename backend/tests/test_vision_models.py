@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
+from groq import RateLimitError as GroqRateLimitError
 from openai import NotFoundError
 
 from llm import router
@@ -100,6 +101,8 @@ class _Client:
     def _create(self, *, model, messages, **kwargs):
         self.calls.append((model, kwargs))
         answer = self.answers[model]
+        if isinstance(answer, list):  # una respuesta por llamada, en orden
+            answer = answer.pop(0)
         if isinstance(answer, Exception):
             raise answer
         return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=answer))])
@@ -109,6 +112,13 @@ def _not_found():
     request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
     response = httpx.Response(404, request=request, json={"error": {"code": "model_not_found"}})
     return NotFoundError("model_not_found", response=response, body=None)
+
+
+def _rate_limited(retry_after: str | None):
+    request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+    headers = {"retry-after": retry_after} if retry_after else {}
+    response = httpx.Response(429, request=request, headers=headers, json={"error": {}})
+    return GroqRateLimitError("rate_limit_exceeded", response=response, body=None)
 
 
 def _install(monkeypatch, answers, chain):
@@ -158,3 +168,48 @@ def test_sin_clave_del_proveedor_se_salta(monkeypatch):
     monkeypatch.setattr(router, "_get_provider_key", lambda p: None if p == "groq" else "k")
     assert router.generar_vision([]) == "ok"
     assert [c[0] for c in calls] == ["b"]
+
+
+# Plan gratuito de Groq: 8000 tokens/min y ~1835 por imagen → la tercera imagen
+# seguida da 429 con Retry-After ~19 s (medido el 2026-09-25).
+def test_un_429_corto_de_groq_se_espera_en_vez_de_pagar_el_respaldo(monkeypatch):
+    calls = _install(
+        monkeypatch,
+        {"qwen": [_rate_limited("19"), "Una matriz de confusión."], "gemini": "de pago"},
+        [("groq", "qwen"), ("openrouter", "gemini")],
+    )
+    waits: list[float] = []
+    monkeypatch.setattr(router.time, "sleep", waits.append)
+    assert router.generar_vision([], max_tokens=512) == "Una matriz de confusión."
+    assert waits == [19.0]
+    assert [c[0] for c in calls] == ["qwen", "qwen"]
+    # Tope bajo: Groq lo reserva contra su límite de tokens por minuto.
+    assert calls[0][1]["max_completion_tokens"] == router._VISION_GROQ_MIN_TOKENS < 1000
+
+
+def test_un_429_largo_o_repetido_pasa_al_siguiente(monkeypatch):
+    waits: list[float] = []
+    calls = _install(
+        monkeypatch,
+        {"qwen": [_rate_limited("3600")], "gemini": "de pago"},
+        [("groq", "qwen"), ("openrouter", "gemini")],
+    )
+    monkeypatch.setattr(router.time, "sleep", waits.append)
+    assert router.generar_vision([]) == "de pago"
+    assert waits == [] and [c[0] for c in calls] == ["qwen", "gemini"]
+
+    retries = router._VISION_GROQ_RATE_RETRIES
+    calls = _install(
+        monkeypatch,
+        {"qwen": [_rate_limited("5") for _ in range(retries + 1)], "gemini": "de pago"},
+        [("groq", "qwen"), ("openrouter", "gemini")],
+    )
+    assert router.generar_vision([]) == "de pago"
+    assert waits == [5.0] * retries
+    assert [c[0] for c in calls] == ["qwen"] * (retries + 1) + ["gemini"]
+
+
+def test_rate_limit_wait():
+    assert vision_models.rate_limit_wait(_rate_limited("18.5")) == 18.5
+    assert vision_models.rate_limit_wait(_rate_limited(None)) is None
+    assert vision_models.rate_limit_wait(_rate_limited("120")) is None
