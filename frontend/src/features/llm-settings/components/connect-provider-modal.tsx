@@ -31,7 +31,7 @@ export function ConnectProviderModal({
       }}
     >
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader className="pr-8">
           <DialogTitle>Conectar proveedor</DialogTitle>
           <DialogDescription>
             {isAdmin

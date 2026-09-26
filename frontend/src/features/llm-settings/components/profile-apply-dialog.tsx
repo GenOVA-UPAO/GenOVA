@@ -39,7 +39,7 @@ export function ProfileApplyDialog({
       }}
     >
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+        <DialogHeader className="pr-8">
           <DialogTitle>¿Aplicar «{profile?.name}»?</DialogTitle>
           <DialogDescription>
             Cambia los modelos de toda la plataforma. Las generaciones lo notan en menos de un

@@ -46,7 +46,7 @@ export function ApplyModelForm({
 
   return (
     <>
-      <DialogHeader>
+      <DialogHeader className="pr-8">
         <DialogTitle>Usar {modelName} en otras tareas</DialogTitle>
         <DialogDescription>
           Elige a qué tareas de texto se copia. Nada cambia hasta que pulses «Guardar cambios».

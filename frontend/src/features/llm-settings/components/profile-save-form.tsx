@@ -41,7 +41,7 @@ export function ProfileSaveForm({
         submit();
       }}
     >
-      <DialogHeader>
+      <DialogHeader className="pr-8">
         <DialogTitle>Guardar como perfil</DialogTitle>
         <DialogDescription>
           Guarda el modelo principal y los de respaldo de cada tarea con un nombre, para volver a
