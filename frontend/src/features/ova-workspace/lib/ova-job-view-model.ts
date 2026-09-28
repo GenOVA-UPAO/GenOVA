@@ -101,11 +101,12 @@ export function humanizeResourceType(raw: string | number | null | undefined): s
     .join(" ");
 }
 
-const PHASES = ["engage", "explore", "explain", "elaborate", "evaluate"];
+/** Orden canónico de las fases 5E. */
+export const PHASE_ORDER = ["engage", "explore", "explain", "elaborate", "evaluate"];
 
 function buildLabelIndex(selections: Selections): Map<string, Partial<SelectionItem>> {
   const index = new Map<string, Partial<SelectionItem>>();
-  for (const phase of PHASES) {
+  for (const phase of PHASE_ORDER) {
     const resources = Object.hasOwn(selections, phase) ? selections[phase] : [];
     for (const r of resources) {
       index.set(`${phase}:${String(r.id)}`, { tipo: r.tipo, emoji: r.emoji });

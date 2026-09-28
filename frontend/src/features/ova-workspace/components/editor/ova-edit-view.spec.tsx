@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type * as jobsApi from "../../api/ova-jobs.api";
+import * as jobsApi from "../../api/ova-jobs.api";
 import * as api from "../../api/ova-workspace.api";
 import { OvaEditView } from "./ova-edit-view";
 
@@ -33,7 +33,7 @@ vi.mock("../../api/ova-workspace.api", async (original) => ({
 }));
 vi.mock("../../api/ova-jobs.api", async (original) => ({
   ...(await original<typeof jobsApi>()),
-  fetchOvaJobByOvaId: () => Promise.reject(new Error("No hay generación para este OVA.")),
+  fetchOvaJobByOvaId: vi.fn(() => Promise.reject(new Error("No hay generación para este OVA."))),
 }));
 vi.mock("../../api/workspace-chat.api", () => ({
   fetchWorkspaceChat: () => Promise.resolve({ messages: [] }),
@@ -67,7 +67,12 @@ async function setup() {
   await screen.findAllByRole("button", { name: "Regenerar recurso" });
 }
 describe("OvaEditView event wiring", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(jobsApi.fetchOvaJobByOvaId).mockRejectedValue(
+      new Error("No hay generación para este OVA."),
+    );
+  });
   it("renders header, version and accessible attachment action", async () => {
     await setup();
     expect(screen.getByRole("link", { name: /Mis OVAs/ })).toHaveAttribute("href", "/mis-ovas");
@@ -132,6 +137,43 @@ describe("OvaEditView event wiring", () => {
     await waitFor(() => {
       expect(api.addOvaPhase).toHaveBeenCalledWith("ova-1", "engage", "Una lectura");
     });
+    // El recurso nuevo solo trae un marcador: se genera de verdad al momento,
+    // con las instrucciones del docente, sin tener que pulsar «Regenerar».
+    await waitFor(() => {
+      expect(api.triggerOvaRegeneration).toHaveBeenCalledWith("ova-1", {
+        prompt: "Una lectura",
+        phaseIds: ["c"],
+        uploadIds: undefined,
+      });
+    });
+  });
+  it("tells the user when the new resource could not be generated", async () => {
+    vi.mocked(api.fetchRegenerationProgress).mockResolvedValueOnce({
+      status: "error",
+      percentage: 100,
+    });
+    await setup();
+    fireEvent.click(screen.getAllByRole("button", { name: "Añadir recurso a Enganche" })[0]);
+    fireEvent.change(await screen.findByLabelText("Instrucciones"), {
+      target: { value: "Una lectura" },
+    });
+    fireEvent.click(screen.getAllByRole("button", { name: "Añadir recurso" }).at(-1)!);
+    expect(await screen.findByText("La regeneración falló.")).toBeInTheDocument();
+  });
+  it("shows the phases chosen at creation even if they lost every resource", async () => {
+    vi.mocked(jobsApi.fetchOvaJobByOvaId).mockResolvedValue({
+      job_id: "job-1",
+      status: "done",
+      resources: [
+        { id: "r1", phase_type: "engage", phase_order: 0, resource_order: 0, status: "done" },
+        { id: "r2", phase_type: "explore", phase_order: 1, resource_order: 0, status: "error" },
+      ],
+    });
+    await setup();
+    expect(
+      await screen.findByRole("button", { name: "Añadir recurso a Exploración" }),
+    ).toBeVisible();
+    expect(screen.getByText("Esta fase no tiene recursos. Añade uno con tus instrucciones.")).toBeVisible();
   });
   it("keeps unsaved HTML when switching to the preview and back", async () => {
     await setup();

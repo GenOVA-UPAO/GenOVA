@@ -1,11 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
-import { fetchOvaJobByOvaId } from "../../api/ova-jobs.api";
+import { useOvaLatestJob } from "../../hooks/use-ova-latest-job";
 import type { JobSnapshot } from "../../lib/ova-job-view-model";
 
 const DISMISS_KEY = "genova:failed-job-notice-dismissed";
@@ -39,12 +38,7 @@ function rememberDismissed(jobId: string): void {
  * enlace lleva de vuelta a esa página, donde se pueden reintentar.
  */
 export function WorkspaceFailedJobNotice({ ovaId }: Readonly<{ ovaId: string }>) {
-  const lookup = useQuery({
-    queryKey: ["ova-job-by-ova", ovaId],
-    queryFn: () => fetchOvaJobByOvaId(ovaId),
-    // Un OVA sin job (duplicado, importado) responde 404: no hay nada que avisar.
-    retry: false,
-  });
+  const lookup = useOvaLatestJob(ovaId);
   const jobId = lookup.data?.job_id;
   const [dismissedId, setDismissedId] = useState<string | null>(null);
   const failed = failedResources(lookup.data);
