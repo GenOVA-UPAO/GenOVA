@@ -23,7 +23,7 @@ from llm.router import generar_texto
 from llm.utils.llm_helpers import _CODE_MAX_TOKENS
 from llm.utils.ova_runtime import inject_runtime, runtime_palette, strip_runtime, theme_of
 from llm.utils.utils import extract_html_document
-from ova.domain.editor import placeholder_prompt
+from ova import placeholder_prompt
 
 logger = structlog.get_logger(__name__)
 

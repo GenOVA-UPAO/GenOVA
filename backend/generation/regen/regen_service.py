@@ -28,8 +28,12 @@ from generation.regen.regen_jobs import (
 from generation.regen.regen_rag import build_regen_material
 from llm.utils.ova_runtime import theme_of
 from models import Ova, OvaPhase, OvaVersion
-from ova import ensure_version_exists, get_active_version, next_version_number
-from ova.domain.editor import placeholder_prompt
+from ova import (
+    ensure_version_exists,
+    get_active_version,
+    next_version_number,
+    placeholder_prompt,
+)
 
 logger = structlog.get_logger(__name__)
 
