@@ -1,7 +1,13 @@
 /** Phosphor icon class (without `ph ` prefix) for a resource `tipo` label. */
+const BOOK_ICON = "ph-book-open";
+const FLASK_ICON = "ph-flask";
+const GRAPH_ICON = "ph-graph";
+const CHAT_ICON = "ph-chat-circle";
+const CLIPBOARD_ICON = "ph-clipboard-text";
+
 const RESOURCE_ICON_BY_TIPO: Record<string, string> = {
   // Engage
-  "Cómic Interactivo": "ph-book-open",
+  "Cómic Interactivo": BOOK_ICON,
   "Storyboard de Video": "ph-film-strip",
   "Micro-Podcast": "ph-microphone",
   "Juego de Gamificación": "ph-game-controller",
@@ -12,20 +18,20 @@ const RESOURCE_ICON_BY_TIPO: Record<string, string> = {
   "Escape Room Virtual": "ph-door",
   "Simulador Intuitivo": "ph-cpu",
   // Explore
-  "Simulador Virtual Lab": "ph-flask",
-  "Agente Socrático": "ph-chat-circle",
+  "Simulador Virtual Lab": FLASK_ICON,
+  "Agente Socrático": CHAT_ICON,
   "Juego Drag & Drop": "ph-puzzle-piece",
   "Video con Pausa Activa": "ph-video-camera",
-  "Lectura Interactiva": "ph-book-open",
+  "Lectura Interactiva": BOOK_ICON,
   "Simulador de Slider": "ph-sliders-horizontal",
-  "Experimento Guiado": "ph-flask",
-  "Mapa Mental": "ph-graph",
-  "Lab de Hipótesis": "ph-flask",
+  "Experimento Guiado": FLASK_ICON,
+  "Mapa Mental": GRAPH_ICON,
+  "Lab de Hipótesis": FLASK_ICON,
   // Explain
   "Video Teórico": "ph-video-camera",
-  "Lectura Guiada": "ph-book-open",
-  "Mapa Conceptual": "ph-graph",
-  "FAQ Interactivo": "ph-chat-circle",
+  "Lectura Guiada": BOOK_ICON,
+  "Mapa Conceptual": GRAPH_ICON,
+  "FAQ Interactivo": CHAT_ICON,
   "Demo Animada": "ph-sparkle",
   "Glosario Visual": "ph-text-aa",
   "Línea de Tiempo": "ph-clock",
@@ -33,10 +39,10 @@ const RESOURCE_ICON_BY_TIPO: Record<string, string> = {
   "Tabla Comparativa": "ph-table",
   "Infografía Interactiva": "ph-presentation-chart",
   // Elaborate
-  "Estudio de Caso": "ph-clipboard-text",
+  "Estudio de Caso": CLIPBOARD_ICON,
   "Ejercicio Guiado": "ph-pencil-simple",
   "Mini-Proyecto": "ph-wrench",
-  "Simulación Aplicada": "ph-flask",
+  "Simulación Aplicada": FLASK_ICON,
   "Análisis de Datos": "ph-chart-line",
   "Escenario Ramificado": "ph-git-branch",
   "Lab de Código": "ph-code",
@@ -45,7 +51,7 @@ const RESOURCE_ICON_BY_TIPO: Record<string, string> = {
   "Reto de Diseño": "ph-blueprint",
   // Evaluate
   "Quiz Interactivo": "ph-exam",
-  "Rúbrica de Autoevaluación": "ph-clipboard-text",
+  "Rúbrica de Autoevaluación": CLIPBOARD_ICON,
   "Desafío Contrarreloj": "ph-timer",
   "Examen Opción Múltiple": "ph-list-checks",
   "Completar Espacios": "ph-text-t",
@@ -79,7 +85,7 @@ const DEFAULT_RESOURCE_ICON = "ph-squares-four";
 
 /** Returns a Phosphor class like `ph ph-microphone` for a resource tipo. */
 export function resourceIconClass(tipo: string | undefined | null): string {
-  const name = (tipo || "").trim();
+  const name = (tipo ?? "").trim();
   if (!name) return `ph ${DEFAULT_RESOURCE_ICON}`;
   const exact = RESOURCE_ICON_BY_TIPO[name];
   if (exact) return `ph ${exact}`;
@@ -99,4 +105,14 @@ export const PHASE_ICON_BY_KEY: Record<string, string> = {
 
 export function phaseIconClass(phaseKey: string): string {
   return `ph ${PHASE_ICON_BY_KEY[phaseKey] ?? "ph-circle"}`;
+}
+
+/** Slug para <Icon name> a partir de la clase de resourceIconClass ("ph ph-x" → "ph-x"). */
+export function resourceIconName(tipo: string | undefined | null): string {
+  return resourceIconClass(tipo).slice(3);
+}
+
+/** Slug para <Icon name> de la fase ("ph-target" → "target"). */
+export function phaseIconName(phaseKey: string): string {
+  return (PHASE_ICON_BY_KEY[phaseKey] ?? "ph-circle").replace(/^ph-/, "");
 }

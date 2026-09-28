@@ -32,7 +32,7 @@ Feature: Gestión de Usuarios y Roles
     Then el backend responde con 403 Forbidden indicando "No puedes modificar a un usuario administrador"
 
   Scenario: Restablecimiento de contraseña por correo
-    When hago clic en "Restablecer por Correo" del usuario "estudiante@upao.edu.pe"
+    When hago clic en "Restablecer por correo" del usuario "estudiante@upao.edu.pe"
     Then el backend genera un token de restablecimiento único
     And el servidor envía un correo electrónico automático a "estudiante@upao.edu.pe" desde "soporte.genova.upao@gmail.com"
     And el frontend muestra una notificación de éxito indicando que el correo fue enviado

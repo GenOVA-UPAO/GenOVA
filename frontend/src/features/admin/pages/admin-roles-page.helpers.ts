@@ -1,15 +1,12 @@
-export function getRoleColor(name: string): string {
-  switch (name.toLowerCase()) {
-    case "administrador":
-      return "bg-primary text-primary-foreground border-primary/20 shadow-md shadow-primary/20";
-    case "usuario":
-      return "bg-accent-brand text-white border-accent-brand/20 shadow-md shadow-accent-brand/20";
-    default:
-      return "bg-emerald-500 text-white border-emerald-500/20 shadow-md shadow-emerald-500/20";
-  }
-}
-
 export function isSystemRole(name?: string): boolean {
   if (!name) return false;
   return ["administrador", "usuario"].includes(name.toLowerCase());
+}
+
+/** El modo tesis asigna este rol a las cuentas nuevas buscándolo por su nombre. */
+export const TESIS_ROLE = "usuarios_prueba";
+
+/** El rol del modo tesis: no se renombra ni se elimina (el registro lo necesita). */
+export function isThesisRole(name?: string): boolean {
+  return name?.toLowerCase() === TESIS_ROLE;
 }

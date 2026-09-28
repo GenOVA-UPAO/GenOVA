@@ -24,11 +24,11 @@ const mk = (key: string, label: string, sub: string, color: string): PhaseSelect
 });
 
 export const PHASE_SELECT_CFG: PhaseSelectCfg[] = [
-  mk("engage", "ENGAGE", "Despierta curiosidad · activa saberes previos", "#EF4444"),
-  mk("explore", "EXPLORE", "Descubre patrones · construye hipótesis", "#3B82F6"),
-  mk("explain", "EXPLAIN", "Formaliza conceptos · consolida la teoría", "#F59E0B"),
-  mk("elaborate", "ELABORATE", "Aplica · transfiere a problemas reales", "#8B5CF6"),
-  mk("evaluate", "EVALUATE", "Verifica aprendizajes · reflexiona el proceso", "#10B981"),
+  mk("engage", "ENGAGE", "Despierta la curiosidad y activa saberes previos", "#EF4444"),
+  mk("explore", "EXPLORE", "Descubre patrones y construye hipótesis", "#3B82F6"),
+  mk("explain", "EXPLAIN", "Formaliza conceptos y consolida la teoría", "#F59E0B"),
+  mk("elaborate", "ELABORATE", "Aplica lo aprendido a problemas reales", "#8B5CF6"),
+  mk("evaluate", "EVALUATE", "Verifica aprendizajes y reflexiona sobre el proceso", "#10B981"),
 ];
 
 export type PhaseResourceMap = Record<string, Resource[]>;

@@ -1,0 +1,59 @@
+import { Icon } from "@/core/components/icon";
+import { Button } from "@/core/components/ui/button";
+import { Tooltip } from "@/core/components/ui/tooltip";
+
+import { OvaCardPrimaryAction } from "./ova-card-primary-action";
+
+interface OvaCardActionsProps {
+  ovaId: string;
+  isGenerating: boolean;
+  isReady: boolean;
+  isInterrupted?: boolean;
+  isDownloading?: boolean;
+  isDuplicating?: boolean;
+  canEdit?: boolean;
+  onDownload: () => void;
+  onResume?: (id: string) => void;
+}
+
+const ACTION_CLASS = "max-sm:h-11";
+
+/** Acciones visibles de la tarjeta: la principal y, si el OVA está listo, «Descargar». */
+export function OvaCardActions({
+  ovaId,
+  isGenerating,
+  isReady,
+  isInterrupted,
+  isDownloading,
+  isDuplicating,
+  canEdit,
+  onDownload,
+  onResume,
+}: Readonly<OvaCardActionsProps>) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <OvaCardPrimaryAction
+        ovaId={ovaId}
+        isGenerating={isGenerating}
+        isInterrupted={Boolean(isInterrupted)}
+        canEdit={canEdit}
+        className={ACTION_CLASS}
+        onResume={onResume}
+      />
+      {isReady && (
+        <Tooltip label="Paquete SCORM (.zip) para tu aula virtual" side="top">
+          <Button
+            variant="ghost"
+            className={ACTION_CLASS}
+            loading={isDownloading}
+            disabled={isDuplicating}
+            onClick={onDownload}
+          >
+            {!isDownloading && <Icon name="download-simple" size="text-base" />}
+            {isDownloading ? "Descargando..." : "Descargar"}
+          </Button>
+        </Tooltip>
+      )}
+    </div>
+  );
+}

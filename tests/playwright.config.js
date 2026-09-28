@@ -1,10 +1,12 @@
 import { defineConfig } from '@playwright/test'
 import { defineBddConfig } from 'playwright-bdd'
 
-// E2E_EXTERNAL=1 → corre contra un deploy real (Vercel/Railway develop): no se
-// levanta webServer y se envía el header de bypass de Vercel Deployment Protection.
-// BDD_TAGS filtra escenarios por tag Gherkin (p.ej. "@smoke" contra develop).
+// E2E_EXTERNAL=1 → no levanta webServer (frontend ya fuera, p.ej. Vite en :4300
+// o un deploy Vercel). El header de bypass de Vercel Deployment Protection
+// SOLO se envía si existe el secret: contra un backend local esas cabeceras
+// no están en CORS allow_headers y el preflight de /api/auth/me cae en 400.
 const external = process.env.E2E_EXTERNAL === '1'
+const vercelBypass = (process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? '').trim()
 
 // Paths are relative to this config file's directory (tests/)
 const testDir = defineBddConfig({
@@ -31,9 +33,9 @@ export default defineConfig({
     // es la evidencia que acompaña al reporte de pruebas e2e. En CI se conserva
     // solo la de los fallos para no inflar los artefactos de cada corrida.
     video: process.env.CI ? 'retain-on-failure' : 'on',
-    ...(external && {
+    ...(vercelBypass && {
       extraHTTPHeaders: {
-        'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? '',
+        'x-vercel-protection-bypass': vercelBypass,
         'x-vercel-set-bypass-cookie': 'true',
       },
     }),
@@ -41,12 +43,13 @@ export default defineConfig({
   reporter: [['html', { outputFolder: 'playwright-report' }]],
   webServer: external
     ? undefined
-    : {
+      : {
+        // Vite (`frontend` → `vite`), no `ng serve`. Cwd = raíz del monorepo
+        // para que `pnpm --filter` resuelva el workspace desde CI y local.
         command: 'pnpm --filter frontend dev',
+        cwd: '..',
         url: 'http://localhost:4200',
         reuseExistingServer: !process.env.CI,
-        // Angular CLI honors process.env.PORT; pin 4200 when backend sets PORT=8000 locally
-        env: { PORT: '4200' },
         timeout: 120000,
       },
 })

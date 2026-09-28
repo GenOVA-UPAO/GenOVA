@@ -8,72 +8,77 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import structlog
 
 from llm.catalog.catalog_refresh_providers import (
+    ProviderNotConfiguredError,
     _fetch_groq,
     _fetch_huggingface,
     _fetch_opencode,
     _fetch_openrouter,
     _load_cached,
+    has_platform_key,
 )
 
 logger = structlog.get_logger(__name__)
 
+PROVIDERS = ("openrouter", "groq", "opencode", "huggingface")
+_DATA_KEYS = {
+    "openrouter": "or_data",
+    "groq": "groq_ids",
+    "opencode": "opencode_ids",
+    "huggingface": "hf_ids",
+}
 
-def _gather_provider_data(db, timeout: float) -> tuple[dict, dict[str, str | None]]:
+
+def _gather_provider_data(
+    db, timeout: float
+) -> tuple[dict, dict[str, str | None], dict[str, bool]]:
     """Fetch every provider in parallel; fall back to the DB cache for any that
-    fail. Returns ({or_data, groq_ids, opencode_ids, hf_ids}, {provider: source}).
-    `source` is "api" | "cache" | None (None = no usable data → keep previous)."""
-    or_data: dict | None = None
-    groq_ids: set | None = None
-    opencode_ids: set | None = None
-    hf_ids: set | None = None
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        f_or = pool.submit(_fetch_openrouter)
-        f_groq = pool.submit(_fetch_groq)
-        f_oc = pool.submit(_fetch_opencode)
-        f_hf = pool.submit(_fetch_huggingface)
+    fail. Returns ({or_data, groq_ids, opencode_ids, hf_ids}, {provider: source},
+    {provider: configured}).
+
+    `source` is "api" | "cache" | None (None = no usable data → keep previous).
+    `configured` is False when the platform has no key for the provider: its
+    list was not fetched on purpose, which the UI shows as "not connected"
+    rather than as a failure. OpenRouter's list is public, so it is always
+    fetched, but it still counts as not connected without a key.
+    """
+    fetchers = {
+        "openrouter": _fetch_openrouter,
+        "groq": _fetch_groq,
+        "opencode": _fetch_opencode,
+        "huggingface": _fetch_huggingface,
+    }
+    results: dict[str, dict | set | None] = dict.fromkeys(PROVIDERS)
+    configured: dict[str, bool] = dict.fromkeys(PROVIDERS, True)
+    with ThreadPoolExecutor(max_workers=len(PROVIDERS) + 1) as pool:
+        futures = {pool.submit(fn): provider for provider, fn in fetchers.items()}
+        or_key = pool.submit(has_platform_key, "openrouter")
         try:
-            for future in as_completed([f_or, f_groq, f_oc, f_hf], timeout=timeout + 5):
-                if future is f_or:
-                    or_data = future.result()
-                elif future is f_groq:
-                    groq_ids = future.result()
-                elif future is f_oc:
-                    opencode_ids = future.result()
-                elif future is f_hf:
-                    hf_ids = future.result()
+            for future in as_completed(futures, timeout=timeout + 5):
+                provider = futures[future]
+                try:
+                    results[provider] = future.result()
+                except ProviderNotConfiguredError:
+                    configured[provider] = False
+                except Exception:
+                    logger.exception("model list fetch crashed", provider=provider)
         except TimeoutError:
             logger.exception("catalog provider fetch timed out")
+        try:
+            configured["openrouter"] = or_key.result(timeout=timeout)
+        except Exception:
+            logger.exception("platform key lookup timed out", provider="openrouter")
 
     sources: dict[str, str | None] = {
-        "openrouter": "api" if or_data is not None else None,
-        "groq": "api" if groq_ids is not None else None,
-        "opencode": "api" if opencode_ids is not None else None,
-        "huggingface": "api" if hf_ids is not None else None,
+        provider: "api" if results[provider] is not None else None for provider in PROVIDERS
     }
-    if or_data is None:
-        cached = _load_cached(db, "openrouter")
-        if cached is not None:
-            or_data, sources["openrouter"] = cached, "cache"
-    if groq_ids is None:
-        cached = _load_cached(db, "groq")
-        if cached is not None:
-            groq_ids, sources["groq"] = cached, "cache"
-    if opencode_ids is None:
-        cached = _load_cached(db, "opencode")
-        if cached is not None:
-            opencode_ids, sources["opencode"] = cached, "cache"
-    if hf_ids is None:
-        cached = _load_cached(db, "huggingface")
-        if cached is not None:
-            hf_ids, sources["huggingface"] = cached, "cache"
+    for provider in PROVIDERS:
+        if results[provider] is None:
+            cached = _load_cached(db, provider)
+            if cached is not None:
+                results[provider], sources[provider] = cached, "cache"
 
-    data = {
-        "or_data": or_data,
-        "groq_ids": groq_ids,
-        "opencode_ids": opencode_ids,
-        "hf_ids": hf_ids,
-    }
-    return data, sources
+    data = {_DATA_KEYS[provider]: results[provider] for provider in PROVIDERS}
+    return data, sources, configured
 
 
 def _dedupe_and_sort(full: list[dict]) -> list[dict]:
@@ -96,7 +101,11 @@ def _persist_api_cache(db, sources: dict[str, str | None], data: dict) -> None:
     if sources["openrouter"] == "api" and data["or_data"]:
         save_to_cache(db, "openrouter", {"models": data["or_data"]})
     if sources["groq"] == "api" and data["groq_ids"]:
-        save_to_cache(db, "groq", {"models": list(data["groq_ids"])})
+        groq = data["groq_ids"]
+        # `meta` (nombre, modalidades, contexto) sirve para no volver a ofrecer
+        # los modelos de voz como de texto cuando el catálogo sale de la caché.
+        meta = dict(groq) if isinstance(groq, dict) else None
+        save_to_cache(db, "groq", {"models": list(groq), "meta": meta})
     if sources["opencode"] == "api" and data["opencode_ids"]:
         save_to_cache(db, "opencode", {"models": list(data["opencode_ids"])})
     if sources["huggingface"] == "api" and data["hf_ids"]:

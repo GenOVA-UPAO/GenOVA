@@ -45,7 +45,7 @@ CREATE TABLE ova_job_resources (
   id TEXT PRIMARY KEY, job_id TEXT NOT NULL, phase_type VARCHAR(30) NOT NULL,
   phase_order INTEGER NOT NULL, resource_type VARCHAR(40),
   resource_order INTEGER NOT NULL DEFAULT 0, status VARCHAR(20) NOT NULL DEFAULT 'pending',
-  attempts INTEGER NOT NULL DEFAULT 0, error_id TEXT, ova_phase_id TEXT, content TEXT,
+  attempts INTEGER NOT NULL DEFAULT 0, error_id TEXT, defect_reason TEXT, ova_phase_id TEXT, content TEXT,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE ova_error_logs (
@@ -438,6 +438,7 @@ def incluye_status_error_id(payload):
     for r in payload["resources"]:
         assert "status" in r
         assert "error_id" in r
+        assert "defect_reason" in r
 
 
 @then("no incluye el contenido, el mensaje de excepción interno ni credenciales")
@@ -509,14 +510,9 @@ def construye_plan(ctx):
 @then("hay una fila por cada recurso elegido con su resource_type")
 def fila_por_recurso(plan):
     assert len(plan) == 6
-    assert [r["resource_type"] for r in plan] == [
-        "Cómic Interactivo",
-        "Micro-Podcast",
-        "5",
-        "Infografía Interactiva",
-        "Estudio de Caso",
-        "Rúbrica de Autoevaluación",
-    ]
+    # Los nombres se normalizan a su id: el motor indexa los recursos por id y
+    # un nombre llegaba hasta int(nombre) y tumbaba la generación.
+    assert [r["resource_type"] for r in plan] == ["1", "3", "5", "10", "1", "2"]
 
 
 @then("cada recurso conserva su fase y su orden dentro de la fase")

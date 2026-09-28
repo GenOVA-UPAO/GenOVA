@@ -75,3 +75,14 @@ def test_refine_disabled_is_noop(monkeypatch):
     out, remaining = refine_mod.refine_and_check(NOTICIA_ROTA, "engage", 6, "tema")
     assert out == NOTICIA_ROTA and remaining  # devuelve defectos sin llamar al LLM
     assert not called
+
+
+def test_refine_skips_llm_when_budget_exhausted(monkeypatch):
+    monkeypatch.setattr(refine_mod, "_refine_enabled", lambda: True)
+    called = []
+    monkeypatch.setattr(refine_mod, "apply_feedback", lambda *a, **k: called.append(1) or GOOD)
+    out, remaining = refine_mod.refine_and_check(
+        NOTICIA_ROTA, "engage", 6, "tema", deadline=0.0
+    )
+    assert out == NOTICIA_ROTA and remaining
+    assert not called

@@ -4,6 +4,8 @@ Subsets are derived from one canonical list so the text-config validators,
 the API-key slots and the env-var lookup never drift apart again.
 """
 
+import os
+
 # Every provider that can hold an API key (text + image generation).
 ALL_PROVIDERS = (
     "groq",
@@ -32,3 +34,12 @@ ENV_VARS: dict[str, str] = {
     # CF_ACCOUNT_ID is read separately inside _cloudflare(); this maps the token.
     "cloudflare": "CF_AI_API_KEY",
 }
+
+
+def env_configured_providers() -> list[str]:
+    """Providers with an API key in their environment variable.
+
+    The key resolver falls back to these when no platform key is saved, so the
+    admin UI must show them as connected instead of «Sin conectar».
+    """
+    return [p for p in ALL_PROVIDERS if os.getenv(ENV_VARS.get(p, ""), "").strip()]

@@ -1,6 +1,8 @@
 """Model categorization heuristics: maps raw OpenRouter/Groq modality + model_id
 keywords to GenOVA's normalized category set (texto/codigo/razonamiento/etc.)."""
 
+import re
+
 MODALITY_CATEGORY = {
     "text": "texto",
     "multimodal": "multimodal",
@@ -10,9 +12,19 @@ MODALITY_CATEGORY = {
     "video": "video",
 }
 
+# Clasificadores de seguridad: Llama Guard, Prompt Guard (Meta), gpt-oss-safeguard
+# (OpenAI), Granite Guardian (IBM). Ningún proveedor los marca como tales en su
+# listado (declaran «text->text» y Groq les pone contexto de sobra), así que el
+# id es la única señal: último recurso, comparado por segmentos del id. Se
+# ofrecen para moderar, no para escribir un recurso (responden «safe/unsafe»).
+_MODERATION_KEYWORDS = frozenset({"guard", "safeguard", "guardian"})
+
 # Model-id keywords that identify video-generation models whose declared
 # modality is still text->text in the provider listing (e.g. Kling on OpenRouter).
-_VIDEO_KEYWORDS = ("video", "kling", "sora", "veo")
+# Se comparan con los segmentos del id, no como subcadena: «inkling» (un modelo
+# de chat) contiene «kling» y acababa ofrecido como generador de video.
+_VIDEO_KEYWORDS = frozenset({"video", "kling", "sora", "veo"})
+_ID_SEPARATORS = re.compile(r"[/\-_.:]+")
 
 # Solo señales de modelos de código. Marcas generales (deepseek, claude, gpt-4…)
 # son LLMs de texto; meterlas aquí vaciaba el pool de asignación de «texto».
@@ -42,7 +54,10 @@ def categorize_model(api_entry: dict, provider: str = "") -> str:
     category = MODALITY_CATEGORY.get(parse_modality(api_entry), "texto")
     mid = (api_entry.get("id") or "").lower()
     if category in ("texto", "multimodal"):
-        if any(kw in mid for kw in _VIDEO_KEYWORDS):
+        segments = set(_ID_SEPARATORS.split(mid))
+        if _MODERATION_KEYWORDS & segments:
+            return "moderacion"
+        if _VIDEO_KEYWORDS & segments:
             return "video"
         if any(kw in mid for kw in _CODIGO_KEYWORDS):
             return "codigo"

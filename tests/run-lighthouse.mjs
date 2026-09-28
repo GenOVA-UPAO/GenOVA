@@ -1,78 +1,68 @@
 /**
- * Ejecuta Lighthouse contra TODO el frontend y guarda HTML/JSON + PNG de scores.
+ * Ejecuta Lighthouse (móvil + escritorio) contra rutas del frontend Vite y
+ * guarda los informes en tests/lighthouse-reports.
  *
- * IMPORTANTE — la métrica debe replicar PRODUCCIÓN, no el dev-server:
- *   - `ng serve` de desarrollo sirve un bundle SIN minificar (~8.5 MB) → score ~35.
- *   - `ng serve --configuration production` minifica pero NO comprime (gzip) →
- *     Lighthouse mide ~450 KB de JS en vez de ~148 KB → LCP/score inflados a la baja.
- *   Prod real (nginx `gzip on`, Vercel brotli) sirve estático COMPRIMIDO. Por eso
- *   este script hace `ng build` y sirve el dist con un server propio que:
- *     1) comprime con gzip como nginx,
- *     2) hace proxy de /api y /auth al backend (127.0.0.1:8000) para que el login
- *        y las páginas autenticadas funcionen,
- *     3) cae a index.html para el routing SPA.
- *   Con esto login/register/etc. puntúan ~90+ (representativo del deploy real).
+ * La métrica debe replicar PRODUCCIÓN, no el dev-server:
+ *   1) `pnpm --filter frontend build` y se sirve `frontend/dist` con un server
+ *      propio que comprime con gzip como nginx y cae a index.html (SPA).
+ *   2) El API está STUBEADO: las páginas autenticadas no dependen del backend.
+ *      El stub responde `/api/auth/me`, `/api/ovas`, `/api/ovas/papelera/count`
+ *      y `POST /api/auth/login`; el resto del API devuelve 404. La "sesión" se
+ *      activa con la cookie de stub `genova_lh_auth=1`, que el runner envía solo
+ *      en las rutas autenticadas vía `--extra-headers` (igual que el proxy+
+ *      cookies de la versión Angular): `/login` se audita como invitado y
+ *      `/dashboard` con sesión.
  *
- * Requisitos: backend corriendo en :8000 (uvicorn) para las rutas autenticadas.
- * Uso: node tests/run-lighthouse.mjs
+ * Requisitos: Chrome/Chromium local. En WSL, si chrome-launcher no lo
+ * encuentra, apunta CHROME_PATH al binario (el de Playwright sirve, véase
+ * fallbackChromePath()).
+ *
+ * Uso: node tests/run-lighthouse.mjs [/ruta1 /ruta2 …] [--no-build]
+ *   - Por defecto audita /login y /dashboard, cada una en móvil y escritorio.
+ *   - --no-build reutiliza frontend/dist sin recompilar.
+ * Salida: <ruta>-<dispositivo>.report.html/json + summary.json/md en
+ * tests/lighthouse-reports y la tabla de métricas por consola.
  */
-import { chromium } from '@playwright/test'
-import { createServer, request as httpRequest } from 'node:http'
-import { mkdir, writeFile, readFile, stat, rm } from 'node:fs/promises'
+import { createServer } from 'node:http'
+import { existsSync } from 'node:fs'
+import { mkdir, writeFile, readFile, stat, rm, readdir } from 'node:fs/promises'
+import { homedir } from 'node:os'
 import { gzipSync } from 'node:zlib'
 import path from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 import { spawn, spawnSync } from 'node:child_process'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const frontendDir = path.join(root, 'frontend')
-const distDir = path.join(frontendDir, 'dist/frontend-ng/browser')
-const outDir = path.join(root, 'docs/assets/usabilidad')
-const lhDir = path.join(root, 'tests/lighthouse-reports')
+const distDir = path.join(root, 'frontend', 'dist')
+const lhDir = path.join(root, 'tests', 'lighthouse-reports')
 
-const PORT = 4200
+// Puerto propio: NO reutiliza el :4200 del dev server/e2e (colisionaría y se
+// auditaría el bundle de desarrollo, no el de producción).
+const PORT = Number(process.env.GENOVA_LH_PORT || 4201)
 const HOST = `http://localhost:${PORT}`
-const BACKEND = process.env.GENOVA_TEST_BACKEND || 'http://127.0.0.1:8000'
-
-// Cobertura de TODO el frontend: cada página renderizable con URL propia (una
-// corrida Lighthouse por URL = scores independientes por página). Se ingresa como
-// admin para auditar también rutas autenticadas y de administración.
-//
-// Las rutas con :id (engage/:id, workspace/:id) se añaden dinámicamente en main()
-// tras el login (workspace necesita el id de una OVA real del admin).
-//
-// Excluidas a propósito: rutas que son solo redirect (crear-ova→crear,
-// modelos/fallback→models, admin/users→/admin, admin/platform→/models, legacy
-// metodologia/*, etc.) — auditarlas mediría la página destino, no una nueva.
-const pages = [
-  // Públicas / auth
-  { id: 'login', url: `${HOST}/login` },
-  { id: 'register', url: `${HOST}/register` },
-  { id: 'forgot-password', url: `${HOST}/forgot-password` },
-  { id: 'reset-password', url: `${HOST}/reset-password` },
-  { id: 'verify-email', url: `${HOST}/verify-email` },
-  { id: 'explore', url: `${HOST}/explore` },
-  { id: 'not-found', url: `${HOST}/ruta-inexistente-404` },
-  // Autenticadas (requieren cookie de admin)
-  { id: 'dashboard', url: `${HOST}/dashboard`, auth: true },
-  { id: 'mis-ovas', url: `${HOST}/mis-ovas`, auth: true },
-  { id: 'papelera', url: `${HOST}/papelera`, auth: true },
-  { id: 'crear', url: `${HOST}/crear`, auth: true },
-  { id: 'profile', url: `${HOST}/profile`, auth: true },
-  { id: 'analytics', url: `${HOST}/analytics`, auth: true },
-  { id: 'models', url: `${HOST}/models`, auth: true },
-  // /admin es la página de usuarios (path ""); /admin/users es solo un redirect.
-  { id: 'admin', url: `${HOST}/admin`, auth: true },
-  { id: 'admin-roles', url: `${HOST}/admin/roles`, auth: true },
+const STUB_COOKIE = 'genova_lh_auth=1'
+const DEFAULT_ROUTES = ['/login', '/dashboard']
+const DEVICES = [
+  { name: 'mobile', preset: [] },
+  { name: 'desktop', preset: ['--preset=desktop'] },
 ]
 
+function parseArgs(argv) {
+  const noBuild = argv.includes('--no-build')
+  const routes = argv.filter((a) => !a.startsWith('--')).map((r) => (r.startsWith('/') ? r : `/${r}`))
+  return { routes: routes.length > 0 ? routes : DEFAULT_ROUTES, noBuild }
+}
+
+/** "mis-ovas" → id de archivo seguro; "/" → "home". */
+function routeId(route) {
+  const clean = route.replace(/^\/+/, '').replace(/[^a-zA-Z0-9-]+/g, '-')
+  return clean === '' ? 'home' : clean
+}
+
 function buildProd() {
-  console.log('Compilando build de producción (ng build) …')
-  const r = spawnSync(process.execPath, [path.join(frontendDir, 'scripts/run-with-api-env.mjs'), 'build'], {
-    cwd: frontendDir,
-    stdio: 'inherit',
-  })
-  if (r.status !== 0) throw new Error('ng build falló')
+  console.log('Compilando frontend (pnpm --filter frontend build) …')
+  const r = spawnSync('pnpm --filter frontend build', { cwd: root, stdio: 'inherit', shell: true })
+  if (r.status !== 0) throw new Error('build del frontend falló')
 }
 
 const MIME = {
@@ -89,62 +79,61 @@ const MIME = {
 }
 const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.json', '.svg', '.txt'])
 
-/**
- * Reenvía /api y /auth al backend; reescribe cookies a localhost para que peguen.
- * Todo blindado: durante la auditoría Lighthouse recarga la página y aborta
- * requests en vuelo; un throw aquí (headers ya enviados, socket cerrado) mataría
- * el server y Lighthouse vería "Target closed". Nada debe tumbar el proceso.
- */
-function proxyToBackend(req, res) {
-  const target = new URL(BACKEND)
-  const proxied = httpRequest(
-    {
-      hostname: target.hostname,
-      port: target.port,
-      path: req.url,
-      method: req.method,
-      headers: { ...req.headers, host: target.host },
-    },
-    (pres) => {
-      if (res.writableEnded || res.headersSent) {
-        pres.resume()
-        return
-      }
-      // Headers tal cual (no tocar transfer-encoding/content-length: romper el
-      // framing hace que el browser nunca vea el fin de la respuesta → cuelga).
-      const headers = { ...pres.headers }
-      if (headers['set-cookie']) {
-        headers['set-cookie'] = headers['set-cookie'].map((c) => c.replace(/;\s*Domain=[^;]+/i, ''))
-      }
-      try {
-        res.writeHead(pres.statusCode ?? 502, headers)
-        pres.pipe(res)
-      } catch {
-        pres.resume()
-      }
-    },
-  )
-  const fail = () => {
-    try {
-      if (!res.headersSent) res.writeHead(502)
-      res.end('backend no disponible en ' + BACKEND)
-    } catch {
-      /* socket ya cerrado */
-    }
-  }
-  proxied.on('error', fail)
-  req.on('error', () => proxied.destroy())
-  res.on('error', () => proxied.destroy())
-  req.pipe(proxied)
+// Datos de ejemplo deterministas: el dashboard muestra tarjetas, actividad
+// reciente y panel admin; estados "listo" evitan el sondeo de jobs.
+const STUB_USER = {
+  id: 'stub-user-1',
+  role: 'administrador',
+  email: 'admin@genova.ai',
+  full_name: 'Admin GenOVA',
+  permissions: [],
+}
+const STUB_OVAS = ['Fotosíntesis interactiva', 'Sistema solar 5E'].map((title, i) => ({
+  id: `ova-stub-${i + 1}`,
+  title,
+  description: 'OVA de ejemplo generado para la auditoría de Lighthouse.',
+  status: 'listo',
+  created_at: '2026-09-01T10:00:00Z',
+  updated_at: '2026-09-10T10:00:00Z',
+  owner: { full_name: 'Admin GenOVA' },
+}))
+
+function sendJson(res, status, body) {
+  const buf = Buffer.from(JSON.stringify(body))
+  res.writeHead(status, {
+    'content-type': 'application/json; charset=utf-8',
+    'content-length': String(buf.length),
+    'cache-control': 'no-store',
+  })
+  res.end(buf)
 }
 
-/** Server estático que replica nginx prod: gzip + proxy API + fallback SPA. */
+function stubApi(req, res, pathname) {
+  const authed = (req.headers.cookie || '').includes(STUB_COOKIE)
+  if (pathname === '/api/auth/me') {
+    return authed ? sendJson(res, 200, STUB_USER) : sendJson(res, 401, { detail: 'No autenticado (stub)' })
+  }
+  if (pathname === '/api/auth/login' && req.method === 'POST') {
+    return sendJson(res, 200, { message: 'Sesión iniciada (stub)' })
+  }
+  if (pathname === '/api/ovas' || pathname === '/api/ovas/papelera') {
+    if (!authed) return sendJson(res, 401, { detail: 'No autenticado (stub)' })
+    return sendJson(res, 200, { ovas: STUB_OVAS, total_items: STUB_OVAS.length, total_pages: 1 })
+  }
+  if (pathname === '/api/ovas/papelera/count') {
+    if (!authed) return sendJson(res, 401, { detail: 'No autenticado (stub)' })
+    return sendJson(res, 200, { count: 0 })
+  }
+  return sendJson(res, 404, { detail: `stub: endpoint no simulado (${pathname})` })
+}
+
+/** Server estático que replica nginx prod: gzip + cache largo en /assets + SPA + stub del API. */
 function startStaticServer() {
   const server = createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://x')
       if (url.pathname.startsWith('/api') || url.pathname.startsWith('/auth')) {
-        return proxyToBackend(req, res)
+        return stubApi(req, res, url.pathname)
       }
       let fp = path.join(distDir, decodeURIComponent(url.pathname))
       // Sin stat previo (evita TOCTOU js/file-system-race): se intenta leer y se
@@ -158,6 +147,10 @@ function startStaticServer() {
       }
       const ext = path.extname(fp)
       const headers = { 'content-type': MIME[ext] || 'application/octet-stream' }
+      // Como nginx prod: assets con hash → caché inmutable; el resto, revalidar.
+      headers['cache-control'] = url.pathname.startsWith('/assets/')
+        ? 'public, max-age=31536000, immutable'
+        : 'no-cache'
       if ((req.headers['accept-encoding'] || '').includes('gzip') && COMPRESSIBLE.has(ext)) {
         headers['content-encoding'] = 'gzip'
         res.writeHead(200, headers)
@@ -167,49 +160,67 @@ function startStaticServer() {
         res.end(buf)
       }
     } catch {
-      res.writeHead(404)
-      res.end('not found')
+      try {
+        res.writeHead(404)
+        res.end('not found')
+      } catch {
+        /* socket ya cerrado */
+      }
     }
   })
-  return new Promise((resolve) => server.listen(PORT, () => resolve(server)))
+  return new Promise((resolve, reject) => {
+    server.on('error', (e) => {
+      const msg =
+        e?.code === 'EADDRINUSE'
+          ? `El puerto ${PORT} está ocupado. Libre con GENOVA_LH_PORT=<puerto>.`
+          : e?.message
+      reject(new Error(msg))
+    })
+    server.listen(PORT, () => resolve(server))
+  })
 }
 
-async function loginAndGetSession() {
-  const browser = await chromium.launch()
-  const context = await browser.newContext()
-  const page = await context.newPage()
-  await page.goto(`${HOST}/login`, { waitUntil: 'domcontentloaded' })
-  // Admin para cubrir rutas autenticadas + /admin en la auditoría.
-  await page.locator('#email, input[type=email]').first().fill('admin@genova.ai')
-  await page.locator('#password input, input[type=password]').first().fill('admin1234password')
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 20000 })
-
-  // Con la sesión viva, tomar el id de la primera OVA para poder auditar el
-  // editor (workspace/:id). Same-origin fetch → la cookie httpOnly viaja sola.
-  const ovaId = await page
-    .evaluate(async () => {
-      try {
-        const res = await fetch('/api/ovas?page=1&limit=1', { credentials: 'include' })
-        if (!res.ok) return null
-        const data = await res.json()
-        return data?.ovas?.[0]?.id ?? null
-      } catch {
-        return null
+/**
+ * chrome-launcher solo mira instalaciones de Chrome: si no hay, se recurre a
+ * Edge/Chrome en sus rutas estándar (Windows/macOS) o al chromium de la suite
+ * e2e de Playwright en WSL/Linux.
+ */
+async function fallbackChromePath() {
+  if (process.env.CHROME_PATH) return
+  const candidates = []
+  if (process.platform === 'win32') {
+    for (const base of ['C:\\Program Files', 'C:\\Program Files (x86)']) {
+      candidates.push(path.join(base, 'Google', 'Chrome', 'Application', 'chrome.exe'))
+      candidates.push(path.join(base, 'Microsoft', 'Edge', 'Application', 'msedge.exe'))
+    }
+    candidates.push(path.join(process.env.LOCALAPPDATA ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'))
+  } else if (process.platform === 'darwin') {
+    candidates.push('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
+    candidates.push('/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge')
+  } else {
+    const cache = path.join(homedir(), '.cache', 'ms-playwright')
+    try {
+      const dirs = (await readdir(cache)).filter((d) => d.startsWith('chromium-')).sort().reverse()
+      for (const d of dirs) {
+        for (const sub of await readdir(path.join(cache, d))) {
+          candidates.push(path.join(cache, d, sub, 'chrome'))
+        }
       }
-    })
-    .catch(() => null)
-
-  const cookies = await context.cookies()
-  await browser.close()
-  return { cookieHeader: cookies.map((c) => `${c.name}=${c.value}`).join('; '), ovaId }
+    } catch {
+      /* sin cache de playwright; chrome-launcher dará su propio error si no hay Chrome */
+    }
+  }
+  for (const bin of candidates) {
+    if (bin && existsSync(bin)) {
+      process.env.CHROME_PATH = bin
+      return
+    }
+  }
 }
 
 // Async (spawn, NO spawnSync): el server estático corre en ESTE mismo proceso;
-// spawnSync bloquearía el event loop y el server no respondería a Lighthouse
-// (la página colgaría). Con spawn el loop sigue libre para servir.
-async function runLh(url, id, extraFlags = []) {
-  const outBase = path.join(lhDir, id)
+// spawnSync bloquearía el event loop y el server no respondería a Lighthouse.
+async function runLh(url, base, extraFlags = []) {
   const args = [
     'lighthouse',
     url,
@@ -218,13 +229,13 @@ async function runLh(url, id, extraFlags = []) {
     '--only-categories=performance,accessibility,best-practices,seo',
     '--output=html',
     '--output=json',
-    `--output-path=${outBase}`,
+    `--output-path=${base}`,
     ...extraFlags,
   ]
-  console.log('Lighthouse', id, url)
+  console.log('Lighthouse', path.basename(base), '→', url)
   // Borrar el reporte previo para que el chequeo de "existe" tras un exit≠0 no
   // dé un falso positivo con un JSON viejo.
-  await rm(`${outBase}.report.json`, { force: true })
+  await rm(`${base}.report.json`, { force: true })
   return new Promise((resolve, reject) => {
     const proc = spawn('npx', args, { cwd: root, shell: true, stdio: 'inherit' })
     proc.on('error', reject)
@@ -232,91 +243,98 @@ async function runLh(url, id, extraFlags = []) {
       // chrome-launcher a veces sale con EPERM al borrar su temp dir en Windows
       // DESPUÉS de escribir el reporte. Si el JSON existe, la auditoría fue OK.
       if (code === 0) return resolve()
-      stat(`${outBase}.report.json`)
+      stat(`${base}.report.json`)
         .then(() => {
-          console.warn(`  (exit ${code} ignorado: reporte de ${id} sí se generó)`)
+          console.warn(`  (exit ${code} ignorado: reporte de ${path.basename(base)} sí se generó)`)
           resolve()
         })
-        .catch(() => reject(new Error(`Lighthouse failed for ${id}: ${code}`)))
+        .catch(() => reject(new Error(`Lighthouse failed for ${path.basename(base)}: ${code}`)))
     })
   })
 }
 
-async function shotScores(htmlPath, pngPath) {
-  const browser = await chromium.launch()
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
-  await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'networkidle', timeout: 60000 })
-  await page.waitForTimeout(1500)
-  await page.screenshot({ path: pngPath, fullPage: false })
-  await browser.close()
-  console.log('OK', pngPath)
+function fmtMs(v) {
+  return v >= 1000 ? `${(v / 1000).toFixed(1)} s` : `${Math.round(v)} ms`
+}
+
+/** Métricas del JSON de Lighthouse: score de rendimiento + FCP/LCP/TBT/CLS. */
+function extractMetrics(json) {
+  const a = json.audits || {}
+  return {
+    performance: Math.round((json.categories?.performance?.score || 0) * 100),
+    accessibility: Math.round((json.categories?.accessibility?.score || 0) * 100),
+    bestPractices: Math.round((json.categories?.['best-practices']?.score || 0) * 100),
+    seo: Math.round((json.categories?.seo?.score || 0) * 100),
+    fcpMs: a['first-contentful-paint']?.numericValue ?? 0,
+    lcpMs: a['largest-contentful-paint']?.numericValue ?? 0,
+    tbtMs: a['total-blocking-time']?.numericValue ?? 0,
+    cls: a['cumulative-layout-shift']?.numericValue ?? 0,
+  }
+}
+
+function buildSummaryTable(rows) {
+  const head =
+    '| Ruta | Dispositivo | Rendimiento | FCP | LCP | TBT | CLS |\n|---|---|---|---|---|---|---|'
+  const body = rows
+    .map(
+      (r) =>
+        `| ${r.route} | ${r.device} | ${r.performance} | ${fmtMs(r.fcpMs)} | ${fmtMs(r.lcpMs)} | ${fmtMs(r.tbtMs)} | ${r.cls.toFixed(3)} |`,
+    )
+    .join('\n')
+  return `${head}\n${body}\n`
 }
 
 async function main() {
-  await mkdir(outDir, { recursive: true })
+  const { routes, noBuild } = parseArgs(process.argv.slice(2))
   await mkdir(lhDir, { recursive: true })
 
-  buildProd()
+  if (noBuild) {
+    if (!existsSync(path.join(distDir, 'index.html'))) {
+      throw new Error('--no-build pero no existe frontend/dist/index.html; ejecuta el build antes')
+    }
+  } else {
+    buildProd()
+  }
+
+  await fallbackChromePath()
+  if (process.env.CHROME_PATH) console.log(`CHROME_PATH = ${process.env.CHROME_PATH}`)
+
+  // Cookie de sesión de stub, solo para las rutas autenticadas.
+  const hdrFile = path.join(lhDir, 'extra-headers.json')
+  await writeFile(hdrFile, JSON.stringify({ Cookie: STUB_COOKIE }), 'utf8')
+
   const server = await startStaticServer()
-  console.log(`Server estático (gzip + proxy → ${BACKEND}) en ${HOST}`)
+  console.log(`Server estático (gzip + SPA + stub del API) en ${HOST}`)
 
   try {
-    let cookieHeader = ''
-    let ovaId = null
-    try {
-      ;({ cookieHeader, ovaId } = await loginAndGetSession())
-    } catch (e) {
-      console.warn('Auth cookie failed (¿backend en :8000?):', e.message)
-    }
-
-    // Rutas con :id cableadas dinámicamente:
-    //  - engage/:id es pública e ignora el id (renderiza la fase ENGAGE) → siempre.
-    //  - workspace/:id (editor OVA) necesita un id real; solo si el admin tiene OVAs.
-    const allPages = [...pages, { id: 'engage', url: `${HOST}/engage/${ovaId ?? 'preview'}` }]
-    if (ovaId) {
-      allPages.push({ id: 'workspace', url: `${HOST}/workspace/${ovaId}`, auth: true })
-    } else {
-      console.warn('Skip workspace/:id — el admin no tiene OVAs para auditar el editor.')
-    }
-
-    const summary = []
-    for (const p of allPages) {
-      const extra = []
-      if (p.auth) {
-        if (!cookieHeader) {
-          console.warn('Skip', p.id)
-          continue
-        }
-        const hdrFile = path.join(lhDir, 'extra-headers.json')
-        await writeFile(hdrFile, JSON.stringify({ Cookie: cookieHeader }), 'utf8')
-        extra.push(`--extra-headers=${hdrFile}`)
+    const rows = []
+    for (const route of routes) {
+      const id = routeId(route)
+      const url = `${HOST}${route}`
+      const authed = !['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/explore'].some(
+        (p) => route === p || route.startsWith(`${p}/`),
+      )
+      for (const device of DEVICES) {
+        const base = path.join(lhDir, `${id}-${device.name}`)
+        const extra = [...device.preset, ...(authed ? [`--extra-headers=${hdrFile}`] : [])]
+        await runLh(url, base, extra)
+        const json = JSON.parse(await readFile(`${base}.report.json`, 'utf8'))
+        const metrics = extractMetrics(json)
+        rows.push({ route, device: device.name, url, ...metrics })
       }
-      await runLh(p.url, p.id, extra)
-      const html = path.join(lhDir, `${p.id}.report.html`)
-      const json = path.join(lhDir, `${p.id}.report.json`)
-      await shotScores(html, path.join(outDir, `lighthouse-${p.id}.png`))
-      const report = JSON.parse(await readFile(json, 'utf8'))
-      const cats = report.categories || {}
-      const row = {
-        id: p.id,
-        url: p.url,
-        performance: Math.round((cats.performance?.score || 0) * 100),
-        accessibility: Math.round((cats.accessibility?.score || 0) * 100),
-        bestPractices: Math.round((cats['best-practices']?.score || 0) * 100),
-        seo: Math.round((cats.seo?.score || 0) * 100),
-      }
-      summary.push(row)
-      console.log(JSON.stringify(row))
     }
 
-    await writeFile(path.join(outDir, 'lighthouse-summary.json'), JSON.stringify(summary, null, 2), 'utf8')
-    console.log('Summary written')
+    const table = buildSummaryTable(rows)
+    await writeFile(path.join(lhDir, 'summary.json'), JSON.stringify(rows, null, 2), 'utf8')
+    await writeFile(path.join(lhDir, 'summary.md'), table, 'utf8')
+    console.log('\n' + table)
+    console.log(`\nInformes en ${lhDir} (summary.json / summary.md)`)
   } finally {
     server.close()
   }
 }
 
-// Red de seguridad: un error tardío en un socket abortado (proxy/gzip durante
+// Red de seguridad: un error tardío en un socket abortado (gzip/SPA durante
 // una recarga de Lighthouse) no debe tumbar el server a mitad de auditoría.
 process.on('uncaughtException', (e) => console.warn('uncaughtException (ignorado):', e.message))
 

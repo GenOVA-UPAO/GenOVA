@@ -15,6 +15,7 @@ RUN printf '%s\n' \
       '  lmdb: true' \
       '  msgpackr-extract: true' \
       '  nx: false' \
+      '  unrs-resolver: true' \
       > pnpm-workspace.yaml
 
 RUN --mount=type=cache,id=pnpm-frontend,target=/root/.local/share/pnpm/store \
@@ -24,4 +25,6 @@ COPY . .
 
 EXPOSE 4200
 
+# Vite dev server en 0.0.0.0:4200. Nota: vite.config.ts actualmente proxia
+# /api y /auth a http://127.0.0.1:8000 por defecto.
 CMD ["pnpm", "dev", "--host", "0.0.0.0", "--port", "4200"]

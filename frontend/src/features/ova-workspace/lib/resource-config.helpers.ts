@@ -5,7 +5,7 @@ import { getDefaultConfig } from "./resource-config";
 export type ResourceConfigs = Record<string, Record<string, number>>;
 
 export function configKey(phaseKey: string, resourceId: string | number): string {
-  return `${phaseKey}:${resourceId}`;
+  return `${phaseKey}:${String(resourceId)}`;
 }
 
 export function getConfigForResource(

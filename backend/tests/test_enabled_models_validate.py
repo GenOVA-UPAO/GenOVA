@@ -3,7 +3,7 @@
 import pytest
 
 from llm.catalog.model_catalog import DEFAULTS
-from users.settings.enabled_models_router import _validate_enabled_models
+from users.interface.http.settings_enabled_models_router import _validate_enabled_models
 
 
 def _fake_full_catalog():
@@ -30,7 +30,7 @@ def _fake_full_catalog():
 
 def test_validate_accepts_unified_image_model(monkeypatch):
     monkeypatch.setattr(
-        "users.settings.enabled_models_router.get_full_catalog_entries",
+        "users.interface.http.settings_enabled_models_router.get_full_catalog_entries",
         _fake_full_catalog,
     )
     clean = _validate_enabled_models(
@@ -45,7 +45,7 @@ def test_validate_accepts_unified_image_model(monkeypatch):
 
 def test_validate_omits_disabled_non_default(monkeypatch):
     monkeypatch.setattr(
-        "users.settings.enabled_models_router.get_full_catalog_entries",
+        "users.interface.http.settings_enabled_models_router.get_full_catalog_entries",
         _fake_full_catalog,
     )
     # Only enable siliconflow — runware stays out (disabled).
@@ -58,7 +58,7 @@ def test_validate_omits_disabled_non_default(monkeypatch):
 
 def test_validate_rejects_unknown_model(monkeypatch):
     monkeypatch.setattr(
-        "users.settings.enabled_models_router.get_full_catalog_entries",
+        "users.interface.http.settings_enabled_models_router.get_full_catalog_entries",
         _fake_full_catalog,
     )
     with pytest.raises(ValueError, match="Modelo no reconocido"):
@@ -67,7 +67,7 @@ def test_validate_rejects_unknown_model(monkeypatch):
 
 def test_validate_reinjects_defaults_when_omitted(monkeypatch):
     monkeypatch.setattr(
-        "users.settings.enabled_models_router.get_full_catalog_entries",
+        "users.interface.http.settings_enabled_models_router.get_full_catalog_entries",
         _fake_full_catalog,
     )
     clean = _validate_enabled_models([])

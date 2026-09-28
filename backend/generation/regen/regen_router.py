@@ -6,16 +6,13 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import get_db
+from core.http_errors import forbidden_response
 from core.rate_limit import limiter
-from generation.regen.regen_jobs import regen_progress_dto, start_regen
-from generation.regen.regen_service import _finalize_edit
-from models import Ova, OvaPhase, User
-from ova.crud.edit_helpers import (
-    _ensure_version_exists,
-    _get_active_version,
-    _is_ova_owner,
-)
-from ova.helpers import forbidden_response
+from generation.regen.regen_jobs import recover_orphan_regen, regen_progress_dto, start_regen
+from generation.regen.regen_launcher import launch_regen
+from generation.regen.regen_rag import attach_to_ova
+from models import Ova, OvaPhase, OvaVersion, User
+from ova import ensure_version_exists, get_active_version, is_ova_owner
 
 router = APIRouter(tags=["Generación"])
 
@@ -23,6 +20,36 @@ router = APIRouter(tags=["Generación"])
 class RegenRequest(BaseModel):
     prompt: str | None = None
     fase_ids: list[str] = Field(default_factory=list)
+    # Archivos adjuntados con el clip del chat para ESTE cambio (HU-024). Se
+    # recuperan sus fragmentos relevantes (y los de los archivos que el OVA ya
+    # tenía) y se inyectan en el prompt de la regeneración.
+    upload_ids: list[str] = Field(default_factory=list, max_length=10)
+
+
+def _original_topic(ova_id: str, fallback: str | None, db: Session) -> str | None:
+    """Tema con el que se creó el OVA: el prompt de su primera versión.
+
+    Las regeneraciones crean la v2 en adelante y nunca tocan la v1, así que es
+    la única fuente del tema que no puede haberse contaminado. Leerla de ahí, y
+    no de la versión activa, también cura los OVAs cuya versión activa guardó
+    como tema un mensaje del chat antes de este arreglo.
+    """
+    first = db.execute(
+        select(OvaVersion.prompt)
+        .where(OvaVersion.ova_id == ova_id)
+        .order_by(OvaVersion.version_number)
+        .limit(1)
+    ).scalar_one_or_none()
+    return first or fallback
+
+
+def _still_generating(ova: Ova, db: Session) -> bool:
+    """«generando» de verdad, o una regeneración cuyo ejecutor murió (sin latido)
+    que se libera aquí mismo en vez de dejar el OVA bloqueado hasta un reinicio."""
+    if ova.current_version_id is None or not recover_orphan_regen(ova_id=ova.id):
+        return True
+    db.refresh(ova)
+    return ova.status == "generando"
 
 
 @router.post("/{ova_id}/regenerar", summary="Regenerar los recursos de una OVA")
@@ -44,10 +71,10 @@ def regenerate_ova(
             content={"error": "not_found", "message": "OVA no encontrado."},
         )
 
-    if not _is_ova_owner(ova, current_user):
+    if not is_ova_owner(ova, current_user):
         return forbidden_response("No tienes permiso para editar este OVA.")
 
-    if ova.status == "generando":
+    if ova.status == "generando" and _still_generating(ova, db):
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content={
@@ -56,9 +83,9 @@ def regenerate_ova(
             },
         )
 
-    active_version = _get_active_version(ova_id, db)
+    active_version = get_active_version(ova_id, db)
     if not active_version:
-        active_version = _ensure_version_exists(ova, db)
+        active_version = ensure_version_exists(ova, db)
 
     if payload.fase_ids:
         valid_phase_ids = {
@@ -79,15 +106,16 @@ def regenerate_ova(
 
     user_prompt = payload.prompt.strip() if payload.prompt and payload.prompt.strip() else None
 
-    # Edición puntual: hay recursos seleccionados + un mensaje de cambio. El
-    # mensaje es una INSTRUCCIÓN sobre el recurso actual, no el tema nuevo — se
-    # conserva el tema original del OVA para no reescribir título ni enfoque.
-    # "Regenerar OVA completo" (sin fase_ids) o sin mensaje = regen desde cero.
-    is_targeted_edit = bool(payload.fase_ids) and user_prompt is not None
-    instruction = user_prompt if is_targeted_edit else None
-    effective_prompt = (
-        active_version.prompt if is_targeted_edit else (user_prompt or active_version.prompt)
-    )
+    # El mensaje del chat es SIEMPRE una instrucción sobre el OVA, nunca el tema.
+    # Antes, sin recursos seleccionados, el mensaje sustituía al tema: el botón
+    # "Regenerar OVA completo" mandaba su propia etiqueta y el OVA de la Ley de
+    # Ohm pasaba a tratar sobre cómo regenerar un OVA. El tema se fija al crear
+    # el OVA y ninguna regeneración lo cambia:
+    #   - sin mensaje         → se regenera desde cero sobre el tema original;
+    #   - con mensaje         → se aplica el cambio partiendo del HTML actual;
+    #   - con fase_ids        → solo a esos recursos; sin ellos, a todos.
+    instruction = user_prompt
+    effective_prompt = _original_topic(ova_id, active_version.prompt, db)
 
     # Phases actually being regenerated: an explicit subset, else every phase of
     # the active version ("Regenerar OVA completo"). Used to pace the progress
@@ -102,14 +130,24 @@ def regenerate_ova(
             .where(OvaPhase.version_id == active_version.id)
         )
 
+    # Los adjuntos pasan a ser material del OVA desde ya: salen de la lista del
+    # chat y sus chunks quedan atados al OVA (no caducan en 1 h y los próximos
+    # cambios también pueden consultarlos).
+    attachments = (
+        attach_to_ova(db, str(current_user.id), ova_id, payload.upload_ids)
+        if payload.upload_ids
+        else []
+    )
+
     job_id = start_regen(
         db,
         ova,
         effective_prompt,
         payload.fase_ids,
         total_phases or 1,
-        worker=_finalize_edit,
+        worker=launch_regen,
         instruction=instruction,
+        attachments=attachments,
     )
 
     return JSONResponse(
@@ -141,7 +179,7 @@ def get_regen_progress(
             content={"error": "not_found", "message": "OVA no encontrado."},
         )
 
-    if not _is_ova_owner(ova, current_user):
+    if not is_ova_owner(ova, current_user):
         return forbidden_response()
 
     progress = regen_progress_dto(job_id, ova_id)

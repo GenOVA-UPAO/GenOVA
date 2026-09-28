@@ -14,14 +14,9 @@ export interface ConfigField {
   description: string;
 }
 
-const N = (
-  key: string,
-  label: string,
-  min: number,
-  max: number,
-  def: number,
-  desc = "",
-): ConfigField => ({
+type FieldArgs = [key: string, label: string, min: number, max: number, def: number, desc?: string];
+
+const N = (...[key, label, min, max, def, desc = ""]: FieldArgs): ConfigField => ({
   key,
   label,
   type: "number",
@@ -31,14 +26,7 @@ const N = (
   description: desc,
 });
 
-const V = (
-  key: string,
-  label: string,
-  min: number,
-  max: number,
-  def: number,
-  desc = "",
-): ConfigField => ({ ...N(key, label, min, max, def, desc), requiresVideo: true });
+const V = (...args: FieldArgs): ConfigField => ({ ...N(...args), requiresVideo: true });
 
 export const RESOURCE_CONFIG_SCHEMA: Record<string, ConfigField[]> = {
   // engage

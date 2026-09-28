@@ -1,7 +1,8 @@
 """Prompts for the 10 EVALUATE-phase resources (5E methodology).
 
 Each prompt fixes the resource FORMAT but adapts all assessments, quizzes and
-rubrics to whatever Machine Learning concept is passed in `concept`.
+rubrics to whatever DBMS (Sistemas de Gestión de Base de Datos) concept is passed
+in `concept`.
 """
 
 from prometheus.prompts._loader import render_codigo, render_html, render_texto

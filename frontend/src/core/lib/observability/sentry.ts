@@ -1,4 +1,4 @@
-// Optional Sentry error tracking for the Angular frontend.
+// Optional Sentry error tracking for the React frontend.
 //
 // Enabled when `window.__GENOVA_SENTRY_DSN__` is set before bootstrap (inject at deploy
 // time via index.html script or server-side HTML substitution from GENOVA_SENTRY_DSN).
@@ -15,7 +15,7 @@ declare global {
 function readDsn(): string | undefined {
   if (typeof window === "undefined") return undefined;
   const dsn = window.__GENOVA_SENTRY_DSN__?.trim();
-  return dsn || undefined;
+  return dsn === undefined || dsn.length === 0 ? undefined : dsn;
 }
 
 const DSN = readDsn();
@@ -28,10 +28,10 @@ export function isSentryEnabled(): boolean {
   return Boolean(DSN);
 }
 
-/** Initialize Sentry before `bootstrapApplication`. Resolves immediately when disabled. */
+/** Initialize Sentry lazily (off the critical path). Resolves immediately when disabled. */
 export function initSentry(): Promise<void> {
   if (!DSN) return Promise.resolve();
-  return import("@sentry/angular")
+  return import("@sentry/react")
     .then((Sentry) => {
       Sentry.init({
         dsn: DSN,
@@ -48,7 +48,7 @@ export function initSentry(): Promise<void> {
 /** Report a captured exception to Sentry. No-op when disabled. */
 export function captureException(error: unknown, context?: Record<string, unknown>): void {
   if (!DSN || !error) return;
-  import("@sentry/angular")
+  import("@sentry/react")
     .then((Sentry) => {
       Sentry.captureException(error, context ? { extra: context } : undefined);
     })

@@ -72,7 +72,7 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
             if html is not None:
                 title = (meta.get(rt) or {}).get("tipo", "")
                 results.append({"phase": phase, "html": html, "resource_type": rt, "title": title})
-                _persist_done(job_id, phase, rt, html)
+                _persist_outcome(job_id, phase, rt, html)
             else:
                 errors.append({"phase": phase, "resource_type": rt, "error": err})
 
@@ -136,17 +136,18 @@ def _persist_rag_context(job_id, contexto: str) -> None:
         db.close()
 
 
-def _persist_done(job_id, phase: str, rt, html: str) -> None:
-    """Mark the matching OvaJobResource row `done` the moment it succeeds.
+def _persist_outcome(
+    job_id, phase: str, rt, html: str, *, defects: list[str] | None = None
+) -> None:
+    """Persiste el HTML y el estado real: `done` solo si no hay defectos.
 
-    Matches the same (phase, resource_type) key the end reconciliation uses, so an
-    incrementally-persisted row is later skipped by _persist_results (status==done).
-    Only successes are written here; failures are left to end reconciliation so its
-    retry/error bookkeeping stays the single owner of that path. Best-effort: a
-    persistence failure never aborts generation.
+    Un recurso con HTML pero defectos estructurales queda `degraded` (reanudable,
+    contenido conservado). Failures sin HTML siguen en reconciliación final.
     """
     if not job_id:
         return
+    status = "done" if html and not defects else "degraded"
+    reason = "; ".join(d.strip() for d in (defects or []) if d.strip()) or None
     db = SessionLocal()
     try:
         rows = list(
@@ -172,9 +173,9 @@ def _persist_done(job_id, phase: str, rt, html: str) -> None:
             return
 
         target.content = html
-        target.status = "done"
+        target.status = status
+        target.defect_reason = reason
         target.attempts = (target.attempts or 0) + 1
-        # Heartbeat the parent job in the same transaction (see _touch_job).
         db.execute(
             update(OvaJob)
             .where(OvaJob.id == uuid.UUID(str(job_id)))
@@ -187,3 +188,8 @@ def _persist_done(job_id, phase: str, rt, html: str) -> None:
             db.rollback()
     finally:
         db.close()
+
+
+def _persist_done(job_id, phase: str, rt, html: str) -> None:
+    """Compat: éxito sin defectos. Preferir `_persist_outcome` con `defects`."""
+    _persist_outcome(job_id, phase, rt, html, defects=None)

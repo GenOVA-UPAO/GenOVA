@@ -34,6 +34,7 @@ services:
     environment:
       - CI=true
       - API_PROXY_TARGET=http://backend:8000
+      - GENOVA_DEV_BACKEND=http://backend:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules

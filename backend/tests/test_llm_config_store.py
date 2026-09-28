@@ -12,6 +12,13 @@ from llm import router
 from llm.utils import llm_config_store as store
 
 
+@pytest.fixture(autouse=True)
+def _todos_con_clave(monkeypatch):
+    """Todos los proveedores con clave de plataforma: la cadena no se filtra
+    (llm.chain_credentials) y el test no depende de las claves de la BD/entorno."""
+    monkeypatch.setattr(router, "_get_provider_key", lambda _p: "k")
+
+
 def test_sanitize_drops_invalid_keeps_valid():
     payload = {
         "defaults": {
@@ -21,7 +28,7 @@ def test_sanitize_drops_invalid_keeps_valid():
         },
         "fallbacks": {
             "codigo": [
-                {"provider": "groq", "model_id": "llama-3.3-70b-versatile"},
+                {"provider": "groq", "model_id": "openai/gpt-oss-120b"},
                 {"provider": "x", "model_id": "y"},  # se descarta
             ]
         },
@@ -233,6 +240,21 @@ def test_fallback_advances_on_empty_content(monkeypatch):
     assert router.generar_texto("p", "codigo", 100) == "<ok>"
 
 
+def test_fallback_cut_when_budget_exhausted(monkeypatch):
+    _admin(
+        monkeypatch,
+        {"codigo": {"provider": "openrouter", "model_id": "primary-x", "extra": {}}},
+        {"codigo": [{"provider": "groq", "model_id": "fb-y", "extra": {}}]},
+    )
+    monkeypatch.setattr(router, "openrouter_client", _ModelFake({"primary-x": ""}))
+    monkeypatch.setattr(router, "groq_client", _ModelFake({"fb-y": "<ok>"}))
+    ticks = iter([0.0, 80.0, 80.0, 80.0])
+    monkeypatch.setattr(router.time, "monotonic", lambda: next(ticks, 80.0))
+    with pytest.raises(router.EmptyContentError):
+        router.generar_texto("p", "codigo", 100, deadline=90.0)
+    # primary falló; el fallback groq no corre porque el presupuesto se agotó.
+
+
 def test_fallback_respects_order(monkeypatch):
     # primario vacío, fallback#1 vacío, fallback#2 responde → se usa el #2.
     _admin(
@@ -272,3 +294,16 @@ def test_primary_success_skips_fallback(monkeypatch):
     # openrouter_client lanzaría KeyError si se invocara → confirma que no se usa.
     monkeypatch.setattr(router, "openrouter_client", _ModelFake({}))
     assert router.generar_texto("p", "texto", 100) == "primario"
+
+
+def test_semillas_estan_en_el_catalogo_curado():
+    """Cada modelo semilla (primario o respaldo) tiene su entrada curada: al
+    retirar un proveedor un id, se cambia en los dos sitios o este test avisa.
+    Sin red: que el id exista hoy en el proveedor lo comprueba el refresco."""
+    from llm.catalog.providers_data import CATALOG_ENTRIES
+
+    curados = {(e["provider"], e["model_id"]) for e in CATALOG_ENTRIES}
+    semillas = {(p, m) for p, m, _ in router._SEED_MODELOS.values()}
+    for chain in router._SEED_FALLBACK_CHAIN.values():
+        semillas |= {(p, m) for p, m, _ in chain}
+    assert semillas - curados == set()

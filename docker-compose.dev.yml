@@ -1,0 +1,40 @@
+# Override para levantar el stack COMPLETO en local (sin Supabase): añade un
+# Postgres con pgvector y reapunta el backend a él por la red interna.
+#
+# Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db backend
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d          # + frontend
+#
+# Las migraciones y el seed corren solos al arrancar el backend (run_migrations()).
+# Cuentas seed: admin@genova.ai / admin1234password  ·  user@genova.ai / user1234password
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: genova-db-dev
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=genova
+      - POSTGRES_DB=genova
+    ports:
+      - '5433:5432'
+    volumes:
+      - genova-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d genova']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - genova-net
+
+  backend:
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Gana sobre env_file: dentro de la red de compose el host es `db`, no localhost.
+      - DATABASE_URL=postgresql+psycopg://postgres:genova@db:5432/genova
+
+volumes:
+  genova-db-data:

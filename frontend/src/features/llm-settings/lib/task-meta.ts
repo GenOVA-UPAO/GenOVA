@@ -91,8 +91,9 @@ export const TASK_META: Record<TaskType, TaskMeta> = {
 };
 
 export function taskMeta(task: string): TaskMeta {
+  const known: Partial<Record<string, TaskMeta>> = TASK_META;
   return (
-    TASK_META[task as TaskType] ?? {
+    known[task] ?? {
       label: task,
       desc: "",
       icon: "•",

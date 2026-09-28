@@ -17,7 +17,7 @@ import structlog
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
-from core.text import smart_truncate
+from core.text import ova_title
 from models import Ova, OvaJob, OvaJobResource, OvaPhase, OvaVersion
 from prometheus.prompts.elaborate_prompts import RECURSOS_META as ELABORATE_META
 from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
@@ -80,7 +80,7 @@ def materialize_partial_ova(
 
 def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uuid.UUID:
     prompt = job.prompt or ""
-    title = smart_truncate(prompt) or "OVA parcial"
+    title = ova_title(prompt) or "OVA parcial"
     total = db.execute(
         select(func.count()).select_from(OvaJobResource).where(OvaJobResource.job_id == job.id)
     ).scalar_one()
@@ -174,15 +174,15 @@ def _add_phases(db: Session, version_id, resources: list[OvaJobResource]) -> lis
 
 
 def _persist_scorm(ova: Ova, title: str, phases_data: list[dict], user_id: str) -> None:
-    from ova.router import _persist_scorm_zip
-    from scorm.service import build_scorm_zip_bytes
+    from ova import persist_scorm_zip
+    from scorm import build_scorm_zip_bytes
 
     zip_bytes = build_scorm_zip_bytes(
         course_title=title,
         module_title="OVA Generado por GenOVA",
         phases=phases_data,
     )
-    storage_key, file_path = _persist_scorm_zip(zip_bytes, user_id, str(ova.id), version=1)
+    storage_key, file_path = persist_scorm_zip(zip_bytes, user_id, str(ova.id), version=1)
     ova.storage_key = storage_key
     ova.file_path = file_path
 
@@ -192,7 +192,7 @@ def _tie_uploads(db: Session, job: OvaJob, ova_id: str) -> None:
     if not upload_ids:
         return
     try:
-        from rag.store import tie_uploads_to_ova
+        from rag import tie_uploads_to_ova
 
         tie_uploads_to_ova(db, upload_ids, ova_id)
     except Exception:

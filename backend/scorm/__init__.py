@@ -1,3 +1,9 @@
-from scorm.service import build_scorm_zip_bytes
+"""Dominio SCORM (arquitectura hexagonal — dominio puro).
 
-__all__ = ["build_scorm_zip_bytes"]
+API pública: `build_scorm_zip_bytes`, `DEFAULT_PHASES`.
+Router de health: `scorm.interface.http.router`.
+"""
+
+from scorm.domain import DEFAULT_PHASES, build_scorm_zip_bytes
+
+__all__ = ["DEFAULT_PHASES", "build_scorm_zip_bytes"]

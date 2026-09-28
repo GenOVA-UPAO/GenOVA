@@ -3,36 +3,23 @@
 Kept out of jobs_router so the router file stays a thin endpoint list.
 """
 
-import threading
 import uuid
 
-import structlog
 from fastapi import status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from core.config import settings
+from generation.infrastructure.job_launcher import launch_job
 from generation.jobs import jobs_service
 from generation.jobs.jobs_helpers import ResumeRequest
 from generation.jobs.jobs_model import JOB_TERMINAL
-from generation.jobs.jobs_runner import run_job
-
-logger = structlog.get_logger(__name__)
 
 
 def _launch(job_id: uuid.UUID, only: list[uuid.UUID] | None = None) -> None:
     """Start a generation run. With REDIS_URL set, enqueue on arq (durable, runs in
     the worker process); otherwise — or if enqueue fails — run inline in a daemon
     thread so local dev and a Redis outage still work (B2/B3)."""
-    if settings.redis_url:
-        try:
-            from generation.jobs.queue import enqueue_generation
-
-            enqueue_generation(job_id, only)
-            return
-        except Exception:
-            logger.exception("arq enqueue failed; running inline", job_id=job_id)
-    threading.Thread(target=run_job, args=(job_id, only), daemon=True).start()
+    launch_job(job_id, only)
 
 
 def _parse_uuid(raw: str) -> uuid.UUID | None:

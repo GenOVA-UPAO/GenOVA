@@ -4,7 +4,7 @@ template = '''
 [ROL] Guionista de cómics educativos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Guion de ${num_panels} viñetas con el robot "Max" que enganche al estudiante con "${concept}". Elige una analogía cotidiana concreta que capture fielmente la idea central de "${concept}" y construye una historia con progresión hacia un clímax que despierte curiosidad. Cada viñeta: descripcion_visual (≤25 palabras), dialogo (≤18 palabras), prompt_imagen (en inglés, estilo cartoon plano).
+[TAREA] Guion de ${num_panels} viñetas con el robot "Max", DBA de una pequeña empresa, que enganche al estudiante con "${concept}". Elige una analogía cotidiana concreta que capture fielmente la idea central de "${concept}" (p. ej. almacén con estantes y cajas para tablespaces/datafiles, biblioteca con fichero para índices, cola en un banco para bloqueos, cámara de seguridad para auditoría, caja fuerte con copias para backup) y construye una historia con progresión hacia un clímax que despierte curiosidad. Cada viñeta: descripcion_visual (≤25 palabras), dialogo (≤18 palabras), prompt_imagen (en inglés, estilo cartoon plano).
 [RESTRICCIONES] Sin jerga técnica en los diálogos. Humor empático. La analogía debe reflejar de verdad cómo funciona "${concept}".
 [SALIDA] JSON puro sin markdown: array de ${num_panels} objetos con claves "numero","descripcion_visual","dialogo","prompt_imagen".'''
 
@@ -12,6 +12,7 @@ template = '''
 defaults = { duration_seconds = 40 }
 template = '''
 [ROL] Guionista audiovisual de EdTech.
+[ALCANCE] No hay generador de video conectado. Entrega un storyboard de preproduccion y un prompt_video copiable para un generador externo; no describas ni propongas una simulacion, reproductor, avance o video incrustado.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Video de apertura de ${duration_seconds} s sobre "${concept}". Genera: guion_visual con marcadores de tiempo cada 10 s y metáforas cotidianas apropiadas al tema; narracion_voz ≤70 palabras que cierra con una pregunta abierta; prompt_video en inglés ≤90 palabras para un generador de video.
@@ -41,20 +42,20 @@ template = '''
 [texto.5]
 defaults = { num_options = 3 }
 template = '''
-[ROL] Redactor de casos de ética en IA.
+[ROL] Redactor de casos de ética y responsabilidad en la administración de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] caso_narrativo de 130 palabras sobre una empresa ficticia donde el uso de "${concept}" produce una consecuencia ética no intencionada y plausible; pregunta_posicion directa; opciones (array de ${num_options} strings); reflexion_post_voto de 60 palabras que amplía el dilema sin dar una respuesta correcta.
+[TAREA] caso_narrativo de 130 palabras sobre una empresa ficticia donde una decisión del DBA sobre "${concept}" produce una consecuencia ética no intencionada y plausible (p. ej. privacidad de datos personales, privilegios excesivos, auditoría que vigila de más o de menos, pérdida de datos por un backup omitido, bloqueos que frenan un servicio crítico); pregunta_posicion directa; opciones (array de ${num_options} strings); reflexion_post_voto de 60 palabras que amplía el dilema sin dar una respuesta correcta.
 [RESTRICCIONES] Empresa ficticia. Tono periodístico. La consecuencia debe derivarse de forma realista de cómo funciona "${concept}".
 [SALIDA] JSON puro con claves "caso_narrativo","pregunta_posicion","opciones","reflexion_post_voto".'''
 
 [texto.6]
 defaults = { body_words = 90 }
 template = '''
-[ROL] Periodista tecnológico especializado en IA.
+[ROL] Periodista tecnológico especializado en bases de datos e infraestructura.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Noticia ficticia plausible sobre un impacto real de "${concept}": titular ≤12 palabras; subtitulo ≤22 palabras; cuerpo_noticia de ${body_words} palabras (organización ficticia, caso concreto); pregunta_cierre ≤12 palabras.
+[TAREA] Noticia ficticia plausible sobre un impacto real de "${concept}" en una organización (p. ej. una caída evitada, una recuperación tras un fallo, una consulta que pasó de horas a segundos, una brecha de acceso detectada): titular ≤12 palabras; subtitulo ≤22 palabras; cuerpo_noticia de ${body_words} palabras (organización ficticia, caso concreto); pregunta_cierre ≤12 palabras.
 [RESTRICCIONES] Sin términos ultra-técnicos. Tono de urgencia informativa. Genera admiración, no miedo.
 [SALIDA] JSON puro con claves "titular","subtitulo","cuerpo_noticia","pregunta_cierre".'''
 
@@ -64,17 +65,17 @@ template = '''
 [ROL] Diseñador de aprendizaje basado en roles.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] El estudiante es consultor de IA en su primer día. contexto_rol de ${context_words} palabras (empresa de un sector concreto) donde "${concept}" resolvería un problema; pregunta_decision; opcion_A y opcion_B (cortas); feedback_A y feedback_B de 35 palabras (validan sin revelar la respuesta); pregunta_cierre ≤16 palabras.
+[TAREA] El estudiante es DBA junior en su primer día. contexto_rol de ${context_words} palabras (pequeña empresa de un sector concreto con su base de datos Oracle) donde "${concept}" resolvería un problema; pregunta_decision; opcion_A y opcion_B (cortas); feedback_A y feedback_B de 35 palabras (validan sin revelar la respuesta); pregunta_cierre ≤16 palabras.
 [RESTRICCIONES] No nombres explícitamente "${concept}" en el escenario. El feedback no revela la respuesta.
 [SALIDA] JSON puro con claves "contexto_rol","pregunta_decision","opcion_A","opcion_B","feedback_A","feedback_B","pregunta_cierre".'''
 
 [texto.8]
 defaults = { num_milestones = 4 }
 template = '''
-[ROL] Historiador de la tecnología.
+[ROL] Historiador de los sistemas de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Timeline de ${num_milestones} hitos reales (o muy plausibles) que llevaron al desarrollo de "${concept}". Cada hito: año, nombre, descripcion de 45 palabras en tono de crónica, dato_sorprendente (1 línea), conexion_actual de 18 palabras con la vida del estudiante hoy.
+[TAREA] Timeline de ${num_milestones} hitos reales (o muy plausibles) que llevaron al desarrollo de "${concept}" (p. ej. IMS de IBM, el modelo relacional de Codd en 1970, System R y SQL, Oracle en 1979, ANSI/SPARC, versiones de Oracle que introdujeron la función). Cada hito: año, nombre, descripcion de 45 palabras en tono de crónica, dato_sorprendente (1 línea), conexion_actual de 18 palabras con la vida del estudiante hoy.
 [RESTRICCIONES] Hechos verídicos o altamente plausibles. Sin fórmulas. Cada hito ≤22 s de lectura.
 [SALIDA] JSON puro con clave "hitos": array de ${num_milestones} objetos con "año","nombre","descripcion","dato_sorprendente","conexion_actual".'''
 
@@ -91,57 +92,51 @@ template = '''
 [simulador]
 defaults = { num_controls = 1 }
 template = '''
-[ROL] Desarrollador front-end de simuladores educativos interactivos.
+[ROL] Diseñador de simuladores intuitivos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Un simulador HTML5 autocontenido que provoque curiosidad: el estudiante manipula algo y ve el efecto, descubriendo la intuición central de "${concept}". Sin menciones a fases 5E ni jerga interna en el HTML visible.
-[TAREA] Diseña la mecánica interactiva más apropiada para "${concept}" (slider, lienzo clicable, arrastre, botones...). Debe incluir: ${num_controls} control(es) manipulable(s), una visualización que reacciona en tiempo real (SVG o canvas), retroalimentación visual del estado, y un texto breve que interpreta lo que ocurre. Un botón de cierre ("¿Qué descubriste?") visible tras explorar.
-[REQUISITOS] HTML5 autocontenido con todo CSS y JS embebido. Mínimo 280 líneas de calidad sin secciones vacías. Paleta oscura elegante (educativa oscura). El control manipulable debe responder en <50ms a la interacción.
+[TAREA] ${num_controls} controles propios con respuesta <50 ms para descubrir causa y efecto en "${concept}". Ideas del dominio: tamaño del buffer cache frente a lecturas en disco, dos sesiones que actualizan la misma fila y se bloquean, un tablespace que se llena al insertar filas, un usuario al que se le otorgan y revocan privilegios, una consulta que cambia de costo con o sin índice.
+[COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje observable; upao-figure con al menos un diagrama propio reactivo; upao-example con ejemplo trabajado de manipulación; upao-status para estado y retroalimentación que explique el porqué; upao-summary para cierre que consolide lo descubierto. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al pulsar el botón de cierre.
+[SCORM] ${scorm}. upao-complete en el cierre, desbloqueado tras explorar.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html]
 estilo_default = 'página educativa moderna e interactiva'
 template = '''
-[ROL] Desarrollador front-end experto en recursos educativos interactivos.
+[ROL] Desarrollador educativo.
 [CURSO] ${curso}
-[OBJETIVO] Construir un recurso HTML5 interactivo sobre "${concept}" que enganche al estudiante. El HTML visible no debe mencionar fases 5E (ENGAGE/EXPLORE/…) ni "FASE ·".
-[DATOS] Usa exactamente este contenido, sin inventar ni omitir datos:
+[OBJETIVO] Despertar curiosidad por "${concept}".
+[DATOS] Conserva estos datos; deriva de ellos el apoyo didáctico, sin añadir hechos:
 ${data_json}
+[VIDEO] Con "prompt_video": un storyboard, no un video generado. Guion, narración y prompt copiable; sin <video>, iframe, reproductor ni "Simulacion de video".
 [FORMATO] ${estilo}
-[REQUISITOS]
-- HTML5 autocontenido: todo el CSS en <style>, todo el JS en <script>.
-- Mínimo 280 líneas de calidad. Cada elemento debe ser funcional (navegación, botones, feedback, puntuación).
-- Paleta apropiada al tipo: cómic (clara vibrante), noticia (clara periodística), escape-room (oscura dramática),
-  podcast (UPAO: fondo claro #F7F9FC, primario #0A3D91, acento #F47A20), timeline (clara académica), juegos (clara con acentos).
+[COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje; upao-figure con al menos una figura/diagrama propio del contenido; upao-example para ejemplo trabajado cuando aplique; retroalimentación que explique el porqué; upao-summary para cierre que consolide. CSS/JS propio solo para la mecánica, sin redefinir tokens.
 ${ds}
-[IMAGENES] Si un item de los datos incluye un campo "image_placeholder" (por ejemplo "__IMG_1__"), úsalo literalmente como src del tag <img> correspondiente (por ejemplo: <img src="__IMG_1__" alt="...">). Si un item NO tiene "image_placeholder", NO inventes uno y NO incluyas <img> para ese item — renderiza solo texto. El servidor reemplaza los placeholders válidos por imágenes reales al renderizar.
-[SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la actividad principal.
+[IMAGENES] Usa image_placeholder literalmente como src con alt; sin él, no inventes img ni placeholders: dibuja SVG propio.
+[SCORM] ${scorm}. Desbloquea upao-complete al completar la actividad.
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html.estilos]
-1 = 'galería deslizable tipo cómic: tarjetas grandes de colores, bocadillos CSS, navegación prev/next con indicador de progreso'
-2 = 'storyboard vertical con marcadores de tiempo, narración en bloque de cita, prompt de video en una caja copiable'
-3 = 'reproductor de podcast con paleta UPAO (fondo #F7F9FC, textos #0A3D91, acentos #F47A20), visualizador de onda CSS animado y el monólogo en texto grande'
-4 = 'minijuego con cronómetro visual, panel de items cliqueables, puntuación dinámica y pantalla de resultados'
-5 = 'tarjeta periodística: caso narrativo, un botón de votación por cada opción del JSON, revelación animada de la reflexión post-voto'
-6 = 'periódico digital: titular bold, columna de noticia, pregunta de cierre resaltada, botón Continuar al final'
-7 = 'interfaz ejecutiva oscura: escenario narrativo, un botón por cada decisión del JSON, revelación animada del feedback'
-8 = 'timeline horizontal con un nodo clicable por cada hito del JSON que expande su información; se completa al abrirlos todos'
-9 = 'escape room: fondo oscuro, un candado SVG por cada acertijo del JSON que se abren progresivamente, un escenario por pantalla, botones A/B'
+1 = 'Cómic: upao-comic-panel, upao-nav, upao-progress. Relacionar analogía y concepto mediante esquema; explicar su límite al cierre.'
+2 = 'Storyboard: upao-steps con ol/li temporal, blockquote y copia del prompt. Interpretar metáfora mediante esquema; justificarla al cierre.'
+3 = 'Podcast: upao-podcast si hay audio, transcripción siempre. Explicar la analogía con esquema y ejemplo; reflexión justificada al cierre.'
+4 = 'Minijuego: upao-timer, upao-question, upao-choice, upao-score, upao-progress. Detectar patrón ilustrado; ronda resuelta previa; justificar aciertos y errores, repasar al cierre.'
+5 = 'Dilema: botones nativos de voto y upao-reveal posterior, sin correcto/incorrecto. Diagrama de consecuencias para argumentar; cierre con tensiones éticas razonadas.'
+6 = 'Noticia: analizar impacto con esquema causal y ejemplo del caso; upao-reveal explica la pregunta final y cierre con transferencia.'
+7 = 'Roles: botones de decisión y upao-reveal por opción. Diagrama de alternativas para anticipar efectos; justificar sin revelar solución; cierre reflexivo.'
+8 = 'Timeline: upao-node por hito, upao-nav, upao-progress; abrir todos. Esquema de evolución para relacionar hitos, ejemplo causal y síntesis de legado.'
+9 = 'Escape: candados SVG propios, upao-question, upao-choice, upao-status y upao-nav. Resolver lógica encadenada; ejemplo ajeno al acertijo, pistas causales y cierre con paralelismo.'
 
 # F1.3 single-step: recursos de texto simple van directo a HTML (1 llamada LLM).
 [codigo.6]
 defaults = { body_words = 90 }
 template = '''
-[ROL] Desarrollador front-end de piezas periodisticas educativas.
+[ROL] Periodista educativo especializado en bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Noticia ficticia plausible sobre un impacto real de "${concept}" como pagina HTML interactiva.
-[TAREA] Redacta e implementa en la MISMA pagina: titular <=12 palabras; subtitulo <=22 palabras; cuerpo de ${body_words} palabras (organizacion ficticia, caso concreto); pregunta de cierre <=12 palabras resaltada. Estilo periodico digital: titular bold, columna de noticia, boton "Continuar" al final que marca la actividad completada.
-[RESTRICCIONES] Sin terminos ultra-tecnicos. Tono de urgencia informativa que genera admiracion, no miedo.
-[REQUISITOS] HTML5+JS autocontenido y responsive.
+[TAREA] Noticia ficticia plausible sobre un impacto real de "${concept}" en una organización (caída evitada, recuperación tras un fallo, consulta optimizada, acceso indebido detectado): titular <=12 palabras, subtítulo <=22, cuerpo ${body_words} palabras, organización ficticia y pregunta final <=12. Admiración sin miedo ni jerga.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de analizar impacto; upao-figure: al menos un diagrama propio causal; upao-example: ejemplo trabajado del caso; upao-reveal: retroalimentación que explique el porqué; upao-summary: cierre que consolide impacto y límites. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
-[SCORM] Al final del <script>: ${scorm}. El boton "Continuar" llama _scormComplete().
+[SCORM] ${scorm}. upao-complete con label="Continuar".
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''

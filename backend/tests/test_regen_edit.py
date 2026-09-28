@@ -78,3 +78,73 @@ def test_regen_one_phase_routes_to_regen_without_instruction(monkeypatch):
     )
     _regen_one_phase(_Phase(), "tema", None, None, None, None)
     assert called == {"regen": True}
+
+
+# ── Recurso añadido con «Añadir recurso»: aún guarda el marcador pendiente ─────
+
+
+def _placeholder_phase(prompt: str = "un ejercicio práctico sobre el sobreajuste"):
+    from ova.domain.editor import placeholder_content
+
+    class _New:
+        id = "p-nuevo"
+        phase_type = "explore"
+        resource_type_id = None
+        content = placeholder_content(prompt)
+        title = None
+
+    return _New()
+
+
+def test_placeholder_prompt_reads_back_the_instructions():
+    from ova.domain.editor import placeholder_content, placeholder_prompt
+
+    assert placeholder_prompt(placeholder_content("  una lectura [con corchetes]  ")) == (
+        "una lectura [con corchetes]"
+    )
+    assert placeholder_prompt(_BASE_HTML) is None
+    assert placeholder_prompt("[Generado con prompt: x] otra cosa") is None
+    assert placeholder_prompt(None) is None
+
+
+def test_new_resource_is_generated_from_scratch_with_its_instructions(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(
+        regen_edit,
+        "edit_phase_content",
+        lambda *a, **kw: seen.setdefault("edit", True),
+    )
+
+    def fake_regen(phase_type, rtype, concept, *_a, **kw):
+        seen.update(phase_type=phase_type, rtype=rtype, concept=concept, theme=kw.get("theme"))
+        return "<html>nuevo</html>"
+
+    monkeypatch.setattr(regen_edit, "regenerate_phase_content", fake_regen)
+    theme = {"color": "free", "design": "free"}
+    out = _regen_one_phase(
+        _placeholder_phase(), "Aprendizaje supervisado", None, None, None, None, "", theme
+    )
+
+    assert out == "<html>nuevo</html>"
+    assert "edit" not in seen  # no «edita» el texto del marcador
+    assert seen["phase_type"] == "explore" and seen["rtype"]  # tipo por defecto de la fase
+    assert "Aprendizaje supervisado" in seen["concept"]
+    assert "un ejercicio práctico sobre el sobreajuste" in seen["concept"]
+    assert seen["theme"] == theme  # colores del resto del OVA
+
+
+def test_new_resource_prefers_the_request_instructions(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(regen_edit, "edit_phase_content", lambda *a, **kw: None)
+    monkeypatch.setattr(
+        regen_edit,
+        "regenerate_phase_content",
+        lambda _p, _r, concept, *a, **kw: seen.setdefault("concept", concept),
+    )
+    _regen_one_phase(_placeholder_phase("viejo"), "Tema", "un mapa conceptual", None, None, None)
+    assert "un mapa conceptual" in seen["concept"] and "viejo" not in seen["concept"]
+
+
+def test_new_resource_concept_without_instructions_keeps_topic():
+    assert regen_edit.new_resource_concept("Tema", "  ") == "Tema"
+    assert regen_edit.new_resource_concept("", "solo esto") == "solo esto"

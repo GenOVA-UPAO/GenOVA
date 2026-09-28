@@ -1,11 +1,13 @@
 import { preview, type ResourcePreviewInfo } from "./preview-types";
 
+const INTERACTIVE_HTML = "HTML + JS interactivo";
+
 export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "1": preview(
     "Cómic Interactivo",
     "Página HTML con viñetas clicables y una pregunta final.",
     "HTML + CSS interactivo",
-    ["3–5 paneles secuenciales", "Narración del concepto", "Pregunta de reflexión al cierre"],
+    ["De 3 a 5 viñetas en secuencia", "Narración del concepto", "Pregunta de reflexión al cierre"],
     "comic",
   ),
   "2": preview(
@@ -25,7 +27,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "4": preview(
     "Juego de Gamificación",
     "Mini-juego HTML con puntos o retos sobre el concepto.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Meta clara del juego", "Feedback al acertar/fallar", "Puntuación o progreso"],
     "game",
   ),
@@ -33,7 +35,7 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
     "Dilema Ético",
     "Escenario con opciones de decisión y consecuencias.",
     "HTML narrativo + elección",
-    ["Situación conflictiva", "2–3 opciones de acción", "Reflexión según la elección"],
+    ["Situación conflictiva", "2 o 3 opciones de acción", "Reflexión según la elección"],
     "decisions",
   ),
   "6": preview(
@@ -60,14 +62,14 @@ export const ENGAGE_PREVIEWS: Record<string, ResourcePreviewInfo> = {
   "9": preview(
     "Escape Room Virtual",
     "Retos encadenados para “escapar” aplicando el concepto.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Pistas y acertijos", "Progreso por salas", "Desbloqueo final"],
     "decisions",
   ),
   "10": preview(
     "Simulador Intuitivo",
     "Controles simples para experimentar el concepto sin fórmulas.",
-    "HTML + JS interactivo",
+    INTERACTIVE_HTML,
     ["Controles ajustables", "Resultado visual inmediato", "Insight guiado"],
     "lab",
   ),

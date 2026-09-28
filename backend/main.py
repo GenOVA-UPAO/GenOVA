@@ -17,7 +17,7 @@ from sqlalchemy.exc import DataError
 
 import models  # noqa: F401  — imported for side-effect of registering ORM models
 from auth.dependencies import require_admin
-from auth.router import router as auth_router
+from auth.interface.http.router import router as auth_router
 from core.config import settings
 from core.database import Base, engine
 from core.http_errors import data_error_handler
@@ -26,26 +26,27 @@ from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
+from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
 from llm.catalog.catalog_router import router as agents_router
-from ova.chat.router import router as ova_chat_router
-from ova.crud.edit_router import router as ova_edit_router
-from ova.crud.subelement_router import router as ova_subelement_router
-from ova.phases.add_phase_router import router as ova_add_phase_router
-from ova.phases.history_router import router as ova_history_router
-from ova.phases.phase_version_router import router as ova_phase_version_router
-from ova.router import router as ova_router
-from rag.router import router as rag_router
-from roles.router import router as roles_router
+from ova.interface.http.add_phase_router import router as ova_add_phase_router
+from ova.interface.http.chat_router import router as ova_chat_router
+from ova.interface.http.edit_router import router as ova_edit_router
+from ova.interface.http.history_router import router as ova_history_router
+from ova.interface.http.phase_version_router import router as ova_phase_version_router
+from ova.interface.http.router import router as ova_router
+from ova.interface.http.subelement_router import router as ova_subelement_router
+from rag.interface.http.router import router as rag_router
+from roles.interface.http.router import router as roles_router
 from run_migrations import run_migrations
-from scorm.router import router as scorm_router
+from scorm.interface.http.router import router as scorm_router
 from seed import seed_db
-from uploads.router import router as uploads_router
-from users.admin.list_router import router as users_list_router
-from users.admin.nodes_config_router import router as nodes_config_router
-from users.admin.platform_settings_router import router as platform_settings_router
-from users.router import router as users_router
+from uploads.interface.http.router import router as uploads_router
+from users.interface.http.admin_list_router import router as users_list_router
+from users.interface.http.admin_nodes_config_router import router as nodes_config_router
+from users.interface.http.admin_platform_settings_router import router as platform_settings_router
+from users.interface.http.router import router as users_router
 
 configure_logging(
     log_level=settings.log_level, env=settings.env, logfire_token=settings.logfire_token
@@ -71,7 +72,7 @@ def _background_rag_purge() -> None:
     try:
         from sqlalchemy.orm import Session
 
-        from rag.store import purge_expired
+        from rag import purge_expired
 
         with Session(engine) as session:
             removed = purge_expired(session)
@@ -85,7 +86,7 @@ def _background_auth_purge() -> None:
     try:
         from sqlalchemy.orm import Session
 
-        from auth.cleanup import purge_expired_auth
+        from auth.infrastructure.cleanup import purge_expired_auth
 
         with Session(engine) as session:
             removed = purge_expired_auth(session)
@@ -96,14 +97,25 @@ def _background_auth_purge() -> None:
 
 
 def _background_regen_recovery() -> None:
-    # Regen jobs live in an in-memory dict (one thread per regen); a restart
-    # loses them while ova.status stays "generando" in DB, bricking the OVA.
+    # Regeneraciones cuyo ejecutor murió (latido caducado en regen_jobs): se
+    # marcan interrumpidas y se libera el OVA. Las de otro proceso vivo no se tocan.
     try:
         from generation.regen.regen_jobs import recover_orphan_regen
 
         recover_orphan_regen()
     except Exception:
         logger.exception("Regen orphan recovery on startup failed (continuing).")
+
+
+def _background_late_video_recovery() -> None:
+    # Los videos tardíos se esperan en hilos en memoria: un reinicio los pierde
+    # y el recurso se quedaría con el aviso «en preparación» para siempre.
+    try:
+        from generation.infrastructure.late_video import recover_late_videos
+
+        recover_late_videos()
+    except Exception:
+        logger.exception("Late video recovery on startup failed (continuing).")
 
 
 def _background_catalog_refresh() -> None:
@@ -123,9 +135,14 @@ async def lifespan(_: FastAPI):
     run_migrations()
     Base.metadata.create_all(bind=engine)
     seed_db()
+    # El sumidero de los videos tardíos va antes de cualquier generación.
+    from generation.infrastructure.late_video import install_late_video
+
+    install_late_video()
     asyncio.create_task(asyncio.to_thread(_background_rag_purge))
     asyncio.create_task(asyncio.to_thread(_background_auth_purge))
     asyncio.create_task(asyncio.to_thread(_background_regen_recovery))
+    asyncio.create_task(asyncio.to_thread(_background_late_video_recovery))
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
     yield
 
@@ -165,9 +182,13 @@ else:
         "http://localhost:3000",
         "http://localhost:4173",
         "http://localhost:4200",
+        # :4300 es la segunda instancia de Vite que las suites e2e/QA levantan
+        # contra el backend determinista (LLM_FAKE=1).
+        "http://localhost:4300",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:4173",
         "http://127.0.0.1:4200",
+        "http://127.0.0.1:4300",
         *_extra,
     ]
 
@@ -268,6 +289,7 @@ app.include_router(users_list_router, prefix="/api/users")
 app.include_router(uploads_router, prefix="/api/uploads")
 app.include_router(platform_settings_router, prefix="/api/admin")
 app.include_router(nodes_config_router, prefix="/api/admin")
+app.include_router(guardrails_router, prefix="/api/admin")
 
 # Alias heredados: el recurso vivía en /api/ova (singular) y los trabajos colgaban
 # de /api/ova/jobs. Se mantienen fuera del esquema para no romper clientes ya

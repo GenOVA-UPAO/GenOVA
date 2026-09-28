@@ -5,8 +5,6 @@ import { EXPLAIN_PREVIEWS } from "./previews/explain";
 import { EXPLORE_PREVIEWS } from "./previews/explore";
 import type { ResourcePreviewInfo } from "./previews/preview-types";
 
-export type { ResourcePreviewInfo, WireframeKind } from "./previews/preview-types";
-
 const PREVIEWS_BY_PHASE: Record<string, Record<string, ResourcePreviewInfo>> = {
   engage: ENGAGE_PREVIEWS,
   explore: EXPLORE_PREVIEWS,
@@ -19,5 +17,11 @@ export function getResourcePreview(
   phaseKey: string,
   resourceId: string | number,
 ): ResourcePreviewInfo | null {
-  return PREVIEWS_BY_PHASE[phaseKey]?.[String(resourceId)] ?? null;
+  if (!Object.hasOwn(PREVIEWS_BY_PHASE, phaseKey)) return null;
+  return PREVIEWS_BY_PHASE[phaseKey][String(resourceId)] ?? null;
+}
+
+/** Nombres de todos los tipos de recurso del catálogo (tal como los envía el backend). */
+export function catalogResourceNames(): Set<string> {
+  return new Set(Object.values(PREVIEWS_BY_PHASE).flatMap((previews) => Object.values(previews).map((info) => info.label)));
 }

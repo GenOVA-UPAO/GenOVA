@@ -1,6 +1,6 @@
 export const TASK_LABELS: Record<string, string> = {
   texto: "Texto",
-  codigo: "Código / HTML interactivo",
+  codigo: "Código / HTML",
   orquestador: "Orquestador",
   razonamiento: "Razonamiento",
 };
@@ -15,10 +15,11 @@ export const TYPE_LABELS: Record<string, string> = {
   video: "Video",
   embedding: "Embedding",
   audio: "Audio",
+  moderacion: "Moderación",
 };
 
 export const CATEGORY_LABELS: Record<string, string> = {
-  all: "Todos",
+  all: "Todos los proveedores",
   recommended: "Recomendados",
   groq: "Groq",
   openrouter: "OpenRouter",
@@ -35,11 +36,5 @@ export const CATEGORY_LABELS: Record<string, string> = {
   video: "Video",
   embedding: "Embedding",
   audio: "Audio",
-};
-
-export const TASK_VISUAL: Record<string, { icon: string; bar: string; tint: string }> = {
-  texto: { icon: "Aa", bar: "bg-primary", tint: "bg-primary/[.04]" },
-  codigo: { icon: "</>", bar: "bg-accent-brand", tint: "bg-accent-brand/[.04]" },
-  orquestador: { icon: "🤖", bar: "bg-primary/60", tint: "bg-primary/[.04]" },
-  razonamiento: { icon: "🧠", bar: "bg-accent-brand/60", tint: "bg-accent-brand/[.04]" },
+  moderacion: "Moderación",
 };

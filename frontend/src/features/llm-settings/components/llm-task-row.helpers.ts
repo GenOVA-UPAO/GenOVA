@@ -6,10 +6,12 @@ export const TASK_LABELS: Record<string, string> = {
 };
 
 export const TASK_DESCS: Record<string, string> = {
-  texto: "Modelo principal utilizado para generar el contenido de los recursos educativos.",
-  codigo: "Especializado en generar estructuras HTML y recursos interactivos SCORM.",
-  orquestador: "Coordina los agentes secundarios para la generación paso a paso.",
-  razonamiento: "Se utiliza para evaluaciones complejas o toma de decisiones semánticas.",
+  texto: "Redacta el contenido de los recursos educativos del OVA.",
+  codigo: "Genera el HTML interactivo de cada recurso y el paquete SCORM.",
+  orquestador: "Planifica el OVA y coordina a los demás modelos paso a paso.",
+  razonamiento: "Resuelve evaluaciones y decisiones que requieren analizar el contenido.",
+  imagen: "Genera las imágenes de los recursos del OVA.",
+  video: "Genera los videos de los recursos del OVA.",
 };
 
 export const MODALITY_SYMBOLS: Record<string, string> = {

@@ -16,7 +16,8 @@ async function parseResponse(response: Response): Promise<unknown> {
     error?: string;
   };
   if (!response.ok) {
-    throw new Error(data?.message || "No se pudo completar la operación de archivos.");
+    if (data.message) throw new Error(data.message);
+    throw new Error("No se pudo completar la operación de archivos.");
   }
   return data;
 }

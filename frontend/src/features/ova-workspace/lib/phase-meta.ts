@@ -11,31 +11,34 @@ export interface PhaseMeta {
   badge: string;
 }
 
+const PRIMARY_BADGE = "bg-primary/10 text-primary border-primary/20";
+const ACCENT_BADGE = "bg-accent-brand/10 text-accent-brand border-accent-brand/25";
+
 const META: Record<string, PhaseMeta> = {
   engage: {
     label: "Enganche",
     tab: "bg-primary text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
+    badge: PRIMARY_BADGE,
   },
   explore: {
     label: "Exploración",
     tab: "bg-primary/85 text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
+    badge: PRIMARY_BADGE,
   },
   explain: {
     label: "Explicación",
     tab: "bg-primary/70 text-primary-foreground",
-    badge: "bg-primary/10 text-primary border-primary/20",
+    badge: PRIMARY_BADGE,
   },
   elaborate: {
     label: "Elaboración",
     tab: "bg-accent-brand/85 text-primary-foreground",
-    badge: "bg-accent-brand/10 text-accent-brand border-accent-brand/25",
+    badge: ACCENT_BADGE,
   },
   evaluate: {
     label: "Evaluación",
     tab: "bg-accent-brand text-primary-foreground",
-    badge: "bg-accent-brand/10 text-accent-brand border-accent-brand/25",
+    badge: ACCENT_BADGE,
   },
 };
 
@@ -56,6 +59,8 @@ export const DEFAULT_PHASE_META: PhaseMeta = {
 
 /** Metadatos de una fase por clave en inglés o español; fallback neutro con la clave como label. */
 export function phaseMeta(key: string): PhaseMeta {
-  const canonical = META[key] ?? META[ALIASES[key]];
-  return canonical ?? { ...DEFAULT_PHASE_META, label: key };
+  const canonicalKey = ALIASES[key] ?? key;
+  return Object.hasOwn(META, canonicalKey)
+    ? META[canonicalKey]
+    : { ...DEFAULT_PHASE_META, label: key };
 }

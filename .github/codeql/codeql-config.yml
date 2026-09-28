@@ -13,3 +13,7 @@ paths-ignore:
   - '.claude/skills'
   - '.agents/skills'
   - 'docs/wireframes'
+  # Snippets que Playwright evalúa dentro del navegador (los carga
+  # `prepare_ova_visual.py`): son una expresión suelta, no un módulo, así que
+  # CodeQL los lee como programa y avisa de «expresión sin efecto».
+  - '**/*.browser.js'

@@ -3,7 +3,7 @@
   "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "pnpm build",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- .",
-  "outputDirectory": "dist/frontend-ng/browser",
+  "outputDirectory": "dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {

@@ -3,6 +3,7 @@ injected into every HTML-generating prompt (Prometheus).
 
 Two independent axes, both defaulting to "upao":
   - color_mode:  "upao" (fixed UPAO palette) | "free" (LLM chooses a palette)
+                 | "custom" (the teacher's palette: primary + accent, see palette.py)
   - design_mode: "upao" (structured UPAO template) | "free" (LLM chooses layout)
 
 This is intentionally separate from the app *chrome* theme in
@@ -22,31 +23,72 @@ UPAO_PALETTE = {
     "accent": "#F47A20",  # NARANJA UPAO — separadores, acento, CTA
     "accent_hover": "#D9650F",
     "accent_tint": "#FDEEE0",  # fondo suave de realces naranja
+    "action": "#B84B00",  # naranja accesible para texto blanco y enlaces
+    "action_hover": "#923B00",
     "text": "#15233B",  # tinta casi-navy
     "text_muted": "#5A6B85",
     "border": "#E2E8F2",
-    "success": "#1B9C6B",
-    "danger": "#D64545",
+    "success": "#146C49",
+    "danger": "#B42332",
     "radius": "14px",
     "shadow": "0 6px 20px rgba(10,61,145,.08)",
 }
 
 
 def _upao_root_vars() -> str:
-    p = UPAO_PALETTE
+    return _root_vars(UPAO_PALETTE)
+
+
+def palette_root_vars(palette: dict | None) -> str:
+    """:root de la paleta del docente, o el de UPAO si no hay paleta válida."""
+    from llm.utils.palette import normalize_palette, palette_vars
+
+    clean = normalize_palette(palette)
+    return _root_vars(palette_vars(clean)) if clean else _upao_root_vars()
+
+
+def _root_vars(p: dict) -> str:
     return (
         ":root{"
         f"--bg:{p['bg']};--surface:{p['surface']};--surface-tint:{p['surface_tint']};"
         f"--primary:{p['primary']};--primary-hover:{p['primary_hover']};"
         f"--accent:{p['accent']};--accent-hover:{p['accent_hover']};--accent-tint:{p['accent_tint']};"
+        f"--action:{p['action']};--action-hover:{p['action_hover']};"
         f"--text:{p['text']};--text-muted:{p['text_muted']};--border:{p['border']};"
         f"--success:{p['success']};--danger:{p['danger']};"
         f"--radius:{p['radius']};--shadow:{p['shadow']};"
-        "--space-1:8px;--space-2:12px;--space-3:16px;--space-4:24px;--space-5:32px;--space-6:48px}"
+        "--space-1:8px;--space-2:12px;--space-3:16px;--space-4:24px;--space-5:32px;--space-6:48px;"
+        # Una sola familia para el recurso y sus componentes: antes la hoja base
+        # usaba system-ui y upao_components.js Trebuchet/Georgia, así que un mismo
+        # recurso mezclaba tres tipografías.
+        '--font-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;'
+        "--font-display:var(--font-body);"
+        '--font-mono:ui-monospace,SFMono-Regular,"Cascadia Mono","Segoe UI Mono",Menlo,monospace}'
     )
 
 
-def _palette_block(color_mode: str) -> str:
+def _custom_palette_block(palette: dict) -> str:
+    return (
+        "2) PALETA DEL DOCENTE OBLIGATORIA (no uses otros colores de marca):\n"
+        f"   - Primario {palette['primary']} y acento {palette['accent']}: el docente los eligió.\n"
+        "   - Las variables :root YA existen (inyectadas): --bg --surface --surface-tint\n"
+        "     --primary --primary-hover --accent --accent-hover --accent-tint --text\n"
+        "     --text-muted --border --success --danger --action --action-hover --radius --shadow --space-1..6.\n"
+        "     ÚSALAS con var(); NO las redefinas ni escribas hex de marca a mano.\n"
+        "   - BLANCO (--surface/--bg) = superficie dominante: la mayor parte del recurso.\n"
+        "   - PRIMARIO (--primary) = títulos (h1/h2), barras de cabecera, bordes de estructura,\n"
+        "     iconos primarios y el track de barras de progreso.\n"
+        "   - ACENTO (--accent) = líneas de separación, resaltados, estados de respuesta y el\n"
+        "     relleno de progreso.\n"
+        "   - --action para CTA con texto blanco y enlaces; --accent solo para acentos y gráficos.\n"
+        "   - NUNCA uses --accent para texto: puede ser un color claro. Usa --action o --primary.\n"
+        "   - Contraste WCAG AA mínimo en todo texto."
+    )
+
+
+def _palette_block(color_mode: str, palette: dict | None = None) -> str:
+    if color_mode == "custom" and palette:
+        return _custom_palette_block(palette)
     if color_mode == "free":
         return (
             "2) PALETA (elige UNA coherente y mantenla):\n"
@@ -59,19 +101,36 @@ def _palette_block(color_mode: str) -> str:
         "2) PALETA UPAO OBLIGATORIA (no uses otros colores de marca):\n"
         "   - Las variables :root YA existen (inyectadas): --bg --surface --surface-tint\n"
         "     --primary --primary-hover --accent --accent-hover --accent-tint --text\n"
-        "     --text-muted --border --success --danger --radius --shadow --space-1..6.\n"
+        "     --text-muted --border --success --danger --action --action-hover --radius --shadow --space-1..6.\n"
         "     ÚSALAS con var(); NO las redefinas ni uses hex de marca hardcodeados.\n"
         "   - BLANCO (--surface/--bg) = superficie dominante: la mayor parte del recurso.\n"
         "   - AZUL (--primary) = títulos (h1/h2), barras de cabecera, bordes de estructura,\n"
         "     iconos primarios y el track de barras de progreso.\n"
         "   - NARANJA (--accent) = líneas/keylines de SEPARACIÓN, botones/CTA primarios,\n"
         "     resaltados, estados de respuesta/clave y el relleno de progreso.\n"
-        "   - NUNCA uses naranja para texto de cuerpo largo (solo títulos, acentos o gráficos).\n"
+        "   - --action (naranja oscuro) para CTA con texto blanco; --accent solo para acentos/gráficos.\n"
+        "   - NUNCA uses --accent para texto pequeño: usa --action o --primary.\n"
         "   - Contraste WCAG AA mínimo en todo texto."
     )
 
 
-def _layout_block(design_mode: str) -> str:
+_UPAO_PALETTE_LINE = (
+    "   Paleta fija UPAO: --primary #0A3D91 · --accent #F47A20 · --bg #F7F9FC · --surface #FFFFFF.\n"
+)
+
+
+def _layout_block(design_mode: str, palette: dict | None = None) -> str:
+    block = _upao_layout_block(design_mode)
+    if palette and _UPAO_PALETTE_LINE in block:
+        block = block.replace(
+            _UPAO_PALETTE_LINE,
+            f"   Paleta del docente: --primary {palette['primary']} · --accent {palette['accent']}"
+            " (usa siempre las variables).\n",
+        )
+    return block
+
+
+def _upao_layout_block(design_mode: str) -> str:
     if design_mode == "free":
         return (
             "4) LAYOUT (libre, con criterio):\n"
@@ -83,6 +142,13 @@ def _layout_block(design_mode: str) -> str:
     return (
         "4) LAYOUT UPAO — USA LOS COMPONENTES UPAO DISPONIBLES:\n"
         "   El script upao_components.js YA está inyectado en el HTML. Usa estos Custom Elements:\n"
+        "   <upao-header eyebrow='SIMULADOR' title='Ley de Ohm'>Introducción breve</upao-header> → única cabecera h1.\n"
+        "   <upao-objective>Al terminar podrás calcular la corriente.</upao-objective> → objetivo inicial.\n"
+        "   <upao-example title='Ejemplo trabajado'><upao-steps><ol><li>I = V/R = 2 A.</li></ol></upao-steps></upao-example> → razonamiento visible, antes de practicar.\n"
+        "   <upao-figure caption='Figura 1. Circuito de 12 V.'>SVG o imagen con alt</upao-figure> → figura con epígrafe.\n"
+        "   <upao-question number='1' prompt='¿Qué corriente circula?'>upao-choice con group único</upao-question> → una pregunta por bloque.\n"
+        "   <upao-summary>Regla transferible<upao-score slot='actions'></upao-score></upao-summary> → síntesis y controles de cierre en slot actions.\n"
+        "   <upao-status state='success'>Paso completado</upao-status> → chip; state: info/success/warning/error.\n"
         "   <upao-card eyebrow='MINIJUEGO' title='Título del concepto' icon='🧠'>contenido</upao-card>\n"
         "   <upao-node number='1' title='Hito' label='Año'>detalle expandible</upao-node>\n"
         "   <upao-choice value='A' correct='true' feedback='¡Correcto!' group='q1'>texto</upao-choice>\n"
@@ -91,12 +157,18 @@ def _layout_block(design_mode: str) -> str:
         "   <upao-timer id='t' seconds='30'></upao-timer>  → start: document.getElementById('t').start()\n"
         "   <upao-score id='s' current='0' max='100'></upao-score>  → add: getElementById('s').add(10)\n"
         "   <upao-nav id='n' total='N' current='1'></upao-nav>  → evento upao-nav-change { index }\n"
-        "   <upao-comic-panel number='1' character='Max' img-src='__IMG_1__'>diálogo</upao-comic-panel>\n"
+        "   <upao-comic-panel number='1' character='Max'><svg slot='art' viewBox='0 0 320 180' role='img'\n"
+        "     aria-label='descripción'>…</svg>lo que dice el personaje</upao-comic-panel>\n"
+        "   En un cómic dibuja cada viñeta con su <svg slot='art'> y escribe diálogo, nunca acotaciones\n"
+        "   («Escena: …» está prohibido): la acotación no enseña y deja la viñeta vacía.\n"
         "   <upao-podcast src='data:audio/wav;base64,...' concept='X' transcript='texto'></upao-podcast>\n"
         "   <upao-drag-item item-id='id' category='cat'>texto</upao-drag-item>\n"
         "   <upao-drop-zone zone-id='z1' accepts='cat' label='Zona'></upao-drop-zone>\n"
         "   <upao-complete label='Continuar →' locked require-progress='N'></upao-complete>\n"
-        "   ÚSALOS para construir el recurso. Complementa con HTML/CSS/JS propio cuando sea necesario.\n"
+        "   Prefiere estas piezas a reconstruir cabeceras, objetivos, ejemplos, preguntas y cierres con CSS.\n"
+        "   upao-steps usa ol/li para pasos visibles; upao-node para pasos expandibles.\n"
+        "   Tablas: .ova-table-scroll con role='region', tabindex='0', aria-label; dentro table/caption/th scope.\n"
+        "   No combines upao-header con un upao-card title (ambos crean h1). Usa .ova-card para secciones.\n"
         "   Paleta fija UPAO: --primary #0A3D91 · --accent #F47A20 · --bg #F7F9FC · --surface #FFFFFF.\n"
         "   Mobile-first, contenedor máx 880px, espaciado escala 8/12/16/24/32/48px."
     )
@@ -106,9 +178,9 @@ def _base_block(color_mode: str) -> str:
     if color_mode == "free":
         return (
             "1) BASE TÉCNICA\n"
-            "   - <!DOCTYPE html>, lang=\"es\", viewport meta para responsive.\n"
+            '   - <!DOCTYPE html>, lang="es", viewport meta para responsive.\n'
             "   - Reset CSS al inicio: *{box-sizing:border-box;margin:0;padding:0}\n"
-            "   - Font stack del sistema: system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif.\n"
+            '   - Font stack del sistema: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif.\n'
             "   - Define variables CSS en :root (--bg, --surface, --primary, --primary-hover,\n"
             "     --text, --text-muted, --border, --success, --danger, --radius, --shadow, --space).\n"
             "   - SIN dependencias externas: nada de CDN, fonts.google, jsdelivr, unpkg, jquery, bootstrap."
@@ -116,13 +188,15 @@ def _base_block(color_mode: str) -> str:
     # UPAO (default): la hoja base se inyecta server-side (F1.2) — el LLM no la escribe.
     return (
         "1) BASE TÉCNICA — HOJA BASE YA INYECTADA, NO LA REESCRIBAS\n"
-        "   - <!DOCTYPE html>, lang=\"es\", viewport meta para responsive.\n"
+        '   - <!DOCTYPE html>, lang="es", viewport meta para responsive.\n'
         "   - El documento YA incluye (inyectado automáticamente): reset CSS, variables\n"
-        "     :root UPAO, tipografía responsive (h1-h3 y body con clamp), focus-visible y\n"
+        "     :root de la paleta, tipografía responsive (h1-h3 y body con clamp), focus-visible y\n"
         "     estas clases listas para usar:\n"
         "     .ova-container .ova-card .ova-btn .ova-btn--ghost .ova-input .ova-option\n"
         "     (.is-selected/.is-correct/.is-wrong) .ova-feedback--ok/--bad\n"
         "     .ova-progress>span .ova-badge .ova-grid .ova-muted .ova-divider\n"
+        "     .ova-stack (ritmo vertical) .ova-table-scroll (tabla ancha con scroll local)\n"
+        "   - p, listas, tablas con caption/th, blockquote/cite, pre/code, figure/figcaption y details ya tienen estilo.\n"
         "   - PROHIBIDO reescribir reset, :root, estilos de body/h1/h2/h3 o clases .ova-*.\n"
         "   - Tu <style> propio: SOLO lo específico de este recurso, máximo ~80 líneas.\n"
         "   - SIN dependencias externas: nada de CDN, fonts.google, jsdelivr, unpkg, jquery, bootstrap."
@@ -138,7 +212,9 @@ def _interaction_block(color_mode: str) -> str:
             "     :focus-visible outline 3px solid color primario con offset 2px.\n"
             "   - Inputs/selectables: borde 2px, focus-visible cambia borde a primary.\n"
             "   - Estados de carga, completado y error VISUALMENTE distintos (color + icono/emoji).\n"
-            "   - Animaciones de entrada en elementos clave: opacity 0→1, translateY 8px→0, 300ms ease-out."
+            "   - Usa UN solo momento de movimiento intencional: responde a una acción del estudiante "
+            "(revelar respuesta, avanzar progreso o mostrar resultado). Si al quitarlo no pierde significado "
+            "ni feedback, quítalo; nunca animes la entrada de cada sección."
         )
     return (
         "5) INTERACCIÓN\n"
@@ -146,13 +222,15 @@ def _interaction_block(color_mode: str) -> str:
         "     NO redefinas su CSS ni fijes padding/height/border/background propios en botones.\n"
         "     Botones que aparecen juntos comparten tamaño (misma clase, sin anchos a medida).\n"
         "   - Opciones seleccionables: .ova-option + toggle de .is-selected/.is-correct/.is-wrong desde JS.\n"
-        "   - Feedback: .ova-feedback--ok / .ova-feedback--bad (color + icono/emoji + texto).\n"
-        "   - Progreso: <div class=\"ova-progress\"><span style=\"width:0%\"></span></div> y anima el width.\n"
-        "   - Animaciones de entrada en elementos clave: opacity 0→1, translateY 8px→0, 300ms ease-out."
+        "   - Feedback: .ova-feedback + .ova-feedback--ok / .ova-feedback--bad; explica por qué.\n"
+        '   - Progreso: <div class="ova-progress"><span style="width:0%"></span></div> y anima el width.\n'
+        "   - Usa UN solo momento de movimiento intencional: responde a una acción del estudiante "
+        "(revelar respuesta, avanzar progreso o mostrar resultado). Si al quitarlo no pierde significado "
+        "ni feedback, quítalo; nunca animes la entrada de cada sección."
     )
 
 
-_GOLDEN_SKELETON = """9) ESQUELETO DORADO (estructura de referencia — adapta el contenido, no el patrón):
+_GOLDEN_SKELETON = """10) ESQUELETO DORADO (estructura de referencia — adapta el contenido, no el patrón):
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -162,9 +240,8 @@ _GOLDEN_SKELETON = """9) ESQUELETO DORADO (estructura de referencia — adapta e
 </head>
 <body>
   <main class="ova-container">
-    <span class="ova-badge">[TIPO DE ACTIVIDAD]</span>
-    <h1>[Título atractivo solo sobre el concepto]</h1>
-    <hr class="ova-divider">
+    <upao-header eyebrow="[TIPO DE ACTIVIDAD]" title="[Título atractivo solo sobre el concepto]"></upao-header>
+    <upao-objective>Al terminar podrás [objetivo observable].</upao-objective>
     <section class="ova-card"><!-- contenido/actividad principal --></section>
     <div class="ova-progress" aria-hidden="true"><span style="width:0%"></span></div>
     <p id="estado" aria-live="polite" class="ova-muted"></p>
@@ -191,7 +268,31 @@ def _output_contract() -> str:
 
     return output_contract()
 
-def build_design_system(color_mode: str = "upao", design_mode: str = "upao") -> str:
+
+def _golden_skeleton(design_mode: str) -> str:
+    if design_mode == "upao":
+        return _GOLDEN_SKELETON
+    return _GOLDEN_SKELETON.replace(
+        '<upao-header eyebrow="[TIPO DE ACTIVIDAD]" title="[Título atractivo solo sobre el concepto]"></upao-header>',
+        '<span class="ova-badge">[TIPO DE ACTIVIDAD]</span>\n'
+        "    <h1>[Título atractivo solo sobre el concepto]</h1>",
+    ).replace(
+        "<upao-objective>Al terminar podrás [objetivo observable].</upao-objective>",
+        "<p>Al terminar podrás [objetivo observable].</p>",
+    )
+
+
+def theme_design_system(theme: dict | None) -> str:
+    """build_design_system a partir del tema de un job ({color, design, palette})."""
+    theme = theme or {}
+    return build_design_system(
+        theme.get("color", "upao"), theme.get("design", "upao"), theme.get("palette")
+    )
+
+
+def build_design_system(
+    color_mode: str = "upao", design_mode: str = "upao", palette: dict | None = None
+) -> str:
     """Build the [SISTEMA_DE_DISEÑO_OBLIGATORIO] block injected into HTML prompts.
 
     Technical / accessibility / SCORM / quality rules are NON-negotiable and
@@ -199,11 +300,16 @@ def build_design_system(color_mode: str = "upao", design_mode: str = "upao") -> 
     En modo upao la hoja base va inyectada server-side (llm/utils/base_css.py) y
     el prompt referencia sus clases en vez de pedir el CSS — menos tokens de salida.
     """
-    color_mode = color_mode if color_mode in ("upao", "free") else "upao"
+    from llm.utils.palette import normalize_palette
+
+    color_mode = color_mode if color_mode in ("upao", "free", "custom") else "upao"
     design_mode = design_mode if design_mode in ("upao", "free") else "upao"
+    custom = normalize_palette(palette) if color_mode == "custom" else None
+    if color_mode == "custom" and custom is None:
+        color_mode = "upao"
     tipografia = (
         ""
-        if color_mode == "upao"
+        if color_mode != "free"
         else """
 3) TIPOGRAFÍA
    - Tamaños con clamp() para responsive sin media queries:
@@ -219,13 +325,42 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
 
 {_base_block(color_mode)}
 
-{_palette_block(color_mode)}
+{_palette_block(color_mode, custom)}
 {tipografia}
-{_layout_block(design_mode)}
+{_layout_block(design_mode, custom)}
 
 {_interaction_block(color_mode)}
 
-6) ACCESIBILIDAD (WCAG 2.2 AA — OBLIGATORIO)
+6) TIPOGRAFÍA Y ESTRUCTURA
+   - No acentúes una sola palabra del titular con cursiva, negrita o color distinto.
+   - Usa marcadores 01/02/03 solo si el contenido es una secuencia real (pasos o línea de tiempo).
+   - Bordes, divisores, numeración y etiquetas codifican información del contenido; nunca son decoración.
+   - Agrupa por función pedagógica: prefiere pocas regiones fuertes a una rejilla uniforme de tarjetas intercambiables.
+
+6.b) PIEZA VISUAL PROPIA (OBLIGATORIA)
+   - Cada recurso incluye AL MENOS una pieza visual inline construida por ti —
+     esquema, diagrama, gráfico, mapa de relaciones, línea de tiempo o tabla
+     comparativa — que EXPLIQUE el concepto y que el alumno pueda leer sin el texto.
+   - Se hace con SVG inline (viewBox + preserveAspectRatio, sin dependencias) o
+     con la rejilla del recurso; nada de adornos ni de "imagen decorativa".
+   - Debe estar etiquetada (títulos de ejes, unidades, leyenda) y ser coherente con
+     los números del contenido: si el texto dice 12 V y 6 Ω, la figura dice lo mismo.
+   - Si el recurso es interactivo y sus valores cambian, la figura se actualiza con
+     ellos (mismo estado, sin duplicar la lógica).
+
+6.c) ANDAMIAJE PEDAGÓGICO (OBLIGATORIO)
+   - Abre con el objetivo de aprendizaje en una frase ("al terminar podrás …").
+   - Incluye al menos un EJEMPLO TRABAJADO paso a paso con los cálculos o el
+     razonamiento a la vista antes de pedirle al alumno que lo haga.
+   - La práctica lleva retroalimentación que explica POR QUÉ la respuesta es
+     correcta o incorrecta y qué revisar; nunca solo "correcto/incorrecto".
+   - Al menos una opción incorrecta de cada pregunta refleja un error conceptual
+     típico del tema, no un distractor al azar.
+   - Cierra consolidando: síntesis, regla o transferencia a otro caso.
+   - Nivel: el del curso indicado en el tema (por defecto universitario); usa la
+     notación, unidades y vocabulario propios de esa asignatura.
+
+7) ACCESIBILIDAD (WCAG 2.2 AA — OBLIGATORIO)
    - Contraste texto/fondo >= 4.5:1 (cuerpo) y >= 3:1 (títulos grandes y bordes de UI).
    - Focus visible en TODO elemento interactivo (:focus-visible outline 3px, offset 2px). Nunca outline:none sin reemplazo.
    - Estructura semántica: un único <h1>, luego <h2>/<h3> en orden sin saltos; usa <main>, <nav>, <section>, <button>, <ul>/<ol>.
@@ -236,7 +371,7 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
    - Objetivos táctiles >= 24x24 CSS px (WCAG 2.5.8) con espacio entre ellos.
    - Respeta @media (prefers-reduced-motion: reduce) → animation:none; transition:none; scroll-behavior:auto.
 
-7) CALIDAD
+8) CALIDAD
    - Mínimo lo indicado por la tarea, sin sections vacías ni texto lorem.
    - JavaScript funcional REAL: ningún botón sin handler, ningún estado sin transición.
    - Limpieza: declara handlers con addEventListener, evita inline onclick=.
@@ -245,14 +380,22 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
      draggable="true" y handlers dragstart/dragend; las zonas destino tienen
      dragover (preventDefault) + drop.
    - Si el tipo requiere cronómetro: usa Date.now() o setInterval con cleanup.
-   - Si el tipo requiere visualización (gráfico, árbol, scatter): genera SVG real
-     con elementos visibles (no solo texto plano); usa viewBox + preserveAspectRatio.
+   - Para cambio en el tiempo usa línea/área; para magnitud ordenada, barras ordenadas o tabla.
+   - Para parte-todo usa barras apiladas solo si el denominador significa algo (nunca tarta decorativa);
+     para distribución, histograma/dot plot; para relación, scatter con escalas reales.
+   - Si importan más valores exactos que la forma, usa TABLA, no gráfico. Todo gráfico es SVG real
+     con elementos visibles (no solo texto plano), viewBox y preserveAspectRatio.
+   - Etiqueta unidades, rango temporal y fuente. No inventes datos para completar: si son ilustrativos, dilo.
+   - COPY: voz activa; el botón nombra lo que sucede al pulsarlo.
+   - Conserva el mismo nombre de la acción en todo el flujo.
+   - Los errores indican qué falló y cómo corregirlo, sin disculpas ni vaguedad.
+   - Un estado vacío invita a actuar; frases llanas y sin relleno: cada texto hace un solo trabajo.
    - Si el tipo usa cards/items en grid: usa CSS grid con minmax(min, 1fr) para
      que se reflowee en móvil sin overflow horizontal.
    - PROHIBIDO `width:` o `min-width:` en px > 320 sin un media query / clamp().
    - Texto en SVG: usa <text> con text-anchor + tamaño adaptado; nunca trunques.
 
-8) PROHIBIDO
+9) PROHIBIDO
    - Lorem ipsum / placeholder copy.
    - Imágenes externas (las que se inyectan ya vienen como data-URI).
    - Librerías JS/CSS externas.
@@ -266,13 +409,11 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
 
 {_output_contract()}
 
-{_GOLDEN_SKELETON}
+{_golden_skeleton(design_mode)}
 [/SISTEMA_DE_DISEÑO_OBLIGATORIO]
 """
 
 
 def inject_design_system(prompt: str, theme: dict | None = None) -> str:
     """Helper for callers that prefer post-hoc injection (unused by the param path)."""
-    color = (theme or {}).get("color", "upao")
-    design = (theme or {}).get("design", "upao")
-    return prompt.replace("[[DESIGN_SYSTEM]]", build_design_system(color, design))
+    return prompt.replace("[[DESIGN_SYSTEM]]", theme_design_system(theme))

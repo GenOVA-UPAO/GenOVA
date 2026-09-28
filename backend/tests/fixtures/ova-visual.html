@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prueba visual · Ley de Ohm</title></head>
+<body>
+<main class="ova-container">
+  <upao-header eyebrow="PRÁCTICA GUIADA" title="Calcula la corriente con la ley de Ohm"><p>Un circuito, dos magnitudes conocidas y una relación para comprobarlas.</p></upao-header>
+  <upao-objective>Al terminar podrás calcular la corriente y explicar cómo cambia al aumentar la resistencia.</upao-objective>
+  <upao-figure caption="Figura 1. Fuente de 12 V y resistencia de 6 Ω en un circuito cerrado.">
+    <svg viewBox="0 0 480 160" role="img" aria-labelledby="circuit-title circuit-desc">
+      <title id="circuit-title">Circuito de corriente continua</title><desc id="circuit-desc">Una fuente de 12 voltios alimenta una resistencia de 6 ohmios. La corriente es de 2 amperios.</desc>
+      <path d="M80 65V30H210M270 30H400V130H80V95" fill="none" stroke="var(--primary)" stroke-width="3"/>
+      <path d="M55 65H105M65 95H95" stroke="var(--primary)" stroke-width="3"/>
+      <rect x="210" y="18" width="60" height="24" fill="var(--surface-tint)" stroke="var(--primary)" stroke-width="3"/>
+      <g fill="var(--text)" font-size="18" text-anchor="middle"><text x="240" y="75">R = 6 Ω</text><text x="80" y="155">V = 12 V</text><text x="330" y="115">I = 2 A</text></g>
+    </svg>
+  </upao-figure>
+  <upao-example title="Ejemplo trabajado: de voltios a amperios">
+    <upao-steps><ol><li>Identifica los datos: V = 12 V y R = 6 Ω.</li><li>Despeja la corriente: <code>I = V / R</code>.</li><li>Sustituye: <strong>I = 12 / 6 = 2 A</strong>.</li></ol></upao-steps>
+    <p>Comprueba las unidades: voltios entre ohmios son amperios.</p>
+  </upao-example>
+  <section class="ova-card">
+    <h2>Compara los valores</h2>
+    <div class="ova-table-scroll" role="region" aria-label="Mediciones de resistencia y corriente" tabindex="0">
+      <table><caption>Fuente constante de 12 V; valores ilustrativos</caption><thead><tr><th scope="col">R (Ω)</th><th scope="col">I (A)</th><th scope="col">Interpretación</th></tr></thead><tbody><tr><td>6</td><td>2</td><td>Condición inicial</td></tr><tr><td>12</td><td>1</td><td>El doble de resistencia reduce la corriente a la mitad.</td></tr></tbody></table>
+    </div>
+    <blockquote><p>Si la tensión permanece constante, la corriente es inversamente proporcional a la resistencia.</p><cite>Relación expresada por la ley de Ohm</cite></blockquote>
+    <details><summary>Ver cálculo en código</summary><pre><code>voltaje = 12
+resistencia = 6
+corriente = voltaje / resistencia</code></pre></details>
+  </section>
+  <upao-question number="1" prompt="Si R aumenta a 12 Ω y V sigue en 12 V, ¿cuánto vale I?">
+    <upao-choice group="q1" value="A" correct="true" feedback="I = 12/12 = 1 A. Al duplicar R, I se reduce a la mitad.">1 A</upao-choice>
+    <upao-choice group="q1" value="B" correct="false" feedback="La corriente no aumenta con la resistencia: usa I = V/R.">4 A</upao-choice>
+  </upao-question>
+  <upao-status id="status">Responde para comprobar tu razonamiento</upao-status>
+  <upao-summary>
+    <p>Con tensión constante, más resistencia significa menos corriente. Aplica esta regla antes de calcular para anticipar el resultado.</p>
+    <upao-score slot="actions" id="score" max="1"></upao-score>
+    <upao-complete slot="actions" id="finish" label="Finalizar práctica" locked></upao-complete>
+  </upao-summary>
+</main>
+<script>
+document.addEventListener('upao-choice-selected', event => {
+  const status = document.getElementById('status');
+  status.setAttribute('state', event.detail.correct ? 'success' : 'error');
+  status.textContent = event.detail.correct ? 'Respuesta razonada correctamente' : 'Revisa la relación entre corriente y resistencia';
+  document.getElementById('score').set(event.detail.correct ? 1 : 0);
+  document.getElementById('finish').unlock();
+});
+</script>
+</body>
+</html>

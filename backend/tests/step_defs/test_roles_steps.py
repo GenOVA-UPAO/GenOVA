@@ -27,7 +27,7 @@ from sqlalchemy.pool import StaticPool  # noqa: E402
 import models  # noqa: E402, F401 — registra los modelos ORM
 from auth.dependencies import get_current_user  # noqa: E402
 from core.database import get_db  # noqa: E402
-from roles.router import router as roles_router  # noqa: E402
+from roles.interface.http.router import router as roles_router  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_CREAR = os.path.join(_FEATURES, "roles", "HU-018_crear-rol.feature")

@@ -79,6 +79,24 @@ def test_worker_structural_defects_route_to_error(monkeypatch):
     out = resource_worker(payload)
     assert "pool_results" not in out
     assert "defectos estructurales" in out["errors"][0]["error"]
+    assert "deadline" in out["errors"][0]
+
+
+def test_worker_budget_exhausted_keeps_html_and_skips_repair(monkeypatch):
+    import prometheus.plans.generate as gen
+
+    def fake_generate(phase, rt, concept, **kw):
+        return gen.ResourceResult("<html>mejor intento</html>", ["contenido escaso"], None)
+
+    monkeypatch.setattr(gen, "generate_resource", fake_generate)
+    monkeypatch.setattr(wp, "can_spend", lambda *a, **k: False)
+    monkeypatch.setattr(wp, "_recursos_meta_for", lambda phase: {1: {"tipo": "Cómic"}})
+    payload = fan_out(_state())[0].arg
+    out = resource_worker(payload)
+    assert "errors" not in out
+    assert out["pool_results"][0]["html"] == "<html>mejor intento</html>"
+    assert out["pool_results"][0]["defects"] == ["contenido escaso"]
+    assert out["worker_signals"][0]["ok"] is False
 
 
 def test_worker_failure_isolated(monkeypatch):

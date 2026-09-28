@@ -21,11 +21,29 @@ _DEFAULT_PLAN = (("engage", 1), ("explore", 2), ("explain", 3), ("elaborate", 4)
 _PHASE_ORDER = {"engage": 1, "explore": 2, "explain": 3, "elaborate": 4, "evaluate": 5}
 
 
+def _resource_id(phase: str, resource_type: str) -> str:
+    """Normaliza el tipo de recurso a su id numérico ("1".."10")."""
+    from generation.jobs.jobs_materialize import resolve_resource_display
+
+    raw = resource_type.strip()
+    if raw.isdigit():
+        return raw
+    rid, _title, _emoji = resolve_resource_display(phase, raw)
+    return str(rid) if rid is not None else raw
+
+
 class ResourceRequest(BaseModel):
     """One chosen resource: which 5E phase and which resource type (id 1-10 or name)."""
 
     phase_type: str = Field(min_length=1, max_length=30)
     resource_type: str = Field(min_length=1, max_length=40)
+
+    @model_validator(mode="after")
+    def normalize_resource_id(self) -> "ResourceRequest":
+        """The API accepts the id or the name ("Cómic Interactivo"); everything
+        downstream (plan rows, params snapshot, engine) works with the id."""
+        self.resource_type = _resource_id(self.phase_type.strip().lower(), self.resource_type)
+        return self
 
 
 class ResumeRequest(BaseModel):
@@ -34,15 +52,37 @@ class ResumeRequest(BaseModel):
     resource_ids: list[str] = Field(default_factory=list, max_length=50)
 
 
+_HEX_COLOR = r"^#[0-9a-fA-F]{6}$"
+
+
+class PaletteRequest(BaseModel):
+    """Paleta del docente: solo primario y acento; el resto se deriva (palette.py)."""
+
+    name: str = Field(default="", max_length=40)
+    primary: str = Field(pattern=_HEX_COLOR)
+    accent: str = Field(pattern=_HEX_COLOR)
+
+
 class ThemeRequest(BaseModel):
     """OVA content theme: two independent axes, both defaulting to the UPAO brand.
 
-    color  — "upao" (azul/naranja/blanco fijo) | "free" (the LLM picks a palette).
+    color  — "upao" (azul/naranja/blanco fijo) | "free" (the LLM picks a palette)
+             | "custom" (la paleta del docente, en `palette`).
     design — "upao" (plantilla estructurada) | "free" (the LLM picks the layout).
     """
 
-    color: Literal["upao", "free"] = "upao"
+    color: Literal["upao", "free", "custom"] = "upao"
     design: Literal["upao", "free"] = "upao"
+    palette: PaletteRequest | None = None
+
+    @model_validator(mode="after")
+    def _custom_needs_palette(self) -> "ThemeRequest":
+        # Sin paleta, «custom» no tiene colores que aplicar: se queda en UPAO.
+        if self.color == "custom" and self.palette is None:
+            self.color = "upao"
+        if self.color != "custom":
+            self.palette = None
+        return self
 
 
 class StartJobRequest(BaseModel):
@@ -176,6 +216,7 @@ def resource_to_dict(resource: OvaJobResource) -> dict:
         "status": resource.status,
         "attempts": resource.attempts,
         "error_id": str(resource.error_id) if resource.error_id else None,
+        "defect_reason": resource.defect_reason,
     }
 
 

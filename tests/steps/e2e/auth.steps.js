@@ -1,13 +1,16 @@
 import { createBdd } from 'playwright-bdd'
 
-const { Given, When, Then } = createBdd()
+import { loginWithCredentials, openLoginPage, waitForAuthedNavigation } from './_helpers.js'
+import { test } from './fixtures.js'
 
-const emailField = (page) => page.locator('#email, input[type=email]').first()
-const passwordField = (page) => page.locator('#password input, input[type=password]').first()
+const { Given, When, Then } = createBdd(test)
+
+// React: <label htmlFor> + Input (Correo / Contraseña), sin wrappers Angular.
+const emailField = (page) => page.getByLabel('Correo', { exact: true })
+const passwordField = (page) => page.getByLabel('Contraseña', { exact: true })
 
 Given('que estoy en la página de login', async ({ page }) => {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ state: 'visible', timeout: 30000 })
+  await openLoginPage(page)
 })
 
 Given('que estoy en la página de registro', async ({ page }) => {
@@ -20,23 +23,23 @@ When('ingreso un correo registrado y contraseña válida', async ({ page }) => {
 })
 
 When('envío el formulario', async ({ page }) => {
-  // Angular login uses gn-button/p-button ("Entrar"), not native type=submit
-  const entrar = page.getByRole('button', { name: 'Entrar' })
-  if (await entrar.count()) {
-    await entrar.click({ force: true })
+  // React muestra las validaciones al perder el foco (touched): un Tab antes de
+  // enviar replica al usuario que sale del último campo del formulario.
+  await page.keyboard.press('Tab').catch(() => {})
+  // force:true evita bloquearse cuando el submit está deshabilitado (p.ej. nombre
+  // de rol vacío o registro inválido); un botón deshabilitado no envía nada.
+  const submit = page.getByRole('button', {
+    name: /^(Entrar|Crear cuenta|Crear rol|Guardar cambios)$/,
+  })
+  if (await submit.count()) {
+    await submit.first().click({ force: true })
     return
   }
-  // force:true skips the "element must be enabled" check so disabled submit buttons
-  // (e.g. empty role name) don't block indefinitely — no actual form submission fires
-  // when the button is disabled regardless of the click
-  await page.click('button[type=submit]', { force: true })
+  await page.locator('button[type=submit]').first().click({ force: true })
 })
 
 Then('debo recibir un JWT con expiración de 24 horas', async ({ page }) => {
-  await page.waitForFunction(
-    () => /dashboard|mis-ovas/.test(window.location.pathname),
-    { timeout: 10000 }
-  )
+  await waitForAuthedNavigation(page, 10000)
   // Auth token lives in the httpOnly `genova_token` cookie (JS can't read it),
   // not localStorage. Verify the cookie exists, is httpOnly, and expires in ~24h.
   const cookies = await page.context().cookies()
@@ -51,16 +54,13 @@ Then('debo recibir un JWT con expiración de 24 horas', async ({ page }) => {
 })
 
 Then('debo ser redirigido al dashboard', async ({ page }) => {
-  // Best-effort: wait up to 5s for the URL to change. In the "Acceso denegado"
-  // scenario AdminRoute's async role-check can hang in CI; the real assertion
-  // is the next step (no debo ver el panel de administración).
+  // Best-effort: espera hasta 5s la navegación real. En "Acceso denegado" el
+  // guard de rol puede tardar; la aserción fuerte es el paso siguiente
+  // (no debo ver el panel de administración).
   try {
-    await page.waitForFunction(
-      () => /dashboard|mis-ovas/.test(window.location.pathname),
-      { timeout: 5000 }
-    )
+    await waitForAuthedNavigation(page, 5000)
   } catch {
-    // Redirect may not have fired yet — continue to panel visibility check
+    // El redirect puede no haber ocurrido aún — sigue la comprobación de panel
   }
 })
 
@@ -73,13 +73,9 @@ Given(
     // (p.ej. admin en el Background y luego "usuario"), /login redirige o el
     // cache de sessionStorage envenena el rol y AdminRoute se cuelga en CI.
     await page.context().clearCookies()
-    await page.goto('/login', { waitUntil: 'domcontentloaded' })
+    await openLoginPage(page)
     await page.evaluate(() => window.sessionStorage.clear())
-    await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ state: 'visible', timeout: 30000 })
-    await emailField(page).fill(email)
-    await passwordField(page).fill(pass)
-    await page.getByRole('button', { name: 'Entrar' }).click()
-    await page.waitForURL(/dashboard|mis-ovas|admin/, { timeout: 20000 })
+    await loginWithCredentials(page, email, pass)
   }
 )
 

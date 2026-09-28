@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import pytest  # noqa: E402
 
-from auth.email_normalize import normalize_email  # noqa: E402
+from auth.domain.email import normalize_email  # noqa: E402
 from core.security import password_complexity_ok  # noqa: E402
 
 

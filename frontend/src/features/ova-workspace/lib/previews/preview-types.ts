@@ -63,11 +63,7 @@ export const ALL_WIREFRAME_KINDS: readonly WireframeKind[] = [
 ] as const;
 
 export function preview(
-  label: string,
-  returns: string,
-  format: string,
-  bullets: [string, string, string],
-  wire: WireframeKind,
+  ...[label, returns, format, bullets, wire]: [string, string, string, [string, string, string], WireframeKind]
 ): ResourcePreviewInfo {
   return { label, returns, format, bullets, wire };
 }

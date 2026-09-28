@@ -11,7 +11,7 @@ Feature: Cambiar contraseña desde el perfil
     And me encuentro en la pantalla de perfil "/profile"
     When ingreso mi contraseña actual "PasswordOld1"
     And coloco mi nueva contraseña "PasswordNew2" y su confirmación "PasswordNew2"
-    And hago clic en "Actualizar Contraseña"
+    And hago clic en "Actualizar contraseña"
     Then el sistema realiza una llamada POST a "/api/users/me/change-password"
     And el servidor retorna un código de estado 200 OK
     And la interfaz despliega un mensaje verde: "¡Contraseña actualizada con éxito!"
@@ -22,7 +22,7 @@ Feature: Cambiar contraseña desde el perfil
     And me encuentro en la pantalla de perfil "/profile"
     When ingreso una contraseña actual errónea como "Incorrecta123"
     And coloco mi nueva contraseña "PasswordNew2" y su confirmación "PasswordNew2"
-    And hago clic en "Actualizar Contraseña"
+    And hago clic en "Actualizar contraseña"
     Then el servidor me retorna un código de estado 400 Bad Request
     And la interfaz despliega una alerta de error: "La contraseña actual ingresada es incorrecta."
     And los campos de texto mantienen sus valores intactos para corrección del usuario
@@ -31,5 +31,5 @@ Feature: Cambiar contraseña desde el perfil
     Given que soy un usuario autenticado
     And me encuentro en la pantalla de perfil "/profile"
     When ingreso una contraseña nueva débil como "123"
-    Then el botón "Actualizar Contraseña" se muestra deshabilitado o el frontend muestra errores de validación
+    Then el botón "Actualizar contraseña" se muestra deshabilitado o el frontend muestra errores de validación
     And previene la llamada al servidor hasta cumplir las políticas de seguridad

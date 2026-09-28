@@ -14,7 +14,7 @@ function clickAnchor(href: string, download?: string): void {
 }
 
 function filenameFromDisposition(res: Response, fallback: string): string {
-  const disposition = res.headers.get("Content-Disposition") || "";
+  const disposition = res.headers.get("Content-Disposition") ?? "";
   const match = /filename="?([^"]+)"?/.exec(disposition);
   return match ? match[1] : fallback;
 }
@@ -24,7 +24,7 @@ export async function triggerDownloadFromResponse(
   res: Response,
   fallbackFilename: string,
 ): Promise<void> {
-  const contentType = res.headers.get("content-type") || "";
+  const contentType = res.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {
     const data = (await res.json()) as { download_url: string; filename?: string };
     clickAnchor(data.download_url, data.filename);

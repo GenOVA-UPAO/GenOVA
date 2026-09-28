@@ -1,59 +1,41 @@
-// Auditoría de accesibilidad con axe-core sobre las pantallas principales.
-// Gate: solo fallan las violaciones serious/critical (moderate/minor se
-// reportan en el log para ir corrigiéndolas sin romper CI).
-import AxeBuilder from '@axe-core/playwright'
+// Humo original de la suite (login/registro/dashboard/mis OVAs en escritorio).
+// La cobertura completa por pantalla, modal, tema y viewport vive en
+// screens.spec.js y modals.spec.js.
 import { expect, test } from '@playwright/test'
 
-async function analyze(page) {
-  // Varias pantallas usan animaciones de entrada (animate-in fade-in, hasta
-  // ~800ms con delay) que dejan el texto a mitad de opacidad justo cuando el
-  // heading ya existe en el DOM. Sin esta espera, axe-core mide un frame
-  // intermedio y reporta contraste de color falso-positivo.
-  await page.waitForTimeout(900)
-  return new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
-}
+import { USER_STATE } from './global-setup.js'
+import { analyze, gotoApp, seriousViolations } from './a11y-helpers.js'
 
-function seriousViolations(results) {
-  const serious = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact))
-  for (const v of results.violations) {
-    const mark = ['serious', 'critical'].includes(v.impact) ? '✖' : '·'
-    console.log(`${mark} [${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} nodos)`)
-  }
-  return serious
-}
-
-async function login(page, email, pass) {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.locator('#email, input[type=email]').first().fill(email)
-  await page.locator('#password input, input[type=password]').first().fill(pass)
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await page.waitForURL(/dashboard|mis-ovas/, { timeout: 20000 })
+async function expectNoSerious(page) {
+  const results = await analyze(page)
+  expect(seriousViolations(results)).toEqual([])
 }
 
 test.describe('Accesibilidad (axe-core, WCAG 2.0 A/AA)', () => {
   test('login no tiene violaciones serias', async ({ page }) => {
     await page.goto('/login', { waitUntil: 'domcontentloaded' })
     await page.getByRole('heading', { name: 'Iniciar sesión' }).waitFor({ timeout: 15000 })
-    expect(seriousViolations(await analyze(page))).toEqual([])
+    await expectNoSerious(page)
   })
 
   test('registro no tiene violaciones serias', async ({ page }) => {
     await page.goto('/register', { waitUntil: 'domcontentloaded' })
-    await page.locator('#fullName').waitFor({ timeout: 15000 })
-    expect(seriousViolations(await analyze(page))).toEqual([])
+    await page.getByLabel('Nombre completo').waitFor({ timeout: 15000 })
+    await expectNoSerious(page)
   })
 
-  test('dashboard no tiene violaciones serias', async ({ page }) => {
-    await login(page, 'user@genova.ai', 'user1234password')
-    await page.goto('/dashboard')
-    await page.getByRole('link', { name: 'Mis OVAs' }).first().waitFor({ timeout: 15000 })
-    expect(seriousViolations(await analyze(page))).toEqual([])
-  })
+  test.describe('con sesión de usuario', () => {
+    test.use({ storageState: USER_STATE })
 
-  test('mis OVAs no tiene violaciones serias', async ({ page }) => {
-    await login(page, 'user@genova.ai', 'user1234password')
-    await page.goto('/mis-ovas')
-    await page.getByRole('heading', { name: 'Biblioteca de OVAs' }).waitFor({ timeout: 15000 })
-    expect(seriousViolations(await analyze(page))).toEqual([])
+    test('dashboard no tiene violaciones serias', async ({ page }) => {
+      await gotoApp(page, '/dashboard')
+      await page.getByRole('heading', { level: 1, name: /Bienvenido/ }).waitFor({ timeout: 15000 })
+      await expectNoSerious(page)
+    })
+
+    test('mis OVAs no tiene violaciones serias', async ({ page }) => {
+      await gotoApp(page, '/mis-ovas', 'Biblioteca de OVAs')
+      await expectNoSerious(page)
+    })
   })
 })

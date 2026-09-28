@@ -2,10 +2,8 @@ export interface ProviderOption {
   id: string;
   label: string;
   desc: string;
-  /** Fallback text glyph, used when `iconName` is not set. */
-  icon?: string;
-  /** Phosphor slug (see `<gn-icon>`), preferred over `icon` when present. */
-  iconName?: string;
+  /** Nombre del icono en el registro de core (`<Icon name>`). */
+  iconName: string;
   badge?: string;
   badgeColor?: string;
 }
@@ -14,23 +12,23 @@ export const PROVIDERS: ProviderOption[] = [
   {
     id: "groq",
     label: "Groq",
-    desc: "Modelos LLaMA y Qwen gratuitos — sin costo por token.",
+    desc: "Modelos LLaMA y Qwen gratuitos, sin costo por token.",
     badge: "Gratuito",
-    badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    badgeColor: "bg-success/12 text-success-strong",
     iconName: "lightning",
   },
   {
     id: "openrouter",
     label: "OpenRouter",
-    desc: "Acceso a +300 modelos: Claude, GPT-4o, Gemini, DeepSeek y más.",
+    desc: "Cientos de modelos con una sola clave: Claude, GPT, Gemini, DeepSeek y más.",
     badge: "Recomendado",
     badgeColor: "bg-primary/10 text-primary",
-    icon: "◎",
+    iconName: "graph",
   },
   {
     id: "opencode",
     label: "OpenCode",
     desc: "Suscripción con modelos optimizados para generación de código.",
-    icon: "◈",
+    iconName: "code",
   },
 ];

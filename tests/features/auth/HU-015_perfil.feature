@@ -10,7 +10,7 @@ Feature: Ver y editar perfil de usuario
     Given que soy un usuario autenticado
     And me encuentro en la pantalla de perfil "/profile"
     When cambio mi nombre a "Carlos Pérez", mi correo a "carlos.perez@upao.edu.pe", mi código UPAO a "257022", mi sexo a "masculino" y mi teléfono a "+51987285992"
-    And hago clic en "Guardar Cambios"
+    And hago clic en "Guardar cambios"
     Then el sistema realiza una llamada PATCH a "/api/users/me" con los nuevos datos
     And el servidor retorna un código de estado 200 con la información del perfil actualizada
     And la interfaz despliega un mensaje de éxito: "¡Perfil actualizado con éxito!"
@@ -20,6 +20,6 @@ Feature: Ver y editar perfil de usuario
     And existe otra cuenta en el sistema registrada bajo "maria@correo.com"
     And me encuentro en la pantalla de perfil "/profile"
     When cambio mi correo electrónico a "maria@correo.com"
-    And hago clic en "Guardar Cambios"
+    And hago clic en "Guardar cambios"
     Then el servidor me retorna un código de estado 400 Bad Request
     And la interfaz despliega un mensaje de advertencia: "El correo electrónico ya está en uso por otro usuario."
