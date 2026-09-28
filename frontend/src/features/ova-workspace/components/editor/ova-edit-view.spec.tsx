@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type * as jobsApi from "../../api/ova-jobs.api";
 import * as api from "../../api/ova-workspace.api";
 import { OvaEditView } from "./ova-edit-view";
 
@@ -29,6 +30,10 @@ vi.mock("../../api/ova-workspace.api", async (original) => ({
   reorderOvaPhases: vi.fn(() => Promise.resolve()),
   triggerOvaRegeneration: vi.fn(() => Promise.resolve({ job_id: "regen-1" })),
   fetchRegenerationProgress: vi.fn(() => Promise.resolve({ status: "success", percentage: 100 })),
+}));
+vi.mock("../../api/ova-jobs.api", async (original) => ({
+  ...(await original<typeof jobsApi>()),
+  fetchOvaJobByOvaId: () => Promise.reject(new Error("No hay generación para este OVA.")),
 }));
 vi.mock("../../api/workspace-chat.api", () => ({
   fetchWorkspaceChat: () => Promise.resolve({ messages: [] }),
