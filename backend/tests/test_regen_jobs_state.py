@@ -296,3 +296,43 @@ def test_un_fallo_marca_error_en_la_fila_y_en_el_ova(db, engine, executor, monke
     assert dto["status"] == "error"
     assert _ova_status(db, ova) == "error"
     assert db.get(RegenJob, uuid.UUID(job_id)).error == "modelo caído"
+
+
+def test_si_no_sale_ningun_recurso_termina_en_error_sin_version_nueva(
+    db, engine, executor, monkeypatch
+):
+    ova = _seed(db)
+    job_id = _start(db, ova)
+    # Todas las fases pedidas vuelven sin contenido (p. ej. el modelo falló).
+    monkeypatch.setattr(
+        regen_service,
+        "regen_phases_parallel",
+        lambda phases, *_a, **_k: {str(p.id): None for p in phases},
+    )
+    regen_service._finalize_edit(job_id, str(ova.id))
+
+    dto = regen_jobs.regen_progress_dto(job_id, str(ova.id))
+    # Antes cerraba «success» con una versión idéntica y el docente no se enteraba.
+    assert dto["status"] == "error"
+    assert db.get(RegenJob, uuid.UUID(job_id)).error == regen_service.NOTHING_REGENERATED
+    versions = db.execute(select(OvaVersion.version_number).where(OvaVersion.ova_id == ova.id))
+    assert sorted(versions.scalars()) == [1]
+    # Nada cambió: el OVA vuelve a estar disponible, no queda marcado «error».
+    assert _ova_status(db, ova) == "listo"
+
+
+def test_el_recurso_nuevo_recibe_el_tema_del_resto_del_ova(db, engine, executor, monkeypatch):
+    ova = _seed(db)
+    seen = {}
+
+    def fake_regen(phases, *_a, **kw):
+        seen["theme"] = kw.get("fallback_theme")
+        return {str(p.id): "<html>v2</html>" for p in phases}
+
+    monkeypatch.setattr(regen_service, "regen_phases_parallel", fake_regen)
+    monkeypatch.setattr(regen_service, "theme_of", lambda html: {"from": html})
+    job_id = _start(db, ova)
+    regen_service._finalize_edit(job_id, str(ova.id))
+
+    assert seen["theme"] == {"from": "<html>v1</html>"}
+    assert regen_jobs.regen_progress_dto(job_id, str(ova.id))["status"] == "success"

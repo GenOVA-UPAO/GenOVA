@@ -11,7 +11,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core.database import SessionLocal
-from generation.infrastructure.regen_persist import _build_and_persist, _mark_ova_error
+from generation.infrastructure.regen_persist import (
+    _build_and_persist,
+    _mark_ova_error,
+    _release_ova,
+)
 from generation.regen.regen_edit import regen_phases_parallel
 from generation.regen.regen_heartbeat import JobHeartbeat
 from generation.regen.regen_jobs import (
@@ -22,10 +26,30 @@ from generation.regen.regen_jobs import (
     touch_regen,
 )
 from generation.regen.regen_rag import build_regen_material
+from llm.utils.ova_runtime import theme_of
 from models import Ova, OvaPhase, OvaVersion
-from ova import ensure_version_exists, get_active_version, next_version_number
+from ova import (
+    ensure_version_exists,
+    get_active_version,
+    next_version_number,
+    placeholder_prompt,
+)
 
 logger = structlog.get_logger(__name__)
+
+NOTHING_REGENERATED = "No se pudo generar ninguno de los recursos pedidos."
+
+
+class RegenProducedNothing(Exception):
+    """Ningún recurso pedido salió: una versión idéntica no es un «Listo»."""
+
+
+def _ova_theme(phases: list) -> dict | None:
+    """Tema del OVA leído de su primer recurso ya generado (no de un marcador)."""
+    for phase in phases:
+        if phase.content and placeholder_prompt(phase.content) is None:
+            return theme_of(phase.content)
+    return None
 
 
 def _finalize_edit(job_id: str, ova_id: str) -> None:
@@ -44,6 +68,13 @@ def _finalize_edit(job_id: str, ova_id: str) -> None:
         db = SessionLocal()
         try:
             _run(db, job_id, ova_id, job, beat)
+        except RegenProducedNothing as exc:
+            # Nada cambió: el OVA vuelve a estar disponible tal cual (no «error»)
+            # y la regeneración termina en error para que el docente lo vea.
+            db.rollback()
+            logger.warning("regen sin contenido", ova_id=str(ova_id), job_id=job_id)
+            if fail_regen(job_id, str(exc)):
+                _release_ova(db, ova_id)
         except RegenLost:
             # Otro proceso la dio por interrumpida (y liberó el OVA) mientras este
             # seguía: no se escribe nada, puede haber otra regeneración en marcha.
@@ -113,9 +144,14 @@ def _run(db: Session, job_id: str, ova_id, job: dict, beat: JobHeartbeat) -> Non
         llm_config,
         image_settings=image_settings,
         contexto=material.contexto,
+        fallback_theme=_ova_theme(current_phases),
     )
     if beat.lost.is_set() or not touch_regen(job_id, step="persist"):
         raise RegenLost(job_id)
+    # Antes se cerraba como «success» con una versión idéntica: un recurso
+    # añadido se quedaba con su marcador «pendiente de regeneración» sin aviso.
+    if to_regen and not any(regen_content.get(str(p.id)) for p in to_regen):
+        raise RegenProducedNothing(NOTHING_REGENERATED)
 
     # La versión nueva se escribe cuando ya está el contenido: insertarla antes
     # dejaba la transacción abierta durante las llamadas al modelo (minutos),

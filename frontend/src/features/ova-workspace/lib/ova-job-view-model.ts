@@ -62,6 +62,11 @@ export interface JobOutcome {
   isTerminal: boolean;
   anyDone: boolean;
   totalFail: boolean;
+  /**
+   * Terminó con algún recurso fallido pero otros sí salieron: el backend marca
+   * el job `done` igualmente, así que el estado del job no basta para saberlo.
+   */
+  partialFail: boolean;
 }
 
 const STATUS_MAP: Record<string, UiStatus> = {
@@ -96,11 +101,12 @@ export function humanizeResourceType(raw: string | number | null | undefined): s
     .join(" ");
 }
 
-const PHASES = ["engage", "explore", "explain", "elaborate", "evaluate"];
+/** Orden canónico de las fases 5E. */
+export const PHASE_ORDER = ["engage", "explore", "explain", "elaborate", "evaluate"];
 
 function buildLabelIndex(selections: Selections): Map<string, Partial<SelectionItem>> {
   const index = new Map<string, Partial<SelectionItem>>();
-  for (const phase of PHASES) {
+  for (const phase of PHASE_ORDER) {
     const resources = Object.hasOwn(selections, phase) ? selections[phase] : [];
     for (const r of resources) {
       index.set(`${phase}:${String(r.id)}`, { tipo: r.tipo, emoji: r.emoji });
@@ -250,10 +256,13 @@ export function jobOutcome(
   viewModel: ResourceVM[] = [],
 ): JobOutcome {
   const status = job?.status ?? "queued";
+  const isTerminal = TERMINAL.has(status);
   const anyDone = viewModel.some((r) => r.status === "check");
+  const anyFailed = viewModel.some((r) => r.status === "X");
   return {
-    isTerminal: TERMINAL.has(status),
+    isTerminal,
     anyDone,
-    totalFail: TERMINAL.has(status) && !anyDone,
+    totalFail: isTerminal && !anyDone,
+    partialFail: isTerminal && anyDone && anyFailed,
   };
 }

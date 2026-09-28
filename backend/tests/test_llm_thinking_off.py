@@ -6,6 +6,8 @@ válido), que los modelos no pensantes no ganan extra_body, y que
 with_model_thinking() mantiene su contrato puro.
 """
 
+import pytest
+
 import llm.router as router
 from llm.router import generar_texto
 from llm.utils.llm_helpers import (
@@ -13,6 +15,13 @@ from llm.utils.llm_helpers import (
     with_model_thinking,
     with_thinking_disabled,
 )
+
+
+@pytest.fixture(autouse=True)
+def _todos_con_clave(monkeypatch):
+    """Todos los proveedores con clave de plataforma: la cadena no se filtra
+    (llm.chain_credentials) y el test no depende de las claves de la BD/entorno."""
+    monkeypatch.setattr(router, "_get_provider_key", lambda _p: "k")
 
 
 class _CapturingChat:

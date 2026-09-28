@@ -1,0 +1,39 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "key": "e0a9a1dc4c5f5e88751bef5a",
+   "msgs_key": "9e42962f4c161a351705b106",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 700,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Locutor de micro-podcasts educativos universitarios.\n[CURSO] Recurso para un curso universitario (pregrado, UPAO). Audiencia: estudiantes universitarios; usa el nivel de profundidad, notación y rigor propios de la asignatura indicada en el tema (fórmulas, unidades y ejemplos numéricos cuando el tema lo requiera). Idioma: español. El recurso debe enseñar de verdad: objetivo de aprendizaje cla",
+    "tail": "r de dominio: no sustituyas el tema por otro (p.ej. machine learning, churn o una empresa ficticia si el tema es historia, biología o matemáticas). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 2146
+   },
+   "response": {
+    "content": "Imagina que despiertas, abres la nevera y... todo lo que ves, en algún momento, fue energía del sol. ¿Cómo? Las plantas son las únicas fábricas capaces de capturar esa luz. Piensa en la fotosíntesis como en un proceso de dos turnos en una fábrica. El primer turno es la fase luminosa: los paneles solares de la hoja atrapan la luz y la convierten en moneda de energía, como si cargaran una batería. El segundo turno es el ciclo de Calvin, donde esa batería se usa para ensamblar moléculas de CO₂ del aire y convertirlas en glucosa, el verdadero combustible. Sin este proceso, no habría oxígeno para respirar ni alimentos en tu plato. La próxima vez que veas una hoja, pregúntate: ¿qué porcentaje de mi almuerzo de hoy empezó su viaje en un rayo de sol?",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "8977afcd8d7cde39c2715495",
+   "msgs_key": "0460fc32aa2126c7850a2064",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 1024,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Evaluador pedagógico de recursos educativos HTML5.\n[FASE_5E] engage | [TIPO_RECURSO] 3 | [CONCEPTO] \"La fotosíntesis: cómo las plantas transforman la energía luminosa en energía química (fase luminosa y ciclo de Calvin), para estudiantes de primer ciclo universitario\"\n[TAREA] Evalúa este recurso según 6 criterios y responde SOLO con JSON válido:\n1. Fidelidad pedagógica: ¿enseña el concepto y",
+    "tail": "ctadas server-side, NO incluidas en el extracto: no las\n  cuentes como CSS/JS ausente.\n- Las imágenes/audio/video aparecen como [img/audio/video:data-uri NKB]:\n  juzga su uso y densidad, no sus bytes.",
+    "chars": 7273
+   },
+   "response": {
+    "content": "```json\n{\n  \"puntaje\": 72,\n  \"problemas\": [\n    \"Fase 5E (engage) no implementada: falta atención inicial, pregunta provocadora o gancho experiencial.\",\n    \"Interactividad nula: el botón 'He terminado de leer' no está vinculado a ningún contenido pedagógico, solo marca SCORM vacío.\",\n    \"No hay visualización del concepto: ningún apoyo gráfico para fase luminosa ni ciclo de Calvin; todo es texto en bloque.\",\n    \"Accesibilidad: falta tabindex/role en contenedores clicables y un aria-live en #status.\",\n    \"No hay estímulo para la exploración: el recurso solo pide leer y marcar completado, no invita a interactuar con el proceso.\",\n    \"Problema conceptual menor: se menciona 'moneda de energía' y 'batería' pero no ATP ni NADPH; adecuado para divulgación pero insuficiente para nivel universitario.\"\n  ],\n  \"veredicto\": \"revisar\"\n}\n```",
+    "finish_reason": "stop"
+   }
+  }
+ ]
+}

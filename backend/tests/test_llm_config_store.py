@@ -12,6 +12,13 @@ from llm import router
 from llm.utils import llm_config_store as store
 
 
+@pytest.fixture(autouse=True)
+def _todos_con_clave(monkeypatch):
+    """Todos los proveedores con clave de plataforma: la cadena no se filtra
+    (llm.chain_credentials) y el test no depende de las claves de la BD/entorno."""
+    monkeypatch.setattr(router, "_get_provider_key", lambda _p: "k")
+
+
 def test_sanitize_drops_invalid_keeps_valid():
     payload = {
         "defaults": {

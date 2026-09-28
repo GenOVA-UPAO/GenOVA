@@ -47,6 +47,15 @@ class Settings(BaseSettings):
     rate_limit_enabled: bool = True
     # LLM_FAKE=1 sustituye la generación LLM por HTML determinista sin proveedores.
     llm_fake: bool = False
+    # Grabar/reproducir las respuestas LLM de texto (llm.cassette): «record»
+    # guarda cada llamada real en un cassette JSON; «replay» responde desde él
+    # sin red ni claves (una llamada sin grabar es un error, nunca va al
+    # proveedor). «off» (por defecto) no intercepta nada.
+    llm_cassette_mode: str = "off"
+    llm_cassette_dir: str = "tests/fixtures/llm_cassettes"
+    # En replay, sin coincidencia exacta se prueba la siguiente entrada con la
+    # misma forma (prompt retocado); STRICT=1 lo desactiva y exige el hash exacto.
+    llm_cassette_strict: bool = False
 
     # --- Observabilidad / app ---
     log_level: str = "INFO"

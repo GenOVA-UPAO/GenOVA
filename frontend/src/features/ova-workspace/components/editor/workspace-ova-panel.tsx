@@ -2,18 +2,12 @@ import { lazy, Suspense, useState } from "react";
 
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
-import { buttonRegenPayload } from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
+import { WorkspaceEditSections } from "./workspace-edit-sections";
 import { type OvaPanelTab, WorkspaceOvaPanelTabs } from "./workspace-ova-panel-tabs";
 import { WorkspaceRegenStatus } from "./workspace-regen-status";
-import { WorkspaceResourceList } from "./workspace-resource-list";
 
 const WorkspaceHtmlPreview = lazy(() => import("./workspace-html-preview"));
-const sectionTypes = (phases: PhaseWithContent[]): string[] => {
-  const seen = new Map<string, true>();
-  for (const phase of phases) seen.set(phase.phase_type, true);
-  return Array.from(seen.keys());
-};
 
 interface Props {
   ovaId: string;
@@ -32,15 +26,6 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
   const changeTab = (next: OvaPanelTab) => {
     if (next === "edit") setEditOpened(true);
     setTab(next);
-  };
-  const handleGroupReorder = (phaseType: string, group: PhaseWithContent[]) => {
-    let index = 0;
-    const reordered = phases.map((phase) =>
-      phase.phase_type === phaseType ? group[index++] : phase,
-    );
-    workspace.reorder.mutate(
-      reordered.map((phase, order) => ({ phase_id: phase.id, new_order: order })),
-    );
   };
   return (
     <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
@@ -70,25 +55,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
           hidden={tab !== "edit"}
           className="h-full min-h-0 space-y-6 overflow-y-auto p-3 sm:p-4"
         >
-          {editOpened &&
-            sectionTypes(phases).map((phaseType) => (
-              <WorkspaceResourceList
-                key={phaseType}
-                ovaId={ovaId}
-                phaseType={phaseType}
-                phases={phases.filter((phase) => phase.phase_type === phaseType)}
-                busy={regen.busy}
-                onReorder={(group) => {
-                  handleGroupReorder(phaseType, group);
-                }}
-                onRegenerate={(phase) => {
-                  if (!regen.busy)
-                    regen.request.mutate(
-                      buttonRegenPayload(phases, "Regenerar recurso", [phase.id]),
-                    );
-                }}
-              />
-            ))}
+          {editOpened && <WorkspaceEditSections ovaId={ovaId} phases={phases} regen={regen} />}
         </div>
       </div>
       {!readOnly && (

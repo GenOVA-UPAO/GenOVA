@@ -332,6 +332,43 @@ python tests/test_rag_uploads.py
 
 Override env para los tests manuales: `BASE`, `EMAIL`, `PASS`, `PHASE`, `TYPE`, `CONCEPT`.
 
+### Generación real sin coste: cassettes LLM (record/replay)
+
+`LLM_FAKE=1` se salta el grafo entero con HTML de relleno. Los **cassettes**
+(`backend/llm/cassette.py`) prueban el flujo **real**: prompts reales → salida
+real del modelo (grabada una vez) → parseo JSON, validate_and_repair, refinado,
+chequeo de JS, crítico, editor y SCORM, todo ejecutándose de verdad.
+
+- La costura es `llm.router._chat_once` (y `_vision_once`): por encima corre la
+  cadena de respaldos y la continuación por `finish_reason=length` sin cambios.
+- `LLM_CASSETTE_MODE=record|replay|off` (por defecto `off`), `LLM_CASSETTE_DIR`
+  y `LLM_CASSETTE_STRICT=1`. En replay no hay red ni claves: una llamada sin
+  grabar lanza `CassetteMissError` con la clave; nunca va al proveedor.
+- Clave: hash de (proveedor, modelo, mensajes normalizados sin UUIDs, fechas ni
+  data URIs); si no casa, mismo prompt con otro modelo; y, salvo modo estricto,
+  la siguiente entrada con la misma forma (prompt retocado sin regrabar; avisa
+  en el log).
+- Cassettes: `backend/tests/fixtures/llm_cassettes/<fase>_<NN>.json` (uno por
+  tipo de recurso) y `ova_full.json` (editor del OVA completo). Guardan un
+  extracto del prompt y la respuesta; nunca claves.
+- Los medios no se graban: sin imágenes ni video y el podcast sin TTS.
+
+```bash
+# Tests (sin red ni claves, segundos):
+pytest tests/test_resource_generation_replay.py tests/test_llm_cassette.py
+
+# Grabar (gasta crédito; la clave SOLO en el entorno del proceso). Todo el texto
+# va a openrouter/deepseek/deepseek-v4-flash; se detiene al superar --cap-usd:
+OPENROUTER_API_KEY=sk-or-... LANGSMITH_TRACING=false RAG_DISABLED=1 \
+  python -m scripts.record_llm_cassettes --only evaluate:1 --cap-usd 0.15
+python -m scripts.record_llm_cassettes --skip-existing      # los que falten
+python -m scripts.record_llm_cassettes --ova --no-resources # OVA completo (editor)
+```
+
+Los tests de inyección de fallos escriben entradas de error a mano (401, 429,
+5xx, timeout, vacío o salida truncada con `finish_reason: "length"`) para
+ejercitar offline la cadena de respaldos y la continuación.
+
 ## Estructura del monorepo
 
 ```

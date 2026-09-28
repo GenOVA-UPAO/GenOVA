@@ -9,6 +9,13 @@ from llm.utils import llm_helpers
 from llm.utils.llm_helpers import OWNER_FIELD, _resolve_primary, with_owner
 
 
+@pytest.fixture(autouse=True)
+def _todos_con_clave(monkeypatch):
+    """Todos los proveedores con clave de plataforma: la cadena no se filtra
+    (llm.chain_credentials) y el test no depende de las claves de la BD/entorno."""
+    monkeypatch.setattr(router, "_get_provider_key", lambda _p: "k")
+
+
 @pytest.fixture
 def user_keys(monkeypatch):
     keys: dict[str, dict[str, str]] = {"u1": {"groq": "gsk-propia"}}

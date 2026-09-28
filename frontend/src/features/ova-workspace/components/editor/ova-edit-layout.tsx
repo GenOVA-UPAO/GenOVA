@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import type { PhaseWithContent } from "../../lib/types";
 import { WorkspaceChatPanel } from "./workspace-chat-panel";
+import { WorkspaceFailedJobNotice } from "./workspace-failed-job-notice";
 import { WorkspaceHeader, type WorkspaceMobileView } from "./workspace-header";
 import { WorkspaceOvaPanel } from "./workspace-ova-panel";
 import { WorkspaceReadOnlyNotice } from "./workspace-read-only-notice";
@@ -40,11 +41,14 @@ export function OvaEditLayout({ ovaId, title, version, readOnly, phases, regen }
           <div className="min-h-0 min-w-0 flex-1">{ovaPanel}</div>
         </>
       ) : (
-        <WorkspaceSplitView
-          mobileView={mobileView}
-          chat={<WorkspaceChatPanel phases={phases} regen={regen} />}
-          preview={ovaPanel}
-        />
+        <>
+          <WorkspaceFailedJobNotice ovaId={ovaId} />
+          <WorkspaceSplitView
+            mobileView={mobileView}
+            chat={<WorkspaceChatPanel phases={phases} regen={regen} />}
+            preview={ovaPanel}
+          />
+        </>
       )}
     </div>
   );

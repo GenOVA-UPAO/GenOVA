@@ -102,6 +102,24 @@ export function buttonRegenPayload(
   };
 }
 
+/**
+ * «Añadir recurso» crea el recurso con un marcador pendiente: esta
+ * regeneración es la que lo genera de verdad, con las instrucciones del
+ * docente (el backend reconoce el marcador y lo crea desde cero).
+ */
+export function addedResourceRegenPayload(
+  phaseLabel: string,
+  instructions: string,
+  phaseId: string,
+): RegenPayload {
+  return {
+    prompt: instructions,
+    historyText: `Nuevo recurso en ${phaseLabel}: ${instructions}`,
+    phaseIds: [phaseId],
+    resourceLabels: [`Nuevo recurso de ${phaseLabel}`],
+  };
+}
+
 /** Payload de un mensaje escrito en el chat: el texto es la instrucción. */
 export function messageRegenPayload(
   phases: PhaseWithContent[],
