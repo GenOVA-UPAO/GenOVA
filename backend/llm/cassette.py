@@ -60,9 +60,16 @@ _PREVIEW_HEAD, _PREVIEW_TAIL = 400, 200
 
 _VOLATILE = (
     (re.compile(r"data:[\w/+.-]+;base64,[A-Za-z0-9+/=]+"), "<data-uri>"),
-    (re.compile(r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"), "<uuid>"),
     (
-        re.compile(r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b"),
+        re.compile(
+            r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+        ),
+        "<uuid>",
+    ),
+    (
+        re.compile(
+            r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b"
+        ),
         "<ts>",
     ),
     (re.compile(r"\b[0-9a-fA-F]{32,}\b"), "<hex>"),
@@ -150,24 +157,44 @@ def build_error(err: dict, provider: str, model_id: str) -> Exception:
     status = int(err.get("status", 500))
     # retry-after 0: el backoff del router no espera en replay.
     response = httpx.Response(status, request=request, headers={"retry-after": "0"})
-    cls = _STATUS_ERRORS.get(status, openai.InternalServerError if status >= 500 else openai.APIStatusError)
+    cls = _STATUS_ERRORS.get(
+        status, openai.InternalServerError if status >= 500 else openai.APIStatusError
+    )
     return cls(msg, response=response, body=None)
 
 
-class Cassette:
-    """Un archivo de cassette: entradas grabadas y su consumo en replay."""
+def _load_entries(path: Path) -> list[dict]:
+    if not path.exists():
+        raise CassetteMissError(f"No existe el cassette {path}: grábalo antes (modo record)")
+    return json.loads(path.read_text(encoding="utf-8")).get("entries", [])
 
-    def __init__(self, path: str | Path, mode: str = REPLAY, *, strict: bool | None = None):
+
+class Cassette:
+    """Un archivo de cassette: entradas grabadas y su consumo en replay.
+
+    `base`: otros cassettes cuyas entradas también valen para responder (p. ej.
+    los de cada recurso dentro del OVA completo). En record, una llamada que ya
+    está en `base` con la misma clave exacta se responde de ahí sin pagarla otra
+    vez; solo lo nuevo se graba en `path`.
+    """
+
+    def __init__(
+        self,
+        path: str | Path,
+        mode: str = REPLAY,
+        *,
+        strict: bool | None = None,
+        base: tuple[str | Path, ...] | list = (),
+    ):
         self.path = Path(path)
         self.mode = mode
         self.strict = settings.llm_cassette_strict if strict is None else strict
-        self.entries: list[dict] = []
+        # Grabar empieza de cero: regrabar reemplaza el cassette entero.
+        self.entries: list[dict] = _load_entries(self.path) if mode == REPLAY else []
+        self.base: list[dict] = [e for b in base for e in _load_entries(Path(b))]
+        self._pool = self.entries + self.base if mode == REPLAY else self.base
         self._used: set[int] = set()
         self._lock = threading.RLock()
-        if self.path.exists():
-            self.entries = json.loads(self.path.read_text(encoding="utf-8")).get("entries", [])
-        elif mode == REPLAY:
-            raise CassetteMissError(f"No existe el cassette {self.path}: grábalo antes (modo record)")
 
     # ── escritura ────────────────────────────────────────────────────────────
     def add(
@@ -186,13 +213,14 @@ class Cassette:
         entry: dict = {
             "key": key,
             "msgs_key": msgs_key,
-            "label": label,
             "provider": provider,
             "model_id": model_id,
             "max_tokens": max_tokens,
             "n_messages": len(msgs),
             "prompt": _preview(msgs),
         }
+        if label:
+            entry["label"] = label
         if error is not None:
             entry["error"] = error
         else:
@@ -201,31 +229,39 @@ class Cassette:
             self.entries.append(entry)
         return entry
 
+    def reusable(self, provider: str, model_id: str, msgs: list[dict]) -> dict | None:
+        """En record: respuesta ya grabada en `base` con la clave exacta (sin error)."""
+        key, _ = call_keys(provider, model_id, msgs)
+        return next((e for e in self.base if e["key"] == key and "error" not in e), None)
+
     def save(self) -> None:
         with self._lock:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             data = {"version": 1, "entries": self.entries}
-            self.path.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+            self.path.write_text(
+                json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+            )
 
     # ── lectura ──────────────────────────────────────────────────────────────
     def _take(self, idxs: list[int]) -> dict | None:
         fresh = [i for i in idxs if i not in self._used]
         if fresh:
             self._used.add(fresh[0])
-            return self.entries[fresh[0]]
-        return self.entries[idxs[-1]] if idxs else None
+            return self._pool[fresh[0]]
+        return self._pool[idxs[-1]] if idxs else None
 
     def lookup(self, provider: str, model_id: str, msgs: list[dict], max_tokens: int) -> dict:
         key, msgs_key = call_keys(provider, model_id, msgs)
+        pool = self._pool
         with self._lock:
-            hit = self._take([i for i, e in enumerate(self.entries) if e["key"] == key])
+            hit = self._take([i for i, e in enumerate(pool) if e["key"] == key])
             if hit is None:
-                same = [i for i, e in enumerate(self.entries) if e["msgs_key"] == msgs_key]
-                hit = self._take([i for i in same if "error" not in self.entries[i]] or same)
+                same = [i for i, e in enumerate(pool) if e["msgs_key"] == msgs_key]
+                hit = self._take([i for i in same if "error" not in pool[i]] or same)
             if hit is None and not self.strict:
                 shape = [
                     i
-                    for i, e in enumerate(self.entries)
+                    for i, e in enumerate(pool)
                     if i not in self._used
                     and "error" not in e
                     and e.get("max_tokens") == max_tokens
@@ -274,10 +310,12 @@ def replaying() -> bool:
 
 
 @contextlib.contextmanager
-def use_cassette(path: str | Path, mode: str = REPLAY, *, strict: bool | None = None) -> Iterator[Cassette]:
+def use_cassette(
+    path: str | Path, mode: str = REPLAY, *, strict: bool | None = None, base=()
+) -> Iterator[Cassette]:
     """Activa un cassette para todas las llamadas (todos los hilos) del bloque."""
     global _active
-    cassette = Cassette(path, mode, strict=strict)
+    cassette = Cassette(path, mode, strict=strict, base=base)
     with _active_lock:
         previous, _active = _active, cassette
     try:
@@ -314,6 +352,9 @@ def intercept_chat(
         if not (resp.get("content") or "").strip():
             raise EmptyContentError(f"Empty content from {provider}/{model_id} (cassette)")
         return resp["content"], resp.get("finish_reason")
+    reused = c.reusable(provider, model_id, msgs)
+    if reused is not None:
+        return reused["response"]["content"], reused["response"].get("finish_reason")
     try:
         content, finish = real_call()
     except Exception as exc:
