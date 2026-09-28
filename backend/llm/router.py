@@ -6,6 +6,7 @@ import structlog
 from groq import RateLimitError as GroqRateLimitError
 from openai import RateLimitError as OpenAIRateLimitError
 
+from llm import cassette
 from llm.clients.clients import (
     _LLM_TIMEOUT_S,
     _get_provider_key,
@@ -89,6 +90,25 @@ def _ls_extra(client) -> dict:
 
 
 def _chat_once(
+    provider: str,
+    model_id: str,
+    msgs: list[dict],
+    max_tokens: int,
+    extra: dict,
+    timeout: float | None = None,
+    key: str | None = None,
+) -> tuple[str, str | None]:
+    """Una llamada de chat. Costura única de record/replay (llm.cassette)."""
+    return cassette.intercept_chat(
+        provider,
+        model_id,
+        msgs,
+        max_tokens,
+        lambda: _provider_chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key),
+    )
+
+
+def _provider_chat_once(
     provider: str,
     model_id: str,
     msgs: list[dict],
@@ -238,7 +258,7 @@ def generar_texto(
                 model_id=model_id,
                 backoff_s=round(backoff, 1),
             )
-            if backoff:
+            if backoff and not cassette.replaying():
                 time.sleep(backoff)
         logger.info(
             "task trying model",
@@ -378,6 +398,18 @@ def _groq_vision(model_id: str, messages: list[dict], max_tokens: int, key: str)
 
 
 def _vision_once(provider: str, model_id: str, messages: list[dict], max_tokens: int, key: str) -> str:
+    return cassette.intercept_vision(
+        provider,
+        model_id,
+        messages,
+        max_tokens,
+        lambda: _provider_vision_once(provider, model_id, messages, max_tokens, key),
+    )
+
+
+def _provider_vision_once(
+    provider: str, model_id: str, messages: list[dict], max_tokens: int, key: str
+) -> str:
     if provider == "groq":
         response = _groq_vision(model_id, messages, max_tokens, key)
     else:
@@ -398,8 +430,9 @@ def generar_vision(messages: list[dict], max_tokens: int = 1024) -> str:
     """
     last_err: Exception | None = None
     for provider, model_id in vision_chain():
-        key = _get_provider_key(provider)
-        if not key:
+        replay = cassette.replaying()  # en replay no se exige clave
+        key = "" if replay else _get_provider_key(provider)
+        if not key and not replay:
             continue
         try:
             text = _vision_once(provider, model_id, messages, max_tokens, key)
