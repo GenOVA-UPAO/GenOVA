@@ -1,31 +1,31 @@
 [texto.1]
 defaults = { num_questions = 4 }
 template = '''
-[ROL] Redactor de casos de estudio para ciencias de datos.
+[ROL] Redactor de casos de estudio de administracion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Caso de estudio: narrativa 180 palabras (empresa ficticia, problema concreto, datos), ${num_questions} preguntas progresivas (observar->diagnosticar->proponer->evaluar), respuesta_modelo <=50 palabras cada una con razonamiento.
+[TAREA] Caso de estudio: narrativa 180 palabras (pequena empresa ficticia con base de datos Oracle, problema concreto, evidencias como salidas de vistas V$$/DBA_, mensajes ORA- o metricas), ${num_questions} preguntas progresivas (observar->diagnosticar->proponer->evaluar), respuesta_modelo <=50 palabras cada una con razonamiento (en "proponer" incluye la sentencia o accion Oracle concreta).
 [RESTRICCIONES] Sector reconocible. Datos plausibles. Preguntas que guien razonamiento.
 [SALIDA] JSON puro con claves "narrativa","preguntas" (array de ${num_questions} con pregunta,respuesta_modelo).'''
 
 [texto.2]
 defaults = { num_steps = 5 }
 template = '''
-[ROL] Instructor de ejercicios practicos de ML.
+[ROL] Instructor de laboratorio de administracion de bases de datos Oracle.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Ejercicio guiado de ${num_steps} pasos para aplicar "${concept}". Cada paso: instruccion <=35 palabras, pista opcional, resultado_esperado, validacion de logro.
-[RESTRICCIONES] Pasos incrementales, sin saltos logicos. Completables sin frustracion.
+[TAREA] Ejercicio guiado de ${num_steps} pasos para aplicar "${concept}", al estilo de un laboratorio del curso: parte de un enunciado concreto sobre un esquema conocido (p. ej. "user01 es dueno de EMPLOYEES y quiere que user02 actualice solo EMAIL y HIRE_DATE cuando DEPARTMENT_ID <> 60"). Cada paso: instruccion <=35 palabras, pista opcional, resultado_esperado, validacion de logro.
+[RESTRICCIONES] Pasos incrementales, sin saltos logicos. Completables sin frustracion. Cuando el paso implique ejecutar algo, resultado_esperado incluye la sentencia SQL/PL/SQL Oracle correcta o la salida esperada.
 [SALIDA] JSON puro con clave "pasos": array de ${num_steps} objetos con "numero","instruccion","pista","resultado_esperado","validacion".'''
 
 [texto.3]
 defaults = { num_deliverables = 3 }
 template = '''
-[ROL] Diseniador de mini-proyectos de ML aplicado.
+[ROL] Diseniador de mini-proyectos de gestion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Mini-proyecto: objetivo 50 palabras, ${num_deliverables} entregables evaluables, dataset_sugerido 80 palabras (al menos 8 variables, 50 registros), rubrica con 4 criterios y 3 niveles cada uno (basico/competente/avanzado).
-[RESTRICCIONES] Entregables en 8-10 min. Dataset realista y descriptivo.
+[TAREA] Mini-proyecto: objetivo 50 palabras, ${num_deliverables} entregables evaluables, dataset_sugerido 80 palabras (caso de una pequena empresa: al menos 4 tablas con sus columnas clave y restricciones, volumen estimado de filas y los tablespaces/usuarios implicados), rubrica con 4 criterios y 3 niveles cada uno (basico/competente/avanzado).
+[RESTRICCIONES] Entregables en 8-10 min, verificables con sentencias o consultas Oracle. Caso realista y descriptivo, en la linea del proyecto del curso (gestion de almacenamiento, seguridad o rendimiento de la BD de una pequena empresa).
 [SALIDA] JSON puro con claves "objetivo","entregables" (array de ${num_deliverables}),"dataset_sugerido","rubrica".'''
 
 [texto.6]
@@ -34,24 +34,24 @@ template = '''
 [ROL] Diseniador de escenarios de decision ramificados.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Escenario ramificado de ${num_decisions} niveles aplicando "${concept}". Nivel 1: situacion 60 palabras + 2 opciones -> cada una lleva al siguiente nivel con nueva situacion + 2 opciones. Cada rama final: desenlace 40 palabras + leccion_aprendida conectada con "${concept}".
+[TAREA] Escenario ramificado de ${num_decisions} niveles aplicando "${concept}". Nivel 1: situacion operativa del DBA de 60 palabras (p. ej. tablespace al 95%, ORA-00060 por interbloqueo, borrado accidental que exige recuperar, consulta critica lenta) + 2 opciones -> cada una lleva al siguiente nivel con nueva situacion + 2 opciones. Cada rama final: desenlace 40 palabras + leccion_aprendida conectada con "${concept}".
 [RESTRICCIONES] Decisiones no triviales. Todas las ramas pedagogicamente valiosas.
 [SALIDA] JSON puro con estructura de arbol: "nodo_raiz" con situacion,opciones (array de 2 con siguiente_nodo,desenlace,leccion_aprendida).'''
 
 [texto.8]
 defaults = { num_problems = 4 }
 template = '''
-[ROL] Facilitador de resolucion de problemas de ML.
+[ROL] Facilitador de resolucion de incidencias en bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Mapa de ${num_problems} problemas donde "${concept}" es la solucion. Cada uno: contexto 40 palabras (sector+situacion), 3 sintomas observables, diagnostico (por que "${concept}"), solucion_recomendada 50 palabras.
-[RESTRICCIONES] Sectores diversos (salud, finanzas, retail, industria). Sintomas sin jerga experta.
+[RESTRICCIONES] Sectores diversos (salud, educacion, retail, banca, logistica). Sintomas observables por un usuario o DBA (lentitud, errores ORA-, disco que crece, accesos sospechosos) sin jerga experta.
 [SALIDA] JSON puro con clave "problemas": array de ${num_problems} con "contexto","sintomas" (array de 3),"diagnostico","solucion_recomendada".'''
 
 [texto.10]
 defaults = { num_criteria = 4 }
 template = '''
-[ROL] Diseniador de retos de arquitectura de soluciones ML.
+[ROL] Diseniador de retos de administracion y configuracion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Reto de disenio: enunciado 80 palabras (cliente realista, problema, restricciones), ${num_criteria} criterios de disenio, guia_evaluacion con 3 niveles, solucion_referencia 100 palabras.
@@ -65,7 +65,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Simulacion HTML5 donde el estudiante aplique "${concept}" en un escenario realista.
-[TAREA] Entorno simulado con escenario empresarial concreto, ${num_params}-${num_params_plus1} parametros ajustables, visualizacion SVG/canvas reactiva, metricas visibles y boton "Aplicar" que ejecuta "${concept}". Iterar al menos 3 veces para descubrir patrones.
+[TAREA] Entorno simulado de una base de datos Oracle en un escenario empresarial concreto (p. ej. dimensionar SGA para N usuarios, repartir datafiles entre discos, planificar backups frente a RPO/RTO, elegir indices para una carga de consultas), ${num_params}-${num_params_plus1} parametros ajustables, visualizacion SVG/canvas reactiva, metricas visibles y boton "Aplicar" que ejecuta "${concept}". Iterar al menos 3 veces para descubrir patrones.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas. Visualizacion <100 ms.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() tras 3 iteraciones.
@@ -74,11 +74,11 @@ ${ds}
 [codigo.5]
 defaults = { num_questions = 3 }
 template = '''
-[ROL] Desarrollador front-end de dashboards de analisis de datos.
+[ROL] Desarrollador front-end de dashboards de monitoreo de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Dashboard HTML5 donde el estudiante analice datos de "${concept}" y extraiga conclusiones.
-[TAREA] Dataset hardcodeado de 15-20 registros, tabla filtrable/ordenable, 2 graficos SVG (scatter/bar/line) que reaccionan a filtros, ${num_questions} preguntas con selector, boton "Revelar insight". Graficos SVG reales.
+[OBJETIVO] Dashboard HTML5 donde el estudiante analice metricas de una base de datos Oracle relacionadas con "${concept}" y extraiga conclusiones como lo haria un DBA.
+[TAREA] Dataset hardcodeado de 15-20 registros plausibles (p. ej. filas de DBA_SEGMENTS, DBA_DATA_FILES, V$$SESSION, DBA_AUDIT_TRAIL o snapshots de Statspack), tabla filtrable/ordenable, 2 graficos SVG (scatter/bar/line) que reaccionan a filtros, ${num_questions} preguntas con selector, boton "Revelar insight". Graficos SVG reales.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al responder las ${num_questions} preguntas.
@@ -90,8 +90,8 @@ template = '''
 [ROL] Desarrollador front-end de laboratorios de codigo interactivo.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[OBJETIVO] Lab de codigo HTML5 donde el estudiante experimente con "${concept}" escribiendo pseudocodigo.
-[TAREA] Editor simplificado (textarea), ${num_exercises} ejercicios crecientes sobre "${concept}" con codigo inicial incompleto, boton "Ejecutar" que valida contra solucion esperada, feedback visual, "Ver solucion" tras 2 intentos. Validacion JS real.
+[OBJETIVO] Lab de codigo HTML5 donde el estudiante practique "${concept}" escribiendo SQL o PL/SQL de Oracle.
+[TAREA] Editor simplificado (textarea monoespaciado), ${num_exercises} ejercicios crecientes sobre "${concept}" con enunciado tipo examen (p. ej. "Crea un indice que acelere las busquedas por LAST_NAME y EMAIL en EMPLOYEES", "Consulta los tipos de segmento en DBA_SEGMENTS", "Programa con DBMS_SCHEDULER un job diario") y codigo inicial incompleto, boton "Ejecutar" que valida la respuesta normalizando mayusculas y espacios y comprobando las palabras clave y objetos esenciales (no una igualdad exacta de texto), feedback visual, "Ver solucion" tras 2 intentos. Validacion JS real.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar los ${num_exercises} ejercicios.
@@ -104,7 +104,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Juego de estrategia HTML5 por turnos que modele la logica de "${concept}" como mecanica.
-[TAREA] Tablero/escenario con ${num_turns} turnos de decision, oponente automatico basado en "${concept}", puntuacion que refleje calidad de decisiones, pantalla final con analisis y consejos. IA oponente funcional.
+[TAREA] Tablero/escenario con ${num_turns} turnos de decision del DBA (p. ej. ordenar operaciones de transacciones concurrentes, repartir memoria o disco, responder a incidentes), oponente o sistema automatico que reacciona segun las reglas reales de "${concept}", puntuacion que refleje calidad de decisiones, pantalla final con analisis y consejos. Logica del sistema automatico funcional.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al terminar la partida.
@@ -127,7 +127,7 @@ ${ds}
 [html.estilos]
 1 = 'estudio de caso: narrativa destacada, preguntas secuenciales con campo de respuesta y toggle de modelo, barra de progreso, disenio periodistico'
 2 = 'ejercicio guiado: pasos numerados, cada uno expandible con pista y validacion, indicador de paso actual, boton siguiente'
-3 = 'mini-proyecto: panel de objetivo, tarjetas de entregables con checklist, dataset colapsable, rubrica interactiva con niveles desplegables'
+3 = 'mini-proyecto: panel de objetivo, tarjetas de entregables con checklist, caso y esquema colapsable, rubrica interactiva con niveles desplegables'
 6 = 'escenario ramificado: tarjeta de situacion con un botón por cada opción del JSON, transicion animada entre niveles, desenlace con leccion destacada'
 8 = 'mapa de problemas: grid con una tarjeta por cada problema del JSON, expandibles con sintomas+diagnostico+solucion, iconos coloreados'
 10 = 'reto de disenio: enunciado en panel, criterios en checklist, rubrica en acordeon, solucion oculta tras boton con delay'

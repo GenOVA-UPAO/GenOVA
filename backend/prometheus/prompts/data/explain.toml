@@ -14,8 +14,8 @@ template = '''
 [ROL] Redactor academico de lecturas guiadas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Lectura de 250 palabras: introduccion (caso real), desarrollo (${num_sections} ideas centrales de "${concept}" con ejemplo cada una), cierre (aplicaciones). ${num_sections} preguntas intercaladas con respuesta modelo.
-[RESTRICCIONES] Lenguaje accesible sin formulas. Cada idea central <=70 palabras.
+[TAREA] Lectura de 250 palabras: introduccion (caso real de una empresa y su base de datos Oracle), desarrollo (${num_sections} ideas centrales de "${concept}" con ejemplo cada una), cierre (como lo aplica el DBA en su trabajo diario, citando la sentencia, vista del diccionario o parametro Oracle representativo). ${num_sections} preguntas intercaladas con respuesta modelo.
+[RESTRICCIONES] Lenguaje accesible sin formulas. Puedes incluir un fragmento SQL corto (<=3 lineas) solo si aclara la idea. Cada idea central <=70 palabras.
 [SALIDA] JSON puro con claves "introduccion","secciones" (array de ${num_sections} con idea,ejemplo,pregunta,respuesta),"cierre".'''
 
 [texto.4]
@@ -31,17 +31,17 @@ template = '''
 [texto.6]
 defaults = { num_terms = 8 }
 template = '''
-[ROL] Lexicografo visual de conceptos de ML.
+[ROL] Lexicografo visual de conceptos de sistemas de gestion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Glosario de ${num_terms} terminos de "${concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras del mundo real.
+[TAREA] Glosario de ${num_terms} terminos de "${concept}". Cada uno: nombre <=20 chars, definicion <=50 palabras, icono_sugerido (emoji+descripcion), ejemplo_concreto <=30 palabras (una situacion real del DBA o la sentencia/vista Oracle donde aparece el termino).
 [RESTRICCIONES] Definiciones autocontenidas. Iconos distintos entre si.
 [SALIDA] JSON puro con clave "terminos": array de ${num_terms} objetos con "termino","definicion","icono_sugerido","ejemplo_concreto".'''
 
 [texto.7]
 defaults = { num_milestones = 5 }
 template = '''
-[ROL] Historiador de la ciencia de datos.
+[ROL] Historiador de los sistemas de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Timeline de ${num_milestones} hitos historicos reales de "${concept}". Cada hito: anio, titulo <=25 chars, descripcion 40 palabras tono cronica, dato_curioso, legado_actual 20 palabras.
@@ -51,10 +51,10 @@ template = '''
 [texto.9]
 defaults = { num_dimensions = 4 }
 template = '''
-[ROL] Analista comparativo de tecnologias de ML.
+[ROL] Analista comparativo de tecnicas y herramientas de administracion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Tabla comparativa de "${concept}" vs 3 conceptos relacionados. ${num_dimensions} dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.
+[TAREA] Tabla comparativa de "${concept}" vs 3 conceptos o alternativas relacionadas (p. ej. backup en frio / en caliente / incremental / diferencial; DBMS_JOB / DBMS_SCHEDULER; READ COMMITTED / SERIALIZABLE; como resuelven lo mismo Oracle, SQL Server, PostgreSQL y MySQL). ${num_dimensions} dimensiones relevantes. Por concepto: valores y balance ventaja/desventaja.
 [RESTRICCIONES] Comparaciones objetivas y medibles. Sin sesgo. Dimensiones que diferencien.
 [SALIDA] JSON puro con claves "dimensiones" (array de ${num_dimensions}) y "comparaciones" (array de 3 con concepto,valores,balance).'''
 
@@ -78,7 +78,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Demo animada HTML5 que ilustre paso a paso el funcionamiento de "${concept}".
-[TAREA] Animacion SVG/canvas con escena inicial, controles play/pause/step, ${num_steps} pasos progresivos, texto explicativo por paso y boton "Repetir". requestAnimationFrame.
+[TAREA] Animacion SVG/canvas del recorrido interno en el SGBD (p. ej. una sentencia UPDATE: proceso servidor, shared pool, buffer cache, redo log buffer, COMMIT, LGWR, DBWR) con escena inicial, controles play/pause/step, ${num_steps} pasos progresivos, texto explicativo por paso y boton "Repetir". requestAnimationFrame.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() tras completar todos los pasos.
@@ -91,7 +91,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Diagrama HTML5 que muestre la arquitectura o taxonomia de "${concept}" como framework visual.
-[TAREA] Diagrama SVG con ${num_blocks} bloques jerarquicos de "${concept}", flechas de flujo, tooltips al hover, zoom/reset y leyenda. SVG con viewBox + preserveAspectRatio.
+[TAREA] Diagrama SVG con ${num_blocks} bloques jerarquicos de "${concept}" (p. ej. instancia vs base de datos en Oracle, tablespace > segmento > extent > bloque, niveles externo/conceptual/interno de ANSI/SPARC, usuario > rol > privilegio), flechas de flujo, tooltips al hover, zoom/reset y leyenda. SVG con viewBox + preserveAspectRatio.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 300 lineas de calidad.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al explorar todos los tooltips.
@@ -140,8 +140,8 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Lectura guiada interactiva sobre "${concept}" en una pagina HTML.
-[TAREA] Redacta e implementa: introduccion con caso real; ${num_sections} secciones expandibles, cada una con una idea central (<=70 palabras) y un ejemplo; una pregunta por seccion con toggle "Mostrar respuesta" (respuesta modelo); cierre con aplicaciones. Diseno de articulo academico con progreso de lectura; se completa al abrir todas las secciones y respuestas.
-[RESTRICCIONES] Lenguaje accesible sin formulas. Total ~250 palabras de lectura.
+[TAREA] Redacta e implementa: introduccion con caso real de una empresa y su base de datos Oracle; ${num_sections} secciones expandibles, cada una con una idea central (<=70 palabras) y un ejemplo; una pregunta por seccion con toggle "Mostrar respuesta" (respuesta modelo); cierre con aplicaciones. Diseno de articulo academico con progreso de lectura; se completa al abrir todas las secciones y respuestas.
+[RESTRICCIONES] Lenguaje accesible sin formulas; fragmentos SQL Oracle cortos solo si aclaran. Total ~250 palabras de lectura.
 [REQUISITOS] HTML5+JS autocontenido y responsive.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al completar la lectura.

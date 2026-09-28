@@ -1,7 +1,8 @@
 """Prompts for the 10 EXPLAIN-phase resources (5E methodology).
 
 Each prompt fixes the resource FORMAT but adapts all content to whatever
-Machine Learning concept is passed in `concept` — no hardcoded ML subtopic.
+DBMS (Sistemas de Gestión de Base de Datos) concept is passed in `concept` —
+no hardcoded subtopic.
 """
 
 from prometheus.prompts._loader import render_codigo, render_html, render_texto

@@ -87,14 +87,12 @@ async function renderForm(
 }
 
 describe("OvaCreateFormCardComponent", () => {
-  it("EXAMPLE_PROMPT includes tema, objetivos, nivel universitario y machine learning", () => {
+  it("EXAMPLE_PROMPT includes tema, objetivos, nivel universitario y un tema de SGBD", () => {
     expect(EXAMPLE_PROMPT).toMatch(/Tema:/i);
     expect(EXAMPLE_PROMPT).toMatch(/Objetivos:/i);
     expect(EXAMPLE_PROMPT).toMatch(/Nivel educativo:/i);
     expect(EXAMPLE_PROMPT).toMatch(/Universitario/i);
-    expect(EXAMPLE_PROMPT).toMatch(
-      /machine learning|aprendizaje supervisado|redes neuronales|clasificador/i,
-    );
+    expect(EXAMPLE_PROMPT).toMatch(/oracle|tablespace|concurrencia|privilegios|consultas/i);
   });
 
   it("CA-11 / CA-25 shows the three-step guide without optional resources", async () => {

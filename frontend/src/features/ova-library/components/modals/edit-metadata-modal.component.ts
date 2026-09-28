@@ -44,7 +44,7 @@ import type { MetadataInput } from "@/features/ova-library/lib/metadataSchema";
               type="text"
               hlmInput
               class="w-full"
-              placeholder="Ej. Regresión lineal aplicada"
+              placeholder="Ej. Gestión de tablespaces en Oracle"
               [formField]="metadataForm.title"
             />
             <p class="text-[11px] text-muted-foreground">{{ titleLength() }}/100</p>

@@ -1,30 +1,30 @@
 [texto.1]
 defaults = { num_questions = 6 }
 template = '''
-[ROL] Diseniador de quizzes educativos de ML.
+[ROL] Diseniador de quizzes educativos de sistemas de gestion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Quiz de ${num_questions} preguntas sobre "${concept}": enunciado <=40 palabras, 4 opciones (A/B/C/D), respuesta_correcta, feedback_correcto e incorrecto <=20 palabras. Dificultad progresiva.
+[TAREA] Quiz de ${num_questions} preguntas sobre "${concept}" que combinen teoria y practica Oracle (p. ej. "que proceso escribe el redo log buffer en disco?", "que vista consultas para ver los datafiles?", "que hace esta sentencia?"): enunciado <=40 palabras, 4 opciones (A/B/C/D), respuesta_correcta, feedback_correcto e incorrecto <=20 palabras. Dificultad progresiva.
 [RESTRICCIONES] Opciones plausibles. Feedback que ensenie, no solo indique error.
 [SALIDA] JSON puro con clave "preguntas": array de ${num_questions} con "enunciado","opciones","correcta","feedback_correcto","feedback_incorrecto".'''
 
 [texto.2]
 defaults = { num_criteria = 5 }
 template = '''
-[ROL] Diseniador de rubricas de autoevaluacion para ML.
+[ROL] Diseniador de rubricas de autoevaluacion para administracion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Rubrica con ${num_criteria} criterios sobre "${concept}". Cada uno: descripcion <=25 palabras, 3 niveles (inicial/en desarrollo/logrado) con descriptor <=30 palabras. Puntuacion 1-3. Reflexion final segun rango de puntaje.
-[RESTRICCIONES] Criterios auto-evaluables. Descriptores en primera persona ("Puedo...").
+[RESTRICCIONES] Criterios auto-evaluables. Descriptores en primera persona ("Puedo...") y ligados a desempenos del DBA (p. ej. "Puedo crear un tablespace y asignarlo a un usuario").
 [SALIDA] JSON puro con claves "criterios" (array de ${num_criteria}) y "reflexiones" (objeto con rangos).'''
 
 [texto.4]
 defaults = { num_questions = 8 }
 template = '''
-[ROL] Examinador de conceptos de Machine Learning.
+[ROL] Examinador del curso Sistemas de Gestion de Base de Datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Examen de ${num_questions} preguntas opcion multiple sobre "${concept}": enunciado <=40 palabras, 4 opciones, justificacion <=30 palabras. Distribucion balanceada entre conceptual, aplicacion, analisis y relacion.
+[TAREA] Examen de ${num_questions} preguntas opcion multiple sobre "${concept}": enunciado <=40 palabras, 4 opciones, justificacion <=30 palabras. Distribucion balanceada entre conceptual, aplicacion (elegir la sentencia Oracle correcta), analisis (interpretar una salida, un plan o una secuencia de transacciones) y relacion.
 [RESTRICCIONES] Sin ambiguedades. Distractores verosimiles. Una sola correcta.
 [SALIDA] JSON puro con clave "examen": array de ${num_questions} con "numero","enunciado","opciones","correcta","justificacion","tipo".'''
 
@@ -34,27 +34,27 @@ template = '''
 [ROL] Diseniador de ejercicios de asociacion conceptual.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_pairs} parejas: columna A (definiciones), columna B (terminos de "${concept}"). Relacion 1:1. Cada pareja: feedback_acierto <=20 palabras, feedback_error <=20 palabras (pista sin revelar).
+[TAREA] ${num_pairs} parejas: columna A (definiciones o funciones), columna B (terminos de "${concept}": procesos, estructuras, vistas del diccionario, privilegios o sentencias Oracle). Relacion 1:1. Cada pareja: feedback_acierto <=20 palabras, feedback_error <=20 palabras (pista sin revelar).
 [RESTRICCIONES] Sin ambiguedad. Terminos y definiciones precisos. Sin pistas en la redaccion.
 [SALIDA] JSON puro con claves "columna_a" (array de ${num_pairs}) y "parejas" (array de ${num_pairs} con a_index,b_termino,feedback_acierto,feedback_error).'''
 
 [texto.7]
 defaults = { num_terms = 8 }
 template = '''
-[ROL] Creador de crucigramas educativos de ML.
+[ROL] Creador de crucigramas educativos de sistemas de gestion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Crucigrama de ${num_terms} terminos de "${concept}": numero, orientacion, longitud, pista <=25 palabras, respuesta. Cuadricula interconectada (>=4 cruces). Pistas ingeniosas pero justas.
-[RESTRICCIONES] Terminos reales. Sin abreviaturas.
+[RESTRICCIONES] Terminos reales, en una sola palabra sin espacios ni guiones bajos (p. ej. TABLESPACE, DATAFILE, CHECKPOINT, INTERBLOQUEO, AUDITORIA). Sin abreviaturas salvo siglas propias del tema (SGA, PGA, RMAN).
 [SALIDA] JSON puro con clave "entradas": array de ${num_terms} con "numero","orientacion","longitud","pista","respuesta".'''
 
 [texto.8]
 defaults = { num_questions = 3 }
 template = '''
-[ROL] Evaluador de comprension profunda de ML.
+[ROL] Evaluador de comprension profunda en administracion de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_questions} preguntas de desarrollo sobre "${concept}": enunciado <=50 palabras (abierto), 3-4 criterios de evaluacion observables, respuesta_modelo <=80 palabras.
+[TAREA] ${num_questions} preguntas de desarrollo sobre "${concept}", al estilo de una evaluacion del curso: enunciado <=50 palabras (abierto; puede pedir justificar una decision del DBA o escribir la sentencia Oracle que resuelve un caso sobre un esquema dado), 3-4 criterios de evaluacion observables, respuesta_modelo <=80 palabras.
 [RESTRICCIONES] No respondibles con si/no. Criterios evaluables objetivamente.
 [SALIDA] JSON puro con clave "preguntas": array de ${num_questions} con "enunciado","criterios","respuesta_modelo".'''
 
@@ -101,7 +101,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Simulacion evaluativa HTML5 donde el estudiante demuestre dominio practico de "${concept}".
-[TAREA] Escenario profesional concreto, ${num_decisions}-${num_decisions_plus1} decisiones evaluables mediante controles interactivos, evaluacion contra criterios objetivos de "${concept}", puntuacion con pesos, reporte final con fortalezas y areas de mejora.
+[TAREA] Escenario profesional concreto de un DBA en una pequena empresa con Oracle, ${num_decisions}-${num_decisions_plus1} decisiones evaluables mediante controles interactivos, evaluacion contra criterios objetivos de "${concept}", puntuacion con pesos, reporte final con fortalezas y areas de mejora.
 [REQUISITOS] HTML5+JS autocontenido. Minimo 320 lineas. Evaluacion real basada en criterios.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete(puntaje_final) al finalizar.
@@ -138,7 +138,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Actividad de ${num_questions} preguntas de desarrollo sobre "${concept}".
-[TAREA] Redacta e implementa: ${num_questions} preguntas abiertas (enunciado <=50 palabras, no respondibles con si/no), cada una con textarea de respuesta, checklist de 3-4 criterios de evaluacion observables y respuesta modelo (<=80 palabras) oculta tras boton "Comparar". Se completa al comparar todas.
+[TAREA] Redacta e implementa: ${num_questions} preguntas abiertas al estilo de una evaluacion del curso (enunciado <=50 palabras, no respondibles con si/no; pueden pedir justificar una decision del DBA o escribir la sentencia Oracle que resuelve un caso), cada una con textarea de respuesta, checklist de 3-4 criterios de evaluacion observables y respuesta modelo (<=80 palabras) oculta tras boton "Comparar". Se completa al comparar todas.
 [RESTRICCIONES] Criterios evaluables objetivamente.
 [REQUISITOS] HTML5+JS autocontenido y responsive.
 ${ds}

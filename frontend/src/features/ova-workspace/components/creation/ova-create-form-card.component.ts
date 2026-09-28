@@ -10,20 +10,20 @@ import { OvaFilesModalComponent } from "../modals/ova-files-modal.component";
 import { OvaThemeModalComponent } from "../modals/ova-theme-modal.component";
 import { FileChipComponent } from "../shared/file-chip.component";
 
-/** Ejemplos de prompt: solo machine learning de nivel universitario. */
+/** Ejemplos de prompt: curso Sistemas de Gestión de Base de Datos (Oracle) de nivel universitario. */
 export const EXAMPLE_PROMPTS = [
-  "Tema: Aprendizaje supervisado y no supervisado en machine learning.\n" +
-    "Objetivos: Distinguir ambos paradigmas, describir algoritmos representativos (regresión lineal, árboles, k-means) y plantear un caso de aplicación con datos tabulares.\n" +
-    "Nivel educativo: Universitario (pregrado en Ingeniería / Ciencia de Datos).",
-  "Tema: Redes neuronales artificiales y backpropagation.\n" +
-    "Objetivos: Explicar la arquitectura de un perceptrón multicapa, el rol de la función de activación y cómo el descenso de gradiente ajusta los pesos mediante backpropagation.\n" +
-    "Nivel educativo: Universitario (pregrado en Ingeniería / Ciencia de Datos).",
-  "Tema: Overfitting, underfitting y validación de modelos de ML.\n" +
-    "Objetivos: Identificar síntomas de sobreajuste y subajuste, aplicar train/validation/test split y cross-validation, y proponer regularización (L2, dropout) según el caso.\n" +
-    "Nivel educativo: Universitario (pregrado en Ingeniería / Ciencia de Datos).",
-  "Tema: Evaluación de clasificadores: métricas y matrices de confusión.\n" +
-    "Objetivos: Interpretar accuracy, precision, recall y F1; construir una matriz de confusión; y elegir la métrica adecuada ante clases desbalanceadas.\n" +
-    "Nivel educativo: Universitario (pregrado en Ingeniería / Ciencia de Datos).",
+  "Tema: Gestión del almacenamiento en Oracle: tablespaces y datafiles.\n" +
+    "Objetivos: Distinguir la estructura lógica (tablespace, segmento, extent, bloque) de la física (datafiles), crear un tablespace y asignarlo a un usuario, y consultar su ocupación en DBA_DATA_FILES y DBA_SEGMENTS.\n" +
+    "Nivel educativo: Universitario (pregrado en Ingeniería de Computación y Sistemas).",
+  "Tema: Control de concurrencia: transacciones, bloqueos e interbloqueos.\n" +
+    "Objetivos: Explicar las propiedades ACID y la serializabilidad, reconocer los problemas de la concurrencia, describir el bloqueo en dos fases y analizar cómo Oracle detecta y resuelve un interbloqueo.\n" +
+    "Nivel educativo: Universitario (pregrado en Ingeniería de Computación y Sistemas).",
+  "Tema: Gestión de seguridad en Oracle: usuarios, roles y privilegios.\n" +
+    "Objetivos: Crear usuarios y perfiles, diferenciar privilegios de sistema y de objeto, otorgar acceso restringido mediante vistas o procedimientos con GRANT/REVOKE y activar la auditoría de las operaciones.\n" +
+    "Nivel educativo: Universitario (pregrado en Ingeniería de Computación y Sistemas).",
+  "Tema: Optimización de consultas y planes de ejecución.\n" +
+    "Objetivos: Aplicar reglas heurísticas del álgebra relacional para transformar un árbol de consulta, comparar planes de acceso por costo de E/S, e interpretar EXPLAIN PLAN para decidir qué índices crear.\n" +
+    "Nivel educativo: Universitario (pregrado en Ingeniería de Computación y Sistemas).",
 ] as const;
 
 /** Primer ejemplo — compatibilidad con tests y referencias existentes. */

@@ -1,27 +1,27 @@
 [texto.2]
 defaults = { num_turns = 6 }
 template = '''
-[ROL] Agente pedagógico socrático "DataGuide" — guías, nunca revelas la respuesta.
+[ROL] Agente pedagógico socrático "DBGuide", DBA mentor — guías, nunca revelas la respuesta.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Sesión socrática de ${num_turns} turnos que lleva al estudiante a descubrir la idea central de "${concept}". Cada turno: dato_mostrado (un ejemplo, dato o situación concreta y relevante a "${concept}"), pregunta (≤28 palabras, abierta, guía al descubrimiento), respuesta_correcta (seguimiento si acierta), respuesta_incorrecta (pista adicional sin revelar).
+[TAREA] Sesión socrática de ${num_turns} turnos que lleva al estudiante a descubrir la idea central de "${concept}". Cada turno: dato_mostrado (un ejemplo, dato o situación concreta y relevante a "${concept}": p. ej. la salida de una consulta a V$$SGA o DBA_DATA_FILES, un fragmento de script SQL/PL/SQL, dos sesiones con sus sentencias en el tiempo, un plan de ejecución), pregunta (≤28 palabras, abierta, guía al descubrimiento), respuesta_correcta (seguimiento si acierta), respuesta_incorrecta (pista adicional sin revelar).
 [RESTRICCIONES] Nunca digas "la respuesta es". Tono de mentor curioso. Dificultad creciente entre turnos.
 [SALIDA] JSON puro con clave "turnos": array de ${num_turns} objetos con "turno","dato_mostrado","pregunta","respuesta_correcta","respuesta_incorrecta".'''
 
 [texto.3]
 defaults = { num_rounds = 6 }
 template = '''
-[ROL] Diseñador de minijuegos de clasificación para ciencia de datos.
+[ROL] Diseñador de minijuegos de clasificación para administración de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Juego drag & drop de ${num_rounds} rondas donde el estudiante clasifica items en 2 categorías propias de "${concept}" (elige las dos categorías más ilustrativas del tema). Define category_a y category_b. Cada ronda: item, contexto (1 línea), respuesta ("A" o "B"), feedback_correcto (≤16 palabras), feedback_incorrecto (≤16 palabras). Incluye al menos un caso ambiguo.
+[TAREA] Juego drag & drop de ${num_rounds} rondas donde el estudiante clasifica items en 2 categorías propias de "${concept}" (elige las dos categorías más ilustrativas del tema; p. ej. SGA/PGA, estructura lógica/física, privilegio de sistema/de objeto, backup en frío/en caliente, DDL/DML, bloqueo compartido/exclusivo). Define category_a y category_b. Cada ronda: item, contexto (1 línea), respuesta ("A" o "B"), feedback_correcto (≤16 palabras), feedback_incorrecto (≤16 palabras). Incluye al menos un caso ambiguo.
 [RESTRICCIONES] Sin repetir items. Dificultad creciente (de obvio a ambiguo).
 [SALIDA] JSON puro con claves "category_a","category_b" y "rondas": array de ${num_rounds} objetos con "ronda","item","contexto","respuesta","feedback_correcto","feedback_incorrecto".'''
 
 [texto.4]
 defaults = { num_pauses = 3 }
 template = '''
-[ROL] Guionista pedagógico de visualización de ML.
+[ROL] Guionista pedagógico de visualización de sistemas de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Guion de video de 120 s sobre "${concept}" con marcadores de tiempo cada 30 s y metáforas cotidianas, más ${num_pauses} preguntas de pausa activa distribuidas a lo largo del video que provoquen una predicción sin revelar la teoría.
@@ -34,34 +34,34 @@ template = '''
 [ROL] Redactor de materiales de análisis exploratorio.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] lectura de 220 palabras (tono periodístico intrigante) que lleva al estudiante a observar un patrón relacionado con "${concept}"; un conjunto_datos ficticio pero plausible y relevante a "${concept}" (${num_records}-${num_records_plus2} registros); pregunta de exploración; revelacion de 50 palabras que conecta el patrón con "${concept}".
+[TAREA] lectura de 220 palabras (tono periodístico intrigante) que lleva al estudiante a observar un patrón relacionado con "${concept}"; un conjunto_datos ficticio pero plausible y relevante a "${concept}" (${num_records}-${num_records_plus2} registros; p. ej. filas de una vista del diccionario como DBA_SEGMENTS, DBA_DATA_FILES, V$$SESSION o DBA_AUDIT_TRAIL, tiempos de respuesta de consultas, crecimiento de tablespaces, historial de backups); pregunta de exploración; revelacion de 50 palabras que conecta el patrón con "${concept}".
 [RESTRICCIONES] Sin la terminología técnica de "${concept}" en la lectura inicial. El patrón debe ser identificable a simple vista.
 [SALIDA] JSON puro con claves "lectura","conjunto_datos" (array de objetos),"pregunta","revelacion".'''
 
 [texto.7]
 defaults = { num_steps = 4 }
 template = '''
-[ROL] Instructor de análisis exploratorio de datos.
+[ROL] Instructor de laboratorio de monitoreo y rendimiento de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Experimento guiado de ${num_steps} pasos para explorar "${concept}": descripcion_dataset (un conjunto de datos plausible y relevante al tema, descrito en texto), puntos para un gráfico (20-25 puntos con coordenadas x/y/grupo que formen una estructura visible coherente con "${concept}"), 3 preguntas de exploración progresivas, revelacion de 60 palabras que conecta lo observado con "${concept}".
+[TAREA] Experimento guiado de ${num_steps} pasos para explorar "${concept}": descripcion_dataset (métricas plausibles de una base de datos Oracle relevantes al tema, descritas en texto: de dónde salen, p. ej. V$$SYSSTAT, Statspack o una traza), puntos para un gráfico (20-25 puntos con coordenadas x/y/grupo que formen una estructura visible coherente con "${concept}"; p. ej. x = filas de la tabla, y = costo de la consulta, grupo = con índice/sin índice; o x = sesiones concurrentes, y = tiempo de espera por bloqueos), 3 preguntas de exploración progresivas, revelacion de 60 palabras que conecta lo observado con "${concept}".
 [RESTRICCIONES] Sin código visible. Las preguntas guían, no evalúan.
 [SALIDA] JSON puro con claves "descripcion_dataset","puntos" (array de objetos con x,y,grupo),"preguntas" (array de 3),"revelacion".'''
 
 [texto.8]
 defaults = { num_scenarios = 4 }
 template = '''
-[ROL] Diseñador de aprendizaje basado en roles para científicos de datos junior.
+[ROL] Diseñador de aprendizaje basado en roles para DBA junior.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_scenarios} escenarios de negocio de sectores distintos donde aplicar "${concept}". Cada escenario: problema ≤45 palabras en lenguaje cotidiano, opcion_A, opcion_B, respuesta_correcta, feedback_A y feedback_B (≤25 palabras). Mensajes finales según el puntaje.
+[TAREA] ${num_scenarios} escenarios de pequeñas empresas de sectores distintos (clínica, colegio, ferretería, agencia de viajes...) donde el DBA debe aplicar "${concept}". Cada escenario: problema ≤45 palabras en lenguaje cotidiano, opcion_A, opcion_B, respuesta_correcta, feedback_A y feedback_B (≤25 palabras). Mensajes finales según el puntaje.
 [RESTRICCIONES] Sin jerga técnica en los enunciados. Respuesta objetivamente correcta y justificable.
 [SALIDA] JSON puro con claves "escenarios" (array de ${num_scenarios} objetos con id,problema,opcion_A,opcion_B,respuesta_correcta,feedback_A,feedback_B) y "mensajes_finales" (objeto).'''
 
 [texto.9]
 defaults = { num_cards = 6 }
 template = '''
-[ROL] Facilitador de mapas mentales para el aprendizaje de ML.
+[ROL] Facilitador de mapas mentales para el aprendizaje de sistemas de gestión de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] ${num_cards} tarjetas que emparejan una pista_cotidiana con su nodo_tecnico real de "${concept}" (relación 1:1). Cada tarjeta: feedback_correcto (✓ y 1 línea de contexto), feedback_incorrecto (✗ y pista sin revelar). Una revelacion final de 90 palabras que integra los nodos en el marco conceptual de "${concept}".
@@ -75,7 +75,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Un laboratorio virtual HTML5 donde el estudiante EXPLORA "${concept}" manipulando sus elementos y observando los resultados.
-[TAREA] Diseña la simulación más representativa de cómo funciona "${concept}": elige datos de ejemplo, controles y visualización (SVG o canvas) apropiados al tema. Debe permitir: (1) manipular entradas o parámetros, (2) ejecutar o iterar el proceso central de "${concept}", (3) ver el resultado actualizarse, (4) un botón que explica qué está ocurriendo. El estudiante debe completar al menos ${num_iterations} iteraciones para finalizar.
+[TAREA] Diseña la simulación más representativa de cómo funciona "${concept}" dentro de un SGBD Oracle: elige datos de ejemplo, controles y visualización (SVG o canvas) apropiados al tema (p. ej. bloques que entran y salen del buffer cache por LRU, redo que LGWR vuelca a los grupos de redo log, extents que se asignan a un segmento, transacciones que adquieren y liberan bloqueos, un árbol de consulta que se transforma). Debe permitir: (1) manipular entradas o parámetros, (2) ejecutar o iterar el proceso central de "${concept}", (3) ver el resultado actualizarse, (4) un botón que explica qué está ocurriendo. El estudiante debe completar al menos ${num_iterations} iteraciones para finalizar.
 [REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad. Datos de ejemplo hardcodeados como arrays JS.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() tras ${num_iterations} iteraciones o al pulsar el botón explicativo.
@@ -88,7 +88,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Un simulador HTML5 centrado en UN parámetro clave de "${concept}" para que el estudiante descubra su efecto.
-[TAREA] Identifica el parámetro o variable más ilustrativo de "${concept}" y construye: (1) un slider o control para ese parámetro con un rango sensato, (2) un gráfico SVG que se actualiza en tiempo real (<100 ms), (3) ${num_zones} zonas o estados coloreados que indican el comportamiento (p. ej. correcto / límite / incorrecto), (4) un campo para la hipótesis del estudiante, (5) un botón "Revelar zona óptima".
+[TAREA] Identifica el parámetro o variable más ilustrativo de "${concept}" (p. ej. DB_CACHE_SIZE, SHARED_POOL_SIZE, LOG_BUFFER, PCTFREE, tamaño de extent, número de sesiones concurrentes, nivel de aislamiento, frecuencia de backup frente al RPO, selectividad de un predicado) y construye: (1) un slider o control para ese parámetro con un rango sensato, (2) un gráfico SVG que se actualiza en tiempo real (<100 ms), (3) ${num_zones} zonas o estados coloreados que indican el comportamiento (p. ej. correcto / límite / incorrecto), (4) un campo para la hipótesis del estudiante, (5) un botón "Revelar zona óptima".
 [REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al revelar.
@@ -101,7 +101,7 @@ template = '''
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [OBJETIVO] Un laboratorio HTML5 donde el estudiante formula una hipótesis sobre "${concept}", experimenta y la contrasta.
-[TAREA] Construye: (1) una visualización de datos relevante a "${concept}" (scatter, curva u otra; datos hardcodeados como array JS), (2) controles para probar configuraciones, (3) métricas o indicadores visibles que cambian con cada prueba, (4) un campo de hipótesis, (5) un botón "Revelar" que muestra la configuración óptima y nombra el concepto técnico correcto. El estudiante debe realizar al menos ${num_trials} pruebas antes de revelar.
+[TAREA] Construye: (1) una visualización relevante a "${concept}" (curva, barras, línea de tiempo de sesiones u otra; datos hardcodeados como array JS con métricas plausibles de Oracle), (2) controles para probar configuraciones, (3) métricas o indicadores visibles que cambian con cada prueba, (4) un campo de hipótesis, (5) un botón "Revelar" que muestra la configuración óptima y nombra el concepto técnico correcto. El estudiante debe realizar al menos ${num_trials} pruebas antes de revelar.
 [REQUISITOS] HTML5+JS autocontenido. Mínimo 320 líneas de calidad.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al revelar tras ${num_trials} pruebas.
@@ -126,10 +126,10 @@ ${ds}
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html.estilos]
-2 = 'chat educativo: burbujas de DataGuide, campo de texto del estudiante, feedback revelado por turno, barra de progreso'
+2 = 'chat educativo: burbujas de DBGuide, campo de texto del estudiante, feedback revelado por turno, barra de progreso'
 3 = 'juego drag & drop: items arrastrables, zonas destino etiquetadas según las categorías del JSON, animación de arrastre, feedback inmediato, puntuación'
 4 = 'storyboard interactivo: guion por secciones, reproductor simulado con barra de progreso, overlay de pregunta de pausa'
 5 = "lectura interactiva: texto periodístico y tabla del conjunto de datos, pregunta destacada, botón 'Revelar patrón' animado"
-7 = "laboratorio EDA: tabla del dataset, gráfico scatter SVG, las preguntas secuenciales del JSON, botón 'Revelar' que colorea los grupos"
+7 = "laboratorio de monitoreo: tabla de métricas, gráfico scatter SVG, las preguntas secuenciales del JSON, botón 'Revelar' que colorea los grupos"
 8 = 'escenarios ejecutivos secuenciales: un botón por cada decisión del JSON, feedback animado, pantalla final con puntaje y mensaje'
 9 = 'mapa mental drag & drop: una pista y un nodo técnico por cada tarjeta del JSON, conexión por arrastre, feedback por par, revelación al completar'
