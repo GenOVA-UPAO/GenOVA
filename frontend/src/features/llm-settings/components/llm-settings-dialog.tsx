@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 
-import { useCurrentUser } from "@/core/auth/auth-store";
+import { useCurrentUser, useIsAdmin } from "@/core/auth/auth-store";
 import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
@@ -23,6 +23,8 @@ interface LlmSettingsDialogProps {
 export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDialogProps>) {
   const store = useLlmSettings();
   const showModelsLink = canAccessModels(useCurrentUser());
+  const isAdmin = useIsAdmin();
+  const copy = dialogCopy(store.hasOwnLlmKey, isAdmin);
 
   async function handleSave(): Promise<void> {
     const ok = await store.save();
@@ -35,13 +37,11 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
         <DialogHeader className="pr-8">
           <DialogTitle>Configuración de IA</DialogTitle>
           <DialogDescription>
-            {store.hasOwnLlmKey
-              ? "Modelo y tiempo máximo de espera de cada tarea al generar tus OVAs."
-              : "Modelos con los que la IA genera tus OVAs."}
+            {copy.text}
             {showModelsLink ? (
               <>
                 {" "}
-                Tienes más opciones en{" "}
+                {copy.linkLead}{" "}
                 <Link
                   to="/models"
                   className="text-primary underline-offset-4 hover:underline"
@@ -82,4 +82,28 @@ export function LlmSettingsDialog({ open, onOpenChange }: Readonly<LlmSettingsDi
       </DialogContent>
     </Dialog>
   );
+}
+
+/**
+ * Qué dice el diálogo según quién lo abre. Antes, sin clave propia, repetía el
+ * enlace a Modelos de IA en un segundo aviso, y al propio administrador le
+ * decía que los modelos «los elige el administrador».
+ */
+function dialogCopy(hasOwnKey: boolean, isAdmin: boolean): { text: string; linkLead: string } {
+  if (hasOwnKey) {
+    return {
+      text: "Modelo y tiempo máximo de espera de cada tarea al generar tus OVAs.",
+      linkLead: "Tienes más opciones en",
+    };
+  }
+  if (isAdmin) {
+    return {
+      text: "Modelos que usa la plataforma para generar los OVAs.",
+      linkLead: "Se cambian en",
+    };
+  }
+  return {
+    text: "Modelos con los que la IA genera tus OVAs. Los elige el administrador.",
+    linkLead: "Con tu propia clave API puedes elegir otros en",
+  };
 }

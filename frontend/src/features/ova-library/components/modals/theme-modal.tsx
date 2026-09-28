@@ -10,12 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/core/components/ui/dialog";
+import { PALETTES } from "@/core/lib/ova-palettes";
 
 import { saveTheme } from "../../services/theme-settings.service";
 import { ThemeDesignPicker } from "./theme-design-picker";
 import { ThemeModalPreview } from "./theme-modal-preview";
 import { ThemePalettePicker } from "./theme-palette-picker";
-import { PALETTES, type ThemeState } from "./theme-types";
+import type { ThemeState } from "./theme-types";
 
 interface ThemeModalProps {
   initialTheme?: unknown;
@@ -28,7 +29,8 @@ function resolveInitialTheme(initial: unknown): ThemeState {
     const raw = initial as Partial<ThemeState>;
     return {
       colorMode: raw.colorMode ?? "upao",
-      designMode: raw.designMode ?? "upao",
+      // «Mis plantillas» ya no existe: quien la tenía guardada vuelve a la de UPAO.
+      designMode: raw.designMode === "ai" ? "ai" : "upao",
       palette: raw.palette ?? null,
     };
   }
@@ -89,7 +91,8 @@ export function ThemeModal({ initialTheme, onClose, onSaved }: Readonly<ThemeMod
         <DialogHeader className="border-b border-border px-5 py-4 pr-12">
           <DialogTitle>Estilo de mis OVAs</DialogTitle>
           <DialogDescription>
-            Colores y diseño que se usarán al generar tus próximos OVAs.
+            Colores y diseño con los que empieza cada OVA nuevo. Al crearlo puedes cambiarlos
+            solo para ese OVA.
           </DialogDescription>
         </DialogHeader>
 

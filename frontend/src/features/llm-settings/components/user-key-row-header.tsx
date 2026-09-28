@@ -1,9 +1,18 @@
 import { PROVIDER_META } from "@/core/components/platform-key-meta";
+import { hasCheck, type ProviderCheckState } from "@/core/components/platform-provider-check";
+import { ProviderCheckBadge } from "@/core/components/platform-provider-check-badge";
+import { ProviderCoverage } from "@/core/components/provider-coverage";
+
+import { ownKeyErrorText, type OwnKeyView } from "../lib/own-catalog-status";
+import { UserKeyState } from "./user-key-state";
+
+const NO_CHECK: ProviderCheckState = { checking: false, result: null, error: null };
 
 export function UserKeyRowHeader({
   provider,
-  configured,
-}: Readonly<{ provider: string; configured: boolean }>) {
+  view,
+  check = NO_CHECK,
+}: Readonly<{ provider: string; view: OwnKeyView; check?: ProviderCheckState }>) {
   const meta = PROVIDER_META[provider] ?? {
     label: provider,
     placeholder: "...",
@@ -14,16 +23,24 @@ export function UserKeyRowHeader({
     <div className="min-w-0 flex-1">
       <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
         <span className="text-sm font-medium">{meta.label}</span>
-        {configured ? (
-          <span className="inline-flex items-center gap-1.5 text-xs text-success-strong">
-            <span aria-hidden="true" className="size-1.5 rounded-full bg-success" />
-            Conectado
-          </span>
-        ) : (
-          <span className="text-xs text-muted-foreground">Sin configurar</span>
-        )}
+        <ProviderCoverage covers={meta.covers} />
+        {/* «Probar conexión» manda sobre el estado de la última carga. */}
+        {hasCheck(check) ? <ProviderCheckBadge check={check} /> : <UserKeyState view={view} />}
       </p>
-      <p className="mt-0.5 text-xs text-muted-foreground">{meta.desc}</p>
+      {/* Tras «Probar conexión», lo que falla ya lo dice la fila debajo: no se repite aquí. */}
+      {view.kind === "error" && !hasCheck(check) ? (
+        <p
+          className={
+            view.code === "invalid_key"
+              ? "mt-0.5 text-xs text-destructive"
+              : "mt-0.5 text-xs text-muted-foreground"
+          }
+        >
+          {ownKeyErrorText(view.code)}
+        </p>
+      ) : (
+        <p className="mt-0.5 text-xs text-muted-foreground">{meta.desc}</p>
+      )}
     </div>
   );
 }

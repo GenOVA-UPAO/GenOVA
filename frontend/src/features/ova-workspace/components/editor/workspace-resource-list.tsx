@@ -1,18 +1,14 @@
 import type { DragEvent } from "react";
 import { lazy, Suspense, useState } from "react";
 
-import { Icon } from "@/core/components/icon";
-import { Button } from "@/core/components/ui/button";
-
 import { usePhaseDrag } from "../../hooks/use-phase-drag";
 import { phaseMeta } from "../../lib/phase-meta";
 import { applyReorder } from "../../lib/resource-reorder";
 import type { PhaseWithContent } from "../../lib/types";
+import { ResourceListHeader } from "./resource-list-header";
 import { WorkspaceResourceRow } from "./workspace-resource-row";
 
 const AddResourceModal = lazy(() => import("../modals/add-resource-modal"));
-
-const MAX_PHASES_PER_TYPE = 4;
 
 interface RowProps {
   draggable: true;
@@ -26,16 +22,26 @@ interface Props {
   phases: PhaseWithContent[];
   phaseType: string;
   ovaId: string;
+  busy: boolean;
   onReorder: (next: PhaseWithContent[]) => void;
   onRegenerate: (phase: PhaseWithContent) => void;
+  /** Recurso recién añadido (aún con su marcador): lo genera la regeneración. */
+  onAdded: (phase: PhaseWithContent, instructions: string) => void;
 }
 
-export function WorkspaceResourceList({ phases, phaseType, ovaId, onReorder, onRegenerate }: Readonly<Props>) {
+export function WorkspaceResourceList({
+  phases,
+  phaseType,
+  ovaId,
+  busy,
+  onReorder,
+  onRegenerate,
+  onAdded,
+}: Readonly<Props>) {
   const drag = usePhaseDrag(phases, onReorder);
   const [adding, setAdding] = useState(false);
   const label = phaseMeta(phaseType).label || phaseType;
   const heading = `phase-section-${phaseType}`;
-  const full = phases.length >= MAX_PHASES_PER_TYPE;
   const move = (index: number, offset: number) => {
     const to = index + offset;
     if (to < 0 || to >= phases.length) return;
@@ -43,29 +49,20 @@ export function WorkspaceResourceList({ phases, phaseType, ovaId, onReorder, onR
   };
   return (
     <section aria-labelledby={heading} className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <h2 id={heading} className="text-sm font-semibold text-foreground">
-          {label}
-          <span className="ml-2 text-xs font-normal tabular-nums text-muted-foreground">
-            {phases.length} de {MAX_PHASES_PER_TYPE}
-          </span>
-        </h2>
-        {full ? (
-          <span className="text-xs text-muted-foreground">Máximo de recursos alcanzado</span>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label={`Añadir recurso a ${label}`}
-            onClick={() => {
-              setAdding(true);
-            }}
-          >
-            <Icon name="plus" />
-            Añadir recurso
-          </Button>
-        )}
-      </div>
+      <ResourceListHeader
+        headingId={heading}
+        label={label}
+        count={phases.length}
+        busy={busy}
+        onAdd={() => {
+          setAdding(true);
+        }}
+      />
+      {phases.length === 0 && (
+        <p className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+          Esta fase no tiene recursos. Añade uno con tus instrucciones.
+        </p>
+      )}
       <ul className="space-y-3">
         {phases.map((phase, index) => (
           <WorkspaceResourceRow
@@ -74,6 +71,7 @@ export function WorkspaceResourceList({ phases, phaseType, ovaId, onReorder, onR
             index={index}
             total={phases.length}
             ovaId={ovaId}
+            busy={busy}
             dragging={drag.dragging === index}
             dragProps={drag.liProps(index) as RowProps}
             onMove={move}
@@ -87,6 +85,7 @@ export function WorkspaceResourceList({ phases, phaseType, ovaId, onReorder, onR
             ovaId={ovaId}
             phaseType={phaseType}
             currentCount={phases.length}
+            onAdded={onAdded}
             onClose={() => {
               setAdding(false);
             }}

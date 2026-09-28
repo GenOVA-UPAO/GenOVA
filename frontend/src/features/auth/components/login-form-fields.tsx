@@ -4,7 +4,7 @@ import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
 import { PasswordInput } from "@/core/components/ui/password-input";
 
-import { AUTH_LINK_CLASS, SESSION_EXPIRED_NOTICE } from "../lib/auth-copy";
+import { AUTH_LINK_CLASS } from "../lib/auth-copy";
 import type { LoginValues } from "../lib/auth-schemas";
 import type { FormSubmitHandler } from "../lib/on-form-submit";
 import type { useAuthForm } from "../lib/use-auth-form";
@@ -20,17 +20,18 @@ interface LoginFormFieldsProps {
   rememberMe: boolean;
   onRemember: (checked: boolean) => void;
   serverError: string;
-  expired: boolean;
+  /** Aviso de contexto al llegar (sesión caducada, cuenta eliminada…). */
+  notice: string | null;
   submitting: boolean;
   onSubmit: FormSubmitHandler;
 }
 
 export function LoginFormFields(props: Readonly<LoginFormFieldsProps>) {
-  const { form, rememberMe, onRemember, serverError, expired, submitting, onSubmit } = props;
+  const { form, rememberMe, onRemember, serverError, notice, submitting, onSubmit } = props;
   return (
     <AuthCard title="Iniciar sesión" subtitle="Accede para crear y gestionar tus OVAs.">
       <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
-        {expired ? <ServerAlert tone="info">{SESSION_EXPIRED_NOTICE}</ServerAlert> : null}
+        {notice === null ? null : <ServerAlert tone="info">{notice}</ServerAlert>}
         <AuthField id="email" label="Correo" error={form.errorFor("email")}>
           <Input id="email" type="email" autoComplete="email" placeholder="nombre@upao.edu.pe" {...form.bind("email")} />
         </AuthField>

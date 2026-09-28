@@ -8,22 +8,29 @@ import {
   SelectValue,
 } from "@/core/components/ui/select";
 
-import type { UserFormValues } from "../../lib/user-form";
+import { fieldDescribedBy } from "../../lib/field-described-by";
+import type { UserFormErrors, UserFormValues } from "../../lib/user-form";
+import { FieldMessage } from "./field-message";
 
+// Mismas opciones y textos que el formulario de «Mi perfil».
 const GENDER_OPTIONS = [
   { value: "masculino", label: "Masculino" },
   { value: "femenino", label: "Femenino" },
-  { value: "otro", label: "Otro o sin especificar" },
+  { value: "otro", label: "Otro o prefiere no decirlo" },
 ];
+
+const PHONE_HINT = "Con prefijo de país, por ejemplo +51987285992.";
 
 interface EditUserContactFieldsProps {
   values: UserFormValues;
+  errors: UserFormErrors;
   disabled: boolean;
   onChange: (field: keyof UserFormValues, value: string) => void;
 }
 
 export function EditUserContactFields({
   values,
+  errors,
   disabled,
   onChange,
 }: Readonly<EditUserContactFieldsProps>) {
@@ -52,21 +59,20 @@ export function EditUserContactFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="edit-phone">Teléfono</Label>
+        <Label htmlFor="edit-phone">Teléfono de contacto</Label>
         <Input
           id="edit-phone"
           type="tel"
           autoComplete="off"
-          aria-describedby="edit-phone-help"
           value={values.phone_number}
           disabled={disabled}
+          aria-invalid={errors.phone_number !== undefined || undefined}
+          aria-describedby={fieldDescribedBy("edit-phone", errors.phone_number, PHONE_HINT)}
           onChange={(event) => {
             onChange("phone_number", event.target.value);
           }}
         />
-        <p id="edit-phone-help" className="text-xs text-muted-foreground">
-          Con prefijo de país, p. ej. +51987285992.
-        </p>
+        <FieldMessage id="edit-phone" error={errors.phone_number} hint={PHONE_HINT} />
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ export function ForgotPasswordForm({
           inputMode="email"
           spellCheck={false}
           autoCapitalize="none"
-          placeholder="estudiante@genova.ai"
+          placeholder="nombre@upao.edu.pe"
           {...form.bind("email")}
         />
       </AuthField>

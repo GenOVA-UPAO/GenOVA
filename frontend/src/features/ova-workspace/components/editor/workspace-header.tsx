@@ -14,6 +14,8 @@ interface Props {
   version: number | undefined;
   mobileView: WorkspaceMobileView;
   onMobileView: (view: WorkspaceMobileView) => void;
+  /** Solo lectura: no hay columna de instrucciones, así que no hay cambio de vista en móvil. */
+  readOnly?: boolean;
 }
 
 /**
@@ -21,11 +23,23 @@ interface Props {
  * acciones del OVA a la derecha. En móvil la segunda fila lleva el cambio
  * de vista (Instrucciones / OVA) junto a las acciones.
  */
-export function WorkspaceHeader({ ovaId, title, version, mobileView, onMobileView }: Readonly<Props>) {
+export function WorkspaceHeader({
+  ovaId,
+  title,
+  version,
+  mobileView,
+  onMobileView,
+  readOnly = false,
+}: Readonly<Props>) {
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 py-2 sm:px-4 md:h-14 md:flex-nowrap md:py-0">
       <div className="flex min-w-0 basis-full items-center gap-2 md:flex-1 md:basis-auto">
-        <Button asChild variant="ghost" size="sm" className="-ml-1 shrink-0 text-muted-foreground">
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="-ml-1 shrink-0 text-muted-foreground max-sm:size-11 max-sm:px-0"
+        >
           <Link to="/mis-ovas" aria-label="Volver a Mis OVAs">
             <Icon name="arrow-left" />
             <span className="hidden sm:inline">Mis OVAs</span>
@@ -44,17 +58,19 @@ export function WorkspaceHeader({ ovaId, title, version, mobileView, onMobileVie
           </span>
         )}
       </div>
-      <SegmentedTabs
-        label="Vista del workspace"
-        className="md:hidden"
-        value={mobileView}
-        onChange={onMobileView}
-        options={[
-          { value: "chat", label: "Instrucciones", controls: "workspace-chat-column" },
-          { value: "ova", label: "OVA", controls: "workspace-ova-column" },
-        ]}
-      />
-      <WorkspacePanelToolbar ovaId={ovaId} className="ml-auto shrink-0" />
+      {!readOnly && (
+        <SegmentedTabs
+          label="Vista del workspace"
+          className="md:hidden"
+          value={mobileView}
+          onChange={onMobileView}
+          options={[
+            { value: "chat", label: "Instrucciones", controls: "workspace-chat-column" },
+            { value: "ova", label: "OVA", controls: "workspace-ova-column" },
+          ]}
+        />
+      )}
+      <WorkspacePanelToolbar ovaId={ovaId} readOnly={readOnly} className="ml-auto shrink-0" />
     </header>
   );
 }

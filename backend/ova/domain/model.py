@@ -12,6 +12,20 @@ class OvaActor:
     is_admin: bool
 
 
+# Un OVA es obra de quien lo creó (profesor o alumno): solo esa persona lo
+# modifica. El admin lo ve (soporte, moderación) pero no lo edita; retirarlo
+# es una acción aparte (papelera), no una edición.
+EDIT_FORBIDDEN = "Solo quien creó el OVA puede modificarlo."
+
+
+def can_read_ova(owner_id: str, actor: OvaActor) -> bool:
+    return actor.is_admin or owner_id == actor.id
+
+
+def can_edit_ova(owner_id: str, actor: OvaActor) -> bool:
+    return owner_id == actor.id
+
+
 @dataclass(frozen=True, slots=True)
 class OvaOwner:
     id: str
@@ -53,4 +67,7 @@ class Ova:
     owner: OvaOwner | None = None
 
     def is_accessible_by(self, actor: OvaActor) -> bool:
-        return actor.is_admin or self.owner_id == actor.id
+        return can_read_ova(self.owner_id, actor)
+
+    def can_edit(self, actor: OvaActor) -> bool:
+        return can_edit_ova(self.owner_id, actor)

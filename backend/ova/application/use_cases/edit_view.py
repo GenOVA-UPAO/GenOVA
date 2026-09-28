@@ -8,6 +8,7 @@ from ova.application.dto import VersionInput
 from ova.application.ports import OvaEditorRepository
 from ova.domain.editor import EditorOva, EditorVersion, phase_to_dict, version_to_dict
 from ova.domain.errors import OvaEditError, OvaForbidden, OvaGenerating, OvaNotFound
+from ova.domain.model import EDIT_FORBIDDEN, can_edit_ova
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,6 +24,8 @@ class EditView:
             "ova_id": ova.id,
             "title": ova.title,
             "status": ova.status,
+            # El editor se muestra en solo lectura a quien no es el autor (el admin).
+            "can_edit": can_edit_ova(ova.owner_id, data.actor),
             "current_version": version_to_dict(active, include_phases=True),
             "version_history": [
                 version_to_dict(version) for version in self.repo.list_versions(ova.id)
@@ -40,6 +43,8 @@ class EditView:
 
     def revert(self, data: VersionInput) -> EditorVersion:
         ova = self._resolve(data.ova_id, data.actor.id, data.actor.is_admin)
+        if not can_edit_ova(ova.owner_id, data.actor):
+            raise OvaForbidden(EDIT_FORBIDDEN)
         if ova.status == "generando":
             raise OvaGenerating("No se puede revertir mientras genera.")
         target = self.repo.get_version(data.version_id, ova.id, with_phases=True)

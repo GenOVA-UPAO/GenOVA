@@ -1,3 +1,4 @@
+import { QueryErrorState } from "@/core/components/query-error-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/ui/tabs";
 
 import type { AdminCatalogItem } from "../hooks/admin-llm-view";
@@ -14,6 +15,8 @@ interface ModelsPageTabsProps {
   onTabChange: (value: string) => void;
   isAdmin: boolean;
   adminLoading: boolean;
+  adminError: boolean;
+  onAdminRetry: () => void;
   tasks: string[];
   draft: Draft | null;
   adminModels: AdminCatalogItem[];
@@ -21,6 +24,8 @@ interface ModelsPageTabsProps {
   chainIssues: Record<string, SlotIssue[]>;
   onDraftChange: (next: Draft) => void;
   onOpenCatalog: () => void;
+  onConnectProvider: (provider: string) => void;
+  onGoToCredentials: (provider?: string) => void;
 }
 
 export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
@@ -40,9 +45,14 @@ export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
         ) : null}
       </TabsList>
       <TabsContent value="models" className="block space-y-6">
-        {props.adminLoading ? (
-          <ModelsTabSkeleton />
-        ) : (
+        {props.adminLoading ? <ModelsTabSkeleton /> : null}
+        {!props.adminLoading && props.adminError ? (
+          <QueryErrorState
+            title="No se pudo cargar la configuración de modelos de la plataforma."
+            onRetry={props.onAdminRetry}
+          />
+        ) : null}
+        {props.adminLoading || props.adminError ? null : (
           <ModelsMasterDetail
             tasks={props.tasks}
             draft={props.draft}
@@ -52,6 +62,8 @@ export function ModelsPageTabs(props: Readonly<ModelsPageTabsProps>) {
             chainIssues={props.chainIssues}
             onDraftChange={props.onDraftChange}
             onOpenCatalog={props.onOpenCatalog}
+            onConnectProvider={props.onConnectProvider}
+            onGoToCredentials={props.onGoToCredentials}
           />
         )}
       </TabsContent>

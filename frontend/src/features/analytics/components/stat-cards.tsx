@@ -14,7 +14,9 @@ function readyMetric(data: AnalyticsData): Metric {
   const ready = Object.hasOwn(data.ova_by_status, "listo") ? data.ova_by_status.listo : 0;
   // Mismo denominador que «OVAs por estado», para que ambos porcentajes cuadren.
   const counted = Object.values(data.ova_by_status).reduce((a, b) => a + b, 0);
-  const share = counted > 0 ? Math.round((ready / counted) * 100) : 0;
+  // Sin OVAs, «0 % del total» no aporta nada: el hint solo aparece si hay datos.
+  if (counted === 0) return { label: "Listos para usar", value: ready };
+  const share = Math.round((ready / counted) * 100);
   return { label: "Listos para usar", value: ready, hint: `${String(share)} % del total` };
 }
 

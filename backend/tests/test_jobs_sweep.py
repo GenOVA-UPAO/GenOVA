@@ -189,3 +189,27 @@ def test_sweep_por_listado_cura_terminal_y_no_toca_generando_de_verdad(db):
     assert _reload(db, OvaJob, canceled).status == "canceled"
     assert _reload(db, Ova, ova_r).status == "generando"
     assert _reload(db, OvaJob, running).status == "running"
+
+
+def test_una_regeneracion_en_curso_no_se_toma_por_ova_atascado(db):
+    """Job inicial terminado + OVA con versión en 'generando' = regeneración.
+
+    Consultar el job (GET /api/jobs?ova_id=) no debe marcarlo como error ni
+    rematerializar la generación vieja.
+    """
+    from generation.jobs.jobs_progress import repair_stuck_ova_if_needed
+
+    job_id, ova_id = _mk_job(db, status="done", age_seconds=10)
+    ova = _reload(db, Ova, ova_id)
+    ova.current_version_id = uuid.uuid4()
+    db.commit()
+    repair_stuck_ova_if_needed(db, _reload(db, OvaJob, job_id))
+    assert _reload(db, Ova, ova_id).status == "generando"
+
+
+def test_ova_atascado_sin_version_se_libera(db):
+    from generation.jobs.jobs_progress import repair_stuck_ova_if_needed
+
+    job_id, ova_id = _mk_job(db, status="done", age_seconds=10)
+    repair_stuck_ova_if_needed(db, _reload(db, OvaJob, job_id))
+    assert _reload(db, Ova, ova_id).status == "error"

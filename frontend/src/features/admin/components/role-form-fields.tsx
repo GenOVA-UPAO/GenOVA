@@ -5,6 +5,8 @@ import { Textarea } from "@/core/components/ui/textarea";
 interface RoleFormFieldsProps {
   name: string;
   nameError: string;
+  /** Motivo por el que el nombre no se puede cambiar; `null` si se puede. */
+  nameLockReason: string | null;
   description: string;
   disabled: boolean;
   onNameChange: (value: string) => void;
@@ -14,6 +16,7 @@ interface RoleFormFieldsProps {
 export function RoleFormFields({
   name,
   nameError,
+  nameLockReason,
   description,
   disabled,
   onNameChange,
@@ -29,6 +32,10 @@ export function RoleFormFields({
           autoComplete="off"
           value={name}
           disabled={disabled}
+          readOnly={nameLockReason !== null}
+          // Bloqueado, no recibe el foco inicial del diálogo (parecería editable).
+          tabIndex={nameLockReason === null ? undefined : -1}
+          className="read-only:bg-muted read-only:text-muted-foreground"
           aria-invalid={nameError !== "" || undefined}
           aria-describedby={nameError !== "" ? "role-name-error" : "role-name-help"}
           onChange={(event) => {
@@ -41,7 +48,7 @@ export function RoleFormFields({
           </p>
         ) : (
           <p id="role-name-help" className="text-xs text-muted-foreground">
-            Un nombre corto y único, por ejemplo «docente».
+            {nameLockReason ?? "Un nombre corto y único, por ejemplo «docente»."}
           </p>
         )}
       </div>

@@ -7,8 +7,13 @@ from dataclasses import dataclass
 from roles.application.dto import RoleView, UpdateRoleInput
 from roles.application.ports import RoleRepository
 from roles.application.views import role_to_view
-from roles.domain.errors import DuplicateRoleName, RoleNotFound, SystemRoleProtected
-from roles.domain.services import is_system_role
+from roles.domain.errors import (
+    DuplicateRoleName,
+    RoleNameLocked,
+    RoleNotFound,
+    SystemRoleProtected,
+)
+from roles.domain.services import is_name_locked, is_system_role
 from roles.domain.value_objects import RoleName
 
 
@@ -24,6 +29,8 @@ class UpdateRole:
             raise SystemRoleProtected()
 
         new_name = self._resolve_name(data.name, data.role_id)
+        if new_name is not None and new_name != role.name and is_name_locked(role.name):
+            raise RoleNameLocked()
         updated = self.repo.update(
             data.role_id,
             name=new_name,

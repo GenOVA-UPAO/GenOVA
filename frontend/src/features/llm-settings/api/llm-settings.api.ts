@@ -1,6 +1,8 @@
 import { apiJson } from "@/core/lib/http";
 
+import type { CatalogStatus } from "../lib/catalog-status";
 import { overridesPayload, type SettingsMap } from "../lib/llm-settings-mutations";
+import type { OwnCatalogStatus } from "../lib/own-catalog-status";
 import type { EnabledModel, LlmSettingsResponse } from "../lib/user-llm-settings.types";
 
 export interface LlmSettingsParams {
@@ -51,7 +53,12 @@ export function saveLlmSettings(settings: SettingsMap): Promise<LlmSettingsRespo
   );
 }
 
-export function refreshLlmCatalog(): Promise<unknown> {
+export interface RefreshCatalogResponse {
+  catalog_status?: CatalogStatus;
+  own_catalog_status?: OwnCatalogStatus | null;
+}
+
+export function refreshLlmCatalog(): Promise<RefreshCatalogResponse> {
   return apiJson(
     "/api/users/me/llm-settings/refresh-catalog",
     { method: "POST" },
@@ -68,20 +75,20 @@ export function saveEnabledModels(models: EnabledModel[]): Promise<EnabledModels
 }
 
 export function getUserApiKeys(): Promise<UserApiKeysResponse> {
-  return apiJson("/api/users/me/api-keys", {}, { fallbackMsg: "No se pudo cargar las API keys." });
+  return apiJson("/api/users/me/api-keys", {}, { fallbackMsg: "No se pudieron cargar tus claves." });
 }
 
 export function saveUserApiKey(provider: string, key: string): Promise<UserApiKeysResponse> {
   return apiJson(
     "/api/users/me/api-keys",
     { method: "PUT", body: json({ [provider]: key }) },
-    { fallbackMsg: "No se pudo guardar la API key." },
+    { fallbackMsg: "No se pudo guardar la clave." },
   );
 }
 
 export function getImageModels(provider: string): Promise<ImageModelOption[]> {
   const path = `/api/users/me/image-models?provider=${encodeURIComponent(provider)}`;
   return apiJson<{ models?: ImageModelOption[] }>(path, {}, {
-    fallbackMsg: "No se pudo cargar los modelos de imagen.",
+    fallbackMsg: "No se pudieron cargar los modelos de imagen.",
   }).then((data) => data.models ?? []);
 }

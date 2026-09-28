@@ -16,6 +16,7 @@ function firstFieldErrors<T extends Record<keyof T, string>>(error: z.ZodError):
 
 export function useForm<T extends Record<keyof T, string>>(schema: z.ZodType<T>, initial: T) {
   const [values, setValues] = useState(initial);
+  const [baseline, setBaseline] = useState(initial);
   const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
   const parsed = schema.safeParse(values);
   const errors: FieldErrors<T> = parsed.success ? {} : firstFieldErrors<T>(parsed.error);
@@ -45,17 +46,27 @@ export function useForm<T extends Record<keyof T, string>>(schema: z.ZodType<T>,
     };
   }
 
-  /** Marca todos los campos como tocados (al enviar) para mostrar sus errores. */
-  function touchAll() {
+  /**
+   * Al enviar con errores: los muestra todos y lleva el foco al primer campo
+   * inválido (si se pasa el formulario), para no dejarlo en el botón.
+   */
+  function touchAll(formEl?: HTMLFormElement | null) {
     const all: Partial<Record<keyof T, boolean>> = {};
     for (const key of Object.keys(values) as (keyof T)[]) all[key] = true;
     setTouched(all);
+    requestAnimationFrame(() => {
+      formEl?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    });
   }
 
+  /** Vuelve a un estado limpio: `next` pasa a ser la referencia de «sin cambios». */
   function reset(next: T) {
     setValues(next);
+    setBaseline(next);
     setTouched({});
   }
 
-  return { values, errorFor, isValid: parsed.success, bind, reset, setField, touch, touchAll };
+  const isDirty = (Object.keys(values) as (keyof T)[]).some((key) => values[key] !== baseline[key]);
+
+  return { values, errorFor, isValid: parsed.success, isDirty, bind, reset, setField, touch, touchAll };
 }

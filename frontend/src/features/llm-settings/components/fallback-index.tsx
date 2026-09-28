@@ -5,8 +5,12 @@ export function FallbackIndex({ index, modality }: Readonly<{ index: number; mod
   const known = modality !== "text" && Object.hasOwn(MODALITY_META, modality);
   const modalityLabel = known ? MODALITY_META[modality].label : undefined;
   return (
-    <div className="flex shrink-0 items-center gap-2 sm:h-9">
-      <span className="w-5 text-sm text-muted-foreground tabular-nums">{index + 1}.</span>
+    <div className="flex h-11 shrink-0 items-center gap-2 sm:h-10">
+      <span className="text-sm text-muted-foreground tabular-nums sm:w-5">
+        <span className="sm:hidden">Respaldo </span>
+        {index + 1}
+        <span className="max-sm:hidden">.</span>
+      </span>
       {modalityLabel ? (
         <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
           {modalityLabel}

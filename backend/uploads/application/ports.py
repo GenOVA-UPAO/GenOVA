@@ -15,13 +15,27 @@ class UploadLimits(Protocol):
 
 
 class TempUploadRepository(Protocol):
-    def count_active(self, user_id: str) -> int: ...
+    """Subidas temporales. `ova_id` es el contexto de la lista (None = crear OVA)."""
 
-    def list_active(self, user_id: str) -> list[TempUpload]: ...
+    def count_active(self, user_id: str, ova_id: str | None = None) -> int: ...
+
+    def list_active(self, user_id: str, ova_id: str | None = None) -> list[TempUpload]: ...
 
     def create(
-        self, user_id: str, filename: str, content_type: str, content: bytes
+        self,
+        user_id: str,
+        filename: str,
+        content_type: str,
+        content: bytes,
+        ova_id: str | None = None,
     ) -> TempUpload: ...
+
+    def get(self, upload_id: str, user_id: str) -> TempUpload | None: ...
+
+    def claim(self, user_id: str, upload_ids: list[str], ova_id: str) -> list[TempUpload]:
+        """Marca como usadas (confirmed) las subidas del usuario y las liga al OVA:
+        salen de su lista y no se vuelven a ofrecer. Devuelve las reclamadas."""
+        ...
 
     def get_storage_path(self, upload_id: str, user_id: str) -> str | None: ...
 

@@ -21,6 +21,17 @@ export function StatusBreakdown({ byStatus }: Readonly<StatusBreakdownProps>) {
     return { key, meta, n, pct };
   });
 
+  // Sin OVAs, cuatro barras vacías al 0 % no dicen nada: basta una frase.
+  if (sum === 0) {
+    return (
+      <AnalyticsPanel title="OVAs por estado">
+        <p className="text-sm text-muted-foreground">
+          Cuando haya OVAs verás aquí cuántos están listos, en borrador o con error.
+        </p>
+      </AnalyticsPanel>
+    );
+  }
+
   return (
     <AnalyticsPanel title="OVAs por estado">
       <ul className="space-y-3.5">

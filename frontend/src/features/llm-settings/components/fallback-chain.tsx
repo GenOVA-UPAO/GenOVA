@@ -10,15 +10,18 @@ import {
   setFallback,
   type TaskDraft,
 } from "../lib/llm-config-draft";
+import type { RichModel } from "../lib/model-facts";
 import { LlmTaskRowItem } from "./llm-task-row-item";
 
 interface FallbackChainProps {
   task: string;
   value: TaskDraft;
   fallbacks: Entry[];
-  models: { provider: string; model_id: string; label?: string; modality?: string }[];
+  models: RichModel[];
   disabled: boolean;
   issues: SlotIssue[];
+  /** Dónde se usa cada modelo, sin contar el respaldo `index` que se edita. */
+  usageFor?: (index: number) => Record<string, string[]>;
   onChange: (next: TaskDraft) => void;
 }
 
@@ -29,6 +32,7 @@ export function FallbackChain({
   models,
   disabled,
   issues,
+  usageFor,
   onChange,
 }: Readonly<FallbackChainProps>) {
   function emit(patch: Partial<TaskDraft>) {
@@ -66,6 +70,7 @@ export function FallbackChain({
               models={models}
               disabled={disabled}
               issues={issues}
+              usage={usageFor?.(index)}
               onChange={(provider, modelId) => {
                 emit({ fallbacks: setFallback(fallbacks, index, provider, modelId) });
               }}

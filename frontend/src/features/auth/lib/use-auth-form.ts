@@ -49,10 +49,19 @@ export function useAuthForm<T extends StringMap>(schema: z.ZodType<T>, initial: 
     return errorFor(name) ? true : undefined;
   }
 
-  function bind(name: keyof T & string) {
+  /**
+   * Props del input. `id` es el del campo en `AuthField` (por defecto, el nombre) y
+   * `hint` indica si el campo lleva ayuda, para enlazar error o ayuda por aria-describedby.
+   */
+  function bind(name: keyof T & string, options: { id?: string; hint?: boolean } = {}) {
+    const id = options.id ?? name;
+    let describedBy: string | undefined;
+    if (errorFor(name)) describedBy = `${id}-error`;
+    else if (options.hint === true) describedBy = `${id}-hint`;
     return {
       value: values[name],
       "aria-invalid": invalid(name),
+      "aria-describedby": describedBy,
       onChange: (event: { target: { value: string } }) => {
         setField(name, event.target.value);
       },

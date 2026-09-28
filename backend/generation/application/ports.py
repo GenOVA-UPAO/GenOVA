@@ -67,3 +67,15 @@ class ImageSettingsResolver(Protocol):
 
 class InputGuardrail(Protocol):
     def assert_allowed(self, prompt: str, user_id: UUID) -> None: ...
+
+
+class ReferenceMaterial(Protocol):
+    """Archivos de referencia (RAG) que el docente adjunta a un OVA."""
+
+    def owned(self, user_id: UUID, upload_ids: list[str]) -> list[str]:
+        """Los ids que de verdad son del usuario (el resto se descarta)."""
+        ...
+
+    def bind_to_ova(self, user_id: UUID, upload_ids: list[str], ova_id: str) -> None:
+        """Los saca de la lista temporal en la que se subieron y los liga al OVA."""
+        ...

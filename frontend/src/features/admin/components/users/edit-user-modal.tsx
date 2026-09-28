@@ -45,7 +45,14 @@ export function EditUserModal({
   const handleSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitted(true);
-    if (Object.keys(validateUserForm(values)).length > 0) return;
+    if (Object.keys(validateUserForm(values)).length > 0) {
+      const form = event.currentTarget;
+      // Tras pintar los errores, el foco va al primer campo inválido.
+      requestAnimationFrame(() => {
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
+      return;
+    }
     onSave(toUserEditPayload(values));
   };
 
@@ -65,6 +72,7 @@ export function EditUserModal({
           onSubmit={(event) => {
             handleSubmit(event);
           }}
+          noValidate
           className="space-y-5"
         >
           <EditUserFields
@@ -73,7 +81,12 @@ export function EditUserModal({
             disabled={isSubmitting}
             onChange={handleChange}
           />
-          <EditUserContactFields values={values} disabled={isSubmitting} onChange={handleChange} />
+          <EditUserContactFields
+            values={values}
+            errors={errors}
+            disabled={isSubmitting}
+            onChange={handleChange}
+          />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancelar

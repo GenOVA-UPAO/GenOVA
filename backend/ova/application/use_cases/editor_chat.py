@@ -14,7 +14,7 @@ from ova.domain.chat import (
     ChatMessagePatch,
 )
 from ova.domain.errors import OvaEditError, OvaForbidden, OvaNotFound
-from ova.domain.model import OvaActor
+from ova.domain.model import EDIT_FORBIDDEN, OvaActor, can_edit_ova, can_read_ova
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,7 +23,7 @@ class EditorChat:
     chat: ChatRepository
 
     def list(self, data: ChatAccessInput) -> tuple[ChatMessage, ...]:
-        self._require(data.ova_id, data.actor)
+        self._require(data.ova_id, data.actor, write=False)
         return self.chat.list_messages(data.ova_id)
 
     def create(self, data: ChatCreateInput) -> ChatMessage:
@@ -73,9 +73,13 @@ class EditorChat:
         self._require(data.ova_id, data.actor)
         return self.chat.clear_messages(data.ova_id)
 
-    def _require(self, ova_id: str, actor: OvaActor) -> None:
+    def _require(self, ova_id: str, actor: OvaActor, *, write: bool = True) -> None:
+        """Leer el hilo: autor o admin. Escribir en él: solo el autor, para que
+        nadie deje mensajes en el historial de otra persona."""
         ova = self.editor.get_ova(ova_id)
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
-        if ova.owner_id != actor.id and not actor.is_admin:
+        if write and not can_edit_ova(ova.owner_id, actor):
+            raise OvaForbidden(EDIT_FORBIDDEN)
+        if not can_read_ova(ova.owner_id, actor):
             raise OvaForbidden("Sin permisos.")

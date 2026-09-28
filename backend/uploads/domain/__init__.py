@@ -12,6 +12,7 @@ from uploads.domain.errors import (
 from uploads.domain.model import TempUpload
 from uploads.domain.policies import (
     ALLOWED_MIME_TYPES,
+    ingestion_message,
     is_allowed_mime,
     magic_bytes_ok,
     safe_filename,
@@ -27,6 +28,7 @@ __all__ = [
     "TooManyFiles",
     "UploadError",
     "UploadNotFound",
+    "ingestion_message",
     "is_allowed_mime",
     "magic_bytes_ok",
     "safe_filename",

@@ -1,16 +1,19 @@
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
+import { joinList } from "../lib/join-list";
 import { taskMeta } from "../lib/task-meta";
 
 interface ModelsTaskTabProps {
   task: string;
   selected: boolean;
   subtitle: string;
+  /** Otras tareas con el mismo modelo principal. */
+  shared?: string[];
   onSelect: (task: string) => void;
 }
 
-export function ModelsTaskTab({ task, selected, subtitle, onSelect }: Readonly<ModelsTaskTabProps>) {
+export function ModelsTaskTab({ task, selected, subtitle, shared = [], onSelect }: Readonly<ModelsTaskTabProps>) {
   const meta = taskMeta(task);
   return (
     <button
@@ -19,6 +22,8 @@ export function ModelsTaskTab({ task, selected, subtitle, onSelect }: Readonly<M
       id={`task-tab-${task}`}
       aria-controls={`task-panel-${task}`}
       aria-selected={selected}
+      // El «igual que…» describe, no nombra: así «Código» no coincide con la pestaña Texto.
+      aria-describedby={shared.length > 0 ? `task-tab-${task}-shared` : undefined}
       tabIndex={selected ? 0 : -1}
       onClick={() => {
         onSelect(task);
@@ -40,8 +45,18 @@ export function ModelsTaskTab({ task, selected, subtitle, onSelect }: Readonly<M
       </span>
       <span className="min-w-0">
         <span className="block text-sm font-medium text-foreground">{meta.label}</span>
-        <span className="mt-0.5 block truncate text-xs text-muted-foreground" title={subtitle}>
-          {subtitle}
+        <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+          <span className="truncate" title={subtitle}>
+            {subtitle}
+          </span>
+          {shared.length > 0 ? (
+            <span className="inline-flex shrink-0" title={`Igual que ${joinList(shared)}`}>
+              <Icon name="link" size="text-xs" />
+              <span id={`task-tab-${task}-shared`} hidden>
+                Mismo modelo que {joinList(shared)}
+              </span>
+            </span>
+          ) : null}
         </span>
       </span>
     </button>

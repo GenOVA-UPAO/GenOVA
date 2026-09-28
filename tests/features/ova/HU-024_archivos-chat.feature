@@ -1,7 +1,8 @@
 # Cubre HU-024 a nivel unit (sin browser/backend): validación del límite de
 # adjuntos — vive en frontend/src/features/ova-workspace/lib/upload-chip-view-model.ts.
-# El estado por archivo ya no se pinta en cada chip: el React muestra un único
-# aviso "Subiendo archivos…" mientras hay subidas en curso.
+# El estado de cada archivo (subiendo, indexando, listo, no se usará y por qué)
+# lo resuelve frontend/src/features/ova-workspace/lib/upload-rag-status.ts y
+# lo cubre su spec de vitest.
 Feature: Archivos contextuales estilo chat — viewmodel (HU-024)
 
   Scenario: Rechazo por exceder el límite de archivos

@@ -4,6 +4,7 @@ import { authApi } from "@/core/auth/auth.service";
 import { Button } from "@/core/components/ui/button";
 import { Input } from "@/core/components/ui/input";
 
+import { CONNECT_ERROR } from "../lib/auth-copy";
 import { totpSchema } from "../lib/auth-schemas";
 import { onFormSubmit } from "../lib/on-form-submit";
 import { useAuthForm } from "../lib/use-auth-form";
@@ -35,9 +36,11 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
         onSuccess();
         return;
       }
-      setServerError(data.message ?? "Código incorrecto.");
+      // Sin mensaje del servidor no se sabe si el código falló o el servidor no respondió
+      // (withOk no expone el estado): un texto neutro no culpa al código por un 502.
+      setServerError(data.message ?? "No se pudo verificar el código. Intenta de nuevo.");
     } catch {
-      setServerError("No se pudo conectar con el servidor.");
+      setServerError(CONNECT_ERROR);
     } finally {
       setSubmitting(false);
     }
@@ -45,32 +48,33 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
 
   return (
     <AuthCard
-      eyebrow="Verificación en 2 pasos"
-      title="Código de autenticación"
-      subtitle="Abre tu aplicación autenticadora e ingresa el código de 6 dígitos. También puedes usar un código de respaldo."
+      title="Verificación en dos pasos"
+      subtitle="Abre tu app autenticadora y escribe el código de 6 dígitos que muestra ahora."
     >
       <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
-        <AuthField id="code" label="Código" error={form.errorFor("code")}>
+        <AuthField
+          id="code"
+          label="Código"
+          error={form.errorFor("code")}
+          hint="¿Sin acceso a la app? Usa uno de tus códigos de respaldo."
+        >
           <Input
             id="code"
             type="text"
-            inputMode="numeric"
             autoComplete="one-time-code"
-            placeholder="123456"
-            {...form.bind("code")}
+            spellCheck={false}
+            autoCapitalize="none"
+            maxLength={9}
+            {...form.bind("code", { hint: true })}
           />
         </AuthField>
         {serverError ? <ServerAlert>{serverError}</ServerAlert> : null}
         <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
           {submitting ? "Verificando…" : "Verificar"}
         </Button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="w-full text-center text-sm text-muted-foreground hover:underline"
-        >
+        <Button type="button" variant="ghost" className="w-full text-muted-foreground" onClick={onCancel}>
           Volver al inicio de sesión
-        </button>
+        </Button>
       </form>
     </AuthCard>
   );

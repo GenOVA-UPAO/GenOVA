@@ -37,8 +37,19 @@ export function DeleteRoleModal({
   onCancel,
 }: Readonly<DeleteRoleModalProps>) {
   const [reassignRoleId, setReassignRoleId] = useState("");
+  const [tried, setTried] = useState(false);
   const needsReassign = (role.user_count ?? 0) > 0;
-  const confirmDisabled = isDeleting || (needsReassign && reassignRoleId === "");
+  const missingTarget = needsReassign && reassignRoleId === "";
+
+  // El botón no se deshabilita en silencio: si falta el rol de destino, se dice junto al selector.
+  const handleConfirm = () => {
+    setTried(true);
+    if (missingTarget) {
+      document.getElementById("reassign-role-select")?.focus();
+      return;
+    }
+    onConfirm(needsReassign ? reassignRoleId : undefined);
+  };
 
   return (
     <Dialog
@@ -47,7 +58,7 @@ export function DeleteRoleModal({
         if (!open && !isDeleting) onCancel();
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg" aria-describedby="delete-role-desc">
         <DialogHeader>
           <DialogTitle>¿Eliminar el rol «{formatRoleName(role.name)}»?</DialogTitle>
         </DialogHeader>
@@ -55,6 +66,7 @@ export function DeleteRoleModal({
           role={role}
           roles={roles}
           reassignRoleId={reassignRoleId}
+          reassignError={tried && missingTarget ? "Elige a qué rol pasarán sus usuarios." : ""}
           isDeleting={isDeleting}
           onReassignChange={setReassignRoleId}
         />
@@ -65,10 +77,8 @@ export function DeleteRoleModal({
           </Button>
           <Button
             variant="danger"
-            disabled={confirmDisabled}
-            onClick={() => {
-              onConfirm(needsReassign ? reassignRoleId : undefined);
-            }}
+            loading={isDeleting}
+            onClick={handleConfirm}
           >
             {confirmLabel(needsReassign, isDeleting)}
           </Button>

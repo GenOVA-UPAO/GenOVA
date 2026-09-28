@@ -7,7 +7,12 @@ import { Button } from "@/core/components/ui/button";
 export function GeneratingHeader() {
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-card px-3 sm:px-4">
-      <Button asChild variant="ghost" size="sm" className="-ml-1 text-muted-foreground">
+      <Button
+        asChild
+        variant="ghost"
+        size="sm"
+        className="-ml-1 text-muted-foreground max-sm:size-11 max-sm:px-0"
+      >
         <Link to="/mis-ovas" aria-label="Volver a Mis OVAs">
           <Icon name="arrow-left" />
           <span className="hidden sm:inline">Mis OVAs</span>

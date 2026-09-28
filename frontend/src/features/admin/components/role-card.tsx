@@ -1,9 +1,9 @@
 import { Badge } from "@/core/components/ui/badge";
-import { Button } from "@/core/components/ui/button";
 
 import { formatRoleDescription, formatRoleName, roleUserCountLabel } from "../lib/role-utils";
 import type { Role } from "../lib/types";
-import { isSystemRole } from "../pages/admin-roles-page.helpers";
+import { isSystemRole, isThesisRole } from "../pages/admin-roles-page.helpers";
+import { RoleCardActions } from "./role-card-actions";
 import { RolePermissionsList } from "./role-permissions-list";
 
 interface RoleCardProps {
@@ -15,6 +15,7 @@ interface RoleCardProps {
 /** Fila de un rol dentro de la lista: nombre, alcance, permisos y acciones. */
 export function RoleCard({ role, onEdit, onDelete }: Readonly<RoleCardProps>) {
   const system = isSystemRole(role.name);
+  const thesis = isThesisRole(role.name);
   const description = formatRoleDescription(role.description);
 
   return (
@@ -34,29 +35,21 @@ export function RoleCard({ role, onEdit, onDelete }: Readonly<RoleCardProps>) {
           <p className="max-w-prose text-sm text-muted-foreground">{description}</p>
         )}
         <RolePermissionsList permissions={role.permissions ?? []} />
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <Button
-          variant="outline"
-          className="max-md:h-11 max-md:flex-1"
-          onClick={() => {
-            onEdit(role);
-          }}
-        >
-          Editar permisos
-        </Button>
-        {!system && (
-          <Button
-            variant="ghost"
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive max-md:h-11"
-            onClick={() => {
-              onDelete(role);
-            }}
-          >
-            Eliminar
-          </Button>
+        {thesis && (
+          <p className="text-xs text-muted-foreground">
+            El modo tesis lo asigna a las cuentas nuevas, así que no se puede eliminar ni renombrar.
+          </p>
         )}
       </div>
+      {/* El servidor rechaza cualquier cambio en los roles del sistema: en lugar de
+      ofrecer un formulario que siempre falla, se explica por qué no se edita. */}
+      {system ? (
+        <p className="text-sm text-muted-foreground md:max-w-52 md:text-right">
+          Los roles del sistema no se editan ni se eliminan.
+        </p>
+      ) : (
+        <RoleCardActions role={role} deletable={!thesis} onEdit={onEdit} onDelete={onDelete} />
+      )}
     </li>
   );
 }

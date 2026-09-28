@@ -2,10 +2,10 @@ import { triggerDownloadFromResponse } from "@/core/lib/download";
 import { apiFetch, apiJson, HttpError } from "@/core/lib/http";
 
 import type { RegenProgressDto } from "../lib/regen-poll";
-import type { OvaData, Phase } from "../lib/types";
+import type { OvaData, Phase, PhaseWithContent } from "../lib/types";
 import type { PhaseMicroVersion, VersionDiffData } from "../lib/version-history.types";
 
-export interface RegenRequest { prompt?: string | null; phaseIds?: string[] }
+export interface RegenRequest { prompt?: string | null; phaseIds?: string[]; uploadIds?: string[] }
 export interface RegenAck { job_id: string }
 
 export function fetchOvaWorkspace(ovaId: string): Promise<OvaData> { return apiJson(`/api/ovas/${ovaId}/editar`); }
@@ -13,13 +13,17 @@ export function saveOvaPhase(ovaId: string, phaseId: string, content: string): P
   return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}`, { method: "PATCH", body: JSON.stringify({ content }) });
 }
 export function triggerOvaRegeneration(ovaId: string, request: RegenRequest = {}): Promise<RegenAck> {
-  return apiJson(`/api/ovas/${ovaId}/regenerar`, { method: "POST", body: JSON.stringify({ prompt: request.prompt ?? null, fase_ids: request.phaseIds ?? [] }) });
+  return apiJson(`/api/ovas/${ovaId}/regenerar`, { method: "POST", body: JSON.stringify({ prompt: request.prompt ?? null, fase_ids: request.phaseIds ?? [], ...(request.uploadIds?.length ? { upload_ids: request.uploadIds } : {}) }) });
 }
 export function fetchRegenerationProgress(ovaId: string, jobId: string): Promise<RegenProgressDto> { return apiJson(`/api/ovas/${ovaId}/regenerar/${jobId}/progress`); }
 export function fetchOvaVersions(ovaId: string): Promise<unknown> { return apiJson(`/api/ovas/${ovaId}/versiones`); }
 export function fetchVersionDiff(ovaId: string, first: string | number, second: string | number): Promise<VersionDiffData> { return apiJson(`/api/ovas/${ovaId}/versiones/diff?v1=${String(first)}&v2=${String(second)}`); }
 export function revertOvaVersion(ovaId: string, versionId: string): Promise<unknown> { return apiJson(`/api/ovas/${ovaId}/versiones/${versionId}/revert`, { method: "POST" }); }
-export function addOvaPhase(ovaId: string, phaseType: string, prompt: string): Promise<Phase> { return apiJson(`/api/ovas/${ovaId}/fases`, { method: "POST", body: JSON.stringify({ phase_type: phaseType, prompt }) }); }
+/** El backend responde `{ message, phase }`: se devuelve la fase creada. */
+export async function addOvaPhase(ovaId: string, phaseType: string, prompt: string): Promise<PhaseWithContent> {
+  const body = await apiJson<{ phase: PhaseWithContent }>(`/api/ovas/${ovaId}/fases`, { method: "POST", body: JSON.stringify({ phase_type: phaseType, prompt }) });
+  return body.phase;
+}
 export function deleteOvaPhase(ovaId: string, phaseId: string): Promise<void> { return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}`, { method: "DELETE" }); }
 export function reorderOvaPhases(ovaId: string, reorders: unknown): Promise<void> { return apiJson(`/api/ovas/${ovaId}/fases/reorder`, { method: "PATCH", body: JSON.stringify({ reorders }) }); }
 export function fetchPhaseVersions(ovaId: string, phaseId: string): Promise<{ micro_versions?: PhaseMicroVersion[] }> { return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}/versiones`); }

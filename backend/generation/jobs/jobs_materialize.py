@@ -17,7 +17,7 @@ import structlog
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
-from core.text import smart_truncate
+from core.text import ova_title
 from models import Ova, OvaJob, OvaJobResource, OvaPhase, OvaVersion
 from prometheus.prompts.elaborate_prompts import RECURSOS_META as ELABORATE_META
 from prometheus.prompts.engage_prompts import RECURSOS_META as ENGAGE_META
@@ -80,7 +80,7 @@ def materialize_partial_ova(
 
 def _build_ova(db: Session, job: OvaJob, resources: list[OvaJobResource]) -> uuid.UUID:
     prompt = job.prompt or ""
-    title = smart_truncate(prompt) or "OVA parcial"
+    title = ova_title(prompt) or "OVA parcial"
     total = db.execute(
         select(func.count()).select_from(OvaJobResource).where(OvaJobResource.job_id == job.id)
     ).scalar_one()

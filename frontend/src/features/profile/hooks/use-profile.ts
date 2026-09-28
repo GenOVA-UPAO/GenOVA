@@ -23,6 +23,7 @@ export function useSaveProfile() {
   return useMutation({
     mutationFn: (values: ProfileFormValues) => saveProfile(values),
     onSuccess: async () => {
+      toast.success("Datos personales guardados.");
       await queryClient.invalidateQueries({ queryKey: profileKeys.all });
       await authStore.revalidate();
     },

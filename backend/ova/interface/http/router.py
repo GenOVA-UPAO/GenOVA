@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
 from core.database import get_db
-from core.text import smart_truncate
+from core.text import ova_title
 from models import User
 from ova.application.dto import ManageOvaInput, SaveOvaInput
 from ova.application.llm_helpers import _enabled_llm_options
@@ -59,7 +59,7 @@ def save_ova(
     current_user: User = Depends(get_current_user),
     use_cases: OvaUseCases = Depends(build_ova),
 ):
-    title = smart_truncate(payload.prompt)
+    title = ova_title(payload.prompt)
     result = use_cases.save_ova.execute(
         SaveOvaInput(
             actor_id=str(current_user.id),

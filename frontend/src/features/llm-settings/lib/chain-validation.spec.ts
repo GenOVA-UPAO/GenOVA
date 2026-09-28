@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { draftHasIssues, validateDraft, validateTaskChain } from "./chain-validation";
+import {
+  blockingMessage,
+  draftHasIssues,
+  validateDraft,
+  validateTaskChain,
+} from "./chain-validation";
 import type { TaskDraft } from "./llm-config-draft";
 
 const llama: TaskDraft = {
@@ -72,5 +77,30 @@ describe("validateDraft", () => {
     expect(draftHasIssues(draft, ["texto", "codigo"])).toBe(true);
     expect(draftHasIssues(draft, ["texto"])).toBe(false);
     expect(draftHasIssues(null, ["texto"])).toBe(false);
+  });
+});
+
+describe("blockingMessage", () => {
+  it("says what blocks the save and in which tasks", () => {
+    expect(blockingMessage({})).toBeNull();
+    expect(blockingMessage({ texto: [{ index: 0, message: "", kind: "empty" }] })).toBe(
+      "Para guardar, elige un modelo o quita los respaldos vacíos en Texto.",
+    );
+    expect(
+      blockingMessage({
+        texto: [{ index: 0, message: "", kind: "duplicate" }],
+        codigo: [{ index: 1, message: "", kind: "duplicate" }],
+      }),
+    ).toBe("Para guardar, cambia los modelos repetidos en Texto y Código / HTML.");
+    expect(
+      blockingMessage({
+        texto: [
+          { index: 0, message: "", kind: "empty" },
+          { index: 1, message: "", kind: "duplicate" },
+        ],
+      }),
+    ).toBe(
+      "Para guardar, completa o quita los respaldos vacíos y cambia los modelos repetidos en Texto.",
+    );
   });
 });

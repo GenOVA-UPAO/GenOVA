@@ -11,12 +11,12 @@ export function ManageModelsSearchField({
 }: Readonly<ManageModelsSearchFieldProps>) {
   return (
     <SearchInput
-      className="min-w-0"
+      className="min-w-0 flex-1"
       value={value}
       onValueChange={onSearch}
       placeholder="Buscar por nombre, proveedor o descripción…"
       ariaLabel="Buscar modelo"
-      inputClassName="h-9 max-sm:h-11"
+      inputClassName="h-9 max-sm:h-11 max-sm:text-base"
     />
   );
 }

@@ -13,8 +13,6 @@ interface NodesCardBodyProps {
   ready: boolean;
   configurable: EngineNode[];
   alwaysOn: EngineNode[];
-  videoNode: EngineNode | undefined;
-  videoWarning: boolean;
   nodes: ReturnType<typeof useNodesConfig>;
 }
 
@@ -24,8 +22,6 @@ export function NodesCardBody({
   ready,
   configurable,
   alwaysOn,
-  videoNode,
-  videoWarning,
   nodes,
 }: Readonly<NodesCardBodyProps>) {
   if (loading || !ready) {
@@ -56,7 +52,6 @@ export function NodesCardBody({
         {alwaysOn.map((node) => (
           <AlwaysOnNodeRow key={node.id} node={node} />
         ))}
-        {videoNode ? <AlwaysOnNodeRow node={videoNode} warning={videoWarning} /> : null}
       </EngineNodeGroup>
     </div>
   );

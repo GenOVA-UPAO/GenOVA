@@ -74,7 +74,7 @@ describe("LoginPage", () => {
     await user.type(screen.getByLabelText("Correo"), "user@genova.ai");
     await user.type(screen.getByLabelText("Contraseña"), "user1234password");
     await user.click(screen.getByRole("button", { name: "Entrar" }));
-    expect(await screen.findByRole("heading", { name: "Código de autenticación" })).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Verificación en dos pasos" })).toBeVisible();
     await user.type(screen.getByLabelText("Código"), "123456");
     await user.click(screen.getByRole("button", { name: "Verificar" }));
     expect(await screen.findByText("Dashboard")).toBeVisible();
@@ -85,5 +85,10 @@ describe("LoginPage", () => {
   it("muestra aviso si la sesión expiró", () => {
     renderLogin("?expired=1");
     expect(screen.getByText("Tu sesión ha expirado. Vuelve a iniciar sesión.")).toBeVisible();
+  });
+
+  it("confirma que la cuenta se eliminó al volver al login", () => {
+    renderLogin("?deleted=1");
+    expect(screen.getByText(/Tu cuenta se eliminó/)).toBeVisible();
   });
 });

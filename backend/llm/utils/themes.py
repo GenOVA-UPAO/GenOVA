@@ -3,6 +3,7 @@ injected into every HTML-generating prompt (Prometheus).
 
 Two independent axes, both defaulting to "upao":
   - color_mode:  "upao" (fixed UPAO palette) | "free" (LLM chooses a palette)
+                 | "custom" (the teacher's palette: primary + accent, see palette.py)
   - design_mode: "upao" (structured UPAO template) | "free" (LLM chooses layout)
 
 This is intentionally separate from the app *chrome* theme in
@@ -35,7 +36,18 @@ UPAO_PALETTE = {
 
 
 def _upao_root_vars() -> str:
-    p = UPAO_PALETTE
+    return _root_vars(UPAO_PALETTE)
+
+
+def palette_root_vars(palette: dict | None) -> str:
+    """:root de la paleta del docente, o el de UPAO si no hay paleta válida."""
+    from llm.utils.palette import normalize_palette, palette_vars
+
+    clean = normalize_palette(palette)
+    return _root_vars(palette_vars(clean)) if clean else _upao_root_vars()
+
+
+def _root_vars(p: dict) -> str:
     return (
         ":root{"
         f"--bg:{p['bg']};--surface:{p['surface']};--surface-tint:{p['surface_tint']};"
@@ -55,7 +67,28 @@ def _upao_root_vars() -> str:
     )
 
 
-def _palette_block(color_mode: str) -> str:
+def _custom_palette_block(palette: dict) -> str:
+    return (
+        "2) PALETA DEL DOCENTE OBLIGATORIA (no uses otros colores de marca):\n"
+        f"   - Primario {palette['primary']} y acento {palette['accent']}: el docente los eligió.\n"
+        "   - Las variables :root YA existen (inyectadas): --bg --surface --surface-tint\n"
+        "     --primary --primary-hover --accent --accent-hover --accent-tint --text\n"
+        "     --text-muted --border --success --danger --action --action-hover --radius --shadow --space-1..6.\n"
+        "     ÚSALAS con var(); NO las redefinas ni escribas hex de marca a mano.\n"
+        "   - BLANCO (--surface/--bg) = superficie dominante: la mayor parte del recurso.\n"
+        "   - PRIMARIO (--primary) = títulos (h1/h2), barras de cabecera, bordes de estructura,\n"
+        "     iconos primarios y el track de barras de progreso.\n"
+        "   - ACENTO (--accent) = líneas de separación, resaltados, estados de respuesta y el\n"
+        "     relleno de progreso.\n"
+        "   - --action para CTA con texto blanco y enlaces; --accent solo para acentos y gráficos.\n"
+        "   - NUNCA uses --accent para texto: puede ser un color claro. Usa --action o --primary.\n"
+        "   - Contraste WCAG AA mínimo en todo texto."
+    )
+
+
+def _palette_block(color_mode: str, palette: dict | None = None) -> str:
+    if color_mode == "custom" and palette:
+        return _custom_palette_block(palette)
     if color_mode == "free":
         return (
             "2) PALETA (elige UNA coherente y mantenla):\n"
@@ -81,7 +114,23 @@ def _palette_block(color_mode: str) -> str:
     )
 
 
-def _layout_block(design_mode: str) -> str:
+_UPAO_PALETTE_LINE = (
+    "   Paleta fija UPAO: --primary #0A3D91 · --accent #F47A20 · --bg #F7F9FC · --surface #FFFFFF.\n"
+)
+
+
+def _layout_block(design_mode: str, palette: dict | None = None) -> str:
+    block = _upao_layout_block(design_mode)
+    if palette and _UPAO_PALETTE_LINE in block:
+        block = block.replace(
+            _UPAO_PALETTE_LINE,
+            f"   Paleta del docente: --primary {palette['primary']} · --accent {palette['accent']}"
+            " (usa siempre las variables).\n",
+        )
+    return block
+
+
+def _upao_layout_block(design_mode: str) -> str:
     if design_mode == "free":
         return (
             "4) LAYOUT (libre, con criterio):\n"
@@ -141,7 +190,7 @@ def _base_block(color_mode: str) -> str:
         "1) BASE TÉCNICA — HOJA BASE YA INYECTADA, NO LA REESCRIBAS\n"
         '   - <!DOCTYPE html>, lang="es", viewport meta para responsive.\n'
         "   - El documento YA incluye (inyectado automáticamente): reset CSS, variables\n"
-        "     :root UPAO, tipografía responsive (h1-h3 y body con clamp), focus-visible y\n"
+        "     :root de la paleta, tipografía responsive (h1-h3 y body con clamp), focus-visible y\n"
         "     estas clases listas para usar:\n"
         "     .ova-container .ova-card .ova-btn .ova-btn--ghost .ova-input .ova-option\n"
         "     (.is-selected/.is-correct/.is-wrong) .ova-feedback--ok/--bad\n"
@@ -233,7 +282,17 @@ def _golden_skeleton(design_mode: str) -> str:
     )
 
 
-def build_design_system(color_mode: str = "upao", design_mode: str = "upao") -> str:
+def theme_design_system(theme: dict | None) -> str:
+    """build_design_system a partir del tema de un job ({color, design, palette})."""
+    theme = theme or {}
+    return build_design_system(
+        theme.get("color", "upao"), theme.get("design", "upao"), theme.get("palette")
+    )
+
+
+def build_design_system(
+    color_mode: str = "upao", design_mode: str = "upao", palette: dict | None = None
+) -> str:
     """Build the [SISTEMA_DE_DISEÑO_OBLIGATORIO] block injected into HTML prompts.
 
     Technical / accessibility / SCORM / quality rules are NON-negotiable and
@@ -241,11 +300,16 @@ def build_design_system(color_mode: str = "upao", design_mode: str = "upao") -> 
     En modo upao la hoja base va inyectada server-side (llm/utils/base_css.py) y
     el prompt referencia sus clases en vez de pedir el CSS — menos tokens de salida.
     """
-    color_mode = color_mode if color_mode in ("upao", "free") else "upao"
+    from llm.utils.palette import normalize_palette
+
+    color_mode = color_mode if color_mode in ("upao", "free", "custom") else "upao"
     design_mode = design_mode if design_mode in ("upao", "free") else "upao"
+    custom = normalize_palette(palette) if color_mode == "custom" else None
+    if color_mode == "custom" and custom is None:
+        color_mode = "upao"
     tipografia = (
         ""
-        if color_mode == "upao"
+        if color_mode != "free"
         else """
 3) TIPOGRAFÍA
    - Tamaños con clamp() para responsive sin media queries:
@@ -261,9 +325,9 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
 
 {_base_block(color_mode)}
 
-{_palette_block(color_mode)}
+{_palette_block(color_mode, custom)}
 {tipografia}
-{_layout_block(design_mode)}
+{_layout_block(design_mode, custom)}
 
 {_interaction_block(color_mode)}
 
@@ -352,6 +416,4 @@ APLICA TODAS ESTAS REGLAS. Son NO NEGOCIABLES.
 
 def inject_design_system(prompt: str, theme: dict | None = None) -> str:
     """Helper for callers that prefer post-hoc injection (unused by the param path)."""
-    color = (theme or {}).get("color", "upao")
-    design = (theme or {}).get("design", "upao")
-    return prompt.replace("[[DESIGN_SYSTEM]]", build_design_system(color, design))
+    return prompt.replace("[[DESIGN_SYSTEM]]", theme_design_system(theme))

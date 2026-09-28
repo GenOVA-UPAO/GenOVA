@@ -1,5 +1,4 @@
 import { PageHeader } from "@/core/components/page-header";
-import { Badge } from "@/core/components/ui/badge";
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 import { formatDate, formatRole } from "../lib/profile-format";
@@ -25,15 +24,15 @@ export function ProfileHeader({ profile, role, isLoading }: Readonly<ProfileHead
     <PageHeader
       title={profile?.full_name ?? "Mi perfil"}
       subtitle={
+        // El rol va junto a los datos de la cuenta: como badge suelto a la derecha
+        // quedaba lejos del nombre y no se asociaba a nada.
         <>
-          {profile?.email ?? ""}
-          <span className="block sm:inline">
-            <span className="hidden sm:inline"> · </span>Miembro desde{" "}
-            {formatDate(profile?.created_at)}
+          <span className="block [overflow-wrap:anywhere]">{profile?.email ?? ""}</span>
+          <span className="block">
+            {formatRole(role)} · Miembro desde {formatDate(profile?.created_at)}
           </span>
         </>
       }
-      actions={<Badge variant="secondary">{formatRole(role)}</Badge>}
     />
   );
 }

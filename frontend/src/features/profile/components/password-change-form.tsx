@@ -25,7 +25,7 @@ export function PasswordChangeForm({ isSubmitting, onSave }: Readonly<PasswordCh
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!form.isValid) {
-      form.touchAll();
+      form.touchAll(event.currentTarget);
       return;
     }
     const saved = await onSave(form.values);

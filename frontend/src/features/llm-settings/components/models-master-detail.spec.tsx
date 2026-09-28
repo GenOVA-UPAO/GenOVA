@@ -11,6 +11,10 @@ vi.mock("./catalog-status-alert", () => ({
   CatalogStatusAlert: () => null,
 }));
 
+vi.mock("./unconnected-providers-note", () => ({
+  UnconnectedProvidersNote: () => null,
+}));
+
 vi.mock("./llm-task-row", () => ({
   LlmTaskRow: ({ task }: { task: string }) =>
     createElement("div", { "data-testid": "task-row" }, task),
@@ -47,6 +51,7 @@ function stubStore(): LlmSettingsStore {
     settings: {},
     catalog: {},
     catalogFull: [],
+    catalogAll: [],
     catalogEnabled: [],
     fullTotal: 0,
     fullHasMore: false,
@@ -64,6 +69,7 @@ function stubStore(): LlmSettingsStore {
     error: "",
     refetch: vi.fn(),
     catalogStatus: null,
+    ownCatalogStatus: null,
     refreshingCatalog: false,
     searchQuery: "",
     categoryFilter: "all",
@@ -110,6 +116,8 @@ function renderDetail(
         chainIssues={{}}
         onDraftChange={vi.fn()}
         onOpenCatalog={props.onOpenCatalog ?? vi.fn()}
+        onConnectProvider={props.onConnectProvider ?? vi.fn()}
+        onGoToCredentials={props.onGoToCredentials ?? vi.fn()}
       />
     </LlmSettingsContext.Provider>,
   );

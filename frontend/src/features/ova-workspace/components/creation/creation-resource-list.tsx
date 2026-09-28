@@ -11,9 +11,19 @@ interface Props {
   onToggle: (id: string) => void;
   onRetryOne: (id: string) => void;
   onPreview?: (id: string) => void;
+  /** Muestra las casillas de los fallidos (para reintentarlos en bloque). */
+  selectable?: boolean;
 }
 
-export function CreationResourceList({ groups, selectedIds, activeId, onToggle, onRetryOne, onPreview }: Readonly<Props>) {
+export function CreationResourceList({
+  groups,
+  selectedIds,
+  activeId,
+  onToggle,
+  onRetryOne,
+  onPreview,
+  selectable = true,
+}: Readonly<Props>) {
   const selected = new Set(selectedIds);
   return (
     <div className="space-y-4">
@@ -28,6 +38,7 @@ export function CreationResourceList({ groups, selectedIds, activeId, onToggle, 
                 key={resource.id}
                 resource={resource}
                 selected={selected.has(resource.id)}
+                selectable={selectable}
                 active={activeId === resource.id}
                 onToggle={() => {
                   onToggle(resource.id);

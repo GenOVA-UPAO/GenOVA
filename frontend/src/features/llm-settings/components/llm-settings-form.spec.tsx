@@ -102,6 +102,28 @@ describe("LlmSettingsForm", () => {
     const names = (await screen.findAllByRole("option")).map((option) => option.textContent);
     expect(names.some((name) => name.startsWith("Llama"))).toBe(true);
     expect(names.some((name) => name.startsWith("Otro"))).toBe(false);
-    expect(names.some((name) => name.startsWith("DeepSeek V4 Flash") && name.endsWith("· actual"))).toBe(true);
+    // El modelo en uso (de la plataforma) se nombra, no con su id en crudo.
+    expect(names.some((name) => name.startsWith("DeepSeek V4 Flash") && name.endsWith("en uso"))).toBe(true);
+  });
+
+  it("el tiempo máximo de cada tarea tiene una etiqueta visible", async () => {
+    vi.mocked(getUserApiKeys).mockResolvedValue({ api_keys: { openrouter: "••••1234" } });
+    vi.mocked(getLlmSettings).mockResolvedValue({
+      has_own_llm_key: true,
+      settings: { texto: { provider: "openrouter", model_id: FLASH.model_id, timeout_s: 120 } },
+      catalog: { openrouter: [FLASH] },
+      timeout_bounds: [30, 300],
+    });
+
+    renderForm();
+
+    const field = await screen.findByRole("spinbutton", {
+      name: "Espera máxima de Texto, de 30 a 300 segundos",
+    });
+    expect(field).toHaveValue(120);
+    const label = document.querySelector(`label[for="${field.id}"]`);
+    expect(label).toHaveTextContent("Espera máxima");
+    expect(label).toBeVisible();
   });
 });
+

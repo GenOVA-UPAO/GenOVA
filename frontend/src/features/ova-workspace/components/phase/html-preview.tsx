@@ -5,6 +5,7 @@ import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 import type { PreviewResult } from "../../lib/ova-types";
+import { resourceDisplayName } from "../../lib/resource-display-name";
 import { SegmentedTabs } from "../shared/segmented-tabs";
 import { HtmlCodeView } from "./html-code-view";
 
@@ -31,10 +32,12 @@ export function HtmlPreview({ result }: Readonly<Props>) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            {result.tipo}: <span className="text-primary">{result.concepto}</span>
+            {resourceDisplayName(result.tipo ?? "")}:{" "}
+            <span className="text-primary">{result.concepto}</span>
           </p>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Icon name="clock-counter-clockwise" size="text-xs" /> {result.duracion}. Interactividad {(result.interactividad ?? "").toLowerCase()}
+            <Icon name="clock-counter-clockwise" size="text-xs" /> {result.duracion}. Interactividad{" "}
+            {(result.interactividad ?? "").toLowerCase()}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

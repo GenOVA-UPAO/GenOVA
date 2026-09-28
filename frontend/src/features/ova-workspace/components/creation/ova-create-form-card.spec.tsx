@@ -6,6 +6,9 @@ import { canCreate, EXAMPLE_PROMPT } from "../../lib/creation-form";
 import type { EducationLevelId } from "../../lib/education-levels";
 import { OvaCreateFormCard } from "./ova-create-form-card";
 
+const toastMock = vi.hoisted(() => vi.fn());
+vi.mock("sonner", () => ({ toast: toastMock }));
+
 beforeAll(() => {
   // jsdom no implementa Pointer Events ni scrollIntoView; Radix Select los usa.
   for (const name of ["hasPointerCapture", "releasePointerCapture", "setPointerCapture"] as const) {
@@ -54,6 +57,24 @@ describe("OvaCreateFormCard", () => {
     expect(EXAMPLE_PROMPT).toMatch(/Objetivos:/);
     expect(EXAMPLE_PROMPT).not.toMatch(/Nivel educativo/i);
   });
+  it("offers to undo when the example replaces the user's own text", () => {
+    toastMock.mockClear();
+    const { props } = setup({ prompt: "Mi tema propio sobre termodinámica" });
+    fireEvent.click(screen.getByRole("button", { name: "Usar ejemplo de prompt" }));
+    expect(props.onPrompt).toHaveBeenCalledWith(EXAMPLE_PROMPT);
+    const options = toastMock.mock.calls[0][1] as {
+      action: { label: string; onClick: () => void };
+    };
+    expect(options.action.label).toBe("Deshacer");
+    options.action.onClick();
+    expect(props.onPrompt).toHaveBeenLastCalledWith("Mi tema propio sobre termodinámica");
+  });
+  it("does not show the undo toast when the field was empty", () => {
+    toastMock.mockClear();
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Usar ejemplo de prompt" }));
+    expect(toastMock).not.toHaveBeenCalled();
+  });
   it("keeps generate disabled for short prompts and insufficient phases", () => {
     setup({ prompt: "corto", phases: 1 });
     expect(screen.getByText("Faltan 5 caracteres para generar")).toBeVisible();
@@ -88,14 +109,22 @@ describe("OvaCreateFormCard", () => {
     setup({ prompt: "corto", phases: 2 });
     const help = screen.getByText("Faltan 5 caracteres para generar");
     expect(help).not.toHaveClass("text-destructive");
-    fireEvent.keyDown(screen.getByLabelText("Describe el tema del OVA"), { key: "Enter", ctrlKey: true });
+    fireEvent.keyDown(screen.getByLabelText("Describe el tema del OVA"), {
+      key: "Enter",
+      ctrlKey: true,
+    });
     expect(help).toHaveClass("text-destructive");
-    expect(screen.getByLabelText("Describe el tema del OVA")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Describe el tema del OVA")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
   });
   it("does not show errors before the user interacts", () => {
     setup();
     expect(screen.queryByText(/Faltan \d+ caracteres/)).not.toBeInTheDocument();
-    const reason = screen.getByText("Para generar, describe el tema y elige recursos en al menos 2 fases.");
+    const reason = screen.getByText(
+      "Para generar, describe el tema y elige recursos en al menos 2 fases.",
+    );
     expect(reason.closest("p")).not.toHaveClass("text-destructive");
     expect(screen.getByLabelText("Describe el tema del OVA")).not.toHaveAttribute("aria-invalid");
   });

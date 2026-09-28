@@ -35,8 +35,11 @@ export function TotpSetupPanel({
   const handleSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setTouched(true);
-    if (error !== "" || code === "") return;
-    onConfirm(code);
+    if (error !== "" || code === "") {
+      document.getElementById("code")?.focus();
+      return;
+    }
+    onConfirm(code.trim());
   };
 
   const fieldError = showError ? error : undefined;
@@ -50,12 +53,14 @@ export function TotpSetupPanel({
       <BackupCodesBox codes={data.backup_codes} />
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="sm:w-56">
-          <FormField id="code" label="Código de verificación" error={fieldError}>
+          <FormField id="code" label="Código de 6 dígitos de tu app" error={fieldError}>
             <Input
               id="code"
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
+              spellCheck={false}
+              maxLength={6}
               value={code}
               aria-invalid={showError ? true : undefined}
               aria-describedby={describedBy("code", fieldError)}

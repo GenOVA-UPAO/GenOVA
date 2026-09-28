@@ -1,7 +1,8 @@
-import { cn } from "@/core/lib/cn";
+import { PaletteSwatches } from "@/core/components/palette-swatches";
+import { type Palette } from "@/core/lib/ova-palettes";
 
 import { ThemeRadioOption } from "./theme-radio-option";
-import { COLOR_MODES, type Palette, PALETTES } from "./theme-types";
+import { COLOR_MODES } from "./theme-types";
 
 interface ThemePalettePickerProps {
   colorMode: string;
@@ -33,36 +34,9 @@ export function ThemePalettePicker({
       ))}
 
       {colorMode === "custom" && (
-        <fieldset className="flex flex-wrap gap-2 pt-1 pl-1">
-          <legend className="sr-only">Combinación de colores</legend>
-          {PALETTES.map((pal) => {
-            const checked = selectedPalette?.name === pal.name;
-            return (
-              <label
-                key={pal.name}
-                title={pal.name}
-                className={cn(
-                  "flex cursor-pointer gap-px rounded-lg border-2 p-0.5 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
-                  checked ? "border-primary" : "border-transparent hover:border-border",
-                )}
-              >
-                <input
-                  type="radio"
-                  name="theme-palette"
-                  value={pal.name}
-                  checked={checked}
-                  onChange={() => {
-                    onSelectPalette(pal);
-                  }}
-                  className="sr-only"
-                />
-                <span className="sr-only">{pal.name}</span>
-                <span aria-hidden="true" className="size-6 rounded-l-md" style={{ background: pal.p }} />
-                <span aria-hidden="true" className="size-6 rounded-r-md" style={{ background: pal.a }} />
-              </label>
-            );
-          })}
-        </fieldset>
+        <div className="pt-1 pl-1">
+          <PaletteSwatches name="theme-palette" selected={selectedPalette} onSelect={onSelectPalette} />
+        </div>
       )}
     </fieldset>
   );

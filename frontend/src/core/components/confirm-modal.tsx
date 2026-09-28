@@ -49,13 +49,15 @@ export function ConfirmModal({
         <div className="flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:gap-3">
           {/* AlertDialogCancel: Radix le da el foco inicial (con un Button normal
           el foco se quedaba detrás del modal). Cierra vía onOpenChange → onCancel. */}
-          <AlertDialogCancel size="lg" className="flex-1" disabled={isLoading}>
+          {/* `flex-1` solo en fila: en columna (móvil) su base 0 aplastaba los botones
+          a ~22 px de alto. En móvil, altura táctil de 44 px. */}
+          <AlertDialogCancel size="lg" className="max-sm:h-11 sm:flex-1" disabled={isLoading}>
             Cancelar
           </AlertDialogCancel>
           <Button
             variant={danger ? "danger" : "default"}
             size="lg"
-            className="flex-1"
+            className="max-sm:h-11 sm:flex-1"
             onClick={onConfirm}
             loading={isLoading}
           >

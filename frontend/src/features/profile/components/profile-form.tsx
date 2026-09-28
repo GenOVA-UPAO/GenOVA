@@ -13,7 +13,7 @@ import { ProfileSection } from "./profile-section";
 interface ProfileFormProps {
   profile: ProfileData | null;
   isSubmitting: boolean;
-  onSave: (values: ProfileFormValues) => Promise<boolean>;
+  onSave: (values: ProfileFormValues) => Promise<ProfileData | null>;
 }
 
 export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileFormProps>) {
@@ -22,11 +22,13 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!form.isValid) {
-      form.touchAll();
+      form.touchAll(event.currentTarget);
       return;
     }
+    // Se rellena con lo que devolvió el servidor (p. ej. el código ya con ceros):
+    // `profile` aún es el de antes de guardar y devolvería los valores viejos.
     const saved = await onSave(form.values);
-    if (saved) form.reset(profileToFormValues(profile));
+    if (saved !== null) form.reset(profileToFormValues(saved));
   };
 
   return (
@@ -56,17 +58,19 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
           disabled={isSubmitting}
         />
         <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            className="max-sm:h-11"
-            disabled={isSubmitting}
-            onClick={() => {
-              form.reset(profileToFormValues(profile));
-            }}
-          >
-            Descartar cambios
-          </Button>
+          {form.isDirty && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="max-sm:h-11"
+              disabled={isSubmitting}
+              onClick={() => {
+                form.reset(profileToFormValues(profile));
+              }}
+            >
+              Descartar cambios
+            </Button>
+          )}
           <Button type="submit" className="max-sm:h-11" loading={isSubmitting}>
             Guardar cambios
           </Button>

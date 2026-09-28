@@ -1,30 +1,23 @@
+import type { ActivityDate } from "../../lib/ova-card-format";
+
 interface OvaCardMetaProps {
+  /** Autor del OVA (solo llega para administradores). */
   ownerName?: string;
-  /** Fecha ISO para `<time dateTime>`. */
-  dateTime?: unknown;
-  /** Texto visible de la fecha, ya formateado. */
-  dateText: string;
-  /** Prefijo opcional de la fecha ("Eliminado el"). */
-  datePrefix?: string;
+  /** Fecha relativa ya formateada; la completa sale al pasar el ratón. */
+  activity: ActivityDate | null;
 }
 
 /** Línea de metadatos de una tarjeta o fila de OVA: autor · fecha. */
-export function OvaCardMeta({
-  ownerName,
-  dateTime,
-  dateText,
-  datePrefix,
-}: Readonly<OvaCardMetaProps>) {
-  if (!ownerName && !dateText) return null;
-  const iso = typeof dateTime === "string" ? dateTime : undefined;
+export function OvaCardMeta({ ownerName, activity }: Readonly<OvaCardMetaProps>) {
+  if (!ownerName && !activity) return null;
 
   return (
-    <p className="truncate text-xs text-muted-foreground">
+    <p className="text-xs text-pretty break-words text-muted-foreground">
       {ownerName && <span className="font-medium text-foreground/80">{ownerName}</span>}
-      {ownerName && dateText && <span aria-hidden="true"> · </span>}
-      {dateText && (
-        <time dateTime={iso}>
-          {datePrefix ? `${datePrefix} ${dateText}` : dateText}
+      {ownerName && activity && <span aria-hidden="true"> · </span>}
+      {activity && (
+        <time dateTime={activity.iso} title={activity.full} className="whitespace-nowrap">
+          {activity.label}
         </time>
       )}
     </p>

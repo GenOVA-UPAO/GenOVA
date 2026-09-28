@@ -105,6 +105,12 @@ def ctx(monkeypatch):
         llm_config_store, "save_stored", lambda clean: box.__setitem__("data", clean)
     )
     monkeypatch.setattr(llm_config_store, "stored_cached", lambda: box["data"])
+    # El historial de cambios (y los perfiles) también van a PlatformConfig: sin
+    # esto, con DATABASE_URL apuntando a un Postgres de desarrollo, cada ejecución
+    # dejaba entradas falsas en el historial real.
+    kv: dict = {}
+    monkeypatch.setattr(llm_config_store, "read_platform_json", kv.get)
+    monkeypatch.setattr(llm_config_store, "write_platform_json", kv.__setitem__)
 
     limiter.enabled = False  # SlowAPI tiene estado global → desactivar evita fugas.
 

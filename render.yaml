@@ -8,6 +8,21 @@
 # Sustituye a `.railway/railway.ts` (Railway). NO se despliega Redis ni el worker
 # arq: sin REDIS_URL, la generación de OVA corre en un hilo dentro del proceso web
 # (backend/generation/jobs/jobs_router_helpers.py). Suficiente para este entorno.
+#
+# Un solo proceso web (sin WEB_CONCURRENCY ni numInstances) y sin REDIS_URL:
+# - límites por email del login y de «Probar un modelo»: se comparten en Postgres
+#   (tabla throttle_hits), valen igual con uno o varios procesos;
+# - límite por IP (SlowAPI): en memoria del proceso, exacto con un solo proceso.
+# Para escalar (WEB_CONCURRENCY>1 o varias instancias) hace falta REDIS_URL y el
+# worker arq: ver el bloque comentado al final. Sin él, el backend avisa al
+# arrancar («rate limits per process»).
+#
+# Tras un despliegue que cambie el modelo de embeddings (p. ej. a
+# gemini-embedding-2) hay que reindexar el RAG a mano: el backend lo avisa al
+# arrancar («hay fragmentos embebidos con otro modelo») y el procedimiento está en
+# el readme, «Reindexar embeddings del RAG». No se automatiza con
+# preDeployCommand: en Render solo existe en instancias de pago y re-embeber
+# gasta cuota/dinero de Gemini en cada despliegue.
 
 services:
   - type: web
@@ -55,8 +70,11 @@ services:
       - key: LOG_LEVEL
         value: INFO
 
-      # NO configurar Redis: con un valor aquí arq encola los jobs, pero este Blueprint
-      # no crea worker y quedarían esperando para siempre. Vacío activa el hilo del servidor.
+      # NO configurar Redis aquí: con un valor, arq encola los jobs, pero este
+      # Blueprint no crea worker y quedarían esperando para siempre. Vacío activa
+      # el hilo del servidor. REDIS_URL también es el almacén de SlowAPI y de
+      # core.shared_throttle: obligatorio si se sube a varios procesos/instancias
+      # (ver el bloque «Escalar» al final), junto con el worker.
       - key: REDIS_URL
         value: ""
       # Un recurso a la vez reduce los picos de RAM del proceso único del plan gratuito.
@@ -112,3 +130,34 @@ services:
         sync: false
       - key: SMTP_PASSWORD
         sync: false
+
+# ─── Escalar a varios procesos o instancias (opcional, NO activo) ─────────────
+# Con WEB_CONCURRENCY>1 o numInstances>1 los límites por IP de SlowAPI dejan de
+# ser exactos sin Redis. Para activarlo: descomentar, quitar `value: ""` de
+# REDIS_URL arriba y poner en su lugar el `fromService`. El Key Value tiene plan
+# free (sin persistencia: basta para límites y la cola), pero el worker arq es un
+# servicio `worker`, que en Render no tiene plan gratuito.
+#
+#  - type: keyvalue
+#    name: genova-kv
+#    region: oregon
+#    plan: free
+#    maxmemoryPolicy: noeviction   # la cola arq no puede perder trabajos
+#    ipAllowList: []               # solo red interna de Render
+#
+#  - type: worker
+#    name: genova-worker
+#    runtime: docker
+#    dockerfilePath: ./backend/Dockerfile.worker
+#    dockerContext: .
+#    region: oregon
+#    plan: starter
+#    envVars:
+#      - fromGroup: ...            # mismas variables que el web (BD, claves LLM, RAG…)
+#
+#  En el web (y el worker), en lugar de `value: ""`:
+#      - key: REDIS_URL
+#        fromService:
+#          type: keyvalue
+#          name: genova-kv
+#          property: connectionString

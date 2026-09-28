@@ -97,14 +97,25 @@ def _background_auth_purge() -> None:
 
 
 def _background_regen_recovery() -> None:
-    # Regen jobs live in an in-memory dict (one thread per regen); a restart
-    # loses them while ova.status stays "generando" in DB, bricking the OVA.
+    # Regeneraciones cuyo ejecutor murió (latido caducado en regen_jobs): se
+    # marcan interrumpidas y se libera el OVA. Las de otro proceso vivo no se tocan.
     try:
         from generation.regen.regen_jobs import recover_orphan_regen
 
         recover_orphan_regen()
     except Exception:
         logger.exception("Regen orphan recovery on startup failed (continuing).")
+
+
+def _background_late_video_recovery() -> None:
+    # Los videos tardíos se esperan en hilos en memoria: un reinicio los pierde
+    # y el recurso se quedaría con el aviso «en preparación» para siempre.
+    try:
+        from generation.infrastructure.late_video import recover_late_videos
+
+        recover_late_videos()
+    except Exception:
+        logger.exception("Late video recovery on startup failed (continuing).")
 
 
 def _background_catalog_refresh() -> None:
@@ -124,9 +135,14 @@ async def lifespan(_: FastAPI):
     run_migrations()
     Base.metadata.create_all(bind=engine)
     seed_db()
+    # El sumidero de los videos tardíos va antes de cualquier generación.
+    from generation.infrastructure.late_video import install_late_video
+
+    install_late_video()
     asyncio.create_task(asyncio.to_thread(_background_rag_purge))
     asyncio.create_task(asyncio.to_thread(_background_auth_purge))
     asyncio.create_task(asyncio.to_thread(_background_regen_recovery))
+    asyncio.create_task(asyncio.to_thread(_background_late_video_recovery))
     asyncio.create_task(asyncio.to_thread(_background_catalog_refresh))
     yield
 

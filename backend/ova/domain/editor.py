@@ -85,8 +85,27 @@ def version_to_dict(version: EditorVersion, include_phases: bool = False) -> dic
     return data
 
 
+_PLACEHOLDER_PREFIX = "[Generado con prompt: "
+
+
 def placeholder_content(prompt: str) -> str:
-    return f"[Generado con prompt: {prompt.strip()}]\n\n{PLACEHOLDER_CONTENT}"
+    return f"{_PLACEHOLDER_PREFIX}{prompt.strip()}]\n\n{PLACEHOLDER_CONTENT}"
+
+
+def placeholder_prompt(content: str | None) -> str | None:
+    """Instrucciones de un recurso añadido que aún no se ha generado, o None.
+
+    «Añadir recurso» guarda este marcador hasta que la regeneración crea el
+    contenido real; la regeneración lo reconoce para generar el recurso desde
+    cero con esas instrucciones en vez de «editar» el texto del marcador.
+    """
+    text = (content or "").strip()
+    if not (text.startswith(_PLACEHOLDER_PREFIX) and text.endswith(PLACEHOLDER_CONTENT)):
+        return None
+    head = text[len(_PLACEHOLDER_PREFIX) : -len(PLACEHOLDER_CONTENT)].rstrip()
+    if not head.endswith("]"):
+        return None
+    return head[:-1].strip() or None
 
 
 def scorm_filename_stem(title: str) -> str:

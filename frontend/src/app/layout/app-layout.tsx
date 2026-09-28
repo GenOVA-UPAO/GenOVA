@@ -2,11 +2,13 @@
 // primer render del layout), evitando el flash "?" en navbar/sidebar.
 import "@/core/components/icon-registry-shell";
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Outlet } from "react-router";
 
+import { useIsAdmin } from "@/core/auth/auth-store";
 import { LlmSettingsModalSlotProvider } from "@/core/lib/llm-settings-modal-slot";
 
+import { prefetchRoutesWhenIdle } from "../pages";
 import { useFullBleed } from "./lib/use-full-bleed";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
@@ -26,8 +28,21 @@ const LazyToaster = lazy(async () => {
 /** id del <main> — destino del skip link. */
 export const MAIN_CONTENT_ID = "contenido-principal";
 
+const MAIN_ROUTES = ["/dashboard", "/mis-ovas", "/crear", "/models", "/papelera", "/profile"];
+const ADMIN_ROUTES = ["/admin", "/admin/roles", "/analytics"];
+
+/** Tras entrar, deja descargadas las páginas del menú para abrirlas sin espera. */
+function usePrefetchMainRoutes() {
+  const isAdmin = useIsAdmin();
+  useEffect(
+    () => prefetchRoutesWhenIdle(isAdmin ? [...MAIN_ROUTES, ...ADMIN_ROUTES] : MAIN_ROUTES),
+    [isAdmin],
+  );
+}
+
 export function AppLayout() {
   const fullBleed = useFullBleed();
+  usePrefetchMainRoutes();
   return (
     <LlmSettingsModalSlotProvider Modal={LlmSettingsModal}>
     <div className="flex h-dvh flex-col bg-background text-foreground">

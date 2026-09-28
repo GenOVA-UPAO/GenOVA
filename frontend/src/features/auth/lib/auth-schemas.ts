@@ -42,20 +42,20 @@ export const resetPasswordSchema = z
   .object({
     new_password: z
       .string()
-      .min(8, "La contraseña debe tener al menos 8 caracteres")
-      .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, "Debe contener letras y números"),
-    confirm_password: z.string().min(1, "Confirma tu nueva contraseña"),
+      .min(8, "La contraseña debe tener al menos 8 caracteres.")
+      .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, "Debe contener letras y números."),
+    confirm_password: z.string().min(1, "Repite la nueva contraseña."),
   })
   .refine((data) => data.new_password === data.confirm_password, {
-    message: "Las contraseñas no coinciden",
+    message: "Las contraseñas no coinciden.",
     path: ["confirm_password"],
   });
 
 export const totpSchema = z.object({
   code: z
     .string()
-    .min(1, "Ingresa el código.")
-    .regex(/^[\dA-Fa-f\s]{4,8}$/, "Código inválido."),
+    .min(1, "Escribe el código de tu app o uno de respaldo.")
+    .regex(/^[\dA-Fa-f\s]{4,8}$/, "El código tiene 6 dígitos (o 8 caracteres si es de respaldo)."),
 });
 
 export type LoginValues = z.infer<typeof loginSchema>;

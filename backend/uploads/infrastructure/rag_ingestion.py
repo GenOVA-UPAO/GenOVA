@@ -35,4 +35,5 @@ class RagIngestionAdapter:
             status=str(raw.get("status", "error")),
             chunks=int(raw.get("chunks", 0)),
             message=raw.get("message"),
+            reason=raw.get("reason"),
         )

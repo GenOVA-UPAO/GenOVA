@@ -168,7 +168,8 @@ describe("AnalyticsPage", () => {
 
     expect(screen.getByText("Mayores creadores")).toBeInTheDocument();
     expect(screen.getByText("Docente Creador")).toBeInTheDocument();
-    expect(screen.getAllByText("dos@upao.edu.pe")).toHaveLength(2);
+    // Sin nombre, el correo es el título de la fila y no se repite debajo.
+    expect(screen.getAllByText("dos@upao.edu.pe")).toHaveLength(1);
 
     expect(screen.getByText("Actividad reciente")).toBeInTheDocument();
     expect(screen.getByText("Biología Celular")).toBeInTheDocument();
@@ -199,5 +200,25 @@ describe("AnalyticsPage", () => {
     expect(screen.getByText("35")).toBeInTheDocument();
     expect(screen.getByText("Listos para usar")).toBeInTheDocument();
     expect(screen.getByText("48 % del total")).toBeInTheDocument();
+    expect(screen.queryByText("Aún no tienes alumnos vinculados")).not.toBeInTheDocument();
+  });
+
+  it("explica las métricas a cero cuando el docente no tiene alumnos vinculados", () => {
+    vi.mocked(useAnalytics).mockReturnValue({
+      data: {
+        scope: "teacher",
+        totals: { ovas: 0, students: 0 },
+        ova_by_status: {},
+        top_creators: [],
+        recent_ovas: [],
+      },
+      error: null,
+      isLoading: false,
+    } as unknown as ReturnType<typeof useAnalytics>);
+
+    renderPage();
+
+    expect(screen.getByText("Aún no tienes alumnos vinculados")).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
   });
 });

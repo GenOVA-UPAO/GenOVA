@@ -6,8 +6,6 @@ interface AuthCardProps {
   title: string;
   children: ReactNode;
   subtitle?: string;
-  /** Contexto corto sobre el título (p. ej. «Verificación en 2 pasos»). */
-  eyebrow?: string;
 }
 
 /**
@@ -15,7 +13,7 @@ interface AuthCardProps {
  * la app), así que esta vista lleva su propio contenedor con scroll: sin él, el
  * registro quedaba cortado en móviles bajos.
  */
-export function AuthCard({ title, children, subtitle, eyebrow }: Readonly<AuthCardProps>) {
+export function AuthCard({ title, children, subtitle }: Readonly<AuthCardProps>) {
   return (
     <main className="grid h-dvh overflow-y-auto bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       <AuthBrandPanel />
@@ -24,12 +22,7 @@ export function AuthCard({ title, children, subtitle, eyebrow }: Readonly<AuthCa
           <p className="font-display text-xl font-semibold tracking-tight lg:hidden">
             Gen<span className="text-primary">OVA</span>
           </p>
-          {eyebrow !== undefined && (
-            <p className="mt-8 text-sm font-medium text-primary lg:mt-0">{eyebrow}</p>
-          )}
-          <h1
-            className={`font-display text-3xl font-semibold tracking-tight ${eyebrow === undefined ? "mt-8 lg:mt-0" : "mt-1.5"}`}
-          >
+          <h1 className="mt-8 font-display text-3xl font-semibold tracking-tight text-balance lg:mt-0">
             {title}
           </h1>
           {subtitle ? <p className="mt-2 text-sm text-pretty text-muted-foreground">{subtitle}</p> : null}

@@ -35,7 +35,7 @@ describe("PhaseSelectModal", () => {
     const { onConfirm } = setup();
     fireEvent.click(await screen.findByRole("button", { name: "Seleccionar Engage 1" }));
     expect(screen.getByRole("button", { name: "Confirmar (1)" })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Exploración (0)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Exploración: ningún recurso elegido" }));
     fireEvent.click(await screen.findByRole("button", { name: "Seleccionar Laboratorio" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirmar (2)" }));
     expect(onConfirm).toHaveBeenCalledWith(

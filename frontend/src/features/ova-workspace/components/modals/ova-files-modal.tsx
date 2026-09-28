@@ -14,7 +14,7 @@ export default function OvaFilesModal({
   uploads,
   onClose,
 }: Readonly<{ uploads: ReturnType<typeof useOvaUploads>; onClose: () => void }>) {
-  const files = uploads.data ?? [];
+  const files = uploads.data;
   const full = files.length >= uploads.maxUploadFiles;
   return (
     <WorkspaceModal

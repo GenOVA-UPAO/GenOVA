@@ -1,6 +1,7 @@
 export interface VersionDiffPhase {
   id: string;
   phase_type: string;
+  title?: string | null;
   content?: string;
 }
 

@@ -1,5 +1,6 @@
 import { humanizeResourceType } from "./ova-job-view-model";
 import { phaseMeta } from "./phase-meta";
+import { resourceDisplayName } from "./resource-display-name";
 import type { Phase } from "./types";
 
 /** Devuelve el valor solo si es texto; evita stringificar objetos a "[object Object]". */
@@ -10,7 +11,7 @@ function asText(value: unknown): string {
 /** Nombre legible del recurso para docentes (no jerga 5E en inglés). */
 export function resourceLabel(phase: Phase): string {
   const title = asText(phase.title).trim();
-  if (title) return title;
+  if (title) return resourceDisplayName(title);
   const type = humanizeResourceType(phase.resource_type as string | number | undefined);
   if (type) return type;
   return phaseMeta(asText(phase.phase_type)).label || "Recurso";

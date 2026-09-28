@@ -8,6 +8,7 @@ from ova.application.dto import PhaseContentInput, ReorderPhasesInput
 from ova.application.ports import OvaEditorRepository
 from ova.domain.editor import EditorOva, EditorVersion
 from ova.domain.errors import OvaEditError, OvaForbidden, OvaGenerating, OvaNotFound
+from ova.domain.model import EDIT_FORBIDDEN
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,7 +18,7 @@ class EditPhases:
     def reorder(self, data: ReorderPhasesInput) -> int:
         if not data.reorders:
             raise OvaEditError(400, "empty", "Lista de reordenamiento vacía.")
-        _, active = self._resolve(data.ova_id, data.actor.id, data.actor.is_admin)
+        _, active = self._resolve(data.ova_id, data.actor.id)
         phase_ids = tuple(item.phase_id for item in data.reorders)
         phases = self.repo.get_phases(phase_ids, active.id)
         if len(phases) != len(data.reorders):
@@ -33,7 +34,7 @@ class EditPhases:
         return len(data.reorders)
 
     def delete(self, data: PhaseContentInput) -> EditorVersion:
-        ova, active = self._resolve(data.ova_id, data.actor.id, data.actor.is_admin)
+        ova, active = self._resolve(data.ova_id, data.actor.id)
         if self.repo.get_phase(data.phase_id, active.id) is None:
             raise OvaEditError(404, "phase_not_found", "Fase no encontrada.")
         remaining = tuple(
@@ -50,7 +51,7 @@ class EditPhases:
     def save(self, data: PhaseContentInput) -> EditorVersion:
         if not data.content.strip():
             raise OvaEditError(400, "content_required", "El contenido no puede estar vacío.")
-        ova, active = self._resolve(data.ova_id, data.actor.id, data.actor.is_admin)
+        ova, active = self._resolve(data.ova_id, data.actor.id)
         phase = self.repo.get_phase(data.phase_id, active.id)
         if phase is None:
             raise OvaEditError(404, "phase_not_found", "Fase no encontrada.")
@@ -77,12 +78,13 @@ class EditPhases:
         self.repo.commit("save_phase")
         return version
 
-    def _resolve(self, ova_id: str, actor_id: str, is_admin: bool) -> tuple[EditorOva, EditorVersion]:
+    def _resolve(self, ova_id: str, actor_id: str) -> tuple[EditorOva, EditorVersion]:
         ova = self.repo.get_ova(ova_id)
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
-        if ova.owner_id != actor_id and not is_admin:
-            raise OvaForbidden("Sin permisos.")
+        # Todo lo de este caso de uso modifica el OVA: solo su autor.
+        if ova.owner_id != actor_id:
+            raise OvaForbidden(EDIT_FORBIDDEN)
         if ova.status == "generando":
             raise OvaGenerating("No se puede editar mientras genera.")
         return ova, self.repo.get_or_create_active_version(ova)

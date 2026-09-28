@@ -6,6 +6,8 @@ export interface PlatformConfigResponse {
   /** Proveedor → key enmascarada (vacía o ausente si no está configurada). */
   platform_config?: Record<string, string>;
   providers?: string[];
+  /** Proveedores con clave en una variable de entorno del servidor. Se usa si no hay clave guardada. */
+  server_keys?: string[];
 }
 
 export function getPlatformConfig(): Promise<PlatformConfigResponse> {

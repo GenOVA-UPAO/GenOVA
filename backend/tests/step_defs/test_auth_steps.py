@@ -3,8 +3,9 @@ app FastAPI mínima (auth_router) + overrides. Sin backend vivo ni red — regis
 login y lockout corren in-process contra una BD sembrada por escenario.
 
 El rate-limiter de SlowAPI se desactiva (su estado es global y filtraría entre
-tests); el throttle por-email (`_email_attempts`) se resetea por escenario y es el
-que produce el 429 del bloqueo de forma determinista.
+tests); el límite por email (`email_login_window`) cuenta en un almacén en memoria
+nuevo por escenario —no en el compartido, que con DATABASE_URL de Postgres sería
+la tabla real— y es el que produce el 429 del bloqueo de forma determinista.
 """
 
 import os
@@ -28,11 +29,12 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 import models  # noqa: E402, F401
-from auth.infrastructure.email_throttle import _email_attempts  # noqa: E402
+from auth.infrastructure.email_throttle import email_login_window  # noqa: E402
 from auth.interface.http.router import router as auth_router  # noqa: E402
 from core.database import get_db  # noqa: E402
 from core.rate_limit import limiter  # noqa: E402
 from core.security import hash_password  # noqa: E402
+from core.shared_throttle import MemoryWindow  # noqa: E402
 
 _FEATURES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "tests", "features")
 FEATURE_LOGIN = os.path.join(_FEATURES, "auth", "HU-008_login.feature")
@@ -81,7 +83,7 @@ CREATE TABLE user_roles (
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
     eng = create_engine(
         "sqlite+pysqlite:///:memory:",
         future=True,
@@ -115,9 +117,9 @@ def client():
             db.close()
 
     # SlowAPI tiene estado global → desactivarlo evita fugas entre tests; el
-    # throttle por-email se resetea aquí y es el que produce el 429 del bloqueo.
+    # límite por email arranca vacío aquí y es el que produce el 429 del bloqueo.
     limiter.enabled = False
-    _email_attempts.clear()
+    monkeypatch.setattr(email_login_window, "store", MemoryWindow())
 
     app = FastAPI()
     app.state.limiter = limiter

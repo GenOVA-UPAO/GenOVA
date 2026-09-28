@@ -4,7 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CrearOvaTour from "./crear-ova-tour";
 
-const mocks = vi.hoisted(() => ({ drive: vi.fn(), destroy: vi.fn(), factory: vi.fn<(config: Config) => void>() }));
+const mocks = vi.hoisted(() => ({
+  drive: vi.fn(),
+  destroy: vi.fn(),
+  factory: vi.fn<(config: Config) => void>(),
+}));
 vi.mock("driver.js", () => ({
   driver: (config: Config) => {
     mocks.factory(config);
@@ -29,6 +33,22 @@ describe("CrearOvaTour", () => {
     ]);
     expect(config.steps?.[1].popover?.description).toContain("al menos 2 fases");
     expect(mocks.drive).toHaveBeenCalledOnce();
+  });
+  it("hides «Anterior» on the first step and localizes the close button", () => {
+    render(<CrearOvaTour replay={0} />);
+    const config = mocks.factory.mock.calls[0][0];
+    expect(config.steps?.[0].popover?.showButtons).toEqual(["next", "close"]);
+    expect(config.steps?.[1].popover?.showButtons).toBeUndefined();
+    expect(config.progressText).toBe("Paso {{current}} de {{total}}");
+    const closeButton = document.createElement("button");
+    const nextButton = document.createElement("button");
+    config.onPopoverRender?.({ closeButton, nextButton } as never, {} as never);
+    expect(closeButton).toHaveAttribute("aria-label", "Cerrar tutorial");
+  });
+  it("marks the tour as seen when it is closed", () => {
+    render(<CrearOvaTour replay={0} />);
+    mocks.factory.mock.calls[0][0].onDestroyed?.(undefined, {}, {} as never);
+    expect(localStorage.getItem("genova.crear-ova.tour.done.user-42")).toBe("1");
   });
   it("does not automatically show again after completion", () => {
     localStorage.setItem("genova.crear-ova.tour.done.user-42", "1");

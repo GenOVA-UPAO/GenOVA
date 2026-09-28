@@ -34,4 +34,19 @@ describe('useOvaUploads', () => {
     expect(result.current.uploadError).toBe('Archivo demasiado grande');
     expect(result.current.uploading).toBe(false);
   });
+  it('keeps each context in its own list', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { result } = renderHook(() => useOvaUploads('ova-9'), { wrapper: ({ children }: PropsWithChildren) => <QueryClientProvider client={client}>{children}</QueryClientProvider> });
+    await waitFor(() => { expect(result.current.isSuccess).toBe(true); });
+    expect(api.fetchTemporaryFiles).toHaveBeenCalledWith('ova-9');
+    vi.mocked(api.uploadTemporaryFiles).mockResolvedValue({ items: [] });
+    await act(() => result.current.addFiles([new File(['x'], 'ref.pdf')]));
+    expect(api.uploadTemporaryFiles).toHaveBeenCalledWith([expect.any(File)], 'ova-9');
+  });
+  it('flags indexing while the backend is still processing a file', async () => {
+    vi.mocked(api.fetchTemporaryFiles).mockResolvedValue({ items: [{ upload_id: 'u1', filename: 'a.pdf', content_type: 'application/pdf', rag_status: { status: 'processing', chunks: 0 } }] });
+    const { result } = setup();
+    await waitFor(() => { expect(result.current.indexing).toBe(true); });
+    expect(result.current.uploadIds).toEqual(['u1']);
+  });
 });

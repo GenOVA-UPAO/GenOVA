@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { lazy, Suspense, useState } from "react";
+import { toast } from "sonner";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -9,16 +10,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/core/components/ui/dropdown-menu";
+import { Tooltip } from "@/core/components/ui/tooltip";
 import { cn } from "@/core/lib/cn";
 import { useLlmSettingsModal } from "@/core/lib/use-llm-settings-modal";
 
 import { exportOvaScorm } from "../../api/ova-workspace.api";
-import { WorkspacePreviewDownloadError } from "./workspace-preview-download-error";
 
 const VersionHistoryPanel = lazy(() => import("../versioning/version-history-panel"));
 
 interface Props {
   ovaId: string;
+  /** Sin «Restaurar» en el historial: el OVA es de otra persona. */
+  readOnly?: boolean;
   className?: string;
 }
 
@@ -27,10 +30,10 @@ interface Props {
  * van a la vista; en móvil se recogen en «Más acciones» y la principal
  * («Descargar SCORM») sigue siempre visible.
  */
-export function WorkspacePanelToolbar({ ovaId, className }: Readonly<Props>) {
+export function WorkspacePanelToolbar({ ovaId, readOnly = false, className }: Readonly<Props>) {
   const [history, setHistory] = useState(false);
   const settings = useLlmSettingsModal();
-  const download = useMutation({ mutationFn: () => exportOvaScorm(ovaId) });
+  const download = useScormDownload(ovaId);
   const openHistory = () => {
     setHistory(true);
   };
@@ -44,13 +47,25 @@ export function WorkspacePanelToolbar({ ovaId, className }: Readonly<Props>) {
           <Icon name="clock-counter-clockwise" />
           Historial de versiones
         </Button>
-        <Button variant="ghost" size="icon-sm" aria-label="Ajustes de modelo IA" title="Ajustes de modelo IA" onClick={openSettings}>
-          <Icon name="gear" />
-        </Button>
+        <Tooltip label="Configuración de IA" side="bottom">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Configuración de IA"
+            onClick={openSettings}
+          >
+            <Icon name="gear" />
+          </Button>
+        </Tooltip>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Más acciones" className="md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Más acciones"
+            className="max-md:size-11 md:hidden"
+          >
             <Icon name="dots-three-vertical" weight="bold" />
           </Button>
         </DropdownMenuTrigger>
@@ -59,28 +74,27 @@ export function WorkspacePanelToolbar({ ovaId, className }: Readonly<Props>) {
             <Icon name="clock-counter-clockwise" /> Historial de versiones
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={openSettings}>
-            <Icon name="gear" /> Ajustes de modelo IA
+            <Icon name="gear" /> Configuración de IA
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <div className="relative">
-        <Button
-          aria-label="Descargar SCORM"
-          loading={download.isPending}
-          onClick={() => {
-            download.mutate();
-          }}
-        >
-          <Icon name="download-simple" />
-          <span className="md:hidden">SCORM</span>
-          <span className="hidden md:inline">Descargar SCORM</span>
-        </Button>
-        {download.error && <WorkspacePreviewDownloadError message={download.error.message} />}
-      </div>
+      <Button
+        aria-label="Descargar SCORM"
+        loading={download.isPending}
+        className="max-md:h-11 max-md:px-4"
+        onClick={() => {
+          download.mutate();
+        }}
+      >
+        <Icon name="download-simple" />
+        <span className="md:hidden">SCORM</span>
+        <span className="hidden md:inline">Descargar SCORM</span>
+      </Button>
       {history && (
         <Suspense>
           <VersionHistoryPanel
             ovaId={ovaId}
+            readOnly={readOnly}
             onClose={() => {
               setHistory(false);
             }}
@@ -89,4 +103,30 @@ export function WorkspacePanelToolbar({ ovaId, className }: Readonly<Props>) {
       )}
     </div>
   );
+}
+
+/**
+ * Descarga del paquete SCORM. El resultado se avisa con un toast, igual que en
+ * Mis OVAs: el globo fijo bajo el botón tapaba la barra del visor y no se
+ * podía cerrar.
+ */
+function useScormDownload(ovaId: string) {
+  const download = useMutation({
+    mutationFn: () => exportOvaScorm(ovaId),
+    onSuccess: () => {
+      toast.success("Descarga iniciada");
+    },
+    onError: (error) => {
+      toast.error("No se pudo descargar el SCORM", {
+        description: error.message,
+        action: {
+          label: "Reintentar",
+          onClick: () => {
+            download.mutate();
+          },
+        },
+      });
+    },
+  });
+  return download;
 }

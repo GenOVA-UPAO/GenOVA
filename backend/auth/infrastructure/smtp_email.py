@@ -21,6 +21,11 @@ class EmailNotConfigured(RuntimeError):
     pass
 
 
+def email_configured() -> bool:
+    """Hay credenciales SMTP: sin ellas, cualquier envío falla."""
+    return bool(SMTP_USER and SMTP_PASSWORD)
+
+
 def _html_body(reset_link: str, greeting: str) -> str:
     return f"""
     <html>

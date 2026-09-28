@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { useConfirmTotpSetup, useDisableTotp, useStartTotpSetup } from "../hooks/use-totp";
 import { errorMessage } from "../lib/error-message";
@@ -42,6 +43,7 @@ export function TotpSetupCard({ totpEnabled }: Readonly<TotpSetupCardProps>) {
       onSuccess: () => {
         setSetupData(null);
         setExplicitPhase("enabled");
+        toast.success("Verificación en dos pasos activada.");
       },
       onError: (error) => {
         setServerError(errorMessage(error, CONNECT_ERROR));
@@ -54,6 +56,7 @@ export function TotpSetupCard({ totpEnabled }: Readonly<TotpSetupCardProps>) {
     disable.mutate(code, {
       onSuccess: () => {
         setExplicitPhase("idle");
+        toast.success("Verificación en dos pasos desactivada.");
       },
       onError: (error) => {
         setServerError(errorMessage(error, CONNECT_ERROR));
@@ -83,6 +86,9 @@ export function TotpSetupCard({ totpEnabled }: Readonly<TotpSetupCardProps>) {
         serverError={serverError}
         isDisabling={disable.isPending}
         onDisable={handleDisable}
+        onDismissError={() => {
+          setServerError("");
+        }}
       />
     );
   }

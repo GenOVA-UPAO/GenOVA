@@ -25,7 +25,7 @@ if TYPE_CHECKING:
         _ova_output_dir,
     )
     from ova.application.scorm_persist import persist_scorm_zip
-    from ova.domain.editor import next_version_number
+    from ova.domain.editor import next_version_number, placeholder_prompt
 
     ensure_version_exists = _ensure_version_exists
     get_active_version = _get_active_version
@@ -39,6 +39,7 @@ __all__ = [
     "next_version_number",
     "ova_output_dir",
     "persist_scorm_zip",
+    "placeholder_prompt",
 ]
 
 
@@ -59,6 +60,8 @@ def __getattr__(name: str) -> Any:
         from ova.application.scorm_persist import persist_scorm_zip as value
     elif name == "next_version_number":
         from ova.domain.editor import next_version_number as value
+    elif name == "placeholder_prompt":
+        from ova.domain.editor import placeholder_prompt as value
     else:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
     return value

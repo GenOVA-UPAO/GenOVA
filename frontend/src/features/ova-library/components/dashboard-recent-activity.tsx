@@ -5,21 +5,13 @@ import { Icon } from "@/core/components/icon";
 import { OvaStatusBadge } from "@/core/components/ova-status-badge";
 import { Button } from "@/core/components/ui/button";
 
+import { lastActivity, ownerNameOf } from "../lib/ova-card-format";
 import type { OvaListItem } from "../lib/types";
-import { formatDate } from "../pages/dashboard-page.helpers";
+import { OvaCardMeta } from "./cards/ova-card-meta";
 
 interface DashboardRecentActivityProps {
   recentOvas: OvaListItem[];
   isAdmin: boolean;
-}
-
-function resolveOwnerName(ova: OvaListItem): string {
-  const owner = ova.owner as { full_name?: string } | undefined;
-  return owner?.full_name ?? "";
-}
-
-function resolveDateLabel(ova: OvaListItem): string {
-  return formatDate((ova.updated_at ?? ova.created_at) as string | undefined);
 }
 
 /** Lista de actividad reciente del dashboard con fallback a EmptyState. */
@@ -48,8 +40,7 @@ export function DashboardRecentActivity({
   return (
     <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
       {recentOvas.map((ova) => {
-        const ownerName = isAdmin ? resolveOwnerName(ova) : "";
-        const title = ova.title ?? "Sin título";
+        const title = ova.title?.trim() ? ova.title : "Sin título";
         return (
           <li key={ova.id}>
             <Link
@@ -57,13 +48,12 @@ export function DashboardRecentActivity({
               className="group flex items-center gap-3 px-4 py-3.5 transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset sm:gap-4 sm:px-5"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-foreground" title={title}>
+                <p className="line-clamp-2 font-medium break-words text-foreground sm:line-clamp-1" title={title}>
                   {title}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  {resolveDateLabel(ova)}
-                  {ownerName !== "" && ` · ${ownerName}`}
-                </p>
+                <div className="mt-0.5">
+                  <OvaCardMeta ownerName={isAdmin ? ownerNameOf(ova) : ""} activity={lastActivity(ova)} />
+                </div>
               </div>
               <OvaStatusBadge status={ova.status} />
               <Icon

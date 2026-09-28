@@ -8,8 +8,9 @@ import {
 
 export const platformConfigKey = ["platform-config"] as const;
 
-export function usePlatformConfig() {
-  return useQuery({ queryKey: platformConfigKey, queryFn: getPlatformConfig });
+/** Claves de plataforma. `enabled: false` para quien no es admin (el endpoint le daría 403). */
+export function usePlatformConfig(enabled = true) {
+  return useQuery({ queryKey: platformConfigKey, queryFn: getPlatformConfig, enabled });
 }
 
 interface SaveKeyInput {

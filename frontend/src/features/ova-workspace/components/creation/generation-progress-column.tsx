@@ -22,12 +22,19 @@ interface Props {
 function resumableCount(job: ReturnType<typeof useOvaJob>): number {
   const snapshot = job.data;
   if (!isResumableJob(snapshot, snapshot?.resources ?? [])) return 0;
-  return job.resources.filter((resource) => resource.status === "pendiente" || resource.status === "X").length;
+  return job.resources.filter(
+    (resource) => resource.status === "pendiente" || resource.status === "X",
+  ).length;
 }
 
 /** Fija el recurso marcado si sigue generado; si no, el primero completado. */
-function activePreviewId(job: ReturnType<typeof useOvaJob>, pinnedId: string | null): string | null {
-  const pinnedDone = job.resources.some((resource) => resource.id === pinnedId && resource.status === "check");
+function activePreviewId(
+  job: ReturnType<typeof useOvaJob>,
+  pinnedId: string | null,
+): string | null {
+  const pinnedDone = job.resources.some(
+    (resource) => resource.id === pinnedId && resource.status === "check",
+  );
   if (pinnedDone) return pinnedId;
   return job.resources.find((resource) => resource.status === "check")?.id ?? null;
 }
@@ -65,6 +72,10 @@ export function GenerationProgressColumn({
           Iniciando generación…
         </p>
       )}
+      {kind === "canceled" && <CanceledJobBanner />}
+      {kind === "totalFail" && (
+        <TotalFailurePanel viewModel={job.resources} onRetryAll={onRetryAll} />
+      )}
       {job.resources.length > 0 && (
         <ProgressPanel
           job={job.data}
@@ -75,6 +86,7 @@ export function GenerationProgressColumn({
           isStalled={stalled}
           resumableCount={resumable}
           resuming={job.resume.isPending}
+          allowBulkRetry={kind !== "totalFail"}
           onToggle={onToggle}
           onRetryOne={onRetryOne}
           onPreview={onPreview}
@@ -82,13 +94,6 @@ export function GenerationProgressColumn({
           onRetrySelected={onRetrySelected}
           onCancel={onCancel}
           onResume={onRetryAll}
-        />
-      )}
-      {kind === "canceled" && <CanceledJobBanner />}
-      {kind === "totalFail" && (
-        <TotalFailurePanel
-          viewModel={job.resources}
-          onRetryAll={onRetryAll}
         />
       )}
       {job.error && <p className="text-xs text-destructive">{job.error.message}</p>}

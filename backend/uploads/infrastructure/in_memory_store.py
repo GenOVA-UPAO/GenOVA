@@ -1,7 +1,8 @@
-"""Registro en memoria de subidas temporales + pruning thread-safe.
+"""Registro en memoria de subidas temporales + pruning thread-safe, y los
+ajustes de subida (límites, TTL, carpeta) que comparte con el registro SQL.
 
-En su propio módulo para que el repositorio quede estrecho y los internals del
-lock no se filtren fuera del paquete.
+El registro en memoria es por proceso: solo sirve con SQLite (desarrollo de un
+proceso) y en tests. Con Postgres se usa `sql_temp_upload_repository`.
 """
 
 from __future__ import annotations

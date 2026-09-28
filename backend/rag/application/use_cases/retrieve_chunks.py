@@ -19,8 +19,8 @@ logger = structlog.get_logger(__name__)
 # recall@5 era 0.60 frente a 0.76 con k=8 en la comparación con corpus real.
 DEFAULT_TOP_K = int(os.getenv("RAG_TOP_K", "8"))
 
-# Caché simple en memoria: (query, tuple(upload_ids)) -> list[dict]
-_retrieval_cache: dict[tuple[str, tuple[str, ...]], list[dict]] = {}
+# Caché simple en memoria: (query, tuple(upload_ids), k) -> list[dict]
+_retrieval_cache: dict[tuple[str, tuple[str, ...], int], list[dict]] = {}
 _MAX_RETRIEVAL_CACHE = 100
 
 
@@ -35,7 +35,7 @@ class RetrieveChunks:
         if not upload_ids or not query.strip():
             return []
 
-        cache_key = (query.strip(), tuple(sorted(upload_ids)))
+        cache_key = (query.strip(), tuple(sorted(upload_ids)), k)
         cached = _retrieval_cache.get(cache_key)
         if cached is not None:
             logger.info("RAG retrieval cache hit", query_preview=query[:60])
@@ -45,6 +45,11 @@ class RetrieveChunks:
         # La búsqueda es híbrida (RRF): si el embedder falla, la rama léxica
         # sigue funcionando (embedding=None → solo léxica). Best-effort.
         result = self.store.search_hybrid(query, embedding, upload_ids, k)
+        # Un resultado vacío no se cachea: puede deberse a que el documento aún se
+        # está indexando o a un fallo pasajero del embedder, y cachearlo dejaba esa
+        # consulta sin contexto para siempre aunque los chunks llegaran después.
+        if not result:
+            return result
         if len(_retrieval_cache) >= _MAX_RETRIEVAL_CACHE:
             _retrieval_cache.pop(next(iter(_retrieval_cache)))
         _retrieval_cache[cache_key] = result

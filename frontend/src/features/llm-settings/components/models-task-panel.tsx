@@ -2,11 +2,12 @@ import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 import type { SlotIssue } from "../lib/chain-validation";
-import { isMediaTask, type TaskDraft } from "../lib/llm-config-draft";
+import { type Draft, isMediaTask, type TaskDraft } from "../lib/llm-config-draft";
+import type { RichModel } from "../lib/model-facts";
 import type { ChipModel } from "../lib/model-task-card.helpers";
 import { taskMeta } from "../lib/task-meta";
 import type { EnabledModel } from "../lib/user-llm-settings.types";
-import { LlmTaskRow } from "./llm-task-row";
+import { AdminTaskEditor } from "./admin-task-editor";
 import { MediaOffMessage } from "./media-off-message";
 import { ModelsReadOnlyTask } from "./models-read-only-task";
 import { ModelsTaskHeading } from "./models-task-heading";
@@ -22,7 +23,7 @@ interface ModelsTaskPanelProps {
   adminSaving: boolean;
   generationOn: boolean;
   selectedDraft: TaskDraft | undefined;
-  poolModels: ChipModel[];
+  poolModels: RichModel[];
   adminModels: ChipModel[];
   issues: SlotIssue[];
   defaults: Record<string, EnabledModel>;
@@ -30,8 +31,13 @@ interface ModelsTaskPanelProps {
   saving: boolean;
   bounds: number[];
   onBack: () => void;
+  onGoToCredentials: () => void;
   onToggleGeneration: () => void;
   onChainChange: (next: TaskDraft) => void;
+  /** Configuración completa: para decir dónde se usa cada modelo y copiarlo a otras tareas. */
+  draft?: Draft | null;
+  tasks?: string[];
+  onDraftChange?: (next: Draft) => void;
 }
 
 export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
@@ -64,13 +70,17 @@ export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
         <MediaOffMessage task={props.task} />
       ) : null}
       {props.isAdmin && props.selectedDraft ? (
-        <LlmTaskRow
+        <AdminTaskEditor
           task={props.task}
           value={props.selectedDraft}
           models={props.poolModels}
+          adminModels={props.adminModels}
           disabled={props.adminSaving}
           issues={props.issues}
+          draft={props.draft ?? null}
+          tasks={props.tasks ?? []}
           onChange={props.onChainChange}
+          onDraftChange={props.onDraftChange}
         />
       ) : (
         <ModelsReadOnlyTask
@@ -83,6 +93,7 @@ export function ModelsTaskPanel(props: Readonly<ModelsTaskPanelProps>) {
           hasOwnLlmKey={props.hasOwnLlmKey}
           saving={props.saving}
           bounds={props.bounds}
+          onGoToCredentials={props.onGoToCredentials}
         />
       )}
     </div>

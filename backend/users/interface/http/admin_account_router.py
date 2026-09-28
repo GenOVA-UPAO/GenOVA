@@ -9,11 +9,11 @@ password by reading the API response.
 
 import os
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 
 from auth.dependencies import require_permission
-from auth.infrastructure.smtp_email import send_reset_email
+from auth.infrastructure.smtp_email import email_configured, send_reset_email
 from core.rate_limit import limiter
 from models import User
 from users.application.dto import (
@@ -84,6 +84,13 @@ def trigger_reset_email(
     current_user: User = Depends(require_permission("manage_users")),
     users: UsersUseCases = Depends(build_users),
 ):
+    # El correo sale en segundo plano: sin SMTP fallaría después de responder
+    # «encolado», y el admin creería que llegó.
+    if not email_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="El servidor no tiene configurado el envío de correos (SMTP), así que no se puede enviar.",
+        )
     try:
         info = users.admin_send_reset_email.execute(
             AdminSendResetEmailInput(caller_id=current_user.id, user_id=user_id)

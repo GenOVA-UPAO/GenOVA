@@ -10,7 +10,12 @@ interface OvaListPaginationProps {
   className?: string;
 }
 
-/** Paginación anterior/siguiente para las listas de OVAs. */
+/**
+ * Paginación anterior/siguiente para las listas de OVAs. En móvil los botones
+ * quedan solo con icono (el nombre accesible viene del aria-label); el texto se
+ * oculta con `hidden` y no con `sr-only`, que al ser absoluto sin ancestro
+ * posicionado alargaba el documento y creaba un segundo scroll de página.
+ */
 export function OvaListPagination({
   currentPage,
   totalPages,
@@ -37,7 +42,7 @@ export function OvaListPagination({
           aria-label="Página anterior"
         >
           <Icon name="caret-left" size="text-base" />
-          <span className="max-sm:sr-only">Anterior</span>
+          <span className="max-sm:hidden">Anterior</span>
         </Button>
         <Button
           variant="outline"
@@ -48,7 +53,7 @@ export function OvaListPagination({
           disabled={currentPage >= totalPages}
           aria-label="Página siguiente"
         >
-          <span className="max-sm:sr-only">Siguiente</span>
+          <span className="max-sm:hidden">Siguiente</span>
           <Icon name="caret-right" size="text-base" />
         </Button>
       </div>

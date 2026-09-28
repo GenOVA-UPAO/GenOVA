@@ -38,13 +38,14 @@ def test_openrouter_returns_data_uri(monkeypatch):
         )
 
     monkeypatch.setattr(or_img.httpx, "post", fake_post)
+    # Modelo solo de imagen → /api/v1/images (Gemini Image va por chat).
     uri = or_img.generate_openrouter_image(
-        "a cat", "sk-or-test", 512, 512, model="google/gemini-2.5-flash-image"
+        "a cat", "sk-or-test", 512, 512, model="black-forest-labs/flux.2-klein-4b"
     )
     assert uri == "data:image/jpeg;base64,YWJj"
-    # Gemini rejects size/output_format — payload must stay minimal.
+    # Many models reject size/output_format — payload must stay minimal.
     assert captured["json"] == {
-        "model": "google/gemini-2.5-flash-image",
+        "model": "black-forest-labs/flux.2-klein-4b",
         "prompt": "a cat",
         "n": 1,
         "aspect_ratio": "1:1",

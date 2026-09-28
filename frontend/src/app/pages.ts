@@ -40,3 +40,26 @@ export function prefetchRoute(path: string): void {
   const key = PATH_TO_PAGE[path.split("?")[0]];
   if (key) void pageLoaders[key]().catch(() => undefined);
 }
+
+/**
+ * Descarga en segundo plano las páginas indicadas, una a una y cuando el
+ * navegador está libre, para que abrirlas por primera vez sea inmediato (la
+ * precarga al pasar el ratón llega justo antes del clic). Devuelve cómo
+ * cancelarlo.
+ */
+export function prefetchRoutesWhenIdle(paths: readonly string[]): () => void {
+  let cancelled = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const queue = [...paths];
+  const next = () => {
+    const path = queue.shift();
+    if (cancelled || path === undefined) return;
+    prefetchRoute(path);
+    timer = setTimeout(next, 300);
+  };
+  timer = setTimeout(next, 2000);
+  return () => {
+    cancelled = true;
+    clearTimeout(timer);
+  };
+}

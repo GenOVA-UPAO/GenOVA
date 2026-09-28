@@ -10,6 +10,7 @@ from generation.application.ports import (
     InputGuardrail,
     JobLauncher,
     JobRepository,
+    ReferenceMaterial,
 )
 
 
@@ -19,6 +20,9 @@ class CreateJob:
     images: ImageSettingsResolver
     launcher: JobLauncher
     guardrail: InputGuardrail
+    # Opcional para no obligar a cada doble de test a traerlo: sin él los ids
+    # pasan tal cual (comportamiento anterior).
+    references: ReferenceMaterial | None = None
 
     def execute(self, data: CreateJobInput) -> CreateJobResult:
         self.guardrail.assert_allowed(data.prompt, data.user_id)
@@ -27,8 +31,13 @@ class CreateJob:
             user_api_keys=data.user_api_keys,
             user_id=data.user_id,
         )
+        # Solo archivos del propio usuario: con el id de un documento ajeno se
+        # recuperaba su contenido como contexto.
+        upload_ids = list(data.upload_ids)
+        if self.references is not None:
+            upload_ids = self.references.owned(data.user_id, upload_ids)
         params = {
-            "upload_ids": list(data.upload_ids),
+            "upload_ids": upload_ids,
             "phases": list(data.phases),
             "resources": list(data.resources),
             "theme": dict(data.theme),
@@ -43,6 +52,8 @@ class CreateJob:
             params=params,
             resources=data.resource_plan,
         )
+        if self.references is not None and job.ova_id and upload_ids:
+            self.references.bind_to_ova(data.user_id, upload_ids, str(job.ova_id))
         self.launcher.launch(job.id)
         return CreateJobResult(
             job_id=str(job.id),

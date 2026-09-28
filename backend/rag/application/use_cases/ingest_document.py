@@ -148,6 +148,7 @@ class IngestDocument:
                 source_filename=filename,
                 chunks=chunks,
                 embeddings=embeddings,
+                embedding_model=getattr(self.embedder, "fingerprint", None),
             )
         except Exception:
             logger.exception("RAG insert falló", filename=filename)

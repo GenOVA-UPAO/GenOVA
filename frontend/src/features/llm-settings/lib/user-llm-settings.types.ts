@@ -1,5 +1,8 @@
+import type { CatalogStatus } from "./catalog-status";
 import type { EffectiveConfig } from "./llm-config-draft";
 import type { SettingsMap } from "./llm-settings-mutations";
+import type { MediaPricing } from "./media-price";
+import type { OwnCatalogStatus } from "./own-catalog-status";
 
 export interface EnabledModel {
   provider: string;
@@ -22,6 +25,11 @@ export interface CatalogModel {
     cache_write?: number;
   };
   description?: string;
+  /** Solo los modelos de imagen y video: precio por imagen, megapíxel o segundo. */
+  media_pricing?: MediaPricing | null;
+  aptitudes?: string[];
+  /** `false`: no se puede elegir (p. ej. clave propia rechazada); sirve para nombrarlo. */
+  active?: boolean;
 }
 
 export interface LlmSettingsResponse {
@@ -40,7 +48,9 @@ export interface LlmSettingsResponse {
   full_has_more?: boolean;
   categories?: string[];
   types?: string[];
-  catalog_status?: Record<string, { ok: boolean; last_success_at?: string }>;
+  catalog_status?: CatalogStatus;
+  /** Listas pedidas con las claves propias del usuario (`null` para el admin). */
+  own_catalog_status?: OwnCatalogStatus | null;
 }
 
 export interface LoadOpts {

@@ -5,6 +5,7 @@ import { Button } from "@/core/components/ui/button";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import { phaseMeta } from "../../lib/phase-meta";
 import { MAX_PER_PHASE } from "../../lib/phase-select.config";
+import type { PhaseWithContent } from "../../lib/types";
 import { ModalActions } from "../shared/modal-actions";
 import { WorkspaceModal } from "../shared/workspace-modal";
 
@@ -13,9 +14,11 @@ interface Props {
   phaseType: string;
   currentCount: number;
   onClose: () => void;
+  /** El recurso ya existe (con su marcador pendiente): hay que generarlo. */
+  onAdded?: (phase: PhaseWithContent, prompt: string) => void;
 }
 
-export default function AddResourceModal({ ovaId, phaseType, currentCount, onClose }: Readonly<Props>) {
+export default function AddResourceModal({ ovaId, phaseType, currentCount, onClose, onAdded }: Readonly<Props>) {
   const [prompt, setPrompt] = useState("");
   const { addPhase } = useOvaWorkspace(ovaId);
   const full = currentCount >= MAX_PER_PHASE;
@@ -23,7 +26,16 @@ export default function AddResourceModal({ ovaId, phaseType, currentCount, onClo
   const empty = !prompt.trim();
   const submit = () => {
     if (empty || addPhase.isPending) return;
-    addPhase.mutate({ phaseType, prompt: prompt.trim() }, { onSuccess: onClose });
+    const instructions = prompt.trim();
+    addPhase.mutate(
+      { phaseType, prompt: instructions },
+      {
+        onSuccess: (phase) => {
+          onAdded?.(phase, instructions);
+          onClose();
+        },
+      },
+    );
   };
   return (
     <WorkspaceModal
@@ -55,7 +67,7 @@ export default function AddResourceModal({ ovaId, phaseType, currentCount, onClo
             id="add-resource-prompt"
             rows={4}
             className="block w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-base leading-relaxed placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:text-sm"
-            placeholder="Ej.: un ejercicio práctico sobre circuitos en paralelo con su solución."
+            placeholder="Ej.: un ejercicio práctico sobre el sobreajuste con su solución."
             value={prompt}
             disabled={addPhase.isPending}
             onChange={(event) => {

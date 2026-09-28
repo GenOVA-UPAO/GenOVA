@@ -1,66 +1,79 @@
-import { Icon } from "@/core/components/icon";
+import { cn } from "@/core/lib/cn";
 
-import { formatContextLength } from "../lib/llm-catalog.utils";
+import { PROVIDER_LABELS } from "../lib/llm-catalog.utils";
+import { formatContext, type ModelFacts, modelFacts, priceSummary, shortDescription } from "../lib/model-facts";
 import { modelDisplayName } from "../lib/model-name";
+import { withoutProviderSuffix } from "../lib/model-search";
+import { usageSummary } from "../lib/model-usage";
 import type { CatalogModel } from "../lib/user-llm-settings.types";
-import { FlagSwitch } from "./flag-switch";
-import { ModelPricingBadge } from "./model-pricing-badge";
+import { CatalogPriceCells } from "./catalog-price-cells";
+import { CatalogStarButton } from "./catalog-star-button";
+import { ModelCapabilities } from "./model-capabilities";
+import { ModelTag } from "./model-tag";
 
 interface ManageModelRowProps {
   model: CatalogModel;
-  locked: boolean;
-  enabled: boolean;
+  /** Modelo base del sistema: siempre es favorito. */
+  base: boolean;
+  favorite: boolean;
+  usage: string[];
   onToggle: (provider: string, modelId: string) => Promise<void>;
 }
 
-export function ManageModelRow({ model, locked, enabled, onToggle }: Readonly<ManageModelRowProps>) {
-  const free =
-    model.pricing === "Gratuito" ||
-    (!model.pricing && (model.provider === "groq" || model.provider === "huggingface"));
+export function ManageModelRow({ model, base, favorite, usage, onToggle }: Readonly<ManageModelRowProps>) {
+  const providerLabel = PROVIDER_LABELS[model.provider] ?? model.provider;
+  const name = withoutProviderSuffix(modelDisplayName(model.label, model.model_id), providerLabel);
+  const facts = modelFacts(model);
+  const context = formatContext(facts.context);
+  const description = shortDescription(model.description);
 
   return (
-    <div
-      className={`flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors [contain-intrinsic-size:auto_3.5rem] [content-visibility:auto] ${locked ? "" : "hover:bg-muted/50"}`}
-    >
-      <FlagSwitch
-        size="sm"
-        checked={enabled}
-        disabled={locked}
-        label={modelDisplayName(model.label, model.model_id)}
-        onToggle={() => {
-          void onToggle(model.provider, model.model_id);
-        }}
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          <span className="truncate text-sm font-medium text-foreground">
-            {modelDisplayName(model.label, model.model_id)}
+    <li className="grid grid-cols-[auto_1fr] items-start gap-x-3 px-5 py-3 [contain-intrinsic-size:auto_4.5rem] [content-visibility:auto] sm:grid-cols-[auto_1fr_5rem_5rem_4.5rem] sm:items-center">
+      <CatalogStarButton name={name} base={base} favorite={favorite} onToggle={() => void onToggle(model.provider, model.model_id)} />
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="min-w-0 truncate text-sm font-medium text-foreground" title={name}>
+            {name}
           </span>
-          {locked ? (
-            <span
-              className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground"
-              title="Modelo base del sistema: siempre está activo"
-            >
-              <Icon name="lock" size="text-xs" />
-              <span className="max-sm:sr-only">Modelo base</span>
-            </span>
-          ) : null}
+          {base ? <ModelTag>Modelo base</ModelTag> : null}
+          {facts.recommended && !base ? <ModelTag>Recomendado</ModelTag> : null}
+          {usage.length > 0 ? <ModelTag tone="primary">En uso: {usageSummary(usage)}</ModelTag> : null}
         </div>
-        {model.description ? (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground" title={model.description}>
-            {model.description}
+        <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+          <span>{providerLabel}</span>
+          <ModelCapabilities capabilities={facts.capabilities} />
+          <span className="tabular-nums sm:hidden">{mobilePrice(facts)}</span>
+          {context ? <span className="tabular-nums sm:hidden">{context} de contexto</span> : null}
+        </p>
+        {description ? (
+          <p lang="en" className="mt-1 line-clamp-2 text-xs text-muted-foreground sm:line-clamp-1" title={model.description ?? undefined}>
+            {description}
           </p>
         ) : null}
       </div>
-      <ModelPricingBadge free={free} variable={model.pricing === "Variable"} pricing={model.pricing} />
-      {formatContextLength(model.context_length) ? (
-        <span
-          className="hidden w-16 shrink-0 text-right text-xs text-muted-foreground tabular-nums sm:inline"
-          title="Contexto máximo (tokens)"
-        >
-          {formatContextLength(model.context_length)}
-        </span>
-      ) : null}
-    </div>
+      <CatalogPriceCells facts={facts} />
+      <span className={contextClass(context)}>{contextLabel(facts, context)}</span>
+    </li>
   );
+}
+
+/** Imagen y video no tienen ventana de contexto: «Sin dato» parecería un fallo. */
+function contextLabel(facts: ModelFacts, context: string | null): string {
+  if (context) return context;
+  return facts.media ? "No aplica" : "Sin dato";
+}
+
+function contextClass(context: string | null): string {
+  return cn(
+    "hidden text-right text-sm tabular-nums sm:block",
+    context ? "text-foreground" : "text-muted-foreground",
+  );
+}
+
+function mobilePrice(facts: ModelFacts): string {
+  const summary = priceSummary(facts);
+  if (!summary) return "Precio sin dato";
+  // Imagen y video ya dicen su unidad («$0.039/imagen», «desde $0.05/s»).
+  if (facts.free || facts.variable || facts.media) return summary;
+  return `${summary} por 1M tokens`;
 }

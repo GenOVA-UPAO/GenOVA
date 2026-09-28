@@ -2,13 +2,15 @@ import { apiJson, HttpError } from "@/core/lib/http";
 import { ovaJobsApi } from "@/core/services/ova-jobs-api.service";
 
 import type { JobSnapshot } from "../lib/ova-job-view-model";
+import { themePayload } from "../lib/ova-theme";
+import type { OvaTheme } from "../lib/types";
 
 export interface StartJobRequest {
   prompt: string;
   uploadIds?: string[];
   // La API valida el tipo como string; aceptarlo como number dejaba pasar un 422.
   resources: { phase_type: string; resource_type: string }[];
-  theme?: { color: string; design: string };
+  theme?: OvaTheme;
   resourceConfigs?: Record<string, Record<string, number>>;
 }
 
@@ -32,7 +34,7 @@ export function startOvaJob(request: StartJobRequest): Promise<JobAck> {
       prompt: request.prompt,
       upload_ids: request.uploadIds ?? [],
       resources: request.resources,
-      theme: request.theme,
+      theme: request.theme && themePayload(request.theme),
       resource_configs: request.resourceConfigs,
     }),
   });

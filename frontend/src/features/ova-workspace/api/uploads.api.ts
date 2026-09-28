@@ -9,14 +9,19 @@ export interface UploadResponse {
   errors?: { filename?: string; message?: string; error?: string }[];
 }
 
-export function uploadTemporaryFiles(files: Iterable<File>): Promise<UploadResponse> {
-  const body = new FormData();
-  for (const file of files) body.append("files", file);
-  return apiJson<UploadResponse>(UPLOADS_TEMP, { method: "POST", body });
+/** Cada lista de archivos es de su contexto: sin `ovaId`, la de crear OVA; con él, la del chat de ese OVA. */
+function scoped(ovaId?: string): string {
+  return ovaId ? `${UPLOADS_TEMP}?ova_id=${encodeURIComponent(ovaId)}` : UPLOADS_TEMP;
 }
 
-export function fetchTemporaryFiles(): Promise<{ items?: ServerItem[] }> {
-  return apiJson(UPLOADS_TEMP);
+export function uploadTemporaryFiles(files: Iterable<File>, ovaId?: string): Promise<UploadResponse> {
+  const body = new FormData();
+  for (const file of files) body.append("files", file);
+  return apiJson<UploadResponse>(scoped(ovaId), { method: "POST", body });
+}
+
+export function fetchTemporaryFiles(ovaId?: string): Promise<{ items?: ServerItem[] }> {
+  return apiJson(scoped(ovaId));
 }
 
 export function removeTemporaryFile(uploadId: string): Promise<unknown> {

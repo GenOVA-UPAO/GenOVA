@@ -174,6 +174,16 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 4200,
       strictPort: true,
+      // En desarrollo Vite compila cada módulo la primera vez que se pide: sin
+      // esto, abrir una página por primera vez tardaba segundos (Modelos, 4,5 s)
+      // mientras se transformaba su árbol. Se precompila al arrancar.
+      warmup: {
+        clientFiles: [
+          "./src/main.tsx",
+          "./src/app/layout/app-layout.tsx",
+          "./src/features/*/pages/*-page.tsx",
+        ],
+      },
       proxy: {
         "/api": { target: BACKEND, changeOrigin: true, cookieDomainRewrite: "localhost" },
         "/auth": { target: BACKEND, changeOrigin: true, cookieDomainRewrite: "localhost" },

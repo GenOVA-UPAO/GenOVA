@@ -15,6 +15,13 @@ from llm.utils import llm_config_store
 from llm.utils.llm_helpers import EmptyContentError
 
 
+@pytest.fixture(autouse=True)
+def _todos_con_clave(monkeypatch):
+    """Todos los proveedores con clave de plataforma: la cadena no se filtra
+    (llm.chain_credentials) y el test no depende de las claves de la BD/entorno."""
+    monkeypatch.setattr(router, "_get_provider_key", lambda _p: "k")
+
+
 class FakeClock:
     def __init__(self, t: float = 0.0):
         self.t = t
@@ -49,7 +56,7 @@ def _admin(monkeypatch, defaults, fallbacks):
 def _fake_chat(clock, actions, calls):
     """Fake de _chat: cada action = (avance_reloj, resultado|Exception)."""
 
-    def fake(provider, model_id, prompt, max_tokens, extra, timeout):
+    def fake(provider, model_id, prompt, max_tokens, extra, timeout, key=None):
         calls.append({"provider": provider, "model_id": model_id, "timeout": timeout})
         advance, outcome = actions.pop(0)
         clock.t += advance

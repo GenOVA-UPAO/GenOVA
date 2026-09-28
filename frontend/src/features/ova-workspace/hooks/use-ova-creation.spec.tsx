@@ -25,6 +25,9 @@ vi.mock("./use-uploads", () => ({
     uploadError: undefined,
     removeUpload: vi.fn(),
     addFiles: vi.fn(),
+    indexing: false,
+    refresh: vi.fn(),
+    uploadIds: [],
   }),
 }));
 

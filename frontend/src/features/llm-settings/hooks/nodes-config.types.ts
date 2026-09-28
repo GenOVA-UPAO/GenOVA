@@ -1,3 +1,4 @@
+import type { MediaTask, MediaTaskStatus } from "../lib/media-status";
 import { withNodeCopy } from "../lib/node-copy";
 
 export interface EngineNode {
@@ -10,12 +11,16 @@ export interface EngineNode {
   flag: string;
   param?: { label: string; min: number; max: number };
   default?: string;
+  /** Imagen y video: su estado sale de la tarea de /models, no de un flag. */
+  media_task?: MediaTask;
 }
 
 export interface NodesConfigResponse {
   nodes?: EngineNode[];
   capabilities?: EngineNode[];
   config?: Record<string, string>;
+  /** Estado real de imagen y video (interruptor, modelo y clave). */
+  media_status?: Partial<Record<MediaTask, MediaTaskStatus>>;
   video_api_key_configured?: boolean;
 }
 

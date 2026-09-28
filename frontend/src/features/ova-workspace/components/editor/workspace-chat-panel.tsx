@@ -1,8 +1,14 @@
 import { useState } from "react";
 
-import { useChatRegeneration } from "../../hooks/use-chat-regeneration";
+import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
+import { useUndoableChatDelete } from "../../hooks/use-undoable-chat-delete";
 import { useOvaUploads } from "../../hooks/use-uploads";
-import { buttonRegenPayload, messageRegenPayload, type RegenPayload } from "../../lib/regen-chat";
+import {
+  buttonRegenPayload,
+  chatAttachments,
+  messageRegenPayload,
+  type RegenPayload,
+} from "../../lib/regen-chat";
 import type { PhaseWithContent } from "../../lib/types";
 import { ChatComposer } from "./chat-composer";
 import { ChatHistory } from "./chat-history";
@@ -22,38 +28,43 @@ function withToggledId(list: string[], id: string): string[] {
 }
 
 export function WorkspaceChatPanel({
-  ovaId,
   phases,
-}: Readonly<{ ovaId: string; phases: PhaseWithContent[] }>) {
+  regen,
+}: Readonly<{ phases: PhaseWithContent[]; regen: ChatRegeneration }>) {
   const [prompt, setPrompt] = useState("");
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
-  const uploads = useOvaUploads();
-  const regen = useChatRegeneration(ovaId);
+  // Adjuntos del chat de ESTE OVA (no se mezclan con los de «Crear OVA»).
+  const uploads = useOvaUploads(regen.ovaId);
+  const removal = useUndoableChatDelete((id) => {
+    regen.chat.remove.mutate(id);
+  });
   // Regenerar crea una versión nueva con ids nuevos: la selección solo cuenta
   // los recursos que siguen existiendo. Al cerrar el selector, vuelve al OVA entero.
   const live = selected.filter((id) => phases.some((phase) => phase.id === id));
   const scopeIds = selecting ? live : [];
   const submit = (payload: RegenPayload, onSent?: () => void) => {
-    if (!regen.busy) {
-      regen.request.mutate(payload, { onSuccess: onSent });
-    }
+    if (regen.busy) return;
+    // Tras enviarlos, el backend ya los ligó al OVA: salen de la lista del chat.
+    regen.request.mutate(payload, { onSuccess: () => { void uploads.refresh(); onSent?.(); } });
   };
-  const error = regen.request.error?.message ?? regen.error ?? uploads.uploadError;
+  // Los fallos de la regeneración ya se leen en el hilo; aquí solo lo que no llegó a él.
+  const error = regen.composerError ?? uploads.uploadError;
 
   return (
-    <aside aria-label="Panel de instrucciones" className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r border-border bg-card">
+    <aside
+      aria-label="Panel de instrucciones"
+      className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden border-r border-border bg-card"
+    >
       <ChatPanelHeader
-        busy={regen.busy}
+        busy={regen.busy || uploads.uploading || uploads.indexing}
         onRegenAll={() => {
-          submit(buttonRegenPayload(phases, "Regenerar OVA completo", []));
+          submit(buttonRegenPayload(phases, "Regenerar OVA completo", [], chatAttachments(uploads.data)));
         }}
       />
       <ChatHistory
-        messages={regen.chat.data ?? []}
-        onRemove={(id) => {
-          regen.chat.remove.mutate(id);
-        }}
+        messages={(regen.chat.data ?? []).filter((m) => !removal.hidden.includes(m.id))}
+        onRemove={removal.request}
         onClear={() => {
           regen.chat.clear.mutate();
         }}
@@ -65,7 +76,7 @@ export function WorkspaceChatPanel({
           prompt={prompt}
           onPrompt={setPrompt}
           onSubmit={() => {
-            submit(messageRegenPayload(phases, prompt, scopeIds), () => {
+            submit(messageRegenPayload(phases, prompt, scopeIds, chatAttachments(uploads.data)), () => {
               setPrompt("");
             });
           }}

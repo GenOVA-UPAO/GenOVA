@@ -14,6 +14,7 @@ export function useLlmSettingsStore(enabled = true): LlmSettingsStore {
     settings: draft.settings,
     catalog: catalogMap,
     catalogFull: catalog.catalogFull,
+    catalogAll: catalog.server.catalog_all ?? [],
     catalogEnabled: Object.values(catalogMap).flat(),
     fullTotal: catalog.server.full_total ?? catalog.catalogFull.length,
     fullHasMore: catalog.fullHasMore,
@@ -30,7 +31,7 @@ export function useLlmSettingsStore(enabled = true): LlmSettingsStore {
     dirty: draft.dirty,
     error: catalog.error,
     refetch: catalog.refetch,
-    catalogStatus: catalog.server.catalog_status ?? null,
+    ...serverStatus(catalog.server),
     refreshingCatalog: catalog.refreshingCatalog,
     searchQuery: catalog.searchQuery,
     categoryFilter: catalog.categoryFilter,
@@ -46,6 +47,7 @@ export function useLlmSettingsStore(enabled = true): LlmSettingsStore {
     isDefaultModel: (provider, modelId) => isDefault(catalog.server.defaults ?? {}, provider, modelId),
     isModelEnabled: favorites.isModelEnabled,
     toggleFavorite: favorites.toggleFavorite,
+    addFavorites: favorites.addFavorites,
     setModel: draft.setModel,
     setTipoTimeout: draft.setTipoTimeout,
     resetTipo: draft.resetTipo,
@@ -68,4 +70,12 @@ function isDefault(
   modelId: string,
 ): boolean {
   return Object.values(defaults).some((item) => item.provider === provider && item.model_id === modelId);
+}
+
+/** Estado de los catálogos: el de plataforma y el de las claves propias. */
+function serverStatus(server: LlmSettingsResponse) {
+  return {
+    catalogStatus: server.catalog_status ?? null,
+    ownCatalogStatus: server.own_catalog_status ?? null,
+  };
 }

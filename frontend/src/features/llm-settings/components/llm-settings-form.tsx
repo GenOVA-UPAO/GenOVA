@@ -1,4 +1,3 @@
-import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { Skeleton } from "@/core/components/ui/skeleton";
 
@@ -40,13 +39,6 @@ export function LlmSettingsForm({ readOnly = false }: Readonly<{ readOnly?: bool
 
   return (
     <div className="space-y-4">
-      {readOnly ? (
-        <p className="flex items-start gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-sm text-muted-foreground">
-          <Icon name="lock" size="text-sm" className="mt-0.5 shrink-0" />
-          Los elige el administrador. Para personalizarlos, añade tu clave API en Modelos de IA,
-          pestaña Credenciales.
-        </p>
-      ) : null}
       <ul className="divide-y divide-border">
         {taskKeys.map((tipo) =>
           readOnly ? (

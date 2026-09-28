@@ -32,7 +32,13 @@ export function RegisterFormFields({
     <AuthCard title="Crear cuenta" subtitle="Regístrate para guardar y acceder a tus OVAs.">
       <form className="mt-8 space-y-5" onSubmit={onSubmit} noValidate>
         <AuthField id="fullName" label="Nombre completo" error={form.errorFor("full_name")}>
-          <Input id="fullName" type="text" autoComplete="name" placeholder="Ej: María Pérez" {...form.bind("full_name")} />
+          <Input
+            id="fullName"
+            type="text"
+            autoComplete="name"
+            placeholder="Ej: María Pérez"
+            {...form.bind("full_name", { id: "fullName" })}
+          />
         </AuthField>
         <AuthField id="email" label="Correo" error={form.errorFor("email") ? EMAIL_FORMAT_ERROR : undefined}>
           <Input
@@ -46,16 +52,18 @@ export function RegisterFormFields({
             {...form.bind("email")}
           />
         </AuthField>
-        <AuthField id="password" label="Contraseña">
-          <PasswordInput id="password" autoComplete="new-password" {...form.bind("password")} />
+        <AuthField
+          id="password"
+          label="Contraseña"
+          error={passwordError ? "Mínimo 8 caracteres con letras y números." : undefined}
+          hint="Usa al menos 8 caracteres con letras y números."
+        >
+          <PasswordInput
+            id="password"
+            autoComplete="new-password"
+            {...form.bind("password", { hint: true })}
+          />
         </AuthField>
-        <p className="text-xs text-muted-foreground">
-          {passwordError ? (
-            <span className="text-destructive">Mínimo 8 caracteres con letras y números.</span>
-          ) : (
-            <span>Usa al menos 8 caracteres con letras y números.</span>
-          )}
-        </p>
         {serverError ? <ServerAlert>{serverError}</ServerAlert> : null}
         <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
           {submitting ? "Creando cuenta…" : "Crear cuenta"}

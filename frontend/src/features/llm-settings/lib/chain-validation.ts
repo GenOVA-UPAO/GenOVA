@@ -1,4 +1,6 @@
+import { joinList } from "./join-list";
 import type { Draft, Entry, TaskDraft } from "./llm-config-draft";
+import { taskMeta } from "./task-meta";
 
 export interface SlotIssue {
   index: number;
@@ -54,4 +56,22 @@ export function validateDraft(
 
 export function draftHasIssues(draft: Draft | null | undefined, tasks: readonly string[]): boolean {
   return Object.keys(validateDraft(draft, tasks)).length > 0;
+}
+
+/**
+ * Por qué no se puede guardar, con las tareas afectadas. El mensaje genérico
+ * («completa o quita… y evita repetir…») obligaba a revisar tarea por tarea.
+ */
+export function blockingMessage(issues: Record<string, SlotIssue[]>): string | null {
+  const tasks = Object.keys(issues);
+  if (tasks.length === 0) return null;
+  const all = Object.values(issues).flat();
+  const empty = all.some((issue) => issue.kind === "empty");
+  const duplicate = all.some((issue) => issue.kind === "duplicate");
+  const where = joinList(tasks.map((task) => taskMeta(task).label));
+  if (empty && duplicate) {
+    return `Para guardar, completa o quita los respaldos vacíos y cambia los modelos repetidos en ${where}.`;
+  }
+  if (duplicate) return `Para guardar, cambia los modelos repetidos en ${where}.`;
+  return `Para guardar, elige un modelo o quita los respaldos vacíos en ${where}.`;
 }

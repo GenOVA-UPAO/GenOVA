@@ -2,6 +2,12 @@
 
 from uploads.infrastructure.rag_ingestion import RagIngestionAdapter
 from uploads.infrastructure.settings import EnvUploadLimits
+from uploads.infrastructure.sql_temp_upload_repository import SqlTempUploadRepository
 from uploads.infrastructure.temp_upload_repository import InMemoryTempUploadRepository
 
-__all__ = ["EnvUploadLimits", "InMemoryTempUploadRepository", "RagIngestionAdapter"]
+__all__ = [
+    "EnvUploadLimits",
+    "InMemoryTempUploadRepository",
+    "RagIngestionAdapter",
+    "SqlTempUploadRepository",
+]

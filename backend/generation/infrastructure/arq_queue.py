@@ -19,6 +19,7 @@ from arq.connections import RedisSettings
 from core.config import settings
 
 GENERATION_TASK = "run_generation"
+REGEN_TASK = "run_regen"
 
 
 def redis_settings() -> RedisSettings:
@@ -45,3 +46,20 @@ def enqueue_generation(job_id: UUID, only: list[UUID] | None = None) -> None:
     """Enqueue a generation job on arq. Sync wrapper: runs its own event loop since
     the caller is a sync FastAPI endpoint executing in the threadpool."""
     asyncio.run(_enqueue(job_id, only))
+
+
+async def _enqueue_regen(job_id: str, ova_id: str) -> None:
+    pool = await create_pool(redis_settings())
+    try:
+        # _job_id fijo: encolar dos veces la misma regeneración no la duplica.
+        await pool.enqueue_job(REGEN_TASK, job_id, ova_id, _job_id=f"regen:{job_id}")
+    finally:
+        try:
+            await pool.aclose()
+        except AttributeError:  # redis-py < 5 exposes close() instead of aclose()
+            await pool.close()
+
+
+def enqueue_regen(job_id: str, ova_id: str) -> None:
+    """Encola una regeneración del chat del editor (la ejecuta worker.run_regen)."""
+    asyncio.run(_enqueue_regen(job_id, ova_id))

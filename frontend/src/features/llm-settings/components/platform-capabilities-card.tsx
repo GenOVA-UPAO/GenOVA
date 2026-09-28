@@ -8,7 +8,6 @@ export function PlatformCapabilitiesCard() {
   const nodes = useNodesConfig();
   const capabilities = nodes.data.capabilities ?? [];
   const configurable = capabilities.filter((item) => item.configurable);
-  const videoWarning = !nodes.data.video_api_key_configured;
   const hasChanges = capabilityDirty(configurable, nodes.draft, nodes.data.config);
 
   return (
@@ -33,7 +32,7 @@ export function PlatformCapabilitiesCard() {
         capabilities={capabilities}
         draft={nodes.draft}
         saving={nodes.saving}
-        videoWarning={videoWarning}
+        mediaStatus={nodes.data.media_status}
         onToggle={nodes.toggleFlag}
       />
     </PlatformSection>

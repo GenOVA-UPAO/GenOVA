@@ -20,6 +20,11 @@ EST_SECONDS_PER_PHASE = 60
 
 _TERMINAL_STATUSES = frozenset({"success", "error"})
 
+# Suelo del porcentaje según el paso real que registra el ejecutor en la BD. La
+# estimación por tiempo sola decía «Generando fases» mientras ya se construía el
+# paquete; con el paso compartido entre procesos la etiqueta no se queda atrás.
+_STEP_FLOORS = {"persist": 90}
+
 
 def resolve_regen_stage(pct: int) -> str:
     for threshold, label in PROGRESS_STAGES:
@@ -28,15 +33,19 @@ def resolve_regen_stage(pct: int) -> str:
     return PROGRESS_STAGES[-1][1]
 
 
-def estimate_percentage(*, status: str, total_phases, started_at: float, now: float) -> int:
+def estimate_percentage(
+    *, status: str, total_phases, started_at: float, now: float, step: str | None = None
+) -> int:
     """Porcentaje estimado: 100 en terminal; si no, tiempo transcurrido sobre
-    el estimado por fase, saturado en 99 (el cierre real lo pone el hilo)."""
+    el estimado por fase (con el suelo del paso real, si lo hay), saturado en 99
+    (el cierre real lo pone el ejecutor)."""
     if status in _TERMINAL_STATUSES:
         return 100
     n_phases = max(int(total_phases or 1), 1)
     est_total = n_phases * EST_SECONDS_PER_PHASE
     elapsed = max(0.0, now - float(started_at))
-    return min(99, int((elapsed / est_total) * 100))
+    by_time = int((elapsed / est_total) * 100)
+    return min(99, max(by_time, _STEP_FLOORS.get(step or "", 0)))
 
 
 def is_terminal(status: str) -> bool:

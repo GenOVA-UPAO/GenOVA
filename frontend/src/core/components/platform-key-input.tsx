@@ -8,6 +8,9 @@ interface PlatformKeyInputProps {
   value: string;
   placeholder: string;
   ref: Ref<HTMLInputElement>;
+  invalid?: boolean;
+  /** id del mensaje de error; solo se enlaza si `invalid`. */
+  errorId?: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
 }
@@ -17,6 +20,8 @@ export function PlatformKeyInput({
   value,
   placeholder,
   ref,
+  invalid = false,
+  errorId,
   onChange,
   onSubmit,
 }: Readonly<PlatformKeyInputProps>) {
@@ -37,6 +42,8 @@ export function PlatformKeyInput({
           spellCheck={false}
           value={value}
           placeholder={placeholder}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? errorId : undefined}
           onChange={(e) => {
             onChange(e.target.value);
           }}

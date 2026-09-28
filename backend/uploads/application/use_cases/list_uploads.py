@@ -13,5 +13,5 @@ from uploads.application.views import to_view
 class ListUploads:
     repo: TempUploadRepository
 
-    def execute(self, user_id: str) -> list[UploadItemView]:
-        return [to_view(u) for u in self.repo.list_active(user_id)]
+    def execute(self, user_id: str, ova_id: str | None = None) -> list[UploadItemView]:
+        return [to_view(u) for u in self.repo.list_active(user_id, ova_id)]

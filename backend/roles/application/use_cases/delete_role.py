@@ -10,10 +10,11 @@ from roles.domain.errors import (
     InvalidReassignmentTarget,
     ReassignmentRequired,
     ReassignmentTargetNotFound,
+    RoleDeletionLocked,
     RoleNotFound,
     SystemRoleProtected,
 )
-from roles.domain.services import is_system_role
+from roles.domain.services import is_name_locked, is_system_role
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,6 +27,9 @@ class DeleteRole:
             raise RoleNotFound()
         if is_system_role(role.name):
             raise SystemRoleProtected("No se pueden eliminar los roles del sistema (administrador, usuario).")
+        # Sin él, el registro en modo tesis crearía cuentas sin ningún rol.
+        if is_name_locked(role.name):
+            raise RoleDeletionLocked()
 
         user_count = self.repo.count_users(data.role_id)
         if user_count > 0:

@@ -8,6 +8,7 @@ from ova.application.dto import PhaseVersionInput
 from ova.application.ports import OvaEditorRepository
 from ova.domain.editor import EditorMicroVersion
 from ova.domain.errors import OvaEditError, OvaForbidden, OvaNotFound
+from ova.domain.model import EDIT_FORBIDDEN, can_edit_ova, can_read_ova
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,7 +19,7 @@ class PhaseVersions:
         ova = self.repo.get_ova(data.ova_id)
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
-        if ova.owner_id != data.actor.id:
+        if not can_read_ova(ova.owner_id, data.actor):
             raise OvaForbidden("Sin permisos.")
         return {
             "phase_id": data.phase_id,
@@ -31,8 +32,8 @@ class PhaseVersions:
         ova = self.repo.get_ova(data.ova_id)
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
-        if ova.owner_id != data.actor.id:
-            raise OvaForbidden("Sin permisos.")
+        if not can_edit_ova(ova.owner_id, data.actor):
+            raise OvaForbidden(EDIT_FORBIDDEN)
         micro = self.repo.get_micro_version(data.micro_version_id, data.phase_id)
         if micro is None:
             raise OvaEditError(404, "not_found", "Micro-versión no encontrada.")

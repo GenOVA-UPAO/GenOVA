@@ -6,33 +6,26 @@ all public symbols. Do not import this file directly from outside llm/.
 
 CATALOG_ENTRIES = [
     # Groq — pricing=None means gratis (Groq doesn't charge per token).
+    # Groq retiró Llama 3.3 70B, Llama 3.1 8B y Qwen3 32B (2026-09): de chat solo
+    # quedan GPT-OSS 120B/20B y Qwen3.8 27B. GPT-OSS 120B (más abajo) cubre el
+    # papel del 70B; los otros dos sustituyen al 8B y al Qwen3 32B.
     {
         "provider": "groq",
-        "model_id": "llama-3.3-70b-versatile",
-        "label": "Llama 3.3 70B (Groq)",
+        "model_id": "openai/gpt-oss-20b",
+        "label": "GPT-OSS 20B (Groq)",
         "task": "texto",
         "pricing": None,
-        "context_length": 128000,
+        "context_length": 131072,
         "active": True,
         "modality": "text",
     },
     {
         "provider": "groq",
-        "model_id": "llama-3.1-8b-instant",
-        "label": "Llama 3.1 8B (Groq)",
-        "task": "texto",
-        "pricing": None,
-        "context_length": 128000,
-        "active": True,
-        "modality": "text",
-    },
-    {
-        "provider": "groq",
-        "model_id": "qwen/qwen3-32b",
-        "label": "Qwen3 32B (Groq)",
+        "model_id": "qwen/qwen3.8-27b",
+        "label": "Qwen3.8 27B (Groq)",
         "task": "razonamiento",
         "pricing": None,
-        "context_length": 128000,
+        "context_length": 131072,
         "active": True,
         "modality": "text",
     },
@@ -80,8 +73,20 @@ CATALOG_ENTRIES = [
     },
     {
         "provider": "openrouter",
-        "model_id": "qwen/qwen3-coder:free",
-        "label": "Qwen3 Coder (OpenRouter · free)",
+        "model_id": "poolside/laguna-s-2.1:free",
+        "label": "Laguna S 2.1 (OpenRouter · free)",
+        "task": "codigo",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+        "modality": "text",
+        "notes": "Modelo de código de Poolside, gratis: respaldo de Código. "
+        "HTML/JS válido y buen español; razonamiento apagado por defecto.",
+    },
+    {
+        "provider": "openrouter",
+        "model_id": "qwen/qwen3.8-27b:free",
+        "label": "Qwen3.8 27B (OpenRouter · free)",
         "task": "codigo",
         "pricing": None,
         "context_length": None,
@@ -134,8 +139,8 @@ CATALOG_ENTRIES = [
     },
     {
         "provider": "openrouter",
-        "model_id": "meta-llama/llama-3.3-70b-instruct:free",
-        "label": "Llama 3.3 70B (OpenRouter · free)",
+        "model_id": "google/gemma-4-31b-it:free",
+        "label": "Gemma 4 31B (OpenRouter · free)",
         "task": "texto",
         "pricing": None,
         "context_length": None,

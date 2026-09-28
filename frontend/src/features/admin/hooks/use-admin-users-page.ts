@@ -9,6 +9,7 @@ import { useRoles } from "./use-admin-roles";
 import { useAdminUsers } from "./use-admin-users";
 import { useAdminUsersController } from "./use-admin-users-controller";
 import { useAdminUsersFilters } from "./use-admin-users-filters";
+import { useDeactivateConfirm } from "./use-deactivate-confirm";
 
 export function useAdminUsersPage() {
   const me = useCurrentUser();
@@ -22,6 +23,11 @@ export function useAdminUsersPage() {
   const rolesQuery = useRoles();
   const controller = useAdminUsersController(setEditingUser);
   const usersData = usersQuery.data ?? EMPTY_USERS_PAGE;
+  const deactivation = useDeactivateConfirm({
+    users: usersData.users,
+    handlers: controller.handlers,
+    deactivate: controller.deactivateUser,
+  });
   const errorText = usersQuery.error
     ? errorMessage(usersQuery.error, "Error al cargar usuarios.")
     : "";
@@ -43,7 +49,11 @@ export function useAdminUsersPage() {
     isCurrentUserAdmin: me?.role === "administrador",
     updatingUserId: controller.updatingUserId,
     isSavingEdit: controller.isSavingEdit,
-    handlers: controller.handlers,
+    handlers: deactivation.handlers,
+    pendingDeactivation: deactivation.pendingDeactivation,
+    isDeactivating: controller.isDeactivating,
+    confirmDeactivation: deactivation.confirmDeactivation,
+    cancelDeactivation: deactivation.cancelDeactivation,
     isLoading: usersQuery.isLoading,
     errorText,
     isFiltering: filters.search !== "" || filters.roleFilter !== ALL_ROLE_FILTER,

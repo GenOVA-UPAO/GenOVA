@@ -62,3 +62,17 @@ def _mark_ova_error(db: Session, ova_id: str) -> None:
         # Best-effort status update; the regen failure is already surfaced to
         # the caller, so failing to mark it here is non-fatal and swallowed.
         pass
+
+
+def _release_ova(db: Session, ova_id: str) -> None:
+    """Devuelve a «listo» un OVA que la regeneración dejó en «generando» sin
+    cambiar nada (ningún recurso salió): su versión actual sigue intacta."""
+    try:
+        ova = db.execute(select(Ova).where(Ova.id == ova_id)).scalar_one_or_none()
+        if ova and ova.status == "generando":
+            ova.status = "listo"
+            db.commit()
+    except Exception:
+        # Igual que _mark_ova_error: el fallo ya se notificó en la fila del job;
+        # si esto falla, la recuperación de huérfanas libera el OVA después.
+        logger.exception("could not release ova after empty regen", ova_id=str(ova_id))

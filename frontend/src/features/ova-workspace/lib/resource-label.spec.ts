@@ -7,8 +7,14 @@ import {
 
 describe("resourceLabel", () => {
   it("prioriza el título del recurso", () => {
+    expect(resourceLabel({ id: "1", title: "Ley de Ohm aplicada", phase_type: "engage" })).toBe(
+      "Ley de Ohm aplicada",
+    );
+  });
+
+  it("lee los nombres del catálogo en mayúscula de oración", () => {
     expect(resourceLabel({ id: "1", title: "Juego de Gamificación", phase_type: "engage" })).toBe(
-      "Juego de Gamificación",
+      "Juego de gamificación",
     );
   });
 
