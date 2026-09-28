@@ -14,12 +14,14 @@ function actionState(job: ReturnType<typeof useOvaJob>) {
     canOpen,
     canResume: terminal && ids.length > 0 && !job.outcome.totalFail,
     canceled: terminal && job.data?.status === "canceled" && !canOpen,
+    // `done` con fallidos: lo que queda es reintentar esos, no «reanudar».
+    partial: job.outcome.partialFail && job.data?.status === "done",
   };
 }
 
 /** Acciones de la página de progreso: al terminar, reanudar lo que falta o abrir el OVA. */
 export function ProgressActions({ job }: Readonly<{ job: ReturnType<typeof useOvaJob> }>) {
-  const { ids, canOpen, canResume, canceled } = actionState(job);
+  const { ids, canOpen, canResume, canceled, partial } = actionState(job);
   return (
     <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
       <Button variant="ghost" asChild className="max-sm:h-11">
@@ -35,7 +37,7 @@ export function ProgressActions({ job }: Readonly<{ job: ReturnType<typeof useOv
               job.resume.mutate(ids);
             }}
           >
-            Reanudar generación
+            {partial ? "Reintentar fallidos" : "Reanudar generación"}
           </Button>
         )}
         {canceled && (
@@ -45,7 +47,9 @@ export function ProgressActions({ job }: Readonly<{ job: ReturnType<typeof useOv
         )}
         {canOpen && (
           <Button asChild className="max-sm:h-11">
-            <Link to={`/workspace/${String(job.data?.ova_id)}`}>Abrir OVA</Link>
+            <Link to={`/workspace/${String(job.data?.ova_id)}`}>
+              {partial ? "Abrir OVA de todos modos" : "Abrir OVA"}
+            </Link>
           </Button>
         )}
       </div>

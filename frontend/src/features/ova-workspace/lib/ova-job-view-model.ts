@@ -62,6 +62,11 @@ export interface JobOutcome {
   isTerminal: boolean;
   anyDone: boolean;
   totalFail: boolean;
+  /**
+   * Terminó con algún recurso fallido pero otros sí salieron: el backend marca
+   * el job `done` igualmente, así que el estado del job no basta para saberlo.
+   */
+  partialFail: boolean;
 }
 
 const STATUS_MAP: Record<string, UiStatus> = {
@@ -250,10 +255,13 @@ export function jobOutcome(
   viewModel: ResourceVM[] = [],
 ): JobOutcome {
   const status = job?.status ?? "queued";
+  const isTerminal = TERMINAL.has(status);
   const anyDone = viewModel.some((r) => r.status === "check");
+  const anyFailed = viewModel.some((r) => r.status === "X");
   return {
-    isTerminal: TERMINAL.has(status),
+    isTerminal,
     anyDone,
-    totalFail: TERMINAL.has(status) && !anyDone,
+    totalFail: isTerminal && !anyDone,
+    partialFail: isTerminal && anyDone && anyFailed,
   };
 }
