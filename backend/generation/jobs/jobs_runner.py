@@ -26,8 +26,9 @@ from generation.jobs.jobs_progress import (
     _safe_mark_error,
     _start_job,
 )
+from generation.jobs.jobs_resume_merge import merge_resumed_resources
 from llm.utils.llm_helpers import with_owner
-from models import OvaJob
+from models import Ova, OvaJob
 
 logger = structlog.get_logger(__name__)
 
@@ -60,7 +61,7 @@ def run_job(job_id: uuid.UUID, only_resource_ids: list[uuid.UUID] | None = None)
         # la conexión al hacer checkout). any_done se decide por la BD, no por
         # len(results), para materializar también lo persistido en vivo si el grafo
         # abortó a mitad (rate-limit, etc.).
-        _finalize(job_id, results, errors)
+        _finalize(job_id, results, errors, only_resource_ids)
     finally:
         if hb_stop is not None:
             hb_stop.set()
@@ -104,7 +105,12 @@ def _generate(
     return invoke_generation(initial_state, str(job_id))
 
 
-def _finalize(job_id: uuid.UUID, results: list[dict], errors: list[dict]) -> None:
+def _finalize(
+    job_id: uuid.UUID,
+    results: list[dict],
+    errors: list[dict],
+    only_resource_ids: list[uuid.UUID] | None = None,
+) -> None:
     db = SessionLocal()
     try:
         job = db.execute(select(OvaJob).where(OvaJob.id == job_id)).scalar_one_or_none()
@@ -113,9 +119,15 @@ def _finalize(job_id: uuid.UUID, results: list[dict], errors: list[dict]) -> Non
         if job.status == "canceled":
             _release_ova_from_generating(db, job)
             return
+        # Un reintento sobre un OVA ya creado (no atascado en «generando») no pasa
+        # por la materialización: sus recursos recuperados se añaden aparte.
+        ova = db.get(Ova, job.ova_id) if job.ova_id is not None else None
+        merge_into_ova = bool(only_resource_ids) and ova is not None and ova.status != "generando"
         _persist_results(db, job, results, errors)
         any_done = _has_done_resource(db, job.id)
         _finish_job(db, job, any_done)
+        if merge_into_ova:
+            merge_resumed_resources(db, job, list(only_resource_ids or []))
     except Exception:
         logger.exception("Job runner crashed", job_id=job_id)
         _safe_mark_error(db, job_id)
