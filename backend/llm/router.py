@@ -7,6 +7,7 @@ from groq import RateLimitError as GroqRateLimitError
 from openai import RateLimitError as OpenAIRateLimitError
 
 from llm import cassette
+from llm.chain_credentials import usable_chain
 from llm.clients.clients import (
     _LLM_TIMEOUT_S,
     _get_provider_key,
@@ -25,6 +26,7 @@ from llm.utils.llm_helpers import (
     _SEED_MODELOS,
     EmptyContentError,
     LLMBudgetExhaustedError,
+    LLMNoCredentialsError,
     _default_models,
     _fallback_chain,
     _resolve_primary,
@@ -43,6 +45,7 @@ from llm.utils.vision_models import clean_description, rate_limit_wait, vision_c
 __all__ = [
     "EmptyContentError",
     "LLMBudgetExhaustedError",
+    "LLMNoCredentialsError",
     "_RECOVERABLE_ERRORS",
     "_SEED_FALLBACK_CHAIN",
     "_SEED_MODELOS",
@@ -221,7 +224,9 @@ def generar_texto(
     el mismo JSON válido)."""
     primary, timeout = _resolve_primary(tarea, llm_config, enabled_models=enabled_models)
     user_keys = own_keys(llm_config)
-    chain: list[tuple[str, str, dict]] = [primary, *_fallback_chain(tarea, llm_config)]
+    chain = usable_chain(
+        tarea, [primary, *_fallback_chain(tarea, llm_config)], user_keys, _get_provider_key
+    )
 
     last_err: Exception | None = None
     prev_provider: str | None = None

@@ -172,6 +172,11 @@ class LLMBudgetExhaustedError(RuntimeError):
     RuntimeError genérico."""
 
 
+class LLMNoCredentialsError(RuntimeError):
+    """Ningún eslabón de la cadena tiene clave (propia ni de plataforma): no se
+    llamó a ningún proveedor. El remedio es configurar una clave, no reintentar."""
+
+
 # Budgets below this → thinking off (JSON corto / critic / podcast).
 _THINK_OFF_MAX = 6000
 # Budgets at/above this → codigo-scale: adaptive/low thinking with hard cap.

@@ -15,6 +15,13 @@ from llm.utils import llm_config_store
 from llm.utils.llm_helpers import EmptyContentError
 
 
+@pytest.fixture(autouse=True)
+def _todos_con_clave(monkeypatch):
+    """Todos los proveedores con clave de plataforma: la cadena no se filtra
+    (llm.chain_credentials) y el test no depende de las claves de la BD/entorno."""
+    monkeypatch.setattr(router, "_get_provider_key", lambda _p: "k")
+
+
 class FakeClock:
     def __init__(self, t: float = 0.0):
         self.t = t
