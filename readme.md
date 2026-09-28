@@ -608,8 +608,8 @@ GET /api/ova/health
 GET /api/uploads/health
 ```
 
-> **API completa** (~70 endpoints): con el backend corriendo, Swagger interactivo en
-> `http://localhost:8000/docs` y ReDoc en `/redoc`.
+> **API completa** (~130 rutas REST): la referencia siempre al día es Swagger. Con el
+> backend corriendo, Swagger interactivo en `http://localhost:8000/docs` y ReDoc en `/redoc`.
 
 ## CI/CD
 
