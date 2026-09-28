@@ -4,7 +4,7 @@ template = '''
 [ROL] Diseñador de quizzes.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_questions} preguntas progresivas: enunciado <=40 palabras, 4 opciones A/B/C/D plausibles, correcta, feedback de acierto/error <=20 palabras que explique el porqué.
+[TAREA] ${num_questions} preguntas progresivas de teoría y práctica Oracle: enunciado <=40 palabras, 4 opciones A/B/C/D plausibles, correcta, feedback de acierto/error <=20 palabras que explique el porqué.
 [SALIDA] JSON puro con clave "preguntas": array de ${num_questions} con "enunciado","opciones","correcta","feedback_correcto","feedback_incorrecto".'''
 
 [texto.2]
@@ -22,7 +22,7 @@ template = '''
 [ROL] Examinador.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_questions} preguntas <=40 palabras; 4 opciones plausibles, una correcta y justificación <=30 palabras. Balance conceptual/aplicación/análisis/relación, sin ambigüedad.
+[TAREA] ${num_questions} preguntas <=40 palabras; 4 opciones plausibles, una correcta y justificación <=30 palabras. Balance conceptual/aplicación (sentencia Oracle)/análisis/relación, sin ambigüedad.
 [SALIDA] JSON puro con clave "examen": array de ${num_questions} con "numero","enunciado","opciones","correcta","justificacion","tipo".'''
 
 [texto.6]
@@ -31,7 +31,7 @@ template = '''
 [ROL] Diseñador de asociaciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_pairs} pares 1:1 definición-término, sin ambigüedad ni pistas. Feedback razonado de acierto/error <=20 palabras; error orienta sin revelar.
+[TAREA] ${num_pairs} pares 1:1 definición-término (procesos, vistas, privilegios o sentencias), sin ambigüedad ni pistas. Feedback razonado de acierto/error <=20 palabras; error orienta sin revelar.
 [SALIDA] JSON puro con claves "columna_a" (array de ${num_pairs}) y "parejas" (array de ${num_pairs} con a_index,b_termino,feedback_acierto,feedback_error).'''
 
 [texto.7]
@@ -40,7 +40,7 @@ template = '''
 [ROL] Creador de crucigramas.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_terms} términos reales sin abreviaturas: número, orientación, longitud, pista justa <=25 palabras y respuesta; cuadrícula con >=4 cruces.
+[TAREA] ${num_terms} términos reales de una palabra, sin abreviaturas salvo SGA/PGA: número, orientación, longitud, pista justa <=25 palabras y respuesta; cuadrícula con >=4 cruces.
 [SALIDA] JSON puro con clave "entradas": array de ${num_terms} con "numero","orientacion","longitud","pista","respuesta".'''
 
 [texto.8]
@@ -49,7 +49,7 @@ template = '''
 [ROL] Evaluador.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_questions} preguntas abiertas <=50 palabras (no sí/no), 3-4 criterios observables y modelo razonado <=80 palabras.
+[TAREA] ${num_questions} preguntas abiertas <=50 palabras (no sí/no; p. ej. justificar una decisión del DBA o escribir la sentencia Oracle), 3-4 criterios observables y modelo razonado <=80 palabras.
 [SALIDA] JSON puro con clave "preguntas": array de ${num_questions} con "enunciado","criterios","respuesta_modelo".'''
 
 [texto.10]
@@ -91,7 +91,7 @@ template = '''
 [ROL] Diseñador de simulaciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Escenario profesional de "${concept}": ${num_decisions}-${num_decisions_plus1} decisiones, controles propios, evaluación real con criterios y pesos.
+[TAREA] Escenario del DBA sobre "${concept}": ${num_decisions}-${num_decisions_plus1} decisiones, controles propios, evaluación real con criterios y pesos.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de demostrar decisiones fundadas; upao-figure: al menos un diagrama propio del escenario; upao-example: ejemplo trabajado ajeno a evaluación; upao-status, upao-score; retroalimentación que explique el porqué de cada valoración; upao-summary: cierre que consolide fortalezas y mejoras. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete(puntaje_final) al finalizar.
@@ -127,7 +127,7 @@ template = '''
 [ROL] Diseñador de evaluaciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_questions} preguntas abiertas sobre "${concept}" (<=50 palabras), textarea, checklist de 3-4 criterios observables y modelo <=80 palabras al comparar.
+[TAREA] ${num_questions} preguntas abiertas sobre "${concept}" (<=50 palabras; decisiones del DBA o sentencias Oracle), textarea, checklist de 3-4 criterios observables y modelo <=80 palabras al comparar.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de fundamentar respuestas; upao-figure: al menos un diagrama propio argumental; upao-example: ejemplo trabajado distinto; upao-question, upao-reveal: retroalimentación que explique el porqué del modelo; upao-summary: cierre que consolide criterios. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] Al final del <script>: ${scorm}. Llama _scormComplete() al comparar la ultima pregunta.

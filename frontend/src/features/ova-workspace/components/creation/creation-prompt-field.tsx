@@ -77,7 +77,7 @@ export function CreationPromptField({
           "outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring",
           "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/40",
         )}
-        placeholder="Ej.: Regresión lineal para un curso introductorio de machine learning. Objetivo: entrenar un modelo y evaluar sus predicciones."
+        placeholder="Ej.: Control de concurrencia en Oracle. Objetivo: explicar bloqueos e interbloqueos y analizar cómo se detecta un ORA-00060."
         value={prompt}
         onChange={(event) => {
           onPrompt(event.target.value);

@@ -4,43 +4,43 @@ template = '''
 [ROL] Redactor de casos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Caso plausible de 180 palabras: empresa ficticia, problema y datos; ${num_questions} preguntas de observación a evaluación, modelos razonados <=50 palabras.
+[TAREA] Caso plausible de 180 palabras: empresa ficticia con Oracle, problema y evidencias (vistas V$$/DBA_, errores ORA-); ${num_questions} preguntas de observación a evaluación, modelos razonados <=50 palabras.
 [SALIDA] JSON puro con claves "narrativa","preguntas" (array de ${num_questions} con pregunta,respuesta_modelo).'''
 
 [texto.2]
 defaults = { num_steps = 5 }
 template = '''
-[ROL] Instructor práctico.
+[ROL] Instructor de laboratorio Oracle.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_steps} pasos incrementales: instrucción <=35 palabras, pista, resultado y validación que explique por qué se logra. Sin saltos lógicos.
+[TAREA] ${num_steps} pasos incrementales sobre un enunciado de laboratorio (p. ej. "user02 solo actualiza EMAIL de EMPLOYEES si DEPARTMENT_ID <> 60"): instrucción <=35 palabras, pista, resultado con la sentencia Oracle y validación que explique por qué se logra. Sin saltos lógicos.
 [SALIDA] JSON puro con clave "pasos": array de ${num_steps} objetos con "numero","instruccion","pista","resultado_esperado","validacion".'''
 
 [texto.3]
 defaults = { num_deliverables = 3 }
 template = '''
-[ROL] Diseñador de proyectos.
+[ROL] Diseñador de proyectos de BD.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Proyecto de 8-10 min: objetivo 50 palabras, ${num_deliverables} entregables, dataset plausible 80 palabras (>=8 variables, 50 registros), rúbrica de 4 criterios × 3 niveles (básico/competente/avanzado).
+[TAREA] Proyecto de 8-10 min: objetivo 50 palabras, ${num_deliverables} entregables, dataset_sugerido 80 palabras: caso de pequeña empresa (>=4 tablas con claves, filas estimadas, tablespaces y usuarios); rúbrica de 4 criterios × 3 niveles (básico/competente/avanzado).
 [SALIDA] JSON puro con claves "objetivo","entregables" (array de ${num_deliverables}),"dataset_sugerido","rubrica".'''
 
 [texto.6]
 defaults = { num_decisions = 3 }
 template = '''
-[ROL] Diseñador de escenarios.
+[ROL] Diseñador de escenarios del DBA.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Árbol de ${num_decisions} niveles: situación 60 palabras y 2 decisiones no triviales por nodo; hojas con desenlace 40 palabras y lección que justifique consecuencias.
+[TAREA] Árbol de ${num_decisions} niveles: situación del DBA de 60 palabras (p. ej. tablespace al 95%, ORA-00060, borrado accidental) y 2 decisiones no triviales por nodo; hojas con desenlace 40 palabras y lección que justifique consecuencias.
 [SALIDA] JSON puro con estructura de arbol: "nodo_raiz" con situacion,opciones (array de 2 con siguiente_nodo,desenlace,leccion_aprendida).'''
 
 [texto.8]
 defaults = { num_problems = 4 }
 template = '''
-[ROL] Facilitador de problemas.
+[ROL] Facilitador de incidencias de BD.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_problems} problemas de sectores diversos: contexto 40 palabras, 3 síntomas sin jerga, diagnóstico justificado y solución 50 palabras aplicando el concepto.
+[TAREA] ${num_problems} problemas de sectores diversos : contexto 40 palabras, 3 síntomas observables (lentitud, errores ORA-, disco lleno), diagnóstico justificado y solución 50 palabras aplicando el concepto.
 [SALIDA] JSON puro con clave "problemas": array de ${num_problems} con "contexto","sintomas" (array de 3),"diagnostico","solucion_recomendada".'''
 
 [texto.10]
@@ -58,7 +58,7 @@ template = '''
 [ROL] Diseñador de simulaciones.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Aplicar "${concept}" en escenario realista: ${num_params}-${num_params_plus1} parámetros, métricas y visualización <100 ms; 3 iteraciones.
+[TAREA] Aplicar "${concept}" en escenario Oracle realista (p. ej. dimensionar SGA, planificar backups por RPO, elegir índices): ${num_params}-${num_params_plus1} parámetros, métricas y visualización <100 ms; 3 iteraciones.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de optimizar decisiones; upao-figure: al menos un diagrama propio reactivo; upao-example: ejemplo trabajado de ajuste; upao-status, upao-progress y retroalimentación que explique el porqué del resultado; upao-summary: cierre que consolide patrones. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. Desbloquea upao-complete tras 3 iteraciones.
@@ -70,7 +70,7 @@ template = '''
 [ROL] Diseñador de dashboards.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Dashboard de "${concept}": 15-20 registros locales, tabla filtrable/ordenable, 2 gráficos SVG reactivos y ${num_questions} preguntas.
+[TAREA] Dashboard de monitoreo de "${concept}": 15-20 registros plausibles (p. ej. DBA_SEGMENTS, V$$SESSION, Statspack), tabla filtrable/ordenable, 2 gráficos SVG reactivos y ${num_questions} preguntas.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de extraer conclusiones; upao-figure: al menos un diagrama propio (ambos gráficos); upao-example: ejemplo trabajado de lectura; upao-question, upao-choice y upao-reveal: retroalimentación que explique el porqué del insight; upao-summary: cierre que consolide evidencia. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. Desbloquea upao-complete al responder las ${num_questions} preguntas.
@@ -82,8 +82,8 @@ template = '''
 [ROL] Diseñador de laboratorios de código.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_exercises} ejercicios de pseudocódigo de "${concept}": textarea, código incompleto, "Ejecutar" con validación JS real; solución tras 2 intentos.
-[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de implementar lógica; upao-figure: al menos un diagrama propio de flujo; upao-example con upao-steps y ol/li: ejemplo trabajado distinto; upao-status, upao-reveal: retroalimentación que explique el porqué del error; upao-summary: cierre que consolide algoritmo. CSS/JS solo para mecánica, sin redefinir tokens.
+[TAREA] ${num_exercises} ejercicios de SQL o PL/SQL de Oracle sobre "${concept}" tipo examen (p. ej. "índice por LAST_NAME y EMAIL en EMPLOYEES"): textarea, código incompleto, "Ejecutar" con validación JS real que ignora mayúsculas/espacios y comprueba palabras clave, no texto exacto; solución tras 2 intentos.
+[COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de escribir la sentencia correcta; upao-figure: al menos un diagrama propio de flujo; upao-example con upao-steps y ol/li: ejemplo trabajado distinto; upao-status, upao-reveal: retroalimentación que explique el porqué del error; upao-summary: cierre que consolide la sintaxis. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. Desbloquea upao-complete al completar ${num_exercises} ejercicios.
 [SALIDA] Solo el HTML completo desde <!DOCTYPE html>, sin markdown.'''
@@ -94,7 +94,7 @@ template = '''
 [ROL] Diseñador de estrategia.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Tablero de ${num_turns} turnos con oponente automático funcional basado en "${concept}"; puntuar calidad de decisiones.
+[TAREA] Tablero de ${num_turns} turnos del DBA (p. ej. ordenar transacciones concurrentes) con sistema automático funcional según las reglas reales de "${concept}"; puntuar calidad de decisiones.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de planificar estrategia; upao-figure: al menos un diagrama propio del tablero; upao-example: ejemplo trabajado de turno; upao-score, upao-status y retroalimentación que explique el porqué de consecuencias; upao-summary: cierre que consolide estrategia y mejoras. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. Desbloquea upao-complete al terminar la partida.
@@ -117,7 +117,7 @@ ${ds}
 [html.estilos]
 1 = 'Caso: narrativa, upao-question con textarea, upao-reveal del modelo y upao-progress. Diagrama causal para diagnosticar; caso análogo resuelto y cierre de transferencia.'
 2 = 'Ejercicio: upao-node por paso desplegable, upao-steps con ol/li para solución, upao-reveal, upao-status, upao-nav. Diagrama del procedimiento para aplicarlo; justificar validación y consolidar método.'
-3 = 'Proyecto: checklists nativas de entregables, dataset en details, rúbrica en upao-node, upao-status. Diagrama del plan para diseñar entregables; ejemplo parcial y cierre contra criterios.'
+3 = 'Proyecto: checklists nativas de entregables, caso y esquema en details, rúbrica en upao-node, upao-status. Diagrama del plan para diseñar entregables; ejemplo parcial y cierre contra criterios.'
 6 = 'Ramificación: botones nativos, árbol y transiciones propios, upao-status, upao-reveal. Diagrama de consecuencias para decidir; ejemplo ajeno a ramas, justificar desenlaces y lección final.'
 8 = 'Problemas: upao-node y upao-reveal por diagnóstico/solución. Grafo síntoma-causa para diagnosticar, caso análogo trabajado y síntesis de criterios.'
 10 = 'Diseño: checklist, rúbrica en upao-node, upao-reveal de referencia tras propuesta. Esquema de arquitectura para justificar trade-offs; ejemplo parcial y cierre de mejoras.'

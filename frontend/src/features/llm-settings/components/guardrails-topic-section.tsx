@@ -46,7 +46,7 @@ export function GuardrailsTopicSection({
             }}
           />
           <p id="guardrail-topic-help" className="text-xs text-muted-foreground">
-            Describe el área en pocas palabras, por ejemplo «machine learning y ciencia de datos».
+            Describe el área en pocas palabras, por ejemplo «sistemas de gestión de bases de datos y Oracle».
           </p>
         </div>
       ) : null}
