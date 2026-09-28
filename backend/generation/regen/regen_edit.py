@@ -23,6 +23,7 @@ from llm.router import generar_texto
 from llm.utils.llm_helpers import _CODE_MAX_TOKENS
 from llm.utils.ova_runtime import inject_runtime, runtime_palette, strip_runtime, theme_of
 from llm.utils.utils import extract_html_document
+from ova.domain.editor import placeholder_prompt
 
 logger = structlog.get_logger(__name__)
 
@@ -119,6 +120,17 @@ def _regen_concurrency() -> int:
         return 4
 
 
+def new_resource_concept(concept: str, instructions: str | None) -> str:
+    """Tema del OVA más las indicaciones del docente para un recurso nuevo."""
+    instructions = (instructions or "").strip()
+    if not instructions:
+        return concept
+    topic = (concept or "").strip()
+    if not topic:
+        return instructions
+    return f"{topic}\n\nIndicaciones del docente para este recurso: {instructions}"
+
+
 def _regen_one_phase(
     phase,
     concept: str,
@@ -127,8 +139,19 @@ def _regen_one_phase(
     enabled_models: list | None,
     image_settings: dict | None,
     contexto: str = "",
+    fallback_theme: dict | None = None,
 ) -> str | None:
-    """Edita (si hay `instruction`) o regenera desde cero un recurso de fase."""
+    """Edita (si hay `instruction`) o regenera desde cero un recurso de fase.
+
+    Un recurso añadido con «Añadir recurso» aún guarda el marcador pendiente:
+    no hay HTML que editar, así que se genera desde cero con las indicaciones
+    del docente (las de esta petición o, si no hay, las del marcador) y con el
+    tema del resto del OVA.
+    """
+    pending = placeholder_prompt(phase.content)
+    if pending is not None:
+        concept = new_resource_concept(concept, instruction or pending)
+        instruction = None
     if instruction:
         return edit_phase_content(
             concept, instruction, phase.content or "", llm_config, enabled_models, contexto
@@ -149,7 +172,7 @@ def _regen_one_phase(
         image_settings,
         contexto,
         # Mismo tema con el que se generó: colores libres o la paleta del docente.
-        theme=theme_of(phase.content or ""),
+        theme=theme_of(phase.content or "") if pending is None else fallback_theme,
     )
 
 
@@ -161,11 +184,14 @@ def regen_phases_parallel(
     enabled_models: list | None = None,
     image_settings: dict | None = None,
     contexto: str = "",
+    fallback_theme: dict | None = None,
 ) -> dict[str, str | None]:
     """Edita/regenera `phases` en paralelo → {phase_id: html|None}.
 
     Cada tarea es una llamada LLM aislada (sin DB); el fallo de una fase da None
     para esa fase sin abortar el resto. El caller escribe las filas.
+    `fallback_theme` = tema del OVA para los recursos nuevos, que aún no tienen
+    HTML del que deducirlo.
     """
     if not phases:
         return {}
@@ -174,7 +200,14 @@ def regen_phases_parallel(
     def _one(phase) -> tuple[str, str | None]:
         try:
             return str(phase.id), _regen_one_phase(
-                phase, concept, instruction, llm_config, enabled_models, image_settings, contexto
+                phase,
+                concept,
+                instruction,
+                llm_config,
+                enabled_models,
+                image_settings,
+                contexto,
+                fallback_theme,
             )
         except Exception:
             logger.exception("regen failed for phase", phase_id=phase.id)
