@@ -15,6 +15,7 @@ RUN printf '%s\n' \
       '  lmdb: true' \
       '  msgpackr-extract: true' \
       '  nx: false' \
+      '  unrs-resolver: true' \
       > pnpm-workspace.yaml
 
 RUN --mount=type=cache,id=pnpm-frontend,target=/root/.local/share/pnpm/store \
