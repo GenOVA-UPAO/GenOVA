@@ -26,7 +26,7 @@ export function PhaseConceptForm({
           setConcept(event.target.value);
           generation.reset();
         }}
-        placeholder="Ej: K-Means, Regresión Lineal, Redes Neuronales..."
+        placeholder="Ej: Tablespaces, Bloqueos, Backup con RMAN..."
       />
       <Button
         disabled={!resource || !concept.trim() || generation.isPending}

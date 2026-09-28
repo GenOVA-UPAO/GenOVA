@@ -1,27 +1,27 @@
 [texto.2]
 defaults = { num_turns = 6 }
 template = '''
-[ROL] Agente pedagógico socrático "DataGuide" — guías, nunca revelas la respuesta.
+[ROL] Agente pedagógico socrático "DBGuide", DBA mentor — guías, nunca revelas la respuesta.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Sesión socrática de ${num_turns} turnos que lleva al estudiante a descubrir la idea central de "${concept}". Cada turno: dato_mostrado (un ejemplo, dato o situación concreta y relevante a "${concept}"), pregunta (≤28 palabras, abierta, guía al descubrimiento), respuesta_correcta (seguimiento si acierta), respuesta_incorrecta (pista adicional sin revelar).
+[TAREA] Sesión socrática de ${num_turns} turnos que lleva al estudiante a descubrir la idea central de "${concept}". Cada turno: dato_mostrado (un ejemplo, dato o situación concreta y relevante a "${concept}": p. ej. la salida de una consulta a V$$SGA o DBA_DATA_FILES, un fragmento de script SQL/PL/SQL, dos sesiones con sus sentencias en el tiempo, un plan de ejecución), pregunta (≤28 palabras, abierta, guía al descubrimiento), respuesta_correcta (seguimiento si acierta), respuesta_incorrecta (pista adicional sin revelar).
 [RESTRICCIONES] Nunca digas "la respuesta es". Tono de mentor curioso. Dificultad creciente entre turnos.
 [SALIDA] JSON puro con clave "turnos": array de ${num_turns} objetos con "turno","dato_mostrado","pregunta","respuesta_correcta","respuesta_incorrecta".'''
 
 [texto.3]
 defaults = { num_rounds = 6 }
 template = '''
-[ROL] Diseñador de minijuegos de clasificación para ciencia de datos.
+[ROL] Diseñador de minijuegos de clasificación para administración de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Juego drag & drop de ${num_rounds} rondas donde el estudiante clasifica items en 2 categorías propias de "${concept}" (elige las dos categorías más ilustrativas del tema). Define category_a y category_b. Cada ronda: item, contexto (1 línea), respuesta ("A" o "B"), feedback_correcto (≤16 palabras), feedback_incorrecto (≤16 palabras). Incluye al menos un caso ambiguo.
+[TAREA] Juego drag & drop de ${num_rounds} rondas donde el estudiante clasifica items en 2 categorías propias de "${concept}" (elige las dos categorías más ilustrativas del tema; p. ej. SGA/PGA, estructura lógica/física, privilegio de sistema/de objeto, backup en frío/en caliente, DDL/DML, bloqueo compartido/exclusivo). Define category_a y category_b. Cada ronda: item, contexto (1 línea), respuesta ("A" o "B"), feedback_correcto (≤16 palabras), feedback_incorrecto (≤16 palabras). Incluye al menos un caso ambiguo.
 [RESTRICCIONES] Sin repetir items. Dificultad creciente (de obvio a ambiguo).
 [SALIDA] JSON puro con claves "category_a","category_b" y "rondas": array de ${num_rounds} objetos con "ronda","item","contexto","respuesta","feedback_correcto","feedback_incorrecto".'''
 
 [texto.4]
 defaults = { num_pauses = 3 }
 template = '''
-[ROL] Guionista pedagógico de visualización del tema universitario.
+[ROL] Guionista pedagógico de visualización de sistemas de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] Guion de video de 120 s sobre "${concept}" con marcadores de tiempo cada 30 s y metáforas cotidianas, más ${num_pauses} preguntas de pausa activa distribuidas a lo largo del video que provoquen una predicción sin revelar la teoría.
@@ -34,34 +34,34 @@ template = '''
 [ROL] Redactor de materiales de análisis exploratorio.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] lectura de 220 palabras (tono periodístico intrigante) que lleva al estudiante a observar un patrón relacionado con "${concept}"; un conjunto_datos ficticio pero plausible y relevante a "${concept}" (${num_records}-${num_records_plus2} registros); pregunta de exploración; revelacion de 50 palabras que conecta el patrón con "${concept}".
+[TAREA] lectura de 220 palabras (tono periodístico intrigante) que lleva al estudiante a observar un patrón relacionado con "${concept}"; un conjunto_datos ficticio pero plausible y relevante a "${concept}" (${num_records}-${num_records_plus2} registros; p. ej. filas de una vista del diccionario como DBA_SEGMENTS, DBA_DATA_FILES, V$$SESSION o DBA_AUDIT_TRAIL, tiempos de respuesta de consultas, crecimiento de tablespaces, historial de backups); pregunta de exploración; revelacion de 50 palabras que conecta el patrón con "${concept}".
 [RESTRICCIONES] Sin la terminología técnica de "${concept}" en la lectura inicial. El patrón debe ser identificable a simple vista.
 [SALIDA] JSON puro con claves "lectura","conjunto_datos" (array de objetos),"pregunta","revelacion".'''
 
 [texto.7]
 defaults = { num_steps = 4 }
 template = '''
-[ROL] Instructor de análisis exploratorio de datos.
+[ROL] Instructor de laboratorio de monitoreo y rendimiento de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Experimento guiado de ${num_steps} pasos para explorar "${concept}": descripcion_dataset (un conjunto de datos plausible y relevante al tema, descrito en texto), puntos para un gráfico (20-25 puntos con coordenadas x/y/grupo que formen una estructura visible coherente con "${concept}"), 3 preguntas de exploración progresivas, revelacion de 60 palabras que conecta lo observado con "${concept}".
+[TAREA] Experimento guiado de ${num_steps} pasos para explorar "${concept}": descripcion_dataset (métricas plausibles de una base de datos Oracle relevantes al tema, descritas en texto: de dónde salen, p. ej. V$$SYSSTAT, Statspack o una traza), puntos para un gráfico (20-25 puntos con coordenadas x/y/grupo que formen una estructura visible coherente con "${concept}"; p. ej. x = filas de la tabla, y = costo de la consulta, grupo = con índice/sin índice; o x = sesiones concurrentes, y = tiempo de espera por bloqueos), 3 preguntas de exploración progresivas, revelacion de 60 palabras que conecta lo observado con "${concept}".
 [RESTRICCIONES] Sin código visible. Las preguntas guían, no evalúan.
 [SALIDA] JSON puro con claves "descripcion_dataset","puntos" (array de objetos con x,y,grupo),"preguntas" (array de 3),"revelacion".'''
 
 [texto.8]
 defaults = { num_scenarios = 4 }
 template = '''
-[ROL] Diseñador de aprendizaje basado en roles para científicos de datos junior.
+[ROL] Diseñador de aprendizaje basado en roles para DBA junior.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_scenarios} escenarios de negocio de sectores distintos donde aplicar "${concept}". Cada escenario: problema ≤45 palabras en lenguaje cotidiano, opcion_A, opcion_B, respuesta_correcta, feedback_A y feedback_B (≤25 palabras). Mensajes finales según el puntaje.
+[TAREA] ${num_scenarios} escenarios de pequeñas empresas de sectores distintos (clínica, colegio, ferretería, agencia de viajes...) donde el DBA debe aplicar "${concept}". Cada escenario: problema ≤45 palabras en lenguaje cotidiano, opcion_A, opcion_B, respuesta_correcta, feedback_A y feedback_B (≤25 palabras). Mensajes finales según el puntaje.
 [RESTRICCIONES] Sin jerga técnica en los enunciados. Respuesta objetivamente correcta y justificable.
 [SALIDA] JSON puro con claves "escenarios" (array de ${num_scenarios} objetos con id,problema,opcion_A,opcion_B,respuesta_correcta,feedback_A,feedback_B) y "mensajes_finales" (objeto).'''
 
 [texto.9]
 defaults = { num_cards = 6 }
 template = '''
-[ROL] Facilitador de mapas mentales para el aprendizaje del tema.
+[ROL] Facilitador de mapas mentales para el aprendizaje de sistemas de gestión de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
 [TAREA] ${num_cards} tarjetas que emparejan una pista_cotidiana con su nodo_tecnico real de "${concept}" (relación 1:1). Cada tarjeta: feedback_correcto (✓ y 1 línea de contexto), feedback_incorrecto (✗ y pista sin revelar). Una revelacion final de 90 palabras que integra los nodos en el marco conceptual de "${concept}".
@@ -74,7 +74,7 @@ template = '''
 [ROL] Diseñador de laboratorios.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Laboratorio de "${concept}": datos JS locales, controles propios y visualización reactiva; al menos ${num_iterations} iteraciones.
+[TAREA] Laboratorio de "${concept}" dentro de un SGBD Oracle: datos JS locales, controles propios y visualización reactiva del mecanismo real (p. ej. bloques que entran y salen del buffer cache por LRU, redo que LGWR vuelca a los grupos de redo log, extents que se asignan a un segmento, transacciones que adquieren y liberan bloqueos, un árbol de consulta que se transforma); al menos ${num_iterations} iteraciones.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de relacionar entradas y resultados; upao-figure: al menos un diagrama propio reactivo; upao-example: ejemplo trabajado de una iteración; upao-reveal: retroalimentación que explique el porqué; upao-status, upao-progress: iteraciones; upao-summary: cierre que consolide el patrón. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. Desbloquea upao-complete tras ${num_iterations} iteraciones.
@@ -86,7 +86,7 @@ template = '''
 [ROL] Diseñador de simuladores.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Slider de un parámetro de "${concept}", rango sensato, SVG reactivo <100 ms, ${num_zones} zonas, campo de hipótesis y revelación de zona óptima.
+[TAREA] Slider de un parámetro de "${concept}" (p. ej. DB_CACHE_SIZE, SHARED_POOL_SIZE, LOG_BUFFER, PCTFREE, tamaño de extent, número de sesiones concurrentes, frecuencia de backup frente al RPO, selectividad de un predicado), rango sensato, SVG reactivo <100 ms, ${num_zones} zonas, campo de hipótesis y revelación de zona óptima.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de predecir efectos; upao-figure: al menos un diagrama propio del parámetro; upao-example: ejemplo trabajado de variación; upao-status: zonas con texto; upao-reveal: retroalimentación que explique el porqué; upao-summary: cierre que consolide hipótesis y resultado. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. Desbloquea upao-complete al revelar.
@@ -98,7 +98,7 @@ template = '''
 [ROL] Diseñador de experimentos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Datos JS locales de "${concept}", controles, métricas reactivas y campo de hipótesis. Revelar configuración óptima y concepto tras ${num_trials} pruebas.
+[TAREA] Datos JS locales de "${concept}" (métricas plausibles de Oracle), controles, métricas reactivas y campo de hipótesis. Revelar configuración óptima y concepto tras ${num_trials} pruebas.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de contrastar hipótesis; upao-figure: al menos un diagrama propio de resultados; upao-example: ejemplo trabajado de prueba; upao-status, upao-progress; upao-reveal: retroalimentación que explique el porqué; upao-summary: cierre que consolide evidencia y límites. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. Desbloquea upao-complete al revelar tras ${num_trials} pruebas.
@@ -119,10 +119,10 @@ ${ds}
 [SALIDA] Solo el documento HTML completo desde <!DOCTYPE html>, sin markdown.'''
 
 [html.estilos]
-2 = 'Chat DataGuide: upao-question con textarea, upao-reveal y upao-progress; turnos propios. Inferir patrón ilustrado, justificar pistas sin dar respuesta y sintetizar hallazgos.'
+2 = 'Chat DBGuide: upao-question con textarea, upao-reveal y upao-progress; turnos propios. Inferir patrón ilustrado, justificar pistas sin dar respuesta y sintetizar hallazgos.'
 3 = 'Clasificar: upao-drag-item, upao-drop-zone, upao-status, upao-score. Diagrama de categorías, par resuelto análogo; explicar casos ambiguos y sintetizar criterio.'
 4 = 'Storyboard: upao-steps con ol/li temporal, upao-nav, upao-question con textarea y upao-reveal; pausas de predicción. Esquema causal, contrastar predicciones y consolidar evidencia.'
-5 = 'Lectura y tabla nativa: upao-question, upao-reveal para patrón. Gráfico del dataset para inferir tendencias; interpretar un dato y cerrar con límites.'
-7 = 'EDA: tabla nativa, scatter SVG propio; upao-steps con ol/li, upao-question, upao-reveal colorea grupos. Interpretar distribución y consolidar relaciones observadas.'
+5 = 'Lectura y tabla nativa: upao-question, upao-reveal para patrón. Gráfico de las métricas para inferir tendencias; interpretar un dato y cerrar con límites.'
+7 = 'Monitoreo: tabla nativa de métricas, scatter SVG propio; upao-steps con ol/li, upao-question, upao-reveal colorea grupos. Interpretar distribución y consolidar relaciones observadas.'
 8 = 'Roles: upao-question, upao-choice por escenario, upao-nav, upao-score. Diagrama de decisiones para comparar efectos, caso análogo y cierre según puntaje.'
 9 = 'Mapa mental: upao-drag-item, upao-drop-zone y upao-reveal final. Grafo propio con conexiones, asociación razonada análoga; explicar cada par e integrar nodos al cierre.'

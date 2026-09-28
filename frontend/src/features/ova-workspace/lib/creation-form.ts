@@ -1,7 +1,7 @@
 // La primera línea es el tema sin etiqueta: el backend titula el OVA con el
 // inicio del prompt. El nivel lo pone el selector de «Nivel educativo».
 export const EXAMPLE_PROMPT =
-  'Aprendizaje supervisado y no supervisado en machine learning.\nObjetivos: distinguir ambos paradigmas, describir algoritmos representativos (regresión lineal, árboles, k-means) y plantear un caso de aplicación con datos tabulares.';
+  'Gestión del almacenamiento en Oracle: tablespaces y datafiles.\nObjetivos: distinguir la estructura lógica (tablespace, segmento, extent, bloque) de la física (datafiles), crear un tablespace y asignarlo a un usuario, y consultar su ocupación en DBA_DATA_FILES y DBA_SEGMENTS.';
 
 export const MIN_PROMPT_LENGTH = 10;
 

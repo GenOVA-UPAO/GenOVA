@@ -4,7 +4,7 @@ template = '''
 [ROL] Guionista de cómics educativos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Guion de ${num_panels} viñetas con el robot "Max" que enganche al estudiante con "${concept}". Elige una analogía cotidiana concreta que capture fielmente la idea central de "${concept}" y construye una historia con progresión hacia un clímax que despierte curiosidad. Cada viñeta: descripcion_visual (≤25 palabras), dialogo (≤18 palabras), prompt_imagen (en inglés, estilo cartoon plano).
+[TAREA] Guion de ${num_panels} viñetas con el robot "Max", DBA de una pequeña empresa, que enganche al estudiante con "${concept}". Elige una analogía cotidiana concreta que capture fielmente la idea central de "${concept}" (p. ej. almacén con estantes y cajas para tablespaces/datafiles, biblioteca con fichero para índices, cola en un banco para bloqueos, cámara de seguridad para auditoría, caja fuerte con copias para backup) y construye una historia con progresión hacia un clímax que despierte curiosidad. Cada viñeta: descripcion_visual (≤25 palabras), dialogo (≤18 palabras), prompt_imagen (en inglés, estilo cartoon plano).
 [RESTRICCIONES] Sin jerga técnica en los diálogos. Humor empático. La analogía debe reflejar de verdad cómo funciona "${concept}".
 [SALIDA] JSON puro sin markdown: array de ${num_panels} objetos con claves "numero","descripcion_visual","dialogo","prompt_imagen".'''
 
@@ -42,20 +42,20 @@ template = '''
 [texto.5]
 defaults = { num_options = 3 }
 template = '''
-[ROL] Redactor de casos de ética en IA.
+[ROL] Redactor de casos de ética y responsabilidad en la administración de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] caso_narrativo de 130 palabras sobre una empresa ficticia donde el uso de "${concept}" produce una consecuencia ética no intencionada y plausible; pregunta_posicion directa; opciones (array de ${num_options} strings); reflexion_post_voto de 60 palabras que amplía el dilema sin dar una respuesta correcta.
+[TAREA] caso_narrativo de 130 palabras sobre una empresa ficticia donde una decisión del DBA sobre "${concept}" produce una consecuencia ética no intencionada y plausible (p. ej. privacidad de datos personales, privilegios excesivos, auditoría que vigila de más o de menos, pérdida de datos por un backup omitido, bloqueos que frenan un servicio crítico); pregunta_posicion directa; opciones (array de ${num_options} strings); reflexion_post_voto de 60 palabras que amplía el dilema sin dar una respuesta correcta.
 [RESTRICCIONES] Empresa ficticia. Tono periodístico. La consecuencia debe derivarse de forma realista de cómo funciona "${concept}".
 [SALIDA] JSON puro con claves "caso_narrativo","pregunta_posicion","opciones","reflexion_post_voto".'''
 
 [texto.6]
 defaults = { body_words = 90 }
 template = '''
-[ROL] Periodista tecnológico especializado en IA.
+[ROL] Periodista tecnológico especializado en bases de datos e infraestructura.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Noticia ficticia plausible sobre un impacto real de "${concept}": titular ≤12 palabras; subtitulo ≤22 palabras; cuerpo_noticia de ${body_words} palabras (organización ficticia, caso concreto); pregunta_cierre ≤12 palabras.
+[TAREA] Noticia ficticia plausible sobre un impacto real de "${concept}" en una organización (p. ej. una caída evitada, una recuperación tras un fallo, una consulta que pasó de horas a segundos, una brecha de acceso detectada): titular ≤12 palabras; subtitulo ≤22 palabras; cuerpo_noticia de ${body_words} palabras (organización ficticia, caso concreto); pregunta_cierre ≤12 palabras.
 [RESTRICCIONES] Sin términos ultra-técnicos. Tono de urgencia informativa. Genera admiración, no miedo.
 [SALIDA] JSON puro con claves "titular","subtitulo","cuerpo_noticia","pregunta_cierre".'''
 
@@ -65,17 +65,17 @@ template = '''
 [ROL] Diseñador de aprendizaje basado en roles.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] El estudiante es consultor de IA en su primer día. contexto_rol de ${context_words} palabras (empresa de un sector concreto) donde "${concept}" resolvería un problema; pregunta_decision; opcion_A y opcion_B (cortas); feedback_A y feedback_B de 35 palabras (validan sin revelar la respuesta); pregunta_cierre ≤16 palabras.
+[TAREA] El estudiante es DBA junior en su primer día. contexto_rol de ${context_words} palabras (pequeña empresa de un sector concreto con su base de datos Oracle) donde "${concept}" resolvería un problema; pregunta_decision; opcion_A y opcion_B (cortas); feedback_A y feedback_B de 35 palabras (validan sin revelar la respuesta); pregunta_cierre ≤16 palabras.
 [RESTRICCIONES] No nombres explícitamente "${concept}" en el escenario. El feedback no revela la respuesta.
 [SALIDA] JSON puro con claves "contexto_rol","pregunta_decision","opcion_A","opcion_B","feedback_A","feedback_B","pregunta_cierre".'''
 
 [texto.8]
 defaults = { num_milestones = 4 }
 template = '''
-[ROL] Historiador de la tecnología.
+[ROL] Historiador de los sistemas de bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Timeline de ${num_milestones} hitos reales (o muy plausibles) que llevaron al desarrollo de "${concept}". Cada hito: año, nombre, descripcion de 45 palabras en tono de crónica, dato_sorprendente (1 línea), conexion_actual de 18 palabras con la vida del estudiante hoy.
+[TAREA] Timeline de ${num_milestones} hitos reales (o muy plausibles) que llevaron al desarrollo de "${concept}" (p. ej. IMS de IBM, el modelo relacional de Codd en 1970, System R y SQL, Oracle en 1979, ANSI/SPARC, versiones de Oracle que introdujeron la función). Cada hito: año, nombre, descripcion de 45 palabras en tono de crónica, dato_sorprendente (1 línea), conexion_actual de 18 palabras con la vida del estudiante hoy.
 [RESTRICCIONES] Hechos verídicos o altamente plausibles. Sin fórmulas. Cada hito ≤22 s de lectura.
 [SALIDA] JSON puro con clave "hitos": array de ${num_milestones} objetos con "año","nombre","descripcion","dato_sorprendente","conexion_actual".'''
 
@@ -95,7 +95,7 @@ template = '''
 [ROL] Diseñador de simuladores intuitivos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] ${num_controls} controles propios con respuesta <50 ms para descubrir causa y efecto en "${concept}".
+[TAREA] ${num_controls} controles propios con respuesta <50 ms para descubrir causa y efecto en "${concept}". Ideas del dominio: tamaño del buffer cache frente a lecturas en disco, dos sesiones que actualizan la misma fila y se bloquean, un tablespace que se llena al insertar filas, un usuario al que se le otorgan y revocan privilegios, una consulta que cambia de costo con o sin índice.
 [COMPONENTES] upao-header; upao-objective con objetivo de aprendizaje observable; upao-figure con al menos un diagrama propio reactivo; upao-example con ejemplo trabajado de manipulación; upao-status para estado y retroalimentación que explique el porqué; upao-summary para cierre que consolide lo descubierto. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. upao-complete en el cierre, desbloqueado tras explorar.
@@ -132,10 +132,10 @@ ${ds}
 [codigo.6]
 defaults = { body_words = 90 }
 template = '''
-[ROL] Periodista educativo.
+[ROL] Periodista educativo especializado en bases de datos.
 [CURSO] ${curso}
 [CONCEPTO] "${concept}"
-[TAREA] Noticia ficticia plausible: titular <=12 palabras, subtítulo <=22, cuerpo ${body_words} palabras, organización ficticia y pregunta final <=12. Admiración sin miedo ni jerga.
+[TAREA] Noticia ficticia plausible sobre un impacto real de "${concept}" en una organización (caída evitada, recuperación tras un fallo, consulta optimizada, acceso indebido detectado): titular <=12 palabras, subtítulo <=22, cuerpo ${body_words} palabras, organización ficticia y pregunta final <=12. Admiración sin miedo ni jerga.
 [COMPONENTES] upao-header; upao-objective: objetivo de aprendizaje de analizar impacto; upao-figure: al menos un diagrama propio causal; upao-example: ejemplo trabajado del caso; upao-reveal: retroalimentación que explique el porqué; upao-summary: cierre que consolide impacto y límites. CSS/JS solo para mecánica, sin redefinir tokens.
 ${ds}
 [SCORM] ${scorm}. upao-complete con label="Continuar".

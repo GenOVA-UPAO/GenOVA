@@ -49,11 +49,11 @@ describe("OvaCreateFormCard", () => {
     for (const name of ["Configurar recursos 5E", "Archivos de referencia", "Tema visual"])
       expect(screen.getByRole("button", { name })).toBeVisible();
   });
-  it("uses the university machine learning example", () => {
+  it("uses the university DBMS (Oracle) example", () => {
     const { props } = setup();
     fireEvent.click(screen.getByRole("button", { name: "Usar ejemplo de prompt" }));
     expect(props.onPrompt).toHaveBeenCalledWith(EXAMPLE_PROMPT);
-    expect(EXAMPLE_PROMPT).toMatch(/^Aprendizaje supervisado.*machine learning/);
+    expect(EXAMPLE_PROMPT).toMatch(/^Gestión del almacenamiento en Oracle/);
     expect(EXAMPLE_PROMPT).toMatch(/Objetivos:/);
     expect(EXAMPLE_PROMPT).not.toMatch(/Nivel educativo/i);
   });

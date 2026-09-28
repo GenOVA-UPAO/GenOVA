@@ -34,7 +34,7 @@ export function ThemeMiniPreview({
     <div aria-hidden="true" className="overflow-hidden rounded-xl border border-border">
       <div style={{ background: primary }} className="px-3 py-2.5">
         <div className="text-[9px] font-bold text-white">Aprendizaje supervisado</div>
-        <div className="mt-0.5 text-[7px] text-white/60">Machine learning · 1.er ciclo</div>
+        <div className="mt-0.5 text-[7px] text-white/60">Sistemas de Gestión de BD · 5.º ciclo</div>
       </div>
       {isTabbed && (
         <div className="flex border-b border-border bg-muted/30">

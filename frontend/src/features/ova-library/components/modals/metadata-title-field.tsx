@@ -28,7 +28,7 @@ export function MetadataTitleField({
         onChange={(e) => {
           onChange(e.target.value);
         }}
-        placeholder="Ej.: Regresión lineal aplicada"
+        placeholder="Ej.: Gestión de tablespaces en Oracle"
         disabled={disabled}
         required
         aria-invalid={Boolean(error)}

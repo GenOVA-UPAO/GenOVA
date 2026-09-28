@@ -24,8 +24,8 @@ _TOPIC_LOCK = (
     "\n\n[ANCLAJE DE TEMA — INQUEBRANTABLE]\n"
     'El ÚNICO tema de este recurso es: "${concept}".\n'
     "El <h1> DEBE nombrar ese tema (o un recorte fiel). PROHIBIDO cambiar de "
-    "dominio: no sustituyas el tema por otro (p.ej. machine learning, churn o "
-    "una empresa ficticia si el tema es historia, biología o matemáticas). "
+    "dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del "
+    "curso de bases de datos, machine learning o ciencia de datos). "
     "Si dudas, desarrolla ESE concepto; no inventes otro.\n"
 )
 

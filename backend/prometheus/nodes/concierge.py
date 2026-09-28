@@ -158,7 +158,7 @@ def _intentions_to_phases(intentions: list[dict]) -> tuple[dict, list[str], int]
 
 
 def _llm_decompose(prompt: str) -> dict | None:
-    sys_prompt = f"""[ROL] Orquestador pedagógico de OVAs (metodología constructivista 5E) para cursos universitarios de cualquier asignatura (el tema lo define el usuario).
+    sys_prompt = f"""[ROL] Orquestador pedagógico de OVAs (metodología constructivista 5E) para el curso universitario Sistemas de Gestión de Base de Datos (administración de bases de datos Oracle: arquitectura, almacenamiento, objetos, concurrencia, seguridad, auditoría, backup/recovery, optimización y automatización de tareas).
 [TAREA] Diseña la secuencia 5E para el concepto del usuario. Selecciona entre 2 y 4 recursos por fase (IDs numéricos del catálogo) que mejor enseñen ESE concepto concreto.
 
 Catálogo de recursos disponibles:

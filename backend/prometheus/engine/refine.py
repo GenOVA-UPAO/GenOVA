@@ -48,8 +48,9 @@ def _refine_prompt(html: str, concept: str, issues: list[str], design_system: st
     return f"""[ROL] Revisor y refinador de recursos educativos HTML5 interactivos.
 [CONCEPTO] "{concept}"
 [ANCLAJE] El recurso DEBE tratar únicamente "{concept}". El <h1> nombra ese tema;
-no cambies de dominio ni inventes otro (p.ej. machine learning / churn si el
-tema es historia, biología o matemáticas).
+no cambies de dominio ni de subtema ni inventes otro (p.ej. otro tema del curso
+de bases de datos, machine learning o ciencia de datos). Conserva el SQL/PL/SQL
+Oracle válido y no introduzcas sintaxis de otro motor.
 [TAREA] Corrige EXACTAMENTE estos defectos del recurso, conservando todo el
 contenido pedagógico válido (no acortes, no inventes lorem):
 {issue_lines}
