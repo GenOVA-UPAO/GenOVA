@@ -129,6 +129,25 @@ def test_salida_truncada_se_continua(tmp_path):
         assert generar_texto("p", "texto") == "<html><body>mitad y final</body></html>"
 
 
+def test_continuacion_que_reinicia_el_documento_lo_sustituye(tmp_path):
+    """deepseek-v4-flash a veces reinicia en <!DOCTYPE html> en vez de continuar:
+    pegarlo a mitad del <script> rompía el JS (grabado en explore_01)."""
+    cortado = "<html><body><script>Math.round"
+    cont = [
+        *_msgs("p"),
+        {"role": "assistant", "content": cortado},
+        {"role": "user", "content": router._CONTINUE_PROMPT},
+    ]
+    completo = "```html\n<!DOCTYPE html><html><body>ok</body></html>"
+    path = _cassette(
+        tmp_path,
+        ("opencode", "oc-1", "p", {"content": cortado, "finish_reason": "length"}),
+        ("opencode", "oc-1", cont, {"content": completo, "finish_reason": "stop"}),
+    )
+    with use_cassette(path):
+        assert generar_texto("p", "texto") == completo
+
+
 def test_falta_de_entrada_es_error_claro_con_la_clave(tmp_path):
     path = _cassette(tmp_path, ("opencode", "oc-1", "otro prompt", {"content": "x"}))
     key, _ = cs.call_keys("opencode", "oc-1", _msgs("p"))

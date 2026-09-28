@@ -1,5 +1,6 @@
 """LLM routing — Groq (primary) + OpenRouter (secondary / arbitrary model)."""
 
+import re
 import time
 
 import structlog
@@ -171,6 +172,9 @@ _CONTINUE_PROMPT = (
 )
 
 
+_RESTART_RE = re.compile(r"\s*(?:```(?:html)?\s*)?<(?:!doctype\s+html|html[\s>])", re.IGNORECASE)
+
+
 def _chat(
     provider: str,
     model_id: str,
@@ -195,7 +199,14 @@ def _chat(
             more, finish = _chat_once(provider, model_id, msgs, max_tokens, extra, timeout, key)
         except EmptyContentError:
             break
-        content += more
+        # Algunos modelos (deepseek-v4-flash) no continúan: reinician el documento.
+        # Concatenarlo lo pegaba a mitad del <script> y el JS quedaba roto; el
+        # reinicio sustituye a la salida cortada y, si también se corta, se sigue.
+        if _RESTART_RE.match(more):
+            logger.info("llm continuation restarted document; replacing", model_id=model_id)
+            content = more
+        else:
+            content += more
     return content
 
 

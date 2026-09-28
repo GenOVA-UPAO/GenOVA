@@ -29,13 +29,7 @@ ALL = rp.all_resources()
 
 # Recursos cuya salida real grabada conserva defectos: son hallazgos del
 # pipeline (ver el informe de la grabación), no fallos del replay.
-KNOWN_DEFECTS: dict[tuple[str, int], str] = {
-    ("explore", 1): (
-        "Continuación rota: al cortarse por longitud, el modelo reinicia el documento "
-        "(<!DOCTYPE html>) en vez de continuar y llm.router._chat lo concatena a mitad "
-        "del <script>; el JS queda con SyntaxError y las 2 rondas de refinado no lo arreglan"
-    ),
-}
+KNOWN_DEFECTS: dict[tuple[str, int], str] = {}
 
 
 @pytest.fixture(autouse=True)
