@@ -23,6 +23,15 @@ export function statusLabel(status: string): string {
   return Object.hasOwn(STATUS_LABEL, status) ? STATUS_LABEL[status] : status;
 }
 
+/**
+ * Título de la página de progreso ya terminada. Un job `done` con recursos
+ * fallidos no es un «¡OVA generado!»: decirlo así escondía el fallo parcial.
+ */
+export function terminalTitle(status: string, partialFail: boolean): string {
+  if (partialFail && status === "done") return "OVA generado con errores";
+  return statusLabel(status);
+}
+
 /** Barrido del backend deja el job en `interrupted` con recursos sin terminar. */
 export function showResumeBanner(status: string, resumableCount: number): boolean {
   return status === "interrupted" && resumableCount > 0;

@@ -20,7 +20,8 @@ interface Props {
  * En móvil es lo único que avisa, porque el chat queda en la otra vista.
  */
 export function WorkspaceRegenStatus({ regen, reorderError }: Readonly<Props>) {
-  const startError = regen.request.error?.message;
+  // Fallo al iniciar o al terminar (p. ej. no salió el recurso añadido).
+  const failure = regen.request.error?.message ?? regen.error;
   return (
     <>
       {regen.busy && (
@@ -39,13 +40,13 @@ export function WorkspaceRegenStatus({ regen, reorderError }: Readonly<Props>) {
         </div>
       )}
       {/* En escritorio el hilo de la izquierda ya lo muestra: aquí solo se anuncia. En móvil el hilo queda en la otra vista. */}
-      {!regen.busy && startError && (
+      {!regen.busy && failure && (
         <p
           role="alert"
           className="flex shrink-0 items-start gap-1.5 border-t border-border px-4 py-2 text-sm text-destructive md:sr-only"
         >
           <Icon name="warning-circle" className="mt-0.5 size-4 shrink-0" />
-          {startError}
+          {failure}
         </p>
       )}
       {reorderError && (

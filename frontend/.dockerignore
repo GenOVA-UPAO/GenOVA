@@ -1,0 +1,31 @@
+# Contexto de build de las imágenes del frontend (Dockerfile / Dockerfile.prod).
+# Las dependencias se instalan dentro de la imagen: el node_modules local de
+# pnpm está lleno de symlinks al store del host y rompe el build
+# («invalid file request node_modules/@eslint/js»).
+node_modules
+**/node_modules
+
+# Salidas de build, cachés y artefactos de tests
+dist
+coverage
+.vite
+tmp
+**/__screenshots__
+test-results
+playwright-report
+*.tsbuildinfo
+*.log
+
+# Variables de entorno locales (la plantilla sí se copia)
+.env
+.env.*
+!.env.example
+
+# Editores y sistema
+.git
+.gitignore
+.idea
+.vscode
+.history
+.DS_Store
+Thumbs.db

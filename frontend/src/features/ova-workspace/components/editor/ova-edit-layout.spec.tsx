@@ -6,6 +6,7 @@ import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { OvaEditLayout } from "./ova-edit-layout";
 
 vi.mock("./workspace-panel-toolbar", () => ({ WorkspacePanelToolbar: () => null }));
+vi.mock("./workspace-failed-job-notice", () => ({ WorkspaceFailedJobNotice: () => null }));
 vi.mock("./workspace-chat-panel", () => ({
   WorkspaceChatPanel: () => "Panel de instrucciones",
 }));
