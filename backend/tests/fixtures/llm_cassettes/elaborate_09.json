@@ -1,0 +1,39 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "key": "37e0e7030bbd231ed57d0ba4",
+   "msgs_key": "3eb7beaa62d01db3ad79f831",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 24000,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Diseñador de estrategia.\n[CURSO] Recurso para el curso universitario «Sistemas de Gestión de Base de Datos» (UPAO, Ing. de Computación y Sistemas, 5.º ciclo), orientado a la administración de bases de datos (rol del DBA) sobre Oracle 11g o superior. Audiencia: estudiantes que ya saben SQL básico (SELECT, JOIN, DDL) y modelado relacional, pero que se inician en la administración del SGBD. Tem",
+    "tail": "ambiar de dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del curso de bases de datos, machine learning o ciencia de datos). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 18101
+   },
+   "response": {
+    "content": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>SIMULADOR · La fotosíntesis</title>\n  <style>\n    /* SOLO CSS específico del recurso, <=80 líneas */\n    body {\n      font-family: var(--text);\n      font-size: clamp(1rem, 1.5vw, 1.2rem);\n      line-height: var(--space-4);\n      margin: 0;\n      padding: var(--space-4);\n      background-color: var(--bg);\n      color: var(--text);\n    }\n    h1 {\n      font-size: clamp(2rem, 3vw, 2.5rem);\n      margin-bottom: var(--space-3);\n      color: var(--primary);\n    }\n    main {\n      max-width: 880px;\n      margin: 0 auto;\n      padding: 0 var(--space-2);\n    }\n    .ova-container {\n      display: flex;\n      flex-direction: column;\n      max-width: 100%;\n    }\n    .ova-card {\n      background-color: var(--surface);\n      border: 1px solid var(--border);\n      border-radius: var(--radius);\n      padding: var(--space-3);\n      margin-top: var(--space-2);\n    }\n    .oca-progress {\n      margin-top: var(--space-2);\n      progress {\n        width: 100%;\n        border-radius: var(--radius);\n        appearance: none;\n        background-color: var(--surface-tint);\n        overflow: hidden;\n        &::-webkit-progress-value {\n          background-color: var(--accent);\n        }\n        &::-moz-progress-value {\n          background-color: var(--accent);\n        }\n      }\n    }\n    .ova-status {\n      background-color: var(--surface);\n      border: 1px solid var(--border);\n      border-radius: var(--radius);\n      padding: var(--space-2);\n      margin-top: var(--space-2);\n      text-align: center;\n      font-weight: bold;\n      color: var(--text);\n    }\n    .ova-btn {\n      background-color: var(--accent);\n      color: var(--text);\n      border: none;\n      border-radius: var(--radius);\n      padding: var(--space-2) var(--space-3);\n      cursor: pointer;\n      transition: background-color 0.3s ease;\n    }\n    .ova-btn:hover {\n      background-color: var(--accent-hover);\n    }\n    details {\n      margin-top: var(--space-2);\n    }\n    summary {\n      cursor: pointer;\n      list-style: none;\n      font-weight: bold;\n      color: var(--primary);\n    }\n    upao-objective {\n      margin-bottom: var(--space-3);\n      color: var(--primary);\n    }\n    upao-steps ol {\n      list-style-type: decimal;\n      margin-top: var(--space-2);\n    }\n    upao-steps li {\n      margin-bottom: var(--space-2);\n    }\n  </style>\n</head>\n<body>\n  <main class=\"ova-container\">\n    <upao-header eyebrow=\"MINIJUEGO\" title=\"La fotosíntesis: fase luminosa y ciclo de Calvin\"></upao-header>\n    <upao-objective>Al terminar podrás interpretar la fase luminosa y el ciclo de Calvin en un tablero realistas.</upao-objective>\n    <section class=\"ova-card\">\n      <upao-status id=\"estado\" state=\"info\"></upao-status>\n      <upao-progress id=\"p\" current=\"0\" total=\"6\" show-fraction></upao-progress>\n      <div id=\"tablero\">\n        <div class=\"turno\">\n          <h3>Fase luminosa</h3>\n          <p>1. Una planta recibe luz solar en sus hojas.</p>\n          <p>2. Los pigmentos como la clorofila capturan la luz.</p>\n          <p>3. Las partículas de luz energizan los electrones de los moléculas de agua.</p>\n          <p>4. Los electrones son reemplazados por los electrones de los átomos de hidrógeno.</p>\n          <p>5. Los electrones viajan a través de una cadena eléctrica, desencadenando la producción de ATP y NADPH.</p>\n          <p>6. Los átomos de hidrógeno son capturados y combinados con el oxígeno para formar glucosa y liberar oxígeno.</p>\n        </div>\n      </div>\n      <button class=\"ova-btn\" id=\"finalizar\" disabled>Finalizar actividad</button>\n    </section>\n    <script>\n      (function(){\n        const fin = document.getElementById('finalizar');\n        const estado = document.getElementById('estado');\n        const p = document.getElementById('p');\n        let turno = 0;\n\n        fin.addEventListener('click', () => {\n          estado.textContent = '✓ Actividad completada';\n          _scormComplete();\n        });\n\n        p.addEventListener('upao-nav-change', (e) => {\n          turno = e.detail.index;\n          if (turno === 5) {\n            fin.disabled = false;\n          } else {\n            fin.disabled = true;\n          }\n        });\n      })();\n    </script>\n  </main>\n</body>\n</html>",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "6bb93a657233e06fc1b9b335",
+   "msgs_key": "78e079f6474360c2cf2a4aed",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 1024,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Evaluador pedagógico de recursos educativos HTML5.\n[FASE_5E] elaborate | [TIPO_RECURSO] 9 | [CONCEPTO] \"La fotosíntesis: cómo las plantas transforman la energía luminosa en energía química (fase luminosa y ciclo de Calvin), para estudiantes de primer ciclo universitario\"\n[TAREA] Evalúa este recurso según 6 criterios y responde SOLO con JSON válido:\n1. Fidelidad pedagógica: ¿enseña el concept",
+    "tail": "ctadas server-side, NO incluidas en el extracto: no las\n  cuentes como CSS/JS ausente.\n- Las imágenes/audio/video aparecen como [img/audio/video:data-uri NKB]:\n  juzga su uso y densidad, no sus bytes.",
+    "chars": 8145
+   },
+   "response": {
+    "content": "```json\n{\n  \"puntaje\": 75,\n  \"problemas\": [\n    \"La fidelidad pedagógica es buena, pero el término de 'actividad' podría confundir a los estudiantes iniciales de primer ciclo universitario. Se recomienda usar un lenguaje más específico.\",\n    \"El HTML es apropiado para el tipo de recurso y cumple con las reglas técnicas.\",\n    \"No se requieren handlers de teclado para los contenedores clicables, lo que limita la accesibilidad para usuarios que usan dispositivos de acceso no visivo.\",\n    \"La interfaz y el contenido son correctos pero la numeración es incorrecta para la fase de explicación y el ciclo de Calvin.\",\n    \"La accesibilidad es aceptable con la única <h1> y la estructura h2/h3 seguida, pero el texto alternativo para las imágenes podría ser mejorado.\",\n    \"El diseño es genérico y no puede ser reutilizado para otro concepto vecino como la respiración celular.\"\n  ],\n  \"veredicto\": \"aceptar\"\n}\n```",
+    "finish_reason": "stop"
+   }
+  }
+ ]
+}

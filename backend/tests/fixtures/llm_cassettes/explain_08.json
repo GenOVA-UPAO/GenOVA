@@ -1,0 +1,39 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "key": "570fb481ee927f59feda15ef",
+   "msgs_key": "2d836e801820b9e9c13a1090",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 24000,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Diseñador de diagramas.\n[CURSO] Recurso para el curso universitario «Sistemas de Gestión de Base de Datos» (UPAO, Ing. de Computación y Sistemas, 5.º ciclo), orientado a la administración de bases de datos (rol del DBA) sobre Oracle 11g o superior. Audiencia: estudiantes que ya saben SQL básico (SELECT, JOIN, DDL) y modelado relacional, pero que se inician en la administración del SGBD. Tema",
+    "tail": "ambiar de dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del curso de bases de datos, machine learning o ciencia de datos). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 18101
+   },
+   "response": {
+    "content": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\">\n  <title>MINIJUEGO · La fotosíntesis: fase luminosa y ciclo de Calvin</title>\n  <style>\n    /* SOLO CSS específico del recurso, <=80 líneas */\n    upao-card {\n      margin-bottom: var(--space-3);\n    }\n    upao-progress {\n      margin-top: var(--space-2);\n    }\n    upao-score {\n      margin-top: var(--space-2);\n    }\n    upao-button {\n      margin-top: var(--space-2);\n    }\n    upao-comic-panel {\n      margin-bottom: var(--space-3);\n    }\n    .comic-label {\n      display: none;\n    }\n  </style>\n</head>\n<body>\n  <main class=\"ova-container\">\n    <upao-header eyebrow=\"MINIJUEGO\" title=\"La fotosíntesis: fase luminosa y ciclo de Calvin\"></upao-header>\n    <upao-objective>Al terminar podrás entender cómo las plantas transforman la energía luminosa en energía química mediante la fase luminosa y el ciclo de Calvin.</upao-objective>\n    <section class=\"ova-card\">\n      <upao-comic-panel number=\"1\" character=\"Planta\">\n        <svg slot=\"art\" viewBox=\"0 0 320 180\" role=\"img\" aria-label=\"Planta absorbiendo luz solar\">\n          <rect width=\"320\" height=\"180\" fill=\"var(--surface)\" />\n          <circle cx=\"200\" cy=\"80\" r=\"50\" fill=\"var(--primary)\" />\n          <path d=\"M120,150 Q200,70 280,150 T400,70 T280,150\" stroke=\"var(--accent)\" stroke-width=\"5\" fill=\"none\" />\n        </svg>\n        \"Estoy absorbiendo energía太阳能 para formar glucosa!\"\n      </upao-comic-panel>\n      <upao-comic-panel number=\"2\" character=\"Ciclo de Calvin\">\n        <svg slot=\"art\" viewBox=\"0 0 320 180\" role=\"img\" aria-label=\"Ciclo de Calvin\">\n          <rect width=\"320\" height=\"180\" fill=\"var(--surface)\" />\n          <rect x=\"100\" y=\"70\" width=\"20\" height=\"50\" fill=\"var(--accent)\" />\n          <circle cx=\"240\" cy=\"50\" r=\"50\" fill=\"var(--primary)\" />\n          <path d=\"M110,160 L250,160 L310,80 Q280,40 250,80 Q220,40 190,80 L110,160 L110,180 Z\" stroke=\"var(--accent)\" stroke-width=\"5\" fill=\"var(--surface)\" />\n        </svg>\n        \"Estoy convirtiendo la energía solar en glucosa viañete y ciclo de Calvin!\"\n      </upao-comic-panel>\n      <upao-comic-panel number=\"3\" character=\"Planta\">\n        <svg slot=\"art\" viewBox=\"0 0 320 180\" role=\"img\" aria-label=\"Planta con glucosa formada\">\n          <rect width=\"320\" height=\"180\" fill=\"var(--surface)\" />\n          <circle cx=\"200\" cy=\"80\" r=\"50\" fill=\"var(--primary)\" />\n          <path d=\"M120,150 Q200,70 280,150 T400,70 T280,150\" stroke=\"var(--accent)\" stroke-width=\"5\" fill=\"none\" />\n          <rect x=\"140\" y=\"110\" width=\"40\" height=\"40\" fill=\"var(--accent)\" />\n        </svg>\n        \"Gracias a la fase luminosa y el ciclo de Calvin, puedo formar glucosa!\"\n      </upao-comic-panel>\n    </section>\n    <div class=\"ova-progress\" aria-hidden=\"true\"><span style=\"width:0%\"></span></div>\n    <p id=\"estado\" aria-live=\"polite\" class=\"ova-muted\"></p>\n    <button class=\"ova-btn\" id=\"finalizar\" disabled>Finalizar actividad</button>\n  </main>\n  <script>\n    (function(){\n      const fin = document.getElementById('finalizar');\n      fin.addEventListener('click', () => {\n        document.getElementById('estado').textContent = '✓ Actividad completada';\n        _scormComplete();\n      });\n    })();\n  </script>\n</body>\n</html>\n```",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "7312d2d876b8ef40db25488f",
+   "msgs_key": "2c544427f729457fcf24785c",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 1024,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Evaluador pedagógico de recursos educativos HTML5.\n[FASE_5E] explain | [TIPO_RECURSO] 8 | [CONCEPTO] \"La fotosíntesis: cómo las plantas transforman la energía luminosa en energía química (fase luminosa y ciclo de Calvin), para estudiantes de primer ciclo universitario\"\n[TAREA] Evalúa este recurso según 6 criterios y responde SOLO con JSON válido:\n1. Fidelidad pedagógica: ¿enseña el concepto ",
+    "tail": "ctadas server-side, NO incluidas en el extracto: no las\n  cuentes como CSS/JS ausente.\n- Las imágenes/audio/video aparecen como [img/audio/video:data-uri NKB]:\n  juzga su uso y densidad, no sus bytes.",
+    "chars": 7088
+   },
+   "response": {
+    "content": "```json\n{\n  \"puntaje\": 85,\n  \"problemas\": [\n    \"La numeración no tiene secuencia real detrás (1, 2, 3, ...).\",\n    \"El texto de relleno con pinta de contenido que no enseña nada.\",\n    \"No hay transición de estado dinámico en el contenedor con aria-live.\"\n  ],\n  \"veredicto\": \"aceptar\"\n}\n```",
+    "finish_reason": "stop"
+   }
+  }
+ ]
+}

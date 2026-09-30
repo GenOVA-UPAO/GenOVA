@@ -1,0 +1,56 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "key": "1f56b75017b8f771f98641c2",
+   "msgs_key": "bc46ffe23860d79bc1cc8216",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 8192,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Instructor de laboratorio de monitoreo y rendimiento de bases de datos.\n[CURSO] Recurso para el curso universitario «Sistemas de Gestión de Base de Datos» (UPAO, Ing. de Computación y Sistemas, 5.º ciclo), orientado a la administración de bases de datos (rol del DBA) sobre Oracle 11g o superior. Audiencia: estudiantes que ya saben SQL básico (SELECT, JOIN, DDL) y modelado relacional, pero qu",
+    "tail": "ambiar de dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del curso de bases de datos, machine learning o ciencia de datos). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 4680
+   },
+   "response": {
+    "content": "```json\n{\n  \"descripcion_dataset\": \"Descríbelo en texto: los datos relevantes a este concepto pueden provenir de diversas fuentes, como el uso de monitores de energía de plantas o experimentos en laboratorio. Para un contexto académico, puedes considerar datos simulados que representan la cantidad de energía luminosa recibida, la tasa de crecimiento de la planta, la cantidad de oxígeno producida y CO2 eliminado. Estos datos pueden estar almecenados en una base de datos Oracle y pueden ser consultados y analizados para entender los procesos de fotosíntesis.\",\n  \"puntos\": [\n    {\n      \"x\": 10,\n      \"y\": 2,\n      \"grupo\": \"Primer día de experimento\"\n    },\n    {\n      \"x\": 20,\n      \"y\": 5,\n      \"grupo\": \"Segundo día de experimento\"\n    },\n    {\n      \"x\": 30,\n      \"y\": 7,\n      \"grupo\": \"Tercer día de experimento\"\n    },\n    {\n      \"x\": 40,\n      \"y\": 10,\n      \"grupo\": \"Cuarto día de experimento\"\n    },\n    {\n      \"x\": 50,\n      \"y\": 8,\n      \"grupo\": \"Primer día control (sin luz)\"\n    },\n    {\n      \"x\": 60,\n      \"y\": 4,\n      \"grupo\": \"Segundo día control (sin luz)\"\n    },\n    {\n      \"x\": 70,\n      \"y\": 6,\n      \"grupo\": \"Tercer día control (sin luz)\"\n    },\n    {\n      \"x\": 80,\n      \"y\": 9,\n      \"grupo\": \"Cuarto día control (sin luz)\"\n    }\n  ],\n  \"preguntas\": [\n    \"¿Qué ocurre con la cantidad de oxígeno producida cuando la planta se expone a luz?\",\n    \"¿Qué diferencia observes entre los datos obtenidos durante las sesiones de experimento y las de control?\",\n    \"¿Cómo crees que esta información puede ayudar a entender el ciclo de Calvin en las plantas?\"\n  ],\n  \"revelacion\": \"Los experimentos muestran que la energía luminosa es esencial para la fotosíntesis. La planta produce más oxígeno cuando se expone a luz. Esto suggiere que la fase luminosa es fundamental para el ciclo de Calvin, donde la luz es convertida en energía química.\"\n}\n```",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "6f4c34d2da5b37304b4d6377",
+   "msgs_key": "07c0c5e3bf585ee97c012e23",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 24000,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Desarrollador educativo.\n[CURSO] Recurso para el curso universitario «Sistemas de Gestión de Base de Datos» (UPAO, Ing. de Computación y Sistemas, 5.º ciclo), orientado a la administración de bases de datos (rol del DBA) sobre Oracle 11g o superior. Audiencia: estudiantes que ya saben SQL básico (SELECT, JOIN, DDL) y modelado relacional, pero que se inician en la administración del SGBD. Tem",
+    "tail": "ambiar de dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del curso de bases de datos, machine learning o ciencia de datos). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 19866
+   },
+   "response": {
+    "content": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\">\n  <title>SIMULADOR · La fotosíntesis</title>\n  <style>\n    :root {\n      --primary: var(--upao-primary);\n      --surface: var(--upao-surface);\n    }\n    .ova-card h1 {\n      font-size: clamp(16px, 3vw, 20px);\n    }\n    .ova-progress {\n      width: 100%;\n      background: var(--surface-tint);\n      border-radius: 4px;\n      overflow: hidden;\n      margin: 12px 0;\n    }\n    .ova-progress>span {\n      background: var(--accent);\n      height: 100%;\n    }\n    #estado {\n      text-align: center;\n      margin-top: 12px;\n    }\n    button.ova-btn {\n      width: 100%;\n      margin-top: 12px;\n    }\n  </style>\n</head>\n<body>\n  <main class=\"ova-container\">\n    <upao-header eyebrow=\"SIMULADOR\" title=\"La fotosíntesis: cómo las plantas transforman la energía luminosa en energía química\"></upao-header>\n    <upao-objective>Al terminar podrás entender el proceso fundamental de la fotosíntesis, incluyendo la fase luminosa y la fármula básica del ciclo de Calvin.</upao-objective>\n    <section class=\"ova-card\">\n      <figure caption=\"Fase luminosa de la fotosíntesis\">\n        <svg viewBox=\"0 0 600 400\">\n          <rect width=\"100%\" height=\"100%\" fill=\"#e9ecef\"/>\n          <line x1=\"0\" y1=\"200\" x2=\"600\" y2=\"200\" stroke=\"#000\" stroke-width=\"2\" stroke-dasharray=\"4 4\"/>\n          <text x=\"300\" y=\"190\" text-anchor=\"middle\" font-size=\"20\" fill=\"#000\">Fase luminosa</text>\n        </svg>\n      </figure>\n      <upao-example title=\"Fase luminosa y ciclo de Calvin\">\n        <upao-steps>\n          <ol>\n            <li>La planta absorbe luz solar, gases de aceite (CO<sub>2</sub>) y agua (H<sub>2</sub>O).</li>\n            <li>La luz solar energiza los átomos de agua, liberando oxígeno como un producto.</li>\n            <li>Los átomos de oxígeno se combinan para formar oxígeno molecular (O<sub>2</sub>).</li>\n            <li>La energía obtenida se usa para convertir CO<sub>2</sub> en glucosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>) mediante el ciclo de Calvin.</li>\n          </ol>\n        </upao-steps>\n      </upao-example>\n      <upao-question number=\"1\" prompt=\"¿Cuáles son los dos productos principales de la fase luminosa de la fotosíntesis?\">\n        <upao-choice value=\"A\" correct=\"true\" feedback=\"¡Correcto! La fase luminosa produce oxígeno y glucosa.\" group=\"q1\"><p>Oxígeno y glucosa</p></upao-choice>\n        <upao-choice value=\"B\" correct=\"false\" feedback=\"Incorrecto. La fase luminosa no produce glucosa.\" group=\"q1\"><p>Oxígeno y metanol</p></upao-choice>\n        <upao-choice value=\"C\" correct=\"false\" feedback=\"Incorrecto. La fase luminosa no produce oxígeno.\" group=\"q1\"><p>Glucosa y metanol</p></upao-choice>\n      </upao-question>\n      <upao-reveal label=\"Ver respuesta\">\n        <p>La fase luminosa de la fotosíntesis produce oxígeno como un producto químico y glucosa a partir del gas de aceite (CO<sub>2</sub>) y agua (H<sub>2</sub>O).</p>\n      </upao-reveal>\n      <upao-progress id=\"p\" current=\"0\" total=\"2\" show-fraction></upao-progress>\n      <p id=\"estado\" aria-live=\"polite\" class=\"ova-muted\"></p>\n      <button class=\"ova-btn\" id=\"finalizar\" disabled>Finalizar actividad</button>\n    </section>\n  </main>\n  <script>\n    (function(){\n      const fin = document.getElementById('finalizar');\n      let progreso = 0;\n      fin.addEventListener('click', () => {\n        progreso++;\n        const spanProgress = document.getElementById('p').querySelector('span');\n        spanProgress.style.width = `${progreso * 50}%`;\n        if (progreso === 2) {\n          document.getElementById('estado').textContent = '✓ Actividad completada';\n          fin.disabled = true;\n        }\n      });\n    })();\n  </script>\n</body>\n</html>\n```",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "c4a235ee0b0484e531ddfb44",
+   "msgs_key": "5ea2f5e412b33e75cb5fd158",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 1024,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Evaluador pedagógico de recursos educativos HTML5.\n[FASE_5E] explore | [TIPO_RECURSO] 7 | [CONCEPTO] \"La fotosíntesis: cómo las plantas transforman la energía luminosa en energía química (fase luminosa y ciclo de Calvin), para estudiantes de primer ciclo universitario\"\n[TAREA] Evalúa este recurso según 6 criterios y responde SOLO con JSON válido:\n1. Fidelidad pedagógica: ¿enseña el concepto ",
+    "tail": "ctadas server-side, NO incluidas en el extracto: no las\n  cuentes como CSS/JS ausente.\n- Las imágenes/audio/video aparecen como [img/audio/video:data-uri NKB]:\n  juzga su uso y densidad, no sus bytes.",
+    "chars": 7568
+   },
+   "response": {
+    "content": "```json\n{\n  \"puntaje\": 85,\n  \"problemas\": [\n    \"La numeración en las tarjetas, no hay secuencia real detrás del 01/02/03.\",\n    \"Una sola palabra del titular 'fotosíntesis' es acentuada en otro color/cursiva.\",\n    \"El texto de relleno con pinta de contenido que no enseña nada.\",\n    \"La misma animación de entrada (opacity 0→1 + translateY) repetida en cada sección.\",\n    \"Todo el contenido está picado en tarjetas idénticas e intercambiables.\"\n  ],\n  \"veredicto\": \"aceptar\"\n}\n```",
+    "finish_reason": "stop"
+   }
+  }
+ ]
+}
