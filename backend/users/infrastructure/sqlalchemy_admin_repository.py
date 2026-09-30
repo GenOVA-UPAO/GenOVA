@@ -9,6 +9,7 @@ from uuid import UUID
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, joinedload
 
+from auth.domain.email import normalize_email
 from core.database import commit_or_500
 from models import PasswordResetToken, Role, User, UserRole
 from users.domain.admin import (
@@ -89,7 +90,7 @@ class SqlAlchemyAdminUserRepository:
 
     def email_in_use(self, email: str, excluding_user_id: UUID) -> bool:
         found = self._db.execute(
-            select(User.id).where(User.email == email, User.id != excluding_user_id)
+            select(User.id).where(User.email_normalized == normalize_email(email), User.id != excluding_user_id)
         ).first()
         return found is not None
 
@@ -118,6 +119,7 @@ class SqlAlchemyAdminUserRepository:
         user = self._db.get(User, user_id)
         user.full_name = full_name
         user.email = email
+        user.email_normalized = normalize_email(email)
         user.university_id = university_id
         user.gender = gender
         user.phone_number = phone_number
