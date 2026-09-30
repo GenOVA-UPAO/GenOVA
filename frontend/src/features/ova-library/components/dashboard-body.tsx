@@ -41,7 +41,7 @@ export function DashboardBody({ ovas, total, isAdmin }: Readonly<DashboardBodyPr
           <DashboardStatCard
             label="Listos"
             value={counts.ready}
-            hint="Preparadas para exportar"
+            hint="Preparados para exportar"
             to="/mis-ovas?estado=listo"
           />
           <DashboardStatCard

@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+
+import { ConfirmModal } from "@/core/components/confirm-modal";
 
 import { useFailedSelection } from "../../hooks/use-failed-selection";
 import { useJobStall } from "../../hooks/use-job-stall";
@@ -28,6 +30,7 @@ export function CreationProgress({
 }: Readonly<{ jobId: string; onReady?: () => void }>) {
   const job = useOvaJob(jobId);
   const navigate = useNavigate();
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
   const ovaId = job.data?.ova_id;
   // Con algún recurso fallido el backend también marca el job `done`: saltar al
   // editor escondería el fallo y el reintento, así que se queda en el progreso.
@@ -69,9 +72,28 @@ export function CreationProgress({
             job.resume.mutate([]);
           }}
           onCancel={() => {
-            job.cancel.mutate();
+            setConfirmingCancel(true);
           }}
         />
+        {confirmingCancel && (
+          <ConfirmModal
+            title="¿Cancelar la generación?"
+            message="Los recursos que aún no se generaron no se crearán. Podrás reintentarlos desde Mis OVAs."
+            confirmLabel="Cancelar generación"
+            loadingLabel="Cancelando…"
+            isLoading={job.cancel.isPending}
+            onConfirm={() => {
+              job.cancel.mutate(undefined, {
+                onSettled: () => {
+                  setConfirmingCancel(false);
+                },
+              });
+            }}
+            onCancel={() => {
+              setConfirmingCancel(false);
+            }}
+          />
+        )}
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error.message}

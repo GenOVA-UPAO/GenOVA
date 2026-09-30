@@ -23,6 +23,8 @@ export function RegisterForm({ onRegistered }: Readonly<RegisterFormProps>) {
 
   const onSubmit = onFormSubmit(async (formEl) => {
     if (!form.isValid) {
+      // El error del envío anterior ya no describe lo que hay en el formulario.
+      setServerError("");
       form.revealErrors(formEl);
       return;
     }

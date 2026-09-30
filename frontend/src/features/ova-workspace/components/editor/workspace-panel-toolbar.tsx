@@ -15,6 +15,7 @@ import { cn } from "@/core/lib/cn";
 import { useLlmSettingsModal } from "@/core/lib/use-llm-settings-modal";
 
 import { exportOvaScorm } from "../../api/ova-workspace.api";
+import { ScormButton } from "./scorm-button";
 
 const VersionHistoryPanel = lazy(() => import("../versioning/version-history-panel"));
 
@@ -22,6 +23,8 @@ interface Props {
   ovaId: string;
   /** Sin «Restaurar» en el historial: el OVA es de otra persona. */
   readOnly?: boolean;
+  /** Falso mientras el OVA no está «listo»: el servidor respondería 409. */
+  canExport?: boolean;
   className?: string;
 }
 
@@ -30,7 +33,12 @@ interface Props {
  * van a la vista; en móvil se recogen en «Más acciones» y la principal
  * («Descargar SCORM») sigue siempre visible.
  */
-export function WorkspacePanelToolbar({ ovaId, readOnly = false, className }: Readonly<Props>) {
+export function WorkspacePanelToolbar({
+  ovaId,
+  readOnly = false,
+  canExport = true,
+  className,
+}: Readonly<Props>) {
   const [history, setHistory] = useState(false);
   const settings = useLlmSettingsModal();
   const download = useScormDownload(ovaId);
@@ -78,18 +86,13 @@ export function WorkspacePanelToolbar({ ovaId, readOnly = false, className }: Re
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Button
-        aria-label="Descargar SCORM"
-        loading={download.isPending}
-        className="max-md:h-11 max-md:px-4"
-        onClick={() => {
+      <ScormButton
+        canExport={canExport}
+        pending={download.isPending}
+        onDownload={() => {
           download.mutate();
         }}
-      >
-        <Icon name="download-simple" />
-        <span className="md:hidden">SCORM</span>
-        <span className="hidden md:inline">Descargar SCORM</span>
-      </Button>
+      />
       {history && (
         <Suspense>
           <VersionHistoryPanel

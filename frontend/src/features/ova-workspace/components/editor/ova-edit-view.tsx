@@ -23,6 +23,11 @@ function showsGeneration(error: Error | null, awaitingReady: boolean, pending: b
   return errorStatus(error) === 409 || (awaitingReady && pending);
 }
 
+/** Un backend antiguo no manda `status`: se deja intentar y decide el servidor. */
+function isExportable(status: string | undefined): boolean {
+  return status === undefined || status === "listo";
+}
+
 export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
   const workspace = useOvaWorkspace(ovaId);
   const regen = useChatRegeneration(ovaId);
@@ -57,6 +62,7 @@ export function OvaEditView({ ovaId }: Readonly<{ ovaId: string }>) {
       version={workspace.data.current_version?.version_number}
       // Un backend antiguo no manda `can_edit`: se asume que se puede editar.
       readOnly={workspace.data.can_edit === false}
+      canExport={isExportable(workspace.data.status)}
       phases={phases}
       regen={regen}
     />

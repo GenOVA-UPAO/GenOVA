@@ -15,12 +15,22 @@ interface Props {
   version: number | undefined;
   /** El OVA es de otra persona: solo la vista previa, sin instrucciones ni edición. */
   readOnly: boolean;
+  /** El servidor solo empaqueta OVAs «listo»: si no, «Descargar SCORM» va desactivado. */
+  canExport?: boolean;
   phases: PhaseWithContent[];
   regen: ChatRegeneration;
 }
 
 /** Editor ya cargado: instrucciones y OVA lado a lado, o solo el OVA en lectura. */
-export function OvaEditLayout({ ovaId, title, version, readOnly, phases, regen }: Readonly<Props>) {
+export function OvaEditLayout({
+  ovaId,
+  title,
+  version,
+  readOnly,
+  canExport = true,
+  phases,
+  regen,
+}: Readonly<Props>) {
   const [mobileView, setMobileView] = useState<WorkspaceMobileView>("chat");
   const ovaPanel = (
     <WorkspaceOvaPanel ovaId={ovaId} phases={phases} regen={regen} readOnly={readOnly} />
@@ -34,6 +44,7 @@ export function OvaEditLayout({ ovaId, title, version, readOnly, phases, regen }
         mobileView={mobileView}
         onMobileView={setMobileView}
         readOnly={readOnly}
+        canExport={canExport}
       />
       {readOnly ? (
         <>
