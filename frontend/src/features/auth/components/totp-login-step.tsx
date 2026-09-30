@@ -22,6 +22,7 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
   const form = useAuthForm(totpSchema, { code: "" });
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [expired, setExpired] = useState(false);
 
   const onSubmit = onFormSubmit(async (formEl) => {
     if (!form.isValid) {
@@ -38,7 +39,12 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
       }
       // Sin mensaje del servidor no se sabe si el código falló o el servidor no respondió
       // (withOk no expone el estado): un texto neutro no culpa al código por un 502.
-      setServerError(data.message ?? "No se pudo verificar el código. Intenta de nuevo.");
+      // El servidor gasta el ticket en cada intento (frena la fuerza bruta): tras un
+      // fallo hay que volver a iniciar sesión, no reintentar aquí.
+      setServerError(
+        `${data.message ?? "No se pudo verificar el código."} Vuelve al inicio de sesión para intentarlo de nuevo.`,
+      );
+      setExpired(true);
     } catch {
       setServerError(CONNECT_ERROR);
     } finally {
@@ -69,10 +75,21 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
           />
         </AuthField>
         {serverError ? <ServerAlert>{serverError}</ServerAlert> : null}
-        <Button type="submit" size="lg" className="w-full" loading={submitting} disabled={submitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          loading={submitting}
+          disabled={submitting || expired}
+        >
           {submitting ? "Verificando…" : "Verificar"}
         </Button>
-        <Button type="button" variant="ghost" className="w-full text-muted-foreground" onClick={onCancel}>
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full text-muted-foreground"
+          onClick={onCancel}
+        >
           Volver al inicio de sesión
         </Button>
       </form>

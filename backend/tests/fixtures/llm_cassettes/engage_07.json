@@ -1,0 +1,56 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "key": "862ea2d49825b26cb11fa01f",
+   "msgs_key": "913ec1c33a0142369dfe3d7b",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 8192,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Diseñador de aprendizaje basado en roles.\n[CURSO] Recurso para el curso universitario «Sistemas de Gestión de Base de Datos» (UPAO, Ing. de Computación y Sistemas, 5.º ciclo), orientado a la administración de bases de datos (rol del DBA) sobre Oracle 11g o superior. Audiencia: estudiantes que ya saben SQL básico (SELECT, JOIN, DDL) y modelado relacional, pero que se inician en la administrac",
+    "tail": "ambiar de dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del curso de bases de datos, machine learning o ciencia de datos). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 4260
+   },
+   "response": {
+    "content": "```json\n{\n  \"contexto_rol\": \"Un pequeña empresa de productos naturales necesita mejorar su procesos de gestión de inventario y optimización de rastreo de productos.\",\n  \"pregunta_decision\": \"¿Cómo un DBA junior puede ayudar a la empresa a mantener un seguimiento preciso de los productos naturales?\",\n  \"opcion_A\": \"Implementar un sistema de seguimiento de productos basado en la fotosíntesis a través de identificar los productos por sus características Únicas\",\n  \"opcion_B\": \"Optimizar la base de datos existente con tablas y índices adecuados, y crear procedimientos almacenados para el seguimiento de inventario\",\n  \"feedback_A\": \"Eso sería interesante en una planta, pero no es lo más eficiente para una empresa con procesos de gestión de inventario.\",\n  \"feedback_B\": \"Correcto, optimizar la base de datos es una solución práctica para mantener un seguimiento preciso de los productos naturales.\",\n  \"pregunta_cierre\": \"¿Cuáles serían los beneficios de implementar las mejoras sugeridas?\"\n}\n```",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "e7695983566628b063e690a3",
+   "msgs_key": "4f29393db428a14abc56a8fa",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 24000,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Desarrollador educativo.\n[CURSO] Recurso para el curso universitario «Sistemas de Gestión de Base de Datos» (UPAO, Ing. de Computación y Sistemas, 5.º ciclo), orientado a la administración de bases de datos (rol del DBA) sobre Oracle 11g o superior. Audiencia: estudiantes que ya saben SQL básico (SELECT, JOIN, DDL) y modelado relacional, pero que se inician en la administración del SGBD. Tem",
+    "tail": "ambiar de dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del curso de bases de datos, machine learning o ciencia de datos). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 19272
+   },
+   "response": {
+    "content": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\">\n  <title>MINIJUEGO · Fotosíntesis</title>\n  <style>\n    .ova-card { max-height: 600px; overflow-y: auto; }\n    .ova-steps ol { counter-reset: step; list-style-type: none; }\n    .ova-steps li::before { counter-increment: step; content: counter(step) \". \"; }\n    .ova-progress { margin-top: 24px; }\n    .ova-btn { margin-top: 12px; }\n  </style>\n</head>\n<body>\n  <main class=\"ova-container\">\n    <upao-header eyebrow='MINIJUEGO' title='Fotosíntesis: Transformación Energética'></upao-header>\n    <upao-objective>Al terminar podrás explicar la fase luminosa y el ciclo de Calvin de fotosíntesis.</upao-objective>\n    <section class=\"ova-card\">\n      <upao-node number='1' title='Fase Luminosa' label='Primer paso'>\n        Las plantas utilizan la luz solar para transformar dióxido de carbono y agua en glucosa y oxígeno.\n        <upao-choice value='A' correct='false' feedback='Eso ocurre en la fase de Calvin, no luminosa.' group='q1'>Transformación de ADN a ARN</upao-choice>\n        <upao-choice value='B' correct='true' feedback='Correcto!' group='q1'>Usando energía luminosa para crear azúcares.</upao-choice>\n        <upao-choice value='C' correct='false' feedback='Eso se refiere a la fotorespiración, no la fase luminosa.' group='q1'>Producción de oxígeno.</upao-choice>\n        <upao-reveal label='Ver respuesta'>La fase luminosa de la fotosíntesis ocurre en la cloroplasto y utiliza la luz solar para crear azúcares a partir de dióxido de carbono y agua.</upao-reveal>\n      </upao-node>\n      <upao-node number='2' title='Ciclo de Calvin' label='Segundo paso'>\n        Durante la fase de Calvin, las plantas utilizan la energía de ATP y NADPH para transformar CO2 en azúcares.\n        <upao-choice value='A' correct='true' feedback='Correcto!' group='q2'>Enzima RuBisCO cataliza la reacción en el ciclo de Calvin.</upao-choice>\n        <upao-choice value='B' correct='false' feedback='Eso ocurre en la fase luminosa.' group='q2'>Energía sol no se utiliza directamente en este ciclo.</upao-choice>\n        <upao-choice value='C' correct='false' feedback='Eso se refiere a la fase luminosa.' group='q2'>Energía no es generada, solo se distribuye.</upao-choice>\n        <upao-reveal label='Ver respuesta'>En el ciclo de Calvin, las plantas utilizan la energía de ATP y NADPH generadas durante la fase luminosa para convertir CO2 en azúcares.</upao-reveal>\n      </upao-node>\n    </section>\n    <upao-progress id='p' current='0' total='2' show-fraction></upao-progress>\n    <p id=\"estado\" aria-live=\"polite\" class=\"ova-muted\"></p>\n    <button class=\"ova-btn\" id=\"finalizar\" disabled>Finalizar minijuego</button>\n  </main>\n  <script>\n    (function(){\n      const fin = document.getElementById('finalizar');\n      const estado = document.getElementById('estado');\n      let current = 0;\n\n      function updateProgress() {\n        document.querySelector('.ova-progress span').style.width = `${(current + 1) / 2 * 100}%`;\n      }\n\n      document.addEventListener('upao-nav-change', (e) => {\n        updateProgress();\n      });\n\n      document.querySelectorAll('.ova-option').forEach(option => {\n        option.addEventListener('click', () => {\n          if (option.classList.contains('is-correct')) {\n            estado.textContent = '✓ Respuesta correcta';\n            option.classList.add('is-correct');\n          } else if (option.classList.contains('is-wrong')) {\n            estado.textContent = '✗ Respuesta incorrecta';\n            option.classList.add('is-wrong');\n          }\n          current++;\n          fin.disabled = current < 2;\n        });\n      });\n\n      fin.addEventListener('click', () => {\n        estado.textContent = '✓ Actividad completada';\n        fin.disabled = true;\n        _scormComplete();\n      });\n    })();\n  </script>\n</body>\n</html>\n```",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "f6794ecb2efa162f539105ff",
+   "msgs_key": "b92fdc9c2214709a2bec4c6e",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 1024,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Evaluador pedagógico de recursos educativos HTML5.\n[FASE_5E] engage | [TIPO_RECURSO] 7 | [CONCEPTO] \"La fotosíntesis: cómo las plantas transforman la energía luminosa en energía química (fase luminosa y ciclo de Calvin), para estudiantes de primer ciclo universitario\"\n[TAREA] Evalúa este recurso según 6 criterios y responde SOLO con JSON válido:\n1. Fidelidad pedagógica: ¿enseña el concepto y",
+    "tail": "ctadas server-side, NO incluidas en el extracto: no las\n  cuentes como CSS/JS ausente.\n- Las imágenes/audio/video aparecen como [img/audio/video:data-uri NKB]:\n  juzga su uso y densidad, no sus bytes.",
+    "chars": 7691
+   },
+   "response": {
+    "content": "```json\n{\n  \"puntaje\": 85,\n  \"problemas\": [\n    \"La interactividad solo se basa en los clics de los botones de respuesta, pero no incluye manejo de teclado (Enter/Space) ni estados dinámicos en el contenedor 'estado' con aria-live updates.\",\n    \"No hay evidencia de manejo de eventos para responder preguntas por medios alternativos como teclado o pantalla táctil.\",\n    \"El diseño de las tarjetas es identico e intercambiable en las dos secciones, lo que podría hacerse más descriptivo.\",\n    \"El contador no es secuencial real (01/02/03), sino incremental.\",\n    \"La unica palabra destacada del titular no es relevantemente acentuada ni de ninguna manera en destaca o resalta el contenido.\"\n  ],\n  \"veredicto\": \"aceptar\"\n}\n```",
+    "finish_reason": "stop"
+   }
+  }
+ ]
+}
