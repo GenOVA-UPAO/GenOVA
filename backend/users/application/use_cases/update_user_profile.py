@@ -41,11 +41,15 @@ class UpdateUserProfile:
         # Cambiar el correo equivale a mover el canal de recuperación de la cuenta:
         # exige reautenticar con la contraseña actual (una sesión robada no basta).
         account = self.accounts.get(data.user_id)
-        if account is not None and email != normalize_email(account.email):
-            if not data.current_password or not self.passwords.verify(
-                data.current_password, account.password_hash
-            ):
-                raise IncorrectCurrentPassword()
+        if (
+            account is not None
+            and email != normalize_email(account.email)
+            and not (
+                data.current_password
+                and self.passwords.verify(data.current_password, account.password_hash)
+            )
+        ):
+            raise IncorrectCurrentPassword()
 
         # Mismo orden de checks que el router original: correo, teléfono,
         # código universitario (cada dup excluye al propio usuario).

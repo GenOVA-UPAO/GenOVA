@@ -15,12 +15,11 @@ from fastapi import HTTPException  # noqa: E402
 from fastapi.security import HTTPAuthorizationCredentials  # noqa: E402
 from sqlalchemy import select  # noqa: E402
 
-from tests._sqlite_db import make_session  # noqa: E402
-
 from auth.infrastructure.jwt import build_token  # noqa: E402
 from auth.infrastructure.reset_adapters import SqlAlchemyPasswordResetTokenRepository  # noqa: E402
 from auth.interface.http.dependencies import get_current_user  # noqa: E402
 from models import PasswordResetToken, RevokedToken, Role, User, UserRole  # noqa: E402
+from tests._sqlite_db import make_session  # noqa: E402
 from users.infrastructure.sqlalchemy_account_repository import (  # noqa: E402
     SqlAlchemyUserAccountRepository,
 )

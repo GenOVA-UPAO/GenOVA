@@ -16,10 +16,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import pytest  # noqa: E402
 from sqlalchemy import select  # noqa: E402
 
-from tests._sqlite_db import make_session  # noqa: E402
-
 from core.security import hash_password  # noqa: E402
 from models import PasswordResetToken, User  # noqa: E402
+from tests._sqlite_db import make_session  # noqa: E402
 from users.application.dto import UpdateProfileInput  # noqa: E402
 from users.application.use_cases.update_user_profile import UpdateUserProfile  # noqa: E402
 from users.domain.errors import IncorrectCurrentPassword  # noqa: E402

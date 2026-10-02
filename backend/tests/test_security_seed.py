@@ -10,11 +10,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import pytest  # noqa: E402
 from sqlalchemy import select  # noqa: E402
 
-from tests._sqlite_db import make_session  # noqa: E402
-
 import seed  # noqa: E402
 from core.security import verify_password  # noqa: E402
 from models import Role, User, UserRole  # noqa: E402
+from tests._sqlite_db import make_session  # noqa: E402
 
 
 @pytest.fixture
