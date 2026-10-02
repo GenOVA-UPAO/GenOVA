@@ -66,6 +66,19 @@ def _verify_html_body(verify_link: str, greeting: str) -> str:
     """
 
 
+def _connect() -> smtplib.SMTP:
+    """465 = TLS implícito (Gmail). Cualquier otro puerto = SMTP plano con
+    STARTTLS si el servidor lo ofrece (587 en proveedores, 1025 en Mailpit local)."""
+    if SMTP_PORT == 465:
+        return smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=15)
+    server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15)
+    server.ehlo()
+    if server.has_extn("starttls"):
+        server.starttls()
+        server.ehlo()
+    return server
+
+
 def _send_html(to_email: str, subject: str, html: str, log_label: str) -> None:
     if not SMTP_USER or not SMTP_PASSWORD:
         logger.error("SMTP credentials faltantes", log_label=log_label, to_email=to_email)
@@ -78,7 +91,7 @@ def _send_html(to_email: str, subject: str, html: str, log_label: str) -> None:
     msg.attach(MIMEText(html, "html"))
 
     try:
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+        with _connect() as server:
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.sendmail(SMTP_USER, to_email, msg.as_string())
         logger.info("Correo enviado", log_label=log_label, to_email=to_email)
