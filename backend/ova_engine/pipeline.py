@@ -65,6 +65,13 @@ def generate_with_template(
             deadline=deadline,
         )
     t_text = time.monotonic()
+    # Recursos de video (engage 2, explore 4, explain 1): el video se encarga con el
+    # guion (`prompt_video` del JSON) y se genera en paralelo al render.
+    pending_video = None
+    if not fake:
+        from prometheus.plans.video_step import start_video
+
+        pending_video = start_video(spec.phase, spec.rt, concept, data, llm_config)
     replacements: dict[str, str] = {}
     if spec.uses_images and image_settings and image_settings.get("enabled", True):
         from llm.images.image_enrich import enrich_with_images
@@ -74,6 +81,10 @@ def generate_with_template(
         except Exception as exc:  # la imagen nunca tumba el recurso
             logger.warning("ova engine images failed", key=spec.key, error=str(exc)[:200])
     html = resolve_image_placeholders(render_resource(spec, data, concept, params, theme), replacements)
+    if pending_video is not None:
+        from prometheus.plans.video_step import attach_video
+
+        html = attach_video(html, pending_video)
     logger.info(
         "ova engine resource",
         key=spec.key,

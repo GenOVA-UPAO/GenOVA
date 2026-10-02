@@ -53,6 +53,14 @@ Copia `templates/engage_01.py` (referencia). Exporta `SPEC = TemplateSpec(...)` 
 - `uses_images=True` solo si hay elementos con `prompt_imagen`; en `render`, si el
   elemento trae `image_placeholder` úsalo como `src`, si no dibuja un SVG/emoji.
 
+## Casos especiales
+- **Video** (engage 2, explore 4, explain 1): el schema DEBE tener `prompt_video` (inglés,
+  ≤90 palabras) en la raíz; el pipeline encarga el video y lo inserta solo. El render
+  muestra el guion/storyboard (el video llega aparte).
+- **Podcast** (engage 3): NO tiene plantilla (ya usa un reproductor fijo, plan `podcast`).
+- **Agente socrático** (explore 2): render con diálogo guionizado (ramas pregunta→respuesta
+  precalculadas en el JSON), sin llamadas a LLM en tiempo de ejecución.
+
 ## Verificar
 
 ```bash
