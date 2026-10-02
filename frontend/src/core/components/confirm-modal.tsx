@@ -1,3 +1,5 @@
+import { useId, useState } from "react";
+
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -6,6 +8,8 @@ import {
   AlertDialogTitle,
 } from "@/core/components/ui/alert-dialog";
 import { Button } from "@/core/components/ui/button";
+import { Input } from "@/core/components/ui/input";
+import { Label } from "@/core/components/ui/label";
 
 interface ConfirmModalProps {
   /** Por defecto `true`: el padre monta/desmonta el modal como en Angular. */
@@ -17,6 +21,8 @@ interface ConfirmModalProps {
   /** Texto del botón mientras se procesa («Eliminando…»). */
   loadingLabel?: string;
   danger?: boolean;
+  /** Si se indica, el usuario debe escribirla (sin distinguir mayúsculas) para habilitar la acción. */
+  confirmPhrase?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -29,9 +35,15 @@ export function ConfirmModal({
   isLoading = false,
   loadingLabel = "Procesando…",
   danger = true,
+  confirmPhrase,
   onConfirm,
   onCancel,
 }: Readonly<ConfirmModalProps>) {
+  const [typed, setTyped] = useState("");
+  const inputId = useId();
+  const phraseOk =
+    confirmPhrase === undefined || typed.trim().toLowerCase() === confirmPhrase.toLowerCase();
+
   // Mientras se procesa no se puede cerrar (Esc incluido): evita dobles envíos a medias.
   const handleOpenChange = (next: boolean) => {
     if (!next && !isLoading) onCancel();
@@ -46,6 +58,31 @@ export function ConfirmModal({
         <AlertDialogDescription className="mt-2 text-sm whitespace-pre-line text-muted-foreground">
           {message}
         </AlertDialogDescription>
+        {confirmPhrase !== undefined && (
+          <form
+            className="mt-4 space-y-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (phraseOk && !isLoading) onConfirm();
+            }}
+          >
+            <Label htmlFor={inputId} className="leading-snug font-normal">
+              Para confirmar, escribe <strong className="font-semibold">{confirmPhrase}</strong>
+            </Label>
+            <Input
+              id={inputId}
+              value={typed}
+              onChange={(e) => {
+                setTyped(e.target.value);
+              }}
+              autoComplete="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              disabled={isLoading}
+              placeholder={confirmPhrase}
+            />
+          </form>
+        )}
         <div className="flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:gap-3">
           {/* AlertDialogCancel: Radix le da el foco inicial (con un Button normal
           el foco se quedaba detrás del modal). Cierra vía onOpenChange → onCancel. */}
@@ -59,6 +96,7 @@ export function ConfirmModal({
             size="lg"
             className="max-sm:h-11 sm:flex-1"
             onClick={onConfirm}
+            disabled={!phraseOk}
             loading={isLoading}
           >
             {isLoading ? loadingLabel : confirmLabel}
