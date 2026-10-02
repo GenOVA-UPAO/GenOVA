@@ -19,6 +19,7 @@ from auth.application.ports import (
 )
 from auth.domain.email import normalize_email
 from auth.domain.errors import (
+    AccountDisabled,
     AccountLocked,
     EmailNotVerified,
     InvalidCredentials,
@@ -58,6 +59,11 @@ class LoginUser:
             attempts, locked_until = next_failure_state(user.failed_login_attempts, now)
             self.repo.record_failed_attempt(user.id, attempts, locked_until)
             raise InvalidCredentials()
+
+        # Tras validar la contraseña (no filtra qué correos existen): una cuenta
+        # desactivada no debe recibir token, o la SPA lo trata como «sesión expirada».
+        if not user.is_active:
+            raise AccountDisabled()
 
         if self.email_verification_enabled and not user.email_verified:
             raise EmailNotVerified()

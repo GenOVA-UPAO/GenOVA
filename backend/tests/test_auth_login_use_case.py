@@ -7,6 +7,7 @@ import pytest
 from auth.application.dto import LoginInput
 from auth.application.use_cases.login_user import LoginUser
 from auth.domain.errors import (
+    AccountDisabled,
     AccountLocked,
     EmailNotVerified,
     InvalidCredentials,
@@ -77,6 +78,7 @@ def build_user(
     locked_until: datetime | None = None,
     email_verified: bool = True,
     totp_enabled: bool = False,
+    is_active: bool = True,
 ) -> AuthUser:
     return AuthUser(
         id=user_id,
@@ -86,6 +88,7 @@ def build_user(
         locked_until=locked_until,
         email_verified=email_verified,
         totp_enabled=totp_enabled,
+        is_active=is_active,
     )
 
 
@@ -250,6 +253,25 @@ def test_login_correo_no_verificado_lanza_email_not_verified():
         use_case.execute(LoginInput(email="noverificado@upao.edu", password="password123"))
 
     assert len(repo.reset_counter_calls) == 0
+
+
+def test_login_cuenta_desactivada_lanza_account_disabled_solo_con_password_correcta():
+    def make(valid: bool) -> LoginUser:
+        return LoginUser(
+            repo=DummyUserRepository(user=build_user(is_active=False)),
+            passwords=DummyPasswordVerifier(valid=valid),
+            throttle=DummyThrottle(),
+            tickets=DummyTotpTicketIssuer(),
+            rate_limit_enabled=True,
+            email_verification_enabled=True,
+        )
+
+    data = LoginInput(email="inactivo@upao.edu", password="password123")
+    with pytest.raises(AccountDisabled):
+        make(valid=True).execute(data)
+    # Con contraseña incorrecta no se revela que la cuenta existe ni que está desactivada.
+    with pytest.raises(InvalidCredentials):
+        make(valid=False).execute(data)
 
 
 def test_login_correo_no_verificado_se_permite_si_verificacion_esta_desactivada():

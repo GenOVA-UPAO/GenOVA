@@ -31,6 +31,10 @@ class EmailNotVerified(AuthError):
     """El correo aún no está verificado y la verificación es obligatoria."""
 
 
+class AccountDisabled(AuthError):
+    """La contraseña es correcta pero un administrador desactivó la cuenta."""
+
+
 class WeakRegistrationPassword(AuthError):
     """La contraseña de registro no cumple la política de complejidad."""
 
