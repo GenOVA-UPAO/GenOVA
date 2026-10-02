@@ -43,12 +43,14 @@ export function DashboardBody({ ovas, total, isAdmin }: Readonly<DashboardBodyPr
             value={counts.ready}
             hint="Preparados para exportar"
             to="/mis-ovas?estado=listo"
+            tone="success"
           />
           <DashboardStatCard
             label="En curso"
             value={counts.active}
             hint="Generándose ahora"
             to="/mis-ovas?estado=generando"
+            tone="live"
           />
         </div>
       </section>
