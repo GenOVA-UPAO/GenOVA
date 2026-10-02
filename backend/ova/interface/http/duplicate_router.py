@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 
-from auth.dependencies import get_current_user
+from auth.dependencies import require_permission
 from core.rate_limit import limiter
 from ova.application.dto import DuplicateOvaInput
 from ova.container import OvaUseCases, build_ova
@@ -16,7 +16,7 @@ router = APIRouter(tags=["OVA · CRUD"])
 def duplicate_ova(
     request: Request,
     ova_id: str,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("create_ova")),
     use_cases: OvaUseCases = Depends(build_ova),
 ):
     try:
