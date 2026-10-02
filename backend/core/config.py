@@ -70,6 +70,8 @@ class Settings(BaseSettings):
     langsmith_api_key: str = ""
     langsmith_tracing: bool = False
     langsmith_project: str = "genova"
+    # P6: prompts, outputs and private RAG content are excluded by default.
+    telemetry_include_content: bool = False
     latency_threshold_ms: float = 278.0
     app_url: str = "https://genova.ai"
     frontend_url: str = "http://localhost:4200"
