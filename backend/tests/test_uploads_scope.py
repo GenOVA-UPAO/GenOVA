@@ -18,7 +18,7 @@ from uploads.infrastructure import in_memory_store as store
 from uploads.infrastructure.temp_upload_repository import InMemoryTempUploadRepository
 
 PDF = b"%PDF-1.4\n%fake\n"
-USER = "user-1"
+USER = str(uuid.uuid4())
 OVA = str(uuid.uuid4())
 
 
@@ -156,6 +156,9 @@ def test_no_se_reclaman_subidas_ajenas():
 
 def test_router_filtra_por_ova_y_lanza_la_ingesta_despues(monkeypatch):
     from auth.dependencies import get_current_user
+    from core.database import get_db
+    from models import Ova
+    from tests._sqlite_db import make_session
     from uploads.container import UploadsUseCases, build_uploads
     from uploads.interface.http import router as http
 
@@ -166,7 +169,11 @@ def test_router_filtra_por_ova_y_lanza_la_ingesta_despues(monkeypatch):
     )
     app = FastAPI()
     app.include_router(http.router, prefix="/api/uploads")
-    app.dependency_overrides[get_current_user] = lambda: type("U", (), {"id": USER})()
+    db = make_session(Ova.__table__)
+    db.add(Ova(id=uuid.UUID(OVA), user_id=uuid.UUID(USER), title="OVA propia"))
+    db.commit()
+    app.dependency_overrides[get_db] = lambda: db
+    app.dependency_overrides[get_current_user] = lambda: type("U", (), {"id": uuid.UUID(USER)})()
     app.dependency_overrides[build_uploads] = lambda: UploadsUseCases(
         ListUploads(repo), UploadFiles(repo, rag, _Limits()), None
     )
@@ -183,6 +190,8 @@ def test_router_filtra_por_ova_y_lanza_la_ingesta_despues(monkeypatch):
     assert client.get("/api/uploads/temp").json()["items"] == []
     assert len(client.get(f"/api/uploads/temp?ova_id={OVA}").json()["items"]) == 1
     assert client.get("/api/uploads/temp?ova_id=no-es-uuid").status_code == 422
+    assert client.get(f"/api/uploads/temp?ova_id={uuid.uuid4()}").status_code == 404
+    db.close()
 
 
 def test_crear_job_solo_usa_archivos_propios_y_los_liga_al_ova():
