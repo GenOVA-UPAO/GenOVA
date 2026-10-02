@@ -42,10 +42,14 @@ def script(js: str) -> str:
     )
 
 
-def document(title: str, body: str, *, lang: str = "es") -> str:
+ENGINE_META = "genova-engine"
+
+
+def document(title: str, body: str, *, lang: str = "es", key: str = "") -> str:
     return (
         f'<!DOCTYPE html>\n<html lang="{lang}">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        f'<meta name="{ENGINE_META}" content="template:{esc(key)}">\n'
         f"<title>{esc(title)}</title>\n</head>\n<body>\n"
         f'<main class="ova-container ova-stack">\n{body}\n</main>\n</body>\n</html>\n'
     )
@@ -68,3 +72,8 @@ PROGRESS_JS = """
   };
 })();
 """
+
+
+def is_template_html(html: str) -> bool:
+    """El recurso salió de una plantilla: su HTML no debe reescribirlo un LLM."""
+    return f'name="{ENGINE_META}"' in (html or "")[:2000]

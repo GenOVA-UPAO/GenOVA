@@ -43,6 +43,11 @@ def user_token(base_url):
 def _legacy_generation_by_default(request, monkeypatch):
     """Los tests del pipeline clásico (LLM→HTML, cassettes) no deben desviarse al
     motor por plantillas: se activa solo en los tests de ova_engine."""
+    # El .env de desarrollo puede apuntar al stack local (Ollama/Laya/SD): los tests
+    # nunca salen a la red por esa vía.
+    monkeypatch.setenv("OVA_TEXT_BACKEND", "router")
+    monkeypatch.setenv("OVA_DECISION_BACKEND", "rules")
+    monkeypatch.delenv("LOCAL_IMAGE_URL", raising=False)
     if "ova_engine" not in request.node.nodeid:
         from core.config import settings
 

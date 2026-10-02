@@ -26,7 +26,7 @@ def render_resource(spec: TemplateSpec, data: dict, concept: str, params: dict, 
 
     theme = theme or {}
     ctx = RenderContext(concept=concept, phase=spec.phase, rt=spec.rt, title=spec.title, params=params)
-    html = document(f"{spec.title}: {concept}", spec.render(data, ctx))
+    html = document(f"{spec.title}: {concept}", spec.render(data, ctx), key=spec.key)
     return inject_runtime(
         html,
         css=theme.get("color", "upao") != "free",
