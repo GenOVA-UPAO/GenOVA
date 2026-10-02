@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from auth.container import AuthUseCases, build_auth
 from auth.infrastructure.cookies import clear_auth_cookie
 from auth.infrastructure.session_adapters import snapshot_authenticated_user
+from auth.interface.http.csrf import check_cookie_csrf
 from auth.interface.http.dependencies import get_current_user
 
 _security_scheme = HTTPBearer(auto_error=False)
@@ -22,6 +23,8 @@ def logout(
     auth: AuthUseCases = Depends(build_auth),
 ) -> JSONResponse:
     token = request.cookies.get(_COOKIE_NAME)
+    if token:
+        check_cookie_csrf(request)
     if not token and creds:
         token = creds.credentials
     auth.logout_session.execute(token)

@@ -8,6 +8,7 @@ from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBea
 from sqlalchemy import literal, select
 from sqlalchemy.orm import Session
 
+from auth.interface.http.csrf import check_cookie_csrf
 from core.config import settings
 from core.database import get_db
 from core.security import JWT_ALGORITHM, JWT_SECRET
@@ -26,6 +27,7 @@ def _extract_token(request: Request, creds: HTTPAuthorizationCredentials | None)
     """Prefer the httpOnly cookie; fall back to Bearer when explicitly enabled."""
     cookie = request.cookies.get(_COOKIE_NAME)
     if cookie:
+        check_cookie_csrf(request)
         return cookie
     if _ACCEPT_BEARER and creds and creds.credentials:
         return creds.credentials
