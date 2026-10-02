@@ -42,12 +42,13 @@ export function AdminUsersPage() {
           onSave={p.saveEditedUser}
         />
       )}
-      {p.pendingDeactivation !== null && (
+      {p.pendingStatusChange !== null && (
         <DeactivateUserConfirm
-          user={p.pendingDeactivation}
-          isDeactivating={p.isDeactivating}
-          onConfirm={p.confirmDeactivation}
-          onCancel={p.cancelDeactivation}
+          user={p.pendingStatusChange.user}
+          nextActive={p.pendingStatusChange.nextActive}
+          isChanging={p.isChangingStatus}
+          onConfirm={p.confirmStatusChange}
+          onCancel={p.cancelStatusChange}
         />
       )}
     </div>
