@@ -85,6 +85,7 @@ _STYLE = """
   margin-bottom: 16px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 .role-tabs {
   display: flex;
@@ -94,6 +95,15 @@ _STYLE = """
   border: 1px solid var(--border, #E2E8F2);
   border-radius: var(--radius, 12px);
   min-width: min-content;
+}
+@media (max-width: 640px) {
+  .role-tabs {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .role-tab {
+    min-width: 100%;
+  }
 }
 .role-tab {
   flex: 1 1 0;
