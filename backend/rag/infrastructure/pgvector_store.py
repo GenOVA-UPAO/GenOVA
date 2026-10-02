@@ -116,9 +116,14 @@ _INSERT_LEGACY = text(
 )
 
 
-def tie_uploads_to_ova(db: Session, upload_ids: Sequence[str], ova_id: str) -> int:
-    """Mark all chunks from these upload_ids as belonging to a generated OVA.
-    Tied chunks never expire automatically (kept until the OVA is deleted)."""
+def tie_uploads_to_ova(
+    db: Session, upload_ids: Sequence[str], ova_id: str, *, user_id: str
+) -> int:
+    """Mark the chunks of these upload_ids as belonging to a generated OVA.
+    Tied chunks never expire automatically (kept until the OVA is deleted).
+
+    Solo toca chunks cuyo dueño es ``user_id``: sin ese filtro, quien conociera el
+    id de un documento ajeno podía reasignarlo a una OVA propia (IDOR)."""
     if not upload_ids:
         return 0
     stmt = text(
@@ -126,11 +131,12 @@ def tie_uploads_to_ova(db: Session, upload_ids: Sequence[str], ova_id: str) -> i
         UPDATE rag_chunks
         SET ova_id = CAST(:ova_id AS UUID)
         WHERE upload_id::text IN :upload_ids
+          AND user_id = CAST(:user_id AS UUID)
         """
     ).bindparams(bindparam("upload_ids", expanding=True))
     result = db.execute(
         stmt,
-        {"ova_id": ova_id, "upload_ids": [str(u) for u in upload_ids]},
+        {"ova_id": ova_id, "upload_ids": [str(u) for u in upload_ids], "user_id": str(user_id)},
     )
     db.commit()
     return result.rowcount or 0
@@ -192,17 +198,18 @@ def purge_expired(db: Session) -> int:
     return result.rowcount or 0
 
 
-def chunks_for_upload(db: Session, upload_id: str) -> list[dict]:
-    """Debug helper: return all chunks for an upload (without embeddings)."""
+def chunks_for_upload(db: Session, upload_id: str, *, user_id: str) -> list[dict]:
+    """Chunks de un upload del usuario (sin embeddings)."""
     stmt = text(
         """
         SELECT id::text, chunk_index, source_filename, content
         FROM rag_chunks
         WHERE upload_id = CAST(:upload_id AS UUID)
+          AND user_id = CAST(:user_id AS UUID)
         ORDER BY chunk_index
         """
     )
-    rows = db.execute(stmt, {"upload_id": upload_id}).mappings().all()
+    rows = db.execute(stmt, {"upload_id": upload_id, "user_id": str(user_id)}).mappings().all()
     return [dict(r) for r in rows]
 
 
@@ -392,11 +399,11 @@ class PgVectorChunkStore:
             self._db, query_text, query_embedding, upload_ids, k, candidate_k
         )
 
-    def tie_uploads_to_ova(self, upload_ids: Sequence[str], ova_id: str) -> int:
-        return tie_uploads_to_ova(self._db, upload_ids, ova_id)
+    def tie_uploads_to_ova(self, upload_ids: Sequence[str], ova_id: str, *, user_id: str) -> int:
+        return tie_uploads_to_ova(self._db, upload_ids, ova_id, user_id=user_id)
 
     def purge_expired(self) -> int:
         return purge_expired(self._db)
 
-    def chunks_for_upload(self, upload_id: str) -> list[dict]:
-        return chunks_for_upload(self._db, upload_id)
+    def chunks_for_upload(self, upload_id: str, *, user_id: str) -> list[dict]:
+        return chunks_for_upload(self._db, upload_id, user_id=user_id)

@@ -194,6 +194,6 @@ def _tie_uploads(db: Session, job: OvaJob, ova_id: str) -> None:
     try:
         from rag import tie_uploads_to_ova
 
-        tie_uploads_to_ova(db, upload_ids, ova_id)
+        tie_uploads_to_ova(db, upload_ids, ova_id, user_id=str(job.user_id))
     except Exception:
         logger.exception("failed to tie RAG chunks to materialized ova", ova_id=ova_id)
