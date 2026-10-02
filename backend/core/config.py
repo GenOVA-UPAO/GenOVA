@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expires_minutes: int = 1440
     auth_accept_bearer: bool = True
+    # P7 rollout cutoff: 2026-10-03 00:00 UTC. Legacy sessions may live at most
+    # their original lifetime (30 days max). Set 0 to require aud immediately.
+    jwt_legacy_issued_before: int = 1790985600
     # Exige verificar el correo antes de iniciar sesión. Desactivado por ahora
     # (el envío de correos no está disponible): el registro y el login funcionan
     # sin verificación. Pon EMAIL_VERIFICATION_ENABLED=1 para reactivarlo.

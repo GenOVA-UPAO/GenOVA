@@ -8,10 +8,10 @@ from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBea
 from sqlalchemy import literal, select
 from sqlalchemy.orm import Session
 
+from auth.infrastructure.jwt import decode_session_token
 from auth.interface.http.csrf import check_cookie_csrf
 from core.config import settings
 from core.database import get_db
-from core.security import JWT_ALGORITHM, JWT_SECRET
 from models import RevokedToken, Role, User, UserRole
 
 _COOKIE_NAME = "genova_token"
@@ -61,7 +61,7 @@ def get_current_user(
 ) -> User:
     token = _extract_token(request, creds)
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = decode_session_token(token)
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(

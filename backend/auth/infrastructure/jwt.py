@@ -9,10 +9,44 @@ import jwt
 from fastapi.responses import JSONResponse
 
 from auth.infrastructure.cookies import set_auth_cookie
+from core.config import settings
 from core.security import JWT_ALGORITHM, JWT_EXPIRES_MINUTES, JWT_SECRET
 
 # Persistent "remember me" sessions (cookie Max-Age + JWT exp).
 JWT_REMEMBER_MINUTES = 60 * 24 * 30  # 30 days
+JWT_ISSUER = "genova"
+JWT_AUDIENCE = "genova-api"
+
+
+def decode_session_token(token: str) -> dict:
+    """Strict session claims, with a bounded exception for pre-P7 sessions."""
+    required = ["sub", "iss", "exp", "iat", "jti"]
+    try:
+        payload = jwt.decode(
+            token, JWT_SECRET, algorithms=[JWT_ALGORITHM], issuer=JWT_ISSUER,
+            audience=JWT_AUDIENCE, options={"require": [*required, "aud"], "strict_aud": True},
+        )
+    except jwt.MissingRequiredClaimError as exc:
+        if exc.claim != "aud":
+            raise
+        # Signature, issuer and every current-format claim remain mandatory.
+        payload = jwt.decode(
+            token, JWT_SECRET, algorithms=[JWT_ALGORITHM], issuer=JWT_ISSUER,
+            options={"require": [*required, "email"], "verify_aud": False},
+        )
+        if "aud" in payload:
+            raise jwt.InvalidAudienceError("Invalid audience") from None
+        cutoff = settings.jwt_legacy_issued_before
+        lifetime = JWT_REMEMBER_MINUTES * 60
+        iat, exp = payload["iat"], payload["exp"]
+        if (type(iat) is not int or type(exp) is not int or cutoff <= 0
+                or iat > cutoff or datetime.now(UTC).timestamp() > cutoff + lifetime
+                or not iat < exp <= iat + lifetime):
+            raise jwt.MissingRequiredClaimError("aud") from None
+    if (type(payload["iat"]) is not int or type(payload["exp"]) is not int
+            or payload["exp"] <= payload["iat"] or not payload["jti"]):
+        raise jwt.InvalidTokenError("Invalid session claims")
+    return payload
 
 
 def build_token(user_id: str, email: str, *, expires_minutes: int | None = None) -> str:
@@ -23,7 +57,8 @@ def build_token(user_id: str, email: str, *, expires_minutes: int | None = None)
         "email": email,
         "iat": now,
         "exp": now + timedelta(minutes=minutes),
-        "iss": "genova",
+        "iss": JWT_ISSUER,
+        "aud": JWT_AUDIENCE,
         "jti": str(uuid4()),
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
