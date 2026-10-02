@@ -124,5 +124,17 @@
     "status": "ok",
     "concept": "optimización de consultas con planes de ejecución",
     "seconds": 18.8
+  },
+  "elaborate:2": {
+    "key": "elaborate:2",
+    "status": "ok",
+    "concept": "backup y recovery con RMAN",
+    "seconds": 24.7
+  },
+  "elaborate:7": {
+    "key": "elaborate:7",
+    "status": "ok",
+    "concept": "auditoría",
+    "seconds": 14.6
   }
 }

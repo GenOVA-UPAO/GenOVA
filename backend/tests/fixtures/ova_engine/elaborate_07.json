@@ -5,58 +5,52 @@
   },
   "data": {
     "titulo": "Auditoría y gestión de índices en Oracle",
-    "objetivo": "Al terminar podrás escribir sentencias SQL para crear, verificar y manejar índices en Oracle.",
+    "objetivo": "Al terminar podrás escribir consultas SQL para auditar y gestionar índices en Oracle.",
     "ejemplo": {
-      "titulo": "Creación de índice en la tabla EMPLOYEES",
+      "titulo": "Creación de un índice",
       "pasos": [
         "Identifica la tabla y las columnas a indexar.",
-        "Usa la sintaxis correcta para crear el índice.",
-        "Verifica que el índice se haya creado correctamente."
+        "Usa la sintaxis correcta de CREATE INDEX.",
+        "Asegúrate de especificar la tabla y las columnas."
       ],
-      "codigo": "CREATE INDEX idx_employees_last_name ON employees (last_name);"
+      "codigo": "CREATE INDEX idx_last_name ON employees(last_name);"
     },
     "ejercicios": [
       {
-        "enunciado": "Crea un índice único llamado idx_departments_id en la tabla DEPARTMENTS sobre la columna department_id.",
-        "codigo_inicial": "CREATE INDEX ___ ON departments (___);\n-- Asegúrate de que el índice sea único.",
+        "enunciado": "Crea un índice llamado idx_email sobre la columna EMAIL de la tabla EMPLOYEES.",
+        "codigo_inicial": "CREATE INDEX ___ ON employees(___);",
         "palabras_clave": [
           "create index",
-          "departments",
-          "department_id",
-          "unique"
+          "employees",
+          "email"
         ],
-        "solucion": "CREATE UNIQUE INDEX idx_departments_id ON departments (department_id);",
-        "error_comun": "Olvidar la palabra 'unique' o usar 'index' en lugar de 'create index'."
+        "solucion": "CREATE INDEX idx_email ON employees(email);",
+        "error_comun": "Olvidar especificar el nombre del índice y la columna correcta."
       },
       {
-        "enunciado": "Crea un índice combinado en la tabla EMPLOYEES sobre las columnas last_name y email, y nombra el índice idx_employees_last_email.",
-        "codigo_inicial": "CREATE INDEX idx_employees_last_email ON employees (___, ___);\n-- Asegúrate de usar la sintaxis correcta para índices combinados.",
+        "enunciado": "Crea un índice compuesto llamado idx_name_email sobre las columnas LAST_NAME y EMAIL de la tabla EMPLOYEES.",
+        "codigo_inicial": "CREATE INDEX idx_name_email ON employees(___ , ___);",
         "palabras_clave": [
           "create index",
           "employees",
           "last_name",
-          "email",
-          "combined",
-          "composite"
+          "email"
         ],
-        "solucion": "CREATE INDEX idx_employees_last_email ON employees (last_name, email);",
-        "error_comun": "Usar solo una columna o no incluir el nombre correcto del índice."
+        "solucion": "CREATE INDEX idx_name_email ON employees(last_name, email);",
+        "error_comun": "No separar las columnas con coma o usar el orden incorrecto."
       },
       {
-        "enunciado": "Crea un índice llamado idx_regions_region_name en la tabla REGIONS sobre la columna region_name, y comenta que se usa para mejorar el rendimiento de las consultas de búsqueda.",
-        "codigo_inicial": "CREATE INDEX idx_regions_region_name ON regions (___);\n-- Comenta el propósito del índice.",
+        "enunciado": "Crea un índice único llamado idx_email_unique sobre la columna EMAIL de la tabla EMPLOYEES.",
+        "codigo_inicial": "CREATE UNIQUE INDEX ___ ON employees(___);",
         "palabras_clave": [
-          "create index",
-          "regions",
-          "region_name",
-          "comment",
-          "performance",
-          "query"
+          "create unique index",
+          "employees",
+          "email"
         ],
-        "solucion": "CREATE INDEX idx_regions_region_name ON regions (region_name);\n-- Este índice mejora el rendimiento de las consultas de búsqueda en la tabla REGIONS.",
-        "error_comun": "Olvidar el comentario o usar una columna incorrecta."
+        "solucion": "CREATE UNIQUE INDEX idx_email_unique ON employees(email);",
+        "error_comun": "Olvidar usar la palabra clave UNIQUE o usarla incorrectamente."
       }
     ],
-    "cierre": "La auditoría en Oracle implica crear índices para optimizar consultas. Usa la sintaxis 'create index' y asegúrate de incluir columnas y nombres adecuados."
+    "cierre": "Usa CREATE INDEX para auditar y optimizar consultas. Asegúrate de usar UNIQUE cuando sea necesario y especificar correctamente el nombre del índice y las columnas."
   }
 }
