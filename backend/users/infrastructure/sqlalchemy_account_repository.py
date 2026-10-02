@@ -13,6 +13,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from auth.domain.email import normalize_email
 from core.database import commit_or_500
 from models import Role, User, UserRole
 from users.domain.account import UserAccount
@@ -65,6 +66,9 @@ class SqlAlchemyUserAccountRepository:
         uid_suffix = str(uuid.uuid4())[:8]
         user.is_active = False
         user.email = f"deleted_{user.id}@{uid_suffix}.removed.local"
+        # La llave canónica también debe soltar el correo original: si no, queda el PII
+        # en BD y nadie (ni el mismo dueño) puede volver a registrarse con él.
+        user.email_normalized = normalize_email(user.email)
         user.full_name = "[eliminado]"
         user.phone_number = None
         user.university_id = None
