@@ -15,7 +15,7 @@ export function UserKeyRowHeader({
 }: Readonly<{ provider: string; view: OwnKeyView; check?: ProviderCheckState }>) {
   const meta = PROVIDER_META[provider] ?? {
     label: provider,
-    placeholder: "...",
+    placeholder: "…",
     desc: "Proveedor",
     compat: false,
   };

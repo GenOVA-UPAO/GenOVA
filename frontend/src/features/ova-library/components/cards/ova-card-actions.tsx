@@ -50,7 +50,7 @@ export function OvaCardActions({
             onClick={onDownload}
           >
             {!isDownloading && <Icon name="download-simple" size="text-base" />}
-            {isDownloading ? "Descargando..." : "Descargar"}
+            {isDownloading ? "Descargando…" : "Descargar"}
           </Button>
         </Tooltip>
       )}

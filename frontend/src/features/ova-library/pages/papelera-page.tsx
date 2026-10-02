@@ -10,6 +10,8 @@ import { SelectionToolbar } from "../components/selection-toolbar";
 import { usePapeleraPage } from "../hooks/use-papelera-page";
 import { ovaNoun } from "../lib/ova-count";
 
+const DELETE_PHRASE = "ELIMINAR";
+
 /** Página de gestión de la papelera con restauración y borrado permanente. */
 export function PapeleraPage() {
   const p = usePapeleraPage();
@@ -26,6 +28,7 @@ export function PapeleraPage() {
           message={p.confirmModal.message}
           confirmLabel={p.confirmModal.confirmLabel}
           danger
+          confirmPhrase={DELETE_PHRASE}
           isLoading={busy}
           onConfirm={() => { void p.confirmModal?.onConfirm(); }}
           onCancel={() => { p.setConfirmModal(null); }}

@@ -144,8 +144,13 @@ describe("PapeleraPage", () => {
     const dialog = await screen.findByRole("alertdialog", { name: "Eliminar definitivamente" });
     expect(dialog).toHaveTextContent("Esta acción no se puede deshacer.");
 
+    const confirmButton = within(dialog).getByRole("button", { name: "Eliminar definitivamente" });
+    expect(confirmButton).toBeDisabled();
+    await user.type(within(dialog).getByLabelText(/Para confirmar, escribe/), "eliminar");
+    expect(confirmButton).toBeEnabled();
+
     await act(async () => {
-      await user.click(within(dialog).getByRole("button", { name: "Eliminar definitivamente" }));
+      await user.click(confirmButton);
     });
 
     expect(ovaLibraryApi.deleteForever).toHaveBeenCalledWith("ova-trash-1");

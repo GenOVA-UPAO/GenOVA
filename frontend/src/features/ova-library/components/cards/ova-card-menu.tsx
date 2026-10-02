@@ -59,7 +59,7 @@ export function OvaCardMenu({
         )}
         <DropdownMenuItem className={ITEM_CLASS} disabled={busy} onSelect={onDuplicate}>
           <Icon name="copy" size="text-base" />
-          {isDuplicating ? "Duplicando..." : "Duplicar"}
+          {isDuplicating ? "Duplicando…" : "Duplicar"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem

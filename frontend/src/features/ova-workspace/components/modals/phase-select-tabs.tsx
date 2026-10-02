@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -25,8 +27,52 @@ function recursosElegidos(count: number): string {
 
 /** Conmutador de fases 5E: nombre en español y cuántos recursos lleva elegidos cada una. */
 export function PhaseSelectTabs({ phase, picks, onChange }: Readonly<Props>) {
+  const navRef = useRef<HTMLElement>(null);
+  const [edges, setEdges] = useState({ start: false, end: false });
+
+  // Pista de scroll: se difuminan los bordes que aún tienen pestañas ocultas.
+  const updateEdges = () => {
+    const el = navRef.current;
+    if (!el) return;
+    const start = el.scrollLeft > 4;
+    const end = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+    setEdges((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
+  };
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    updateEdges();
+    const active = el.querySelector<HTMLElement>("[aria-pressed='true']");
+    if (active) {
+      // Deja la pestaña activa visible sin tocar el scroll vertical de la página.
+      const left = active.offsetLeft - el.offsetLeft;
+      if (left < el.scrollLeft) el.scrollLeft = left - 8;
+      else if (left + active.offsetWidth > el.scrollLeft + el.clientWidth) {
+        el.scrollLeft = left + active.offsetWidth - el.clientWidth + 8;
+      }
+    }
+    window.addEventListener("resize", updateEdges);
+    return () => {
+      window.removeEventListener("resize", updateEdges);
+    };
+  }, [phase]);
+
+  const mask = [
+    edges.start && "[--fade-start:2rem]",
+    edges.end && "[--fade-end:2rem]",
+  ];
   return (
-    <nav aria-label="Fases" className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none]">
+    <nav
+      ref={navRef}
+      aria-label="Fases"
+      onScroll={updateEdges}
+      className={cn(
+        "-mx-1 overflow-x-auto px-1 [scrollbar-width:none] [--fade-start:0px] [--fade-end:0px]",
+        "[mask-image:linear-gradient(to_right,transparent,#000_var(--fade-start),#000_calc(100%-var(--fade-end)),transparent)]",
+        mask,
+      )}
+    >
       <div className="flex w-max min-w-full gap-1 rounded-lg bg-muted p-1">
         {PHASE_SELECT_CFG.map((item) => {
           const count = picks[item.key].length;

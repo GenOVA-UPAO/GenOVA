@@ -68,6 +68,9 @@ function outcome(result: ModelTestResult, onRetry: () => void): ReactNode {
         <img
           src={result.image}
           alt="Imagen de prueba generada por el modelo"
+          width={128}
+          height={128}
+          loading="lazy"
           className="size-32 rounded-lg border border-border object-cover"
         />
       ) : null}

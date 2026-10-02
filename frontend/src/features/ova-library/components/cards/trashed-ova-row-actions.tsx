@@ -27,7 +27,7 @@ export function TrashedOvaRowActions({
         onClick={onRestore}
       >
         {!isRestoring && <Icon name="arrow-counter-clockwise" size="text-base" />}
-        {isRestoring ? "Restaurando..." : "Restaurar"}
+        {isRestoring ? "Restaurando…" : "Restaurar"}
       </Button>
       <Button
         variant="ghost"
