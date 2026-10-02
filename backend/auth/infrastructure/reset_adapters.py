@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -66,6 +66,7 @@ class SqlAlchemyPasswordResetTokenRepository:
     def apply_new_password(self, user_id: UUID, password_hash: str) -> None:
         assert self._user_row is not None and self._user_row.id == user_id
         self._user_row.password_hash = password_hash
+        self._user_row.password_changed_at = datetime.now(UTC)
         self._user_row.failed_login_attempts = 0
         self._user_row.locked_until = None
         self._db.execute(

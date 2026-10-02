@@ -57,6 +57,7 @@ CREATE TABLE users (
   theme_settings TEXT NOT NULL DEFAULT '{}',
   resource_configs TEXT NOT NULL DEFAULT '{}',
   user_api_keys TEXT NOT NULL DEFAULT '{}',
+  password_changed_at TIMESTAMP,
   totp_secret TEXT, totp_enabled BOOLEAN NOT NULL DEFAULT 0,
   totp_backup_codes TEXT NOT NULL DEFAULT '[]',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP

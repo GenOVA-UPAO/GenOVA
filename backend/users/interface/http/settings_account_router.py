@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from auth.dependencies import get_current_user
 from auth.infrastructure.cookies import clear_auth_cookie
+from auth.infrastructure.jwt import issue_session_response
 from core.rate_limit import limiter
 from users.application.dto import ChangePasswordInput, DeleteAccountInput
 from users.container import UsersUseCases, build_users
@@ -46,7 +47,13 @@ def change_password(
     except UserError as err:
         raise to_http_exception(err) from None
 
-    return {"message": "Contraseña actualizada con éxito."}
+    # El cambio invalida las sesiones previas (incluida esta): se reemite la cookie
+    # para que quien cambió la clave siga conectado.
+    return issue_session_response(
+        str(current_user.id),
+        current_user.email,
+        extra_content={"message": "Contraseña actualizada con éxito."},
+    )
 
 
 class UserDeleteRequest(BaseModel):
