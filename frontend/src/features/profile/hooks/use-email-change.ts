@@ -8,6 +8,7 @@ import type { ProfileData, ProfileFormValues, ProfileSaveValues } from "../lib/t
  */
 export function useEmailChange(profile: ProfileData | null, values: ProfileFormValues) {
   const [currentPassword, setCurrentPassword] = useState("");
+  const [totpCode, setTotpCode] = useState("");
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const emailChanged =
     values.email.trim().toLowerCase() !== (profile?.email ?? "").trim().toLowerCase();
@@ -18,22 +19,29 @@ export function useEmailChange(profile: ProfileData | null, values: ProfileFormV
       setPasswordError("Ingresa tu contraseña actual para cambiar el correo.");
       return false;
     }
+    if (emailChanged && profile?.totp_enabled && !/^\d{6}$/.test(totpCode)) {
+      setPasswordError("Ingresa el código TOTP de 6 dígitos.");
+      return false;
+    }
     setPasswordError(undefined);
     return true;
   };
 
   const withPassword = (): ProfileSaveValues =>
-    emailChanged ? { ...values, current_password: currentPassword } : values;
+    emailChanged ? { ...values, current_password: currentPassword, totp_code: totpCode || undefined } : values;
 
   return {
     emailChanged,
     currentPassword,
+    totpCode,
+    setTotpCode,
     setCurrentPassword,
     passwordError,
     validate,
     withPassword,
     clear: () => {
       setCurrentPassword("");
+      setTotpCode("");
     },
   };
 }

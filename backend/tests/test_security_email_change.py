@@ -89,11 +89,13 @@ def test_cambiar_correo_sin_clave_valida_se_rechaza(db, user, pw):
     assert user.email_normalized == "victima@example.com"
 
 
-def test_cambiar_correo_con_clave_valida_funciona_y_borra_resets_pendientes(db, user):
+def test_cambiar_correo_con_clave_valida_queda_pendiente(db, user, monkeypatch):
+    monkeypatch.setattr("users.infrastructure.sqlalchemy_profile_repository.send_email_change", lambda *args: None)
     _uc(db).execute(_input(user, "nuevo@example.com", PASSWORD))
     db.refresh(user)
-    assert user.email == "nuevo@example.com"
-    assert db.execute(select(PasswordResetToken)).first() is None
+    assert user.email == "victima@example.com"
+    assert user.pending_email == "nuevo@example.com"
+    assert db.execute(select(PasswordResetToken)).first() is not None
 
 
 def test_editar_otros_campos_sin_cambiar_correo_no_pide_clave(db, user):

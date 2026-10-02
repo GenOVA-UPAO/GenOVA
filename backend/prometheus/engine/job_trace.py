@@ -33,11 +33,14 @@ def _get_or_create(job_id: str) -> Any:
         if rt is None:
             from langsmith import RunTree
 
+            from core.observability import private_langsmith_client
+
             rt = RunTree(
                 name="ova-generation",
                 run_type="chain",
                 inputs={"job_id": job_id},
                 metadata={"job_id": job_id},
+                ls_client=private_langsmith_client(),
             )
             with contextlib.suppress(Exception):
                 rt.post()

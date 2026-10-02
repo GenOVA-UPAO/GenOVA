@@ -2,8 +2,8 @@
 
 from uploads.domain.errors import (
     ContentMismatch,
-    FileTooLarge,
     FilesRequired,
+    FileTooLarge,
     MimeNotAllowed,
     TooManyFiles,
     UploadError,

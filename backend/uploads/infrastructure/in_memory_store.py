@@ -35,6 +35,16 @@ def max_file_size_bytes() -> int:
     return max_file_size_mb() * 1024 * 1024
 
 
+def check_user_quota(count: int, size_bytes: int, incoming_bytes: int) -> None:
+    from uploads.domain.errors import FileTooLarge, TooManyFiles
+
+    if count >= max_files_per_request():
+        raise TooManyFiles(max_files_per_request(), total=True)
+    maximum = max(1, _parse_int_env("UPLOAD_MAX_TOTAL_BYTES", max_files_per_request() * max_file_size_bytes()))
+    if size_bytes + incoming_bytes > maximum:
+        raise FileTooLarge(maximum / (1024 * 1024))
+
+
 def temp_ttl_seconds() -> int:
     return max(60, _parse_int_env("UPLOAD_TEMP_TTL_SECONDS", 3600))
 

@@ -29,10 +29,27 @@ def redact_event_dict(
     _method_name: str,
     event_dict: dict,
 ) -> dict:
-    """structlog processor: redact string values in the event dict (R8)."""
-    for key, value in list(event_dict.items()):
-        if isinstance(value, str):
-            event_dict[key] = redact(value)
+    """Redact nested PII and content before any telemetry processor (R8/P6)."""
+    from core.config import settings
+
+    private_keys = {
+        "prompt", "prompts", "messages", "content", "chunks", "rag_context",
+        "contexto_usuario", "inputs", "outputs", "request_data", "response_data",
+        "filename", "source_filename", "sources",
+    }
+
+    def clean(value):
+        if isinstance(value, dict):
+            return {
+                key: "[redacted]" if not settings.telemetry_include_content
+                and str(key).lower() in private_keys else clean(item)
+                for key, item in value.items()
+            }
+        if isinstance(value, list | tuple):
+            return [clean(item) for item in value]
+        return redact(value) if isinstance(value, str) else value
+
+    event_dict.update(clean(event_dict))
     return event_dict
 
 

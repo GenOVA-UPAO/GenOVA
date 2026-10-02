@@ -2,7 +2,18 @@
 
 import os
 
+import pytest
+
 from core import observability
+
+
+@pytest.fixture(autouse=True)
+def _isolate_tracing_environment(monkeypatch):
+    # init_langsmith writes os.environ directly: snapshot before invoking it,
+    # otherwise cleanup delenv would restore the test's true/dummy values.
+    for key in ("LANGSMITH_TRACING", "LANGSMITH_API_KEY", "LANGSMITH_PROJECT",
+                "LANGSMITH_HIDE_INPUTS", "LANGSMITH_HIDE_OUTPUTS"):
+        monkeypatch.delenv(key, raising=False)
 
 
 def test_init_langsmith_noop_without_key(monkeypatch):

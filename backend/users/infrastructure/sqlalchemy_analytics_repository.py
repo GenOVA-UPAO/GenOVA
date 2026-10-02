@@ -34,13 +34,13 @@ class SqlAlchemyAnalyticsRepository:
         )
 
     def linked_student_ids(self, professor_id) -> list:
-        """Accepted, still-linked student user ids for a professor."""
+        """Active, still-linked student user ids for a professor."""
         from models import UserLink
 
         rows = self._db.execute(
             select(UserLink.linked_user_id).where(
                 UserLink.owner_user_id == professor_id,
-                UserLink.status == "accepted",
+                UserLink.status == "active",
                 UserLink.linked_user_id.isnot(None),
             )
         ).all()

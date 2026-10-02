@@ -24,6 +24,16 @@ export function apiOrigin() {
 }
 
 /**
+ * Cabecera Origin del frontend para escrituras con la cookie de sesión: el backend
+ * rechaza escrituras con cookie sin Origin/Sec-Fetch-Site confiables (CSRF) y
+ * page.request no la envía como haría el navegador.
+ */
+export function originHeaders(page) {
+  const url = page.url()
+  return url.startsWith('http') ? { Origin: new URL(url).origin } : {}
+}
+
+/**
  * Siembra un OVA terminado vía API usando la sesión (cookie) del page ya logueado.
  * Requiere backend con LLM_FAKE=1 para completar en segundos sin proveedores LLM.
  * Devuelve { title, jobId, ovaId }.
@@ -31,6 +41,7 @@ export function apiOrigin() {
 export async function seedOvaViaApi(page) {
   const title = `OVA e2e ${uniqueId()}`
   const res = await page.request.post(`${apiOrigin()}/api/jobs`, {
+    headers: originHeaders(page),
     data: {
       prompt: title,
       resources: [

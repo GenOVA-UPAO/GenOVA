@@ -28,7 +28,11 @@ class SqlAlchemyUserAccountRepository:
         self._db = db
 
     def get(self, user_id: UUID) -> UserAccount | None:
-        user = self._db.get(User, user_id)
+        # Read the password under the same lock held until update_password commits.
+        user = self._db.execute(
+            select(User).where(User.id == user_id).with_for_update()
+            .execution_options(populate_existing=True)
+        ).scalar_one_or_none()
         if user is None:
             return None
         return UserAccount(
@@ -36,7 +40,10 @@ class SqlAlchemyUserAccountRepository:
         )
 
     def update_password(self, user_id: UUID, password_hash: str) -> None:
-        user = self._db.get(User, user_id)
+        user = self._db.execute(
+            select(User).where(User.id == user_id).with_for_update()
+            .execution_options(populate_existing=True)
+        ).scalar_one()
         user.password_hash = password_hash
         user.password_changed_at = datetime.now(UTC)
         # Un reset pendiente emitido antes del cambio no debe poder pisar la clave nueva.

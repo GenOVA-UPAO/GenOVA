@@ -5,10 +5,13 @@ from __future__ import annotations
 import uuid
 from dataclasses import asdict
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Query, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user
-from models import User
+from core.database import get_db
+from models import Ova, User
 from uploads.application.dto import IncomingFile
 from uploads.container import UploadsUseCases, build_uploads, run_background_ingestion
 from uploads.domain.errors import UploadError
@@ -28,6 +31,13 @@ def _scope(ova_id: uuid.UUID | None) -> str | None:
     return str(ova_id) if ova_id else None
 
 
+def validate_ova_scope(ova_id: uuid.UUID | None, user_id: uuid.UUID, db: Session) -> None:
+    if ova_id is not None and db.execute(
+        select(Ova.id).where(Ova.id == ova_id, Ova.user_id == user_id)
+    ).scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="OVA no encontrada")
+
+
 @router.get("/health", tags=["Health"], summary="Estado del módulo de subidas")
 def uploads_health() -> dict[str, str]:
     return {"module": "uploads", "status": "ok"}
@@ -40,7 +50,9 @@ def list_temp_uploads(
     ova_id: uuid.UUID | None = _OVA_SCOPE,
     current_user: User = Depends(get_current_user),
     uc: UploadsUseCases = Depends(build_uploads),
+    db: Session = Depends(get_db),
 ) -> dict[str, list[dict]]:
+    validate_ova_scope(ova_id, current_user.id, db)
     items = uc.list_uploads.execute(str(current_user.id), _scope(ova_id))
     return {"items": [asdict(v) for v in items]}
 
@@ -52,7 +64,9 @@ async def upload_temp_files(
     ova_id: uuid.UUID | None = _OVA_SCOPE,
     current_user: User = Depends(get_current_user),
     uc: UploadsUseCases = Depends(build_uploads),
+    db: Session = Depends(get_db),
 ):
+    validate_ova_scope(ova_id, current_user.id, db)
     incoming = [
         IncomingFile(
             filename=f.filename or "archivo",

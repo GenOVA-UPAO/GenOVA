@@ -18,6 +18,7 @@ class UpdateProfileInput:
     phone_number: str | None
     # Obligatoria solo si cambia el correo (identidad + canal de recuperación).
     current_password: str | None = None
+    totp_code: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

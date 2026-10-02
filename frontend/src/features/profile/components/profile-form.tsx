@@ -1,4 +1,5 @@
 import type { SyntheticEvent } from "react";
+import { useState } from "react";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -7,7 +8,8 @@ import { profileToFormValues } from "../lib/profile-format";
 import { profileSchema } from "../lib/profile-schemas";
 import type { ProfileData, ProfileSaveValues } from "../lib/types";
 import { useForm } from "../lib/use-form";
-import { PasswordField } from "./password-field";
+import { EmailChangeFields } from "./email-change-fields";
+import { PendingEmailConfirm } from "./pending-email-confirm";
 import { ProfileContactFields } from "./profile-contact-fields";
 import { ProfileIdentityFields } from "./profile-identity-fields";
 import { ProfileSection } from "./profile-section";
@@ -22,6 +24,7 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
   const form = useForm(profileSchema, profileToFormValues(profile));
 
   const emailChange = useEmailChange(profile, form.values);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,6 +37,7 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
     // `profile` aún es el de antes de guardar y devolvería los valores viejos.
     const saved = await onSave(emailChange.withPassword());
     if (saved !== null) {
+      setPendingEmail(typeof saved.pending_email === "string" ? saved.pending_email : null);
       form.reset(profileToFormValues(saved));
       emailChange.clear();
     }
@@ -58,17 +62,18 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
           onBlur={form.touch}
           disabled={isSubmitting}
         />
-        {emailChange.emailChanged && (
-          <PasswordField
-            id="emailChangePassword"
-            label="Contraseña actual"
-            hint="Necesaria para cambiar el correo de tu cuenta."
-            value={emailChange.currentPassword}
-            error={emailChange.passwordError}
-            autoComplete="current-password"
-            disabled={isSubmitting}
-            onChange={emailChange.setCurrentPassword}
-            onBlur={() => undefined}
+        <EmailChangeFields
+          emailChange={emailChange}
+          totpEnabled={Boolean(profile?.totp_enabled)}
+          disabled={isSubmitting}
+        />
+        {pendingEmail && (
+          <PendingEmailConfirm
+            pendingEmail={pendingEmail}
+            onConfirmed={(email) => {
+              form.setField("email", email);
+              setPendingEmail(null);
+            }}
           />
         )}
         <ProfileContactFields

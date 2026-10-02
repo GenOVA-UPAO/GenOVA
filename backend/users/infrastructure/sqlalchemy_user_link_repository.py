@@ -56,6 +56,19 @@ class SqlAlchemyUserLinkRepository:
     def __init__(self, db: Session) -> None:
         self._db = db
 
+    def reserve_attempt(self, selector: str, now: datetime, invite_email: str) -> LinkRecord | None:
+        row = self._db.execute(update(UserLink).where(
+            UserLink.code_selector == selector,
+            UserLink.status == "pending", UserLink.expires_at > now,
+            UserLink.code_attempts < 5,
+            (UserLink.invite_email.is_(None)) | (UserLink.invite_email == invite_email),
+        ).values(code_attempts=UserLink.code_attempts + 1).returning(UserLink)
+            .execution_options(populate_existing=True)).scalar_one_or_none()
+        record = _to_record(row) if row is not None else None
+        # Persistir incluso si el secreto resulta incorrecto o la petición falla.
+        commit_or_500(self._db, "reserve_link_attempt")
+        return record
+
     def list_for_owner(self, owner_id) -> tuple[list[LinkSnapshot], dict[str, LinkParticipant]]:
         links = (
             self._db.execute(
@@ -106,6 +119,7 @@ class SqlAlchemyUserLinkRepository:
         *,
         invite_email: str | None,
         code_hash: str,
+        code_selector: str,
         expires_at,
         op: str,
     ) -> LinkSnapshot:
@@ -113,6 +127,7 @@ class SqlAlchemyUserLinkRepository:
             owner_user_id=owner_id,
             invite_email=invite_email,
             code_hash=code_hash,
+            code_selector=code_selector,
             expires_at=expires_at,
         )
         self._db.add(link)
@@ -147,9 +162,11 @@ class SqlAlchemyUserLinkRepository:
             raise LinkNotFound()
         return _to_record(link)
 
-    def rotate_code(self, link_id: UUID, *, code_hash: str, expires_at, op: str) -> LinkSnapshot:
+    def rotate_code(self, link_id: UUID, *, code_hash: str, code_selector: str, expires_at, op: str) -> LinkSnapshot:
         link = self._db.get(UserLink, link_id)
         link.code_hash = code_hash
+        link.code_selector = code_selector
+        link.code_attempts = 0
         link.expires_at = expires_at
         commit_or_500(self._db, op)
         self._db.refresh(link)
