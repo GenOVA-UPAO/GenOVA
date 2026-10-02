@@ -1,6 +1,5 @@
 import type { SyntheticEvent } from "react";
 import { useState } from "react";
-import { confirmEmailChange } from "../api/profile.api";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -9,7 +8,8 @@ import { profileToFormValues } from "../lib/profile-format";
 import { profileSchema } from "../lib/profile-schemas";
 import type { ProfileData, ProfileSaveValues } from "../lib/types";
 import { useForm } from "../lib/use-form";
-import { PasswordField } from "./password-field";
+import { EmailChangeFields } from "./email-change-fields";
+import { PendingEmailConfirm } from "./pending-email-confirm";
 import { ProfileContactFields } from "./profile-contact-fields";
 import { ProfileIdentityFields } from "./profile-identity-fields";
 import { ProfileSection } from "./profile-section";
@@ -25,8 +25,6 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
 
   const emailChange = useEmailChange(profile, form.values);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const [confirmation, setConfirmation] = useState("");
-  const [confirmationError, setConfirmationError] = useState("");
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -64,41 +62,19 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
           onBlur={form.touch}
           disabled={isSubmitting}
         />
-        {emailChange.emailChanged && (
-          <PasswordField
-            id="emailChangePassword"
-            label="Contraseña actual"
-            hint="Necesaria para cambiar el correo de tu cuenta."
-            value={emailChange.currentPassword}
-            error={emailChange.passwordError}
-            autoComplete="current-password"
-            disabled={isSubmitting}
-            onChange={emailChange.setCurrentPassword}
-            onBlur={() => undefined}
-          />
-        )}
-        {emailChange.emailChanged && profile?.totp_enabled && (
-          <label className="block">Código TOTP
-            <input aria-label="Código TOTP" inputMode="numeric" maxLength={6}
-              value={emailChange.totpCode} onChange={(e) => emailChange.setTotpCode(e.target.value)}
-              disabled={isSubmitting} className="block rounded border p-2" />
-          </label>
-        )}
+        <EmailChangeFields
+          emailChange={emailChange}
+          totpEnabled={Boolean(profile?.totp_enabled)}
+          disabled={isSubmitting}
+        />
         {pendingEmail && (
-          <div role="status">
-            <p>El correo actual sigue vigente. Enviamos un código a {pendingEmail}; confírmalo aquí.</p>
-            <input aria-label="Código de confirmación de correo" value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)} className="rounded border p-2" />
-            <Button type="button" onClick={() => {
-              void confirmEmailChange(confirmation).then((result) => {
-                form.setField("email", String(result.email));
-                setPendingEmail(null);
-                setConfirmation("");
-                window.location.reload();
-              }).catch((error: unknown) => setConfirmationError(error instanceof Error ? error.message : "No se pudo confirmar."));
-            }}>Confirmar correo</Button>
-            {confirmationError && <p role="alert">{confirmationError}</p>}
-          </div>
+          <PendingEmailConfirm
+            pendingEmail={pendingEmail}
+            onConfirmed={(email) => {
+              form.setField("email", email);
+              setPendingEmail(null);
+            }}
+          />
         )}
         <ProfileContactFields
           values={form.values}

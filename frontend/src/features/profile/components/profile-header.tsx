@@ -31,16 +31,16 @@ export function ProfileHeader({ profile, role, isLoading }: Readonly<ProfileHead
       <PageHeader
         className="min-w-0 flex-1"
         title={profile?.full_name ?? "Mi perfil"}
-      subtitle={
-        // El rol va junto a los datos de la cuenta: como badge suelto a la derecha
-        // quedaba lejos del nombre y no se asociaba a nada.
-        <>
-          <span className="block [overflow-wrap:anywhere]">{profile?.email ?? ""}</span>
-          <span className="block">
-            {formatRole(role)} · Miembro desde {formatDate(profile?.created_at)}
-          </span>
-        </>
-      }
+        subtitle={
+          // El rol va junto a los datos de la cuenta: como badge suelto a la derecha
+          // quedaba lejos del nombre y no se asociaba a nada.
+          <>
+            <span className="block [overflow-wrap:anywhere]">{profile?.email ?? ""}</span>
+            <span className="block">
+              {formatRole(role)} · Miembro desde {formatDate(profile?.created_at)}
+            </span>
+          </>
+        }
       />
     </div>
   );

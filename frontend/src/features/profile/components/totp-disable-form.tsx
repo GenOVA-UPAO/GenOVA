@@ -15,7 +15,11 @@ interface TotpDisableFormProps {
 }
 
 /** Confirmación con un código actual antes de quitar la verificación en dos pasos. */
-export function TotpDisableForm({ isDisabling, onDisable, onCancel }: Readonly<TotpDisableFormProps>) {
+export function TotpDisableForm({
+  isDisabling,
+  onDisable,
+  onCancel,
+}: Readonly<TotpDisableFormProps>) {
   const [code, setCode] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -25,7 +29,8 @@ export function TotpDisableForm({ isDisabling, onDisable, onCancel }: Readonly<T
   }, []);
   const [tried, setTried] = useState(false);
   const clean = code.trim();
-  const codeError = tried && !/^\d{6}$/.test(clean) ? "Escribe los 6 dígitos del código." : undefined;
+  const codeError =
+    tried && !/^\d{6}$/.test(clean) ? "Escribe los 6 dígitos del código." : undefined;
 
   const handleSubmit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();

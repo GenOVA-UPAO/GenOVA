@@ -8,10 +8,10 @@ from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBea
 from sqlalchemy import literal, select
 from sqlalchemy.orm import Session
 
-from auth.infrastructure.jwt import decode_session_token
 from auth.interface.http.csrf import check_cookie_csrf
 from core.config import settings
 from core.database import get_db
+from core.security import decode_session_token
 from models import RevokedToken, Role, User, UserRole
 
 _COOKIE_NAME = "genova_token"
