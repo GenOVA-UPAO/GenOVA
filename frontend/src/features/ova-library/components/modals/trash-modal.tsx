@@ -50,7 +50,7 @@ export function TrashModal({
             Cancelar
           </Button>
           <Button variant="danger" onClick={onConfirm} loading={isLoading}>
-            {isLoading ? "Moviendo..." : "Mover a la papelera"}
+            {isLoading ? "Moviendo…" : "Mover a la papelera"}
           </Button>
         </DialogFooter>
       </DialogContent>
