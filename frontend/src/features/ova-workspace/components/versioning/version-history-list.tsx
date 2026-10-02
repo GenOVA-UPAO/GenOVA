@@ -1,3 +1,4 @@
+import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 
 import { formatShortDate } from "../../lib/format-date";
@@ -21,6 +22,7 @@ export function VersionHistoryList({ versions, selected, onToggle, onRestore }: 
     );
   }
   return (
+    <>
     <ul className="divide-y divide-border rounded-xl border border-border">
       {versions.map((version) => {
         const inputId = `version-compare-${version.id}`;
@@ -43,7 +45,10 @@ export function VersionHistoryList({ versions, selected, onToggle, onRestore }: 
               {date && <span className="text-xs text-muted-foreground">{date}</span>}
             </label>
             {version.is_active && (
-              <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success-strong">Actual</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success-strong">
+                <Icon name="check" size="text-xs" />
+                Actual
+              </span>
             )}
             {!version.is_active && onRestore && (
               <Button
@@ -60,5 +65,12 @@ export function VersionHistoryList({ versions, selected, onToggle, onRestore }: 
         );
       })}
     </ul>
+    {versions.length === 1 && (
+      <p className="text-sm text-pretty text-muted-foreground">
+        Esta es la única versión. Cuando apliques cambios con la IA aparecerán aquí para que puedas
+        compararlas o volver a una anterior.
+      </p>
+    )}
+    </>
   );
 }
