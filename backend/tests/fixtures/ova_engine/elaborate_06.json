@@ -1,0 +1,110 @@
+{
+  "concept": "optimización de consultas con planes de ejecución",
+  "params": {
+    "num_decisions": 3
+  },
+  "data": {
+    "titulo": "Optimización de Consultas en Crisis",
+    "introduccion": "Como DBA, enfrentas una situación crítica: tablespace al 95%, bloqueo ORA-00060 y datos borrados accidentalmente. ¿Qué haces?",
+    "nodo_raiz": {
+      "situacion": "El tablespace está al 95%, hay bloqueo ORA-00060 y datos de una tabla crítica fueron borrados. La aplicación se bloquea y los usuarios esperan una solución inmediata.",
+      "opciones": [
+        {
+          "texto": "Reparar datos eliminados y aumentar el tablespace.",
+          "consecuencia": "Se recuperan los datos usando flashback, pero el tablespace se queda en 98% y se genera un bloqueo temporal.",
+          "siguiente_nodo": {
+            "situacion": "El tablespace sigue en 98% y el bloqueo persiste. Los usuarios reportan lentitud en consultas.",
+            "opciones": [
+              {
+                "texto": "Reorganizar índices y optimizar consultas con plan de ejecución.",
+                "consecuencia": "Las consultas mejoran, el bloqueo se resuelve y el tablespace baja al 92%.",
+                "siguiente_nodo": {
+                  "situacion": "Los usuarios notan mejoras, pero el sistema sigue con un tablespace alto. Se requiere una solución definitiva.",
+                  "opciones": [
+                    {
+                      "texto": "Mover datos a otro tablespace y reorganizar tablas.",
+                      "desenlace": "Se libera espacio, se resuelve el tablespace y se evita bloqueos. La aplicación vuelve a funcionar normalmente.",
+                      "leccion_aprendida": "El uso de planes de ejecución eficientes reduce el impacto en el espacio y la concurrencia."
+                    },
+                    {
+                      "texto": "Aumentar el tablespace y esperar a que se libere espacio.",
+                      "desenlace": "El tablespace se mantiene alto, lo que puede causar problemas futuros. Se evita el bloqueo pero no se resuelve el espacio.",
+                      "leccion_aprendida": "La optimización de consultas permite usar recursos de manera más eficiente, evitando el agotamiento de espacio."
+                    }
+                  ]
+                }
+              },
+              {
+                "texto": "Desbloquear manualmente y esperar que se libere espacio.",
+                "consecuencia": "El bloqueo se resuelve temporalmente, pero el tablespace no mejora. Consultas siguen lentas.",
+                "siguiente_nodo": {
+                  "situacion": "El bloqueo se resuelve, pero el tablespace sigue en 98% y consultas son lentas. Los usuarios reportan problemas.",
+                  "opciones": [
+                    {
+                      "texto": "Reorganizar índices y optimizar consultas con plan de ejecución.",
+                      "desenlace": "Se mejora el rendimiento y el tablespace baja al 92%. La aplicación vuelve a funcionar normalmente.",
+                      "leccion_aprendida": "El uso de planes de ejecución eficientes reduce el impacto en el espacio y la concurrencia."
+                    },
+                    {
+                      "texto": "Aumentar el tablespace y esperar a que se libere espacio.",
+                      "desenlace": "El tablespace se mantiene alto, lo que puede causar problemas futuros. Se evita el bloqueo pero no se resuelve el espacio.",
+                      "leccion_aprendida": "La optimización de consultas permite usar recursos de manera más eficiente, evitando el agotamiento de espacio."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "texto": "Desbloquear manualmente y esperar que se libere espacio.",
+          "consecuencia": "El bloqueo se resuelve temporalmente, pero el tablespace no mejora. Consultas siguen lentas.",
+          "siguiente_nodo": {
+            "situacion": "El bloqueo se resuelve, pero el tablespace sigue en 98% y consultas son lentas. Los usuarios reportan problemas.",
+            "opciones": [
+              {
+                "texto": "Reorganizar índices y optimizar consultas con plan de ejecución.",
+                "consecuencia": "Las consultas mejoran, el bloqueo se resuelve y el tablespace baja al 92%.",
+                "siguiente_nodo": {
+                  "situacion": "Los usuarios notan mejoras, pero el sistema sigue con un tablespace alto. Se requiere una solución definitiva.",
+                  "opciones": [
+                    {
+                      "texto": "Mover datos a otro tablespace y reorganizar tablas.",
+                      "desenlace": "Se libera espacio, se resuelve el tablespace y se evita bloqueos. La aplicación vuelve a funcionar normalmente.",
+                      "leccion_aprendida": "El uso de planes de ejecución eficientes reduce el impacto en el espacio y la concurrencia."
+                    },
+                    {
+                      "texto": "Aumentar el tablespace y esperar a que se libere espacio.",
+                      "desenlace": "El tablespace se mantiene alto, lo que puede causar problemas futuros. Se evita el bloqueo pero no se resuelve el espacio.",
+                      "leccion_aprendida": "La optimización de consultas permite usar recursos de manera más eficiente, evitando el agotamiento de espacio."
+                    }
+                  ]
+                }
+              },
+              {
+                "texto": "Aumentar el tablespace y esperar a que se libere espacio.",
+                "consecuencia": "El tablespace se mantiene alto, lo que puede causar problemas futuros. Se evita el bloqueo pero no se resuelve el espacio.",
+                "siguiente_nodo": {
+                  "situacion": "Los usuarios notan mejoras, pero el sistema sigue con un tablespace alto. Se requiere una solución definitiva.",
+                  "opciones": [
+                    {
+                      "texto": "Mover datos a otro tablespace y reorganizar tablas.",
+                      "desenlace": "Se libera espacio, se resuelve el tablespace y se evita bloqueos. La aplicación vuelve a funcionar normalmente.",
+                      "leccion_aprendida": "El uso de planes de ejecución eficientes reduce el impacto en el espacio y la concurrencia."
+                    },
+                    {
+                      "texto": "Aumentar el tablespace y esperar a que se libere espacio.",
+                      "desenlace": "El tablespace se mantiene alto, lo que puede causar problemas futuros. Se evita el bloqueo pero no se resuelve el espacio.",
+                      "leccion_aprendida": "La optimización de consultas permite usar recursos de manera más eficiente, evitando el agotamiento de espacio."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "cierre": "La optimización de consultas con planes de ejecución permite tomar decisiones informadas bajo presión, priorizando la eficiencia y la resolución de problemas críticos sin comprometer la estabilidad del sistema."
+  }
+}

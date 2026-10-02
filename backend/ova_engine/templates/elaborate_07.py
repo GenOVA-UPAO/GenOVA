@@ -44,11 +44,11 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - ejercicios: EXACTAMENTE {n}; cada uno con:
   * `enunciado`: lo que se pide, con tabla y columnas concretas (≤40 palabras).
   * `codigo_inicial`: la sentencia INCOMPLETA con huecos marcados como ___ (varias líneas si hace falta).
-  * `palabras_clave`: 2-6 palabras o símbolos (en minúsculas o mayúsculas, da igual) que DEBE contener cualquier respuesta correcta, sin exigir el texto exacto (p. ej. «create index», «employees», «last_name»).
+  * `palabras_clave`: 2-6 fragmentos o tokens literales de código SQL (en minúsculas o mayúsculas) que aparecen DENTRO de la sentencia solucion (p. ej. «create index», «employees», «last_name»). NO uses palabras descriptivas ni conceptuales que no estén presentes en el código SQL.
   * `solucion`: la sentencia correcta completa.
   * `error_comun`: el error más frecuente en este ejercicio y por qué ocurre (≤30 palabras).
 - cierre: consolida la sintaxis y cuándo aplicarla.
-[RESTRICCIONES] Sintaxis Oracle válida. Las palabras clave deben admitir distintas formas correctas de escribir la solución.
+[RESTRICCIONES] Sintaxis Oracle válida. Las palabras clave deben estar presentes textualmente dentro de `solucion`.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

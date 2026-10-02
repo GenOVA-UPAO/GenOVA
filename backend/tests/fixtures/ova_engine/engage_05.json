@@ -1,0 +1,38 @@
+{
+  "concept": "optimización de consultas con planes de ejecución",
+  "params": {
+    "num_options": 4
+  },
+  "data": {
+    "titulo": "El dilema del plan de ejecución y la privacidad de los ciudadanos",
+    "caso_narrativo": "El DBA de una empresa de gestión de servicios públicos debe decidir si optimizar consultas mediante un plan de ejecución que incluya el acceso a datos personales de ciudadanos para mejorar la disponibilidad del sistema. La decisión es urgente y no permite una solución perfecta.",
+    "pregunta_posicion": "¿Qué postura técnica tomarías para optimizar consultas con planes de ejecución en este dilema?",
+    "opciones": [
+      {
+        "id": "opt-1",
+        "texto": "Incluir acceso a datos personales en el plan de ejecución para mejorar la eficiencia.",
+        "consecuencia": "Mejora la disponibilidad del sistema, pero compromete la privacidad de los ciudadanos.",
+        "tension_etica": "Equilibrio entre eficiencia operativa y protección de la privacidad personal."
+      },
+      {
+        "id": "opt-2",
+        "texto": "Excluir datos personales del plan de ejecución para garantizar la privacidad.",
+        "consecuencia": "Aumenta el tiempo de respuesta de las consultas y el riesgo de caída del sistema.",
+        "tension_etica": "Compromiso con la ética de la privacidad frente a la necesidad de disponibilidad."
+      },
+      {
+        "id": "opt-3",
+        "texto": "Implementar un plan de ejecución con datos personales, pero limitar el acceso a un subconjunto.",
+        "consecuencia": "Mejora parcial la eficiencia sin comprometer totalmente la privacidad de los ciudadanos.",
+        "tension_etica": "Compromiso entre eficiencia y protección parcial de la privacidad."
+      },
+      {
+        "id": "opt-4",
+        "texto": "Usar datos personales pero auditar todo el acceso para garantizar transparencia.",
+        "consecuencia": "Mejora la eficiencia y la trazabilidad, aunque implica mayor complejidad operativa.",
+        "tension_etica": "Confrontación entre eficiencia, trazabilidad y el riesgo de abuso de datos."
+      }
+    ],
+    "reflexion_post_voto": "La administración de datos implica siempre una elección ética, ya que cada decisión técnica afecta la privacidad, la eficiencia y la responsabilidad. No hay una opción claramente correcta, sino un conjunto de tensiones que reflejan la complejidad de la ética profesional."
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "concept": "bloqueos y deadlocks",
+  "params": {
+    "num_markers": 5
+  },
+  "data": {
+    "titulo": "Bloqueos y Deadlocks en Sistemas de Base de Datos",
+    "introduccion": "En el mundo de las bases de datos, los bloqueos y deadlocks son fenómenos críticos que afectan el rendimiento y la eficiencia del sistema.",
+    "marcadores": [
+      {
+        "tiempo": "0:00 - 0:30",
+        "concepto_clave": "Bloqueo y recursos compartidos",
+        "descripcion_visual": "Imagina una biblioteca con libros compartidos entre lectores. Un lector toma un libro, lo bloquea, y otros deben esperar hasta que lo libere.",
+        "narracion": "Un bloqueo es un mecanismo que evita que múltiples procesos accedan simultáneamente a un recurso compartido."
+      },
+      {
+        "tiempo": "0:30 - 1:00",
+        "concepto_clave": "Condiciones de bloqueo",
+        "descripcion_visual": "Un diagrama muestra cómo un proceso solicita un recurso, lo bloquea, y otro proceso solicita el mismo recurso y debe esperar.",
+        "narracion": "Los bloqueos se basan en condiciones como exclusión mutua y espera activa, que aseguran el uso seguro de recursos."
+      },
+      {
+        "tiempo": "1:00 - 1:30",
+        "concepto_clave": "Deadlock y su naturaleza",
+        "descripcion_visual": "Una metáfora de tráfico en una autopista: dos coches se bloquean mutuamente, cada uno intentando pasar al otro.",
+        "narracion": "Un deadlock es una situación donde dos o más procesos se bloquean mutuamente, cada uno esperando que el otro libere un recurso."
+      },
+      {
+        "tiempo": "1:30 - 2:00",
+        "concepto_clave": "Ciclo de espera y recursos",
+        "descripcion_visual": "Un ciclo visual muestra cómo un proceso espera un recurso que otro proceso también espera, creando un bucle sin fin.",
+        "narracion": "Los deadlocks ocurren cuando existe un ciclo de espera donde cada proceso espera un recurso que otro está bloqueando."
+      },
+      {
+        "tiempo": "2:00 - 2:30",
+        "concepto_clave": "Prevención y manejo",
+        "descripcion_visual": "Un sistema de control muestra cómo se detectan y resuelven deadlocks mediante algoritmos o intervención manual.",
+        "narracion": "Para evitar deadlocks, se utilizan estrategias de prevención, detección y recuperación que garantizan el flujo del sistema."
+      }
+    ],
+    "narracion_voz": "En el mundo de las bases de datos, los bloqueos y deadlocks son fenómenos críticos que afectan el rendimiento y la eficiencia del sistema. Un bloqueo es un mecanismo que evita que múltiples procesos accedan simultáneamente a un recurso compartido. Los bloqueos se basan en condiciones como exclusión mutua y espera activa, que aseguran el uso seguro de recursos. Un deadlock es una situación donde dos o más procesos se bloquean mutuamente, cada uno esperando que el otro libere un recurso. Los deadl",
+    "prompt_video": "Un video que comienza con una animación de una biblioteca con libros compartidos, mostrando cómo un lector toma un libro y bloquea el recurso. Luego muestra un diagrama de condiciones de bloqueo y un ciclo de espera. Finalmente, presenta un sistema de control que resuelve el deadlock mediante algoritmos o intervención manual. El tono es claro y didáctico, con transiciones suaves entre escenas y animaciones que reflejan las metáforas conceptuales.",
+    "sintesis": "Los bloqueos y deadlocks son fundamentales para el manejo de recursos en bases de datos, asegurando eficiencia y evitando situaciones de parálisis en sistemas complejos."
+  }
+}

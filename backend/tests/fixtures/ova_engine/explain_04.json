@@ -1,0 +1,61 @@
+{
+  "concept": "transacciones y aislamiento",
+  "params": {
+    "num_questions": 7
+  },
+  "data": {
+    "titulo": "¿Qué son las transacciones y aislamiento? Despejando dudas clave",
+    "intro": "Antes de programar o administrar sistemas, es clave entender los conceptos básicos de transacciones y aislamiento. Aquí respondemos a las dudas más comunes.",
+    "faqs": [
+      {
+        "pregunta": "¿Por qué no se puede realizar una transacción sin un commit o rollback?",
+        "respuesta": "Una transacción es como una carta que envías: si no la entregas (commit) o la devuelves (rollback), el destinatario no la recibe. Es esencial para mantener la coherencia.",
+        "nivel": "Principiante",
+        "categoria": "Conceptos Básicos"
+      },
+      {
+        "pregunta": "¿Qué significa el aislamiento en las transacciones?",
+        "respuesta": "El aislamiento es como estar en una habitación cerrada: solo tú puedes ver lo que estás haciendo, y otros no pueden interferir. Garantiza que los datos no se contaminen.",
+        "nivel": "Principiante",
+        "categoria": "Conceptos Básicos"
+      },
+      {
+        "pregunta": "¿Por qué no se pueden usar transacciones en consultas de solo lectura?",
+        "respuesta": "Las transacciones son como una operación en un banco: si solo lees, no afectas el estado. Solo se usan cuando hay cambios, para evitar inconsistencias.",
+        "nivel": "Intermedio",
+        "categoria": "Casos Prácticos"
+      },
+      {
+        "pregunta": "¿Qué ocurre si no se maneja correctamente el aislamiento?",
+        "respuesta": "Si no se maneja bien el aislamiento, es como si varios usuarios estuvieran usando el mismo libro al mismo tiempo: pueden alterar páginas y generar errores.",
+        "nivel": "Intermedio",
+        "categoria": "Arquitectura Interna"
+      },
+      {
+        "pregunta": "¿Qué es el nivel de aislamiento 'read uncommitted'?",
+        "respuesta": "Es como leer un libro en una biblioteca abierta: puedes ver lo que otros están leyendo, incluso si no está terminado. Puede causar problemas de inconsistencia.",
+        "nivel": "Intermedio",
+        "categoria": "Arquitectura Interna"
+      },
+      {
+        "pregunta": "¿Por qué las transacciones pueden afectar el rendimiento?",
+        "respuesta": "Las transacciones son como un proceso que requiere permiso para actuar. Si hay muchas, el sistema puede retrasarse, como si tuvieras que pedir permiso a cada persona en una fila.",
+        "nivel": "Avanzado",
+        "categoria": "Optimización"
+      },
+      {
+        "pregunta": "¿Cómo garantizar la atomicidad en una transacción?",
+        "respuesta": "La atomicidad es como una acción que se completa o no. Si algo falla, todo se deshace, como si un cohete se desvía: si no llega al espacio, vuelve a la tierra.",
+        "nivel": "Avanzado",
+        "categoria": "Conceptos Básicos"
+      }
+    ],
+    "categorias": [
+      "Conceptos Básicos",
+      "Arquitectura Interna",
+      "Casos Prácticos",
+      "Optimización"
+    ],
+    "sintesis": "Las transacciones y el aislamiento son pilares para mantener la integridad y la consistencia de los datos. Comprenderlos permite gestionar sistemas de base de datos con mayor seguridad y eficiencia."
+  }
+}

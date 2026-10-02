@@ -1,0 +1,55 @@
+{
+  "concept": "índices B-tree",
+  "params": {
+    "num_nodes": 6
+  },
+  "data": {
+    "titulo": "Estructura y funcionalidad de índices B-tree en SGBD",
+    "nodo_central": "índices B-tree",
+    "nodos": [
+      {
+        "id": "nodo-1",
+        "etiqueta": "estructura de árbol balanceado",
+        "relacion": "posee una organización basada en un árbol balanceado",
+        "explicacion": "la organización en árbol balanceado permite acceso eficiente a datos mediante operaciones de búsqueda, inserción y eliminación en logaritmo de la cantidad de registros.",
+        "ejemplo": "una tabla con millones de registros se indexa mediante un B-tree para permitir consultas rápidas."
+      },
+      {
+        "id": "nodo-2",
+        "etiqueta": "nodos internos y hojas",
+        "relacion": "se compone de nodos internos y hojas",
+        "explicacion": "los nodos internos contienen claves y punteros, mientras que las hojas contienen datos o punteros a datos, permitiendo la división de datos en niveles.",
+        "ejemplo": "en una consulta SELECT, el índice B-tree divide el acceso en niveles internos hasta llegar a las hojas con registros."
+      },
+      {
+        "id": "nodo-3",
+        "etiqueta": "ordenamiento de claves",
+        "relacion": "organiza claves en orden ascendente",
+        "explicacion": "el ordenamiento de claves permite la búsqueda eficiente mediante comparaciones y divide el espacio de búsqueda en intervalos reducidos.",
+        "ejemplo": "una consulta WHERE nombre LIKE 'A%' se optimiza mediante el ordenamiento de claves en el índice B-tree."
+      },
+      {
+        "id": "nodo-4",
+        "etiqueta": "búsqueda y acceso secuencial",
+        "relacion": "permite búsqueda y acceso secuencial eficiente",
+        "explicacion": "la estructura permite la búsqueda binaria en nodos internos y el acceso secuencial a registros en hojas, optimizando la lectura de datos.",
+        "ejemplo": "un índice B-tree en una tabla de clientes permite acceder a registros en orden ascendente de ID."
+      },
+      {
+        "id": "nodo-5",
+        "etiqueta": "operaciones de inserción y eliminación",
+        "relacion": "soporta operaciones de inserción y eliminación dinámicas",
+        "explicacion": "la estructura permite la inserción y eliminación de registros sin destruir el ordenamiento, manteniendo la eficiencia del índice.",
+        "ejemplo": "al insertar un nuevo registro, el índice B-tree ajusta la estructura para mantener el ordenamiento."
+      },
+      {
+        "id": "nodo-6",
+        "etiqueta": "optimización de consultas",
+        "relacion": "mejora el rendimiento de consultas selectivas",
+        "explicacion": "el índice B-tree reduce el tiempo de búsqueda al limitar el espacio de búsqueda a un subconjunto de registros, optimizando el acceso a datos.",
+        "ejemplo": "una consulta SELECT con filtro en columna indexada se ejecuta más rápido gracias a la estructura B-tree."
+      }
+    ],
+    "sintesis": "Los índices B-tree son estructuras clave en SGBD que optimizan el acceso a datos mediante organización en árbol balanceado, permitiendo operaciones eficientes de búsqueda, inserción, eliminación y consultas selectivas, esenciales para el rendimiento."
+  }
+}

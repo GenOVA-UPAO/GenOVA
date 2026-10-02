@@ -1,0 +1,44 @@
+{
+  "concept": "índices B-tree",
+  "params": {
+    "num_sentences": 5,
+    "word_bank": "si"
+  },
+  "data": {
+    "titulo": "Ejercicios sobre índices B-tree",
+    "instrucciones": "Completa el hueco con el término técnico correspondiente al concepto descrito en la oración.",
+    "oraciones": [
+      {
+        "antes": "Los índices B-tree son estructuras de datos que permiten un acceso rápido a los datos mediante la organización en nodos.",
+        "respuesta": "nodos",
+        "despues": "Cada uno de estos contiene claves y punteros a otros",
+        "explicacion": "Los nodos son componentes esenciales de la estructura B-tree que almacenan claves y apuntan a otros nodos."
+      },
+      {
+        "antes": "En un índice B-tree, las claves se organizan de forma que permiten una búsqueda eficiente mediante la división en",
+        "respuesta": "ramas",
+        "despues": "que facilitan la localización de los datos.",
+        "explicacion": "Las ramas son las divisiones que permiten la búsqueda eficiente en la estructura B-tree."
+      },
+      {
+        "antes": "El índice B-tree se basa en una estructura de árbol balanceado que garantiza una búsqueda en tiempo logarítmico mediante la",
+        "respuesta": "balance",
+        "despues": "de las operaciones de inserción y eliminación.",
+        "explicacion": "El balance es una propiedad clave del árbol B que asegura la eficiencia en las operaciones."
+      },
+      {
+        "antes": "La profundidad de un índice B-tree es importante para el rendimiento, ya que reduce el número de accesos necesarios al",
+        "respuesta": "nivel",
+        "despues": "de la estructura.",
+        "explicacion": "El nivel del árbol B determina la cantidad de pasos necesarios para localizar un dato."
+      },
+      {
+        "antes": "Los índices B-tree son ampliamente utilizados en bases de datos y sistemas de archivos gracias a su capacidad para manejar grandes volúmenes de",
+        "respuesta": "datos",
+        "despues": "con un acceso eficiente y rápido.",
+        "explicacion": "Los índices B-tree manejan grandes volúmenes de datos de forma eficiente gracias a su estructura."
+      }
+    ],
+    "cierre": "Conoce y domina los términos técnicos clave de los índices B-tree para un manejo efectivo de las bases de datos."
+  }
+}

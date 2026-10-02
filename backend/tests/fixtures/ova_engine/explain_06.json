@@ -1,0 +1,76 @@
+{
+  "concept": "roles y privilegios",
+  "params": {
+    "num_terms": 9
+  },
+  "data": {
+    "titulo": "Roles y Privilegios: Clave para la Seguridad de BD",
+    "intro": "Descubre los conceptos fundamentales que permiten controlar el acceso a bases de datos con precisión y seguridad.",
+    "terminos": [
+      {
+        "termino": "Acceso",
+        "definicion": "Permiso concedido a un usuario para interactuar con elementos de la base de datos.",
+        "icono": "🔑",
+        "icono_desc": "Llave que simboliza el permiso para acceder a recursos.",
+        "ejemplo": "Un usuario con acceso a tablas puede leer o modificar registros."
+      },
+      {
+        "termino": "Usuario",
+        "definicion": "Identidad creada en el sistema que permite interactuar con la base de datos.",
+        "icono": "👤",
+        "icono_desc": "Representa a una persona que interactúa con el sistema.",
+        "ejemplo": "El usuario 'dba' tiene permisos para realizar tareas de mantenimiento."
+      },
+      {
+        "termino": "Permiso",
+        "definicion": "Derecho específico que permite realizar una acción concreta en la base de datos.",
+        "icono": "✅",
+        "icono_desc": "Verificación de que una acción está autorizada.",
+        "ejemplo": "El permiso 'SELECT' permite extraer datos de una tabla."
+      },
+      {
+        "termino": "Rol",
+        "definicion": "Conjunto de permisos asignados a un grupo de usuarios con funciones similares.",
+        "icono": "👥",
+        "icono_desc": "Representa a un grupo de usuarios con roles definidos.",
+        "ejemplo": "El rol 'analista' tiene permisos para consultar datos."
+      },
+      {
+        "termino": "Asignación",
+        "definicion": "Proceso de vincular un usuario o rol a un conjunto de permisos.",
+        "icono": "🔗",
+        "icono_desc": "Vinculo entre un usuario y sus permisos asignados.",
+        "ejemplo": "El rol 'admin' se asigna a un usuario para darle acceso total."
+      },
+      {
+        "termino": "Sistema",
+        "definicion": "Entorno donde se gestiona el acceso y se aplican reglas de seguridad.",
+        "icono": "🏛️",
+        "icono_desc": "Representa el entorno donde se gestionan los permisos.",
+        "ejemplo": "El sistema Oracle gestiona roles y permisos mediante sentencias SQL."
+      },
+      {
+        "termino": "Gestión",
+        "definicion": "Proceso de asignar, revisar y controlar el acceso a recursos de la base de datos.",
+        "icono": "🛠️",
+        "icono_desc": "Herramienta para administrar el acceso a la base de datos.",
+        "ejemplo": "El DBA gestiona los roles y privilegios para mantener la seguridad."
+      },
+      {
+        "termino": "Vista",
+        "definicion": "Estructura que limita el acceso a ciertos datos mediante la definición de permisos.",
+        "icono": "👁️",
+        "icono_desc": "Representa la visión restringida de datos por seguridad.",
+        "ejemplo": "Una vista limita el acceso a datos sensibles a usuarios específicos."
+      },
+      {
+        "termino": "Privilegio",
+        "definicion": "Derecho otorgado a un usuario o rol para realizar una acción específica en la base de datos.",
+        "icono": "⚡",
+        "icono_desc": "Representa un derecho específico otorgado a un usuario.",
+        "ejemplo": "El privilegio 'CREATE TABLE' permite crear nuevas tablas."
+      }
+    ],
+    "cierre": "Los roles y privilegios se construyen a partir de estos conceptos, garantizando un control preciso sobre el acceso a la base de datos."
+  }
+}

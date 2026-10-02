@@ -44,9 +44,9 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `pista`: ayuda que orienta sin dar la sentencia (≤25 palabras).
   * `resultado_esperado`: la sentencia SQL/PL-SQL/comando Oracle correcta, en una o pocas líneas.
   * `validacion`: cómo comprobar que se logró y POR QUÉ funciona (≤35 palabras).
-  * `palabras_clave`: 2-5 palabras o símbolos que DEBE contener la respuesta del estudiante (p. ej. «GRANT», «UPDATE», «EMPLOYEES»), no la sentencia completa.
+  * `palabras_clave`: 2-5 palabras o símbolos que DEBE contener la respuesta del estudiante y que aparecen literalmente dentro de `resultado_esperado` (p. ej. «GRANT», «UPDATE», «EMPLOYEES»).
 - cierre: qué logró el estudiante y cómo se generaliza.
-[RESTRICCIONES] Cada paso depende del anterior. Sintaxis Oracle correcta.
+[RESTRICCIONES] Cada paso depende del anterior. Sintaxis Oracle correcta. Las palabras clave deben estar contenidas dentro del texto de resultado_esperado.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

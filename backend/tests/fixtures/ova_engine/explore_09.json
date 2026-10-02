@@ -1,0 +1,55 @@
+{
+  "concept": "índices B-tree",
+  "params": {
+    "num_cards": 6
+  },
+  "data": {
+    "titulo": "¿Qué tienen en común una biblioteca y un índice B-tree?",
+    "intro": "Imagina que estás buscando un libro en una biblioteca. ¿Cómo lo encontrarías? Descubre cómo las estructuras de datos imitan esta experiencia cotidiana.",
+    "tarjetas": [
+      {
+        "id": "c1",
+        "pista_cotidiana": "Un estante de una biblioteca con libros organizados por autor.",
+        "nodo_tecnico": "Nodo de un B-tree",
+        "feedback_correcto": "Cada estante representa un nodo que contiene datos o referencias a otros nodos.",
+        "feedback_incorrecto": "Piensa en cómo se organizan los elementos para facilitar la búsqueda."
+      },
+      {
+        "id": "c2",
+        "pista_cotidiana": "Una guía de localización que muestra los estantes por sección.",
+        "nodo_tecnico": "Nivel de profundidad en B-tree",
+        "feedback_correcto": "La guía simula los niveles de profundidad que permiten acceder al dato rápidamente.",
+        "feedback_incorrecto": "Imagina cómo se estructura la información para facilitar la navegación."
+      },
+      {
+        "id": "c3",
+        "pista_cotidiana": "Un índice en la parte frontal de la biblioteca con títulos.",
+        "nodo_tecnico": "Índice raíz del B-tree",
+        "feedback_correcto": "El índice frontal es como la raíz que conecta a toda la estructura.",
+        "feedback_incorrecto": "Piensa en cómo se inicia la búsqueda en una biblioteca."
+      },
+      {
+        "id": "c4",
+        "pista_cotidiana": "Un libro que contiene referencias a otros libros en el mismo estante.",
+        "nodo_tecnico": "Hijo de un nodo en B-tree",
+        "feedback_correcto": "El libro con referencias es como un nodo que apunta a otros nodos.",
+        "feedback_incorrecto": "Piensa en cómo se conectan los elementos en una búsqueda."
+      },
+      {
+        "id": "c5",
+        "pista_cotidiana": "Un sistema de búsqueda que te lleva directamente al libro solicitado.",
+        "nodo_tecnico": "Búsqueda eficiente en B-tree",
+        "feedback_correcto": "Este sistema simula la búsqueda eficiente que caracteriza a los índices B-tree.",
+        "feedback_incorrecto": "Piensa en cómo se logra una búsqueda rápida."
+      },
+      {
+        "id": "c6",
+        "pista_cotidiana": "Un estante que contiene múltiples libros pero solo uno es el buscado.",
+        "nodo_tecnico": "Nodo hoja en B-tree",
+        "feedback_correcto": "El estante con solo un libro es el nodo hoja que contiene el dato buscado.",
+        "feedback_incorrecto": "Imagina cuál es el destino final de una búsqueda."
+      }
+    ],
+    "revelacion": "El índice B-tree imita la manera en que una biblioteca organiza sus libros. Cada nivel representa una sección, cada estante un nodo, y cada libro un dato. Esta estructura permite búsquedas rápidas y eficientes, como en una biblioteca bien organizada."
+  }
+}

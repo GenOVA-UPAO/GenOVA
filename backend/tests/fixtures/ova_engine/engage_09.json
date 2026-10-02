@@ -1,0 +1,45 @@
+{
+  "concept": "backup y recovery con RMAN",
+  "params": {
+    "num_puzzles": 4
+  },
+  "data": {
+    "titulo": "La Clave del Backup Perdido",
+    "mision": "Un sistema de datos ha sido atacado. Debes restaurar la información usando solo las herramientas de backup que quedan. ¡No hay tiempo!",
+    "acertijos": [
+      {
+        "numero": 1,
+        "escenario": "Un archivo importante fue borrado. Solo queda una copia en una carpeta llamada 'backup' y una carpeta llamada 'temporal'.",
+        "opcion_A": "Usar la carpeta 'backup' para recuperar el archivo.",
+        "opcion_B": "Usar la carpeta 'temporal' para recuperar el archivo.",
+        "respuesta_correcta": "A",
+        "explicacion_conexion": "El backup es la copia segura de los datos, como la carpeta 'backup'."
+      },
+      {
+        "numero": 2,
+        "escenario": "Tienes dos discos: uno con los datos originales y otro con una copia. ¿Cuál usas para restaurar si el original se daña?",
+        "opcion_A": "Usar el disco con los datos originales.",
+        "opcion_B": "Usar el disco con la copia de los datos.",
+        "respuesta_correcta": "B",
+        "explicacion_conexion": "El disco con la copia es el backup. Es lo que usamos para recovery."
+      },
+      {
+        "numero": 3,
+        "escenario": "Un mensaje se envió por error. Solo hay un mensaje de confirmación y uno de error. ¿Cuál es el mensaje de recovery?",
+        "opcion_A": "El mensaje de confirmación.",
+        "opcion_B": "El mensaje de error.",
+        "respuesta_correcta": "B",
+        "explicacion_conexion": "El mensaje de error es la señal de que algo salió mal y se necesita recovery."
+      },
+      {
+        "numero": 4,
+        "escenario": "Un sistema tiene dos versiones: una actual y una antigua. ¿Cuál usas para recuperar los datos si la actual se corrompe?",
+        "opcion_A": "Usar la versión actual.",
+        "opcion_B": "Usar la versión antigua.",
+        "respuesta_correcta": "B",
+        "explicacion_conexion": "La versión antigua es el backup. Se usa para recovery cuando la actual no funciona."
+      }
+    ],
+    "epilogo": "Con los backups adecuados, siempre puedes recuperar lo que se pierde. ¡Has salvado los datos del sistema!"
+  }
+}

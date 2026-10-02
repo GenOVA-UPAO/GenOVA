@@ -1,0 +1,64 @@
+{
+  "concept": "backup y recovery con RMAN",
+  "params": {
+    "num_panels": 5,
+    "tone": "humor"
+  },
+  "data": {
+    "titulo": "Backup y Recovery con RMAN",
+    "gancho": "¿Qué pasa si tu base de datos se cae como un helado en verano? Max lo sabe.",
+    "vinetas": [
+      {
+        "dialogo": "¡Oh no! La base de datos se ha caído como un helado en verano.",
+        "descripcion_visual": "Max se encuentra frente a una pantalla con error, con el pelo de pánico.",
+        "prompt_imagen": "Max, a small friendly round navy-blue robot with an orange antenna and big screen eyes, standing in front of a computer screen showing an error message, looking worried."
+      },
+      {
+        "dialogo": "¡No te preocupes! Tengo un plan: backup y recovery con RMAN.",
+        "descripcion_visual": "Max sonríe y muestra una pantalla con el proceso de backup.",
+        "prompt_imagen": "Max, a small friendly round navy-blue robot with an orange antenna and big screen eyes, smiling and showing a computer screen with backup process, holding a cup of coffee."
+      },
+      {
+        "dialogo": "Hago una copia de seguridad como si fuera un helado de verano: frío, seguro y siempre a mano.",
+        "descripcion_visual": "Max está en una cocina con un helado de verano y una pantalla de backup.",
+        "prompt_imagen": "Max, a small friendly round navy-blue robot with an orange antenna and big screen eyes, in a kitchen with a summer ice cream and a computer screen showing backup, holding a spoon."
+      },
+      {
+        "dialogo": "Si algo sale mal, recupero la base como si fuera un helado que se derrite: rápido y sin daños.",
+        "descripcion_visual": "Max está en una cocina con un helado derritiéndose y una pantalla de recovery.",
+        "prompt_imagen": "Max, a small friendly round navy-blue robot with an orange antenna and big screen eyes, in a kitchen with a melting ice cream and a computer screen showing recovery, holding a spoon."
+      },
+      {
+        "dialogo": "¡Y todo gracias a RMAN! ¡Como un buen helado de verano, siempre a mano!",
+        "descripcion_visual": "Max sonríe mientras muestra un helado y una pantalla de RMAN.",
+        "prompt_imagen": "Max, a small friendly round navy-blue robot with an orange antenna and big screen eyes, smiling with an ice cream and a computer screen showing RMAN, holding a spoon."
+      }
+    ],
+    "pregunta": {
+      "enunciado": "¿Qué representa el helado en la analogía de Max?",
+      "opciones": [
+        {
+          "texto": "El backup.",
+          "correcta": false,
+          "feedback": "No, el helado representa el backup, no la base de datos."
+        },
+        {
+          "texto": "La base de datos.",
+          "correcta": false,
+          "feedback": "No, la base de datos es como el helado que se cae."
+        },
+        {
+          "texto": "El recovery.",
+          "correcta": true,
+          "feedback": "Correcto, el recovery es como salvar el helado antes de que se derrita."
+        },
+        {
+          "texto": "El error de la base de datos.",
+          "correcta": false,
+          "feedback": "No, el error es como el helado que se cae, no el proceso."
+        }
+      ]
+    },
+    "cierre": "Con RMAN, Max asegura que la base de datos esté siempre fría y segura, como un buen helado de verano."
+  }
+}

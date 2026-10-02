@@ -1,0 +1,155 @@
+{
+  "concept": "transacciones y aislamiento",
+  "params": {
+    "num_turns": 7
+  },
+  "data": {
+    "titulo": "Defensa de la Base de Datos",
+    "escenario": "Un sistema Oracle está bajo carga. El objetivo es mantener la estabilidad del sistema durante 7 turnos mediante transacciones y aislamiento.",
+    "objetivo": "Al terminar podrás planificar transacciones concurrentes, gestionar copias de seguridad y optimizar el espacio en Oracle según las reglas de aislamiento.",
+    "recurso": "Estabilidad del sistema",
+    "turnos": [
+      {
+        "situacion": "El sistema detecta una carga alta. Una transacción de actualización bloquea la tabla de inventario.",
+        "opciones": [
+          {
+            "texto": "Realizar una copia de seguridad antes de finalizar la transacción.",
+            "calidad": 2,
+            "consecuencia": "Se garantiza la recuperabilidad. La regla de aislamiento asegura que la base de datos no se corrompa."
+          },
+          {
+            "texto": "Forzar el fin de la transacción sin copia de seguridad.",
+            "calidad": 1,
+            "consecuencia": "Puede causar pérdida de datos. Violación de la regla de aislamiento que asegura la integridad de la transacción."
+          },
+          {
+            "texto": "Ignorar la transacción y continuar con la carga.",
+            "calidad": 0,
+            "consecuencia": "Puede causar bloqueos y pérdida de datos. Violación de la regla de aislamiento que exige control de transacciones."
+          }
+        ]
+      },
+      {
+        "situacion": "Una nueva transacción de lectura intenta acceder a la tabla de inventario bloqueada.",
+        "opciones": [
+          {
+            "texto": "Aislar la transacción de lectura para evitar conflictos.",
+            "calidad": 2,
+            "consecuencia": "Se mantiene la coherencia. La regla de aislamiento previene lecturas incoherentes."
+          },
+          {
+            "texto": "Permitir la lectura sin aislar la transacción.",
+            "calidad": 1,
+            "consecuencia": "Puede causar lecturas incoherentes. Violación de la regla de aislamiento que exige exclusividad en transacciones."
+          },
+          {
+            "texto": "Eliminar la transacción de lectura sin aislarla.",
+            "calidad": 0,
+            "consecuencia": "Puede causar pérdida de datos. Violación de la regla de aislamiento que exige control de transacciones."
+          }
+        ]
+      },
+      {
+        "situacion": "El sistema detecta un uso excesivo de espacio en la tabla de usuarios.",
+        "opciones": [
+          {
+            "texto": "Realizar un reorganizado de la tabla para optimizar espacio.",
+            "calidad": 2,
+            "consecuencia": "Se mejora la eficiencia. La regla de aislamiento asegura que la operación no afecte transacciones activas."
+          },
+          {
+            "texto": "Reorganizar la tabla sin aislar la operación.",
+            "calidad": 1,
+            "consecuencia": "Puede causar interrupciones. Violación de la regla de aislamiento que exige exclusividad en transacciones."
+          },
+          {
+            "texto": "Ignorar el espacio y esperar que se resuelva solo.",
+            "calidad": 0,
+            "consecuencia": "Puede causar lentitud. Violación de la regla de aislamiento que exige control de recursos."
+          }
+        ]
+      },
+      {
+        "situacion": "Una transacción de actualización intenta modificar la tabla de usuarios.",
+        "opciones": [
+          {
+            "texto": "Aislar la transacción para evitar conflicto con la actualización.",
+            "calidad": 2,
+            "consecuencia": "Se mantiene la coherencia. La regla de aislamiento previene conflictos de transacciones."
+          },
+          {
+            "texto": "Permitir la transacción sin aislarla.",
+            "calidad": 1,
+            "consecuencia": "Puede causar conflictos. Violación de la regla de aislamiento que exige exclusividad en transacciones."
+          },
+          {
+            "texto": "Eliminar la transacción de actualización sin aislarla.",
+            "calidad": 0,
+            "consecuencia": "Puede causar pérdida de datos. Violación de la regla de aislamiento que exige control de transacciones."
+          }
+        ]
+      },
+      {
+        "situacion": "El sistema detecta una posible pérdida de datos en una transacción no confirmada.",
+        "opciones": [
+          {
+            "texto": "Confirmar la transacción y realizar una copia de seguridad.",
+            "calidad": 2,
+            "consecuencia": "Se asegura la integridad. La regla de aislamiento garantiza la confirmación de transacciones."
+          },
+          {
+            "texto": "Cancelar la transacción sin copia de seguridad.",
+            "calidad": 1,
+            "consecuencia": "Puede causar pérdida de datos. Violación de la regla de aislamiento que exige confirmación de transacciones."
+          },
+          {
+            "texto": "Ignorar la transacción y esperar que se resuelva sola.",
+            "calidad": 0,
+            "consecuencia": "Puede causar pérdida de datos. Violación de la regla de aislamiento que exige confirmación de transacciones."
+          }
+        ]
+      },
+      {
+        "situacion": "Una transacción de lectura intenta acceder a una tabla que está en proceso de reorganización.",
+        "opciones": [
+          {
+            "texto": "Aislar la transacción para evitar conflictos con la reorganización.",
+            "calidad": 2,
+            "consecuencia": "Se mantiene la coherencia. La regla de aislamiento previene lecturas incoherentes."
+          },
+          {
+            "texto": "Permitir la lectura sin aislar la transacción.",
+            "calidad": 1,
+            "consecuencia": "Puede causar lecturas incoherentes. Violación de la regla de aislamiento que exige exclusividad en transacciones."
+          },
+          {
+            "texto": "Eliminar la transacción de lectura sin aislarla.",
+            "calidad": 0,
+            "consecuencia": "Puede causar pérdida de datos. Violación de la regla de aislamiento que exige control de transacciones."
+          }
+        ]
+      },
+      {
+        "situacion": "El sistema detecta una posible interrupción de la estabilidad debido a transacciones incontroladas.",
+        "opciones": [
+          {
+            "texto": "Realizar un checkpoint y monitorear transacciones.",
+            "calidad": 2,
+            "consecuencia": "Se mejora la estabilidad. La regla de aislamiento garantiza el control de transacciones."
+          },
+          {
+            "texto": "Ignorar el checkpoint y continuar con la ejecución.",
+            "calidad": 1,
+            "consecuencia": "Puede causar interrupciones. Violación de la regla de aislamiento que exige control de transacciones."
+          },
+          {
+            "texto": "Forzar la interrupción de todas las transacciones sin checkpoint.",
+            "calidad": 0,
+            "consecuencia": "Puede causar pérdida de datos. Violación de la regla de aislamiento que exige control de transacciones."
+          }
+        ]
+      }
+    ],
+    "cierre": "La estrategia general debe ser la planificación de transacciones con aislamiento y control de recursos. Para mejorar, se deben analizar más casos de conflictos y optimización de espacio."
+  }
+}

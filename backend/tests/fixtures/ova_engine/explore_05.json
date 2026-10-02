@@ -1,0 +1,105 @@
+{
+  "concept": "tablespaces y datafiles",
+  "params": {
+    "num_records": 7
+  },
+  "data": {
+    "titulo": "Anomalía en el comportamiento de los datos",
+    "lectura": "Durante una auditoría técnica, se detectó un comportamiento inusual en el sistema. Las métricas revelaron una correlación inesperada entre ciertos valores, lo que sugiere una posible configuración no óptima en el entorno de almacenamiento.",
+    "columnas": [
+      "Tabla",
+      "Tamaño (GB)",
+      "Lecturas por segundo",
+      "Espacio libre (%)"
+    ],
+    "filas": [
+      {
+        "valores": [
+          "ventas",
+          "50",
+          "120",
+          "20"
+        ],
+        "observacion": "Alta actividad en la tabla ventas."
+      },
+      {
+        "valores": [
+          "empleados",
+          "10",
+          "30",
+          "70"
+        ],
+        "observacion": "Baja carga en empleados."
+      },
+      {
+        "valores": [
+          "clientes",
+          "30",
+          "80",
+          "40"
+        ],
+        "observacion": "Alta demanda de lecturas en clientes."
+      },
+      {
+        "valores": [
+          "pedidos",
+          "70",
+          "150",
+          "10"
+        ],
+        "observacion": "Alta carga y baja espacio libre en pedidos."
+      },
+      {
+        "valores": [
+          "inventario",
+          "20",
+          "40",
+          "60"
+        ],
+        "observacion": "Operación estable en inventario."
+      },
+      {
+        "valores": [
+          "reportes",
+          "15",
+          "25",
+          "80"
+        ],
+        "observacion": "Baja actividad en reportes."
+      },
+      {
+        "valores": [
+          "historial",
+          "40",
+          "60",
+          "50"
+        ],
+        "observacion": "Estructura equilibrada en historial."
+      }
+    ],
+    "pregunta_patron": "¿Cuál es el patrón observable en los datos presentados?",
+    "opciones_patron": [
+      {
+        "texto": "Las tablas con alta carga tienen espacio libre bajo.",
+        "feedback": "Correcto. La correlación entre carga y espacio libre es clara.",
+        "correcta": true
+      },
+      {
+        "texto": "Las tablas pequeñas tienen más lecturas por segundo.",
+        "feedback": "Incorrecto. No hay relación directa entre tamaño y lecturas.",
+        "correcta": false
+      },
+      {
+        "texto": "Las tablas con más espacio libre tienen más lecturas.",
+        "feedback": "Incorrecto. La correlación es inversa.",
+        "correcta": false
+      },
+      {
+        "texto": "Las tablas grandes siempre tienen más lecturas.",
+        "feedback": "Incorrecto. No todos los grandes datos tienen alta lectura.",
+        "correcta": false
+      }
+    ],
+    "revelacion": "El patrón muestra que los tablespaces con alta carga de datos tienen menos espacio libre, lo que refleja un uso optimizado de los datafiles."
+  }
+}

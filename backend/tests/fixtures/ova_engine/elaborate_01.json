@@ -1,0 +1,68 @@
+{
+  "concept": "índices B-tree",
+  "params": {
+    "num_questions": 4
+  },
+  "data": {
+    "titulo": "Optimización de consultas en una plataforma de e-commerce",
+    "empresa": "E-ComTrade S.A., plataforma de comercio electrónico",
+    "narrativa": "E-ComTrade S.A. es una empresa que opera una plataforma de comercio electrónico con una base de datos Oracle que maneja millones de transacciones diarias. Recientemente, los desarrolladores notaron que ciertas consultas de búsqueda de productos estaban tomando demasiado tiempo, lo que afectaba la experiencia del usuario. Al analizar los logs, se detectó que las consultas estaban realizando escaneos completos de tablas grandes, en lugar de usar índices. El problema se manifestó al aumentar la carga de usuarios durante las promociones, donde las consultas se volvían lentas y generaban bloqueos en la base de datos.",
+    "evidencias": [
+      {
+        "fuente": "V$SESSION",
+        "dato": "SQL_ID: 4xq8q2r5j6y3a, status: WAITING, event: 'SQL*Net message from client'"
+      },
+      {
+        "fuente": "DBA_INDEXES",
+        "dato": "INDEX_NAME: IDX_PROD_NOMBRE, TABLE_NAME: PRODUCTS, UNIQUENESS: NONUNIQUE"
+      },
+      {
+        "fuente": "DBA_TAB_STATISTICS",
+        "dato": "TABLE_NAME: PRODUCTS, NUM_ROWS: 12,500,000, CLUSTERING_FACTOR: 10"
+      }
+    ],
+    "preguntas": [
+      {
+        "pregunta": "¿Por qué las consultas de búsqueda de productos estaban tomando demasiado tiempo?",
+        "respuesta_modelo": "Las consultas no estaban utilizando índices B-tree debido a la falta de índices adecuados o a una estructura de tabla inadecuada. Esto provocó que las consultas realizaran escaneos completos de tablas grandes, lo que aumentó significativamente el tiempo de respuesta.",
+        "puntos_clave": [
+          "Índices B-tree",
+          "Escaneo completo",
+          "Consultas lentas",
+          "Clustering factor"
+        ]
+      },
+      {
+        "pregunta": "¿Cómo afecta el factor de agrupamiento a la eficiencia de las consultas?",
+        "respuesta_modelo": "El factor de agrupamiento indica cómo están organizados los datos en una tabla. Un valor bajo sugiere que los datos no están bien organizados, lo que puede hacer que las consultas que usan índices B-tree sean menos eficientes y requieran más operaciones de disco.",
+        "puntos_clave": [
+          "Factor de agrupamiento",
+          "Eficiencia de consultas",
+          "Índices B-tree",
+          "Ordenamiento de datos"
+        ]
+      },
+      {
+        "pregunta": "¿Qué implicaciones tiene la falta de índices B-tree en el rendimiento de la base de datos?",
+        "respuesta_modelo": "La falta de índices B-tree lleva a que las consultas no puedan aprovechar la estructura de los índices para acceder a los datos de forma rápida. Esto resulta en escaneos completos, aumento del tiempo de respuesta y mayor carga en los recursos de la base de datos.",
+        "puntos_clave": [
+          "Índices B-tree",
+          "Escaneo completo",
+          "Rendimiento",
+          "Carga de recursos"
+        ]
+      },
+      {
+        "pregunta": "¿Cómo se puede mejorar el rendimiento de las consultas en este caso?",
+        "respuesta_modelo": "Se puede mejorar el rendimiento al crear índices B-tree adecuados sobre las columnas frecuentemente consultadas, optimizar la estructura de las tablas y monitorear el factor de agrupamiento para mantener los datos bien organizados.",
+        "puntos_clave": [
+          "Índices B-tree",
+          "Estructura de tablas",
+          "Factor de agrupamiento",
+          "Optimización"
+        ]
+      }
+    ],
+    "cierre": "Este caso resalta la importancia de los índices B-tree en la optimización de consultas. Un DBA debe monitorear el rendimiento de las consultas, identificar la falta de índices y ajustar la estructura de las tablas para garantizar,"
+  }
+}

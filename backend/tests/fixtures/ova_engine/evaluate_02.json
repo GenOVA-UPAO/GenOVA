@@ -1,0 +1,45 @@
+{
+  "concept": "bloqueos y deadlocks",
+  "params": {
+    "num_criteria": 5
+  },
+  "data": {
+    "titulo": "Autoevaluación de Bloqueos y Deadlocks",
+    "instrucciones": "Evalúa tu dominio con honestidad, considerando lo que sabes y lo que aún necesitas aprender sobre bloqueos y deadlocks en bases de datos.",
+    "criterios": [
+      {
+        "criterio": "Identificar tipos de bloqueos en Oracle",
+        "inicial": "Puedo mencionar los tipos básicos de bloqueos, pero no sé diferenciarlos en Oracle.",
+        "en_desarrollo": "Puedo identificar los tipos de bloqueos en Oracle, pero no siempre explico su propósito.",
+        "logrado": "Puedo identificar y explicar los tipos de bloqueos en Oracle, incluyendo sus propósitos y escenarios de uso."
+      },
+      {
+        "criterio": "Explicar el concepto de deadlock",
+        "inicial": "Puedo definir deadlock, pero no comprendo cómo ocurre en sistemas de bases de datos.",
+        "en_desarrollo": "Puedo explicar el concepto de deadlock y su ocurrencia en bases de datos, pero no con ejemplos concretos.",
+        "logrado": "Puedo explicar el concepto de deadlock, sus causas y cómo se detecta en Oracle con ejemplos prácticos."
+      },
+      {
+        "criterio": "Analizar situaciones de deadlock",
+        "inicial": "Puedo describir situación de deadlock, pero no puedo analizarla en un caso real.",
+        "en_desarrollo": "Puedo analizar una situación de deadlock en un caso simple, pero no identifico todas las causas.",
+        "logrado": "Puedo analizar y resolver situaciones de deadlock con ejemplos prácticos en Oracle."
+      },
+      {
+        "criterio": "Utilizar herramientas de Oracle para monitoreo de bloqueos",
+        "inicial": "Puedo mencionar herramientas de Oracle, pero no sé usarlas para monitoreo de bloqueos.",
+        "en_desarrollo": "Puedo usar herramientas básicas de Oracle para monitoreo de bloqueos, pero no con precisión.",
+        "logrado": "Puedo usar herramientas avanzadas de Oracle para monitoreo y diagnóstico de bloqueos con precisión."
+      },
+      {
+        "criterio": "Aplicar estrategias para evitar deadlocks",
+        "inicial": "Puedo mencionar estrategias generales, pero no sé aplicarlas en Oracle.",
+        "en_desarrollo": "Puedo aplicar estrategias básicas para evitar deadlocks, pero no siempre en entornos de Oracle.",
+        "logrado": "Puedo aplicar estrategias efectivas para evitar deadlocks en Oracle, con ejemplos prácticos."
+      }
+    ],
+    "reflexion_baja": "Si tu puntaje es bajo, revisa los conceptos básicos de bloqueos y deadlocks, enfócate en Oracle y practica con ejemplos.",
+    "reflexion_media": "Si tu puntaje es medio, profundiza en el análisis de deadlocks en Oracle y practica con casos reales para mejorar tu comprensión.",
+    "reflexion_alta": "Si tu puntaje es alto, sigue explorando herramientas avanzadas de Oracle para monitoreo y evita deadlocks con estrategias eficientes."
+  }
+}

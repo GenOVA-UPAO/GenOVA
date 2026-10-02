@@ -1,0 +1,46 @@
+{
+  "concept": "tablespaces y datafiles",
+  "params": {
+    "num_scenes": 5,
+    "style": "cinematografico"
+  },
+  "data": {
+    "titulo": "Tablespaces y Datafiles: La Ciudad de los Datos",
+    "gancho": "Imagina una ciudad donde cada edificio alberga información, pero solo se accede a través de puertas específicas. Descubre cómo funciona el mundo de los tablespa",
+    "escenas": [
+      {
+        "tiempo": "0:00 - 0:10",
+        "titulo": "La Ciudad de los Datos",
+        "descripcion_visual": "Una ciudad futurista con torres de cristal y calles iluminadas. La cámara se mueve lentamente por las calles mientras se escucha el sonido de una ciudad viva.",
+        "narracion": "En una ciudad invisible, cada edificio alberga información. Pero para acceder a ella, debes encontrar la puerta correcta."
+      },
+      {
+        "tiempo": "0:10 - 0:20",
+        "titulo": "El Gran Almacén",
+        "descripcion_visual": "Una gran sala con estanterías de libros, pero cada libro está en una caja diferente. La cámara enfoca una caja con una etiqueta brillante.",
+        "narracion": "El gran almacén es como una biblioteca, pero cada libro vive en una caja. Así es como se organizan los datos en un sistema."
+      },
+      {
+        "tiempo": "0:20 - 0:30",
+        "titulo": "Las Cajas y sus Puertas",
+        "descripcion_visual": "Una caja con una puerta de cristal que brilla. La cámara muestra el interior de la caja con libros ordenados, mientras se escucha un sonido de apertura.",
+        "narracion": "Cada caja es un datafile, y la puerta es el tablespace. Son como las habitaciones que contienen los datos de la ciudad."
+      },
+      {
+        "tiempo": "0:30 - 0:40",
+        "titulo": "Cómo Se Accede a la Ciudad",
+        "descripcion_visual": "Una persona se acerca a la puerta de una caja, la abre y entra. La cámara muestra la organización interna de la caja y el flujo de información.",
+        "narracion": "Para acceder a los datos, primero debes llegar a la caja correcta. Luego, abres la puerta y exploras el contenido."
+      },
+      {
+        "tiempo": "0:40 - 0:50",
+        "titulo": "La Vida en la Ciudad",
+        "descripcion_visual": "La cámara muestra una ciudad en movimiento con personas accediendo a diferentes cajas. Las luces brillan y el ambiente es dinámico y eficiente.",
+        "narracion": "La ciudad funciona gracias a la organización de las cajas y sus puertas. Así es como los tablespaces y datafiles manejan la información."
+      }
+    ],
+    "narracion_completa": "Imagina una ciudad invisible donde cada edificio alberga información. Para acceder a ella, debes encontrar la puerta correcta. El gran almacén es como una biblioteca, pero cada libro vive en una caja. Cada caja es un datafile, y la puerta es el tablespace. Son como las habitaciones que contienen los datos de la ciudad. Para acceder a los datos, primero debes llegar a la caja correcta. Luego, abres la puerta y exploras el contenido. La ciudad funciona gracias a la organización de las cajas y sus ",
+    "pregunta_reflexion": "¿Cómo podría la organización de estos espacios afectar la eficiencia de un sistema de bases de datos?",
+    "prompt_video": "Un video estilo cinematográfico que comienza con una ciudad futurista, mostrando una gran sala con estanterías de libros. Una cámara se acerca a una caja con una puerta brillante. La caja se abre revelando información ordenada. La ciudad se mueve con dinamismo mientras se muestra la interacción entre las cajas y las personas que las usan. El tono es empático y visualmente atractivo, sin texto ni fórmulas."
+  }
+}
