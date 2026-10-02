@@ -122,6 +122,30 @@ class StartJobRequest(BaseModel):
         return self
 
 
+def autoplan_resources(payload: StartJobRequest) -> None:
+    """Sin `resources`, decide el plan AL CREAR el job con el motor de decisión.
+
+    Antes se creaban filas genéricas (1 por fase) y el concierge re-planificaba
+    otros recursos en el grafo: filas y resultados no coincidían, quedaban
+    `pending` y el job terminaba `interrupted`. Ahora filas y grafo comparten el
+    mismo plan. Sin motor de decisión disponible se mantiene el modo legacy.
+    """
+    if payload.resources:
+        return
+    from ova_engine.planner import plan_ova
+
+    plan = plan_ova(payload.prompt)
+    if not plan:
+        return
+    wanted = {p.strip().lower() for p in payload.phases if p and p.strip()}
+    payload.resources = [
+        ResourceRequest(phase_type=phase, resource_type=str(rt))
+        for phase, ids in plan.items()
+        if not wanted or phase in wanted
+        for rt in ids
+    ]
+
+
 def build_resource_plan(payload: StartJobRequest) -> list[dict]:
     """Translate the chosen resources into the rows to create — one per resource (R1, R2).
 

@@ -56,3 +56,16 @@ def test_tema_ignora_h1_del_runtime_y_lee_upao_header():
         "<script>tpl = `<h1>${title}</h1>`</script></body>"
     )
     assert _first_h1(html) == "Simulador de caché & índices"
+
+
+def test_job_sin_recursos_se_planifica_al_crear(monkeypatch):
+    import ova_engine.planner as planner
+    from generation.jobs.jobs_helpers import StartJobRequest, autoplan_resources, build_resource_plan
+
+    monkeypatch.setattr(planner, "plan_ova", lambda prompt, contexto="": {"engage": [2, 4], "evaluate": [1]})
+    payload = StartJobRequest(prompt="Índices")
+    autoplan_resources(payload)
+    rows = build_resource_plan(payload)
+    assert [(r["phase_type"], r["resource_type"]) for r in rows] == [
+        ("engage", "2"), ("engage", "4"), ("evaluate", "1"),
+    ]

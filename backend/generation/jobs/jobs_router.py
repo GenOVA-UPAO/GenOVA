@@ -19,6 +19,7 @@ from generation.interface.http.error_map import generation_error_to_response
 from generation.jobs.jobs_helpers import (
     ResumeRequest,
     StartJobRequest,
+    autoplan_resources,
     build_resource_plan,
 )
 from generation.jobs.jobs_router_helpers import (
@@ -48,6 +49,7 @@ def start_job(
     uc: GenerationUseCases = Depends(build_generation),
 ):
     """Create a job + its resources, launch the runner, return {job_id, status}."""
+    autoplan_resources(payload)
     try:
         result = uc.create_job.execute(
             CreateJobInput(
