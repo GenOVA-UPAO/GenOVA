@@ -1,0 +1,143 @@
+{
+  "concept": "optimización de consultas con planes de ejecución",
+  "params": {
+    "num_steps": 4
+  },
+  "data": {
+    "titulo": "Comparación de consultas con y sin optimización",
+    "descripcion_dataset": "Métricas simuladas de trazas V$SQL_PLAN y V$SYSSTAT. El eje X representa el número de filas de la tabla y el eje Y el costo de la consulta.",
+    "puntos": [
+      {
+        "x": 100,
+        "y": 20,
+        "grupo": "Con índice"
+      },
+      {
+        "x": 100,
+        "y": 40,
+        "grupo": "Sin índice"
+      },
+      {
+        "x": 200,
+        "y": 15,
+        "grupo": "Con índice"
+      },
+      {
+        "x": 200,
+        "y": 50,
+        "grupo": "Sin índice"
+      },
+      {
+        "x": 300,
+        "y": 10,
+        "grupo": "Con índice"
+      },
+      {
+        "x": 300,
+        "y": 60,
+        "grupo": "Sin índice"
+      },
+      {
+        "x": 400,
+        "y": 8,
+        "grupo": "Con índice"
+      },
+      {
+        "x": 400,
+        "y": 70,
+        "grupo": "Sin índice"
+      },
+      {
+        "x": 500,
+        "y": 6,
+        "grupo": "Con índice"
+      },
+      {
+        "x": 500,
+        "y": 80,
+        "grupo": "Sin índice"
+      },
+      {
+        "x": 600,
+        "y": 5,
+        "grupo": "Con índice"
+      },
+      {
+        "x": 600,
+        "y": 90,
+        "grupo": "Sin índice"
+      }
+    ],
+    "preguntas": [
+      {
+        "paso": 1,
+        "pregunta": "¿Qué grupo muestra un costo de consulta más bajo para 100 filas?",
+        "pista": "Observa el grupo 'Con índice' en el rango de 100 filas.",
+        "opciones": [
+          {
+            "texto": "El grupo 'Sin índice' tiene menor costo.",
+            "feedback": "El grupo 'Con índice' muestra menor costo.",
+            "correcta": false
+          },
+          {
+            "texto": "El grupo 'Con índice' tiene menor costo.",
+            "feedback": "El grupo 'Con índice' muestra menor costo.",
+            "correcta": true
+          }
+        ]
+      },
+      {
+        "paso": 2,
+        "pregunta": "¿Qué grupo tiene un costo de consulta más alto en 500 filas?",
+        "pista": "Localiza el grupo 'Sin índice' en el rango de 500 filas.",
+        "opciones": [
+          {
+            "texto": "El grupo 'Con índice' tiene mayor costo.",
+            "feedback": "El grupo 'Sin índice' tiene mayor costo.",
+            "correcta": false
+          },
+          {
+            "texto": "El grupo 'Sin índice' tiene mayor costo.",
+            "feedback": "El grupo 'Sin índice' tiene mayor costo.",
+            "correcta": true
+          }
+        ]
+      },
+      {
+        "paso": 3,
+        "pregunta": "¿Qué patrón se observa al aumentar el número de filas?",
+        "pista": "Compara ambos grupos cuando el número de filas supera los 400.",
+        "opciones": [
+          {
+            "texto": "Ambos grupos muestran un aumento lineal en costo.",
+            "feedback": "Ambos grupos muestran un aumento lineal en costo.",
+            "correcta": true
+          },
+          {
+            "texto": "El grupo 'Con índice' muestra un aumento exponencial.",
+            "feedback": "El grupo 'Con índice' muestra un aumento lineal.",
+            "correcta": false
+          }
+        ]
+      },
+      {
+        "paso": 4,
+        "pregunta": "¿Qué grupo muestra una mejora en el costo de consulta con el aumento de filas?",
+        "pista": "Analiza la pendiente de la línea para ambos grupos.",
+        "opciones": [
+          {
+            "texto": "El grupo 'Sin índice' mejora con más filas.",
+            "feedback": "El grupo 'Con índice' mejora con más filas.",
+            "correcta": false
+          },
+          {
+            "texto": "El grupo 'Con índice' mejora con más filas.",
+            "feedback": "El grupo 'Con índice' mejora con más filas.",
+            "correcta": true
+          }
+        ]
+      }
+    ],
+    "revelacion": "La optimización de consultas con planes de ejecución reduce el costo de consulta al aprovechar estructuras de datos indexadas, lo que mejora la eficiencia y la escalabilidad de las consultas."
+  }
+}

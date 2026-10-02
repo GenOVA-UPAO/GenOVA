@@ -1,0 +1,71 @@
+{
+  "concept": "backup y recovery con RMAN",
+  "params": {
+    "num_rounds": 7
+  },
+  "data": {
+    "titulo": "Clasifica: Backup y Recovery con RMAN",
+    "categoria_a": {
+      "id": "conceptos",
+      "nombre": "Conceptos de Backup",
+      "descripcion": "Elementos relacionados con la copia de datos y su protección."
+    },
+    "categoria_b": {
+      "id": "recovery",
+      "nombre": "Mecanismos de Recuperación",
+      "descripcion": "Procedimientos para restaurar datos y restaurar la base de datos."
+    },
+    "items": [
+      {
+        "id": "item-1",
+        "texto": "Backup en frío",
+        "contexto": "Realizado cuando la base de datos está en modo de lectura solo.",
+        "categoria": "conceptos",
+        "feedback": "Corresponde a backup de datos sin actividad, garantizando consistencia."
+      },
+      {
+        "id": "item-2",
+        "texto": "RMAN incremental",
+        "contexto": "Copia solo los cambios realizados desde el último backup.",
+        "categoria": "conceptos",
+        "feedback": "Es un tipo de backup que solo copia los datos modificados."
+      },
+      {
+        "id": "item-3",
+        "texto": "Restaurar base de datos",
+        "contexto": "Proceso de devolver los datos a un estado anterior.",
+        "categoria": "recovery",
+        "feedback": "Es un paso clave en la recuperación de datos perdidos o dañados."
+      },
+      {
+        "id": "item-4",
+        "texto": "Bloqueo exclusivo",
+        "contexto": "Evita que otros usuarios accedan a la base de datos durante una operación.",
+        "categoria": "recovery",
+        "feedback": "Permite operaciones seguras durante la recuperación de datos."
+      },
+      {
+        "id": "item-5",
+        "texto": "DML",
+        "contexto": "Operaciones que modifican datos en la base de datos.",
+        "categoria": "conceptos",
+        "feedback": "Pertenece a las operaciones que afectan los datos almacenados."
+      },
+      {
+        "id": "item-6",
+        "texto": "Recovery Manager",
+        "contexto": "Herramienta que gestiona el backup y la recuperación de datos.",
+        "categoria": "recovery",
+        "feedback": "Es el motor central que permite la gestión de operaciones de recuperación."
+      },
+      {
+        "id": "item-7",
+        "texto": "Backup en caliente",
+        "contexto": "Realizado mientras la base de datos está en modo de lectura/escritura.",
+        "categoria": "conceptos",
+        "feedback": "Permite operaciones en tiempo real, aunque con mayor complejidad."
+      }
+    ],
+    "sintesis": "Los conceptos de backup abordan la protección de datos, mientras que los mecanismos de recuperación se enfocan en la restauración de los mismos. Ambos son complementarios para garantizar la integridad y disponibilidad de la base de datos."
+  }
+}

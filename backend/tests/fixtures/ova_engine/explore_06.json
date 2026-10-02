@@ -1,0 +1,45 @@
+{
+  "concept": "bloqueos y deadlocks",
+  "params": {
+    "num_zones": 4
+  },
+  "data": {
+    "titulo": "Simulador de Bloqueos y Deadlocks por Concurrencia",
+    "parametro": "Concurrencia de Sesiones",
+    "unidad": "sesiones",
+    "min_val": 10,
+    "max_val": 1000,
+    "default_val": 100,
+    "zonas": [
+      {
+        "nombre": "Subdimensionado",
+        "rango": "10 - 50 sesiones",
+        "estado": "warning",
+        "descripcion": "El motor no puede manejar la carga de trabajo.",
+        "efecto": "Alta latencia y bloqueos frecuentes."
+      },
+      {
+        "nombre": "Zona Óptima",
+        "rango": "50 - 300 sesiones",
+        "estado": "success",
+        "descripcion": "El motor maneja eficientemente la concurrencia.",
+        "efecto": "Baja latencia y mínimos bloqueos."
+      },
+      {
+        "nombre": "Saturación",
+        "rango": "300 - 600 sesiones",
+        "estado": "info",
+        "descripcion": "El motor alcanza su capacidad máxima de procesamiento.",
+        "efecto": "Latencia moderada y bloqueos intermitentes."
+      },
+      {
+        "nombre": "Sobredimensionado",
+        "rango": "600 - 1000 sesiones",
+        "estado": "error",
+        "descripcion": "El motor no puede procesar todas las sesiones simultáneas.",
+        "efecto": "Alta latencia, bloqueos frecuentes y posible deadlock."
+      }
+    ],
+    "explicacion_optima": "La zona óptima equilibra la capacidad del motor y la demanda de concurrencia. Un valor demasiado bajo genera bloqueos, mientras que uno excesivo sobrecarga el sistema y genera deadlocks."
+  }
+}

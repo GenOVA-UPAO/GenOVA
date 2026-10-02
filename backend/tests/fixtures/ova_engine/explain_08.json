@@ -1,0 +1,92 @@
+{
+  "concept": "bloqueos y deadlocks",
+  "params": {
+    "num_blocks": 6
+  },
+  "data": {
+    "titulo": "Arquitectura de Bloqueos y Deadlocks",
+    "objetivo": "Al terminar podrás interpretar cómo se gestionan los bloqueos y deadlocks en una base de datos Oracle.",
+    "bloques": [
+      {
+        "nombre": "Sistema",
+        "rol": "Controla la gestión global de recursos y operaciones del motor de base de datos.",
+        "contiene": "Instancia, procesos, memoria y componentes de gestión.",
+        "relacion": "La instancia coordina la ejecución de operaciones y maneja bloqueos a nivel general."
+      },
+      {
+        "nombre": "Instancia",
+        "rol": "Representa la memoria y procesos que permiten la ejecución de consultas y manejo de bloqueos.",
+        "contiene": "Memoria compartida, procesos y componentes de bloqueo.",
+        "relacion": "La instancia maneja bloqueos que afectan al sistema global y a múltiples bases de datos."
+      },
+      {
+        "nombre": "Base de Datos",
+        "rol": "Define el conjunto de objetos y recursos compartidos por múltiples sesiones.",
+        "contiene": "Espacio de usuario, tablespaces y objetos compartidos.",
+        "relacion": "La base de datos permite el acceso compartido a recursos y maneja bloqueos a nivel de objeto."
+      },
+      {
+        "nombre": "Tablespace",
+        "rol": "Organiza el almacenamiento físico y el manejo de bloqueos a nivel de espacio.",
+        "contiene": "Segmentos, extents y bloques de datos.",
+        "relacion": "El tablespace gestiona los bloqueos relacionados con el espacio de almacenamiento."
+      },
+      {
+        "nombre": "Segmento",
+        "rol": "Representa un conjunto de extents relacionados con un objeto específico.",
+        "contiene": "Extents y bloqueos específicos de objetos.",
+        "relacion": "Los segmentos son unidades de bloqueo a nivel de objeto y espacio."
+      },
+      {
+        "nombre": "Extent",
+        "rol": "Unidad de gestión de espacio y bloqueo para bloques contiguos.",
+        "contiene": "Bloques de datos y bloqueos específicos.",
+        "relacion": "El extent permite gestionar bloqueos en bloques de datos contiguos."
+      }
+    ],
+    "flujo": [
+      {
+        "paso": "Una consulta accede a una tabla y solicita un bloqueo de lectura.",
+        "bloque": 6
+      },
+      {
+        "paso": "El bloqueo se verifica en el extent y se asigna a un bloque específico.",
+        "bloque": 5
+      },
+      {
+        "paso": "El segmento verifica si el bloqueo es compatible y lo asigna.",
+        "bloque": 4
+      },
+      {
+        "paso": "La base de datos registra el bloqueo y lo comunica a la instancia.",
+        "bloque": 3
+      }
+    ],
+    "pregunta": {
+      "enunciado": "¿Por qué se organiza la arquitectura de bloqueos en niveles jerárquicos?",
+      "opciones": [
+        {
+          "texto": "Para permitir un acceso más rápido a los datos.",
+          "correcta": false,
+          "feedback": "No es la razón principal. La jerarquía se organiza para manejar bloqueos de forma estructurada."
+        },
+        {
+          "texto": "Para facilitar la gestión de bloqueos a diferentes niveles de detalle.",
+          "correcta": true,
+          "feedback": "Correcto. La jerarquía permite manejar bloqueos en distintos niveles de la base de datos."
+        },
+        {
+          "texto": "Para mejorar la seguridad de los datos.",
+          "correcta": false,
+          "feedback": "La seguridad no es el objetivo principal de esta jerarquía."
+        },
+        {
+          "texto": "Para optimizar el uso de memoria.",
+          "correcta": false,
+          "feedback": "La jerarquía no se organiza para optimizar la memoria, sino para gestionar bloqueos."
+        }
+      ]
+    },
+    "sintesis": "La jerarquía de bloqueos y deadlocks permite gestionar recursos de manera estructurada, desde el sistema hasta los bloques individuales, asegurando la concurrencia y evitando bloqueos indeseados."
+  }
+}

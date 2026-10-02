@@ -1,0 +1,35 @@
+{
+  "concept": "auditoría",
+  "params": {
+    "num_iterations": 3
+  },
+  "data": {
+    "titulo": "Auditoría y dinámica interna de bases de datos",
+    "objetivo": "Comprender cómo se gestionan los bloques, registros y bloqueos en el motor de bases de datos durante una transacción.",
+    "concepto_mecanismo": "La auditoría sigue el flujo de bloques entre disco y buffer cache, el registro de cambios en redo logs y la gestión de bloqueos durante transacciones. Estos mecanismos garantizan la coherencia y la ef",
+    "controles": [
+      {
+        "id": "leer_bloque",
+        "accion": "Leer bloque A (Disk Read)",
+        "descripcion": "El bloque A se carga desde disco al buffer cache y se marca como utilizado."
+      },
+      {
+        "id": "modificar",
+        "accion": "Modificar bloque A (Modify)",
+        "descripcion": "El bloque A se marca como modificado, generando un registro en el redo log."
+      },
+      {
+        "id": "commit",
+        "accion": "Commit transacción",
+        "descripcion": "La transacción se confirma, el bloque A se libera y se actualiza el redo log."
+      },
+      {
+        "id": "checkpoint",
+        "accion": "Checkpoint (LGWR)",
+        "descripcion": "Los cambios en el redo log se escriben en disco, y los bloques en buffer cache se marcan como sincronizados."
+      }
+    ],
+    "ejemplo_trabajado": "El estudiante ejecuta 'leer_bloque', carga el bloque A al buffer cache, luego lo modifica, genera un registro en el redo log, y finalmente confirma la transacción, sincronizando cambios con disco.",
+    "sintesis": "La auditoría garantiza la coherencia mediante el seguimiento de bloques, registros y bloqueos, asegurando que los cambios se persistan correctamente y se manejen de forma eficiente."
+  }
+}

@@ -4,5 +4,125 @@
     "status": "ok",
     "concept": "backup y recovery con RMAN",
     "seconds": 19.7
+  },
+  "explore:1": {
+    "key": "explore:1",
+    "status": "ok",
+    "concept": "auditoría",
+    "seconds": 24.2
+  },
+  "explore:10": {
+    "key": "explore:10",
+    "status": "ok",
+    "concept": "índices B-tree",
+    "seconds": 30.3
+  },
+  "explore:2": {
+    "key": "explore:2",
+    "status": "ok",
+    "concept": "transacciones y aislamiento",
+    "seconds": 40.9
+  },
+  "explore:3": {
+    "key": "explore:3",
+    "status": "ok",
+    "concept": "backup y recovery con RMAN",
+    "seconds": 19.6
+  },
+  "explore:4": {
+    "key": "explore:4",
+    "status": "ok",
+    "concept": "roles y privilegios",
+    "seconds": 38.0
+  },
+  "explore:5": {
+    "key": "explore:5",
+    "status": "ok",
+    "concept": "tablespaces y datafiles",
+    "seconds": 17.1
+  },
+  "explore:6": {
+    "key": "explore:6",
+    "status": "ok",
+    "concept": "bloqueos y deadlocks",
+    "seconds": 13.7
+  },
+  "explore:7": {
+    "key": "explore:7",
+    "status": "ok",
+    "concept": "optimización de consultas con planes de ejecución",
+    "seconds": 27.7
+  },
+  "explore:8": {
+    "key": "explore:8",
+    "status": "ok",
+    "concept": "auditoría",
+    "seconds": 28.0
+  },
+  "explore:9": {
+    "key": "explore:9",
+    "status": "ok",
+    "concept": "índices B-tree",
+    "seconds": 19.8
+  },
+  "explain:1": {
+    "key": "explain:1",
+    "status": "ok",
+    "concept": "bloqueos y deadlocks",
+    "seconds": 28.9
+  },
+  "explain:10": {
+    "key": "explain:10",
+    "status": "ok",
+    "concept": "optimización de consultas con planes de ejecución",
+    "seconds": 19.4
+  },
+  "explain:2": {
+    "key": "explain:2",
+    "status": "ok",
+    "concept": "auditoría",
+    "seconds": 23.7
+  },
+  "explain:3": {
+    "key": "explain:3",
+    "status": "ok",
+    "concept": "índices B-tree",
+    "seconds": 26.4
+  },
+  "explain:4": {
+    "key": "explain:4",
+    "status": "ok",
+    "concept": "transacciones y aislamiento",
+    "seconds": 26.2
+  },
+  "explain:5": {
+    "key": "explain:5",
+    "status": "ok",
+    "concept": "backup y recovery con RMAN",
+    "seconds": 19.1
+  },
+  "explain:6": {
+    "key": "explain:6",
+    "status": "ok",
+    "concept": "roles y privilegios",
+    "seconds": 26.0
+  },
+  "explain:7": {
+    "key": "explain:7",
+    "status": "ok",
+    "concept": "tablespaces y datafiles",
+    "seconds": 22.4
+  },
+  "explain:8": {
+    "key": "explain:8",
+    "status": "ok",
+    "concept": "bloqueos y deadlocks",
+    "seconds": 27.1
+  },
+  "explain:9": {
+    "key": "explain:9",
+    "status": "ok",
+    "concept": "optimización de consultas con planes de ejecución",
+    "seconds": 18.8
   }
 }
