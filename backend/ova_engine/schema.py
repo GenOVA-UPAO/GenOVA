@@ -20,7 +20,7 @@ _TYPES = {
 }
 
 
-def validate(data, schema: dict, path: str = "") -> list[str]:
+def validate(data, schema: dict, path: str = "") -> list[str]:  # noqa: C901, PLR0912
     where = path or "(raíz)"
     t = schema.get("type")
     if t and not isinstance(data, _TYPES[t]) or (t in ("integer", "number") and isinstance(data, bool)):

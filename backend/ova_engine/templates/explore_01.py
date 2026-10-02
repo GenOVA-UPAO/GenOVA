@@ -821,7 +821,7 @@ def sample(concept: str, p: dict) -> dict:
                 "descripcion": "El proceso de fondo escribe los bloques sucios a disco y actualiza las cabeceras de control.",
             },
         ],
-        "ejemplo_trabajado": f"Al ejecutar 'Cargar bloque', el bloque A entra al buffer; luego 'Modificar' lo torna sucio (rojo) y 'Checkpoint' lo persiste a disco (verde)."[:250],
+        "ejemplo_trabajado": "Al ejecutar 'Cargar bloque', el bloque A entra al buffer; luego 'Modificar' lo torna sucio (rojo) y 'Checkpoint' lo persiste a disco (verde)."[:250],
         "sintesis": f"El mecanismo de {concept} optimiza el rendimiento postergando la escritura a disco y garantizando durabilidad con el registro previo en redo log."[:250],
     }
 

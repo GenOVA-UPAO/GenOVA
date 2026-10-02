@@ -472,7 +472,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 
     chart_elements = []
     slot_w = 480.0 / max(1, n)
-    for idx, opt in enumerate(trials):
+    for idx, _opt in enumerate(trials):
         cx = 60.0 + slot_w * idx + slot_w / 2.0
         bar_w = min(54.0, slot_w * 0.55)
         bx = cx - bar_w / 2.0

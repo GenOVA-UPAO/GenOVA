@@ -500,16 +500,16 @@ def render(data: dict, ctx: RenderContext) -> str:
         candados_items.append('<span class="ova-track-arrow" aria-hidden="true">→</span>')
 
     candados_items.append(
-        f'<div class="ova-door-chip" id="door-chip" aria-label="Puerta de escape: Bloqueada">'
-        f'<span class="ova-door-icon">'
-        f'<svg class="svg-door-locked" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v17"></path><path d="M16 12h.01"></path></svg>'
-        f'<svg class="svg-door-unlocked" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v17"></path><path d="M4 4l10 3v14L4 18V4z" fill="currentColor" opacity="0.2"></path><path d="M11 12h.01"></path></svg>'
-        f'</span>'
-        f'<span class="ova-lock-info">'
-        f'<span class="ova-lock-name">Puerta Final</span>'
-        f'<span class="ova-lock-state" id="door-state">Bloqueada</span>'
-        f'</span>'
-        f'</div>'
+        '<div class="ova-door-chip" id="door-chip" aria-label="Puerta de escape: Bloqueada">'
+        '<span class="ova-door-icon">'
+        '<svg class="svg-door-locked" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v17"></path><path d="M16 12h.01"></path></svg>'
+        '<svg class="svg-door-unlocked" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v17"></path><path d="M4 4l10 3v14L4 18V4z" fill="currentColor" opacity="0.2"></path><path d="M11 12h.01"></path></svg>'
+        '</span>'
+        '<span class="ova-lock-info">'
+        '<span class="ova-lock-name">Puerta Final</span>'
+        '<span class="ova-lock-state" id="door-state">Bloqueada</span>'
+        '</span>'
+        '</div>'
     )
     track_html = "".join(candados_items)
 

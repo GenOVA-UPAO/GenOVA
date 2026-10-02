@@ -607,7 +607,7 @@ def sample(concept: str, p: dict) -> dict:
     base_turns = [
         {
             "turno": 1,
-            "dato_mostrado": f"SELECT table_name, num_rows, blocks FROM user_tables WHERE table_name = 'TRANSACCIONES'; -- 1,500,000 filas | 42,000 bloques",
+            "dato_mostrado": "SELECT table_name, num_rows, blocks FROM user_tables WHERE table_name = 'TRANSACCIONES'; -- 1,500,000 filas | 42,000 bloques",
             "pregunta": f"Sin una estructura de acceso directo para {concept}, ¿cómo debe buscar el motor cada registro en esta tabla?",
             "pista": "Observa el total de bloques que deben leerse si no se cuenta con un índice o puntero.",
             "opciones": [
@@ -643,7 +643,7 @@ def sample(concept: str, p: dict) -> dict:
         },
         {
             "turno": 3,
-            "dato_mostrado": f"CREATE INDEX idx_txn_fecha ON TRANSACCIONES(fecha_pago); -- Jerarquía: Bloque Raíz -> Nodos Rama -> Hojas con ROWIDs",
+            "dato_mostrado": "CREATE INDEX idx_txn_fecha ON TRANSACCIONES(fecha_pago); -- Jerarquía: Bloque Raíz -> Nodos Rama -> Hojas con ROWIDs",
             "pregunta": f"Al estructurar {concept}, ¿qué información mínima almacena cada nodo hoja?",
             "pista": "Piensa en el valor buscado y la dirección física donde reside la fila completa.",
             "opciones": [
@@ -697,7 +697,7 @@ def sample(concept: str, p: dict) -> dict:
         },
         {
             "turno": 6,
-            "dato_mostrado": f"SELECT blevel, leaf_blocks, clustering_factor FROM user_indexes WHERE index_name = 'IDX_TXN_FECHA'; -- CF cercano a blocks",
+            "dato_mostrado": "SELECT blevel, leaf_blocks, clustering_factor FROM user_indexes WHERE index_name = 'IDX_TXN_FECHA'; -- CF cercano a blocks",
             "pregunta": f"Al analizar el clustering factor de {concept}, ¿qué nos indica que su valor esté alineado con los bloques?",
             "pista": "Relaciona el orden de las entradas del índice con la disposición física en disco.",
             "opciones": [

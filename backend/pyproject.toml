@@ -113,6 +113,8 @@ max-args = 6
 "seed.py" = ["S105", "S106", "PLR0915"]
 "run_migrations.py" = ["PLR0915"]
 "main.py" = ["E402"]
+# Plantillas de OVA: render declarativo largo (HTML+JS) y texto educativo con SQL (no son consultas).
+"ova_engine/templates/**" = ["C901", "PLR0912", "PLR0915", "S608"]
 "ova/history_router.py" = ["E402"]
 # Deuda de tamaño en dominios aún no migrados a hexagonal — cada línea se elimina
 # cuando su dominio pasa por el refactor (Fase 2). `roles/` ya migrado (Fase 1).

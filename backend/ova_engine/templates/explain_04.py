@@ -581,19 +581,19 @@ def sample(concept: str, p: dict) -> dict:
         },
         {
             "pregunta": f"¿Qué ocurre internamente cuando se fragmenta {concept}?",
-            "respuesta": f"Tras constantes borrados y modificaciones se generan huecos vacíos. Es como un archivador con carpetas a medio llenar: el DBA debe reconstruir la estructura para recuperar eficiencia.",
+            "respuesta": "Tras constantes borrados y modificaciones se generan huecos vacíos. Es como un archivador con carpetas a medio llenar: el DBA debe reconstruir la estructura para recuperar eficiencia.",
             "nivel": "Intermedio",
             "categoria": "Funcionamiento",
         },
         {
             "pregunta": f"¿Cómo diagnostica el DBA el rendimiento real de {concept}?",
-            "respuesta": f"Analizando el plan de ejecución de la consulta (EXPLAIN PLAN) y verificando estadísticas del optimizador para confirmar que el costo de acceso disminuye significativamente.",
+            "respuesta": "Analizando el plan de ejecución de la consulta (EXPLAIN PLAN) y verificando estadísticas del optimizador para confirmar que el costo de acceso disminuye significativamente.",
             "nivel": "Avanzado",
             "categoria": "Casos Prácticos",
         },
         {
             "pregunta": f"¿Cuándo un escaneo completo es mejor opción que usar {concept}?",
-            "respuesta": f"Cuando la consulta recupera un porcentaje alto de filas (más del 15%). Leer el libro entero de un tirón resulta más rápido que saltar continuamente entre el índice y las páginas.",
+            "respuesta": "Cuando la consulta recupera un porcentaje alto de filas (más del 15%). Leer el libro entero de un tirón resulta más rápido que saltar continuamente entre el índice y las páginas.",
             "nivel": "Avanzado",
             "categoria": "Casos Prácticos",
         },
@@ -605,7 +605,7 @@ def sample(concept: str, p: dict) -> dict:
         },
         {
             "pregunta": f"¿Qué buenas prácticas garantizan la estabilidad de {concept}?",
-            "respuesta": f"Monitorear periódicamente las estadísticas mediante DBMS_STATS y evaluar el ratio de lecturas lógicas frente a físicas para prevenir degradaciones de tiempo de respuesta.",
+            "respuesta": "Monitorear periódicamente las estadísticas mediante DBMS_STATS y evaluar el ratio de lecturas lógicas frente a físicas para prevenir degradaciones de tiempo de respuesta.",
             "nivel": "Intermedio",
             "categoria": "Casos Prácticos",
         },

@@ -60,7 +60,11 @@ def test_tema_ignora_h1_del_runtime_y_lee_upao_header():
 
 def test_job_sin_recursos_se_planifica_al_crear(monkeypatch):
     import ova_engine.planner as planner
-    from generation.jobs.jobs_helpers import StartJobRequest, autoplan_resources, build_resource_plan
+    from generation.jobs.jobs_helpers import (
+        StartJobRequest,
+        autoplan_resources,
+        build_resource_plan,
+    )
 
     monkeypatch.setattr(planner, "plan_ova", lambda prompt, contexto="": {"engage": [2, 4], "evaluate": [1]})
     payload = StartJobRequest(prompt="Índices")
