@@ -1,0 +1,212 @@
+{
+  "concept": "bloqueos y deadlocks",
+  "params": {
+    "num_questions": 4
+  },
+  "data": {
+    "titulo": "Monitoreo de Bloqueos y Deadlocks",
+    "contexto": "Monitoreo de bloqueos y deadlocks en la base de datos para identificar causas de rendimiento y resolver conflictos de acceso.",
+    "columnas": {
+      "nombre": "Identificador del bloque",
+      "categoria": "Tipo de bloque",
+      "valor_a": "Tiempo de espera (ms)",
+      "valor_b": "Número de bloqueos"
+    },
+    "registros": [
+      {
+        "nombre": "Bloque_1",
+        "categoria": "Transacción",
+        "valor_a": 500,
+        "valor_b": 3
+      },
+      {
+        "nombre": "Bloque_2",
+        "categoria": "Tabla",
+        "valor_a": 300,
+        "valor_b": 2
+      },
+      {
+        "nombre": "Bloque_3",
+        "categoria": "Índice",
+        "valor_a": 400,
+        "valor_b": 4
+      },
+      {
+        "nombre": "Bloque_4",
+        "categoria": "Transacción",
+        "valor_a": 600,
+        "valor_b": 5
+      },
+      {
+        "nombre": "Bloque_5",
+        "categoria": "Tabla",
+        "valor_a": 200,
+        "valor_b": 1
+      },
+      {
+        "nombre": "Bloque_6",
+        "categoria": "Índice",
+        "valor_a": 700,
+        "valor_b": 6
+      },
+      {
+        "nombre": "Bloque_7",
+        "categoria": "Transacción",
+        "valor_a": 800,
+        "valor_b": 7
+      },
+      {
+        "nombre": "Bloque_8",
+        "categoria": "Tabla",
+        "valor_a": 100,
+        "valor_b": 0
+      },
+      {
+        "nombre": "Bloque_9",
+        "categoria": "Índice",
+        "valor_a": 900,
+        "valor_b": 8
+      },
+      {
+        "nombre": "Bloque_10",
+        "categoria": "Transacción",
+        "valor_a": 1200,
+        "valor_b": 10
+      },
+      {
+        "nombre": "Bloque_11",
+        "categoria": "Tabla",
+        "valor_a": 150,
+        "valor_b": 2
+      },
+      {
+        "nombre": "Bloque_12",
+        "categoria": "Índice",
+        "valor_a": 1100,
+        "valor_b": 9
+      },
+      {
+        "nombre": "Bloque_13",
+        "categoria": "Transacción",
+        "valor_a": 1300,
+        "valor_b": 11
+      },
+      {
+        "nombre": "Bloque_14",
+        "categoria": "Tabla",
+        "valor_a": 250,
+        "valor_b": 3
+      },
+      {
+        "nombre": "Bloque_15",
+        "categoria": "Índice",
+        "valor_a": 1400,
+        "valor_b": 12
+      }
+    ],
+    "ejemplo": "El bloque Bloque_10 tiene un tiempo de espera de 1200 ms y 10 bloqueos, lo que sugiere un problema grave en la transacción, requiriendo atención inmediata.",
+    "preguntas": [
+      {
+        "enunciado": "¿Cuál es el bloque con el mayor tiempo de espera?",
+        "opciones": [
+          {
+            "texto": "Bloque_10",
+            "correcta": true,
+            "feedback": "El bloque Bloque_10 tiene un tiempo de espera de 1200 ms, el más alto de todos."
+          },
+          {
+            "texto": "Bloque_6",
+            "correcta": false,
+            "feedback": "El bloque Bloque_6 tiene un tiempo de espera de 700 ms, que es menor que el de Bloque_10."
+          },
+          {
+            "texto": "Bloque_9",
+            "correcta": false,
+            "feedback": "El bloque Bloque_9 tiene un tiempo de espera de 900 ms, que es menor que el de Bloque_10."
+          },
+          {
+            "texto": "Bloque_15",
+            "correcta": false,
+            "feedback": "El bloque Bloque_15 tiene un tiempo de espera de 1400 ms, que es mayor que el de Bloque_10."
+          }
+        ]
+      },
+      {
+        "enunciado": "¿Cuál categoría concentra más bloqueos?",
+        "opciones": [
+          {
+            "texto": "Transacción",
+            "correcta": true,
+            "feedback": "La categoría Transacción tiene 11 bloqueos, el mayor número de todas."
+          },
+          {
+            "texto": "Índice",
+            "correcta": false,
+            "feedback": "La categoría Índice tiene 12 bloqueos, que es mayor que la de Transacción, pero no es la máxima."
+          },
+          {
+            "texto": "Tabla",
+            "correcta": false,
+            "feedback": "La categoría Tabla tiene 3 bloqueos, que es menor que las otras dos categorías."
+          },
+          {
+            "texto": "Todos igual",
+            "correcta": false,
+            "feedback": "Las categorías no tienen el mismo número de bloqueos, por lo que esta opción no es correcta."
+          }
+        ]
+      },
+      {
+        "enunciado": "¿Qué relación existe entre el tiempo de espera y el número de bloqueos?",
+        "opciones": [
+          {
+            "texto": "No hay relación",
+            "correcta": false,
+            "feedback": "Hay una relación directa, ya que el bloque Bloque_10 tiene el mayor tiempo de espera y también el mayor número de bloqueos."
+          },
+          {
+            "texto": "A mayor tiempo de espera, mayor número de bloqueos",
+            "correcta": true,
+            "feedback": "El bloque Bloque_10 tiene 1200 ms de tiempo de espera y 10 bloqueos, lo que muestra una relación directa."
+          },
+          {
+            "texto": "A mayor tiempo de espera, menor número de bloqueos",
+            "correcta": false,
+            "feedback": "El bloque Bloque_10 tiene mayor tiempo de espera y también mayor número de bloqueos, lo que refuta esta opción."
+          },
+          {
+            "texto": "A menor tiempo de espera, mayor número de bloqueos",
+            "correcta": false,
+            "feedback": "El bloque Bloque_10 tiene mayor tiempo de espera y mayor número de bloqueos, lo que refuta esta opción."
+          }
+        ]
+      },
+      {
+        "enunciado": "¿Cuál bloque tiene un tiempo de espera atípico?",
+        "opciones": [
+          {
+            "texto": "Bloque_15",
+            "correcta": true,
+            "feedback": "El bloque Bloque_15 tiene un tiempo de espera de 1400 ms, que es el más alto de todos los bloques registrados."
+          },
+          {
+            "texto": "Bloque_10",
+            "correcta": false,
+            "feedback": "El bloque Bloque_10 tiene un tiempo de espera de 1200 ms, que es alto, pero no es el más alto."
+          },
+          {
+            "texto": "Bloque_9",
+            "correcta": false,
+            "feedback": "El bloque Bloque_9 tiene un tiempo de espera de 900 ms, que es menor que el de Bloque_15."
+          },
+          {
+            "texto": "Bloque_6",
+            "correcta": false,
+            "feedback": "El bloque Bloque_6 tiene un tiempo de espera de 700 ms, que es menor que el de Bloque_15."
+          }
+        ]
+      }
+    ],
+    "cierre": "El monitoreo muestra que los bloques de Transacción y Índice tienen más bloqueos, lo que indica un problema de concurrencia. Se recomienda optimizar transacciones y revisar índices para mejorar el rendimiento."
+  }
+}

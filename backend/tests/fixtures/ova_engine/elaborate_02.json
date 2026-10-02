@@ -1,0 +1,78 @@
+{
+  "concept": "backup y recovery con RMAN",
+  "params": {
+    "num_steps": 6
+  },
+  "data": {
+    "titulo": "Backup y Recovery con RMAN: Restaurar restricción de actualización",
+    "enunciado": "User02 solo puede actualizar EMAIL de EMPLOYEES si DEPARTMENT_ID <> 60",
+    "pasos": [
+      {
+        "instruccion": "Verifica si la tabla EMPLOYEES tiene restricción de actualización.",
+        "pista": "Usa DESC o DESC EMPLOYEES para ver si hay restricciones definidas.",
+        "resultado_esperado": "DESC EMPLOYEES;",
+        "validacion": "Comprueba si hay restricciones de actualización definidas en la tabla.",
+        "palabras_clave": [
+          "DESC",
+          "EMPLOYEES"
+        ]
+      },
+      {
+        "instruccion": "Crea una restricción de actualización para user02 en la tabla EMPLOYEES.",
+        "pista": "Usa CREATE OR REPLACE TRIGGER con WHEN para definir la condición.",
+        "resultado_esperado": "CREATE OR REPLACE TRIGGER trg_update_email\nAFTER UPDATE ON EMPLOYEES\nFOR EACH ROW\nWHEN (NEW.DEPARTMENT_ID <> 60)\nBEGIN\nNULL;\nEND;",
+        "validacion": "La restricción se activa si DEPARTMENT_ID no es 60 y bloquea actualizaciones en caso contrario.",
+        "palabras_clave": [
+          "TRIGGER",
+          "UPDATE",
+          "EMPLOYEES"
+        ]
+      },
+      {
+        "instruccion": "Realiza un backup completo de la base de datos usando RMAN.",
+        "pista": "Usa el comando BACKUP DATABASE para crear un backup completo.",
+        "resultado_esperado": "RUN {\nALLOCATE CHANNEL c1 TYPE DISK;\nBACKUP DATABASE;\nRELEASE CHANNEL c1;\n}",
+        "validacion": "RMAN crea un backup del contenido de la base de datos.",
+        "palabras_clave": [
+          "RMAN",
+          "BACKUP",
+          "DATABASE"
+        ]
+      },
+      {
+        "instruccion": "Simula una pérdida de datos en la tabla EMPLOYEES modificando un registro de DEPARTMENT_ID = 60.",
+        "pista": "Usa UPDATE para cambiar el DEPARTMENT_ID de un registro de EMPLOYEES a 60.",
+        "resultado_esperado": "UPDATE EMPLOYEES SET DEPARTMENT_ID = 60 WHERE EMPLOYEE_ID = 100;",
+        "validacion": "El registro se modifica, pero la restricción no permite actualización del EMAIL en este caso.",
+        "palabras_clave": [
+          "UPDATE",
+          "EMPLOYEES",
+          "DEPARTMENT_ID"
+        ]
+      },
+      {
+        "instruccion": "Restaura la base de datos desde el backup realizado en el paso anterior.",
+        "pista": "Usa el comando RESTORE DATABASE para recuperar los datos del backup.",
+        "resultado_esperado": "RUN {\nALLOCATE CHANNEL c1 TYPE DISK;\nRESTORE DATABASE;\nRELEASE CHANNEL c1;\n}",
+        "validacion": "La base de datos se restaura a su estado anterior, incluyendo la restricción definida.",
+        "palabras_clave": [
+          "RMAN",
+          "RESTORE",
+          "DATABASE"
+        ]
+      },
+      {
+        "instruccion": "Verifica que la restricción de actualización funcione correctamente tras la restauración.",
+        "pista": "Intenta actualizar el EMAIL de un registro con DEPARTMENT_ID = 60 y otro con DEPARTMENT_ID ≠ 60.",
+        "resultado_esperado": "UPDATE EMPLOYEES SET EMAIL = 'newemail@domain.com' WHERE EMPLOYEE_ID = 100;\nUPDATE EMPLOYEES SET EMAIL = 'newemail2@domain.com' WHERE EMPLOYEE_ID = 101;",
+        "validacion": "La primera actualización falla por la restricción, la segunda se ejecuta correctamente.",
+        "palabras_clave": [
+          "UPDATE",
+          "EMPLOYEES",
+          "TRIGGER"
+        ]
+      }
+    ],
+    "cierre": "El estudiante logró implementar y restaurar una restricción de actualización con RMAN. Este proceso se generaliza para garantizar la integridad de datos en ambientes de producción."
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "concept": "auditoría",
+  "params": {
+    "num_exercises": 3
+  },
+  "data": {
+    "titulo": "Auditoría y gestión de índices en Oracle",
+    "objetivo": "Al terminar podrás escribir sentencias SQL para crear, verificar y manejar índices en Oracle.",
+    "ejemplo": {
+      "titulo": "Creación de índice en la tabla EMPLOYEES",
+      "pasos": [
+        "Identifica la tabla y las columnas a indexar.",
+        "Usa la sintaxis correcta para crear el índice.",
+        "Verifica que el índice se haya creado correctamente."
+      ],
+      "codigo": "CREATE INDEX idx_employees_last_name ON employees (last_name);"
+    },
+    "ejercicios": [
+      {
+        "enunciado": "Crea un índice único llamado idx_departments_id en la tabla DEPARTMENTS sobre la columna department_id.",
+        "codigo_inicial": "CREATE INDEX ___ ON departments (___);\n-- Asegúrate de que el índice sea único.",
+        "palabras_clave": [
+          "create index",
+          "departments",
+          "department_id",
+          "unique"
+        ],
+        "solucion": "CREATE UNIQUE INDEX idx_departments_id ON departments (department_id);",
+        "error_comun": "Olvidar la palabra 'unique' o usar 'index' en lugar de 'create index'."
+      },
+      {
+        "enunciado": "Crea un índice combinado en la tabla EMPLOYEES sobre las columnas last_name y email, y nombra el índice idx_employees_last_email.",
+        "codigo_inicial": "CREATE INDEX idx_employees_last_email ON employees (___, ___);\n-- Asegúrate de usar la sintaxis correcta para índices combinados.",
+        "palabras_clave": [
+          "create index",
+          "employees",
+          "last_name",
+          "email",
+          "combined",
+          "composite"
+        ],
+        "solucion": "CREATE INDEX idx_employees_last_email ON employees (last_name, email);",
+        "error_comun": "Usar solo una columna o no incluir el nombre correcto del índice."
+      },
+      {
+        "enunciado": "Crea un índice llamado idx_regions_region_name en la tabla REGIONS sobre la columna region_name, y comenta que se usa para mejorar el rendimiento de las consultas de búsqueda.",
+        "codigo_inicial": "CREATE INDEX idx_regions_region_name ON regions (___);\n-- Comenta el propósito del índice.",
+        "palabras_clave": [
+          "create index",
+          "regions",
+          "region_name",
+          "comment",
+          "performance",
+          "query"
+        ],
+        "solucion": "CREATE INDEX idx_regions_region_name ON regions (region_name);\n-- Este índice mejora el rendimiento de las consultas de búsqueda en la tabla REGIONS.",
+        "error_comun": "Olvidar el comentario o usar una columna incorrecta."
+      }
+    ],
+    "cierre": "La auditoría en Oracle implica crear índices para optimizar consultas. Usa la sintaxis 'create index' y asegúrate de incluir columnas y nombres adecuados."
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "concept": "roles y privilegios",
+  "params": {
+    "num_questions": 6
+  },
+  "data": {
+    "titulo": "Roles y Privilegios en BD",
+    "instrucciones": "Elige la opción correcta para cada pregunta. Las respuestas van de teoría a práctica con Oracle.",
+    "preguntas": [
+      {
+        "enunciado": "¿Qué es un rol en un sistema de gestión de base de datos?",
+        "opciones": [
+          {
+            "texto": "Un conjunto de permisos asignables a usuarios.",
+            "correcta": true
+          },
+          {
+            "texto": "Un tipo de usuario con acceso limitado.",
+            "correcta": false
+          },
+          {
+            "texto": "Una tabla que almacena los privilegios.",
+            "correcta": false
+          },
+          {
+            "texto": "Un mecanismo de autenticación para bases de datos.",
+            "correcta": false
+          }
+        ],
+        "feedback_correcto": "Un rol agrupa permisos que se asignan a usuarios.",
+        "feedback_incorrecto": "Un rol no es un tipo de usuario, sino un conjunto de permisos."
+      },
+      {
+        "enunciado": "¿Cuál es la sintaxis para crear un rol en Oracle?",
+        "opciones": [
+          {
+            "texto": "CREATE ROLE rol_nombre;",
+            "correcta": true
+          },
+          {
+            "texto": "CREATE USER rol_nombre;",
+            "correcta": false
+          },
+          {
+            "texto": "CREATE PRIVILEGE rol_nombre;",
+            "correcta": false
+          },
+          {
+            "texto": "GRANT ROLE rol_nombre;",
+            "correcta": false
+          }
+        ],
+        "feedback_correcto": "La sintaxis CREATE ROLE permite definir un nuevo rol.",
+        "feedback_incorrecto": "CREATE USER define un usuario, no un rol."
+      },
+      {
+        "enunciado": "¿Cuál es la función de los privilegios en una base de datos?",
+        "opciones": [
+          {
+            "texto": "Permiten controlar el acceso a objetos.",
+            "correcta": true
+          },
+          {
+            "texto": "Permiten crear tablas y vistas.",
+            "correcta": false
+          },
+          {
+            "texto": "Permiten acceder a la base de datos.",
+            "correcta": false
+          },
+          {
+            "texto": "Permiten ejecutar consultas SQL.",
+            "correcta": false
+          }
+        ],
+        "feedback_correcto": "Los privilegios definen qué puede hacer un usuario.",
+        "feedback_incorrecto": "Los privilegios no solo permiten consultas, sino también operaciones más amplias."
+      },
+      {
+        "enunciado": "¿Qué comando se usa para asignar un rol a un usuario en Oracle?",
+        "opciones": [
+          {
+            "texto": "GRANT rol_nombre TO usuario;",
+            "correcta": true
+          },
+          {
+            "texto": "ASSIGN rol_nombre TO usuario;",
+            "correcta": false
+          },
+          {
+            "texto": "GIVE rol_nombre TO usuario;",
+            "correcta": false
+          },
+          {
+            "texto": "CREATE rol_nombre TO usuario;",
+            "correcta": false
+          }
+        ],
+        "feedback_correcto": "GRANT se usa para asignar roles a usuarios.",
+        "feedback_incorrecto": "ASSIGN y GIVE no son comandos válidos en Oracle."
+      },
+      {
+        "enunciado": "¿Qué ocurre si un usuario se asigna a múltiples roles?",
+        "opciones": [
+          {
+            "texto": "Hereda los privilegios de todos los roles.",
+            "correcta": true
+          },
+          {
+            "texto": "Solo puede usar los privilegios del último rol.",
+            "correcta": false
+          },
+          {
+            "texto": "No puede usar ninguno de los privilegios.",
+            "correcta": false
+          },
+          {
+            "texto": "Se le asignan solo los privilegios del primer rol.",
+            "correcta": false
+          }
+        ],
+        "feedback_correcto": "El usuario hereda los privilegios de todos los roles asignados.",
+        "feedback_incorrecto": "El usuario no restringe su acceso al último o primer rol."
+      },
+      {
+        "enunciado": "¿Qué comando se usa para revocar un rol de un usuario en Oracle?",
+        "opciones": [
+          {
+            "texto": "REVOKE rol_nombre FROM usuario;",
+            "correcta": true
+          },
+          {
+            "texto": "REMOVE rol_nombre FROM usuario;",
+            "correcta": false
+          },
+          {
+            "texto": "DELETE rol_nombre FROM usuario;",
+            "correcta": false
+          },
+          {
+            "texto": "DROP rol_nombre FROM usuario;",
+            "correcta": false
+          }
+        ],
+        "feedback_correcto": "REVOKE se usa para quitar un rol a un usuario.",
+        "feedback_incorrecto": "REMOVE y DELETE no son comandos válidos en Oracle."
+      }
+    ],
+    "cierre": "Los roles y privilegios son herramientas esenciales para la seguridad y gestión de accesos en bases de datos."
+  }
+}

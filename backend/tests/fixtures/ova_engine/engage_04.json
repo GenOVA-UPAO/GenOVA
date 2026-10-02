@@ -1,0 +1,65 @@
+{
+  "concept": "bloqueos y deadlocks",
+  "params": {
+    "num_rounds": 4
+  },
+  "data": {
+    "titulo": "¿Quién se queda atascado? ¡Atrapa el deadlock!",
+    "gancho": "¡Saca a todos de la cola! En este juego, debes resolver situaciones de bloqueo y evitar deadlocks en tiempo récord.",
+    "rondas": [
+      {
+        "ronda": 1,
+        "enunciado": "Dos amigos quieren ir al cine, pero cada uno quiere una película diferente. ¿Qué pasa?",
+        "items": [
+          "Se turnan para ver las películas.",
+          "Quedan atascados esperando al otro.",
+          "Uno cede su plaza para que el otro vaya.",
+          "Ambos deciden ver la misma película."
+        ],
+        "respuesta_correcta": "Quedan atascados esperando al otro.",
+        "feedback_correcto": "Es un deadlock: ambos esperan que el otro actúe primero.",
+        "feedback_incorrecto": "No es un deadlock si uno cede o se turnan."
+      },
+      {
+        "ronda": 2,
+        "enunciado": "Dos personas quieren usar la impresora. Cada una tiene un documento, pero necesitan el papel del otro. ¿Qué ocurre?",
+        "items": [
+          "Usan la impresora uno tras otro.",
+          "Quedan bloqueados esperando al otro.",
+          "Una imprime su documento primero.",
+          "Ambas imprimen sus documentos sin problemas."
+        ],
+        "respuesta_correcta": "Quedan bloqueados esperando al otro.",
+        "feedback_correcto": "Es un deadlock: ambos esperan que el otro libere el papel.",
+        "feedback_incorrecto": "No es un deadlock si uno imprime primero o se turnan."
+      },
+      {
+        "ronda": 3,
+        "enunciado": "Un grupo de estudiantes quiere usar la biblioteca, pero cada uno necesita un libro que está en la mesa del otro. ¿Qué sucede?",
+        "items": [
+          "Se turnan para usar la biblioteca.",
+          "Quedan bloqueados esperando al otro.",
+          "Uno cede su libro para que el otro lo use.",
+          "Todos usan la biblioteca sin problemas."
+        ],
+        "respuesta_correcta": "Quedan bloqueados esperando al otro.",
+        "feedback_correcto": "Es un deadlock: todos esperan que otro libere el libro.",
+        "feedback_incorrecto": "No es un deadlock si uno cede o se turnan."
+      },
+      {
+        "ronda": 4,
+        "enunciado": "Dos equipos de trabajo quieren usar la misma computadora. Cada uno necesita un archivo del otro. ¿Qué ocurre?",
+        "items": [
+          "Usan la computadora uno tras otro.",
+          "Quedan bloqueados esperando al otro.",
+          "Un equipo cede el archivo para que el otro lo use.",
+          "Ambos usan la computadora sin problemas."
+        ],
+        "respuesta_correcta": "Quedan bloqueados esperando al otro.",
+        "feedback_correcto": "Es un deadlock: ambos esperan que el otro libere el archivo.",
+        "feedback_incorrecto": "No es un deadlock si uno cede o se turnan."
+      }
+    ],
+    "cierre": "En la vida real, los bloqueos y deadlocks son como estos escenarios: si no se gestionan adecuadamente, todo se atasca. Aprender a resolverlos es clave para evitar caos en sistemas complejos."
+  }
+}

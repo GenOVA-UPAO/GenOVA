@@ -1,0 +1,17 @@
+{
+  "concept": "índices B-tree",
+  "params": {
+    "context_words": 70
+  },
+  "data": {
+    "titulo": "El primer día, el sistema se bloquea",
+    "contexto_rol": "Eres un DBA junior en tu primer día en una empresa de logística. La base de datos que maneja el sistema de seguimiento de envíos se ha vuelto lenta y la pantalla de control muestra alertas de tiempos de respuesta excesivos. El equipo de desarrollo te ha pedido que investigues si los índices B-tree están causando el problema. La presión es alta y cada segundo cuenta.",
+    "pregunta_decision": "¿Cómo abordarías el problema de lentitud causado por los índices B-tree sin afectar la operación?",
+    "opcion_A": "Revisar el uso de índices y optimizar los que estén sobrantes o mal configurados.",
+    "opcion_B": "Realizar un análisis de las consultas y probar la creación de nuevos índices B-tree adecuados.",
+    "feedback_A": "Al revisar los índices, descubres que algunos están duplicados y no están siendo usados. La optimización mejora ligeramente el rendimiento, pero aún hay más que hacer. ¿Qué pasa con las consultas que no usan índices?",
+    "feedback_B": "Al analizar las consultas, identificas que varias están realizando búsquedas sin índices. Crear nuevos índices B-tree reduce significativamente el tiempo de respuesta. Sin embargo, se generan algunas alertas de bloques. ¿Qué significa eso?",
+    "pregunta_cierre": "¿Cómo equilibrar la mejora del rendimiento con la posibilidad de generar bloqueos en la base de datos?",
+    "reflexion_final": "El dilema entre optimización y estabilidad revela la complejidad de los índices B-tree. Su diseño no solo afecta la velocidad, sino también la coherencia de los datos. La experiencia subraya la necesidad de un análisis cuidadoso y la comprensión de cómo estos índices impactan en el funcionamiento de"
+  }
+}
