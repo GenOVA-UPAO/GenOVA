@@ -175,6 +175,20 @@ class SqlTempUploadRepository:
         prune_expired()
         try:
             with _engine().begin() as conn:
+                uid, scope = _uuid(user_id), _uuid(ova_id)
+                # La fila del usuario serializa reservas en todos los workers/contextos.
+                if conn.execute(text("SELECT id FROM users WHERE id = :uid FOR UPDATE"), {"uid": uid}).first() is None:
+                    raise ValueError("Usuario inexistente")
+                if ova_id is not None and (scope is None or conn.execute(
+                    text("SELECT id FROM ovas WHERE id = :ova AND user_id = :uid"),
+                    {"ova": scope, "uid": uid},
+                ).first() is None):
+                    raise ValueError("OVA inexistente o ajena")
+                count, size = conn.execute(text(
+                    "SELECT count(*), COALESCE(sum(size_bytes), 0) FROM temp_uploads "
+                    "WHERE user_id = :uid AND expires_at > now()"
+                ), {"uid": uid}).one()
+                files.check_user_quota(int(count), int(size), len(content))
                 row = conn.execute(
                     text(_SQL_INSERT),
                     {
