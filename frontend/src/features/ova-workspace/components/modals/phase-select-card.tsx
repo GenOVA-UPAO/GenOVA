@@ -73,7 +73,7 @@ export function PhaseSelectCard({
       </div>
       <div className="pointer-events-none flex flex-wrap items-center gap-1 px-3 pb-3">
         <Button
-          className="pointer-events-auto relative"
+          className="pointer-events-auto relative max-sm:h-11"
           size="sm"
           variant="ghost"
           onClick={onConfigure}
@@ -83,7 +83,7 @@ export function PhaseSelectCard({
           Configurar
         </Button>
         <Button
-          className="pointer-events-auto relative lg:hidden"
+          className="pointer-events-auto relative max-sm:h-11 lg:hidden"
           size="sm"
           variant="ghost"
           onClick={onOpenPreview}
