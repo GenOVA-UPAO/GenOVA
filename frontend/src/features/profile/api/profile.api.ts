@@ -1,6 +1,6 @@
 import { apiJson } from "@/core/lib/http";
 
-import type { ChangePasswordValues, ProfileData, ProfileFormValues } from "../lib/types";
+import type { ChangePasswordValues, ProfileData, ProfileSaveValues } from "../lib/types";
 
 const json = (body: unknown) => JSON.stringify(body);
 
@@ -18,7 +18,7 @@ export function fetchProfile(): Promise<ProfileData> {
   );
 }
 
-export function saveProfile(values: ProfileFormValues): Promise<ProfileData> {
+export function saveProfile(values: ProfileSaveValues): Promise<ProfileData> {
   return apiJson<ProfileData>(
     "/api/users/me",
     {
@@ -29,6 +29,7 @@ export function saveProfile(values: ProfileFormValues): Promise<ProfileData> {
         university_id: parseUniversityId(values.university_id),
         gender: values.gender !== "" ? values.gender : null,
         phone_number: values.phone_number.trim() !== "" ? values.phone_number.trim() : null,
+        ...(values.current_password ? { current_password: values.current_password } : {}),
       }),
     },
     { fallbackMsg: "Error al actualizar el perfil." },

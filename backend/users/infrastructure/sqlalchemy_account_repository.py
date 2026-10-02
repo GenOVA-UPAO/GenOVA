@@ -31,7 +31,9 @@ class SqlAlchemyUserAccountRepository:
         user = self._db.get(User, user_id)
         if user is None:
             return None
-        return UserAccount(id=str(user.id), password_hash=user.password_hash)
+        return UserAccount(
+            id=str(user.id), password_hash=user.password_hash, email=user.email or ""
+        )
 
     def update_password(self, user_id: UUID, password_hash: str) -> None:
         user = self._db.get(User, user_id)

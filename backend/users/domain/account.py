@@ -11,3 +11,4 @@ class UserAccount:
 
     id: str
     password_hash: str
+    email: str = ""

@@ -5,7 +5,7 @@ import { authStore } from "@/core/auth/auth-store";
 
 import { changePassword, deleteAccount, fetchProfile, saveProfile } from "../api/profile.api";
 import { errorMessage } from "../lib/error-message";
-import type { ChangePasswordValues, ProfileFormValues } from "../lib/types";
+import type { ChangePasswordValues, ProfileSaveValues } from "../lib/types";
 
 export const profileKeys = {
   all: ["profile"] as const,
@@ -21,7 +21,7 @@ export function useProfile() {
 export function useSaveProfile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (values: ProfileFormValues) => saveProfile(values),
+    mutationFn: (values: ProfileSaveValues) => saveProfile(values),
     onSuccess: async () => {
       toast.success("Datos personales guardados.");
       await queryClient.invalidateQueries({ queryKey: profileKeys.all });

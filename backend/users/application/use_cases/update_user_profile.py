@@ -5,9 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from users.application.dto import UpdateProfileInput
-from users.application.ports import UserProfileRepository
+from users.application.ports import PasswordHasher, UserAccountRepository, UserProfileRepository
 from users.domain.errors import (
     EmailAlreadyInUse,
+    IncorrectCurrentPassword,
     PhoneNumberAlreadyInUse,
     UniversityIdAlreadyInUse,
 )
@@ -25,6 +26,8 @@ from users.domain.profile import (
 @dataclass(frozen=True, slots=True)
 class UpdateUserProfile:
     repo: UserProfileRepository
+    accounts: UserAccountRepository
+    passwords: PasswordHasher
 
     def execute(self, data: UpdateProfileInput) -> UserProfile:
         email = normalize_email(data.email)
@@ -34,6 +37,15 @@ class UpdateUserProfile:
 
         validate_gender(gender)
         validate_phone_number(phone_number)
+
+        # Cambiar el correo equivale a mover el canal de recuperación de la cuenta:
+        # exige reautenticar con la contraseña actual (una sesión robada no basta).
+        account = self.accounts.get(data.user_id)
+        if account is not None and email != normalize_email(account.email):
+            if not data.current_password or not self.passwords.verify(
+                data.current_password, account.password_hash
+            ):
+                raise IncorrectCurrentPassword()
 
         # Mismo orden de checks que el router original: correo, teléfono,
         # código universitario (cada dup excluye al propio usuario).
