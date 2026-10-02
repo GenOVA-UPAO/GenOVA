@@ -46,3 +46,13 @@ def test_texto_invalido_reintenta_con_errores(monkeypatch):
     monkeypatch.setattr(text_mod, "_router", fake_router)
     assert text_mod.generate_json("p", spec.schema(params)) == good
     assert "no cumplía el schema" in prompts[1]
+
+
+def test_tema_ignora_h1_del_runtime_y_lee_upao_header():
+    from prometheus.engine.topic import _first_h1
+
+    html = (
+        '<body><upao-header title="Simulador de caché &amp; índices"></upao-header>'
+        "<script>tpl = `<h1>${title}</h1>`</script></body>"
+    )
+    assert _first_h1(html) == "Simulador de caché & índices"
