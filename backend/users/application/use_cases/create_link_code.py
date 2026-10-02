@@ -21,7 +21,8 @@ class CreateLinkCode:
         link: LinkSnapshot = self.repo.create(
             data.owner_id,
             invite_email=data.invite_email.lower() if data.invite_email else None,
-            code_hash=self.hasher.hash(code),
+            code_selector=code.split("-", 1)[0],
+            code_hash=self.hasher.hash(code.split("-", 1)[1]),
             expires_at=expires_at,
             op="la invitacion" if data.invite_email else "la creacion del codigo",
         )

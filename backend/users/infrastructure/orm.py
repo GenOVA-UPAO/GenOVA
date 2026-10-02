@@ -87,6 +87,8 @@ class UserLink(Base):
     )
     invite_email = Column(String(255), nullable=True, index=True)
     code_hash = Column(String(255), nullable=False)
+    code_selector = Column(String(12), unique=True, index=True)
+    code_attempts = Column(Integer, nullable=False, default=0, server_default="0")
     status = Column(String(20), nullable=False, default="pending", server_default="pending")
     expires_at = Column(DateTime(timezone=True), nullable=False)
     consumed_at = Column(DateTime(timezone=True), nullable=True)
