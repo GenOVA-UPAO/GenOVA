@@ -62,3 +62,16 @@ def test_prompt_no_pide_html(spec):
     p = spec.prompt("Índices B-tree", "", params)
     assert "Índices B-tree" in p
     assert "<html" not in p.lower()
+
+
+def test_todas_las_plantillas_cargan():
+    from ova_engine.registry import load_errors
+
+    assert load_errors() == {}
+
+
+def test_cobertura_de_los_49_recursos():
+    """50 recursos 5E menos el podcast (engage 3, plantilla fija propia)."""
+    expected = {f"{p}:{n}" for p in ("engage", "explore", "explain", "elaborate", "evaluate") for n in range(1, 11)}
+    expected.discard("engage:3")
+    assert expected - set(all_specs()) == set()

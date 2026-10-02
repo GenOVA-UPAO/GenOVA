@@ -14,6 +14,15 @@ from ova_engine.contract import TemplateSpec
 logger = structlog.get_logger(__name__)
 
 
+_LOAD_ERRORS: dict[str, str] = {}
+
+
+def load_errors() -> dict[str, str]:
+    """Plantillas que no cargaron (nombre → error). Los tests exigen que esté vacío."""
+    all_specs()
+    return dict(_LOAD_ERRORS)
+
+
 @functools.cache
 def all_specs() -> dict[str, TemplateSpec]:
     specs: dict[str, TemplateSpec] = {}
@@ -22,7 +31,8 @@ def all_specs() -> dict[str, TemplateSpec]:
             continue
         try:
             module = importlib.import_module(f"{templates.__name__}.{mod.name}")
-        except Exception:  # una plantilla rota no tumba el motor: ese recurso usa el plan clásico
+        except Exception as exc:  # una plantilla rota no tumba el motor: ese recurso usa el plan clásico
+            _LOAD_ERRORS[mod.name] = f"{type(exc).__name__}: {exc}"
             logger.exception("ova engine template failed to load", template=mod.name)
             continue
         spec = getattr(module, "SPEC", None)
