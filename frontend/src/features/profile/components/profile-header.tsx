@@ -1,7 +1,7 @@
 import { PageHeader } from "@/core/components/page-header";
 import { Skeleton } from "@/core/components/ui/skeleton";
 
-import { formatDate, formatRole } from "../lib/profile-format";
+import { formatDate, formatRole, getInitials } from "../lib/profile-format";
 import type { ProfileData } from "../lib/types";
 
 interface ProfileHeaderProps {
@@ -21,8 +21,16 @@ export function ProfileHeader({ profile, role, isLoading }: Readonly<ProfileHead
   }
 
   return (
-    <PageHeader
-      title={profile?.full_name ?? "Mi perfil"}
+    <div className="flex items-center gap-4 sm:gap-5">
+      <div
+        aria-hidden="true"
+        className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground sm:size-16 sm:text-xl"
+      >
+        {getInitials(profile?.full_name)}
+      </div>
+      <PageHeader
+        className="min-w-0 flex-1"
+        title={profile?.full_name ?? "Mi perfil"}
       subtitle={
         // El rol va junto a los datos de la cuenta: como badge suelto a la derecha
         // quedaba lejos del nombre y no se asociaba a nada.
@@ -33,6 +41,7 @@ export function ProfileHeader({ profile, role, isLoading }: Readonly<ProfileHead
           </span>
         </>
       }
-    />
+      />
+    </div>
   );
 }
