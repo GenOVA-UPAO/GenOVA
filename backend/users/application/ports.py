@@ -110,6 +110,8 @@ class AnalyticsRepository(Protocol):
 
 
 class UserProfileRepository(Protocol):
+    def request_email_change(self, user_id: UUID, email: str, totp_code: str | None) -> None: ...
+
     """Persistencia del perfil propio. La implementación vive en `infrastructure/`."""
 
     def email_in_use(self, email: str, excluding_user_id: UUID) -> bool: ...

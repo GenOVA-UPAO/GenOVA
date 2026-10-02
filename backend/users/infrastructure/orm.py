@@ -53,6 +53,9 @@ class User(Base):
     # Último cambio/reset de contraseña: los JWT emitidos antes dejan de valer.
     password_changed_at = Column(DateTime(timezone=True))
     totp_secret = Column(String(64))
+    pending_email = Column(String(255))
+    pending_email_token_hash = Column(String(64))
+    pending_email_expires_at = Column(DateTime(timezone=True))
     totp_enabled = Column(Boolean, nullable=False, default=False, server_default=text("false"))
     totp_backup_codes = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

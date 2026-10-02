@@ -1,4 +1,6 @@
 import type { SyntheticEvent } from "react";
+import { useState } from "react";
+import { confirmEmailChange } from "../api/profile.api";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -22,6 +24,9 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
   const form = useForm(profileSchema, profileToFormValues(profile));
 
   const emailChange = useEmailChange(profile, form.values);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState("");
+  const [confirmationError, setConfirmationError] = useState("");
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,6 +39,7 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
     // `profile` aún es el de antes de guardar y devolvería los valores viejos.
     const saved = await onSave(emailChange.withPassword());
     if (saved !== null) {
+      setPendingEmail(typeof saved.pending_email === "string" ? saved.pending_email : null);
       form.reset(profileToFormValues(saved));
       emailChange.clear();
     }
@@ -70,6 +76,29 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
             onChange={emailChange.setCurrentPassword}
             onBlur={() => undefined}
           />
+        )}
+        {emailChange.emailChanged && profile?.totp_enabled && (
+          <label className="block">Código TOTP
+            <input aria-label="Código TOTP" inputMode="numeric" maxLength={6}
+              value={emailChange.totpCode} onChange={(e) => emailChange.setTotpCode(e.target.value)}
+              disabled={isSubmitting} className="block rounded border p-2" />
+          </label>
+        )}
+        {pendingEmail && (
+          <div role="status">
+            <p>El correo actual sigue vigente. Enviamos un código a {pendingEmail}; confírmalo aquí.</p>
+            <input aria-label="Código de confirmación de correo" value={confirmation}
+              onChange={(e) => setConfirmation(e.target.value)} className="rounded border p-2" />
+            <Button type="button" onClick={() => {
+              void confirmEmailChange(confirmation).then((result) => {
+                form.setField("email", String(result.email));
+                setPendingEmail(null);
+                setConfirmation("");
+                window.location.reload();
+              }).catch((error: unknown) => setConfirmationError(error instanceof Error ? error.message : "No se pudo confirmar."));
+            }}>Confirmar correo</Button>
+            {confirmationError && <p role="alert">{confirmationError}</p>}
+          </div>
         )}
         <ProfileContactFields
           values={form.values}

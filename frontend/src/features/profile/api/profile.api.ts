@@ -30,10 +30,17 @@ export function saveProfile(values: ProfileSaveValues): Promise<ProfileData> {
         gender: values.gender !== "" ? values.gender : null,
         phone_number: values.phone_number.trim() !== "" ? values.phone_number.trim() : null,
         ...(values.current_password ? { current_password: values.current_password } : {}),
+        ...(values.totp_code ? { totp_code: values.totp_code } : {}),
       }),
     },
     { fallbackMsg: "Error al actualizar el perfil." },
   );
+}
+
+export function confirmEmailChange(token: string): Promise<ProfileData> {
+  return apiJson<ProfileData>("/api/users/me/email/confirm", {
+    method: "POST", body: json({ token }),
+  }, { fallbackMsg: "Código inválido o expirado." });
 }
 
 export function changePassword(values: ChangePasswordValues): Promise<void> {

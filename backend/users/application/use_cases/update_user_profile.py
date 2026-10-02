@@ -64,6 +64,10 @@ class UpdateUserProfile:
         ):
             raise UniversityIdAlreadyInUse()
 
+        if account is not None and email != normalize_email(account.email):
+            self.repo.request_email_change(data.user_id, email, data.totp_code)
+            email = account.email
+
         return self.repo.save_profile(
             data.user_id,
             full_name=full_name,
