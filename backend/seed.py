@@ -1,4 +1,6 @@
-from sqlalchemy import delete, select
+import os
+
+from sqlalchemy import select
 
 from auth.domain.email import normalize_email
 from core.database import SessionLocal
@@ -6,9 +8,37 @@ from core.security import hash_password
 from models import Role, User, UserRole
 
 
-def seed_db():
+_DEMO_ENVS_BLOQUEADOS = {"production", "prod", "staging"}
+_MIN_BOOTSTRAP_PASSWORD = 12
+
+
+def seed_db(
+    db=None,
+    *,
+    env: str | None = None,
+    bootstrap_email: str | None = None,
+    bootstrap_password: str | None = None,
+):
+    """Siembra roles y, según el entorno, usuarios.
+
+    - Roles: siempre (idempotente, sin pisar permisos personalizados).
+    - Usuarios demo (credenciales fijas del código): SOLO fuera de producción/staging.
+    - Admin inicial en producción: ``ADMIN_BOOTSTRAP_EMAIL`` + ``ADMIN_BOOTSTRAP_PASSWORD``
+      (secreto externo, >= 12 caracteres), solo si el correo no existe todavía.
+    - Un usuario que ya existe NUNCA se toca (ni rol, ni contraseña): coincidir por
+      email no concede privilegios.
+    """
     print("Iniciando la siembra (seeding) de la base de datos...")
-    db = SessionLocal()
+    if env is None:
+        env = os.getenv("ENV", "dev")
+    if bootstrap_email is None:
+        bootstrap_email = os.getenv("ADMIN_BOOTSTRAP_EMAIL") or None
+    if bootstrap_password is None:
+        bootstrap_password = os.getenv("ADMIN_BOOTSTRAP_PASSWORD") or None
+    demo_permitido = env.strip().lower() not in _DEMO_ENVS_BLOQUEADOS
+    owns_session = db is None
+    if db is None:
+        db = SessionLocal()
     try:
         # 1. Crear roles
         roles_to_seed = [
@@ -109,56 +139,46 @@ def seed_db():
             },
         ]
 
-        for u_data in users_to_seed:
-            user = db.execute(
-                select(User).where(User.email == u_data["email"])
-            ).scalar_one_or_none()
-            if not user:
-                print(f"Creando usuario: {u_data['email']}")
-                user = User(
-                    email=u_data["email"],
-                    email_normalized=normalize_email(u_data["email"]),
-                    password_hash=hash_password(u_data["password"]),
-                    full_name=u_data["full_name"],
-                    email_verified=True,
-                )
-                db.add(user)
-                db.commit()
-                db.refresh(user)
-
-                # Asignar rol
-                role = roles_map[u_data["role"]]
-                user_role = UserRole(user_id=user.id, role_id=role.id)
-                db.add(user_role)
-                db.commit()
-                print(f"Rol '{u_data['role']}' asignado a {u_data['email']}")
+        if not demo_permitido:
+            print("Entorno protegido: no se siembran usuarios demo.")
+            users_to_seed = []
+        if bootstrap_email and bootstrap_password:
+            if len(bootstrap_password) < _MIN_BOOTSTRAP_PASSWORD:
+                print("ADMIN_BOOTSTRAP_PASSWORD demasiado corta: se ignora el bootstrap.")
             else:
-                print(f"El usuario {u_data['email']} ya existe.")
-                # BU-002 AC#7: el seed debe ser idempotente entre runs.
-                # Antes: solo se añadía la fila si la combinación (user_id, role_id)
-                # no existía → con el tiempo el usuario acumulaba roles duplicados
-                # por cambios de permisos/nombres del seed. Ahora: borrar TODAS las
-                # user_roles previas y re-asignar exactamente las del seed actual.
-                deleted = db.execute(
-                    delete(UserRole).where(UserRole.user_id == user.id)
+                users_to_seed.append(
+                    {
+                        "email": bootstrap_email.strip(),
+                        "password": bootstrap_password,
+                        "full_name": "Administrador",
+                        "role": "administrador",
+                    }
                 )
-                db.commit()
-                if deleted.rowcount:
-                    print(
-                        f"Limpiadas {deleted.rowcount} filas previas de "
-                        f"user_roles para {u_data['email']}"
-                    )
-                role = roles_map[u_data["role"]]
-                user_role = UserRole(
-                    user_id=user.id,
-                    role_id=role.id,
-                    # is_primary se resuelve después por la migración 034
-                    # (o por una corrida previa del seed). No lo fijamos aquí
-                    # para no asumir un orden de aplicación.
+
+        for u_data in users_to_seed:
+            existente = db.execute(
+                select(User).where(
+                    User.email_normalized == normalize_email(u_data["email"])
                 )
-                db.add(user_role)
-                db.commit()
-                print(f"Rol '{u_data['role']}' re-asignado a {u_data['email']}")
+            ).scalar_one_or_none()
+            if existente is not None:
+                # No elevar, no resetear contraseña, no reasignar roles.
+                print(f"El usuario {u_data['email']} ya existe: se deja intacto.")
+                continue
+            print(f"Creando usuario: {u_data['email']}")
+            user = User(
+                email=u_data["email"],
+                email_normalized=normalize_email(u_data["email"]),
+                password_hash=hash_password(u_data["password"]),
+                full_name=u_data["full_name"],
+                email_verified=True,
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            db.add(UserRole(user_id=user.id, role_id=roles_map[u_data["role"]].id))
+            db.commit()
+            print(f"Rol '{u_data['role']}' asignado a {u_data['email']}")
 
         print("Siembra completada exitosamente. ¡Listo para probar!")
 
@@ -166,7 +186,8 @@ def seed_db():
         db.rollback()
         print(f"Error durante la siembra de la base de datos: {e}")
     finally:
-        db.close()
+        if owns_session:
+            db.close()
 
 
 if __name__ == "__main__":

@@ -646,4 +646,6 @@ Al iniciar el backend por primera vez se ejecuta `seed.py` automáticamente, cre
 - `admin@genova.ai` / `admin1234password`
 - `user@genova.ai` / `user1234password`
 
+> Solo con `ENV` distinto de `production`/`staging`. En producción no se crean usuarios demo; para el primer admin define `ADMIN_BOOTSTRAP_EMAIL` y `ADMIN_BOOTSTRAP_PASSWORD` (≥ 12 caracteres). Un usuario existente nunca se modifica.
+>
 > Las contraseñas son alfanuméricas y ≥ 8 caracteres a propósito para que pasen la validación del flujo de reset.
