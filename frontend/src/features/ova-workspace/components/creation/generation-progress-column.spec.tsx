@@ -56,14 +56,26 @@ function renderColumn(job: ReturnType<typeof useOvaJob>) {
 describe("GenerationProgressColumn", () => {
   it("shows a calm canceled banner instead of total failure", () => {
     renderColumn(
-      jobStub("canceled", [failed], { isTerminal: true, anyDone: false, totalFail: true, partialFail: false }),
+      jobStub("canceled", [failed], {
+        isTerminal: true,
+        anyDone: false,
+        totalFail: true,
+        partialFail: false,
+      }),
     );
     expect(screen.getByRole("status")).toHaveTextContent("se canceló a petición tuya");
     expect(screen.queryByText("No se pudo generar el OVA")).not.toBeInTheDocument();
   });
 
   it("shows the total failure panel when every resource failed", () => {
-    renderColumn(jobStub("error", [failed], { isTerminal: true, anyDone: false, totalFail: true, partialFail: false }));
+    renderColumn(
+      jobStub("error", [failed], {
+        isTerminal: true,
+        anyDone: false,
+        totalFail: true,
+        partialFail: false,
+      }),
+    );
     expect(screen.getByText("No se pudo generar el OVA")).toBeVisible();
     expect(screen.queryByText("se canceló a petición tuya")).not.toBeInTheDocument();
     // Con fallo total basta «Reintentar generación»: sin casillas ni reintento en bloque.
@@ -73,5 +85,18 @@ describe("GenerationProgressColumn", () => {
       screen.queryByRole("button", { name: "Seleccionar todos los fallidos" }),
     ).not.toBeInTheDocument();
     expect(screen.getByText("1 recurso no se pudo generar")).toBeVisible();
+  });
+
+  it("shows the load error as an alert and hides the «Iniciando» status", () => {
+    const job = {
+      data: undefined,
+      resources: [],
+      outcome: { isTerminal: false, anyDone: false, totalFail: false, partialFail: false },
+      error: new Error("Job no encontrado."),
+      resume: { isPending: false },
+    } as unknown as ReturnType<typeof useOvaJob>;
+    renderColumn(job);
+    expect(screen.getByRole("alert")).toHaveTextContent("Job no encontrado.");
+    expect(screen.queryByText("Iniciando generación…")).not.toBeInTheDocument();
   });
 });

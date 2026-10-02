@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 import { useCurrentUser } from "@/core/auth/auth-store";
 import { Icon } from "@/core/components/icon";
@@ -56,6 +57,9 @@ export function Navbar() {
         <Suspense fallback={null}>
           <ThemeModal
             initialTheme={user?.theme_settings}
+            onSaved={() => {
+              toast.success("Estilo guardado. Se usará en tus próximos OVAs.");
+            }}
             onClose={() => {
               setThemeModalOpen(false);
             }}

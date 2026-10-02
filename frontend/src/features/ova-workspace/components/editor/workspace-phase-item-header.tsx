@@ -11,6 +11,16 @@ interface Props {
   reorder?: ReactNode;
 }
 
+/** Quita del resumen el nombre del recurso con que suele empezar el HTML («Mapa conceptual: …»). */
+function previewWithoutName(saved: string, name: string): string {
+  const preview = contentPlainPreview(saved, 120 + name.length);
+  const lower = preview.toLowerCase();
+  const prefix = name.trim().toLowerCase();
+  if (!prefix || !lower.startsWith(prefix)) return preview;
+  const rest = preview.slice(prefix.length).replace(/^\s*[:\-–—]\s*/, "").trim();
+  return rest || preview;
+}
+
 /** Cabecera de un recurso en edición: nombre y resumen, o aviso de cambios sin guardar. */
 export function WorkspacePhaseItemHeader({ name, saved, dirty, reorder }: Readonly<Props>) {
   return (
@@ -23,7 +33,7 @@ export function WorkspacePhaseItemHeader({ name, saved, dirty, reorder }: Readon
           {dirty ? (
             <span className="font-medium text-foreground">Cambios sin guardar en el HTML</span>
           ) : (
-            contentPlainPreview(saved, 120)
+            previewWithoutName(saved, name)
           )}
         </p>
       </div>

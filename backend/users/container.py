@@ -108,7 +108,7 @@ def build_users(db: Session = Depends(get_db)) -> UsersUseCases:
     platform = SqlAlchemyPlatformSettingsRepository(db)
     hasher = CorePasswordHasher()
     return UsersUseCases(
-        update_profile=UpdateUserProfile(profiles),
+        update_profile=UpdateUserProfile(profiles, accounts, hasher),
         update_theme=UpdateUserTheme(profiles),
         change_password=ChangePassword(accounts, hasher),
         delete_account=DeleteAccount(accounts, hasher),

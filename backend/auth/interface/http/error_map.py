@@ -9,6 +9,7 @@ from fastapi import status
 from fastapi.responses import JSONResponse
 
 from auth.domain.errors import (
+    AccountDisabled,
     AccountLocked,
     AuthError,
     EmailAlreadyRegistered,
@@ -141,6 +142,13 @@ _ERROR_RESPONSES: dict[type[AuthError], tuple[int, dict[str, object]]] = {
                 "Verifica tu correo para iniciar sesión. Revisa tu bandeja o "
                 "solicita un nuevo enlace."
             ),
+        },
+    ),
+    AccountDisabled: (
+        status.HTTP_403_FORBIDDEN,
+        {
+            "error": "account_disabled",
+            "message": "Tu cuenta está desactivada. Contacta a un administrador.",
         },
     ),
     InvalidCredentials: (

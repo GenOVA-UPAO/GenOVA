@@ -21,6 +21,9 @@ class UserProfileUpdate(BaseModel):
     university_id: int | None = Field(default=None, ge=1)
     gender: str | None = Field(default=None, max_length=20)
     phone_number: str | None = Field(default=None, max_length=20)
+    current_password: str | None = Field(
+        default=None, max_length=256, description="Obligatoria si cambia el correo"
+    )
 
 
 @router.patch("/me", summary="Actualizar el perfil propio")
@@ -40,6 +43,7 @@ def update_profile(
                 university_id=payload.university_id,
                 gender=payload.gender,
                 phone_number=payload.phone_number,
+                current_password=payload.current_password,
             )
         )
     except UserError as err:

@@ -2,10 +2,12 @@ import type { SyntheticEvent } from "react";
 
 import { Button } from "@/core/components/ui/button";
 
+import { useEmailChange } from "../hooks/use-email-change";
 import { profileToFormValues } from "../lib/profile-format";
 import { profileSchema } from "../lib/profile-schemas";
-import type { ProfileData, ProfileFormValues } from "../lib/types";
+import type { ProfileData, ProfileSaveValues } from "../lib/types";
 import { useForm } from "../lib/use-form";
+import { PasswordField } from "./password-field";
 import { ProfileContactFields } from "./profile-contact-fields";
 import { ProfileIdentityFields } from "./profile-identity-fields";
 import { ProfileSection } from "./profile-section";
@@ -13,11 +15,13 @@ import { ProfileSection } from "./profile-section";
 interface ProfileFormProps {
   profile: ProfileData | null;
   isSubmitting: boolean;
-  onSave: (values: ProfileFormValues) => Promise<ProfileData | null>;
+  onSave: (values: ProfileSaveValues) => Promise<ProfileData | null>;
 }
 
 export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileFormProps>) {
   const form = useForm(profileSchema, profileToFormValues(profile));
+
+  const emailChange = useEmailChange(profile, form.values);
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,10 +29,14 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
       form.touchAll(event.currentTarget);
       return;
     }
+    if (!emailChange.validate()) return;
     // Se rellena con lo que devolvió el servidor (p. ej. el código ya con ceros):
     // `profile` aún es el de antes de guardar y devolvería los valores viejos.
-    const saved = await onSave(form.values);
-    if (saved !== null) form.reset(profileToFormValues(saved));
+    const saved = await onSave(emailChange.withPassword());
+    if (saved !== null) {
+      form.reset(profileToFormValues(saved));
+      emailChange.clear();
+    }
   };
 
   return (
@@ -50,6 +58,19 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
           onBlur={form.touch}
           disabled={isSubmitting}
         />
+        {emailChange.emailChanged && (
+          <PasswordField
+            id="emailChangePassword"
+            label="Contraseña actual"
+            hint="Necesaria para cambiar el correo de tu cuenta."
+            value={emailChange.currentPassword}
+            error={emailChange.passwordError}
+            autoComplete="current-password"
+            disabled={isSubmitting}
+            onChange={emailChange.setCurrentPassword}
+            onBlur={() => undefined}
+          />
+        )}
         <ProfileContactFields
           values={form.values}
           errorFor={form.errorFor}

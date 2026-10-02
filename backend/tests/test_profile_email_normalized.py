@@ -21,7 +21,7 @@ from sqlalchemy.ext.compiler import compiles  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
-from models import User  # noqa: E402
+from models import PasswordResetToken, User  # noqa: E402
 from users.infrastructure.sqlalchemy_admin_repository import (
     SqlAlchemyAdminUserRepository,  # noqa: E402
 )
@@ -49,6 +49,7 @@ def db():
         column.server_default = None
     try:
         User.__table__.create(engine)
+        PasswordResetToken.__table__.create(engine)
     finally:
         for column, default in saved.items():
             column.server_default = default

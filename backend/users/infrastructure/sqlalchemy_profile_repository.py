@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from auth.domain.email import normalize_email
 from core.database import commit_or_500
-from models import User
+from models import PasswordResetToken, User
 from users.domain.profile import UserProfile
 
 
@@ -65,6 +65,11 @@ class SqlAlchemyUserProfileRepository:
         # la mutación en sitio y el refresh reproducen el flujo del router.
         user = self._db.get(User, user_id)
         user.full_name = full_name
+        if user.email_normalized != normalize_email(email):
+            # Un reset emitido para el correo anterior no debe sobrevivir al cambio.
+            self._db.execute(
+                PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user_id)
+            )
         user.email = email
         user.email_normalized = normalize_email(email)
         user.university_id = university_id

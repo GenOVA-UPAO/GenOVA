@@ -9,7 +9,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, require_permission
 from ova.application.dto import DuplicateOvaInput, DuplicateOvaResult
 from ova.application.use_cases.duplicate_ova import DuplicateOva
 from ova.container import OvaUseCases, build_ova
@@ -199,6 +199,7 @@ def http_client() -> Generator[tuple[TestClient, MagicMock], None, None]:
     fake_user = SimpleNamespace(id="user-1", admin_flag_cached=False)
 
     app.dependency_overrides[get_current_user] = lambda: fake_user
+    app.dependency_overrides[require_permission("create_ova")] = lambda: fake_user
     app.dependency_overrides[build_ova] = lambda: fake_use_cases
 
     client = TestClient(app)

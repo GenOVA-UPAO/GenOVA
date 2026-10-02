@@ -8,6 +8,7 @@ daría demasiados falsos positivos; el anclaje del prompt cubre ese caso.
 
 from __future__ import annotations
 
+import html as html_lib
 import re
 import unicodedata
 
@@ -101,10 +102,15 @@ def _lead_text(html: str, limit: int = 800) -> str:
 
 
 def _first_h1(html: str) -> str:
-    match = re.search(r"<h1\b[^>]*>(.*?)</h1>", html, flags=re.I | re.S)
-    if not match:
-        return ""
-    return re.sub(r"<[^>]+>", " ", match.group(1)).strip()
+    """Titular visible: <h1> fuera de scripts/estilos, o el `title` de la cabecera
+    UPAO (upao-header / upao-card renderizan el h1 desde JS). Antes el regex
+    encontraba el `<h1>${title}</h1>` del runtime de componentes."""
+    body = re.sub(r"<(script|style|head)[\s\S]*?</\1>", " ", html, flags=re.I)
+    match = re.search(r"<h1\b[^>]*>(.*?)</h1>", body, flags=re.I | re.S)
+    if match:
+        return re.sub(r"<[^>]+>", " ", match.group(1)).strip()
+    match = re.search(r"<upao-(?:header|card)\b[^>]*\btitle=\"([^\"]*)\"", body, flags=re.I)
+    return html_lib.unescape(match.group(1)).strip() if match else ""
 
 
 def topic_drift_defect(html: str, prompt: str) -> str | None:

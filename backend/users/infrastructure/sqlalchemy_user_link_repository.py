@@ -5,12 +5,12 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from core.database import commit_or_500
 from models import User, UserLink
-from users.domain.errors import LinkNotFound
+from users.domain.errors import InvalidLinkCode, LinkNotFound
 from users.domain.links import LinkParticipant, LinkRecord, LinkSnapshot
 
 
@@ -46,8 +46,7 @@ def _participants_map(db: Session, user_ids: set) -> dict[str, LinkParticipant]:
         else {}
     )
     return {
-        str(uid): LinkParticipant(email=u.email, full_name=u.full_name)
-        for uid, u in users.items()
+        str(uid): LinkParticipant(email=u.email, full_name=u.full_name) for uid, u in users.items()
     }
 
 
@@ -72,9 +71,7 @@ class SqlAlchemyUserLinkRepository:
 
     def list_all(self) -> tuple[list[LinkSnapshot], dict[str, LinkParticipant]]:
         links = (
-            self._db.execute(select(UserLink).order_by(UserLink.created_at.desc()))
-            .scalars()
-            .all()
+            self._db.execute(select(UserLink).order_by(UserLink.created_at.desc())).scalars().all()
         )
         user_ids = {lnk.owner_user_id for lnk in links} | {
             lnk.linked_user_id for lnk in links if lnk.linked_user_id
@@ -89,8 +86,7 @@ class SqlAlchemyUserLinkRepository:
                 select(UserLink).where(
                     UserLink.status == "pending",
                     UserLink.expires_at > now,
-                    (UserLink.invite_email.is_(None))
-                    | (UserLink.invite_email == invite_email),
+                    (UserLink.invite_email.is_(None)) | (UserLink.invite_email == invite_email),
                 )
             )
             .scalars()
@@ -125,11 +121,23 @@ class SqlAlchemyUserLinkRepository:
         return _to_snapshot(link)
 
     def redeem(self, link_id: str, *, linked_user_id, consumed_at, op: str) -> LinkSnapshot:
-        link = self._db.get(UserLink, UUID(link_id))
-        link.linked_user_id = linked_user_id
-        link.status = "active"
-        link.consumed_at = consumed_at
+        # UPDATE condicional: solo consume un vínculo todavía pendiente y vigente. Dos
+        # canjes concurrentes del mismo código no pueden ganar los dos.
+        result = self._db.execute(
+            update(UserLink)
+            .where(
+                UserLink.id == UUID(link_id),
+                UserLink.status == "pending",
+                UserLink.expires_at > consumed_at,
+            )
+            .values(linked_user_id=linked_user_id, status="active", consumed_at=consumed_at)
+            .execution_options(synchronize_session=False)
+        )
+        if result.rowcount != 1:
+            self._db.rollback()
+            raise InvalidLinkCode()
         commit_or_500(self._db, op)
+        link = self._db.get(UserLink, UUID(link_id))
         self._db.refresh(link)
         return _to_snapshot(link)
 

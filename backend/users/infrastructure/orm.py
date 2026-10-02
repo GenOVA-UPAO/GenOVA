@@ -50,6 +50,8 @@ class User(Base):
     # Per-user provider API keys (never logged, returned masked):
     # {groq, openrouter, opencode, siliconflow, runware, falai}
     user_api_keys = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    # Último cambio/reset de contraseña: los JWT emitidos antes dejan de valer.
+    password_changed_at = Column(DateTime(timezone=True))
     totp_secret = Column(String(64))
     totp_enabled = Column(Boolean, nullable=False, default=False, server_default=text("false"))
     totp_backup_codes = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))

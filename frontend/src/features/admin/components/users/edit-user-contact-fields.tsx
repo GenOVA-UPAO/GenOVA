@@ -16,7 +16,7 @@ import { FieldMessage } from "./field-message";
 const GENDER_OPTIONS = [
   { value: "masculino", label: "Masculino" },
   { value: "femenino", label: "Femenino" },
-  { value: "otro", label: "Otro o prefiere no decirlo" },
+  { value: "otro", label: "Otro o prefiero no decirlo" },
 ];
 
 const PHONE_HINT = "Con prefijo de país, por ejemplo +51987285992.";

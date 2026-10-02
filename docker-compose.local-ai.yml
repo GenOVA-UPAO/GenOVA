@@ -1,0 +1,51 @@
+# Stack local de IA y correo para desarrollo/QA sin coste (GPU NVIDIA recomendada).
+#
+#   docker compose -f docker-compose.local-ai.yml up -d
+#
+# Variables para backend/.env:
+#   OVA_DECISION_BACKEND=laya   OVA_DECISION_URL=http://localhost:8090
+#   OVA_TEXT_BACKEND=local      OVA_LOCAL_LLM_URL=http://localhost:11435  OVA_LOCAL_LLM_MODEL=qwen3:8b
+#   LOCAL_IMAGE_URL=http://localhost:7860
+#   SMTP_HOST=localhost SMTP_PORT=1025 SMTP_USER=no-reply@genova.local SMTP_PASSWORD=mailpit
+# Primer uso: docker exec genova-ollama ollama pull qwen3:8b
+services:
+  mailpit:
+    image: axllent/mailpit
+    container_name: genova-mailpit
+    ports: ['8025:8025', '1025:1025']
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+
+  ollama:
+    image: ollama/ollama
+    container_name: genova-ollama
+    ports: ['11435:11434']
+    environment:
+      - OLLAMA_CONTEXT_LENGTH=8192
+      - OLLAMA_NUM_PARALLEL=2
+      - OLLAMA_KEEP_ALIVE=30m
+    volumes: ['genova-ollama-models:/root/.ollama']
+    deploy: &gpu
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+
+  laya:
+    build: ./infra/local-ai/laya
+    container_name: genova-laya
+    ports: ['8090:8000']
+    volumes: ['genova-laya-hf:/root/.cache/huggingface']
+    deploy: *gpu
+
+  sd:
+    build: ./infra/local-ai/sd
+    container_name: genova-sd
+    ports: ['7860:7860']
+    volumes: ['genova-sd-hf:/root/.cache/huggingface']
+    deploy: *gpu
+
+volumes:
+  genova-ollama-models:
+  genova-laya-hf:
+  genova-sd-hf:

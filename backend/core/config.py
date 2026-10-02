@@ -145,6 +145,10 @@ class Settings(BaseSettings):
     supabase_service_role_key: str = ""
     supabase_storage_bucket: str = "scorm-packages"
 
+    # --- Motor por plantillas (ova_engine) ---
+    # 1 = los recursos con plantilla se generan como texto JSON + HTML determinista.
+    ova_engine_templates: bool = True
+
     # --- SMTP ---
     smtp_host: str = ""
     smtp_port: int = 465

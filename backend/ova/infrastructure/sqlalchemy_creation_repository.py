@@ -70,9 +70,11 @@ class SqlAlchemyOvaCreationRepository:
         ova.file_path = file_path
         ova.current_version_id = version_id
 
-    def tie_uploads_to_ova(self, upload_ids: tuple[str, ...], ova_id: str) -> None:
+    def tie_uploads_to_ova(
+        self, upload_ids: tuple[str, ...], ova_id: str, actor_id: str
+    ) -> None:
         try:
-            tie_uploads_to_ova(self._db, upload_ids, ova_id)
+            tie_uploads_to_ova(self._db, upload_ids, ova_id, user_id=actor_id)
         except Exception:
             logger.exception("failed to tie RAG chunks to ova", ova_id=ova_id)
 

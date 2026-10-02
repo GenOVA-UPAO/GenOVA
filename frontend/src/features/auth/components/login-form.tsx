@@ -14,7 +14,13 @@ import { LoginFormFields } from "./login-form-fields";
 
 interface LoginFormProps {
   onUnverified: (email: string) => void;
-  onTotp: (ticket: string) => void;
+  onTotp: (ticket: string, credentials: LoginCredentials) => void;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+  rememberMe: boolean;
 }
 
 export function LoginForm({ onUnverified, onTotp }: Readonly<LoginFormProps>) {
@@ -36,7 +42,11 @@ export function LoginForm({ onUnverified, onTotp }: Readonly<LoginFormProps>) {
       const { status, data } = await authApi.login(form.values.email, form.values.password, rememberMe);
       const result = applyLoginOutcome(status, data);
       if (result.totp) {
-        onTotp(result.totp);
+        onTotp(result.totp, {
+          email: form.values.email,
+          password: form.values.password,
+          rememberMe,
+        });
         return;
       }
       if (result.unverified) {

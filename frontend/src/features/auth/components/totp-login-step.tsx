@@ -16,9 +16,17 @@ interface TotpLoginStepProps {
   ticket: string;
   onSuccess: () => void;
   onCancel: () => void;
+  /** Pide un ticket nuevo tras un fallo; `false` si no se pudo y hay que volver al inicio. */
+  onRenewTicket?: () => Promise<boolean>;
 }
 
-export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLoginStepProps>) {
+function focusCode(formEl: HTMLFormElement) {
+  const input = formEl.querySelector<HTMLInputElement>("#code");
+  input?.focus();
+  input?.select();
+}
+
+export function TotpLoginStep({ ticket, onSuccess, onCancel, onRenewTicket }: Readonly<TotpLoginStepProps>) {
   const form = useAuthForm(totpSchema, { code: "" });
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -39,11 +47,15 @@ export function TotpLoginStep({ ticket, onSuccess, onCancel }: Readonly<TotpLogi
       }
       // Sin mensaje del servidor no se sabe si el código falló o el servidor no respondió
       // (withOk no expone el estado): un texto neutro no culpa al código por un 502.
-      // El servidor gasta el ticket en cada intento (frena la fuerza bruta): tras un
-      // fallo hay que volver a iniciar sesión, no reintentar aquí.
-      setServerError(
-        `${data.message ?? "No se pudo verificar el código."} Vuelve al inicio de sesión para intentarlo de nuevo.`,
-      );
+      // El servidor gasta el ticket en cada intento (frena la fuerza bruta): se pide uno
+      // nuevo en silencio para que un dígito erróneo no obligue a repetir la contraseña.
+      const message = data.message ?? "No se pudo verificar el código.";
+      if (onRenewTicket && (await onRenewTicket())) {
+        setServerError(`${message} Revisa el código e inténtalo de nuevo.`);
+        focusCode(formEl);
+        return;
+      }
+      setServerError(`${message} Vuelve al inicio de sesión para intentarlo de nuevo.`);
       setExpired(true);
     } catch {
       setServerError(CONNECT_ERROR);

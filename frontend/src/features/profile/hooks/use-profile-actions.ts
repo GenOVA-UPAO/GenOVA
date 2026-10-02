@@ -4,7 +4,7 @@ import { authStore } from "@/core/auth/auth-store";
 import { queryClient } from "@/core/lib/query-client";
 
 import { errorMessage } from "../lib/error-message";
-import type { ChangePasswordValues, ProfileData, ProfileFormValues } from "../lib/types";
+import type { ChangePasswordValues, ProfileData, ProfileSaveValues } from "../lib/types";
 import { useChangePassword, useDeleteAccount, useSaveProfile } from "./use-profile";
 
 export function useProfileActions() {
@@ -14,7 +14,7 @@ export function useProfileActions() {
   const deleteAccount = useDeleteAccount();
 
   /** Devuelve el perfil tal como quedó guardado, o `null` si falló. */
-  const handleSaveProfile = async (values: ProfileFormValues): Promise<ProfileData | null> => {
+  const handleSaveProfile = async (values: ProfileSaveValues): Promise<ProfileData | null> => {
     try {
       return await saveProfile.mutateAsync(values);
     } catch {
