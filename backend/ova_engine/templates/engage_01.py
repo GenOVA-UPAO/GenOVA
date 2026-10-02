@@ -43,7 +43,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Escribe un cómic de {p["num_panels"]} viñetas, tono {p["tone"]}, protagonizado por «Max», un robot DBA de una pequeña empresa. Usa una analogía cotidiana concreta que refleje FIELMENTE cómo funciona «{concept}» y construye una progresión hasta un clímax que despierte curiosidad.
 - titulo: título corto del cómic.
 - gancho: una frase que invite a leer.
-- vinetas: por cada viñeta, `dialogo` (lo que DICE Max, ≤18 palabras, sin acotaciones), `descripcion_visual` (la escena, ≤25 palabras) y `prompt_imagen` (escena en inglés, estilo cartoon plano, sin texto en la imagen).
+- vinetas: por cada viñeta, `dialogo` (lo que DICE Max, ≤18 palabras, sin acotaciones), `descripcion_visual` (la escena, ≤25 palabras) y `prompt_imagen` (escena en inglés, estilo cartoon plano, sin texto en la imagen; describe SIEMPRE a Max igual: "Max, a small friendly round navy-blue robot with an orange antenna and big screen eyes").
 - pregunta: una pregunta de enganche sobre la analogía con 3-4 opciones; exactamente UNA con `correcta: true`; cada `feedback` explica por qué.
 - cierre: frase que conecte la historia con lo que se aprenderá.
 [RESTRICCIONES] Sin jerga técnica en los diálogos. Humor empático.
