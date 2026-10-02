@@ -26,9 +26,9 @@ export function PhaseSelectFooter({ count, phases, onClose, onConfirm }: Readonl
         <div role="status">
           <p className={cn("flex items-center gap-1.5 font-medium", valid ? "text-foreground" : "text-muted-foreground")}>
             <Icon name={valid ? "check-circle" : "info"} className={cn("size-4 shrink-0", valid && "text-success")} />
-            {selectionSummary(count, phases)}
+            {count === 0 ? requirement(phases) : selectionSummary(count, phases)}
           </p>
-          {!valid && (
+          {!valid && count > 0 && (
             <p id="phase-select-requirement" className="mt-0.5 text-xs">
               {requirement(phases)}
             </p>
