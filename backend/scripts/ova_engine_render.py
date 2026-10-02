@@ -18,7 +18,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ova_engine.pipeline import render_resource  # noqa: E402
 from ova_engine.registry import all_specs  # noqa: E402
 
-
 FIXTURES = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "ova_engine"
 
 
