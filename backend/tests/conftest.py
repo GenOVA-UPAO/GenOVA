@@ -37,3 +37,13 @@ def user_token(base_url):
     )
     r.raise_for_status()
     return r.json()["access_token"]
+
+
+@pytest.fixture(autouse=True)
+def _legacy_generation_by_default(request, monkeypatch):
+    """Los tests del pipeline clásico (LLM→HTML, cassettes) no deben desviarse al
+    motor por plantillas: se activa solo en los tests de ova_engine."""
+    if "ova_engine" not in request.node.nodeid:
+        from core.config import settings
+
+        monkeypatch.setattr(settings, "ova_engine_templates", False)
