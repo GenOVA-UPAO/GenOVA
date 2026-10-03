@@ -19,6 +19,7 @@ from auth.infrastructure.orm import (  # noqa: F401
     RevokedToken,
     Session,
 )
+from editor.infrastructure.orm import EditorFeedback  # noqa: F401
 from generation.errors.error_log_model import (
     OvaErrorLog,  # noqa: F401  — registers ova_error_logs table
 )
@@ -37,6 +38,7 @@ from users.infrastructure.orm_platform import PlatformConfig  # noqa: F401
 
 __all__ = [
     "CatalogCache",
+    "EditorFeedback",
     "EmailVerificationToken",
     "Ova",
     "OvaEditorChatMessage",
