@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -42,7 +42,7 @@ class SqlAlchemyFeedbackRepository:
             "reason": draft.reason,
             "comment": draft.comment,
         }
-        update = {k: v for k, v in values.items() if k not in ("user_id", "phase_id")}
+        update = {k: v for k, v in values.items() if k not in ("user_id", "phase_id")} | {"updated_at": func.now()}
         stmt = (
             pg_insert(ResourceFeedbackRow)
             .values(**values)
