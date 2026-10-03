@@ -94,7 +94,9 @@ def is_template_html(html: str) -> bool:
 def engine_info(html: str) -> dict:
     """{"key": "engage_01", "params": {...}, "review": {...}} leído del HTML de una plantilla.
     Vacío si el recurso no salió del motor."""
-    head = (html or "")[:6000]
+    # El runtime UPAO inyecta ~8 KB de CSS antes de los meta: se busca en todo el <head>.
+    html = html or ""
+    head = html[: html.find("</head>") if "</head>" in html else 60000]
     m = re.search(rf'<meta name="{ENGINE_META}" content="template:([^"]*)"', head)
     if not m:
         return {}

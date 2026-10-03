@@ -134,3 +134,11 @@ def test_engine_info_viaja_en_el_html():
     info = engine_info(html)
     assert info["key"] == "engage_01" and info["params"] == {"num_panels": 5} and info["review"] == {"found": 1}
     assert engine_info("<html></html>") == {}
+
+
+def test_engine_info_tras_inyectar_el_runtime():
+    """El runtime UPAO mete CSS antes del meta: el meta debe seguir leyéndose."""
+    html = document("t", "<p>x</p>", key="explain_05", info={"params": {"num_steps": 4}})
+    html = html.replace("<head>", "<head><style>" + "a{}" * 6000 + "</style>", 1)
+    assert engine_info(html)["key"] == "explain_05"
+    assert engine_info(html)["params"] == {"num_steps": 4}
