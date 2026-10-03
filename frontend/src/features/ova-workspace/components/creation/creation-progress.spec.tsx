@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -47,12 +48,14 @@ function resource(id: string, phase: string, status: string, order: number): Bac
 
 function renderProgress() {
   render(
-    <MemoryRouter initialEntries={["/crear?jobId=job-1"]}>
-      <Routes>
-        <Route path="/crear" element={<CreationProgress jobId="job-1" />} />
-        <Route path="/workspace/:id" element={<p>Editor del OVA</p>} />
-      </Routes>
-    </MemoryRouter>,
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MemoryRouter initialEntries={["/crear?jobId=job-1"]}>
+        <Routes>
+          <Route path="/crear" element={<CreationProgress jobId="job-1" />} />
+          <Route path="/workspace/:id" element={<p>Editor del OVA</p>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

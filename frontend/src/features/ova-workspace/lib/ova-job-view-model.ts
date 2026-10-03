@@ -47,9 +47,16 @@ export interface PhaseGroup {
   items: ResourceVM[];
 }
 
+export interface JobEta {
+  seconds: number;
+  /** `historial`: con la mediana real de cada tipo · `estimado`: algún tipo sin datos aún. */
+  basis: "historial" | "estimado";
+}
+
 export interface JobLike {
   status?: string;
   updated_at?: string;
+  eta?: JobEta | null;
 }
 
 export interface JobSnapshot extends JobLike {

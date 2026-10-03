@@ -1,4 +1,4 @@
-import { groupByPhase, type JobLike, type ResourceVM } from "./ova-job-view-model";
+import { groupByPhase, type JobEta, type JobLike, type ResourceVM } from "./ova-job-view-model";
 
 const TERMINAL = new Set(["done", "error", "canceled", "interrupted"]);
 
@@ -71,4 +71,31 @@ export function markClass(status: string): string {
 
 export function phaseGroups(viewModel: ResourceVM[] = []): ReturnType<typeof groupByPhase> {
   return groupByPhase(viewModel);
+}
+
+/**
+ * Tiempo restante en lenguaje llano y sin falsa precisión: redondea a minutos
+ * enteros y avisa cuando la cifra aún es una estimación inicial.
+ */
+export function formatEta(eta: JobEta | null | undefined): string | null {
+  if (!eta) return null;
+  const hint = eta.basis === "estimado" ? " (estimación inicial)" : "";
+  if (eta.seconds < 20) return `Casi listo${hint}`;
+  if (eta.seconds < 60) return `Menos de 1 min restante${hint}`;
+  return `≈ ${String(Math.round(eta.seconds / 60))} min restante${hint}`;
+}
+
+/** Mensaje para el lector de pantalla al cambiar el estado de un recurso (null si no hay cambio relevante). */
+export function announceChange(
+  previous: Record<string, string>,
+  viewModel: ResourceVM[],
+): string | null {
+  const messages: string[] = [];
+  for (const r of viewModel) {
+    if (!Object.hasOwn(previous, r.id) || previous[r.id] === r.status) continue;
+    if (r.status === "check") messages.push(`${r.label}: listo`);
+    else if (r.status === "X") messages.push(`${r.label}: no se pudo generar`);
+    else if (r.status === "generando") messages.push(`${r.label}: generando`);
+  }
+  return messages.length > 0 ? messages.join(". ") : null;
 }
