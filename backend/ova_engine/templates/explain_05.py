@@ -487,7 +487,7 @@ _STYLE = """
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--accent, #F47A20);
+  color: var(--action, #B84B00);
   margin-bottom: 2px;
 }
 .state-value {
@@ -661,7 +661,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 
     <upao-figure class="demo-figure" caption="Diagrama reactivo de flujo entre componentes del motor de base de datos">
       <div class="demo-svg-container">
-        <svg class="demo-svg" viewBox="0 0 {view_w} {view_h}" role="img" aria-label="Diagrama del flujo de datos entre componentes">
+        <svg class="demo-svg" viewBox="0 0 {view_w} {view_h}" role="group" aria-label="Diagrama del flujo de datos entre componentes">
           <defs>
             <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
               <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--border, #cbd5e1)"/>

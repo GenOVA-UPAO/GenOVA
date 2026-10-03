@@ -70,7 +70,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     n = len(pairs)
     terms = "".join(
         f'<upao-drag-item class="rl-term" item-id="{esc(pairs[i]["termino"])}" category="{i}" data-i="{i}" '
-        f'role="button" tabindex="-1">{esc(pairs[i]["termino"])}</upao-drag-item>'
+        f'role="button" tabindex="0">{esc(pairs[i]["termino"])}</upao-drag-item>'
         for i in _order(n)
     )
     defs = "".join(

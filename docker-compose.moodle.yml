@@ -1,0 +1,27 @@
+name: genova-ci-moodle
+services:
+  db:
+    image: postgres:16.10
+    environment:
+      POSTGRES_DB: moodle
+      POSTGRES_USER: moodle
+      POSTGRES_PASSWORD: moodle-local-ci
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U moodle]
+      interval: 5s
+      retries: 30
+    volumes: [moodle-db:/var/lib/postgresql/data]
+  moodle:
+    build: tests/moodle
+    ports: ['8081:80']
+    depends_on:
+      db: { condition: service_healthy }
+    volumes: [moodle-data:/var/moodledata, moodle-config:/var/genova-config]
+    healthcheck:
+      test: [CMD-SHELL, 'curl -fsS -H ''Host: localhost:8081'' http://localhost/login/index.php | grep -q ''id="username"''']
+      interval: 10s
+      retries: 60
+volumes:
+  moodle-db:
+  moodle-data:
+  moodle-config:

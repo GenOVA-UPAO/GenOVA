@@ -202,7 +202,7 @@ _STYLE = """
   gap: 6px;
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--accent, #F47A20);
+  color: var(--action, #B84B00);
   background: var(--accent-tint, #FDEEE0);
   padding: 4px 10px;
   border-radius: 6px;

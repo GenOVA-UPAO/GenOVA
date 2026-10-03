@@ -100,6 +100,19 @@ def build_app_js() -> str:
   const frame = document.getElementById('res-frame')
   const tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'))
   const visited = {}
+  const completed = {}
+  const startedAt = Date.now()
+  let finished = false
+
+  function saveTime() {
+    const cs = Math.max(0, Math.round((Date.now() - startedAt) / 10))
+    const hours = Math.min(9999, Math.floor(cs / 360000))
+    const minutes = Math.floor(cs / 6000) % 60
+    const seconds = Math.floor(cs / 100) % 60
+    const pad = (v, n) => String(v).padStart(n, '0')
+    window.GenovaScorm.setValue('cmi.core.session_time',
+      pad(hours, 4) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2) + '.' + pad(cs % 100, 2))
+  }
 
   const initialized = window.GenovaScorm && window.GenovaScorm.initialize()
   const xapi = window.GenovaXapi || null
@@ -117,7 +130,6 @@ def build_app_js() -> str:
       visited[src] = true
       if (xapi) { xapi.experienced(btn.textContent.trim()) }
       if (focus) { btn.focus() }
-      maybeComplete()
     }
   }
 
@@ -128,15 +140,19 @@ def build_app_js() -> str:
       return
     }
     window.GenovaScorm.setValue('cmi.core.lesson_status', 'completed')
-    window.GenovaScorm.setValue('cmi.core.score.raw', '100')
+    const scores = Object.values(completed)
+    const score = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 100
+    window.GenovaScorm.setValue('cmi.core.score.min', '0')
+    window.GenovaScorm.setValue('cmi.core.score.max', '100')
+    window.GenovaScorm.setValue('cmi.core.score.raw', score)
+    saveTime()
     window.GenovaScorm.commit()
     statusNode.textContent = 'Estado LMS: completado y guardado.'
   }
 
   function maybeComplete() {
-    // Un OVA de un solo recurso no se completa al abrirlo: el estudiante debe
-    // usar el botón explícito. Con varios recursos, visitarlos todos completa.
-    if (tabs.length > 1 && Object.keys(visited).length >= tabs.length) {
+    // Visitar una pestaña no demuestra completar una interacción.
+    if (tabs.length > 1 && Object.keys(completed).length >= tabs.length) {
       markComplete()
     }
   }
@@ -179,9 +195,23 @@ def build_app_js() -> str:
 
   completeButton.addEventListener('click', markComplete)
 
+  // Los recursos están en sandbox sin allow-same-origin. Su origin es null:
+  // autenticar por la ventana del iframe activo, no por event.origin.
+  window.addEventListener('message', function (event) {
+    if (event.source !== frame.contentWindow || event.data?.type !== 'genova-resource-completed') return
+    const raw = Number(event.data.score)
+    if (!Number.isFinite(raw)) return
+    completed[frame.getAttribute('src')] = Math.max(0, Math.min(100, raw))
+    maybeComplete()
+  })
+
   window.addEventListener('beforeunload', function () {
     if (xapi) { xapi.terminated() }
-    if (initialized) {
+    if (initialized && !finished) {
+      finished = true
+      saveTime()
+      window.GenovaScorm.setValue('cmi.core.exit',
+        window.GenovaScorm.getValue('cmi.core.lesson_status') === 'completed' ? '' : 'suspend')
       window.GenovaScorm.commit()
       window.GenovaScorm.finish()
     }

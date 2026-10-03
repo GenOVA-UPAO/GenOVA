@@ -251,7 +251,7 @@ _STYLE = """
 }
 .col-pill--tech {
   background: #FFF3EB;
-  color: var(--accent, #F47A20);
+  color: var(--action, #B84B00);
   border: 1px solid #FFE0CC;
 }
 .col-sub {
@@ -371,7 +371,7 @@ _STYLE = """
   color: var(--text-muted, #5A6B85);
 }
 .card-tag--tech {
-  color: var(--accent, #F47A20);
+  color: var(--action, #B84B00);
 }
 .match-badge {
   font-size: 0.72rem;

@@ -328,7 +328,6 @@ _STYLE = """
 .drag-item-card.is-matched {
   border-color: var(--success, #146C49);
   background: var(--success-bg, #EAF7F1);
-  opacity: 0.9;
 }
 .drag-item-card.is-shake {
   animation: upao-drag-shake 0.4s ease-in-out;

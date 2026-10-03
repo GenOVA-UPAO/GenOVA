@@ -302,3 +302,5 @@ tests/load/jmeter-report-*/
 
 # Evidencia visual generada localmente (capturas de recursos reinyectados).
 backend/tests/visual-output/
+tests/.ova-rendered/
+tests/playwright-report-templates/

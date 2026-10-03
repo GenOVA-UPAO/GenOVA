@@ -80,7 +80,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 {progress(n, "Turnos jugados")}
 <upao-figure caption="Figura 1. Tablero: cada casilla es un turno; el color indica la calidad de tu decisión (verde óptima, ámbar aceptable, rojo mala).">
 <div class="ge-board" id="ge-board" role="list" aria-label="Tablero de turnos"></div></upao-figure>
-<div class="ge-hud"><div><p class="k-label">{esc(data["recurso"])}</p><div class="k-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" id="ge-meter"><span id="ge-fill" style="width:70%"></span></div></div>
+<div class="ge-hud"><div><p class="k-label">{esc(data["recurso"])}</p><div class="k-meter" role="progressbar" aria-label="{esc(data['recurso'])}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" id="ge-meter"><span id="ge-fill" style="width:70%"></span></div></div>
 <upao-score id="sc" current="0" max="{20 * n}" label="Puntaje"></upao-score></div>
 <upao-status id="ge-status" state="info">Turno 1: elige tu decisión.</upao-status>
 <article class="k-panel ova-stack" id="ge-card" aria-live="polite">
