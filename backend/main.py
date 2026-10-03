@@ -34,6 +34,7 @@ from llm.catalog.catalog_router import router as agents_router
 from ova.interface.http.add_phase_router import router as ova_add_phase_router
 from ova.interface.http.chat_router import router as ova_chat_router
 from ova.interface.http.edit_router import router as ova_edit_router
+from ova.interface.http.feedback_router import router as ova_feedback_router
 from ova.interface.http.history_router import router as ova_history_router
 from ova.interface.http.phase_version_router import router as ova_phase_version_router
 from ova.interface.http.router import router as ova_router
@@ -280,6 +281,7 @@ app.include_router(ova_edit_router, prefix="/api/ovas")
 # Chat también montado aquí: include anidado en edit_router a veces no aparece
 # en el proceso que queda pegado a un socket zombie de :8000.
 app.include_router(ova_chat_router, prefix="/api/ovas")
+app.include_router(ova_feedback_router, prefix="/api/ovas")
 app.include_router(ova_phase_version_router, prefix="/api/ovas")
 app.include_router(editor_router, prefix="/api/ovas")
 app.include_router(ova_add_phase_router, prefix="/api/ovas")
