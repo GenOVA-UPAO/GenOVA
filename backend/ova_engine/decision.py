@@ -155,7 +155,7 @@ def decide(spec: TemplateSpec, concept: str, contexto: str = "", override: dict 
     """Parámetros finales del recurso. `override` = resource_config del docente:
     lo que el docente fija explícitamente gana sobre cualquier decisión."""
     decided = rules_decide(spec, concept, contexto)
-    if _backend() in ("laya", "jev"):
+    if _backend() in ("laya", "jev", "planner-atributos"):
         try:
             decided.update(systemone_decide(spec, concept, contexto))
         except Exception as exc:  # red, 5xx, formato: las reglas ya decidieron

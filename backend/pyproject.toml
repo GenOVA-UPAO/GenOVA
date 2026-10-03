@@ -134,7 +134,7 @@ indent-style = "space"
 # `lint-imports` se ejecuta desde `backend/`.
 root_packages = [
     "core", "auth", "ova", "llm", "rag", "roles",
-    "users", "scorm", "generation", "prometheus", "storage", "uploads",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads", "editor",
 ]
 include_external_packages = true
 
@@ -144,7 +144,7 @@ type = "forbidden"
 source_modules = ["core"]
 forbidden_modules = [
     "auth", "ova", "llm", "rag", "roles",
-    "users", "scorm", "generation", "prometheus", "storage", "uploads",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads", "editor",
 ]
 
 # --- roles: hexagonal estricto (piloto) ---
@@ -528,8 +528,35 @@ name = "ova no depende de roles ni users"
 type = "forbidden"
 source_modules = ["ova"]
 forbidden_modules = ["roles", "users"]
-# `ova` sí alcanza `prometheus` transitivamente a través de `generation` (que usa
-# el motor de generación) — acoplamiento legítimo, no un import directo de `ova`.
+# --- editor: hexagonal estricto ---
+
+[[tool.importlinter.contracts]]
+name = "editor.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["editor.domain"]
+forbidden_modules = [
+    "editor.application", "editor.infrastructure", "editor.interface", "editor.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "editor.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["editor.application"]
+forbidden_modules = [
+    "editor.infrastructure", "editor.interface", "editor.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "editor: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "editor.interface",
+    "editor.container",
+    "editor.application",
+    "editor.domain",
+]
 
 # =====================================================================
 # Fase 3 — contratos globales entre dominios
@@ -570,7 +597,7 @@ name = "auth y roles no dependen de ningún dominio superior"
 type = "forbidden"
 source_modules = ["auth", "roles"]
 forbidden_modules = [
-    "ova", "generation", "llm", "prometheus", "rag", "scorm", "storage", "uploads",
+    "ova", "generation", "llm", "prometheus", "rag", "scorm", "storage", "uploads", "editor",
 ]
 
 [[tool.importlinter.contracts]]
@@ -578,7 +605,7 @@ name = "rag solo depende de llm (para visión/transcripción), no de dominios su
 type = "forbidden"
 source_modules = ["rag"]
 forbidden_modules = [
-    "ova", "generation", "users", "roles", "prometheus", "scorm", "storage", "uploads",
+    "ova", "generation", "users", "roles", "prometheus", "scorm", "storage", "uploads", "editor",
 ]
 
 [[tool.importlinter.contracts]]
@@ -586,7 +613,7 @@ name = "uploads solo depende de rag (ingesta), no de dominios superiores"
 type = "forbidden"
 source_modules = ["uploads"]
 forbidden_modules = [
-    "ova", "generation", "prometheus", "users", "roles", "scorm", "storage",
+    "ova", "generation", "prometheus", "users", "roles", "scorm", "storage", "editor",
 ]
 # `llm` no se lista: uploads lo alcanza solo transitivamente vía `rag`
 # (rag.infrastructure.parsers usa visión/transcripción), que es un edge permitido.

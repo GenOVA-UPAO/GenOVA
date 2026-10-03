@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
 import { Icon } from "@/core/components/icon";
@@ -7,6 +7,7 @@ import { humanizeResourceType } from "../../lib/ova-job-view-model";
 import { phaseMeta } from "../../lib/phase-meta";
 import { resourceDisplayName } from "../../lib/resource-display-name";
 import type { PhaseWithContent } from "../../lib/types";
+import { ResourceFeedback } from "./resource-feedback";
 import { WorkspacePreviewEmpty } from "./workspace-preview-empty";
 import { WorkspacePreviewFooter } from "./workspace-preview-footer";
 import { WorkspacePreviewTabs } from "./workspace-preview-tabs";
@@ -53,9 +54,34 @@ interface Selection {
   index: number;
 }
 
-export default function WorkspaceHtmlPreview({ phases }: Readonly<{ phases: PhaseWithContent[] }>) {
+/** 👍/👎 del recurso visible; nada si el OVA es solo lectura o no hay recurso. */
+function feedbackSlot(
+  readOnly: boolean,
+  ovaId: string,
+  active: PhaseWithContent | undefined,
+  labels: Map<string, string>,
+): ReactNode {
+  if (readOnly || !active) return undefined;
+  return (
+    <ResourceFeedback
+      ovaId={ovaId}
+      phaseId={active.id}
+      resourceName={labels.get(active.id) ?? "el recurso"}
+    />
+  );
+}
+
+interface PreviewProps {
+  phases: PhaseWithContent[];
+  ovaId: string;
+  /** Solo vista: quien no es dueño del OVA no valora sus recursos. */
+  readOnly?: boolean;
+}
+
+export default function WorkspaceHtmlPreview({ phases, ovaId, readOnly = false }: Readonly<PreviewProps>) {
   const [selection, setSelection] = useState<Selection | null>(null);
   const active = pickActive(phases, selection);
+  const labels = uniqueLabels(phases);
   const position = active ? phases.indexOf(active) : -1;
   const select = (index: number) => {
     const phase = phases.at(index);
@@ -67,7 +93,7 @@ export default function WorkspaceHtmlPreview({ phases }: Readonly<{ phases: Phas
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-card sm:rounded-xl sm:border sm:border-border">
         <WorkspacePreviewTabs
           phases={phases}
-          labels={uniqueLabels(phases)}
+          labels={labels}
           activeId={active?.id ?? null}
           onSelect={(id) => {
             select(phases.findIndex((phase) => phase.id === id));
@@ -99,6 +125,7 @@ export default function WorkspaceHtmlPreview({ phases }: Readonly<{ phases: Phas
           onNext={() => {
             select(position + 1);
           }}
+          feedback={feedbackSlot(readOnly, ovaId, active, labels)}
         />
       </div>
     </section>

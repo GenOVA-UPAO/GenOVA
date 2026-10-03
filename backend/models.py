@@ -19,6 +19,7 @@ from auth.infrastructure.orm import (  # noqa: F401
     RevokedToken,
     Session,
 )
+from editor.infrastructure.orm import EditorFeedback  # noqa: F401
 from generation.errors.error_log_model import (
     OvaErrorLog,  # noqa: F401  — registers ova_error_logs table
 )
@@ -30,6 +31,7 @@ from generation.regen.regen_job_model import RegenJob  # noqa: F401  — registe
 from llm.catalog.models import CatalogCache  # noqa: F401
 from ova.infrastructure.orm import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
 from ova.infrastructure.orm_chat import OvaEditorChatMessage  # noqa: F401
+from ova.infrastructure.orm_feedback import ResourceFeedbackRow  # noqa: F401
 from rag.infrastructure.orm import RagChunk  # noqa: F401
 from roles.infrastructure.orm import Role, UserRole  # noqa: F401
 from users.infrastructure.orm import User, UserLink  # noqa: F401
@@ -37,6 +39,7 @@ from users.infrastructure.orm_platform import PlatformConfig  # noqa: F401
 
 __all__ = [
     "CatalogCache",
+    "EditorFeedback",
     "EmailVerificationToken",
     "Ova",
     "OvaEditorChatMessage",
@@ -50,6 +53,7 @@ __all__ = [
     "PlatformConfig",
     "RagChunk",
     "RegenJob",
+    "ResourceFeedbackRow",
     "RevokedToken",
     "Role",
     "Session",

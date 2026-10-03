@@ -1,5 +1,8 @@
+import type { ReactNode } from "react";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
+import { cn } from "@/core/lib/cn";
 
 import { phaseMeta } from "../../lib/phase-meta";
 import type { PhaseWithContent } from "../../lib/types";
@@ -10,6 +13,8 @@ interface Props {
   total: number;
   onPrevious: () => void;
   onNext: () => void;
+  /** Valoración del recurso (👍/👎); solo para quien puede editar el OVA. */
+  feedback?: ReactNode;
 }
 
 const NAV = "max-sm:size-11 max-sm:px-0";
@@ -25,6 +30,7 @@ export function WorkspacePreviewFooter({
   total,
   onPrevious,
   onNext,
+  feedback,
 }: Readonly<Props>) {
   if (!active) return null;
   const meta = phaseMeta(active.phase_type);
@@ -42,8 +48,9 @@ export function WorkspacePreviewFooter({
           <span className="max-sm:sr-only">Regenerado</span>
         </span>
       )}
+      {feedback && <span className="ml-auto flex shrink-0 items-center">{feedback}</span>}
       {total > 1 && (
-        <span className="ml-auto flex shrink-0 items-center gap-1">
+        <span className={cn("flex shrink-0 items-center gap-1", !feedback && "ml-auto")}>
           <Button
             variant="ghost"
             size="sm"
