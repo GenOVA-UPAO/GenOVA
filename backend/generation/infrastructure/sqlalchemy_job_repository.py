@@ -52,6 +52,15 @@ class SqlAlchemyJobRepository:
         resources = jobs_service.list_resources(self._db, orm.id)
         return to_job(orm), [to_resource(r) for r in resources]
 
+    def duration_medians(self, keys: list[tuple[str, str]]) -> dict[str, float]:
+        from prometheus.engine.timing import duration_medians
+
+        try:
+            return duration_medians(self._db, keys)
+        except Exception:  # noqa: BLE001 — la estimación nunca rompe el estado del job
+            self._db.rollback()
+            return {}
+
     def get_owned_by_ova_with_resources(
         self, ova_id: UUID, user_id: UUID
     ) -> tuple[Job, list[JobResource]] | None:
@@ -92,5 +101,12 @@ class FreshSessionJobRepository:
         db = SessionLocal()
         try:
             return SqlAlchemyJobRepository(db).get_owned_with_resources(job_id, user_id)
+        finally:
+            db.close()
+
+    def duration_medians(self, keys: list[tuple[str, str]]) -> dict[str, float]:
+        db = SessionLocal()
+        try:
+            return SqlAlchemyJobRepository(db).duration_medians(keys)
         finally:
             db.close()

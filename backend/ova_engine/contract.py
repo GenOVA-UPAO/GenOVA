@@ -74,6 +74,9 @@ class TemplateSpec:
     # `prompt_imagen` reciben `image_placeholder` ("__IMG_N__") y `render` lo usa
     # como src; sin imagen, `render` dibuja su alternativa (SVG/emoji).
     uses_images: bool = False
+    # Personaje recurrente (clave de `llm.images.style_guide.CHARACTERS`): su descripción fija
+    # se antepone a TODOS los `prompt_imagen` del recurso para que no cambie de viñeta a viñeta.
+    image_character: str = ""
 
     @property
     def key(self) -> str:

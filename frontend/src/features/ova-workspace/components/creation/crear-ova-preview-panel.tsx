@@ -52,7 +52,15 @@ export default function CrearOvaPreviewPanel({ jobId, viewModel, pinnedId, onPin
         />
       )}
       <div className="min-h-0 flex-1 overflow-hidden">
-        <PreviewPanelBody active={active} loading={content.isPending} html={html} />
+        <PreviewPanelBody
+          active={active}
+          loading={content.isPending}
+          html={html}
+          error={content.isError}
+          onRetry={() => {
+            void content.refetch();
+          }}
+        />
       </div>
       {active && (
         <div className="flex min-w-0 shrink-0 items-center gap-2 border-t border-border px-3 py-2 text-xs text-muted-foreground">

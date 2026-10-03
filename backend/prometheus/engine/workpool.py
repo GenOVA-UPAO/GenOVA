@@ -26,6 +26,7 @@ from prometheus.engine.budget import can_spend, deadline_at
 from prometheus.engine.job_trace import job_trace
 from prometheus.engine.runtime import _persist_outcome, _touch_job
 from prometheus.engine.state import OvaGenerationState
+from prometheus.engine.timing import mark_running, record_duration
 
 logger = structlog.get_logger(__name__)
 
@@ -92,6 +93,7 @@ def resource_worker(payload: dict) -> dict:
     job_id = payload.get("job_id")
     started = time.monotonic()
     deadline = deadline_at(started)
+    mark_running(job_id, phase, rt)
     try:
         result = generate_resource(
             phase,
@@ -134,6 +136,7 @@ def resource_worker(payload: dict) -> dict:
     # generate_resource como compuerta única; aquí solo leemos los defectos
     # estructurales restantes para el routing a repair.
     html, remaining = result.html, result.defects
+    record_duration(phase, rt, time.monotonic() - started)
     meta = _recursos_meta_for(phase)
     title = (meta.get(rt) or {}).get("tipo", "")
     if remaining:

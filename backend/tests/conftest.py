@@ -39,6 +39,12 @@ def user_token(base_url):
     return r.json()["access_token"]
 
 
+def tmp_path_factory_dir(request):
+    import tempfile
+
+    return tempfile.mkdtemp(prefix="genova-img-cache-test-")
+
+
 @pytest.fixture(autouse=True)
 def _legacy_generation_by_default(request, monkeypatch):
     """Los tests del pipeline clásico (LLM→HTML, cassettes) no deben desviarse al
@@ -48,6 +54,7 @@ def _legacy_generation_by_default(request, monkeypatch):
     monkeypatch.setenv("OVA_TEXT_BACKEND", "router")
     monkeypatch.setenv("OVA_DECISION_BACKEND", "rules")
     monkeypatch.delenv("LOCAL_IMAGE_URL", raising=False)
+    monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path_factory_dir(request)))
     if "ova_engine" not in request.node.nodeid:
         from core.config import settings
 

@@ -93,7 +93,15 @@ def _runware(prompt: str, api_key: str | None, width: int, height: int, model: s
         return None
 
 
-def _falai(prompt: str, api_key: str | None, width: int, height: int, model: str | None = None) -> str | None:
+def _falai(
+    prompt: str,
+    api_key: str | None,
+    width: int,
+    height: int,
+    model: str | None = None,
+    *,
+    seed: int | None = None,
+) -> str | None:
     if not api_key:
         logger.warning("image generation skipped: no api_key", provider="falai")
         return None
@@ -102,7 +110,11 @@ def _falai(prompt: str, api_key: str | None, width: int, height: int, model: str
         resp = httpx.post(
             f"https://fal.run/{model}",
             headers={"Authorization": f"Key {api_key}", "Content-Type": "application/json"},
-            json={"prompt": prompt, "image_size": {"width": width, "height": height}},
+            json={
+                "prompt": prompt,
+                "image_size": {"width": width, "height": height},
+                **({"seed": seed} if seed is not None else {}),
+            },
             timeout=_TIMEOUT,
         )
         resp.raise_for_status()
@@ -152,6 +164,7 @@ def get_image_data_uri(
     model: str | None = None,
     *,
     hf_fallback: bool = True,
+    seed: int | None = None,
 ) -> str | None:
     """Generate an image for `prompt` using the specified provider.
 
@@ -169,11 +182,13 @@ def get_image_data_uri(
     if os.getenv("LOCAL_IMAGE_URL"):
         # Servidor local (SD-Turbo en Docker, ver genova-sd): simula un proveedor
         # real en desarrollo/QA sin coste. Si falla, sigue el proveedor elegido.
-        local = _local_image(clean, width, height)
+        local = _local_image(clean, width, height, seed)
         if local:
             return local
     fn = _PROVIDERS.get(provider, _hf)
-    if provider in _MODEL_PROVIDERS:
+    if provider == "falai":
+        result = _falai(clean, api_key, width, height, model, seed=seed)
+    elif provider in _MODEL_PROVIDERS:
         result = fn(clean, api_key, width, height, model)
     else:
         result = fn(clean, api_key, width, height)
@@ -187,11 +202,14 @@ def get_image_data_uri(
     return result
 
 
-def _local_image(prompt: str, width: int, height: int) -> str | None:
+def _local_image(prompt: str, width: int, height: int, seed: int | None = None) -> str | None:
+    payload = {"prompt": prompt, "width": width, "height": height}
+    if seed is not None:
+        payload["seed"] = seed  # el servidor SD lo usa si lo soporta; si no, lo ignora
     try:
         r = httpx.post(
             os.environ["LOCAL_IMAGE_URL"].rstrip("/") + "/generate",
-            json={"prompt": prompt, "width": width, "height": height},
+            json=payload,
             timeout=60,
         )
         r.raise_for_status()

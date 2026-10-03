@@ -9,6 +9,7 @@ stays as a reconciliation pass (it skips rows already marked "done").
 """
 
 import contextlib
+import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
@@ -19,6 +20,7 @@ from sqlalchemy import select, update
 from core.config import settings
 from core.database import SessionLocal
 from models import OvaJob, OvaJobResource
+from prometheus.engine.timing import mark_running, record_duration
 
 logger = structlog.get_logger(__name__)
 
@@ -54,10 +56,13 @@ def run_phase(state: dict, phase: str, dispatch, meta: dict) -> dict:
     def _work(item: dict):
         rt = item["resource_type"]
         per_config = resource_configs.get(f"{phase}:{rt}", {})
+        started = time.monotonic()
+        mark_running(job_id, phase, rt)
         try:
             html = dispatch(
                 rt, concept, llm_config, enabled_models, theme, image_settings, per_config
             )
+            record_duration(phase, rt, time.monotonic() - started)
             return item, html, None
         except Exception as exc:  # noqa: BLE001 — isolate one resource's failure
             logger.exception("resource failed", phase=phase, resource_type=rt)
