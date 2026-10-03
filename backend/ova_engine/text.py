@@ -38,9 +38,16 @@ def _full_prompt(prompt: str, schema: dict) -> str:
     return f"{prompt}\n\n{_SYSTEM_RULES}{json.dumps(schema, ensure_ascii=False)}"
 
 
-def _local(prompt: str, schema: dict, max_tokens: int, temperature: float = 0.6, timeout: float | None = None) -> str:
+def _local(
+    prompt: str,
+    schema: dict,
+    max_tokens: int,
+    temperature: float = 0.6,
+    timeout: float | None = None,
+    model: str | None = None,
+) -> str:
     url = os.getenv("OVA_LOCAL_LLM_URL", "http://localhost:11435").rstrip("/")
-    model = os.getenv("OVA_LOCAL_LLM_MODEL", "qwen3:8b")
+    model = model or os.getenv("OVA_LOCAL_LLM_MODEL", "qwen3:8b")
     r = httpx.post(
         f"{url}/api/chat",
         json={
@@ -76,6 +83,7 @@ def generate_json(
     temperature: float | None = None,
     attempts: int = 2,
     timeout: float | None = None,
+    model: str | None = None,
 ) -> dict:
     backend = os.getenv("OVA_TEXT_BACKEND", "router").strip().lower()
     full = _full_prompt(prompt, schema)
@@ -88,7 +96,7 @@ def generate_json(
                 "devuelve el JSON completo:\n- " + "\n- ".join(errors)
             )
         raw = (
-            _local(ask, schema, max_tokens, 0.6 if temperature is None else temperature, timeout)
+            _local(ask, schema, max_tokens, 0.6 if temperature is None else temperature, timeout, model)
             if backend == "local"
             else _router(ask, max_tokens, llm_config, enabled_models, deadline)
         )

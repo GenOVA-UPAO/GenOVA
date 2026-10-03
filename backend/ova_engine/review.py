@@ -8,7 +8,7 @@ dato original.
 
 Variables: `OVA_CONTENT_REVIEW` (1 por defecto), `OVA_CONTENT_REVIEW_BUDGET_S`
 (tope de tiempo extra, 90 s), `OVA_CONTENT_REVIEW_PREFILTER` (0; Laya noul
-«¿trata de <concepto>?» por campo largo, ver README).
+«¿trata de <concepto>?» por campo largo), `OVA_CONTENT_REVIEW_MODEL` (modelo Ollama del revisor).
 """
 
 from __future__ import annotations
@@ -30,23 +30,18 @@ logger = structlog.get_logger(__name__)
 
 TIPOS = ("fuera_de_tema", "incorrecto", "incoherente", "vacio")
 # Campos que no son texto para el estudiante (se ignoran en la revisión).
-_SKIP_KEYS = {"prompt_imagen", "prompt_video", "image_placeholder", "icono", "emoji", "color", "id", "clave"}
-_MIN_LEN = 12  # textos más cortos (etiquetas, números) no se revisan
+_SKIP_KEYS = {"feedback_incorrecto", "distractores", "prompt_imagen", "prompt_video", "image_placeholder", "icono", "emoji", "color", "id", "clave"}
+_MIN_LEN = 40  # textos más cortos (títulos, etiquetas, nombres) no se revisan: no tienen contenido que verificar
+MAX_VERIFY = 4  # sospechas que se verifican por recurso (acota el coste)
 LONG_FIELD = 80  # umbral de «campo largo» para el pre-filtro
 
 REVIEW_SCHEMA = obj(
-    revision=arr(
-        obj(
-            campo=s(120),
-            veredicto={"type": "string", "enum": ["ok", *TIPOS]},
-            explicacion=s(120, min_len=0),
-        )
-    )
+    revision=arr(obj(n={"type": "integer"}, veredicto={"type": "string", "enum": ["ok", *TIPOS]}))
 )
 
 _PROMPT = """[ROL] Eres un revisor técnico estricto de material didáctico universitario de Bases de Datos.
 [CONCEPTO] «{concept}»
-[TAREA] Para CADA campo de la lista, en el mismo orden, da un veredicto:
+[TAREA] Para CADA campo de la lista (por su número entre corchetes), en orden, da un veredicto:
 - ok: el texto trata sobre «{concept}» (o es un detalle, paso o ejemplo razonable de él) y es correcto.
 - fuera_de_tema: el texto trata de OTRO tema de bases de datos distinto a «{concept}» (otro componente, otra técnica).
 - incorrecto: contiene una afirmación técnicamente falsa o engañosa sobre «{concept}».
@@ -55,8 +50,10 @@ _PROMPT = """[ROL] Eres un revisor técnico estricto de material didáctico univ
 [RESTRICCIONES]
 - Lee el contenido de cada campo con atención: mezclar un párrafo de otro tema dentro de un recurso es el error más frecuente.
 - No marques estilo, tono, humor, metáforas ni analogías razonables.
+- Las opciones de preguntas de opción múltiple pueden contener respuestas incorrectas A PROPÓSITO (distractores): no son error.
+- Las «descripcion_visual» y «prompt» son instrucciones para ilustrar: no las marques como vacías.
 - Ante la duda en detalles menores, «ok»; pero un tema distinto o un dato falso evidente NO es «ok».
-- «campo» debe ser EXACTAMENTE la ruta de la lista (p. ej. «vinetas[2].dialogo»). «explicacion» breve (vacía si ok).
+- Responde solo con el número del campo y el veredicto.
 [CAMPOS]
 {fields}
 """
@@ -100,11 +97,13 @@ def iter_text_fields(data, path: str = "") -> list[tuple[str, str]]:
     elif isinstance(data, list):
         for n, v in enumerate(data):
             out += iter_text_fields(v, f"{path}[{n}]")
-    elif isinstance(data, str) and len(data.strip()) >= _MIN_LEN:
+    elif isinstance(data, str) and len(data.strip()) >= _MIN_LEN and not _OPTION_TEXT.search(path):
         out.append((path, data))
     return out
 
 
+# Texto de las opciones de pregunta: incluye distractores incorrectos A PROPÓSITO.
+_OPTION_TEXT = re.compile(r"opciones\[\d+\]\.texto$")
 _TOKEN = re.compile(r"([^.\[\]]+)|\[(\d+)\]")
 
 
@@ -177,10 +176,11 @@ def _llm_json(prompt: str, schema: dict, *, deadline: float | None, llm_config, 
         llm_config=llm_config,
         enabled_models=enabled_models,
         deadline=deadline,
-        max_tokens=3000,
-        timeout=float(os.getenv("OVA_CONTENT_REVIEW_TIMEOUT_S", "75")),
+        max_tokens=1500,
+        timeout=float(os.getenv("OVA_CONTENT_REVIEW_TIMEOUT_S", "60")),
         temperature=0.0,
         attempts=1,
+        model=os.getenv("OVA_CONTENT_REVIEW_MODEL") or None,  # modelo local más fuerte solo para revisar
     )
 
 
@@ -195,7 +195,7 @@ def review_fields(
     """Problemas por ruta de campo (solo rutas existentes y tipos válidos)."""
     if not fields:
         return []
-    listing = "\n".join(f"- {p}: {t}" for p, t in fields)
+    listing = "\n".join(f"[{n}] ({p}) {t}" for n, (p, t) in enumerate(fields))
     out = _llm_json(
         _PROMPT.format(concept=concept, fields=listing),
         REVIEW_SCHEMA,
@@ -204,20 +204,25 @@ def review_fields(
         enabled_models=enabled_models,
     )
     texts = dict(fields)
-    known = set(texts)
     seen: set[str] = set()
     problems = []
     for pr in out.get("revision", []):
-        campo = pr["campo"].strip().strip("«»")
-        if pr["veredicto"] != "ok" and campo in known and campo not in seen:
-            seen.add(campo)
-            problems.append({"campo": campo, "tipo": pr["veredicto"], "explicacion": pr["explicacion"] or "sin detalle"})
+        n = pr["n"]
+        if pr["veredicto"] == "ok" or not 0 <= n < len(fields) or fields[n][0] in seen:
+            continue
+        seen.add(fields[n][0])
+        problems.append({"campo": fields[n][0], "tipo": pr["veredicto"], "explicacion": "revisión automática"})
     if verify_on():
-        problems = [
-            p
-            for p in problems
-            if _verify(concept, p, texts[p["campo"]], deadline=deadline, llm_config=llm_config, enabled_models=enabled_models)
-        ]
+        kept = []
+        for p in problems[:MAX_VERIFY]:
+            if deadline is not None and time.monotonic() >= deadline:
+                break  # sin tiempo para la segunda opinión: se descarta la sospecha
+            motivo = _verify(
+                concept, p, texts[p["campo"]], deadline=deadline, llm_config=llm_config, enabled_models=enabled_models
+            )
+            if motivo is not None:
+                kept.append({**p, "explicacion": motivo or p["explicacion"]})
+        problems = kept
     return problems
 
 
@@ -225,7 +230,7 @@ def verify_on() -> bool:
     return os.getenv("OVA_CONTENT_REVIEW_VERIFY", "1") != "0"
 
 
-def _verify(concept: str, problem: dict, text: str, *, deadline, llm_config, enabled_models) -> bool:
+def _verify(concept: str, problem: dict, text: str, *, deadline, llm_config, enabled_models) -> str | None:
     """Segunda opinión por campo señalado (solo se paga cuando hay sospecha): recorta falsos positivos."""
     try:
         out = _llm_json(
@@ -233,35 +238,32 @@ def _verify(concept: str, problem: dict, text: str, *, deadline, llm_config, ena
                 concept=concept,
                 campo=problem["campo"],
                 texto=text,
-                tipo=problem["tipo"],
-                explicacion=problem["explicacion"],
-                criterio=_CRITERIO[problem["tipo"]].format(concept=concept),
+                pregunta=_PREGUNTA[problem["tipo"]].format(concept=concept),
             ),
             _VERIFY_SCHEMA,
             deadline=deadline,
             llm_config=llm_config,
             enabled_models=enabled_models,
         )
-        return bool(out.get("confirmado"))
+        return None if out.get("respuesta_si") else out.get("motivo", "")
     except Exception:
-        return True  # sin verificación, se conserva la sospecha
+        return ""  # sin verificación, se conserva la sospecha
 
 
-_VERIFY_PROMPT = """[ROL] Eres un profesor de Bases de Datos que verifica una objeción.
+_VERIFY_PROMPT = """[ROL] Eres un profesor de Bases de Datos que evalúa un fragmento de un recurso didáctico.
 [CONCEPTO DEL RECURSO] «{concept}»
 [TEXTO DEL CAMPO «{campo}»]
 {texto}
-[OBJECIÓN DE UN REVISOR ({tipo})]
-{explicacion}
-[TAREA] Decide si la objeción es VÁLIDA: el texto realmente {criterio}. Si el texto es razonable, aceptable
-para un curso universitario sobre «{concept}» o la objeción es exagerada, responde confirmado=false.
+[PREGUNTA] {pregunta}
+Razona en «motivo» (una frase) y responde «respuesta_si» con true o false.
 """
-_VERIFY_SCHEMA = obj(confirmado=b(), motivo=s(200))
-_CRITERIO = {
-    "fuera_de_tema": "trata de un tema distinto a «{concept}» (no es un detalle ni un ejemplo del concepto)",
-    "incorrecto": "contiene una afirmación técnicamente falsa",
-    "incoherente": "es incoherente o se contradice",
-    "vacio": "no dice nada útil",
+_VERIFY_SCHEMA = obj(motivo=s(200), respuesta_si=b())
+# «sí» = el texto está bien; «no» confirma la sospecha del revisor.
+_PREGUNTA = {
+    "fuera_de_tema": "¿El texto trata sobre «{concept}» (o es un detalle, paso o ejemplo suyo), en vez de explicar otro tema distinto?",
+    "incorrecto": "¿Son técnicamente correctas todas las afirmaciones del texto sobre bases de datos?",
+    "incoherente": "¿El texto es coherente y tiene sentido como parte de un recurso sobre «{concept}»?",
+    "vacio": "¿El texto aporta información útil para estudiar «{concept}»?",
 }
 
 _FIX_PROMPT = """[ROL] Eres redactor de material didáctico universitario de Bases de Datos.

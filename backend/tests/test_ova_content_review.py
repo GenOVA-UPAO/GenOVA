@@ -34,18 +34,14 @@ def test_campos_de_prompt_no_se_revisan(data):
 
 
 def _verdicts(fields, bad):
-    return {
-        "revision": [
-            {"campo": p, "veredicto": bad.get(p, "ok"), "explicacion": "x" if p in bad else ""} for p, _ in fields
-        ]
-    }
+    return {"revision": [{"n": n, "veredicto": bad.get(p, "ok")} for n, (p, _) in enumerate(fields)]}
 
 
-def test_review_fields_devuelve_solo_rutas_conocidas(monkeypatch, data):
+def test_review_fields_ignora_indices_inventados(monkeypatch, data):
     fields = R.iter_text_fields(data)
     path = fields[1][0]
     out = _verdicts(fields, {path: "fuera_de_tema"})
-    out["revision"].append({"campo": "inventado[9]", "veredicto": "incorrecto", "explicacion": "x"})
+    out["revision"].append({"n": 999, "veredicto": "incorrecto"})
     monkeypatch.setenv("OVA_CONTENT_REVIEW_VERIFY", "0")
     monkeypatch.setattr(R, "_llm_json", lambda *a, **k: out)
     got = R.review_fields("Índices B-tree", fields)
@@ -58,8 +54,8 @@ def test_verificacion_descarta_falsos_positivos(monkeypatch, data):
     monkeypatch.setenv("OVA_CONTENT_REVIEW_VERIFY", "1")
 
     def fake(prompt, schema, **k):
-        if "confirmado" in str(schema):
-            return {"confirmado": False, "motivo": "razonable"}
+        if "respuesta_si" in str(schema):
+            return {"motivo": "razonable", "respuesta_si": True}
         return _verdicts(fields, {path: "incorrecto"})
 
     monkeypatch.setattr(R, "_llm_json", fake)
