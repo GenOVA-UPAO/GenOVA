@@ -28,6 +28,7 @@ from ova.application.use_cases import (
     ListTrashedOvas,
     PermanentlyDeleteOva,
     PhaseVersions,
+    ResourceFeedbackUseCase,
     RestoreOva,
     SaveOva,
     UpdateOvaMetadata,
@@ -37,11 +38,18 @@ from ova.infrastructure.sqlalchemy_catalog_repository import SqlAlchemyOvaCatalo
 from ova.infrastructure.sqlalchemy_chat_repository import SqlAlchemyChatRepository
 from ova.infrastructure.sqlalchemy_creation_repository import SqlAlchemyOvaCreationRepository
 from ova.infrastructure.sqlalchemy_editor_repository import SqlAlchemyOvaEditorRepository
+from ova.infrastructure.sqlalchemy_feedback_repository import SqlAlchemyFeedbackRepository
 from ova.infrastructure.sqlalchemy_lifecycle_repository import (
     SqlAlchemyOvaLifecycleRepository,
 )
 from ova.infrastructure.storage_packages import StoragePackageSource
 from scorm import build_scorm_zip_bytes
+
+
+def _engine_info(html: str) -> dict:
+    from ova_engine.html import engine_info
+
+    return engine_info(html)
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +75,7 @@ class OvaUseCases:
     batch_move_to_trash: BatchMoveOvasToTrash
     batch_restore: BatchRestoreOvas
     batch_permanently_delete: BatchDeleteOvas
+    resource_feedback: ResourceFeedbackUseCase
 
 
 def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
@@ -103,4 +112,5 @@ def build_ova(db: Session = Depends(get_db)) -> OvaUseCases:
         batch_move_to_trash=BatchMoveOvasToTrash(lifecycle),
         batch_restore=BatchRestoreOvas(lifecycle),
         batch_permanently_delete=BatchDeleteOvas(lifecycle, packages),
+        resource_feedback=ResourceFeedbackUseCase(editor, SqlAlchemyFeedbackRepository(db), _engine_info),
     )
