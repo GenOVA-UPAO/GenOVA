@@ -22,6 +22,20 @@ def _input(ova_id: str, fase_id: str, current_user, micro_version_id: str = "") 
     )
 
 
+@router.get("/{ova_id}/fases/{fase_id}/bloques", summary="Extraer los bloques de una fase")
+@router.get("/{ova_id}/phases/{fase_id}/blocks", summary="Extraer los bloques de una fase (alias)")
+def get_phase_blocks(
+    ova_id: str,
+    fase_id: str,
+    current_user=Depends(get_current_user),
+    use_cases: OvaUseCases = Depends(build_ova),
+):
+    try:
+        return use_cases.phase_versions.blocks(_input(ova_id, fase_id, current_user))
+    except OvaError as error:
+        return ova_error_to_response(error)
+
+
 @router.get("/{ova_id}/fases/{fase_id}/versiones", summary="Listar las versiones de una fase")
 def list_phase_versions(
     ova_id: str,
