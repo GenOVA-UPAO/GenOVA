@@ -4,13 +4,13 @@ import prometheus.plans.generate as gen
 from core.config import settings
 from ova_engine import text as text_mod
 from ova_engine.registry import get_spec
-from prometheus.plans.plan_map import TEMPLATE, TWO_STEP, degraded_plan, plan_for
+from prometheus.plans.plan_map import TEMPLATE, degraded_plan, plan_for
 
 
 def test_plan_template_si_hay_plantilla(monkeypatch):
     monkeypatch.setattr(settings, "ova_engine_templates", True)
     assert plan_for("engage", 1) == TEMPLATE
-    assert degraded_plan("engage", 1, TEMPLATE) == TWO_STEP
+    assert degraded_plan("engage", 1, TEMPLATE) is None
 
 
 def test_generate_resource_usa_texto_y_plantilla(monkeypatch):
