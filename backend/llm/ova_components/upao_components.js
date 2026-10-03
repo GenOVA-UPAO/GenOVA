@@ -638,6 +638,11 @@ ${s}
     connectedCallback() {
       const cat = this.getAttribute('category') || '';
       const id  = this.getAttribute('item-id')  || '';
+      // Un único control accesible en el host; listitem exigía un padre list
+      // y creaba un segundo foco interactivo dentro del botón de la plantilla.
+      if (!this.hasAttribute('role')) this.setAttribute('role', 'button');
+      if (!this.hasAttribute('tabindex')) this.tabIndex = 0;
+      if (!this.hasAttribute('aria-label')) this.setAttribute('aria-label', 'Elemento: ' + id);
       this.shadowRoot.innerHTML = this.css(`
         .item{padding:11px 16px;border:2px solid ${T.border};border-radius:${T.radiusSm};
           background:${T.surface};cursor:grab;font-size:.93rem;font-weight:500;
@@ -653,8 +658,7 @@ ${s}
           animation:upao-shake .3s ${T.ease}}
         .grip{color:${T.muted};font-size:.9rem;cursor:grab}
       `) + `
-      <div class="item" draggable="true" role="listitem" tabindex="0"
-        data-id="${id}" data-cat="${cat}" aria-label="Elemento: ${id}">
+      <div class="item" draggable="true" data-id="${id}" data-cat="${cat}">
         <span class="grip" aria-hidden="true">⠿</span>
         <slot></slot>
       </div>`;

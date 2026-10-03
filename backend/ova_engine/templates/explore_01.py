@@ -780,7 +780,7 @@ def render(data: dict, ctx: RenderContext) -> str:
       </div>
       <div class="ova-log-container">
         <h4 style="margin:0 0 6px;font-size:0.9rem">Bitácora del Motor (Event Log)</h4>
-        <ul class="ova-log-list" id="lab-event-log" role="log" aria-live="polite">
+        <ul class="ova-log-list" id="lab-event-log" aria-live="polite" aria-label="Bitácora del motor">
           <li>[00:00] Laboratorio iniciado. Buffer Cache inicializado con 4 ranuras disponibles.</li>
         </ul>
       </div>

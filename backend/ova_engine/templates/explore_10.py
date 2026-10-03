@@ -292,7 +292,7 @@ _STYLE = """
   color: var(--text, #0f172a);
 }
 .ova-cell-placeholder {
-  color: var(--muted, #94a3b8);
+  color: var(--text-muted, #5A6B85);
   font-style: italic;
 }
 .ova-pill {
@@ -305,7 +305,7 @@ _STYLE = """
 }
 .ova-pill--pending {
   background: #f1f5f9;
-  color: #64748b;
+  color: #475569;
 }
 .ova-pill--success {
   background: #dcfce7;
