@@ -16,17 +16,31 @@ class SqlAlchemyEditorPhaseRepository(EditorPhaseRepositoryPort):
     def __init__(self, db: Session):
         self._db = db
 
+    def get_ova_owner(self, ova_id: str) -> str | None:
+        if not is_uuid(ova_id):
+            return None
+        row = self._db.execute(
+            select(Ova.user_id).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
+        ).scalar_one_or_none()
+        return str(row) if row is not None else None
+
+    def phase_exists(self, ova_id: str, phase_id: str) -> bool:
+        if not is_uuid(ova_id) or not is_uuid(phase_id):
+            return False
+        row = self._db.execute(
+            select(OvaPhase.id)
+            .join(OvaVersion, OvaPhase.version_id == OvaVersion.id)
+            .where(OvaVersion.ova_id == ova_id, OvaPhase.id == phase_id)
+        ).scalar_one_or_none()
+        return row is not None
+
     def can_edit(self, ova_id: str, actor_id: str, is_admin: bool) -> bool:
         if is_admin:
             return True
-        if not is_uuid(ova_id):
+        owner = self.get_ova_owner(ova_id)
+        if owner is None:
             return False
-        row = self._db.execute(
-            select(Ova).where(Ova.id == ova_id, Ova.deleted_at.is_(None))
-        ).scalar_one_or_none()
-        if row is None:
-            return False
-        return str(row.user_id) == str(actor_id)
+        return owner == str(actor_id)
 
     def get_phase_content(self, ova_id: str, phase_id: str) -> str | None:
         if not is_uuid(ova_id) or not is_uuid(phase_id):

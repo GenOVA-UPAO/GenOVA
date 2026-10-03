@@ -26,6 +26,7 @@ from core.logging_setup import RequestContextMiddleware, configure_logging
 from core.openapi_ids import generate_operation_id
 from core.openapi_tags import OPENAPI_TAGS
 from core.rate_limit import limiter
+from editor.interface.http import router as editor_router
 from generation.interface.http.admin_guardrails_router import router as guardrails_router
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
@@ -280,6 +281,7 @@ app.include_router(ova_edit_router, prefix="/api/ovas")
 # en el proceso que queda pegado a un socket zombie de :8000.
 app.include_router(ova_chat_router, prefix="/api/ovas")
 app.include_router(ova_phase_version_router, prefix="/api/ovas")
+app.include_router(editor_router, prefix="/api/ovas")
 app.include_router(ova_add_phase_router, prefix="/api/ovas")
 app.include_router(ova_subelement_router, prefix="/api/ovas")
 app.include_router(users_router, prefix="/api/users")
@@ -295,5 +297,6 @@ app.include_router(guardrails_router, prefix="/api/admin")
 # de /api/ova/jobs. Se mantienen fuera del esquema para no romper clientes ya
 # desplegados; se retiran cuando ninguno los use.
 app.include_router(ova_router, prefix="/api/ova", include_in_schema=False)
+app.include_router(editor_router, prefix="/api/ova", include_in_schema=False)
 app.include_router(ova_jobs_router, prefix="/api/ova/jobs", include_in_schema=False)
 app.include_router(ova_jobs_stream_router, prefix="/api/ova/jobs", include_in_schema=False)
