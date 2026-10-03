@@ -74,3 +74,25 @@ def test_job_sin_recursos_se_planifica_al_crear(monkeypatch):
     assert [(r["phase_type"], r["resource_type"]) for r in rows] == [
         ("engage", "2"), ("engage", "4"), ("evaluate", "1"),
     ]
+
+
+def test_podcast_usa_el_backend_de_texto_local(monkeypatch):
+    import ova_engine.text as text_mod
+
+    monkeypatch.setenv("OVA_TEXT_BACKEND", "local")
+    calls = {}
+
+    class _Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"message": {"content": "Hola, hoy hablamos de índices."}}
+
+    def fake_post(url, json, timeout):
+        calls["url"] = url
+        return _Resp()
+
+    monkeypatch.setattr(text_mod.httpx, "post", fake_post)
+    assert text_mod.generate_plain("p") == "Hola, hoy hablamos de índices."
+    assert calls["url"].endswith("/api/chat")

@@ -40,14 +40,12 @@ def _gen_podcast(
         mono = f"Micro-podcast educativo sobre {concept}."
         audio = None
     else:
-        from llm.router import generar_texto
+        from ova_engine.text import generate_plain
 
-        mono = generar_texto(
+        mono = generate_plain(
             prompt_texto(rt, concept, contexto),
-            "texto",
-            700,
-            llm_config,
-            enabled_models,
+            llm_config=llm_config,
+            enabled_models=enabled_models,
             deadline=deadline,
         )
         mono = plain_monologue(mono)

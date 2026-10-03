@@ -258,3 +258,33 @@ def generate_json(
     raise TextGenerationError(
         f"Revisar y reintentar: error de esquema al generar el contenido ({detail})"
     )
+
+
+def generate_plain(
+    prompt: str,
+    *,
+    llm_config=None,
+    enabled_models=None,
+    deadline: float | None = None,
+    max_tokens: int = 700,
+) -> str:
+    """Texto libre (sin schema) con el mismo backend que `generate_json`: lo usa el
+    podcast, que no tiene plantilla. Con `OVA_TEXT_BACKEND=local` va a Ollama."""
+    if os.getenv("OVA_TEXT_BACKEND", "router").strip().lower() == "local":
+        url = os.getenv("OVA_LOCAL_LLM_URL", "http://localhost:11435").rstrip("/")
+        r = httpx.post(
+            f"{url}/api/chat",
+            json={
+                "model": os.getenv("OVA_LOCAL_LLM_MODEL", "qwen3:8b"),
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": False,
+                "think": False,
+                "options": {"num_predict": max_tokens, "temperature": 0.6},
+            },
+            timeout=float(os.getenv("OVA_LOCAL_LLM_TIMEOUT", "240")),
+        )
+        r.raise_for_status()
+        return r.json()["message"]["content"]
+    from llm.router import generar_texto
+
+    return generar_texto(prompt, "texto", max_tokens, llm_config, enabled_models, deadline=deadline)
