@@ -1,0 +1,44 @@
+{
+  "concept": "roles y privilegios",
+  "params": {
+    "num_deliverables": 4
+  },
+  "data": {
+    "titulo": "Gestión de Acceso en una Empresa Ficticia",
+    "objetivo": "El estudiante debe diseñar roles y privilegios en una base de datos Oracle para una empresa ficticia. Resultado verificable: script de creación de roles y asignación de permisos.",
+    "entregables": [
+      "Define los roles necesarios para la empresa según sus funciones.",
+      "Crea roles y privilegios en Oracle con sentencias SQL.",
+      "Documenta la asignación de usuarios a roles en un diagrama.",
+      "Ejecuta y verifica la funcionalidad de los roles y privilegios."
+    ],
+    "dataset_sugerido": "Empresa de logística con 4 tablas: Clientes (1000 filas), Pedidos (5000), Productos (2000), Empleados (150). Tablas en tablespace LOGISTICA. Usuarios: Administrador, Vendedor, Gerente, Contable.",
+    "rubrica": [
+      {
+        "criterio": "Definición de roles",
+        "basico": "Identifica roles sin justificar su necesidad.",
+        "competente": "Define roles según funciones, pero sin detalle de privilegios.",
+        "avanzado": "Define roles con justificación funcional y asignación de privilegios."
+      },
+      {
+        "criterio": "Creación de privilegios",
+        "basico": "Crea roles sin privilegios específicos.",
+        "competente": "Asigna privilegios básicos a roles, pero sin restricciones.",
+        "avanzado": "Asigna privilegios específicos con limitaciones y autorizaciones."
+      },
+      {
+        "criterio": "Documentación de roles",
+        "basico": "Documenta roles sin representación visual.",
+        "competente": "Documenta roles en texto sin diagrama.",
+        "avanzado": "Documenta roles con diagrama y descripción clara."
+      },
+      {
+        "criterio": "Verificación de funcionalidad",
+        "basico": "Ejecuta script sin verificar permisos asignados.",
+        "competente": "Ejecuta script y verifica permisos básicos.",
+        "avanzado": "Ejecuta script y verifica permisos con pruebas de acceso."
+      }
+    ],
+    "cierre": "Aplicar los conceptos en un caso real mediante la evaluación de necesidades de seguridad y accesos en una empresa existente, usando Oracle como herramienta de gestión."
+  }
+}

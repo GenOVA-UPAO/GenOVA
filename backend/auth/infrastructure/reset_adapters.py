@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -31,6 +31,7 @@ class SqlAlchemyPasswordResetTokenRepository:
         )
 
     def replace_for_user(self, user_id: UUID, token: str, expires_at: datetime) -> None:
+        self.find_user(user_id)
         self._db.execute(
             PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user_id)
         )
@@ -40,8 +41,17 @@ class SqlAlchemyPasswordResetTokenRepository:
         commit_or_500(self._db, "request_password_reset")
 
     def find_by_token(self, token: str) -> PasswordResetTokenRecord | None:
+        # Only discover the owner first. All credential mutations acquire the
+        # user lock BEFORE token locks/deletes, avoiding a reset/change deadlock.
+        user_id = self._db.execute(
+            select(PasswordResetToken.user_id).where(PasswordResetToken.token == token)
+        ).scalar_one_or_none()
+        if user_id is None or not self.find_user(user_id):
+            return None
+        # Recheck after waiting: a change/reset may have deleted the token.
         row = self._db.execute(
             select(PasswordResetToken).where(PasswordResetToken.token == token)
+            .with_for_update().execution_options(populate_existing=True)
         ).scalar_one_or_none()
         if row is None:
             return None
@@ -59,13 +69,15 @@ class SqlAlchemyPasswordResetTokenRepository:
 
     def find_user(self, user_id: UUID) -> bool:
         self._user_row = self._db.execute(
-            select(User).where(User.id == user_id)
+            select(User).where(User.id == user_id).with_for_update()
+            .execution_options(populate_existing=True)
         ).scalar_one_or_none()
         return self._user_row is not None
 
     def apply_new_password(self, user_id: UUID, password_hash: str) -> None:
         assert self._user_row is not None and self._user_row.id == user_id
         self._user_row.password_hash = password_hash
+        self._user_row.password_changed_at = datetime.now(UTC)
         self._user_row.failed_login_attempts = 0
         self._user_row.locked_until = None
         self._db.execute(

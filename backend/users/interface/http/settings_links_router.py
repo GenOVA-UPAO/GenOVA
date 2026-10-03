@@ -3,7 +3,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from auth.dependencies import get_current_user, require_permission
 from core.rate_limit import limiter
@@ -22,7 +22,7 @@ class InviteRequest(BaseModel):
 
 
 class AcceptRequest(BaseModel):
-    code: str
+    code: str = Field(min_length=1, max_length=45)
 
 
 @router.get("/me/links", summary="Listar los vínculos propios")

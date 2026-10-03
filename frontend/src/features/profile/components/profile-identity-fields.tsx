@@ -63,7 +63,12 @@ export function ProfileIdentityFields({
         />
       </FormField>
 
-      <FormField id="universityId" label="Código universitario (UPAO)" hint={UNI_HINT} error={uniError}>
+      <FormField
+        id="universityId"
+        label="Código universitario (UPAO)"
+        hint={UNI_HINT}
+        error={uniError}
+      >
         <Input
           id="universityId"
           type="text"

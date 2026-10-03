@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, require_permission
 from core.database import get_db
 from core.text import ova_title
 from models import User
@@ -56,7 +56,7 @@ class SaveOvaRequest(BaseModel):
 @router.post("/save", tags=["OVA · CRUD"], summary="Guardar una OVA generada")
 def save_ova(
     payload: SaveOvaRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission("create_ova")),
     use_cases: OvaUseCases = Depends(build_ova),
 ):
     title = ova_title(payload.prompt)

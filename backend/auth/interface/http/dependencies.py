@@ -1,12 +1,17 @@
+from datetime import UTC
+from functools import cache
+from uuid import UUID
+
 import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyCookie, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import literal, select
 from sqlalchemy.orm import Session
 
+from auth.interface.http.csrf import check_cookie_csrf
 from core.config import settings
 from core.database import get_db
-from core.security import JWT_ALGORITHM, JWT_SECRET
+from core.security import decode_session_token
 from models import RevokedToken, Role, User, UserRole
 
 _COOKIE_NAME = "genova_token"
@@ -22,6 +27,7 @@ def _extract_token(request: Request, creds: HTTPAuthorizationCredentials | None)
     """Prefer the httpOnly cookie; fall back to Bearer when explicitly enabled."""
     cookie = request.cookies.get(_COOKIE_NAME)
     if cookie:
+        check_cookie_csrf(request)
         return cookie
     if _ACCEPT_BEARER and creds and creds.credentials:
         return creds.credentials
@@ -29,6 +35,22 @@ def _extract_token(request: Request, creds: HTTPAuthorizationCredentials | None)
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No autenticado.",
     )
+
+
+def _reject_stale_session(user: User, payload: dict) -> None:
+    # Corte de credenciales: un cambio/reset de contraseña invalida las sesiones
+    # emitidas antes (``iat`` en segundos enteros; ``<`` estricto para no tumbar la
+    # sesión nueva creada en el mismo segundo).
+    changed_at = user.password_changed_at
+    if changed_at is not None:
+        if changed_at.tzinfo is None:
+            changed_at = changed_at.replace(tzinfo=UTC)
+        iat = payload.get("iat")
+        if not isinstance(iat, int | float) or iat < int(changed_at.timestamp()):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Sesión invalidada por un cambio de contraseña. Inicia sesión nuevamente.",
+            )
 
 
 def get_current_user(
@@ -39,7 +61,7 @@ def get_current_user(
 ) -> User:
     token = _extract_token(request, creds)
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = decode_session_token(token)
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(
@@ -51,6 +73,14 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token de autenticación inválido o expirado.",
         ) from exc
+
+    try:
+        user_uuid = UUID(str(user_id))
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token de autenticación inválido o sin identificador de usuario.",
+        ) from None
 
     # Un solo round-trip para las tres comprobaciones (RN-001): el token revocado
     # y el rol de administrador viajan como EXISTS correlacionados junto a la fila
@@ -67,7 +97,7 @@ def get_current_user(
         .exists()
     )
 
-    row = db.execute(select(User, revoked_flag, admin_flag).where(User.id == user_id)).first()
+    row = db.execute(select(User, revoked_flag, admin_flag).where(User.id == user_uuid)).first()
     if row is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -84,6 +114,7 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Cuenta desactivada.",
         )
+    _reject_stale_session(user, payload)
     # Cache de petición: `ova.helpers._is_admin` lo lee en vez de repetir el JOIN
     # (14 llamadores hacían una consulta extra cada uno).
     user.admin_flag_cached = bool(is_admin)
@@ -115,7 +146,10 @@ def require_admin(
     return current_user
 
 
+@cache
 def require_permission(required_permission: str):
+    """Dependency que exige el permiso (o ser administrador). Cacheada: la misma
+    cadena devuelve el mismo callable, de modo que los tests pueden sobrescribirlo."""
     def dependency(
         current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
     ) -> User:
@@ -149,4 +183,5 @@ def require_permission(required_permission: str):
                 )
         return current_user
 
+    dependency.required_permission = required_permission  # type: ignore[attr-defined]
     return dependency

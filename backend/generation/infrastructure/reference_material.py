@@ -37,7 +37,7 @@ def bind_references_to_ova(db: Session, user_id: str, upload_ids: list[str], ova
 
     claimed = claim_uploads(user_id, upload_ids, ova_id)
     try:
-        tie_uploads_to_ova(db, upload_ids, ova_id)
+        tie_uploads_to_ova(db, upload_ids, ova_id, user_id=str(user_id))
     except Exception:  # noqa: BLE001 — el RAG es best-effort
         logger.exception("No se pudieron ligar los chunks al OVA", ova_id=ova_id)
         db.rollback()

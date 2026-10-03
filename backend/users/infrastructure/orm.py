@@ -50,7 +50,12 @@ class User(Base):
     # Per-user provider API keys (never logged, returned masked):
     # {groq, openrouter, opencode, siliconflow, runware, falai}
     user_api_keys = Column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    # Último cambio/reset de contraseña: los JWT emitidos antes dejan de valer.
+    password_changed_at = Column(DateTime(timezone=True))
     totp_secret = Column(String(64))
+    pending_email = Column(String(255))
+    pending_email_token_hash = Column(String(64))
+    pending_email_expires_at = Column(DateTime(timezone=True))
     totp_enabled = Column(Boolean, nullable=False, default=False, server_default=text("false"))
     totp_backup_codes = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -82,6 +87,8 @@ class UserLink(Base):
     )
     invite_email = Column(String(255), nullable=True, index=True)
     code_hash = Column(String(255), nullable=False)
+    code_selector = Column(String(12), unique=True, index=True)
+    code_attempts = Column(Integer, nullable=False, default=0, server_default="0")
     status = Column(String(20), nullable=False, default="pending", server_default="pending")
     expires_at = Column(DateTime(timezone=True), nullable=False)
     consumed_at = Column(DateTime(timezone=True), nullable=True)

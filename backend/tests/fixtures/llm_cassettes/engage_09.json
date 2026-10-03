@@ -1,0 +1,56 @@
+{
+ "version": 1,
+ "entries": [
+  {
+   "key": "3d6133ea4ec2966fc6ef5cd1",
+   "msgs_key": "c90be18518fb2ad455e621d7",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 8192,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Diseñador de escape rooms educativas digitales.\n[CURSO] Recurso para el curso universitario «Sistemas de Gestión de Base de Datos» (UPAO, Ing. de Computación y Sistemas, 5.º ciclo), orientado a la administración de bases de datos (rol del DBA) sobre Oracle 11g o superior. Audiencia: estudiantes que ya saben SQL básico (SELECT, JOIN, DDL) y modelado relacional, pero que se inician en la admin",
+    "tail": "ambiar de dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del curso de bases de datos, machine learning o ciencia de datos). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 4216
+   },
+   "response": {
+    "content": "```json\n{\n  \"acertijos\": [\n    {\n      \"numero\": 1,\n      \"escenario\": \"Estás en una cocina con una caja de azúcar y un fuego encendido encima de una sartén. Debes usar estos materiales para hacer algo útil, pero solo puedes quemar el azúcar. ¿Qué puedes hacer?\",\n      \"opcion_A\": \"Puedo arder el azúcar en la sartén y hacer café con el vapor.\",\n      \"opcion_B\": \"Puedo combinar el azúcar con agua y calentarlas juntas para hacer una preparación.\",\n      \"respuesta_correcta\": \"A\",\n      \"explicacion_conexion\": \"La fase luminosa es como quemas el azúcar; la luz solar se transforma en calor y energía química, generando azúcar.\"\n    },\n    {\n      \"numero\": 2,\n      \"escenario\": \"Estás en un laboratorio y tienes un vidrio con agua y una especie de 'alquimia' que parece hacer crecer un 'hecho' en el agua. ¿Qué es la alquimia que estás usando?\",\n      \"opcion_A\": \"La alquimia química que estás usando es simplemente el agua y el aire.\",\n      \"opcion_B\": \"La alquimia química que estás usando es el suministro de energía luminosa a través del sol, que produce una especie de crecimiento en el agua.\",\n      \"respuesta_correcta\": \"B\",\n      \"explicacion_conexion\": \"El ciclo de Calvin es como la alquimia de crecimiento; la energía luminosa se transforma en energía química para alimento en el agua, creando un 'hecho' en forma de crecimiento.\"\n    },\n    {\n      \"numero\": 3,\n      \"escenario\": \"Estás en un jardín y tienes una plantita y una lámpara de led intensamente encendida. La plantita está creciendo todo el tiempo. ¿Qué es lo que está haciendo la lámpara?\",\n      \"opcion_A\": \"La lámpara está simplemente proporcionando luz.\",\n      \"opcion_B\": \"La lámpara está proporcionando luz y energía química para que la plantita crezca.\",\n      \"respuesta_correcta\": \"B\",\n      \"explicacion_conexion\": \"La fase luminosa y el ciclo de Calvin son como la luz proporcionando energía para que la planta crezca; la luz solar y la luz del LED están dando energía para que la planta se alimente y crezca.\"\n    }\n  ]\n}\n```",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "3792b6838399eaa03f9f2a09",
+   "msgs_key": "43830bf6b196aab3424b284c",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 24000,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Desarrollador educativo.\n[CURSO] Recurso para el curso universitario «Sistemas de Gestión de Base de Datos» (UPAO, Ing. de Computación y Sistemas, 5.º ciclo), orientado a la administración de bases de datos (rol del DBA) sobre Oracle 11g o superior. Audiencia: estudiantes que ya saben SQL básico (SELECT, JOIN, DDL) y modelado relacional, pero que se inician en la administración del SGBD. Tem",
+    "tail": "ambiar de dominio ni de subtema: no sustituyas el tema por otro (p.ej. otro tema del curso de bases de datos, machine learning o ciencia de datos). Si dudas, desarrolla ESE concepto; no inventes otro.",
+    "chars": 20318
+   },
+   "response": {
+    "content": "```html\n<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>SIMULADOR · La fotosíntesis</title>\n  <style>\n    .fotosintesis-svg {\n      viewBox=\"0 0 800 600\" preserveAspectRatio=\"xMidYMid meet\">\n        <circle cx=\"400\" cy=\"300\" r=\"20\" fill=\"green\" />\n        <line x1=\"400\" y1=\"100\" x2=\"400\" y2=\"500\" stroke=\"black\" stroke-width=\"5\" />\n        <polygon points=\"350,100 250,200 400,500 550,200\" fill=\"green\" />\n        <text x=\"400\" y=\"350\" text-anchor=\"middle\" font-size=\"36\">Plantas</text>\n        <text x=\"400\" y=\"150\" text-anchor=\"middle\" font-size=\"24\">Fase Luminosa</text>\n        <text x=\"400\" y=\"450\" text-anchor=\"middle\" font-size=\"24\">Ciclo de Calvin</text>\n        <rect x=\"200\" y=\"200\" width=\"400\" height=\"200\" fill=\"none\" stroke=\"black\" stroke-width=\"2\"/>\n      </svg>\n    </style>\n</head>\n<body>\n  <main class=\"ova-container\">\n    <upao-header eyebrow=\"SIMULADOR\" title=\"La fotosíntesis\"></upao-header>\n    <upao-objective>Al terminar podrás explicar cómo las plantas usan la energía solar para producir energía química.</upao-objective>\n    <section class=\"ova-card\">\n      <upao-figure caption=\"Modelo simplificado de la fotosíntesis\">fotosintesis-svg</upao-figure>\n      <upao-example title=\"Ejemplo trabajado\" aria-labelledby=\"example-text\">\n        <p id=\"example-text\">Considera la siguiente escenario: una planta recibe luz solar a través de sus hojas, que almacenan energía en sus moléculas de azúcar.</p>\n      </upao-example>\n      <upao-question number=\"1\" prompt=\"¿Qué parte de la planta realiza la fase luminosa de la fotosíntesis?\">\n        <upao-choice value=\"A\" correct=\"true\" feedback=\"¡Correcto! La fase luminosa ocurre en las hojas y usa la luz solar para transformar la dióxido de carbono y el agua en glucosa y oxígeno.\" group=\"q1\">Hojas</upao-choice>\n        <upao-choice value=\"B\" incorrect=\"true\" feedback=\"Incorrecto. La fase luminosa ocurre en las hojas y no en las raíces.\" group=\"q1\">Raíces</upao-choice>\n        <upao-choice value=\"C\" incorrect=\"true\" feedback=\"Incorrecto. La fase luminosa ocurre en las hojas y no en las flores.\" group=\"q1\">Flores</upao-choice>\n        <upao-choice value=\"D\" incorrect=\"true\" feedback=\"Incorrecto. La fase luminosa ocurre en las hojas y no en los tallos.\" group=\"q1\">Tallos</upao-choice>\n      </upao-question>\n      <upao-summary>La fase luminosa de la fotosíntesis ocurre en las hojas de las plantas y usa la luz solar para transformar la dióxido de carbono y el agua en glucosa y oxígeno.</upao-summary>\n      <upao-status state=\"success\">Paso completado</upao-status>\n    </section>\n    <div class=\"ova-progress\" aria-hidden=\"true\"><span style=\"width:0%\"></span></div>\n    <p id=\"estado\" aria-live=\"polite\" class=\"ova-muted\"></p>\n    <button class=\"ova-btn\" id=\"finalizar\" disabled>Finalizar actividad</button>\n  </main>\n  <script>\n    (function(){\n      const fin = document.getElementById('finalizar');\n      fin.addEventListener('click', () => {\n        document.getElementById('estado').textContent = '✓ Actividad completada';\n        _scormComplete();\n      });\n    })();\n  </script>\n</body>\n</html>\n```",
+    "finish_reason": "stop"
+   }
+  },
+  {
+   "key": "909200fcf578ee0674e072be",
+   "msgs_key": "c1d13ca5fde4d2d2d05b5761",
+   "provider": "openrouter",
+   "model_id": "deepseek/deepseek-v4-flash",
+   "max_tokens": 1024,
+   "n_messages": 1,
+   "prompt": {
+    "head": "[ROL] Evaluador pedagógico de recursos educativos HTML5.\n[FASE_5E] engage | [TIPO_RECURSO] 9 | [CONCEPTO] \"La fotosíntesis: cómo las plantas transforman la energía luminosa en energía química (fase luminosa y ciclo de Calvin), para estudiantes de primer ciclo universitario\"\n[TAREA] Evalúa este recurso según 6 criterios y responde SOLO con JSON válido:\n1. Fidelidad pedagógica: ¿enseña el concepto y",
+    "tail": "ctadas server-side, NO incluidas en el extracto: no las\n  cuentes como CSS/JS ausente.\n- Las imágenes/audio/video aparecen como [img/audio/video:data-uri NKB]:\n  juzga su uso y densidad, no sus bytes.",
+    "chars": 6963
+   },
+   "response": {
+    "content": "```json\n{\n  \"puntaje\": 85,\n  \"problemas\": [\n    \"La interactividad es limitada, solo se requiere un botón finalizar con feedback sencillo.\",\n    \"El contenido podría ser más interactivo con drag & drop o el ciclo visualizado en animación.\",\n    \"Aunque hay handler con addEventListener, no se requiere una interactividad mayor.\",\n    \"El extracto muestra una paleta UPAO fija, lo cual es aceptable pero podría ser más interesante.\",\n    \"La numeración 01/02/03 se usa para las tarjetas, pero ninguna tiene una secuencia real detrás.\"\n  ],\n  \"veredicto\": \"aceptar\"\n}\n```",
+    "finish_reason": "stop"
+   }
+  }
+ ]
+}

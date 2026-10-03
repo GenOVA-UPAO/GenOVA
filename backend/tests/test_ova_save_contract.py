@@ -42,7 +42,9 @@ class TraceRecordingRepository:
         self.scorm_package_args = (ova_id, version_id, storage_key, file_path)
         self.events.append(f"set_scorm_package:{storage_key}:{file_path}")
 
-    def tie_uploads_to_ova(self, upload_ids: tuple[str, ...], ova_id: str) -> None:
+    def tie_uploads_to_ova(
+        self, upload_ids: tuple[str, ...], ova_id: str, actor_id: str
+    ) -> None:
         self.events.append(f"tie_uploads:{ova_id}:{len(upload_ids)}")
         self.tied_uploads = (upload_ids, ova_id)
         if self.raise_on_rag:

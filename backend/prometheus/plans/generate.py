@@ -257,6 +257,28 @@ def _gen_two_step(
     return ResourceResult(attach_video(html, pending_video), defects, json_data)
 
 
+def _gen_template(
+    spec, concept, contexto, theme, image_settings, resource_config,
+    llm_config, enabled_models, deadline, *, fake: bool,
+) -> ResourceResult:
+    from ova_engine.pipeline import generate_with_template
+    from prometheus.engine.validate import resource_defects
+
+    html, data = generate_with_template(
+        spec,
+        concept,
+        contexto=contexto,
+        theme=theme,
+        image_settings=image_settings,
+        resource_config=resource_config,
+        llm_config=llm_config,
+        enabled_models=enabled_models,
+        deadline=deadline,
+        fake=fake,
+    )
+    return ResourceResult(html, resource_defects(html, concept), data)
+
+
 def generate_resource(
     phase: str,
     rt: int,
@@ -281,9 +303,21 @@ def generate_resource(
 
     from core.config import settings
     from prometheus.engine.budget import deadline_at
-    from prometheus.plans.plan_map import DIRECT_CODE, PODCAST, plan_for
+    from prometheus.plans.plan_map import DIRECT_CODE, PODCAST, TEMPLATE, plan_for
 
     n = int(rt)
+    # Motor por plantillas (ova_engine): el LLM solo escribe texto y el HTML sale
+    # de una plantilla probada. Se usa siempre que exista plantilla para el
+    # recurso, salvo que se pida explícitamente otro plan (p. ej. degradación).
+    if settings.ova_engine_templates and plan in (None, TEMPLATE):
+        from ova_engine.registry import get_spec
+
+        spec = get_spec(phase, n)
+        if spec is not None:
+            return _gen_template(
+                spec, concept, contexto, theme or {}, image_settings, resource_config,
+                llm_config, enabled_models, deadline, fake=settings.llm_fake,
+            )
     if settings.llm_fake:
         from prometheus.engine.fake_invoke import fake_standalone_html
         from prometheus.engine.fake_media import with_fake_media

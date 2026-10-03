@@ -1,0 +1,122 @@
+{
+  "concept": "optimización de consultas con planes de ejecución",
+  "params": {
+    "num_questions": 6,
+    "time_seconds": 91
+  },
+  "data": {
+    "titulo": "¡Optimiza tu mente! Planes de Ejecución",
+    "reglas": "Responde 6 preguntas en 91 segundos. Bonus por velocidad. Preguntas de definición y estructura.",
+    "preguntas": [
+      {
+        "enunciado": "¿Qué es un plan de ejecución en una consulta SQL?",
+        "opciones": [
+          {
+            "texto": "Estructura lógica de la consulta",
+            "correcta": false
+          },
+          {
+            "texto": "Representación física de la consulta",
+            "correcta": false
+          },
+          {
+            "texto": "Secuencia de operaciones para ejecutar la consulta",
+            "correcta": true
+          }
+        ],
+        "explicacion": "El plan de ejecución muestra el orden y las operaciones para ejecutar una consulta de forma eficiente."
+      },
+      {
+        "enunciado": "¿Cuál es el objetivo de la optimización de consultas?",
+        "opciones": [
+          {
+            "texto": "Aumentar el tiempo de ejecución",
+            "correcta": false
+          },
+          {
+            "texto": "Reducir el uso de recursos",
+            "correcta": true
+          },
+          {
+            "texto": "Aumentar la complejidad de la consulta",
+            "correcta": false
+          }
+        ],
+        "explicacion": "La optimización busca ejecutar consultas de manera eficiente, reduciendo el uso de recursos del sistema."
+      },
+      {
+        "enunciado": "¿Qué estructura se usa para representar un plan de ejecución?",
+        "opciones": [
+          {
+            "texto": "Árbol de ejecución",
+            "correcta": true
+          },
+          {
+            "texto": "Diagrama de flujo",
+            "correcta": false
+          },
+          {
+            "texto": "Gráfico de dependencias",
+            "correcta": false
+          }
+        ],
+        "explicacion": "El plan de ejecución se representa comúnmente como un árbol que muestra las operaciones y sus relaciones."
+      },
+      {
+        "enunciado": "¿Qué es un índice en el contexto de optimización?",
+        "opciones": [
+          {
+            "texto": "Estructura de datos para acceso rápido",
+            "correcta": true
+          },
+          {
+            "texto": "Estructura de datos para almacenamiento",
+            "correcta": false
+          },
+          {
+            "texto": "Estructura de datos para visualización",
+            "correcta": false
+          }
+        ],
+        "explicacion": "Un índice es una estructura de datos que permite acceder a registros de manera rápida en una base de datos."
+      },
+      {
+        "enunciado": "¿Qué significa el término 'costo' en optimización de consultas?",
+        "opciones": [
+          {
+            "texto": "Tiempo de ejecución estimado",
+            "correcta": true
+          },
+          {
+            "texto": "Número de filas afectadas",
+            "correcta": false
+          },
+          {
+            "texto": "Memoria utilizada",
+            "correcta": false
+          }
+        ],
+        "explicacion": "El costo es una estimación del tiempo o recursos necesarios para ejecutar una consulta."
+      },
+      {
+        "enunciado": "¿Qué se busca al analizar el plan de ejecución?",
+        "opciones": [
+          {
+            "texto": "Identificar operaciones innecesarias",
+            "correcta": true
+          },
+          {
+            "texto": "Identificar operaciones necesarias",
+            "correcta": false
+          },
+          {
+            "texto": "Identificar operaciones comunes",
+            "correcta": false
+          }
+        ],
+        "explicacion": "El análisis del plan de ejecución busca identificar operaciones que pueden optimizarse para mejorar el rendimiento."
+      }
+    ],
+    "cierre": "Los errores típicos incluyen confundir plan de ejecución con consulta lógica, y no entender el rol del costo en la optimización."
+  }
+}

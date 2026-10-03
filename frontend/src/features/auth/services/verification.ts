@@ -10,7 +10,7 @@ async function readMessage(res: Response): Promise<VerifyResponse> {
 }
 
 export async function verifyEmail(token: string): Promise<VerifyResponse> {
-  const res = await apiFetch("/auth/verify-email", {
+  const res = await apiFetch("/api/auth/verify-email", {
     method: "POST",
     body: JSON.stringify({ token }),
   });
@@ -22,7 +22,7 @@ export async function verifyEmail(token: string): Promise<VerifyResponse> {
 }
 
 export async function resendVerification(email: string): Promise<string> {
-  const res = await apiFetch("/auth/resend-verification", {
+  const res = await apiFetch("/api/auth/resend-verification", {
     method: "POST",
     body: JSON.stringify({ email }),
   });

@@ -1,0 +1,3 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pending_email VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pending_email_token_hash VARCHAR(64);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pending_email_expires_at TIMESTAMPTZ;

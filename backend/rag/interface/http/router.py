@@ -48,7 +48,7 @@ def rag_health(db: Session = Depends(get_db)) -> dict:
 )
 def list_chunks_by_upload(
     upload_id: str,
-    current_user: User = Depends(get_current_user),  # noqa: ARG001  (auth only)
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
-    return {"items": chunks_for_upload(db, upload_id)}
+    return {"items": chunks_for_upload(db, upload_id, user_id=str(current_user.id))}

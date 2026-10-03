@@ -1,0 +1,109 @@
+{
+  "concept": "roles y privilegios",
+  "params": {
+    "num_pauses": 4
+  },
+  "data": {
+    "titulo": "Roles y Privilegios: El Poder en la Base de Datos",
+    "gancho": "¿Qué pasa si un usuario tiene más poder de lo debido? Explora cómo los roles controlan el acceso y descubre el dilema de los privilegios.",
+    "guion_segmentos": [
+      {
+        "segundo": "0:00 - 0:20",
+        "visual": "Animación de una base de datos con usuarios conectándose, algunos con identidades ocultas.",
+        "narracion": "En un sistema de bases de datos, cada usuario tiene un rol. Pero ¿qué pasa si se da más poder de lo necesario?"
+      },
+      {
+        "segundo": "0:20 - 0:45",
+        "visual": "Escena de un administrador de base de datos asignando permisos a un usuario, con un mensaje de aviso en rojo.",
+        "narracion": "Al asignar permisos, se debe considerar: ¿qué consecuencias podría tener otorgar demasiado poder?"
+      },
+      {
+        "segundo": "0:45 - 1:10",
+        "visual": "Animación de un usuario con acceso total modificando registros de forma ilegal, con un mensaje de error en la pantalla.",
+        "narracion": "Los privilegios no solo permiten acceder, también pueden causar daño. ¿Cómo se previene esto?"
+      },
+      {
+        "segundo": "1:10 - 1:35",
+        "visual": "Escena de un panel de control donde se muestran roles y sus permisos, con un usuario intentando acceder a algo restringido.",
+        "narracion": "Los roles son como identidades dentro de la base de datos. ¿Cómo se usan para controlar el acceso?"
+      },
+      {
+        "segundo": "1:35 - 2:00",
+        "visual": "Animación de un sistema de seguridad con roles y privilegios bien definidos, mostrando cómo se protege la base de datos.",
+        "narracion": "Los roles y privilegios son la base de la seguridad. ¿Cómo se equilibran para evitar riesgos?"
+      }
+    ],
+    "pausas": [
+      {
+        "numero": 1,
+        "momento": "En 0:20",
+        "pregunta_prediccion": "¿Qué podría suceder si un usuario recibe permisos más allá de su rol?",
+        "opciones": [
+          {
+            "texto": "El sistema se vuelve inseguro y vulnerable.",
+            "feedback": "Correcto. Más poder sin control puede llevar a accesos no autorizados.",
+            "correcta": true
+          },
+          {
+            "texto": "El sistema se vuelve más rápido y eficiente.",
+            "feedback": "Incorrecto. Otorgar más poder sin control no mejora la seguridad.",
+            "correcta": false
+          }
+        ]
+      },
+      {
+        "numero": 2,
+        "momento": "En 0:45",
+        "pregunta_prediccion": "¿Qué podría pasar si un usuario tiene acceso total a la base de datos?",
+        "opciones": [
+          {
+            "texto": "El sistema se corrompe y se pierden datos.",
+            "feedback": "Incorrecto. La corrupción no es la consecuencia directa de tener acceso total.",
+            "correcta": false
+          },
+          {
+            "texto": "El usuario podría alterar información sin autorización.",
+            "feedback": "Correcto. El acceso total permite acciones que no deben ser permitidas.",
+            "correcta": true
+          }
+        ]
+      },
+      {
+        "numero": 3,
+        "momento": "En 1:10",
+        "pregunta_prediccion": "¿Qué ocurre cuando un usuario intenta acceder a algo que no le corresponde?",
+        "opciones": [
+          {
+            "texto": "El sistema le da el acceso de todos modos.",
+            "feedback": "Incorrecto. Los roles limitan el acceso para evitar errores.",
+            "correcta": false
+          },
+          {
+            "texto": "El sistema le bloquea el acceso y muestra un mensaje de error.",
+            "feedback": "Correcto. Los sistemas bloquean el acceso para proteger la base de datos.",
+            "correcta": true
+          }
+        ]
+      },
+      {
+        "numero": 4,
+        "momento": "En 1:35",
+        "pregunta_prediccion": "¿Cómo se garantiza la seguridad con roles y privilegios?",
+        "opciones": [
+          {
+            "texto": "Se otorgan permisos a todos los usuarios igualmente.",
+            "feedback": "Incorrecto. Otorgar permisos a todos no garantiza la seguridad.",
+            "correcta": false
+          },
+          {
+            "texto": "Se definen roles con permisos específicos según el usuario.",
+            "feedback": "Correcto. Los roles permiten controlar el acceso con precisión.",
+            "correcta": true
+          }
+        ]
+      }
+    ],
+    "prompt_video": "Animación técnica moderna que muestra una base de datos con usuarios, roles y privilegios. La escena comienza con una conexión a la base de datos, muestra un administrador asignando permisos, un usuario intentando acceder a algo restringido, y finaliza con un sistema de seguridad bien definido. Estilo visual dinámico y animado, sin texto ni fórmulas.",
+    "sintesis": "Los roles y privilegios son fundamentales para controlar el acceso y prevenir riesgos. A través de las predicciones, vimos cómo un exceso de poder puede causar problemas, y cómo se soluciona con roles bien definidos."
+  }
+}

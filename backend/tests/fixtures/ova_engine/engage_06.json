@@ -1,0 +1,19 @@
+{
+  "concept": "auditoría",
+  "params": {
+    "body_words": 90
+  },
+  "data": {
+    "titular": "Auditoría de bases de datos evita caída crítica en producción",
+    "subtitulo": "Un error de configuración puso en riesgo un sistema clave, pero la auditoría lo detectó antes de que ocurriera.",
+    "organizacion": "TechNova Sistemas",
+    "cuerpo_noticia": "TechNova Sistemas, una empresa líder en soluciones de infraestructura crítica, enfrentó una crisis potencial cuando un error de configuración en su base de datos principal amenazó la continuidad de sus servicios. Gracias a un programa de auditoría activo, el problema fue identificado y corregido antes de que afectara la producción. La solución permitió la restauración completa del sistema sin interrupciones significativas, demostrando la importancia de las prácticas de auditoría en la gestión de datos.",
+    "esquema_causal": {
+      "causa": "Un error de configuración en la base de datos causó una sobrecarga de consultas.",
+      "mecanismo": "La auditoría detectó el problema mediante análisis de rendimiento y registros de acceso.",
+      "efecto": "La organización evitó una interrupción de 4 horas y redujo el riesgo de pérdida de datos."
+    },
+    "pregunta_cierre": "¿Cómo puede un futuro profesional garantizar que la auditoría no sea solo una rutina, sino un salvavidas?",
+    "analisis_cierre": "La auditoría no solo detecta errores, sino que previene crisis. Su rol es fundamental en la gestión de infraestructura crítica, ya que asegura la estabilidad y la seguridad de los datos. Como profesional, es vital integrarla como parte activa del diseño y la operación."
+  }
+}

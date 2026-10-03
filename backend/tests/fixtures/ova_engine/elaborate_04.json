@@ -1,0 +1,57 @@
+{
+  "concept": "tablespaces y datafiles",
+  "params": {
+    "num_params": 4
+  },
+  "data": {
+    "titulo": "Optimización de tablespaces y datafiles",
+    "escenario": "Un DBA debe optimizar un sistema Oracle para mejorar el rendimiento y reducir costos operativos en un entorno de producción.",
+    "objetivo": "Al terminar podrás optimizar tablespaces y datafiles ajustando parámetros críticos para equilibrar rendimiento y costos.",
+    "parametros": [
+      {
+        "nombre": "Tamaño inicial de datafile",
+        "unidad": "MB",
+        "minimo": 100,
+        "maximo": 1000,
+        "inicial": 200,
+        "optimo": 500,
+        "si_bajo": "Rendimiento limitado por falta de espacio para datos y índices.",
+        "si_alto": "Mayor uso de almacenamiento y costos operativos."
+      },
+      {
+        "nombre": "Tamaño de buffer de PGA",
+        "unidad": "MB",
+        "minimo": 100,
+        "maximo": 2000,
+        "inicial": 300,
+        "optimo": 1200,
+        "si_bajo": "Peor rendimiento en consultas complejas debido a falta de memoria.",
+        "si_alto": "Mayor consumo de memoria y posibles fallos de sistema."
+      },
+      {
+        "nombre": "Factor de crecimiento de datafil",
+        "unidad": "%",
+        "minimo": 10,
+        "maximo": 100,
+        "inicial": 20,
+        "optimo": 50,
+        "si_bajo": "Frecuentes crecimientos de datafile y reorganizaciones.",
+        "si_alto": "Espacio no optimizado y riesgo de agotamiento de almacenamiento."
+      },
+      {
+        "nombre": "Número de sesiones concurrentes",
+        "unidad": "sesiones",
+        "minimo": 10,
+        "maximo": 100,
+        "inicial": 30,
+        "optimo": 60,
+        "si_bajo": "Rendimiento limitado por bajo uso de recursos concurrentes.",
+        "si_alto": "Mayor consumo de recursos y posibles bloqueos."
+      }
+    ],
+    "metrica_rendimiento": "Tasa de aciertos de caché",
+    "metrica_costo": "Memoria consumida",
+    "ejemplo": "Aumentar el tamaño inicial de datafile a 500 MB mejora la capacidad de almacenamiento, lo que incrementa la tasa de aciertos de caché al reducir las lecturas físicas.",
+    "cierre": "Ajusta parámetros para equilibrar rendimiento y costos, evitando extremos que afectan negativamente el sistema."
+  }
+}

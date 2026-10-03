@@ -47,7 +47,7 @@ export function WorkspacePhaseActions({
         <Button
           variant="ghost"
           size="sm"
-          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:text-destructive"
           onClick={onDelete}
         >
           <Icon name="trash" />

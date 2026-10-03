@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { useCurrentUser, useIsAdmin } from "@/core/auth/auth-store";
 import { usePlatformConfig } from "@/core/hooks/use-platform-config";
+import { useTabParam } from "@/core/hooks/use-tab-param";
 
 import type { ApplyConfigResponse } from "../api/model-tools.api";
 import { connectedProviders, platformKeyCount } from "../lib/catalog-status";
@@ -23,13 +24,17 @@ import { useAdminLlmDraft } from "./use-admin-llm-draft";
 import { useConfigApply } from "./use-config-apply";
 import { useLlmSettingsStore } from "./use-llm-settings-store";
 
+const MODELS_TABS = ["models", "credentials", "platform"] as const;
+
 export function useModelsPage() {
   const user = useCurrentUser();
   const isAdmin = useIsAdmin();
   const navigate = useNavigate();
   const store = useLlmSettingsStore();
   const admin = useAdminLlmDraft(store, isAdmin);
-  const [activeTab, setActiveTab] = useState("models");
+  const [requestedTab, setActiveTab] = useTabParam(MODELS_TABS, "models");
+  // «Plataforma» solo existe para administradores: otro rol cae en la primera pestaña.
+  const activeTab = requestedTab === "platform" && !isAdmin ? "models" : requestedTab;
   const [manageOpen, setManageOpen] = useState(false);
   const feedback = useConfigApply();
 

@@ -1,0 +1,61 @@
+{
+  "concept": "optimización de consultas con planes de ejecución",
+  "params": {
+    "num_dimensions": 5
+  },
+  "data": {
+    "titulo": "Comparación de optimización de consultas con planes de ejecución",
+    "intro": "Comparación de estrategias para mejorar el rendimiento de consultas en bases de datos, evaluando sus métricas clave.",
+    "dimensiones": [
+      "Rendimiento de consulta",
+      "Recursos de CPU",
+      "Tiempo de espera",
+      "Complejidad de implementación",
+      "Escalabilidad"
+    ],
+    "comparaciones": [
+      {
+        "concepto": "Optimización de consultas con planes de ejecución",
+        "valores": [
+          "Mejora el tiempo de ejecución de consultas en un 40%",
+          "Usa menos CPU en consultas complejas",
+          "Reduce el tiempo de espera del usuario en un 35%",
+          "Requiere conocimiento técnico avanzado",
+          "Escalable para grandes volúmenes de datos"
+        ],
+        "ventaja": "Ofrece un rendimiento optimizado mediante la selección de ejecución eficiente.",
+        "desventaja": "Requiere un análisis técnico profundo y configuración compleja."
+      },
+      {
+        "concepto": "Backup incremental",
+        "valores": [
+          "No mejora directamente el rendimiento de consultas",
+          "Usa recursos CPU en un 10% durante la ejecución",
+          "Tiempo de espera del usuario no cambia",
+          "Fácil de implementar y gestionar",
+          "No escalable para grandes volúmenes de datos"
+        ],
+        "ventaja": "Facilita la restauración de datos sin necesidad de copias completas.",
+        "desventaja": "No optimiza el rendimiento de consultas ni mejora la eficiencia."
+      },
+      {
+        "concepto": "DBMS_SCHEDULER",
+        "valores": [
+          "No mejora el rendimiento de consultas",
+          "Usa CPU en un 15% durante la ejecución",
+          "Tiempo de espera del usuario no cambia",
+          "Fácil de programar tareas",
+          "No escalable para consultas complejas"
+        ],
+        "ventaja": "Permite programar tareas de mantenimiento sin interrumpir consultas.",
+        "desventaja": "No optimiza el rendimiento de consultas ni mejora la eficiencia."
+      }
+    ],
+    "reto": {
+      "escenario": "Un DBA maneja un sistema con consultas complejas que afectan la experiencia del usuario y busca un método para mejorar el rendimiento sin interrumpir operaciones.",
+      "mejor": 1,
+      "explicacion": "La optimización con planes de ejecución mejora el rendimiento de consultas, aunque requiere configuración técnica. Se sacrifica la simplicidad de implementación."
+    },
+    "conclusion": "Elegir la optimización de consultas con planes de ejecución es ideal para mejorar el rendimiento, pero se debe considerar la complejidad de implementación en comparación con alternativas más simples."
+  }
+}

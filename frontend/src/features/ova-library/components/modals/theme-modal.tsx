@@ -122,7 +122,7 @@ export function ThemeModal({ initialTheme, onClose, onSaved }: Readonly<ThemeMod
             Cancelar
           </Button>
           <Button loading={saving} onClick={() => { void handleSave(); }}>
-            {saving ? "Guardando..." : "Guardar estilo"}
+            {saving ? "Guardando…" : "Guardar estilo"}
           </Button>
         </DialogFooter>
       </DialogContent>

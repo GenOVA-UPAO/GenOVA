@@ -101,7 +101,10 @@ def concierge_node(state: OvaGenerationState) -> dict:
         }
 
     # --- BDI: 2. Deseos → Generar plan candidato ---
-    raw_plan = _llm_decompose(prompt) or _FALLBACK_PLAN
+    from ova_engine.planner import plan_ova
+
+    # Motor de decisión (Laya/Jev, ~100 ms) antes que la descomposición con LLM.
+    raw_plan = plan_ova(prompt, rag_context) or _llm_decompose(prompt) or _FALLBACK_PLAN
     phases_data, phase_order, total = _plan_to_phases(raw_plan)
 
     # --- BDI: 3. Generar deseos desde el plan ---

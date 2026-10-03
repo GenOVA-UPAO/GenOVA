@@ -24,6 +24,12 @@ _CTX_GUARD = (
 )
 
 
+def sanitize_source_filename(filename: object) -> str:
+    """A bounded single-line data label, incapable of injecting prompt markers."""
+    name = str(filename or "?")[:200]
+    return "".join(c if c.isalnum() or c in " ._-" else "_" for c in name).strip() or "?"
+
+
 def select_context_chunks(
     chunks: list[dict],
     max_chars: int = DEFAULT_MAX_CONTEXT_CHARS,
@@ -41,10 +47,11 @@ def select_context_chunks(
             continue
         # Anti-spoofing: el contenido no puede falsificar los delimitadores.
         snippet = snippet.replace(_CTX_OPEN, "").replace(_CTX_CLOSE, "")
-        block_len = len(_SOURCE_HEADER.format(c.get("source_filename", "?"))) + 1 + len(snippet)
+        filename = sanitize_source_filename(c.get("source_filename"))
+        block_len = len(_SOURCE_HEADER.format(filename)) + 1 + len(snippet)
         if total + block_len > max_chars and selected:
             break
-        selected.append({**c, "content": snippet})
+        selected.append({**c, "source_filename": filename, "content": snippet})
         total += block_len + 4
     return selected
 

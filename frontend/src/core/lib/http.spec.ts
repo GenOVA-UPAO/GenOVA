@@ -88,6 +88,22 @@ describe("apiJson", () => {
     expect((err as HttpError).status).toBe(404);
   });
 
+  it("toma el primer msg cuando detail es la lista de validación de FastAPI (422)", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({ detail: [{ msg: "Input should be greater than or equal to 1" }] }, 422),
+    );
+    const err = await apiJson("/api/users/me").catch((e: unknown) => e);
+    expect((err as HttpError).message).toBe("Input should be greater than or equal to 1");
+  });
+
+  it("con un detail que no es texto ni lista usa fallbackMsg", async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ detail: [{ loc: ["body"] }] }, 422));
+    const err = await apiJson("/api/users/me", {}, { fallbackMsg: "No se pudo guardar." }).catch(
+      (e: unknown) => e,
+    );
+    expect((err as HttpError).message).toBe("No se pudo guardar.");
+  });
+
   it("usa fallbackMsg cuando el error no trae detail ni message", async () => {
     fetchMock.mockResolvedValue(jsonResponse({}, 500));
     const err = await apiJson("/api/ovas", {}, { fallbackMsg: "No se pudo cargar." }).catch(

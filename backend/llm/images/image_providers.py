@@ -166,6 +166,12 @@ def get_image_data_uri(
 
     if fake_media_enabled():
         return _fake_image(provider, api_key, model, width, height)
+    if os.getenv("LOCAL_IMAGE_URL"):
+        # Servidor local (SD-Turbo en Docker, ver genova-sd): simula un proveedor
+        # real en desarrollo/QA sin coste. Si falla, sigue el proveedor elegido.
+        local = _local_image(clean, width, height)
+        if local:
+            return local
     fn = _PROVIDERS.get(provider, _hf)
     if provider in _MODEL_PROVIDERS:
         result = fn(clean, api_key, width, height, model)
@@ -179,6 +185,20 @@ def get_image_data_uri(
         if result:
             logger.info("image provider failed; huggingface fallback succeeded", provider=provider)
     return result
+
+
+def _local_image(prompt: str, width: int, height: int) -> str | None:
+    try:
+        r = httpx.post(
+            os.environ["LOCAL_IMAGE_URL"].rstrip("/") + "/generate",
+            json={"prompt": prompt, "width": width, "height": height},
+            timeout=60,
+        )
+        r.raise_for_status()
+        return r.json().get("data_uri")
+    except Exception as exc:
+        logger.warning("local image server failed", error=str(exc)[:200])
+        return None
 
 
 def _fake_image(

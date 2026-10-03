@@ -9,10 +9,15 @@ import jwt
 from fastapi.responses import JSONResponse
 
 from auth.infrastructure.cookies import set_auth_cookie
-from core.security import JWT_ALGORITHM, JWT_EXPIRES_MINUTES, JWT_SECRET
-
-# Persistent "remember me" sessions (cookie Max-Age + JWT exp).
-JWT_REMEMBER_MINUTES = 60 * 24 * 30  # 30 days
+from core.security import (  # noqa: F401 — re-export: decode_session_token vive en core
+    JWT_ALGORITHM,
+    JWT_AUDIENCE,
+    JWT_EXPIRES_MINUTES,
+    JWT_ISSUER,
+    JWT_REMEMBER_MINUTES,
+    JWT_SECRET,
+    decode_session_token,
+)
 
 
 def build_token(user_id: str, email: str, *, expires_minutes: int | None = None) -> str:
@@ -23,7 +28,8 @@ def build_token(user_id: str, email: str, *, expires_minutes: int | None = None)
         "email": email,
         "iat": now,
         "exp": now + timedelta(minutes=minutes),
-        "iss": "genova",
+        "iss": JWT_ISSUER,
+        "aud": JWT_AUDIENCE,
         "jti": str(uuid4()),
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)

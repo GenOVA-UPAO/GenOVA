@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from auth.dependencies import get_current_user
+from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
 from llm.images.image_providers import build_image_settings
@@ -35,7 +35,7 @@ def list_engage_recursos():
 def generate_engage_resource(
     request: Request,
     payload: GenerateEngageRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission("create_ova")),
     db: Session = Depends(get_db),
 ):
     n = payload.resource_type

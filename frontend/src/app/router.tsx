@@ -1,4 +1,10 @@
-import { createBrowserRouter, redirect, type RouteObject } from "react-router";
+import { Fragment } from "react";
+import {
+  createBrowserRouter,
+  type LoaderFunctionArgs,
+  redirect,
+  type RouteObject,
+} from "react-router";
 
 import { requireAdmin, requireAuth, requireGuest } from "@/core/auth/guards";
 
@@ -27,6 +33,16 @@ const guest = (path: string, title: string, lazy: RouteObject["lazy"]): RouteObj
   lazy,
 });
 
+/** El loader siempre redirige; el Component vacío (Fragment) evita el aviso de ruta hoja sin elemento. */
+const redirectRoute = (
+  path: string,
+  to: string | ((args: LoaderFunctionArgs) => string),
+): RouteObject => ({
+  path,
+  Component: Fragment,
+  loader: (args) => redirect(typeof to === "string" ? to : to(args)),
+});
+
 const workspace = page(pageLoaders.workspace, "OvaWorkspacePage");
 
 export const routes: RouteObject[] = [
@@ -53,22 +69,19 @@ export const routes: RouteObject[] = [
         lazy: page(pageLoaders.verifyEmail, "VerifyEmailPage"),
       },
       // Legacy Spanish URLs (emails already sent link here).
-      { path: "/recuperar-contrasena", loader: () => redirect("/forgot-password") },
-      {
-        path: "/verificar-correo",
-        loader: ({ request }) => redirect(`/verify-email${new URL(request.url).search}`),
-      },
-      { path: "/metodologia/explore", loader: () => redirect("/explore") },
-      {
-        path: "/metodologia/engage/:id",
-        loader: ({ params }) => redirect(`/engage/${String(params.id)}`),
-      },
+      redirectRoute("/recuperar-contrasena", "/forgot-password"),
+      redirectRoute(
+        "/verificar-correo",
+        ({ request }) => `/verify-email${new URL(request.url).search}`,
+      ),
+      redirectRoute("/metodologia/explore", "/explore"),
+      redirectRoute("/metodologia/engage/:id", ({ params }) => `/engage/${String(params.id)}`),
       {
         path: "/",
         loader: requireAuth,
         lazy: page(pageLoaders.appLayout, "AppLayout"),
         children: [
-          { index: true, loader: () => redirect("/dashboard") },
+          { index: true, Component: Fragment, loader: () => redirect("/dashboard") },
           {
             path: "dashboard",
             handle: { title: "Dashboard" },
@@ -85,16 +98,13 @@ export const routes: RouteObject[] = [
             handle: { title: "Papelera" },
             lazy: page(pageLoaders.papelera, "PapeleraPage"),
           },
-          { path: "crear-ova", loader: () => redirect("/crear") },
+          redirectRoute("crear-ova", "/crear"),
           { path: "crear", handle: { title: "Crear OVA", fullBleed: true }, lazy: workspace },
-          {
-            path: "ova/:id/workspace",
-            loader: ({ params }) => redirect(`/workspace/${String(params.id)}`),
-          },
-          {
-            path: "ova/job/:jobId/workspace",
-            loader: ({ params }) => redirect(`/crear?jobId=${String(params.jobId)}`),
-          },
+          redirectRoute("ova/:id/workspace", ({ params }) => `/workspace/${String(params.id)}`),
+          redirectRoute(
+            "ova/job/:jobId/workspace",
+            ({ params }) => `/crear?jobId=${String(params.jobId)}`,
+          ),
           {
             path: "workspace/:id",
             handle: { title: "Editor de OVA", fullBleed: true },
@@ -110,8 +120,8 @@ export const routes: RouteObject[] = [
             handle: { title: "Analítica" },
             lazy: page(pageLoaders.analytics, "AnalyticsPage"),
           },
-          { path: "modelos", loader: () => redirect("/models") },
-          { path: "fallback", loader: () => redirect("/models") },
+          redirectRoute("modelos", "/models"),
+          redirectRoute("fallback", "/models"),
           {
             path: "models",
             handle: { title: "Modelos de IA" },
@@ -123,14 +133,14 @@ export const routes: RouteObject[] = [
             handle: { title: "Usuarios" },
             lazy: page(pageLoaders.adminUsers, "AdminUsersPage"),
           },
-          { path: "admin/users", loader: () => redirect("/admin") },
+          redirectRoute("admin/users", "/admin"),
           {
             path: "admin/roles",
             loader: requireAdmin,
             handle: { title: "Gestión de roles" },
             lazy: page(pageLoaders.adminRoles, "AdminRolesPage"),
           },
-          { path: "admin/platform", loader: () => redirect("/models") },
+          redirectRoute("admin/platform", "/models"),
         ],
       },
       {

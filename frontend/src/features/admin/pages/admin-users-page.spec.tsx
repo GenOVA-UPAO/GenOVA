@@ -17,14 +17,14 @@ vi.mock("../hooks/use-admin-roles", () => ({
   useRoles: () => ({ data: [], isLoading: false, error: null }),
 }));
 
-const deactivateUser = vi.fn();
+const setUserStatus = vi.fn();
 
 vi.mock("../hooks/use-admin-users-controller", () => ({
   useAdminUsersController: () => ({
     updatingUserId: "",
     isSavingEdit: false,
-    isDeactivating: false,
-    deactivateUser,
+    isChangingStatus: false,
+    setUserStatus,
     handlers: {
       handleRoleChange: vi.fn(),
       handleToggleStatus: vi.fn(),
@@ -90,12 +90,42 @@ describe("AdminUsersPage", () => {
     await user.click(screen.getByRole("button", { name: "Más acciones para Docente Uno" }));
     await user.click(await screen.findByRole("menuitem", { name: "Desactivar cuenta" }));
 
-    expect(deactivateUser).not.toHaveBeenCalled();
+    expect(setUserStatus).not.toHaveBeenCalled();
     const dialog = await screen.findByRole("alertdialog");
     expect(dialog).toHaveTextContent("¿Desactivar la cuenta de Docente Uno?");
 
     await user.click(within(dialog).getByRole("button", { name: "Desactivar cuenta" }));
-    expect(deactivateUser).toHaveBeenCalledWith("u-1", expect.any(Function));
+    expect(setUserStatus).toHaveBeenCalledWith("u-1", false, expect.any(Function));
+  });
+
+  it("pide confirmación antes de activar una cuenta", async () => {
+    mockUsersQuery({
+      data: {
+        users: [
+          {
+            id: "u-2",
+            email: "otro@upao.edu.pe",
+            full_name: "Docente Dos",
+            role: { id: "r-1", name: "profesor" },
+            is_active: false,
+          },
+        ],
+        total_pages: 1,
+        total_items: 1,
+      },
+    });
+    const user = userEvent.setup();
+    render(<AdminUsersPage />);
+
+    await user.click(screen.getByRole("button", { name: "Más acciones para Docente Dos" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Activar cuenta" }));
+
+    expect(setUserStatus).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole("alertdialog");
+    expect(dialog).toHaveTextContent("¿Activar la cuenta de Docente Dos?");
+
+    await user.click(within(dialog).getByRole("button", { name: "Activar cuenta" }));
+    expect(setUserStatus).toHaveBeenCalledWith("u-2", true, expect.any(Function));
   });
 
   it("muestra el error en español y reintenta con refetch", async () => {

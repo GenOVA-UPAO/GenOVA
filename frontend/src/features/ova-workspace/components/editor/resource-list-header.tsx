@@ -12,12 +12,18 @@ interface HeaderProps {
 }
 
 /** Título de la sección de una fase con su contador y «Añadir recurso». */
-export function ResourceListHeader({ headingId, label, count, busy, onAdd }: Readonly<HeaderProps>) {
+export function ResourceListHeader({
+  headingId,
+  label,
+  count,
+  busy,
+  onAdd,
+}: Readonly<HeaderProps>) {
   return (
     <div className="flex items-center justify-between gap-2">
       <h2 id={headingId} className="text-sm font-semibold text-foreground">
-        {label}
-        <span className="ml-2 text-xs font-normal tabular-nums text-muted-foreground">
+        {label}{" "}
+        <span className="text-xs font-normal tabular-nums text-muted-foreground">
           {count} de {MAX_PHASES_PER_TYPE} recursos
         </span>
       </h2>

@@ -8,13 +8,15 @@ mismo orden, ahora señalando errores de dominio en vez de HTTP).
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from auth.domain.email import normalize_email
 from core.database import commit_or_500
-from models import Role, User, UserRole
+from models import PasswordResetToken, Role, User, UserRole
 from users.domain.account import UserAccount
 from users.domain.errors import SoleAdminRemoval
 
@@ -26,14 +28,28 @@ class SqlAlchemyUserAccountRepository:
         self._db = db
 
     def get(self, user_id: UUID) -> UserAccount | None:
-        user = self._db.get(User, user_id)
+        # Read the password under the same lock held until update_password commits.
+        user = self._db.execute(
+            select(User).where(User.id == user_id).with_for_update()
+            .execution_options(populate_existing=True)
+        ).scalar_one_or_none()
         if user is None:
             return None
-        return UserAccount(id=str(user.id), password_hash=user.password_hash)
+        return UserAccount(
+            id=str(user.id), password_hash=user.password_hash, email=user.email or ""
+        )
 
     def update_password(self, user_id: UUID, password_hash: str) -> None:
-        user = self._db.get(User, user_id)
+        user = self._db.execute(
+            select(User).where(User.id == user_id).with_for_update()
+            .execution_options(populate_existing=True)
+        ).scalar_one()
         user.password_hash = password_hash
+        user.password_changed_at = datetime.now(UTC)
+        # Un reset pendiente emitido antes del cambio no debe poder pisar la clave nueva.
+        self._db.execute(
+            PasswordResetToken.__table__.delete().where(PasswordResetToken.user_id == user_id)
+        )
         commit_or_500(self._db, "change_password")
 
     def assert_not_sole_admin(self, user_id: UUID) -> None:
@@ -65,6 +81,9 @@ class SqlAlchemyUserAccountRepository:
         uid_suffix = str(uuid.uuid4())[:8]
         user.is_active = False
         user.email = f"deleted_{user.id}@{uid_suffix}.removed.local"
+        # La llave canónica también debe soltar el correo original: si no, queda el PII
+        # en BD y nadie (ni el mismo dueño) puede volver a registrarse con él.
+        user.email_normalized = normalize_email(user.email)
         user.full_name = "[eliminado]"
         user.phone_number = None
         user.university_id = None

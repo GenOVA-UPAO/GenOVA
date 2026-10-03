@@ -1,0 +1,51 @@
+{
+  "concept": "índices B-tree",
+  "params": {
+    "num_trials": 3
+  },
+  "data": {
+    "titulo": "Efecto del tamaño del buffer cache en el rendimiento de índices B-tree",
+    "objetivo": "Analizar cómo el tamaño del buffer cache impacta en la tasa de aciertos de caché en índices B-tree.",
+    "variable_independiente": "Tamaño asignado al Buffer Cache",
+    "variable_dependiente": "Tasa de aciertos de caché (Hit Ratio)",
+    "opciones_prueba": [
+      {
+        "id": "cfg_1",
+        "valor": "Buffer Cache = 64 MB",
+        "resultado_metrica": "Hit Ratio: 65% (410 I/O disco/s)",
+        "interpretacion": "El tamaño limitado del buffer cache genera más I/O al disco, reduciendo la eficiencia."
+      },
+      {
+        "id": "cfg_2",
+        "valor": "Buffer Cache = 128 MB",
+        "resultado_metrica": "Hit Ratio: 78% (280 I/O disco/s)",
+        "interpretacion": "Un mayor buffer cache mejora el acierto en caché, reduciendo las lecturas físicas."
+      },
+      {
+        "id": "cfg_3",
+        "valor": "Buffer Cache = 256 MB",
+        "resultado_metrica": "Hit Ratio: 89% (180 I/O disco/s)",
+        "interpretacion": "El buffer cache suficiente permite almacenar más índices en memoria, optimizando el acceso."
+      }
+    ],
+    "pregunta_conclusion": "¿Cuál es el principio empírico que relaciona el tamaño del buffer cache con el rendimiento de los índices B-tree?",
+    "opciones_conclusion": [
+      {
+        "texto": "Un mayor tamaño del buffer cache incrementa la tasa de aciertos de caché.",
+        "feedback": "Este resultado es consistente con los datos experimentales observados.",
+        "correcta": true
+      },
+      {
+        "texto": "El tamaño del buffer cache no afecta el rendimiento de los índices.",
+        "feedback": "Contradice los datos experimentales que muestran una mejora clara con más memoria.",
+        "correcta": false
+      },
+      {
+        "texto": "El tamaño del buffer cache solo afecta las consultas de lectura.",
+        "feedback": "Los datos muestran impacto en las operaciones de escritura también.",
+        "correcta": false
+      }
+    ],
+    "sintesis_evidencia": "El tamaño del buffer cache influye directamente en el rendimiento de los índices B-tree: mayor tamaño mejora el hit ratio, reduciendo las lecturas físicas. La optimización requiere un equilibrio entre memoria disponible y carga de trabajo."
+  }
+}

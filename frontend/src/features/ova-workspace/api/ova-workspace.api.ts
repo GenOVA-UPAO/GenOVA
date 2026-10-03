@@ -4,6 +4,7 @@ import { apiFetch, apiJson, HttpError } from "@/core/lib/http";
 import type { RegenProgressDto } from "../lib/regen-poll";
 import type { OvaData, Phase, PhaseWithContent } from "../lib/types";
 import type { PhaseMicroVersion, VersionDiffData } from "../lib/version-history.types";
+import type { ConfirmResponse, EditResponse, ResourceBlock } from "../lib/visual-editor.types";
 
 export interface RegenRequest { prompt?: string | null; phaseIds?: string[]; uploadIds?: string[] }
 export interface RegenAck { job_id: string }
@@ -45,3 +46,63 @@ export async function exportOvaScorm(ovaId: string): Promise<void> {
   if (!response.ok) throw await scormExportError(response);
   await triggerDownloadFromResponse(response, `ova-${ovaId}.zip`);
 }
+
+export interface EditorFeedbackPayload {
+  fase_id?: string | null;
+  instruccion?: string | null;
+  bloques_antes?: unknown[];
+  intencion_propuesta?: unknown;
+  intencion_final?: unknown;
+  resultado: "applied" | "undone" | "cancelled" | "rejected_guard";
+  confianza?: number | null;
+  backend?: string | null;
+  motivo_rechazo?: string | null;
+}
+
+export function fetchPhaseBlocks(ovaId: string, phaseId: string): Promise<ResourceBlock[]> {
+  return apiJson(`/api/ovas/${ovaId}/fases/${phaseId}/bloques`);
+}
+
+export interface EditPhaseBlocksArgs {
+  ovaId: string;
+  phaseId: string;
+  blocks: ResourceBlock[];
+  instruction: string;
+  backend?: string;
+}
+
+export function editPhaseBlocks({
+  ovaId,
+  phaseId,
+  blocks,
+  instruction,
+  backend,
+}: EditPhaseBlocksArgs): Promise<EditResponse> {
+  return apiJson(`/api/ovas/${ovaId}/phases/${phaseId}/editor/interpret-and-apply`, {
+    method: "POST",
+    body: JSON.stringify({ instruction, blocks, backend }),
+  });
+}
+
+export function confirmPhaseBlocks(
+  ovaId: string,
+  phaseId: string,
+  blocks: ResourceBlock[],
+  instruction?: string
+): Promise<ConfirmResponse> {
+  return apiJson(`/api/ovas/${ovaId}/phases/${phaseId}/editor/confirm`, {
+    method: "POST",
+    body: JSON.stringify({ instruction: instruction ?? "Edición en editor visual", blocks }),
+  });
+}
+
+export function recordEditorFeedback(
+  ovaId: string,
+  payload: EditorFeedbackPayload
+): Promise<{ success: boolean; feedback_id: string }> {
+  return apiJson(`/api/ovas/${ovaId}/editor/feedback`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+

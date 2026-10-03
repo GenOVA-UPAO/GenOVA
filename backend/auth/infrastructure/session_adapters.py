@@ -10,8 +10,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from auth.domain.user import AuthenticatedUser, TokenRevocation, UserAccess
+from auth.infrastructure.jwt import decode_session_token
 from core.database import commit_or_500
-from core.security import JWT_ALGORITHM, JWT_SECRET
 from models import RevokedToken, Role, User, UserRole
 
 
@@ -34,7 +34,7 @@ def snapshot_authenticated_user(row: User) -> AuthenticatedUser:
 class JwtSessionTokenDecoder:
     def decode_for_revocation(self, token: str) -> TokenRevocation | None:
         try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            payload = decode_session_token(token)
         except jwt.PyJWTError:
             return None
         jti = payload.get("jti")

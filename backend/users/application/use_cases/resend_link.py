@@ -25,7 +25,8 @@ class ResendLink:
         code = new_link_code()
         link = self.repo.rotate_code(
             link_id,
-            code_hash=self.hasher.hash(code),
+            code_selector=code.split("-", 1)[0],
+            code_hash=self.hasher.hash(code.split("-", 1)[1]),
             expires_at=datetime.now(UTC) + timedelta(hours=CODE_TTL_HOURS),
             op="el reenvio",
         )

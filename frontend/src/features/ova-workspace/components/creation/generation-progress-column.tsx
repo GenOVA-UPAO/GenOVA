@@ -67,7 +67,7 @@ export function GenerationProgressColumn({
   const kind = outcomeKind(outcome, job.data?.status);
   return (
     <>
-      {!outcome.isTerminal && job.resources.length === 0 && (
+      {!outcome.isTerminal && job.resources.length === 0 && !job.error && (
         <p role="status" className="text-sm text-muted-foreground">
           Iniciando generación…
         </p>
@@ -96,7 +96,11 @@ export function GenerationProgressColumn({
           onResume={onRetryAll}
         />
       )}
-      {job.error && <p className="text-xs text-destructive">{job.error.message}</p>}
+      {job.error && (
+        <p role="alert" className="text-sm text-destructive">
+          {job.error.message}
+        </p>
+      )}
     </>
   );
 }

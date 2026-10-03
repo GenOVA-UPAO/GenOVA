@@ -26,7 +26,7 @@ export function useAdminUsersPage() {
   const deactivation = useDeactivateConfirm({
     users: usersData.users,
     handlers: controller.handlers,
-    deactivate: controller.deactivateUser,
+    setStatus: controller.setUserStatus,
   });
   const errorText = usersQuery.error
     ? errorMessage(usersQuery.error, "Error al cargar usuarios.")
@@ -50,10 +50,10 @@ export function useAdminUsersPage() {
     updatingUserId: controller.updatingUserId,
     isSavingEdit: controller.isSavingEdit,
     handlers: deactivation.handlers,
-    pendingDeactivation: deactivation.pendingDeactivation,
-    isDeactivating: controller.isDeactivating,
-    confirmDeactivation: deactivation.confirmDeactivation,
-    cancelDeactivation: deactivation.cancelDeactivation,
+    pendingStatusChange: deactivation.pendingStatusChange,
+    isChangingStatus: controller.isChangingStatus,
+    confirmStatusChange: deactivation.confirmStatusChange,
+    cancelStatusChange: deactivation.cancelStatusChange,
     isLoading: usersQuery.isLoading,
     errorText,
     isFiltering: filters.search !== "" || filters.roleFilter !== ALL_ROLE_FILTER,

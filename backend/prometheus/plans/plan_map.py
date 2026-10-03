@@ -9,6 +9,8 @@ consultan este mapa, y el worker despacha por `intention.plan_type`.
 PODCAST = "podcast"
 DIRECT_CODE = "direct_code"
 TWO_STEP = "two_step"
+# Motor ova_engine: texto JSON (LLM) + plantilla determinista. Ver ova_engine/.
+TEMPLATE = "template"
 
 # Recursos con generación directa a HTML (existe plantilla [codigo.N] en el TOML).
 CODE_ONLY: dict[str, frozenset[int]] = {
@@ -25,6 +27,13 @@ _PODCAST = {("engage", 3)}
 def plan_for(phase: str, rt) -> str:
     """Plan de ejecución canónico para un recurso."""
     n = int(rt)
+    from core.config import settings
+
+    if settings.ova_engine_templates:
+        from ova_engine.registry import get_spec
+
+        if get_spec(phase, n) is not None:
+            return TEMPLATE
     if (phase, n) in _PODCAST:
         return PODCAST
     if n in CODE_ONLY.get(phase, frozenset()):
@@ -39,6 +48,10 @@ def degraded_plan(phase: str, rt, current: str) -> str | None:
     tiene degradación segura.
     """
     n = int(rt)
+    if current == TEMPLATE:
+        # Plantilla falló (texto inválido tras el reintento): el camino LLM→HTML
+        # clásico es el respaldo.
+        return DIRECT_CODE if n in CODE_ONLY.get(phase, frozenset()) else TWO_STEP
     if current == TWO_STEP and n in CODE_ONLY.get(phase, frozenset()):
         return DIRECT_CODE
     return None

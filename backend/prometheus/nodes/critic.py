@@ -107,6 +107,12 @@ def _evaluate(result: dict, concept: str, llm_config, enabled_models, theme, max
 
         if veredicto != "revisar" or ronda >= max_rounds:
             break
+        from ova_engine.html import is_template_html
+
+        if is_template_html(html):
+            # Recurso de plantilla: el diseño/JS son fijos y probados; reescribir el
+            # HTML con un LLM solo puede romperlo. Se conserva la puntuación.
+            break
 
         try:
             html = apply_feedback(html, concept, issues, phase, rt, llm_config, enabled_models, theme)

@@ -95,7 +95,7 @@ export function EditMetadataModal({
               Cancelar
             </Button>
             <Button type="submit" loading={isLoading}>
-              {isLoading ? "Guardando..." : "Guardar cambios"}
+              {isLoading ? "Guardando…" : "Guardar cambios"}
             </Button>
           </DialogFooter>
         </form>

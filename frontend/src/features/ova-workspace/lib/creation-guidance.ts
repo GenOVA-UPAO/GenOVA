@@ -15,7 +15,9 @@ function phasesPhrase(phases: number): string {
 function promptPhrase(prompt: string): string {
   const missing = missingPromptChars(prompt);
   if (prompt.trim().length === 0) return "describe el tema";
-  return `faltan ${String(missing)} caracteres en la descripción`;
+  return missing === 1
+    ? "falta 1 carácter en la descripción"
+    : `faltan ${String(missing)} caracteres en la descripción`;
 }
 
 /**

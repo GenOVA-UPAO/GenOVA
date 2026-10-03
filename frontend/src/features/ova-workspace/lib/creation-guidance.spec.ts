@@ -4,10 +4,21 @@ import { generateBlocker, missingPromptChars, selectionSummary } from "./creatio
 
 describe("creation guidance", () => {
   it("explains everything that is missing in one sentence", () => {
-    expect(generateBlocker("", 0)).toBe("Para generar, describe el tema y elige recursos en al menos 2 fases.");
-    expect(generateBlocker("corto", 1)).toBe("Para generar, completa la descripción y elige recursos en 1 fase más.");
-    expect(generateBlocker("corto", 2)).toBe("Para generar, faltan 5 caracteres en la descripción.");
-    expect(generateBlocker("Un tema válido", 1)).toBe("Para generar, elige recursos en 1 fase más.");
+    expect(generateBlocker("", 0)).toBe(
+      "Para generar, describe el tema y elige recursos en al menos 2 fases.",
+    );
+    expect(generateBlocker("corto", 1)).toBe(
+      "Para generar, completa la descripción y elige recursos en 1 fase más.",
+    );
+    expect(generateBlocker("corto", 2)).toBe(
+      "Para generar, faltan 5 caracteres en la descripción.",
+    );
+    expect(generateBlocker("Quicksort", 2)).toBe(
+      "Para generar, falta 1 carácter en la descripción.",
+    );
+    expect(generateBlocker("Un tema válido", 1)).toBe(
+      "Para generar, elige recursos en 1 fase más.",
+    );
     expect(generateBlocker("Un tema válido", 2)).toBeNull();
   });
   it("counts trimmed characters", () => {

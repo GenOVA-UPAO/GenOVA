@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, JSONResponse
 
-from auth.dependencies import get_current_user
+from auth.dependencies import require_permission
 from ova.application.dto import ManageOvaInput
 from ova.container import OvaUseCases, build_ova
 from ova.domain.errors import OvaError
@@ -16,7 +16,7 @@ router = APIRouter(tags=["SCORM y descargas"])
 @router.get("/{ova_id}/export-scorm", summary="Exportar la OVA como paquete SCORM 1.2")
 def export_scorm(
     ova_id: str,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("export_ova")),
     use_cases: OvaUseCases = Depends(build_ova),
 ):
     try:

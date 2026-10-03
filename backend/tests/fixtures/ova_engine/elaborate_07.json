@@ -1,0 +1,56 @@
+{
+  "concept": "auditoría",
+  "params": {
+    "num_exercises": 3
+  },
+  "data": {
+    "titulo": "Auditoría y gestión de índices en Oracle",
+    "objetivo": "Al terminar podrás escribir consultas SQL para auditar y gestionar índices en Oracle.",
+    "ejemplo": {
+      "titulo": "Creación de un índice",
+      "pasos": [
+        "Identifica la tabla y las columnas a indexar.",
+        "Usa la sintaxis correcta de CREATE INDEX.",
+        "Asegúrate de especificar la tabla y las columnas."
+      ],
+      "codigo": "CREATE INDEX idx_last_name ON employees(last_name);"
+    },
+    "ejercicios": [
+      {
+        "enunciado": "Crea un índice llamado idx_email sobre la columna EMAIL de la tabla EMPLOYEES.",
+        "codigo_inicial": "CREATE INDEX ___ ON employees(___);",
+        "palabras_clave": [
+          "create index",
+          "employees",
+          "email"
+        ],
+        "solucion": "CREATE INDEX idx_email ON employees(email);",
+        "error_comun": "Olvidar especificar el nombre del índice y la columna correcta."
+      },
+      {
+        "enunciado": "Crea un índice compuesto llamado idx_name_email sobre las columnas LAST_NAME y EMAIL de la tabla EMPLOYEES.",
+        "codigo_inicial": "CREATE INDEX idx_name_email ON employees(___ , ___);",
+        "palabras_clave": [
+          "create index",
+          "employees",
+          "last_name",
+          "email"
+        ],
+        "solucion": "CREATE INDEX idx_name_email ON employees(last_name, email);",
+        "error_comun": "No separar las columnas con coma o usar el orden incorrecto."
+      },
+      {
+        "enunciado": "Crea un índice único llamado idx_email_unique sobre la columna EMAIL de la tabla EMPLOYEES.",
+        "codigo_inicial": "CREATE UNIQUE INDEX ___ ON employees(___);",
+        "palabras_clave": [
+          "create unique index",
+          "employees",
+          "email"
+        ],
+        "solucion": "CREATE UNIQUE INDEX idx_email_unique ON employees(email);",
+        "error_comun": "Olvidar usar la palabra clave UNIQUE o usarla incorrectamente."
+      }
+    ],
+    "cierre": "Usa CREATE INDEX para auditar y optimizar consultas. Asegúrate de usar UNIQUE cuando sea necesario y especificar correctamente el nombre del índice y las columnas."
+  }
+}

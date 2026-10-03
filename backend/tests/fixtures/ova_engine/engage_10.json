@@ -1,0 +1,44 @@
+{
+  "concept": "roles y privilegios",
+  "params": {
+    "num_controls": 3
+  },
+  "data": {
+    "titulo": "Simulador de Roles y Privilegios en BD",
+    "objetivo": "Descubrir cómo la configuración de roles y privilegios afecta el rendimiento y seguridad de una base de datos.",
+    "controles": [
+      {
+        "id": "tam_buffer",
+        "etiqueta": "Tamaño del Buffer Cache",
+        "min": 10,
+        "max": 250,
+        "default": 100,
+        "unidad": "MB",
+        "descripcion": "Aumenta el tamaño del buffer cache para reducir lecturas en disco."
+      },
+      {
+        "id": "sesiones",
+        "etiqueta": "Número de Sesiones Concurrentes",
+        "min": 1,
+        "max": 20,
+        "default": 5,
+        "unidad": "sesiones",
+        "descripcion": "Aumenta sesiones concurrentes para simular carga de trabajo."
+      },
+      {
+        "id": "tasa_insert",
+        "etiqueta": "Tasa de Inserción de Datos",
+        "min": 10,
+        "max": 100,
+        "default": 50,
+        "unidad": "registros/s",
+        "descripcion": "Aumenta la tasa de inserción para observar llenado del tablespace."
+      }
+    ],
+    "ejemplo_trabajado": {
+      "paso": "Aumenta el tamaño del buffer cache a 200 MB y observa el impacto en lecturas en disco.",
+      "resultado": "Lecturas en disco disminuyen al aumentar el buffer cache, lo que mejora el rendimiento."
+    },
+    "cierre_conceptual": "La configuración del buffer cache, sesiones y tasa de inserción influye directamente en el rendimiento y uso de recursos. En producción, optimizar estos parámetros mejora la eficiencia y evita saturación de recursos."
+  }
+}

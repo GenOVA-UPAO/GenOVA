@@ -8,11 +8,9 @@ formulario que consumía el frontend.
 from __future__ import annotations
 
 import secrets
-import string
 from dataclasses import dataclass
 
 CODE_TTL_HOURS = 24
-_CODE_ALPHABET = string.ascii_uppercase + string.digits
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,8 +42,7 @@ class LinkRecord(LinkSnapshot):
 
 
 def new_link_code() -> str:
-    raw = "".join(secrets.choice(_CODE_ALPHABET) for _ in range(6))
-    return f"{raw[:3]}-{raw[3:]}"
+    return f"{secrets.token_hex(6).upper()}-{secrets.token_hex(16).upper()}"
 
 
 def serialize_link(

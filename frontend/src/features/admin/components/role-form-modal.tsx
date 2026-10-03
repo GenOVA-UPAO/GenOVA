@@ -123,7 +123,7 @@ export function RoleFormModal({
             />
           </fieldset>
 
-          <FormErrorAlert message={serverError} />
+          <FormErrorAlert message={nameError === "" ? serverError : ""} />
 
           <RoleFormActions
             isSubmitting={isSubmitting}

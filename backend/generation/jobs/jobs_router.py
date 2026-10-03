@@ -10,7 +10,7 @@ All four endpoints require auth (cookie JWT) and the mutating one is rate-limite
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, require_permission
 from core.rate_limit import limiter
 from generation.application.dto import CreateJobInput, ResumeJobInput
 from generation.container import GenerationUseCases, build_generation
@@ -19,6 +19,7 @@ from generation.interface.http.error_map import generation_error_to_response
 from generation.jobs.jobs_helpers import (
     ResumeRequest,
     StartJobRequest,
+    autoplan_resources,
     build_resource_plan,
 )
 from generation.jobs.jobs_router_helpers import (
@@ -44,10 +45,11 @@ def _resolve_resume_targets(*args, **kwargs):
 def start_job(
     request: Request,
     payload: StartJobRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission("create_ova")),
     uc: GenerationUseCases = Depends(build_generation),
 ):
     """Create a job + its resources, launch the runner, return {job_id, status}."""
+    autoplan_resources(payload)
     try:
         result = uc.create_job.execute(
             CreateJobInput(

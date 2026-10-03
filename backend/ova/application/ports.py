@@ -8,6 +8,7 @@ from typing import Protocol
 from ova.domain.catalog import OvaListFilter
 from ova.domain.chat import ChatMessage, ChatMessageDraft, ChatMessagePatch
 from ova.domain.editor import EditorMicroVersion, EditorOva, EditorPhase, EditorVersion
+from ova.domain.feedback import ResourceFeedback, ResourceFeedbackDraft
 from ova.domain.model import Ova, OvaDuplicateSource, OvaPhase
 
 
@@ -52,7 +53,9 @@ class OvaCreationRepository(Protocol):
         file_path: str | None,
     ) -> None: ...
 
-    def tie_uploads_to_ova(self, upload_ids: tuple[str, ...], ova_id: str) -> None: ...
+    def tie_uploads_to_ova(
+        self, upload_ids: tuple[str, ...], ova_id: str, actor_id: str
+    ) -> None: ...
 
     def commit(self, operation: str) -> None: ...
 
@@ -144,6 +147,16 @@ class ChatRepository(Protocol):
     def delete_message(self, ova_id: str, message_id: str) -> bool: ...
 
     def clear_messages(self, ova_id: str) -> int: ...
+
+
+class FeedbackRepository(Protocol):
+    def upsert(self, draft: ResourceFeedbackDraft) -> ResourceFeedback: ...
+
+    def get(self, user_id: str, phase_id: str) -> ResourceFeedback | None: ...
+
+    def list_for_ova(self, user_id: str, ova_id: str) -> tuple[ResourceFeedback, ...]: ...
+
+    def delete(self, user_id: str, phase_id: str) -> bool: ...
 
 
 class OvaCatalogRepository(Protocol):

@@ -1,0 +1,35 @@
+{
+  "concept": "auditoría",
+  "params": {
+    "num_sections": 3
+  },
+  "data": {
+    "titulo": "Auditoría en Sistemas Oracle: Conceptos y Aplicaciones",
+    "introduccion": "En entornos empresariales, la auditoría en Oracle es clave para garantizar seguridad y cumplimiento. A través de registros y herramientas específicas, se controla el acceso y se detectan actividades sospechosas en tiempo real.",
+    "secciones": [
+      {
+        "subtitulo": "Definición y Propósito de la Auditoría",
+        "idea_central": "La auditoría es el proceso de registro y revisión de acciones en una base de datos para garantizar seguridad, cumplimiento normativo y detección de actividades no autorizadas.",
+        "ejemplo_razonado": "En una empresa financiera, Oracle registra cada acceso a datos sensibles, permitiendo identificar intentos de intrusión o accesos no autorizados en tiempo real.",
+        "pregunta_comprobacion": "¿Cuál es el propósito principal de la auditoría en un sistema Oracle?",
+        "respuesta_modelo": "El propósito principal es garantizar la seguridad, el cumplimiento normativo y la detección de actividades no autorizadas en la base de datos."
+      },
+      {
+        "subtitulo": "Mecanismos de Registro y Seguimiento",
+        "idea_central": "Oracle utiliza registros de auditoría para grabar cada acción realizada en la base de datos, como consultas, modificaciones o accesos, permitiendo un seguimiento detallado de las operaciones.",
+        "ejemplo_razonado": "Un DBA puede revisar el registro de auditoría para identificar quién modificó un dato en una tabla específica, incluyendo la fecha, la hora y el usuario que realizó la acción.",
+        "pregunta_comprobacion": "¿Qué información se registra en los registros de auditoría de Oracle?",
+        "respuesta_modelo": "Se registra información como el usuario, la fecha, la hora, la acción realizada y los datos afectados en cada operación."
+      },
+      {
+        "subtitulo": "Herramientas y Vistas para la Auditoría",
+        "idea_central": "Oracle ofrece vistas como V$AUDIT e identificadores de objetos para permitir a los DBA revisar y gestionar las auditorías de forma operativa y segura.",
+        "ejemplo_razonado": "Un administrador puede usar V$AUDIT para revisar cuáles usuarios han realizado consultas sobre una tabla específica y si esas acciones están autorizadas.",
+        "pregunta_comprobacion": "¿Cuál es el uso principal de la vista V$AUDIT en Oracle?",
+        "respuesta_modelo": "La vista V$AUDIT se usa para revisar y monitorear las acciones registradas en los registros de auditoría de la base de datos."
+      }
+    ],
+    "aplicacion_dba": "El DBA puede usar sentencias como SELECT * FROM V$AUDIT para revisar registros de auditoría y ajustar parámetros de seguridad, garantizando el control de accesos y cumplimiento normativo.",
+    "cierre": "La auditoría en Oracle es un mecanismo clave para garantizar seguridad y cumplimiento. Su aplicación práctica permite al DBA controlar accesos, detectar actividades no autorizadas y mantener la integridad de la base de datos."
+  }
+}

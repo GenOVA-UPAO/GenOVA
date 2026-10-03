@@ -1,0 +1,271 @@
+{
+  "resources": {
+    "explain": [
+      { "id": "header_1", "tipo": "upao-header", "props": { "title": "Índices B-tree en Oracle", "eyebrow": "LECTURA GUIADA" } },
+      { "id": "p_intro", "tipo": "p", "props": { "title": "Introducción", "text": "En sistemas de gestión de bases de datos..." } },
+      { "id": "p_concept", "tipo": "p", "props": { "title": "Estructura B-Tree", "text": "Un árbol B-tree mantiene datos ordenados..." } },
+      { "id": "example_1", "tipo": "upao-example", "props": { "title": "Búsqueda en 3 niveles", "content": "Al buscar un cliente específico..." } },
+      { "id": "question_1", "tipo": "upao-question", "props": { "prompt": "¿Por qué los índices B-tree son balanceados?" } },
+      { "id": "summary_1", "tipo": "upao-summary", "props": { "title": "Resumen y Conclusiones", "text": "Los índices balanceados reducen I/O..." } }
+    ],
+    "comic": [
+      { "id": "header_comic", "tipo": "upao-header", "props": { "title": "El secreto de Max", "eyebrow": "CÓMIC INTERACTIVO" } },
+      { "id": "panel_1", "tipo": "upao-comic-panel", "props": { "number": 1, "character": "Max", "dialogue": "¡No encuentro el libro!" } },
+      { "id": "panel_2", "tipo": "upao-comic-panel", "props": { "number": 2, "character": "Max", "dialogue": "¡Ah! Los índices son como el catálogo." } },
+      { "id": "panel_3", "tipo": "upao-comic-panel", "props": { "number": 3, "character": "Max", "dialogue": "Buscando en tiempo logarítmico..." } },
+      { "id": "question_comic", "tipo": "upao-question", "props": { "prompt": "¿Cómo se organizan los nodos?" } },
+      { "id": "summary_comic", "tipo": "upao-summary", "props": { "title": "Cierre del Cómic", "text": "Max entendió la estructura B-tree." } }
+    ],
+    "quiz": [
+      { "id": "header_quiz", "tipo": "upao-header", "props": { "title": "Quiz B-tree Oracle", "eyebrow": "EVALUACIÓN" } },
+      { "id": "q1", "tipo": "upao-question", "props": { "prompt": "1. ¿Qué almacena un nodo hoja?", "number": 1 } },
+      { "id": "q2", "tipo": "upao-question", "props": { "prompt": "2. ¿Cuál es la complejidad temporal de búsqueda?", "number": 2 } },
+      { "id": "q3", "tipo": "upao-question", "props": { "prompt": "3. ¿Cuándo ocurre un split de bloque?", "number": 3 } },
+      { "id": "q4", "tipo": "upao-question", "props": { "prompt": "4. ¿Qué ventaja tiene sobre un Full Table Scan?", "number": 4 } },
+      { "id": "q5", "tipo": "upao-question", "props": { "prompt": "5. ¿Qué comando crea un índice B-tree?", "number": 5 } },
+      { "id": "summary_quiz", "tipo": "upao-summary", "props": { "title": "Resultados", "text": "Has completado la evaluación." } }
+    ]
+  },
+  "cases": [
+    {
+      "id": 1,
+      "recurso": "explain",
+      "category": "quitar",
+      "prompt": "quita el ejemplo",
+      "expectedIntent": { "accion": "quitar", "tipo": "example" },
+      "expectedBlockIds": ["header_1", "p_intro", "p_concept", "question_1", "summary_1"]
+    },
+    {
+      "id": 2,
+      "recurso": "explain",
+      "category": "mover",
+      "prompt": "pon la pregunta al inicio",
+      "expectedIntent": { "accion": "mover", "tipo": "question", "posicion": "inicio" },
+      "expectedBlockIds": ["header_1", "question_1", "p_intro", "p_concept", "example_1", "summary_1"]
+    },
+    {
+      "id": 3,
+      "recurso": "explain",
+      "category": "quitar",
+      "prompt": "elimina el primer párrafo introductorio",
+      "expectedIntent": { "accion": "quitar", "tipo": "paragraph", "indice": 1 },
+      "expectedBlockIds": ["header_1", "p_concept", "example_1", "question_1", "summary_1"]
+    },
+    {
+      "id": 4,
+      "recurso": "explain",
+      "category": "quitar",
+      "prompt": "quita la pregunta y deja solo la explicación",
+      "expectedIntent": { "accion": "quitar", "tipo": "question" },
+      "expectedBlockIds": ["header_1", "p_intro", "p_concept", "example_1", "summary_1"]
+    },
+    {
+      "id": 5,
+      "recurso": "comic",
+      "category": "quitar",
+      "prompt": "quita el resumen del cómic",
+      "expectedIntent": { "accion": "quitar", "tipo": "summary" },
+      "expectedBlockIds": ["header_comic", "panel_1", "panel_2", "panel_3", "question_comic"]
+    },
+    {
+      "id": 6,
+      "recurso": "comic",
+      "category": "quitar",
+      "prompt": "elimina la última viñeta del cómic",
+      "expectedIntent": { "accion": "quitar", "tipo": "panel", "indice": "ultimo" },
+      "expectedBlockIds": ["header_comic", "panel_1", "panel_2", "question_comic", "summary_comic"]
+    },
+    {
+      "id": 7,
+      "recurso": "comic",
+      "category": "mover",
+      "prompt": "pon la pregunta al inicio del cómic",
+      "expectedIntent": { "accion": "mover", "tipo": "question", "posicion": "inicio" },
+      "expectedBlockIds": ["header_comic", "question_comic", "panel_1", "panel_2", "panel_3", "summary_comic"]
+    },
+    {
+      "id": 8,
+      "recurso": "quiz",
+      "category": "quitar",
+      "prompt": "quita la última pregunta del quiz",
+      "expectedIntent": { "accion": "quitar", "tipo": "question", "indice": "ultimo" },
+      "expectedBlockIds": ["header_quiz", "q1", "q2", "q3", "q4", "summary_quiz"]
+    },
+    {
+      "id": 9,
+      "recurso": "quiz",
+      "category": "quitar",
+      "prompt": "quita el resumen final",
+      "expectedIntent": { "accion": "quitar", "tipo": "summary" },
+      "expectedBlockIds": ["header_quiz", "q1", "q2", "q3", "q4", "q5"]
+    },
+    {
+      "id": 10,
+      "recurso": "quiz",
+      "category": "mover",
+      "prompt": "pon la pregunta 5 al inicio de la evaluación",
+      "expectedIntent": { "accion": "mover", "tipo": "question", "indice": 5, "posicion": "inicio" },
+      "expectedBlockIds": ["header_quiz", "q5", "q1", "q2", "q3", "q4", "summary_quiz"]
+    },
+    {
+      "id": 11,
+      "recurso": "explain",
+      "category": "quitar",
+      "prompt": "borra el ejemplo",
+      "expectedIntent": { "accion": "quitar", "tipo": "example" },
+      "expectedBlockIds": ["header_1", "p_intro", "p_concept", "question_1", "summary_1"]
+    },
+    {
+      "id": 12,
+      "recurso": "explain",
+      "category": "quitar",
+      "prompt": "saca el resumen de la lectura",
+      "expectedIntent": { "accion": "quitar", "tipo": "summary" },
+      "expectedBlockIds": ["header_1", "p_intro", "p_concept", "example_1", "question_1"]
+    },
+    {
+      "id": 13,
+      "recurso": "explain",
+      "category": "mover",
+      "prompt": "sube la pregunta al principio",
+      "expectedIntent": { "accion": "mover", "tipo": "question", "posicion": "inicio" },
+      "expectedBlockIds": ["header_1", "question_1", "p_intro", "p_concept", "example_1", "summary_1"]
+    },
+    {
+      "id": 14,
+      "recurso": "explain",
+      "category": "mover",
+      "prompt": "baja el ejemplo al final",
+      "expectedIntent": { "accion": "mover", "tipo": "example", "posicion": "final" },
+      "expectedBlockIds": ["header_1", "p_intro", "p_concept", "question_1", "summary_1", "example_1"]
+    },
+    {
+      "id": 15,
+      "recurso": "explain",
+      "category": "quitar",
+      "prompt": "quita el segundo párrafo",
+      "expectedIntent": { "accion": "quitar", "tipo": "paragraph", "indice": 2 },
+      "expectedBlockIds": ["header_1", "p_intro", "example_1", "question_1", "summary_1"]
+    },
+    {
+      "id": 16,
+      "recurso": "explain",
+      "category": "mover",
+      "prompt": "pon el resumen después del ejemplo",
+      "expectedIntent": { "accion": "mover", "tipo": "summary", "posicion": "despues" },
+      "expectedBlockIds": ["header_1", "p_intro", "p_concept", "example_1", "summary_1", "question_1"]
+    },
+    {
+      "id": 17,
+      "recurso": "explain",
+      "category": "anadir",
+      "prompt": "agrega un objetivo de aprendizaje al inicio",
+      "expectedIntent": { "accion": "anadir", "tipo": "objective", "posicion": "inicio" },
+      "expectedBlockTypes": ["upao-header", "upao-objective", "p", "p", "upao-example", "upao-question", "upao-summary"]
+    },
+    {
+      "id": 18,
+      "recurso": "comic",
+      "category": "quitar",
+      "prompt": "elimina la segunda viñeta",
+      "expectedIntent": { "accion": "quitar", "tipo": "panel", "indice": 2 },
+      "expectedBlockIds": ["header_comic", "panel_1", "panel_3", "question_comic", "summary_comic"]
+    },
+    {
+      "id": 19,
+      "recurso": "comic",
+      "category": "mover",
+      "prompt": "mueve la viñeta 1 al final",
+      "expectedIntent": { "accion": "mover", "tipo": "panel", "indice": 1, "posicion": "final" },
+      "expectedBlockIds": ["header_comic", "panel_2", "panel_3", "question_comic", "summary_comic", "panel_1"]
+    },
+    {
+      "id": 20,
+      "recurso": "comic",
+      "category": "mover",
+      "prompt": "sube la última viñeta al inicio",
+      "expectedIntent": { "accion": "mover", "tipo": "panel", "indice": "ultimo", "posicion": "inicio" },
+      "expectedBlockIds": ["header_comic", "panel_3", "panel_1", "panel_2", "question_comic", "summary_comic"]
+    },
+    {
+      "id": 21,
+      "recurso": "comic",
+      "category": "quitar",
+      "prompt": "borra la primera viñeta del cómic",
+      "expectedIntent": { "accion": "quitar", "tipo": "panel", "indice": 1 },
+      "expectedBlockIds": ["header_comic", "panel_2", "panel_3", "question_comic", "summary_comic"]
+    },
+    {
+      "id": 22,
+      "recurso": "comic",
+      "category": "mover",
+      "prompt": "pon el resumen al principio del cómic",
+      "expectedIntent": { "accion": "mover", "tipo": "summary", "posicion": "inicio" },
+      "expectedBlockIds": ["header_comic", "summary_comic", "panel_1", "panel_2", "panel_3", "question_comic"]
+    },
+    {
+      "id": 23,
+      "recurso": "quiz",
+      "category": "quitar",
+      "prompt": "elimina la pregunta 3",
+      "expectedIntent": { "accion": "quitar", "tipo": "question", "indice": 3 },
+      "expectedBlockIds": ["header_quiz", "q1", "q2", "q4", "q5", "summary_quiz"]
+    },
+    {
+      "id": 24,
+      "recurso": "quiz",
+      "category": "mover",
+      "prompt": "mueve la pregunta 1 al final",
+      "expectedIntent": { "accion": "mover", "tipo": "question", "indice": 1, "posicion": "final" },
+      "expectedBlockIds": ["header_quiz", "q2", "q3", "q4", "q5", "summary_quiz", "q1"]
+    },
+    {
+      "id": 25,
+      "recurso": "quiz",
+      "category": "quitar",
+      "prompt": "quita la primera pregunta",
+      "expectedIntent": { "accion": "quitar", "tipo": "question", "indice": 1 },
+      "expectedBlockIds": ["header_quiz", "q2", "q3", "q4", "q5", "summary_quiz"]
+    },
+    {
+      "id": 26,
+      "recurso": "quiz",
+      "category": "anadir",
+      "prompt": "agrega un objetivo de aprendizaje al inicio",
+      "expectedIntent": { "accion": "anadir", "tipo": "objective", "posicion": "inicio" },
+      "expectedBlockTypes": ["upao-header", "upao-objective", "upao-question", "upao-question", "upao-question", "upao-question", "upao-question", "upao-summary"]
+    },
+    {
+      "id": 27,
+      "recurso": "explain",
+      "category": "ninguna",
+      "prompt": "hola, ¿cómo estás hoy?",
+      "expectedIntent": { "accion": "ninguna" },
+      "expectedBlockIds": ["header_1", "p_intro", "p_concept", "example_1", "question_1", "summary_1"]
+    },
+    {
+      "id": 28,
+      "recurso": "quiz",
+      "category": "ninguna",
+      "prompt": "haz que el fondo sea de color azul",
+      "expectedIntent": { "accion": "ninguna" },
+      "expectedBlockIds": ["header_quiz", "q1", "q2", "q3", "q4", "q5", "summary_quiz"]
+    },
+    {
+      "id": 29,
+      "recurso": "comic",
+      "category": "ninguna",
+      "prompt": "elimina el video interactivo",
+      "expectedIntent": { "accion": "ninguna" },
+      "expectedBlockIds": ["header_comic", "panel_1", "panel_2", "panel_3", "question_comic", "summary_comic"]
+    },
+    {
+      "id": 30,
+      "recurso": "explain",
+      "category": "ninguna",
+      "prompt": "explícame en detalle qué es un árbol B-tree",
+      "expectedIntent": { "accion": "ninguna" },
+      "expectedBlockIds": ["header_1", "p_intro", "p_concept", "example_1", "question_1", "summary_1"]
+    }
+  ]
+}

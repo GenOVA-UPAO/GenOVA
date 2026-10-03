@@ -96,6 +96,12 @@ class InMemoryTempUploadRepository:
         }
         with store.lock():
             store.prune_expired_locked()
+            owned = [it for it in store.registry().values() if it["user_id"] == user_id]
+            try:
+                store.check_user_quota(len(owned), sum(it["size_bytes"] for it in owned), len(content))
+            except Exception:
+                store.remove_file(str(storage_path))
+                raise
             store.registry()[upload_id] = payload
         return _to_entity(payload)
 
