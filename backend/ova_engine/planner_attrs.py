@@ -115,6 +115,11 @@ _NOUL_LO = float(os.getenv("OVA_PLANNER_NOUL_LO", "0.5"))
 
 
 def _laya_endpoint() -> tuple[str, dict, dict]:
+    """Laya local o, con `OVA_DECISION_BACKEND=jev`, Jev en OpenRouter (mismo protocolo)."""
+    from ova_engine.decision import _backend, _endpoint
+
+    if _backend() == "jev" and not os.getenv("OVA_PLANNER_URL"):
+        return _endpoint()
     base = (os.getenv("OVA_PLANNER_URL") or os.getenv("OVA_DECISION_URL") or "http://localhost:8090").rstrip("/")
     headers = {"Authorization": f"Bearer {os.environ['LAYA_API_KEY']}"} if os.getenv("LAYA_API_KEY") else {}
     return f"{base}/v1/systemone", headers, {"model": "multilingual"}

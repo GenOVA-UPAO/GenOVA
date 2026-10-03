@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ResourceBlockSchema(BaseModel):
@@ -13,11 +13,22 @@ class ResourceBlockSchema(BaseModel):
     props: dict[str, Any] = Field(default_factory=dict)
 
 
+class InterpretOptions(BaseModel):
+    """Opciones que el cliente puede fijar. Sin URLs: el servidor solo llama a
+    los endpoints de su propia configuración (evita SSRF vía `laya_url`)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enable_post_verification: bool | None = None
+    threshold: float | None = Field(default=None, ge=0.0, le=1.0)
+    use_router: bool | None = None
+
+
 class InterpretRequest(BaseModel):
     instruction: str = Field(..., min_length=1, max_length=500)
     blocks: list[ResourceBlockSchema] = Field(default_factory=list)
     backend: str | None = None
-    options: dict[str, Any] = Field(default_factory=dict)
+    options: InterpretOptions = Field(default_factory=InterpretOptions)
 
 
 class ConfirmRequest(BaseModel):

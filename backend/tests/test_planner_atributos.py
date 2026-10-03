@@ -146,6 +146,26 @@ def test_plan_ova_backend_atributos(monkeypatch):
     assert set(plan) == set(PHASES) and 7 in plan["explain"]
 
 
+def test_plan_ova_jev_atributos_usa_openrouter(monkeypatch):
+    monkeypatch.setenv("OVA_DECISION_BACKEND", "jev")
+    monkeypatch.setenv("OVA_PLANNER_MODE", "atributos")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test")
+    monkeypatch.delenv("OVA_PLANNER_URL", raising=False)
+    monkeypatch.delenv("OVA_DECISION_URL", raising=False)
+    calls = []
+
+    def fake_post(url, json=None, headers=None, **kw):
+        calls.append((url, json, headers))
+        return _Resp({a: {"noul": 0.9 if a == "historico" else 0.1} for a in pa.ATTRIBUTES})
+
+    monkeypatch.setattr(pa.httpx, "post", fake_post)
+    plan = planner.plan_ova("Historia de las bases de datos", "")
+    url, body, headers = calls[0]
+    assert url == "https://openrouter.ai/api/alpha/decisions"
+    assert body["model"] == "typesafe/jev-1.13" and headers["Authorization"] == "Bearer sk-test"
+    assert set(plan) == set(PHASES) and 7 in plan["explain"]
+
+
 def test_plan_ova_rules_sin_red(monkeypatch):
     monkeypatch.setenv("OVA_DECISION_BACKEND", "rules")
     monkeypatch.setattr(pa.httpx, "post", lambda *a, **k: pytest.fail("no debe usar red"))
