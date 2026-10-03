@@ -43,26 +43,60 @@ def _capture(prompts):
 # --- generación inicial -------------------------------------------------------
 
 
-def test_two_step_lleva_el_material_a_los_dos_prompts(monkeypatch):
+def test_plantilla_lleva_el_material_al_prompt(monkeypatch):
+    import json
+
+    from ova_engine.decision import decide
+    from ova_engine.registry import get_spec
+
+    spec = get_spec("evaluate", 1)
+    params = decide(spec, "Cuántica", CTX)
+    sample_data = spec.sample("Cuántica", params)
     prompts: list = []
-    monkeypatch.setattr(gen, "generar_texto", _capture(prompts))
-    gen.generate_resource("evaluate", 1, "Cuántica", contexto=CTX, refine=False)
-    assert [t for t, _ in prompts] == ["texto", "codigo"]
-    assert all(MARK in p for _, p in prompts)
-    assert all("CONTEXTO_APORTADO_POR_EL_USUARIO" in p for _, p in prompts)
+
+    def fake(prompt, task, *a, **k):
+        prompts.append((task, prompt))
+        return json.dumps(sample_data)
+
+    monkeypatch.setattr("llm.router.generar_texto", fake)
+    gen.generate_resource("evaluate", 1, "Cuántica", contexto=CTX)
+    assert len(prompts) == 1
+    assert prompts[0][0] == "texto"
+    assert MARK in prompts[0][1]
+    assert "[MATERIAL DEL DOCENTE]" in prompts[0][1]
 
 
-def test_direct_code_lleva_el_material(monkeypatch):
+def test_podcast_lleva_el_material(monkeypatch):
     prompts: list = []
-    monkeypatch.setattr(gen, "generar_texto", _capture(prompts))
-    gen.generate_resource("explain", 2, "Cuántica", contexto=CTX, refine=False)
-    assert len(prompts) == 1 and MARK in prompts[0][1]
+
+    def fake(prompt, task, *a, **k):
+        prompts.append((task, prompt))
+        return "Guion de podcast sobre cuántica"
+
+    monkeypatch.setattr("llm.router.generar_texto", fake)
+    monkeypatch.setattr("llm.podcast.podcast.podcast_audio", lambda text: None)
+    gen.generate_resource("engage", 3, "Cuántica", contexto=CTX)
+    assert len(prompts) == 1
+    assert MARK in prompts[0][1]
 
 
 def test_sin_material_no_hay_bloque(monkeypatch):
+    import json
+
+    from ova_engine.decision import decide
+    from ova_engine.registry import get_spec
+
+    spec = get_spec("explain", 2)
+    params = decide(spec, "Cuántica", "")
+    sample_data = spec.sample("Cuántica", params)
     prompts: list = []
-    monkeypatch.setattr(gen, "generar_texto", _capture(prompts))
-    gen.generate_resource("explain", 2, "Cuántica", refine=False)
+
+    def fake(prompt, task, *a, **k):
+        prompts.append((task, prompt))
+        return json.dumps(sample_data)
+
+    monkeypatch.setattr("llm.router.generar_texto", fake)
+    gen.generate_resource("explain", 2, "Cuántica")
     assert "CONTEXTO_APORTADO_POR_EL_USUARIO" not in prompts[0][1]
 
 

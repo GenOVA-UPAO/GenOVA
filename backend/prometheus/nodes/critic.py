@@ -81,46 +81,23 @@ def critic_node(state: dict) -> dict:
     }
 
 
-def _evaluate(result: dict, concept: str, llm_config, enabled_models, theme, max_rounds: int) -> dict:
+def _evaluate(result: dict, concept: str, llm_config, enabled_models, theme, max_rounds: int = 0) -> dict:
     from prometheus.critic.critic import critique_resource
-    from prometheus.engine.refine import apply_feedback
 
     html = result["html"]
     rt = result["resource_type"]
     phase = result["phase"]
-    best_html, best_score = html, 0
+    score = 0
     issues: list = []
 
-    for ronda in range(max_rounds + 1):
-        try:
-            r = critique_resource(html, phase, rt, concept, llm_config, enabled_models, theme)
-        except Exception:  # noqa: BLE001
-            logger.exception("critic failed", phase=phase, resource_type=rt, round=ronda)
-            break
-
+    try:
+        r = critique_resource(html, phase, rt, concept, llm_config, enabled_models, theme)
         score = r.get("puntaje", 0)
         issues = r.get("problemas", [])
-        veredicto = r.get("veredicto", "aceptar")
+    except Exception:  # noqa: BLE001
+        logger.exception("critic failed", phase=phase, resource_type=rt)
 
-        if score > best_score:
-            best_html, best_score = html, score
-
-        if veredicto != "revisar" or ronda >= max_rounds:
-            break
-        from ova_engine.html import is_template_html
-
-        if is_template_html(html):
-            # Recurso de plantilla: el diseño/JS son fijos y probados; reescribir el
-            # HTML con un LLM solo puede romperlo. Se conserva la puntuación.
-            break
-
-        try:
-            html = apply_feedback(html, concept, issues, phase, rt, llm_config, enabled_models, theme)
-        except Exception:  # noqa: BLE001
-            logger.exception("apply_feedback failed", phase=phase, resource_type=rt)
-            break
-
-    return {**result, "html": best_html, "score": best_score, "critic_issues": issues}
+    return {**result, "score": score, "critic_issues": issues}
 
 
 def _revise(state: dict, phase: str, results: list, errors: list) -> dict:

@@ -39,7 +39,7 @@ def test_resource_defects_incluye_deriva():
 
 
 def test_prompt_lleva_anclaje_de_tema():
-    body = render_texto("engage", 1, "Revolución Industrial")
+    body = render_texto("engage", 3, "Revolución Industrial")
     assert "ANCLAJE DE TEMA" in body
     assert "Revolución Industrial" in body
     assert "PROHIBIDO cambiar de dominio" in body

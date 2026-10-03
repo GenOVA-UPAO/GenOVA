@@ -84,20 +84,49 @@ def edit_phase_content(
     # stripped first and re-injected after, so it is never rewritten or cut.
     authored, had_css, had_components = strip_runtime(base_html)
     try:
-        new_html = extract_html_document(
-            generar_texto(
-                _EDIT_PROMPT.format(
-                    concept=concept,
-                    instruction=instruction,
-                    material=_material_block(contexto),
-                    html=authored,
-                ),
-                "codigo",
-                _CODE_MAX_TOKENS,
-                llm_config,
-                enabled_models,
+        if getattr(settings, "ova_text_backend", None) == "local":
+            import httpx
+
+            url = os.getenv("OVA_LOCAL_LLM_URL", "http://localhost:11435").rstrip("/")
+            model = os.getenv("OVA_LOCAL_LLM_MODEL", "qwen3:8b")
+            r = httpx.post(
+                f"{url}/api/chat",
+                json={
+                    "model": model,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": _EDIT_PROMPT.format(
+                                concept=concept,
+                                instruction=instruction,
+                                material=_material_block(contexto),
+                                html=authored,
+                            ),
+                        }
+                    ],
+                    "options": {"num_predict": min(_CODE_MAX_TOKENS, 4096)},
+                    "stream": False,
+                },
+                timeout=180.0,
             )
-        )
+            r.raise_for_status()
+            raw_text = r.json().get("message", {}).get("content", "")
+            new_html = extract_html_document(raw_text)
+        else:
+            new_html = extract_html_document(
+                generar_texto(
+                    _EDIT_PROMPT.format(
+                        concept=concept,
+                        instruction=instruction,
+                        material=_material_block(contexto),
+                        html=authored,
+                    ),
+                    "codigo",
+                    _CODE_MAX_TOKENS,
+                    llm_config,
+                    enabled_models,
+                )
+            )
     except Exception:
         logger.exception("edit_phase_content failed", concept=concept[:60])
         return None
@@ -153,9 +182,12 @@ def _regen_one_phase(
         concept = new_resource_concept(concept, instruction or pending)
         instruction = None
     if instruction:
-        return edit_phase_content(
+        edited = edit_phase_content(
             concept, instruction, phase.content or "", llm_config, enabled_models, contexto
         )
+        if edited:
+            return edited
+        concept = f"{concept}. Ajuste pedagógico: {instruction}"
     rtype = resolve_resource_type(phase)
     if rtype is None:
         logger.warning("skipping regen — unknown resource_type", phase_id=phase.id)

@@ -1,12 +1,7 @@
-"""Prompts for the 10 EVALUATE-phase resources (5E methodology).
+"""Metadatos de recursos para la fase EVALUATE (metodología 5E).
 
-Each prompt fixes the resource FORMAT but adapts all assessments, quizzes and
-rubrics to whatever DBMS (Sistemas de Gestión de Base de Datos) concept is passed
-in `concept`.
+La generación de contenido corre sobre las plantillas deterministas de ova_engine/.
 """
-
-from prometheus.prompts._loader import render_codigo, render_html, render_texto
-from prometheus.prompts._scaffold import with_user_context
 
 # fmt: off
 RECURSOS_META = {
@@ -22,34 +17,3 @@ RECURSOS_META = {
     10: {"tipo": "Diploma de Logro", "duracion": "1–2 min", "interactividad": "Baja", "emoji": "🏆"},
 }
 # fmt: on
-CODE_ONLY = {3, 5, 9}
-
-
-def prompt_codigo(
-    n: int,
-    concept: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-    config: dict | None = None,
-) -> str:
-    return with_user_context(
-        render_codigo("evaluate", n, concept, design_system, config), contexto_usuario
-    )
-
-
-def prompt_texto(
-    n: int, concept: str, contexto_usuario: str = "", config: dict | None = None
-) -> str:
-    return with_user_context(render_texto("evaluate", n, concept, config), contexto_usuario)
-
-
-def prompt_html(
-    n: int,
-    concept: str,
-    data_json: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-) -> str:
-    return with_user_context(
-        render_html("evaluate", n, concept, data_json, design_system), contexto_usuario
-    )

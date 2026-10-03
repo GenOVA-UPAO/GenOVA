@@ -4,13 +4,13 @@ import prometheus.plans.generate as gen
 from core.config import settings
 from ova_engine import text as text_mod
 from ova_engine.registry import get_spec
-from prometheus.plans.plan_map import TEMPLATE, TWO_STEP, degraded_plan, plan_for
+from prometheus.plans.plan_map import TEMPLATE, degraded_plan, plan_for
 
 
 def test_plan_template_si_hay_plantilla(monkeypatch):
     monkeypatch.setattr(settings, "ova_engine_templates", True)
     assert plan_for("engage", 1) == TEMPLATE
-    assert degraded_plan("engage", 1, TEMPLATE) == TWO_STEP
+    assert degraded_plan("engage", 1, TEMPLATE) is None
 
 
 def test_generate_resource_usa_texto_y_plantilla(monkeypatch):
@@ -74,3 +74,25 @@ def test_job_sin_recursos_se_planifica_al_crear(monkeypatch):
     assert [(r["phase_type"], r["resource_type"]) for r in rows] == [
         ("engage", "2"), ("engage", "4"), ("evaluate", "1"),
     ]
+
+
+def test_podcast_usa_el_backend_de_texto_local(monkeypatch):
+    import ova_engine.text as text_mod
+
+    monkeypatch.setenv("OVA_TEXT_BACKEND", "local")
+    calls = {}
+
+    class _Resp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"message": {"content": "Hola, hoy hablamos de índices."}}
+
+    def fake_post(url, json, timeout):
+        calls["url"] = url
+        return _Resp()
+
+    monkeypatch.setattr(text_mod.httpx, "post", fake_post)
+    assert text_mod.generate_plain("p") == "Hola, hoy hablamos de índices."
+    assert calls["url"].endswith("/api/chat")
