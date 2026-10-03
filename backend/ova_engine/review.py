@@ -6,7 +6,7 @@ ruta de campo; si los hay se reescriben SOLO esos campos (máx. 1 ronda) y se
 revalida contra el schema. Nunca bloquea: ante cualquier fallo devuelve el
 dato original.
 
-Variables: `OVA_CONTENT_REVIEW` (1 por defecto), `OVA_CONTENT_REVIEW_BUDGET_S`
+Variables: `OVA_CONTENT_REVIEW` (0 por defecto: con qwen3:8b el bench dio recall ~0.6 y FP ~0.35; actívalo con un modelo de revisión fuerte en `OVA_CONTENT_REVIEW_MODEL`), `OVA_CONTENT_REVIEW_BUDGET_S`
 (tope de tiempo extra, 90 s), `OVA_CONTENT_REVIEW_PREFILTER` (0; Laya noul
 «¿trata de <concepto>?» por campo largo), `OVA_CONTENT_REVIEW_MODEL` (modelo Ollama del revisor).
 """
@@ -81,7 +81,7 @@ class ReviewReport:
 
 
 def enabled() -> bool:
-    return os.getenv("OVA_CONTENT_REVIEW", "1").strip().lower() not in ("0", "false", "no", "off", "")
+    return os.getenv("OVA_CONTENT_REVIEW", "0").strip().lower() not in ("0", "false", "no", "off", "")
 
 
 # ---------------------------------------------------------------- rutas
