@@ -23,7 +23,7 @@ function apiBases(mode: string): { prod: string; develop: string } {
 // Destino del proxy en desarrollo. GENOVA_DEV_BACKEND permite levantar una
 // segunda instancia contra el backend determinista (LLM_FAKE=1) y probar la
 // generación de OVAs sin gastar créditos de un proveedor real.
-const BACKEND = process.env.GENOVA_DEV_BACKEND ?? "http://127.0.0.1:8002";
+const BACKEND = process.env.GENOVA_DEV_BACKEND ?? "http://127.0.0.1:8000";
 
 // Phosphor y radix quedan FUERA del splitting manual: forzarlos a un chunk único
 // hacía que el entry lo descargue entero aunque la ruta solo use 3-4 módulos;
@@ -172,7 +172,7 @@ export default defineConfig(({ mode }) => {
       GENOVA_API_BASE_DEVELOP: JSON.stringify(develop),
     },
     server: {
-      port: 4202,
+      port: 4200,
       strictPort: true,
       // En desarrollo Vite compila cada módulo la primera vez que se pide: sin
       // esto, abrir una página por primera vez tardaba segundos (Modelos, 4,5 s)
