@@ -10,9 +10,10 @@ const screenshotFonts = `
 @font-face{font-family:Reference;src:url(/templates/fonts/DejaVuSans.ttf);font-weight:400}
 @font-face{font-family:Reference;src:url(/templates/fonts/DejaVuSans-Bold.ttf);font-weight:600 900}
 @font-face{font-family:ReferenceMono;src:url(/templates/fonts/DejaVuSansMono.ttf)}
-:root{--font-body:Reference;--font-display:Reference;--font-mono:ReferenceMono}
-body,button,input,textarea,select{font-family:Reference!important}
-pre,code{font-family:ReferenceMono!important}`;
+@font-face{font-family:ReferenceEmoji;src:url(/templates/fonts/NotoEmoji.ttf);font-weight:300 700}
+:root{--font-body:Reference,ReferenceEmoji;--font-display:Reference,ReferenceEmoji;--font-mono:ReferenceMono,ReferenceEmoji}
+*{font-family:Reference,ReferenceEmoji!important}
+pre,pre *,code,code *,.k-code,.k-code-in{font-family:ReferenceMono,ReferenceEmoji!important}`;
 
 test.beforeEach(async ({ page }) => {
   await page.clock.install({ time: new Date('2026-01-01T12:00:00Z') });

@@ -23,7 +23,7 @@ render de producción, incluyendo CSS y Shadow DOM UPAO, y sirve estáticos en
   Drag & drop usa la alternativa accesible de selección/colocación; los timers
   se adelantan con `page.clock`.
 - Baselines full-page a 1280 y 375, tolerancia máxima 0.5% de píxeles. Fuentes
-  DejaVu vendorizadas, seed aleatorio fijo, UTC, fecha fija y reduced-motion.
+  DejaVu y Noto Emoji vendorizadas, seed aleatorio fijo, UTC, fecha fija y reduced-motion.
   La auditoría usa el CSS real; la tipografía de referencia se aplica solo al
   screenshot. Revisar cambios visuales antes de actualizar las referencias:
 
