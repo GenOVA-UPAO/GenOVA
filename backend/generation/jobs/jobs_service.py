@@ -31,7 +31,7 @@ QUEUED_STALE_AFTER_SECONDS = 900
 _STALE_THRESHOLDS = {"running": STALE_AFTER_SECONDS, "queued": QUEUED_STALE_AFTER_SECONDS}
 # `degraded` = HTML conservado que no pasó el validador; reanudable sin
 # reutilizar `error` (fallo duro) ni `pending` (aún no intentado).
-_RESUMABLE_RESOURCE_STATUSES = ("pending", "error", "degraded")
+_RESUMABLE_RESOURCE_STATUSES = ("pending", "running", "error", "degraded")
 
 
 def _now() -> datetime:
@@ -258,9 +258,7 @@ def sweep_stale_jobs_for_ovas(db: Session, ova_ids: list[uuid.UUID]) -> None:
     try:
         jobs = (
             db.execute(
-                select(OvaJob)
-                .where(OvaJob.ova_id.in_(ova_ids))
-                .order_by(OvaJob.created_at.desc())
+                select(OvaJob).where(OvaJob.ova_id.in_(ova_ids)).order_by(OvaJob.created_at.desc())
             )
             .scalars()
             .all()

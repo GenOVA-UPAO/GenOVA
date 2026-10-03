@@ -17,6 +17,8 @@ class JobSnapshotPort(Protocol):
         self, job_id: UUID, user_id: UUID
     ) -> tuple[Job, list[JobResource]] | None: ...
 
+    def duration_medians(self, keys: list[tuple[str, str]]) -> dict[str, float]: ...
+
 
 class JobRepository(Protocol):
     def create(

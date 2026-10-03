@@ -13,7 +13,8 @@ from dataclasses import dataclass
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from core.database import get_db
+from core.config import settings
+from core.database import SessionLocal, get_db
 from generation.application.use_cases import (
     CancelJob,
     CreateJob,
@@ -53,7 +54,7 @@ def build_generation(db: Session = Depends(get_db)) -> GenerationUseCases:
             guardrail=InputGuardrailChecker(),
             references=ReferenceMaterialAdapter(db),
         ),
-        get_job_status=GetJobStatus(repo=repo),
+        get_job_status=GetJobStatus(repo=repo, concurrency=settings.ova_gen_concurrency),
         find_job_by_ova=FindJobByOva(repo=repo),
         get_resource_content=GetResourceContent(repo=repo),
         cancel_job=CancelJob(repo=repo),
@@ -62,4 +63,21 @@ def build_generation(db: Session = Depends(get_db)) -> GenerationUseCases:
 
 
 def build_generation_stream() -> GetJobStatus:
-    return GetJobStatus(repo=FreshSessionJobRepository())
+    return GetJobStatus(repo=FreshSessionJobRepository(), concurrency=settings.ova_gen_concurrency)
+
+
+class FreshSessionContentReader:
+    """Lee el HTML de un recurso listo con sesión corta (eventos `resource` del SSE)."""
+
+    def execute(self, job_id, resource_id, user_id):
+        db = SessionLocal()
+        try:
+            return GetResourceContent(repo=SqlAlchemyJobRepository(db)).execute(
+                job_id, resource_id, user_id
+            )
+        finally:
+            db.close()
+
+
+def build_resource_content_reader() -> FreshSessionContentReader:
+    return FreshSessionContentReader()

@@ -26,6 +26,7 @@ from generation.jobs.jobs_model import (  # noqa: F401  — registers ova_jobs t
     OvaJob,
     OvaJobResource,
 )
+from generation.jobs.timing_model import ResourceTiming  # noqa: F401  — registers resource_timings
 from generation.regen.regen_job_model import RegenJob  # noqa: F401  — registers regen_jobs
 from llm.catalog.models import CatalogCache  # noqa: F401
 from ova.infrastructure.orm import Ova, OvaPhase, OvaPhaseVersion, OvaVersion  # noqa: F401
@@ -48,6 +49,7 @@ __all__ = [
     "OvaPhaseVersion",
     "OvaVersion",
     "PasswordResetToken",
+    "ResourceTiming",
     "PlatformConfig",
     "RagChunk",
     "RegenJob",

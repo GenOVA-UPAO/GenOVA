@@ -213,7 +213,7 @@ export const STALL_MS = 3 * 60 * 1000;
  * justo el caso que este botón existe para rescatar. Si se añade un estado
  * nuevo en `jobs_service.py`, hay que añadirlo aquí o el botón no aparecerá.
  */
-export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "error", "degraded"]);
+export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "running", "error", "degraded"]);
 
 export function resumableResourceIds(snapshot: JobSnapshot | null | undefined): string[] {
   if (!snapshot) return [];
