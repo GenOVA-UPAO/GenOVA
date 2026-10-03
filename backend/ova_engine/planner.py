@@ -9,6 +9,7 @@ None y el concierge sigue con su camino de siempre.
 
 from __future__ import annotations
 
+import os
 import time
 
 import httpx
@@ -35,6 +36,16 @@ def _catalog() -> dict[str, dict[int, str]]:
 
 
 def plan_ova(concept: str, contexto: str = "", per_phase: int = 3, timeout: float = 6.0) -> dict | None:
+    backend = _backend()
+    if backend == "planner-atributos" or (backend == "laya" and os.getenv("OVA_PLANNER_MODE") == "atributos"):
+        from ova_engine.planner_attrs import plan_by_attributes
+
+        return plan_by_attributes(concept, mode=os.getenv("OVA_PLANNER_PROFILE", "hibrido"), per_phase=per_phase)
+    return plan_ova_global(concept, contexto, per_phase, timeout)
+
+
+def plan_ova_global(concept: str, contexto: str = "", per_phase: int = 3, timeout: float = 6.0) -> dict | None:
+    """Planner original: 50 preguntas `noul` globales (se conserva para comparar en el bench)."""
     if _backend() not in ("laya", "jev"):
         return None
     catalog = _catalog()
