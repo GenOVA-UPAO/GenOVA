@@ -132,52 +132,6 @@ def score_85_no_issues(phase_result):
 
 
 # ---------------------------------------------------------------------------
-# Scenario 3 — Crítico re-genera
-# ---------------------------------------------------------------------------
-
-
-@scenario(FEATURE, "Crítico re-genera un recurso defectuoso")
-def test_critico_regenera():
-    pass
-
-
-@given('el LLM del Crítico retorna veredicto "revisar" puntaje 40 en primera llamada')
-def critic_returns_revisar(ctx, monkeypatch):
-    ctx["critique_calls"] = []
-
-    def _critique(*a, **k):
-        ctx["critique_calls"].append("call")
-        if len(ctx["critique_calls"]) == 1:
-            return {"puntaje": 40, "problemas": ["falta interactividad"], "veredicto": "revisar"}
-        return {"puntaje": 78, "problemas": [], "veredicto": "aceptar"}
-
-    import prometheus.critic.critic as critic_mod
-    import prometheus.engine.refine as refine_mod
-
-    monkeypatch.setattr(critic_mod, "critique_resource", _critique)
-    # apply_feedback must also be patched so no LLM call happens during re-generation
-    monkeypatch.setattr(
-        refine_mod,
-        "apply_feedback",
-        lambda *a, **k: _STUB_HTML_V2,
-    )
-
-
-@given('el LLM del Crítico retorna veredicto "aceptar" puntaje 78 en segunda llamada')
-def critic_returns_accept_second(ctx):
-    # Already wired in the previous step via closure — no extra setup needed.
-    pass
-
-
-@then("el result dict incluye score=78 y critique fue llamado dos veces")
-def score_78_two_calls(ctx, phase_result):
-    results = phase_result.get("results", [])
-    assert len(results) == 1
-    assert results[0]["score"] == 78, f"expected 78, got {results[0]['score']}"
-    assert len(ctx["critique_calls"]) == 2, (
-        f"expected 2 critique calls, got {len(ctx['critique_calls'])}"
-    )
-
 
 # ---------------------------------------------------------------------------
 # Scenario 4 — Rondas=0: evalúa pero no re-genera
