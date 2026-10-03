@@ -13,6 +13,7 @@ class Req(BaseModel):
     width: int = 512
     height: int = 512
     steps: int = 2
+    seed: int | None = None  # determinista por OVA: misma semilla + prompt = misma imagen
 
 @app.get("/health")
 def health():
@@ -22,6 +23,7 @@ def health():
 def generate(r: Req):
     w = max(256, min(768, r.width // 64 * 64)); h = max(256, min(768, r.height // 64 * 64))
     with _lock:
-        img = pipe(prompt=r.prompt, num_inference_steps=max(1, min(4, r.steps)), guidance_scale=0.0, width=w, height=h).images[0]
+        gen = torch.Generator(device="cuda").manual_seed(r.seed) if r.seed is not None else None
+        img = pipe(prompt=r.prompt, num_inference_steps=max(1, min(4, r.steps)), guidance_scale=0.0, width=w, height=h, generator=gen).images[0]
     buf = io.BytesIO(); img.save(buf, format="WEBP", quality=82)
     return {"data_uri": "data:image/webp;base64," + base64.b64encode(buf.getvalue()).decode()}

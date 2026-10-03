@@ -7,11 +7,15 @@ from concurrent.futures import ThreadPoolExecutor
 
 import structlog
 
+from llm.images import image_cache
 from llm.images.image_compress import compress_data_uri
 from llm.images.image_placeholder import IMG_PLACEHOLDER
 from llm.images.image_providers import get_image_data_uri, hf_last_resort
+from llm.images.media_fake import fake_media_enabled
+from llm.images.style_guide import guide_from_settings
 
 logger = structlog.get_logger(__name__)
+_SIZE = 512  # get_image_data_uri genera 512x512 por defecto
 
 
 def image_items(json_data) -> list[dict]:
@@ -35,11 +39,22 @@ def image_items(json_data) -> list[dict]:
     return []
 
 
-def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[str, str]:
+def enrich_with_images(
+    json_data,
+    image_settings: dict | None = None,
+    *,
+    character: str = "",
+    ova_key: str = "",
+) -> dict[str, str]:
     """Fetch images for items with ``prompt_imagen``; inject placeholders.
 
     ``image_settings``: max_images, provider, api_key, image_model, chain?, enabled?
     When ``chain`` is set, tries each entry until one succeeds.
+
+    Todas las imágenes del OVA comparten la guía de estilo (``image_settings['style_guide']``,
+    fijada al crear el job, o derivada de ``ova_key``) y, si el recurso tiene personaje
+    (``character``), su descripción fija. La misma imagen (prompt+estilo+modelo+tamaño) sale
+    de la caché de disco en vez de regenerarse.
     """
     json_data = image_items(json_data)
     if not json_data:
@@ -60,9 +75,22 @@ def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[st
     if max_images <= 0 or provider in (None, "", "none"):
         return {}
 
-    def _one(prompt: str) -> str | None:
+    guide = guide_from_settings(settings, ova_key)
+    style = f"{guide.prefix}|{guide.suffix}|{character}"
+    use_cache = image_cache.enabled() and not fake_media_enabled()
+
+    def _one(scene: str) -> str | None:
+        key = image_cache.cache_key(scene, style, f"{provider}:{model or ''}", _SIZE, _SIZE)
+        if use_cache and (cached := image_cache.get(key)):
+            return cached
+        uri = _generate(guide.apply(scene, character), guide.seed)
+        if uri and use_cache:
+            image_cache.put(key, uri)
+        return uri
+
+    def _generate(prompt: str, seed: int) -> str | None:
         if not chain:
-            return get_image_data_uri(prompt, provider, api_key, model=model)
+            return get_image_data_uri(prompt, provider, api_key, model=model, seed=seed)
         # Principal y respaldos en orden; HuggingFace solo cuando falló toda la
         # cadena (antes se colaba entre el principal y el primer respaldo).
         for entry in chain:
@@ -72,7 +100,7 @@ def enrich_with_images(json_data, image_settings: dict | None = None) -> dict[st
             if not p:
                 continue
             key = entry.get("api_key") or (api_key if p == provider else None)
-            uri = get_image_data_uri(prompt, p, key, model=m, hf_fallback=False)
+            uri = get_image_data_uri(prompt, p, key, model=m, hf_fallback=False, seed=seed)
             if uri:
                 return uri
             logger.info("image chain entry failed; trying next", provider=p, model=m)
