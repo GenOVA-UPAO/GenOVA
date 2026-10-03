@@ -17,6 +17,8 @@ from auth.interface.http.dependencies import _extract_token  # noqa: E402
 from auth.interface.http.session_router import logout  # noqa: E402
 from core.config import settings  # noqa: E402
 
+pytestmark = pytest.mark.usefixtures("accept_bearer")
+
 
 def request(method="POST", cookie=True, **headers):
     if cookie:

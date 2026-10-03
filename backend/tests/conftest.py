@@ -12,6 +12,14 @@ def envio_formulario_global():
     pass  # shared across auth and roles scenarios
 
 
+@pytest.fixture
+def accept_bearer(monkeypatch):
+    """Tests que autentican con Bearer: no dependen de AUTH_ACCEPT_BEARER del .env local."""
+    from auth.interface.http import dependencies
+
+    monkeypatch.setattr(dependencies, "_ACCEPT_BEARER", True)
+
+
 @pytest.fixture(scope="session")
 def base_url():
     return BASE
