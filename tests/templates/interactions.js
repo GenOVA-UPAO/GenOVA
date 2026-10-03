@@ -41,6 +41,38 @@ export async function completeResource(page, id) {
   // usado al renderizar, nunca se sustituye la lógica de interacción.
   const data = await page.locator('#ova-data').count()
     ? await page.locator('#ova-data').evaluate(el => JSON.parse(el.textContent)) : null;
+  if (id === 'explain_04') {
+    await all(page, 'upao-node .head');
+    await page.clock.runFor(400);
+    return;
+  }
+  if (id === 'explore_02') {
+    const turns = await page.locator('.socratic-turn').count();
+    for (let i = 1; i <= turns; i++) {
+      await activate(page, page.locator(`#turn-${i} .socratic-opt-btn`).first());
+      if (i < turns) await activate(page, `#next-btn-${i}`);
+    }
+    return;
+  }
+  if (['explore_04', 'explore_07'].includes(id)) {
+    for (const choice of await page.locator('upao-choice[correct="true"] button').all()) {
+      await activate(page, choice);
+      if (id === 'explore_04') {
+        const next = page.locator('.btn-next-step:visible');
+        if (await next.count()) await activate(page, next.last());
+      }
+    }
+    if (id === 'explore_04') await activate(page, '#btn-copy-prompt');
+    return;
+  }
+  if (id === 'explore_08') {
+    const panels = await page.locator('.scenario-panel').count();
+    for (let i = 1; i <= panels; i++) {
+      await activate(page, `upao-choice[group="scenario-${i}"][correct="true"] button`);
+      if (i < panels) await activate(page, 'upao-nav #next');
+    }
+    return;
+  }
   if (id === 'explore_03') {
     const game = await page.locator('#drag-game-data').evaluate(el => JSON.parse(el.textContent));
     for (const [itemId, item] of Object.entries(game.items))
@@ -193,6 +225,7 @@ export async function completeResource(page, id) {
   const used = new Set();
   for (let round = 0; round < 35; round++) {
     if (await page.locator('upao-complete button').isEnabled()) return;
+    await all(page, 'upao-choice[correct="true"] button');
     await all(page, 'input[type="checkbox"]:visible:not(:checked):not(:disabled)');
     const names = await page.locator('input[type="radio"]').evaluateAll(els => [...new Set(els.map(e => e.name))]);
     for (const name of names) {
@@ -227,5 +260,5 @@ export async function completeResource(page, id) {
     // Avanza únicamente los timers reales; sin esperas de minutos en CI.
     await page.clock.runFor(2500);
   }
-  throw new Error(`No completado ${id}: ${await page.locator('#prog').getAttribute('current')}`);
+  throw new Error(`No completado ${id}: ${await page.locator('#prog [role="progressbar"]').getAttribute('aria-valuenow')}`);
 }
