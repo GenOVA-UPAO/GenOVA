@@ -8,6 +8,9 @@ import { type OvaPanelTab, WorkspaceOvaPanelTabs } from "./workspace-ova-panel-t
 import { WorkspaceRegenStatus } from "./workspace-regen-status";
 
 const WorkspaceHtmlPreview = lazy(() => import("./workspace-html-preview"));
+const VisualEditorPanel = lazy(() =>
+  import("../visual-editor/visual-editor-panel").then((m) => ({ default: m.VisualEditorPanel }))
+);
 
 interface Props {
   ovaId: string;
@@ -56,6 +59,25 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
           className="h-full min-h-0 space-y-6 overflow-y-auto p-3 sm:p-4"
         >
           {editOpened && <WorkspaceEditSections ovaId={ovaId} phases={phases} regen={regen} />}
+        </div>
+        <div
+          id="workspace-ova-visual-editor"
+          role="tabpanel"
+          aria-label="Editor visual (beta)"
+          hidden={tab !== "visual_editor"}
+          className="h-full min-h-0 overflow-y-auto"
+        >
+          {tab === "visual_editor" && (
+            <Suspense
+              fallback={
+                <p role="status" className="p-4 text-sm text-muted-foreground">
+                  Cargando editor visual…
+                </p>
+              }
+            >
+              <VisualEditorPanel ovaId={ovaId} phases={phases} />
+            </Suspense>
+          )}
         </div>
       </div>
       {!readOnly && (
