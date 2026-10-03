@@ -62,7 +62,10 @@ def _auth(db, token: str) -> User:
 
 
 def _token_at(user: User, when: datetime) -> str:
-    from core.security import JWT_ALGORITHM, JWT_SECRET
+    # Formato de sesión ACTUAL (con aud): el test mide el corte por cambio de
+    # contraseña, no la transición de tokens legacy, que depende de la fecha de
+    # corte (jwt_legacy_issued_before) y lo volvía una bomba de tiempo.
+    from core.security import JWT_ALGORITHM, JWT_AUDIENCE, JWT_SECRET
 
     return jwt.encode(
         {
@@ -71,7 +74,7 @@ def _token_at(user: User, when: datetime) -> str:
             "iat": when,
             "exp": when + timedelta(hours=1),
             "iss": "genova",
-            "aud": "genova-api",
+            "aud": JWT_AUDIENCE,
             "jti": str(uuid.uuid4()),
         },
         JWT_SECRET,
