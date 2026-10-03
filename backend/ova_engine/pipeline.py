@@ -17,23 +17,36 @@ import structlog
 from ova_engine.contract import RenderContext, TemplateSpec
 from ova_engine.decision import decide
 from ova_engine.html import document
+from ova_engine.review import review_and_fix
 from ova_engine.text import generate_json
 
 logger = structlog.get_logger(__name__)
 
 
-def render_resource(spec: TemplateSpec, data: dict, concept: str, params: dict, theme: dict | None = None) -> str:
+def render_resource(
+    spec: TemplateSpec, data: dict, concept: str, params: dict, theme: dict | None = None, review: dict | None = None
+) -> str:
     from llm.utils.ova_runtime import inject_runtime
 
     theme = theme or {}
     ctx = RenderContext(concept=concept, phase=spec.phase, rt=spec.rt, title=spec.title, params=params)
-    html = document(f"{spec.title}: {concept}", spec.render(data, ctx), key=spec.key)
+    info = {"params": params, **({"review": review} if review else {})}
+    html = document(f"{spec.title}: {concept}", spec.render(data, ctx), key=spec.key, info=info)
     return inject_runtime(
         html,
         css=theme.get("color", "upao") != "free",
         # Las plantillas SIEMPRE usan los componentes UPAO.
         components=True,
         palette=theme.get("palette") if theme.get("color") == "custom" else None,
+    )
+
+
+def _review_step(spec, concept, params, data, fake, llm_config, enabled_models, deadline):
+    """Revisor de contenido: detecta texto fuera de tema/incorrecto y reescribe solo esos campos."""
+    if fake:
+        return data, None
+    return review_and_fix(
+        concept, data, spec.schema(params), deadline=deadline, llm_config=llm_config, enabled_models=enabled_models
     )
 
 
@@ -66,6 +79,8 @@ def generate_with_template(
             deadline=deadline,
         )
     t_text = time.monotonic()
+    data, review = _review_step(spec, concept, params, data, fake, llm_config, enabled_models, deadline)
+    t_review = time.monotonic()
     # Recursos de video (engage 2, explore 4, explain 1): el video se encarga con el
     # guion (`prompt_video` del JSON) y se genera en paralelo al render.
     pending_video = None
@@ -84,7 +99,9 @@ def generate_with_template(
             replacements = enrich_with_images(data, image_settings)
         except Exception as exc:  # la imagen nunca tumba el recurso
             logger.warning("ova engine images failed", key=spec.key, error=str(exc)[:200])
-    html = resolve_image_placeholders(render_resource(spec, data, concept, params, theme), replacements)
+    html = resolve_image_placeholders(
+        render_resource(spec, data, concept, params, theme, review.summary() if review else None), replacements
+    )
     if pending_video is not None:
         from prometheus.plans.video_step import attach_video
 
@@ -94,6 +111,9 @@ def generate_with_template(
         key=spec.key,
         params=params,
         text_s=round(t_text - t0, 2),
+        review_s=round(t_review - t_text, 2),
+        review_found=len(review.found) if review else 0,
+        review_fixed=review.fixed if review else 0,
         total_s=round(time.monotonic() - t0, 2),
         images=len(replacements),
     )

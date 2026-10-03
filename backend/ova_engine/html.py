@@ -7,8 +7,10 @@ que un `</script>` en el texto no cierre la etiqueta.
 
 from __future__ import annotations
 
+import contextlib
 import html as _html
 import json
+import re
 from typing import Any
 
 
@@ -45,11 +47,21 @@ def script(js: str) -> str:
 ENGINE_META = "genova-engine"
 
 
-def document(title: str, body: str, *, lang: str = "es", key: str = "") -> str:
+ENGINE_PARAMS_META = "genova-engine-params"
+
+
+def document(title: str, body: str, *, lang: str = "es", key: str = "", info: dict | None = None) -> str:
+    """`info` (params decididos, métricas del revisor) viaja en un meta para que la
+    valoración del docente se pueda ligar a la plantilla y a la decisión sin
+    persistir nada más (ver `engine_info`)."""
+    info_meta = (
+        f'<meta name="{ENGINE_PARAMS_META}" content="{esc(json.dumps(info, ensure_ascii=False))}">\n' if info else ""
+    )
     return (
         f'<!DOCTYPE html>\n<html lang="{lang}">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
         f'<meta name="{ENGINE_META}" content="template:{esc(key)}">\n'
+        f"{info_meta}"
         f"<title>{esc(title)}</title>\n</head>\n<body>\n"
         f'<main class="ova-container ova-stack">\n{body}\n</main>\n</body>\n</html>\n'
     )
@@ -77,3 +89,18 @@ PROGRESS_JS = """
 def is_template_html(html: str) -> bool:
     """El recurso salió de una plantilla: su HTML no debe reescribirlo un LLM."""
     return f'name="{ENGINE_META}"' in (html or "")[:2000]
+
+
+def engine_info(html: str) -> dict:
+    """{"key": "engage_01", "params": {...}, "review": {...}} leído del HTML de una plantilla.
+    Vacío si el recurso no salió del motor."""
+    head = (html or "")[:6000]
+    m = re.search(rf'<meta name="{ENGINE_META}" content="template:([^"]*)"', head)
+    if not m:
+        return {}
+    out: dict = {"key": _html.unescape(m.group(1))}
+    p = re.search(rf'<meta name="{ENGINE_PARAMS_META}" content="([^"]*)"', head)
+    if p:
+        with contextlib.suppress(ValueError):
+            out.update(json.loads(_html.unescape(p.group(1))))
+    return out
