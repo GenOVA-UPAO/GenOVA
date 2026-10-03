@@ -17,7 +17,6 @@ export function ProgressHeader(props: Readonly<HeaderProps>) {
         <span className="font-medium text-foreground">{props.headline}</span>
         <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
           {props.done} de {String(props.total)} listos
-          {props.eta && <span> · {props.eta}</span>}
         </span>
       </div>
       <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -26,8 +25,10 @@ export function ProgressHeader(props: Readonly<HeaderProps>) {
           style={{ transform: `scaleX(${String(props.pct / 100)})` }}
         />
       </div>
-      {props.showCancel && (
-        <div className="mt-1 flex justify-end">
+      {(props.eta !== null || props.showCancel) && (
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <span className="text-xs text-muted-foreground">{props.eta}</span>
+          {props.showCancel && (
           <Button
             variant="ghost"
             size="sm"
@@ -36,6 +37,7 @@ export function ProgressHeader(props: Readonly<HeaderProps>) {
           >
             Cancelar generación
           </Button>
+          )}
         </div>
       )}
     </div>

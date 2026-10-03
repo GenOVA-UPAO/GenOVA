@@ -14,7 +14,8 @@ import statistics
 from dataclasses import dataclass
 
 DEFAULT_SECONDS = 45.0
-MIN_REMAINING_RUNNING = 3.0  # un recurso en curso que ya superó su mediana no «termina en 0»
+OVERDUE_FRACTION = 0.5  # un recurso que ya superó su mediana no «termina en 0»: se supone otra media mediana
+OVERDUE_MIN_SECONDS = 10.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,6 +43,7 @@ def estimate_remaining(
         return None
     fallback = statistics.median(medians.values()) if medians else DEFAULT_SECONDS
     exact = all(i.key in medians for i in open_items)
+    overdue = False
 
     lanes = max(1, min(concurrency, len(open_items)))
     heap: list[float] = [0.0] * lanes
@@ -51,9 +53,13 @@ def estimate_remaining(
     for item in ordered:
         typical = medians.get(item.key, fallback)
         if item.status == "running":
-            duration = max(typical - item.elapsed, MIN_REMAINING_RUNNING)
+            if item.elapsed >= typical:
+                overdue = True
+                duration = max(typical * OVERDUE_FRACTION, OVERDUE_MIN_SECONDS)
+            else:
+                duration = typical - item.elapsed
         else:
             duration = typical
         start = heapq.heappop(heap)
         heapq.heappush(heap, start + duration)
-    return Eta(seconds=round(max(heap)), basis="historial" if exact else "estimado")
+    return Eta(seconds=round(max(heap)), basis="historial" if exact and not overdue else "estimado")

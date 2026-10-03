@@ -25,4 +25,5 @@ def test_sin_historial_es_estimado():
 def test_running_pasado_de_su_mediana_no_llega_a_cero():
     eta = estimate_remaining([EtaItem("a:1", "running", 100)], {"a:1": 10}, 4)
     assert eta is not None
-    assert eta.seconds == 3
+    assert eta.seconds == 10
+    assert eta.basis == "estimado"  # se pasó de lo habitual: la cifra ya no es fiable

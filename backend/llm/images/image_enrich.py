@@ -111,6 +111,13 @@ def enrich_with_images(
     with ThreadPoolExecutor(max_workers=2) as pool:
         uris = [compress_data_uri(uri) for uri in pool.map(_one, prompts)]
 
+    logger.info(
+        "image enrichment",
+        images=len(targets),
+        style=guide.key,
+        seed=guide.seed,
+        cache=image_cache.stats(),
+    )
     replacements: dict[str, str] = {}
     for i, (item, uri) in enumerate(zip(targets, uris, strict=True), start=1):
         placeholder = f"__IMG_{i}__"
