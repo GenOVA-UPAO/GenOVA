@@ -16,11 +16,14 @@ from ova.application.use_cases.list_ovas import ListOvas
 from ova.application.use_cases.list_trashed_ovas import ListTrashedOvas
 from ova.application.use_cases.permanently_delete_ova import PermanentlyDeleteOva
 from ova.application.use_cases.phase_versions import PhaseVersions
+from ova.application.use_cases.resource_feedback import FeedbackInput, ResourceFeedbackUseCase
 from ova.application.use_cases.restore_ova import RestoreOva
 from ova.application.use_cases.save_ova import SaveOva
 from ova.application.use_cases.update_ova_metadata import UpdateOvaMetadata
 
 __all__ = [
+    "FeedbackInput",
+    "ResourceFeedbackUseCase",
     "BatchDeleteOvas",
     "BatchMoveOvasToTrash",
     "BatchRestoreOvas",

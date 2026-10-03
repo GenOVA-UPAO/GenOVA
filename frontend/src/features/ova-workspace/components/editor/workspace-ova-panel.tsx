@@ -45,7 +45,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
               </p>
             }
           >
-            <WorkspaceHtmlPreview phases={phases} />
+            <WorkspaceHtmlPreview phases={phases} ovaId={ovaId} readOnly={readOnly} />
           </Suspense>
         </div>
         <div

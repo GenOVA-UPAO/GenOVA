@@ -38,9 +38,16 @@ def _full_prompt(prompt: str, schema: dict) -> str:
     return f"{prompt}\n\n{_SYSTEM_RULES}{json.dumps(schema, ensure_ascii=False)}"
 
 
-def _local(prompt: str, schema: dict, max_tokens: int) -> str:
+def _local(
+    prompt: str,
+    schema: dict,
+    max_tokens: int,
+    temperature: float = 0.6,
+    timeout: float | None = None,
+    model: str | None = None,
+) -> str:
     url = os.getenv("OVA_LOCAL_LLM_URL", "http://localhost:11435").rstrip("/")
-    model = os.getenv("OVA_LOCAL_LLM_MODEL", "qwen3:8b")
+    model = model or os.getenv("OVA_LOCAL_LLM_MODEL", "qwen3:8b")
     r = httpx.post(
         f"{url}/api/chat",
         json={
@@ -49,9 +56,9 @@ def _local(prompt: str, schema: dict, max_tokens: int) -> str:
             "format": schema,
             "stream": False,
             "think": False,
-            "options": {"num_predict": max_tokens, "temperature": 0.6},
+            "options": {"num_predict": max_tokens, "temperature": temperature},
         },
-        timeout=float(os.getenv("OVA_LOCAL_LLM_TIMEOUT", "240")),
+        timeout=timeout or float(os.getenv("OVA_LOCAL_LLM_TIMEOUT", "240")),
     )
     r.raise_for_status()
     return r.json()["message"]["content"]
@@ -73,11 +80,15 @@ def generate_json(
     enabled_models=None,
     deadline: float | None = None,
     max_tokens: int = 6000,
+    temperature: float | None = None,
+    attempts: int = 2,
+    timeout: float | None = None,
+    model: str | None = None,
 ) -> dict:
     backend = os.getenv("OVA_TEXT_BACKEND", "router").strip().lower()
     full = _full_prompt(prompt, schema)
     errors: list[str] = []
-    for attempt in range(2):
+    for attempt in range(attempts):
         ask = full
         if errors:
             ask += (
@@ -85,7 +96,7 @@ def generate_json(
                 "devuelve el JSON completo:\n- " + "\n- ".join(errors)
             )
         raw = (
-            _local(ask, schema, max_tokens)
+            _local(ask, schema, max_tokens, 0.6 if temperature is None else temperature, timeout, model)
             if backend == "local"
             else _router(ask, max_tokens, llm_config, enabled_models, deadline)
         )

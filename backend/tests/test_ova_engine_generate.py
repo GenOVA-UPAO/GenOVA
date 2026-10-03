@@ -16,6 +16,7 @@ def test_plan_template_si_hay_plantilla(monkeypatch):
 def test_generate_resource_usa_texto_y_plantilla(monkeypatch):
     monkeypatch.setattr(settings, "ova_engine_templates", True)
     monkeypatch.setattr(settings, "llm_fake", False)
+    monkeypatch.setenv("OVA_CONTENT_REVIEW", "0")  # el revisor tiene sus propios tests
     spec = get_spec("engage", 1)
     calls = []
 
