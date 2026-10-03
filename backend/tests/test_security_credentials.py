@@ -71,6 +71,7 @@ def _token_at(user: User, when: datetime) -> str:
             "iat": when,
             "exp": when + timedelta(hours=1),
             "iss": "genova",
+            "aud": "genova-api",
             "jti": str(uuid.uuid4()),
         },
         JWT_SECRET,
