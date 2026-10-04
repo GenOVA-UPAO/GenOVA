@@ -114,7 +114,8 @@ def generate_with_template(
     if spec.uses_images and not image_settings and os.getenv("LOCAL_IMAGE_URL"):
         # Desarrollo/QA: el servidor local de imágenes (SD) hace de proveedor.
         image_settings = {"provider": "local", "max_images": int(os.getenv("OVA_MAX_GENERATED_IMAGES", "6"))}
-    if spec.uses_images and (image_settings is None or image_settings.get("enabled", True)):
+    # En modo fake no se sale a la red: la plantilla dibuja su alternativa (SVG/emoji).
+    if not fake and spec.uses_images and (image_settings is None or image_settings.get("enabled", True)):
         from llm.images.image_enrich import enrich_with_images
         from llm.images.style_guide import CHARACTERS
 

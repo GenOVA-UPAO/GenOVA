@@ -95,6 +95,9 @@ def significant_tokens(text: str) -> set[str]:
 
 
 _HIDDEN_OPEN = re.compile(r"<(script|style|head)", re.I)
+# Cierre de cada bloque, buscado sobre el texto original (no sobre `html.lower()`:
+# con algunos caracteres Unicode `lower()` cambia la longitud y desplaza los índices).
+_HIDDEN_CLOSE = {tag: re.compile(rf"</{tag}>", re.I) for tag in ("script", "style", "head")}
 # `<` excluido dentro de la etiqueta: con `<[^>]+>` una cadena de muchos `<` sin
 # `>` era cuadrática (CodeQL py/polynomial-redos).
 _TAG = re.compile(r"<[^<>]+>")
@@ -106,22 +109,21 @@ def _strip_hidden_blocks(html: str) -> str:
     Equivale a `re.sub(r"<(script|style|head)[\\s\\S]*?</\\1>", " ", html, flags=re.I)`,
     que era cuadrático con muchas aperturas sin cierre (CodeQL py/polynomial-redos).
     """
-    lower = html.lower()
     unclosed: set[str] = set()
     parts: list[str] = []
     pos = 0
     search_from = 0
     while match := _HIDDEN_OPEN.search(html, search_from):
         tag = match.group(1).lower()
-        end = -1 if tag in unclosed else lower.find(f"</{tag}>", match.end())
-        if end == -1:
+        close = None if tag in unclosed else _HIDDEN_CLOSE[tag].search(html, match.end())
+        if close is None:
             # Sin cierre posterior: ninguna apertura siguiente de este tag cerrará.
             unclosed.add(tag)
             search_from = match.start() + 1
             continue
         parts.append(html[pos : match.start()])
         parts.append(" ")
-        pos = search_from = end + len(tag) + 3
+        pos = search_from = close.end()
     parts.append(html[pos:])
     return "".join(parts)
 

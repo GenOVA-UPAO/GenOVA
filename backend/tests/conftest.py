@@ -61,6 +61,8 @@ def _legacy_generation_by_default(request, monkeypatch):
     # nunca salen a la red por esa vía.
     monkeypatch.setenv("OVA_TEXT_BACKEND", "router")
     monkeypatch.setenv("OVA_DECISION_BACKEND", "rules")
+    # Producción lo activa (render.yaml); los tests del revisor lo encienden ellos mismos.
+    monkeypatch.setenv("OVA_CONTENT_REVIEW", "0")
     monkeypatch.delenv("LOCAL_IMAGE_URL", raising=False)
     monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path_factory_dir(request)))
     if "ova_engine" not in request.node.nodeid:

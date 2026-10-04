@@ -149,6 +149,22 @@ def _invoke_backend(
     return _router(ask, max_tokens, cfg, enabled_models, deadline)
 
 
+def _coerce_root(data, schema: dict):
+    """Repara las dos raíces equivocadas más comunes de los modelos cuando el schema
+    pide un objeto: `[{...}]` (objeto envuelto en lista) y `[...]` (la lista de la
+    única propiedad array, p. ej. `revision` del revisor, sin su objeto)."""
+    if schema.get("type") != "object" or not isinstance(data, list):
+        return data
+    if len(data) == 1 and isinstance(data[0], dict):
+        return data[0]
+    props = schema.get("properties", {})
+    if len(props) == 1:
+        (name, sub), = props.items()
+        if sub.get("type") == "array":
+            return {name: data}
+    return data
+
+
 def _run_model_attempts(
     model_entry: tuple | None,
     full: str,
@@ -195,7 +211,7 @@ def _run_model_attempts(
             continue
 
         try:
-            data = parse_json(raw)
+            data = _coerce_root(parse_json(raw), schema)
         except Exception:
             errors = ["la respuesta no es JSON válido"]
             continue

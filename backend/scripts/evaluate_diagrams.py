@@ -129,7 +129,7 @@ CASES = [
 
 def evaluate(out: Path, *, resume: bool = False, cases=None, model: str | None = None):
     os.environ.setdefault("OVA_LOCAL_LLM_URL", "http://localhost:11435")
-    records = json.loads((out / "resultados.json").read_text()) if resume else []
+    records = json.loads((out / "resultados.json").read_text(encoding="utf-8")) if resume else []
     for index, (kind, concept, criteria) in enumerate(cases if cases is not None else CASES, 1):
         if any(record["id"] == index for record in records):
             continue
@@ -168,7 +168,7 @@ def evaluate(out: Path, *, resume: bool = False, cases=None, model: str | None =
                 base64.b64decode(result.data_uri.split(",", 1)[1])
             )
         records.append(record)
-        (out / "resultados.json").write_text(json.dumps(records, ensure_ascii=False, indent=2))
+        (out / "resultados.json").write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8")
         print(
             f"{index:02} {kind} {concept}: schema={record['schema_valid']} graph={record['graph_valid']} {seconds:.2f}s",
             flush=True,
@@ -178,11 +178,11 @@ def evaluate(out: Path, *, resume: bool = False, cases=None, model: str | None =
 
 def gallery(out: Path, source: Path | None = None):
     source = source or out
-    records = json.loads((source / "resultados.json").read_text())
+    records = json.loads((source / "resultados.json").read_text(encoding="utf-8"))
     cards = []
     for record in records:
         svg_path = source / f"{record['id']:02}.svg"
-        svg = svg_path.read_text() if svg_path.exists() else "<p>Rechazado por la fuente</p>"
+        svg = svg_path.read_text(encoding="utf-8") if svg_path.exists() else "<p>Rechazado por la fuente</p>"
         # Standalone SVG IDs are local; inline gallery SVGs need document-unique IDs.
         for name in ("title", "desc", "arrow"):
             svg = svg.replace(f'id="{name}"', f'id="{name}-{record["id"]}"')
@@ -207,12 +207,12 @@ def gallery(out: Path, source: Path | None = None):
         + "".join(cards)
         + "</html>"
     )
-    (out / "galeria.html").write_text(document)
+    (out / "galeria.html").write_text(document, encoding="utf-8")
 
 
 def rerender(out: Path):
     """Recheck the same raw responses after renderer fixes, without new LLM sampling."""
-    records = json.loads((out / "resultados.json").read_text())
+    records = json.loads((out / "resultados.json").read_text(encoding="utf-8"))
     for record in records:
         start = time.perf_counter()
         result = DiagramSource().fetch(
@@ -231,7 +231,7 @@ def rerender(out: Path):
             path.write_bytes(base64.b64decode(result.data_uri.split(",", 1)[1]))
         elif path.exists():
             path.unlink()
-    (out / "resultados.json").write_text(json.dumps(records, ensure_ascii=False, indent=2))
+    (out / "resultados.json").write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8")
     gallery(out)
 
 
@@ -240,7 +240,7 @@ def snapshots():
 
     SNAPSHOTS.mkdir(parents=True, exist_ok=True)
     for kind in KINDS:
-        (SNAPSHOTS / f"{kind}.svg").write_text(render(fixture(kind))[1])
+        (SNAPSHOTS / f"{kind}.svg").write_text(render(fixture(kind))[1], encoding="utf-8")
 
 
 if __name__ == "__main__":
@@ -264,7 +264,7 @@ if __name__ == "__main__":
         gallery(args.out, args.gallery_source)
     else:
         args.out.mkdir(parents=True, exist_ok=True)
-        cases = json.loads(args.cases.read_text()) if args.cases else None
+        cases = json.loads(args.cases.read_text(encoding="utf-8")) if args.cases else None
         if cases is not None and (
             not isinstance(cases, list)
             or not cases
