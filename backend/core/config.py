@@ -11,6 +11,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _WEAK_SECRETS = {"", "change-me", "changeme", "secret", "test"}
+_REDIS_SCHEMES = ("redis://", "rediss://", "unix://")
 
 
 class Settings(BaseSettings):
@@ -168,6 +169,22 @@ class Settings(BaseSettings):
                 "JWT_SECRET debe ser un valor aleatorio fuerte (>=16 chars). "
                 'Genera con: python -c "import secrets; print(secrets.token_urlsafe(48))"'
             )
+        return v
+
+    @field_validator("redis_url")
+    @classmethod
+    def _redis_dsn_or_empty(cls, v: str) -> str:
+        """Un valor que no es una URL de Redis (p. ej. un secreto pegado en la variable
+        equivocada en Render) tumbaba el arranque en SlowAPI y mandaba los jobs a una
+        cola inexistente. Se ignora con un aviso: sin Redis la app funciona igual."""
+        v = (v or "").strip()
+        if v and not v.lower().startswith(_REDIS_SCHEMES):
+            import structlog
+
+            structlog.get_logger(__name__).warning(
+                "REDIS_URL ignorada: no es una URL de Redis (redis://, rediss:// o unix://)"
+            )
+            return ""
         return v
 
 
