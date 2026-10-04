@@ -124,6 +124,8 @@ def test_candidate_filtering_and_ranking():
 
 def test_search_source_fetch_with_mocked_network(monkeypatch, tmp_path):
     monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path / "cache"))
+    # Prueba el flujo de red/licencias, no CLIP (opcional): se fuerza sin verificación visual.
+    monkeypatch.setenv("IMAGE_SEARCH_WITHOUT_CLIP", "1")
 
     # Falsa respuesta de Wikimedia
     mock_wiki_resp = {
@@ -269,3 +271,24 @@ def test_search_cache_rejects_generic_credit_and_preserves_real_credit(monkeypat
     assert res_valid.credit.license != "Licencia libre verificada"
     assert res_valid.credit.provider == "wikimedia"
     assert res_valid.credit.provider != "cache"
+
+
+def test_search_skipped_without_clip(monkeypatch, tmp_path):
+    """Sin CLIP disponible la búsqueda no devuelve fotos sin verificar."""
+    from llm.images.clip_rerank import ClipReranker
+    from llm.images.sources.contract import ImageRequest
+    from llm.images.sources.search import SearchSource
+
+    monkeypatch.setenv("IMAGE_CACHE", "0")
+    monkeypatch.delenv("IMAGE_SEARCH_WITHOUT_CLIP", raising=False)
+    fake = type("R", (), {"available": False})()
+    monkeypatch.setattr(ClipReranker, "get_instance", classmethod(lambda cls: fake))
+    src = SearchSource()
+    monkeypatch.setattr(
+        "llm.images.sources.search.search_wikimedia",
+        lambda *a, **k: [{"url": "https://upload.wikimedia.org/x.jpg", "width": 1200, "height": 800,
+                          "license": "CC0", "title": "File:server.jpg", "provider": "wikimedia"}],
+    )
+    monkeypatch.setattr("llm.images.sources.search.search_openverse", lambda *a, **k: [])
+    monkeypatch.setattr("llm.images.sources.search.filter_candidates", lambda c: c)
+    assert src.fetch(ImageRequest(tipo="foto", descripcion="servidores", consulta="server rack")) is None

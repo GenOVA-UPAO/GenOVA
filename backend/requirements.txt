@@ -45,7 +45,3 @@ filetype==1.2.0
 pyotp==2.10.0
 # Validación de sintaxis JS de los OVAs generados (motor QuickJS)
 quickjs==1.19.4
-# Re-ranking visual local con CLIP y filtrado zero-shot de clases negativas
-torch>=2.0.0
-torchvision>=0.15.0
-open-clip-torch>=2.20.0

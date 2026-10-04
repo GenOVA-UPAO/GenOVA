@@ -714,6 +714,11 @@ class SearchSource:
 
         # 4. Re-ranking visual local con CLIP y clases negativas zero-shot
         reranker = ClipReranker.get_instance()
+        if not reranker.available and os.getenv("IMAGE_SEARCH_WITHOUT_CLIP", "0") != "1":
+            # Sin verificación visual las fotos elegidas por metadatos resultaron
+            # inadecuadas (medido): mejor dejar que el decisor pase a otra fuente.
+            logger.info("image search skipped: CLIP unavailable", query=query)
+            return None
         primary_query = search_queries[0] if search_queries else query
         best_candidate, clip_diagnostics = reranker.score_candidates(
             valid_candidates[:20],

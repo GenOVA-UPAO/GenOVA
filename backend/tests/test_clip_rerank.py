@@ -2,9 +2,18 @@
 
 import io
 
+import pytest
 from PIL import Image, ImageDraw
 
-from llm.images.clip_rerank import ClipReranker
+# CLIP es opcional (requirements-clip.txt): sin torch/open_clip, o sin el modelo
+# descargado, estas pruebas no aplican (el CI no instala dependencias pesadas).
+pytest.importorskip("torch")
+pytest.importorskip("open_clip")
+
+from llm.images.clip_rerank import ClipReranker  # noqa: E402
+
+if not ClipReranker.get_instance().available:
+    pytest.skip("modelo CLIP no disponible", allow_module_level=True)
 
 
 def _image_to_bytes(img: Image.Image) -> bytes:
