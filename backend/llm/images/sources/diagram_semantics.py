@@ -247,8 +247,30 @@ def prepare_diagram(data: dict, context: str = "") -> dict | None:
         if card == "1:N":
             _fk(b, a)
         edges.append(edge)
-    data["aristas"] = edges
+    data["aristas"] = _dedupe_reciprocal(edges, nodes)
     return data
+
+
+def _dedupe_reciprocal(edges: list[dict], nodes: dict) -> list[dict]:
+    """El LLM suele dar cada relación en los dos sentidos (A→B 1:N y B→A N:1).
+
+    Tras normalizar, el sentido invertido (marcado «(inversa)») duplica una línea
+    ya presente: se descarta salvo que el lado N tenga varias FK de rol hacia el
+    mismo padre (sigue / seguido por). Las aristas en el mismo sentido con
+    etiquetas distintas son roles explícitos y se conservan.
+    """
+    kept: list[dict] = []
+    seen: dict[tuple[str, str], int] = {}
+    for edge in edges:
+        pair = (edge["origen"], edge["destino"])
+        inverse = edge.get("etiqueta", "").endswith("(inversa)")
+        if inverse and seen.get(pair):
+            roles = len(_fk_indices(nodes[pair[1]], nodes[pair[0]]))
+            if seen[pair] >= max(1, roles):
+                continue
+        seen[pair] = seen.get(pair, 0) + 1
+        kept.append(edge)
+    return kept
 
 
 def node_keys(node: dict) -> list[float]:
