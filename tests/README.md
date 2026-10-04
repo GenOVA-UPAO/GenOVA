@@ -32,8 +32,10 @@ HU-013 y HU-025) hacen `POST /api/jobs` y esperan un OVA terminado. La suite com
 **requiere un backend con `LLM_FAKE=1`** (`backend/prometheus/engine/graph.py` →
 `fake_invoke.py`), que genera HTML determinista en segundos sin proveedores LLM:
 
-- Un recurso por fase seleccionada, con `status: "done"` y HTML
-  `<h1>{prompt}</h1><p>Recurso de prueba ({fase} / {recurso}) generado con LLM_FAKE=1.</p>`.
+- Un recurso por fase seleccionada, con `status: "done"` y su plantilla real
+  (`ova_engine`) rellena con los datos de ejemplo de `spec.sample`; los recursos sin
+  plantilla (podcast) usan `<h1>{prompt}</h1><p>Recurso de prueba ({fase} / {recurso})
+  generado con LLM_FAKE=1.</p>`.
 - El job termina `done` en <1s y materializa el OVA con los títulos de recurso de
   `RECURSOS_META` ("Cómic Interactivo", "Lectura Interactiva", …), así que los steps
   verifican esos títulos y el botón "Descargar SCORM", nunca contenido real.

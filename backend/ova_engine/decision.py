@@ -95,14 +95,19 @@ def rules_decide(spec: TemplateSpec, concept: str, contexto: str = "") -> dict:
 # ---------------------------------------------------------------- System One
 
 
+def jev_endpoint() -> tuple[str, dict, dict]:
+    """(url, headers, campos extra del cuerpo) de Jev en OpenRouter."""
+    key = os.getenv("OPENROUTER_API_KEY", "")
+    url = os.getenv("OVA_DECISION_URL", "https://openrouter.ai/api/alpha/decisions")
+    return url, {"Authorization": f"Bearer {key}"}, {
+        "model": os.getenv("OVA_DECISION_MODEL", "typesafe/jev-1.13"),
+        "provider": {"allow_fallbacks": True, "data_collection": "deny"},
+    }
+
+
 def _endpoint() -> tuple[str, dict, dict]:
     if _backend() == "jev":
-        key = os.getenv("OPENROUTER_API_KEY", "")
-        url = os.getenv("OVA_DECISION_URL", "https://openrouter.ai/api/alpha/decisions")
-        return url, {"Authorization": f"Bearer {key}"}, {
-            "model": os.getenv("OVA_DECISION_MODEL", "typesafe/jev-1.13"),
-            "provider": {"allow_fallbacks": True, "data_collection": "deny"},
-        }
+        return jev_endpoint()
     base = os.getenv("OVA_DECISION_URL", "http://localhost:8090").rstrip("/")
     headers = {}
     if os.getenv("LAYA_API_KEY"):

@@ -47,7 +47,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `consecuencia`: resultado práctico directo sobre los sistemas, usuarios o el negocio (≤30 palabras).
   * `tension_etica`: principio ético comprometido o el costo de valor que implica esta elección (≤30 palabras).
 - reflexion_post_voto: síntesis reflexiva (≤60 palabras) que profundiza en la complejidad del dilema, destacando que en la administración de datos toda arquitectura y decisión técnica conlleva una carga ética inevitable, sin calificar ninguna opción como correcta o errónea.
-[RESTRICCIONES] Empresa ficticia. Tono periodístico y deontológico profesional. Ninguna postura debe ser una negligencia absurda ni un delito obvio; todas deben tener defensores racionales y costos reales. La consecuencia debe derivarse de forma realista del funcionamiento de «{concept}». No incluyas código HTML ni referencias al JSON Schema.
+[RESTRICCIONES] Empresa ficticia. Tono periodístico y deontológico profesional. Ninguna postura debe ser una negligencia absurda ni un delito obvio; todas deben tener defensores racionales y costos reales. La consecuencia debe derivarse de forma realista del funcionamiento de «{concept}». Exactitud técnica: no atribuyas a «{concept}» efectos que no tiene en Oracle (p. ej., un índice, un plan de ejecución o un tablespace no otorgan ni quitan permisos: quién ve qué datos lo deciden los privilegios, roles, vistas o VPD). Si «{concept}» no afecta por sí mismo a la privacidad, plantea el dilema con otros valores reales (costo, disponibilidad, plazos, trazabilidad, carga de trabajo). No incluyas código HTML ni referencias al JSON Schema.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

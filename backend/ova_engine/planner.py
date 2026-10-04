@@ -37,7 +37,7 @@ def _catalog() -> dict[str, dict[int, str]]:
 
 def plan_ova(concept: str, contexto: str = "", per_phase: int = 3, timeout: float = 6.0) -> dict | None:
     backend = _backend()
-    if backend == "planner-atributos" or (backend == "laya" and os.getenv("OVA_PLANNER_MODE") == "atributos"):
+    if backend == "planner-atributos" or (backend in ("laya", "jev") and os.getenv("OVA_PLANNER_MODE") == "atributos"):
         from ova_engine.planner_attrs import plan_by_attributes
 
         return plan_by_attributes(concept, mode=os.getenv("OVA_PLANNER_PROFILE", "hibrido"), per_phase=per_phase)

@@ -91,6 +91,14 @@ def _build_questions_payload(blocks: list[ResourceBlock]) -> dict[str, Any]:
     }
 
 
+def _confidence(answer: dict[str, Any]) -> float:
+    """Laya devuelve `answer_confidence`; Jev, `confidence`."""
+    for key in ("answer_confidence", "confidence"):
+        if isinstance(answer.get(key), (int, float)):
+            return float(answer[key])
+    return 0.5
+
+
 def _parse_laya_answers(
     answers: dict[str, Any],
 ) -> tuple[str, str | None, int | str | None, str | None, float]:
@@ -99,10 +107,10 @@ def _parse_laya_answers(
     indice_choice = answers.get("indice", {}).get("choice")
     destino_choice = answers.get("destino", {}).get("choice")
 
-    accion_conf = answers.get("accion", {}).get("answer_confidence", 0.5)
-    tipo_conf = answers.get("tipo_bloque", {}).get("answer_confidence", 0.5)
-    indice_conf = answers.get("indice", {}).get("answer_confidence", 0.5)
-    dest_conf = answers.get("destino", {}).get("answer_confidence", 0.5)
+    accion_conf = _confidence(answers.get("accion", {}))
+    tipo_conf = _confidence(answers.get("tipo_bloque", {}))
+    indice_conf = _confidence(answers.get("indice", {}))
+    dest_conf = _confidence(answers.get("destino", {}))
 
     overall_conf = round(accion_conf * 0.4 + tipo_conf * 0.3 + indice_conf * 0.15 + dest_conf * 0.15, 2)
 
@@ -130,11 +138,21 @@ class LayaIntentInterpreter(IntentInterpreterPort, ScopeGuardPort):
         model_name: str = "multilingual",
         timeout_s: float = 10.0,
         backend_tag: str = "laya",
+        headers: dict[str, str] | None = None,
+        extra: dict[str, Any] | None = None,
     ):
+        """`headers`/`extra` permiten hablar con Jev en OpenRouter (mismo protocolo
+        System One): auth y `model`/`provider` en el cuerpo en vez del modelo de Laya."""
         self._url = base_url or os.getenv("LAYA_URL", "http://localhost:8090/v1/systemone")
-        self._model = model_name
+        self._headers = headers or {}
+        self._extra = extra or {"model": model_name}
         self._timeout_s = timeout_s
         self._backend_tag = backend_tag
+
+    def _post(self, client: httpx.Client, state: dict, questions: dict) -> httpx.Response:
+        return client.post(
+            self._url, json={**self._extra, "state": state, "questions": questions}, headers=self._headers
+        )
 
     def interpret(
         self,
@@ -143,19 +161,12 @@ class LayaIntentInterpreter(IntentInterpreterPort, ScopeGuardPort):
         options: dict[str, Any] | None = None,
     ) -> tuple[Intent, IntentTrace]:
         start_time = time.time()
-        url = (options and options.get("laya_url")) or self._url
+        url = self._url
         questions_payload = _build_questions_payload(blocks)
 
         try:
             with httpx.Client(timeout=self._timeout_s) as client:
-                res = client.post(
-                    url,
-                    json={
-                        "model": self._model,
-                        "state": {"text": instruction},
-                        "questions": questions_payload,
-                    },
-                )
+                res = self._post(client, {"text": instruction}, questions_payload)
                 res.raise_for_status()
                 data = res.json()
         except Exception as exc:
@@ -195,21 +206,17 @@ class LayaIntentInterpreter(IntentInterpreterPort, ScopeGuardPort):
         """Capa 2 de alcance: verifica con Laya (noul) si es una instrucción de edición estructural."""
         core_text = extract_core_request(instruction)
         text_to_check = core_text if len(core_text) >= 4 else instruction
-        url = (options and options.get("laya_url")) or self._url
 
         try:
             with httpx.Client(timeout=3.0) as client:
-                res = client.post(
-                    url,
-                    json={
-                        "model": self._model,
-                        "state": {"text": text_to_check},
-                        "questions": {
-                            "es_edicion": {
-                                "type": "noul",
-                                "instructions": "¿Es una instrucción para editar la estructura del recurso (quitar, mover o añadir bloques)?",
-                            }
-                        },
+                res = self._post(
+                    client,
+                    {"text": text_to_check},
+                    {
+                        "es_edicion": {
+                            "type": "noul",
+                            "instructions": "¿Es una instrucción para editar la estructura del recurso (quitar, mover o añadir bloques)?",
+                        }
                     },
                 )
                 if not res.is_success:

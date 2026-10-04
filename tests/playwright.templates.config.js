@@ -13,7 +13,8 @@ export default defineConfig({
     viewport: { width: 1280, height: 900 }, locale: 'es-PE', timezoneId: 'UTC',
     reducedMotion: 'reduce', colorScheme: 'light', trace: 'retain-on-failure' },
   webServer: {
-    command: 'python3 -m http.server 8790 --bind 127.0.0.1',
+    // Windows no trae `python3`, solo `python`.
+    command: `${process.platform === 'win32' ? 'python' : 'python3'} -m http.server 8790 --bind 127.0.0.1`,
     url: 'http://127.0.0.1:8790/.ova-rendered/engage_01.html', reuseExistingServer: false,
   },
 });
