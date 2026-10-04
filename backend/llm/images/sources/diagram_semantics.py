@@ -33,7 +33,11 @@ def _fk_indices(node: dict, parent: dict) -> list[int]:
         name = _attribute(attr).split(" (")[0]
         name = _slug(re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name))
         if any(
-            re.fullmatch(rf"(?:id_{re.escape(n)}|{re.escape(n)}_id)(?:_.+)?", name) for n in names
+            re.fullmatch(
+                rf"(?:id_{re.escape(n)}(?:_.+)?|{re.escape(n)}(?:_[a-z0-9]+)*_id(?:_.+)?)",
+                name,
+            )
+            for n in names
         ):
             matches.append(index)
     return matches
@@ -260,9 +264,77 @@ def node_keys(node: dict) -> list[float]:
     return [float(v) for value in values for v in re.findall(r"-?\d+(?:\.\d+)?", value)]
 
 
+def _state_flow_valid(data: dict, context: str) -> bool:
+    """Only infer terminal/error semantics for recognizable state diagrams."""
+    topic = _slug(context)
+    transaction = "transaccion" in topic
+    if not transaction and not re.search(r"(?:estados?|ciclo_de_vida)", topic):
+        return True
+    nodes = {n["id"]: n for n in data["nodos"]}
+    labels = {ident: _slug(n["etiqueta"]) for ident, n in nodes.items()}
+    transaction = transaction and bool(
+        set(labels.values()) & {"activa", "activo", "fallida", "fallido", "abortada", "abortado"}
+    )
+    edges = data.get("aristas", [])
+    # A textbook transaction can include a separate terminal state after commit/abort.
+    terminated = any(label in {"terminada", "terminado"} for label in labels.values())
+    finals = {
+        ident
+        for ident, node in nodes.items()
+        if labels[ident] in {"fin", "final", "terminada", "terminado"}
+        or any(
+            re.fullmatch(r"(?:estado_)?final(?:_.*)?", _slug(attr))
+            for attr in node.get("atributos", [])
+        )
+        or (
+            transaction
+            and not terminated
+            and labels[ident] in {"abortada", "abortado", "confirmada", "confirmado", "committed"}
+        )
+    }
+    if not finals and not transaction:
+        return True  # Unknown lifecycle: do not invent which states are terminal.
+    # Read permission from the user's detail, never from a generated edge or title.
+    retry = bool(re.search(r"\b(?:reintent\w*|reinici\w*|retry)\b", context, re.I))
+    if re.search(
+        r"\b(?:sin|no|nunca)\s+(?:\w+\s+){0,2}(?:reintent\w*|reinici\w*|retry)\b", context, re.I
+    ):
+        retry = False
+    for ident in nodes:
+        outgoing = [e for e in edges if e["origen"] == ident]
+        if (
+            transaction
+            and terminated
+            and labels[ident] in {"abortada", "abortado", "confirmada", "confirmado", "committed"}
+            and not retry
+            and any(labels[e["destino"]] not in {"terminada", "terminado"} for e in outgoing)
+        ):
+            return False
+        if ident in finals:
+            if outgoing and not retry:
+                return False
+        elif not outgoing:
+            return False
+    if transaction:
+        failed = {
+            ident for ident, label in labels.items() if label in {"fallida", "fallido", "failed"}
+        }
+        for ident, label in labels.items():
+            if label in {
+                "activa",
+                "activo",
+                "parcialmente_confirmada",
+                "parcialmente_confirmado",
+            } and not any(e["origen"] == ident and e["destino"] in failed for e in edges):
+                return False
+    return True
+
+
 def semantic_valid(data: dict, context: str) -> bool:
     """Check only recognizable invariants; unknown concepts need human review."""
     topic = _slug(context + " " + data.get("titulo", ""))
+    if data["tipo"] == "flujo" and not _state_flow_valid(data, context):
+        return False
     if data["tipo"] == "comparacion":
         if len(data["nodos"]) != 2:
             return False
