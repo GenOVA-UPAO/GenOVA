@@ -15,8 +15,9 @@ import time
 import structlog
 
 from ova_engine.contract import RenderContext, TemplateSpec
-from ova_engine.decision import decide
+from ova_engine.decision import decide, rules_decide
 from ova_engine.html import document
+from ova_engine.planner_attrs import normalize_topic
 from ova_engine.review import review_and_fix
 from ova_engine.text import generate_json
 
@@ -50,6 +51,25 @@ def _review_step(spec, concept, params, data, fake, llm_config, enabled_models, 
     )
 
 
+def _split_request(concept: str, contexto: str) -> tuple[str, str]:
+    """El docente escribe «Tema. Objetivo: … Nivel educativo: …»: el tema núcleo va a
+    títulos, decisión y revisor; el pedido completo llega al LLM como contexto."""
+    request = " ".join(concept.split())
+    topic, _ = normalize_topic(request)
+    if topic == request:
+        return topic, contexto
+    pedido = f"Pedido del docente (respeta su objetivo y nivel): {request}"
+    return topic, f"{pedido}\n\n{contexto}" if contexto else pedido
+
+
+def _params(spec: TemplateSpec, concept: str, contexto: str, resource_config: dict | None, fake: bool) -> dict:
+    if not fake:
+        return decide(spec, concept, contexto, override=resource_config)
+    # Sin red: ni Jev/Laya ni LLM.
+    override = {k: v for k, v in (resource_config or {}).items() if v is not None}
+    return spec.resolve_params({**rules_decide(spec, concept, contexto), **override})
+
+
 def generate_with_template(
     spec: TemplateSpec,
     concept: str,
@@ -67,17 +87,19 @@ def generate_with_template(
     from llm.images.image_placeholder import resolve_image_placeholders
 
     t0 = time.monotonic()
-    params = decide(spec, concept, contexto, override=resource_config)
-    if fake:
-        data = spec.sample(concept, params)
-    else:
-        data = generate_json(
-            spec.prompt(concept, contexto, params),
+    concept, prompt_ctx = _split_request(concept, contexto)
+    params = _params(spec, concept, contexto, resource_config, fake)
+    data = (
+        spec.sample(concept, params)
+        if fake
+        else generate_json(
+            spec.prompt(concept, prompt_ctx, params),
             spec.schema(params),
             llm_config=llm_config,
             enabled_models=enabled_models,
             deadline=deadline,
         )
+    )
     t_text = time.monotonic()
     data, review = _review_step(spec, concept, params, data, fake, llm_config, enabled_models, deadline)
     t_review = time.monotonic()

@@ -1,7 +1,8 @@
 """LLM_FAKE=1 — generación determinista sin proveedores LLM (CI, e2e, carga).
 
 Sustituye a ``invoke_ova_generation`` cuando ``settings.llm_fake`` está activo:
-lee los OvaJobResource del job y devuelve HTML fijo por recurso, con la misma
+lee los OvaJobResource del job y devuelve por recurso su plantilla real con los
+datos de ``spec.sample`` (o HTML fijo si no tiene plantilla), con la misma
 forma de estado final (``results``/``errors``) que produce el grafo real, para
 que ``_persist_results`` materialice el job como ``done`` en segundos.
 
@@ -47,20 +48,23 @@ def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer
         for res in resources:
             if only_ids is not None and str(res.id) not in only_ids:
                 continue
+            html = _template_html(concept, res.phase_type, res.resource_type, contexto, theme)
+            if html is None:
+                html = with_fake_media(
+                    _themed(
+                        stub_resource_html(concept, res.phase_type, res.resource_type, contexto),
+                        theme,
+                    ),
+                    res.phase_type,
+                    res.resource_type,
+                    concept,
+                    image_settings,
+                    llm_config,
+                )
             results.append(
                 {
                     "phase": res.phase_type,
-                    "html": with_fake_media(
-                        _themed(
-                            stub_resource_html(concept, res.phase_type, res.resource_type, contexto),
-                            theme,
-                        ),
-                        res.phase_type,
-                        res.resource_type,
-                        concept,
-                        image_settings,
-                        llm_config,
-                    ),
+                    "html": html,
                     "resource_type": res.resource_type,
                     "title": res.resource_type,
                 }
@@ -68,6 +72,28 @@ def fake_invoke_ova_generation(initial_state: dict, thread_id: str, checkpointer
         return {"results": results, "errors": []}
     finally:
         db.close()
+
+
+def _template_html(concept: str, phase: str, resource_type, contexto: str, theme: dict) -> str | None:
+    """Recurso con su plantilla real y los datos de `spec.sample` (sin LLM ni imágenes),
+    para que el modo fake muestre el mismo diseño que producción. None si no hay plantilla."""
+    from core.config import settings
+
+    if not settings.ova_engine_templates:
+        return None
+    from ova_engine.registry import get_spec
+
+    try:
+        spec = get_spec(phase, int(resource_type))
+    except (TypeError, ValueError):
+        return None
+    if spec is None:
+        return None
+    from ova_engine.pipeline import generate_with_template
+
+    html, _ = generate_with_template(spec, concept, contexto=contexto, theme=theme, fake=True)
+    summary = fake_rag_summary(contexto)
+    return html.replace("</body>", f"{summary}</body>", 1) if summary else html
 
 
 def _themed(html: str, theme: dict) -> str:

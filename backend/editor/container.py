@@ -34,12 +34,21 @@ class EditorUseCases:
     record_feedback: RecordFeedbackUseCase
 
 
+def _system_one() -> dict:
+    """Destino System One del editor: Jev en OpenRouter si así se decide el motor
+    (`EDITOR_DECISION_BACKEND`, por defecto `OVA_DECISION_BACKEND`), si no Laya local."""
+    backend = (os.getenv("EDITOR_DECISION_BACKEND") or os.getenv("OVA_DECISION_BACKEND", "")).strip().lower()
+    if backend == "jev" and os.getenv("OPENROUTER_API_KEY"):
+        from ova_engine.decision import jev_endpoint
+
+        url, headers, extra = jev_endpoint()
+        return {"base_url": url, "headers": headers, "extra": extra}
+    return {"base_url": os.getenv("LAYA_URL", "http://localhost:8090/v1/systemone")}
+
+
 def _create_interpreters() -> dict[str, IntentInterpreterPort]:
     rules = RulesIntentInterpreter()
-    laya = LayaIntentInterpreter(
-        base_url=os.getenv("LAYA_URL", "http://localhost:8090/v1/systemone"),
-        backend_tag="laya",
-    )
+    laya = LayaIntentInterpreter(**_system_one(), backend_tag="laya")
     laya_ft = LayaIntentInterpreter(
         base_url=os.getenv("LAYA_FT_URL", "http://localhost:8091/v1/systemone"),
         backend_tag="laya-ft",
@@ -78,9 +87,7 @@ def build_editor(db: Session = Depends(get_db)) -> EditorUseCases:
 
     default_backend = os.getenv("EDITOR_INTENT_BACKEND", "hybrid")
     enable_pv_default = os.getenv("ENABLE_POST_VERIFICATION", "0").lower() in ("1", "true")
-    post_verifier = LayaPostVerifier(
-        base_url=os.getenv("LAYA_URL", "http://localhost:8090/v1/systemone")
-    )
+    post_verifier = LayaPostVerifier(**_system_one())
 
     return EditorUseCases(
         interpret_and_apply=InterpretAndApplyUseCase(

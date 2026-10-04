@@ -56,9 +56,28 @@ def _fold(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s.lower()) if unicodedata.category(c) != "Mn")
 
 
+# Secciones que el formulario de creación añade tras el tema («Objetivo: …»,
+# «Nivel educativo: …»): describen el pedido, no el concepto.
+# Se busca sobre el texto ya normalizado (saltos de línea → «. », espacios simples),
+# así el patrón no tiene cuantificadores solapados (sin backtracking polinómico).
+_SECTIONS = re.compile(r"(?:^|[.;] )(?:objetivos?(?: de aprendizaje)?|nivel(?: educativo)?|p[uú]blico) ?:", re.I)
+
+
+def _strip_sections(raw: str) -> str:
+    """El texto hasta la primera sección «Objetivo:»/«Nivel educativo:» (o todo)."""
+    lines = ". ".join(line.strip() for line in raw.splitlines() if line.strip())
+    flat = " ".join(lines.split())
+    m = _SECTIONS.search(flat)
+    if m is None:
+        return " ".join(raw.split())
+    return flat[: m.start()]
+
+
 def normalize_topic(raw: str) -> tuple[str, bool]:
     """(concepto núcleo, hay conocimientos previos). Conserva tildes del original."""
-    text = " ".join((raw or "").split())
+    raw = (raw or "")[:4000]  # pedido del docente: tope defensivo antes de las regex
+    head = _strip_sections(raw)
+    text = head if head.strip(" .:;") else " ".join(raw.split())
     advanced = False
     m = re.match(r"^\s*(?:para|con)\s+(?:mis|los|las|nuestros)\s+(?:alumnos|estudiantes|chicos)\b(.*)$", text, re.I)
     if m:
@@ -115,6 +134,11 @@ _NOUL_LO = float(os.getenv("OVA_PLANNER_NOUL_LO", "0.5"))
 
 
 def _laya_endpoint() -> tuple[str, dict, dict]:
+    """Laya local o, con `OVA_DECISION_BACKEND=jev`, Jev en OpenRouter (mismo protocolo)."""
+    from ova_engine.decision import _backend, _endpoint
+
+    if _backend() == "jev" and not os.getenv("OVA_PLANNER_URL"):
+        return _endpoint()
     base = (os.getenv("OVA_PLANNER_URL") or os.getenv("OVA_DECISION_URL") or "http://localhost:8090").rstrip("/")
     headers = {"Authorization": f"Bearer {os.environ['LAYA_API_KEY']}"} if os.getenv("LAYA_API_KEY") else {}
     return f"{base}/v1/systemone", headers, {"model": "multilingual"}

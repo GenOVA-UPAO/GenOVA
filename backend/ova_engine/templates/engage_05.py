@@ -63,7 +63,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * tipo "escena" para ilustraciones narrativas o pedagógicas del dilema profesional.
   * tipo "logo" para tecnologías o plataformas involucradas.
   Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
-[RESTRICCIONES] Empresa ficticia. Tono periodístico y deontológico profesional. Ninguna postura debe ser una negligencia absurda ni un delito obvio; todas deben tener defensores racionales y costos reales. La consecuencia debe derivarse de forma realista del funcionamiento de «{concept}». No incluyas código HTML ni referencias al JSON Schema.
+[RESTRICCIONES] Empresa ficticia. Tono periodístico y deontológico profesional. Ninguna postura debe ser una negligencia absurda ni un delito obvio; todas deben tener defensores racionales y costos reales. La consecuencia debe derivarse de forma realista del funcionamiento de «{concept}». Exactitud técnica: no atribuyas a «{concept}» efectos que no tiene en Oracle (p. ej., un índice, un plan de ejecución o un tablespace no otorgan ni quitan permisos: quién ve qué datos lo deciden los privilegios, roles, vistas o VPD). Si «{concept}» no afecta por sí mismo a la privacidad, plantea el dilema con otros valores reales (costo, disponibilidad, plazos, trazabilidad, carga de trabajo). No incluyas código HTML ni referencias al JSON Schema.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
 

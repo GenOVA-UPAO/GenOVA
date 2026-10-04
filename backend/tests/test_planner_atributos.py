@@ -26,6 +26,22 @@ def test_normalize_quita_preambulo_y_detecta_nivel():
     assert adv is True
 
 
+def test_normalize_quita_objetivo_y_nivel_del_formulario():
+    pedido = "Índices B-tree en Oracle. Objetivo: entender cuándo crearlos.\n\nNivel educativo: posgrado."
+    assert pa.normalize_topic(pedido) == ("Índices B-tree en Oracle", False)
+    assert pa.normalize_topic("Tablespaces y datafiles\n\nNivel educativo: posgrado.")[0] == "Tablespaces y datafiles"
+    assert pa.normalize_topic("Objetivo: que entiendan el redo log")[0] == "Objetivo: que entiendan el redo log"
+
+
+def test_normalize_lineal_con_muchos_saltos_de_linea():
+    import time
+
+    t0 = time.perf_counter()
+    pa.normalize_topic("a" + "\n" * 200_000 + "x")
+    pa.normalize_topic("." + " \n" * 100_000)
+    assert time.perf_counter() - t0 < 1.0
+
+
 def test_normalize_tema_simple_intacto():
     assert pa.normalize_topic("Flashback: consultas y tabla") == ("Flashback: consultas y tabla", False)
 
@@ -143,6 +159,26 @@ def test_plan_ova_backend_atributos(monkeypatch):
     monkeypatch.setenv("OVA_DECISION_BACKEND", "planner-atributos")
     monkeypatch.setattr(pa, "profile_laya", lambda *a, **k: _prof(historico=1.0))
     plan = planner.plan_ova("Historia de las bases de datos", "")
+    assert set(plan) == set(PHASES) and 7 in plan["explain"]
+
+
+def test_plan_ova_jev_atributos_usa_openrouter(monkeypatch):
+    monkeypatch.setenv("OVA_DECISION_BACKEND", "jev")
+    monkeypatch.setenv("OVA_PLANNER_MODE", "atributos")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test")
+    monkeypatch.delenv("OVA_PLANNER_URL", raising=False)
+    monkeypatch.delenv("OVA_DECISION_URL", raising=False)
+    calls = []
+
+    def fake_post(url, json=None, headers=None, **kw):
+        calls.append((url, json, headers))
+        return _Resp({a: {"noul": 0.9 if a == "historico" else 0.1} for a in pa.ATTRIBUTES})
+
+    monkeypatch.setattr(pa.httpx, "post", fake_post)
+    plan = planner.plan_ova("Historia de las bases de datos", "")
+    url, body, headers = calls[0]
+    assert url == "https://openrouter.ai/api/alpha/decisions"
+    assert body["model"] == "typesafe/jev-1.13" and headers["Authorization"] == "Bearer sk-test"
     assert set(plan) == set(PHASES) and 7 in plan["explain"]
 
 

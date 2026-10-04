@@ -21,7 +21,7 @@ jobs:
 
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install
@@ -36,7 +36,7 @@ jobs:
 
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v10.2.0
         with: { enable-cache: true }
 
       - run: uvx ruff check backend/
@@ -99,10 +99,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v10.2.0
         with: { enable-cache: true }
 
       - name: Install backend deps
@@ -143,6 +143,51 @@ jobs:
           coverage xml
         working-directory: backend
 
+  # Tests unitarios/integración del backend (motor de OVAs, editor visual,
+  # seguridad, RAG…): sin servidor ni proveedores LLM. Postgres propio con las
+  # migraciones aplicadas para que también corran los tests que lo requieren.
+  backend-unit:
+    name: Backend unit (pytest)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: genova_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/genova_test
+      JWT_SECRET: ci-solo-para-github-actions-no-es-un-secreto-real
+      LLM_FAKE: '0'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with: { python-version: '3.11' }
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with: { enable-cache: true }
+
+      - name: Install backend deps
+        run: uv pip install --system -r requirements-dev.txt
+        working-directory: backend
+
+      - name: Apply migrations
+        run: python -c "from run_migrations import run_migrations; run_migrations()"
+        working-directory: backend
+
+      - name: Run unit tests
+        run: pytest tests --ignore=tests/step_defs -q -rf --tb=short
+        working-directory: backend
+
   # Caja negra automatizada: Schemathesis genera cientos de casos desde el
   # OpenAPI que expone FastAPI y verifica contratos (códigos, schemas, 500s).
   # TODO: retirar continue-on-error cuando la primera pasada quede estable.
@@ -176,10 +221,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v10.2.0
         with: { enable-cache: true }
 
       - name: Install backend deps
@@ -234,7 +279,7 @@ jobs:
 
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install
@@ -249,7 +294,7 @@ jobs:
 
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install
@@ -264,7 +309,7 @@ jobs:
 
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install --frozen-lockfile
@@ -273,7 +318,7 @@ jobs:
       - name: pnpm audit (prod)
         run: pnpm audit --prod --audit-level high
 
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v10.2.0
         with: { enable-cache: true }
 
       - name: pip-audit (backend)
@@ -316,12 +361,12 @@ jobs:
 
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ hashFiles('tests/package.json') }}
@@ -329,10 +374,10 @@ jobs:
 
       - run: pnpm --filter genova-tests exec playwright install --with-deps chromium
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
 
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v10.2.0
         with: { enable-cache: true }
 
       - name: Install backend deps

@@ -90,7 +90,7 @@ def interpret_and_apply(
             instruction=payload.instruction,
             blocks=domain_blocks,
             backend=payload.backend or "hybrid",
-            options=payload.options,
+            options=payload.options.model_dump(exclude_none=True),
         )
     )
     return output.to_dict()

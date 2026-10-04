@@ -33,6 +33,8 @@ from users.infrastructure.sqlalchemy_analytics_repository import (  # noqa: E402
     SqlAlchemyAnalyticsRepository,
 )
 
+pytestmark = pytest.mark.usefixtures("accept_bearer")
+
 
 @pytest.fixture
 def db():

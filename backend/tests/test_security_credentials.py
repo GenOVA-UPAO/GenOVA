@@ -24,6 +24,8 @@ from users.infrastructure.sqlalchemy_account_repository import (  # noqa: E402
     SqlAlchemyUserAccountRepository,
 )
 
+pytestmark = pytest.mark.usefixtures("accept_bearer")
+
 
 class _Req:
     cookies: dict = {}

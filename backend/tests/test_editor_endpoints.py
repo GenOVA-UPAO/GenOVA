@@ -223,3 +223,23 @@ def test_record_feedback_200_success():
     data = res.json()
     assert data["success"] is True
     assert data["feedback_id"] == "feedback-uuid-999"
+
+
+def test_interpret_rechaza_laya_url_del_cliente():
+    """SSRF: el cliente no elige a qué URL llama el servidor."""
+    owner_id = str(uuid.uuid4())
+    ova_id = str(uuid.uuid4())
+    phase_id = str(uuid.uuid4())
+
+    app.dependency_overrides[get_current_user] = lambda: FakeUser(owner_id)
+    app.dependency_overrides[build_editor] = lambda: _build_test_editor(owner_id=owner_id, phases=[phase_id])
+
+    res = client.post(
+        f"/api/ovas/{ova_id}/phases/{phase_id}/editor/interpret-and-apply",
+        json={
+            "instruction": "elimina el ejemplo",
+            "blocks": [{"id": "b1", "tipo": "example", "props": {}}],
+            "options": {"laya_url": "http://169.254.169.254/latest/meta-data"},
+        },
+    )
+    assert res.status_code == 422
