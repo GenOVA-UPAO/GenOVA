@@ -2,8 +2,16 @@
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, header, progress, summary
 
@@ -14,7 +22,7 @@ PARAMS = (
 
 def schema(p: dict) -> dict:
     n = p["num_sections"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         objetivo=s(180),
         secciones=arr(
@@ -24,6 +32,8 @@ def schema(p: dict) -> dict:
         ),
         sintesis=s(240),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -33,6 +43,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Escribe el contenido de una infografía de «{concept}» con exactamente {n} secciones que se revelan en secuencia, de la idea general a la aplicación.
 - titulo: título corto y atractivo.
 - objetivo: objetivo de aprendizaje observable («Al terminar podrás integrar…»).
+- imagen (opcional): apoyo visual estructurado de la infografía:
+  * "diagrama" para flujos, procesos o mapas conceptuales (incluye objeto `diagrama` con tipo: "flujo"|"capas"|"arbol", titulo, nodos, aristas).
+  * "foto" ÚNICAMENTE para hardware, infraestructura de servidores o dispositivos físicos reales.
+  * "logo" para tecnologías o marcas concretas.
+  * "escena" para ilustraciones pedagógicas de la situación.
+  Incluye {{"tipo": "diagrama"|"foto"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - secciones: por cada una: `titulo` (≤5 palabras), `emoji` (un solo emoji), `dato` (el dato clave destacado en grande: una cifra, sigla, comando o frase muy corta ≤5 palabras, p. ej. «8 KB», «ROWID», «COMMIT»), `explicacion` (qué significa y cómo se aplica, ≤40 palabras) y `porque` (por qué ese dato importa o por qué es así, ≤30 palabras).
 - sintesis: cierre que integre las {n} ideas.
 [RESTRICCIONES] Datos técnicamente correctos y verificables; cada sección aporta una idea distinta y las secciones forman una secuencia lógica.
@@ -74,9 +90,19 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<button type="button" class="k-btn ig-why" aria-expanded="false" aria-controls="ig-w{k}">¿Por qué importa?</button>'
             f'<div class="k-fb k-hide" id="ig-w{k}">{esc(sec["porque"])}</div></section>'
         )
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Infografía de {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
     return f"""
 {header("INFOGRAFÍA INTERACTIVA", data["titulo"])}
 {KIT_CSS}
+{IMAGE_FIGURE_CSS}
 <style>
 .ig-sec{{border-left:6px solid var(--accent)}}
 .ig-emo{{font-size:2rem;line-height:1}}
@@ -91,12 +117,13 @@ def render(data: dict, ctx: RenderContext) -> str:
 .ig-l{{font-size:11px;fill:var(--text)}}
 </style>
 <upao-objective>{esc(data["objetivo"])}</upao-objective>
+{fig_html}
 {progress(n, "Secciones reveladas")}
 <upao-figure caption="Figura 1. Mapa de la infografía: se ilumina cada sección que revelas.">{_map(secs)}</upao-figure>
 <div class="ova-stack" id="ig-list">{"".join(cards)}</div>
 <div class="k-row"><button type="button" class="k-btn main" id="ig-next">Revelar siguiente sección →</button>
 <span class="k-chip" id="ig-count" aria-live="polite">1 de {n}</span></div>
-<div id="ig-end" hidden>{summary(data["sintesis"], "Síntesis")}</div>
+<div id="ig-end" hidden>{summary(data["sintesis"], "Síntesis")}{credits_sec}</div>
 {script(PROGRESS_JS + '''
 const secs = Array.from(document.querySelectorAll('.ig-sec'));
 const nodes = Array.from(document.querySelectorAll('.ig-node'));
@@ -133,6 +160,11 @@ def sample(concept: str, p: dict) -> dict:
     return {
         "titulo": f"{concept} en una mirada"[:70],
         "objetivo": f"Al terminar podrás integrar las ideas clave de {concept}.",
+        "imagen": {
+            "tipo": "diagrama",
+            "descripcion": f"Infografía esquemática y flujo de {concept}",
+            "consulta": f"{concept} infographic overview diagram",
+        },
         "secciones": [
             {
                 "titulo": f"Idea {k}",
@@ -156,4 +188,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    uses_images=True,
 )

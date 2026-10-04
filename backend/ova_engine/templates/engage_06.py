@@ -2,8 +2,17 @@
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, paragraphs, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    paragraphs,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import obj, s
 
 PARAMS = (
@@ -12,7 +21,7 @@ PARAMS = (
 
 
 def schema(p: dict) -> dict:
-    return obj(
+    sch = obj(
         titular=s(80),
         subtitulo=s(140),
         organizacion=s(60),
@@ -25,6 +34,8 @@ def schema(p: dict) -> dict:
         pregunta_cierre=s(160),
         analisis_cierre=s(300),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -42,6 +53,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * efecto: resultado cuantificable y beneficio de alto impacto para la organización (≤20 palabras).
 - pregunta_cierre: interrogante o dilema periodístico final que invita al estudiante a reflexionar sobre su rol como futuro profesional (≤25 palabras).
 - analisis_cierre: análisis reflexivo conciso que responde a la pregunta de cierre, explicando el principio técnico subyacente y su lección esencial (≤50 palabras).
+- imagen (opcional): fotografía o gráfico estructurado de contexto periodístico sobre la infraestructura:
+  * tipo "foto" ÚNICAMENTE para servidores, datacenter, hardware de telecomunicaciones o infraestructura física real.
+  * tipo "diagrama" para esquemas causales o de flujo del incidente (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * tipo "escena" para ilustraciones editoriales o pedagógicas de la noticia.
+  * tipo "logo" para la empresa o tecnología protagonista.
+  Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] Sin términos ultra-técnicos incomprensibles. Tono de urgencia informativa y rigor periodístico. Genera admiración y curiosidad por el concepto, no miedo ni sensacionalismo alarmista.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
@@ -271,7 +288,16 @@ _STYLE = """
 
 def render(data: dict, ctx: RenderContext) -> str:
     causal = data["esquema_causal"]
-    return f"""{_STYLE}
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Infraestructura y caso técnico sobre {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
+    return f"""{_STYLE}{IMAGE_FIGURE_CSS}
 <upao-header eyebrow="NOTICIA DE IMPACTO" title="{esc(data["titular"])}"><p>{
         esc(data["subtitulo"])
     }</p></upao-header>
@@ -292,6 +318,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <div class="news-body">
     {paragraphs(data["cuerpo_noticia"])}
   </div>
+  {fig_html}
 </article>
 
 <section class="news-causal-section" aria-labelledby="causal-heading">
@@ -370,6 +397,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     }</strong> permite prevenir incidencias de alto impacto y salvaguardar la infraestructura en entornos reales.</p>
   <upao-complete slot="actions" label="Continuar" locked></upao-complete>
 </upao-summary>
+{credits_sec}
 {script(PROGRESS_JS)}
 {
         script('''
@@ -479,6 +507,11 @@ def sample(concept: str, p: dict) -> dict:
             f"sino una salvaguarda esencial de continuidad de negocio: anticipar la contención previene "
             f"pérdidas millonarias antes de que ocurran."
         )[:300],
+        "imagen": {
+            "query": f"{concept} server infrastructure datacenter",
+            "tipo": "foto",
+            "descripcion": f"Infraestructura tecnológica y servidores para {concept}",
+        },
     }
 
 
@@ -491,5 +524,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
-    uses_images=False,
+    uses_images=True,
 )

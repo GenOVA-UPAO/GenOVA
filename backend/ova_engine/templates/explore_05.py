@@ -7,8 +7,17 @@ pregunta de validación y la revelación del mecanismo subyacente.
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, paragraphs, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    paragraphs,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, b, obj, s
 
 PARAMS = (
@@ -24,7 +33,7 @@ PARAMS = (
 
 def schema(p: dict) -> dict:
     n = p["num_records"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         lectura=s(600),
         columnas=arr(s(30), 2, 4),
@@ -41,6 +50,8 @@ def schema(p: dict) -> dict:
         ),
         revelacion=s(300),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -57,6 +68,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - pregunta_patron: pregunta desafiante que invita al estudiante a identificar el patrón evidente o la relación sistemática en los datos de la tabla (≤25 palabras).
 - opciones_patron: entre 2 y 4 opciones de respuesta para resolver el patrón. Exactamente UNA opción debe tener `correcta: true` y las demás `correcta: false`. Cada opción incluye `texto` (descripción del patrón, ≤15 palabras) y `feedback` explicativo que argumente por qué es correcta o por qué descarta la hipótesis (≤25 palabras).
 - revelacion: explicación pedagógica clara (≤50 palabras) que conecta el patrón descubierto en la tabla con el mecanismo y funcionamiento real de «{concept}».
+- imagen (opcional): recurso visual del incidente o análisis:
+  * tipo "foto" ÚNICAMENTE para hardware de servidores, salas de monitoreo (NOC) o infraestructura física real tangible.
+  * tipo "diagrama" para flujos del incidente o esquemas conceptuales (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * tipo "logo" para marcas o tecnologías analizadas.
+  * tipo "escena" para ilustraciones pedagógicas de la situación.
+  Incluye {{"tipo": "foto"|"diagrama"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] El patrón debe ser identificable a simple vista mediante inspección visual y contraste de filas (p. ej. un incremento repentino, una correlación directa entre dos métricas o una repetición anómala). No uses la terminología técnica avanzada de «{concept}» en la lectura inicial. No incluyas etiquetas de formato ni código web.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
@@ -129,6 +146,11 @@ def sample(concept: str, p: dict) -> dict:
         "revelacion": (
             f"Este patrón manifiesta el principio operativo de {concept}: cuando el volumen de solicitudes sobrepasa la capacidad de los búferes y colas internas, el costo de contención y E/S se multiplica exponencialmente, provocando cuellos de botella característicos en el motor de datos."
         )[:300],
+        "imagen": {
+            "query": f"{concept} database performance monitoring",
+            "tipo": "foto",
+            "descripcion": f"Métricas de rendimiento en servidores para {concept}",
+        },
     }
 
 
@@ -245,7 +267,16 @@ def render(data: dict, ctx: RenderContext) -> str:
         for k, o in enumerate(data.get("opciones_patron", []))
     )
 
-    return f"""{_STYLE}
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Métricas y análisis de {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
+    return f"""{_STYLE}{IMAGE_FIGURE_CSS}
 <upao-header eyebrow="LECTURA INTERACTIVA" title="{esc(data["titulo"])}">
   <p>Examina la lectura y el conjunto de datos para descubrir el patrón oculto.</p>
 </upao-header>
@@ -260,6 +291,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <div class="read-text">
     {paragraphs(data["lectura"])}
   </div>
+  {fig_html}
 </section>
 
 <section class="ova-card table-section" aria-labelledby="table-heading">
@@ -318,6 +350,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     }</strong> antes de realizar modificaciones en producción.</p>
   <upao-complete slot="actions" label="Finalizar lectura" locked></upao-complete>
 </upao-summary>
+{credits_sec}
 
 {script(PROGRESS_JS)}
 {
@@ -385,5 +418,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
-    uses_images=False,
+    uses_images=True,
 )

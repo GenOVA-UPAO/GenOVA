@@ -114,16 +114,17 @@ def generate_with_template(
     if spec.uses_images and not image_settings and os.getenv("LOCAL_IMAGE_URL"):
         # Desarrollo/QA: el servidor local de imágenes (SD) hace de proveedor.
         image_settings = {"provider": "local", "max_images": int(os.getenv("OVA_MAX_GENERATED_IMAGES", "6"))}
-    if spec.uses_images and image_settings and image_settings.get("enabled", True):
+    if spec.uses_images and (image_settings is None or image_settings.get("enabled", True)):
         from llm.images.image_enrich import enrich_with_images
         from llm.images.style_guide import CHARACTERS
 
         try:
             replacements = enrich_with_images(
                 data,
-                image_settings,
+                image_settings or {},
                 character=CHARACTERS.get(spec.image_character, ""),
                 ova_key=concept,
+                template_key=spec.key,
             )
         except Exception as exc:  # la imagen nunca tumba el recurso
             logger.warning("ova engine images failed", key=spec.key, error=str(exc)[:200])
