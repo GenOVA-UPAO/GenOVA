@@ -2,8 +2,18 @@
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, json_data, paragraphs, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    json_data,
+    paragraphs,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -14,7 +24,7 @@ PARAMS = (
 
 def schema(p: dict) -> dict:
     n = p["num_questions"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         empresa=s(60),
         narrativa=s(1300),
@@ -30,6 +40,8 @@ def schema(p: dict) -> dict:
         ),
         cierre=s(230),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -39,6 +51,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Redacta un caso plausible donde «{concept}» sea la clave para entender y resolver un problema real de una empresa ficticia que usa Oracle.
 - titulo: título corto del caso.
 - empresa: nombre de la empresa ficticia y su giro (≤8 palabras).
+- imagen (opcional): recurso visual estructurado del caso:
+  * "foto" ÚNICAMENTE para instalaciones físicas reales, servidores, rack o datacenters tangibles de la empresa (NUNCA para conceptos abstractos).
+  * "diagrama" para diagramas de arquitectura, flujos o modelos de datos del caso (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * "escena" para ilustraciones pedagógicas de la situación en la empresa.
+  * "logo" para marcas de software o motores de datos.
+  Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - narrativa: el caso en unas 180 palabras, en 2-3 párrafos separados por salto de línea: contexto de la empresa, el problema y cómo se manifestó.
 - evidencias: 3 o 4 evidencias técnicas del caso; `fuente` (vista, log o comando: V$..., DBA_..., alert.log) y `dato` (el valor o mensaje observado, p. ej. un error ORA- real o una cifra; ≤25 palabras).
 - preguntas: EXACTAMENTE {n} preguntas de análisis que suban de nivel (observación → interpretación → aplicación → evaluación). Cada una con `pregunta`, `respuesta_modelo` (respuesta razonada, ≤55 palabras) y `puntos_clave` (2-4 conceptos o términos breves, ≤3 palabras, que una buena respuesta debe mencionar).
@@ -66,20 +84,35 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<div class="cs-res k-hide" aria-live="polite"></div></section>'
         for k, q in enumerate(qs)
     )
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Contexto del caso de {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
     return f"""
 {header("ESTUDIO DE CASO", data["titulo"], data["empresa"])}
 {KIT_CSS}
+{IMAGE_FIGURE_CSS}
 <style>
 .cs-story p{{max-width:70ch}}
 .cs-kp{{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}}
 </style>
 {progress(n, "Preguntas analizadas")}
-<article class="ova-card cs-story" aria-labelledby="cs-narr-h"><h2 id="cs-narr-h">El caso</h2>{paragraphs(data["narrativa"])}</article>
+<article class="ova-card cs-story" aria-labelledby="cs-narr-h">
+<h2 id="cs-narr-h">El caso</h2>
+{paragraphs(data["narrativa"])}
+{fig_html}
+</article>
 <div class="ova-table-scroll" role="region" aria-label="Evidencias del caso" tabindex="0">
 <table><caption>Evidencias recopiladas</caption><thead><tr><th scope="col">Fuente</th><th scope="col">Dato observado</th></tr></thead>
 <tbody>{ev}</tbody></table></div>
 {panels}
 {summary(data["cierre"], "Reflexión")}
+{credits_sec}
 {json_data([{"m": q["respuesta_modelo"], "k": q["puntos_clave"]} for q in qs])}
 {script(PROGRESS_JS + UTIL_JS + '''
 const D = JSON.parse(document.getElementById('ova-data').textContent);
@@ -111,6 +144,11 @@ def sample(concept: str, p: dict) -> dict:
     return {
         "titulo": f"El caso de {concept}"[:70],
         "empresa": "Distribuidora Andina S.A., comercio mayorista",
+        "imagen": {
+            "tipo": "foto",
+            "descripcion": f"Infraestructura y centro de datos para {concept}",
+            "consulta": "datacenter database server enterprise",
+        },
         "narrativa": f"Distribuidora Andina usa Oracle para sus pedidos y notó lentitud cada fin de mes.\nEl DBA revisó {concept} y halló una configuración inadecuada que degradaba las consultas.",
         "evidencias": [
             {"fuente": "V$SESSION", "dato": "48 sesiones activas esperando por el mismo recurso"},
@@ -138,4 +176,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    uses_images=True,
 )

@@ -7,8 +7,16 @@ un panel de aplicación práctica para el DBA en Oracle y control de progreso co
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (
@@ -18,7 +26,7 @@ PARAMS = (
 
 def schema(p: dict) -> dict:
     n = p["num_sections"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         introduccion=s(300),
         secciones=arr(
@@ -35,6 +43,8 @@ def schema(p: dict) -> dict:
         aplicacion_dba=s(300),
         cierre=s(250),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -44,6 +54,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Redacta una lectura académica guiada, accesible y estructurada de nivel universitario sobre «{concept}», orientada a casos reales con el motor Oracle Database. La lectura debe evitar fórmulas matemáticas complejas y explicar los mecanismos mediante razonamiento técnico y analogías claras.
 - titulo: título académico claro y conciso de la lectura guiada (≤10 palabras).
 - introduccion: contextualización accesible del concepto mediante un caso o situación real en entornos Oracle (≤45 palabras).
+- imagen (opcional): elemento visual estructurado según el concepto:
+  * usa "foto" ÚNICAMENTE para objetos físicos concretos, hardware, servidores o datacenters tangibles (NUNCA para abstracciones o algoritmos).
+  * usa "diagrama" para conceptos abstractos, procesos o estructuras, incluyendo el objeto `diagrama` (tipo: "flujo"|"arbol"|"capas"|"er"|"secuencia"|"comparacion", titulo, nodos, aristas).
+  * usa "logo" para marcas o tecnologías reconocidas (ej. Oracle).
+  * usa "escena" para ilustraciones pedagógicas de la situación.
+  Incluye {{"tipo": "foto"|"diagrama"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - secciones: exactamente {n} secciones temáticas estructuradas con progresión pedagógica. Cada sección contiene:
   * `subtitulo`: nombre conceptual de la sección o aspecto abordado (≤8 palabras).
   * `idea_central`: explicación teórica clara y rigurosa sin fórmulas complejas ni abstracciones excesivas (≤35 palabras).
@@ -412,7 +428,16 @@ def render(data: dict, ctx: RenderContext) -> str:
 })();
 """
 
-    return f"""{_STYLE}
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Arquitectura de {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
+    return f"""{_STYLE}{IMAGE_FIGURE_CSS}
 <div class="ova-reading-container">
   <upao-header eyebrow="LECTURA GUIADA" title="{esc(data["titulo"])}">
     <p>Lectura analítica estructurada: explora cada sección conceptual, analiza el ejemplo razonado en Oracle y comprueba tu comprensión técnica.</p>
@@ -426,6 +451,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     </div>
     <h2 id="intro-heading" class="card-title">Introducción al Caso Real</h2>
     <p class="card-body-text">{esc(data["introduccion"])}</p>
+    {fig_html}
   </section>
 
   <div class="reading-toolbar" role="region" aria-label="Controles de lectura">
@@ -461,6 +487,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <p>{esc(data["cierre"])}</p>
     <upao-complete slot="actions" label="Finalizar lectura" locked></upao-complete>
   </upao-summary>
+  {credits_sec}
 </div>
 {script(PROGRESS_JS)}
 {script(reading_js)}
@@ -546,6 +573,11 @@ def sample(concept: str, p: dict) -> dict:
             f"En infraestructuras empresariales con Oracle Database, dominar {concept} es fundamental para garantizar alta disponibilidad "
             "y tiempos de respuesta óptimos. Analizaremos su funcionamiento mediante casos prácticos y razonamiento técnico."
         )[:300],
+        "imagen": {
+            "tipo": "foto",
+            "descripcion": f"Infografía técnica y arquitectura de {concept} en base de datos",
+            "consulta": f"{concept} database architecture",
+        },
         "secciones": base_secciones[:n],
         "aplicacion_dba": (
             f"El DBA supervisa {concept} mediante vistas como V$SQL, V$SESSION y V$SYSTEM_EVENT, analizando eventos de espera "
@@ -567,5 +599,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
-    uses_images=False,
+    uses_images=True,
 )

@@ -216,6 +216,9 @@ export default defineConfig(({ mode }) => {
       setupFiles: ["./src/test-setup.ts"],
       include: ["src/**/*.spec.{ts,tsx}"],
       css: false,
+      // Con la PC cargada (dev servers, Docker) tests de interacción pasaban de los
+      // 5 s por defecto y el pre-push fallaba al azar; en CI tardan <1 s.
+      testTimeout: 15_000,
     },
   };
 });

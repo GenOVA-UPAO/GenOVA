@@ -1,9 +1,9 @@
-"""Enrich engage JSON with generated images (HU-035 chain-aware)."""
+"""Enrich OVA JSON with images from router (search, logos, diagrams) or generator (HU-035 chain-aware)."""
 
 from __future__ import annotations
 
 import os
-from concurrent.futures import ThreadPoolExecutor
+from typing import Any
 
 import structlog
 
@@ -18,8 +18,29 @@ logger = structlog.get_logger(__name__)
 _SIZE = 512  # get_image_data_uri genera 512x512 por defecto
 
 
-def image_items(json_data) -> list[dict]:
-    """Elementos con ``prompt_imagen`` (las viñetas del cómic, por ejemplo).
+def format_credit_caption(credit: Any) -> str:
+    """Formatea la atribución requerida para imágenes de terceros en el pie de figura."""
+    if not credit:
+        return ""
+    from ova_engine.html import esc
+
+    author = esc(getattr(credit, "author", "") or "Autor")
+    license_name = esc(getattr(credit, "license", "") or "Licencia libre")
+    license_url = esc(getattr(credit, "license_url", "") or "#")
+    provider = esc(getattr(credit, "provider", "") or "web")
+    source_url = esc(getattr(credit, "source_url", "") or "#")
+
+    return (
+        f'<figcaption class="ova-image-credit">'
+        f'<span>{author}</span> · '
+        f'<a href="{license_url}" target="_blank" rel="noopener noreferrer">{license_name}</a> · '
+        f'<a href="{source_url}" target="_blank" rel="noopener noreferrer">{provider}</a>'
+        f'</figcaption>'
+    )
+
+
+def image_items(json_data: Any) -> list[dict]:
+    """Elementos con ``prompt_imagen`` (cómic tradicional) o ``imagen`` (contrato nuevo).
 
     El prompt pide un array, pero el modelo a veces lo envuelve en un objeto
     (``{"viñetas": [...]}``) o devuelve una sola viñeta: se aceptan las tres
@@ -27,7 +48,7 @@ def image_items(json_data) -> list[dict]:
     devuelven los mismos diccionarios, no copias.
     """
     if isinstance(json_data, dict):
-        if "prompt_imagen" in json_data:
+        if "prompt_imagen" in json_data or "imagen" in json_data:
             return [json_data]
         for value in json_data.values():
             items = image_items(value) if isinstance(value, list) else []
@@ -35,31 +56,31 @@ def image_items(json_data) -> list[dict]:
                 return items
         return []
     if isinstance(json_data, list):
-        return [item for item in json_data if isinstance(item, dict) and "prompt_imagen" in item]
+        return [
+            item
+            for item in json_data
+            if isinstance(item, dict) and ("prompt_imagen" in item or "imagen" in item)
+        ]
     return []
 
 
 def enrich_with_images(
-    json_data,
+    json_data: Any,
     image_settings: dict | None = None,
     *,
     character: str = "",
     ova_key: str = "",
+    template_key: str = "",
 ) -> dict[str, str]:
-    """Fetch images for items with ``prompt_imagen``; inject placeholders.
+    """Fetch images for items with ``imagen`` (via ImageRouter) or ``prompt_imagen``; inject placeholders.
 
     ``image_settings``: max_images, provider, api_key, image_model, chain?, enabled?
-    When ``chain`` is set, tries each entry until one succeeds.
-
-    Todas las imágenes del OVA comparten la guía de estilo (``image_settings['style_guide']``,
-    fijada al crear el job, o derivada de ``ova_key``) y, si el recurso tiene personaje
-    (``character``), su descripción fija. La misma imagen (prompt+estilo+modelo+tamaño) sale
-    de la caché de disco en vez de regenerarse.
+    Los ítems con ``imagen`` usan el decisor (búsqueda web, logos, diagramas con fallback a generación).
+    Los ítems que solo tienen ``prompt_imagen`` (cómic) mantienen su flujo habitual de generación guiada.
     """
-    json_data = image_items(json_data)
-    if not json_data:
-        # Antes salía en silencio: un OVA sin imágenes no dejaba rastro de por qué.
-        logger.info("image enrichment skipped: no prompt_imagen in resource JSON")
+    items = image_items(json_data)
+    if not items:
+        logger.info("image enrichment skipped: no image fields in resource JSON")
         return {}
 
     settings = image_settings or {}
@@ -67,32 +88,21 @@ def enrich_with_images(
         return {}
     default_max = int(os.getenv("OVA_MAX_GENERATED_IMAGES", "2"))
     max_images = int(settings.get("max_images", default_max))
+    if max_images <= 0:
+        return {}
+
     provider = settings.get("provider", "cloudflare")
     api_key = settings.get("api_key") or None
     model = settings.get("image_model") or None
     chain = settings.get("chain") or []
 
-    if max_images <= 0 or provider in (None, "", "none"):
-        return {}
-
     guide = guide_from_settings(settings, ova_key)
     style = f"{guide.prefix}|{guide.suffix}|{character}"
     use_cache = image_cache.enabled() and not fake_media_enabled()
 
-    def _one(scene: str) -> str | None:
-        key = image_cache.cache_key(scene, style, f"{provider}:{model or ''}", _SIZE, _SIZE)
-        if use_cache and (cached := image_cache.get(key)):
-            return cached
-        uri = _generate(guide.apply(scene, character), guide.seed)
-        if uri and use_cache:
-            image_cache.put(key, uri)
-        return uri
-
     def _generate(prompt: str, seed: int) -> str | None:
         if not chain:
             return get_image_data_uri(prompt, provider, api_key, model=model, seed=seed)
-        # Principal y respaldos en orden; HuggingFace solo cuando falló toda la
-        # cadena (antes se colaba entre el principal y el primer respaldo).
         for entry in chain:
             if not isinstance(entry, dict):
                 continue
@@ -106,10 +116,59 @@ def enrich_with_images(
             logger.info("image chain entry failed; trying next", provider=p, model=m)
         return hf_last_resort(prompt)
 
-    targets = json_data[:max_images]
-    prompts = [(item.get("prompt_imagen") or "").strip() for item in targets]
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        uris = [compress_data_uri(uri) for uri in pool.map(_one, prompts)]
+    def _one_generated(scene: str) -> str | None:
+        key = image_cache.cache_key(scene, style, f"{provider}:{model or ''}", _SIZE, _SIZE)
+        if use_cache and (cached := image_cache.get(key)):
+            return cached
+        uri = _generate(guide.apply(scene, character), guide.seed)
+        if uri and use_cache:
+            image_cache.put(key, uri)
+        return uri
+
+    used_hashes: set[str] = set()
+
+    def _process_item(item: dict) -> str | None:
+        # 1. Rama nueva: el ítem declara un objeto 'imagen' estructurado
+        if "imagen" in item and isinstance(item["imagen"], dict):
+            from llm.images.sources.contract import ImageRequest
+            from llm.images.sources.router import ImageRouter
+
+            router = ImageRouter()
+            req = ImageRequest.from_json(
+                item["imagen"],
+                concept=ova_key,
+                template_key=template_key,
+                used_hashes=used_hashes,
+            )
+            try:
+                res = router.route(
+                    req,
+                    image_settings=settings,
+                    character=character,
+                    ova_key=ova_key,
+                )
+                if res:
+                    item["image_credit"] = res.credit
+                    item["image_credit_html"] = format_credit_caption(res.credit)
+                    item["image_source"] = res.source
+                    item["image_alt"] = res.alt
+                    item["image_meta"] = res.meta
+                    phash = (res.meta or {}).get("phash")
+                    if phash:
+                        used_hashes.add(phash)
+                    return res.data_uri
+            except Exception as exc:
+                logger.warning("router image enrichment failed", error=str(exc)[:120])
+            return None
+
+        # 2. Rama cómic: elemento con solo prompt_imagen
+        scene = (item.get("prompt_imagen") or "").strip()
+        if not scene or provider in (None, "", "none"):
+            return None
+        return _one_generated(scene)
+
+    targets = items[:max_images]
+    uris = [compress_data_uri(_process_item(item)) for item in targets]
 
     logger.info(
         "image enrichment",

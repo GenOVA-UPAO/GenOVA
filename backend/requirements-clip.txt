@@ -1,0 +1,6 @@
+# Opcional: re-ranking visual local con CLIP para la búsqueda de fotos
+# (pesado: torch). Sin esto la búsqueda web se desactiva y el decisor usa
+# diagramas, logos o generación. Instalar: uv pip install -r requirements-clip.txt
+torch>=2.14.1
+torchvision>=0.29.1
+open-clip-torch>=3.3.0

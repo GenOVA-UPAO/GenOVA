@@ -2,8 +2,17 @@
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    json_data,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -16,7 +25,7 @@ PARAMS = (
 
 def schema(p: dict) -> dict:
     n = p["num_terms"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         intro=s(180),
         terminos=arr(
@@ -32,6 +41,8 @@ def schema(p: dict) -> dict:
         ),
         cierre=s(220),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -41,6 +52,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Construye un glosario visual de exactamente {n} términos esenciales para comprender «{concept}», ordenados de lo más básico a lo más específico.
 - titulo: título corto del glosario.
 - intro: una frase que invite a explorar los términos.
+- imagen (opcional): elemento visual estructurado para el glosario:
+  * "logo" para marcas o tecnologías reconocidas (ej. Oracle, PostgreSQL).
+  * "diagrama" para conceptos, relaciones o procesos (con objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * "foto" ÚNICAMENTE si representa hardware, servidores o equipamiento físico real.
+  * "escena" para ilustraciones pedagógicas.
+  Incluye {{"tipo": "logo"|"diagrama"|"foto"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - terminos: por cada término:
   * `termino`: el nombre exacto (≤20 caracteres).
   * `definicion`: definición autocontenida y precisa (≤50 palabras), sin usar el propio término para definirse.
@@ -66,9 +83,19 @@ def render(data: dict, ctx: RenderContext) -> str:
             f'<div class="gl-body k-hide" id="gl-b{k}"><p>{esc(t["definicion"])}</p>'
             f'<p class="k-label">Ejemplo</p><p>{esc(t["ejemplo"])}</p></div></article>'
         )
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Logotipo y diagrama de {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
     return f"""
 {header("GLOSARIO VISUAL", data["titulo"], data["intro"])}
 {KIT_CSS}
+{IMAGE_FIGURE_CSS}
 <style>
 .gl-grid{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))}}
 .gl-ico{{font-size:2rem;line-height:1}}
@@ -78,6 +105,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 .gl-opts{{display:grid;gap:8px;margin-top:10px}}
 </style>
 {progress(n + rounds, "Términos explorados y práctica")}
+{fig_html}
 <div class="k-row"><label for="gl-q" class="k-label">Buscar término</label>
 <input id="gl-q" type="search" class="ova-input k-grow" placeholder="Escribe para filtrar" autocomplete="off">
 <span class="k-chip" id="gl-count" aria-live="polite">{n} términos</span></div>
@@ -89,6 +117,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <div id="gl-quiz" class="ova-stack"></div>
 </section>
 {summary(data["cierre"], "Resumen")}
+{credits_sec}
 {json_data({"t": [{"termino": t["termino"], "definicion": t["definicion"]} for t in terms], "rounds": rounds})}
 {script(PROGRESS_JS + UTIL_JS + '''
 const D = JSON.parse(document.getElementById('ova-data').textContent);
@@ -144,6 +173,11 @@ def sample(concept: str, p: dict) -> dict:
     return {
         "titulo": f"Glosario de {concept}"[:70],
         "intro": f"Explora los términos clave para dominar {concept}.",
+        "imagen": {
+            "tipo": "logo",
+            "descripcion": f"Logotipo representativo de {concept}",
+            "marca": concept,
+        },
         "terminos": [
             {
                 "termino": f"Término {k}",
@@ -167,4 +201,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    uses_images=True,
 )
