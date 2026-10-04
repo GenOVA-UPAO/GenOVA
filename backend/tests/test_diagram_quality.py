@@ -166,3 +166,53 @@ def test_generated_title_cannot_authorize_retry_with_empty_description():
         )
         is None
     )
+
+
+def test_relacion_dada_en_ambos_sentidos_se_dibuja_una_vez():
+    data = {
+        "tipo": "er",
+        "nodos": [
+            {"id": "alumno", "etiqueta": "Alumno", "atributos": ["id_alumno (PK)"]},
+            {"id": "nota", "etiqueta": "Calificación", "atributos": ["id_nota (PK)", "nota"]},
+        ],
+        "aristas": [
+            {"origen": "alumno", "destino": "nota", "etiqueta": "tiene", "cardinalidad": "1:N"},
+            {"origen": "nota", "destino": "alumno", "etiqueta": "pertenece", "cardinalidad": "N:1"},
+        ],
+    }
+    out = prepare_diagram(data, "Modelo ER de notas")
+    assert [(e["origen"], e["destino"], e["etiqueta"]) for e in out["aristas"]] == [
+        ("alumno", "nota", "tiene")
+    ]
+    assert sum("(FK)" in a for a in out["nodos"][1]["atributos"]) == 1
+
+
+def test_autorrelacion_con_dos_fk_de_rol_conserva_dos_lineas():
+    data = {
+        "tipo": "er",
+        "nodos": [
+            {"id": "usuario", "etiqueta": "Usuario", "atributos": ["id_usuario (PK)"]},
+            {
+                "id": "seguimiento",
+                "etiqueta": "Seguimiento",
+                "atributos": ["id (PK)", "usuario_origen_id (FK)", "usuario_destino_id (FK)"],
+            },
+        ],
+        "aristas": [
+            {
+                "origen": "usuario",
+                "destino": "seguimiento",
+                "etiqueta": "sigue",
+                "cardinalidad": "1:N",
+            },
+            {
+                "origen": "seguimiento",
+                "destino": "usuario",
+                "etiqueta": "seguido por",
+                "cardinalidad": "N:1",
+            },
+        ],
+    }
+    out = prepare_diagram(data, "Modelo ER de una red social")
+    assert len(out["aristas"]) == 2
+    assert sum("(FK)" in a for a in out["nodos"][1]["atributos"]) == 2
