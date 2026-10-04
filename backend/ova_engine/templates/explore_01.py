@@ -197,6 +197,9 @@ _ICONS = ("▶", "◆", "■", "●")
 
 def render(data: dict, ctx: RenderContext) -> str:
     total = ctx.params.get("num_iterations", 3) if ctx and ctx.params else 3
+    # Jev decide las iteraciones y el LLM las acciones: sin tope, con 4 acciones y 5
+    # iteraciones el estudiante debía repetir una para poder finalizar.
+    total = max(1, min(total, len(data["controles"])))
 
     comps_html = "".join(
         f'<li class="lab-comp" id="lab-comp-{n}" data-active="false">'

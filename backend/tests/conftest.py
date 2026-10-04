@@ -63,6 +63,9 @@ def _legacy_generation_by_default(request, monkeypatch):
     monkeypatch.setenv("OVA_DECISION_BACKEND", "rules")
     # Producción lo activa (render.yaml); los tests del revisor lo encienden ellos mismos.
     monkeypatch.setenv("OVA_CONTENT_REVIEW", "0")
+    # Con claves reales en el .env local, los recursos con imágenes las generaban de
+    # verdad (red y coste) dentro de los tests.
+    monkeypatch.setenv("OVA_MAX_GENERATED_IMAGES", "0")
     monkeypatch.delenv("LOCAL_IMAGE_URL", raising=False)
     monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path_factory_dir(request)))
     if "ova_engine" not in request.node.nodeid:
