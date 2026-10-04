@@ -26,7 +26,15 @@ logger = structlog.get_logger(__name__)
 DEFAULT_MIN_SIMILARITY = float(os.getenv("CLIP_MIN_SIMILARITY", "0.18"))
 DEFAULT_STRONG_NEGATIVE_THRESHOLD = float(os.getenv("CLIP_STRONG_NEG_THRESHOLD", "0.235"))
 DEFAULT_SPECIFICITY_MARGIN = float(os.getenv("CLIP_SPECIFICITY_MARGIN", "-0.01"))
+DEFAULT_PERSON_THRESHOLD = float(os.getenv("CLIP_PERSON_THRESHOLD", "0.205"))
 MAX_HAMMING_DISTANCE_DUPLICATE = 6
+
+PERSON_NEGATIVE_CLASSES: set[str] = {
+    "persona",
+    "persona_primer_plano",
+    "persona_rostro",
+    "persona_posando",
+}
 
 GENERIC_TECH_PROMPTS: list[str] = [
     "a photo of computer technology",
@@ -35,8 +43,17 @@ GENERIC_TECH_PROMPTS: list[str] = [
     "abstract technology background",
 ]
 
+SERVER_ROOM_PROMPTS: list[str] = [
+    "a server room with rows of server racks",
+    "datacenter server racks corridor",
+    "datacenter server room",
+]
+
 NEGATIVE_CLASSES: dict[str, str] = {
-    "persona": "an identifiable person, portrait of a person, human face or group of people",
+    "persona": "an identifiable person, man or woman, portrait or group of people",
+    "persona_primer_plano": "close-up portrait of a person, person's face, people posing",
+    "persona_rostro": "a close-up of a person's face, human face portrait looking at camera",
+    "persona_posando": "people posing, person standing in foreground looking at camera or equipment",
     "militar": "military soldiers in uniform, armed forces, military badge, coat of arms, or military shield",
     "poster_texto": "poster or flyer with a lot of text, awareness campaign poster, typography banner with words",
     "screenshot": "computer screenshot, software user interface window, operating system desktop, code terminal",
@@ -52,6 +69,10 @@ NEGATIVE_CLASSES: dict[str, str] = {
 }
 
 GENERATED_NEGATIVE_CLASSES: dict[str, str] = {
+    "persona": "an identifiable person, man or woman, portrait or group of people",
+    "persona_primer_plano": "close-up portrait of a person, person's face, people posing",
+    "persona_rostro": "a close-up of a person's face, human face portrait looking at camera",
+    "persona_posando": "people posing, person standing in foreground looking at camera or equipment",
     "infantil_casitas": "children, childlike cartoon, kids, cute house, suburban residential cottage, country landscape, rural house",
     "persona_infantil": "child, toddler, group of children, childish cartoon character, fairy tale drawing",
     "militar": "military soldiers in uniform, armed forces, military badge, coat of arms, or military shield",
@@ -107,6 +128,7 @@ class ClipReranker:
         self.negative_embeddings = None
         self.generated_negative_embeddings = None
         self.generic_embeddings = None
+        self.server_room_embeddings = None
         self.load_duration_s = 0.0
         self.vram_mb = 0.0
 
@@ -167,6 +189,12 @@ class ClipReranker:
             with torch.no_grad():
                 g_embs = self.model.encode_text(g_tokens)
                 self.generic_embeddings = g_embs / g_embs.norm(dim=-1, keepdim=True)
+
+            # Precomputar embeddings normalizados de sala de servidores para penalización fuera de infraestructura
+            sr_tokens = self.tokenizer(SERVER_ROOM_PROMPTS).to(self.device)
+            with torch.no_grad():
+                sr_embs = self.model.encode_text(sr_tokens)
+                self.server_room_embeddings = sr_embs / sr_embs.norm(dim=-1, keepdim=True)
 
             self.load_duration_s = round(time.monotonic() - t0, 3)
             self.available = True
@@ -318,6 +346,25 @@ class ClipReranker:
                 usage_penalty = min(0.12, 0.04 * len(other_queries)) if other_queries else 0.0
                 effective_score = sim_pos - usage_penalty
 
+                # Evaluación de clases de persona con umbral calibrado (DEFAULT_PERSON_THRESHOLD = 0.205)
+                persona_scores = {k: v for k, v in neg_scores.items() if k.startswith("persona")}
+                top_p_class, top_p_score = (
+                    max(persona_scores.items(), key=lambda it: it[1]) if persona_scores else ("", 0.0)
+                )
+
+                # Penalización / descarte de sala de servidores fuera de infraestructura
+                from llm.images.query_builder import is_infrastructure_topic
+
+                is_infra = is_infrastructure_topic(concept, description)
+                top_sr_score = 0.0
+                sr_penalty = 0.0
+                if self.server_room_embeddings is not None and not is_infra:
+                    sim_srs = (img_emb @ self.server_room_embeddings.T).squeeze(0).tolist()
+                    top_sr_score = max(sim_srs)
+                    if top_sr_score > 0.16:
+                        sr_penalty = (top_sr_score - 0.16) * 0.5
+                        effective_score -= sr_penalty
+
                 # Reglas de descarte en cascada:
                 discard_reason = None
                 if is_dup:
@@ -325,16 +372,24 @@ class ClipReranker:
                 # 1. Competencia zero-shot: gana una clase negativa
                 elif top_neg_score >= sim_pos:
                     discard_reason = f"negativa_ganadora:{top_neg_class} ({top_neg_score:.3f} >= {sim_pos:.3f})"
-                # 2. Presencia negativa dominante (persona, militar, diagrama, chip die, render, etc.)
+                # 2. Persona identificable / rostro / posando con umbral calibrado
+                elif top_p_score >= DEFAULT_PERSON_THRESHOLD:
+                    discard_reason = f"persona_detectada:{top_p_class} ({top_p_score:.3f} >= {DEFAULT_PERSON_THRESHOLD:.3f})"
+                # 3. Sala de servidores en tema no de infraestructura
+                elif not is_infra and top_sr_score >= sim_pos:
+                    discard_reason = f"negativa_servidores: sala de servidores en tema no de infraestructura ({top_sr_score:.3f} >= {sim_pos:.3f})"
+                elif not is_infra and top_sr_score >= DEFAULT_STRONG_NEGATIVE_THRESHOLD:
+                    discard_reason = f"fuerte_servidores: sala de servidores dominante en tema no de infraestructura ({top_sr_score:.3f} >= {DEFAULT_STRONG_NEGATIVE_THRESHOLD:.3f})"
+                # 4. Presencia negativa dominante (militar, diagrama, chip die, render, etc.)
                 elif top_neg_score >= DEFAULT_STRONG_NEGATIVE_THRESHOLD:
                     discard_reason = f"fuerte_negativa:{top_neg_class} ({top_neg_score:.3f} >= {DEFAULT_STRONG_NEGATIVE_THRESHOLD:.3f})"
-                # 3. Margen de especificidad: rechaza imágenes genéricas que encajan con todo
+                # 5. Margen de especificidad: rechaza imágenes genéricas que encajan con todo
                 elif specificity_margin < DEFAULT_SPECIFICITY_MARGIN:
                     discard_reason = (
                         f"especificidad_insuficiente (pos={sim_pos:.3f} vs gen={top_gen_score:.3f} "
                         f"[{top_gen_prompt}], margen={specificity_margin:.3f} < {DEFAULT_SPECIFICITY_MARGIN:.3f})"
                     )
-                # 4. Umbral mínimo de similitud positiva
+                # 6. Umbral mínimo de similitud positiva
                 elif sim_pos < min_similarity:
                     discard_reason = f"umbral_minimo ({sim_pos:.3f} < {min_similarity:.3f})"
 
@@ -345,8 +400,12 @@ class ClipReranker:
                     "pos_score": round(sim_pos, 4),
                     "effective_score": round(effective_score, 4),
                     "usage_penalty": round(usage_penalty, 4),
+                    "server_room_score": round(top_sr_score, 4),
+                    "server_room_penalty": round(sr_penalty, 4),
                     "top_neg_class": top_neg_class,
                     "top_neg_score": round(top_neg_score, 4),
+                    "top_persona_class": top_p_class,
+                    "top_persona_score": round(top_p_score, 4),
                     "top_generic_prompt": top_gen_prompt,
                     "top_generic_score": round(top_gen_score, 4),
                     "specificity_margin": round(specificity_margin, 4),
@@ -362,6 +421,8 @@ class ClipReranker:
                     c_with_score["clip_score"] = effective_score
                     c_with_score["raw_clip_score"] = sim_pos
                     c_with_score["usage_penalty"] = usage_penalty
+                    c_with_score["server_room_score"] = top_sr_score
+                    c_with_score["server_room_penalty"] = sr_penalty
                     c_with_score["clip_top_neg"] = top_neg_class
                     c_with_score["clip_top_neg_score"] = top_neg_score
                     c_with_score["specificity_margin"] = specificity_margin
@@ -456,6 +517,21 @@ class ClipReranker:
         neg_scores = dict(zip(neg_names, sim_negs, strict=False))
         top_neg_class, top_neg_score = max(neg_scores.items(), key=lambda item: item[1])
 
+        # Evaluación de clases de persona con umbral calibrado (DEFAULT_PERSON_THRESHOLD = 0.205)
+        person_scores = {k: v for k, v in neg_scores.items() if k in PERSON_NEGATIVE_CLASSES}
+        top_p_class, top_p_score = (
+            max(person_scores.items(), key=lambda item: item[1]) if person_scores else (None, 0.0)
+        )
+
+        # Control de sala de servidores para temas que no son de infraestructura
+        from llm.images.query_builder import is_infrastructure_topic
+
+        is_infra = is_infrastructure_topic(concept, subject_prompt)
+        top_sr_score = 0.0
+        if self.server_room_embeddings is not None and not is_infra:
+            sim_servers = (img_emb @ self.server_room_embeddings.T).squeeze(0).tolist()
+            top_sr_score = max(sim_servers)
+
         top_gen_score = max(sim_generics)
         specificity_margin = sim_pos - top_gen_score
 
@@ -463,20 +539,38 @@ class ClipReranker:
             "pos_score": round(sim_pos, 4),
             "top_neg_class": top_neg_class,
             "top_neg_score": round(top_neg_score, 4),
+            "top_persona_class": top_p_class,
+            "top_persona_score": round(top_p_score, 4),
+            "server_room_score": round(top_sr_score, 4),
             "top_generic_score": round(top_gen_score, 4),
             "specificity_margin": round(specificity_margin, 4),
             "neg_scores": {k: round(v, 4) for k, v in neg_scores.items()},
         }
 
+        # 1. Competencia zero-shot: gana una clase negativa
         if top_neg_score >= sim_pos:
             return False, f"negativa_ganadora:{top_neg_class} ({top_neg_score:.3f} >= {sim_pos:.3f})", sim_pos, diag
 
+        # 2. Persona identificable / rostro con umbral calibrado
+        if top_p_score >= DEFAULT_PERSON_THRESHOLD:
+            return False, f"persona_detectada:{top_p_class} ({top_p_score:.3f} >= {DEFAULT_PERSON_THRESHOLD:.3f})", sim_pos, diag
+
+        # 3. Sala de servidores en tema que no es de infraestructura
+        if not is_infra and top_sr_score >= sim_pos:
+            return False, f"sala_de_servidores_inapropiada ({top_sr_score:.3f} >= {sim_pos:.3f})", sim_pos, diag
+
+        if not is_infra and top_sr_score >= DEFAULT_STRONG_NEGATIVE_THRESHOLD:
+            return False, f"fuerte_sala_de_servidores ({top_sr_score:.3f} >= {DEFAULT_STRONG_NEGATIVE_THRESHOLD:.3f})", sim_pos, diag
+
+        # 4. Fuerte presencia de clase negativa general
         if top_neg_score >= DEFAULT_STRONG_NEGATIVE_THRESHOLD:
             return False, f"fuerte_negativa:{top_neg_class} ({top_neg_score:.3f} >= {DEFAULT_STRONG_NEGATIVE_THRESHOLD:.3f})", sim_pos, diag
 
+        # 5. Margen de especificidad
         if specificity_margin < DEFAULT_SPECIFICITY_MARGIN:
             return False, f"especificidad_insuficiente (pos={sim_pos:.3f} vs gen={top_gen_score:.3f})", sim_pos, diag
 
+        # 6. Umbral mínimo
         if sim_pos < min_similarity:
             return False, f"umbral_minimo ({sim_pos:.3f} < {min_similarity:.3f})", sim_pos, diag
 
