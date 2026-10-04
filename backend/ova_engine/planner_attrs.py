@@ -56,9 +56,15 @@ def _fold(s: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFD", s.lower()) if unicodedata.category(c) != "Mn")
 
 
+# Secciones que el formulario de creación añade tras el tema («Objetivo: …»,
+# «Nivel educativo: …»): describen el pedido, no el concepto.
+_SECTIONS = re.compile(r"(?:^|[.;\n]\s*)(?:objetivos?(?: de aprendizaje)?|nivel(?: educativo)?|p[uú]blico)\s*:", re.I)
+
+
 def normalize_topic(raw: str) -> tuple[str, bool]:
     """(concepto núcleo, hay conocimientos previos). Conserva tildes del original."""
-    text = " ".join((raw or "").split())
+    head = _SECTIONS.split(raw or "", maxsplit=1)[0]
+    text = " ".join((head if head.strip() else raw or "").split())
     advanced = False
     m = re.match(r"^\s*(?:para|con)\s+(?:mis|los|las|nuestros)\s+(?:alumnos|estudiantes|chicos)\b(.*)$", text, re.I)
     if m:

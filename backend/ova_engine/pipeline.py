@@ -66,13 +66,23 @@ def generate_with_template(
     """Devuelve (html, data). `fake` = datos de `spec.sample` (sin LLM)."""
     from llm.images.image_placeholder import resolve_image_placeholders
 
+    from ova_engine.planner_attrs import normalize_topic
+
     t0 = time.monotonic()
+    # El docente escribe «Tema. Objetivo: … Nivel educativo: …»: el tema núcleo va a
+    # títulos, decisión y revisor; el pedido completo llega al LLM como contexto.
+    request = " ".join(concept.split())
+    concept, _ = normalize_topic(request)
+    prompt_ctx = contexto
+    if concept != request:
+        pedido = f"Pedido del docente (respeta su objetivo y nivel): {request}"
+        prompt_ctx = f"{pedido}\n\n{contexto}" if contexto else pedido
     params = decide(spec, concept, contexto, override=resource_config)
     if fake:
         data = spec.sample(concept, params)
     else:
         data = generate_json(
-            spec.prompt(concept, contexto, params),
+            spec.prompt(concept, prompt_ctx, params),
             spec.schema(params),
             llm_config=llm_config,
             enabled_models=enabled_models,

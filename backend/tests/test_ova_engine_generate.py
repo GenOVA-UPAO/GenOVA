@@ -33,6 +33,28 @@ def test_generate_resource_usa_texto_y_plantilla(monkeypatch):
     assert r.defects == []
 
 
+def test_tema_nucleo_y_pedido_del_docente_como_contexto(monkeypatch):
+    """«Tema. Objetivo: … Nivel educativo: …»: el título usa el tema y el pedido llega al LLM."""
+    monkeypatch.setattr(settings, "ova_engine_templates", True)
+    monkeypatch.setattr(settings, "llm_fake", False)
+    monkeypatch.setenv("OVA_CONTENT_REVIEW", "0")
+    spec = get_spec("engage", 1)
+    calls = []
+
+    def fake_router(prompt, max_tokens, *a):
+        calls.append(prompt)
+        import json
+
+        return json.dumps(spec.sample("Índices B-tree", spec.resolve_params({})))
+
+    monkeypatch.setattr(text_mod, "_router", fake_router)
+    pedido = "Índices B-tree en Oracle. Objetivo: entender cuándo crearlos.\n\nNivel educativo: posgrado."
+    r = gen.generate_resource("engage", 1, pedido)
+    assert "«Índices B-tree en Oracle»" in calls[0]
+    assert "Pedido del docente" in calls[0] and "Nivel educativo: posgrado" in calls[0]
+    assert f"<title>{spec.title}: Índices B-tree en Oracle</title>" in r.html
+
+
 def test_texto_invalido_reintenta_con_errores(monkeypatch):
     spec = get_spec("engage", 1)
     params = spec.resolve_params({})
