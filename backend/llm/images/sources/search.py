@@ -95,6 +95,14 @@ _LOW_QUALITY_SCREENSHOT_RE = re.compile(
 # Detección de código malicioso o interactivo en SVG
 _UNSAFE_SVG_RE = re.compile(r"(?i)(?:<script[\s>]|javascript:|onload\s*=|onerror\s*=|onclick\s*=)")
 
+# Detección de títulos o descripciones que denotan diagramas, gráficos o esquemas (búsqueda solo fotos)
+_NON_PHOTO_TITLE_RE = re.compile(
+    r"\b(?:diagram|diagrama|schema|scheme|schematic|chart|graph|infographic|infograf[ií]a|"
+    r"wordcloud|word\s+cloud|tag\s+cloud|die\s+shot|chip\s+die|floorplan|blueprint|"
+    r"dall[·-]?e|midjourney|stable\s+diffusion|3d\s+render|cg\s+render)\b",
+    re.IGNORECASE,
+)
+
 
 def is_allowed_license(license_str: str) -> bool:
     """Verifica si la licencia está en el conjunto permitido (CC0, PD, CC BY, CC BY-SA, Pexels, Unsplash)."""
@@ -407,7 +415,11 @@ def filter_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if _LOW_QUALITY_SCREENSHOT_RE.search(title) or _LOW_QUALITY_SCREENSHOT_RE.search(desc):
             continue
 
-        # 4. Dimensiones y proporción razonable (si vienen informadas)
+        # 4. Descartar diagramas, esquemas, gráficos, infografías, renders IA o chip dies (búsqueda solo fotos)
+        if _NON_PHOTO_TITLE_RE.search(title) or _NON_PHOTO_TITLE_RE.search(desc) or _NON_PHOTO_TITLE_RE.search(url_clean):
+            continue
+
+        # 5. Dimensiones y proporción razonable (si vienen informadas)
         w, h = c.get("width", 0), c.get("height", 0)
         if w > 0 and h > 0:
             if w < 240 or h < 160:
@@ -526,29 +538,29 @@ def build_search_queries(request: ImageRequest) -> list[str]:
         (r"memoria ram|almacenamiento masivo|discos? duros?|raid", "hard drive disk array storage server"),
         (r"criptograf[ií]a|rsa|cifrado", "cryptography digital security server network encryption"),
         (r"superc[oó]mputo|supercomputador|clusters? de gpu", "gpu cluster supercomputer server datacenter"),
-        (r"infraestructura cloud|virtualizaci[oó]n", "cloud computing infrastructure server hardware"),
-        (r"cliente-servidor|arquitectura web", "client server network architecture datacenter"),
+        (r"infraestructura cloud|virtualizaci[oó]n", "cloud computing infrastructure server hardware datacenter"),
+        (r"cliente-servidor|arquitectura web", "client server network datacenter workstation equipment"),
         (r"kanban|agil|scrum", "software development agile board office"),
-        (r"postgresql", "postgresql relational database server architecture"),
-        (r"mongodb", "mongodb nosql document database architecture"),
-        (r"redis", "redis in-memory cache database architecture"),
-        (r"kafka", "apache kafka event streaming distributed architecture"),
-        (r"kubernetes", "kubernetes container cluster architecture"),
-        (r"docker", "docker container isolation virtualization architecture"),
-        (r"bases? de datos|sql", "database server system architecture"),
-        (r"contenedores", "cloud computing container cluster technology"),
-        (r"linux|kernel|sistema operativo", "computer server linux open source system"),
-        (r"git|control de versiones", "git version control branches repository diagram"),
-        (r"python", "python programming language software development"),
-        (r"nginx", "nginx reverse proxy web server architecture"),
+        (r"postgresql", "database server hardware storage rack datacenter"),
+        (r"mongodb", "nosql database server hardware rack infrastructure"),
+        (r"redis", "high performance in-memory cache server hardware rack"),
+        (r"kafka", "distributed event streaming server cluster datacenter"),
+        (r"kubernetes", "kubernetes cloud container cluster server rack datacenter"),
+        (r"docker", "datacenter server blade container infrastructure"),
+        (r"bases? de datos|sql", "database storage array server rack datacenter"),
+        (r"contenedores", "cloud computing container datacenter server hardware"),
+        (r"linux|kernel|sistema operativo", "computer server linux open source system terminal"),
+        (r"git|control de versiones", "git developer workstation terminal screen programming"),
+        (r"python", "python programming workstation terminal monitor code"),
+        (r"nginx", "web server rack datacenter hardware computer networking"),
     ]
 
     target_text = f"{concept} {desc} {consulta} {marca}".lower()
 
     # 1. Marca específica si viene informada
     if marca:
-        add(f"{marca} software architecture")
-        add(f"{marca} system infrastructure")
+        add(f"{marca} server hardware infrastructure")
+        add(f"{marca} computer technology")
 
     # 2. Conceptos técnicos mapeados al inglés (óptimos para Wikimedia y Openverse)
     for pattern, mapped_en in cs_mappings:
@@ -603,41 +615,61 @@ class SearchSource:
             record = image_cache.get_record(ckey)
             if record and record.get("meta") and record["meta"].get("credit"):
                 c_meta = record["meta"]["credit"]
-                author = (c_meta.get("author") or "").strip()
-                lic = (c_meta.get("license") or "").strip()
-                prov = (c_meta.get("provider") or "").strip()
-                src_url = (c_meta.get("source_url") or "").strip()
-                lic_url = (c_meta.get("license_url") or "").strip()
+                cached_phash = (record["meta"].get("search_meta") or {}).get("phash") or record["meta"].get("phash")
 
-                is_generic = (
-                    not author
-                    or author.lower() in ("fuente libre", "comunidad libre", "desconocido", "unknown")
-                    or not lic
-                    or lic.lower() in ("licencia libre verificada", "licencia libre", "unknown")
-                    or prov.lower() == "cache"
-                )
-                if not is_generic:
-                    logger.info("search image cache hit with real credit", query=query, author=author, license=lic)
-                    real_credit = Credit(
-                        title=c_meta.get("title") or f"Imagen para {query}",
-                        author=author,
-                        license=lic,
-                        license_url=lic_url or "https://creativecommons.org/",
-                        source_url=src_url,
-                        provider=prov or "busqueda",
+                # Deduplicación perceptual dentro del mismo OVA
+                is_dup = False
+                if cached_phash and request.used_hashes:
+                    from llm.images.clip_rerank import (
+                        MAX_HAMMING_DISTANCE_DUPLICATE,
+                        hamming_distance,
                     )
-                    return ImageResult(
-                        data_uri=record["data_uri"],
-                        source="busqueda",
-                        alt=request.descripcion or real_credit.title or query,
-                        credit=real_credit,
-                        meta={
-                            "cache_hit": True,
-                            "query": query,
-                            **(record["meta"].get("search_meta") or {}),
-                        },
+                    for uh in request.used_hashes:
+                        if hamming_distance(cached_phash, uh) <= MAX_HAMMING_DISTANCE_DUPLICATE:
+                            is_dup = True
+                            break
+
+                if is_dup:
+                    logger.info("search cache hit skipped due to intra-OVA duplicate hash", query=query, phash=cached_phash)
+                else:
+                    author = (c_meta.get("author") or "").strip()
+                    lic = (c_meta.get("license") or "").strip()
+                    prov = (c_meta.get("provider") or "").strip()
+                    src_url = (c_meta.get("source_url") or "").strip()
+                    lic_url = (c_meta.get("license_url") or "").strip()
+
+                    is_generic = (
+                        not author
+                        or author.lower() in ("fuente libre", "comunidad libre", "desconocido", "unknown")
+                        or not lic
+                        or lic.lower() in ("licencia libre verificada", "licencia libre", "unknown")
+                        or prov.lower() == "cache"
                     )
-                logger.info("search image cache hit contained generic/invalid credit; treating as miss", query=query)
+                    if not is_generic:
+                        logger.info("search image cache hit with real credit", query=query, author=author, license=lic)
+                        if cached_phash:
+                            image_cache.record_image_usage(cached_phash, query)
+                        real_credit = Credit(
+                            title=c_meta.get("title") or f"Imagen para {query}",
+                            author=author,
+                            license=lic,
+                            license_url=lic_url or "https://creativecommons.org/",
+                            source_url=src_url,
+                            provider=prov or "busqueda",
+                        )
+                        return ImageResult(
+                            data_uri=record["data_uri"],
+                            source="busqueda",
+                            alt=request.descripcion or real_credit.title or query,
+                            credit=real_credit,
+                            meta={
+                                "cache_hit": True,
+                                "query": query,
+                                "phash": cached_phash,
+                                **(record["meta"].get("search_meta") or {}),
+                            },
+                        )
+                    logger.info("search image cache hit contained generic/invalid credit; treating as miss", query=query)
 
         # 2. Recolectar 15-20 candidatas usando múltiples variantes de consulta
         search_queries = build_search_queries(request)
@@ -688,12 +720,17 @@ class SearchSource:
             concept=request.concept,
             query=primary_query,
             description=request.descripcion,
+            used_hashes=request.used_hashes,
         )
         self.last_diagnostics = clip_diagnostics
 
         if not best_candidate:
             logger.info("all candidates rejected by CLIP similarity or negative classes", query=query)
             return None
+
+        chosen_phash = best_candidate.get("phash")
+        if chosen_phash:
+            image_cache.record_image_usage(chosen_phash, primary_query)
 
         # 5. Descargar y comprimir la mejor candidata aceptada
         data_uri = download_image_as_data_uri(best_candidate, self.session)
@@ -727,11 +764,13 @@ class SearchSource:
                 data_uri,
                 meta={
                     "credit": credit_meta,
+                    "phash": chosen_phash,
                     "search_meta": {
                         "provider": credit.provider,
                         "candidates_evaluated": len(valid_candidates),
                         "chosen_title": best_candidate.get("title"),
                         "clip_score": best_candidate.get("clip_score"),
+                        "phash": chosen_phash,
                     },
                 },
             )
@@ -755,6 +794,7 @@ class SearchSource:
                 "candidates_evaluated": len(valid_candidates),
                 "chosen_title": best_candidate.get("title"),
                 "clip_score": best_candidate.get("clip_score"),
+                "phash": chosen_phash,
                 "clip_diagnostics": clip_diagnostics,
             },
         )

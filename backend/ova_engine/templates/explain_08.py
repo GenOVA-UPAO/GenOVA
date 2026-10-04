@@ -49,7 +49,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Describe la arquitectura de «{concept}» como exactamente {n} bloques jerárquicos, del más externo/general al más interno/específico (p. ej. instancia > base de datos, o tablespace > segmento > extent > bloque, o niveles ANSI/SPARC).
 - titulo: título corto del diagrama.
 - objetivo: objetivo de aprendizaje observable («Al terminar podrás interpretar…»).
-- imagen (opcional): diagrama o esquema de arquitectura de referencia (ej. arquitectura general de la tecnología).
+- imagen (opcional): apoyo visual estructurado de la arquitectura:
+  * "diagrama" para modelos conceptuales, componentes y capas (incluye objeto `diagrama` con tipo: "capas"|"arbol"|"flujo", titulo, nodos, aristas).
+  * "logo" para tecnologías o marcas reconocidas.
+  * "foto" ÚNICAMENTE si el concepto refiere a equipamiento o servidores físicos reales (no para abstracciones de software).
+  * "escena" para ilustraciones conceptuales.
+  Incluye {{"tipo": "diagrama"|"foto"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - bloques: en orden jerárquico, por cada bloque: `nombre` (≤24 caracteres), `rol` (qué función cumple, ≤35 palabras), `contiene` (qué hay dentro o qué lo compone, ≤20 palabras), `relacion` (cómo se conecta con el bloque siguiente y por qué existe esa jerarquía, ≤25 palabras).
 - flujo: 3 o 4 pasos de un ejemplo trabajado de cómo viaja una operación (p. ej. una consulta) por la arquitectura; cada uno con `paso` (≤25 palabras) y `bloque` (número entero: posición del bloque implicado, empezando en 1).
 - pregunta: una pregunta de comprensión sobre por qué se organiza así la jerarquía, con 3-4 opciones; exactamente UNA `correcta: true`; cada `feedback` explica el porqué.

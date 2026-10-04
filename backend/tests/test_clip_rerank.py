@@ -122,4 +122,104 @@ def test_clip_rerank_diagnostics_structure():
     assert "poster_texto" in d["neg_scores"]
     assert "screenshot" in d["neg_scores"]
     assert "meme" in d["neg_scores"]
+    assert "diagrama" in d["neg_scores"]
+    assert "esquema" in d["neg_scores"]
+    assert "ia_render3d" in d["neg_scores"]
+    assert "die_chip_plano" in d["neg_scores"]
+    assert "phash" in d
+    assert "specificity_margin" in d
+    assert "top_generic_prompt" in d
+    assert "top_generic_score" in d
+    assert "usage_penalty" in d
     assert "reason" in d
+
+
+def test_dhash_and_hamming_distance():
+    from llm.images.clip_rerank import compute_dhash, hamming_distance
+
+    img1 = Image.new("RGB", (64, 64), color=(50, 50, 50))
+    img2 = Image.new("RGB", (64, 64), color=(50, 50, 50))
+    h1 = compute_dhash(img1)
+    h2 = compute_dhash(img2)
+    assert h1 == h2
+    assert hamming_distance(h1, h2) == 0
+
+    # Modificar ligeramente img2 pero sin cambiar el patrón de gradiente
+    draw = ImageDraw.Draw(img2)
+    draw.rectangle([10, 10, 20, 20], fill=(52, 52, 52))
+    h2_mod = compute_dhash(img2)
+    assert hamming_distance(h1, h2_mod) <= 2
+
+    # Imagen con gradiente decreciente (izq clara, der oscura -> bits en 1)
+    img3 = Image.new("L", (64, 64))
+    for x in range(64):
+        for y in range(64):
+            img3.putpixel((x, y), (63 - x) * 4)
+    h3 = compute_dhash(img3.convert("RGB"))
+    assert hamming_distance(h1, h3) >= 32
+
+
+def test_clip_rerank_intra_ova_deduplication():
+    from llm.images.clip_rerank import compute_dhash
+
+    reranker = ClipReranker.get_instance()
+    img = Image.new("RGB", (224, 224), color=(40, 90, 160))
+    img_bytes = _image_to_bytes(img)
+    img_phash = compute_dhash(img)
+
+    candidates = [
+        {
+            "title": "Network Switch",
+            "url": "https://example.com/switch.png",
+            "_downloaded_bytes": img_bytes,
+        }
+    ]
+
+    # Pasamos img_phash como used_hashes: debe ser descartada por duplicada
+    best, diags = reranker.score_candidates(
+        candidates,
+        concept="Redes",
+        query="network switch ethernet hardware",
+        description="Switch ethernet administrable",
+        min_similarity=0.10,
+        used_hashes=[img_phash],
+    )
+    assert best is None
+    assert len(diags) == 1
+    assert "duplicada_mismo_ova" in diags[0]["reason"]
+    assert diags[0]["passed"] is False
+
+
+def test_clip_rerank_usage_penalty(tmp_path, monkeypatch):
+    from llm.images import image_cache
+    from llm.images.clip_rerank import compute_dhash
+
+    monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path / "cache"))
+
+    reranker = ClipReranker.get_instance()
+    img = Image.new("RGB", (224, 224), color=(60, 120, 180))
+    img_bytes = _image_to_bytes(img)
+    img_phash = compute_dhash(img)
+
+    # Registramos que este hash ya fue usado para otra consulta previa
+    image_cache.record_image_usage(img_phash, "previous query server infrastructure")
+
+    candidates = [
+        {
+            "title": "Server Chassis",
+            "url": "https://example.com/server.png",
+            "_downloaded_bytes": img_bytes,
+        }
+    ]
+
+    _, diags = reranker.score_candidates(
+        candidates,
+        concept="Hardware",
+        query="different query modern datacenter server rack",
+        description="Servidores en rack",
+        min_similarity=0.01,
+    )
+    assert len(diags) == 1
+    assert diags[0]["usage_penalty"] >= 0.04
+    assert diags[0]["effective_score"] < diags[0]["pos_score"]
+

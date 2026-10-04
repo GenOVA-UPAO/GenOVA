@@ -57,10 +57,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `consecuencia`: resultado práctico directo sobre los sistemas, usuarios o el negocio (≤30 palabras).
   * `tension_etica`: principio ético comprometido o el costo de valor que implica esta elección (≤30 palabras).
 - reflexion_post_voto: síntesis reflexiva (≤60 palabras) que profundiza en la complejidad del dilema, destacando que en la administración de datos toda arquitectura y decisión técnica conlleva una carga ética inevitable, sin calificar ninguna opción como correcta o errónea.
-- imagen (opcional): fotografía conceptual o técnica de dilema, auditoría o seguridad relacionada con «{concept}»:
-  - query: término de búsqueda en inglés (ej: "{concept} data privacy cybersecurity compliance")
-  - tipo: "foto", "diagrama" o "logo"
-  - descripcion: texto accesible en español (alt)
+- imagen (opcional): contexto visual estructurado del dilema profesional:
+  * tipo "foto" ÚNICAMENTE para entornos físicos reales de centros de datos, servidores o salas de auditoría.
+  * tipo "diagrama" para flujos de auditoría o esquemas de seguridad (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * tipo "escena" para ilustraciones narrativas o pedagógicas del dilema profesional.
+  * tipo "logo" para tecnologías o plataformas involucradas.
+  Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] Empresa ficticia. Tono periodístico y deontológico profesional. Ninguna postura debe ser una negligencia absurda ni un delito obvio; todas deben tener defensores racionales y costos reales. La consecuencia debe derivarse de forma realista del funcionamiento de «{concept}». No incluyas código HTML ni referencias al JSON Schema.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 

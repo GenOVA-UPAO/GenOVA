@@ -25,6 +25,15 @@ logger = structlog.get_logger(__name__)
 # Umbrales calibrados para CLIP ViT-B-32
 DEFAULT_MIN_SIMILARITY = float(os.getenv("CLIP_MIN_SIMILARITY", "0.18"))
 DEFAULT_STRONG_NEGATIVE_THRESHOLD = float(os.getenv("CLIP_STRONG_NEG_THRESHOLD", "0.235"))
+DEFAULT_SPECIFICITY_MARGIN = float(os.getenv("CLIP_SPECIFICITY_MARGIN", "-0.01"))
+MAX_HAMMING_DISTANCE_DUPLICATE = 6
+
+GENERIC_TECH_PROMPTS: list[str] = [
+    "a photo of computer technology",
+    "a data center",
+    "a circuit board",
+    "abstract technology background",
+]
 
 NEGATIVE_CLASSES: dict[str, str] = {
     "persona": "an identifiable person, portrait of a person, human face or group of people",
@@ -32,7 +41,47 @@ NEGATIVE_CLASSES: dict[str, str] = {
     "poster_texto": "poster or flyer with a lot of text, awareness campaign poster, typography banner with words",
     "screenshot": "computer screenshot, software user interface window, operating system desktop, code terminal",
     "meme": "internet meme, humorous graphic with impact font captions",
+    "diagrama": "technical diagram, architecture diagram, flow chart, schematic diagram, sequence diagram, block diagram",
+    "esquema": "technical schema, engineering schematic, blueprint, circuit diagram, wiring schema",
+    "grafico_chart": "data chart, graph, bar chart, pie chart, line plot, statistical diagram",
+    "infografia": "infographic, vector illustration infographic, educational banner with arrows and labels",
+    "captura": "software screen capture, application interface, code window, terminal dump",
+    "nube_palabras": "word cloud, tag cloud, cluster of text buzzwords, word collage",
+    "ia_render3d": "AI generated image, 3D CGI render, digital art illustration, artificial synthetic render",
+    "die_chip_plano": "silicon chip die microphotography, semiconductor wafer die, microprocessor die, architectural floor plan, blueprint plan",
 }
+
+
+def compute_dhash(img: Any, hash_size: int = 8) -> str:
+    """Calcula el hash perceptual dHash (Difference Hash) de 64 bits en formato hexadecimal."""
+    from PIL import Image
+
+    gray = img.convert("L").resize((hash_size + 1, hash_size), Image.Resampling.LANCZOS)
+    raw_bytes = list(gray.tobytes())
+    difference = []
+    width = hash_size + 1
+    for row in range(hash_size):
+        for col in range(hash_size):
+            pixel_left = raw_bytes[row * width + col]
+            pixel_right = raw_bytes[row * width + col + 1]
+            difference.append(pixel_left > pixel_right)
+    decimal_val = 0
+    hex_str = []
+    for index, value in enumerate(difference):
+        if value:
+            decimal_val += 1 << (index % 4)
+        if index % 4 == 3:
+            hex_str.append(hex(decimal_val)[2:])
+            decimal_val = 0
+    return "".join(hex_str)
+
+
+def hamming_distance(h1: str, h2: str) -> int:
+    """Calcula la distancia de Hamming en bits entre dos hashes hexadecimales."""
+    if not h1 or not h2 or len(h1) != len(h2):
+        return 64
+    x = int(h1, 16) ^ int(h2, 16)
+    return bin(x).count("1")
 
 
 class ClipReranker:
@@ -47,6 +96,7 @@ class ClipReranker:
         self.device = "cpu"
         self.available = False
         self.negative_embeddings = None
+        self.generic_embeddings = None
         self.load_duration_s = 0.0
         self.vram_mb = 0.0
 
@@ -95,6 +145,12 @@ class ClipReranker:
                 embs = self.model.encode_text(tokens)
                 self.negative_embeddings = embs / embs.norm(dim=-1, keepdim=True)
 
+            # Precomputar embeddings normalizados de prompts genéricos para especificidad
+            gen_tokens = self.tokenizer(GENERIC_TECH_PROMPTS).to(self.device)
+            with torch.no_grad():
+                g_embs = self.model.encode_text(gen_tokens)
+                self.generic_embeddings = g_embs / g_embs.norm(dim=-1, keepdim=True)
+
             self.load_duration_s = round(time.monotonic() - t0, 3)
             self.available = True
             logger.info("CLIP model loaded successfully", device=self.device, duration_s=self.load_duration_s)
@@ -110,6 +166,8 @@ class ClipReranker:
         query: str,
         description: str,
         min_similarity: float = DEFAULT_MIN_SIMILARITY,
+        *,
+        used_hashes: tuple[str, ...] | set[str] | list[str] = (),
     ) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
         """Puntúa y filtra candidatas con CLIP contra la consulta y clases negativas.
 
@@ -134,8 +192,8 @@ class ClipReranker:
         import torch
         from PIL import Image
 
-        # Construir prompt positivo combinando concepto, consulta y descripción técnica
-        pos_prompt = f"a technical photo or diagram of {concept}. {query}. {description}".strip()
+        # Construir prompt positivo fotográfico combinando concepto, consulta y descripción técnica
+        pos_prompt = f"a real photograph of {concept}. {query}. {description}".strip()
         pos_tokens = self.tokenizer([pos_prompt]).to(self.device)
 
         with torch.no_grad():
@@ -160,6 +218,8 @@ class ClipReranker:
         session.mount("https://", adapter)
         session.mount("http://", adapter)
         session.headers.update({"User-Agent": "GenOVA/1.0 (https://github.com/GenOVA-UPAO/GenOVA; soporte@genova.edu.pe)"})
+
+        from llm.images import image_cache
 
         for c in candidates:
             url = c.get("url")
@@ -186,6 +246,7 @@ class ClipReranker:
                     raw_bytes = resp.content
 
                 pil_img = Image.open(io.BytesIO(raw_bytes)).convert("RGB")
+                phash = compute_dhash(pil_img)
             except Exception as exc:
                 diagnostics.append({
                     "title": title,
@@ -198,6 +259,16 @@ class ClipReranker:
                 })
                 continue
 
+            # Descarte 0: Deduplicación perceptual dentro del mismo OVA
+            is_dup = False
+            dup_dist = 64
+            for uh in used_hashes:
+                d = hamming_distance(phash, uh)
+                if d <= MAX_HAMMING_DISTANCE_DUPLICATE:
+                    is_dup = True
+                    dup_dist = d
+                    break
+
             try:
                 img_tensor = self.preprocess(pil_img).unsqueeze(0).to(self.device)
                 with torch.no_grad():
@@ -206,29 +277,62 @@ class ClipReranker:
 
                     sim_pos = float((img_emb @ pos_emb.T).item())
                     sim_negs = (img_emb @ self.negative_embeddings.T).squeeze(0).tolist()
+                    sim_generics = (
+                        (img_emb @ self.generic_embeddings.T).squeeze(0).tolist()
+                        if self.generic_embeddings is not None
+                        else [0.0]
+                    )
 
                 neg_scores = dict(zip(neg_names, sim_negs, strict=False))
                 top_neg_class, top_neg_score = max(neg_scores.items(), key=lambda item: item[1])
 
-                # Reglas de descarte:
-                discard_reason = None
+                top_gen_score = max(sim_generics)
+                top_gen_prompt = (
+                    GENERIC_TECH_PROMPTS[sim_generics.index(top_gen_score)]
+                    if self.generic_embeddings is not None
+                    else "none"
+                )
+                specificity_margin = sim_pos - top_gen_score
 
+                # Penalización por reutilización en consultas previas distintas
+                prev_queries = image_cache.get_image_usage(phash)
+                norm_current = image_cache.normalize_prompt(f"{query} {concept}")
+                other_queries = [pq for pq in prev_queries if image_cache.normalize_prompt(pq) != norm_current]
+                usage_penalty = min(0.12, 0.04 * len(other_queries)) if other_queries else 0.0
+                effective_score = sim_pos - usage_penalty
+
+                # Reglas de descarte en cascada:
+                discard_reason = None
+                if is_dup:
+                    discard_reason = f"duplicada_mismo_ova (dist={dup_dist} <= {MAX_HAMMING_DISTANCE_DUPLICATE})"
                 # 1. Competencia zero-shot: gana una clase negativa
-                if top_neg_score >= sim_pos:
+                elif top_neg_score >= sim_pos:
                     discard_reason = f"negativa_ganadora:{top_neg_class} ({top_neg_score:.3f} >= {sim_pos:.3f})"
-                # 2. Presencia negativa dominante (persona identificable, militar, póster con texto)
+                # 2. Presencia negativa dominante (persona, militar, diagrama, chip die, render, etc.)
                 elif top_neg_score >= DEFAULT_STRONG_NEGATIVE_THRESHOLD:
                     discard_reason = f"fuerte_negativa:{top_neg_class} ({top_neg_score:.3f} >= {DEFAULT_STRONG_NEGATIVE_THRESHOLD:.3f})"
-                # 3. Umbral mínimo de similitud positiva
+                # 3. Margen de especificidad: rechaza imágenes genéricas que encajan con todo
+                elif specificity_margin < DEFAULT_SPECIFICITY_MARGIN:
+                    discard_reason = (
+                        f"especificidad_insuficiente (pos={sim_pos:.3f} vs gen={top_gen_score:.3f} "
+                        f"[{top_gen_prompt}], margen={specificity_margin:.3f} < {DEFAULT_SPECIFICITY_MARGIN:.3f})"
+                    )
+                # 4. Umbral mínimo de similitud positiva
                 elif sim_pos < min_similarity:
                     discard_reason = f"umbral_minimo ({sim_pos:.3f} < {min_similarity:.3f})"
 
                 diag = {
                     "title": title,
                     "url": url,
+                    "phash": phash,
                     "pos_score": round(sim_pos, 4),
+                    "effective_score": round(effective_score, 4),
+                    "usage_penalty": round(usage_penalty, 4),
                     "top_neg_class": top_neg_class,
                     "top_neg_score": round(top_neg_score, 4),
+                    "top_generic_prompt": top_gen_prompt,
+                    "top_generic_score": round(top_gen_score, 4),
+                    "specificity_margin": round(specificity_margin, 4),
                     "neg_scores": {k: round(v, 4) for k, v in neg_scores.items()},
                     "passed": discard_reason is None,
                     "reason": discard_reason or "aprobado",
@@ -236,13 +340,16 @@ class ClipReranker:
                 diagnostics.append(diag)
 
                 if discard_reason is None:
-                    # Guardamos la imagen precargada en la candidata para ahorrar re-descarga
                     c_with_score = dict(c)
-                    c_with_score["clip_score"] = sim_pos
+                    c_with_score["phash"] = phash
+                    c_with_score["clip_score"] = effective_score
+                    c_with_score["raw_clip_score"] = sim_pos
+                    c_with_score["usage_penalty"] = usage_penalty
                     c_with_score["clip_top_neg"] = top_neg_class
                     c_with_score["clip_top_neg_score"] = top_neg_score
-                    c_with_score["_downloaded_bytes"] = resp.content
-                    accepted_candidates.append((sim_pos, c_with_score))
+                    c_with_score["specificity_margin"] = specificity_margin
+                    c_with_score["_downloaded_bytes"] = raw_bytes
+                    accepted_candidates.append((effective_score, c_with_score))
 
             except Exception as exc:
                 diagnostics.append({

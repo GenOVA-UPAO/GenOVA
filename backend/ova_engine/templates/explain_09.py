@@ -51,7 +51,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Compara «{concept}» con otras alternativas o conceptos relacionados (p. ej. backup frío/caliente/incremental, DBMS_JOB/DBMS_SCHEDULER, Oracle/SQL Server/PostgreSQL): EXACTAMENTE 3 elementos comparados (uno puede ser «{concept}») en {n} dimensiones medibles.
 - titulo: título corto de la comparación.
 - intro: una frase que explique qué se compara y para qué.
-- imagen (opcional): logo o imagen comparativa de tecnologías (ej. logotipos de motores enfrentados o diagrama).
+- imagen (opcional): recurso visual estructurado comparativo:
+  * "logo" para marcas o tecnologías reconocidas comparadas (ej. Oracle vs PostgreSQL).
+  * "diagrama" para esquemas conceptuales o contrastes arquitectónicos (incluye objeto `diagrama` con tipo "comparacion"|"capas"|"flujo", titulo, nodos, aristas).
+  * "foto" ÚNICAMENTE para equipamiento físico o hardware tangible.
+  * "escena" para ilustraciones pedagógicas.
+  Incluye {{"tipo": "logo"|"diagrama"|"foto"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - dimensiones: {n} criterios medibles (≤5 palabras cada uno, p. ej. «Tiempo de recuperación»).
 - comparaciones: 3 objetos, cada uno con `concepto` (nombre), `valores` (EXACTAMENTE {n} textos, uno por dimensión y EN EL MISMO ORDEN que `dimensiones`; ≤30 palabras, con datos concretos y comparables), `ventaja` (balance de su principal ventaja, ≤30 palabras) y `desventaja` (su principal desventaja, ≤30 palabras).
 - reto: `escenario` (situación realista de un DBA donde hay que elegir entre los 3, ≤35 palabras), `mejor` (número 1, 2 o 3: posición de la mejor opción en `comparaciones`) y `explicacion` (por qué esa opción gana y qué se sacrifica, ≤40 palabras).

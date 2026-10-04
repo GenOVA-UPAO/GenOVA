@@ -49,10 +49,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - dataset_sugerido: el caso de la pequeña empresa en ≤80 palabras: al menos 4 tablas con sus claves, filas estimadas, tablespaces y usuarios involucrados.
 - rubrica: EXACTAMENTE 4 criterios; cada uno con `criterio` (nombre corto) y tres descripciones observables de nivel `basico`, `competente` y `avanzado` (≤22 palabras cada una).
 - cierre: cómo transferir el proyecto a un caso real.
-- imagen (opcional): si añade valor conceptual sobre «{concept}» o la arquitectura del proyecto, incluye un objeto con:
-  - query: término de búsqueda preciso en inglés (ej: "{concept} database architecture diagram")
-  - tipo: "logo", "diagrama", "foto" o "escena"
-  - descripcion: texto accesible en español (alt)
+- imagen (opcional): si añade valor conceptual sobre «{concept}» o el proyecto:
+  * tipo "diagrama" para flujos, modelos entidad-relación o arquitecturas del proyecto (incluye objeto `diagrama` con tipo: "flujo"|"er"|"capas"|"arbol", titulo, nodos, aristas).
+  * tipo "foto" ÚNICAMENTE para hardware, servidores o infraestructura física real (consulta en inglés enfocada en hardware/datacenters).
+  * tipo "logo" para la tecnología o motor del proyecto (ej. Oracle, PostgreSQL).
+  * tipo "escena" para ilustraciones pedagógicas de la situación.
+  Incluye {{"tipo": "diagrama"|"foto"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] Entregables alcanzables en el tiempo; rúbrica con diferencias claras entre niveles.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 

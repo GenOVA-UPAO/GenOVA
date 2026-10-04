@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import structlog
@@ -126,6 +125,8 @@ def enrich_with_images(
             image_cache.put(key, uri)
         return uri
 
+    used_hashes: set[str] = set()
+
     def _process_item(item: dict) -> str | None:
         # 1. Rama nueva: el ítem declara un objeto 'imagen' estructurado
         if "imagen" in item and isinstance(item["imagen"], dict):
@@ -133,7 +134,12 @@ def enrich_with_images(
             from llm.images.sources.router import ImageRouter
 
             router = ImageRouter()
-            req = ImageRequest.from_json(item["imagen"], concept=ova_key, template_key=template_key)
+            req = ImageRequest.from_json(
+                item["imagen"],
+                concept=ova_key,
+                template_key=template_key,
+                used_hashes=used_hashes,
+            )
             try:
                 res = router.route(
                     req,
@@ -147,6 +153,9 @@ def enrich_with_images(
                     item["image_source"] = res.source
                     item["image_alt"] = res.alt
                     item["image_meta"] = res.meta
+                    phash = (res.meta or {}).get("phash")
+                    if phash:
+                        used_hashes.add(phash)
                     return res.data_uri
             except Exception as exc:
                 logger.warning("router image enrichment failed", error=str(exc)[:120])
@@ -159,8 +168,7 @@ def enrich_with_images(
         return _one_generated(scene)
 
     targets = items[:max_images]
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        uris = [compress_data_uri(uri) for uri in pool.map(_process_item, targets)]
+    uris = [compress_data_uri(_process_item(item)) for item in targets]
 
     logger.info(
         "image enrichment",

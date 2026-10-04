@@ -51,7 +51,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Redacta un caso plausible donde «{concept}» sea la clave para entender y resolver un problema real de una empresa ficticia que usa Oracle.
 - titulo: título corto del caso.
 - empresa: nombre de la empresa ficticia y su giro (≤8 palabras).
-- imagen (opcional): fotografía real o esquema que contextualice la empresa o su infraestructura de datos.
+- imagen (opcional): recurso visual estructurado del caso:
+  * "foto" ÚNICAMENTE para instalaciones físicas reales, servidores, rack o datacenters tangibles de la empresa (NUNCA para conceptos abstractos).
+  * "diagrama" para diagramas de arquitectura, flujos o modelos de datos del caso (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * "escena" para ilustraciones pedagógicas de la situación en la empresa.
+  * "logo" para marcas de software o motores de datos.
+  Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - narrativa: el caso en unas 180 palabras, en 2-3 párrafos separados por salto de línea: contexto de la empresa, el problema y cómo se manifestó.
 - evidencias: 3 o 4 evidencias técnicas del caso; `fuente` (vista, log o comando: V$..., DBA_..., alert.log) y `dato` (el valor o mensaje observado, p. ej. un error ORA- real o una cifra; ≤25 palabras).
 - preguntas: EXACTAMENTE {n} preguntas de análisis que suban de nivel (observación → interpretación → aplicación → evaluación). Cada una con `pregunta`, `respuesta_modelo` (respuesta razonada, ≤55 palabras) y `puntos_clave` (2-4 conceptos o términos breves, ≤3 palabras, que una buena respuesta debe mencionar).

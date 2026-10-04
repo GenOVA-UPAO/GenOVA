@@ -68,10 +68,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - pregunta_patron: pregunta desafiante que invita al estudiante a identificar el patrón evidente o la relación sistemática en los datos de la tabla (≤25 palabras).
 - opciones_patron: entre 2 y 4 opciones de respuesta para resolver el patrón. Exactamente UNA opción debe tener `correcta: true` y las demás `correcta: false`. Cada opción incluye `texto` (descripción del patrón, ≤15 palabras) y `feedback` explicativo que argumente por qué es correcta o por qué descarta la hipótesis (≤25 palabras).
 - revelacion: explicación pedagógica clara (≤50 palabras) que conecta el patrón descubierto en la tabla con el mecanismo y funcionamiento real de «{concept}».
-- imagen (opcional): si añade valor conceptual sobre «{concept}» (ej. monitoreo de métricas o servidores), incluye un objeto con:
-  - query: término de búsqueda preciso en inglés (ej: "{concept} database performance monitoring metrics")
-  - tipo: "foto", "diagrama" o "logo"
-  - descripcion: texto accesible en español (alt)
+- imagen (opcional): recurso visual del incidente o análisis:
+  * tipo "foto" ÚNICAMENTE para hardware de servidores, salas de monitoreo (NOC) o infraestructura física real tangible.
+  * tipo "diagrama" para flujos del incidente o esquemas conceptuales (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * tipo "logo" para marcas o tecnologías analizadas.
+  * tipo "escena" para ilustraciones pedagógicas de la situación.
+  Incluye {{"tipo": "foto"|"diagrama"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] El patrón debe ser identificable a simple vista mediante inspección visual y contraste de filas (p. ej. un incremento repentino, una correlación directa entre dos métricas o una repetición anómala). No uses la terminología técnica avanzada de «{concept}» en la lectura inicial. No incluyas etiquetas de formato ni código web.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 

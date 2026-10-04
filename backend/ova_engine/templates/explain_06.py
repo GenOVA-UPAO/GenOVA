@@ -52,7 +52,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Construye un glosario visual de exactamente {n} términos esenciales para comprender «{concept}», ordenados de lo más básico a lo más específico.
 - titulo: título corto del glosario.
 - intro: una frase que invite a explorar los términos.
-- imagen (opcional): logo o imagen técnica representativa del tema (ej. logo de la tecnología o diagrama general).
+- imagen (opcional): elemento visual estructurado para el glosario:
+  * "logo" para marcas o tecnologías reconocidas (ej. Oracle, PostgreSQL).
+  * "diagrama" para conceptos, relaciones o procesos (con objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * "foto" ÚNICAMENTE si representa hardware, servidores o equipamiento físico real.
+  * "escena" para ilustraciones pedagógicas.
+  Incluye {{"tipo": "logo"|"diagrama"|"foto"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - terminos: por cada término:
   * `termino`: el nombre exacto (≤20 caracteres).
   * `definicion`: definición autocontenida y precisa (≤50 palabras), sin usar el propio término para definirse.

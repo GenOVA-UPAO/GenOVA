@@ -54,7 +54,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Redacta una lectura académica guiada, accesible y estructurada de nivel universitario sobre «{concept}», orientada a casos reales con el motor Oracle Database. La lectura debe evitar fórmulas matemáticas complejas y explicar los mecanismos mediante razonamiento técnico y analogías claras.
 - titulo: título académico claro y conciso de la lectura guiada (≤10 palabras).
 - introduccion: contextualización accesible del concepto mediante un caso o situación real en entornos Oracle (≤45 palabras).
-- imagen (opcional): si un diagrama o foto técnica ilustra el concepto, incluye {{"tipo": "foto"|"diagrama"|"logo", "descripcion": "...", "consulta": "..."}}.
+- imagen (opcional): elemento visual estructurado según el concepto:
+  * usa "foto" ÚNICAMENTE para objetos físicos concretos, hardware, servidores o datacenters tangibles (NUNCA para abstracciones o algoritmos).
+  * usa "diagrama" para conceptos abstractos, procesos o estructuras, incluyendo el objeto `diagrama` (tipo: "flujo"|"arbol"|"capas"|"er"|"secuencia"|"comparacion", titulo, nodos, aristas).
+  * usa "logo" para marcas o tecnologías reconocidas (ej. Oracle).
+  * usa "escena" para ilustraciones pedagógicas de la situación.
+  Incluye {{"tipo": "foto"|"diagrama"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - secciones: exactamente {n} secciones temáticas estructuradas con progresión pedagógica. Cada sección contiene:
   * `subtitulo`: nombre conceptual de la sección o aspecto abordado (≤8 palabras).
   * `idea_central`: explicación teórica clara y rigurosa sin fórmulas complejas ni abstracciones excesivas (≤35 palabras).

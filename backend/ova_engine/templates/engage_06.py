@@ -53,10 +53,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * efecto: resultado cuantificable y beneficio de alto impacto para la organización (≤20 palabras).
 - pregunta_cierre: interrogante o dilema periodístico final que invita al estudiante a reflexionar sobre su rol como futuro profesional (≤25 palabras).
 - analisis_cierre: análisis reflexivo conciso que responde a la pregunta de cierre, explicando el principio técnico subyacente y su lección esencial (≤50 palabras).
-- imagen (opcional): fotografía periodística o de contexto técnico relacionada con la infraestructura o noticia sobre «{concept}»:
-  - query: término de búsqueda en inglés (ej: "{concept} server infrastructure datacenter")
-  - tipo: "foto", "diagrama" o "logo"
-  - descripcion: texto accesible en español (alt)
+- imagen (opcional): fotografía o gráfico estructurado de contexto periodístico sobre la infraestructura:
+  * tipo "foto" ÚNICAMENTE para servidores, datacenter, hardware de telecomunicaciones o infraestructura física real.
+  * tipo "diagrama" para esquemas causales o de flujo del incidente (incluye objeto `diagrama`: tipo, titulo, nodos, aristas).
+  * tipo "escena" para ilustraciones editoriales o pedagógicas de la noticia.
+  * tipo "logo" para la empresa o tecnología protagonista.
+  Incluye {{"tipo": "foto"|"diagrama"|"escena"|"logo", "descripcion": "...", "consulta": "..." (en inglés)}}.
 [RESTRICCIONES] Sin términos ultra-técnicos incomprensibles. Tono de urgencia informativa y rigor periodístico. Genera admiración y curiosidad por el concepto, no miedo ni sensacionalismo alarmista.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 

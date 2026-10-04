@@ -43,7 +43,12 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Escribe el contenido de una infografía de «{concept}» con exactamente {n} secciones que se revelan en secuencia, de la idea general a la aplicación.
 - titulo: título corto y atractivo.
 - objetivo: objetivo de aprendizaje observable («Al terminar podrás integrar…»).
-- imagen (opcional): infografía, diagrama de flujo o esquema visual general del concepto.
+- imagen (opcional): apoyo visual estructurado de la infografía:
+  * "diagrama" para flujos, procesos o mapas conceptuales (incluye objeto `diagrama` con tipo: "flujo"|"capas"|"arbol", titulo, nodos, aristas).
+  * "foto" ÚNICAMENTE para hardware, infraestructura de servidores o dispositivos físicos reales.
+  * "logo" para tecnologías o marcas concretas.
+  * "escena" para ilustraciones pedagógicas de la situación.
+  Incluye {{"tipo": "diagrama"|"foto"|"logo"|"escena", "descripcion": "...", "consulta": "..." (en inglés)}}.
 - secciones: por cada una: `titulo` (≤5 palabras), `emoji` (un solo emoji), `dato` (el dato clave destacado en grande: una cifra, sigla, comando o frase muy corta ≤5 palabras, p. ej. «8 KB», «ROWID», «COMMIT»), `explicacion` (qué significa y cómo se aplica, ≤40 palabras) y `porque` (por qué ese dato importa o por qué es así, ≤30 palabras).
 - sintesis: cierre que integre las {n} ideas.
 [RESTRICCIONES] Datos técnicamente correctos y verificables; cada sección aporta una idea distinta y las secciones forman una secuencia lógica.

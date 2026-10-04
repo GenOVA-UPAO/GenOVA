@@ -136,3 +136,49 @@ def stats() -> dict:
         "stores": stores,
         "hit_rate": round(hits / total, 3) if total else 0.0,
     }
+
+
+def _usage_registry_path() -> Path:
+    return cache_dir() / "usage_registry.json"
+
+
+def record_image_usage(phash: str, query: str) -> None:
+    """Registra en disco la consulta para la cual fue elegida una imagen (por hash perceptual)."""
+    if not enabled() or not phash or not query:
+        return
+    reg_path = _usage_registry_path()
+    with _lock:
+        data: dict[str, list[str]] = {}
+        try:
+            if reg_path.exists():
+                data = json.loads(reg_path.read_text(encoding="utf-8"))
+        except Exception:
+            data = {}
+
+        queries = data.setdefault(phash, [])
+        norm_q = normalize_prompt(query)
+        if norm_q not in queries:
+            queries.append(norm_q)
+
+        try:
+            reg_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = reg_path.with_suffix(f".{os.getpid()}.{threading.get_ident()}.tmp")
+            tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            tmp.replace(reg_path)
+        except OSError as exc:
+            logger.warning("failed to write usage registry", error=str(exc)[:120])
+
+
+def get_image_usage(phash: str) -> list[str]:
+    """Obtiene la lista de consultas normalizadas para las cuales ya fue seleccionada esta imagen."""
+    if not enabled() or not phash:
+        return []
+    reg_path = _usage_registry_path()
+    try:
+        if reg_path.exists():
+            data = json.loads(reg_path.read_text(encoding="utf-8"))
+            return list(data.get(phash, []))
+    except Exception:
+        pass
+    return []
+

@@ -88,11 +88,20 @@ def test_candidate_filtering_and_ranking():
             "height": 40,
             "license": "CC0",
         },
-        # Candidata 4: válida y relevante
+        # Candidata 4: válida y relevante (fotografía real de servidores)
+        {
+            "title": "PostgreSQL Database Server Hardware Rack in Datacenter",
+            "description": "High performance server rack hosting PostgreSQL database cluster",
+            "url": "https://example.com/pg_rack.jpg",
+            "width": 1024,
+            "height": 768,
+            "license": "CC BY-SA 4.0",
+        },
+        # Candidata 5: diagrama / esquema (debe ser descartada por _NON_PHOTO_TITLE_RE)
         {
             "title": "PostgreSQL Architecture Diagram",
-            "description": "Detailed PostgreSQL internal architecture and processes",
-            "url": "https://example.com/pg.png",
+            "description": "Detailed database schema flowchart",
+            "url": "https://example.com/diagram.png",
             "width": 1024,
             "height": 768,
             "license": "CC BY-SA 4.0",
@@ -101,13 +110,13 @@ def test_candidate_filtering_and_ranking():
 
     filtered = filter_candidates(candidates)
     assert len(filtered) == 1
-    assert filtered[0]["title"] == "PostgreSQL Architecture Diagram"
+    assert filtered[0]["title"] == "PostgreSQL Database Server Hardware Rack in Datacenter"
 
     # Verificar puntuación
     score = score_candidate(
         filtered[0],
-        query="PostgreSQL architecture",
-        description="Arquitectura de procesos",
+        query="PostgreSQL database server hardware",
+        description="Rack de servidores en datacenter",
         concept="Bases de datos",
     )
     assert score > 20.0
