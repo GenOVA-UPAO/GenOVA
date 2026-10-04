@@ -26,6 +26,22 @@ def test_normalize_quita_preambulo_y_detecta_nivel():
     assert adv is True
 
 
+def test_normalize_quita_objetivo_y_nivel_del_formulario():
+    pedido = "Índices B-tree en Oracle. Objetivo: entender cuándo crearlos.\n\nNivel educativo: posgrado."
+    assert pa.normalize_topic(pedido) == ("Índices B-tree en Oracle", False)
+    assert pa.normalize_topic("Tablespaces y datafiles\n\nNivel educativo: posgrado.")[0] == "Tablespaces y datafiles"
+    assert pa.normalize_topic("Objetivo: que entiendan el redo log")[0] == "Objetivo: que entiendan el redo log"
+
+
+def test_normalize_lineal_con_muchos_saltos_de_linea():
+    import time
+
+    t0 = time.perf_counter()
+    pa.normalize_topic("a" + "\n" * 200_000 + "x")
+    pa.normalize_topic("." + " \n" * 100_000)
+    assert time.perf_counter() - t0 < 1.0
+
+
 def test_normalize_tema_simple_intacto():
     assert pa.normalize_topic("Flashback: consultas y tabla") == ("Flashback: consultas y tabla", False)
 

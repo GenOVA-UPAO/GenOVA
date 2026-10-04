@@ -58,13 +58,26 @@ def _fold(s: str) -> str:
 
 # Secciones que el formulario de creación añade tras el tema («Objetivo: …»,
 # «Nivel educativo: …»): describen el pedido, no el concepto.
-_SECTIONS = re.compile(r"(?:^|[.;\n]\s*)(?:objetivos?(?: de aprendizaje)?|nivel(?: educativo)?|p[uú]blico)\s*:", re.I)
+# Se busca sobre el texto ya normalizado (saltos de línea → «. », espacios simples),
+# así el patrón no tiene cuantificadores solapados (sin backtracking polinómico).
+_SECTIONS = re.compile(r"(?:^|[.;] )(?:objetivos?(?: de aprendizaje)?|nivel(?: educativo)?|p[uú]blico) ?:", re.I)
+
+
+def _strip_sections(raw: str) -> str:
+    """El texto hasta la primera sección «Objetivo:»/«Nivel educativo:» (o todo)."""
+    lines = ". ".join(line.strip() for line in raw.splitlines() if line.strip())
+    flat = " ".join(lines.split())
+    m = _SECTIONS.search(flat)
+    if m is None:
+        return " ".join(raw.split())
+    return flat[: m.start()]
 
 
 def normalize_topic(raw: str) -> tuple[str, bool]:
     """(concepto núcleo, hay conocimientos previos). Conserva tildes del original."""
-    head = _SECTIONS.split(raw or "", maxsplit=1)[0]
-    text = " ".join((head if head.strip() else raw or "").split())
+    raw = (raw or "")[:4000]  # pedido del docente: tope defensivo antes de las regex
+    head = _strip_sections(raw)
+    text = head if head.strip(" .:;") else " ".join(raw.split())
     advanced = False
     m = re.match(r"^\s*(?:para|con)\s+(?:mis|los|las|nuestros)\s+(?:alumnos|estudiantes|chicos)\b(.*)$", text, re.I)
     if m:
