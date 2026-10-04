@@ -22,17 +22,13 @@ from llm.images.image_compress import compress_data_uri
 from llm.images.image_providers import get_image_data_uri, hf_last_resort
 from llm.images.media_fake import fake_media_enabled
 from llm.images.sources.contract import ImageKind, ImageRequest, ImageResult, ImageSource
+from llm.images.sources.diagram import DiagramSource, valid_diagram
+from llm.images.sources.diagram_generation import generate_diagram_for_request
 from llm.images.sources.logos import LogoSource
 from llm.images.sources.search import SearchSource
 from llm.images.style_guide import guide_from_settings
 
 logger = structlog.get_logger(__name__)
-
-# Importación condicional de DiagramSource (rama paralela; no crear diagram.py)
-try:
-    from llm.images.sources.diagram import DiagramSource  # type: ignore
-except ImportError:
-    DiagramSource = None
 
 
 class GenerationSource:
@@ -57,11 +53,26 @@ class GenerationSource:
             return None
 
         provider = settings.get("provider")
+        api_key = settings.get("api_key")
         if not provider or provider in ("none", ""):
-            # Si no hay proveedor configurado ni servidor local, la generación no está disponible
-            if not os.getenv("LOCAL_IMAGE_URL"):
+            # En local, SD :7860 vía LOCAL_IMAGE_URL; en producción OpenRouter si hay key
+            if os.getenv("LOCAL_IMAGE_URL"):
+                provider = "local"
+            elif os.getenv("OPENROUTER_API_KEY"):
+                provider = "openrouter"
+                api_key = os.getenv("OPENROUTER_API_KEY")
+            else:
+                try:
+                    from llm.clients.clients import _get_provider_key
+
+                    k = _get_provider_key("openrouter")
+                    if k:
+                        provider = "openrouter"
+                        api_key = k
+                except Exception:
+                    pass
+            if not provider or provider in ("none", ""):
                 return None
-            provider = "local"
 
         prompt = (request.consulta or request.descripcion or request.concept).strip()
         if not prompt:
@@ -148,11 +159,13 @@ class ImageRouter:
         search_source: ImageSource | None = None,
         diagram_source: ImageSource | None = None,
         generation_source: ImageSource | None = None,
+        diagram_generation_func: Any = None,
     ) -> None:
         self.logos_source = logos_source or LogoSource()
         self.search_source = search_source or SearchSource()
-        self.diagram_source = diagram_source or (DiagramSource() if DiagramSource else None)
+        self.diagram_source = diagram_source or DiagramSource()
         self.generation_source = generation_source
+        self.diagram_generation_func = diagram_generation_func or generate_diagram_for_request
 
     def route(
         self,
@@ -217,8 +230,8 @@ class ImageRouter:
 
         # --- CASO 3: DIAGRAMA ---
         elif kind == "diagrama":
-            # 1. Probar DiagramSource si está disponible y los datos son válidos
-            if self.diagram_source and isinstance(request.diagrama, dict) and request.diagrama.get("nodos"):
+            # 1. Probar DiagramSource si el objeto diagrama existe y es válido
+            if self.diagram_source and isinstance(request.diagrama, dict) and valid_diagram(request.diagrama):
                 try:
                     result = self.diagram_source.fetch(request)
                     if result:
@@ -227,21 +240,25 @@ class ImageRouter:
                     logger.warning("diagram source error", error=str(exc)[:100])
                     history.append("diagrama:error")
             else:
-                history.append("diagrama:unavailable_or_no_schema")
+                history.append("diagrama:missing_or_invalid_schema")
 
-            # 2. Respaldo a búsqueda web libre si no hubo diagrama SVG
-            if not result:
-                result = self.search_source.fetch(request)
-                if result:
-                    reason = "Diagrama técnico obtenido mediante búsqueda web libre"
-                else:
-                    history.append("busqueda:not_found")
+            # 2. Si falta o es inválido, usar diagram_generation (segunda llamada LLM con su prompt por tipo)
+            if not result and self.diagram_source:
+                try:
+                    result = self.diagram_generation_func(request, self.diagram_source)
+                    if result:
+                        reason = "Diagrama vectorial SVG generado mediante fallback de diagram_generation"
+                except Exception as exc:
+                    logger.warning("diagram generation fallback error", error=str(exc)[:100])
+                    history.append("diagram_generation:error")
+                if not result:
+                    history.append("diagram_generation:failed")
 
-            # 3. Respaldo final a generación
+            # 3. Respaldo final a generación de IA (SD / OpenRouter) — nunca diagramas de internet
             if not result:
                 result = gen_source.fetch(request)
                 if result:
-                    reason = "Diagrama ilustrado mediante generación de IA (último recurso)"
+                    reason = "Diagrama ilustrado mediante generación de IA (respaldo)"
                 else:
                     history.append("generada:failed")
 

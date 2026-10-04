@@ -13,14 +13,13 @@ import json
 import os
 import sys
 import time
-from copy import deepcopy
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from llm.images.sources.contract import DIAGRAM_SCHEMA, ImageRequest  # noqa: E402
 from llm.images.sources.diagram import DiagramSource, _matches, valid_diagram  # noqa: E402
-from llm.images.sources.diagram_generation import generate_diagram_json  # noqa: E402
+from llm.images.sources.diagram_generation import generate_diagram_json, prompt_for  # noqa: E402
 
 CASES = [
     (
@@ -125,64 +124,7 @@ CASES = [
     ),
 ]
 
-EXAMPLE = {
-    "tipo": "flujo",
-    "titulo": "Procesamiento",
-    "nodos": [{"id": "a", "etiqueta": "Entrada"}, {"id": "b", "etiqueta": "Salida"}],
-    "aristas": [{"origen": "a", "destino": "b", "etiqueta": "procesar"}],
-}
 
-
-def prompt_for(kind, concept, criteria):
-    example = deepcopy(EXAMPLE)
-    example["tipo"] = kind
-    example["nodos"][0]["etiqueta"] = "Elemento Alfa"
-    example["nodos"][1]["etiqueta"] = "Elemento Beta"
-    example["aristas"][0]["etiqueta"] = "relación"
-    example["nodos"][0]["atributos"] = ["Propiedad breve"]
-    rules = {
-        "er": "Atributos SOLO nombres con marcas (PK)/(FK), sin explicaciones ni '(completo)'. PK en cada entidad. Cardinalidad 1:1, 1:N, N:1 o N:M relativa a origen→destino; la FK va en el lado N. No dupliques FK existentes aunque usen id_x, x_id, xId, idX o sufijos de rol. Entidad intermedia para N:M. Relaciones de roles distintos conservan sus etiquetas, incluso entre las mismas entidades. No emitas cardinalidades contradictorias ni entidades ajenas al concepto solicitado.",
-        "arbol": "Solo nodos necesarios. Un padre por nodo. Hermanos y aristas en orden izquierda→derecha. En B-Tree etiqueta SOLO [claves,numéricas], sin atributos; respeta rangos y profundidad uniforme. En BST etiqueta SOLO número.",
-        "flujo": "Solo etapas necesarias. Cada arista expresa la condición o acción que permite ir del origen al destino, no un resultado aún no obtenido. Decisiones con salidas sí/no o condiciones mutuamente excluyentes; bucles vuelven a evaluar la condición y tienen salida. Incluye todas las transiciones solicitadas, incluidas las de fallo en ciclos de estado. Recalcula en cada iteración.",
-        "capas": "Nodos ordenados arriba→abajo, grupo y atributos describen función de cada capa.",
-        "secuencia": "Nodos SOLO actores únicos por etiqueta; reutiliza el mismo ID para cada aparición del actor. Aristas SOLO mensajes, en orden temporal. No crear nodos de mensajes.",
-        "comparacion": "EXACTAMENTE dos nodos. Atributos con formato 'Criterio: valor', mismos criterios neutrales y precisos en ambos nodos, máximo 5. Si el detalle pide criterios, usa exclusivamente esos criterios y no añadas otros. Omite cualquier criterio cuyo valor no sepas con certeza para ambas alternativas. Evita absolutos, dicotomías inventadas o juicios de superioridad.",
-    }
-    if kind == "er":
-        example["nodos"][0]["atributos"] = ["id (PK)"]
-        example["nodos"][1]["atributos"] = ["id (PK)", "elemento_alfa_id (FK)"]
-        example["aristas"][0]["cardinalidad"] = "1:N"
-    elif kind == "flujo":
-        example["titulo"] = "Ciclo abstracto"
-        example["nodos"] = [
-            {"id": "a", "etiqueta": "Inicio"},
-            {"id": "b", "etiqueta": "¿Condición pendiente?"},
-            {"id": "c", "etiqueta": "Acción abstracta"},
-            {"id": "d", "etiqueta": "Fin"},
-        ]
-        example["aristas"] = [
-            {"origen": "a", "destino": "b", "etiqueta": "evaluar"},
-            {"origen": "b", "destino": "c", "etiqueta": "sí"},
-            {"origen": "b", "destino": "d", "etiqueta": "no"},
-            {"origen": "c", "destino": "b", "etiqueta": "reevaluar"},
-        ]
-    elif kind == "capas":
-        example["nodos"][0]["grupo"] = "Capa A"
-        example["nodos"][1]["grupo"] = "Capa B"
-    elif kind == "comparacion":
-        example["nodos"][0]["atributos"] = ["Propiedad: valor alfa"]
-        example["nodos"][1]["atributos"] = ["Propiedad: valor beta"]
-        example["aristas"] = []
-    return (
-        f"Diagrama en español de {concept}. tipo DEBE ser {kind}. {criteria} {rules[kind]} "
-        "IDs únicos; referencias existentes. Etiquetas cortas (máx 24 caracteres); "
-        "explicaciones en atributos separados, cortos y completos (máx 35 caracteres). "
-        "No trunques frases. Solo JSON, sin HTML. "
-        "No incluyas contadores ni derivados (Hijos: 2, grado, nivel, altura): los calcula el renderizador. "
-        "Cardinalidad exclusivamente en ER, nunca en mensajes ni otros tipos. Titulo específico del concepto. "
-        "El ejemplo siguiente SOLO ilustra estructura abstracta: no copies sus nodos ni propiedades al resultado. "
-        + json.dumps(example, ensure_ascii=False)
-    )
 
 
 def evaluate(out: Path, *, resume: bool = False, cases=None, model: str | None = None):

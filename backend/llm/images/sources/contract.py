@@ -96,9 +96,17 @@ class ImageRequest:
     template_key: str = ""  # plantilla pedagógica ("explain:08", etc.) para delimitar tipos admitidos
     width: int = 768
     height: int = 512
+    used_hashes: tuple[str, ...] = ()
 
     @classmethod
-    def from_json(cls, data: dict, *, concept: str = "", template_key: str = "") -> ImageRequest:
+    def from_json(
+        cls,
+        data: dict,
+        *,
+        concept: str = "",
+        template_key: str = "",
+        used_hashes: tuple[str, ...] | set[str] | list[str] = (),
+    ) -> ImageRequest:
         return cls(
             tipo=data.get("tipo") or "escena",
             descripcion=str(data.get("descripcion") or "").strip(),
@@ -107,6 +115,7 @@ class ImageRequest:
             diagrama=data.get("diagrama") or None,
             concept=concept,
             template_key=template_key or str(data.get("template_key") or "").strip(),
+            used_hashes=tuple(used_hashes or data.get("used_hashes") or ()),
         )
 
 

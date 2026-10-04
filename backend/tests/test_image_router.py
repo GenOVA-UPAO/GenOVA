@@ -91,15 +91,47 @@ def test_router_foto_fallback_to_generation():
     gen.fetch.assert_called_once()
 
 
+def test_router_diagrama_hit_valid_schema():
+    diagram = MagicMock()
+    diagram.fetch.return_value = _dummy_result("diagrama")
+    router = ImageRouter(diagram_source=diagram)
+    req = ImageRequest(
+        tipo="diagrama",
+        descripcion="Diagrama ER",
+        diagrama={"tipo": "er", "nodos": [{"id": "n1", "etiqueta": "Usuario"}]},
+    )
+    res = router.route(req)
+    assert res is not None
+    assert res.source == "diagrama"
+    diagram.fetch.assert_called_once()
+
+
+def test_router_diagrama_fallback_to_diagram_generation():
+    diagram = MagicMock()
+    diagram_gen = MagicMock(return_value=_dummy_result("diagrama"))
+    router = ImageRouter(diagram_source=diagram, diagram_generation_func=diagram_gen)
+    # Petición sin esquema de diagrama
+    req = ImageRequest(tipo="diagrama", descripcion="Flujo de compilación")
+    res = router.route(req)
+    assert res is not None
+    assert res.source == "diagrama"
+    diagram_gen.assert_called_once()
+
+
 def test_router_diagrama_fallback_chain():
     diagram = MagicMock()
     diagram.fetch.return_value = None
+    diagram_gen = MagicMock(return_value=None)
     search = MagicMock()
-    search.fetch.return_value = None
     gen = MagicMock()
     gen.fetch.return_value = _dummy_result("generada")
 
-    router = ImageRouter(diagram_source=diagram, search_source=search, generation_source=gen)
+    router = ImageRouter(
+        diagram_source=diagram,
+        search_source=search,
+        generation_source=gen,
+        diagram_generation_func=diagram_gen,
+    )
     req = ImageRequest(
         tipo="diagrama",
         descripcion="Diagrama ER",
@@ -109,8 +141,10 @@ def test_router_diagrama_fallback_chain():
     res = router.route(req)
     assert res is not None
     assert res.source == "generada"
-    assert "diagrama:unavailable_or_no_schema" not in res.meta["fallback_history"]
-    assert "busqueda:not_found" in res.meta["fallback_history"]
+    assert "diagrama:missing_or_invalid_schema" not in res.meta["fallback_history"]
+    # La búsqueda web nunca se llama para diagramas
+    search.fetch.assert_not_called()
+    gen.fetch.assert_called_once()
 
 
 def test_router_escena_and_personaje():
@@ -132,10 +166,9 @@ def test_router_explanatory_template_rejects_logo():
     """Verifica que plantillas explicativas (como explain:08 Framework) rechazan logotipos aislados."""
     logos = MagicMock()
     logos.fetch.return_value = _dummy_result("logo")
-    search = MagicMock()
-    search.fetch.return_value = _dummy_result("busqueda")
+    diagram_gen = MagicMock(return_value=_dummy_result("diagrama"))
 
-    router = ImageRouter(logos_source=logos, search_source=search)
+    router = ImageRouter(logos_source=logos, diagram_generation_func=diagram_gen)
 
     # El LLM solicita 'logo' en explain:08 (Diagrama de Framework)
     req = ImageRequest(
@@ -147,10 +180,10 @@ def test_router_explanatory_template_rejects_logo():
 
     res = router.route(req)
     assert res is not None
-    # No debe devolver el logo estático; redirige a diagrama/búsqueda
-    assert res.source == "busqueda"
+    # No debe devolver el logo estático; redirige a diagrama
+    assert res.source == "diagrama"
     logos.fetch.assert_not_called()
-    search.fetch.assert_called_once()
+    diagram_gen.assert_called_once()
 
 
 def test_router_glossary_accepts_logo():
@@ -178,10 +211,9 @@ def test_router_glossary_accepts_logo():
 def test_router_explanatory_template_unpadded_key_rejects_logo():
     """Verifica que 'explain:8' sin cero a la izquierda también rechace logos."""
     logos = MagicMock()
-    search = MagicMock()
-    search.fetch.return_value = _dummy_result("busqueda")
+    diagram_gen = MagicMock(return_value=_dummy_result("diagrama"))
 
-    router = ImageRouter(logos_source=logos, search_source=search)
+    router = ImageRouter(logos_source=logos, diagram_generation_func=diagram_gen)
 
     req = ImageRequest(
         tipo="logo",
@@ -192,7 +224,7 @@ def test_router_explanatory_template_unpadded_key_rejects_logo():
 
     res = router.route(req)
     assert res is not None
-    assert res.source == "busqueda"
+    assert res.source == "diagrama"
     logos.fetch.assert_not_called()
-    search.fetch.assert_called_once()
+    diagram_gen.assert_called_once()
 
