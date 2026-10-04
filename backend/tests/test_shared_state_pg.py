@@ -50,6 +50,21 @@ def user_id():
         conn.execute(text("DELETE FROM users WHERE id = :id"), {"id": uid})
 
 
+@pytest.fixture
+def ova_id(user_id):
+    """OVA real del usuario: las subidas del chat exigen que exista y sea suya (#154)."""
+    oid = uuid.uuid4()
+    with engine.begin() as conn:
+        conn.execute(
+            text("INSERT INTO ovas (id, user_id, title) VALUES (:id, :uid, 'shared-state')"),
+            {"id": oid, "uid": user_id},
+        )
+    yield str(oid)
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM temp_uploads WHERE ova_id = :id"), {"id": oid})
+        conn.execute(text("DELETE FROM ovas WHERE id = :id"), {"id": oid})
+
+
 # ── Subidas temporales ─────────────────────────────────────────────────────────
 
 
@@ -81,12 +96,12 @@ def test_una_subida_la_ve_cualquier_proceso(user_id, tmp_path, monkeypatch):
     assert not (tmp_path / user_id / f"{up.upload_id}_apunte.pdf").exists()
 
 
-def test_cada_lista_es_de_su_contexto_y_caduca(user_id, tmp_path, monkeypatch):
+def test_cada_lista_es_de_su_contexto_y_caduca(user_id, ova_id, tmp_path, monkeypatch):
     from uploads.infrastructure import sql_temp_upload_repository as sql
 
     monkeypatch.setenv("UPLOAD_TEMP_DIR", str(tmp_path))
     repo = sql.SqlTempUploadRepository()
-    ova = str(uuid.uuid4())
+    ova = ova_id
     crear = repo.create(user_id, "a.pdf", "application/pdf", b"%PDF")
     chat = repo.create(user_id, "b.pdf", "application/pdf", b"%PDF", ova_id=ova)
     assert [u.upload_id for u in repo.list_active(user_id)] == [crear.upload_id]
