@@ -24,6 +24,15 @@ updates:
     groups:
       npm:
         patterns: ["*"]
+    ignore:
+      # TypeScript 7 rompe typescript-eslint y ESLint 10 no es compatible con
+      # eslint-plugin-react 7.x (ver #165/#166). Quitar cuando lo sean.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@eslint/js"
+        update-types: ["version-update:semver-major"]
 
   # Backend: ecosystem 'uv' (actualiza pyproject.toml + uv.lock juntos).
   # NOTA: requirements.txt es un espejo; tras un PR de uv corre

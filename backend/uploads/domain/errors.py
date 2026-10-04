@@ -9,6 +9,13 @@ from __future__ import annotations
 
 class UploadError(Exception):
     code = "upload_error"
+    GENERIC_MESSAGE = "No se pudo procesar el archivo."
+
+    @property
+    def public_message(self) -> str:
+        """Texto apto para el cliente. Los subtipos llevan frases curadas; el error
+        genérico nunca expone su detalle (puede venir de una excepción interna)."""
+        return str(self) if type(self) is not UploadError else self.GENERIC_MESSAGE
 
 
 class FilesRequired(UploadError):
