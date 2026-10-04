@@ -165,29 +165,10 @@ def prompt_for(kind: str, concept: str, criteria: str) -> str:
 
 def infer_diagram_kind(text: str, template_key: str = "") -> str:
     """Infiere el tipo de diagrama más adecuado según la plantilla y el texto semántico."""
-    import re
+    from llm.images.sources.diagram_selection import classify_topic_traits
 
-    norm_tpl = (template_key or "").lower().strip()
-    if norm_tpl in ("explain:09", "explain:9"):
-        return "comparacion"
-    if norm_tpl in ("explain:08", "explain:8"):
-        return "capas"
-
-    t = (text or "").lower()
-    if re.search(r"\b(comparaci[oó]n|comparativa|versus|\bvs\b|diferencias? entre)\b", t):
-        return "comparacion"
-    if re.search(r"\b(secuencia|handshake|dns|protocolo|flujo de mensajes|intercambio|temporal)\b", t):
-        return "secuencia"
-    if re.search(r"\b(modelo er|diagrama er|entidad[\s-]relaci[oó]n|base de datos relacional|cardinalidad)\b", t):
-        return "er"
-    if re.search(r"\b(árbol|arbol|b-tree|bst|binario|jerarqu[ií]a|directorio|arborescencia)\b", t):
-        return "arbol"
-    if re.search(r"\b(capas|arquitectura|stack|osi|cliente[\s-]servidor|niveles? de abstracci[oó]n)\b", t):
-        return "capas"
-    if re.search(r"\b(flujo|ciclo|proceso|algoritmo|pasos?|etapas?|transici[oó]n|pipeline)\b", t):
-        return "flujo"
-
-    return "flujo"
+    kinds = classify_topic_traits(text, template_key=template_key)
+    return kinds[0]
 
 
 def generate_diagram_for_request(
@@ -202,17 +183,18 @@ def generate_diagram_for_request(
     """
     from llm.images.sources.contract import ImageRequest, ImageResult
     from llm.images.sources.diagram import DiagramSource, valid_diagram
+    from llm.images.sources.diagram_selection import (
+        classify_topic_traits,
+        validate_diagram_quality,
+    )
 
     source = diagram_source or DiagramSource()
-    kind = ""
-    if isinstance(getattr(request, "diagrama", None), dict):
-        k = request.diagrama.get("tipo")
-        if k in ("er", "arbol", "flujo", "capas", "secuencia", "comparacion"):
-            kind = k
-
-    if not kind:
-        text_context = f"{request.descripcion} {request.consulta} {request.concept}"
-        kind = infer_diagram_kind(text_context, getattr(request, "template_key", ""))
+    expected_kinds = classify_topic_traits(
+        request.concept,
+        request.descripcion,
+        getattr(request, "template_key", ""),
+    )
+    kind = expected_kinds[0]
 
     concept = request.concept or request.descripcion or "Concepto técnico"
     criteria = request.descripcion or request.consulta or concept
@@ -222,6 +204,14 @@ def generate_diagram_for_request(
         raw_json, actual_model = generate_diagram_json(prompt, model=model)
         parsed = json.loads(raw_json)
         if not valid_diagram(parsed):
+            return None
+        ok_qual, _ = validate_diagram_quality(
+            parsed,
+            request.concept,
+            request.descripcion,
+            getattr(request, "template_key", ""),
+        )
+        if not ok_qual:
             return None
 
         # Actualizar la petición con el diagrama generado estructurado
