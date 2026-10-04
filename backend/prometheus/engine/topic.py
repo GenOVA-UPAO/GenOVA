@@ -94,21 +94,53 @@ def significant_tokens(text: str) -> set[str]:
     return {w for w in re.findall(r"[a-z0-9]+", _fold(text)) if len(w) >= 3 and w not in _STOP}
 
 
+_HIDDEN_OPEN = re.compile(r"<(script|style|head)", re.I)
+# `<` excluido dentro de la etiqueta: con `<[^>]+>` una cadena de muchos `<` sin
+# `>` era cuadrática (CodeQL py/polynomial-redos).
+_TAG = re.compile(r"<[^<>]+>")
+
+
+def _strip_hidden_blocks(html: str) -> str:
+    """Quita los bloques <script>/<style>/<head> en tiempo lineal.
+
+    Equivale a `re.sub(r"<(script|style|head)[\\s\\S]*?</\\1>", " ", html, flags=re.I)`,
+    que era cuadrático con muchas aperturas sin cierre (CodeQL py/polynomial-redos).
+    """
+    lower = html.lower()
+    unclosed: set[str] = set()
+    parts: list[str] = []
+    pos = 0
+    search_from = 0
+    while match := _HIDDEN_OPEN.search(html, search_from):
+        tag = match.group(1).lower()
+        end = -1 if tag in unclosed else lower.find(f"</{tag}>", match.end())
+        if end == -1:
+            # Sin cierre posterior: ninguna apertura siguiente de este tag cerrará.
+            unclosed.add(tag)
+            search_from = match.start() + 1
+            continue
+        parts.append(html[pos : match.start()])
+        parts.append(" ")
+        pos = search_from = end + len(tag) + 3
+    parts.append(html[pos:])
+    return "".join(parts)
+
+
 def _lead_text(html: str, limit: int = 800) -> str:
     """Primer tramo del texto visible: el titular puede ser creativo (noticia,
     cómic) y el tema aparece en la entradilla."""
-    body = re.sub(r"<(script|style|head)[\s\S]*?</\1>", " ", html, flags=re.I)
-    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body))[:limit]
+    body = _strip_hidden_blocks(html)
+    return re.sub(r"\s+", " ", _TAG.sub(" ", body))[:limit]
 
 
 def _first_h1(html: str) -> str:
     """Titular visible: <h1> fuera de scripts/estilos, o el `title` de la cabecera
     UPAO (upao-header / upao-card renderizan el h1 desde JS). Antes el regex
     encontraba el `<h1>${title}</h1>` del runtime de componentes."""
-    body = re.sub(r"<(script|style|head)[\s\S]*?</\1>", " ", html, flags=re.I)
+    body = _strip_hidden_blocks(html)
     match = re.search(r"<h1\b[^>]*>(.*?)</h1>", body, flags=re.I | re.S)
     if match:
-        return re.sub(r"<[^>]+>", " ", match.group(1)).strip()
+        return _TAG.sub(" ", match.group(1)).strip()
     match = re.search(r"<upao-(?:header|card)\b[^>]*\btitle=\"([^\"]*)\"", body, flags=re.I)
     return html_lib.unescape(match.group(1)).strip() if match else ""
 
