@@ -70,7 +70,7 @@ def generate_diagram_json(prompt: str, *, model: str | None = None) -> tuple[str
             "think": False,
             "options": {"num_predict": 3000, "temperature": 0},
         },
-        timeout=float(os.getenv("OVA_LOCAL_LLM_TIMEOUT", "300")),
+        timeout=float(os.getenv("OVA_DIAGRAM_TIMEOUT", "60")),  # una imagen no debe frenar el recurso
     )
     response.raise_for_status()
     return response.json()["message"]["content"], local_model
