@@ -7,8 +7,6 @@ the response reaches the client.
 
 import structlog
 
-from llm.utils.utils import SCORM_JS
-
 logger = structlog.get_logger(__name__)
 
 _FORBIDDEN_CDN = [
@@ -78,74 +76,3 @@ def validate_html(html: str, phase: str, resource_type: int) -> list[str]:
             failures.append(f"external CDN: {cdn}")
 
     return failures
-
-
-def repair_truncated_html(html: str) -> str:
-    """Best-effort repair of truncated HTML from LLM output.
-
-    Closes open tags and injects SCORM if missing. This is NOT a substitute
-    for regeneration — it just prevents completely broken resources.
-    """
-    repaired = html.rstrip()
-
-    # Close unclosed script tag
-    if "<script>" in repaired.lower() and "</script>" not in repaired.lower():
-        repaired += "\n</script>"
-
-    # Inject SCORM callbacks if missing
-    if "_scormInit" not in repaired:
-        repaired = _inject_scorm(repaired)
-
-    # Close body/html
-    lower = repaired.lower()
-    if "</body>" not in lower:
-        repaired += "\n</body>"
-    if "</html>" not in lower:
-        repaired += "\n</html>"
-
-    return repaired
-
-
-def _inject_scorm(html: str) -> str:
-    """Insert the SCORM JS snippet before the closing </script> or </body>."""
-    scorm_block = f"\n<script>{SCORM_JS}</script>\n"
-    lower = html.lower()
-    # Prefer inserting before </body>
-    idx = lower.rfind("</body>")
-    if idx != -1:
-        return html[:idx] + scorm_block + html[idx:]
-    # Fallback: append
-    return html + scorm_block
-
-
-def validate_and_repair(html: str, phase: str, resource_type: int) -> tuple[str, list[str]]:
-    """Validate, attempt repair if needed, re-validate. Returns (html, failures).
-
-    If the repaired HTML still fails validation, the failures list will be
-    non-empty but the HTML is returned anyway (best effort).
-    """
-    failures = validate_html(html, phase, resource_type)
-    if not failures:
-        return html, []
-
-    logger.warning(
-        "HTML validation failed, attempting repair",
-        phase=phase,
-        resource_type=resource_type,
-        issue_count=len(failures),
-    )
-
-    repaired = repair_truncated_html(html)
-    remaining = validate_html(repaired, phase, resource_type)
-
-    if remaining:
-        logger.warning(
-            "HTML repair incomplete",
-            phase=phase,
-            resource_type=resource_type,
-            remaining_failures=remaining,
-        )
-    else:
-        logger.info("HTML repair succeeded", phase=phase, resource_type=resource_type)
-
-    return repaired, remaining

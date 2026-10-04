@@ -178,6 +178,7 @@ _STYLE = """
   white-space: pre-wrap;
   overflow-x: auto;
   color: #38bdf8;
+  background: #0f172a;
 }
 .socratic-question-card {
   background: var(--surface-tint, #eaf0fb);

@@ -47,9 +47,16 @@ export interface PhaseGroup {
   items: ResourceVM[];
 }
 
+export interface JobEta {
+  seconds: number;
+  /** `historial`: con la mediana real de cada tipo · `estimado`: algún tipo sin datos aún. */
+  basis: "historial" | "estimado";
+}
+
 export interface JobLike {
   status?: string;
   updated_at?: string;
+  eta?: JobEta | null;
 }
 
 export interface JobSnapshot extends JobLike {
@@ -213,7 +220,7 @@ export const STALL_MS = 3 * 60 * 1000;
  * justo el caso que este botón existe para rescatar. Si se añade un estado
  * nuevo en `jobs_service.py`, hay que añadirlo aquí o el botón no aparecerá.
  */
-export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "error", "degraded"]);
+export const RESUMABLE_RESOURCE_STATUSES = new Set(["pending", "running", "error", "degraded"]);
 
 export function resumableResourceIds(snapshot: JobSnapshot | null | undefined): string[] {
   if (!snapshot) return [];

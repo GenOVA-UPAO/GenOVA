@@ -121,7 +121,7 @@ _STYLE = """
 }
 .ova-badge-step--final {
   background: var(--accent-tint, #fdeee0);
-  color: var(--accent, #f47a20);
+  color: var(--action, #B84B00);
 }
 .ova-time-tag {
   display: inline-flex;

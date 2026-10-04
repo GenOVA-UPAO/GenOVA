@@ -8,10 +8,10 @@ from prometheus.plans.plan_map import degraded_plan, plan_for
 
 def test_plan_for_matches_real_plans():
     assert plan_for("engage", 3) == "podcast"
-    assert plan_for("engage", 6) == "direct_code"  # F1.3 noticia
-    assert plan_for("engage", "10") == "direct_code"
-    assert plan_for("explain", 2) == "direct_code"
-    assert plan_for("evaluate", 1) == "two_step"
+    assert plan_for("engage", 6) == "template"
+    assert plan_for("engage", "10") == "template"
+    assert plan_for("explain", 2) == "template"
+    assert plan_for("evaluate", 1) == "template"
 
 
 def test_bdi_intentions_carry_real_plan_types():
@@ -24,14 +24,14 @@ def test_bdi_intentions_carry_real_plan_types():
     intentions = deliberar(desires, {"rag_quality": 0.5, "model_capability": 1.0})
     plans = {(i["phase"], i["resource_type"]): i["plan_type"] for i in intentions}
     assert plans[("engage", 3)] == "podcast"
-    assert plans[("evaluate", 1)] == "two_step"
+    assert plans[("evaluate", 1)] == "template"
 
 
-def test_degraded_plan_only_with_codigo_template():
-    assert degraded_plan("evaluate", 1, "two_step") is None  # quiz sin [codigo.1]
-    assert degraded_plan("explain", 4, "two_step") is None
-    assert degraded_plan("engage", 6, "two_step") == "direct_code"
-    assert degraded_plan("engage", 6, "direct_code") is None  # ya degradado
+def test_degraded_plan_is_none():
+    assert degraded_plan("evaluate", 1, "template") is None
+    assert degraded_plan("explain", 4, "template") is None
+    assert degraded_plan("engage", 6, "template") is None
+    assert degraded_plan("engage", 3, "podcast") is None
 
 
 def test_fan_out_uses_intentions_plan():

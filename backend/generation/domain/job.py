@@ -36,3 +36,4 @@ class JobResource:
     emoji: str = ""
     content: str | None = None
     defect_reason: str | None = None
+    updated_at: datetime | None = None

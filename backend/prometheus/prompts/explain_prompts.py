@@ -1,12 +1,7 @@
-"""Prompts for the 10 EXPLAIN-phase resources (5E methodology).
+"""Metadatos de recursos para la fase EXPLAIN (metodología 5E).
 
-Each prompt fixes the resource FORMAT but adapts all content to whatever
-DBMS (Sistemas de Gestión de Base de Datos) concept is passed in `concept` —
-no hardcoded subtopic.
+La generación de contenido corre sobre las plantillas deterministas de ova_engine/.
 """
-
-from prometheus.prompts._loader import render_codigo, render_html, render_texto
-from prometheus.prompts._scaffold import with_user_context
 
 # fmt: off
 RECURSOS_META = {
@@ -22,34 +17,3 @@ RECURSOS_META = {
     10: {"tipo": "Infografía Interactiva", "duracion": "2–3 min", "interactividad": "Alta", "emoji": "🎨"},
 }
 # fmt: on
-CODE_ONLY = {3, 5, 8, 10}
-
-
-def prompt_codigo(
-    n: int,
-    concept: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-    config: dict | None = None,
-) -> str:
-    return with_user_context(
-        render_codigo("explain", n, concept, design_system, config), contexto_usuario
-    )
-
-
-def prompt_texto(
-    n: int, concept: str, contexto_usuario: str = "", config: dict | None = None
-) -> str:
-    return with_user_context(render_texto("explain", n, concept, config), contexto_usuario)
-
-
-def prompt_html(
-    n: int,
-    concept: str,
-    data_json: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-) -> str:
-    return with_user_context(
-        render_html("explain", n, concept, data_json, design_system), contexto_usuario
-    )

@@ -12,6 +12,7 @@ from generation.application.ports import (
     JobRepository,
     ReferenceMaterial,
 )
+from llm.images.style_guide import build_style_guide
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,6 +32,13 @@ class CreateJob:
             user_api_keys=data.user_api_keys,
             user_id=data.user_id,
         )
+        if image_settings:
+            # Una sola guía de estilo por OVA, fijada ahora: todas las imágenes de todos sus
+            # recursos (también al regenerar o reanudar) la comparten.
+            image_settings = {
+                **image_settings,
+                "style_guide": build_style_guide(data.prompt).as_dict(),
+            }
         # Solo archivos del propio usuario: con el id de un documento ajeno se
         # recuperaba su contenido como contexto.
         upload_ids = list(data.upload_ids)

@@ -434,7 +434,7 @@ def _render_svg_chart(
             f'aria-label="Punto {i_pt + 1}: {g_esc} (X={px}, Y={py})"></circle>'
         )
 
-    return f"""<svg class="scatter-svg" viewBox="0 0 670 370" role="img" aria-label="Gráfico de dispersión con métricas de rendimiento">
+    return f"""<svg class="scatter-svg" viewBox="0 0 670 370" role="group" aria-label="Gráfico de dispersión con métricas de rendimiento">
   <defs>
     <clipPath id="chart-area-clip">
       <rect x="65" y="30" width="575" height="290" />

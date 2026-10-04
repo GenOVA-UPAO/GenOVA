@@ -71,6 +71,7 @@ class JobStatusView:
     started_at: str | None
     finished_at: str | None
     resources: tuple[ResourceStatusView, ...] = ()
+    eta: dict | None = None
 
     def as_dict(self) -> dict:
         return {
@@ -82,6 +83,7 @@ class JobStatusView:
             "started_at": self.started_at,
             "finished_at": self.finished_at,
             "resources": [r.as_dict() for r in self.resources],
+            "eta": self.eta,
         }
 
 
