@@ -279,13 +279,17 @@ def _sequence(canvas: Canvas, data: dict, top: int) -> tuple[int, int, dict]:
             points = f"M {ax} {y} h 180 v 45 H {ax + 6}"
         canvas.path(points)
         canvas.text(min(ax, bx) + 12, y - 52, f"{index + 1}. {_edge_label(edge)}")
-    return 36 + 430 * len(nodes), bottom + 40, boxes
+    return max(620, 36 + 430 * len(nodes)), bottom + 40, boxes
 
 
 def _er_layout(data: dict, top: int) -> tuple[dict[str, Box], int, int]:
     nodes = data["nodos"]
     cols = min(len(nodes), 2 if len(nodes) <= 6 else 3)
-    row_height = max(_node_height(node) for node in nodes) + 190
+    loops = {
+        n["id"]: sum(e["origen"] == e["destino"] == n["id"] for e in data.get("aristas", []))
+        for n in nodes
+    }
+    row_height = max(_node_height(node) for node in nodes) + max(190, max(loops.values()) * 70 + 50)
     slots = [
         Box(36 + (i % cols) * 680, top + (i // cols) * row_height, 390, _node_height(node))
         for i, node in enumerate(nodes)
@@ -339,7 +343,7 @@ def _er_layout(data: dict, top: int) -> tuple[dict[str, Box], int, int]:
     return (
         boxes,
         max(b.x + b.width for b in boxes.values()) + 36,
-        max(b.y + b.height for b in boxes.values()) + 36,
+        max(b.y + b.height + loops[ident] * 70 for ident, b in boxes.items()) + 36,
     )
 
 
@@ -350,16 +354,35 @@ def _er_edges(canvas: Canvas, data: dict, boxes: dict[str, Box]):
         scale = 1 / max(abs(dx) / (box.width / 2), abs(dy) / (box.height / 2), 1e-6)
         return round(cx + dx * scale), round(cy + dy * scale)
 
+    groups = {}
+    for edge in data.get("aristas", []):
+        groups.setdefault(tuple(sorted((edge["origen"], edge["destino"]))), []).append(edge)
     for edge in data.get("aristas", []):
         a, b = boxes[edge["origen"]], boxes[edge["destino"]]
+        peers = groups[tuple(sorted((edge["origen"], edge["destino"])))]
+        index = peers.index(edge)
         if a == b:
-            canvas.path(f"M {a.x + 30} {a.y} v -24 h 140 v 24", arrow=False)
+            y = a.y + a.height + 35 + index * 70
+            canvas.path(
+                f"M {a.x + 40} {a.y + a.height} V {y} H {a.x + 350} V {a.y + a.height}", arrow=False
+            )
+            canvas.text(a.x + 50, y + 22, edge.get("etiqueta", "relación"))
+            canvas.text(a.x + 20, y - 8, edge["cardinalidad"].split(":")[0], bold=True)
+            canvas.text(a.x + 355, y - 8, edge["cardinalidad"].split(":")[1], bold=True)
             continue
         ax, ay = boundary(a, b)
         bx, by = boundary(b, a)
-        canvas.path(f"M {ax} {ay} L {bx} {by}", arrow=False)
         dx, dy = bx - ax, by - ay
         length = max(math.hypot(dx, dy), 1)
+        offset = (index - (len(peers) - 1) / 2) * 90
+        # Use the same normal for both directions of a pair.
+        sign = 1 if edge["origen"] <= edge["destino"] else -1
+        mx = (ax + bx) / 2 - sign * dy / length * offset
+        my = (ay + by) / 2 + sign * dx / length * offset
+        points = f"M {ax} {ay} L {bx} {by}"
+        if len(peers) > 1:
+            points = f"M {ax} {ay} Q {round(2 * mx - (ax + bx) / 2)} {round(2 * my - (ay + by) / 2)} {bx} {by}"
+        canvas.path(points, arrow=False)
         for x, y, sign, card in [
             (ax, ay, 1, edge["cardinalidad"].split(":")[0]),
             (bx, by, -1, edge["cardinalidad"].split(":")[1]),
@@ -373,7 +396,7 @@ def _er_edges(canvas: Canvas, data: dict, boxes: dict[str, Box]):
         if label := edge.get("etiqueta"):
             lines = _lines(label, 18)
             width = min(270, max(len(line) for line in lines) * 9 + 16)
-            x, y = round((ax + bx - width) / 2), round((ay + by) / 2)
+            x, y = round(mx - width / 2), round(my)
             canvas.rect(Box(x, y - 20, width, len(lines) * 22 + 6), BACKGROUND, BACKGROUND)
             canvas.text(x + 8, y - 2, label, length=18)
 
@@ -452,7 +475,7 @@ class DiagramSource:
         description = request.descripcion or request.diagrama.get("titulo") or "Diagrama técnico"
         if len(description) > 2000 or not _xml_text(description):
             return None
-        data = prepare_diagram(request.diagrama)
+        data = prepare_diagram(request.diagrama, request.descripcion + " " + request.concept)
         if (
             data is None
             or not valid_diagram(data)

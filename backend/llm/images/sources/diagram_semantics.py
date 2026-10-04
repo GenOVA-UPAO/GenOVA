@@ -23,30 +23,116 @@ def _counter(value: str) -> bool:
     return bool(re.search(r"\b(?:hijos|grado|altura|nivel|cantidad)\s*:\s*\d+", value, re.I))
 
 
+def _fk_indices(node: dict, parent: dict) -> list[int]:
+    """Recognize key conventions with token boundaries and optional role suffixes."""
+    names = {_slug(parent["etiqueta"]), _slug(parent["id"])}
+    matches = []
+    for index, attr in enumerate(node.get("atributos", [])):
+        if "PK" in attr.upper() and "FK" not in attr.upper():
+            continue
+        name = _attribute(attr).split(" (")[0]
+        name = _slug(re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name))
+        if any(
+            re.fullmatch(rf"(?:id_{re.escape(n)}|{re.escape(n)}_id)(?:_.+)?", name) for n in names
+        ):
+            matches.append(index)
+    return matches
+
+
 def _fk(node: dict, parent: dict):
     attrs = node.setdefault("atributos", [])
-    names = {_slug(_attribute(a).split(" (")[0]): i for i, a in enumerate(attrs)}
     expected = _slug(parent["etiqueta"]) + "_id"
     if len(expected) > 35:
         expected = _slug(parent["id"]) + "_id"
-    aliases = {expected, _slug(parent["id"]) + "_id", "id_" + _slug(parent["etiqueta"])}
-    existing = next((names[name] for name in sorted(aliases) if name in names), None)
-    if existing is None:
+    existing = _fk_indices(node, parent)
+    if not existing:
         attrs.append(expected + " (FK)")
-    elif "FK" not in attrs[existing]:
-        attrs[existing] += " (FK)"
+    for index in existing:
+        if "FK" not in attrs[index].upper():
+            attrs[index] += " (FK)"
 
 
 def _has_fk(node: dict, parent: dict) -> bool:
-    names = {_slug(parent["etiqueta"]), _slug(parent["id"])}
-    aliases = {name + "_id" for name in names} | {"id_" + name for name in names}
-    return any(
-        "FK" in attr.upper() and _slug(_attribute(attr).split(" (")[0]) in aliases
-        for attr in node.get("atributos", [])
-    )
+    return bool(_fk_indices(node, parent))
 
 
-def prepare_diagram(data: dict) -> dict | None:
+def _cardinality(edge: dict) -> str:
+    card = edge.get("cardinalidad", "").upper().replace(" ", "")
+    return card.replace("..", ":").replace("-", ":").replace("*", "N").replace("M", "N")
+
+
+def _consistent_er_edges(data: dict, nodes: dict) -> list[dict] | None:
+    groups = {}
+    for edge in data.get("aristas", []):
+        edge["cardinalidad"] = _cardinality(edge)
+        if edge["cardinalidad"] not in {"1:1", "1:N", "N:1", "N:N"}:
+            return None
+        groups.setdefault(tuple(sorted((edge["origen"], edge["destino"]))), []).append(edge)
+    result = []
+    for (first, second), edges in groups.items():
+        cards = {
+            e["cardinalidad"] if e["origen"] == first else e["cardinalidad"][::-1] for e in edges
+        }
+        if len(cards) > 1:
+            forward = _has_fk(nodes[second], nodes[first])
+            reverse = _has_fk(nodes[first], nodes[second])
+            if forward == reverse:
+                return None
+            coherent = "1:N" if forward else "N:1"
+            edges = [
+                e
+                for e in edges
+                if (e["cardinalidad"] if e["origen"] == first else e["cardinalidad"][::-1])
+                == coherent
+            ]
+            if not edges:
+                return None
+        for edge in edges:
+            if edge not in result:
+                result.append(edge)
+    return result
+
+
+def _merge_actors(data: dict):
+    actors, redirects = {}, {}
+    for node in data["nodos"]:
+        key = _slug(node["etiqueta"])
+        canonical = actors.setdefault(key, node)
+        redirects[node["id"]] = canonical["id"]
+        canonical["atributos"] = list(
+            dict.fromkeys(canonical.get("atributos", []) + node.get("atributos", []))
+        )
+    data["nodos"] = list(actors.values())
+    for edge in data.get("aristas", []):
+        edge["origen"] = redirects[edge["origen"]]
+        edge["destino"] = redirects[edge["destino"]]
+
+
+def requested_criteria(detail: str) -> list[str]:
+    """Extract explicit short criterion lists, never infer criteria from a topic."""
+    for segment in re.split(r"[;.\n]", detail):
+        explicit = re.search(r"\bcriterios?\s*(?::|son|de comparación:)?\s*(.+)", segment, re.I)
+        listing = explicit[1] if explicit else segment.strip()
+        if not explicit and "," not in listing:
+            continue
+        items = [item.strip() for item in re.split(r",|\s+y\s+", listing)]
+        if items and all(
+            re.fullmatch(r"[\wáéíóúüñ /-]{1,35}", i) and len(i.split()) <= 4 for i in items
+        ):
+            return list(dict.fromkeys(_slug(i) for i in items))[:5]
+    return []
+
+
+def _limit_comparison(data: dict, detail: str):
+    requested = requested_criteria(detail)
+    for node in data["nodos"]:
+        attrs = node.get("atributos", [])
+        if requested:
+            attrs = [a for a in attrs if _slug(a.partition(":")[0]) in requested]
+        node["atributos"] = attrs
+
+
+def prepare_diagram(data: dict, context: str = "") -> dict | None:
     """Input must already satisfy the schema and graph reference constraints."""
     data = deepcopy(data)
     nodes = {n["id"]: n for n in data["nodos"]}
@@ -63,14 +149,27 @@ def prepare_diagram(data: dict) -> dict | None:
             if not any(re.search(r"\bPK\b", a) for a in attrs):
                 attrs.insert(0, "id (PK)")
         node["atributos"] = attrs
+    if data["tipo"] == "secuencia":
+        _merge_actors(data)
+    if data["tipo"] == "comparacion":
+        _limit_comparison(data, context)
     if data["tipo"] != "er":
         return data
+    if context:
+        connected = {e[end] for e in data.get("aristas", []) for end in ("origen", "destino")}
+        text = "_" + _slug(context) + "_"
+        data["nodos"] = [
+            n
+            for n in data["nodos"]
+            if n["id"] in connected or "_" + _slug(n["etiqueta"]) + "_" in text
+        ]
+        nodes = {n["id"]: n for n in data["nodos"]}
+    source_edges = _consistent_er_edges(data, nodes)
+    if source_edges is None:
+        return None
     edges = []
-    for edge in data.get("aristas", []):
-        card = edge.get("cardinalidad", "").upper().replace(" ", "")
-        card = card.replace("..", ":").replace("-", ":").replace("*", "N").replace("M", "N")
-        if card not in {"1:1", "1:N", "N:1", "N:N"}:
-            return None
+    for edge in source_edges:
+        card = edge["cardinalidad"]
         a, b = nodes[edge["origen"]], nodes[edge["destino"]]
         if card in {"1:N", "N:1"}:
             forward, reverse = _has_fk(b, a), _has_fk(a, b)
@@ -80,8 +179,10 @@ def prepare_diagram(data: dict) -> dict | None:
                 card = "1:N" if forward else "N:1"
         if card == "N:1":
             edge["origen"], edge["destino"] = edge["destino"], edge["origen"]
-            # A verb belongs to the original direction; use a neutral label after reversal.
-            edge["etiqueta"] = "relación"
+            # Retain the distinct relationship label and mark its reversed direction.
+            if a != b:
+                label = edge.get("etiqueta", "relación")
+                edge["etiqueta"] = label + " (inversa)" if len(label) <= 20 else label
             card = "1:N"
         a, b = nodes[edge["origen"]], nodes[edge["destino"]]
         if card == "N:N":
@@ -125,7 +226,11 @@ def prepare_diagram(data: dict) -> dict | None:
                     ]
                 )
             _fk(join, a)
-            _fk(join, b)
+            if a == b:
+                if len(_fk_indices(join, a)) < 2:
+                    join["atributos"].append(_slug(a["etiqueta"]) + "_id_destino (FK)")
+            else:
+                _fk(join, b)
             continue
         edge["cardinalidad"] = card
         if card == "1:N":
@@ -156,7 +261,7 @@ def semantic_valid(data: dict, context: str) -> bool:
             return False
         # Named criteria must align; positional anonymous rows cannot be compared reliably.
         criteria = [comparison_values(node) for node in data["nodos"]]
-        return bool(criteria[0]) and criteria[0].keys() == criteria[1].keys()
+        return 1 <= len(criteria[0]) <= 5 and criteria[0].keys() == criteria[1].keys()
     if data["tipo"] == "flujo" and "normalizacion" in topic:
         for node in data["nodos"]:
             if "1fn" in _slug(node["etiqueta"]):

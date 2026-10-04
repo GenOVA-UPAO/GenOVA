@@ -128,12 +128,12 @@ def test_accessibility_and_maximum_geometry(kind):
     data["nodos"] = [
         {
             "id": str(i),
-            "etiqueta": "W" * 40,
+            "etiqueta": "W" * 38 + f"{i:02}" if kind == "secuencia" else "W" * 40,
             "grupo": "g" * 30,
             "atributos": (
                 ["id (PK)", *["W" * 39 + str(j) for j in range(6)]]
                 if kind == "er"
-                else ["W" * 40] * 8
+                else ["W" * 40] * (5 if kind == "comparacion" else 8)
             ),
         }
         for i in range(count)
