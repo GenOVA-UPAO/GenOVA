@@ -137,25 +137,6 @@ IMAGE_FIGURE_CSS = """
   color: inherit;
   text-decoration: underline;
 }
-.ova-figure-fallback {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: var(--surface-tint, #EEF2FF);
-  border: 1px dashed var(--border, #CBD5E1);
-  border-radius: var(--radius, 12px);
-  margin: 14px 0;
-}
-.ova-fallback-icon {
-  font-size: 1.5rem;
-}
-.ova-fallback-desc {
-  margin: 0;
-  font-size: 0.92rem;
-  font-style: italic;
-  color: var(--text-muted, #475569);
-}
 .ova-credits-section {
   margin-top: 28px;
   padding: 16px;
@@ -184,12 +165,11 @@ def render_image_figure(
     credit_html: str = "",
     *,
     alt_fallback: str = "Ilustración conceptual",
-    fallback_icon: str = "🖼️",
     extra_class: str = "",
     concept: str = "",
     **kwargs: Any,
 ) -> str:
-    """Renderiza una figura con imagen y atribución breve o una tarjeta alternativa accesible si no hay imagen."""
+    """Renderiza una figura con imagen y atribución breve; sin imagen devuelve cadena vacía."""
     if concept and alt_fallback == "Ilustración conceptual":
         alt_fallback = f"Ilustración de {concept}"
     alt = esc((img_data or {}).get("descripcion") or alt_fallback)
@@ -220,13 +200,9 @@ def render_image_figure(
             f'</figure>'
         )
 
-    # Alternativa accesible cuando no hay imagen disponible
-    return (
-        f'<div class="ova-figure-fallback {extra_class}" role="img" aria-label="{alt}">'
-        f'<span class="ova-fallback-icon" aria-hidden="true">{fallback_icon}</span>'
-        f'<span class="ova-fallback-desc">{alt}</span>'
-        f'</div>'
-    )
+    # Sin imagen no se dibuja nada: una caja con icono parecía una imagen rota
+    # y el recurso ya se entiende sin ella (la imagen es un apoyo opcional).
+    return ""
 
 
 def render_credits_section(data: dict | None) -> str:
