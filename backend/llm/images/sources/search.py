@@ -24,6 +24,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from llm.images import image_cache
+from llm.images.clip_rerank import ClipReranker
 from llm.images.image_compress import compress_data_uri
 from llm.images.sources.contract import Credit, ImageRequest, ImageResult
 
@@ -190,7 +191,7 @@ def search_wikimedia(query: str, session: requests.Session | None = None) -> lis
         "generator": "search",
         "gsrsearch": query,
         "gsrnamespace": "6",  # Espacio File:
-        "gsrlimit": "12",
+        "gsrlimit": "20",
         "prop": "imageinfo",
         "iiprop": "url|size|extmetadata|mime",
         "format": "json",
@@ -223,7 +224,11 @@ def search_wikimedia(query: str, session: requests.Session | None = None) -> lis
 
         lic = extmetadata.get("LicenseShortName", {}).get("value") or extmetadata.get("License", {}).get("value") or ""
         lic_url = extmetadata.get("LicenseUrl", {}).get("value") or "https://creativecommons.org/"
-        author = clean_html_tags(extmetadata.get("Artist", {}).get("value") or "Comunidad Wikimedia")
+        author = clean_html_tags(
+            extmetadata.get("Artist", {}).get("value")
+            or extmetadata.get("Credit", {}).get("value")
+            or "Colaborador de Wikimedia"
+        )
         desc = clean_html_tags(extmetadata.get("ImageDescription", {}).get("value") or title)
         source_url = imageinfo.get("descriptionurl") or f"https://commons.wikimedia.org/wiki/{urllib.parse.quote(page.get('title', ''))}"
 
@@ -251,7 +256,7 @@ def search_openverse(query: str, session: requests.Session | None = None) -> lis
     params = {
         "q": query,
         "license": "pdm,cc0,by,by-sa",
-        "page_size": "12",
+        "page_size": "20",
     }
     try:
         resp = s.get(url, params=params, timeout=_TIMEOUT_S)
@@ -451,28 +456,29 @@ def rerank_with_vision(
 
 def download_image_as_data_uri(candidate: dict[str, Any], session: requests.Session | None = None) -> str | None:
     """Descarga los bytes de la imagen y los convierte en un data URI comprimido."""
-    s = session or create_http_session()
+    content = candidate.get("_downloaded_bytes")
     url = candidate.get("url")
-    if not url:
-        return None
-
-    try:
-        resp = s.get(url, timeout=8.0, stream=True)
-        if resp.status_code != 200:
+    if not content:
+        s = session or create_http_session()
+        if not url:
             return None
-        content = resp.content
-    except Exception as exc:
-        logger.warning("image download failed", url=url[:80], error=str(exc)[:100])
-        return None
+        try:
+            resp = s.get(url, timeout=8.0, stream=True)
+            if resp.status_code != 200:
+                return None
+            content = resp.content
+        except Exception as exc:
+            logger.warning("image download failed", url=url[:80], error=str(exc)[:100])
+            return None
 
     mime = candidate.get("mime", "image/jpeg")
 
     # Si es SVG, verificar seguridad
-    if "svg" in mime or url.lower().endswith(".svg"):
+    if "svg" in mime or (url and url.lower().endswith(".svg")):
         try:
             svg_text = content.decode("utf-8", errors="replace")
             if not is_safe_svg(svg_text):
-                logger.warning("unsafe SVG discarded", url=url[:80])
+                logger.warning("unsafe SVG discarded", url=str(url)[:80])
                 return None
             b64 = base64.b64encode(svg_text.encode("utf-8")).decode("ascii")
             return f"data:image/svg+xml;base64,{b64}"
@@ -491,6 +497,88 @@ def download_image_as_data_uri(candidate: dict[str, Any], session: requests.Sess
     return compressed or raw_uri
 
 
+def build_search_queries(request: ImageRequest) -> list[str]:
+    """Genera variantes de consulta (términos en inglés, sinónimos y concepto) para ampliar candidatas."""
+    queries: list[str] = []
+    seen = set()
+
+    def add(q: str) -> None:
+        q_clean = re.sub(r"\s+", " ", q).strip()
+        if q_clean and len(q_clean) >= 3 and q_clean.lower() not in seen:
+            seen.add(q_clean.lower())
+            queries.append(q_clean)
+
+    concept = request.concept.strip()
+    desc = request.descripcion.strip()
+    consulta = request.consulta.strip()
+    marca = request.marca.strip()
+
+    cs_mappings = [
+        (r"ciberseguridad|seguridad", "cyber security data encryption server network"),
+        (r"monitoreo|observabilidad", "network operations center monitor displays metrics"),
+        (r"telecomunicaciones|conmutador|switches?", "telecommunications patch panel ethernet cables switches"),
+        (r"cables? submarinos?|fibra [oó]ptica", "fiber optic cables patch panel networking"),
+        (r"cumplimiento|normativ[oa]|auditor[ií]a", "digital privacy compliance data security server"),
+        (r"datacenter|centro de datos|servidores", "modern datacenter server racks interior"),
+        (r"redes?|cableado", "computer networking server room patch panel cables"),
+        (r"placa base|procesador|cpu|microprocesador|circuitos integrados", "computer motherboard silicon microprocessor circuit"),
+        (r"memoria ram|almacenamiento masivo|discos? duros?|raid", "hard drive disk array storage server"),
+        (r"criptograf[ií]a|rsa|cifrado", "cryptography digital security server network encryption"),
+        (r"superc[oó]mputo|supercomputador|clusters? de gpu", "gpu cluster supercomputer server datacenter"),
+        (r"infraestructura cloud|virtualizaci[oó]n", "cloud computing infrastructure server hardware"),
+        (r"cliente-servidor|arquitectura web", "client server network architecture datacenter"),
+        (r"kanban|agil|scrum", "software development agile board office"),
+        (r"postgresql", "postgresql relational database server architecture"),
+        (r"mongodb", "mongodb nosql document database architecture"),
+        (r"redis", "redis in-memory cache database architecture"),
+        (r"kafka", "apache kafka event streaming distributed architecture"),
+        (r"kubernetes", "kubernetes container cluster architecture"),
+        (r"docker", "docker container isolation virtualization architecture"),
+        (r"bases? de datos|sql", "database server system architecture"),
+        (r"contenedores", "cloud computing container cluster technology"),
+        (r"linux|kernel|sistema operativo", "computer server linux open source system"),
+        (r"git|control de versiones", "git version control branches repository diagram"),
+        (r"python", "python programming language software development"),
+        (r"nginx", "nginx reverse proxy web server architecture"),
+    ]
+
+    target_text = f"{concept} {desc} {consulta} {marca}".lower()
+
+    # 1. Marca específica si viene informada
+    if marca:
+        add(f"{marca} software architecture")
+        add(f"{marca} system infrastructure")
+
+    # 2. Conceptos técnicos mapeados al inglés (óptimos para Wikimedia y Openverse)
+    for pattern, mapped_en in cs_mappings:
+        if re.search(pattern, target_text):
+            add(mapped_en)
+
+    # 3. Consulta directa si es técnica y no es código SQL o sintaxis bruta
+    is_sql = bool(re.search(r"\b(select|insert|update|create|drop|from|where)\b", consulta, re.IGNORECASE))
+    is_spanish = bool(re.search(r"[áéíóúñÁÉÍÓÚÑ]|\b(de|la|el|en|con|para|por)\b", consulta, re.IGNORECASE))
+    if consulta and not is_sql:
+        if not is_spanish:
+            # Consulta directa en inglés tiene alta prioridad
+            queries.insert(0, consulta)
+            seen.add(consulta.lower())
+        else:
+            add(consulta)
+
+    # 4. Términos limpios del concepto
+    concept_terms = " ".join(w for w in re.findall(r"[a-zA-Z0-9]+", concept) if len(w) > 3)
+    if concept_terms:
+        add(f"{concept_terms} technology")
+
+    # 5. Fallback si no hay consultas
+    if not queries:
+        fallback = consulta or concept or desc
+        if fallback:
+            add(fallback)
+
+    return queries[:4]
+
+
 class SearchSource:
     """Fuente de imágenes reales con licencia libre desde Wikimedia, Openverse, Pexels o Unsplash."""
 
@@ -498,9 +586,10 @@ class SearchSource:
 
     def __init__(self) -> None:
         self.session = create_http_session()
+        self.last_diagnostics: list[dict[str, Any]] = []
 
     def fetch(self, request: ImageRequest) -> ImageResult | None:
-        """Busca, filtra, puntúa y descarga la imagen más relevante para la solicitud."""
+        """Busca, filtra, puntúa con CLIP y descarga la imagen más relevante."""
         query = (request.consulta or request.descripcion or request.concept).strip()
         if not query:
             return None
@@ -510,112 +599,147 @@ class SearchSource:
         ckey = image_cache.cache_key(norm_query, "search", "free", request.width, request.height)
 
         if image_cache.enabled():
-            cached_uri = image_cache.get(ckey)
-            if cached_uri:
-                logger.info("search image cache hit", query=query)
-                return ImageResult(
-                    data_uri=cached_uri,
-                    source="busqueda",
-                    alt=request.descripcion or query,
-                    credit=Credit(
-                        title=f"Imagen para {query}",
-                        author="Fuente libre",
-                        license="Licencia libre verificada",
-                        license_url="https://creativecommons.org/",
-                        source_url="https://commons.wikimedia.org/",
-                        provider="cache",
-                    ),
-                    meta={"cache_hit": True, "query": query},
+            record = image_cache.get_record(ckey)
+            if record and record.get("meta") and record["meta"].get("credit"):
+                c_meta = record["meta"]["credit"]
+                author = (c_meta.get("author") or "").strip()
+                lic = (c_meta.get("license") or "").strip()
+                prov = (c_meta.get("provider") or "").strip()
+                src_url = (c_meta.get("source_url") or "").strip()
+                lic_url = (c_meta.get("license_url") or "").strip()
+
+                is_generic = (
+                    not author
+                    or author.lower() in ("fuente libre", "comunidad libre", "desconocido", "unknown")
+                    or not lic
+                    or lic.lower() in ("licencia libre verificada", "licencia libre", "unknown")
+                    or prov.lower() == "cache"
                 )
+                if not is_generic:
+                    logger.info("search image cache hit with real credit", query=query, author=author, license=lic)
+                    real_credit = Credit(
+                        title=c_meta.get("title") or f"Imagen para {query}",
+                        author=author,
+                        license=lic,
+                        license_url=lic_url or "https://creativecommons.org/",
+                        source_url=src_url,
+                        provider=prov or "busqueda",
+                    )
+                    return ImageResult(
+                        data_uri=record["data_uri"],
+                        source="busqueda",
+                        alt=request.descripcion or real_credit.title or query,
+                        credit=real_credit,
+                        meta={
+                            "cache_hit": True,
+                            "query": query,
+                            **(record["meta"].get("search_meta") or {}),
+                        },
+                    )
+                logger.info("search image cache hit contained generic/invalid credit; treating as miss", query=query)
 
-        # 2. Recolectar candidatas de proveedores gratuitos
+        # 2. Recolectar 15-20 candidatas usando múltiples variantes de consulta
+        search_queries = build_search_queries(request)
         all_candidates: list[dict[str, Any]] = []
+        seen_urls = set()
 
-        # Wikimedia Commons
-        wiki_candidates = search_wikimedia(query, self.session)
-        all_candidates.extend(wiki_candidates)
+        for sq in search_queries:
+            for c in search_wikimedia(sq, self.session):
+                u = c.get("url")
+                if u and u not in seen_urls:
+                    seen_urls.add(u)
+                    all_candidates.append(c)
 
-        # Openverse
-        openverse_candidates = search_openverse(query, self.session)
-        all_candidates.extend(openverse_candidates)
+            for c in search_openverse(sq, self.session):
+                u = c.get("url")
+                if u and u not in seen_urls:
+                    seen_urls.add(u)
+                    all_candidates.append(c)
 
-        # Opcionales si hay API keys
         pexels_key = os.getenv("PEXELS_API_KEY", "").strip()
-        if pexels_key:
-            all_candidates.extend(search_pexels(query, pexels_key, self.session))
+        if pexels_key and search_queries:
+            for c in search_pexels(search_queries[0], pexels_key, self.session):
+                u = c.get("url")
+                if u and u not in seen_urls:
+                    seen_urls.add(u)
+                    all_candidates.append(c)
 
         unsplash_key = os.getenv("UNSPLASH_ACCESS_KEY", "").strip()
-        if unsplash_key:
-            all_candidates.extend(search_unsplash(query, unsplash_key, self.session))
+        if unsplash_key and search_queries:
+            for c in search_unsplash(search_queries[0], unsplash_key, self.session):
+                u = c.get("url")
+                if u and u not in seen_urls:
+                    seen_urls.add(u)
+                    all_candidates.append(c)
 
         # 3. Filtrar candidatas (licencia, idioma, proporciones, capturas ilegibles)
         valid_candidates = filter_candidates(all_candidates)
 
-        # Si una consulta larga no dio candidatas válidas, relajarla a términos esenciales
         if not valid_candidates:
-            words = [w for w in re.findall(r"[a-zA-Z0-9]+", query) if len(w) > 2]
-            if len(words) > 2:
-                sub_queries = [" ".join(words[:2]), " ".join(words[-2:])]
-                for sub_q in sub_queries:
-                    relaxed_candidates: list[dict[str, Any]] = []
-                    relaxed_candidates.extend(search_wikimedia(sub_q, self.session))
-                    relaxed_candidates.extend(search_openverse(sub_q, self.session))
-                    valid_candidates = filter_candidates(relaxed_candidates)
-                    if valid_candidates:
-                        logger.info("search succeeded with relaxed query", original=query, relaxed=sub_q)
-                        query = sub_q
-                        break
-
-        if not valid_candidates:
-            logger.info("no candidates passed search filters", query=query, raw_total=len(all_candidates))
+            logger.info("no candidates passed initial search filters", query=query, raw_total=len(all_candidates))
             return None
 
-        # 4. Puntuación y ordenamiento por relevancia
-        scored = [
-            (score_candidate(c, query, request.descripcion, request.concept), c)
-            for c in valid_candidates
-        ]
-        scored.sort(key=lambda item: item[0], reverse=True)
-        top_candidates = [c for _, c in scored[:10]]
+        # 4. Re-ranking visual local con CLIP y clases negativas zero-shot
+        reranker = ClipReranker.get_instance()
+        primary_query = search_queries[0] if search_queries else query
+        best_candidate, clip_diagnostics = reranker.score_candidates(
+            valid_candidates[:20],
+            concept=request.concept,
+            query=primary_query,
+            description=request.descripcion,
+        )
+        self.last_diagnostics = clip_diagnostics
 
-        # 5. Re-ranking visual opcional si hay modelo con visión disponible
-        ranked = rerank_with_vision(top_candidates, request)
-
-        # 6. Descargar y embeber imagen comprimida iterando hasta hallar candidata válida
-        data_uri = None
-        best = None
-        for candidate in ranked[:5]:
-            candidate_uri = download_image_as_data_uri(candidate, self.session)
-            if candidate_uri and (
-                candidate_uri.startswith("data:image/svg+xml")
-                or candidate_uri.startswith("data:image/webp")
-                or candidate_uri.startswith("data:image/jpeg")
-                or candidate_uri.startswith("data:image/png")
-            ):
-                data_uri = candidate_uri
-                best = candidate
-                break
-
-        if not data_uri or not best:
+        if not best_candidate:
+            logger.info("all candidates rejected by CLIP similarity or negative classes", query=query)
             return None
 
-        # Guardar en caché
-        if image_cache.enabled():
-            image_cache.put(ckey, data_uri)
+        # 5. Descargar y comprimir la mejor candidata aceptada
+        data_uri = download_image_as_data_uri(best_candidate, self.session)
+        if not data_uri:
+            return None
 
+        # 6. Atribución real obligatoria (CC BY / CC BY-SA)
+        author = best_candidate.get("author") or "Colaborador de Wikimedia"
+        license_name = best_candidate.get("license") or "CC BY-SA 4.0"
         credit = Credit(
-            title=best.get("title") or query,
-            author=best.get("author") or "Comunidad libre",
-            license=best.get("license") or "Licencia libre",
-            license_url=best.get("license_url") or "https://creativecommons.org/",
-            source_url=best.get("source_url") or "https://commons.wikimedia.org/",
-            provider=best.get("provider") or "busqueda",
+            title=best_candidate.get("title") or query,
+            author=author,
+            license=license_name,
+            license_url=best_candidate.get("license_url") or "https://creativecommons.org/",
+            source_url=best_candidate.get("source_url") or best_candidate.get("url") or "https://commons.wikimedia.org/",
+            provider=best_candidate.get("provider") or "wikimedia",
         )
 
+        # 7. Guardar en caché con metadatos reales completos
+        if image_cache.enabled():
+            credit_meta = {
+                "title": credit.title,
+                "author": credit.author,
+                "license": credit.license,
+                "license_url": credit.license_url,
+                "source_url": credit.source_url,
+                "provider": credit.provider,
+            }
+            image_cache.put_record(
+                ckey,
+                data_uri,
+                meta={
+                    "credit": credit_meta,
+                    "search_meta": {
+                        "provider": credit.provider,
+                        "candidates_evaluated": len(valid_candidates),
+                        "chosen_title": best_candidate.get("title"),
+                        "clip_score": best_candidate.get("clip_score"),
+                    },
+                },
+            )
+
         logger.info(
-            "search source succeeded",
+            "search source succeeded with CLIP verification",
             query=query,
             title=credit.title,
+            clip_score=best_candidate.get("clip_score"),
             provider=credit.provider,
             license=credit.license,
         )
@@ -623,11 +747,13 @@ class SearchSource:
         return ImageResult(
             data_uri=data_uri,
             source="busqueda",
-            alt=request.descripcion or best.get("description") or query,
+            alt=request.descripcion or best_candidate.get("description") or query,
             credit=credit,
             meta={
                 "provider": credit.provider,
                 "candidates_evaluated": len(valid_candidates),
-                "chosen_title": best.get("title"),
+                "chosen_title": best_candidate.get("title"),
+                "clip_score": best_candidate.get("clip_score"),
+                "clip_diagnostics": clip_diagnostics,
             },
         )

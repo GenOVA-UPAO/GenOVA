@@ -155,6 +155,17 @@ def test_search_source_fetch_with_mocked_network(monkeypatch, tmp_path):
             resp.content = fake_png
         return resp
 
+    from llm.images.clip_rerank import ClipReranker
+
+    def mock_score(self, candidates, concept, query, description, **kwargs):
+        if candidates:
+            c = dict(candidates[0])
+            c["clip_score"] = 0.29
+            return c, [{"passed": True, "pos_score": 0.29, "title": c.get("title")}]
+        return None, []
+
+    monkeypatch.setattr(ClipReranker, "score_candidates", mock_score)
+
     source = SearchSource()
     monkeypatch.setattr(source.session, "get", mock_get)
 
@@ -174,7 +185,78 @@ def test_search_source_fetch_with_mocked_network(monkeypatch, tmp_path):
     assert result.credit.author == "John Doe DBA"
     assert "CC BY-SA 4.0" in result.credit.license
 
-    # Segunda llamada: debe responder desde la caché de disco
+    # Segunda llamada: debe responder desde la caché de disco CON EL CRÉDITO REAL
     cached_result = source.fetch(req)
     assert cached_result is not None
     assert cached_result.meta.get("cache_hit") is True
+    assert cached_result.credit is not None
+    assert cached_result.credit.author == "John Doe DBA"
+    assert cached_result.credit.author != "Fuente libre"
+    assert "CC BY-SA 4.0" in cached_result.credit.license
+    assert cached_result.credit.license != "Licencia libre verificada"
+    assert cached_result.credit.provider == "wikimedia"
+    assert cached_result.credit.provider != "cache"
+
+
+def test_search_cache_rejects_generic_credit_and_preserves_real_credit(monkeypatch, tmp_path):
+    """Verifica que nunca se devuelvan créditos inventados ('Fuente libre', 'cache') y que la caché conserve datos reales."""
+    from llm.images import image_cache
+
+    monkeypatch.setenv("IMAGE_CACHE_DIR", str(tmp_path / "cache_test"))
+
+    fake_png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    req = ImageRequest(tipo="foto", descripcion="Datacenter rack", consulta="datacenter rack", concept="Sistemas")
+
+    norm_query = image_cache.normalize_prompt(f"{req.consulta} {req.concept}")
+    ckey = image_cache.cache_key(norm_query, "search", "free", req.width, req.height)
+
+    # 1. Caso corrupto/genérico: caché antigua con 'Fuente libre' o 'Licencia libre verificada'
+    image_cache.put_record(
+        ckey,
+        fake_png,
+        meta={
+            "credit": {
+                "title": "Imagen para datacenter rack",
+                "author": "Fuente libre",
+                "license": "Licencia libre verificada",
+                "license_url": "https://creativecommons.org/",
+                "source_url": "https://commons.wikimedia.org/",
+                "provider": "cache",
+            }
+        },
+    )
+
+    source = SearchSource()
+    # No hay red; si lee el crédito genérico fallará la prueba porque debe tratarlo como miss
+    def mock_fail(*args, **kwargs):
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = {"query": {"pages": {}}, "results": []}
+        return resp
+
+    monkeypatch.setattr(source.session, "get", mock_fail)
+
+    # Debe ser cache MISS porque el crédito almacenado es genérico/inválido
+    res = source.fetch(req)
+    assert res is None  # Descartó el hit corrupto y no halló en red
+
+    # 2. Caso legítimo: guardar crédito real
+    real_credit = {
+        "title": "Datacenter Supermicro Rack",
+        "author": "Ing. Maria Ramirez",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "source_url": "https://commons.wikimedia.org/wiki/File:Supermicro_Rack.jpg",
+        "provider": "wikimedia",
+    }
+    image_cache.put_record(ckey, fake_png, meta={"credit": real_credit})
+
+    res_valid = source.fetch(req)
+    assert res_valid is not None
+    assert res_valid.meta.get("cache_hit") is True
+    assert res_valid.credit.author == "Ing. Maria Ramirez"
+    assert res_valid.credit.author != "Fuente libre"
+    assert res_valid.credit.license == "CC BY-SA 4.0"
+    assert res_valid.credit.license != "Licencia libre verificada"
+    assert res_valid.credit.provider == "wikimedia"
+    assert res_valid.credit.provider != "cache"
