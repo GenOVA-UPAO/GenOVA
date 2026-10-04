@@ -479,7 +479,7 @@ class DiagramSource:
         if (
             data is None
             or not valid_diagram(data)
-            or not semantic_valid(data, description + " " + request.concept)
+            or not semantic_valid(data, request.descripcion + " " + request.concept)
         ):
             return None
         svg, meta = _render(data, description)
