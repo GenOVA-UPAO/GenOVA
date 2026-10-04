@@ -1,7 +1,7 @@
 """Tests unitarios para la fuente de búsqueda web (SearchSource) sin conexión externa."""
 
-from urllib.parse import urlparse
 from unittest.mock import MagicMock
+from urllib.parse import urlparse
 
 from llm.images.sources.contract import ImageRequest
 from llm.images.sources.search import (
