@@ -43,3 +43,22 @@ def test_prompt_lleva_anclaje_de_tema():
     assert "ANCLAJE DE TEMA" in body
     assert "Revolución Industrial" in body
     assert "PROHIBIDO cambiar de dominio" in body
+
+
+def test_strip_hidden_blocks_igual_al_regex_original_con_unicode():
+    """`html.lower()` alarga «İ» (U+0130) y desplazaba los índices del recorte."""
+    import re
+
+    from prometheus.engine.topic import _strip_hidden_blocks
+
+    def original(html: str) -> str:
+        return re.sub(r"<(script|style|head)[\s\S]*?</\1>", " ", html, flags=re.I)
+
+    casos = [
+        "İİİ<script>var x=1;</script><h1>Índices</h1>",
+        "<HEAD><title>t</title></HEAD><p>İstanbul</p><STYLE>p{}</style>fin",
+        "<script>sin cierre <style>a</style> resto",
+        "<header>cabecera</header><head>x</head>",
+    ]
+    for html in casos:
+        assert _strip_hidden_blocks(html) == original(html), html
