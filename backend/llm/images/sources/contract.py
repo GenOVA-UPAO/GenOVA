@@ -101,8 +101,8 @@ class ImageRequest:
         return cls(
             tipo=data.get("tipo") or "escena",
             descripcion=str(data.get("descripcion") or "").strip(),
-            consulta=str(data.get("consulta") or "").strip(),
-            marca=str(data.get("marca") or "").strip(),
+            consulta=str(data.get("consulta") or data.get("query") or "").strip(),
+            marca=str(data.get("marca") or data.get("brand") or "").strip(),
             diagrama=data.get("diagrama") or None,
             concept=concept,
         )
