@@ -31,18 +31,18 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with: { python-version: '3.11' }
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v10.2.0
         with: { enable-cache: true }
       - name: Dependencias y render de fixtures reales
         run: |
           uv pip install --system -r backend/requirements.txt
           python backend/scripts/ova_engine_render.py tests/.ova-rendered --fixtures
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: templates-chromium-${{ hashFiles('pnpm-lock.yaml') }}
