@@ -97,8 +97,8 @@ def main() -> None:
     ap.add_argument("--llm-cache", help="json para cachear los planes del LLM entre ejecuciones")
     ap.add_argument("--out", help="json de resultados")
     args = ap.parse_args()
-    cases = json.loads(Path(args.cases).read_text())["cases"]
-    cache = json.loads(Path(args.llm_cache).read_text()) if args.llm_cache and Path(args.llm_cache).exists() else {}
+    cases = json.loads(Path(args.cases).read_text(encoding="utf-8"))["cases"]
+    cache = json.loads(Path(args.llm_cache).read_text(encoding="utf-8")) if args.llm_cache and Path(args.llm_cache).exists() else {}
     out = {}
     for name in args.strategies.split(","):
         fn = STRATEGIES[name]
@@ -130,9 +130,9 @@ def main() -> None:
         print(f"{name:24s} rec {o['recomendado']:5}% | aceptable+ {o['aceptable_o_mejor']:5}% | "
               f"inadecuado {o['inadecuado']:5}% | p50 {o['p50_s']}s", flush=True)
     if args.llm_cache:
-        Path(args.llm_cache).write_text(json.dumps(cache))
+        Path(args.llm_cache).write_text(json.dumps(cache), encoding="utf-8")
     if args.out:
-        Path(args.out).write_text(json.dumps(out, indent=2))
+        Path(args.out).write_text(json.dumps(out, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":

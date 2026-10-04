@@ -81,7 +81,7 @@ def test_local_override_and_custom_evaluation_cases(monkeypatch, tmp_path):
     monkeypatch.setattr(evaluate_diagrams, "generate_diagram_json", generate)
     cases = [["flujo", "Mi concepto", "Mi detalle"]]
     evaluate_diagrams.evaluate(tmp_path, cases=cases, model="local-override")
-    records = json.loads((tmp_path / "resultados.json").read_text())
+    records = json.loads((tmp_path / "resultados.json").read_text(encoding="utf-8"))
     assert len(records) == 1 and records[0]["model"] == "local-override"
     assert "Mi concepto" in calls[0][0] and "Mi detalle" in calls[0][0]
     evaluate_diagrams.evaluate(tmp_path, cases=cases, model="local-override", resume=True)
@@ -122,7 +122,7 @@ def test_cli_cases_and_model(tmp_path):
             pass
 
     cases = tmp_path / "cases.json"
-    cases.write_text(json.dumps([["flujo", "Caso externo", "Detalle externo"]]))
+    cases.write_text(json.dumps([["flujo", "Caso externo", "Detalle externo"]]), encoding="utf-8")
     server = HTTPServer(("127.0.0.1", 0), Handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -146,7 +146,7 @@ def test_cli_cases_and_model(tmp_path):
         )
         assert requests[0]["model"] == "cli-test-model"
         assert "Caso externo" in requests[0]["messages"][0]["content"]
-        records = json.loads((tmp_path / "out" / "resultados.json").read_text())
+        records = json.loads((tmp_path / "out" / "resultados.json").read_text(encoding="utf-8"))
         assert len(records) == 1 and records[0]["concepto"] == "Caso externo"
     finally:
         server.shutdown()

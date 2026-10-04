@@ -46,7 +46,7 @@ def render(data, description="Una persona realiza varios préstamos."):
 @pytest.mark.parametrize("kind", KINDS)
 def test_snapshots_and_determinism(kind):
     result, svg = render(fixture(kind))
-    assert svg == (SNAPSHOTS / f"{kind}.svg").read_text()
+    assert svg == (SNAPSHOTS / f"{kind}.svg").read_text(encoding="utf-8")
     assert render(deepcopy(fixture(kind)))[1] == svg
     reordered = dict(reversed(list(fixture(kind).items())))
     assert render(reordered)[1] == svg
