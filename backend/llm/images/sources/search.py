@@ -66,6 +66,42 @@ _FORBIDDEN_LICENSE_TOKENS = (
     "desconocida",
 )
 
+_GENERIC_CREDIT_TOKENS = {
+    "autor",
+    "author",
+    "licencia libre",
+    "free license",
+    "licencia",
+    "license",
+    "web",
+    "cache",
+    "fuente libre",
+    "licencia libre verificada",
+    "comunidad libre",
+    "desconocido",
+    "desconocida",
+    "unknown",
+    "anonimo",
+    "anónimo",
+    "anonymous",
+    "colaborador de wikimedia",
+    "autor openverse",
+    "n/a",
+    "none",
+    "null",
+    "undefined",
+    "#",
+    "imagen",
+    "image",
+}
+
+
+def is_generic_credit_token(val: str | None) -> bool:
+    if not val or not isinstance(val, str):
+        return True
+    clean = val.strip().lower()
+    return not clean or clean in _GENERIC_CREDIT_TOKENS
+
 # Regex para detectar scripts no latinos (hebreo, árabe, cirílico, asiáticos, etc.)
 _NON_LATIN_SCRIPTS_RE = re.compile(
     r"[\u0590-\u05FF"  # Hebreo
@@ -236,7 +272,7 @@ def search_wikimedia(query: str, session: requests.Session | None = None) -> lis
         author = clean_html_tags(
             extmetadata.get("Artist", {}).get("value")
             or extmetadata.get("Credit", {}).get("value")
-            or "Colaborador de Wikimedia"
+            or ""
         )
         desc = clean_html_tags(extmetadata.get("ImageDescription", {}).get("value") or title)
         source_url = imageinfo.get("descriptionurl") or f"https://commons.wikimedia.org/wiki/{urllib.parse.quote(page.get('title', ''))}"
@@ -297,7 +333,7 @@ def search_openverse(query: str, session: requests.Session | None = None) -> lis
             "mime": "image/jpeg",
             "license": lic_name,
             "license_url": lic_url,
-            "author": item.get("creator") or "Autor Openverse",
+            "author": (item.get("creator") or "").strip(),
             "source_url": item.get("foreign_landing_url") or item.get("url") or "",
             "provider": "openverse",
         })
@@ -401,8 +437,15 @@ def filter_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if any(url_clean.endswith(ext) or title_clean.endswith(ext) for ext in forbidden_exts):
             continue
 
-        # 1. Licencia permitida
-        if not is_allowed_license(c.get("license", "")):
+        # 1. Licencia permitida y no genérica
+        lic = (c.get("license") or "").strip()
+        if not is_allowed_license(lic) or is_generic_credit_token(lic):
+            continue
+        author = c.get("author")
+        if author is not None and is_generic_credit_token(str(author)):
+            continue
+        src_url = c.get("source_url") or c.get("url")
+        if src_url is not None and not (str(src_url).startswith("http://") or str(src_url).startswith("https://")):
             continue
 
         # 2. Idioma: descartar si hay caracteres o menciones explícitas de idioma ajeno
@@ -640,9 +683,12 @@ class SearchSource:
 
                     is_generic = (
                         not author
-                        or author.lower() in ("fuente libre", "comunidad libre", "desconocido", "unknown")
+                        or is_generic_credit_token(author)
                         or not lic
-                        or lic.lower() in ("licencia libre verificada", "licencia libre", "unknown")
+                        or is_generic_credit_token(lic)
+                        or not src_url
+                        or not (src_url.startswith("http://") or src_url.startswith("https://"))
+                        or is_generic_credit_token(src_url)
                         or prov.lower() == "cache"
                     )
                     if not is_generic:
@@ -743,14 +789,26 @@ class SearchSource:
             return None
 
         # 6. Atribución real obligatoria (CC BY / CC BY-SA)
-        author = best_candidate.get("author") or "Colaborador de Wikimedia"
-        license_name = best_candidate.get("license") or "CC BY-SA 4.0"
+        author = (best_candidate.get("author") or "").strip()
+        license_name = (best_candidate.get("license") or "").strip()
+        source_url = (best_candidate.get("source_url") or best_candidate.get("url") or "").strip()
+        if (
+            not author
+            or is_generic_credit_token(author)
+            or not license_name
+            or is_generic_credit_token(license_name)
+            or not source_url
+            or not (source_url.startswith("http://") or source_url.startswith("https://"))
+        ):
+            logger.warning("best candidate lacks complete attribution, discarding", title=best_candidate.get("title"))
+            return None
+
         credit = Credit(
             title=best_candidate.get("title") or query,
             author=author,
             license=license_name,
-            license_url=best_candidate.get("license_url") or "https://creativecommons.org/",
-            source_url=best_candidate.get("source_url") or best_candidate.get("url") or "https://commons.wikimedia.org/",
+            license_url=best_candidate.get("license_url") or source_url,
+            source_url=source_url,
             provider=best_candidate.get("provider") or "wikimedia",
         )
 

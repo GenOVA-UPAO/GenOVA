@@ -108,4 +108,4 @@ def test_generation_source_fetch_with_clip_integration():
         assert result is not None
         assert result.source == "generada"
         assert result.meta.get("clip_score") == 0.29
-        assert "servers in a datacenter rack" in result.meta.get("subject", "")
+        assert "datacenter rack" in result.meta.get("subject", "")

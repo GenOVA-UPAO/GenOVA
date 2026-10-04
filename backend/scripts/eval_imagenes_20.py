@@ -627,11 +627,12 @@ def main():
         </div>
         """)
 
+    v_tag = "V5" if "v5" in out_dir else ("V4" if "v4" in out_dir else "")
     sheet_html = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Hoja de Contactos — Búsqueda de Fotos, Logos y Diagramas SVG V3 (Génova)</title>
+  <title>Hoja de Contactos — Evaluación de Calidad de Imágenes {v_tag} (Génova)</title>
   <style>
     :root {{
       --primary: #0A3D91;
@@ -860,8 +861,8 @@ def main():
 <body>
   <div class="container">
     <header>
-      <h1>Hoja de Contactos — Evaluación de Fuentes de Imagen V4</h1>
-      <p>Evaluación con motor de diagramas SVG deterministas y selección léxica, prompts compuestos para generación local con CLIP estricto, y saneamiento determinista de consultas.</p>
+      <h1>Hoja de Contactos — Evaluación de Fuentes de Imagen {v_tag}</h1>
+      <p>Evaluación con glosario temático ampliado (anti-servidores), descarte estricto de personas por CLIP (umbral calibrado), y eliminación de créditos incompletos o genéricos.</p>
     </header>
 
     <div class="stats-grid">

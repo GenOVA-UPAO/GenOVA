@@ -102,16 +102,54 @@ def test_build_deterministic_query_glossary():
 
 def test_build_concrete_scene_subject():
     s1 = build_concrete_scene_subject("Bases de datos relacionales con PostgreSQL")
-    assert "servers in a datacenter rack" in s1
+    assert "hard disk drive" in s1 or "magnetic platters" in s1
+    assert "server" not in s1.lower()
 
     s2 = build_concrete_scene_subject("Redes de computadoras y cableado de fibra óptica")
-    assert "network engineer patching fiber optic cables" in s2
+    assert "fiber optic cables" in s2 or "router" in s2
+    assert "engineer" not in s2.lower()
+    assert "server" not in s2.lower()
 
     s3 = build_concrete_scene_subject("Ciberseguridad y cifrado de datos en reposo")
-    assert "cybersecurity engineer analyzing encrypted data" in s3
+    assert "brass padlock" in s3
+    assert "engineer" not in s3.lower()
+    assert "server" not in s3.lower()
 
     s4 = build_concrete_scene_subject("Desarrollo de software con Python")
-    assert "software developer workstation" in s4
+    assert "programming code" in s4
+    assert "no visible face" in s4
+    assert "server" not in s4.lower()
+
+    s5 = build_concrete_scene_subject("Centros de datos y servidores de alta densidad")
+    assert "servers in a modern datacenter rack" in s5
+
+
+def test_build_concrete_scene_subject_ten_areas_variety_no_servers():
+    """Verifica que build_concrete_scene_subject devuelva escenas concretas para >= 10 áreas y NINGUNA no-infraestructura use servidores."""
+    areas = [
+        ("Redes y Telecomunicaciones 5G", ["antennas", "router", "telecommunication"]),
+        ("Inteligencia Artificial y Deep Learning", ["neural network", "robotic"]),
+        ("Programación Orientada a Objetos en Python", ["code in dark mode", "no visible face"]),
+        ("Ciberseguridad y Criptografía Asimétrica", ["brass padlock", "keys"]),
+        ("Bases de Datos Relacionales y SQL", ["hard disk drive", "magnetic platters"]),
+        ("Arquitectura de Computadoras y CPU", ["motherboard", "microprocessor"]),
+        ("Sistemas Operativos y Kernel Linux", ["terminal diagnostics", "workstation monitor"]),
+        ("Computación en la Nube y Microservicios", ["cloud compute pods", "container architecture"]),
+        ("Metodologías Ágiles y Scrum", ["kanban", "sticky notes"]),
+        ("Blockchain y Contratos Inteligentes", ["cryptographic digital blocks", "distributed ledger"]),
+    ]
+
+    for concept, expected_keywords in areas:
+        subject = build_concrete_scene_subject(concept)
+        # Ninguna de estas áreas debe usar servidores
+        assert "server" not in subject.lower(), f"Tema '{concept}' cayó incorrectamente en 'server': {subject}"
+        # Debe contener alguno de los términos visuales concretos esperados
+        matched = any(kw in subject.lower() for kw in expected_keywords)
+        assert matched, f"Tema '{concept}' no contiene ninguno de {expected_keywords}: {subject}"
+
+    # Caso de infraestructura física: ÚNICA que debe usar servidores
+    infra_subject = build_concrete_scene_subject("Infraestructura de Centros de Datos y Servidores en Rack")
+    assert "servers in a modern datacenter rack" in infra_subject
 
 
 def test_sanitize_image_request_replaces_garbage_and_records_trace():

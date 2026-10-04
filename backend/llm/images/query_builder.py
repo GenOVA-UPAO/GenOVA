@@ -47,45 +47,73 @@ _SPANISH_STOPWORDS_RE = re.compile(
     re.IGNORECASE,
 )
 
+def is_infrastructure_topic(concept: str, descripcion: str = "") -> bool:
+    """Determina si el tema corresponde estrictamente a infraestructura física de servidores/datacenters."""
+    norm = _strip_accents(f"{concept} {descripcion}").lower()
+    infra_patterns = [
+        r"\bcentros?\s+de\s+datos\b",
+        r"\bdatacenters?\b",
+        r"\bdata\s+centres?\b",
+        r"\binfraestructura\s+f[ií]sica\b",
+        r"\bsala\s+de\s+servidores\b",
+        r"\bracks?\s+de\s+servidores\b",
+        r"\bservidores?\s+de\s+alta\s+densidad\b",
+        r"\bserver\s+rooms?\b",
+    ]
+    return any(re.search(p, norm) for p in infra_patterns)
+
+
 # Glosario técnico determinista: español normalizado -> sustantivos técnicos en inglés
+# Servidores se usan ÚNICAMENTE para temas de infraestructura física.
 _GLOSSARY_MAP: list[tuple[str, str]] = [
-    # Conceptos clave de Ciencias de la Computación
-    (r"postgresql|postgres", "postgresql database server"),
-    (r"kubernetes|k8s", "kubernetes cluster container infrastructure"),
-    (r"docker|contenedores?", "docker container virtualization server"),
-    (r"redis", "redis in-memory cache database"),
-    (r"mongodb", "mongodb nosql database server"),
-    (r"kafka|apache kafka", "apache kafka event streaming cluster"),
-    (r"linux|kernel linux", "linux kernel operating system server"),
-    (r"git|control de versiones", "git version control repository"),
-    (r"python", "python programming code development"),
-    (r"nginx", "nginx web server reverse proxy"),
-    (r"centros? de datos|datacenter|servidores?", "datacenter server racks infrastructure"),
-    (r"ciberseguridad|cifrado de datos|seguridad informatica", "cybersecurity data encryption network"),
-    (r"redes? de computadoras?|fibra [oó]ptica", "computer networking fiber optic cables"),
-    (r"arquitectura de computadoras?|circuitos integrados?|cpu|microprocesador", "computer architecture microprocessor circuit"),
-    (r"infraestructura cloud|virtualizaci[oó]n", "cloud infrastructure virtualization servers"),
-    (r"monitoreo operativo|observabilidad", "systems monitoring observability metrics"),
-    (r"superc[oó]mputo|clusters? de gpu", "supercomputer gpu cluster datacenter"),
-    (r"cumplimiento normativo|auditor[ií]a de bases de datos", "database audit data compliance"),
-    (r"arreglos? de discos?|raid|almacenamiento masivo", "raid disk array storage servers"),
-    (r"telecomunicaciones|switches?|conmutador", "telecommunications network switch rack"),
-    # Conceptos adicionales comunes y de heldout
-    (r"blockchain|cadena de bloques|contratos? inteligentes?", "blockchain distributed ledger network"),
-    (r"seguridad wifi|redes? inal[aá]mbricas?", "wifi wireless network security encryption"),
-    (r"programaci[oó]n orientada a objetos|poo|clases y objetos", "object oriented programming architecture"),
-    (r"microservicios?|servicios distribuidos", "microservices architecture cloud servers"),
-    (r"inteligencia artificial|aprendizaje profundo|deep learning|machine learning", "artificial intelligence machine learning servers"),
-    (r"criptograf[ií]a asim[eé]trica|rsa|claves p[uú]blicas", "asymmetric cryptography rsa encryption"),
-    (r"memoria ram|almacenamiento ssd", "ram memory solid state storage hardware"),
-    (r"desarrollo [aá]gil|scrum|tablero kanban", "software development agile board workflow"),
-    (r"cliente[\s-]servidor|protocolo http", "client server network infrastructure"),
-    (r"placa base|motherboard", "computer motherboard electronics"),
-    (r"cables? submarinos?", "submarine communications cable networking"),
-    (r"firewall|cortafuegos|detecci[oó]n de intrusos", "firewall network security appliance"),
-    (r"base de datos relacional|modelo er|sql", "relational database sql storage"),
-    (r"base de datos|bases de datos", "database server system"),
-    (r"algoritmos?|estructuras? de datos", "algorithms data structures computing"),
+    # 1. Redes / 5G / Telecomunicaciones
+    (r"\b(?:5g|antenas? de telefon[ií]a|redes? m[oó]viles)\b", "cellular telecommunication tower antennas 5g"),
+    (r"\b(?:redes? inal[aá]mbricas?|wifi|seguridad wifi)\b", "wifi wireless network router security ethernet"),
+    (r"\b(?:redes? de computadoras?|cableado estructurado)\b", "computer networking router fiber optic cables"),
+    (r"\b(?:cables? submarinos?|telecomunicaciones globales)\b", "submarine communications fiber optic cables"),
+    (r"\b(?:telecomunicaciones|switches?|conmutador)\b", "telecommunications network switch router equipment"),
+    (r"\b(?:fibra [oó]ptica)\b", "fiber optic optical network cables"),
+    # 2. Inteligencia Artificial / Machine Learning / Robótica
+    (r"\b(?:inteligencia artificial|\bia\b|aprendizaje profundo|deep learning|machine learning|redes? neuronales?)\b", "illustrated artificial neural network graph robot"),
+    (r"\b(?:superc[oó]mputo|clusters? de gpu para ia|clusters? de gpu)\b", "gpu accelerator compute processor technology"),
+    # 3. POO / Programación / Desarrollo de Software
+    (r"\b(?:programaci[oó]n orientada a objetos|\bpoo\b|clases y objetos)\b", "object oriented programming computer screen code dark mode"),
+    (r"\b(?:desarrollo de software|programaci[oó]n|codigo fuente)\b", "computer monitor displaying programming source code"),
+    (r"\b(?:python)\b", "computer screen with python programming code"),
+    (r"\b(?:git|control de versiones)\b", "git version control repository commit graph"),
+    (r"\b(?:desarrollo [aá]gil|scrum|tablero kanban)\b", "agile kanban workflow board sticky notes"),
+    (r"\b(?:algoritmos?|estructuras? de datos)\b", "computer algorithm logic flow flowchart"),
+    # 4. Seguridad / Ciberseguridad / Criptografía
+    (r"\b(?:ciberseguridad|seguridad informatica|cifrado de datos en reposo|cifrado de datos)\b", "physical brass padlock on computer keyboard"),
+    (r"\b(?:criptograf[ií]a asim[eé]trica|\brsa\b|claves p[uú]blicas|claves rsa)\b", "cryptographic brass lock and key hardware"),
+    (r"\b(?:firewall|cortafuegos|detecci[oó]n de intrusos)\b", "network firewall security protection lock"),
+    (r"\b(?:cumplimiento normativo|auditor[ií]a de bases de datos)\b", "database compliance audit data security lock"),
+    # 5. Bases de datos / Almacenamiento
+    (r"\b(?:postgresql|postgres)\b", "postgresql relational database storage system"),
+    (r"\b(?:mongodb|nosql)\b", "mongodb document database storage technology"),
+    (r"\b(?:redis|almacenamiento en memoria)\b", "redis in-memory cache data storage"),
+    (r"\b(?:arreglos? de discos?|raid|almacenamiento masivo|discos? duros?)\b", "hard disk drive magnetic platters storage"),
+    (r"\b(?:memoria ram|almacenamiento ssd|estado solido)\b", "ram memory sticks solid state drive ssd"),
+    (r"\b(?:base de datos relacional|modelo er|sql)\b", "relational database data storage system"),
+    (r"\b(?:base de datos|bases de datos)\b", "database storage disk media system"),
+    # 6. Hardware / Microprocesadores / CPU
+    (r"\b(?:placa base|motherboard)\b", "computer motherboard electronics circuit"),
+    (r"\b(?:arquitectura de computadoras?|circuitos integrados?|cpu|microprocesador)\b", "silicon microprocessor chip on motherboard circuit"),
+    # 7. Sistemas Operativos / Linux / Kernel
+    (r"\b(?:linux|kernel linux|sistema operativo)\b", "computer workstation monitor system terminal console"),
+    # 8. Cloud / Contenedores / DevOps
+    (r"\b(?:docker|contenedores?)\b", "docker container application deployment technology"),
+    (r"\b(?:kubernetes|k8s)\b", "kubernetes cluster container application nodes"),
+    (r"\b(?:microservicios?|servicios distribuidos)\b", "microservices distributed application network nodes"),
+    (r"\b(?:infraestructura cloud|virtualizaci[oó]n)\b", "cloud computing virtualization technology infrastructure"),
+    (r"\b(?:kafka|apache kafka)\b", "apache kafka event streaming data pipeline"),
+    (r"\b(?:nginx)\b", "nginx web proxy networking reverse proxy"),
+    (r"\b(?:cliente[\s-]servidor|protocolo http)\b", "client network web technology protocol"),
+    (r"\b(?:monitoreo operativo|observabilidad)\b", "systems telemetry monitoring performance metrics"),
+    # 9. Blockchain / Criptoactivos
+    (r"\b(?:blockchain|cadena de bloques|contratos? inteligentes?)\b", "blockchain distributed cryptographic ledger blocks"),
+    # 10. Infraestructura física / Centros de datos (ÚNICA área con servidores)
+    (r"\b(?:centros? de datos|datacenter|servidores de alta densidad|servidores en rack|sala de servidores)\b", "datacenter server racks infrastructure corridor"),
 ]
 
 # Diccionario palabra por palabra para traducción determinista de términos sueltos
@@ -133,6 +161,16 @@ _WORD_TRANSLATIONS: dict[str, str] = {
     "tablero": "board",
     "modulo": "module",
     "modulos": "modules",
+    "antena": "antenna",
+    "antenas": "antennas",
+    "candado": "padlock",
+    "candados": "padlocks",
+    "llave": "key",
+    "llaves": "keys",
+    "robot": "robot",
+    "robotica": "robotics",
+    "neuronal": "neural",
+    "pantalla": "screen",
 }
 
 
@@ -244,7 +282,7 @@ def build_deterministic_query(concept: str, descripcion: str = "") -> str:
             translated_tokens.append(en_word)
 
     if not translated_tokens:
-        translated_tokens = ["computer", "technology", "server"]
+        translated_tokens = ["computer", "technology", "hardware"]
 
     # Agregar sufijo técnico descriptivo si es muy corta
     if len(translated_tokens) < 3:
@@ -256,35 +294,64 @@ def build_deterministic_query(concept: str, descripcion: str = "") -> str:
 def build_concrete_scene_subject(concept: str, descripcion: str = "") -> str:
     """Construye el sujeto concreto derivado del tema para generación visual.
 
-    Garantiza una escena física o técnica concreta (servidores en rack, técnico,
-    estación de trabajo) en vez de abstracciones, preguntas o casitas/niños.
+    Garantiza una escena física o técnica concreta acorde a cada área
+    (antenas de telefonía, routers, red neuronal ilustrada, robot, pantalla con código
+    sin rostro visible, candado físico y llaves, discos duros, motherboard), y SOLO
+    usa servidores cuando el tema sea estrictamente de infraestructura física.
     """
-    norm = _strip_accents(f"{concept} {descripcion}")
+    norm = _strip_accents(f"{concept} {descripcion}").lower()
 
-    if re.search(r"centros? de datos|datacenter|servidores?|bases? de datos|postgresql|sql|almacenamiento|redis|mongodb", norm):
-        return "servers in a datacenter rack with glowing status indicator lights and cable management"
-    if re.search(r"redes?|telecomunicaciones|switches?|fibra [oó]ptica|cableado|wifi", norm):
-        return "network engineer patching fiber optic cables into enterprise rack switches"
-    if re.search(r"ciberseguridad|cifrado|seguridad|criptograf[ií]a", norm):
-        return "cybersecurity engineer analyzing encrypted data streams on multiple workstation monitors"
-    if re.search(r"contenedores?|docker|kubernetes|cloud|virtualizaci[oó]n", norm):
-        return "cloud infrastructure server blade chassis running enterprise container hardware"
-    if re.search(r"procesador|cpu|circuitos?|arquitectura de computadoras?|motherboard", norm):
+    # 1. Infraestructura física de centros de datos (ÚNICA área con servidores)
+    if is_infrastructure_topic(concept, descripcion):
+        return "servers in a modern datacenter rack with glowing status indicator lights and cable management"
+
+    # 2. Redes / 5G / Telecomunicaciones: antenas de telefonía, routers
+    if re.search(r"\b(?:5g|antenas?|telecomunicaciones|switches?|fibra\s+[oó]ptica|cableado|wifi|redes?|conmutador)\b", norm):
+        return "cellular telecommunication tower antennas and enterprise router with fiber optic cables"
+
+    # 3. Inteligencia Artificial / Machine Learning: red neuronal ilustrada, robot
+    if re.search(r"\b(?:inteligencia\s+artificial|ia\b|aprendizaje\s+profundo|deep\s+learning|machine\s+learning|redes?\s+neuronales?|robotica|robot)\b", norm):
+        return "an illustrated artificial neural network graph with glowing interconnected nodes and a modern robotic arm"
+
+    # 4. Metodologías Ágiles / Scrum / Kanban: tablero ágil
+    if re.search(r"\b(?:agil|scrum|kanban|metodolog[ií]as?)\b", norm):
+        return "an agile kanban workflow board with colorful sticky notes and organized sprint columns"
+
+    # 5. POO / Programación / Desarrollo de Software: pantalla con código, persona programando sin rostro visible
+    if re.search(r"\b(?:programaci[oó]n|poo|codigo|software|python|algoritmos?|git|control\s+de\s+versiones)\b", norm):
+        return "a computer screen displaying programming code in dark mode, software developer seen from behind with no visible face"
+
+    # 6. Seguridad / Ciberseguridad / Criptografía: candado/llave física
+    if re.search(r"\b(?:ciberseguridad|cifrado|seguridad|criptograf[ií]a|firewall|claves\s+rsa|cortafuegos|autenticaci[oó]n)\b", norm):
+        return "a physical brass padlock and keys on top of a computer keyboard symbolizing cybersecurity data protection"
+
+    # 7. Bases de datos / SQL / Almacenamiento: platos de disco duro, circuitos SSD, almacenamiento
+    if re.search(r"\b(?:bases?\s+de\s+datos|postgresql|mongodb|redis|sql|almacenamiento\s+masivo|raid|discos?|memoria\s+ram|ssd)\b", norm):
+        return "an open hard disk drive showing reflective magnetic platters and actuator arm with electronic storage circuitry"
+
+    # 8. Hardware / CPU / Microprocesadores: circuitos, microprocesador, motherboard
+    if re.search(r"\b(?:procesador|cpu|circuitos?|arquitectura\s+de\s+computadoras?|motherboard|placa\s+base|microprocesador)\b", norm):
         return "a computer motherboard with silicon microprocessor chip and electronic bus circuits"
-    if re.search(r"linux|kernel|sistema operativo|terminal", norm):
-        return "a computer workstation running system terminal diagnostics in a modern engineering lab"
-    if re.search(r"git|control de versiones|python|desarrollo|software", norm):
-        return "a software developer workstation with dual monitors displaying structured code"
-    if re.search(r"superc[oó]mputo|gpu|ia|inteligencia artificial", norm):
-        return "high density GPU compute clusters in a liquid cooled modern datacenter room"
-    if re.search(r"blockchain|cadena de bloques", norm):
-        return "distributed network compute nodes validating cryptographic transaction blocks"
-    if re.search(r"auditor[ií]a|cumplimiento|normativ[oa]", norm):
-        return "a technical specialist reviewing compliance reports and server architecture diagrams"
 
-    # Sujeto genérico profesional para cualquier otro tema de computación
+    # 9. Sistemas Operativos / Linux: pantalla con terminal de sistema
+    if re.search(r"\b(?:linux|kernel|sistema\s+operativo|terminal|unix|procesos)\b", norm):
+        return "a computer workstation monitor running system terminal diagnostics in a modern engineering lab"
+
+    # 10. Cloud / Contenedores: ilustración técnica de pods y microservicios
+    if re.search(r"\b(?:contenedores?|docker|kubernetes|cloud|virtualizaci[oó]n|microservicios?|servicios\s+distribuidos)\b", norm):
+        return "a stylized technical illustration of interconnected cloud compute pods and container architecture"
+
+    # 11. Blockchain / Criptoactivos: bloques interconectados
+    if re.search(r"\b(?:blockchain|cadena\s+de\s+bloques|contratos?\s+inteligentes?|ledger)\b", norm):
+        return "interconnected illuminated cryptographic digital blocks representing distributed ledger technology"
+
+    # 12. Auditoría / Cumplimiento: candado y reportes
+    if re.search(r"\b(?:auditor[ií]a|cumplimiento|normativ[oa])\b", norm):
+        return "a computer workstation with audit compliance checklist reports and a physical security lock"
+
+    # Sujeto temático derivado deterministamente (sin personas ni servidores)
     query_terms = build_deterministic_query(concept, descripcion)
-    return f"a technical educator explaining {query_terms} on an interactive digital whiteboard"
+    return f"a technical computer workstation showing {query_terms} on high resolution display screen"
 
 
 def sanitize_image_request(request: ImageRequest) -> ImageRequest:

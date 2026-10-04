@@ -158,6 +158,95 @@ IMAGE_FIGURE_CSS = """
 """
 
 
+GENERIC_CREDIT_VALUES: set[str] = {
+    "autor",
+    "author",
+    "licencia libre",
+    "free license",
+    "licencia",
+    "license",
+    "web",
+    "cache",
+    "fuente libre",
+    "licencia libre verificada",
+    "desconocido",
+    "desconocida",
+    "unknown",
+    "anonimo",
+    "anónimo",
+    "anonymous",
+    "colaborador de wikimedia",
+    "autor openverse",
+    "wikimedia",
+    "openverse",
+    "wikipedia",
+    "internet",
+    "google",
+    "flickr",
+    "cc",
+    "creative commons",
+    "n/a",
+    "none",
+    "null",
+    "undefined",
+    "#",
+    "imagen",
+    "image",
+}
+
+
+def is_generic_credit_value(val: Any) -> bool:
+    """Verifica si un campo de crédito es nulo, vacío o contiene texto genérico/inventado."""
+    if not val or not isinstance(val, str):
+        return True
+    clean = val.strip().lower()
+    return not clean or clean in GENERIC_CREDIT_VALUES
+
+
+def is_valid_third_party_credit(credit: Any) -> bool:
+    """Valida si un crédito de terceros tiene autor, licencia y URL de origen legítimos (no genéricos)."""
+    if not credit:
+        return False
+    author = getattr(credit, "author", None) if not isinstance(credit, dict) else credit.get("author")
+    lic = getattr(credit, "license", None) if not isinstance(credit, dict) else credit.get("license")
+    src_url = (
+        getattr(credit, "source_url", None)
+        if not isinstance(credit, dict)
+        else (credit.get("source_url") or credit.get("url"))
+    )
+
+    if is_generic_credit_value(author) or is_generic_credit_value(lic) or is_generic_credit_value(src_url):
+        return False
+
+    url_str = str(src_url).strip()
+    return url_str.startswith("http://") or url_str.startswith("https://")
+
+
+def _format_figure_caption(credit: Any, default_prov: str = "origen") -> str:
+    """Genera el bloque <figcaption> con autor, licencia y origen si el crédito es válido."""
+    if not credit or not is_valid_third_party_credit(credit):
+        return ""
+    author = esc(str(getattr(credit, "author", "") or credit.get("author")).strip())
+    lic = esc(str(getattr(credit, "license", "") or credit.get("license")).strip())
+    lic_url = getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "")
+    lic_url_esc = esc(str(lic_url).strip()) if (lic_url and str(lic_url).strip().startswith("http")) else "#"
+    prov = getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "")
+    prov_esc = esc(str(prov).strip()) if not is_generic_credit_value(prov) else default_prov
+    raw_src = (
+        getattr(credit, "source_url", "")
+        or (credit.get("source_url") if isinstance(credit, dict) else "")
+        or (credit.get("url") if isinstance(credit, dict) else "")
+    )
+    src_url = esc(str(raw_src).strip())
+    return (
+        f'<figcaption class="ova-image-credit">'
+        f'<span>{author}</span> · '
+        f'<a href="{lic_url_esc}" target="_blank" rel="noopener noreferrer">{lic}</a> · '
+        f'<a href="{src_url}" target="_blank" rel="noopener noreferrer">{prov_esc}</a>'
+        f'</figcaption>'
+    )
+
+
 def render_image_figure(
     img_data: dict | None = None,
     src: str | None = None,
@@ -169,30 +258,46 @@ def render_image_figure(
     concept: str = "",
     **kwargs: Any,
 ) -> str:
-    """Renderiza una figura con imagen y atribución breve; sin imagen devuelve cadena vacía."""
+    """Renderiza una figura con imagen y atribución breve.
+
+    Si a una imagen de terceros le falta autor, licencia o URL de origen, NO se muestra
+    la imagen (se trata como sin imagen). Los diagramas, logos con licencia propia y
+    generadas siguen sin crédito. Nunca se usan textos genéricos en créditos.
+    """
+    if not src and isinstance(img_data, dict):
+        src = img_data.get("src") or img_data.get("image_placeholder")
+
+    if not src:
+        return ""
+
     if concept and alt_fallback == "Ilustración conceptual":
         alt_fallback = f"Ilustración de {concept}"
     alt = esc((img_data or {}).get("descripcion") or alt_fallback)
     cls = f"ova-image-figure {extra_class}".strip()
 
-    if not src and isinstance(img_data, dict):
-        src = img_data.get("src") or img_data.get("image_placeholder")
+    source = kwargs.get("image_source") or kwargs.get("source") or ""
+    tipo = kwargs.get("tipo") or ""
+    if isinstance(img_data, dict):
+        source = source or img_data.get("source") or img_data.get("image_source") or ""
+        tipo = tipo or img_data.get("tipo") or ""
 
-    if src:
-        caption = credit_html
-        if not caption and credit:
-            author = esc(getattr(credit, "author", "") or (credit.get("author") if isinstance(credit, dict) else "") or "Autor")
-            lic = esc(getattr(credit, "license", "") or (credit.get("license") if isinstance(credit, dict) else "") or "Licencia libre")
-            lic_url = esc(getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "") or "https://creativecommons.org/")
-            prov = esc(getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "") or "web")
-            src_url = esc(getattr(credit, "source_url", "") or (credit.get("source_url") if isinstance(credit, dict) else "") or "#")
-            caption = (
-                f'<figcaption class="ova-image-credit">'
-                f'<span>{author}</span> · '
-                f'<a href="{lic_url}" target="_blank" rel="noopener noreferrer">{lic}</a> · '
-                f'<a href="{src_url}" target="_blank" rel="noopener noreferrer">{prov}</a>'
-                f'</figcaption>'
-            )
+    is_exempt = (
+        source in ("diagrama", "logo", "generada", "personaje")
+        or tipo in ("diagrama", "logo", "escena", "personaje")
+        or bool(kwargs.get("is_diagram"))
+        or bool(kwargs.get("is_logo"))
+        or bool(kwargs.get("is_generated"))
+        or bool(kwargs.get("diagrama"))
+        or (isinstance(img_data, dict) and bool(img_data.get("diagrama")))
+        or (isinstance(src, str) and src.startswith("data:image/svg"))
+    )
+
+    if not credit and isinstance(img_data, dict):
+        credit = img_data.get("image_credit") or img_data.get("credit")
+
+    # Diagramas, logos con licencia propia y generadas siguen sin crédito
+    if is_exempt:
+        caption = _format_figure_caption(credit, default_prov="marca")
         return (
             f'<figure class="{cls}">'
             f'<img class="ova-figure-img" src="{esc(src)}" alt="{alt}" loading="lazy">'
@@ -200,32 +305,69 @@ def render_image_figure(
             f'</figure>'
         )
 
-    # Sin imagen no se dibuja nada: una caja con icono parecía una imagen rota
-    # y el recurso ya se entiende sin ella (la imagen es un apoyo opcional).
-    return ""
-
-
-def render_credits_section(data: dict | None) -> str:
-    """Renderiza la sección de créditos al pie del recurso si existe alguna atribución."""
-    if not isinstance(data, dict):
+    # Imagen de terceros: autor, licencia y URL de origen son estrictamente obligatorios
+    if not is_valid_third_party_credit(credit):
         return ""
-    credit = data.get("image_credit") or data.get("credit")
-    if not credit and "author" in data and "license" in data:
-        credit = data
-    if not credit:
-        return ""
-    author = esc(getattr(credit, "author", "") or (credit.get("author") if isinstance(credit, dict) else "") or "Autor")
-    license_name = esc(getattr(credit, "license", "") or (credit.get("license") if isinstance(credit, dict) else "") or "Licencia libre")
-    license_url = esc(getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "") or "#")
-    provider = esc(getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "") or "web")
-    source_url = esc(getattr(credit, "source_url", "") or (credit.get("source_url") if isinstance(credit, dict) else "") or "#")
-    title = esc(getattr(credit, "title", "") or (credit.get("title") if isinstance(credit, dict) else "") or "Imagen")
 
+    caption = _format_figure_caption(credit, default_prov="origen")
     return (
-        f'<section class="ova-credits-section">'
-        f'<h4>Créditos de imágenes</h4>'
+        f'<figure class="{cls}">'
+        f'<img class="ova-figure-img" src="{esc(src)}" alt="{alt}" loading="lazy">'
+        f"{caption}"
+        f'</figure>'
+    )
+
+
+def render_credits_section(data: dict | list | None) -> str:
+    """Renderiza la sección de créditos al pie del recurso si existe alguna atribución legítima."""
+    if not data:
+        return ""
+
+    items = data if isinstance(data, list) else [data]
+    valid_entries: list[tuple[str, str, str, str, str, str]] = []
+
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+
+        source = item.get("image_source") or item.get("source") or ""
+        tipo = (item.get("imagen") or {}).get("tipo") if isinstance(item.get("imagen"), dict) else item.get("tipo")
+        if source in ("diagrama", "generada", "personaje") or tipo in ("diagrama", "escena", "personaje"):
+            continue
+
+        credit = item.get("image_credit") or item.get("credit")
+        if not credit and ("author" in item or "license" in item):
+            credit = item
+
+        if not is_valid_third_party_credit(credit):
+            continue
+
+        author = esc(str(getattr(credit, "author", "") or (credit.get("author") if isinstance(credit, dict) else "")).strip())
+        license_name = esc(str(getattr(credit, "license", "") or (credit.get("license") if isinstance(credit, dict) else "")).strip())
+        raw_src = getattr(credit, "source_url", "") or (credit.get("source_url") if isinstance(credit, dict) else "") or (credit.get("url") if isinstance(credit, dict) else "")
+        source_url = esc(str(raw_src).strip())
+        lic_url = getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "")
+        license_url = esc(str(lic_url).strip()) if (lic_url and str(lic_url).strip().startswith("http")) else source_url
+        prov = getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "")
+        provider = esc(str(prov).strip()) if not is_generic_credit_value(prov) else "origen"
+        raw_title = getattr(credit, "title", "") or (credit.get("title") if isinstance(credit, dict) else "")
+        title = esc(str(raw_title).strip()) if not is_generic_credit_value(raw_title) else "Fotografía técnica"
+
+        valid_entries.append((title, author, license_url, license_name, source_url, provider))
+
+    if not valid_entries:
+        return ""
+
+    paragraphs = "\n".join(
         f'<p><strong>{title}</strong>: Por {author} · '
         f'<a href="{license_url}" target="_blank" rel="noopener noreferrer">{license_name}</a> · '
         f'Fuente: <a href="{source_url}" target="_blank" rel="noopener noreferrer">{provider}</a></p>'
+        for title, author, license_url, license_name, source_url, provider in valid_entries
+    )
+
+    return (
+        f'<section class="ova-credits-section">\n'
+        f'<h4>Créditos de imágenes</h4>\n'
+        f'{paragraphs}\n'
         f'</section>'
     )
