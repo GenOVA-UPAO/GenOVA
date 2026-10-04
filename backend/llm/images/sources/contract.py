@@ -97,6 +97,9 @@ class ImageRequest:
     width: int = 768
     height: int = 512
     used_hashes: tuple[str, ...] = ()
+    original_consulta: str = ""
+    consulta_replaced: bool = False
+    replacement_reason: str = ""
 
     @classmethod
     def from_json(
@@ -107,16 +110,24 @@ class ImageRequest:
         template_key: str = "",
         used_hashes: tuple[str, ...] | set[str] | list[str] = (),
     ) -> ImageRequest:
-        return cls(
+        raw_consulta = str(data.get("consulta") or data.get("query") or "").strip()
+        req = cls(
             tipo=data.get("tipo") or "escena",
             descripcion=str(data.get("descripcion") or "").strip(),
-            consulta=str(data.get("consulta") or data.get("query") or "").strip(),
+            consulta=raw_consulta,
             marca=str(data.get("marca") or data.get("brand") or "").strip(),
             diagrama=data.get("diagrama") or None,
             concept=concept,
             template_key=template_key or str(data.get("template_key") or "").strip(),
             used_hashes=tuple(used_hashes or data.get("used_hashes") or ()),
+            original_consulta=raw_consulta,
         )
+        try:
+            from llm.images.query_builder import sanitize_image_request
+
+            return sanitize_image_request(req)
+        except Exception:
+            return req
 
 
 @dataclass(frozen=True, slots=True)
