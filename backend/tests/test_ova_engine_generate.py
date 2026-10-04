@@ -118,3 +118,29 @@ def test_podcast_usa_el_backend_de_texto_local(monkeypatch):
     monkeypatch.setattr(text_mod.httpx, "post", fake_post)
     assert text_mod.generate_plain("p") == "Hola, hoy hablamos de índices."
     assert calls["url"].endswith("/api/chat")
+
+
+def test_raiz_en_lista_se_repara_sin_cambiar_de_modelo(monkeypatch):
+    """`[{...}]` o `[...]` en vez del objeto pedido: se acepta sin gastar otro modelo."""
+    import json
+
+    from ova_engine.schema import arr, obj, s
+
+    schema = obj(revision=arr(obj(n={"type": "integer"}, veredicto=s())))
+    assert text_mod._coerce_root([{"n": 1, "veredicto": "ok"}], schema) == {"n": 1, "veredicto": "ok"}
+    assert text_mod._coerce_root([{"n": 1, "veredicto": "ok"}, {"n": 2, "veredicto": "ok"}], schema) == {
+        "revision": [{"n": 1, "veredicto": "ok"}, {"n": 2, "veredicto": "ok"}]
+    }
+    assert text_mod._coerce_root({"revision": []}, schema) == {"revision": []}
+    assert text_mod._coerce_root([1, 2], obj(a=s(), b=s())) == [1, 2]  # sin forma reparable: lo marca validate
+
+    spec = get_spec("engage", 1)
+    calls = []
+
+    def fake_router(prompt, max_tokens, *a, **k):
+        calls.append(prompt)
+        return json.dumps([spec.sample("Índices", spec.resolve_params({}))])
+
+    monkeypatch.setattr(text_mod, "_router", fake_router)
+    data = text_mod.generate_json("p", spec.schema(spec.resolve_params({})))
+    assert isinstance(data, dict) and len(calls) == 1
