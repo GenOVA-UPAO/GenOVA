@@ -17,13 +17,17 @@ _PALETTE = (
     "limited palette of deep UPAO blue (#0A3D91), warm orange (#F58220) accents, "
     "navy ink outlines and a warm off-white background"
 )
-_NO_TEXT = "no text, no letters, no captions, no watermark, no logo"
+_NO_TEXT = (
+    "no text, no letters, no captions, no watermark, no logo, "
+    "no children, no childlike cartoon, no kids, no house, no residential cottage, "
+    "no domestic buildings, no outdoor landscape"
+)
 
 # Variantes de ilustración: se elige una por OVA (por hash), nunca por imagen.
 _STYLES = (
-    "flat vector illustration, clean geometric shapes, soft gradients, friendly educational look",
-    "gouache-style children's book illustration, soft textured shading, rounded shapes",
-    "modern editorial cartoon, bold outlines, flat colors, subtle paper grain",
+    "flat vector technical illustration, clean geometric shapes, subtle gradients, professional educational look",
+    "isometric technical diagram illustration, modern clean geometry, crisp lines, professional educational look",
+    "modern editorial technical illustration, bold outlines, balanced colors, subtle paper grain, engineering style",
 )
 
 # Personajes recurrentes por nombre (el cómic usa «Max»): descripción fija, idéntica en cada viñeta.

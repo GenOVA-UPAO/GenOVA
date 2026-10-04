@@ -31,6 +31,89 @@ from llm.images.style_guide import guide_from_settings
 logger = structlog.get_logger(__name__)
 
 
+def _resolve_provider_and_key(settings: dict[str, Any]) -> tuple[str, str]:
+    provider = settings.get("provider")
+    api_key = settings.get("api_key")
+    if provider and provider not in ("none", ""):
+        return str(provider), str(api_key or "")
+
+    if os.getenv("LOCAL_IMAGE_URL"):
+        return "local", ""
+    if os.getenv("OPENROUTER_API_KEY"):
+        return "openrouter", os.getenv("OPENROUTER_API_KEY") or ""
+    try:
+        from llm.clients.clients import _get_provider_key
+
+        k = _get_provider_key("openrouter")
+        if k:
+            return "openrouter", k
+    except Exception:
+        pass
+    return "", ""
+
+
+def _generate_image_uri(
+    full_prompt: str,
+    provider: str,
+    api_key: str,
+    model: str | None,
+    seed: int,
+    chain: list[dict],
+) -> str | None:
+    if not chain:
+        return get_image_data_uri(full_prompt, provider, api_key, model=model, seed=seed)
+    for entry in chain:
+        if not isinstance(entry, dict):
+            continue
+        p, m = entry.get("provider"), entry.get("model_id")
+        if not p:
+            continue
+        key = entry.get("api_key") or (api_key if p == provider else None)
+        uri = get_image_data_uri(full_prompt, p, key, model=m, hf_fallback=False, seed=seed)
+        if uri:
+            return uri
+    return hf_last_resort(full_prompt)
+
+
+def _validate_and_retry_generation(
+    full_prompt: str,
+    base_seed: int,
+    concept: str,
+    subject: str,
+    generate_fn: Any,
+) -> tuple[str | None, int, float, dict[str, Any]]:
+    """Genera imagen y valida con CLIP; reintenta una vez con otra semilla si falla."""
+    from llm.images.clip_rerank import ClipReranker
+
+    reranker = ClipReranker.get_instance()
+    uri = generate_fn(base_seed)
+    if not uri:
+        return None, base_seed, 0.0, {}
+
+    compressed = compress_data_uri(uri) or uri
+    passed, reason, clip_score, diag = reranker.validate_generated_image(
+        compressed, concept, subject
+    )
+    if passed:
+        return compressed, base_seed, clip_score, diag
+
+    # Reintento con otra semilla
+    alt_seed = (base_seed + 99991) % (2**31)
+    uri_retry = generate_fn(alt_seed)
+    if not uri_retry:
+        return None, base_seed, 0.0, diag
+
+    compressed_retry = compress_data_uri(uri_retry) or uri_retry
+    passed2, reason2, clip_score2, diag2 = reranker.validate_generated_image(
+        compressed_retry, concept, subject
+    )
+    if passed2:
+        return compressed_retry, alt_seed, clip_score2, diag2
+
+    logger.info("generated image rejected twice by CLIP", concept=concept, reason=reason2)
+    return None, base_seed, 0.0, diag2
+
+
 class GenerationSource:
     """Fuente de generación de imágenes con IA (último recurso o escenas/personajes)."""
 
@@ -48,87 +131,63 @@ class GenerationSource:
         self.ova_key = ova_key
 
     def fetch(self, request: ImageRequest) -> ImageResult | None:
-        settings = self.image_settings
-        if settings.get("enabled") is False:
+        if self.image_settings.get("enabled") is False:
             return None
 
-        provider = settings.get("provider")
-        api_key = settings.get("api_key")
-        if not provider or provider in ("none", ""):
-            # En local, SD :7860 vía LOCAL_IMAGE_URL; en producción OpenRouter si hay key
-            if os.getenv("LOCAL_IMAGE_URL"):
-                provider = "local"
-            elif os.getenv("OPENROUTER_API_KEY"):
-                provider = "openrouter"
-                api_key = os.getenv("OPENROUTER_API_KEY")
-            else:
-                try:
-                    from llm.clients.clients import _get_provider_key
-
-                    k = _get_provider_key("openrouter")
-                    if k:
-                        provider = "openrouter"
-                        api_key = k
-                except Exception:
-                    pass
-            if not provider or provider in ("none", ""):
-                return None
-
-        prompt = (request.consulta or request.descripcion or request.concept).strip()
-        if not prompt:
+        provider, api_key = _resolve_provider_and_key(self.image_settings)
+        if not provider:
             return None
 
-        guide = guide_from_settings(settings, self.ova_key or request.concept)
+        from llm.images.query_builder import build_concrete_scene_subject
+
+        subject = build_concrete_scene_subject(request.concept, request.descripcion)
+        guide = guide_from_settings(self.image_settings, self.ova_key or request.concept)
         style = f"{guide.prefix}|{guide.suffix}|{self.character}"
         use_cache = image_cache.enabled() and not fake_media_enabled()
 
-        ckey = image_cache.cache_key(prompt, style, f"{provider}:{settings.get('image_model') or ''}", request.width, request.height)
+        model = str(self.image_settings.get("image_model") or "")
+        ckey = image_cache.cache_key(
+            subject, style, f"{provider}:{model}", request.width, request.height
+        )
         if use_cache:
             cached = image_cache.get(ckey)
             if cached:
                 return ImageResult(
                     data_uri=cached,
                     source="generada",
-                    alt=request.descripcion or prompt,
+                    alt=request.descripcion or subject,
                     credit=None,
-                    meta={"cache_hit": True, "style": guide.key},
+                    meta={"cache_hit": True, "style": guide.key, "subject": subject},
                 )
 
-        full_prompt = guide.apply(prompt, self.character)
-        chain = settings.get("chain") or []
-        api_key = settings.get("api_key")
-        model = settings.get("image_model")
+        full_prompt = guide.apply(subject, self.character)
+        chain = self.image_settings.get("chain") or []
 
-        uri: str | None = None
-        if not chain:
-            uri = get_image_data_uri(full_prompt, provider, api_key, model=model, seed=guide.seed)
-        else:
-            for entry in chain:
-                if not isinstance(entry, dict):
-                    continue
-                p, m = entry.get("provider"), entry.get("model_id")
-                if not p:
-                    continue
-                key = entry.get("api_key") or (api_key if p == provider else None)
-                uri = get_image_data_uri(full_prompt, p, key, model=m, hf_fallback=False, seed=guide.seed)
-                if uri:
-                    break
-            if not uri:
-                uri = hf_last_resort(full_prompt)
+        def _gen(seed: int) -> str | None:
+            return _generate_image_uri(full_prompt, provider, api_key, model, seed, chain)
 
-        if not uri:
+        data_uri, seed_used, clip_score, diag = _validate_and_retry_generation(
+            full_prompt, guide.seed, request.concept, subject, _gen
+        )
+        if not data_uri:
             return None
 
-        compressed = compress_data_uri(uri) or uri
         if use_cache:
-            image_cache.put(ckey, compressed)
+            image_cache.put(ckey, data_uri)
 
         return ImageResult(
-            data_uri=compressed,
+            data_uri=data_uri,
             source="generada",
-            alt=request.descripcion or prompt,
-            credit=None,  # Imágenes generadas no llevan créditos de terceros
-            meta={"provider": provider, "style": guide.key, "seed": guide.seed},
+            alt=request.descripcion or subject,
+            credit=None,
+            meta={
+                "provider": provider,
+                "style": guide.key,
+                "seed": seed_used,
+                "clip_score": clip_score,
+                "clip_diag": diag,
+                "subject": subject,
+            },
         )
 
 
@@ -176,6 +235,9 @@ class ImageRouter:
         ova_key: str = "",
     ) -> ImageResult | None:
         """Determina la fuente óptima según la pista `tipo` y gestiona la cadena de respaldo."""
+        from llm.images.query_builder import sanitize_image_request
+
+        request = sanitize_image_request(request)
         gen_source = self.generation_source or GenerationSource(
             image_settings, character=character, ova_key=ova_key or request.concept
         )
@@ -230,15 +292,27 @@ class ImageRouter:
 
         # --- CASO 3: DIAGRAMA ---
         elif kind == "diagrama":
-            # 1. Probar DiagramSource si el objeto diagrama existe y es válido
+            # 1. Probar DiagramSource si el objeto diagrama existe y supera validación estructural y léxica
             if self.diagram_source and isinstance(request.diagrama, dict) and valid_diagram(request.diagrama):
-                try:
-                    result = self.diagram_source.fetch(request)
-                    if result:
-                        reason = "Diagrama vectorial SVG determinista generado desde datos estructurados"
-                except Exception as exc:
-                    logger.warning("diagram source error", error=str(exc)[:100])
-                    history.append("diagrama:error")
+                from llm.images.sources.diagram_selection import validate_diagram_quality
+
+                ok_qual, qual_reason = validate_diagram_quality(
+                    request.diagrama,
+                    request.concept,
+                    request.descripcion,
+                    request.template_key,
+                )
+                if ok_qual:
+                    try:
+                        result = self.diagram_source.fetch(request)
+                        if result:
+                            reason = "Diagrama vectorial SVG determinista generado desde datos estructurados"
+                    except Exception as exc:
+                        logger.warning("diagram source error", error=str(exc)[:100])
+                        history.append("diagrama:error")
+                else:
+                    logger.info("diagram rejected by quality check", reason=qual_reason)
+                    history.append(f"diagrama:rejected_{qual_reason}")
             else:
                 history.append("diagrama:missing_or_invalid_schema")
 
@@ -294,6 +368,10 @@ class ImageRouter:
                 "chosen_source": result.source,
                 "reason": reason,
                 "fallback_history": history,
+                "original_consulta": getattr(request, "original_consulta", "") or request.consulta,
+                "final_consulta": request.consulta,
+                "consulta_replaced": getattr(request, "consulta_replaced", False),
+                "replacement_reason": getattr(request, "replacement_reason", ""),
             })
             result = ImageResult(
                 data_uri=result.data_uri,

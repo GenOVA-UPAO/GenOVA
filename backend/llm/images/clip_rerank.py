@@ -51,6 +51,15 @@ NEGATIVE_CLASSES: dict[str, str] = {
     "die_chip_plano": "silicon chip die microphotography, semiconductor wafer die, microprocessor die, architectural floor plan, blueprint plan",
 }
 
+GENERATED_NEGATIVE_CLASSES: dict[str, str] = {
+    "infantil_casitas": "children, childlike cartoon, kids, cute house, suburban residential cottage, country landscape, rural house",
+    "persona_infantil": "child, toddler, group of children, childish cartoon character, fairy tale drawing",
+    "militar": "military soldiers in uniform, armed forces, military badge, coat of arms, or military shield",
+    "poster_texto": "poster or flyer with a lot of text, awareness campaign poster, typography banner with words",
+    "screenshot": "computer screenshot, software user interface window, operating system desktop, code terminal",
+    "meme": "internet meme, humorous graphic with impact font captions",
+}
+
 
 def compute_dhash(img: Any, hash_size: int = 8) -> str:
     """Calcula el hash perceptual dHash (Difference Hash) de 64 bits en formato hexadecimal."""
@@ -96,6 +105,7 @@ class ClipReranker:
         self.device = "cpu"
         self.available = False
         self.negative_embeddings = None
+        self.generated_negative_embeddings = None
         self.generic_embeddings = None
         self.load_duration_s = 0.0
         self.vram_mb = 0.0
@@ -138,17 +148,24 @@ class ClipReranker:
             self.model.eval()
             self.tokenizer = open_clip.get_tokenizer(model_name)
 
-            # Precomputar embeddings normalizados de clases negativas
+            # Precomputar embeddings normalizados de clases negativas (para fotos de búsqueda)
             neg_texts = list(NEGATIVE_CLASSES.values())
             tokens = self.tokenizer(neg_texts).to(self.device)
             with torch.no_grad():
                 embs = self.model.encode_text(tokens)
                 self.negative_embeddings = embs / embs.norm(dim=-1, keepdim=True)
 
-            # Precomputar embeddings normalizados de prompts genéricos para especificidad
-            gen_tokens = self.tokenizer(GENERIC_TECH_PROMPTS).to(self.device)
+            # Precomputar embeddings normalizados de clases negativas (para imágenes generadas)
+            gen_neg_texts = list(GENERATED_NEGATIVE_CLASSES.values())
+            gen_tokens = self.tokenizer(gen_neg_texts).to(self.device)
             with torch.no_grad():
-                g_embs = self.model.encode_text(gen_tokens)
+                gen_embs = self.model.encode_text(gen_tokens)
+                self.generated_negative_embeddings = gen_embs / gen_embs.norm(dim=-1, keepdim=True)
+
+            # Precomputar embeddings normalizados de prompts genéricos para especificidad
+            g_tokens = self.tokenizer(GENERIC_TECH_PROMPTS).to(self.device)
+            with torch.no_grad():
+                g_embs = self.model.encode_text(g_tokens)
                 self.generic_embeddings = g_embs / g_embs.norm(dim=-1, keepdim=True)
 
             self.load_duration_s = round(time.monotonic() - t0, 3)
@@ -382,3 +399,85 @@ class ClipReranker:
             total_evaluated=len(diagnostics),
         )
         return best_candidate, diagnostics
+
+    def validate_generated_image(
+        self,
+        image_input: str | bytes | Any,
+        concept: str,
+        subject_prompt: str,
+        min_similarity: float = DEFAULT_MIN_SIMILARITY,
+    ) -> tuple[bool, str, float, dict[str, Any]]:
+        """Valida una imagen generada con CLIP contra el sujeto concreto y negativos infantiles/casitas.
+
+        Retorna (aprobada, motivo, clip_score, diagnostico).
+        """
+        if not self.available or self.model is None or self.generated_negative_embeddings is None:
+            return True, "clip_unavailable", 0.0, {}
+
+        import base64
+        import io
+
+        import torch
+        from PIL import Image
+
+        try:
+            if isinstance(image_input, str):
+                b64 = image_input.split(",", 1)[-1]
+                pil_img = Image.open(io.BytesIO(base64.b64decode(b64))).convert("RGB")
+            elif isinstance(image_input, (bytes, bytearray)):
+                pil_img = Image.open(io.BytesIO(image_input)).convert("RGB")
+            elif hasattr(image_input, "convert"):
+                pil_img = image_input.convert("RGB")
+            else:
+                return False, "formato_imagen_no_valido", 0.0, {}
+        except Exception as exc:
+            return False, f"error_decodificacion:{str(exc)[:40]}", 0.0, {}
+
+        pos_prompt = f"a professional technical illustration of {concept}. {subject_prompt}".strip()
+        pos_tokens = self.tokenizer([pos_prompt]).to(self.device)
+
+        with torch.no_grad():
+            pos_emb = self.model.encode_text(pos_tokens)
+            pos_emb = pos_emb / pos_emb.norm(dim=-1, keepdim=True)
+
+            img_tensor = self.preprocess(pil_img).unsqueeze(0).to(self.device)
+            img_emb = self.model.encode_image(img_tensor)
+            img_emb = img_emb / img_emb.norm(dim=-1, keepdim=True)
+
+            sim_pos = float((img_emb @ pos_emb.T).item())
+            sim_negs = (img_emb @ self.generated_negative_embeddings.T).squeeze(0).tolist()
+            sim_generics = (
+                (img_emb @ self.generic_embeddings.T).squeeze(0).tolist()
+                if self.generic_embeddings is not None
+                else [0.0]
+            )
+
+        neg_names = list(GENERATED_NEGATIVE_CLASSES.keys())
+        neg_scores = dict(zip(neg_names, sim_negs, strict=False))
+        top_neg_class, top_neg_score = max(neg_scores.items(), key=lambda item: item[1])
+
+        top_gen_score = max(sim_generics)
+        specificity_margin = sim_pos - top_gen_score
+
+        diag = {
+            "pos_score": round(sim_pos, 4),
+            "top_neg_class": top_neg_class,
+            "top_neg_score": round(top_neg_score, 4),
+            "top_generic_score": round(top_gen_score, 4),
+            "specificity_margin": round(specificity_margin, 4),
+            "neg_scores": {k: round(v, 4) for k, v in neg_scores.items()},
+        }
+
+        if top_neg_score >= sim_pos:
+            return False, f"negativa_ganadora:{top_neg_class} ({top_neg_score:.3f} >= {sim_pos:.3f})", sim_pos, diag
+
+        if top_neg_score >= DEFAULT_STRONG_NEGATIVE_THRESHOLD:
+            return False, f"fuerte_negativa:{top_neg_class} ({top_neg_score:.3f} >= {DEFAULT_STRONG_NEGATIVE_THRESHOLD:.3f})", sim_pos, diag
+
+        if specificity_margin < DEFAULT_SPECIFICITY_MARGIN:
+            return False, f"especificidad_insuficiente (pos={sim_pos:.3f} vs gen={top_gen_score:.3f})", sim_pos, diag
+
+        if sim_pos < min_similarity:
+            return False, f"umbral_minimo ({sim_pos:.3f} < {min_similarity:.3f})", sim_pos, diag
+
+        return True, "aprobada", sim_pos, diag
