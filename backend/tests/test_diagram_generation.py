@@ -18,6 +18,25 @@ from scripts import evaluate_diagrams
 DATA = {"tipo": "flujo", "titulo": "Entrada", "nodos": [{"id": "a", "etiqueta": "Entrada"}]}
 
 
+@pytest.mark.parametrize(
+    "concept,detail",
+    [
+        ("Ciclo de vida de una transacción", "Estados habituales"),
+        ("Protocolo abstracto", "Estados y transiciones"),
+        ("Ciclo de vida de una tarea", "Pendiente y final"),
+    ],
+)
+def test_state_prompt_requires_error_paths_without_invented_retries(concept, detail):
+    prompt = generation.prompt_for("flujo", concept, detail)
+    assert "transiciones de error desde cada estado no final" in prompt
+    assert "Todo estado no final tiene salida" in prompt
+    assert "no inventes reintentos" in prompt
+    assert "Todo estado no final" not in generation.prompt_for(
+        "flujo", "Compilación", "Fases ordenadas"
+    )
+    assert "Todo estado no final" not in generation.prompt_for("er", concept, detail)
+
+
 @pytest.mark.parametrize("kind", ["er", "secuencia", "comparacion", "flujo"])
 def test_neutral_prompt_and_type_specific_instructions(kind):
     prompt = evaluate_diagrams.prompt_for(kind, "Dominio nuevo", "Detalle solicitado")
