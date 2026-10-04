@@ -6,10 +6,15 @@ import statistics
 from pathlib import Path
 
 
-def summarize(out: Path):
+def summarize(out: Path, single_round: str | None = None):
     reviews = json.loads((out / "revision.json").read_text())["casos"]
     summary = {}
-    for name, directory in (("inicial", out), ("mejorado", out / "mejorado")):
+    rounds = (
+        [(single_round, out)]
+        if single_round
+        else [("inicial", out), ("mejorado", out / "mejorado")]
+    )
+    for name, directory in rounds:
         records = json.loads((directory / "resultados.json").read_text())
         groups = {"total": records}
         for record in records:
@@ -22,6 +27,7 @@ def summarize(out: Path):
                 "schema_valid": sum(r["schema_valid"] for r in rows),
                 "graph_valid": sum(r["graph_valid"] for r in rows),
                 "tipo_correcto": sum(r["tipo_correcto"] for r in rows),
+                "accepted": sum(r.get("accepted", r.get("meta") is not None) for r in rows),
                 "correctos": sum(
                     next(review[name] for review in reviews if review["id"] == r["id"])
                     for r in rows
@@ -41,4 +47,8 @@ def summarize(out: Path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
-    summarize(parser.parse_args().out)
+    parser.add_argument(
+        "--round", help="Una ronda individual (p. ej. v2), con revisión de igual nombre"
+    )
+    args = parser.parse_args()
+    summarize(args.out, args.round)
