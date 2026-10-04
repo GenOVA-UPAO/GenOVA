@@ -15,6 +15,7 @@ import structlog
 from rag.application.errors import EmbedderError, ParserError
 from rag.application.ports import ChunkStorePort, EmbedderPort, TextExtractorPort
 from rag.domain.chunking import MAX_CHUNKS_PER_FILE, chunk_text, chunks_needed
+from rag.domain.context import sanitize_source_filename
 
 logger = structlog.get_logger(__name__)
 
@@ -115,12 +116,13 @@ class IngestDocument:
         return result
 
     def _describe(self, storage_path: str, filename: str, mime_type: str) -> str:
+        safe_name = sanitize_source_filename(filename)
         try:
             text = self.extractor.extract_text(storage_path, filename=filename)
-            return text if text.strip() else f"[Archivo multimodal: {filename} ({mime_type})]"
+            return text if text.strip() else f"[Archivo multimodal: {safe_name} ({mime_type})]"
         except Exception as exc:  # noqa: BLE001
             logger.warning("RAG extract_text falló para multimodal", filename=filename, error=str(exc))
-            return f"[Archivo multimodal: {filename} ({mime_type})]"
+            return f"[Archivo multimodal: {safe_name} ({mime_type})]"
 
     def _embed_batch(self, chunks: list[str], filename: str) -> list[list[float]] | None:
         try:

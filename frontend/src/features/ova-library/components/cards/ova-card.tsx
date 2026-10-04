@@ -57,7 +57,7 @@ export function OvaCard({
       data-testid="ova-card"
       data-ova-id={ova.id}
       className={cn(
-        "flex h-full flex-col rounded-xl border bg-card p-4 transition-colors",
+        "flex h-full flex-col rounded-xl border bg-card p-4 transition-[border-color,box-shadow] duration-200 hover:shadow-sm",
         isSelected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-foreground/20",
         isMoving && "opacity-60",
       )}

@@ -638,6 +638,11 @@ ${s}
     connectedCallback() {
       const cat = this.getAttribute('category') || '';
       const id  = this.getAttribute('item-id')  || '';
+      // Un único control accesible en el host; listitem exigía un padre list
+      // y creaba un segundo foco interactivo dentro del botón de la plantilla.
+      if (!this.hasAttribute('role')) this.setAttribute('role', 'button');
+      if (!this.hasAttribute('tabindex')) this.tabIndex = 0;
+      if (!this.hasAttribute('aria-label')) this.setAttribute('aria-label', 'Elemento: ' + id);
       this.shadowRoot.innerHTML = this.css(`
         .item{padding:11px 16px;border:2px solid ${T.border};border-radius:${T.radiusSm};
           background:${T.surface};cursor:grab;font-size:.93rem;font-weight:500;
@@ -648,13 +653,12 @@ ${s}
         .item:active{cursor:grabbing;transform:scale(.97)}
         .item.dragging{opacity:.45;transform:rotate(2deg)}
         .item.matched{border-color:${T.success};background:${T.successBg};
-          cursor:default;opacity:.8}
+          cursor:default}
         .item.wrong{border-color:${T.danger};background:${T.dangerBg};
           animation:upao-shake .3s ${T.ease}}
         .grip{color:${T.muted};font-size:.9rem;cursor:grab}
       `) + `
-      <div class="item" draggable="true" role="listitem" tabindex="0"
-        data-id="${id}" data-cat="${cat}" aria-label="Elemento: ${id}">
+      <div class="item" draggable="true" data-id="${id}" data-cat="${cat}">
         <span class="grip" aria-hidden="true">⠿</span>
         <slot></slot>
       </div>`;
@@ -729,9 +733,9 @@ ${s}
         .wrap{text-align:center;padding:8px 0}
         .btn{display:inline-flex;align-items:center;gap:10px;
           padding:14px 32px;border-radius:${T.radiusSm};border:none;
-          background:${T.action};color:#fff;font-family:${T.fontBody};
-          font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.02em;
-          transition:all .25s ${T.ease};box-shadow:0 4px 14px rgba(244,122,32,.35)}
+           background:${T.action};color:#fff;font-family:${T.fontBody};
+           font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.02em;
+           transition:transform .25s ${T.ease},box-shadow .25s ${T.ease};box-shadow:0 4px 14px rgba(244,122,32,.35)}
         .btn:hover:not([disabled]){background:${T.accentHv};
           transform:translateY(-2px);box-shadow:0 6px 20px rgba(244,122,32,.45)}
         .btn:active:not([disabled]){transform:translateY(0)}
@@ -755,6 +759,10 @@ ${s}
         this.$('#lbl').textContent = '¡Completado!';
         this.$('#icon').textContent = '✓';
         this.emit('upao-completed');
+        const score = document.querySelector('upao-score');
+        const max = Number(score?.getAttribute('max') || 100);
+        const raw = score && max > 0 ? Math.round(100 * score._val / max) : 100;
+        if (G.parent !== G) G.parent.postMessage({ type: 'genova-resource-completed', score: raw }, '*');
         typeof G._scormComplete === 'function' && G._scormComplete();
       });
       this.unlock = () => {

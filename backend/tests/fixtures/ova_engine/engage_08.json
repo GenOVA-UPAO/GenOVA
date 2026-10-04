@@ -1,0 +1,48 @@
+{
+  "concept": "transacciones y aislamiento",
+  "params": {
+    "num_milestones": 5
+  },
+  "data": {
+    "titulo": "De las tiendas de los antiguos a los bancos digitales",
+    "intro": "Antes de las bases de datos, las transacciones eran propensas a errores. La necesidad de seguridad y precisión impulsó la evolución del aislamiento.",
+    "hitos": [
+      {
+        "anio": "1950",
+        "nombre": "La primera base de datos en la historia",
+        "descripcion": "La creación de la primera base de datos centralizada permitió almacenar información de manera estructurada, aunque sin mecanismos de aislamiento.",
+        "dato_sorprendente": "La base de datos fue usada en un laboratorio de investigación nuclear para registrar experimentos.",
+        "conexion_actual": "Estableció la base para sistemas modernos que requieren datos precisos."
+      },
+      {
+        "anio": "1970",
+        "nombre": "El nacimiento del modelo relacional",
+        "descripcion": "E.F. Codd propuso el modelo relacional, que permitió organizar datos en tablas, abriendo camino a la noción de transacciones.",
+        "dato_sorprendente": "Codd trabajaba en IBM cuando presentó su teoría revolucionaria.",
+        "conexion_actual": "Es la base de todas las bases de datos relacionales que usamos hoy."
+      },
+      {
+        "anio": "1980",
+        "nombre": "La llegada de los sistemas transaccionales",
+        "descripcion": "Los sistemas como DB2 introdujeron el concepto de transacciones, asegurando que las operaciones se completaran o se revocaran.",
+        "dato_sorprendente": "Los sistemas transaccionales se usaron inicialmente en bancos para garantizar la seguridad de los depósitos.",
+        "conexion_actual": "Permite que transacciones complejas en línea se ejecuten sin errores."
+      },
+      {
+        "anio": "1990",
+        "nombre": "El aislamiento como prioridad",
+        "descripcion": "La norma ACID se estableció, garantizando que las transacciones fueran átomicas, consistentes, aisladas y duraderas.",
+        "dato_sorprendente": "La norma ACID fue adoptada por la industria como estándar de seguridad para bases de datos.",
+        "conexion_actual": "Es esencial para operaciones como compras en línea o transferencias bancarias."
+      },
+      {
+        "anio": "2000",
+        "nombre": "El aislamiento en el mundo digital",
+        "descripcion": "Con el surgimiento de Internet, el aislamiento se volvió vital para evitar conflictos en transacciones simultáneas en servidores globales.",
+        "dato_sorprendente": "Las bases de datos en la nube dependen del aislamiento para garantizar la integridad de los datos.",
+        "conexion_actual": "Asegura que operaciones como reservas de vuelos se realicen sin errores."
+      }
+    ],
+    "sintesis": "El pasado forjó el concepto de transacciones y aislamiento, fundamentales para la seguridad y precisión en la vida digital. Dominarlos es clave para entender cómo funcionan los sistemas modernos."
+  }
+}

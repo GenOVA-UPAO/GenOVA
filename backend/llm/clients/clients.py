@@ -132,7 +132,9 @@ def traced_openai(client: OpenAI) -> OpenAI:
     try:
         from langsmith.wrappers import wrap_openai
 
-        wrapped = wrap_openai(client)
+        from core.observability import private_langsmith_client
+
+        wrapped = wrap_openai(client, tracing_extra={"client": private_langsmith_client()})
     except Exception:  # nunca romper la generación por instrumentar
         return client
     # cliente sin __dict__ escribible: se envolvería de nuevo, inofensivo

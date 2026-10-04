@@ -8,7 +8,9 @@ pasan los parámetros que Ollama entiende; los propios de OpenRouter
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import json
 import math
 import os
 import re
@@ -23,6 +25,14 @@ EMBED_MODEL = os.getenv("FAKE_OR_EMBED_MODEL", "nomic-embed-text")
 # real: sirven para probar ingesta, reindexado y recuperación sin GPU.
 EMBED_BACKEND = os.getenv("FAKE_OR_EMBED_BACKEND", "ollama").strip().lower()
 _HASH_DIM = 768
+# FAKE_OR_TEXT_BACKEND=claude: el texto lo redacta un agente Claude (`claude -p`, sin
+# herramientas) en vez de Ollama. Sirve para grabar cassettes con salida de calidad.
+# El id de modelo pedido sigue siendo el de la respuesta; el coste real se acumula en
+# COST_LOG (una línea JSON por llamada) para poder poner un tope.
+TEXT_BACKEND = os.getenv("FAKE_OR_TEXT_BACKEND", "ollama").strip().lower()
+CLAUDE_MODEL = os.getenv("FAKE_OR_CLAUDE_MODEL", "sonnet")
+CLAUDE_TIMEOUT = int(os.getenv("FAKE_OR_CLAUDE_TIMEOUT", "900"))
+COST_LOG = os.getenv("FAKE_OR_COST_LOG", "")
 _NOMIC_PREFIX = re.compile(r"^(search_query|search_document):\s*")
 # El contexto de Ollama (OLLAMA_CONTEXT_LENGTH) limita prompt + respuesta.
 MAX_TOKENS = int(os.getenv("FAKE_OR_MAX_TOKENS", "10000"))
@@ -45,7 +55,55 @@ def with_openrouter_fields(data: dict, requested_model: str) -> dict:
     return data
 
 
+def _claude_prompt(messages: list[dict]) -> tuple[str, str]:
+    """(system, prompt): los mensajes `system` van aparte; el resto se transcribe."""
+    system, turns = [], []
+    for m in messages:
+        content = m.get("content")
+        if isinstance(content, list):
+            content = "\n".join(p.get("text", "") for p in content if isinstance(p, dict))
+        if m.get("role") == "system":
+            system.append(str(content))
+        else:
+            turns.append(str(content) if m.get("role") == "user" else f"[respuesta previa]\n{content}")
+    return "\n\n".join(system) or "Eres un generador de contenido.", "\n\n".join(turns)
+
+
+async def _claude_complete(body: dict) -> dict:
+    system, prompt = _claude_prompt(body.get("messages", []))
+    proc = await asyncio.create_subprocess_exec(
+        "claude", "-p", "--model", CLAUDE_MODEL, "--tools", "", "--disable-slash-commands",
+        "--no-session-persistence", "--setting-sources", "", "--output-format", "json",
+        "--system-prompt", system,
+        stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+    )
+    out, err = await asyncio.wait_for(proc.communicate(prompt.encode()), CLAUDE_TIMEOUT)
+    if proc.returncode != 0:
+        raise RuntimeError(f"claude -p falló: {err.decode()[:300]}")
+    data = json.loads(out)
+    if COST_LOG:
+        with open(COST_LOG, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"cost": data.get("total_cost_usd", 0)}) + "\n")
+    usage = data.get("usage", {})
+    finish = "length" if data.get("stop_reason") == "max_tokens" else "stop"
+    return {
+        "id": "claude-local",
+        "object": "chat.completion",
+        "model": body.get("model") or CLAUDE_MODEL,
+        "choices": [
+            {"index": 0, "finish_reason": finish, "message": {"role": "assistant", "content": data.get("result", "")}}
+        ],
+        "usage": {
+            "prompt_tokens": usage.get("input_tokens", 0),
+            "completion_tokens": usage.get("output_tokens", 0),
+            "cost": 0,
+        },
+    }
+
+
 async def complete(body: dict) -> dict:
+    if TEXT_BACKEND == "claude":
+        return await _claude_complete(body)
     async with httpx.AsyncClient(timeout=600) as client:
         resp = await client.post(f"{OLLAMA}/v1/chat/completions", json={**ollama_body(body), "stream": False})
         resp.raise_for_status()

@@ -82,6 +82,27 @@ describe("LoginPage", () => {
     expect(vi.mocked(authApi).verifyTotpLogin.mock.calls).toEqual([["ticket-1", "123456"]]);
   });
 
+  it("tras un código 2FA erróneo pide un ticket nuevo sin repetir la contraseña", async () => {
+    const user = userEvent.setup();
+    vi.mocked(authApi)
+      .login.mockResolvedValueOnce({ status: 200, data: { totp_required: true, ticket: "t-1" } })
+      .mockResolvedValueOnce({ status: 200, data: { totp_required: true, ticket: "t-2" } });
+    vi.mocked(authApi)
+      .verifyTotpLogin.mockResolvedValueOnce({ ok: false, data: { message: "Código incorrecto." } })
+      .mockResolvedValueOnce({ ok: true, data: {} });
+    renderLogin();
+    await user.type(screen.getByLabelText("Correo"), "user@genova.ai");
+    await user.type(screen.getByLabelText("Contraseña"), "user1234password");
+    await user.click(screen.getByRole("button", { name: "Entrar" }));
+    await user.type(await screen.findByLabelText("Código"), "123456");
+    await user.click(screen.getByRole("button", { name: "Verificar" }));
+    expect(await screen.findByText(/Código incorrecto\. Revisa el código/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Verificar" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Verificar" }));
+    expect(await screen.findByText("Dashboard")).toBeVisible();
+    expect(vi.mocked(authApi).verifyTotpLogin.mock.calls[1]?.[0]).toBe("t-2");
+  });
+
   it("muestra aviso si la sesión expiró", () => {
     renderLogin("?expired=1");
     expect(screen.getByText("Tu sesión ha expirado. Vuelve a iniciar sesión.")).toBeVisible();

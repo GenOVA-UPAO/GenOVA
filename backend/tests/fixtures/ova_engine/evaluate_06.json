@@ -1,0 +1,49 @@
+{
+  "concept": "transacciones y aislamiento",
+  "params": {
+    "num_pairs": 6
+  },
+  "data": {
+    "titulo": "Transacciones y Aislamiento: Definiciones Clave",
+    "instrucciones": "Arrastra cada término a su definición correspondiente o selecciona y pulsa «Colocar aquí».",
+    "parejas": [
+      {
+        "definicion": "Propiedad que garantiza que una transacción se ejecuta como una unidad completa o no se ejecuta en absoluto.",
+        "termino": "Atomicidad",
+        "feedback_acierto": "Correcto, la atomicidad asegura la integridad de una transacción.",
+        "feedback_error": "Pensando en una propiedad fundamental de las transacciones."
+      },
+      {
+        "definicion": "Propiedad que asegura que una transacción no afecta la base de datos hasta que se confirme su finalización.",
+        "termino": "Consistencia",
+        "feedback_acierto": "Bien, la consistencia mantiene la integridad de los datos durante una transacción.",
+        "feedback_error": "Busca una propiedad que garantice la estabilidad de los datos."
+      },
+      {
+        "definicion": "Propiedad que evita que otras transacciones accedan a datos en proceso de modificación.",
+        "termino": "Aislamiento",
+        "feedback_acierto": "Perfecto, el aislamiento previene interferencias entre transacciones.",
+        "feedback_error": "Piensa en una propiedad que protege los datos durante su procesamiento."
+      },
+      {
+        "definicion": "Propiedad que asegura que una transacción deja la base de datos en un estado válido, sin violar las restricciones.",
+        "termino": "Integridad",
+        "feedback_acierto": "Correcto, la integridad garantiza que los datos permanezcan válidos.",
+        "feedback_error": "Busca una propiedad relacionada con la validez de los datos."
+      },
+      {
+        "definicion": "Sentencia que confirma los cambios realizados por una transacción y los hace permanentes.",
+        "termino": "Commit",
+        "feedback_acierto": "Bien, el commit finaliza una transacción con éxito.",
+        "feedback_error": "Piensa en una palabra que indica la finalización de una transacción."
+      },
+      {
+        "definicion": "Sentencia que revierte los cambios realizados por una transacción y restaura el estado anterior.",
+        "termino": "Rollback",
+        "feedback_acierto": "Perfecto, el rollback cancela una transacción sin efectos permanentes.",
+        "feedback_error": "Busca una palabra que indique la cancelación de una transacción."
+      }
+    ],
+    "cierre": "Las propiedades de las transacciones, como atomicidad, consistencia, aislamiento e integridad, son esenciales para garantizar la correcta manipulación de datos en sistemas de bases de datos."
+  }
+}

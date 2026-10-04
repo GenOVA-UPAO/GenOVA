@@ -43,8 +43,16 @@ export interface HttpErrorOptions {
 
 interface JsonBody {
   message?: string;
-  detail?: string;
+  /** Texto (HTTPException) o lista de errores de validación de FastAPI (422). */
+  detail?: string | readonly { msg?: unknown }[];
   error?: string;
+}
+
+/** `detail` como texto: FastAPI manda una lista `[{msg, loc…}]` en los 422. */
+function detailText(detail: JsonBody["detail"]): string | undefined {
+  if (detail === undefined || typeof detail === "string") return detail;
+  const first = detail[0]?.msg;
+  return typeof first === "string" ? first : undefined;
 }
 
 export class HttpError extends Error {
@@ -131,7 +139,8 @@ export async function apiJson<T = unknown>(
 
   if (!res.ok) {
     const message =
-      firstNonBlank(body?.message, body?.detail, opts.fallbackMsg) ?? `HTTP ${String(res.status)}`;
+      firstNonBlank(body?.message, detailText(body?.detail), opts.fallbackMsg) ??
+      `HTTP ${String(res.status)}`;
     throw new HttpError(message, { status: res.status, code: body?.error ?? "", body });
   }
 

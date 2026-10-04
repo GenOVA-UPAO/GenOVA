@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from auth.dependencies import get_current_user
+from auth.dependencies import require_permission
 from core.database import get_db
 from core.rate_limit import limiter
 from llm.phases._rag import retrieve_phase_context
@@ -34,7 +34,7 @@ def list_elaborate_recursos():
 def generate_elaborate_resource(
     request: Request,
     payload: GenerateElaborateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission("create_ova")),
     db: Session = Depends(get_db),
 ):
     n = payload.resource_type

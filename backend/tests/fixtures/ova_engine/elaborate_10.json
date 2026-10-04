@@ -1,0 +1,56 @@
+{
+  "concept": "transacciones y aislamiento",
+  "params": {
+    "num_criteria": 5
+  },
+  "data": {
+    "titulo": "Gestión de stock en tienda online",
+    "enunciado": "Una tienda online debe gestionar stock de productos con transacciones seguras. El cliente requiere alta disponibilidad, pero debe minimizar interrupciones durante la ventana de mantenimiento. El volumen de datos es alto y el presupuesto es limitado.",
+    "criterios": [
+      {
+        "nombre": "Aislamiento de transacciones",
+        "descripcion": "Evitar lecturas no repetibles y lecturas sucias durante las operaciones de actualización de stock."
+      },
+      {
+        "nombre": "Disponibilidad",
+        "descripcion": "Mantener el sistema operativo durante la ventana de mantenimiento sin interrupciones."
+      },
+      {
+        "nombre": "Rendimiento",
+        "descripcion": "Minimizar el tiempo de respuesta para las operaciones de compra y actualización de stock."
+      },
+      {
+        "nombre": "Seguridad de datos",
+        "descripcion": "Garantizar que los datos de stock no se corrompan durante transacciones concurrentes."
+      },
+      {
+        "nombre": "Costo de implementación",
+        "descripcion": "Minimizar el gasto en infraestructura y herramientas de gestión de transacciones."
+      }
+    ],
+    "guia_evaluacion": {
+      "basico": "Cumple con las reglas básicas de aislamiento y seguridad, pero no optimiza el rendimiento ni minimiza el costo.",
+      "competente": "Ajusta el nivel de aislamiento y utiliza mecanismos de bloqueo para garantizar seguridad, equilibrando rendimiento y costo.",
+      "avanzado": "Optimiza el uso de transacciones y mecanismos de concurrencia, logrando un equilibrio entre disponibilidad, rendimiento y seguridad."
+    },
+    "solucion_referencia": "La solución propone el uso de transacciones con nivel de aislamiento SERIALIZABLE para garantizar la seguridad de los datos, pero limita el tiempo de bloqueo para mantener la disponibilidad. Se emplean mecanismos de bloqueo optimista y se programan las actualizaciones de stock fuera de la ventana de mantenimiento. Se evita el uso de técnicas complejas que incrementen el costo, manteniendo la simplicidad y la escalabilidad.",
+    "tradeoffs": [
+      {
+        "decision": "Usar aislamiento SERIALIZABLE",
+        "ganancia": "Garantiza la integridad de los datos en transacciones concurrentes.",
+        "costo": "Reduce el rendimiento y aumenta la latencia de las operaciones."
+      },
+      {
+        "decision": "Programar actualizaciones fuera de la ventana de mantenimiento",
+        "ganancia": "Mantiene la disponibilidad del sistema durante la ventana de mantenimiento.",
+        "costo": "Aumenta el tiempo de espera para las operaciones de actualización de stock."
+      },
+      {
+        "decision": "Evitar técnicas avanzadas de concurrencia",
+        "ganancia": "Mantiene el costo de implementación bajo.",
+        "costo": "Limita la capacidad del sistema para manejar altos volúmenes de datos."
+      }
+    ],
+    "cierre": "Este razonamiento se puede aplicar a otros sistemas donde se requiere equilibrar seguridad, rendimiento y disponibilidad, como en sistemas de reservas o de gestión financiera."
+  }
+}

@@ -1,12 +1,7 @@
-"""Prompts for the 10 EXPLORE-phase resources (5E methodology).
+"""Metadatos de recursos para la fase EXPLORE (metodología 5E).
 
-Each prompt fixes the resource FORMAT but adapts its content, datasets and
-mechanics to whatever DBMS (Sistemas de Gestión de Base de Datos) concept is passed
-in `concept`.
+La generación de contenido corre sobre las plantillas deterministas de ova_engine/.
 """
-
-from prometheus.prompts._loader import render_codigo, render_html, render_texto
-from prometheus.prompts._scaffold import with_user_context
 
 RECURSOS_META = {
     1: {
@@ -55,35 +50,3 @@ RECURSOS_META = {
         "emoji": "💡",
     },
 }
-
-CODE_ONLY = {1, 6, 10}
-
-
-def prompt_codigo(
-    n: int,
-    concept: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-    config: dict | None = None,
-) -> str:
-    return with_user_context(
-        render_codigo("explore", n, concept, design_system, config), contexto_usuario
-    )
-
-
-def prompt_texto(
-    n: int, concept: str, contexto_usuario: str = "", config: dict | None = None
-) -> str:
-    return with_user_context(render_texto("explore", n, concept, config), contexto_usuario)
-
-
-def prompt_html(
-    n: int,
-    concept: str,
-    data_json: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-) -> str:
-    return with_user_context(
-        render_html("explore", n, concept, data_json, design_system), contexto_usuario
-    )

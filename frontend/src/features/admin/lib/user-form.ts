@@ -42,12 +42,16 @@ export function initialUserFormValues(user: AdminUser): UserFormValues {
 export function validateUserForm(values: UserFormValues): UserFormErrors {
   const errors: UserFormErrors = {};
   // Mismos mensajes que el formulario de «Mi perfil».
-  if (values.full_name.trim() === "") errors.full_name = "El nombre completo es requerido.";
+  const fullName = values.full_name.trim();
+  if (fullName === "") errors.full_name = "El nombre completo es requerido.";
+  else if (fullName.length < 3) errors.full_name = "El nombre debe tener al menos 3 caracteres.";
   if (!EMAIL_SCHEMA.safeParse(values.email.trim()).success) {
     errors.email = "Ingresa un correo electrónico válido.";
   }
   if (!/^\d*$/.test(values.university_id.trim())) {
     errors.university_id = "El código solo debe contener números.";
+  } else if (values.university_id.trim() !== "" && Number(values.university_id) < 1) {
+    errors.university_id = "El código debe ser mayor o igual a 1.";
   }
   const phone = values.phone_number.trim();
   if (phone !== "" && !PHONE_RE.test(phone)) {

@@ -1,0 +1,101 @@
+{
+  "concept": "auditoría",
+  "params": {
+    "num_scenarios": 4
+  },
+  "data": {
+    "titulo": "Auditoría de Datos: Resolviendo Problemas Reales",
+    "intro": "Como DBA junior, debes diagnosticar y resolver problemas operativos mediante auditorías técnicas y decisiones fundamentadas en buenas prácticas.",
+    "escenarios": [
+      {
+        "id": "esc-1",
+        "empresa": "Hospital San Vicente (Salud)",
+        "problema": "Los registros de pacientes se duplican al importar datos de un sistema externo. Se necesita evitar la duplicación sin perder información.",
+        "opciones": [
+          {
+            "texto": "Desactivar la clave primaria en la tabla de pacientes.",
+            "correcta": false,
+            "feedback": "Provocaría violaciones de integridad y conflictos de datos."
+          },
+          {
+            "texto": "Realizar una auditoría de duplicados y actualizar registros con identificadores únicos.",
+            "correcta": true,
+            "feedback": "Permite identificar y resolver duplicados sin perder datos únicos."
+          },
+          {
+            "texto": "Eliminar los registros duplicados directamente sin revisión.",
+            "correcta": false,
+            "feedback": "Puede eliminar información válida y causar pérdida de datos."
+          }
+        ]
+      },
+      {
+        "id": "esc-2",
+        "empresa": "Escuela del Futuro (Educación)",
+        "problema": "El sistema de notas no refleja actualizaciones en tiempo real. Se requiere garantizar la consistencia de los datos.",
+        "opciones": [
+          {
+            "texto": "Usar una tabla de transacciones sin auditoría.",
+            "correcta": false,
+            "feedback": "No permite rastrear cambios y puede causar inconsistencias."
+          },
+          {
+            "texto": "Implementar auditoría de cambios con registros de transacciones.",
+            "correcta": true,
+            "feedback": "Permite rastrear modificaciones y mantener la integridad de los datos."
+          },
+          {
+            "texto": "Habilitar solo notificaciones de cambios sin auditoría.",
+            "correcta": false,
+            "feedback": "No garantiza la consistencia y no registra los cambios."
+          }
+        ]
+      },
+      {
+        "id": "esc-3",
+        "empresa": "Tienda Online Mágica (Retail)",
+        "problema": "Los pedidos no se procesan correctamente al final del día. Se sospecha de inconsistencias en los registros de inventario.",
+        "opciones": [
+          {
+            "texto": "Reiniciar la base de datos sin auditoría.",
+            "correcta": false,
+            "feedback": "Puede causar pérdida de datos y no identifica la causa raíz."
+          },
+          {
+            "texto": "Realizar una auditoría de inventario y registros de pedidos.",
+            "correcta": true,
+            "feedback": "Permite identificar inconsistencias y resolver el problema de forma precisa."
+          },
+          {
+            "texto": "Habilitar solo alertas de errores sin auditoría.",
+            "correcta": false,
+            "feedback": "No identifica el origen del problema y no soluciona la inconsistencia."
+          }
+        ]
+      },
+      {
+        "id": "esc-4",
+        "empresa": "Agencia Viajeros del Mundo (Turismo)",
+        "problema": "Los datos de reservas se corrompen al sincronizar con el sistema de pago. Se necesita asegurar la integridad de los datos durante la sincronización.",
+        "opciones": [
+          {
+            "texto": "Sincronizar sin auditoría y confiar en el sistema de pago.",
+            "correcta": false,
+            "feedback": "No garantiza la integridad de los datos durante la sincronización."
+          },
+          {
+            "texto": "Implementar auditoría de transacciones durante la sincronización.",
+            "correcta": true,
+            "feedback": "Permite detectar y corregir errores en tiempo real, asegurando la integridad de los datos."
+          },
+          {
+            "texto": "Usar solo un script de sincronización sin auditoría.",
+            "correcta": false,
+            "feedback": "No detecta errores y no garantiza la integridad de los datos."
+          }
+        ]
+      }
+    ],
+    "sintesis": "La auditoría permite identificar, corregir y prevenir problemas técnicos, garantizando la integridad, consistencia y seguridad de los datos en entornos de producción."
+  }
+}

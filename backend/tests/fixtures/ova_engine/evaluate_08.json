@@ -1,0 +1,49 @@
+{
+  "concept": "roles y privilegios",
+  "params": {
+    "num_questions": 4
+  },
+  "data": {
+    "titulo": "Roles y privilegios en sistemas de gestión de bases de datos",
+    "instrucciones": "Escribe tu respuesta, compárala con el modelo y marca los criterios que cumpliste.",
+    "preguntas": [
+      {
+        "enunciado": "Explica cómo un DBA podría usar roles para simplificar el control de acceso en una base de datos.",
+        "criterios": [
+          "Menciona la creación de roles y su vinculación a usuarios",
+          "Explica la ventaja de centralizar permisos",
+          "Justifica la reducción de duplicación de privilegios"
+        ],
+        "respuesta_modelo": "Un DBA puede usar roles para agrupar permisos similares y asignarlos a usuarios, reduciendo la complejidad. Esto permite centralizar el control de acceso, facilitar la gestión y evitar duplicaciones de privilegios, lo cual mejora la seguridad y la eficiencia del sistema."
+      },
+      {
+        "enunciado": "Escribe una sentencia Oracle que cree un rol y otorgue permisos específicos, luego explica su funcionamiento.",
+        "criterios": [
+          "Escribe la sentencia CREATE ROLE y GRANT",
+          "Menciona los permisos otorgados",
+          "Explica cómo el rol se asigna a usuarios"
+        ],
+        "respuesta_modelo": "CREATE ROLE auditor; GRANT SELECT ON empleados TO auditor; El rol 'auditor' permite a los usuarios seleccionar datos de la tabla 'empleados'. Se asigna a usuarios mediante GRANT, facilitando el control de acceso centralizado."
+      },
+      {
+        "enunciado": "¿Por qué un DBA podría preferir asignar privilegios a roles en lugar de a usuarios directamente?",
+        "criterios": [
+          "Menciona la simplificación de gestión",
+          "Explica la coherencia en el acceso",
+          "Justifica la facilitación de cambios"
+        ],
+        "respuesta_modelo": "Asignar privilegios a roles simplifica la gestión al agrupar permisos. Permite una coherencia en el acceso y facilita cambios, ya que se modifican roles en lugar de actualizar múltiples usuarios, mejorando la eficiencia y la seguridad."
+      },
+      {
+        "enunciado": "Justifica la decisión de un DBA al restringir el privilegio de eliminar registros a un rol específico.",
+        "criterios": [
+          "Menciona el riesgo de pérdida de datos",
+          "Explica la necesidad de control",
+          "Justifica la asignación a roles"
+        ],
+        "respuesta_modelo": "Un DBA restringe el privilegio de eliminar registros a un rol específico para minimizar el riesgo de pérdida de datos. Esto permite controlar quién puede modificar la base de datos, asegurando la integridad de los datos y evitando errores accidentales."
+      }
+    ],
+    "cierre": "Fundamentar respuestas técnicas implica comprender el impacto de las decisiones en la seguridad, eficiencia y mantenibilidad del sistema."
+  }
+}

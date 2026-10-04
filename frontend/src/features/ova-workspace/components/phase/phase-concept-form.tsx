@@ -26,7 +26,7 @@ export function PhaseConceptForm({
           setConcept(event.target.value);
           generation.reset();
         }}
-        placeholder="Ej: Tablespaces, Bloqueos, Backup con RMAN..."
+        placeholder="Ej: Tablespaces, Bloqueos, Backup con RMAN…"
       />
       <Button
         disabled={!resource || !concept.trim() || generation.isPending}

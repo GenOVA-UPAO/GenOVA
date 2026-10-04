@@ -5,12 +5,7 @@ DBMS (Sistemas de Gestión de Base de Datos) concept is passed in `concept` —
 no hardcoded subtopic.
 """
 
-from prometheus.prompts._loader import (
-    render_codigo,
-    render_html,
-    render_simulador,
-    render_texto,
-)
+from prometheus.prompts._loader import render_texto
 from prometheus.prompts._scaffold import with_user_context
 
 RECURSOS_META = {
@@ -65,45 +60,5 @@ RECURSOS_META = {
 def prompt_texto(
     n: int, concept: str, contexto_usuario: str = "", config: dict | None = None
 ) -> str:
+    """Prompt de texto para engage:3 (micro-podcast)."""
     return with_user_context(render_texto("engage", n, concept, config), contexto_usuario)
-
-
-def prompt_simulador(
-    concept: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-    config: dict | None = None,
-) -> str:
-    return with_user_context(
-        render_simulador("engage", concept, design_system, config), contexto_usuario
-    )
-
-
-def prompt_codigo(
-    n: int,
-    concept: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-    config: dict | None = None,
-) -> str:
-    # engage:10 (Simulador Intuitivo) usa la plantilla [simulador]; el resto de
-    # recursos direct_code (p. ej. 6, Noticia de Impacto) su propia [codigo.N].
-    # Antes esto devolvía SIEMPRE el simulador, así que engage:6 se generaba con
-    # el prompt equivocado; plan_map ya marca {6,10} como direct_code.
-    if n == 10:
-        return prompt_simulador(concept, contexto_usuario, design_system, config)
-    return with_user_context(
-        render_codigo("engage", n, concept, design_system, config), contexto_usuario
-    )
-
-
-def prompt_html(
-    n: int,
-    concept: str,
-    data_json: str,
-    contexto_usuario: str = "",
-    design_system: str | None = None,
-) -> str:
-    return with_user_context(
-        render_html("engage", n, concept, data_json, design_system), contexto_usuario
-    )

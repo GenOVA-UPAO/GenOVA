@@ -165,7 +165,10 @@ When('borro definitivamente el OVA sembrado desde la papelera', async ({ page })
   await page.goto('/papelera')
   const card = ovaCard(page, state(page).ova.title)
   await card.getByRole('button', { name: 'Eliminar definitivamente' }).click()
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Eliminar definitivamente' }).click()
+  const dialog = page.getByRole('alertdialog')
+  // Borrado irreversible: hay que escribir la frase de confirmación.
+  await dialog.getByRole('textbox').fill('ELIMINAR')
+  await dialog.getByRole('button', { name: 'Eliminar definitivamente' }).click()
 })
 
 Then('el OVA sembrado ya no aparece en la papelera', async ({ page }) => {

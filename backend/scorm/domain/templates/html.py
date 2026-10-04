@@ -174,6 +174,7 @@ def build_index_html(course_title: str, resources: list[dict]) -> str:
 
       <iframe
         id="res-frame"
+        sandbox="allow-scripts"
         role="tabpanel"
         title="Contenido del recurso seleccionado"
         aria-label="Contenido del recurso seleccionado"

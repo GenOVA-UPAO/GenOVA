@@ -1,0 +1,128 @@
+{
+  "concept": "transacciones y aislamiento",
+  "params": {
+    "num_turns": 5
+  },
+  "data": {
+    "titulo": "La danza invisible de las transacciones",
+    "intro": "¿Cómo evitan los sistemas de bases de datos que los datos cambien de forma inesperada durante operaciones? Descubre la magia del aislamiento.",
+    "turnos": [
+      {
+        "turno": 1,
+        "dato_mostrado": "SELECT * FROM V$SESSION WHERE status = 'ACTIVE';",
+        "pregunta": "¿Qué sucede si dos sesiones intentan modificar la misma fila al mismo tiempo?",
+        "pista": "Piensa en cómo se manejan los recursos compartidos en un entorno concurrente.",
+        "opciones": [
+          {
+            "texto": "Las sesiones acceden a la fila sin problemas.",
+            "feedback": "No es correcto. Las sesiones pueden bloquearse o esperar.",
+            "correcta": false
+          },
+          {
+            "texto": "Las sesiones se bloquean mutuamente hasta que una termina.",
+            "feedback": "Muy cercano. Depende del aislamiento. Vamos más lejos.",
+            "correcta": false
+          },
+          {
+            "texto": "Las sesiones trabajan con copias de la fila sin afectar la original.",
+            "feedback": "Correcto. Esto se llama aislamiento. ¿Qué sucede si no se cumple?",
+            "correcta": true
+          }
+        ]
+      },
+      {
+        "turno": 2,
+        "dato_mostrado": "EXPLAIN PLAN FOR SELECT * FROM cuentas WHERE id = 1 FOR UPDATE;",
+        "pregunta": "¿Qué indica el uso de FOR UPDATE en una consulta?",
+        "pista": "Piensa en cómo se asegura la base de datos de que el dato no cambie durante una transacción.",
+        "opciones": [
+          {
+            "texto": "Asegura que la fila sea leída, pero no bloqueada.",
+            "feedback": "No es exacto. Bloquea la fila para evitar conflictos.",
+            "correcta": false
+          },
+          {
+            "texto": "Asegura que la fila sea leída y bloqueada hasta que la transacción termine.",
+            "feedback": "Correcto. Esto protege la integridad. ¿Cuál es su impacto en el rendimiento?",
+            "correcta": true
+          },
+          {
+            "texto": "Asegura que la fila sea leída, pero se puede modificar por otras transacciones.",
+            "feedback": "Incorrecto. El aislamiento evita eso. Vamos más lejos.",
+            "correcta": false
+          }
+        ]
+      },
+      {
+        "turno": 3,
+        "dato_mostrado": "SELECT * FROM V$SYSSTAT WHERE name = 'user rollbacks';",
+        "pregunta": "¿Qué revela la estadística de rollbacks en una base de datos?",
+        "pista": "Piensa en qué sucede cuando una transacción no puede completarse por conflicto.",
+        "opciones": [
+          {
+            "texto": "Indica cuántas transacciones se han completado correctamente.",
+            "feedback": "No es correcto. Mide las transacciones que fallaron.",
+            "correcta": false
+          },
+          {
+            "texto": "Indica cuántas transacciones se han cancelado debido a conflictos.",
+            "feedback": "Correcto. Esto se debe a problemas de aislamiento. ¿Por qué ocurre?",
+            "correcta": true
+          },
+          {
+            "texto": "Indica cuántas transacciones se han ejecutado sin conflicto.",
+            "feedback": "Incorrecto. Mide las transacciones fallidas. Vamos más lejos.",
+            "correcta": false
+          }
+        ]
+      },
+      {
+        "turno": 4,
+        "dato_mostrado": "SELECT * FROM V$TRANSACTION WHERE status = 'ACTIVE';",
+        "pregunta": "¿Qué revela el estado de las transacciones activas?",
+        "pista": "Piensa en cómo se manejan las transacciones en un entorno concurrente.",
+        "opciones": [
+          {
+            "texto": "Indica cuántas transacciones están completas.",
+            "feedback": "No es correcto. Mide las transacciones en ejecución.",
+            "correcta": false
+          },
+          {
+            "texto": "Indica cuántas transacciones están bloqueadas por conflictos.",
+            "feedback": "Muy cercano. Depende del aislamiento. Vamos más lejos.",
+            "correcta": false
+          },
+          {
+            "texto": "Indica cuántas transacciones están en ejecución y cómo se manejan entre sí.",
+            "feedback": "Correcto. Esto es clave para entender el aislamiento. ¿Qué niveles existen?",
+            "correcta": true
+          }
+        ]
+      },
+      {
+        "turno": 5,
+        "dato_mostrado": "SELECT * FROM V$SESSION WHERE sid IN (SELECT sid FROM V$LOCK);",
+        "pregunta": "¿Qué revela el bloqueo de sesiones en una base de datos?",
+        "pista": "Piensa en cómo se manejan los recursos compartidos en un entorno concurrente.",
+        "opciones": [
+          {
+            "texto": "Indica cuántas sesiones están en espera de un recurso.",
+            "feedback": "Muy cercano. Depende del aislamiento. Vamos más lejos.",
+            "correcta": false
+          },
+          {
+            "texto": "Indica cuántas sesiones están bloqueadas por conflictos de transacciones.",
+            "feedback": "Correcto. Esto es clave para entender el aislamiento. ¿Qué niveles existen?",
+            "correcta": true
+          },
+          {
+            "texto": "Indica cuántas sesiones se han completado sin conflicto.",
+            "feedback": "Incorrecto. Mide las sesiones en conflicto. Vamos más lejos.",
+            "correcta": false
+          }
+        ]
+      }
+    ],
+    "revelacion_final": "Las transacciones y el aislamiento garantizan que los datos no cambien inesperadamente durante operaciones concurrentes. El aislamiento define cómo se manejan los bloqueos y los accesos a recursos compartidos, protegiendo la integridad y la consistencia del sistema."
+  }
+}

@@ -1,5 +1,7 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useProfile } from "../hooks/use-profile";
@@ -71,7 +73,7 @@ describe("ProfilePage", () => {
 
   it("permite guardar el perfil con los valores editados", async () => {
     const user = userEvent.setup();
-    render(<ProfilePage />);
+    render(<ProfilePage />, { wrapper: MemoryRouter });
 
     const nameInput = screen.getByLabelText("Nombre completo");
     await user.clear(nameInput);
@@ -93,7 +95,7 @@ describe("ProfilePage", () => {
   it("tras guardar muestra lo que devolvió el servidor, no los datos anteriores", async () => {
     handleSaveProfile.mockResolvedValue({ ...PROFILE, phone_number: "+51999888777" });
     const user = userEvent.setup();
-    render(<ProfilePage />);
+    render(<ProfilePage />, { wrapper: MemoryRouter });
 
     const phoneInput = screen.getByLabelText("Teléfono de contacto");
     await user.type(phoneInput, "+51999888777");
@@ -109,7 +111,7 @@ describe("ProfilePage", () => {
 
   it("al enviar con errores lleva el foco al primer campo inválido", async () => {
     const user = userEvent.setup();
-    render(<ProfilePage />);
+    render(<ProfilePage />, { wrapper: MemoryRouter });
 
     await user.clear(screen.getByLabelText("Nombre completo"));
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
@@ -129,7 +131,7 @@ describe("ProfilePage", () => {
       phone_number: null,
     });
 
-    render(<ProfilePage />);
+    render(<ProfilePage />, { wrapper: MemoryRouter });
 
     expect(screen.getByLabelText("Código universitario (UPAO)")).toHaveValue("");
     expect(screen.getByLabelText("Teléfono de contacto")).toHaveValue("");
@@ -144,7 +146,7 @@ describe("ProfilePage", () => {
     mockProfile(undefined, { isError: true, refetch });
 
     const user = userEvent.setup();
-    render(<ProfilePage />);
+    render(<ProfilePage />, { wrapper: MemoryRouter });
 
     expect(screen.getByText("No se pudo cargar el perfil")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Reintentar" }));
@@ -154,14 +156,14 @@ describe("ProfilePage", () => {
   it("muestra el estado vacío cuando no hay datos de perfil", () => {
     mockProfile(undefined);
 
-    render(<ProfilePage />);
+    render(<ProfilePage />, { wrapper: MemoryRouter });
 
     expect(screen.getByText("No hay datos de perfil")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reintentar" })).toBeInTheDocument();
   });
 
   it("muestra las pestañas en una fila superior, no como columna lateral", () => {
-    render(<ProfilePage />);
+    render(<ProfilePage />, { wrapper: MemoryRouter });
 
     const tabList = screen.getByRole("tablist");
     const tabsRoot = tabList.parentElement;
@@ -169,5 +171,17 @@ describe("ProfilePage", () => {
     expect(tabsRoot).not.toBeNull();
     expect(tabsRoot?.className).toContain("flex-col");
     expect(tabList.className).toContain("overflow-x-auto");
+  });
+
+  it("abre la pestaña indicada en la URL (?tab=security)", () => {
+    mockProfile(PROFILE);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter initialEntries={["/profile?tab=security"]}>
+          <ProfilePage />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(screen.getByRole("tab", { name: "Seguridad" })).toHaveAttribute("aria-selected", "true");
   });
 });

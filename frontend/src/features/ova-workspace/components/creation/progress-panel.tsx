@@ -1,9 +1,13 @@
+import { useEffect, useRef, useState } from "react";
+
 import { Button } from "@/core/components/ui/button";
 
 import type { JobLike, ResourceVM } from "../../lib/ova-job-view-model";
 import {
+  announceChange,
   doneCount,
   failedCount,
+  formatEta,
   isTerminalStatus,
   jobStatus,
   phaseGroups,
@@ -13,6 +17,7 @@ import {
 } from "../../lib/progress-view-model";
 import { CreationResourceList } from "./creation-resource-list";
 import { ProgressBanners } from "./progress-banners";
+import { ProgressHeader } from "./progress-header";
 
 interface Props {
   job: JobLike | null | undefined;
@@ -44,39 +49,41 @@ function headline(status: string, failed: number): string {
     : `${String(failed)} recursos no se pudieron generar`;
 }
 
+/** Región aria-live: anuncia (sin robar el foco) cuando un recurso empieza, termina o falla. */
+function useStatusAnnouncement(viewModel: ResourceVM[]): string {
+  const previous = useRef<Record<string, string> | null>(null);
+  const [message, setMessage] = useState("");
+  useEffect(() => {
+    if (previous.current) {
+      const next = announceChange(previous.current, viewModel);
+      if (next) setMessage(next);
+    }
+    previous.current = Object.fromEntries(viewModel.map((r) => [r.id, r.status]));
+  }, [viewModel]);
+  return message;
+}
+
 export function ProgressPanel(props: Readonly<Props>) {
   const status = jobStatus(props.job);
   const terminal = isTerminalStatus(status);
   const done = doneCount(props.viewModel);
   const failed = failedCount(props.viewModel);
+  const announcement = useStatusAnnouncement(props.viewModel);
+  const eta = terminal ? null : formatEta(props.job?.eta);
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-xs sm:p-5">
-      <div>
-        <div className="flex items-center justify-between gap-2 text-sm">
-          <span className="font-medium text-foreground">{headline(status, failed)}</span>
-          <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-            {done} de {String(props.viewModel.length)} listos
-          </span>
-        </div>
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full w-full origin-left rounded-full bg-primary transition-transform duration-500"
-            style={{ transform: `scaleX(${String(progressPct(props.viewModel) / 100)})` }}
-          />
-        </div>
-        {!terminal && props.showCancel && (
-          <div className="mt-1 flex justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="-mr-2.5 text-muted-foreground max-sm:h-11"
-              onClick={props.onCancel}
-            >
-              Cancelar generación
-            </Button>
-          </div>
-        )}
-      </div>
+      <ProgressHeader
+        headline={headline(status, failed)}
+        done={done}
+        total={props.viewModel.length}
+        pct={progressPct(props.viewModel)}
+        eta={eta}
+        showCancel={!terminal && props.showCancel}
+        onCancel={props.onCancel}
+      />
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </p>
       <ProgressBanners
         isStalled={props.isStalled}
         showResume={showResumeBanner(status, props.resumableCount)}

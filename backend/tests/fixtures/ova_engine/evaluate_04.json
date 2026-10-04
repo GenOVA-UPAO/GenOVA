@@ -1,0 +1,151 @@
+{
+  "concept": "auditoría",
+  "params": {
+    "num_questions": 6
+  },
+  "data": {
+    "titulo": "Examen sobre el concepto de auditoría en sistemas de gestión de bases",
+    "instrucciones": "Responde una pregunta por cada opción múltiple. Tiempo sugerido: 30 minutos. Se califica al entregar.",
+    "preguntas": [
+      {
+        "enunciado": "¿Cuál es la definición principal de auditoría en el contexto de bases de datos?",
+        "tipo": "conceptual",
+        "opciones": [
+          {
+            "texto": "Verificación de la seguridad de los datos.",
+            "correcta": false
+          },
+          {
+            "texto": "Revisión de los accesos y acciones realizadas en la base de datos.",
+            "correcta": true
+          },
+          {
+            "texto": "Proceso de copia de datos a otro servidor.",
+            "correcta": false
+          },
+          {
+            "texto": "Control de la integridad de los datos.",
+            "correcta": false
+          }
+        ],
+        "justificacion": "La auditoría implica revisar las acciones y accesos, no solo la seguridad o la integridad. La opción falsa más tentadora se refiere a la seguridad, que es un aspecto relacionado pero no la definición principal."
+      },
+      {
+        "enunciado": "¿Cuál sentencia en Oracle se utiliza para activar la auditoría de usuarios?",
+        "tipo": "aplicacion",
+        "opciones": [
+          {
+            "texto": "AUDIT USER;",
+            "correcta": true
+          },
+          {
+            "texto": "AUDIT ALL;",
+            "correcta": false
+          },
+          {
+            "texto": "AUDIT USER ALL;",
+            "correcta": false
+          },
+          {
+            "texto": "AUDIT SYSTEM;",
+            "correcta": false
+          }
+        ],
+        "justificacion": "La sentencia correcta es `AUDIT USER;` que activa la auditoría de los usuarios. Las otras opciones no son sintácticamente válidas o no cumplen con la finalidad."
+      },
+      {
+        "enunciado": "¿Qué tipo de auditoría se realiza cuando se registra la actividad de los usuarios en la base de datos?",
+        "tipo": "analisis",
+        "opciones": [
+          {
+            "texto": "Auditoría de seguridad.",
+            "correcta": false
+          },
+          {
+            "texto": "Auditoría de acceso.",
+            "correcta": true
+          },
+          {
+            "texto": "Auditoría de integridad.",
+            "correcta": false
+          },
+          {
+            "texto": "Auditoría de rendimiento.",
+            "correcta": false
+          }
+        ],
+        "justificacion": "La auditoría de acceso registra las acciones de los usuarios, mientras que la seguridad se refiere a permisos y la integridad a la veracidad de los datos."
+      },
+      {
+        "enunciado": "¿Qué relación tiene la auditoría con el control de acceso?",
+        "tipo": "relacion",
+        "opciones": [
+          {
+            "texto": "La auditoría es un mecanismo de control de acceso.",
+            "correcta": true
+          },
+          {
+            "texto": "El control de acceso es un mecanismo de auditoría.",
+            "correcta": false
+          },
+          {
+            "texto": "No tienen relación.",
+            "correcta": false
+          },
+          {
+            "texto": "La auditoría impide el control de acceso.",
+            "correcta": false
+          }
+        ],
+        "justificacion": "La auditoría se basa en el control de acceso para registrar actividades, por lo que es un mecanismo de control. La opción falsa más tentadora invierte la relación."
+      },
+      {
+        "enunciado": "¿Cuál es la finalidad de la auditoría de bases de datos?",
+        "tipo": "conceptual",
+        "opciones": [
+          {
+            "texto": "Asegurar la privacidad de los datos.",
+            "correcta": false
+          },
+          {
+            "texto": "Detectar accesos no autorizados.",
+            "correcta": true
+          },
+          {
+            "texto": "Aumentar la capacidad de almacenamiento.",
+            "correcta": false
+          },
+          {
+            "texto": "Optimizar el rendimiento de consultas.",
+            "correcta": false
+          }
+        ],
+        "justificacion": "La auditoría busca detectar accesos no autorizados, mientras que la privacidad, el almacenamiento y el rendimiento son aspectos distintos."
+      },
+      {
+        "enunciado": "¿Qué se registra en una auditoría de base de datos?",
+        "tipo": "analisis",
+        "opciones": [
+          {
+            "texto": "Solo los accesos exitosos.",
+            "correcta": false
+          },
+          {
+            "texto": "Los accesos exitosos y fallidos.",
+            "correcta": true
+          },
+          {
+            "texto": "Solo los accesos fallidos.",
+            "correcta": false
+          },
+          {
+            "texto": "Solo los accesos de administradores.",
+            "correcta": false
+          }
+        ],
+        "justificacion": "La auditoría registra tanto accesos exitosos como fallidos, no solo uno de ellos. La opción falsa más tentadora limita la auditoría a un tipo específico de acceso."
+      }
+    ],
+    "cierre": "Este examen ha sido diseñado para evaluar tu comprensión del concepto de auditoría y su aplicación en sistemas de gestión de bases de datos."
+  }
+}

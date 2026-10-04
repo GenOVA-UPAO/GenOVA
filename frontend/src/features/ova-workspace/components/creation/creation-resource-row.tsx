@@ -6,6 +6,7 @@ import { cn } from "@/core/lib/cn";
 import type { ResourceVM } from "../../lib/ova-job-view-model";
 import { resourceIconName } from "../../lib/resource-icons";
 import { CreationStatusBadge } from "./creation-status-badge";
+import { RowStateHint } from "./row-state-hint";
 
 interface Props {
   resource: ResourceVM;
@@ -57,6 +58,7 @@ export function CreationResourceRow({
             </span>
           </span>
         )}
+        <RowStateHint status={resource.status} canPreview={Boolean(onPreview)} />
         {resource.status === "X" && (
           <Button variant="outline" size="sm" className="shrink-0" onClick={onRetry}>
             Reintentar

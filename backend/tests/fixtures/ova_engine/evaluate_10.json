@@ -1,0 +1,20 @@
+{
+  "concept": "tablespaces y datafiles",
+  "params": {
+    "num_competencias": 5,
+    "estilo": "clasico"
+  },
+  "data": {
+    "titulo": "Diploma de Logro en Gestión de Espacios y Archivos de Datos",
+    "descripcion_logro": "El estudiante logró comprender y aplicar los conceptos de tablespaces y datafiles en el desarrollo de sistemas de gestión de bases de datos.",
+    "competencias": [
+      "Diseñar estructuras de tablespaces según requisitos de almacenamiento",
+      "Configurar y gestionar archivos de datos de manera eficiente",
+      "Evaluar el impacto de la organización de tablespaces en el rendimiento",
+      "Implementar estrategias de optimización de espacio de almacenamiento",
+      "Analizar y resolver problemas relacionados con datafiles y tablespaces"
+    ],
+    "firma": "Coordinación Académica — Sistemas de BD",
+    "reflexion": "Estos logros te permitirán optimizar sistemas de bases de datos en tu práctica profesional, garantizando eficiencia y escalabilidad en proyectos reales."
+  }
+}

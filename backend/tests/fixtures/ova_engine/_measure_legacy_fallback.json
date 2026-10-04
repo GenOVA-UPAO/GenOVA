@@ -1,0 +1,1695 @@
+{
+  "total_executions": 98,
+  "ok_count": 81,
+  "fail_count": 17,
+  "fallback_rate_pct": 17.346938775510203,
+  "total_seconds": 4116.3,
+  "avg_seconds_per_resource": 82.8,
+  "results": [
+    {
+      "round": 1,
+      "key": "elaborate:1",
+      "phase": "elaborate",
+      "rt": 1,
+      "title": "Estudio de Caso",
+      "concept": "índices B-tree y búsqueda binaria",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "empresa",
+        "narrativa",
+        "evidencias",
+        "preguntas",
+        "cierre"
+      ],
+      "seconds": 21.6
+    },
+    {
+      "round": 1,
+      "key": "elaborate:2",
+      "phase": "elaborate",
+      "rt": 2,
+      "title": "Ejercicio Guiado",
+      "concept": "transacciones ACID y niveles de aislamiento",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "enunciado",
+        "pasos",
+        "cierre"
+      ],
+      "seconds": 18.8
+    },
+    {
+      "round": 1,
+      "key": "elaborate:3",
+      "phase": "elaborate",
+      "rt": 3,
+      "title": "Mini-Proyecto",
+      "concept": "backup físico con RMAN y recuperación point-in-time",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "entregables",
+        "dataset_sugerido",
+        "rubrica",
+        "cierre"
+      ],
+      "seconds": 14.6
+    },
+    {
+      "round": 1,
+      "key": "elaborate:4",
+      "phase": "elaborate",
+      "rt": 4,
+      "title": "Simulación Aplicada",
+      "concept": "roles, privilegios y principio de menor privilegio",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "escenario",
+        "objetivo",
+        "parametros",
+        "metrica_rendimiento",
+        "metrica_costo",
+        "ejemplo",
+        "cierre"
+      ],
+      "seconds": 14.6
+    },
+    {
+      "round": 1,
+      "key": "elaborate:5",
+      "phase": "elaborate",
+      "rt": 5,
+      "title": "Análisis de Datos",
+      "concept": "tablespaces, datafiles y gestión de almacenamiento",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "contexto",
+        "columnas",
+        "registros",
+        "ejemplo",
+        "preguntas",
+        "cierre"
+      ],
+      "seconds": 33.5
+    },
+    {
+      "round": 1,
+      "key": "elaborate:6",
+      "phase": "elaborate",
+      "rt": 6,
+      "title": "Escenario Ramificado",
+      "concept": "bloqueos concurrentes y detección de deadlocks",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "introduccion",
+        "nodo_raiz",
+        "cierre"
+      ],
+      "seconds": 40.6
+    },
+    {
+      "round": 1,
+      "key": "elaborate:7",
+      "phase": "elaborate",
+      "rt": 7,
+      "title": "Lab de Código",
+      "concept": "planes de ejecución EXPLAIN y optimizador basado en costos",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "ejemplo",
+        "ejercicios",
+        "cierre"
+      ],
+      "seconds": 25.6
+    },
+    {
+      "round": 1,
+      "key": "elaborate:8",
+      "phase": "elaborate",
+      "rt": 8,
+      "title": "Mapa de Problemas",
+      "concept": "auditoría de accesos y cumplimiento normativo",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "problemas",
+        "cierre"
+      ],
+      "seconds": 18.1
+    },
+    {
+      "round": 1,
+      "key": "elaborate:9",
+      "phase": "elaborate",
+      "rt": 9,
+      "title": "Juego de Estrategia",
+      "concept": "particionamiento de tablas por rango y lista",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "escenario",
+        "objetivo",
+        "recurso",
+        "turnos",
+        "cierre"
+      ],
+      "seconds": 39.6
+    },
+    {
+      "round": 1,
+      "key": "elaborate:10",
+      "phase": "elaborate",
+      "rt": 10,
+      "title": "Reto de Diseño",
+      "concept": "vistas materializadas y refresco incremental",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "enunciado",
+        "criterios",
+        "guia_evaluacion",
+        "solucion_referencia",
+        "tradeoffs",
+        "cierre"
+      ],
+      "seconds": 15.0
+    },
+    {
+      "round": 1,
+      "key": "engage:1",
+      "phase": "engage",
+      "rt": 1,
+      "title": "Cómic Interactivo",
+      "concept": "concurrencia multiversión MVCC",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "gancho",
+        "vinetas",
+        "pregunta",
+        "cierre"
+      ],
+      "seconds": 14.1
+    },
+    {
+      "round": 1,
+      "key": "engage:2",
+      "phase": "engage",
+      "rt": 2,
+      "title": "Storyboard de Video",
+      "concept": "triggers y restricciones de integridad referencial",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "gancho",
+        "escenas",
+        "narracion_completa",
+        "pregunta_reflexion",
+        "prompt_video"
+      ],
+      "seconds": 20.9
+    },
+    {
+      "round": 1,
+      "key": "engage:4",
+      "phase": "engage",
+      "rt": 4,
+      "title": "Juego de Gamificación",
+      "concept": "índices B-tree y búsqueda binaria",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "gancho",
+        "rondas",
+        "cierre"
+      ],
+      "seconds": 15.8
+    },
+    {
+      "round": 1,
+      "key": "engage:5",
+      "phase": "engage",
+      "rt": 5,
+      "title": "Dilema Ético",
+      "concept": "transacciones ACID y niveles de aislamiento",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "caso_narrativo",
+        "pregunta_posicion",
+        "opciones",
+        "reflexion_post_voto"
+      ],
+      "seconds": 14.7
+    },
+    {
+      "round": 1,
+      "key": "engage:6",
+      "phase": "engage",
+      "rt": 6,
+      "title": "Noticia de Impacto",
+      "concept": "backup físico con RMAN y recuperación point-in-time",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titular",
+        "subtitulo",
+        "organizacion",
+        "cuerpo_noticia",
+        "esquema_causal",
+        "pregunta_cierre",
+        "analisis_cierre"
+      ],
+      "seconds": 8.1
+    },
+    {
+      "round": 1,
+      "key": "engage:7",
+      "phase": "engage",
+      "rt": 7,
+      "title": "Juego de Roles",
+      "concept": "roles, privilegios y principio de menor privilegio",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "contexto_rol",
+        "pregunta_decision",
+        "opcion_A",
+        "opcion_B",
+        "feedback_A",
+        "feedback_B",
+        "pregunta_cierre",
+        "reflexion_final"
+      ],
+      "seconds": 8.8
+    },
+    {
+      "round": 1,
+      "key": "engage:8",
+      "phase": "engage",
+      "rt": 8,
+      "title": "Timeline Interactivo",
+      "concept": "tablespaces, datafiles y gestión de almacenamiento",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "hitos",
+        "sintesis"
+      ],
+      "seconds": 17.5
+    },
+    {
+      "round": 1,
+      "key": "engage:9",
+      "phase": "engage",
+      "rt": 9,
+      "title": "Escape Room Virtual",
+      "concept": "bloqueos concurrentes y detección de deadlocks",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "mision",
+        "acertijos",
+        "epilogo"
+      ],
+      "seconds": 18.1
+    },
+    {
+      "round": 1,
+      "key": "engage:10",
+      "phase": "engage",
+      "rt": 10,
+      "title": "Simulador Intuitivo",
+      "concept": "planes de ejecución EXPLAIN y optimizador basado en costos",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "controles",
+        "ejemplo_trabajado",
+        "cierre_conceptual"
+      ],
+      "seconds": 13.4
+    },
+    {
+      "round": 1,
+      "key": "evaluate:1",
+      "phase": "evaluate",
+      "rt": 1,
+      "title": "Quiz Interactivo",
+      "concept": "auditoría de accesos y cumplimiento normativo",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "preguntas",
+        "cierre"
+      ],
+      "seconds": 22.6
+    },
+    {
+      "round": 1,
+      "key": "evaluate:2",
+      "phase": "evaluate",
+      "rt": 2,
+      "title": "Rúbrica de Autoevaluación",
+      "concept": "particionamiento de tablas por rango y lista",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "criterios",
+        "reflexion_baja",
+        "reflexion_media",
+        "reflexion_alta"
+      ],
+      "seconds": 15.8
+    },
+    {
+      "round": 1,
+      "key": "evaluate:3",
+      "phase": "evaluate",
+      "rt": 3,
+      "title": "Desafío Contrarreloj",
+      "concept": "vistas materializadas y refresco incremental",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "reglas",
+        "preguntas",
+        "cierre"
+      ],
+      "seconds": 16.6
+    },
+    {
+      "round": 1,
+      "key": "evaluate:4",
+      "phase": "evaluate",
+      "rt": 4,
+      "title": "Examen Opción Múltiple",
+      "concept": "concurrencia multiversión MVCC",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "preguntas",
+        "cierre"
+      ],
+      "seconds": 24.0
+    },
+    {
+      "round": 1,
+      "key": "evaluate:5",
+      "phase": "evaluate",
+      "rt": 5,
+      "title": "Completar Espacios",
+      "concept": "triggers y restricciones de integridad referencial",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "oraciones",
+        "cierre"
+      ],
+      "seconds": 13.2
+    },
+    {
+      "round": 1,
+      "key": "evaluate:6",
+      "phase": "evaluate",
+      "rt": 6,
+      "title": "Relacionar Conceptos",
+      "concept": "índices B-tree y búsqueda binaria",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "parejas",
+        "cierre"
+      ],
+      "seconds": 14.3
+    },
+    {
+      "round": 1,
+      "key": "evaluate:7",
+      "phase": "evaluate",
+      "rt": 7,
+      "title": "Crucigrama Conceptual",
+      "concept": "transacciones ACID y niveles de aislamiento",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "entradas",
+        "cierre"
+      ],
+      "seconds": 8.0
+    },
+    {
+      "round": 1,
+      "key": "evaluate:8",
+      "phase": "evaluate",
+      "rt": 8,
+      "title": "Preguntas de Desarrollo",
+      "concept": "backup físico con RMAN y recuperación point-in-time",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "preguntas",
+        "cierre"
+      ],
+      "seconds": 16.6
+    },
+    {
+      "round": 1,
+      "key": "evaluate:9",
+      "phase": "evaluate",
+      "rt": 9,
+      "title": "Simulación Evaluativa",
+      "concept": "roles, privilegios y principio de menor privilegio",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "escenario",
+        "decisiones",
+        "veredicto_alto",
+        "veredicto_medio",
+        "veredicto_bajo"
+      ],
+      "seconds": 31.2
+    },
+    {
+      "round": 1,
+      "key": "evaluate:10",
+      "phase": "evaluate",
+      "rt": 10,
+      "title": "Diploma de Logro",
+      "concept": "tablespaces, datafiles y gestión de almacenamiento",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "descripcion_logro",
+        "competencias",
+        "firma",
+        "reflexion"
+      ],
+      "seconds": 6.1
+    },
+    {
+      "round": 1,
+      "key": "explain:1",
+      "phase": "explain",
+      "rt": 1,
+      "title": "Video Teórico",
+      "concept": "bloqueos concurrentes y detección de deadlocks",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "introduccion",
+        "marcadores",
+        "narracion_voz",
+        "prompt_video",
+        "sintesis"
+      ],
+      "seconds": 21.2
+    },
+    {
+      "round": 1,
+      "key": "explain:2",
+      "phase": "explain",
+      "rt": 2,
+      "title": "Lectura Guiada",
+      "concept": "planes de ejecución EXPLAIN y optimizador basado en costos",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "introduccion",
+        "secciones",
+        "aplicacion_dba",
+        "cierre"
+      ],
+      "seconds": 23.3
+    },
+    {
+      "round": 1,
+      "key": "explain:3",
+      "phase": "explain",
+      "rt": 3,
+      "title": "Mapa Conceptual",
+      "concept": "auditoría de accesos y cumplimiento normativo",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "nodo_central",
+        "nodos",
+        "sintesis"
+      ],
+      "seconds": 22.6
+    },
+    {
+      "round": 1,
+      "key": "explain:4",
+      "phase": "explain",
+      "rt": 4,
+      "title": "FAQ Interactivo",
+      "concept": "particionamiento de tablas por rango y lista",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "faqs",
+        "categorias",
+        "sintesis"
+      ],
+      "seconds": 19.2
+    },
+    {
+      "round": 1,
+      "key": "explain:5",
+      "phase": "explain",
+      "rt": 5,
+      "title": "Demo Animada",
+      "concept": "vistas materializadas y refresco incremental",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "pasos",
+        "sintesis"
+      ],
+      "seconds": 14.4
+    },
+    {
+      "round": 1,
+      "key": "explain:6",
+      "phase": "explain",
+      "rt": 6,
+      "title": "Glosario Visual",
+      "concept": "concurrencia multiversión MVCC",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "terminos",
+        "cierre"
+      ],
+      "seconds": 19.7
+    },
+    {
+      "round": 1,
+      "key": "explain:7",
+      "phase": "explain",
+      "rt": 7,
+      "title": "Línea de Tiempo",
+      "concept": "triggers y restricciones de integridad referencial",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "hitos",
+        "cierre"
+      ],
+      "seconds": 20.3
+    },
+    {
+      "round": 1,
+      "key": "explain:8",
+      "phase": "explain",
+      "rt": 8,
+      "title": "Diagrama de Framework",
+      "concept": "índices B-tree y búsqueda binaria",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "bloques",
+        "flujo",
+        "pregunta",
+        "sintesis"
+      ],
+      "seconds": 31.8
+    },
+    {
+      "round": 1,
+      "key": "explain:9",
+      "phase": "explain",
+      "rt": 9,
+      "title": "Tabla Comparativa",
+      "concept": "transacciones ACID y niveles de aislamiento",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "dimensiones",
+        "comparaciones",
+        "reto",
+        "conclusion"
+      ],
+      "seconds": 20.5
+    },
+    {
+      "round": 1,
+      "key": "explain:10",
+      "phase": "explain",
+      "rt": 10,
+      "title": "Infografía Interactiva",
+      "concept": "backup físico con RMAN y recuperación point-in-time",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 240.7
+    },
+    {
+      "round": 1,
+      "key": "explore:1",
+      "phase": "explore",
+      "rt": 1,
+      "title": "Simulador Virtual Lab",
+      "concept": "roles, privilegios y principio de menor privilegio",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "concepto_mecanismo",
+        "controles",
+        "ejemplo_trabajado",
+        "sintesis"
+      ],
+      "seconds": 69.4
+    },
+    {
+      "round": 1,
+      "key": "explore:2",
+      "phase": "explore",
+      "rt": 2,
+      "title": "Agente Socrático",
+      "concept": "tablespaces, datafiles y gestión de almacenamiento",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 240.4
+    },
+    {
+      "round": 1,
+      "key": "explore:3",
+      "phase": "explore",
+      "rt": 3,
+      "title": "Juego Drag & Drop",
+      "concept": "bloqueos concurrentes y detección de deadlocks",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 242.0
+    },
+    {
+      "round": 1,
+      "key": "explore:4",
+      "phase": "explore",
+      "rt": 4,
+      "title": "Video con Pausa Activa",
+      "concept": "planes de ejecución EXPLAIN y optimizador basado en costos",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 243.1
+    },
+    {
+      "round": 1,
+      "key": "explore:5",
+      "phase": "explore",
+      "rt": 5,
+      "title": "Lectura Interactiva",
+      "concept": "auditoría de accesos y cumplimiento normativo",
+      "status": "fail",
+      "error": "Server error '500 Internal Server Error' for url 'http://localhost:11435/api/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",
+      "keys": [],
+      "seconds": 66.1
+    },
+    {
+      "round": 1,
+      "key": "explore:6",
+      "phase": "explore",
+      "rt": 6,
+      "title": "Simulador de Slider",
+      "concept": "particionamiento de tablas por rango y lista",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 244.3
+    },
+    {
+      "round": 1,
+      "key": "explore:7",
+      "phase": "explore",
+      "rt": 7,
+      "title": "Experimento Guiado",
+      "concept": "vistas materializadas y refresco incremental",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 241.8
+    },
+    {
+      "round": 1,
+      "key": "explore:8",
+      "phase": "explore",
+      "rt": 8,
+      "title": "Juego de Roles",
+      "concept": "concurrencia multiversión MVCC",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 242.6
+    },
+    {
+      "round": 1,
+      "key": "explore:9",
+      "phase": "explore",
+      "rt": 9,
+      "title": "Mapa Mental",
+      "concept": "triggers y restricciones de integridad referencial",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 243.0
+    },
+    {
+      "round": 1,
+      "key": "explore:10",
+      "phase": "explore",
+      "rt": 10,
+      "title": "Lab de Hipótesis",
+      "concept": "índices B-tree y búsqueda binaria",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "variable_independiente",
+        "variable_dependiente",
+        "opciones_prueba",
+        "pregunta_conclusion",
+        "opciones_conclusion",
+        "sintesis_evidencia"
+      ],
+      "seconds": 158.9
+    },
+    {
+      "round": 2,
+      "key": "elaborate:1",
+      "phase": "elaborate",
+      "rt": 1,
+      "title": "Estudio de Caso",
+      "concept": "normalización de bases de datos hasta 3FN",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "empresa",
+        "narrativa",
+        "evidencias",
+        "preguntas",
+        "cierre"
+      ],
+      "seconds": 160.7
+    },
+    {
+      "round": 2,
+      "key": "elaborate:2",
+      "phase": "elaborate",
+      "rt": 2,
+      "title": "Ejercicio Guiado",
+      "concept": "consultas analíticas con funciones de ventana Window Functions",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "enunciado",
+        "pasos",
+        "cierre"
+      ],
+      "seconds": 18.7
+    },
+    {
+      "round": 2,
+      "key": "elaborate:3",
+      "phase": "elaborate",
+      "rt": 3,
+      "title": "Mini-Proyecto",
+      "concept": "réplica maestro-esclavo y alta disponibilidad",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "entregables",
+        "dataset_sugerido",
+        "rubrica",
+        "cierre"
+      ],
+      "seconds": 13.9
+    },
+    {
+      "round": 2,
+      "key": "elaborate:4",
+      "phase": "elaborate",
+      "rt": 4,
+      "title": "Simulación Aplicada",
+      "concept": "sharding horizontal y distribución de datos",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "escenario",
+        "objetivo",
+        "parametros",
+        "metrica_rendimiento",
+        "metrica_costo",
+        "ejemplo",
+        "cierre"
+      ],
+      "seconds": 13.9
+    },
+    {
+      "round": 2,
+      "key": "elaborate:5",
+      "phase": "elaborate",
+      "rt": 5,
+      "title": "Análisis de Datos",
+      "concept": "inyección SQL y técnicas de parametrización segura",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "contexto",
+        "columnas",
+        "registros",
+        "ejemplo",
+        "preguntas",
+        "cierre"
+      ],
+      "seconds": 45.4
+    },
+    {
+      "round": 2,
+      "key": "elaborate:6",
+      "phase": "elaborate",
+      "rt": 6,
+      "title": "Escenario Ramificado",
+      "concept": "almacenamiento columnar vs almacenamiento por filas",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "introduccion",
+        "nodo_raiz",
+        "cierre"
+      ],
+      "seconds": 38.5
+    },
+    {
+      "round": 2,
+      "key": "elaborate:7",
+      "phase": "elaborate",
+      "rt": 7,
+      "title": "Lab de Código",
+      "concept": "optimización de buffers y cache de páginas (Buffer Pool)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "ejemplo",
+        "ejercicios",
+        "cierre"
+      ],
+      "seconds": 17.9
+    },
+    {
+      "round": 2,
+      "key": "elaborate:8",
+      "phase": "elaborate",
+      "rt": 8,
+      "title": "Mapa de Problemas",
+      "concept": "índices invertidos y búsqueda de texto completo",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "problemas",
+        "cierre"
+      ],
+      "seconds": 17.6
+    },
+    {
+      "round": 2,
+      "key": "elaborate:9",
+      "phase": "elaborate",
+      "rt": 9,
+      "title": "Juego de Estrategia",
+      "concept": "gestión de memoria SGA y PGA en SGBD empresariales",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "escenario",
+        "objetivo",
+        "recurso",
+        "turnos",
+        "cierre"
+      ],
+      "seconds": 39.8
+    },
+    {
+      "round": 2,
+      "key": "elaborate:10",
+      "phase": "elaborate",
+      "rt": 10,
+      "title": "Reto de Diseño",
+      "concept": "gestión de registros de redo log y write-ahead logging (WAL)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "enunciado",
+        "criterios",
+        "guia_evaluacion",
+        "solucion_referencia",
+        "tradeoffs",
+        "cierre"
+      ],
+      "seconds": 16.3
+    },
+    {
+      "round": 2,
+      "key": "engage:1",
+      "phase": "engage",
+      "rt": 1,
+      "title": "Cómic Interactivo",
+      "concept": "protocolos de consenso distribuido (Raft y 2PC)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "gancho",
+        "vinetas",
+        "pregunta",
+        "cierre"
+      ],
+      "seconds": 18.0
+    },
+    {
+      "round": 2,
+      "key": "engage:2",
+      "phase": "engage",
+      "rt": 2,
+      "title": "Storyboard de Video",
+      "concept": "modelado dimensional de estrella para Data Warehouse",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "gancho",
+        "escenas",
+        "narracion_completa",
+        "pregunta_reflexion",
+        "prompt_video"
+      ],
+      "seconds": 20.2
+    },
+    {
+      "round": 2,
+      "key": "engage:4",
+      "phase": "engage",
+      "rt": 4,
+      "title": "Juego de Gamificación",
+      "concept": "normalización de bases de datos hasta 3FN",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "gancho",
+        "rondas",
+        "cierre"
+      ],
+      "seconds": 15.7
+    },
+    {
+      "round": 2,
+      "key": "engage:5",
+      "phase": "engage",
+      "rt": 5,
+      "title": "Dilema Ético",
+      "concept": "consultas analíticas con funciones de ventana Window Functions",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "caso_narrativo",
+        "pregunta_posicion",
+        "opciones",
+        "reflexion_post_voto"
+      ],
+      "seconds": 14.2
+    },
+    {
+      "round": 2,
+      "key": "engage:6",
+      "phase": "engage",
+      "rt": 6,
+      "title": "Noticia de Impacto",
+      "concept": "réplica maestro-esclavo y alta disponibilidad",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titular",
+        "subtitulo",
+        "organizacion",
+        "cuerpo_noticia",
+        "esquema_causal",
+        "pregunta_cierre",
+        "analisis_cierre"
+      ],
+      "seconds": 8.6
+    },
+    {
+      "round": 2,
+      "key": "engage:7",
+      "phase": "engage",
+      "rt": 7,
+      "title": "Juego de Roles",
+      "concept": "sharding horizontal y distribución de datos",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "contexto_rol",
+        "pregunta_decision",
+        "opcion_A",
+        "opcion_B",
+        "feedback_A",
+        "feedback_B",
+        "pregunta_cierre",
+        "reflexion_final"
+      ],
+      "seconds": 9.1
+    },
+    {
+      "round": 2,
+      "key": "engage:8",
+      "phase": "engage",
+      "rt": 8,
+      "title": "Timeline Interactivo",
+      "concept": "inyección SQL y técnicas de parametrización segura",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "hitos",
+        "sintesis"
+      ],
+      "seconds": 27.4
+    },
+    {
+      "round": 2,
+      "key": "engage:9",
+      "phase": "engage",
+      "rt": 9,
+      "title": "Escape Room Virtual",
+      "concept": "almacenamiento columnar vs almacenamiento por filas",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "mision",
+        "acertijos",
+        "epilogo"
+      ],
+      "seconds": 27.3
+    },
+    {
+      "round": 2,
+      "key": "engage:10",
+      "phase": "engage",
+      "rt": 10,
+      "title": "Simulador Intuitivo",
+      "concept": "optimización de buffers y cache de páginas (Buffer Pool)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "controles",
+        "ejemplo_trabajado",
+        "cierre_conceptual"
+      ],
+      "seconds": 15.3
+    },
+    {
+      "round": 2,
+      "key": "evaluate:1",
+      "phase": "evaluate",
+      "rt": 1,
+      "title": "Quiz Interactivo",
+      "concept": "índices invertidos y búsqueda de texto completo",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 240.1
+    },
+    {
+      "round": 2,
+      "key": "evaluate:2",
+      "phase": "evaluate",
+      "rt": 2,
+      "title": "Rúbrica de Autoevaluación",
+      "concept": "gestión de memoria SGA y PGA en SGBD empresariales",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 240.4
+    },
+    {
+      "round": 2,
+      "key": "evaluate:3",
+      "phase": "evaluate",
+      "rt": 3,
+      "title": "Desafío Contrarreloj",
+      "concept": "gestión de registros de redo log y write-ahead logging (WAL)",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 240.2
+    },
+    {
+      "round": 2,
+      "key": "evaluate:4",
+      "phase": "evaluate",
+      "rt": 4,
+      "title": "Examen Opción Múltiple",
+      "concept": "protocolos de consenso distribuido (Raft y 2PC)",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 271.5
+    },
+    {
+      "round": 2,
+      "key": "evaluate:5",
+      "phase": "evaluate",
+      "rt": 5,
+      "title": "Completar Espacios",
+      "concept": "modelado dimensional de estrella para Data Warehouse",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "oraciones",
+        "cierre"
+      ],
+      "seconds": 103.8
+    },
+    {
+      "round": 2,
+      "key": "evaluate:6",
+      "phase": "evaluate",
+      "rt": 6,
+      "title": "Relacionar Conceptos",
+      "concept": "normalización de bases de datos hasta 3FN",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "instrucciones",
+        "parejas",
+        "cierre"
+      ],
+      "seconds": 53.4
+    },
+    {
+      "round": 2,
+      "key": "evaluate:7",
+      "phase": "evaluate",
+      "rt": 7,
+      "title": "Crucigrama Conceptual",
+      "concept": "consultas analíticas con funciones de ventana Window Functions",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 901.7
+    },
+    {
+      "round": 2,
+      "key": "evaluate:8",
+      "phase": "evaluate",
+      "rt": 8,
+      "title": "Preguntas de Desarrollo",
+      "concept": "réplica maestro-esclavo y alta disponibilidad",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 900.2
+    },
+    {
+      "round": 2,
+      "key": "evaluate:9",
+      "phase": "evaluate",
+      "rt": 9,
+      "title": "Simulación Evaluativa",
+      "concept": "sharding horizontal y distribución de datos",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 264.6
+    },
+    {
+      "round": 2,
+      "key": "evaluate:10",
+      "phase": "evaluate",
+      "rt": 10,
+      "title": "Diploma de Logro",
+      "concept": "inyección SQL y técnicas de parametrización segura",
+      "status": "fail",
+      "error": "timed out",
+      "keys": [],
+      "seconds": 259.1
+    },
+    {
+      "round": 2,
+      "key": "explain:1",
+      "phase": "explain",
+      "rt": 1,
+      "title": "Video Teórico",
+      "concept": "almacenamiento columnar vs almacenamiento por filas",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "introduccion",
+        "marcadores",
+        "narracion_voz",
+        "prompt_video",
+        "sintesis"
+      ],
+      "seconds": 392.7
+    },
+    {
+      "round": 2,
+      "key": "explain:2",
+      "phase": "explain",
+      "rt": 2,
+      "title": "Lectura Guiada",
+      "concept": "optimización de buffers y cache de páginas (Buffer Pool)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "introduccion",
+        "secciones",
+        "aplicacion_dba",
+        "cierre"
+      ],
+      "seconds": 385.5
+    },
+    {
+      "round": 2,
+      "key": "explain:3",
+      "phase": "explain",
+      "rt": 3,
+      "title": "Mapa Conceptual",
+      "concept": "índices invertidos y búsqueda de texto completo",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "nodo_central",
+        "nodos",
+        "sintesis"
+      ],
+      "seconds": 18.0
+    },
+    {
+      "round": 2,
+      "key": "explain:4",
+      "phase": "explain",
+      "rt": 4,
+      "title": "FAQ Interactivo",
+      "concept": "gestión de memoria SGA y PGA en SGBD empresariales",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "faqs",
+        "categorias",
+        "sintesis"
+      ],
+      "seconds": 17.6
+    },
+    {
+      "round": 2,
+      "key": "explain:5",
+      "phase": "explain",
+      "rt": 5,
+      "title": "Demo Animada",
+      "concept": "gestión de registros de redo log y write-ahead logging (WAL)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "pasos",
+        "sintesis"
+      ],
+      "seconds": 13.2
+    },
+    {
+      "round": 2,
+      "key": "explain:6",
+      "phase": "explain",
+      "rt": 6,
+      "title": "Glosario Visual",
+      "concept": "protocolos de consenso distribuido (Raft y 2PC)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "terminos",
+        "cierre"
+      ],
+      "seconds": 23.0
+    },
+    {
+      "round": 2,
+      "key": "explain:7",
+      "phase": "explain",
+      "rt": 7,
+      "title": "Línea de Tiempo",
+      "concept": "modelado dimensional de estrella para Data Warehouse",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "hitos",
+        "cierre"
+      ],
+      "seconds": 20.5
+    },
+    {
+      "round": 2,
+      "key": "explain:8",
+      "phase": "explain",
+      "rt": 8,
+      "title": "Diagrama de Framework",
+      "concept": "normalización de bases de datos hasta 3FN",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "bloques",
+        "flujo",
+        "pregunta",
+        "sintesis"
+      ],
+      "seconds": 22.0
+    },
+    {
+      "round": 2,
+      "key": "explain:9",
+      "phase": "explain",
+      "rt": 9,
+      "title": "Tabla Comparativa",
+      "concept": "consultas analíticas con funciones de ventana Window Functions",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "dimensiones",
+        "comparaciones",
+        "reto",
+        "conclusion"
+      ],
+      "seconds": 16.2
+    },
+    {
+      "round": 2,
+      "key": "explain:10",
+      "phase": "explain",
+      "rt": 10,
+      "title": "Infografía Interactiva",
+      "concept": "réplica maestro-esclavo y alta disponibilidad",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "secciones",
+        "sintesis"
+      ],
+      "seconds": 17.3
+    },
+    {
+      "round": 2,
+      "key": "explore:1",
+      "phase": "explore",
+      "rt": 1,
+      "title": "Simulador Virtual Lab",
+      "concept": "sharding horizontal y distribución de datos",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "concepto_mecanismo",
+        "controles",
+        "ejemplo_trabajado",
+        "sintesis"
+      ],
+      "seconds": 10.5
+    },
+    {
+      "round": 2,
+      "key": "explore:2",
+      "phase": "explore",
+      "rt": 2,
+      "title": "Agente Socrático",
+      "concept": "inyección SQL y técnicas de parametrización segura",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "turnos",
+        "revelacion_final"
+      ],
+      "seconds": 33.1
+    },
+    {
+      "round": 2,
+      "key": "explore:3",
+      "phase": "explore",
+      "rt": 3,
+      "title": "Juego Drag & Drop",
+      "concept": "almacenamiento columnar vs almacenamiento por filas",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "categoria_a",
+        "categoria_b",
+        "items",
+        "sintesis"
+      ],
+      "seconds": 19.0
+    },
+    {
+      "round": 2,
+      "key": "explore:4",
+      "phase": "explore",
+      "rt": 4,
+      "title": "Video con Pausa Activa",
+      "concept": "optimización de buffers y cache de páginas (Buffer Pool)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "gancho",
+        "guion_segmentos",
+        "pausas",
+        "prompt_video",
+        "sintesis"
+      ],
+      "seconds": 35.5
+    },
+    {
+      "round": 2,
+      "key": "explore:5",
+      "phase": "explore",
+      "rt": 5,
+      "title": "Lectura Interactiva",
+      "concept": "índices invertidos y búsqueda de texto completo",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "lectura",
+        "columnas",
+        "filas",
+        "pregunta_patron",
+        "opciones_patron",
+        "revelacion"
+      ],
+      "seconds": 16.0
+    },
+    {
+      "round": 2,
+      "key": "explore:6",
+      "phase": "explore",
+      "rt": 6,
+      "title": "Simulador de Slider",
+      "concept": "gestión de memoria SGA y PGA en SGBD empresariales",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "parametro",
+        "unidad",
+        "min_val",
+        "max_val",
+        "default_val",
+        "zonas",
+        "explicacion_optima"
+      ],
+      "seconds": 14.4
+    },
+    {
+      "round": 2,
+      "key": "explore:7",
+      "phase": "explore",
+      "rt": 7,
+      "title": "Experimento Guiado",
+      "concept": "gestión de registros de redo log y write-ahead logging (WAL)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "descripcion_dataset",
+        "puntos",
+        "preguntas",
+        "revelacion"
+      ],
+      "seconds": 23.4
+    },
+    {
+      "round": 2,
+      "key": "explore:8",
+      "phase": "explore",
+      "rt": 8,
+      "title": "Juego de Roles",
+      "concept": "protocolos de consenso distribuido (Raft y 2PC)",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "escenarios",
+        "sintesis"
+      ],
+      "seconds": 21.0
+    },
+    {
+      "round": 2,
+      "key": "explore:9",
+      "phase": "explore",
+      "rt": 9,
+      "title": "Mapa Mental",
+      "concept": "modelado dimensional de estrella para Data Warehouse",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "intro",
+        "tarjetas",
+        "revelacion"
+      ],
+      "seconds": 18.3
+    },
+    {
+      "round": 2,
+      "key": "explore:10",
+      "phase": "explore",
+      "rt": 10,
+      "title": "Lab de Hipótesis",
+      "concept": "normalización de bases de datos hasta 3FN",
+      "status": "ok",
+      "error": "",
+      "keys": [
+        "titulo",
+        "objetivo",
+        "variable_independiente",
+        "variable_dependiente",
+        "opciones_prueba",
+        "pregunta_conclusion",
+        "opciones_conclusion",
+        "sintesis_evidencia"
+      ],
+      "seconds": 12.3
+    }
+  ]
+}

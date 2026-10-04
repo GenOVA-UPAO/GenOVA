@@ -1,8 +1,7 @@
-import { useState } from "react";
-
 import { EmptyState } from "@/core/components/empty-state";
 import { QueryErrorState } from "@/core/components/query-error-state";
 import { Button } from "@/core/components/ui/button";
+import { useTabParam } from "@/core/hooks/use-tab-param";
 
 import { ProfileHeader } from "../components/profile-header";
 import { ProfileSkeleton } from "../components/profile-skeleton";
@@ -12,11 +11,12 @@ import { useProfileActions } from "../hooks/use-profile-actions";
 
 const TAB_INFO = "info";
 const TAB_CONFIG = "config";
+const PROFILE_TABS = [TAB_INFO, TAB_CONFIG, "security"] as const;
 
 export function ProfilePage() {
   const profileQuery = useProfile();
   const actions = useProfileActions();
-  const [tab, setTab] = useState(TAB_INFO);
+  const [tab, setTab] = useTabParam(PROFILE_TABS, TAB_INFO);
   const retry = () => {
     void profileQuery.refetch();
   };

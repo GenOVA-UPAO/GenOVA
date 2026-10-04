@@ -1,0 +1,125 @@
+{
+  "concept": "tablespaces y datafiles",
+  "params": {
+    "num_decisions": 5
+  },
+  "data": {
+    "titulo": "Gestión de tablespaces en un sistema de ventas",
+    "escenario": "Una empresa de ventas enfrenta un crecimiento exponencial de datos. El DBA debe optimizar tablespaces y datafiles bajo restricciones de espacio y rendimiento.",
+    "decisiones": [
+      {
+        "criterio": "Diagnóstico",
+        "peso": 3,
+        "situacion": "El DBA debe identificar los tablespaces con mayor uso de espacio para priorizar la gestión.",
+        "opciones": [
+          {
+            "texto": "Usar la vista V$TABLESPACE para identificar tablespaces ocupados.",
+            "nivel": 2,
+            "feedback": "Es la opción más eficiente y directa para obtener información precisa."
+          },
+          {
+            "texto": "Revisar el uso de espacio a través de la herramienta de gestión de Oracle.",
+            "nivel": 1,
+            "feedback": "Es aceptable pero menos precisa que las consultas directas."
+          },
+          {
+            "texto": "Depender de informes manuales sin usar vistas de Oracle.",
+            "nivel": 0,
+            "feedback": "Es riesgoso y puede llevar a decisiones basadas en datos incompletos."
+          }
+        ]
+      },
+      {
+        "criterio": "Planificación",
+        "peso": 3,
+        "situacion": "El DBA debe decidir si crear un nuevo tablespace o expandir uno existente.",
+        "opciones": [
+          {
+            "texto": "Crear un nuevo tablespace con datafile en un disco de alta capacidad.",
+            "nivel": 2,
+            "feedback": "Optimiza el uso del espacio y evita saturar datafiles antiguos."
+          },
+          {
+            "texto": "Expandir el datafile existente en el tablespace más ocupado.",
+            "nivel": 1,
+            "feedback": "Es aceptable, pero puede generar fragmentación si no se maneja bien."
+          },
+          {
+            "texto": "Crear un nuevo datafile en el mismo tablespace sin planificación.",
+            "nivel": 0,
+            "feedback": "Riesgoso por posibles problemas de gestión y fragmentación."
+          }
+        ]
+      },
+      {
+        "criterio": "Rendimiento",
+        "peso": 3,
+        "situacion": "El DBA debe asegurarse de que los datafiles no causen problemas de rendimiento.",
+        "opciones": [
+          {
+            "texto": "Distribuir datafiles en múltiples discos para mejorar el I/O.",
+            "nivel": 2,
+            "feedback": "Mejora significativamente el rendimiento del sistema."
+          },
+          {
+            "texto": "Usar datafiles en un solo disco pero con mayor tamaño.",
+            "nivel": 1,
+            "feedback": "Aceptable, pero puede limitar el rendimiento en casos de alta carga."
+          },
+          {
+            "texto": "No ajustar la distribución de datafiles.",
+            "nivel": 0,
+            "feedback": "Puede causar cuellos de botella de I/O y afectar el rendimiento."
+          }
+        ]
+      },
+      {
+        "criterio": "Seguridad",
+        "peso": 2,
+        "situacion": "El DBA debe decidir si aplicar restricciones de acceso a los datafiles.",
+        "opciones": [
+          {
+            "texto": "Crear un tablespace con restricción de acceso a usuarios específicos.",
+            "nivel": 2,
+            "feedback": "Optimiza la seguridad y evita accesos no autorizados."
+          },
+          {
+            "texto": "Permitir acceso a todos los usuarios con permisos limitados.",
+            "nivel": 1,
+            "feedback": "Aceptable, pero puede aumentar el riesgo de errores."
+          },
+          {
+            "texto": "No aplicar restricciones de acceso a los datafiles.",
+            "nivel": 0,
+            "feedback": "Riesgoso por posibles accesos no autorizados o modificaciones accidentales."
+          }
+        ]
+      },
+      {
+        "criterio": "Monitorización",
+        "peso": 2,
+        "situacion": "El DBA debe decidir cómo monitorear el uso de los datafiles.",
+        "opciones": [
+          {
+            "texto": "Usar la vista DBA_DATA_FILES para monitorear el espacio de los datafiles.",
+            "nivel": 2,
+            "feedback": "Es la herramienta más efectiva y precisa para monitorear el uso."
+          },
+          {
+            "texto": "Implementar alertas en la herramienta de gestión de Oracle.",
+            "nivel": 1,
+            "feedback": "Aceptable, pero requiere configuración adicional."
+          },
+          {
+            "texto": "Depender de informes manuales sin herramientas automatizadas.",
+            "nivel": 0,
+            "feedback": "Riesgoso por posibilidad de errores y retrasos en la detección."
+          }
+        ]
+      }
+    ],
+    "veredicto_alto": "El DBA demostró una excelente comprensión de tablespaces y datafiles. Tomó decisiones óptimas que mejoraron el rendimiento y la seguridad del sistema.",
+    "veredicto_medio": "El DBA mostró un buen entendimiento de los conceptos. Sus decisiones fueron aceptables, pero podría mejorar en la planificación y en la monitorización.",
+    "veredicto_bajo": "El DBA mostró deficiencias en la toma de decisiones. Algunas opciones eran riesgosas, lo que pone en peligro la estabilidad y seguridad del sistema."
+  }
+}

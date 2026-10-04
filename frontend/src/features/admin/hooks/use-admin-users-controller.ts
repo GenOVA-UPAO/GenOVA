@@ -52,10 +52,10 @@ export function useAdminUsersController(onOpenEdit: (user: AdminUser) => void) {
     );
   };
 
-  const deactivateUser = (userId: string, onSuccess: () => void) => {
+  const setUserStatus = (userId: string, isActive: boolean, onSuccess: () => void) => {
     setUpdatingUserId(userId);
     statusMutation.mutate(
-      { userId, isActive: false },
+      { userId, isActive },
       { onSuccess, onSettled: clearUpdating },
     );
   };
@@ -63,8 +63,8 @@ export function useAdminUsersController(onOpenEdit: (user: AdminUser) => void) {
   return {
     updatingUserId,
     isSavingEdit: editMutation.isPending,
-    isDeactivating: statusMutation.isPending,
-    deactivateUser,
+    isChangingStatus: statusMutation.isPending,
+    setUserStatus,
     handlers,
     saveEditedUser,
   };

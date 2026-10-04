@@ -1,0 +1,79 @@
+{
+  "concept": "índices B-tree",
+  "params": {
+    "num_iterations": 3
+  },
+  "data": {
+    "titulo": "Laboratorio de índices B-tree en Oracle",
+    "objetivo": "El estudiante explora cómo los índices B-tree reducen el costo de acceso a filas.",
+    "concepto_mecanismo": "Un índice B-tree organiza claves en una estructura jerárquica de bloques (raíz, rama, hoja) que se leen secuencialmente para localizar filas en la tabla.",
+    "componentes": [
+      {
+        "nombre": "Nodo raíz",
+        "estado_inicial": "Sin leer"
+      },
+      {
+        "nombre": "Nodo rama",
+        "estado_inicial": "Sin leer"
+      },
+      {
+        "nombre": "Bloque hoja",
+        "estado_inicial": "Sin leer"
+      },
+      {
+        "nombre": "Tabla",
+        "estado_inicial": "Sin leer"
+      }
+    ],
+    "metricas": [
+      {
+        "nombre": "Bloques leídos",
+        "inicial": 0
+      },
+      {
+        "nombre": "Filas devueltas",
+        "inicial": 0
+      }
+    ],
+    "controles": [
+      {
+        "id": "buscar-indice",
+        "accion": "Buscar por índice",
+        "descripcion": "Busca una fila usando el índice B-tree: recorre raíz, rama y hoja.",
+        "componente": 3,
+        "nuevo_estado": "Leído",
+        "cambios": [
+          3,
+          1
+        ],
+        "resultado": "Se leyeron 3 bloques del índice (raíz, rama, hoja) y se devolvió 1 fila."
+      },
+      {
+        "id": "buscar-tabla",
+        "accion": "Buscar sin índice",
+        "descripcion": "Recorre toda la tabla secuencialmente sin usar índice.",
+        "componente": 4,
+        "nuevo_estado": "Leído completo",
+        "cambios": [
+          10,
+          1
+        ],
+        "resultado": "Se leyeron 10 bloques de tabla (full scan) y se devolvió 1 fila."
+      },
+      {
+        "id": "insertar-fila",
+        "accion": "Insertar una fila",
+        "descripcion": "Inserta una fila en la tabla y actualiza el bloque hoja del índice.",
+        "componente": 3,
+        "nuevo_estado": "Modificado",
+        "cambios": [
+          2,
+          0
+        ],
+        "resultado": "Se leyeron 2 bloques (localizar hoja y escribir) para insertar la fila."
+      }
+    ],
+    "ejemplo_trabajado": "Tras 'Buscar por índice' (3 bloques, 1 fila) y luego 'Insertar una fila' (2 bloques más), los contadores muestran 5 bloques leídos y 1 fila devuelta.",
+    "sintesis": "El índice B-tree evita leer toda la tabla: busca en pocos bloques jerárquicos, ahorrando lecturas incluso al insertar."
+  }
+}

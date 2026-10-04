@@ -1,11 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { useFailedSelection } from "../../hooks/use-failed-selection";
 import { useJobStall } from "../../hooks/use-job-stall";
 import { useOvaJob } from "../../hooks/use-ova-job";
 import { failedCount, terminalTitle } from "../../lib/progress-view-model";
+import { CancelGenerationModal } from "./cancel-generation-modal";
 import { GenerationProgressColumn } from "./generation-progress-column";
+import { PreviewAside } from "./preview-aside";
 import { ProgressActions } from "./progress-actions";
 
 function subtitle(job: ReturnType<typeof useOvaJob>): string {
@@ -28,6 +30,8 @@ export function CreationProgress({
 }: Readonly<{ jobId: string; onReady?: () => void }>) {
   const job = useOvaJob(jobId);
   const navigate = useNavigate();
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [pinnedId, setPinnedId] = useState<string | null>(null);
   const ovaId = job.data?.ova_id;
   // Con algún recurso fallido el backend también marca el job `done`: saltar al
   // editor escondería el fallo y el reintento, así que se queda en el progreso.
@@ -46,17 +50,18 @@ export function CreationProgress({
     ? terminalTitle(job.data?.status ?? "error", job.outcome.partialFail)
     : "Generando tu OVA";
   return (
-    <section className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8 sm:px-6">
+    <section className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8 sm:px-6">
       <header>
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">{title}</h1>
         <p className="mt-1.5 text-sm font-medium text-muted-foreground">{subtitle(job)}</p>
       </header>
-      <div className="space-y-3">
+      <div className="lg:grid lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
+      <div className="min-w-0 space-y-3">
         <GenerationProgressColumn
           job={job}
           stalled={stalled}
           selectedIds={selection.selected}
-          pinnedId={null}
+          pinnedId={pinnedId}
           onToggle={selection.toggle}
           onSelectAll={selection.selectAll}
           onRetryOne={(id) => {
@@ -69,14 +74,30 @@ export function CreationProgress({
             job.resume.mutate([]);
           }}
           onCancel={() => {
-            job.cancel.mutate();
+            setConfirmingCancel(true);
           }}
+          onPreview={setPinnedId}
         />
+        {confirmingCancel && (
+          <CancelGenerationModal
+            cancel={job.cancel}
+            onClose={() => {
+              setConfirmingCancel(false);
+            }}
+          />
+        )}
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error.message}
           </p>
         )}
+      </div>
+        <PreviewAside
+          jobId={jobId}
+          resources={job.resources}
+          pinnedId={pinnedId}
+          onPin={setPinnedId}
+        />
       </div>
       <ProgressActions job={job} />
     </section>

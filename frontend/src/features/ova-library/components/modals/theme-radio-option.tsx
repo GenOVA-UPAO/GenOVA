@@ -33,7 +33,7 @@ export function ThemeRadioOption({
         onChange={() => {
           onSelect(value);
         }}
-        className="row-span-2 mt-0.5 size-4 accent-primary outline-none"
+        className="row-span-2 mt-0.5 size-4 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       />
       <span className="text-sm font-medium text-foreground">{label}</span>
       <span className="text-xs leading-snug text-muted-foreground">{desc}</span>

@@ -16,6 +16,7 @@ interface Props {
   onMobileView: (view: WorkspaceMobileView) => void;
   /** Solo lectura: no hay columna de instrucciones, así que no hay cambio de vista en móvil. */
   readOnly?: boolean;
+  canExport?: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ export function WorkspaceHeader({
   mobileView,
   onMobileView,
   readOnly = false,
+  canExport = true,
 }: Readonly<Props>) {
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-card px-3 py-2 sm:px-4 md:h-14 md:flex-nowrap md:py-0">
@@ -70,7 +72,12 @@ export function WorkspaceHeader({
           ]}
         />
       )}
-      <WorkspacePanelToolbar ovaId={ovaId} readOnly={readOnly} className="ml-auto shrink-0" />
+      <WorkspacePanelToolbar
+        ovaId={ovaId}
+        readOnly={readOnly}
+        canExport={canExport}
+        className="ml-auto shrink-0"
+      />
     </header>
   );
 }

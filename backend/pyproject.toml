@@ -9,38 +9,38 @@ readme = "../readme.md"
 # uv reads this; pip uses requirements.txt. Both must resolve to the same set.
 dependencies = [
     "fastapi==0.138.0",
-    "uvicorn[standard]==0.49.0",
-    "sqlalchemy==2.0.51",
-    "psycopg[binary]==3.3.4",
-    "python-dotenv==1.2.2",
+    "uvicorn[standard]==0.54.0",
+    "sqlalchemy==2.1.1",
+    "psycopg[binary]==3.3.6",
+    "python-dotenv==1.2.3",
     "bcrypt==5.0.0",
-    "PyJWT==2.13.0",
+    "PyJWT==2.15.0",
     "python-multipart==0.0.32",
-    "pydantic[email]==2.13.4",
-    "pydantic-settings==2.14.2",
+    "pydantic[email]==2.13.5",
+    "pydantic-settings==2.15.0",
     "slowapi==0.1.10",
-    "sse-starlette==3.4.5",
+    "sse-starlette==3.5.0",
     "arq==0.28.0",
-    "sentry-sdk[fastapi]==2.63.0",
-    "prometheus-fastapi-instrumentator==8.0.2",
+    "sentry-sdk[fastapi]==2.71.0",
+    "prometheus-fastapi-instrumentator==8.1.0",
     # Sin extra [fastapi]: otel-instrumentation-fastapi 0.63b1 rompe con FastAPI 0.138
     # (_IncludedRouter sin `.path`) y tumba /api/*. Ver core/observability.py.
-    "logfire[sqlalchemy]==4.37.0",
-    "structlog==25.5.0",
+    "logfire[sqlalchemy]==5.1.1",
+    "structlog==26.1.0",
     "openai==2.43.0",
-    "groq==1.4.0",
+    "groq==1.7.0",
     "lameenc==1.8.4",
     "pillow==12.3.0",
-    "instructor==1.15.4",
+    "instructor==1.17.0",
     "supabase==2.31.0",
-    "google-genai==2.9.0",
-    "pypdf==6.18.0",
+    "google-genai==2.26.0",
+    "pypdf==6.19.0",
     "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "filetype==1.2.0",
-    "langgraph==1.2.6",
+    "langgraph==1.2.12",
     "langgraph-checkpoint-postgres==3.1.2",
-    "langsmith==0.8.18",
+    "langsmith==0.14.2",
     "pyotp==2.10.0",
     # Parser JS (motor QuickJS) para detectar scripts rotos o truncados en los OVAs generados.
     "quickjs==1.19.4",
@@ -113,6 +113,8 @@ max-args = 6
 "seed.py" = ["S105", "S106", "PLR0915"]
 "run_migrations.py" = ["PLR0915"]
 "main.py" = ["E402"]
+# Plantillas de OVA: render declarativo largo (HTML+JS) y texto educativo con SQL (no son consultas).
+"ova_engine/templates/**" = ["C901", "PLR0912", "PLR0915", "S608"]
 "ova/history_router.py" = ["E402"]
 # Deuda de tamaño en dominios aún no migrados a hexagonal — cada línea se elimina
 # cuando su dominio pasa por el refactor (Fase 2). `roles/` ya migrado (Fase 1).
@@ -132,7 +134,7 @@ indent-style = "space"
 # `lint-imports` se ejecuta desde `backend/`.
 root_packages = [
     "core", "auth", "ova", "llm", "rag", "roles",
-    "users", "scorm", "generation", "prometheus", "storage", "uploads",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads", "editor",
 ]
 include_external_packages = true
 
@@ -142,7 +144,7 @@ type = "forbidden"
 source_modules = ["core"]
 forbidden_modules = [
     "auth", "ova", "llm", "rag", "roles",
-    "users", "scorm", "generation", "prometheus", "storage", "uploads",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads", "editor",
 ]
 
 # --- roles: hexagonal estricto (piloto) ---
@@ -526,8 +528,35 @@ name = "ova no depende de roles ni users"
 type = "forbidden"
 source_modules = ["ova"]
 forbidden_modules = ["roles", "users"]
-# `ova` sí alcanza `prometheus` transitivamente a través de `generation` (que usa
-# el motor de generación) — acoplamiento legítimo, no un import directo de `ova`.
+# --- editor: hexagonal estricto ---
+
+[[tool.importlinter.contracts]]
+name = "editor.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["editor.domain"]
+forbidden_modules = [
+    "editor.application", "editor.infrastructure", "editor.interface", "editor.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "editor.application no depende de infraestructura/interface ni frameworks"
+type = "forbidden"
+source_modules = ["editor.application"]
+forbidden_modules = [
+    "editor.infrastructure", "editor.interface", "editor.container",
+    "fastapi", "sqlalchemy", "pydantic", "starlette",
+]
+
+[[tool.importlinter.contracts]]
+name = "editor: capas (interface -> container -> application -> domain)"
+type = "layers"
+layers = [
+    "editor.interface",
+    "editor.container",
+    "editor.application",
+    "editor.domain",
+]
 
 # =====================================================================
 # Fase 3 — contratos globales entre dominios
@@ -568,7 +597,7 @@ name = "auth y roles no dependen de ningún dominio superior"
 type = "forbidden"
 source_modules = ["auth", "roles"]
 forbidden_modules = [
-    "ova", "generation", "llm", "prometheus", "rag", "scorm", "storage", "uploads",
+    "ova", "generation", "llm", "prometheus", "rag", "scorm", "storage", "uploads", "editor",
 ]
 
 [[tool.importlinter.contracts]]
@@ -576,7 +605,7 @@ name = "rag solo depende de llm (para visión/transcripción), no de dominios su
 type = "forbidden"
 source_modules = ["rag"]
 forbidden_modules = [
-    "ova", "generation", "users", "roles", "prometheus", "scorm", "storage", "uploads",
+    "ova", "generation", "users", "roles", "prometheus", "scorm", "storage", "uploads", "editor",
 ]
 
 [[tool.importlinter.contracts]]
@@ -584,7 +613,7 @@ name = "uploads solo depende de rag (ingesta), no de dominios superiores"
 type = "forbidden"
 source_modules = ["uploads"]
 forbidden_modules = [
-    "ova", "generation", "prometheus", "users", "roles", "scorm", "storage",
+    "ova", "generation", "prometheus", "users", "roles", "scorm", "storage", "editor",
 ]
 # `llm` no se lista: uploads lo alcanza solo transitivamente vía `rag`
 # (rag.infrastructure.parsers usa visión/transcripción), que es un edge permitido.

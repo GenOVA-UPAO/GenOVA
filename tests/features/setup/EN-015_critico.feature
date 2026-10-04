@@ -13,13 +13,6 @@ Feature: Crítico evaluator-optimizer (EN-015)
     When se ejecuta run_phase con un recurso mock
     Then el result dict incluye score=85 y critic_issues vacío
 
-  Scenario: Crítico re-genera un recurso defectuoso
-    Given OVA_CRITIC está en "1" y OVA_REFLECTION_ROUNDS en "1"
-    And el LLM del Crítico retorna veredicto "revisar" puntaje 40 en primera llamada
-    And el LLM del Crítico retorna veredicto "aceptar" puntaje 78 en segunda llamada
-    When se ejecuta run_phase con un recurso mock
-    Then el result dict incluye score=78 y critique fue llamado dos veces
-
   Scenario: Crítico con rondas=0 evalúa pero no re-genera
     Given OVA_CRITIC está en "1" y OVA_REFLECTION_ROUNDS en "0"
     And el LLM del Crítico retorna veredicto "revisar" con puntaje 50

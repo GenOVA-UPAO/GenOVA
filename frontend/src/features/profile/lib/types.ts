@@ -19,6 +19,9 @@ export interface ProfileFormValues {
   phone_number: string;
 }
 
+/** Valores a guardar: la contraseña actual solo se exige si cambia el correo. */
+export type ProfileSaveValues = ProfileFormValues & { current_password?: string; totp_code?: string };
+
 export interface ChangePasswordValues {
   currentPassword: string;
   newPassword: string;

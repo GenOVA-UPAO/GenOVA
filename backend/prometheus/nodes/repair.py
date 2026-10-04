@@ -74,19 +74,10 @@ def repair_node(state: OvaGenerationState) -> dict:
     def _retry(err: dict):
         phase, rt = err["phase"], err["resource_type"]
         per_config = resource_configs.get(f"{phase}:{rt}", {})
-        # F3.2 — deliberación del reintento: si el intento original usó
-        # two_step (2 llamadas LLM, más exposición a fallos), degradar a
-        # direct_code cuando existe plantilla; si no hay degradación, mismo
-        # plan (la cadena de fallback de modelos ya rota providers por dentro).
         from prometheus.plans.generate import generate_resource
-        from prometheus.plans.plan_map import degraded_plan, plan_for
+        from prometheus.plans.plan_map import plan_for
 
-        original = err.get("plan") or plan_for(phase, rt)
-        plan = degraded_plan(phase, rt, original) or original
-        if plan != original:
-            logger.info(
-                "repair: deliberación plan degradado", phase=phase, resource_type=rt, plan=plan
-            )
+        plan = err.get("plan") or plan_for(phase, rt)
         deadline = err.get("deadline")
         if not can_spend(deadline):
             logger.info(
@@ -112,7 +103,12 @@ def repair_node(state: OvaGenerationState) -> dict:
             return err, result.html, result.defects
         except Exception as exc:  # noqa: BLE001 — aislar cada reintento
             logger.warning("repair: failed again", phase=phase, resource_type=rt, error=str(exc))
-            return err, None, []
+            err_updated = dict(err)
+            msg = str(exc)
+            if not msg.startswith("Revisar y reintentar"):
+                msg = f"Revisar y reintentar: no se pudo generar el recurso ({msg})"
+            err_updated["error"] = msg
+            return err_updated, None, []
 
     results, exhausted = [], []
     workers = min(_concurrency(), len(failures))
@@ -158,6 +154,12 @@ def repair_node(state: OvaGenerationState) -> dict:
                 else:
                     logger.info("repair: resource recovered", phase=phase, resource_type=rt)
             else:
-                exhausted.append({**err, "exhausted": True})
+                err_exhausted = dict(err)
+                err_exhausted["exhausted"] = True
+                msg = err_exhausted.get("error") or "error desconocido"
+                if not msg.startswith("Revisar y reintentar"):
+                    msg = f"Revisar y reintentar: no se pudo generar el recurso ({msg})"
+                err_exhausted["error"] = msg
+                exhausted.append(err_exhausted)
 
     return {"results": results, "errors": exhausted}

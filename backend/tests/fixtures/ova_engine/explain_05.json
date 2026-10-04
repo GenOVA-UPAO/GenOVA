@@ -1,0 +1,55 @@
+{
+  "concept": "backup y recovery con RMAN",
+  "params": {
+    "num_steps": 6
+  },
+  "data": {
+    "titulo": "Flujo interno de transacción con RMAN",
+    "objetivo": "El estudiante comprenderá cómo una transacción pasa por los componentes internos del motor de base de datos hasta alcanzar la confirmación y la persistencia en,",
+    "pasos": [
+      {
+        "paso": 1,
+        "titulo": "Parsing de sentencia",
+        "descripcion": "La sentencia SQL se analiza y se verifica su sintaxis y semántica en el Shared Pool.",
+        "componente_activo": "Shared Pool",
+        "estado_datos": "Sentencia parseada y validada en memoria"
+      },
+      {
+        "paso": 2,
+        "titulo": "Búsqueda en Buffer Cache",
+        "descripcion": "El motor busca los bloques de datos necesarios en el Buffer Cache para acceder a los datos.",
+        "componente_activo": "Buffer Cache",
+        "estado_datos": "Bloques de datos encontrados en caché"
+      },
+      {
+        "paso": 3,
+        "titulo": "Modificación de datos",
+        "descripcion": "Los bloques encontrados son modificados en el Buffer Cache, marcándose como dirty buffers.",
+        "componente_activo": "Buffer Cache",
+        "estado_datos": "Bloques modificados (dirty buffer)"
+      },
+      {
+        "paso": 4,
+        "titulo": "Registro en Redo Log",
+        "descripcion": "Se registra la operación en el Redo Log Buffer para garantizar la recuperabilidad en caso de fallo.",
+        "componente_activo": "Redo Log Buffer",
+        "estado_datos": "Operación registrada en buffer de redo log"
+      },
+      {
+        "paso": 5,
+        "titulo": "Confirmación de transacción",
+        "descripcion": "La transacción se confirma con Commit, lo que desencadena LGWR para escribir el redo log en disco.",
+        "componente_activo": "LGWR",
+        "estado_datos": "Transacción confirmada y redo log escrito en disco"
+      },
+      {
+        "paso": 6,
+        "titulo": "Persistencia de datos",
+        "descripcion": "DBWn escribe los bloques modificados desde el Buffer Cache hacia los datafiles, asegurando la persistencia.",
+        "componente_activo": "DBWn",
+        "estado_datos": "Datos persistidos en datafiles"
+      }
+    ],
+    "sintesis": "Este flujo explica cómo RMAN garantiza la recuperabilidad mediante el registro de transacciones y la persistencia de datos, asegurando la integridad de la base de datos."
+  }
+}

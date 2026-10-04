@@ -1,0 +1,57 @@
+{
+  "concept": "índices B-tree",
+  "params": {
+    "num_problems": 4
+  },
+  "data": {
+    "titulo": "Diagnóstico de incidencias con índices B-tree",
+    "intro": "Relaciona cada incidencia con su diagnóstico específico. Asegúrate de que los diagnósticos sean distintos y coherentes con los síntomas.",
+    "problemas": [
+      {
+        "sector": "Banca",
+        "contexto": "Una transacción de transferencia entre cuentas está fallando con mensajes de error relacionados con la base de datos.",
+        "sintomas": [
+          "Error ORA-01555: lectura de versión antigua",
+          "Lentitud en operaciones de consulta",
+          "Bloqueo de transacciones no confirmadas"
+        ],
+        "diagnostico": "Fragmentación de índices B-tree en tablas de transacciones",
+        "solucion_recomendada": "Reconstruir los índices B-tree en tablas de transacciones para mejorar la coherencia y reducir los errores de lectura."
+      },
+      {
+        "sector": "Salud",
+        "contexto": "El sistema de gestión de historiales médicos está experimentando tiempos de respuesta elevados durante la búsqueda de pacientes por número de seguro.",
+        "sintomas": [
+          "Lentitud en consultas de búsqueda",
+          "Tiempo de respuesta excesivo",
+          "Bloqueo de hilos de consulta"
+        ],
+        "diagnostico": "Ausencia de índices B-tree en columnas de búsqueda frecuente",
+        "solucion_recomendada": "Crear índices B-tree en columnas de búsqueda para acelerar consultas y reducir la carga en tablas principales."
+      },
+      {
+        "sector": "Retail",
+        "contexto": "El sistema de inventario está mostrando datos desactualizados al intentar actualizar stock en tiempo real.",
+        "sintomas": [
+          "Datos inconsistentes en consultas",
+          "Tiempo de respuesta excesivo",
+          "Bloqueo de actualizaciones"
+        ],
+        "diagnostico": "Falta de índices B-tree en tablas de stock y ventas",
+        "solucion_recomendada": "Implementar índices B-tree en tablas de stock y ventas para optimizar las actualizaciones y consultas en tiempo real."
+      },
+      {
+        "sector": "Logística",
+        "contexto": "El sistema de seguimiento de envíos está mostrando retrasos en la actualización de rutas y ubicaciones.",
+        "sintomas": [
+          "Lentitud en consultas de seguimiento",
+          "Erros ORA-01003: conexión no válida",
+          "Tiempo de respuesta excesivo"
+        ],
+        "diagnostico": "Fragmentación de índices B-tree en tablas de seguimiento",
+        "solucion_recomendada": "Reconstruir los índices B-tree en tablas de seguimiento para mejorar el rendimiento de consultas y reducir errores de conexión."
+      }
+    ],
+    "cierre": "Los índices B-tree son esenciales para optimizar consultas y reducir errores, siempre que se implementen correctamente según el contexto de uso."
+  }
+}

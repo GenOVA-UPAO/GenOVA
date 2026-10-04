@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, require_permission
 from core.database import get_db
 from core.pagination import page_meta
 from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
@@ -64,7 +64,7 @@ def list_ovas(
 @router.get("/{ova_id}/download", tags=["SCORM y descargas"], summary="Descargar la OVA")
 def download_ova(
     ova_id: str,
-    current_user=Depends(get_current_user),
+    current_user=Depends(require_permission("export_ova")),
     db: Session = Depends(get_db),
     use_cases: OvaUseCases = Depends(build_ova),
 ):

@@ -30,6 +30,7 @@ def _snapshot(row: User) -> AuthUser:
         locked_until=row.locked_until,
         email_verified=bool(row.email_verified),
         totp_enabled=bool(row.totp_enabled),
+        is_active=bool(row.is_active),
     )
 
 

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from generation.application.dto import JobStatusView, ResourceStatusView
 from generation.domain.job import Job, JobResource
+from generation.domain.lifecycle import JOB_TERMINAL
 
 
-def job_to_view(job: Job, resources: list[JobResource]) -> JobStatusView:
+def job_to_view(job: Job, resources: list[JobResource], eta: dict | None = None) -> JobStatusView:
     return JobStatusView(
         job_id=str(job.id),
         ova_id=str(job.ova_id) if job.ova_id else None,
@@ -15,11 +16,17 @@ def job_to_view(job: Job, resources: list[JobResource]) -> JobStatusView:
         updated_at=job.updated_at.isoformat() if job.updated_at else None,
         started_at=job.started_at.isoformat() if job.started_at else None,
         finished_at=job.finished_at.isoformat() if job.finished_at else None,
-        resources=tuple(_resource_view(r) for r in resources),
+        resources=tuple(_resource_view(r, job.status) for r in resources),
+        eta=eta,
     )
 
 
-def _resource_view(resource: JobResource) -> ResourceStatusView:
+def _resource_view(resource: JobResource, job_status: str) -> ResourceStatusView:
+    # Un job terminal no tiene nada «generando»: una fila `running` huérfana (cancelación,
+    # caída del hilo) se muestra como pendiente y es reanudable.
+    status = resource.status
+    if status == "running" and job_status in JOB_TERMINAL:
+        status = "pending"
     return ResourceStatusView(
         id=str(resource.id),
         phase_type=resource.phase_type,
@@ -28,7 +35,7 @@ def _resource_view(resource: JobResource) -> ResourceStatusView:
         resource_order=resource.resource_order,
         title=resource.title,
         emoji=resource.emoji,
-        status=resource.status,
+        status=status,
         attempts=resource.attempts,
         error_id=str(resource.error_id) if resource.error_id else None,
         defect_reason=resource.defect_reason,

@@ -28,6 +28,20 @@ class PhaseVersions:
             ],
         }
 
+    def blocks(self, data: PhaseVersionInput) -> list[dict]:
+        ova = self.repo.get_ova(data.ova_id)
+        if ova is None:
+            raise OvaNotFound("OVA no encontrado.")
+        if not can_read_ova(ova.owner_id, data.actor):
+            raise OvaForbidden("Sin permisos.")
+        active = self.repo.get_or_create_active_version(ova)
+        phase = self.repo.get_phase(data.phase_id, active.id)
+        if phase is None:
+            raise OvaEditError(404, "phase_not_found", "Fase no encontrada en versión activa.")
+        from ova_engine.block_parser import parse_html_blocks
+
+        return parse_html_blocks(phase.content)
+
     def revert(self, data: PhaseVersionInput) -> dict:
         ova = self.repo.get_ova(data.ova_id)
         if ova is None:

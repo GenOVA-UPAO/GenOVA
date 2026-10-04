@@ -1,0 +1,55 @@
+{
+  "concept": "optimización de consultas con planes de ejecución",
+  "params": {
+    "num_sections": 6
+  },
+  "data": {
+    "titulo": "Optimización con Planes de Ejecución",
+    "objetivo": "Al terminar podrás integrar técnicas de optimización de consultas mediante el análisis de planes de ejecución en sistemas de gestión de bases de datos.",
+    "secciones": [
+      {
+        "titulo": "Qué es un plan de ejecución",
+        "emoji": "🔍",
+        "dato": "EXPLAIN ANALYZE",
+        "explicacion": "Es una herramienta que muestra cómo se ejecuta una consulta, incluyendo operaciones y costos estimados.",
+        "porque": "Permite identificar cuellos de botella y mejorar el rendimiento de consultas."
+      },
+      {
+        "titulo": "Costos de ejecución",
+        "emoji": "💰",
+        "dato": "Costo físico",
+        "explicacion": "Mide el tiempo y recursos necesarios para ejecutar una operación, como lecturas y escrituras.",
+        "porque": "Ayuda a comparar alternativas y elegir la más eficiente."
+      },
+      {
+        "titulo": "Índices y rendimiento",
+        "emoji": "📌",
+        "dato": "ROWID",
+        "explicacion": "Identifica la ubicación física de un registro, permitiendo acceso rápido a datos indexados.",
+        "porque": "Facilita la recuperación de datos sin escanear toda la tabla."
+      },
+      {
+        "titulo": "Operaciones clave",
+        "emoji": "🛠️",
+        "dato": "JOIN, SORT, SCAN",
+        "explicacion": "Son operaciones comunes que impactan el rendimiento si no se optimizan adecuadamente.",
+        "porque": "Saber cómo se procesan mejora la capacidad de ajustar consultas."
+      },
+      {
+        "titulo": "Reescritura de consultas",
+        "emoji": "🧮",
+        "dato": "SELECT *",
+        "explicacion": "Evitar usar comodines innecesarios mejora la eficiencia al reducir datos transferidos.",
+        "porque": "Evita sobrecargar la red y mejora el tiempo de respuesta."
+      },
+      {
+        "titulo": "Herramientas de optimización",
+        "emoji": "🔧",
+        "dato": "Query Optimizer",
+        "explicacion": "Componente del sistema que elige el plan de ejecución más eficiente para cada consulta.",
+        "porque": "Automatiza la selección de estrategias, mejorando la eficiencia general."
+      }
+    ],
+    "sintesis": "La optimización de consultas mediante planes de ejecución implica entender cómo se procesan las consultas, identificar costos, usar índices, reescribir consultas y aprovechar herramientas de optimización para mejorar el rendimiento general."
+  }
+}

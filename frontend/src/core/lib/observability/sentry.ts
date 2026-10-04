@@ -36,7 +36,15 @@ export function initSentry(): Promise<void> {
       Sentry.init({
         dsn: DSN,
         environment: location.hostname === "localhost" ? "development" : "production",
-        sendDefaultPii: false,
+        // Sentry 11 reemplazó `sendDefaultPii: false` por `dataCollection`: no enviamos
+        // datos de usuario, cookies, cabeceras, cuerpos HTTP ni query params.
+        dataCollection: {
+          userInfo: false,
+          cookies: false,
+          httpHeaders: false,
+          httpBodies: [],
+          urlQueryParams: false,
+        },
         tracesSampleRate: 0,
       });
     })

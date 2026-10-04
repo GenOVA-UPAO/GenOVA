@@ -1,0 +1,55 @@
+{
+  "concept": "tablespaces y datafiles",
+  "params": {
+    "num_milestones": 6
+  },
+  "data": {
+    "titulo": "Evolución de tablespaces y datafiles",
+    "intro": "La evolución de tablespaces y datafiles refleja la necesidad de gestionar eficientemente el almacenamiento de datos en bases de datos.",
+    "hitos": [
+      {
+        "anio": "1970",
+        "titulo": "Concepto inicial",
+        "descripcion": "El modelo de bases de datos relacional introduce la necesidad de organizar datos en estructuras lógicas y físicas.",
+        "dato_curioso": "El modelo se desarrolló en el contexto del sistema DBMS de IBM, System R.",
+        "legado_actual": "La separación lógica y física persiste en sistemas modernos como Oracle y PostgreSQL."
+      },
+      {
+        "anio": "1979",
+        "titulo": "Introducción de tablespaces",
+        "descripcion": "Oracle 2.0 introduce tablespaces para organizar datos en unidades lógicas, facilitando el manejo de grandes volúmenes de datos.",
+        "dato_curioso": "Los tablespaces permitieron el uso de múltiples dispositivos de almacenamiento en un solo sistema.",
+        "legado_actual": "Los tablespaces son una característica clave en Oracle y otros sistemas de gestión de bases de datos."
+      },
+      {
+        "anio": "1980",
+        "titulo": "Datafiles como unidad física",
+        "descripcion": "Los datafiles se convierten en la unidad de almacenamiento física para los tablespaces, permitiendo un control más preciso sobre el espacio.",
+        "dato_curioso": "Un datafile puede contener múltiples segmentos, como tablas y índices.",
+        "legado_actual": "Los datafiles siguen siendo fundamentales en la gestión del almacenamiento en sistemas como Oracle."
+      },
+      {
+        "anio": "1986",
+        "titulo": "Extensión de datafiles",
+        "descripcion": "Los datafiles se extienden dinámicamente para evitar la necesidad de reorganizar el almacenamiento con frecuencia.",
+        "dato_curioso": "Esta característica fue un avance significativo en la escalabilidad de bases de datos.",
+        "legado_actual": "La capacidad de extender datafiles es una funcionalidad estándar en muchos sistemas modernos."
+      },
+      {
+        "anio": "1995",
+        "titulo": "Tablespaces compartidos",
+        "descripcion": "Se permiten tablespaces compartidos entre usuarios, mejorando la gestión del espacio y la seguridad.",
+        "dato_curioso": "Esta característica facilitó la implementación de bases de datos distribuidas y multitenant.",
+        "legado_actual": "Los tablespaces compartidos son esenciales en arquitecturas multitenant en Oracle."
+      },
+      {
+        "anio": "2000",
+        "titulo": "Administración automatizada",
+        "descripcion": "Los sistemas empiezan a automatizar la gestión de tablespaces y datafiles, reduciendo la carga de administración manual.",
+        "dato_curioso": "La automatización incluye la monitorización y optimización del uso del espacio.",
+        "legado_actual": "La automatización sigue siendo un pilar de la gestión eficiente de tablespaces y datafiles hoy en día."
+      }
+    ],
+    "cierre": "Los tablespaces y datafiles han evolucionado para permitir una gestión más eficiente y escalable del almacenamiento, lo que sigue siendo fundamental en sistemas de bases de datos actuales."
+  }
+}

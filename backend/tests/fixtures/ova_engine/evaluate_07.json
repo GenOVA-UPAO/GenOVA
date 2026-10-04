@@ -1,0 +1,41 @@
+{
+  "concept": "backup y recovery con RMAN",
+  "params": {
+    "num_terms": 7
+  },
+  "data": {
+    "titulo": "Backup y Recovery con RMAN",
+    "instrucciones": "Escribe en cada casilla, usa las pistas, pulsa «Comprobar».",
+    "entradas": [
+      {
+        "respuesta": "RECOVERY",
+        "pista": "Proceso para restaurar datos dañados o perdidos."
+      },
+      {
+        "respuesta": "BACKUP",
+        "pista": "Copia de seguridad de datos para evitar pérdidas."
+      },
+      {
+        "respuesta": "RMAN",
+        "pista": "Herramienta de Oracle para gestión de respaldos y recuperación."
+      },
+      {
+        "respuesta": "INCREMENTAL",
+        "pista": "Tipo de respaldo que solo copia cambios realizados."
+      },
+      {
+        "respuesta": "REDOLOG",
+        "pista": "Registro que contiene los cambios realizados en la base de datos."
+      },
+      {
+        "respuesta": "ARCHIVELOG",
+        "pista": "Modo que permite almacenar registros de transacciones para recuperación."
+      },
+      {
+        "respuesta": "RESTAURAR",
+        "pista": "Acción de volver a colocar datos en su estado original."
+      }
+    ],
+    "cierre": "Conocer los términos asociados a backup y recovery con RMAN es fundamental para garantizar la integridad y disponibilidad de los datos en un entorno de bases de datos."
+  }
+}

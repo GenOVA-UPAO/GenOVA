@@ -2,40 +2,43 @@ import { useState } from "react";
 
 import type { AdminUser, UsersHandlers } from "../lib/types";
 
-interface DeactivateConfirmOptions {
+export interface PendingStatusChange {
+  user: AdminUser;
+  /** Estado al que pasará la cuenta si se confirma. */
+  nextActive: boolean;
+}
+
+interface StatusConfirmOptions {
   users: AdminUser[];
   handlers: UsersHandlers;
-  deactivate: (userId: string, onSuccess: () => void) => void;
+  setStatus: (userId: string, isActive: boolean, onSuccess: () => void) => void;
 }
 
 /**
- * Desactivar una cuenta deja a esa persona sin acceso, así que se confirma antes;
- * activarla no necesita confirmación.
+ * Activar o desactivar una cuenta cambia el acceso de esa persona, así que
+ * ambas acciones se confirman antes de enviarse.
  */
-export function useDeactivateConfirm({ users, handlers, deactivate }: DeactivateConfirmOptions) {
-  const [pending, setPending] = useState<AdminUser | null>(null);
+export function useDeactivateConfirm({ users, handlers, setStatus }: StatusConfirmOptions) {
+  const [pending, setPending] = useState<PendingStatusChange | null>(null);
 
   const guardedHandlers: UsersHandlers = {
     ...handlers,
     handleToggleStatus: (userId, isActive) => {
-      if (isActive) {
-        handlers.handleToggleStatus(userId, true);
-        return;
-      }
-      setPending(users.find((user) => user.id === userId) ?? null);
+      const user = users.find((u) => u.id === userId);
+      setPending(user ? { user, nextActive: isActive } : null);
     },
   };
 
   return {
     handlers: guardedHandlers,
-    pendingDeactivation: pending,
-    confirmDeactivation: () => {
+    pendingStatusChange: pending,
+    confirmStatusChange: () => {
       if (pending === null) return;
-      deactivate(pending.id, () => {
+      setStatus(pending.user.id, pending.nextActive, () => {
         setPending(null);
       });
     },
-    cancelDeactivation: () => {
+    cancelStatusChange: () => {
       setPending(null);
     },
   };

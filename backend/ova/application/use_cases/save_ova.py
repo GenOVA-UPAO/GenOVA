@@ -45,5 +45,5 @@ class SaveOva:
         # La promoción es deliberadamente posterior al commit y tolerante a
         # fallos: un error de RAG nunca invalida una OVA ya guardada.
         if data.upload_ids:
-            self.repo.tie_uploads_to_ova(data.upload_ids, ova_id)
+            self.repo.tie_uploads_to_ova(data.upload_ids, ova_id, data.actor_id)
         return SaveOvaResult(ova_id=ova_id)

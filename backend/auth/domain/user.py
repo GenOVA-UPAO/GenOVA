@@ -27,6 +27,7 @@ class AuthUser:
     locked_until: datetime | None
     email_verified: bool
     totp_enabled: bool
+    is_active: bool = True
 
 
 @dataclass(frozen=True, slots=True)

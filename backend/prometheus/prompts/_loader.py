@@ -1,14 +1,7 @@
-"""Load + render the externalized 5E prompt templates from ``data/<phase>.toml``.
+"""Load + render prompt templates from data/<phase>.toml.
 
-Each phase file holds the prompt body of every resource as an editable
-multiline string with ``${placeholder}`` substitutions, so prompts can be tuned
-without touching Python. The ``*_prompts.py`` modules are thin consumers of the
-render helpers here.
-
-Placeholders: ``${concept}`` ``${curso}`` ``${scorm}`` ``${ds}`` ``${data_json}``
-``${estilo}`` plus per-resource ``${num_*}`` knobs (with ``_plus1`` / ``_plus2``
-derived variants). Defaults live in each resource's ``defaults`` table and are
-overridden by the caller's ``config``.
+Conserved for podcast script generation (engage:3).
+All other 49 resources use deterministic templates in ova_engine/.
 """
 
 import tomllib
@@ -16,7 +9,7 @@ from functools import cache
 from pathlib import Path
 from string import Template
 
-from llm.utils.utils import CURSO_CONTEXTO, DESIGN_SYSTEM, SCORM_JS
+from llm.utils.utils import CURSO_CONTEXTO, SCORM_JS
 
 _DATA_DIR = Path(__file__).parent / "data"
 
@@ -36,7 +29,10 @@ def _lock(concept: str) -> str:
 
 @cache
 def _phase(name: str) -> dict:
-    with open(_DATA_DIR / f"{name}.toml", "rb") as f:
+    p = _DATA_DIR / f"{name}.toml"
+    if not p.exists():
+        return {}
+    with open(p, "rb") as f:
         return tomllib.load(f)
 
 
@@ -57,53 +53,4 @@ def render_texto(phase: str, n: int, concept: str, config: dict | None = None) -
         return ""
     return Template(entry["template"]).substitute(
         concept=concept, curso=CURSO_CONTEXTO, scorm=SCORM_JS, **_params(entry, config)
-    ) + _lock(concept)
-
-
-def render_codigo(
-    phase: str, n: int, concept: str, design_system: str | None = None, config: dict | None = None
-) -> str:
-    entry = _phase(phase).get("codigo", {}).get(str(n))
-    if not entry:
-        return ""
-    return (
-        Template(entry["template"]).substitute(
-            concept=concept,
-            curso=CURSO_CONTEXTO,
-            scorm=SCORM_JS,
-            ds=design_system or DESIGN_SYSTEM,
-            **_params(entry, config),
-        )
-        + _lock(concept)
-    )
-
-
-def render_simulador(
-    phase: str, concept: str, design_system: str | None = None, config: dict | None = None
-) -> str:
-    entry = _phase(phase)["simulador"]
-    return (
-        Template(entry["template"]).substitute(
-            concept=concept,
-            curso=CURSO_CONTEXTO,
-            scorm=SCORM_JS,
-            ds=design_system or DESIGN_SYSTEM,
-            **_params(entry, config),
-        )
-        + _lock(concept)
-    )
-
-
-def render_html(
-    phase: str, n: int, concept: str, data_json: str, design_system: str | None = None
-) -> str:
-    html = _phase(phase)["html"]
-    estilo = html.get("estilos", {}).get(str(n), html["estilo_default"])
-    return Template(html["template"]).substitute(
-        concept=concept,
-        curso=CURSO_CONTEXTO,
-        scorm=SCORM_JS,
-        ds=design_system or DESIGN_SYSTEM,
-        data_json=data_json,
-        estilo=estilo,
     ) + _lock(concept)
