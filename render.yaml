@@ -81,6 +81,18 @@ services:
       - key: OVA_GEN_CONCURRENCY
         value: "1"
 
+      # ─── Motor de OVAs (ver backend/ova_engine/README.md) ─────────────────
+      # Jev (OpenRouter, usa OPENROUTER_API_KEY) decide estructura y plan; ~$0.00002
+      # por decisión. Sin red o con baja confianza cae solo a las reglas.
+      - key: OVA_DECISION_BACKEND
+        value: jev
+      - key: OVA_PLANNER_MODE
+        value: atributos
+      # Revisor de contenido: ~5 s extra por recurso si no encuentra nada; corrige
+      # afirmaciones falsas o fuera de tema antes del render.
+      - key: OVA_CONTENT_REVIEW
+        value: "1"
+
       # ─── Pool de BD — free tier de Supabase ────────────────────────────────
       - key: DB_POOL_SIZE
         value: "5"
