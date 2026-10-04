@@ -234,7 +234,7 @@ def main():
     parser.add_argument(
         "--out-dir",
         type=str,
-        default="/home/jeffryru/github/genova-orquestacion/out/imagenes-busqueda/v2",
+        default="/home/jeffryru/github/genova-orquestacion/out/imagenes-busqueda/v3",
         help="Directorio de salida para la hoja de contactos, métricas y muestras.",
     )
     parser.add_argument(
@@ -252,6 +252,11 @@ def main():
     args = parser.parse_args()
 
     os.environ["OVA_TEXT_BACKEND"] = "local"
+    if "LOCAL_IMAGE_URL" not in os.environ:
+        os.environ["LOCAL_IMAGE_URL"] = "http://127.0.0.1:7860"
+    if "LLM_LOCAL_URL" not in os.environ:
+        os.environ["LLM_LOCAL_URL"] = "http://127.0.0.1:11435"
+
     out_dir = args.out_dir
     samples_dir = os.path.join(out_dir, "samples")
     os.makedirs(out_dir, exist_ok=True)
@@ -264,12 +269,15 @@ def main():
 
     router = ImageRouter()
     results: list[dict[str, Any]] = []
+    used_hashes_seen: set[str] = set()
 
-    print("=== INICIANDO EVALUACIÓN HONESTA DE IMÁGENES (Iteración 2) ===")
+    print("=== INICIANDO EVALUACIÓN HONESTA DE IMÁGENES (Iteración 3) ===")
     print(f"Temas a evaluar: {len(topics)}")
     print(f"Directorio de salida: {out_dir}")
     print("Backend LLM: local (Ollama/llama-server qwen3:8b)")
-    print("Re-ranking: local CLIP ViT-B-32 (clases negativas zero-shot activas)")
+    print("Motor de diagramas: DiagramSource (SVG nativo / determinista)")
+    print("Re-ranking fotos: local CLIP ViT-B-32 (clases negativas y margen especificidad)")
+    print("Deduplicación: dHash perceptual (intra-OVA y registro de uso)")
     print("=" * 65)
 
     all_clip_evals: list[dict[str, Any]] = []
@@ -297,7 +305,12 @@ def main():
         # 2. Extracción de la petición de imagen generada por el LLM
         raw_image_req = data.get("imagen")
         if isinstance(raw_image_req, dict) and (raw_image_req.get("consulta") or raw_image_req.get("marca") or raw_image_req.get("tipo")):
-            req = ImageRequest.from_json(raw_image_req, concept=concept, template_key=template_key)
+            req = ImageRequest.from_json(
+                raw_image_req,
+                concept=concept,
+                template_key=template_key,
+                used_hashes=tuple(used_hashes_seen),
+            )
             llm_request_summary = {
                 "tipo": req.tipo,
                 "marca": req.marca or "",
@@ -312,6 +325,7 @@ def main():
                 consulta=concept,
                 descripcion=concept,
                 template_key=template_key,
+                used_hashes=tuple(used_hashes_seen),
             )
             llm_request_summary = {
                 "tipo": "foto (inferido)",
@@ -325,12 +339,14 @@ def main():
         # 3. Enrutamiento y evaluación visual con CLIP
         print("     [3/3] Enrutando y evaluando con CLIP...", end="", flush=True)
         t_img0 = time.time()
-        res = router.route(req)
+        res = router.route(req, image_settings={"provider": "local", "enabled": True})
         img_latency_ms = round((time.time() - t_img0) * 1000, 1)
 
         source = res.source if res else "ninguna"
         provider = (res.meta.get("provider") if res else "") or ""
         clip_score = res.meta.get("clip_score") if res else None
+        if res and res.meta.get("phash"):
+            used_hashes_seen.add(res.meta["phash"])
 
         # Diagnósticos de candidatos evaluados y descartados por CLIP
         raw_diags = (
@@ -477,6 +493,8 @@ def main():
         source_cls = {
             "logo": "badge-logo",
             "busqueda": "badge-search",
+            "diagrama": "badge-diagram",
+            "generada": "badge-generated",
             "ninguna": "badge-none",
         }.get(r["source"], "badge-none")
 
@@ -560,7 +578,7 @@ def main():
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Hoja de Contactos — Búsqueda de Imágenes y Logos V2 (Génova)</title>
+  <title>Hoja de Contactos — Búsqueda de Fotos, Logos y Diagramas SVG V3 (Génova)</title>
   <style>
     :root {{
       --primary: #0A3D91;
@@ -689,6 +707,8 @@ def main():
     }}
     .badge-logo {{ background: #E0E7FF; color: #3730A3; }}
     .badge-search {{ background: #DCFCE7; color: #166534; }}
+    .badge-diagram {{ background: #FEF3C7; color: #92400E; }}
+    .badge-generated {{ background: #F3E8FF; color: #6B21A8; }}
     .badge-none {{ background: #FEE2E2; color: #991B1B; }}
     .badge-template {{ background: #F1F5F9; color: var(--text-muted); }}
     .badge-score {{ background: #FEF3C7; color: #92400E; }}
