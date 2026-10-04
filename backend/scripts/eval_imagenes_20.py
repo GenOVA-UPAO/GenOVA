@@ -427,7 +427,7 @@ def main():
 
     # Cálculo de métricas objetivas agregadas
     total = len(results)
-    con_imagen = sum(1 for r in results if r["source"] in ("logo", "busqueda", "generada"))
+    con_imagen = sum(1 for r in results if r["source"] in ("logo", "busqueda", "generada", "diagrama"))
     sin_imagen = total - con_imagen
 
     source_counts: dict[str, int] = {}
@@ -800,8 +800,8 @@ def main():
 <body>
   <div class="container">
     <header>
-      <h1>Hoja de Contactos — Evaluación de Fuentes de Imagen V2</h1>
-      <p>Evaluación con peticiones 'imagen' generadas por LLM local (qwen3:8b) sobre plantillas reales UPAO y re-ranking visual con CLIP ViT-B-32 (clases negativas zero-shot).</p>
+      <h1>Hoja de Contactos — Evaluación de Fuentes de Imagen V3</h1>
+      <p>Evaluación con motor de diagramas SVG deterministas, búsqueda estricta de fotos con CLIP zero-shot y deduplicación perceptual dHash.</p>
     </header>
 
     <div class="stats-grid">
@@ -815,8 +815,8 @@ def main():
       </div>
       <div class="stat-card">
         <div class="stat-lbl">Distribución de Fuentes</div>
-        <div class="stat-val" style="font-size:1.15rem;margin-top:8px">
-          Logos: {metrics['distribucion_fuentes'].get('logo', {}).get('pct', 0)}% · Web: {metrics['distribucion_fuentes'].get('busqueda', {}).get('pct', 0)}% · Sin img: {metrics['distribucion_fuentes'].get('ninguna', {}).get('pct', 0)}%
+        <div class="stat-val" style="font-size:1.05rem;margin-top:8px">
+          Diagramas: {metrics['distribucion_fuentes'].get('diagrama', {}).get('pct', 0)}% · Generada: {metrics['distribucion_fuentes'].get('generada', {}).get('pct', 0)}% · Web: {metrics['distribucion_fuentes'].get('busqueda', {}).get('pct', 0)}% · Logos: {metrics['distribucion_fuentes'].get('logo', {}).get('pct', 0)}%
         </div>
       </div>
       <div class="stat-card">
