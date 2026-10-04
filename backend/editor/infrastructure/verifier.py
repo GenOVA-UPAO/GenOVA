@@ -33,9 +33,12 @@ class LayaPostVerifier(PostVerifierPort):
         model_name: str = "multilingual",
         threshold: float = 0.7,
         timeout_s: float = 3.0,
+        headers: dict[str, str] | None = None,
+        extra: dict[str, Any] | None = None,
     ):
         self._url = base_url or os.getenv("LAYA_URL", "http://localhost:8090/v1/systemone")
-        self._model = model_name
+        self._headers = headers or {}
+        self._extra = extra or {"model": model_name}
         self._threshold = float(os.getenv("POST_VERIFY_THRESHOLD", str(threshold)))
         self._timeout_s = timeout_s
 
@@ -47,7 +50,7 @@ class LayaPostVerifier(PostVerifierPort):
         intent: Intent,
         options: dict[str, Any] | None = None,
     ) -> tuple[bool, float, str | None]:
-        url = (options and options.get("laya_url")) or self._url
+        url = self._url
         threshold = (options and options.get("threshold")) or self._threshold
 
         before_summary = format_blocks_summary(before_blocks)
@@ -59,7 +62,7 @@ class LayaPostVerifier(PostVerifierPort):
         )
 
         payload = {
-            "model": self._model,
+            **self._extra,
             "state": {
                 "instruction": instruction,
                 "summary": summary_text,
@@ -74,7 +77,7 @@ class LayaPostVerifier(PostVerifierPort):
 
         try:
             with httpx.Client(timeout=self._timeout_s) as client:
-                res = client.post(url, json=payload)
+                res = client.post(url, json=payload, headers=self._headers)
                 if not res.is_success:
                     return True, 1.0, None
                 data = res.json()
