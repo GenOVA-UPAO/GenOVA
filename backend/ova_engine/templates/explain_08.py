@@ -2,8 +2,17 @@
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    json_data,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, b, i, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, header, progress, summary
 
@@ -14,7 +23,7 @@ PARAMS = (
 
 def schema(p: dict) -> dict:
     n = p["num_blocks"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         objetivo=s(180),
         bloques=arr(
@@ -29,6 +38,8 @@ def schema(p: dict) -> dict:
         ),
         sintesis=s(240),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -38,6 +49,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Describe la arquitectura de «{concept}» como exactamente {n} bloques jerárquicos, del más externo/general al más interno/específico (p. ej. instancia > base de datos, o tablespace > segmento > extent > bloque, o niveles ANSI/SPARC).
 - titulo: título corto del diagrama.
 - objetivo: objetivo de aprendizaje observable («Al terminar podrás interpretar…»).
+- imagen (opcional): diagrama o esquema de arquitectura de referencia (ej. arquitectura general de la tecnología).
 - bloques: en orden jerárquico, por cada bloque: `nombre` (≤24 caracteres), `rol` (qué función cumple, ≤35 palabras), `contiene` (qué hay dentro o qué lo compone, ≤20 palabras), `relacion` (cómo se conecta con el bloque siguiente y por qué existe esa jerarquía, ≤25 palabras).
 - flujo: 3 o 4 pasos de un ejemplo trabajado de cómo viaja una operación (p. ej. una consulta) por la arquitectura; cada uno con `paso` (≤25 palabras) y `bloque` (número entero: posición del bloque implicado, empezando en 1).
 - pregunta: una pregunta de comprensión sobre por qué se organiza así la jerarquía, con 3-4 opciones; exactamente UNA `correcta: true`; cada `feedback` explica el porqué.
@@ -90,9 +102,19 @@ def render(data: dict, ctx: RenderContext) -> str:
     )
     flujo = [{"paso": f["paso"], "bloque": max(1, min(n, int(f["bloque"] or 1))) - 1} for f in data["flujo"]]
     steps = "".join(f"<li>{esc(f['paso'])}</li>" for f in flujo)
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Diagrama arquitectónico de {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
     return f"""
 {header("DIAGRAMA DE ARQUITECTURA", data["titulo"])}
 {KIT_CSS}
+{IMAGE_FIGURE_CSS}
 <style>
 .fw-wrap{{overflow:auto;max-height:70vh;border:1px solid var(--border);border-radius:12px;background:var(--surface)}}
 #fw-svg{{display:block;width:100%;height:auto;transition:width .2s ease}}
@@ -110,6 +132,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 .fw-sw{{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}}
 </style>
 <upao-objective>{esc(data["objetivo"])}</upao-objective>
+{fig_html}
 {progress(n + 1, "Bloques explorados + comprobación")}
 <div class="k-row" role="group" aria-label="Zoom del diagrama">
 <button type="button" class="k-btn" id="fw-zin" aria-label="Acercar">+ Acercar</button>
@@ -127,6 +150,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <p class="k-fb k-hide" id="fw-play-t" role="status" aria-live="polite"></p></upao-example>
 <upao-question number="1" prompt="{esc(q["enunciado"])}">{choices}</upao-question>
 {summary(data["sintesis"], "Síntesis")}
+{credits_sec}
 {json_data({"b": [{"n": x["nombre"], "r": x["rol"], "c": x["contiene"], "x": x["relacion"]} for x in bl], "f": flujo})}
 {script(PROGRESS_JS + '''
 const D = JSON.parse(document.getElementById('ova-data').textContent);
@@ -178,6 +202,11 @@ def sample(concept: str, p: dict) -> dict:
     return {
         "titulo": f"Arquitectura de {concept}"[:70],
         "objetivo": f"Al terminar podrás interpretar la jerarquía de bloques de {concept}.",
+        "imagen": {
+            "tipo": "diagrama",
+            "descripcion": f"Diagrama arquitectónico formal de {concept}",
+            "consulta": f"{concept} framework architecture diagram",
+        },
         "bloques": [
             {
                 "nombre": f"Bloque {k}",
@@ -211,4 +240,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    uses_images=True,
 )

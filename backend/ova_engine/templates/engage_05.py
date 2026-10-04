@@ -6,8 +6,16 @@ de bases de datos, sopesando trade-offs éticos y técnicos antes de registrar s
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, obj, s
 
 PARAMS = (Param("num_options", 3, min=2, max=4, help="Número de opciones de postura ética"),)
@@ -15,7 +23,7 @@ PARAMS = (Param("num_options", 3, min=2, max=4, help="Número de opciones de pos
 
 def schema(p: dict) -> dict:
     n = p["num_options"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         caso_narrativo=s(600),
         pregunta_posicion=s(180),
@@ -31,6 +39,8 @@ def schema(p: dict) -> dict:
         ),
         reflexion_post_voto=s(400),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -47,6 +57,10 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
   * `consecuencia`: resultado práctico directo sobre los sistemas, usuarios o el negocio (≤30 palabras).
   * `tension_etica`: principio ético comprometido o el costo de valor que implica esta elección (≤30 palabras).
 - reflexion_post_voto: síntesis reflexiva (≤60 palabras) que profundiza en la complejidad del dilema, destacando que en la administración de datos toda arquitectura y decisión técnica conlleva una carga ética inevitable, sin calificar ninguna opción como correcta o errónea.
+- imagen (opcional): fotografía conceptual o técnica de dilema, auditoría o seguridad relacionada con «{concept}»:
+  - query: término de búsqueda en inglés (ej: "{concept} data privacy cybersecurity compliance")
+  - tipo: "foto", "diagrama" o "logo"
+  - descripcion: texto accesible en español (alt)
 [RESTRICCIONES] Empresa ficticia. Tono periodístico y deontológico profesional. Ninguna postura debe ser una negligencia absurda ni un delito obvio; todas deben tener defensores racionales y costos reales. La consecuencia debe derivarse de forma realista del funcionamiento de «{concept}». No incluyas código HTML ni referencias al JSON Schema.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
@@ -97,6 +111,11 @@ def sample(concept: str, p: dict) -> dict:
             f"Administrar «{concept}» exige sopesar constantemente la disponibilidad de servicios esenciales, "
             f"la privacidad de las personas y la rendición de cuentas. Cada alternativa conlleva un costo ético inevitable."
         )[:400],
+        "imagen": {
+            "query": f"{concept} data privacy cybersecurity compliance",
+            "tipo": "foto",
+            "descripcion": f"Dilema ético sobre seguridad y privacidad de datos en {concept}",
+        },
     }
 
 
@@ -275,7 +294,16 @@ def render(data: dict, ctx: RenderContext) -> str:
 
     options_html = "".join(options_html_list)
 
-    return f"""{_STYLE}
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Dilema ético en la gestión de {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
+    return f"""{_STYLE}{IMAGE_FIGURE_CSS}
 <upao-header eyebrow="DILEMA ÉTICO" title="{esc(data["titulo"])}">
   <p>{esc(data["pregunta_posicion"])}</p>
 </upao-header>
@@ -288,6 +316,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   </div>
   <h2 class="dilema-section-title">Caso en Producción</h2>
   <p class="dilema-narrative">{esc(data["caso_narrativo"])}</p>
+  {fig_html}
 </section>
 
 <section class="ova-card dilema-card" aria-labelledby="decision-title">
@@ -314,6 +343,7 @@ def render(data: dict, ctx: RenderContext) -> str:
   <p>Toda decisión técnica en la gestión de datos tiene repercusiones humanas y éticas. Reconocer la tensión entre disponibilidad, privacidad y transparencia es el primer paso para una administración responsable.</p>
   <upao-complete slot="actions" label="Finalizar dilema" locked></upao-complete>
 </upao-summary>
+{credits_sec}
 
 {script(PROGRESS_JS)}
 {
@@ -383,5 +413,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
-    uses_images=False,
+    uses_images=True,
 )

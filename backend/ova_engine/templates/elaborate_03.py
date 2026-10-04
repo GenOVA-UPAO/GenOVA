@@ -2,8 +2,16 @@
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, paragraphs, script
+from ova_engine.html import (
+    PROGRESS_JS,
+    esc,
+    paragraphs,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -14,7 +22,7 @@ PARAMS = (
 
 def schema(p: dict) -> dict:
     n = p["num_deliverables"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         objetivo=s(380),
         entregables=arr(s(180), n, n),
@@ -26,6 +34,8 @@ def schema(p: dict) -> dict:
         ),
         cierre=s(230),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -39,6 +49,10 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 - dataset_sugerido: el caso de la pequeña empresa en ≤80 palabras: al menos 4 tablas con sus claves, filas estimadas, tablespaces y usuarios involucrados.
 - rubrica: EXACTAMENTE 4 criterios; cada uno con `criterio` (nombre corto) y tres descripciones observables de nivel `basico`, `competente` y `avanzado` (≤22 palabras cada una).
 - cierre: cómo transferir el proyecto a un caso real.
+- imagen (opcional): si añade valor conceptual sobre «{concept}» o la arquitectura del proyecto, incluye un objeto con:
+  - query: término de búsqueda preciso en inglés (ej: "{concept} database architecture diagram")
+  - tipo: "logo", "diagrama", "foto" o "escena"
+  - descripcion: texto accesible en español (alt)
 [RESTRICCIONES] Entregables alcanzables en el tiempo; rúbrica con diferencias claras entre niveles.
 {f"[MATERIAL DEL DOCENTE] Úsalo como fuente prioritaria:{chr(10)}{contexto}" if contexto else ""}"""
 
@@ -76,6 +90,7 @@ fieldset.mp-crit{{margin:0 0 12px}}
 .mp-ent.done{{border-color:var(--success)}}
 </style>
 <upao-objective>{esc(data["objetivo"])}</upao-objective>
+{render_image_figure(data.get("imagen"), concept=ctx.concept)}
 {progress(n + 1, "Entregables y autoevaluación")}
 <article class="ova-card ova-stack" aria-labelledby="mp-ds-h"><h2 id="mp-ds-h">Caso y datos de partida</h2>{paragraphs(data["dataset_sugerido"])}</article>
 <div class="k-row"><upao-timer id="tmr" seconds="600" label="Tiempo sugerido (10 min)"></upao-timer>
@@ -86,6 +101,7 @@ fieldset.mp-crit{{margin:0 0 12px}}
 {rub_html}
 <div class="k-fb" id="mp-score" role="status" aria-live="polite">Evalúa los {len(rub)} criterios para ver tu resultado.</div></section>
 {summary(data["cierre"], "Transferencia")}
+{render_credits_section(data.get("imagen"))}
 {script(PROGRESS_JS + UTIL_JS + '''
 const $ = id => document.getElementById(id);
 $('mp-start').addEventListener('click', () => { const t = $('tmr'); if (t && t.start) t.start(); $('mp-start').disabled = true; });
@@ -129,6 +145,11 @@ def sample(concept: str, p: dict) -> dict:
             for c in range(1, 5)
         ],
         "cierre": "Lleva este patrón a una base de datos real de tu práctica.",
+        "imagen": {
+            "query": f"{concept} database architecture diagram",
+            "tipo": "diagrama",
+            "descripcion": f"Diagrama arquitectónico para {concept}",
+        },
     }
 
 
@@ -141,4 +162,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    uses_images=True,
 )

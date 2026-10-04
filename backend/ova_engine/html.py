@@ -106,3 +106,150 @@ def engine_info(html: str) -> dict:
         with contextlib.suppress(ValueError):
             out.update(json.loads(_html.unescape(p.group(1))))
     return out
+
+
+IMAGE_FIGURE_CSS = """
+<style>
+.ova-image-figure {
+  margin: 16px 0;
+  text-align: center;
+  background: var(--surface-2, #F8FAFC);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: var(--radius, 12px);
+  padding: 12px;
+  overflow: hidden;
+}
+.ova-figure-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 420px;
+  border-radius: 8px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+.ova-image-credit {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748B);
+}
+.ova-image-credit a {
+  color: inherit;
+  text-decoration: underline;
+}
+.ova-figure-fallback {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--surface-tint, #EEF2FF);
+  border: 1px dashed var(--border, #CBD5E1);
+  border-radius: var(--radius, 12px);
+  margin: 14px 0;
+}
+.ova-fallback-icon {
+  font-size: 1.5rem;
+}
+.ova-fallback-desc {
+  margin: 0;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: var(--text-muted, #475569);
+}
+.ova-credits-section {
+  margin-top: 28px;
+  padding: 16px;
+  background: var(--surface-2, #F8FAFC);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: var(--radius, 8px);
+  font-size: 0.85rem;
+}
+.ova-credits-section h4 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: var(--primary, #0A3D91);
+}
+.ova-credits-section p {
+  margin: 0;
+  color: var(--text-muted, #475569);
+}
+</style>
+"""
+
+
+def render_image_figure(
+    img_data: dict | None = None,
+    src: str | None = None,
+    credit: Any = None,
+    credit_html: str = "",
+    *,
+    alt_fallback: str = "Ilustración conceptual",
+    fallback_icon: str = "🖼️",
+    extra_class: str = "",
+    concept: str = "",
+    **kwargs: Any,
+) -> str:
+    """Renderiza una figura con imagen y atribución breve o una tarjeta alternativa accesible si no hay imagen."""
+    if concept and alt_fallback == "Ilustración conceptual":
+        alt_fallback = f"Ilustración de {concept}"
+    alt = esc((img_data or {}).get("descripcion") or alt_fallback)
+    cls = f"ova-image-figure {extra_class}".strip()
+
+    if not src and isinstance(img_data, dict):
+        src = img_data.get("src") or img_data.get("image_placeholder")
+
+    if src:
+        caption = credit_html
+        if not caption and credit:
+            author = esc(getattr(credit, "author", "") or (credit.get("author") if isinstance(credit, dict) else "") or "Autor")
+            lic = esc(getattr(credit, "license", "") or (credit.get("license") if isinstance(credit, dict) else "") or "Licencia libre")
+            lic_url = esc(getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "") or "https://creativecommons.org/")
+            prov = esc(getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "") or "web")
+            src_url = esc(getattr(credit, "source_url", "") or (credit.get("source_url") if isinstance(credit, dict) else "") or "#")
+            caption = (
+                f'<figcaption class="ova-image-credit">'
+                f'<span>{author}</span> · '
+                f'<a href="{lic_url}" target="_blank" rel="noopener noreferrer">{lic}</a> · '
+                f'<a href="{src_url}" target="_blank" rel="noopener noreferrer">{prov}</a>'
+                f'</figcaption>'
+            )
+        return (
+            f'<figure class="{cls}">'
+            f'<img class="ova-figure-img" src="{esc(src)}" alt="{alt}" loading="lazy">'
+            f"{caption}"
+            f'</figure>'
+        )
+
+    # Alternativa accesible cuando no hay imagen disponible
+    return (
+        f'<div class="ova-figure-fallback {extra_class}" role="img" aria-label="{alt}">'
+        f'<span class="ova-fallback-icon" aria-hidden="true">{fallback_icon}</span>'
+        f'<span class="ova-fallback-desc">{alt}</span>'
+        f'</div>'
+    )
+
+
+def render_credits_section(data: dict | None) -> str:
+    """Renderiza la sección de créditos al pie del recurso si existe alguna atribución."""
+    if not isinstance(data, dict):
+        return ""
+    credit = data.get("image_credit") or data.get("credit")
+    if not credit and "author" in data and "license" in data:
+        credit = data
+    if not credit:
+        return ""
+    author = esc(getattr(credit, "author", "") or (credit.get("author") if isinstance(credit, dict) else "") or "Autor")
+    license_name = esc(getattr(credit, "license", "") or (credit.get("license") if isinstance(credit, dict) else "") or "Licencia libre")
+    license_url = esc(getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "") or "#")
+    provider = esc(getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "") or "web")
+    source_url = esc(getattr(credit, "source_url", "") or (credit.get("source_url") if isinstance(credit, dict) else "") or "#")
+    title = esc(getattr(credit, "title", "") or (credit.get("title") if isinstance(credit, dict) else "") or "Imagen")
+
+    return (
+        f'<section class="ova-credits-section">'
+        f'<h4>Créditos de imágenes</h4>'
+        f'<p><strong>{title}</strong>: Por {author} · '
+        f'<a href="{license_url}" target="_blank" rel="noopener noreferrer">{license_name}</a> · '
+        f'Fuente: <a href="{source_url}" target="_blank" rel="noopener noreferrer">{provider}</a></p>'
+        f'</section>'
+    )

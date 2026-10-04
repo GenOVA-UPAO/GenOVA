@@ -2,8 +2,17 @@
 
 from __future__ import annotations
 
+from llm.images.sources.contract import IMAGE_REQUEST_SCHEMA
 from ova_engine.contract import Param, RenderContext, TemplateSpec
-from ova_engine.html import PROGRESS_JS, esc, json_data, script
+from ova_engine.html import (
+    IMAGE_FIGURE_CSS,
+    PROGRESS_JS,
+    esc,
+    json_data,
+    render_credits_section,
+    render_image_figure,
+    script,
+)
 from ova_engine.schema import arr, i, obj, s
 from ova_engine.templates._kit_a import KIT_CSS, UTIL_JS, header, progress, summary
 
@@ -14,7 +23,7 @@ PARAMS = (
 
 def schema(p: dict) -> dict:
     n = p["num_dimensions"]
-    return obj(
+    sch = obj(
         titulo=s(70),
         intro=s(180),
         dimensiones=arr(s(40), n, n),
@@ -31,6 +40,8 @@ def schema(p: dict) -> dict:
         reto=obj(escenario=s(230), mejor=i(), explicacion=s(280)),
         conclusion=s(240),
     )
+    sch["properties"]["imagen"] = IMAGE_REQUEST_SCHEMA
+    return sch
 
 
 def prompt(concept: str, contexto: str, p: dict) -> str:
@@ -40,6 +51,7 @@ def prompt(concept: str, contexto: str, p: dict) -> str:
 [TAREA] Compara «{concept}» con otras alternativas o conceptos relacionados (p. ej. backup frío/caliente/incremental, DBMS_JOB/DBMS_SCHEDULER, Oracle/SQL Server/PostgreSQL): EXACTAMENTE 3 elementos comparados (uno puede ser «{concept}») en {n} dimensiones medibles.
 - titulo: título corto de la comparación.
 - intro: una frase que explique qué se compara y para qué.
+- imagen (opcional): logo o imagen comparativa de tecnologías (ej. logotipos de motores enfrentados o diagrama).
 - dimensiones: {n} criterios medibles (≤5 palabras cada uno, p. ej. «Tiempo de recuperación»).
 - comparaciones: 3 objetos, cada uno con `concepto` (nombre), `valores` (EXACTAMENTE {n} textos, uno por dimensión y EN EL MISMO ORDEN que `dimensiones`; ≤30 palabras, con datos concretos y comparables), `ventaja` (balance de su principal ventaja, ≤30 palabras) y `desventaja` (su principal desventaja, ≤30 palabras).
 - reto: `escenario` (situación realista de un DBA donde hay que elegir entre los 3, ≤35 palabras), `mejor` (número 1, 2 o 3: posición de la mejor opción en `comparaciones`) y `explicacion` (por qué esa opción gana y qué se sacrifica, ≤40 palabras).
@@ -68,9 +80,19 @@ def render(data: dict, ctx: RenderContext) -> str:
         f'<button type="button" class="ova-option cmp-opt" data-c="{c}">{esc(x["concepto"])}</button>' for c, x in enumerate(comps)
     )
     best = max(1, min(3, int(reto["mejor"] or 1))) - 1
+    fig_html = render_image_figure(
+        data.get("imagen"),
+        data.get("image_placeholder"),
+        data.get("image_credit"),
+        data.get("image_credit_html", ""),
+        alt_fallback=f"Comparativa de {ctx.concept}",
+    )
+    credits_sec = render_credits_section(data)
+
     return f"""
 {header("TABLA COMPARATIVA", data["titulo"], data["intro"])}
 {KIT_CSS}
+{IMAGE_FIGURE_CSS}
 <style>
 .cmp-table{{border-collapse:separate;border-spacing:0;min-width:640px}}
 .cmp-table th,.cmp-table td{{vertical-align:top;padding:10px;text-align:left}}
@@ -81,6 +103,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 .cmp-bad{{border-left:4px solid var(--danger)}}
 </style>
 {progress(4, "Balances revisados + reto")}
+{fig_html}
 <p class="ova-muted">Pulsa una dimensión para resaltar su fila y un elemento para ver su balance de ventajas y desventajas.</p>
 <div class="ova-table-scroll" role="region" aria-label="Tabla comparativa" tabindex="0">
 <table class="cmp-table"><caption>Comparación en {len(dims)} dimensiones</caption>
@@ -93,6 +116,7 @@ def render(data: dict, ctx: RenderContext) -> str:
 <div class="k-fb k-hide" id="cmp-fb" role="status" aria-live="polite"></div>
 </section>
 {summary(data["conclusion"], "Conclusión")}
+{credits_sec}
 {json_data({"c": [{"n": x["concepto"], "v": x["ventaja"], "d": x["desventaja"]} for x in comps], "best": best, "exp": reto["explicacion"]})}
 {script(PROGRESS_JS + UTIL_JS + '''
 const D = JSON.parse(document.getElementById('ova-data').textContent);
@@ -133,6 +157,11 @@ def sample(concept: str, p: dict) -> dict:
     return {
         "titulo": f"Comparativa: {concept}"[:70],
         "intro": f"Tres alternativas relacionadas con {concept} frente a criterios medibles.",
+        "imagen": {
+            "tipo": "logo",
+            "descripcion": f"Logotipo representativo de {concept}",
+            "marca": concept,
+        },
         "dimensiones": [f"Dimensión {k}" for k in range(1, n + 1)],
         "comparaciones": [
             {
@@ -161,4 +190,5 @@ SPEC = TemplateSpec(
     prompt=prompt,
     render=render,
     sample=sample,
+    uses_images=True,
 )
