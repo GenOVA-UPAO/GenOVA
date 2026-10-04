@@ -162,7 +162,7 @@ def test_search_source_fetch_with_mocked_network(monkeypatch, tmp_path):
         host = urlparse(url).hostname or ""
         if host == "commons.wikimedia.org":
             resp.json.return_value = mock_wiki_resp
-        elif host.endswith("openverse.org"):
+        elif host == "api.openverse.org":
             resp.json.return_value = {"results": []}
         else:
             resp.content = fake_png

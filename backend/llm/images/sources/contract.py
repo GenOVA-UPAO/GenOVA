@@ -153,4 +153,5 @@ class ImageSource(Protocol):
 
     name: str
 
-    def fetch(self, request: ImageRequest) -> ImageResult | None: ...
+    def fetch(self, request: ImageRequest) -> ImageResult | None:
+        """Devuelve la imagen para `request`, o None si esta fuente no puede servirla."""
