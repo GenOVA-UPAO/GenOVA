@@ -29,6 +29,12 @@ for _slug, _data in LOGOS.items():
 _SORTED_ALIASES = sorted(_ALIAS_MAP.keys(), key=lambda a: (-len(a), a))
 
 
+_EXCLUDED_APACHE_SUBPROJECTS = {
+    "kafka", "spark", "hadoop", "flink", "airflow", "tomcat",
+    "maven", "solr", "zookeeper", "hive", "storm", "drill", "hbase"
+}
+
+
 def normalize_logo_name(name: str) -> str:
     """Normaliza un nombre o marca a minúsculas y caracteres alfanuméricos simples."""
     return re.sub(r"[^a-z0-9+#.-]", "", (name or "").strip().lower())
@@ -36,6 +42,14 @@ def normalize_logo_name(name: str) -> str:
 
 def find_logo_slug(query: str, brand: str = "") -> str | None:
     """Encuentra el slug de un logo dado el nombre de marca o una consulta/descripción."""
+    full_text = f" {brand.lower()} {query.lower()} "
+
+    # Exclusión explícita: subproyectos de Apache no vendorizados (ej. Apache Kafka no es Apache HTTP Server)
+    if any(p in full_text for p in _EXCLUDED_APACHE_SUBPROJECTS):
+        if "cassandra" in full_text:
+            return "cassandra"
+        return None
+
     # 1. Probar marca explícita
     if brand:
         norm_brand = brand.strip().lower()
@@ -48,6 +62,9 @@ def find_logo_slug(query: str, brand: str = "") -> str | None:
     # 2. Buscar en la consulta o descripción por palabras completas
     text = f" {query.lower()} "
     for alias in _SORTED_ALIASES:
+        # Alias demasiado cortos (longitud <= 2 como 'c', 'r', 'go') sólo se permiten en marca explícita
+        if len(alias) <= 2:
+            continue
         # Match con límites de palabra o puntuación común
         pattern = rf"(?:^|[\s_.,:;()/-]){re.escape(alias)}(?:$|[\s_.,:;()/-])"
         if re.search(pattern, text):
@@ -61,8 +78,11 @@ def get_logo_data(slug: str) -> dict[str, Any] | None:
     return LOGOS.get(slug)
 
 
-def svg_to_data_uri(svg_content: str) -> str:
-    """Convierte código SVG a un data URI base64 autocontenido."""
+def svg_to_data_uri(svg_content: str, hex_color: str = "") -> str:
+    """Convierte código SVG a un data URI base64 autocontenido con su color oficial."""
+    if hex_color and "<path" in svg_content and 'fill="' not in svg_content:
+        color = hex_color if hex_color.startswith("#") else f"#{hex_color}"
+        svg_content = svg_content.replace("<path ", f'<path fill="{color}" ', 1)
     encoded = base64.b64encode(svg_content.encode("utf-8")).decode("ascii")
     return f"data:image/svg+xml;base64,{encoded}"
 
@@ -90,7 +110,7 @@ class LogoSource:
         if not logo_info:
             return None
 
-        data_uri = svg_to_data_uri(logo_info["svg"])
+        data_uri = svg_to_data_uri(logo_info["svg"], logo_info.get("hex", ""))
         if request.descripcion and logo_info["title"].lower() in request.descripcion.lower():
             alt_text = request.descripcion
         elif request.descripcion:

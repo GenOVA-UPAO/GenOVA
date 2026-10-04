@@ -102,6 +102,7 @@ def generate_with_template(
                 image_settings or {},
                 character=CHARACTERS.get(spec.image_character, ""),
                 ova_key=concept,
+                template_key=spec.key,
             )
         except Exception as exc:  # la imagen nunca tumba el recurso
             logger.warning("ova engine images failed", key=spec.key, error=str(exc)[:200])

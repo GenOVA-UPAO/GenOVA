@@ -126,3 +126,73 @@ def test_router_escena_and_personaje():
     res_personaje = router.route(ImageRequest(tipo="personaje", descripcion="Max explicando bases de datos"))
     assert res_personaje is not None
     assert res_personaje.source == "generada"
+
+
+def test_router_explanatory_template_rejects_logo():
+    """Verifica que plantillas explicativas (como explain:08 Framework) rechazan logotipos aislados."""
+    logos = MagicMock()
+    logos.fetch.return_value = _dummy_result("logo")
+    search = MagicMock()
+    search.fetch.return_value = _dummy_result("busqueda")
+
+    router = ImageRouter(logos_source=logos, search_source=search)
+
+    # El LLM solicita 'logo' en explain:08 (Diagrama de Framework)
+    req = ImageRequest(
+        tipo="logo",
+        descripcion="Arquitectura de Kubernetes",
+        marca="Kubernetes",
+        template_key="explain:08",
+    )
+
+    res = router.route(req)
+    assert res is not None
+    # No debe devolver el logo estático; redirige a diagrama/búsqueda
+    assert res.source == "busqueda"
+    logos.fetch.assert_not_called()
+    search.fetch.assert_called_once()
+
+
+def test_router_glossary_accepts_logo():
+    """Verifica que el glosario visual (explain:06) sí acepta logotipos técnicos."""
+    logos = MagicMock()
+    logos.fetch.return_value = _dummy_result("logo")
+    search = MagicMock()
+
+    router = ImageRouter(logos_source=logos, search_source=search)
+
+    req = ImageRequest(
+        tipo="logo",
+        descripcion="Logotipo de Python",
+        marca="Python",
+        template_key="explain:06",
+    )
+
+    res = router.route(req)
+    assert res is not None
+    assert res.source == "logo"
+    logos.fetch.assert_called_once()
+    search.fetch.assert_not_called()
+
+
+def test_router_explanatory_template_unpadded_key_rejects_logo():
+    """Verifica que 'explain:8' sin cero a la izquierda también rechace logos."""
+    logos = MagicMock()
+    search = MagicMock()
+    search.fetch.return_value = _dummy_result("busqueda")
+
+    router = ImageRouter(logos_source=logos, search_source=search)
+
+    req = ImageRequest(
+        tipo="logo",
+        descripcion="Arquitectura de Kubernetes",
+        marca="Kubernetes",
+        template_key="explain:8",
+    )
+
+    res = router.route(req)
+    assert res is not None
+    assert res.source == "busqueda"
+    logos.fetch.assert_not_called()
+    search.fetch.assert_called_once()
+

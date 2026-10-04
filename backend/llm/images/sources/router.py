@@ -121,6 +121,23 @@ class GenerationSource:
         )
 
 
+# Tipos de imagen permitidos como figura principal según el objetivo pedagógico de la plantilla.
+# Las plantillas de arquitectura y análisis técnico prohíben logotipos aislados como figura central.
+TEMPLATE_ALLOWED_KINDS: dict[str, tuple[ImageKind, ...]] = {
+    "explain:08": ("diagrama", "foto"),  # Diagrama de Framework: exige esquema de arquitectura, no logo
+    "elaborate:01": ("foto", "diagrama"),  # Estudio de Caso: fotografía real de infraestructura o entorno
+    "elaborate:03": ("diagrama", "foto"),  # Mini-Proyecto: arquitectura técnica o esquema del entregable
+    "engage:05": ("foto", "escena"),  # Dilema Ético: imagen situacional/evocadora
+    "engage:06": ("foto", "escena"),  # Noticia de Impacto: fotografía documental/noticiosa
+    "explain:02": ("foto", "diagrama"),  # Lectura Guiada: figura técnica o diagrama
+    "explore:05": ("foto", "diagrama"),  # Lectura Interactiva: imagen de contexto
+    "explain:10": ("foto", "diagrama"),  # Infografía Interactiva: infografía o esquema amplio
+    # Plantillas que admiten logotipos oficiales como identificador técnico:
+    "explain:06": ("logo", "foto", "diagrama"),  # Glosario Visual
+    "explain:09": ("logo", "diagrama", "foto"),  # Tabla Comparativa
+}
+
+
 class ImageRouter:
     """Enrutador inteligente de imágenes del OVA con fallbacks automáticos."""
 
@@ -153,6 +170,23 @@ class ImageRouter:
         kind: ImageKind = request.tipo
         if kind not in ("personaje", "logo", "diagrama", "foto", "escena"):
             kind = "foto" if (request.consulta or request.descripcion) else "escena"
+
+        # Validación por plantilla/hueco: evitar logos como figura principal en plantillas explicativas
+        template_key = request.template_key
+        norm_key = template_key
+        if template_key and ":" in template_key:
+            phase, sep, num = template_key.partition(":")
+            if num.isdigit():
+                norm_key = f"{phase}:{int(num):02d}"
+        allowed_kinds = TEMPLATE_ALLOWED_KINDS.get(template_key) or TEMPLATE_ALLOWED_KINDS.get(norm_key)
+        if allowed_kinds and kind not in allowed_kinds:
+            logger.info(
+                "image kind redirected by template pedagogy policy",
+                requested=kind,
+                template=template_key,
+                fallback=allowed_kinds[0],
+            )
+            kind = allowed_kinds[0]
 
         history: list[str] = []
         result: ImageResult | None = None

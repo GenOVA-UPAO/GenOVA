@@ -93,11 +93,12 @@ class ImageRequest:
     marca: str = ""
     diagrama: dict | None = None
     concept: str = ""  # tema del OVA (contexto para buscar/elegir)
+    template_key: str = ""  # plantilla pedagógica ("explain:08", etc.) para delimitar tipos admitidos
     width: int = 768
     height: int = 512
 
     @classmethod
-    def from_json(cls, data: dict, *, concept: str = "") -> ImageRequest:
+    def from_json(cls, data: dict, *, concept: str = "", template_key: str = "") -> ImageRequest:
         return cls(
             tipo=data.get("tipo") or "escena",
             descripcion=str(data.get("descripcion") or "").strip(),
@@ -105,6 +106,7 @@ class ImageRequest:
             marca=str(data.get("marca") or data.get("brand") or "").strip(),
             diagrama=data.get("diagrama") or None,
             concept=concept,
+            template_key=template_key or str(data.get("template_key") or "").strip(),
         )
 
 

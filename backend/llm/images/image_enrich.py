@@ -71,6 +71,7 @@ def enrich_with_images(
     *,
     character: str = "",
     ova_key: str = "",
+    template_key: str = "",
 ) -> dict[str, str]:
     """Fetch images for items with ``imagen`` (via ImageRouter) or ``prompt_imagen``; inject placeholders.
 
@@ -132,7 +133,7 @@ def enrich_with_images(
             from llm.images.sources.router import ImageRouter
 
             router = ImageRouter()
-            req = ImageRequest.from_json(item["imagen"], concept=ova_key)
+            req = ImageRequest.from_json(item["imagen"], concept=ova_key, template_key=template_key)
             try:
                 res = router.route(
                     req,

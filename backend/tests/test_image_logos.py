@@ -71,3 +71,45 @@ def test_logo_source_oracle_and_devicon():
     assert res.meta["slug"] == "oracle"
     assert res.credit.provider == "devicon"
     assert "MIT" in res.credit.license
+
+
+def test_kafka_does_not_return_apache():
+    """Verifica que Apache Kafka NO devuelve la pluma de Apache HTTP Server."""
+    source = LogoSource()
+
+    # Distintas variantes de consulta y marca
+    assert find_logo_slug("Apache Kafka") is None
+    assert find_logo_slug("Kafka", brand="Apache Kafka") is None
+    assert find_logo_slug("Kafka") is None
+    assert find_logo_slug("", brand="Kafka") is None
+    assert find_logo_slug("", brand="Apache Kafka") is None
+    assert find_logo_slug("procesamiento distribuido con Apache Kafka") is None
+
+    # Petición formal a LogoSource
+    req = ImageRequest(tipo="logo", descripcion="Stream de eventos", marca="Apache Kafka", consulta="Apache Kafka")
+    res = source.fetch(req)
+    assert res is None  # No hay logo estático -> cae a búsqueda
+
+
+def test_logo_official_colors_in_svg():
+    """Verifica que los logotipos de Simple Icons incluyen su color oficial en el SVG (no negro)."""
+    source = LogoSource()
+    import base64
+
+    # PostgreSQL oficial (#4169E1)
+    res_pg = source.fetch(ImageRequest(tipo="logo", descripcion="Postgres", marca="PostgreSQL"))
+    assert res_pg is not None
+    svg_pg = base64.b64decode(res_pg.data_uri.split(",")[1]).decode("utf-8")
+    assert 'fill="#4169E1"' in svg_pg or 'fill="#4169e1"' in svg_pg.lower()
+
+    # Docker oficial (#2496ED)
+    res_docker = source.fetch(ImageRequest(tipo="logo", descripcion="Docker", marca="Docker"))
+    assert res_docker is not None
+    svg_docker = base64.b64decode(res_docker.data_uri.split(",")[1]).decode("utf-8")
+    assert 'fill="#2496ED"' in svg_docker or 'fill="#2496ed"' in svg_docker.lower()
+
+    # Kubernetes oficial (#326CE5)
+    res_k8s = source.fetch(ImageRequest(tipo="logo", descripcion="Kubernetes", marca="Kubernetes"))
+    assert res_k8s is not None
+    svg_k8s = base64.b64decode(res_k8s.data_uri.split(",")[1]).decode("utf-8")
+    assert 'fill="#326CE5"' in svg_k8s or 'fill="#326ce5"' in svg_k8s.lower()
