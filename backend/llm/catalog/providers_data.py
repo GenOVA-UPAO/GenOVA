@@ -53,6 +53,18 @@ CATALOG_ENTRIES = [
     },
     {
         "provider": "openrouter",
+        "model_id": "deepseek/deepseek-v4-pro",
+        "label": "DeepSeek V4 Pro (OpenRouter)",
+        "task": "codigo",
+        "pricing": None,
+        "context_length": None,
+        "active": True,
+        "modality": "text",
+        "notes": "Edición de recursos (HTML completo): 384k de salida, ~$0.01 por edición. "
+        "Misma cuenta de OpenRouter que el texto; sin suscripción aparte.",
+    },
+    {
+        "provider": "openrouter",
         "model_id": "deepseek/deepseek-chat-v3.1",
         "label": "DeepSeek Chat V3.1 (OpenRouter)",
         "task": "codigo",
