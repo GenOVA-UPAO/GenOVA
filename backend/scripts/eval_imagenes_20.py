@@ -1,13 +1,12 @@
 """Script de evaluación honesta y generación de hoja de contactos para temas de CS.
 
-Iteración 2:
-- Peticiones 'imagen' generadas dinámicamente por el LLM local (qwen3:8b) sobre plantillas reales.
-- Admite argumento CLI `--temas <archivo.json>` para evaluación con conjunto ciego (heldout).
-- Hoja de contactos HTML con todas las imágenes cargadas de inmediato (sin lazy-loading).
-- Muestra puntuación CLIP, candidatos descartados y motivos de descarte por clases negativas.
-- Crédito real completo (autor, licencia con enlace, proveedor).
-- Columna 'Relevante (revisión humana)' dejada vacía para el evaluador humano.
-- Métricas objetivas en out/imagenes-busqueda/v2/metrics.json y hoja de contactos en contact_sheet.html.
+Iteración 4:
+- Saneamiento y validación estricta de consultas (rechazo de URLs, SQL, preguntas, palabras vacías).
+- Construcción determinista de consultas a partir de conceptos y glosario técnico.
+- Generación de escenas con sujetos concretos y validación CLIP contra prompt y clases negativas.
+- Selección semántica de diagramas por rasgos del tema y control léxico estricto.
+- Hoja de contactos HTML con trazabilidad completa de consultas (original vs final) y scores CLIP.
+- Métricas objetivas en out/imagenes-busqueda/v4/metrics.json y hoja de contactos en contact_sheet.html.
 """
 
 from __future__ import annotations
@@ -25,6 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from llm.images.image_enrich import format_credit_caption
 from llm.images.image_placeholder import resolve_image_placeholders
+from llm.images.query_builder import sanitize_image_request
 from llm.images.sources.contract import ImageRequest
 from llm.images.sources.router import ImageRouter
 from ova_engine.decision import decide
@@ -234,7 +234,7 @@ def main():
     parser.add_argument(
         "--out-dir",
         type=str,
-        default="/home/jeffryru/github/genova-orquestacion/out/imagenes-busqueda/v3",
+        default="/home/jeffryru/github/genova-orquestacion/out/imagenes-busqueda/v4",
         help="Directorio de salida para la hoja de contactos, métricas y muestras.",
     )
     parser.add_argument(
@@ -271,11 +271,12 @@ def main():
     results: list[dict[str, Any]] = []
     used_hashes_seen: set[str] = set()
 
-    print("=== INICIANDO EVALUACIÓN HONESTA DE IMÁGENES (Iteración 3) ===")
+    print("=== INICIANDO EVALUACIÓN HONESTA DE IMÁGENES (Iteración 4) ===")
     print(f"Temas a evaluar: {len(topics)}")
     print(f"Directorio de salida: {out_dir}")
     print("Backend LLM: local (Ollama/llama-server qwen3:8b)")
-    print("Motor de diagramas: DiagramSource (SVG nativo / determinista)")
+    print("Motor de diagramas: DiagramSource (SVG nativo con selección por rasgos y control léxico)")
+    print("Generación local: SD-Turbo con prompt estructurado y validación CLIP")
     print("Re-ranking fotos: local CLIP ViT-B-32 (clases negativas y margen especificidad)")
     print("Deduplicación: dHash perceptual (intra-OVA y registro de uso)")
     print("=" * 65)
@@ -302,7 +303,7 @@ def main():
         except Exception as exc:
             print(f" ERROR: {exc}")
 
-        # 2. Extracción de la petición de imagen generada por el LLM
+        # 2. Extracción y validación/saneamiento de la petición de imagen
         raw_image_req = data.get("imagen")
         if isinstance(raw_image_req, dict) and (raw_image_req.get("consulta") or raw_image_req.get("marca") or raw_image_req.get("tipo")):
             req = ImageRequest.from_json(
@@ -311,12 +312,6 @@ def main():
                 template_key=template_key,
                 used_hashes=tuple(used_hashes_seen),
             )
-            llm_request_summary = {
-                "tipo": req.tipo,
-                "marca": req.marca or "",
-                "consulta": req.consulta or "",
-                "descripcion": req.descripcion or "",
-            }
         else:
             # Fallback seguro con metadatos del concepto
             req = ImageRequest(
@@ -327,14 +322,19 @@ def main():
                 template_key=template_key,
                 used_hashes=tuple(used_hashes_seen),
             )
-            llm_request_summary = {
-                "tipo": "foto (inferido)",
-                "marca": "",
-                "consulta": concept,
-                "descripcion": concept,
-            }
+            req = sanitize_image_request(req)
 
-        print(f"     [2/3] Petición LLM: tipo={llm_request_summary['tipo']}, marca='{llm_request_summary['marca']}', consulta='{llm_request_summary['consulta']}'")
+        llm_request_summary = {
+            "tipo": req.tipo,
+            "marca": req.marca or "",
+            "consulta": req.original_consulta or req.consulta or "",
+            "descripcion": req.descripcion or "",
+        }
+
+        if req.consulta_replaced:
+            print(f"     [2/3] Consulta LLM inválida ({req.replacement_reason}) -> Determinista: «{req.consulta}»")
+        else:
+            print(f"     [2/3] Petición LLM: tipo={req.tipo}, marca='{req.marca or ''}', consulta='{req.consulta}'")
 
         # 3. Enrutamiento y evaluación visual con CLIP
         print("     [3/3] Enrutando y evaluando con CLIP...", end="", flush=True)
@@ -386,12 +386,26 @@ def main():
 
         total_latency_ms = round(llm_latency_ms + img_latency_ms, 1)
 
+        original_query = (res.meta.get("original_query") if res else "") or req.original_consulta or ""
+        final_query = (res.meta.get("query") if res else "") or req.consulta or ""
+        query_replaced = bool((res.meta.get("query_replaced") if res else False) or req.consulta_replaced)
+        replacement_reason = (res.meta.get("replacement_reason") if res else None) or req.replacement_reason
+
+        clip_pos_score = res.meta.get("clip_pos_score") if res else None
+        clip_top_neg_class = res.meta.get("clip_top_neg_class") if res else None
+        clip_top_neg_score = res.meta.get("clip_top_neg_score") if res else None
+        clip_margin = res.meta.get("clip_margin") if res else None
+
         rec = {
             "id": item["id"],
             "concept": concept,
             "template": f"{phase}:{rt} ({template_title})",
             "template_key": template_key,
             "llm_request": llm_request_summary,
+            "original_query": original_query,
+            "final_query": final_query,
+            "query_replaced": query_replaced,
+            "replacement_reason": replacement_reason,
             "source": source,
             "provider": provider,
             "author": getattr(res.credit, "author", "") if (res and res.credit) else "",
@@ -399,6 +413,10 @@ def main():
             "license_url": getattr(res.credit, "license_url", "") if (res and res.credit) else "",
             "source_url": getattr(res.credit, "source_url", "") if (res and res.credit) else "",
             "clip_score": clip_score,
+            "clip_pos_score": clip_pos_score,
+            "clip_top_neg_class": clip_top_neg_class,
+            "clip_top_neg_score": clip_top_neg_score,
+            "clip_margin": clip_margin,
             "candidates_evaluated": len(diagnostics),
             "candidates_passed": num_passed,
             "candidates_discarded": num_discarded,
@@ -439,6 +457,9 @@ def main():
     total_candidates_passed = sum(1 for d in all_clip_evals if d.get("passed"))
     total_candidates_discarded = total_candidates_eval - total_candidates_passed
 
+    total_queries_replaced = sum(1 for r in results if r.get("query_replaced"))
+    pct_queries_replaced = round((total_queries_replaced / total) * 100, 1) if total else 0.0
+
     discard_reasons_summary: dict[str, int] = {}
     for d in all_clip_evals:
         if not d.get("passed"):
@@ -456,6 +477,8 @@ def main():
             "con_imagen": con_imagen,
             "sin_imagen": sin_imagen,
             "cobertura_pct": round((con_imagen / total) * 100, 1) if total else 0.0,
+            "consultas_reemplazadas": total_queries_replaced,
+            "consultas_reemplazadas_pct": pct_queries_replaced,
             "costo_total_usd": 0.00,
         },
         "distribucion_fuentes": {
@@ -542,6 +565,38 @@ def main():
             else html.escape(r["provider"] or r["source"])
         )
 
+        query_section_html = ""
+        if r.get("query_replaced"):
+            query_section_html = f"""
+            <div class="req-box query-box-replaced">
+              <div class="replaced-tag">⚠️ Consulta LLM inválida descartada:</div>
+              <div><del>«{html.escape(r['original_query'])}»</del></div>
+              <div class="reason-note"><strong>Motivo:</strong> {html.escape(r.get('replacement_reason') or 'inválida')}</div>
+              <div class="final-query-row"><strong>Consulta FINAL (determinista):</strong> <span class="final-query">«{html.escape(r['final_query'])}»</span></div>
+            </div>
+            """
+        else:
+            query_section_html = f"""
+            <div class="req-box">
+              <strong>Petición generada por LLM:</strong>
+              <div>Tipo: <code>{html.escape(r['llm_request']['tipo'])}</code> · Marca: <code>{html.escape(r['llm_request']['marca'] or 'N/A')}</code></div>
+              <div>Consulta: <span class="final-query">«{html.escape(r['final_query'] or r['llm_request']['consulta'])}»</span></div>
+            </div>
+            """
+
+        clip_detail_html = ""
+        if r.get("clip_pos_score") is not None and r.get("clip_margin") is not None:
+            neg_info = f"{r.get('clip_top_neg_class')} ({r.get('clip_top_neg_score'):.3f})" if r.get("clip_top_neg_class") else "N/A"
+            clip_detail_html = f"""
+            <div class="clip-scores-detail">
+              <span><strong>Positivo:</strong> {r['clip_pos_score']:.3f}</span> ·
+              <span><strong>Margen:</strong> {r['clip_margin']:.3f}</span> ·
+              <span><strong>Top Negativo:</strong> {neg_info}</span>
+            </div>
+            """
+
+        replaced_badge = '<span class="badge badge-replaced">CONSULTA DETERMINISTA</span>' if r.get("query_replaced") else ""
+
         contact_cards_html.append(f"""
         <div class="card">
           <div class="card-img-wrap">
@@ -552,13 +607,11 @@ def main():
               <span class="badge {source_cls}">{r["source"].upper()}</span>
               <span class="badge badge-template">{html.escape(r["template"])}</span>
               <span class="badge badge-score">CLIP: {score_text}</span>
+              {replaced_badge}
             </div>
             <h3 class="card-title">{html.escape(r["concept"])}</h3>
-            <div class="req-box">
-              <strong>Petición generada por LLM:</strong>
-              <div>Tipo: <code>{html.escape(r['llm_request']['tipo'])}</code> · Marca: <code>{html.escape(r['llm_request']['marca'] or 'N/A')}</code></div>
-              <div>Consulta: <em>«{html.escape(r['llm_request']['consulta'])}»</em></div>
-            </div>
+            {query_section_html}
+            {clip_detail_html}
             <div class="card-meta">
               <strong>Atribución:</strong> {html.escape(r["author"] or "N/A")} · {credit_link} · {source_link}
             </div>
@@ -712,6 +765,13 @@ def main():
     .badge-none {{ background: #FEE2E2; color: #991B1B; }}
     .badge-template {{ background: #F1F5F9; color: var(--text-muted); }}
     .badge-score {{ background: #FEF3C7; color: #92400E; }}
+    .badge-replaced {{ background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5; }}
+    .query-box-replaced {{ background: #FFFBEB; border-left: 4px solid #F59E0B; }}
+    .replaced-tag {{ color: #B45309; font-weight: 600; font-size: 0.75rem; }}
+    .reason-note {{ color: #92400E; font-size: 0.75rem; margin: 2px 0; }}
+    .final-query-row {{ margin-top: 4px; padding-top: 4px; border-top: 1px dashed #FDE68A; }}
+    .final-query {{ color: #1D4ED8; font-weight: 600; }}
+    .clip-scores-detail {{ font-size: 0.75rem; color: #334155; background: #F1F5F9; border-radius: 6px; padding: 4px 8px; line-height: 1.4; }}
     .card-title {{
       margin: 4px 0 0;
       font-size: 1.05rem;
@@ -800,8 +860,8 @@ def main():
 <body>
   <div class="container">
     <header>
-      <h1>Hoja de Contactos — Evaluación de Fuentes de Imagen V3</h1>
-      <p>Evaluación con motor de diagramas SVG deterministas, búsqueda estricta de fotos con CLIP zero-shot y deduplicación perceptual dHash.</p>
+      <h1>Hoja de Contactos — Evaluación de Fuentes de Imagen V4</h1>
+      <p>Evaluación con motor de diagramas SVG deterministas y selección léxica, prompts compuestos para generación local con CLIP estricto, y saneamiento determinista de consultas.</p>
     </header>
 
     <div class="stats-grid">
@@ -812,6 +872,12 @@ def main():
       <div class="stat-card">
         <div class="stat-lbl">Cobertura con Imagen</div>
         <div class="stat-val" style="color:var(--success)">{metrics['resumen_general']['cobertura_pct']}%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Consultas Deterministas</div>
+        <div class="stat-val" style="color:var(--accent)">
+          {total_queries_replaced} / {total} <span style="font-size:0.9rem">({pct_queries_replaced}%)</span>
+        </div>
       </div>
       <div class="stat-card">
         <div class="stat-lbl">Distribución de Fuentes</div>
