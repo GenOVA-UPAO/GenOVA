@@ -13,6 +13,7 @@ import json
 import os
 import sys
 import time
+from copy import deepcopy
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -133,20 +134,45 @@ EXAMPLE = {
 
 
 def prompt_for(kind, concept, criteria):
+    example = deepcopy(EXAMPLE)
+    example["tipo"] = kind
+    example["nodos"][0]["etiqueta"] = "Elemento A"
+    example["nodos"][1]["etiqueta"] = "Elemento B"
+    example["aristas"][0]["etiqueta"] = "relación"
+    example["nodos"][0]["atributos"] = ["Propiedad breve"]
+    rules = {
+        "er": "PK/FK en atributos separados; cardinalidad en cada arista, relativa a origen→destino.",
+        "arbol": "Solo nodos necesarios. Un padre por nodo. Hermanos en orden izquierda→derecha.",
+        "flujo": "Solo etapas necesarias. Etiquetas de aristas coherentes con las etapas; recalcula en cada iteración.",
+        "capas": "Nodos ordenados arriba→abajo, grupo y atributos describen función de cada capa.",
+        "secuencia": "Nodos SOLO actores; aristas SOLO mensajes, en orden temporal. No crear nodos de mensajes.",
+        "comparacion": "EXACTAMENTE dos nodos: cada etiqueta nombra una alternativa; atributos comparan propiedades.",
+    }
+    if kind == "er":
+        example["nodos"][0]["atributos"] = ["id (PK)"]
+        example["nodos"][1]["atributos"] = ["id (PK)", "a_id (FK)"]
+        example["aristas"][0]["cardinalidad"] = "1:N"
+    elif kind == "capas":
+        example["nodos"][0]["grupo"] = "Capa A"
+        example["nodos"][1]["grupo"] = "Capa B"
+    elif kind == "comparacion":
+        example["nodos"][1]["atributos"] = ["Propiedad alternativa"]
+        example["aristas"] = []
     return (
-        f"Crea un diagrama educativo en español de tipo {kind} sobre {concept}. {criteria} "
-        "Usa ids únicos, aristas solo a ids existentes y respeta todos los límites del schema. "
-        "En secuencia nodos=actores y aristas=mensajes en orden. "
-        "En árbol ordena hermanos de izquierda a derecha; etiquetas incluyen claves. "
-        "En capas ordena nodos de arriba abajo. Sin HTML. Solo JSON. Ejemplo: "
-        + json.dumps(EXAMPLE, ensure_ascii=False)
+        f"Diagrama en español de {concept}. tipo DEBE ser {kind}. {criteria} {rules[kind]} "
+        "IDs únicos; referencias existentes. Etiquetas cortas (máx 24 caracteres); "
+        "explicaciones en atributos separados, cortos y completos (máx 35 caracteres). "
+        "No trunques frases. Solo JSON, sin HTML. Ejemplo estructural del tipo (otro concepto): "
+        + json.dumps(example, ensure_ascii=False)
     )
 
 
-def evaluate(out: Path):
+def evaluate(out: Path, *, resume: bool = False):
     os.environ["OVA_LOCAL_LLM_URL"] = "http://localhost:11435"
-    records = []
+    records = json.loads((out / "resultados.json").read_text()) if resume else []
     for index, (kind, concept, criteria) in enumerate(CASES, 1):
+        if any(record["id"] == index for record in records):
+            continue
         prompt = prompt_for(kind, concept, criteria)
         start = time.perf_counter()
         raw = _local(prompt, DIAGRAM_SCHEMA, 2400, temperature=0, timeout=300, model="qwen3:8b")
@@ -186,12 +212,21 @@ def evaluate(out: Path):
     gallery(out)
 
 
-def gallery(out: Path):
-    records = json.loads((out / "resultados.json").read_text())
+def gallery(out: Path, source: Path | None = None):
+    source = source or out
+    records = json.loads((source / "resultados.json").read_text())
     cards = []
     for record in records:
-        svg_path = out / f"{record['id']:02}.svg"
+        svg_path = source / f"{record['id']:02}.svg"
         svg = svg_path.read_text() if svg_path.exists() else "<p>Rechazado por la fuente</p>"
+        # Standalone SVG IDs are local; inline gallery SVGs need document-unique IDs.
+        for name in ("title", "desc", "arrow"):
+            svg = svg.replace(f'id="{name}"', f'id="{name}-{record["id"]}"')
+        svg = svg.replace(
+            'aria-labelledby="title desc"',
+            f'aria-labelledby="title-{record["id"]} desc-{record["id"]}"',
+        )
+        svg = svg.replace("url(#arrow)", f"url(#arrow-{record['id']})")
         cards.append(
             f'<article id="caso-{record["id"]}"><h2>{record["id"]:02}. {html.escape(record["concepto"])}</h2>'
             f"<p>{record['tipo']} · LLM {record['seconds']} s · SVG {record['render_ms']} ms</p>"
@@ -224,11 +259,13 @@ if __name__ == "__main__":
     parser.add_argument("--out", type=Path)
     parser.add_argument("--snapshots", action="store_true")
     parser.add_argument("--gallery", action="store_true")
+    parser.add_argument("--gallery-source", type=Path)
+    parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
     if args.snapshots:
         snapshots()
     elif args.gallery:
-        gallery(args.out)
+        gallery(args.out, args.gallery_source)
     else:
         args.out.mkdir(parents=True, exist_ok=True)
-        evaluate(args.out)
+        evaluate(args.out, resume=args.resume)
