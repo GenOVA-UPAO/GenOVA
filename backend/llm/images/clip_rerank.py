@@ -146,9 +146,20 @@ class ClipReranker:
         accepted_candidates: list[tuple[float, dict[str, Any]]] = []
 
         import requests
+        from requests.adapters import HTTPAdapter
+        from urllib3.util.retry import Retry
 
         session = requests.Session()
-        session.headers.update({"User-Agent": "GenOVA-Educational-Bot/1.0"})
+        retries = Retry(
+            total=3,
+            backoff_factor=1.5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(max_retries=retries)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        session.headers.update({"User-Agent": "GenOVA/1.0 (https://github.com/GenOVA-UPAO/GenOVA; soporte@genova.edu.pe)"})
 
         for c in candidates:
             url = c.get("url")

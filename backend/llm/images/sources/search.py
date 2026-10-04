@@ -30,7 +30,7 @@ from llm.images.sources.contract import Credit, ImageRequest, ImageResult
 
 logger = structlog.get_logger(__name__)
 
-USER_AGENT = "GenOVA-Educational-Bot/1.0 (https://genova.local; soporte@genova.edu.pe) python-requests"
+USER_AGENT = "GenOVA/1.0 (https://github.com/GenOVA-UPAO/GenOVA; soporte@genova.edu.pe)"
 _TIMEOUT_S = 6.0
 
 # Licencias permitidas según requerimiento
@@ -131,8 +131,8 @@ def create_http_session() -> requests.Session:
     """Crea una sesión requests con reintentos exponenciales para lidiar con 429."""
     session = requests.Session()
     retries = Retry(
-        total=2,
-        backoff_factor=1.0,
+        total=3,
+        backoff_factor=1.5,
         status_forcelist=[429, 500, 502, 503, 504],
         raise_on_status=False,
     )
@@ -194,6 +194,7 @@ def search_wikimedia(query: str, session: requests.Session | None = None) -> lis
         "gsrlimit": "20",
         "prop": "imageinfo",
         "iiprop": "url|size|extmetadata|mime",
+        "iiurlwidth": "800",
         "format": "json",
     }
     try:
@@ -214,7 +215,7 @@ def search_wikimedia(query: str, session: requests.Session | None = None) -> lis
         imageinfo = page.get("imageinfo", [{}])[0]
         extmetadata = imageinfo.get("extmetadata", {})
 
-        url_img = imageinfo.get("url")
+        url_img = imageinfo.get("thumburl") or imageinfo.get("url")
         if not url_img:
             continue
 
