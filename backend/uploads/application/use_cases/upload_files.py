@@ -56,7 +56,7 @@ class UploadFiles:
             except UploadError as err:
                 errors.append(
                     UploadFileError(
-                        filename=incoming.filename or "archivo", error=err.code, message=str(err)
+                        filename=incoming.filename or "archivo", error=err.code, message=err.public_message
                     )
                 )
         pending = [

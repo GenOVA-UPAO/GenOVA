@@ -14,7 +14,7 @@ def error_response(err: UploadError) -> JSONResponse:
         if isinstance(err, UploadNotFound)
         else status.HTTP_400_BAD_REQUEST
     )
-    content: dict = {"error": err.code, "message": str(err)}
+    content: dict = {"error": err.code, "message": err.public_message}
     if isinstance(err, TooManyFiles):
         content["max_files"] = err.max_files
     return JSONResponse(status_code=code, content=content)
