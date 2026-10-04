@@ -32,8 +32,24 @@ class TextGenerationError(RuntimeError):
     pass
 
 
+# Errores de Oracle que los modelos repiten (QA en producción, 2026-10-04): se fijan
+# como hechos para el texto y para el revisor (ambos pasan por aquí).
+ORACLE_FACTS = (
+    "Hechos de Oracle que NO puedes contradecir: "
+    "(1) ante un interbloqueo (ORA-00060) Oracle revierte solo la SENTENCIA que lo detecta, "
+    "no la transacción ni elige «víctima»; la sesión decide luego COMMIT o ROLLBACK; "
+    "(2) un SELECT normal no bloquea filas (lectura consistente con undo); solo SELECT ... FOR UPDATE las bloquea; "
+    "(3) Oracle no usa BEGIN TRANSACTION: la transacción empieza con la primera DML y termina con COMMIT/ROLLBACK; "
+    "(4) SAVEPOINT marca un punto y ROLLBACK TO SAVEPOINT revierte hasta él; ROLLBACK sin más revierte toda la transacción; "
+    "(5) las vistas V$ (V$LOCK, V$SESSION) son dinámicas de rendimiento, no del diccionario; "
+    "(6) jerarquía de almacenamiento: tablespace → segmento → extensión → bloque; "
+    "(7) SERIALIZABLE puede lanzar ORA-08177 (can't serialize access). "
+    "No uses sintaxis ni comportamientos de SQL Server, MySQL o PostgreSQL.\n"
+)
+
 _SYSTEM_RULES = (
-    "Escribe SOLO el contenido textual en español neutro, preciso y fiel al concepto. "
+    ORACLE_FACTS
+    + "Escribe SOLO el contenido textual en español neutro, preciso y fiel al concepto. "
     "No escribas HTML, CSS, JavaScript ni markdown. Responde únicamente con un JSON "
     "válido que cumpla exactamente este JSON Schema:\n"
 )
