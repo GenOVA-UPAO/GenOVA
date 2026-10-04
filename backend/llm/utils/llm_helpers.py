@@ -21,8 +21,10 @@ logger = structlog.get_logger(__name__)
 _SEED_MODELOS: dict[str, tuple] = {
     # Groq quota se agota rápido con prompts largos → OpenRouter como primario.
     "texto": ("openrouter", "deepseek/deepseek-v4-flash", {}),
-    # DeepSeek V4 Pro via OpenCode Go subscription — stronger code model.
-    "codigo": ("opencode", "deepseek-v4-pro", {}),
+    # DeepSeek V4 Pro vía OpenRouter (edición de recursos). Antes era OpenCode Go,
+    # una suscripción aparte: sin su clave cada edición caía a un modelo gratuito
+    # lento (~90 s). OpenCode sigue disponible si el admin lo elige.
+    "codigo": ("openrouter", "deepseek/deepseek-v4-pro", {}),
     "orquestador": ("openrouter", "deepseek/deepseek-v4-flash", {}),
     "razonamiento": ("openrouter", "deepseek/deepseek-v4-flash", {}),
 }

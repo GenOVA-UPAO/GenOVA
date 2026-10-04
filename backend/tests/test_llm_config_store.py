@@ -95,7 +95,8 @@ def test_effective_config_shape(monkeypatch):
     eff = router.effective_llm_config()
     assert set(eff["defaults"]) == set(router._SEED_MODELOS)
     assert set(eff["fallbacks"]) == set(router._SEED_MODELOS)
-    assert eff["defaults"]["codigo"]["provider"] == "opencode"
+    assert eff["defaults"]["codigo"]["provider"] == "openrouter"
+    assert eff["defaults"]["codigo"]["model_id"] == "deepseek/deepseek-v4-pro"
 
 
 # --- _chat: opencode DeepSeek thinking-disabled injection -------------------
