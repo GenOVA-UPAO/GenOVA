@@ -18,6 +18,22 @@ from scripts import evaluate_diagrams
 DATA = {"tipo": "flujo", "titulo": "Entrada", "nodos": [{"id": "a", "etiqueta": "Entrada"}]}
 
 
+@pytest.mark.parametrize("kind", ["er", "secuencia", "comparacion", "flujo"])
+def test_neutral_prompt_and_type_specific_instructions(kind):
+    prompt = evaluate_diagrams.prompt_for(kind, "Dominio nuevo", "Detalle solicitado")
+    assert "Ejemplar" not in prompt and "préstamo" not in prompt and "SQL/NoSQL" not in prompt
+    assert "no copies" in prompt
+    if kind == "comparacion":
+        assert (
+            "exclusivamente esos criterios" in prompt
+            and "certeza" in prompt
+            and "máximo 5" in prompt
+        )
+    if kind == "flujo":
+        assert '"etiqueta": "sí"' in prompt and '"etiqueta": "no"' in prompt
+        assert '"origen": "c", "destino": "b"' in prompt and "transiciones" in prompt
+
+
 @pytest.mark.parametrize(
     "status,content,expected",
     [

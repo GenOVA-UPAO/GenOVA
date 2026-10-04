@@ -136,36 +136,51 @@ EXAMPLE = {
 def prompt_for(kind, concept, criteria):
     example = deepcopy(EXAMPLE)
     example["tipo"] = kind
-    example["nodos"][0]["etiqueta"] = "Elemento A"
-    example["nodos"][1]["etiqueta"] = "Elemento B"
+    example["nodos"][0]["etiqueta"] = "Elemento Alfa"
+    example["nodos"][1]["etiqueta"] = "Elemento Beta"
     example["aristas"][0]["etiqueta"] = "relación"
     example["nodos"][0]["atributos"] = ["Propiedad breve"]
     rules = {
-        "er": "Atributos SOLO nombres con marcas (PK)/(FK), sin explicaciones ni '(completo)'. PK en cada entidad. Cardinalidad 1:1, 1:N, N:1 o N:M relativa a origen→destino; la FK va en el lado N. Un préstamo histórico pertenece a un ejemplar; un ejemplar puede tener muchos préstamos en el tiempo. Entidad intermedia para N:M.",
+        "er": "Atributos SOLO nombres con marcas (PK)/(FK), sin explicaciones ni '(completo)'. PK en cada entidad. Cardinalidad 1:1, 1:N, N:1 o N:M relativa a origen→destino; la FK va en el lado N. No dupliques FK existentes aunque usen id_x, x_id, xId, idX o sufijos de rol. Entidad intermedia para N:M. Relaciones de roles distintos conservan sus etiquetas, incluso entre las mismas entidades. No emitas cardinalidades contradictorias ni entidades ajenas al concepto solicitado.",
         "arbol": "Solo nodos necesarios. Un padre por nodo. Hermanos y aristas en orden izquierda→derecha. En B-Tree etiqueta SOLO [claves,numéricas], sin atributos; respeta rangos y profundidad uniforme. En BST etiqueta SOLO número.",
-        "flujo": "Solo etapas necesarias. Etiquetas de aristas coherentes con las etapas; recalcula en cada iteración.",
+        "flujo": "Solo etapas necesarias. Cada arista expresa la condición o acción que permite ir del origen al destino, no un resultado aún no obtenido. Decisiones con salidas sí/no o condiciones mutuamente excluyentes; bucles vuelven a evaluar la condición y tienen salida. Incluye todas las transiciones solicitadas, incluidas las de fallo en ciclos de estado. Recalcula en cada iteración.",
         "capas": "Nodos ordenados arriba→abajo, grupo y atributos describen función de cada capa.",
-        "secuencia": "Nodos SOLO actores; aristas SOLO mensajes, en orden temporal. No crear nodos de mensajes.",
-        "comparacion": "EXACTAMENTE dos nodos. Atributos con formato 'Criterio: valor', mismos criterios neutrales y precisos en ambos nodos. SQL/NoSQL: distinguir modelos, esquema, lenguajes y escalabilidad según motor; NoSQL puede ofrecer ACID y SQL puede escalar horizontalmente. Evitar absolutos o juicios de superioridad.",
+        "secuencia": "Nodos SOLO actores únicos por etiqueta; reutiliza el mismo ID para cada aparición del actor. Aristas SOLO mensajes, en orden temporal. No crear nodos de mensajes.",
+        "comparacion": "EXACTAMENTE dos nodos. Atributos con formato 'Criterio: valor', mismos criterios neutrales y precisos en ambos nodos, máximo 5. Si el detalle pide criterios, usa exclusivamente esos criterios y no añadas otros. Omite cualquier criterio cuyo valor no sepas con certeza para ambas alternativas. Evita absolutos, dicotomías inventadas o juicios de superioridad.",
     }
     if kind == "er":
         example["nodos"][0]["atributos"] = ["id (PK)"]
-        example["nodos"][1]["atributos"] = ["id (PK)", "a_id (FK)"]
+        example["nodos"][1]["atributos"] = ["id (PK)", "elemento_alfa_id (FK)"]
         example["aristas"][0]["cardinalidad"] = "1:N"
+    elif kind == "flujo":
+        example["titulo"] = "Ciclo abstracto"
+        example["nodos"] = [
+            {"id": "a", "etiqueta": "Inicio"},
+            {"id": "b", "etiqueta": "¿Condición pendiente?"},
+            {"id": "c", "etiqueta": "Acción abstracta"},
+            {"id": "d", "etiqueta": "Fin"},
+        ]
+        example["aristas"] = [
+            {"origen": "a", "destino": "b", "etiqueta": "evaluar"},
+            {"origen": "b", "destino": "c", "etiqueta": "sí"},
+            {"origen": "b", "destino": "d", "etiqueta": "no"},
+            {"origen": "c", "destino": "b", "etiqueta": "reevaluar"},
+        ]
     elif kind == "capas":
         example["nodos"][0]["grupo"] = "Capa A"
         example["nodos"][1]["grupo"] = "Capa B"
     elif kind == "comparacion":
-        example["nodos"][0]["atributos"] = ["Modelo: alternativa A"]
-        example["nodos"][1]["atributos"] = ["Modelo: alternativa B"]
+        example["nodos"][0]["atributos"] = ["Propiedad: valor alfa"]
+        example["nodos"][1]["atributos"] = ["Propiedad: valor beta"]
         example["aristas"] = []
     return (
         f"Diagrama en español de {concept}. tipo DEBE ser {kind}. {criteria} {rules[kind]} "
         "IDs únicos; referencias existentes. Etiquetas cortas (máx 24 caracteres); "
         "explicaciones en atributos separados, cortos y completos (máx 35 caracteres). "
-        "No trunques frases. Solo JSON, sin HTML. Ejemplo estructural del tipo (otro concepto): "
+        "No trunques frases. Solo JSON, sin HTML. "
         "No incluyas contadores ni derivados (Hijos: 2, grado, nivel, altura): los calcula el renderizador. "
         "Cardinalidad exclusivamente en ER, nunca en mensajes ni otros tipos. Titulo específico del concepto. "
+        "El ejemplo siguiente SOLO ilustra estructura abstracta: no copies sus nodos ni propiedades al resultado. "
         + json.dumps(example, ensure_ascii=False)
     )
 
@@ -185,7 +200,9 @@ def evaluate(out: Path, *, resume: bool = False, cases=None, model: str | None =
         except json.JSONDecodeError:
             data = None
         begin = time.perf_counter()
-        result = DiagramSource().fetch(ImageRequest("diagrama", concept, diagrama=data))
+        result = DiagramSource().fetch(
+            ImageRequest("diagrama", concept + ". " + criteria, diagrama=data)
+        )
         render_ms = (time.perf_counter() - begin) * 1000
         record = {
             "id": index,
@@ -243,7 +260,7 @@ def gallery(out: Path, source: Path | None = None):
         "h1{color:#0A3D91}article{background:white;border:2px solid #0A3D91;border-radius:12px;"
         "padding:20px;margin:24px 0}h2{font-size:22px}.diagram{overflow:auto}"
         "svg{display:block;max-width:100%;height:auto}p{font-size:14px}</style>"
-        f"<h1>{len(records)} diagramas técnicos · SVG determinista v2</h1>"
+        f"<h1>{len(records)} diagramas técnicos · SVG determinista v3</h1>"
         "<p>JSON original registrado y reparaciones automáticas trazables en meta.diagrama.</p>"
         + "".join(cards)
         + "</html>"
@@ -257,7 +274,11 @@ def rerender(out: Path):
     for record in records:
         start = time.perf_counter()
         result = DiagramSource().fetch(
-            ImageRequest("diagrama", record["concepto"], diagrama=record["diagrama"])
+            ImageRequest(
+                "diagrama",
+                record["concepto"] + ". " + record["criterios"],
+                diagrama=record["diagrama"],
+            )
         )
         record.setdefault("first_render_ms", record["render_ms"])
         record["render_ms"] = round((time.perf_counter() - start) * 1000, 3)
