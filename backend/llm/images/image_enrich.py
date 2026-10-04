@@ -22,13 +22,23 @@ def format_credit_caption(credit: Any) -> str:
     """Formatea la atribución requerida para imágenes de terceros en el pie de figura."""
     if not credit:
         return ""
-    from ova_engine.html import esc
+    from ova_engine.html import esc, is_generic_credit_value, is_valid_third_party_credit
 
-    author = esc(getattr(credit, "author", "") or "Autor")
-    license_name = esc(getattr(credit, "license", "") or "Licencia libre")
-    license_url = esc(getattr(credit, "license_url", "") or "#")
-    provider = esc(getattr(credit, "provider", "") or "web")
-    source_url = esc(getattr(credit, "source_url", "") or "#")
+    if not is_valid_third_party_credit(credit):
+        return ""
+
+    author = esc(str(getattr(credit, "author", "") or (credit.get("author") if isinstance(credit, dict) else "")).strip())
+    license_name = esc(str(getattr(credit, "license", "") or (credit.get("license") if isinstance(credit, dict) else "")).strip())
+    src_url = str(
+        getattr(credit, "source_url", "")
+        or (credit.get("source_url") if isinstance(credit, dict) else "")
+        or (credit.get("url") if isinstance(credit, dict) else "")
+    ).strip()
+    lic_url = str(getattr(credit, "license_url", "") or (credit.get("license_url") if isinstance(credit, dict) else "")).strip()
+    license_url = esc(lic_url) if lic_url.startswith("http") else esc(src_url)
+    prov = str(getattr(credit, "provider", "") or (credit.get("provider") if isinstance(credit, dict) else "")).strip()
+    provider = esc(prov) if not is_generic_credit_value(prov) else "origen"
+    source_url = esc(src_url)
 
     return (
         f'<figcaption class="ova-image-credit">'
