@@ -10,11 +10,13 @@ Métricas: contador Prometheus `genova_image_cache_total{result}` + `stats()`.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import re
 import tempfile
 import threading
 from pathlib import Path
+from typing import Any
 
 import structlog
 
@@ -62,6 +64,10 @@ def _path(key: str) -> Path:
     return cache_dir() / key[:2] / f"{key}.uri"
 
 
+def _meta_path(key: str) -> Path:
+    return cache_dir() / key[:2] / f"{key}.meta.json"
+
+
 def get(key: str) -> str | None:
     if not enabled():
         return None
@@ -76,7 +82,25 @@ def get(key: str) -> str | None:
     return None
 
 
-def put(key: str, data_uri: str) -> None:
+def get_record(key: str) -> dict[str, Any] | None:
+    """Recupera la imagen y sus metadatos reales de licencia y atribución."""
+    if not enabled():
+        return None
+    try:
+        uri = _path(key).read_text(encoding="utf-8")
+        if not uri.startswith("data:"):
+            _count("miss")
+            return None
+        meta_text = _meta_path(key).read_text(encoding="utf-8")
+        meta = json.loads(meta_text)
+        _count("hit")
+        return {"data_uri": uri, "meta": meta}
+    except Exception:
+        _count("miss")
+        return None
+
+
+def put(key: str, data_uri: str, meta: dict[str, Any] | None = None) -> None:
     if not enabled() or not data_uri.startswith("data:"):
         return
     path = _path(key)
@@ -85,9 +109,21 @@ def put(key: str, data_uri: str) -> None:
         tmp = path.with_suffix(f".{os.getpid()}.{threading.get_ident()}.tmp")
         tmp.write_text(data_uri, encoding="utf-8")
         tmp.replace(path)
+
+        if meta is not None:
+            m_path = _meta_path(key)
+            m_tmp = m_path.with_suffix(f".{os.getpid()}.{threading.get_ident()}.tmp")
+            m_tmp.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+            m_tmp.replace(m_path)
+
         _count("store")
     except OSError as exc:
         logger.warning("image cache write failed", error=str(exc)[:120])
+
+
+def put_record(key: str, data_uri: str, meta: dict[str, Any]) -> None:
+    """Almacena la imagen y sus metadatos reales (autor, licencia, URL)."""
+    put(key, data_uri, meta=meta)
 
 
 def stats() -> dict:
