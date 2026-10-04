@@ -73,7 +73,7 @@ def main() -> None:
             print(json.dumps(r, ensure_ascii=False), flush=True)
             results.append(r)
     log = a.out / "_record_log.json"
-    prev = json.loads(log.read_text()) if log.exists() else {}
+    prev = json.loads(log.read_text(encoding="utf-8")) if log.exists() else {}
     for r in results:
         if r["status"] != "skip":
             prev[r["key"]] = r
