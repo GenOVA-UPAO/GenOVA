@@ -184,3 +184,12 @@ def test_single_merged_actor_long_self_message_fits_canvas():
     result, svg = render(data)
     for text in ET.fromstring(svg).findall("{*}text"):
         assert int(text.attrib["x"]) + len(text.text or "") * 16 <= result.meta["width"]
+
+
+def test_requested_criterion_ignores_articles_without_hiding_values():
+    data = fixture("comparacion")
+    for node in data["nodos"]:
+        node["atributos"] = ["Casos uso: texto original", "Lenguaje: ajeno"]
+    result, svg = render(data, "Criterios: casos de uso")
+    assert result.meta["diagrama"]["nodos"][0]["atributos"] == ["Casos uso: texto original"]
+    assert "texto original" in svg and "ajeno" not in svg

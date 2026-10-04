@@ -124,11 +124,18 @@ def requested_criteria(detail: str) -> list[str]:
 
 
 def _limit_comparison(data: dict, detail: str):
-    requested = requested_criteria(detail)
+    def key(value):
+        return "_".join(
+            token
+            for token in _slug(value).split("_")
+            if token not in {"de", "del", "la", "el", "las", "los"}
+        )
+
+    requested = {key(value) for value in requested_criteria(detail)}
     for node in data["nodos"]:
         attrs = node.get("atributos", [])
         if requested:
-            attrs = [a for a in attrs if _slug(a.partition(":")[0]) in requested]
+            attrs = [a for a in attrs if key(a.partition(":")[0]) in requested]
         node["atributos"] = attrs
 
 
