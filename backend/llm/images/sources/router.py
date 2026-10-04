@@ -47,7 +47,7 @@ def _resolve_provider_and_key(settings: dict[str, Any]) -> tuple[str, str]:
         k = _get_provider_key("openrouter")
         if k:
             return "openrouter", k
-    except Exception:
+    except Exception:  # noqa: BLE001 — sin clave configurada: se usa el modelo local
         pass
     return "", ""
 

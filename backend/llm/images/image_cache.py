@@ -178,7 +178,7 @@ def get_image_usage(phash: str) -> list[str]:
         if reg_path.exists():
             data = json.loads(reg_path.read_text(encoding="utf-8"))
             return list(data.get(phash, []))
-    except Exception:
+    except Exception:  # noqa: BLE001 — registro de uso ilegible: se trata como vacío
         pass
     return []
 

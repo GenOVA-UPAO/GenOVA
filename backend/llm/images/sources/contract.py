@@ -122,12 +122,9 @@ class ImageRequest:
             used_hashes=tuple(used_hashes or data.get("used_hashes") or ()),
             original_consulta=raw_consulta,
         )
-        try:
-            from llm.images.query_builder import sanitize_image_request
-
-            return sanitize_image_request(req)
-        except Exception:
-            return req
+        # La consulta se valida/reconstruye en el decisor (router.resolve_image →
+        # query_builder.sanitize_image_request); el contrato no depende de él.
+        return req
 
 
 @dataclass(frozen=True, slots=True)

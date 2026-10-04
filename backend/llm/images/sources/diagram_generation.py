@@ -53,7 +53,7 @@ def generate_diagram_json(prompt: str, *, model: str | None = None) -> tuple[str
             if _matches(json.loads(raw), DIAGRAM_SCHEMA):
                 return raw, selected
         except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError):
-            pass
+            pass  # el modelo remoto falló o devolvió JSON inválido: se prueba el local
     local_model = (
         selected
         if selected and "/" not in selected

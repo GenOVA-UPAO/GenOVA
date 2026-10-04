@@ -1,5 +1,6 @@
 """Tests unitarios para la fuente de búsqueda web (SearchSource) sin conexión externa."""
 
+from urllib.parse import urlparse
 from unittest.mock import MagicMock
 
 from llm.images.sources.contract import ImageRequest
@@ -158,9 +159,10 @@ def test_search_source_fetch_with_mocked_network(monkeypatch, tmp_path):
     def mock_get(url, *args, **kwargs):
         resp = MagicMock()
         resp.status_code = 200
-        if "commons.wikimedia.org" in url:
+        host = urlparse(url).hostname or ""
+        if host == "commons.wikimedia.org":
             resp.json.return_value = mock_wiki_resp
-        elif "openverse.org" in url:
+        elif host.endswith("openverse.org"):
             resp.json.return_value = {"results": []}
         else:
             resp.content = fake_png
