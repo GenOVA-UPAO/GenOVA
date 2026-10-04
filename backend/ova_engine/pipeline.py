@@ -15,7 +15,7 @@ import time
 import structlog
 
 from ova_engine.contract import RenderContext, TemplateSpec
-from ova_engine.decision import decide
+from ova_engine.decision import decide, rules_decide
 from ova_engine.html import document
 from ova_engine.review import review_and_fix
 from ova_engine.text import generate_json
@@ -77,7 +77,11 @@ def generate_with_template(
     if concept != request:
         pedido = f"Pedido del docente (respeta su objetivo y nivel): {request}"
         prompt_ctx = f"{pedido}\n\n{contexto}" if contexto else pedido
-    params = decide(spec, concept, contexto, override=resource_config)
+    if fake:  # sin red: ni Jev/Laya ni LLM
+        override = {k: v for k, v in (resource_config or {}).items() if v is not None}
+        params = spec.resolve_params({**rules_decide(spec, concept, contexto), **override})
+    else:
+        params = decide(spec, concept, contexto, override=resource_config)
     if fake:
         data = spec.sample(concept, params)
     else:
