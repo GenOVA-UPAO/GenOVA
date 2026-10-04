@@ -8,7 +8,7 @@ readme = "../readme.md"
 # Mirror of requirements.txt — kept in sync manually.
 # uv reads this; pip uses requirements.txt. Both must resolve to the same set.
 dependencies = [
-    "fastapi==0.138.0",
+    "fastapi==0.142.2",
     "uvicorn[standard]==0.54.0",
     "sqlalchemy==2.1.1",
     "psycopg[binary]==3.3.6",
