@@ -6,6 +6,7 @@ os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
 
 from collections.abc import Generator  # noqa: E402
+from dataclasses import replace  # noqa: E402
 from io import BytesIO  # noqa: E402
 from types import SimpleNamespace  # noqa: E402
 from zipfile import ZipFile  # noqa: E402
@@ -124,15 +125,14 @@ def test_builds_active_version_phases_on_the_fly():
     assert "Bienvenida" in z.read("index.html").decode()
 
 
-def test_scorm12_delegates_to_stored_package():
+def test_scorm12_rebuilds_even_when_a_stored_package_exists():
     result = _use_case(_ova(key="k"), FakePackages(url="https://signed/x")).execute(
         _input("scorm12")
     )
-    assert (result.kind, result.url, result.filename) == (
-        "url",
-        "https://signed/x",
-        "Lección de Historia_v3.zip",
-    )
+    assert result.kind == "bytes"
+    assert result.filename == "Lección de Historia_v3.zip"
+    with ZipFile(BytesIO(result.content)) as package:
+        assert "--primary:#0A3D91" in package.read("resources/styles.css").decode()
 
 
 # --- HTTP -------------------------------------------------------------------------
@@ -205,24 +205,34 @@ def test_http_non_ascii_title_gets_rfc5987_filename(make_client):
     assert "filename*=UTF-8''Lecci%C3%B3n%20de%20Historia_v3.epub" in disposition
 
 
+@pytest.mark.parametrize("fmt", ["scorm12", "scorm2004", "ims", "html", "epub", "elpx"])
+def test_http_uses_persisted_theme_instead_of_stored_zip(make_client, fmt):
+    ova = replace(_ova(key="old-zip"), package_theme="oscuro")
+    client = make_client(_use_case(ova, FakePackages(url="https://signed/old-zip")))
+    response = client.get(f"/api/ovas/ova-1/export?format={fmt}")
+    assert response.status_code == 200
+    with ZipFile(BytesIO(response.content)) as package:
+        path = (
+            "EPUB/recurso_1.xhtml" if fmt == "epub" else
+            "content/resources/genova/recurso_1.html" if fmt == "elpx" else
+            "resources/recurso_1.html"
+        )
+        assert "--bg:#000000 !important;" in package.read(path).decode()
+
+
 def test_http_scorm12_default_matches_export_scorm(make_client):
     client = make_client(_use_case(_ova(key="k"), FakePackages(url="https://signed/x")))
     default = client.get("/api/ovas/ova-1/export")
     explicit = client.get("/api/ovas/ova-1/export?format=scorm12")
     legacy = client.get("/api/ovas/ova-1/export-scorm")
     assert default.status_code == explicit.status_code == legacy.status_code == 200
-    assert (
-        default.json()
-        == explicit.json()
-        == legacy.json()
-        == {
-            "download_url": "https://signed/x",
-            "filename": "Lección de Historia_v3.zip",
-        }
-    )
+    for response in (default, explicit, legacy):
+        with ZipFile(BytesIO(response.content)) as package:
+            assert "--primary:#0A3D91" in package.read("resources/styles.css").decode()
+        assert response.headers["content-type"] == "application/zip"
 
 
-def test_http_scorm12_serves_stored_file(make_client, tmp_path):
+def test_http_scorm12_does_not_serve_stale_stored_file(make_client, tmp_path):
     stored = tmp_path / "ova-1_v3.zip"
     stored.write_bytes(b"PK-stored")
     client = make_client(
@@ -230,7 +240,8 @@ def test_http_scorm12_serves_stored_file(make_client, tmp_path):
     )
     res = client.get("/api/ovas/ova-1/export?format=scorm12")
     assert res.status_code == 200
-    assert res.content == b"PK-stored"
+    with ZipFile(BytesIO(res.content)) as package:
+        assert "Hola" in package.read("resources/recurso_1.html").decode()
     assert res.headers["content-type"] == "application/zip"
     assert 'filename="Historia_v3.zip"' in res.headers["content-disposition"]
 

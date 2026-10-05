@@ -57,6 +57,7 @@ CREATE TABLE ovas (
   license TEXT NOT NULL DEFAULT 'CC BY-SA 4.0', language TEXT NOT NULL DEFAULT 'es',
   keywords JSON NOT NULL DEFAULT '[]', educational_level TEXT NOT NULL DEFAULT '',
   audience TEXT NOT NULL DEFAULT '', typical_learning_time TEXT NOT NULL DEFAULT '', author TEXT NOT NULL DEFAULT '',
+  package_theme VARCHAR(24) NOT NULL DEFAULT 'upao',
   id TEXT PRIMARY KEY, user_id TEXT NOT NULL, title TEXT NOT NULL,
   description TEXT, status VARCHAR(20) NOT NULL DEFAULT 'borrador',
   file_path TEXT, storage_key TEXT, current_version_id TEXT, deleted_at TIMESTAMP,

@@ -7,12 +7,13 @@ from auth.dependencies import get_current_user, require_permission
 from core.database import get_db
 from core.text import ova_title
 from models import User
-from ova.application.dto import ManageOvaInput, SaveOvaInput
+from ova.application.dto import ExportOvaInput, SaveOvaInput
 from ova.application.llm_helpers import _enabled_llm_options
 from ova.container import OvaUseCases, build_ova
 from ova.domain.errors import OvaEditError, OvaNotFound
 from ova.domain.model import OvaActor, OvaPhase
 from ova.interface.http._shared import _is_admin
+from ova.interface.http.export_router import _content_disposition
 
 router = APIRouter()
 
@@ -92,9 +93,10 @@ def download_ova_scorm(
     use_cases: OvaUseCases = Depends(build_ova),
 ):
     try:
-        result = use_cases.download_ova_scorm.execute(
-            ManageOvaInput(
+        result = use_cases.export_package.execute(
+            ExportOvaInput(
                 ova_id=ova_id,
+                format="scorm12",
                 actor=OvaActor(
                     id=str(current_user.id),
                     is_admin=_is_admin(current_user, db),
@@ -105,12 +107,15 @@ def download_ova_scorm(
         raise HTTPException(status_code=404, detail="OVA no encontrado.") from None
     except OvaEditError as error:
         raise HTTPException(status_code=error.status_code, detail=error.message) from None
-    if result.kind == "redirect":
+    if result.kind in ("redirect", "url"):
         return RedirectResponse(url=result.url, status_code=302)
-    with open(str(result.file_path), "rb") as f:
-        zip_bytes = f.read()
+    if result.kind == "bytes":
+        zip_bytes = result.content
+    else:
+        with open(str(result.file_path), "rb") as f:
+            zip_bytes = f.read()
     return Response(
         content=zip_bytes,
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="{result.filename}"'},
+        headers={"Content-Disposition": _content_disposition(result.filename)},
     )

@@ -216,6 +216,7 @@ def build_elpx_bytes(
     phases: list[dict] | None = None,
     *,
     metadata: EducationalMetadata | None = None,
+    theme: str = "upao",
     now: datetime | None = None,
     rng: random.Random | None = None,
 ) -> bytes:
@@ -223,7 +224,7 @@ def build_elpx_bytes(
     pages: list[tuple[str, str]] = []
     buffer = BytesIO()
     with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as zip_file:
-        for resource in prepare_phase_resources(phases):
+        for resource in prepare_phase_resources(phases, theme):
             rel = f"{GENOVA_FOLDER}/{resource.basename}.html"
             zip_file.writestr(f"{RESOURCES_DIR}/{rel}", resource.html)
             for item in resource.media:

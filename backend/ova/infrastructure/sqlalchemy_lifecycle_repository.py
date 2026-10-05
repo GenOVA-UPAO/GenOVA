@@ -32,6 +32,7 @@ def _to_domain(
         audience=row.audience,
         typical_learning_time=row.typical_learning_time,
         author=row.author or ((owner.full_name or owner.email) if owner else ""),
+        package_theme=row.package_theme,
         status=str(row.status),
         file_path=str(row.file_path) if row.file_path else None,
         storage_key=str(row.storage_key) if row.storage_key else None,
@@ -107,6 +108,9 @@ class SqlAlchemyOvaLifecycleRepository:
 
     def move_to_trash(self, ova_id: str, deleted_at: datetime) -> None:
         self._loaded[ova_id].deleted_at = deleted_at
+
+    def update_package_theme(self, ova_id: str, theme: str) -> None:
+        self._loaded[ova_id].package_theme = theme
 
     def restore(self, ova_id: str) -> None:
         self._loaded[ova_id].deleted_at = None

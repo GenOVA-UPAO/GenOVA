@@ -14,6 +14,7 @@ import binascii
 import re
 from dataclasses import dataclass
 
+from ova.domain.package_themes import inject_package_theme
 from scorm.domain.templates.html import phase_label, wrap_resource_html
 
 DEFAULT_PHASES = [
@@ -75,7 +76,7 @@ def extract_videos(html: str, idx: int) -> tuple[str, tuple[MediaFile, ...]]:
     return _VIDEO_DATA_URI.sub(replace, html), tuple(media)
 
 
-def prepare_phase_resources(phases: list[dict] | None) -> list[PhaseResource]:
+def prepare_phase_resources(phases: list[dict] | None, theme: str = "upao") -> list[PhaseResource]:
     """Ordena las fases y devuelve un recurso por fase (sin fases → DEFAULT_PHASES)."""
     ordered = sorted(phases if phases else DEFAULT_PHASES, key=lambda p: p.get("order", 0))
     resources: list[PhaseResource] = []
@@ -83,6 +84,7 @@ def prepare_phase_resources(phases: list[dict] | None) -> list[PhaseResource]:
         custom_title = (phase.get("title") or "").strip()
         label = custom_title or phase_label(phase.get("type", ""), idx)
         page = wrap_resource_html(phase.get("content", ""), label)
+        page = inject_package_theme(page, theme)
         html, media = extract_videos(page, idx)
         resources.append(PhaseResource(order=idx, label=label, html=html, media=media))
     return resources

@@ -14,6 +14,7 @@ class UpdateOvaMetadataInput:
     title: str
     description: str | None
     metadata: dict = field(default_factory=dict)
+    package_theme: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,6 +23,7 @@ class OvaMetadataResult:
     title: str
     description: str | None
     metadata: dict = field(default_factory=dict)
+    package_theme: str = "upao"
 
 
 @dataclass(frozen=True, slots=True)

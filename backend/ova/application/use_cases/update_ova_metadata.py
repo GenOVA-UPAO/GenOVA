@@ -20,6 +20,7 @@ from ova.domain.errors import (
     OvaNotFound,
 )
 from ova.domain.model import EDIT_FORBIDDEN
+from ova.domain.package_themes import PACKAGE_THEMES
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +34,8 @@ class UpdateOvaMetadata:
             raise MetadataTitleRequired()
         if len(title) > 100:
             raise MetadataTitleTooLong()
+        if data.package_theme is not None and data.package_theme not in PACKAGE_THEMES:
+            raise OvaEditError(400, "invalid_package_theme", "Elige un tema visual válido.")
 
         ova = self.repo.get_active(data.ova_id)
         if ova is None:
@@ -51,5 +54,10 @@ class UpdateOvaMetadata:
         except InvalidEducationalMetadata as error:
             raise OvaEditError(422, "invalid_metadata", "Revisa la licencia y los metadatos educativos.") from error
         self.repo.update_metadata(ova.id, title, description, **metadata)
+        if data.package_theme is not None:
+            self.repo.update_package_theme(ova.id, data.package_theme)
         self.repo.commit("update_ova_metadata")
-        return OvaMetadataResult(id=ova.id, title=title, description=description, metadata=metadata)
+        return OvaMetadataResult(
+            id=ova.id, title=title, description=description, metadata=metadata,
+            package_theme=data.package_theme or ova.package_theme,
+        )

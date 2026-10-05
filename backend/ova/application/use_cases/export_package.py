@@ -1,7 +1,7 @@
 """Caso de uso: exportar la versión activa de una OVA en el formato pedido.
 
-`scorm12` delega en `ExportScorm` (sirve el paquete guardado al generar). El resto
-de formatos se construye al vuelo a partir de las fases de la versión activa.
+Los formatos se construyen desde la versión activa para reflejar el tema vigente.
+Solo una OVA antigua sin versión activa recurre al SCORM almacenado.
 """
 
 from __future__ import annotations
@@ -32,9 +32,6 @@ class ExportPackage:
             raise OvaEditError(
                 400, "unknown_format", f"Formato de exportación no soportado: {data.format}"
             )
-        if fmt.id == STORED_FORMAT:
-            return self.export_scorm.execute(ManageOvaInput(ova_id=data.ova_id, actor=data.actor))
-
         ova = self.ovas.get_active(data.ova_id)
         if ova is None:
             raise OvaNotFound("OVA no encontrado.")
@@ -44,6 +41,8 @@ class ExportPackage:
             raise OvaEditError(409, "ova_not_ready", "El OVA no está listo.")
         active = self.editor.get_active_version(data.ova_id)
         if active is None:
+            if fmt.id == STORED_FORMAT and ova.package_theme == "upao":
+                return self.export_scorm.execute(ManageOvaInput(ova_id=data.ova_id, actor=data.actor))
             raise OvaEditError(404, "version_not_found", "La OVA no tiene una versión activa.")
 
         phases = [
@@ -55,7 +54,7 @@ class ExportPackage:
             }
             for phase in self.editor.list_phases(active.id)
         ]
-        content = fmt.build(ova.title, phases, metadata=metadata_from_ova(ova))
+        content = fmt.build(ova.title, phases, metadata=metadata_from_ova(ova), theme=ova.package_theme)
         filename = f"{scorm_filename_stem(ova.title)}_v{active.version_number}.{fmt.extension}"
         return PackageDownload(
             kind="bytes", filename=filename, content=content, media_type=fmt.media_type

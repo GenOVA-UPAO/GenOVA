@@ -32,7 +32,9 @@ def test_exported_resources_have_opaque_origin_and_only_script_permission():
         assert len(parser.frames) == 1
         frame = parser.frames[0]
         assert set(frame.get("sandbox", "").split()) == {"allow-scripts"}
-        assert package.read(frame["src"]).decode() == content
+        resource = package.read(frame["src"]).decode()
+        assert resource.endswith("<body><script>window.quizWorks = true</script></body></html>")
+        assert 'id="genova-package-theme"' in resource
         # The trusted parent shell, not the opaque resource, owns LMS tracking.
         shell = package.read("index.html").decode()
         assert '<script src="resources/scorm.js"></script>' in shell

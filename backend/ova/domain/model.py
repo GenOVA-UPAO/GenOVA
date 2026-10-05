@@ -72,6 +72,7 @@ class Ova:
     audience: str = ""
     typical_learning_time: str = ""
     author: str = ""
+    package_theme: str = "upao"
 
     def is_accessible_by(self, actor: OvaActor) -> bool:
         return can_read_ova(self.owner_id, actor)

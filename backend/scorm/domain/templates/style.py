@@ -1,4 +1,7 @@
-def build_styles_css() -> str:
+from ova.domain.package_themes import theme_css
+
+
+def build_styles_css(theme: str = "upao") -> str:
     return """:root {
   --bg: #f8fafc;
   --surface: #ffffff;
@@ -15,7 +18,7 @@ def build_styles_css() -> str:
 
 body {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
 }
@@ -77,7 +80,8 @@ body {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -108,8 +112,8 @@ body {
   width: 100%;
   min-height: 70vh;
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 
 iframe {
@@ -120,8 +124,9 @@ iframe {
 }
 
 button {
+  font-family: inherit;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 12px 16px;
   min-height: 44px;
   background: var(--primary);
@@ -145,4 +150,4 @@ button:hover {
     scroll-behavior: auto !important;
   }
 }
-"""
+""" + theme_css(theme)
