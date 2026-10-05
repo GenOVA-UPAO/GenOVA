@@ -30,10 +30,6 @@
   },
   "status": {
     "413": "El archivo es demasiado grande.",
-    "429": "Demasiadas solicitudes. Inténtalo de nuevo en unos instantes.",
-    "500": "Ocurrió un error en el servidor. Inténtalo de nuevo.",
-    "502": "El servidor no está disponible por ahora.",
-    "503": "El servicio no está disponible por ahora.",
-    "504": "El servidor tardó demasiado en responder."
+    "429": "Demasiadas solicitudes. Inténtalo de nuevo en unos instantes."
   }
 }
