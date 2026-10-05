@@ -27,7 +27,7 @@ function buildResources(): Record<string, Record<string, Bundle>> {
 
 void i18n.use(initReactI18next).init({
   resources: buildResources(),
-  lng: detectLanguage(),
+  lng: import.meta.env.MODE === "test" ? DEFAULT_LANGUAGE : detectLanguage(),
   fallbackLng: DEFAULT_LANGUAGE,
   defaultNS: "common",
   // React ya escapa los valores.

@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { CheckIcon } from "@phosphor-icons/react";
+import { useTranslation } from "react-i18next";
 
 import { DropdownMenuItem, DropdownMenuLabel } from "@/core/components/ui/dropdown-menu";
 
@@ -28,9 +28,9 @@ export function ExportFormatItems({ selected, onSelect }: Readonly<ExportFormatI
         >
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="font-medium">
-              {format.label} <span className="text-xs font-normal text-muted-foreground">.{format.extension}</span>
+              {format.id === "html" ? t("shared:web_html") : format.label} <span className="text-xs font-normal text-muted-foreground">.{format.extension}</span>
             </span>
-            <span className="text-xs whitespace-normal text-muted-foreground">{format.description}</span>
+            <span className="text-xs whitespace-normal text-muted-foreground">{t(format.descriptionKey)}</span>
           </span>
           {format.id === selected && <CheckIcon aria-label={t("shared:formato_habitual")} className="mt-0.5" />}
         </DropdownMenuItem>

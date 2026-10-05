@@ -33,7 +33,8 @@ const TEXT_ATTRIBUTES = new Set([
 ]);
 
 /** Literales que no son texto traducible (marcas, siglas, unidades, símbolos). */
-const ALLOWED_LITERALS = new Set(["GenOVA", "UPAO", "SCORM", "HTML", "PDF", "EPUB", "ELPX"]);
+// Autónimos: el selector mantiene el nombre propio del idioma al cambiar la interfaz.
+const ALLOWED_LITERALS = new Set(["GenOVA", "UPAO", "SCORM", "HTML", "PDF", "EPUB", "ELPX", "Español"]);
 
 /** Archivos con texto en duro justificado (cada entrada necesita un motivo). */
 const ALLOWED_FILES: Record<string, string> = {
@@ -78,6 +79,12 @@ function inspectAttribute(node: ts.JsxAttribute, source: ts.SourceFile): Found |
   return { node, value, why: `atributo ${name}` };
 }
 
+function isProtocolLiteral(node: ts.StringLiteralLike | ts.TemplateLiteralLikeNode, source: ts.SourceFile): boolean {
+  // `diseño` es un FeedbackReason de la API; su etiqueta se traduce aparte.
+  return node.text === "diseño" && (ts.isLiteralTypeNode(node.parent) ||
+    (ts.isPropertyAssignment(node.parent) && node.parent.name.getText(source) === "value"));
+}
+
 function inspect(node: ts.Node, source: ts.SourceFile): Found | null {
   if (ts.isJsxText(node)) {
     const value = node.text.replaceAll(/\s+/g, " ").trim();
@@ -86,10 +93,7 @@ function inspect(node: ts.Node, source: ts.SourceFile): Found | null {
   }
   if (ts.isJsxAttribute(node)) return inspectAttribute(node, source);
   if (ts.isStringLiteral(node) || isTemplatePart(node)) {
-    // `diseño` es un FeedbackReason que la API recibe literalmente. La etiqueta
-    // visible se traduce por separado; solo se permite en el tipo y su value.
-    if (node.text === "diseño" && (ts.isLiteralTypeNode(node.parent) ||
-      (ts.isPropertyAssignment(node.parent) && node.parent.name.getText(source) === "value"))) return null;
+    if (isProtocolLiteral(node, source)) return null;
     const flagged = looksSpanish(node.text) && !ALLOWED_LITERALS.has(node.text);
     return flagged ? { node, value: node.text, why: "literal en español" } : null;
   }

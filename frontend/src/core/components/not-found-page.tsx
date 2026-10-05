@@ -15,7 +15,7 @@ export function NotFoundPage() {
       </h1>
       <h2 className="mt-3 text-xl font-semibold tracking-tight">{t("shared:esta_pagina_no_existe")}</h2>
       <p className="mt-2 max-w-sm text-sm text-pretty text-muted-foreground">
-        {t("shared:el_enlace_puede_estar_mal_escrito_o_la_pagina_909760")} </p>
+        {t("shared:notFound.hint")} </p>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Button asChild size="lg">
           <Link to="/dashboard">{t("shared:volver_al_inicio")}</Link>

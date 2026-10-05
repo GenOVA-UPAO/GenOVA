@@ -1,29 +1,25 @@
-import { useTranslation } from "react-i18next";
 import { XIcon } from "@phosphor-icons/react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import { useReturnFocus } from "@/core/components/ui/return-focus";
 import { cn } from "@/core/lib/cn";
 
 function Dialog(props: Readonly<ComponentProps<typeof DialogPrimitive.Root>>) {
-  const { t } = useTranslation();
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
 function DialogTrigger(props: Readonly<ComponentProps<typeof DialogPrimitive.Trigger>>) {
-  const { t } = useTranslation();
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
 function DialogPortal(props: Readonly<ComponentProps<typeof DialogPrimitive.Portal>>) {
-  const { t } = useTranslation();
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
 function DialogClose(props: Readonly<ComponentProps<typeof DialogPrimitive.Close>>) {
-  const { t } = useTranslation();
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
@@ -31,7 +27,6 @@ function DialogOverlay({
   className,
   ...props
 }: Readonly<ComponentProps<typeof DialogPrimitive.Overlay>>) {
-  const { t } = useTranslation();
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
@@ -85,7 +80,6 @@ function DialogContent({
 }
 
 function DialogHeader({ className, ...props }: Readonly<ComponentProps<"div">>) {
-  const { t } = useTranslation();
   return (
     <div data-slot="dialog-header" className={cn("flex flex-col gap-2", className)} {...props} />
   );
@@ -121,7 +115,6 @@ function DialogTitle({
   className,
   ...props
 }: Readonly<ComponentProps<typeof DialogPrimitive.Title>>) {
-  const { t } = useTranslation();
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
@@ -135,7 +128,6 @@ function DialogDescription({
   className,
   ...props
 }: Readonly<ComponentProps<typeof DialogPrimitive.Description>>) {
-  const { t } = useTranslation();
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"

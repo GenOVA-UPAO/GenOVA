@@ -1,4 +1,5 @@
 import i18n from "i18next";
+
 import { apiJson } from "@/core/lib/http";
 
 const PLATFORM_CONFIG = "/api/admin/platform-config";

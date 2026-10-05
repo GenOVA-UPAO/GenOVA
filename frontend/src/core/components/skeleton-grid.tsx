@@ -1,5 +1,5 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 import { cn } from "@/core/lib/cn";
 
@@ -15,13 +15,13 @@ export function SkeletonGrid({
   count = 6,
   className,
   itemClassName,
-  label = i18n.t("shared:cargando"),
+  label,
 }: Readonly<SkeletonGridProps>) {
   const { t } = useTranslation();
   return (
     <div
       role="status"
-      aria-label={label}
+      aria-label={label ?? t("shared:cargando")}
       aria-busy="true"
       className={cn("grid gap-4 sm:grid-cols-2 lg:grid-cols-3", className)}
     >

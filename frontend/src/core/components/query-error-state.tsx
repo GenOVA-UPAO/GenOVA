@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import { EmptyState } from "@/core/components/empty-state";
 import { Button } from "@/core/components/ui/button";
 

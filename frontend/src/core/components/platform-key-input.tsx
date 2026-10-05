@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { type Ref, useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Input } from "@/core/components/ui/input";

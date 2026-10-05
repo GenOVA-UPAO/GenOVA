@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -23,7 +24,7 @@ export function ProviderCheckBadge({ check }: Readonly<{ check: ProviderCheckSta
         {t("shared:comprobando")} </span>
     );
   }
-  const { tone, label } = providerCheckText(check.result);
+  const { tone, label } = providerCheckText(check.result, t);
   return (
     <span className={cn("inline-flex items-center gap-1.5 text-xs", CHECK_TONE_TEXT[tone])}>
       <span aria-hidden="true" className={cn("size-1.5 rounded-full", CHECK_TONE_DOT[tone])} />

@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
+
 import { usePlatformConfig } from "@/core/hooks/use-platform-config";
 
-import { groupProviders, PROVIDER_META, RECOMMENDED_HINT } from "./platform-key-meta";
+import { groupProviders, PROVIDER_META } from "./platform-key-meta";
 import { PlatformKeyRow } from "./platform-key-row";
 
 const LIST_CLASS = "divide-y divide-border overflow-hidden rounded-xl border border-border bg-card";
@@ -61,7 +62,7 @@ export function PlatformApiKeysList() {
   // OpenRouter primero: con una sola clave cubre texto, imagen y video.
   return (
     <div className="space-y-6">
-      {group(t("shared:recomendado"), groups.recommended, RECOMMENDED_HINT)}
+      {group(t("shared:recomendado"), groups.recommended, t("shared:platformKey.openrouterHint"))}
       {group(t("shared:otros_proveedores_de_texto"), groups.text)}
       {group(t("shared:otros_proveedores_de_imagen"), groups.image)}
     </div>

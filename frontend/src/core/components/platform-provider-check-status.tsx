@@ -1,6 +1,6 @@
 import i18n from "i18next";
-import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
@@ -13,7 +13,7 @@ import { type ProviderCheckState, providerCheckText } from "./platform-provider-
  * dice qué hacer.
  */
 export function ProviderCheckStatus({ check }: Readonly<{ check: ProviderCheckState }>) {
-  const { t } = useTranslation();
+  useTranslation();
   // Si solo hay texto para lectores de pantalla, la región no ocupa sitio: si
   // no, el hueco de la fila crecía bajo «Conectado · N modelos».
   const visible = visibleStatus(check);

@@ -1,4 +1,5 @@
 import i18n from "i18next";
+
 import { triggerDownloadFromResponse } from "@/core/lib/download";
 import { apiFetch, HttpError } from "@/core/lib/http";
 

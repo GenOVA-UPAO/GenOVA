@@ -1,6 +1,5 @@
-import i18n from "i18next";
-import { useTranslation } from "react-i18next";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   AlertDialog,
@@ -35,7 +34,7 @@ export function ConfirmModal({
   message,
   confirmLabel,
   isLoading = false,
-  loadingLabel = i18n.t("shared:procesando"),
+  loadingLabel,
   danger = true,
   confirmPhrase,
   onConfirm,
@@ -101,7 +100,7 @@ export function ConfirmModal({
             disabled={!phraseOk}
             loading={isLoading}
           >
-            {isLoading ? loadingLabel : confirmLabel}
+            {isLoading ? (loadingLabel ?? t("shared:procesando")) : confirmLabel}
           </Button>
         </div>
       </AlertDialogContent>

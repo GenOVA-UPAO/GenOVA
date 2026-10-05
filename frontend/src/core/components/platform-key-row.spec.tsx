@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import i18n from "i18next";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PlatformKeyRow } from "./platform-key-row";
@@ -69,5 +70,18 @@ describe("PlatformKeyRow · probar conexión", () => {
     renderRow({ serverKey: true });
     await userEvent.click(screen.getByRole("button", { name: "Probar conexión con Groq" }));
     expect(await screen.findByText("Sin respuesta")).toBeInTheDocument();
+  });
+
+  it("actualiza descripción y resultado de conexión al cambiar idioma", async () => {
+    mocks.check.mockResolvedValue({ provider: "groq", code: "connected", models: 7 });
+    renderRow({ serverKey: true });
+    await userEvent.click(screen.getByRole("button", { name: "Probar conexión con Groq" }));
+    expect(await screen.findAllByText("Conectado · 7 modelos")).toHaveLength(2);
+    await act(() => i18n.changeLanguage("en"));
+    expect(screen.getByText(/Open text models with very fast responses/)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Connected · 7 models");
+    expect(screen.getAllByText("Connected · 7 models")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Groq Use another key" })).toHaveTextContent("Use another key");
+    expect(screen.getByText("Text")).toBeInTheDocument();
   });
 });

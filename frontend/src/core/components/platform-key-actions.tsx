@@ -1,5 +1,5 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { Tooltip } from "@/core/components/ui/tooltip";
@@ -58,10 +58,10 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
         aria-label={
           configured
             ? t("shared:cambiar_la_clave_de_value", { p0: label })
-            : t("shared:value_de_value", { p0: actionLabel(configured, props.serverKey), p1: label })
+            : t("shared:value_de_value", { p0: t(actionLabel(configured, props.serverKey)), p1: label })
         }
       >
-        {actionLabel(configured, props.serverKey)}
+        {t(actionLabel(configured, props.serverKey))}
       </Button>
       {configured && (
         <Tooltip label={t("shared:eliminar_clave")} side="top">
@@ -82,6 +82,6 @@ export function PlatformKeyActions(props: Readonly<PlatformKeyActionsProps>) {
 }
 
 function actionLabel(configured: boolean, serverKey: boolean): string {
-  if (configured) return i18n.t("shared:cambiar");
-  return serverKey ? i18n.t("shared:usar_otra_clave") : i18n.t("shared:anadir_clave");
+  if (configured) return "shared:cambiar";
+  return serverKey ? "shared:usar_otra_clave" : "shared:anadir_clave";
 }
