@@ -9,6 +9,7 @@ from core.educational_metadata import (
     InvalidEducationalMetadata,
     metadata_from_ova,
 )
+from core.package_themes import PACKAGE_THEMES
 from ova.application.dto import OvaMetadataResult, UpdateOvaMetadataInput
 from ova.application.ports import OvaLifecycleRepository
 from ova.domain.errors import (
@@ -20,7 +21,6 @@ from ova.domain.errors import (
     OvaNotFound,
 )
 from ova.domain.model import EDIT_FORBIDDEN
-from ova.domain.package_themes import PACKAGE_THEMES
 
 
 @dataclass(frozen=True, slots=True)

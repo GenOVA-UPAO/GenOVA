@@ -1,4 +1,4 @@
-"""Temas de presentación offline, independientes del tema de generación de la IA."""
+"""Temas de presentación offline compartidos por OVA y SCORM, sin frameworks."""
 
 from __future__ import annotations
 

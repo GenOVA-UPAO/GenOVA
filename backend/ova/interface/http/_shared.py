@@ -1,8 +1,8 @@
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from core.educational_metadata import EducationalMetadata, InvalidEducationalMetadata, License
+from core.package_themes import PackageThemeId
 from ova.application.access import _is_admin as _is_admin
-from ova.domain.package_themes import PackageThemeId
 
 
 class BatchIdsRequest(BaseModel):

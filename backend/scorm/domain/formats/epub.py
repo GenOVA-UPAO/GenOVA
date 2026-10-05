@@ -21,7 +21,7 @@ from xml.sax.saxutils import quoteattr
 from zipfile import ZIP_DEFLATED, ZIP_STORED, ZipFile, ZipInfo
 
 from core.educational_metadata import EducationalMetadata
-from ova.domain.package_themes import inject_package_theme
+from core.package_themes import inject_package_theme
 from scorm.domain.formats.xhtml import html_to_xhtml
 from scorm.domain.resources import prepare_phase_resources
 

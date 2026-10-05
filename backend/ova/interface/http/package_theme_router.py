@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 
 from auth.dependencies import get_current_user
-from ova.domain.package_themes import theme_catalog
+from core.package_themes import theme_catalog
 
 router = APIRouter(tags=["OVA · CRUD"])
 

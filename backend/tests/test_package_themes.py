@@ -6,7 +6,7 @@ from zipfile import ZipFile
 import pytest
 
 from core.educational_metadata import EducationalMetadata
-from ova.domain.package_themes import PACKAGE_THEMES, inject_package_theme
+from core.package_themes import PACKAGE_THEMES, inject_package_theme
 from scorm import EXPORT_FORMATS, build_export
 
 

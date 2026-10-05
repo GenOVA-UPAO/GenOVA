@@ -1,4 +1,4 @@
-from ova.domain.package_themes import theme_css
+from core.package_themes import theme_css
 
 
 def build_styles_css(theme: str = "upao") -> str:

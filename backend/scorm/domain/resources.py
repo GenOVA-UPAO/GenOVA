@@ -14,7 +14,7 @@ import binascii
 import re
 from dataclasses import dataclass
 
-from ova.domain.package_themes import inject_package_theme
+from core.package_themes import inject_package_theme
 from scorm.domain.templates.html import phase_label, wrap_resource_html
 
 DEFAULT_PHASES = [
