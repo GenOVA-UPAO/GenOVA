@@ -1,9 +1,9 @@
-import { CONNECT_ERROR, TOO_MANY_ATTEMPTS } from "./auth-copy";
+import { connectError, tooManyAttempts } from "./auth-copy";
 import { applyLoginOutcome } from "./login-outcome";
 
 describe("applyLoginOutcome", () => {
   it("explica que hay que esperar cuando el límite por IP responde 429 sin mensaje", () => {
-    expect(applyLoginOutcome(429, {})).toEqual({ error: TOO_MANY_ATTEMPTS });
+    expect(applyLoginOutcome(429, {})).toEqual({ error: tooManyAttempts() });
   });
 
   it("respeta el mensaje del backend cuando el 429 lo trae", () => {
@@ -12,6 +12,6 @@ describe("applyLoginOutcome", () => {
   });
 
   it("con el servidor caído (5xx sin mensaje) pide reintentar en vez del genérico", () => {
-    expect(applyLoginOutcome(502, {})).toEqual({ error: CONNECT_ERROR });
+    expect(applyLoginOutcome(502, {})).toEqual({ error: connectError() });
   });
 });

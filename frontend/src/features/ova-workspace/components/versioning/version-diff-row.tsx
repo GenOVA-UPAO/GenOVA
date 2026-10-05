@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -12,8 +13,8 @@ interface Props {
   after: { number: string; phase: VersionDiffPhase | undefined };
 }
 
-function rowTitle(phase: VersionDiffPhase | undefined): string {
-  if (!phase) return "Recurso";
+function rowTitle(phase: VersionDiffPhase | undefined, fallback: string): string {
+  if (!phase) return fallback;
   const name = phase.title ? resourceDisplayName(phase.title) : "";
   const phaseName = phaseMeta(phase.phase_type).label || phase.phase_type;
   return name ? `${phaseName} · ${name}` : phaseName;
@@ -24,12 +25,13 @@ function rowTitle(phase: VersionDiffPhase | undefined): string {
  * comparar es lo que cambió, y cada vista previa es un iframe.
  */
 export function VersionDiffRow({ before, after }: Readonly<Props>) {
+  const { t } = useTranslation("workspace-versioning");
   const changed = before.phase?.content !== after.phase?.content;
   const [open, setOpen] = useState(changed);
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <h4 className="text-sm font-medium">{rowTitle(after.phase ?? before.phase)}</h4>
+        <h4 className="text-sm font-medium">{rowTitle(after.phase ?? before.phase, t("diff.resource"))}</h4>
         <span
           className={
             changed
@@ -37,7 +39,7 @@ export function VersionDiffRow({ before, after }: Readonly<Props>) {
               : "rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
           }
         >
-          {changed ? "Cambió" : "Sin cambios"}
+          {changed ? t("diff.changed") : t("diff.unchanged")}
         </span>
         {!changed && (
           <Button
@@ -48,14 +50,14 @@ export function VersionDiffRow({ before, after }: Readonly<Props>) {
               setOpen(!open);
             }}
           >
-            {open ? "Ocultar" : "Ver igualmente"}
+            {open ? t("diff.hide") : t("diff.showAnyway")}
           </Button>
         )}
       </div>
       {open && (
         <div className="grid gap-3 md:grid-cols-2 md:gap-4">
-          <VersionDiffCell side="Anterior" number={before.number} phase={before.phase} />
-          <VersionDiffCell side="Posterior" number={after.number} phase={after.phase} />
+          <VersionDiffCell side="before" number={before.number} phase={before.phase} />
+          <VersionDiffCell side="after" number={after.number} phase={after.phase} />
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { fetchVersionDiff, revertOvaVersion } from "../../api/ova-workspace.api";
 import { ovaWorkspaceKey, useOvaWorkspace } from "../../hooks/use-ova-workspace";
@@ -15,6 +16,7 @@ export default function VersionHistoryPanel({
   readOnly = false,
   onClose,
 }: Readonly<{ ovaId: string; readOnly?: boolean; onClose: () => void }>) {
+  const { t } = useTranslation("workspace-versioning");
   const workspace = useOvaWorkspace(ovaId);
   const client = useQueryClient();
   const versions = sortVersionsDesc(workspace.data?.version_history as OvaVersionRow[] | undefined);
@@ -39,8 +41,8 @@ export default function VersionHistoryPanel({
   const error = diff.error ?? revert.error;
   return (
     <WorkspaceModal
-      title="Historial de versiones"
-      description={historyDescription(readOnly)}
+      title={t("history.title")}
+      description={t(readOnly ? "history.descriptionReadOnly" : "history.description")}
       size={diff.data ? "xl" : "lg"}
       onClose={onClose}
       footer={
@@ -104,11 +106,6 @@ function useVersionCompare(ovaId: string, selected: string[], versions: OvaVersi
     },
   });
   return { diff, diffRef };
-}
-
-function historyDescription(readOnly: boolean): string {
-  if (readOnly) return "Compara dos versiones del OVA.";
-  return "Compara dos versiones del OVA o restaura una anterior.";
 }
 
 /** Sin «Restaurar» cuando el OVA es de otra persona. */

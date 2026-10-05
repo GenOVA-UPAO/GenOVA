@@ -1,6 +1,7 @@
+import { t } from "i18next";
 import { z } from "zod";
 
-import { EMAIL_FORMAT_ERROR, EMAIL_VALID_ERROR } from "./auth-copy";
+import { emailFormatError, emailValidError } from "./auth-copy";
 import {
   FULL_NAME_LETTER_RE,
   FULL_NAME_MAX,
@@ -8,54 +9,56 @@ import {
   PASSWORD_RE,
 } from "./auth-validators";
 
-const FULL_NAME_RANGE = "El nombre completo debe tener al menos 3 caracteres y máximo 100.";
+// Los mensajes son funciones: zod las evalúa al validar, con el idioma activo en ese momento.
+const fullNameRange = () => t("auth:validation.fullNameRange");
+const passwordRequired = () => t("auth:validation.passwordRequired");
 
-function emailField(message: string) {
+function emailField(message: () => string) {
   return z.string().trim().pipe(z.email({ error: message }));
 }
 
 export const loginSchema = z.object({
-  email: emailField(EMAIL_FORMAT_ERROR),
-  password: z.string().min(1, "La contraseña es requerida."),
+  email: emailField(emailFormatError),
+  password: z.string().min(1, { error: passwordRequired }),
 });
 
 export const registerSchema = z.object({
   full_name: z
     .string()
     .trim()
-    .min(1, "El nombre completo es requerido.")
-    .max(FULL_NAME_MAX, FULL_NAME_RANGE)
-    .refine((value) => value.length >= FULL_NAME_MIN, { message: FULL_NAME_RANGE })
-    .regex(FULL_NAME_LETTER_RE, "El nombre debe contener al menos una letra."),
-  email: emailField(EMAIL_FORMAT_ERROR),
+    .min(1, { error: () => t("auth:validation.fullNameRequired") })
+    .max(FULL_NAME_MAX, { error: fullNameRange })
+    .refine((value) => value.length >= FULL_NAME_MIN, { error: fullNameRange })
+    .regex(FULL_NAME_LETTER_RE, { error: () => t("auth:validation.fullNameLetter") }),
+  email: emailField(emailFormatError),
   password: z
     .string()
-    .min(1, "La contraseña es requerida.")
-    .regex(PASSWORD_RE, "Mínimo 8 caracteres con letras y números."),
+    .min(1, { error: passwordRequired })
+    .regex(PASSWORD_RE, { error: () => t("auth:validation.passwordFormat") }),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: emailField(EMAIL_VALID_ERROR),
+  email: emailField(emailValidError),
 });
 
 export const resetPasswordSchema = z
   .object({
     new_password: z
       .string()
-      .min(8, "La contraseña debe tener al menos 8 caracteres.")
-      .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, "Debe contener letras y números."),
-    confirm_password: z.string().min(1, "Repite la nueva contraseña."),
+      .min(8, { error: () => t("auth:validation.newPasswordMin") })
+      .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, { error: () => t("auth:validation.newPasswordMix") }),
+    confirm_password: z.string().min(1, { error: () => t("auth:validation.confirmRequired") }),
   })
   .refine((data) => data.new_password === data.confirm_password, {
-    message: "Las contraseñas no coinciden.",
+    error: () => t("auth:validation.passwordMismatch"),
     path: ["confirm_password"],
   });
 
 export const totpSchema = z.object({
   code: z
     .string()
-    .min(1, "Escribe el código de tu app o uno de respaldo.")
-    .regex(/^[\dA-Fa-f\s]{4,8}$/, "El código tiene 6 dígitos (o 8 caracteres si es de respaldo)."),
+    .min(1, { error: () => t("auth:validation.codeRequired") })
+    .regex(/^[\dA-Fa-f\s]{4,8}$/, { error: () => t("auth:validation.codeFormat") }),
 });
 
 export type LoginValues = z.infer<typeof loginSchema>;

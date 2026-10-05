@@ -1,11 +1,13 @@
+import i18n from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
 import { authApi } from "@/core/auth/auth.service";
 
 import { AuthCard } from "../components/auth-card";
 import { ResetPasswordBody } from "../components/reset-password-body";
-import { CONNECT_ERROR } from "../lib/auth-copy";
+import { connectError } from "../lib/auth-copy";
 import { resetPasswordSchema } from "../lib/auth-schemas";
 import { onFormSubmit } from "../lib/on-form-submit";
 import { useAuthForm } from "../lib/use-auth-form";
@@ -13,6 +15,7 @@ import { useAuthForm } from "../lib/use-auth-form";
 type Status = "idle" | "submitting" | "success" | "error";
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation("auth");
   const [params] = useSearchParams();
   const token = params.get("token");
   const form = useAuthForm(resetPasswordSchema, { new_password: "", confirm_password: "" });
@@ -33,18 +36,14 @@ export function ResetPasswordPage() {
       setMessage(pickMessage(ok, data.message));
     } catch {
       setStatus("error");
-      setMessage(CONNECT_ERROR);
+      setMessage(connectError());
     }
   });
 
   return (
     <AuthCard
-      title={token ? "Nueva contraseña" : "Enlace incompleto"}
-      subtitle={
-        token
-          ? "Elige una contraseña nueva para tu cuenta."
-          : "Al enlace le falta el código de restablecimiento. Puede haberse cortado al copiarlo."
-      }
+      title={token ? t("reset.title") : t("reset.missingTitle")}
+      subtitle={token ? t("reset.subtitle") : t("reset.missingSubtitle")}
     >
       <ResetPasswordBody
         token={token}
@@ -59,5 +58,5 @@ export function ResetPasswordPage() {
 
 function pickMessage(ok: boolean, message: string | undefined): string {
   if (message) return message;
-  return ok ? "Contraseña restablecida con éxito." : "No se pudo restablecer la contraseña.";
+  return ok ? i18n.t("auth:reset.done") : i18n.t("auth:reset.failed");
 }
