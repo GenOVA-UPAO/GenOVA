@@ -1,6 +1,17 @@
 """Utilidades de texto compartidas."""
 
+import hashlib
 import re
+
+
+def content_hash(content: str | None) -> str:
+    """Huella (sha256 hex) del HTML de un recurso, ignorando espacios en los extremos.
+
+    Liga los datos estructurados de un recurso generado con su HTML: quien genera
+    guarda la huella y quien exporta la recalcula sobre el contenido actual de la
+    fase; si el docente lo editó, ya no coincide.
+    """
+    return hashlib.sha256((content or "").strip().encode("utf-8")).hexdigest()
 
 
 def smart_truncate(text: str, limit: int = 80) -> str:

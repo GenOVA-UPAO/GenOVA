@@ -15,6 +15,7 @@ import re
 from dataclasses import dataclass
 
 from core.package_themes import inject_package_theme
+from scorm.domain.activities import Activity, phase_activity
 from scorm.domain.templates.html import phase_label, wrap_resource_html
 
 DEFAULT_PHASES = [
@@ -52,6 +53,9 @@ class PhaseResource:
     label: str
     html: str
     media: tuple[MediaFile, ...]
+    # Actividad editable (opción múltiple, crucigrama…) si la fase salió de una
+    # plantilla con equivalente y sus datos siguen sincronizados con el HTML.
+    activity: Activity | None = None
 
     @property
     def basename(self) -> str:
@@ -86,5 +90,9 @@ def prepare_phase_resources(phases: list[dict] | None, theme: str = "upao") -> l
         page = wrap_resource_html(phase.get("content", ""), label)
         page = inject_package_theme(page, theme)
         html, media = extract_videos(page, idx)
-        resources.append(PhaseResource(order=idx, label=label, html=html, media=media))
+        resources.append(
+            PhaseResource(
+                order=idx, label=label, html=html, media=media, activity=phase_activity(phase)
+            )
+        )
     return resources
