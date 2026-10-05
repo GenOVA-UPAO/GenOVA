@@ -1,6 +1,7 @@
+import i18n from "i18next";
 import { useState } from "react";
 
-import { ovaCountPhrase, ovaNoun } from "../lib/ova-count";
+import { ovaNoun } from "../lib/ova-count";
 import { pageMeta } from "../lib/page-meta";
 import type { OvaListItem } from "../lib/types";
 import { useTrashList } from "./use-ova-library";
@@ -14,13 +15,20 @@ export interface ConfirmModalState {
   onConfirm: () => Promise<void>;
 }
 
-const IRREVERSIBLE = "Esta acción no se puede deshacer.";
-const DELETE_FOREVER = "Eliminar definitivamente";
+function useTrashConfirmation() {
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
+  const confirmThen = (state: Omit<ConfirmModalState, "onConfirm">, run: () => Promise<boolean>) => {
+    setConfirmModal({ ...state, onConfirm: async () => { if (await run()) setConfirmModal(null); } });
+  };
+  return { confirmModal, setConfirmModal, confirmThen };
+}
 
 /** Hook de estado y acciones para la página de Papelera. */
 export function usePapeleraPage() {
+  const IRREVERSIBLE = i18n.t("ova-library:esta_accion_no_se_puede_deshacer");
+  const DELETE_FOREVER = i18n.t("ova-library:eliminar_definitivamente");
   const [page, setPage] = useState(1);
-  const [confirmModal, setConfirmModal] = useState<ConfirmModalState | null>(null);
+  const { confirmModal, setConfirmModal, confirmThen } = useTrashConfirmation();
 
   const { data, isLoading, isPlaceholderData, error, refetch } = useTrashList(page);
   const { ovas, totalItems, totalPages } = pageMeta(data);
@@ -29,20 +37,11 @@ export function usePapeleraPage() {
   const selection = useOvaSelection(ovas.map((o) => o.id));
   const actions = useTrashActions();
 
-  const confirmThen = (state: Omit<ConfirmModalState, "onConfirm">, run: () => Promise<boolean>) => {
-    setConfirmModal({
-      ...state,
-      onConfirm: async () => {
-        if (await run()) setConfirmModal(null);
-      },
-    });
-  };
-
   const handlePermanentDelete = (ova: OvaListItem) => {
     confirmThen(
       {
         title: DELETE_FOREVER,
-        message: `Se eliminará «${ova.title ?? "OVA"}» de forma permanente. ${IRREVERSIBLE}`,
+        message: i18n.t("ova-library:se_eliminara_value_de_forma_permanente_value", { p0: ova.title ?? "OVA", p1: IRREVERSIBLE }),
         confirmLabel: DELETE_FOREVER,
       },
       async () => {
@@ -57,8 +56,8 @@ export function usePapeleraPage() {
     const ids = Array.from(selection.selectedIds);
     confirmThen(
       {
-        title: `Eliminar ${String(ids.length)} ${ovaNoun(ids.length)} definitivamente`,
-        message: `${ids.length === 1 ? "Se eliminará" : "Se eliminarán"} de forma permanente. ${IRREVERSIBLE}`,
+        title: i18n.t("ova-library:eliminar_value_value_definitivamente", { p0: String(ids.length), p1: ovaNoun(ids.length) }),
+        message: i18n.t("ova-library:deleteSelected", { count: ids.length, warning: IRREVERSIBLE }),
         confirmLabel: DELETE_FOREVER,
       },
       async () => {
@@ -72,20 +71,25 @@ export function usePapeleraPage() {
   const handleEmptyTrash = () => {
     confirmThen(
       {
-        title: "Vaciar la papelera",
-        message: `${ovaCountPhrase(totalItems, "se eliminará", "se eliminarán")} de forma permanente. ${IRREVERSIBLE}`,
-        confirmLabel: "Vaciar papelera",
+        title: i18n.t("ova-library:vaciar_la_papelera"),
+        message: i18n.t("ova-library:deleteAll", { count: totalItems, warning: IRREVERSIBLE }),
+        confirmLabel: i18n.t("ova-library:vaciar_papelera"),
       },
       async () => {
         const ok = await actions.emptyTrash();
-        if (ok) { selection.clear(); setPage(1); }
+        if (ok) {
+          selection.clear();
+          setPage(1);
+        }
         return ok;
       },
     );
   };
 
   const handleRestoreOva = (id: string) => {
-    void actions.restoreOva(id).then((ok) => { if (ok) selection.remove(id); });
+    void actions.restoreOva(id).then((ok) => {
+      if (ok) selection.remove(id);
+    });
   };
 
   const handleBatchRestore = () => {
@@ -94,12 +98,14 @@ export function usePapeleraPage() {
     });
   };
 
-  const handlePageChange = (next: number) => { setPage(next); selection.clear(); };
+  const handlePageChange = (next: number) => {
+    setPage(next);
+    selection.clear();
+  };
 
   return {
-    page, handlePageChange, totalItems, totalPages, selection,
-    confirmModal, setConfirmModal, handlePermanentDelete, handleBulkPermanentDelete, handleEmptyTrash,
-    handleRestoreOva, handleBatchRestore,
-    ovas, actions, isLoading, isStale: isPlaceholderData, error, refetch,
+    page, handlePageChange, totalItems, totalPages, selection, confirmModal, setConfirmModal,
+    handlePermanentDelete, handleBulkPermanentDelete, handleEmptyTrash, handleRestoreOva,
+    handleBatchRestore, ovas, actions, isLoading, isStale: isPlaceholderData, error, refetch,
   };
 }

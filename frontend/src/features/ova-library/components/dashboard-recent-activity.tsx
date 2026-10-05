@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { EmptyState } from "@/core/components/empty-state";
@@ -19,17 +21,20 @@ export function DashboardRecentActivity({
   recentOvas,
   isAdmin,
 }: Readonly<DashboardRecentActivityProps>) {
+  useTranslation();
   if (recentOvas.length === 0) {
     return (
       <EmptyState
         icon="plus"
-        title="Crea tu primer OVA"
-        description="Describe un tema y GenOVA generará los recursos de cada fase del modelo 5E. Luego podrás revisarlos, ajustarlos y exportarlos a SCORM."
+        title={i18n.t("ova-library:crea_tu_primer_ova")}
+        description={i18n.t(
+          "ova-library:describe_un_tema_y_genova_generara_los_recursos_de_cada_fase_del_modelo_5e_luego_podras_re",
+        )}
         action={
           <Button asChild size="lg">
             <Link to="/crear">
               <Icon name="plus" size="text-base" />
-              Comenzar ahora
+              {i18n.t("ova-library:comenzar_ahora")}{" "}
             </Link>
           </Button>
         }
@@ -40,7 +45,7 @@ export function DashboardRecentActivity({
   return (
     <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
       {recentOvas.map((ova) => {
-        const title = ova.title?.trim() ? ova.title : "Sin título";
+        const title = ova.title?.trim() ? ova.title : i18n.t("ova-library:sin_titulo");
         return (
           <li key={ova.id}>
             <Link
@@ -48,11 +53,17 @@ export function DashboardRecentActivity({
               className="group flex items-center gap-3 px-4 py-3.5 transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset sm:gap-4 sm:px-5"
             >
               <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 font-medium break-words text-foreground sm:line-clamp-1" title={title}>
+                <p
+                  className="line-clamp-2 font-medium break-words text-foreground sm:line-clamp-1"
+                  title={title}
+                >
                   {title}
                 </p>
                 <div className="mt-0.5">
-                  <OvaCardMeta ownerName={isAdmin ? ownerNameOf(ova) : ""} activity={lastActivity(ova)} />
+                  <OvaCardMeta
+                    ownerName={isAdmin ? ownerNameOf(ova) : ""}
+                    activity={lastActivity(ova)}
+                  />
                 </div>
               </div>
               <OvaStatusBadge status={ova.status} />

@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import type { Palette } from "@/core/lib/ova-palettes";
 
 interface ThemeMiniPreviewProps {
@@ -5,8 +8,6 @@ interface ThemeMiniPreviewProps {
   designMode: string;
   palette: Palette | null;
 }
-
-const TABS = ["Enganche", "Exploración", "Explicación", "Evaluación"];
 
 function resolveColors(colorMode: string, palette: Palette | null) {
   if (colorMode === "upao") {
@@ -27,14 +28,25 @@ export function ThemeMiniPreview({
   designMode,
   palette,
 }: Readonly<ThemeMiniPreviewProps>) {
+  useTranslation();
+  const TABS = [
+    i18n.t("ova-library:enganche"),
+    i18n.t("ova-library:exploracion"),
+    i18n.t("ova-library:explicacion"),
+    i18n.t("ova-library:evaluacion"),
+  ];
   const { primary, accent } = resolveColors(colorMode, palette);
   const isTabbed = designMode !== "ai";
 
   return (
     <div aria-hidden="true" className="overflow-hidden rounded-xl border border-border">
       <div style={{ background: primary }} className="px-3 py-2.5">
-        <div className="text-[9px] font-bold text-white">Aprendizaje supervisado</div>
-        <div className="mt-0.5 text-[7px] text-white/60">Sistemas de Gestión de BD · 5.º ciclo</div>
+        <div className="text-[9px] font-bold text-white">
+          {i18n.t("ova-library:aprendizaje_supervisado")}
+        </div>
+        <div className="mt-0.5 text-[7px] text-white/60">
+          {i18n.t("ova-library:sistemas_de_gestion_de_bd_5_ciclo")}
+        </div>
       </div>
       {isTabbed && (
         <div className="flex border-b border-border bg-muted/30">
@@ -62,10 +74,7 @@ export function ThemeMiniPreview({
           <div className="h-8 rounded-lg bg-muted/50" />
         </div>
         <div className="flex items-center gap-1.5">
-          <div
-            className="h-2 flex-1 rounded-full opacity-40"
-            style={{ background: accent }}
-          />
+          <div className="h-2 flex-1 rounded-full opacity-40" style={{ background: accent }} />
           <div className="h-2 w-8 rounded-full bg-muted" />
         </div>
       </div>

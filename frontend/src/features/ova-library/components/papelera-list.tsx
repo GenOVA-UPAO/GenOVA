@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { EmptyState } from "@/core/components/empty-state";
@@ -41,21 +43,27 @@ export function PapeleraList({
   onPermanentDelete,
   onRetry,
 }: Readonly<PapeleraListProps>) {
+  useTranslation();
   if (isLoading) return <PapeleraSkeleton />;
 
   if (error) {
-    return <QueryErrorState title="No se pudo cargar la papelera" onRetry={onRetry} />;
+    return (
+      <QueryErrorState
+        title={i18n.t("ova-library:no_se_pudo_cargar_la_papelera")}
+        onRetry={onRetry}
+      />
+    );
   }
 
   if (ovas.length === 0) {
     return (
       <EmptyState
         icon="trash"
-        title="Tu papelera está vacía"
-        description="Los OVAs que muevas a la papelera aparecerán aquí."
+        title={i18n.t("ova-library:tu_papelera_esta_vacia")}
+        description={i18n.t("ova-library:los_ovas_que_muevas_a_la_papelera_apareceran_aqui")}
         action={
           <Button asChild variant="outline">
-            <Link to="/mis-ovas">Ir a Mis OVAs</Link>
+            <Link to="/mis-ovas">{i18n.t("ova-library:ir_a_mis_ovas")}</Link>
           </Button>
         }
       />
@@ -64,13 +72,16 @@ export function PapeleraList({
 
   return (
     <section
-      aria-label="OVAs en la papelera"
+      aria-label={i18n.t("ova-library:ovas_en_la_papelera")}
       className="overflow-clip rounded-xl border border-border bg-card"
     >
       {toolbar}
       <ul
         aria-busy={isStale}
-        className={cn("divide-y divide-border transition-opacity duration-150", isStale && "opacity-60")}
+        className={cn(
+          "divide-y divide-border transition-opacity duration-150",
+          isStale && "opacity-60",
+        )}
       >
         {ovas.map((ova) => (
           <TrashedOvaRow

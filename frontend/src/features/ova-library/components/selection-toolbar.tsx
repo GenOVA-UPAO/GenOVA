@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { type ReactNode, useId } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import { Checkbox } from "@/core/components/ui/checkbox";
@@ -18,10 +20,8 @@ interface SelectionToolbarProps {
   onClearSelection: () => void;
 }
 
-const SELECT_ALL_LABEL = "Seleccionar todos en esta página";
-
 function selectedLabel(count: number): string {
-  return count === 1 ? "1 seleccionado" : `${String(count)} seleccionados`;
+  return i18n.t("ova-library:selected", { count });
 }
 
 function toolbarClass(variant: "standalone" | "inset", selecting: boolean): string {
@@ -51,13 +51,15 @@ export function SelectionToolbar({
   onSelectAllChange,
   onClearSelection,
 }: Readonly<SelectionToolbarProps>) {
+  useTranslation();
+  const SELECT_ALL_LABEL = i18n.t("ova-library:seleccionar_todos_en_esta_pagina");
   const checkboxId = useId();
   const selecting = selectedCount > 0;
 
   return (
     <div
       role="toolbar"
-      aria-label="Selección de OVAs"
+      aria-label={i18n.t("ova-library:seleccion_de_ovas")}
       className={toolbarClass(variant, selecting)}
     >
       <Checkbox
@@ -83,7 +85,7 @@ export function SelectionToolbar({
       )}
       {selecting && (
         <Button variant="ghost" size="sm" onClick={onClearSelection} disabled={disabled}>
-          Quitar selección
+          {i18n.t("ova-library:quitar_seleccion")}{" "}
         </Button>
       )}
       {selecting ? (

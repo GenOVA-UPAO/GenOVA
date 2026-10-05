@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { PaletteSwatches } from "@/core/components/palette-swatches";
 import { type Palette } from "@/core/lib/ova-palettes";
 
@@ -18,9 +21,12 @@ export function ThemePalettePicker({
   onSelectColorMode,
   onSelectPalette,
 }: Readonly<ThemePalettePickerProps>) {
+  useTranslation();
   return (
     <fieldset className="space-y-2">
-      <legend className="mb-2 text-sm font-medium text-foreground">Colores</legend>
+      <legend className="mb-2 text-sm font-medium text-foreground">
+        {i18n.t("ova-library:colores")}
+      </legend>
       {COLOR_MODES.map((m) => (
         <ThemeRadioOption
           key={m.key}
@@ -35,7 +41,11 @@ export function ThemePalettePicker({
 
       {colorMode === "custom" && (
         <div className="pt-1 pl-1">
-          <PaletteSwatches name="theme-palette" selected={selectedPalette} onSelect={onSelectPalette} />
+          <PaletteSwatches
+            name="theme-palette"
+            selected={selectedPalette}
+            onSelect={onSelectPalette}
+          />
         </div>
       )}
     </fieldset>

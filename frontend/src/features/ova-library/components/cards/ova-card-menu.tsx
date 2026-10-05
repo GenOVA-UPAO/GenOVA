@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import {
@@ -34,17 +37,18 @@ export function OvaCardMenu({
   onDuplicate,
   onMoveToTrash,
 }: Readonly<OvaCardMenuProps>) {
+  useTranslation();
   const busy = isGenerating || isDuplicating;
 
   return (
     <DropdownMenu modal={false}>
-      <Tooltip label="Más acciones" side="top">
+      <Tooltip label={i18n.t("ova-library:mas_acciones")} side="top">
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
             className="-my-2 -mr-2 shrink-0 text-foreground/70 max-sm:-my-3 max-sm:size-11"
-            aria-label={`Más acciones para ${title}`}
+            aria-label={i18n.t("ova-library:mas_acciones_para_value", { p0: title })}
           >
             <Icon name="dots-three-vertical" weight="bold" className="size-5" />
           </Button>
@@ -54,12 +58,12 @@ export function OvaCardMenu({
         {canEdit && (
           <DropdownMenuItem className={ITEM_CLASS} disabled={busy} onSelect={onEditMetadata}>
             <Icon name="pencil-simple" size="text-base" />
-            Editar título y descripción
+            {i18n.t("ova-library:editar_titulo_y_descripcion")}{" "}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem className={ITEM_CLASS} disabled={busy} onSelect={onDuplicate}>
           <Icon name="copy" size="text-base" />
-          {isDuplicating ? "Duplicando…" : "Duplicar"}
+          {isDuplicating ? i18n.t("ova-library:duplicando") : i18n.t("ova-library:duplicar")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -69,7 +73,7 @@ export function OvaCardMenu({
           onSelect={onMoveToTrash}
         >
           <Icon name="trash" size="text-base" />
-          Mover a la papelera
+          {i18n.t("ova-library:mover_a_la_papelera")}{" "}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

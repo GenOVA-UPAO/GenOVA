@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { ExportMenu } from "@/core/export/components/export-menu";
@@ -32,6 +35,7 @@ export function OvaCardActions({
   onDownload,
   onResume,
 }: Readonly<OvaCardActionsProps>) {
+  useTranslation();
   const [format, rememberFormat] = useLastExportFormat();
   const handleSelect = (next: ExportFormatId) => {
     rememberFormat(next);
@@ -52,12 +56,12 @@ export function OvaCardActions({
           <Button
             variant="ghost"
             className={ACTION_CLASS}
-            aria-label="Descargar, elegir formato"
+            aria-label={i18n.t("ova-library:descargar_elegir_formato")}
             loading={isDownloading}
             disabled={isDuplicating}
           >
             {!isDownloading && <Icon name="download-simple" size="text-base" />}
-            {isDownloading ? "Descargando…" : "Descargar"}
+            {isDownloading ? i18n.t("ova-library:descargando") : i18n.t("ova-library:descargar")}
             {!isDownloading && <Icon name="caret-down" size="text-xs" />}
           </Button>
         </ExportMenu>

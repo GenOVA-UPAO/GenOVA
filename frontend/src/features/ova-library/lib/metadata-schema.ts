@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { z } from "zod";
 
 import { OVA_LICENSES } from "@/core/lib/educational-metadata";
@@ -6,8 +7,8 @@ export const metadataSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(1, "El título es obligatorio.")
-    .max(100, "El título no puede superar 100 caracteres."),
+    .min(1, { error: () => i18n.t("ova-library:el_titulo_es_obligatorio") })
+    .max(100, { error: () => i18n.t("ova-library:el_titulo_no_puede_superar_100_caracteres") }),
   description: z.string().max(2000).optional().or(z.literal("")),
   license: z.enum(OVA_LICENSES.map((license) => license.value)).default("CC BY-SA 4.0"),
   language: z.string().trim().max(35).regex(/^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$/, "Usa un código de idioma como es o es-PE.").default("es"),

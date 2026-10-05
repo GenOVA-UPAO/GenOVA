@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { useCurrentUser } from "@/core/auth/auth-store";
 import { Checkbox } from "@/core/components/ui/checkbox";
 import type { ExportFormatId } from "@/core/export/lib/formats";
@@ -48,8 +51,9 @@ export function OvaCard({
   onEditMetadata,
   onResume,
 }: Readonly<OvaCardProps>) {
+  useTranslation();
   const isGenerating = ova.status === "generando";
-  const title = ova.title?.trim() ? ova.title : "Sin título";
+  const title = ova.title?.trim() ? ova.title : i18n.t("ova-library:sin_titulo");
   const description = meaningfulDescription(ova);
   const canEdit = isOwnOva(ova, useCurrentUser()?.id);
 
@@ -59,7 +63,9 @@ export function OvaCard({
       data-ova-id={ova.id}
       className={cn(
         "flex h-full flex-col rounded-xl border bg-card p-4 transition-[border-color,box-shadow] duration-200 hover:shadow-sm",
-        isSelected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-foreground/20",
+        isSelected
+          ? "border-primary bg-primary/5 ring-1 ring-primary"
+          : "border-border hover:border-foreground/20",
         isMoving && "opacity-60",
       )}
     >
@@ -68,7 +74,7 @@ export function OvaCard({
           checked={isSelected}
           disabled={isGenerating}
           onCheckedChange={() => onToggleSelect?.(ova.id)}
-          aria-label={`Seleccionar ${title}`}
+          aria-label={i18n.t("ova-library:seleccionar_value", { p0: title })}
         />
         <div className="min-w-0 flex-1">
           <OvaCardBadges status={ova.status} version={visibleVersion(ova)} job={job} />

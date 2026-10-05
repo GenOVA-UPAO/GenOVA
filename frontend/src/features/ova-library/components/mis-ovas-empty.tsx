@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { EmptyState } from "@/core/components/empty-state";
@@ -13,24 +15,32 @@ interface MisOvasEmptyProps {
 }
 
 function noResultsDescription(search: string, status: string): string {
-  const byStatus = status === "all" ? "" : ` en estado «${statusLabel(status)}»`;
-  if (search) return `No hay OVAs${byStatus} cuyo título contenga «${search}».`;
-  return `No hay OVAs${byStatus}.`;
+  const byStatus =
+    status === "all" ? "" : i18n.t("ova-library:withStatus", { status: statusLabel(status) });
+  if (search)
+    return i18n.t("ova-library:no_hay_ovasvalue_cuyo_titulo_contenga_value", {
+      p0: byStatus,
+      p1: search,
+    });
+  return i18n.t("ova-library:no_hay_ovasvalue", { p0: byStatus });
 }
 
 function clearLabel(search: string, status: string): string {
-  if (status === "all") return "Limpiar búsqueda";
-  return search ? "Limpiar filtros" : "Ver todos los estados";
+  if (status === "all") return i18n.t("ova-library:limpiar_busqueda");
+  return search
+    ? i18n.t("ova-library:limpiar_filtros")
+    : i18n.t("ova-library:ver_todos_los_estados");
 }
 
 /** Estado vacío de la biblioteca: sin OVAs todavía o sin resultados para el filtro. */
 export function MisOvasEmpty({ search, status, onClearFilters }: Readonly<MisOvasEmptyProps>) {
+  useTranslation();
   const trimmed = search.trim();
   if (trimmed !== "" || status !== "all") {
     return (
       <EmptyState
         icon="magnifying-glass-minus"
-        title="Sin resultados"
+        title={i18n.t("ova-library:sin_resultados")}
         description={noResultsDescription(trimmed, status)}
         action={
           <Button variant="outline" onClick={onClearFilters}>
@@ -43,13 +53,15 @@ export function MisOvasEmpty({ search, status, onClearFilters }: Readonly<MisOva
   return (
     <EmptyState
       icon="folder"
-      title="Aún no has creado ningún OVA"
-      description="Describe un tema y el asistente generará tu primer objeto virtual de aprendizaje, listo para editar y descargar."
+      title={i18n.t("ova-library:aun_no_has_creado_ningun_ova")}
+      description={i18n.t(
+        "ova-library:describe_un_tema_y_el_asistente_generara_tu_primer_objeto_virtual_de_aprendizaje_listo_par",
+      )}
       action={
         <Button asChild>
           <Link to="/crear">
             <Icon name="plus" size="text-base" />
-            Crear mi primer OVA
+            {i18n.t("ova-library:crear_mi_primer_ova")}{" "}
           </Link>
         </Button>
       }
