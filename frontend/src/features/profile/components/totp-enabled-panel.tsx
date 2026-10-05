@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -24,16 +25,17 @@ export function TotpEnabledPanel({
   onDisable,
   onDismissError,
 }: Readonly<TotpEnabledPanelProps>) {
+  const { t } = useTranslation("profile");
   const [showDisableForm, setShowDisableForm] = useState(false);
 
   return (
     <ProfileSection
-      title="Verificación en dos pasos"
-      description="Al entrar, además de tu contraseña, se te pide un código de tu app autenticadora."
+      title={t("totp.title")}
+      description={t("totp.enabledDescription")}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="flex items-center gap-2 text-sm font-medium text-success-strong">
-          <Icon name="shield-check" size="text-lg" /> Activada
+          <Icon name="shield-check" size="text-lg" /> {t("totp.enabled")}
         </p>
         {!showDisableForm && (
           <Button
@@ -43,7 +45,7 @@ export function TotpEnabledPanel({
               setShowDisableForm(true);
             }}
           >
-            Desactivar
+            {t("totp.disable")}
           </Button>
         )}
       </div>

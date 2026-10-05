@@ -1,5 +1,6 @@
 import type { SyntheticEvent } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -22,9 +23,9 @@ interface ProfileFormProps {
 
 export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileFormProps>) {
   const form = useForm(profileSchema, profileToFormValues(profile));
-
   const emailChange = useEmailChange(profile, form.values);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const { t } = useTranslation("profile");
 
   const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -33,8 +34,6 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
       return;
     }
     if (!emailChange.validate()) return;
-    // Se rellena con lo que devolvió el servidor (p. ej. el código ya con ceros):
-    // `profile` aún es el de antes de guardar y devolvería los valores viejos.
     const saved = await onSave(emailChange.withPassword());
     if (saved !== null) {
       setPendingEmail(typeof saved.pending_email === "string" ? saved.pending_email : null);
@@ -44,17 +43,8 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
   };
 
   return (
-    <ProfileSection
-      title="Datos personales"
-      description="Tu nombre y correo aparecen en los OVAs que creas y en los listados de la plataforma."
-    >
-      <form
-        noValidate
-        onSubmit={(event) => {
-          void handleSubmit(event);
-        }}
-        className="space-y-5"
-      >
+    <ProfileSection title={t("form.title")} description={t("form.description")}>
+      <form noValidate onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
         <ProfileIdentityFields
           values={form.values}
           errorFor={form.errorFor}
@@ -94,11 +84,11 @@ export function ProfileForm({ profile, isSubmitting, onSave }: Readonly<ProfileF
                 form.reset(profileToFormValues(profile));
               }}
             >
-              Descartar cambios
+              {t("form.discard")}
             </Button>
           )}
           <Button type="submit" className="max-sm:h-11" loading={isSubmitting}>
-            Guardar cambios
+            {t("form.save")}
           </Button>
         </div>
       </form>

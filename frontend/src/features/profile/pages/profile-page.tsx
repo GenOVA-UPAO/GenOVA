@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { EmptyState } from "@/core/components/empty-state";
 import { QueryErrorState } from "@/core/components/query-error-state";
 import { Button } from "@/core/components/ui/button";
@@ -14,6 +16,7 @@ const TAB_CONFIG = "config";
 const PROFILE_TABS = [TAB_INFO, TAB_CONFIG, "security"] as const;
 
 export function ProfilePage() {
+  const { t } = useTranslation("profile");
   const profileQuery = useProfile();
   const actions = useProfileActions();
   const [tab, setTab] = useTabParam(PROFILE_TABS, TAB_INFO);
@@ -24,7 +27,7 @@ export function ProfilePage() {
   if (profileQuery.isError) {
     return (
       <div className="mx-auto max-w-7xl space-y-6">
-        <QueryErrorState title="No se pudo cargar el perfil" onRetry={retry} />
+        <QueryErrorState title={t("page.loadError")} onRetry={retry} />
       </div>
     );
   }
@@ -45,11 +48,11 @@ export function ProfilePage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <EmptyState
           icon="users-three"
-          title="No hay datos de perfil"
-          description="Vuelve a cargar tu información para continuar."
+          title={t("page.emptyTitle")}
+          description={t("page.emptyDescription")}
           action={
             <Button variant="outline" onClick={retry}>
-              Reintentar
+              {t("page.retry")}
             </Button>
           }
         />
@@ -57,14 +60,11 @@ export function ProfilePage() {
     );
   }
 
-  const role = profile.role ?? "usuario";
-  const activeTab = tab === TAB_CONFIG && role !== "administrador" ? TAB_INFO : tab;
-
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <ProfileWorkspace
         profile={profile}
-        activeTab={activeTab}
+        activeTab={tab}
         onTabChange={setTab}
         actions={actions}
       />
