@@ -5,7 +5,7 @@ import { completeResource } from './interactions.js';
 
 const fixtures = readdirSync(new URL('../../backend/tests/fixtures/ova_engine/', import.meta.url))
   .filter(f => /^(engage|explore|explain|elaborate|evaluate)_\d\d\.json$/.test(f)).sort();
-if (fixtures.length !== 49) throw new Error(`Se esperaban 49 fixtures, hay ${fixtures.length}`);
+if (fixtures.length !== 51) throw new Error(`Se esperaban 51 fixtures, hay ${fixtures.length}`);
 const screenshotFonts = `
 @font-face{font-family:Reference;src:url(/templates/fonts/DejaVuSans.ttf);font-weight:400}
 @font-face{font-family:Reference;src:url(/templates/fonts/DejaVuSans-Bold.ttf);font-weight:600 900}
