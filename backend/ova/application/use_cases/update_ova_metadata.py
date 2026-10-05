@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from pydantic import ValidationError
-
-from core.educational_metadata import EducationalMetadata, metadata_from_ova
+from core.educational_metadata import (
+    EducationalMetadata,
+    InvalidEducationalMetadata,
+    metadata_from_ova,
+)
 from ova.application.dto import OvaMetadataResult, UpdateOvaMetadataInput
 from ova.application.ports import OvaLifecycleRepository
 from ova.domain.errors import (
@@ -41,12 +43,12 @@ class UpdateOvaMetadata:
             raise OvaGenerating("No se puede editar el OVA mientras se está generando.")
 
         try:
-            metadata = EducationalMetadata(**{
-                **metadata_from_ova(ova).model_dump(), **data.metadata, "description": description,
-            }).model_dump(exclude={"description"})
+            metadata = EducationalMetadata.from_values(**{
+                **metadata_from_ova(ova).as_dict(), **data.metadata, "description": description,
+            }).as_dict(exclude={"description"})
             if not metadata["author"]:
                 metadata["author"] = ova.owner.display_name if ova.owner else ova.author
-        except ValidationError as error:
+        except InvalidEducationalMetadata as error:
             raise OvaEditError(422, "invalid_metadata", "Revisa la licencia y los metadatos educativos.") from error
         self.repo.update_metadata(ova.id, title, description, **metadata)
         self.repo.commit("update_ova_metadata")

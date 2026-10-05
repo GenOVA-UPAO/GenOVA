@@ -17,11 +17,15 @@ from zipfile import ZipFile
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pydantic import ValidationError
 from sqlalchemy import text
 
 from auth.dependencies import get_current_user
-from core.educational_metadata import LICENSES, EducationalMetadata, metadata_from_ova
+from core.educational_metadata import (
+    LICENSES,
+    EducationalMetadata,
+    InvalidEducationalMetadata,
+    metadata_from_ova,
+)
 from models import Ova as OvaORM
 from models import User
 from ova.application.dto import UpdateOvaMetadataInput
@@ -105,13 +109,13 @@ def test_license_mapping_and_lom_rights(license):
     {"typical_learning_time": "30 minutos"}, {"author": "x" * 256},
 ])
 def test_metadata_validation(values):
-    with pytest.raises(ValidationError):
+    with pytest.raises(InvalidEducationalMetadata):
         EducationalMetadata(**values)
 
 
 def _ova():
     return Ova("ova-1", "owner", "Curso", "Descripción", "listo", None, None, 1,
-               None, None, None, owner=OvaOwner("owner", "Docente"), **META.model_dump(exclude={"description"}))
+               None, None, None, owner=OvaOwner("owner", "Docente"), **META.as_dict(exclude={"description"}))
 
 
 class Repository:
@@ -188,7 +192,7 @@ def test_orm_persists_metadata_and_defaults():
         assert (ova.license, ova.language, ova.keywords) == ("CC BY-SA 4.0", "es", [])
         repo = SqlAlchemyOvaLifecycleRepository(db)
         assert repo.get_active(ova.id).author == "Docente"
-        repo.update_metadata(str(ova.id), "Nuevo", META.description, **META.model_dump(exclude={"description"}))
+        repo.update_metadata(str(ova.id), "Nuevo", META.description, **META.as_dict(exclude={"description"}))
         repo.commit("test_metadata")
         db.expire_all()
         assert metadata_from_ova(db.get(OvaORM, ova.id)) == META
@@ -248,7 +252,7 @@ ROLLBACK;
 def test_regeneration_persists_updated_metadata_in_stored_scorm(monkeypatch, tmp_path):
     from generation.infrastructure import regen_persist
 
-    ova = SimpleNamespace(title="Título actualizado", user_id="owner", **META.model_dump())
+    ova = SimpleNamespace(title="Título actualizado", user_id="owner", **META.as_dict())
     monkeypatch.setattr("storage.is_configured", lambda: False)
     monkeypatch.setattr(regen_persist, "ova_output_dir", lambda: str(tmp_path))
     commits = []

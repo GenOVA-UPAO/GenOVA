@@ -26,7 +26,7 @@ def _ova_to_dict(ova: Ova, include_owner: bool) -> dict:
         "id": ova.id,
         "title": ova.title,
         "description": ova.description,
-        **metadata_from_ova(ova).model_dump(),
+        **metadata_from_ova(ova).as_dict(),
         "status": ova.status,
         "file_path": ova.file_path,
         "version_number": ova.version_number,
