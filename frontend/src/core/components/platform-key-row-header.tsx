@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+
 import type { ProviderMeta } from "./platform-key-meta";
 import { PlatformKeyState } from "./platform-key-state";
 import { hasCheck, type ProviderCheckState } from "./platform-provider-check";

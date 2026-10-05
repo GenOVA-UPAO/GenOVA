@@ -1,8 +1,8 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
+
 import type { ProviderCoverage as Coverage } from "./platform-key-meta";
 
-const LABEL: Record<Coverage, string> = { get texto() { return i18n.t("shared:texto"); }, get imagen() { return i18n.t("shared:imagen"); }, get video() { return i18n.t("shared:video"); } };
+const LABEL: Record<Coverage, string> = { texto: "shared:texto", imagen: "shared:imagen", video: "shared:video" };
 
 /** Etiquetas de lo que se puede generar con la clave del proveedor. */
 export function ProviderCoverage({ covers }: Readonly<{ covers: readonly Coverage[] }>) {
@@ -11,7 +11,7 @@ export function ProviderCoverage({ covers }: Readonly<{ covers: readonly Coverag
   return (
     <span
       className="inline-flex flex-wrap gap-1"
-      aria-label={t("shared:sirve_para_value", { p0: covers.map((c) => LABEL[c].toLowerCase()).join(", ") })}
+      aria-label={t("shared:sirve_para_value", { p0: covers.map((c) => t(LABEL[c]).toLowerCase()).join(", ") })}
     >
       {covers.map((c) => (
         <span
@@ -19,7 +19,7 @@ export function ProviderCoverage({ covers }: Readonly<{ covers: readonly Coverag
           aria-hidden="true"
           className="rounded-full border border-border bg-muted/60 px-1.5 py-px text-[11px] leading-4 font-medium text-muted-foreground"
         >
-          {LABEL[c]}
+          {t(LABEL[c])}
         </span>
       ))}
     </span>

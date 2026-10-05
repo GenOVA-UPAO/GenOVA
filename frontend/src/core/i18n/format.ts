@@ -24,8 +24,8 @@ export function formatDateTime(value: DateInput): string {
   return formatDate(value, { dateStyle: "medium", timeStyle: "short" });
 }
 
-export function formatNumber(value: number, options?: Intl.NumberFormatOptions): string {
-  return new Intl.NumberFormat(currentLocale(), options).format(value);
+export function formatNumber(value: number, options?: Intl.NumberFormatOptions, locale = currentLocale()): string {
+  return new Intl.NumberFormat(locale, options).format(value);
 }
 
 export function formatPercent(fraction: number, maximumFractionDigits = 0): string {

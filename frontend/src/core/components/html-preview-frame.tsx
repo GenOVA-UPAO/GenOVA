@@ -1,6 +1,5 @@
-import i18n from "i18next";
-import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/core/lib/cn";
 
@@ -20,7 +19,7 @@ export function HtmlPreviewFrame({
   html = "",
   height = "60vh",
   className = "block w-full border-0",
-  title = i18n.t("shared:vista_previa_del_recurso"),
+  title,
 }: Readonly<HtmlPreviewFrameProps>) {
   const { t } = useTranslation();
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -47,7 +46,7 @@ export function HtmlPreviewFrame({
   return (
     <iframe
       ref={frameRef}
-      title={title}
+      title={title ?? t("shared:vista_previa_del_recurso")}
       className={cn(className, loading && "animate-pulse bg-muted")}
       style={height === null ? undefined : { height }}
       sandbox="allow-scripts"

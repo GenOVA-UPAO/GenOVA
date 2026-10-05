@@ -1,6 +1,6 @@
 import i18n from "i18next";
-/** Proveedores sin prefijo de clave reconocible. */
-const PASTE_HINT = i18n.t("shared:pega_aqui_la_clave");
+/** Clave compartida; se resuelve al leer el metadato, nunca al importar. */
+const PASTE_HINT_KEY = "shared:pega_aqui_la_clave";
 
 /** Qué puede generar GenOVA con la clave de cada proveedor. */
 export type ProviderCoverage = "texto" | "imagen" | "video";
@@ -17,7 +17,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
   openrouter: {
     label: "OpenRouter",
     placeholder: "sk-or-…",
-    get desc() { return i18n.t("shared:casi_todos_los_modelos_con_una_sola_clave_el__46a946"); },
+    get desc() { return i18n.t("shared:platformKey.openrouterDescription"); },
     compat: true,
     covers: ["texto", "imagen", "video"],
   },
@@ -51,22 +51,22 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
   },
   runware: {
     get label() { return i18n.t("shared:runware"); },
-    placeholder: PASTE_HINT,
+    get placeholder() { return i18n.t(PASTE_HINT_KEY); },
     get desc() { return i18n.t("shared:generacion_de_imagenes_stable_diffusion_xl"); },
     compat: false,
     covers: ["imagen"],
   },
   falai: {
     label: "fal.ai",
-    placeholder: PASTE_HINT,
+    get placeholder() { return i18n.t(PASTE_HINT_KEY); },
     get desc() { return i18n.t("shared:generacion_de_imagenes_en_la_nube"); },
     compat: false,
     covers: ["imagen"],
   },
   cloudflare: {
     get label() { return i18n.t("shared:cloudflare_workers_ai"); },
-    placeholder: PASTE_HINT,
-    get desc() { return i18n.t("shared:generacion_de_imagenes_con_el_plan_gratuito_d_6a547c"); },
+    get placeholder() { return i18n.t(PASTE_HINT_KEY); },
+    get desc() { return i18n.t("shared:platformKey.cloudflareDescription"); },
     compat: false,
     covers: ["imagen"],
   },
@@ -75,8 +75,12 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
 /** El proveedor que se recomienda conectar primero: cubre texto, imagen y video. */
 export const RECOMMENDED_PROVIDER = "openrouter";
 
-export const RECOMMENDED_HINT =
-  i18n.t("shared:con_una_sola_clave_de_openrouter_tienes_casi__af0ae8");
+/** Compatibilidad con consumidores externos al área: binding vivo al cambiar idioma. */
+export let RECOMMENDED_HINT = i18n.t("shared:platformKey.openrouterHint");
+i18n.on("languageChanged", () => {
+  RECOMMENDED_HINT = i18n.t("shared:platformKey.openrouterHint");
+});
+
 
 export interface ProviderGroups {
   recommended: string[];
@@ -102,7 +106,7 @@ export function providerMeta(provider: string): ProviderMeta {
   if (Object.hasOwn(PROVIDER_META, provider)) return PROVIDER_META[provider];
   return {
     label: provider,
-    placeholder: PASTE_HINT,
+    placeholder: i18n.t(PASTE_HINT_KEY),
     desc: i18n.t("shared:proveedor_generico"),
     compat: false,
     covers: [],

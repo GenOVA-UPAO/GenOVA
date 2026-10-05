@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { PlatformKeyActions } from "./platform-key-actions";
 import { PlatformKeyDeleteConfirm } from "./platform-key-delete-confirm";

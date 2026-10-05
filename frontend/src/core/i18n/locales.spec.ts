@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import { SUPPORTED_LANGUAGES } from "./languages";
 
 const BUNDLES = import.meta.glob<unknown>("./locales/*/*.json", { eager: true, import: "default" });
+const SOURCES = import.meta.glob<string>("/src/**/*.{ts,tsx}", {
+  eager: true, query: "?raw", import: "default",
+});
 
 /** `{ es: { common: bundle, … }, en: … }` */
 function groupByLanguage(): Map<string, Map<string, unknown>> {
@@ -41,6 +44,18 @@ const placeholders = (text: string) =>
 const base = (key: string) => key.replace(/_(?:zero|one|two|few|many|other)$/, "");
 const baseKeys = (map: Map<string, string>) => sorted(new Set([...map.keys()].map(base)));
 
+function missingReferences(file: string, source: string): string[] {
+  return [...source.matchAll(/\bt\(\s*["']([^"']+)["']/g)].flatMap((match) => {
+    const reference = match[1];
+    const separator = reference.indexOf(":");
+    const namespace = separator === -1 ? "common" : reference.slice(0, separator);
+    const key = separator === -1 ? reference : reference.slice(separator + 1);
+    return SUPPORTED_LANGUAGES
+      .filter((language) => !baseKeys(load(language, namespace)).includes(base(key)))
+      .map((language) => `${file}: ${language}/${reference}`);
+  });
+}
+
 describe("recursos de traducción", () => {
   const files = namespaces("es");
 
@@ -52,9 +67,14 @@ describe("recursos de traducción", () => {
 
   it.each(files)("%s: mismas claves y mismos {{parámetros}} en todos los idiomas", (file) => {
     const reference = load("es", file);
+    for (const [key, text] of reference) {
+      expect(text.trim(), `es/${file}:${key} vacío`).not.toBe("");
+    }
     for (const language of SUPPORTED_LANGUAGES.filter((l) => l !== "es")) {
       const other = load(language, file);
       expect(baseKeys(other)).toEqual(baseKeys(reference));
+      // Español e inglés usan las mismas formas cardinales: no basta con la base.
+      expect(sorted(other.keys())).toEqual(sorted(reference.keys()));
       for (const [key, text] of other) {
         expect(text.trim(), `${language}/${file}:${key} vacío`).not.toBe("");
         const ref = reference.get(key);
@@ -63,5 +83,12 @@ describe("recursos de traducción", () => {
         }
       }
     }
+  });
+
+  it("las claves literales usadas por app, core y biblioteca existen en ambos idiomas", () => {
+    const problems = Object.entries(SOURCES)
+      .filter(([file]) => /^\/src\/(app|core|features\/ova-library)\//.test(file) && !/\.(spec|test)\.tsx?$/.test(file))
+      .flatMap(([file, source]) => missingReferences(file, source));
+    expect(problems).toEqual([]);
   });
 });

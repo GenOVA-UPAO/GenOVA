@@ -1,5 +1,5 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Input } from "@/core/components/ui/input";
 import { cn } from "@/core/lib/cn";
@@ -21,8 +21,8 @@ interface SearchInputProps {
 export function SearchInput({
   value,
   onValueChange,
-  placeholder = i18n.t("shared:buscar"),
-  ariaLabel = i18n.t("shared:buscar_77"),
+  placeholder,
+  ariaLabel,
   inputClassName,
   className,
 }: Readonly<SearchInputProps>) {
@@ -37,8 +37,8 @@ export function SearchInput({
       <Input
         type="search"
         value={value}
-        placeholder={placeholder}
-        aria-label={ariaLabel}
+        placeholder={placeholder ?? t("shared:buscar")}
+        aria-label={ariaLabel ?? t("shared:buscar_77")}
         onChange={(e) => {
           onValueChange(e.target.value);
         }}
