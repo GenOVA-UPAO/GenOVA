@@ -45,10 +45,15 @@ const base = (key: string) => key.replace(/_(?:zero|one|two|few|many|other)$/, "
 const baseKeys = (map: Map<string, string>) => sorted(new Set([...map.keys()].map(base)));
 
 function missingReferences(file: string, source: string): string[] {
-  return [...source.matchAll(/\bt\(\s*["']([^"']+)["']/g)].flatMap((match) => {
-    const reference = match[1];
+  const defaultNamespace = /useTranslation\(\s*["']([^"']+)["']/.exec(source)?.[1] ?? "common";
+  const references = new Set([
+    ...[...source.matchAll(/\bt\(\s*["']([^"']+)["']/g)].map((match) => match[1]),
+    // Incluye claves de catálogos, metadatos y helpers resueltas con t(key).
+    ...[...source.matchAll(/["']((?:workspace|workspace-versioning):[^"']+)["']/g)].map((match) => match[1]),
+  ]);
+  return [...references].flatMap((reference) => {
     const separator = reference.indexOf(":");
-    const namespace = separator === -1 ? "common" : reference.slice(0, separator);
+    const namespace = separator === -1 ? defaultNamespace : reference.slice(0, separator);
     const key = separator === -1 ? reference : reference.slice(separator + 1);
     return SUPPORTED_LANGUAGES
       .filter((language) => !baseKeys(load(language, namespace)).includes(base(key)))
@@ -85,10 +90,18 @@ describe("recursos de traducción", () => {
     }
   });
 
-  it("las claves literales usadas por app, core y biblioteca existen en ambos idiomas", () => {
+  it("las claves literales usadas por app, core, biblioteca y workspace existen en ambos idiomas", () => {
     const problems = Object.entries(SOURCES)
-      .filter(([file]) => /^\/src\/(app|core|features\/ova-library)\//.test(file) && !/\.(spec|test)\.tsx?$/.test(file))
+      .filter(([file]) => /^\/src\/(app|core|features\/(ova-library|ova-workspace))\//.test(file) && !/\.(spec|test)\.tsx?$/.test(file))
       .flatMap(([file, source]) => missingReferences(file, source));
     expect(problems).toEqual([]);
+  });
+
+  it("workspace no conserva claves autogeneradas con hash", () => {
+    for (const language of SUPPORTED_LANGUAGES) {
+      for (const namespace of namespaces(language).filter((name) => name.startsWith("workspace"))) {
+        expect([...load(language, namespace).keys()].filter((key) => /_[a-f\d]{6}$/.test(key))).toEqual([]);
+      }
+    }
   });
 });
