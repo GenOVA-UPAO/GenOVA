@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import mimetypes
 from typing import Annotated
+from urllib.parse import quote
 
 import structlog
 from fastapi import APIRouter, Body, Depends, Form, Request
@@ -215,9 +216,10 @@ def deep_link_submit(
 
 
 @router.get("/play/{token}", include_in_schema=False)
-def play_without_slash(token: str, request: Request):
+def play_without_slash(token: str):
     # Las rutas relativas del reproductor (content/…, score) necesitan la barra final.
-    return RedirectResponse(f"{tool_url(request)}/lti/play/{token}/", status_code=307)
+    # Ruta relativa al mismo host y token escapado: no puede redirigir fuera de GenOVA.
+    return RedirectResponse(f"/lti/play/{quote(token, safe='')}/", status_code=307)
 
 
 @router.get("/play/{token}/", summary="Reproductor de la OVA dentro del LMS")

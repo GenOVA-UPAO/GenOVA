@@ -581,8 +581,10 @@ def test_admin_platform_crud_and_tool_config(env):
     )
     assert updated.json()["is_active"] is False
     assert len(client.get("/api/admin/lti/platforms").json()) == 2
-    assert client.delete(f"/api/admin/lti/platforms/{platform_id}").status_code == 204
-    assert client.delete(f"/api/admin/lti/platforms/{platform_id}").status_code == 404
+    deleted = client.delete(f"/api/admin/lti/platforms/{platform_id}")
+    assert deleted.status_code == 204
+    deleted_again = client.delete(f"/api/admin/lti/platforms/{platform_id}")
+    assert deleted_again.status_code == 404
 
 
 def test_tool_key_is_stored_encrypted_and_stable(env):
