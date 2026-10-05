@@ -93,6 +93,7 @@ export function OvaCard({
           </p>
         )}
         <OvaCardMeta ownerName={ownerNameOf(ova)} activity={lastActivity(ova)} />
+        {ova.license && <p className="text-xs text-muted-foreground">Licencia: {ova.license}</p>}
       </div>
 
       <div className="mt-4 border-t border-border pt-3">

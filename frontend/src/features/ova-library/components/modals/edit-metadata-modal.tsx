@@ -1,5 +1,3 @@
-import { type SyntheticEvent, useState } from "react";
-
 import { Button } from "@/core/components/ui/button";
 import {
   Dialog,
@@ -11,12 +9,16 @@ import {
 } from "@/core/components/ui/dialog";
 import { Label } from "@/core/components/ui/label";
 import { Textarea } from "@/core/components/ui/textarea";
+import type { EducationalMetadata } from "@/core/lib/educational-metadata";
 
-import { type MetadataInput, metadataSchema } from "../../lib/metadata-schema";
+import { useMetadataForm } from "../../hooks/use-metadata-form";
+import type { MetadataInput } from "../../lib/metadata-schema";
+import { EducationalMetadataFields } from "./educational-metadata-fields";
+import { MetadataDiscardDialog } from "./metadata-discard-dialog";
 import { MetadataTitleField } from "./metadata-title-field";
 
 interface EditMetadataModalProps {
-  initial: {
+  initial: EducationalMetadata & {
     title: string;
     description?: string;
   };
@@ -29,7 +31,7 @@ interface EditMetadataModalProps {
 
 const TITLE_MAX = 100;
 
-/** Modal para editar el título y la descripción de un OVA (validación con Zod). */
+/** Metadatos educativos y licencia del OVA, con validación accesible. */
 export function EditMetadataModal({
   initial,
   isLoading = false,
@@ -37,43 +39,27 @@ export function EditMetadataModal({
   onCancel,
   onCloseAutoFocus,
 }: Readonly<EditMetadataModalProps>) {
-  const [title, setTitle] = useState(initial.title);
-  const [description, setDescription] = useState(initial.description ?? "");
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const result = metadataSchema.safeParse({ title, description });
-    if (!result.success) {
-      setError(result.error.issues[0].message);
-      return;
-    }
-    setError(null);
-    onSave(result.data);
-  };
+  const f = useMetadataForm(initial, onSave, onCancel);
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open && !isLoading) onCancel(); }}>
+    <Dialog open onOpenChange={(open) => { if (!open && !isLoading) f.requestCancel(); }}>
       <DialogContent
-        className="sm:max-w-lg"
+        className="max-h-[90dvh] overflow-y-auto sm:max-w-lg"
         showCloseButton={!isLoading}
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogHeader className="pr-8">
-          <DialogTitle>Editar título y descripción</DialogTitle>
-          <DialogDescription>Así aparece el OVA en tu biblioteca.</DialogDescription>
+          <DialogTitle>Editar metadatos del OVA</DialogTitle>
+          <DialogDescription>Define cómo aparece y cómo se puede reutilizar tu material educativo.</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} noValidate className="grid gap-5">
+        <form onSubmit={f.handleSubmit} noValidate className="grid gap-5">
           <MetadataTitleField
-            value={title}
+            value={f.values.title}
             maxLength={TITLE_MAX}
-            error={error}
+            error={f.errors.title ?? null}
             disabled={isLoading}
-            onChange={(value) => {
-              setTitle(value);
-              if (error) setError(null);
-            }}
+            onChange={(value) => { f.onChange("title", value); }}
           />
 
           <div className="grid gap-2">
@@ -83,15 +69,23 @@ export function EditMetadataModal({
             <Textarea
               id="metadata-description"
               rows={4}
-              value={description}
-              onChange={(e) => { setDescription(e.target.value); }}
+              value={f.values.description}
+              onChange={(e) => { f.onChange("description", e.target.value); }}
               disabled={isLoading}
               className="resize-none"
+              maxLength={2000}
+              aria-invalid={Boolean(f.errors.description)}
+              aria-describedby="metadata-description-hint"
             />
+            <p id="metadata-description-hint" className="text-xs text-muted-foreground">{f.errors.description ?? "Hasta 2000 caracteres."}</p>
           </div>
 
+          <EducationalMetadataFields values={f.values} keywords={f.keywords} disabled={isLoading} errors={f.errors} onChange={f.onChange} />
+          <p className="text-xs text-muted-foreground">Los cambios viajan al exportar. El paquete SCORM 1.2 guardado se actualiza al regenerar el OVA o guardar un recurso en el editor.</p>
+          {f.error && <p role="alert" className="text-sm text-destructive">{f.error}</p>}
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+            <Button type="button" variant="outline" onClick={f.requestCancel} disabled={isLoading}>
               Cancelar
             </Button>
             <Button type="submit" loading={isLoading}>
@@ -99,6 +93,7 @@ export function EditMetadataModal({
             </Button>
           </DialogFooter>
         </form>
+        <MetadataDiscardDialog open={f.discardOpen} onOpenChange={f.setDiscardOpen} onDiscard={onCancel} />
       </DialogContent>
     </Dialog>
   );
