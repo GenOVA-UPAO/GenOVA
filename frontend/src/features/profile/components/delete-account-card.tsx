@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -18,13 +19,14 @@ export function DeleteAccountCard({
   onDelete,
   onDismissError,
 }: Readonly<DeleteAccountCardProps>) {
+  const { t } = useTranslation("profile");
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <ProfileSection
       tone="danger"
-      title="Eliminar cuenta"
-      description="Se desactiva tu cuenta y se anonimizan tus datos personales. Tus OVAs se conservan sin tu autoría. No se puede deshacer."
+      title={t("delete.title")}
+      description={t("delete.description")}
     >
       <Button
         variant="destructive"
@@ -33,7 +35,7 @@ export function DeleteAccountCard({
           setIsOpen(true);
         }}
       >
-        Eliminar cuenta
+        {t("delete.button")}
       </Button>
 
       {isOpen && (
