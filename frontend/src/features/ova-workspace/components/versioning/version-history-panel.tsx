@@ -11,6 +11,42 @@ import { VersionDiff } from "./version-diff";
 import { VersionHistoryFooter } from "./version-history-footer";
 import { VersionHistoryList } from "./version-history-list";
 
+function toggleSelection(current: string[], id: string): string[] {
+  return current.includes(id)
+    ? current.filter((value) => value !== id)
+    : [...current, id].slice(0, 2);
+}
+
+interface RestoreConfirmOptions {
+  target: string | undefined;
+  versions: OvaVersionRow[];
+  isLoading: boolean;
+  onConfirm: (targetId: string) => void;
+  onCancel: () => void;
+}
+
+function renderRestoreConfirm({
+  target,
+  versions,
+  isLoading,
+  onConfirm,
+  onCancel,
+}: Readonly<RestoreConfirmOptions>) {
+  if (!target) return null;
+  const match = versions.find((version) => version.id === target);
+  const versionNumber = String(match?.version_number ?? "");
+  return (
+    <RestoreVersionConfirm
+      versionNumber={versionNumber}
+      isLoading={isLoading}
+      onConfirm={() => {
+        onConfirm(target);
+      }}
+      onCancel={onCancel}
+    />
+  );
+}
+
 export default function VersionHistoryPanel({
   ovaId,
   readOnly = false,
@@ -31,18 +67,16 @@ export default function VersionHistoryPanel({
       onClose();
     },
   });
-  const toggle = (id: string, checked: boolean) => {
-    setSelected(checked ? [...selected, id].slice(0, 2) : selected.filter((value) => value !== id));
+  const toggle = (id: string) => {
+    setSelected(toggleSelection(selected, id));
     diff.reset();
   };
-  const targetNumber = String(
-    versions.find((version) => version.id === target)?.version_number ?? "",
-  );
   const error = diff.error ?? revert.error;
+  const descriptionKey = readOnly ? "history.descriptionReadOnly" : "history.description";
   return (
     <WorkspaceModal
       title={t("history.title")}
-      description={t(readOnly ? "history.descriptionReadOnly" : "history.description")}
+      description={t(descriptionKey)}
       size={diff.data ? "xl" : "lg"}
       onClose={onClose}
       footer={
@@ -74,18 +108,17 @@ export default function VersionHistoryPanel({
           {error.message}
         </p>
       )}
-      {target && (
-        <RestoreVersionConfirm
-          versionNumber={targetNumber}
-          isLoading={revert.isPending}
-          onConfirm={() => {
-            revert.mutate(target);
-          }}
-          onCancel={() => {
-            setTarget(undefined);
-          }}
-        />
-      )}
+      {renderRestoreConfirm({
+        target,
+        versions,
+        isLoading: revert.isPending,
+        onConfirm: (targetId) => {
+          revert.mutate(targetId);
+        },
+        onCancel: () => {
+          setTarget(undefined);
+        },
+      })}
     </WorkspaceModal>
   );
 }

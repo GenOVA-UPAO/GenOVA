@@ -30,10 +30,6 @@
   },
   "status": {
     "413": "The file is too large.",
-    "429": "Too many requests. Please try again in a moment.",
-    "500": "Something went wrong on our side. Please try again.",
-    "502": "The server is unavailable right now.",
-    "503": "The service is unavailable right now.",
-    "504": "The server took too long to respond."
+    "429": "Too many requests. Please try again in a moment."
   }
 }
