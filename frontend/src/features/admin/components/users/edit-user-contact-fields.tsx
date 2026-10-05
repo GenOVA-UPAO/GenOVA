@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/core/components/ui/input";
 import { Label } from "@/core/components/ui/label";
 import {
@@ -12,15 +14,6 @@ import { fieldDescribedBy } from "../../lib/field-described-by";
 import type { UserFormErrors, UserFormValues } from "../../lib/user-form";
 import { FieldMessage } from "./field-message";
 
-// Mismas opciones y textos que el formulario de «Mi perfil».
-const GENDER_OPTIONS = [
-  { value: "masculino", label: "Masculino" },
-  { value: "femenino", label: "Femenino" },
-  { value: "otro", label: "Otro o prefiero no decirlo" },
-];
-
-const PHONE_HINT = "Con prefijo de país, por ejemplo +51987285992.";
-
 interface EditUserContactFieldsProps {
   values: UserFormValues;
   errors: UserFormErrors;
@@ -34,10 +27,18 @@ export function EditUserContactFields({
   disabled,
   onChange,
 }: Readonly<EditUserContactFieldsProps>) {
+  const { t } = useTranslation("admin");
+  const phoneHint = t("users.editFields.phoneHint");
+  const genderOptions = [
+    { value: "masculino", label: t("users.editFields.genderMale") },
+    { value: "femenino", label: t("users.editFields.genderFemale") },
+    { value: "otro", label: t("users.editFields.genderOther") },
+  ];
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="space-y-2">
-        <Label htmlFor="edit-gender">Sexo</Label>
+        <Label htmlFor="edit-gender">{t("users.editFields.gender")}</Label>
         <Select
           value={values.gender}
           disabled={disabled}
@@ -49,7 +50,7 @@ export function EditUserContactFields({
             <SelectValue />
           </SelectTrigger>
           <SelectContent position="popper">
-            {GENDER_OPTIONS.map((option) => (
+            {genderOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -59,7 +60,7 @@ export function EditUserContactFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="edit-phone">Teléfono de contacto</Label>
+        <Label htmlFor="edit-phone">{t("users.editFields.phone")}</Label>
         <Input
           id="edit-phone"
           type="tel"
@@ -67,12 +68,12 @@ export function EditUserContactFields({
           value={values.phone_number}
           disabled={disabled}
           aria-invalid={errors.phone_number !== undefined || undefined}
-          aria-describedby={fieldDescribedBy("edit-phone", errors.phone_number, PHONE_HINT)}
+          aria-describedby={fieldDescribedBy("edit-phone", errors.phone_number, phoneHint)}
           onChange={(event) => {
             onChange("phone_number", event.target.value);
           }}
         />
-        <FieldMessage id="edit-phone" error={errors.phone_number} hint={PHONE_HINT} />
+        <FieldMessage id="edit-phone" error={errors.phone_number} hint={phoneHint} />
       </div>
     </div>
   );

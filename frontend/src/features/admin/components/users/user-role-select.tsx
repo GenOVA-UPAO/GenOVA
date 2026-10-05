@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import {
   Select,
   SelectContent,
@@ -26,6 +28,7 @@ export function UserRoleSelect({
   isUpdating,
   onRoleChange,
 }: Readonly<UserRoleSelectProps>) {
+  const { t } = useTranslation("admin");
   const roleId = roleIdOf(user);
 
   return (
@@ -38,7 +41,7 @@ export function UserRoleSelect({
           disabled={isUpdating || disabled}
           className="-ml-2.5 w-44 max-w-full border-transparent bg-transparent shadow-none hover:border-border hover:bg-background disabled:cursor-default disabled:opacity-100 disabled:hover:border-transparent disabled:hover:bg-transparent data-[state=open]:border-border dark:bg-transparent dark:hover:bg-input/30 [&:disabled_svg]:invisible"
         >
-          <SelectValue placeholder="Sin rol" />
+          <SelectValue placeholder={t("users.roleSelect.noRole")} />
         </SelectTrigger>
         <SelectContent position="popper" align="start">
           {roles.map((role) => (

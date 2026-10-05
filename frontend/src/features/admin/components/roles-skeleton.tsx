@@ -1,14 +1,18 @@
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 const ROWS = ["a", "b", "c"];
 
 /** Esqueleto con la forma de las filas de rol: nombre, descripción y permisos. */
 export function RolesSkeleton() {
+  const { t } = useTranslation("admin");
+
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Cargando roles"
+      aria-label={t("roles.loading")}
       className="divide-y rounded-xl border border-border bg-card"
     >
       {ROWS.map((key) => (

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { t } from "i18next";
 import { toast } from "sonner";
 
 import {
@@ -20,14 +21,14 @@ function useInvalidateUsers() {
 
 function useUsersMutation<TVariables>(
   mutationFn: (variables: TVariables) => Promise<unknown>,
-  successMessage: string,
+  getSuccessMessage: () => string,
 ) {
   const invalidate = useInvalidateUsers();
   return useMutation({
     mutationFn,
     onSuccess: () => {
       invalidate();
-      toast.success(successMessage);
+      toast.success(getSuccessMessage());
     },
     onError: (error) => {
       toast.error(error.message);
@@ -38,14 +39,14 @@ function useUsersMutation<TVariables>(
 export function useUpdateUserRole() {
   return useUsersMutation<{ userId: string; roleId: string }>(
     ({ userId, roleId }) => updateUserRole(userId, roleId),
-    "Rol del usuario actualizado.",
+    () => t("admin:users.toast.roleUpdated"),
   );
 }
 
 export function useUpdateUser() {
   return useUsersMutation<{ userId: string; fields: UserEditPayload }>(
     ({ userId, fields }) => updateUser(userId, fields),
-    "Perfil actualizado.",
+    () => t("admin:users.toast.profileUpdated"),
   );
 }
 
@@ -56,7 +57,11 @@ export function useToggleUserStatus() {
       updateUserStatus(userId, isActive),
     onSuccess: (_data, variables) => {
       invalidate();
-      toast.success(variables.isActive ? "Usuario activado." : "Usuario desactivado.");
+      toast.success(
+        variables.isActive
+          ? t("admin:users.toast.userActivated")
+          : t("admin:users.toast.userDeactivated"),
+      );
     },
     onError: (error) => {
       toast.error(error.message);
@@ -65,12 +70,15 @@ export function useToggleUserStatus() {
 }
 
 export function useUnlockUser() {
-  return useUsersMutation<string>((userId) => unlockUser(userId), "Usuario desbloqueado.");
+  return useUsersMutation<string>(
+    (userId) => unlockUser(userId),
+    () => t("admin:users.toast.userUnlocked"),
+  );
 }
 
 export function useSendResetEmail() {
   return useUsersMutation<string>(
     (userId) => sendUserResetEmail(userId),
-    "Correo de restablecimiento en camino.",
+    () => t("admin:users.toast.resetEmailSent"),
   );
 }
