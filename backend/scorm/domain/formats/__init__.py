@@ -14,6 +14,7 @@ from functools import partial
 from core.educational_metadata import EducationalMetadata
 from scorm.domain.formats.elpx import build_elpx_bytes
 from scorm.domain.formats.epub import build_epub_bytes
+from scorm.domain.formats.h5p import build_h5p_bytes
 from scorm.domain.package import build_shell_zip_bytes
 
 DEFAULT_EXPORT_FORMAT = "scorm12"
@@ -81,6 +82,7 @@ EXPORT_FORMATS: dict[str, ExportFormat] = {
         ),
         ExportFormat("epub", "EPUB 3", "epub", "application/epub+zip", build_epub_bytes),
         ExportFormat("elpx", "eXeLearning", "elpx", "application/zip", build_elpx_bytes),
+        ExportFormat("h5p", "H5P", "h5p", "application/zip", build_h5p_bytes),
     )
 }
 

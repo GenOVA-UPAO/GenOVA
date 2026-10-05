@@ -1,7 +1,7 @@
 """Núcleo de dominio de SCORM: ensamblado puro de los paquetes exportables.
 
 Sin persistencia ni orquestación: `build_scorm_zip_bytes` (SCORM 1.2) y el registro
-de formatos (`scorm.domain.formats`: SCORM 2004, IMS CP, HTML, EPUB 3, eXeLearning)
+de formatos (`scorm.domain.formats`: SCORM 2004, IMS CP, HTML, EPUB 3, eXeLearning, H5P)
 toman los datos del OVA y devuelven los bytes del paquete (en memoria). Por eso
 este dominio no tiene capas `application`/`infrastructure` ni `container` — no hay
 nada que abstraer ni inyectar.

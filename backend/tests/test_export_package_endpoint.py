@@ -185,6 +185,7 @@ def test_http_404_missing(make_client):
         ("html", "Leccion de Historia_v3.zip", "application/zip"),
         ("epub", "Leccion de Historia_v3.epub", "application/epub+zip"),
         ("elpx", "Leccion de Historia_v3.elpx", "application/zip"),
+        ("h5p", "Leccion de Historia_v3.h5p", "application/zip"),
     ],
 )
 def test_http_200_attachment(make_client, fmt, filename, media_type):
