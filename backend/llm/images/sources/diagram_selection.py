@@ -251,6 +251,41 @@ def validate_diagram_quality(
     description: str = "",
     template_key: str = "",
 ) -> tuple[bool, str]:
+    """Envoltorio compatible: mantiene la tupla y los códigos usados por el router."""
+    return _validate_diagram_quality(diagram, concept, description, template_key)
+
+
+def quality_rejection_reasons(
+    diagram: dict[str, Any],
+    concept: str,
+    description: str = "",
+    template_key: str = "",
+) -> list[str]:
+    ok, reason = _validate_diagram_quality(diagram, concept, description, template_key)
+    if ok:
+        return []
+    if reason.startswith("tipo_inadecuado"):
+        expected = classify_topic_traits(concept, description, template_key)
+        return [f"Tipo de diagrama inadecuado; usa uno de: {', '.join(expected)}"]
+    if reason.startswith("mapa_conceptos_aristas_genericas"):
+        return ["Demasiadas aristas genéricas; etiqueta cada relación con una acción o condición específica"]
+    if reason.startswith("nodos_indice_temario"):
+        return ["Un nodo es un índice de temario; reemplázalo por un elemento concreto del concepto"]
+    if reason == "flujo_es_indice_temario_poo":
+        return ["El flujo enumera temas de POO; representa pasos o decisiones de un proceso real"]
+    if reason.startswith("falta_relevancia_lexica"):
+        return [f'Los nodos no representan "{concept[:160]}"; incluye elementos o términos del tema']
+    if reason == "sin_nodos":
+        return ["El diagrama no tiene nodos; añade los elementos del concepto"]
+    return ["El diagrama debe ser un objeto JSON con nodos y aristas"]
+
+
+def _validate_diagram_quality(
+    diagram: dict[str, Any],
+    concept: str,
+    description: str = "",
+    template_key: str = "",
+) -> tuple[bool, str]:
     """Evalúa exhaustivamente la validez pedagógica y estructural del diagrama."""
     if not isinstance(diagram, dict):
         return False, "diagrama_no_es_diccionario"
