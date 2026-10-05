@@ -1,0 +1,10 @@
+-- Metadatos educativos básicos; description ya pertenece a la OVA.
+ALTER TABLE ovas ADD COLUMN IF NOT EXISTS license VARCHAR(80) NOT NULL DEFAULT 'CC BY-SA 4.0';
+ALTER TABLE ovas ADD COLUMN IF NOT EXISTS language VARCHAR(35) NOT NULL DEFAULT 'es';
+ALTER TABLE ovas ADD COLUMN IF NOT EXISTS keywords JSON NOT NULL DEFAULT '[]';
+ALTER TABLE ovas ADD COLUMN IF NOT EXISTS educational_level VARCHAR(120) NOT NULL DEFAULT '';
+ALTER TABLE ovas ADD COLUMN IF NOT EXISTS audience VARCHAR(255) NOT NULL DEFAULT '';
+ALTER TABLE ovas ADD COLUMN IF NOT EXISTS typical_learning_time VARCHAR(40) NOT NULL DEFAULT '';
+ALTER TABLE ovas ADD COLUMN IF NOT EXISTS author VARCHAR(255) NOT NULL DEFAULT '';
+UPDATE ovas SET author = COALESCE(NULLIF(users.full_name, ''), users.email, '')
+FROM users WHERE ovas.user_id = users.id AND ovas.author = '';

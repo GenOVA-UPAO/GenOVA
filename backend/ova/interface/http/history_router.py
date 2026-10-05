@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from auth.dependencies import get_current_user, require_permission
 from core.database import get_db
+from core.educational_metadata import metadata_from_ova
 from core.pagination import page_meta
 from generation.jobs.jobs_service import sweep_stale_jobs_for_ovas
 from ova.application.dto import ManageOvaInput, OvaListQuery
@@ -25,6 +26,7 @@ def _ova_to_dict(ova: Ova, include_owner: bool) -> dict:
         "id": ova.id,
         "title": ova.title,
         "description": ova.description,
+        **metadata_from_ova(ova).model_dump(),
         "status": ova.status,
         "file_path": ova.file_path,
         "version_number": ova.version_number,
