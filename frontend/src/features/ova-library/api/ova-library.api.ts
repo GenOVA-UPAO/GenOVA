@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { triggerDownloadFromResponse } from "@/core/lib/download";
 import { apiFetch, apiJson } from "@/core/lib/http";
 
@@ -63,7 +65,7 @@ export const ovaLibraryApi = {
     const res = await apiFetch(`/api/ovas/${id}/download`);
     if (!res.ok) {
       const data = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(data.message ?? "No se pudo descargar el archivo.");
+      throw new Error(data.message ?? i18n.t("ova-library:no_se_pudo_descargar_el_archivo"));
     }
     await triggerDownloadFromResponse(res, `${title}.zip`);
   },

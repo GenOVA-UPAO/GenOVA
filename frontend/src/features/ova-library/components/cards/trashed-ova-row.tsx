@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Checkbox } from "@/core/components/ui/checkbox";
 import { cn } from "@/core/lib/cn";
 
@@ -26,7 +29,8 @@ export function TrashedOvaRow({
   onRestore,
   onPermanentDelete,
 }: Readonly<TrashedOvaRowProps>) {
-  const title = ova.title?.trim() ? ova.title : "Sin título";
+  useTranslation();
+  const title = ova.title?.trim() ? ova.title : i18n.t("ova-library:sin_titulo");
 
   return (
     <li
@@ -40,7 +44,7 @@ export function TrashedOvaRow({
       <Checkbox
         checked={isSelected}
         onCheckedChange={() => onToggleSelect?.(ova.id)}
-        aria-label={`Seleccionar ${title}`}
+        aria-label={i18n.t("ova-library:seleccionar_value", { p0: title })}
       />
       <div className="min-w-0 flex-1 basis-48 space-y-0.5">
         <h3 className="line-clamp-2 text-sm font-medium text-foreground" title={title}>

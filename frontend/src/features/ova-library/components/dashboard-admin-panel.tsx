@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { Icon } from "@/core/components/icon";
@@ -6,10 +8,11 @@ import { ADMIN_CARDS } from "../pages/dashboard-page.helpers";
 
 /** Accesos directos de administración en el dashboard. */
 export function DashboardAdminPanel() {
+  useTranslation();
   return (
     <section aria-labelledby="accesos-admin">
       <h2 id="accesos-admin" className="mb-3 text-lg font-semibold tracking-tight">
-        Administración
+        {i18n.t("ova-library:administracion")}{" "}
       </h2>
       <div className="grid gap-3 sm:grid-cols-2">
         {ADMIN_CARDS.map((card) => (

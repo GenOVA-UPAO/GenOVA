@@ -1,11 +1,15 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Skeleton } from "@/core/components/ui/skeleton";
 
 /** Esqueleto con la forma de la lista de la papelera. */
 export function PapeleraSkeleton() {
+  useTranslation();
   return (
     <div
       role="status"
-      aria-label="Cargando papelera"
+      aria-label={i18n.t("ova-library:cargando_papelera")}
       aria-busy="true"
       className="divide-y divide-border rounded-xl border border-border bg-card"
     >

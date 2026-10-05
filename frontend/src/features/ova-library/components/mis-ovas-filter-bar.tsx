@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { SearchInput } from "@/core/components/search-input";
 import {
   Select,
@@ -23,17 +26,18 @@ export function MisOvasFilterBar({
   status,
   onStatusChange,
 }: Readonly<MisOvasFilterBarProps>) {
+  useTranslation();
   return (
     <div role="search" className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <SearchInput
         className="flex-1 sm:max-w-md"
         value={search}
         onValueChange={onSearchChange}
-        placeholder="Buscar por título"
-        ariaLabel="Buscar por título de la OVA"
+        placeholder={i18n.t("ova-library:buscar_por_titulo")}
+        ariaLabel={i18n.t("ova-library:buscar_por_titulo_de_la_ova")}
       />
       <label htmlFor="mis-ovas-status-filter" className="sr-only">
-        Filtrar por estado
+        {i18n.t("ova-library:filtrar_por_estado")}{" "}
       </label>
       <Select value={status} onValueChange={onStatusChange}>
         <SelectTrigger id="mis-ovas-status-filter" className="w-full sm:w-48">

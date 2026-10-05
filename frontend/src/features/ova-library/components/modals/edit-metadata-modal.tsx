@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { type SyntheticEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 import {
@@ -37,6 +39,7 @@ export function EditMetadataModal({
   onCancel,
   onCloseAutoFocus,
 }: Readonly<EditMetadataModalProps>) {
+  useTranslation();
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initial.description ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -53,15 +56,20 @@ export function EditMetadataModal({
   };
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open && !isLoading) onCancel(); }}>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !isLoading) onCancel();
+      }}
+    >
       <DialogContent
         className="sm:max-w-lg"
         showCloseButton={!isLoading}
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogHeader className="pr-8">
-          <DialogTitle>Editar título y descripción</DialogTitle>
-          <DialogDescription>Así aparece el OVA en tu biblioteca.</DialogDescription>
+          <DialogTitle>{i18n.t("ova-library:editar_titulo_y_descripcion")}</DialogTitle>
+          <DialogDescription>{i18n.t("ova-library:asi_aparece_el_ova_en_tu_biblioteca")}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} noValidate className="grid gap-5">
@@ -78,13 +86,18 @@ export function EditMetadataModal({
 
           <div className="grid gap-2">
             <Label htmlFor="metadata-description">
-              Descripción <span className="font-normal text-muted-foreground">(opcional)</span>
+              {i18n.t("ova-library:descripcion")}{" "}
+              <span className="font-normal text-muted-foreground">
+                {i18n.t("ova-library:opcional")}
+              </span>
             </Label>
             <Textarea
               id="metadata-description"
               rows={4}
               value={description}
-              onChange={(e) => { setDescription(e.target.value); }}
+              onChange={(e) => {
+                setDescription(e.target.value);
+              }}
               disabled={isLoading}
               className="resize-none"
             />
@@ -92,10 +105,10 @@ export function EditMetadataModal({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-              Cancelar
+              {i18n.t("ova-library:cancelar")}{" "}
             </Button>
             <Button type="submit" loading={isLoading}>
-              {isLoading ? "Guardando…" : "Guardar cambios"}
+              {isLoading ? i18n.t("ova-library:guardando") : i18n.t("ova-library:guardar_cambios")}
             </Button>
           </DialogFooter>
         </form>
