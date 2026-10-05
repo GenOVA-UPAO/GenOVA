@@ -80,6 +80,21 @@ class Settings(BaseSettings):
     app_url: str = "https://genova.ai"
     frontend_url: str = "http://localhost:4200"
 
+    # --- LTI 1.3 (GenOVA como herramienta dentro del LMS; ver lti/README.md) ---
+    # URL pública del backend que ve el LMS (sin barra final), p. ej.
+    # https://api.genova.upao.edu.pe. Vacía: se deduce de la petición.
+    lti_tool_url: str = ""
+    # Par RSA de la herramienta (PEM). Vacío: se genera y se guarda cifrado en
+    # `lti_tool_keys`. Server-only — nunca exponer en HTTP ni logs.
+    lti_private_key: str = ""
+    lti_key_id: str = ""
+    # Exigir que la cookie del state (SameSite=None; Secure) vuelva en /lti/launch.
+    # Desactivar solo si el navegador del LMS bloquea cookies de terceros: el state
+    # y el nonce siguen siendo de un solo uso en el servidor.
+    lti_state_cookie_required: bool = True
+    # Vida de la sesión LTI acotada (reproductor / selector de Deep Linking).
+    lti_session_hours: int = 8
+
     # --- LLM (claves server-only + routing) ---
     llm_timeout_s: float = 120.0
     groq_api_key: str = ""
