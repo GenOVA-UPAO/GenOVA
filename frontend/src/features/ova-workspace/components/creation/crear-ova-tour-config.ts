@@ -1,12 +1,12 @@
 import type { Config, DriveStep, PopoverDOM } from "driver.js";
+import i18n from "i18next";
 
 const STEPS: DriveStep[] = [
   {
     element: "#tour-crear-ova-prompt",
     popover: {
-      title: "Describe tu tema",
-      description:
-        "Escribe el tema, los objetivos y el nivel. Si quieres ver cómo se hace, pulsa «Usar ejemplo».",
+      get title() { return i18n.t("workspace:describe_tu_tema"); },
+      get description() { return i18n.t("workspace:escribe_el_tema_los_objetivos_y_el_nivel_si_q_4dcead"); },
       // En el primer paso no hay «Anterior»: un botón deshabilitado parecía roto.
       showButtons: ["next", "close"],
     },
@@ -14,17 +14,15 @@ const STEPS: DriveStep[] = [
   {
     element: "#tour-crear-ova-config",
     popover: {
-      title: "Elige recursos",
-      description:
-        "Pulsa Recursos para elegir qué generará la IA en cada fase. Necesitas recursos en al menos 2 fases. Archivos, Tema y Nivel educativo son opcionales.",
+      get title() { return i18n.t("workspace:elige_recursos"); },
+      get description() { return i18n.t("workspace:pulsa_recursos_para_elegir_que_generara_la_ia_0370c6"); },
     },
   },
   {
     element: "#tour-crear-ova-generar",
     popover: {
-      title: "Genera el OVA",
-      description:
-        "«Generar OVA» se activa cuando la descripción tiene al menos 10 caracteres y hay recursos en 2 fases. Si falta algo, lo verás junto al botón.",
+      get title() { return i18n.t("workspace:genera_el_ova"); },
+      get description() { return i18n.t("workspace:generar_ova_se_activa_cuando_la_descripcion_t_f760ac"); },
     },
   },
 ];
@@ -35,8 +33,8 @@ const STEPS: DriveStep[] = [
  * que el teclado y los lectores de pantalla empiecen donde está la acción.
  */
 function localizePopover(popover: PopoverDOM) {
-  popover.closeButton.setAttribute("aria-label", "Cerrar tutorial");
-  popover.closeButton.setAttribute("title", "Cerrar tutorial");
+  popover.closeButton.setAttribute("aria-label", i18n.t("workspace:cerrar_tutorial"));
+  popover.closeButton.setAttribute("title", i18n.t("workspace:cerrar_tutorial"));
   requestAnimationFrame(() => {
     popover.nextButton.focus({ preventScroll: true });
   });
@@ -47,10 +45,10 @@ export function crearOvaTourConfig(onDone: () => void): Config {
   return {
     popoverClass: "gn-tour",
     showProgress: true,
-    nextBtnText: "Siguiente",
-    prevBtnText: "Anterior",
-    doneBtnText: "Entendido",
-    progressText: "Paso {{current}} de {{total}}",
+    nextBtnText: i18n.t("workspace:siguiente"),
+    prevBtnText: i18n.t("workspace:anterior"),
+    doneBtnText: i18n.t("workspace:entendido"),
+    progressText: i18n.t("workspace:paso_current_de_total"),
     stagePadding: 6,
     stageRadius: 14,
     popoverOffset: 12,

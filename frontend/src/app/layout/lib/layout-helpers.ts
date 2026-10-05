@@ -1,8 +1,9 @@
+import i18n from "i18next";
 import type { MeUser } from "@/core/auth/auth.service";
 import { firstNonBlank } from "@/core/lib/text";
 
 export function userInitials(user: MeUser | null): string {
-  const name = firstNonBlank(user?.full_name, user?.email) ?? "Usuario";
+  const name = firstNonBlank(user?.full_name, user?.email) ?? i18n.t("shell:usuario");
   return name
     .split(/\s|@/)
     .filter(Boolean)

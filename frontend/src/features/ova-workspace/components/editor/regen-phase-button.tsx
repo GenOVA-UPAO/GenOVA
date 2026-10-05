@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmModal } from "@/core/components/confirm-modal";
 import { Icon } from "@/core/components/icon";
@@ -15,6 +16,7 @@ interface Props {
  * llama al modelo (cuesta dinero) y bloquea la edición mientras dura.
  */
 export function RegenPhaseButton({ name, busy, onRegenerate }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [confirm, setConfirm] = useState(false);
   return (
     <>
@@ -27,13 +29,12 @@ export function RegenPhaseButton({ name, busy, onRegenerate }: Readonly<Props>) 
         }}
       >
         <Icon name="arrow-clockwise" />
-        Regenerar recurso
-      </Button>
+        {t("workspace:regenerar_recurso")} </Button>
       {confirm && (
         <ConfirmModal
-          title="¿Regenerar este recurso?"
-          message={`La IA volverá a crear «${name}» desde cero. La versión actual quedará guardada en el historial de versiones.`}
-          confirmLabel="Regenerar recurso"
+          title={t("workspace:regenerar_este_recurso")}
+          message={t("workspace:la_ia_volvera_a_crear_value_desde_cero_la_ver_e99a7f", { p0: name })}
+          confirmLabel={t("workspace:regenerar_recurso")}
           danger={false}
           onConfirm={() => {
             setConfirm(false);

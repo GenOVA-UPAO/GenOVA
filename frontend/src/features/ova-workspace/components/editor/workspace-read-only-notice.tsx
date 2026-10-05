@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 /**
@@ -5,6 +7,7 @@ import { Icon } from "@/core/components/icon";
  * alumno): los demás, como el admin, pueden revisarlo pero no modificarlo.
  */
 export function WorkspaceReadOnlyNotice() {
+  const { t } = useTranslation();
   return (
     <div
       role="note"
@@ -12,9 +15,7 @@ export function WorkspaceReadOnlyNotice() {
     >
       <Icon name="lock" className="mt-0.5 shrink-0 text-muted-foreground sm:mt-0" />
       <p className="min-w-0 text-muted-foreground">
-        <span className="font-medium text-foreground">Solo lectura.</span> Solo quien creó este OVA
-        puede modificarlo. Puedes revisarlo, comparar sus versiones y descargar el SCORM.
-      </p>
+        <span className="font-medium text-foreground">{t("workspace:solo_lectura")}</span> {t("workspace:solo_quien_creo_este_ova_puede_modificarlo_pu_628163")} </p>
     </div>
   );
 }

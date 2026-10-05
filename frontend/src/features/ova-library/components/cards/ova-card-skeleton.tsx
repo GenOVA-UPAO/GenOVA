@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Skeleton } from "@/core/components/ui/skeleton";
@@ -11,11 +10,11 @@ interface OvaCardSkeletonGridProps {
 
 /** Esqueleto con la forma de la rejilla de tarjetas de OVA. */
 export function OvaCardSkeletonGrid({ count = 6 }: Readonly<OvaCardSkeletonGridProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <div
       role="status"
-      aria-label={i18n.t("ova-library:cargando_ovas")}
+      aria-label={t("ova-library:cargando_ovas")}
       aria-busy="true"
       className="space-y-3"
     >

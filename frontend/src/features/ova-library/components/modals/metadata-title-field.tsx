@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Input } from "@/core/components/ui/input";
@@ -20,10 +19,10 @@ export function MetadataTitleField({
   disabled = false,
   onChange,
 }: Readonly<MetadataTitleFieldProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <div className="grid gap-2">
-      <Label htmlFor="metadata-title">{i18n.t("ova-library:titulo")}</Label>
+      <Label htmlFor="metadata-title">{t("ova-library:titulo")}</Label>
       <Input
         id="metadata-title"
         type="text"
@@ -32,7 +31,7 @@ export function MetadataTitleField({
         onChange={(e) => {
           onChange(e.target.value);
         }}
-        placeholder={i18n.t("ova-library:ej_gestion_de_tablespaces_en_oracle")}
+        placeholder={t("ova-library:ej_gestion_de_tablespaces_en_oracle")}
         disabled={disabled}
         required
         aria-invalid={Boolean(error)}
@@ -44,7 +43,7 @@ export function MetadataTitleField({
             {error}
           </p>
         ) : (
-          <p className="text-muted-foreground">{i18n.t("ova-library:obligatorio")}</p>
+          <p className="text-muted-foreground">{t("ova-library:obligatorio")}</p>
         )}
         <p className="shrink-0 text-muted-foreground tabular-nums">
           {value.length}/{maxLength}

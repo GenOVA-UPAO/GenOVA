@@ -51,15 +51,15 @@ export function SelectionToolbar({
   onSelectAllChange,
   onClearSelection,
 }: Readonly<SelectionToolbarProps>) {
-  useTranslation();
-  const SELECT_ALL_LABEL = i18n.t("ova-library:seleccionar_todos_en_esta_pagina");
+  const { t } = useTranslation();
+  const SELECT_ALL_LABEL = t("ova-library:seleccionar_todos_en_esta_pagina");
   const checkboxId = useId();
   const selecting = selectedCount > 0;
 
   return (
     <div
       role="toolbar"
-      aria-label={i18n.t("ova-library:seleccion_de_ovas")}
+      aria-label={t("ova-library:seleccion_de_ovas")}
       className={toolbarClass(variant, selecting)}
     >
       <Checkbox
@@ -85,7 +85,7 @@ export function SelectionToolbar({
       )}
       {selecting && (
         <Button variant="ghost" size="sm" onClick={onClearSelection} disabled={disabled}>
-          {i18n.t("ova-library:quitar_seleccion")}{" "}
+          {t("ova-library:quitar_seleccion")}{" "}
         </Button>
       )}
       {selecting ? (

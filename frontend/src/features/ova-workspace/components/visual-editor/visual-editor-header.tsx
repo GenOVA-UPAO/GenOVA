@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import type { PhaseWithContent } from "../../lib/types";
@@ -13,6 +15,7 @@ export function VisualEditorHeader({
   activePhaseId,
   onSelectPhase,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
@@ -21,22 +24,18 @@ export function VisualEditorHeader({
             <Icon name="sparkle" className="size-3.5" />
           </span>
           <h2 className="font-heading text-base font-bold text-foreground">
-            Editor visual de recursos (beta)
-          </h2>
+            {t("workspace:editor_visual_de_recursos_beta")} </h2>
           <span className="rounded-full bg-accent-brand/15 px-2 py-0.5 text-[10px] font-bold text-accent-brand uppercase">
-            FastAPI · Laya
-          </span>
+            {t("workspace:fastapi_laya")} </span>
         </div>
         <p className="text-xs text-muted-foreground">
-          Recompone la estructura del recurso con decisiones deterministas sobre componentes UPAO.
-        </p>
+          {t("workspace:recompone_la_estructura_del_recurso_con_decis_6baa1d")} </p>
       </div>
 
       {phases.length > 1 && (
         <div className="flex items-center gap-2">
           <label htmlFor="resource-select" className="text-xs font-medium text-muted-foreground">
-            Recurso:
-          </label>
+            {t("workspace:recurso_367")} </label>
           <select
             id="resource-select"
             value={activePhaseId}

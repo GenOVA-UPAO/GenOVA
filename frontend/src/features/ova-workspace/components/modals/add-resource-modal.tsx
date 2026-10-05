@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function AddResourceModal({ ovaId, phaseType, currentCount, onClose, onAdded }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [prompt, setPrompt] = useState("");
   const { addPhase } = useOvaWorkspace(ovaId);
   const full = currentCount >= MAX_PER_PHASE;
@@ -39,35 +41,33 @@ export default function AddResourceModal({ ovaId, phaseType, currentCount, onClo
   };
   return (
     <WorkspaceModal
-      title={`Añadir recurso a ${phaseLabel}`}
-      description="La IA creará un recurso nuevo con tus instrucciones y lo pondrá al final de la fase."
+      title={t("workspace:anadir_recurso_a_value", { p0: phaseLabel })}
+      description={t("workspace:la_ia_creara_un_recurso_nuevo_con_tus_instruc_43edd9")}
       size="md"
       onClose={onClose}
       footer={
-        <ModalActions status={!full && (empty ? "Escribe las instrucciones para añadirlo." : "Ctrl+Enter para añadir")}>
+        <ModalActions status={!full && (empty ? t("workspace:escribe_las_instrucciones_para_anadirlo") : t("workspace:ctrl_enter_para_anadir"))}>
           <Button variant="outline" onClick={onClose}>
-            {full ? "Cerrar" : "Cancelar"}
+            {full ? t("workspace:cerrar") : t("workspace:cancelar")}
           </Button>
           {!full && (
             <Button disabled={empty} loading={addPhase.isPending} onClick={submit}>
-              Añadir recurso
-            </Button>
+              {t("workspace:anadir_recurso")} </Button>
           )}
         </ModalActions>
       }
     >
       {full ? (
-        <p className="text-sm">Esta fase ya tiene el máximo de {MAX_PER_PHASE} recursos. Elimina uno para añadir otro.</p>
+        <p className="text-sm">{t("workspace:esta_fase_ya_tiene_el_maximo_de")} {MAX_PER_PHASE} {t("workspace:recursos_elimina_uno_para_anadir_otro")}</p>
       ) : (
         <div className="space-y-1.5">
           <label htmlFor="add-resource-prompt" className="text-sm font-medium">
-            Instrucciones
-          </label>
+            {t("workspace:instrucciones")} </label>
           <textarea
             id="add-resource-prompt"
             rows={4}
             className="block w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-base leading-relaxed placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:text-sm"
-            placeholder="Ej.: un ejercicio práctico sobre el sobreajuste con su solución."
+            placeholder={t("workspace:ej_un_ejercicio_practico_sobre_el_sobreajuste_49764f")}
             value={prompt}
             disabled={addPhase.isPending}
             onChange={(event) => {

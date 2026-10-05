@@ -1,12 +1,15 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 const QUICK_PROMPTS = [
-  { label: "Quitar ejemplo", prompt: "quita el ejemplo" },
-  { label: "Añadir resumen", prompt: "añade un resumen al final" },
-  { label: "Pregunta al inicio", prompt: "pon la pregunta al inicio" },
-  { label: "Añadir objetivo", prompt: "agrega un objetivo de aprendizaje al inicio" },
-  { label: "Quitar última pregunta", prompt: "quita la última pregunta del quiz" },
+  { get label() { return i18n.t("workspace:quitar_ejemplo"); }, get prompt() { return i18n.t("workspace:quita_el_ejemplo"); } },
+  { get label() { return i18n.t("workspace:anadir_resumen"); }, get prompt() { return i18n.t("workspace:anade_un_resumen_al_final"); } },
+  { get label() { return i18n.t("workspace:pregunta_al_inicio"); }, get prompt() { return i18n.t("workspace:pon_la_pregunta_al_inicio"); } },
+  { get label() { return i18n.t("workspace:anadir_objetivo"); }, get prompt() { return i18n.t("workspace:agrega_un_objetivo_de_aprendizaje_al_inicio"); } },
+  { get label() { return i18n.t("workspace:quitar_ultima_pregunta"); }, get prompt() { return i18n.t("workspace:quita_la_ultima_pregunta_del_quiz"); } },
 ] as const;
 
 interface Props {
@@ -28,12 +31,12 @@ export function VisualPromptControls({
   statusMessage,
   errorMessage,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-2xs">
       <div className="flex items-center justify-between">
         <label htmlFor="visual-prompt" className="block text-xs font-bold text-foreground">
-          Instrucción de cambio
-        </label>
+          {t("workspace:instruccion_de_cambio")} </label>
       </div>
 
       <textarea
@@ -49,7 +52,7 @@ export function VisualPromptControls({
             onSubmit();
           }
         }}
-        placeholder="Ej. pon la pregunta al inicio, quita el ejemplo, añade un resumen..."
+        placeholder={t("workspace:ej_pon_la_pregunta_al_inicio_quita_el_ejemplo_cd7844")}
         className="w-full rounded-lg border border-border bg-background p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
         disabled={isProcessing}
       />
@@ -83,7 +86,7 @@ export function VisualPromptControls({
             name={isProcessing ? "spinner" : "lightning"}
             className={cn("size-3.5", isProcessing && "animate-spin")}
           />
-          {isProcessing ? "Interpretando y aplicando intención…" : "Interpretar y aplicar cambio"}
+          {isProcessing ? t("workspace:interpretando_y_aplicando_intencion") : t("workspace:interpretar_y_aplicar_cambio")}
         </button>
       </div>
 

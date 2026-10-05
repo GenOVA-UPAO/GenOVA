@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
@@ -24,11 +26,11 @@ interface Props {
 const HINT_ID = "chat-prompt-hint";
 
 function hintText(busy: boolean, uploading: boolean, indexing: boolean, empty: boolean): string {
-  if (busy) return "Espera a que termine la regeneración en curso.";
-  if (uploading) return "Subiendo archivos…";
-  if (indexing) return "Indexando archivos para que la IA pueda consultarlos…";
-  if (empty) return "Escribe un cambio para poder aplicarlo.";
-  return "Ctrl+Enter para aplicar";
+  if (busy) return i18n.t("workspace:espera_a_que_termine_la_regeneracion_en_curso");
+  if (uploading) return i18n.t("workspace:subiendo_archivos");
+  if (indexing) return i18n.t("workspace:indexando_archivos_para_que_la_ia_pueda_consultarlos");
+  if (empty) return i18n.t("workspace:escribe_un_cambio_para_poder_aplicarlo");
+  return i18n.t("workspace:ctrl_enter_para_aplicar");
 }
 
 export function ChatComposer({
@@ -42,6 +44,7 @@ export function ChatComposer({
   picker,
   error,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const empty = !prompt.trim();
   // Mientras un adjunto se indexa, aplicar el cambio lo dejaría fuera sin avisar.
   const disabled = busy || empty || uploads.uploading || uploads.indexing;
@@ -55,8 +58,7 @@ export function ChatComposer({
       )}
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <label htmlFor="chat-prompt" className="text-sm font-medium text-foreground">
-          Describe los cambios que deseas
-        </label>
+          {t("workspace:describe_los_cambios_que_deseas")} </label>
         {scope}
       </div>
       {picker}
@@ -65,7 +67,7 @@ export function ChatComposer({
         className="block max-h-56 min-h-20 w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-base leading-relaxed placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:text-sm"
         rows={3}
         aria-describedby={HINT_ID}
-        placeholder={placeholder ?? "Escribe un cambio o mejora para el OVA…"}
+        placeholder={placeholder ?? t("workspace:escribe_un_cambio_o_mejora_para_el_ova")}
         value={prompt}
         onChange={(event) => {
           onPrompt(event.target.value);
@@ -90,8 +92,7 @@ export function ChatComposer({
           onClick={onSubmit}
         >
           <Icon name="paper-plane-tilt" />
-          Aplicar cambios
-        </Button>
+          {t("workspace:aplicar_cambios")} </Button>
       </div>
     </div>
   );

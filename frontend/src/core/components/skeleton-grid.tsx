@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/core/components/ui/skeleton";
 import { cn } from "@/core/lib/cn";
 
@@ -13,8 +15,9 @@ export function SkeletonGrid({
   count = 6,
   className,
   itemClassName,
-  label = "Cargando",
+  label = i18n.t("shared:cargando"),
 }: Readonly<SkeletonGridProps>) {
+  const { t } = useTranslation();
   return (
     <div
       role="status"

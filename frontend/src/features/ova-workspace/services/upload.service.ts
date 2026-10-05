@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { apiFetch } from "@/core/lib/http";
 
 const UPLOADS_TEMP = "/api/uploads/temp";
@@ -17,7 +19,7 @@ async function parseResponse(response: Response): Promise<unknown> {
   };
   if (!response.ok) {
     if (data.message) throw new Error(data.message);
-    throw new Error("No se pudo completar la operación de archivos.");
+    throw new Error(i18n.t("workspace:no_se_pudo_completar_la_operacion_de_archivos"));
   }
   return data;
 }

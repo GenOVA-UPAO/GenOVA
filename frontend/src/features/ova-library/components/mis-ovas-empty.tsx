@@ -34,13 +34,13 @@ function clearLabel(search: string, status: string): string {
 
 /** Estado vacío de la biblioteca: sin OVAs todavía o sin resultados para el filtro. */
 export function MisOvasEmpty({ search, status, onClearFilters }: Readonly<MisOvasEmptyProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   const trimmed = search.trim();
   if (trimmed !== "" || status !== "all") {
     return (
       <EmptyState
         icon="magnifying-glass-minus"
-        title={i18n.t("ova-library:sin_resultados")}
+        title={t("ova-library:sin_resultados")}
         description={noResultsDescription(trimmed, status)}
         action={
           <Button variant="outline" onClick={onClearFilters}>
@@ -53,15 +53,15 @@ export function MisOvasEmpty({ search, status, onClearFilters }: Readonly<MisOva
   return (
     <EmptyState
       icon="folder"
-      title={i18n.t("ova-library:aun_no_has_creado_ningun_ova")}
-      description={i18n.t(
+      title={t("ova-library:aun_no_has_creado_ningun_ova")}
+      description={t(
         "ova-library:describe_un_tema_y_el_asistente_generara_tu_primer_objeto_virtual_de_aprendizaje_listo_par",
       )}
       action={
         <Button asChild>
           <Link to="/crear">
             <Icon name="plus" size="text-base" />
-            {i18n.t("ova-library:crear_mi_primer_ova")}{" "}
+            {t("ova-library:crear_mi_primer_ova")}{" "}
           </Link>
         </Button>
       }

@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { useFailedSelection } from "../../hooks/use-failed-selection";
@@ -12,22 +14,23 @@ import { ProgressActions } from "./progress-actions";
 
 function subtitle(job: ReturnType<typeof useOvaJob>): string {
   if (!job.outcome.isTerminal) {
-    return "Puedes salir de esta página: la generación continúa y el OVA aparecerá en Mis OVAs.";
+    return i18n.t("workspace:puedes_salir_de_esta_pagina_la_generacion_con_6a269a");
   }
-  if (!job.outcome.partialFail) return "Revisa el resultado de cada recurso.";
+  if (!job.outcome.partialFail) return i18n.t("workspace:revisa_el_resultado_de_cada_recurso");
   const failed = failedCount(job.resources);
   const total = String(job.resources.length);
   const lead =
     failed === 1
-      ? `1 de ${total} recursos no se pudo generar.`
-      : `${String(failed)} de ${total} recursos no se pudieron generar.`;
-  return `${lead} Reintenta los fallidos o abre el OVA con lo que sí se generó.`;
+      ? i18n.t("workspace:1_de_value_recursos_no_se_pudo_generar", { p0: total })
+      : i18n.t("workspace:value_de_value_recursos_no_se_pudieron_generar", { p0: String(failed), p1: total });
+  return i18n.t("workspace:value_reintenta_los_fallidos_o_abre_el_ova_co_e9693b", { p0: lead });
 }
 
 export function CreationProgress({
   jobId,
   onReady,
 }: Readonly<{ jobId: string; onReady?: () => void }>) {
+  const { t } = useTranslation();
   const job = useOvaJob(jobId);
   const navigate = useNavigate();
   const [confirmingCancel, setConfirmingCancel] = useState(false);
@@ -48,7 +51,7 @@ export function CreationProgress({
   const error = job.resume.error ?? job.cancel.error;
   const title = job.outcome.isTerminal
     ? terminalTitle(job.data?.status ?? "error", job.outcome.partialFail)
-    : "Generando tu OVA";
+    : t("workspace:generando_tu_ova");
   return (
     <section className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8 sm:px-6">
       <header>

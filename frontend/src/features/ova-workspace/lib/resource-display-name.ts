@@ -1,6 +1,4 @@
-import { catalogResourceNames } from "./resource-previews";
-
-const CATALOG = catalogResourceNames();
+import { localizedCatalogName } from "./resource-previews";
 
 function lowerWord(word: string): string {
   // Siglas (FAQ) se quedan como están; el resto en minúscula, también tras guion.
@@ -15,8 +13,9 @@ function lowerWord(word: string): string {
  * («Ley de Ohm en circuitos») se deja tal cual para no romper nombres propios.
  */
 export function resourceDisplayName(name: string): string {
-  if (!CATALOG.has(name)) return name;
-  const [first = "", ...rest] = name.split(" ");
+  const localized = localizedCatalogName(name);
+  if (!localized) return name;
+  const [first = "", ...rest] = localized.split(" ");
   const tail = rest.map((word) => word.split("-").map(lowerWord).join("-"));
   const head = first.split("-").map((part, index) => (index === 0 ? part : lowerWord(part))).join("-");
   return [head, ...tail].join(" ");

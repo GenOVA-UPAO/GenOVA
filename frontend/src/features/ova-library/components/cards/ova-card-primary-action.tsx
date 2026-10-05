@@ -24,7 +24,7 @@ export function OvaCardPrimaryAction({
   className,
   onResume,
 }: Readonly<OvaCardPrimaryActionProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const workspaceUrl = `/workspace/${ovaId}`;
 
@@ -39,7 +39,7 @@ export function OvaCardPrimaryAction({
         }}
       >
         <Icon name="arrow-clockwise" size="text-base" />
-        {i18n.t("ova-library:reanudar_generacion")}{" "}
+        {t("ova-library:reanudar_generacion")}{" "}
       </Button>
     );
   }

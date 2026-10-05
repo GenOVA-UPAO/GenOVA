@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 const ACCEPTED_ATTR = ".pdf,.docx,.pptx,.mp3,.wav,.m4a,.aac,.jpg,.jpeg,.png,.webp";
-const ACCEPTED_LABEL = "PDF, DOCX, PPTX, MP3, WAV, M4A, JPG, PNG o WEBP";
 
 interface Props {
   count: number;
@@ -14,15 +14,17 @@ interface Props {
 }
 
 export function OvaFilesDropzone({ count, max, uploading, onFiles }: Readonly<Props>) {
+  const { t } = useTranslation();
+  const ACCEPTED_LABEL = t("workspace:pdf_docx_pptx_mp3_wav_m4a_jpg_png_o_webp");
   const input = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const full = count >= max;
   const disabled = uploading || full;
 
-  let headline = "Arrastra archivos aquí o haz clic para elegirlos";
-  if (dragging) headline = "Suelta aquí";
-  else if (full) headline = "Límite alcanzado";
-  else if (uploading) headline = "Subiendo archivos…";
+  let headline = t("workspace:arrastra_archivos_aqui_o_haz_clic_para_elegirlos");
+  if (dragging) headline = t("workspace:suelta_aqui");
+  else if (full) headline = t("workspace:limite_alcanzado");
+  else if (uploading) headline = t("workspace:subiendo_archivos");
 
   let stateClass = "cursor-pointer border-border hover:border-primary/50 hover:bg-primary/5";
   if (dragging) stateClass = "border-primary bg-primary/5";
@@ -58,8 +60,7 @@ export function OvaFilesDropzone({ count, max, uploading, onFiles }: Readonly<Pr
       <span className="space-y-1">
         <span className="block text-sm font-semibold">{headline}</span>
         <span id="reference-files-hint" className="block text-xs text-muted-foreground">
-          {ACCEPTED_LABEL}. Máximo {String(max)} archivos.
-        </span>
+          {ACCEPTED_LABEL}{t("workspace:maximo")} {String(max)} {t("workspace:archivos_234")} </span>
       </span>
       <input
         ref={input}
@@ -68,7 +69,7 @@ export function OvaFilesDropzone({ count, max, uploading, onFiles }: Readonly<Pr
         multiple
         accept={ACCEPTED_ATTR}
         disabled={disabled}
-        aria-label="Subir archivos"
+        aria-label={t("workspace:subir_archivos")}
         aria-describedby="reference-files-hint"
         className="sr-only"
         onChange={(event) => {

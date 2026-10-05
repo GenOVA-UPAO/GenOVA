@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -6,9 +9,9 @@ import { ChatDeleteButton } from "./chat-delete-button";
 import { ChatProgressBar } from "./chat-progress-bar";
 
 const STATUS = {
-  running: { icon: "spinner", tone: "text-primary", spin: true, label: "En curso" },
-  error: { icon: "warning-circle", tone: "text-destructive", spin: false, label: "Error" },
-  success: { icon: "check-circle", tone: "text-success", spin: false, label: "Completado" },
+  running: { icon: "spinner", tone: "text-primary", spin: true, get label() { return i18n.t("workspace:en_curso"); } },
+  error: { icon: "warning-circle", tone: "text-destructive", spin: false, get label() { return i18n.t("workspace:error"); } },
+  success: { icon: "check-circle", tone: "text-success", spin: false, get label() { return i18n.t("workspace:completado_93"); } },
   idle: { icon: "sparkle", tone: "text-primary", spin: false, label: "GenOVA" },
 } as const;
 
@@ -19,6 +22,7 @@ interface Props {
 
 /** Respuesta del sistema: alineada a la izquierda, sin burbuja, con icono de estado. */
 export function ChatAssistantMessage({ message, onRemove }: Readonly<Props>) {
+  useTranslation();
   const status = STATUS[message.status ?? "idle"];
   const running = message.status === "running";
   return (

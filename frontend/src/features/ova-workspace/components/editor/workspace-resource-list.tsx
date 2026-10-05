@@ -1,5 +1,6 @@
 import type { DragEvent } from "react";
 import { lazy, Suspense, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { usePhaseDrag } from "../../hooks/use-phase-drag";
 import { phaseMeta } from "../../lib/phase-meta";
@@ -38,6 +39,7 @@ export function WorkspaceResourceList({
   onRegenerate,
   onAdded,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const drag = usePhaseDrag(phases, onReorder);
   const [adding, setAdding] = useState(false);
   const label = phaseMeta(phaseType).label || phaseType;
@@ -60,8 +62,7 @@ export function WorkspaceResourceList({
       />
       {phases.length === 0 && (
         <p className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-          Esta fase no tiene recursos. Añade uno con tus instrucciones.
-        </p>
+          {t("workspace:esta_fase_no_tiene_recursos_anade_uno_con_tus_5ec0ae")} </p>
       )}
       <ul className="space-y-3">
         {phases.map((phase, index) => (

@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { QueryErrorState } from "@/core/components/query-error-state";
@@ -57,13 +56,13 @@ export function MisOvasGrid({
   onRetry,
   onClearFilters,
 }: Readonly<MisOvasGridProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   if (isLoading) return <OvaCardSkeletonGrid />;
 
   if (error) {
     return (
       <QueryErrorState
-        title={i18n.t("ova-library:no_se_pudo_cargar_la_biblioteca_de_ovas")}
+        title={t("ova-library:no_se_pudo_cargar_la_biblioteca_de_ovas")}
         onRetry={onRetry}
       />
     );

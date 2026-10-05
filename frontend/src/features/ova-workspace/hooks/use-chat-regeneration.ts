@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import i18n from "i18next";
 import { useState } from "react";
 
 import { triggerOvaRegeneration } from "../api/ova-workspace.api";
@@ -11,7 +12,7 @@ class RegenStartError extends Error {}
 
 function startFailureText(error: unknown): string {
   const reason = error instanceof Error ? error.message.trim() : "";
-  return reason ? `No se pudo iniciar la regeneración. ${reason}` : "No se pudo iniciar la regeneración.";
+  return reason ? i18n.t("workspace:no_se_pudo_iniciar_la_regeneracion_value", { p0: reason }) : i18n.t("workspace:no_se_pudo_iniciar_la_regeneracion");
 }
 
 /**

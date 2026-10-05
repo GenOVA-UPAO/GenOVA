@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { type ReactNode, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
 import { Icon } from "@/core/components/icon";
@@ -66,7 +68,7 @@ function feedbackSlot(
     <ResourceFeedback
       ovaId={ovaId}
       phaseId={active.id}
-      resourceName={labels.get(active.id) ?? "el recurso"}
+      resourceName={labels.get(active.id) ?? i18n.t("workspace:el_recurso")}
     />
   );
 }
@@ -79,6 +81,7 @@ interface PreviewProps {
 }
 
 export default function WorkspaceHtmlPreview({ phases, ovaId, readOnly = false }: Readonly<PreviewProps>) {
+  const { t } = useTranslation();
   const [selection, setSelection] = useState<Selection | null>(null);
   const active = pickActive(phases, selection);
   const labels = uniqueLabels(phases);
@@ -104,7 +107,7 @@ export default function WorkspaceHtmlPreview({ phases, ovaId, readOnly = false }
             html={active?.content ?? ""}
             className="peer block h-full min-h-0 w-full border-0"
             height={null}
-            title={active?.title ?? "Vista previa del recurso"}
+            title={active?.title ?? t("workspace:vista_previa_del_recurso")}
           />
           {/* El iframe marca aria-busy mientras pinta el recurso: sin este aviso parecía vacío. */}
           <p
@@ -112,8 +115,7 @@ export default function WorkspaceHtmlPreview({ phases, ovaId, readOnly = false }
             className="pointer-events-none absolute inset-0 hidden items-center justify-center gap-2 text-sm text-muted-foreground peer-aria-busy:flex"
           >
             <Icon name="spinner" className="size-4 animate-spin" />
-            Cargando vista previa…
-          </p>
+            {t("workspace:cargando_vista_previa_172")} </p>
         </div>
         <WorkspacePreviewFooter
           active={active}

@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
@@ -21,12 +23,13 @@ function tabClass(active: boolean): string {
 }
 
 function recursosElegidos(count: number): string {
-  if (count === 0) return "ningún recurso elegido";
-  return count === 1 ? "1 recurso elegido" : `${String(count)} recursos elegidos`;
+  if (count === 0) return i18n.t("workspace:ningun_recurso_elegido");
+  return i18n.t("workspace:chosenResources", { count });
 }
 
 /** Conmutador de fases 5E: nombre en español y cuántos recursos lleva elegidos cada una. */
 export function PhaseSelectTabs({ phase, picks, onChange }: Readonly<Props>) {
+  const { t } = useTranslation();
   const navRef = useRef<HTMLElement>(null);
   const [edges, setEdges] = useState({ start: false, end: false });
 
@@ -65,7 +68,7 @@ export function PhaseSelectTabs({ phase, picks, onChange }: Readonly<Props>) {
   return (
     <nav
       ref={navRef}
-      aria-label="Fases"
+      aria-label={t("workspace:fases")}
       onScroll={updateEdges}
       className={cn(
         "-mx-1 overflow-x-auto px-1 [scrollbar-width:none] [--fade-start:0px] [--fade-end:0px]",

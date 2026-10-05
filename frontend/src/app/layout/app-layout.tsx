@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 // Iconos del shell: se asignan al registro al evaluar el módulo (antes del
 // primer render del layout), evitando el flash "?" en navbar/sidebar.
 import "@/core/components/icon-registry-shell";
@@ -41,6 +42,7 @@ function usePrefetchMainRoutes() {
 }
 
 export function AppLayout() {
+  const { t } = useTranslation();
   const fullBleed = useFullBleed();
   usePrefetchMainRoutes();
   return (
@@ -54,8 +56,7 @@ export function AppLayout() {
         }}
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-lg"
       >
-        Saltar al contenido principal
-      </a>
+        {t("shell:saltar_al_contenido_principal")} </a>
       <Navbar />
       <div className="flex min-h-0 w-full flex-1 overflow-hidden">
         <Sidebar />

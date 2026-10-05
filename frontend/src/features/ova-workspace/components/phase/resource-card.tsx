@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import type { Resource } from "../../lib/ova-types";
@@ -19,6 +21,7 @@ export function ResourceCard({
   onPreview,
   onConfigure,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const title = resourceDisplayName(resource.tipo ?? String(resource.id));
   return (
     <article
@@ -28,7 +31,7 @@ export function ResourceCard({
         type="button"
         className="w-full text-left"
         disabled={disabled}
-        aria-label={`Seleccionar ${title}`}
+        aria-label={t("workspace:seleccionar_value", { p0: title })}
         aria-pressed={selected}
         onClick={onSelect}
         onMouseEnter={onPreview}
@@ -39,7 +42,7 @@ export function ResourceCard({
         </h3>
         {resource.interactividad && (
           <p className="text-xs text-muted-foreground">
-            Interactividad {resource.interactividad.toLowerCase()}
+            {t("workspace:interactividad")} {resource.interactividad.toLowerCase()}
           </p>
         )}
       </button>
@@ -49,20 +52,18 @@ export function ResourceCard({
             size="sm"
             variant="ghost"
             onClick={onPreview}
-            aria-label={`Vista previa ${title}`}
+            aria-label={t("workspace:vista_previa_value", { p0: title })}
           >
-            Vista previa
-          </Button>
+            {t("workspace:vista_previa")} </Button>
         )}
         {onConfigure && (
           <Button
             size="sm"
             variant="outline"
             onClick={onConfigure}
-            aria-label={`Configurar ${title}`}
+            aria-label={t("workspace:configurar_value", { p0: title })}
           >
-            Configurar
-          </Button>
+            {t("workspace:configurar")} </Button>
         )}
       </div>
     </article>

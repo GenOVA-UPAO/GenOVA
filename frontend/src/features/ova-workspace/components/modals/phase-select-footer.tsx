@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
@@ -14,11 +17,12 @@ interface Props {
 
 function requirement(phases: number): string {
   return phases === 0
-    ? "Elige recursos en al menos 2 fases para confirmar."
-    : "Elige recursos en 1 fase más para confirmar.";
+    ? i18n.t("workspace:elige_recursos_en_al_menos_2_fases_para_confirmar")
+    : i18n.t("workspace:elige_recursos_en_1_fase_mas_para_confirmar");
 }
 
 export function PhaseSelectFooter({ count, phases, onClose, onConfirm }: Readonly<Props>) {
+  const { t } = useTranslation();
   const valid = phases >= 2;
   return (
     <ModalActions
@@ -37,10 +41,9 @@ export function PhaseSelectFooter({ count, phases, onClose, onConfirm }: Readonl
       }
     >
       <Button variant="outline" onClick={onClose}>
-        Cancelar
-      </Button>
+        {t("workspace:cancelar")} </Button>
       <Button disabled={!valid} aria-describedby={valid ? undefined : "phase-select-requirement"} onClick={onConfirm}>
-        Confirmar ({count})
+        {t("workspace:confirmar")}{count})
       </Button>
     </ModalActions>
   );

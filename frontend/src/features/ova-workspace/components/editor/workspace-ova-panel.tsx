@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<OvaPanelTab>("preview");
   // La edición se monta al abrirla y ya no se desmonta: cambiar a «Vista previa»
   // para comprobar algo no debe descartar el HTML que aún no se ha guardado.
@@ -37,15 +39,14 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
         <div
           id="workspace-ova-preview"
           role="tabpanel"
-          aria-label="Vista previa"
+          aria-label={t("workspace:vista_previa")}
           hidden={tab !== "preview"}
           className="h-full"
         >
           <Suspense
             fallback={
               <p role="status" className="p-4 text-sm text-muted-foreground">
-                Cargando vista previa…
-              </p>
+                {t("workspace:cargando_vista_previa_186")} </p>
             }
           >
             <WorkspaceHtmlPreview phases={phases} ovaId={ovaId} readOnly={readOnly} />
@@ -54,7 +55,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
         <div
           id="workspace-ova-edit"
           role="tabpanel"
-          aria-label="Editar"
+          aria-label={t("workspace:editar")}
           hidden={tab !== "edit"}
           className="h-full min-h-0 space-y-6 overflow-y-auto p-3 sm:p-4"
         >
@@ -63,7 +64,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
         <div
           id="workspace-ova-visual-editor"
           role="tabpanel"
-          aria-label="Editor visual (beta)"
+          aria-label={t("workspace:editor_visual_beta")}
           hidden={tab !== "visual_editor"}
           className="h-full min-h-0 overflow-y-auto"
         >
@@ -71,8 +72,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
             <Suspense
               fallback={
                 <p role="status" className="p-4 text-sm text-muted-foreground">
-                  Cargando editor visual…
-                </p>
+                  {t("workspace:cargando_editor_visual")} </p>
               }
             >
               <VisualEditorPanel ovaId={ovaId} phases={phases} />

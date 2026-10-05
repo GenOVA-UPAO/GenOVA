@@ -36,7 +36,10 @@ const TEXT_ATTRIBUTES = new Set([
 const ALLOWED_LITERALS = new Set(["GenOVA", "UPAO", "SCORM", "HTML", "PDF", "EPUB", "ELPX"]);
 
 /** Archivos con texto en duro justificado (cada entrada necesita un motivo). */
-const ALLOWED_FILES: Record<string, string> = {};
+const ALLOWED_FILES: Record<string, string> = {
+  // Catálogo de identificadores `tipo` del backend → icono; no se muestra como texto.
+  "src/features/ova-workspace/lib/resource-icons.ts": "Claves del protocolo, no etiquetas de interfaz",
+};
 
 const SPANISH_MARKS = /[áéíóúñ¿¡ÁÉÍÓÚÑ]/;
 const SPANISH_WORDS = new Set(
@@ -83,6 +86,10 @@ function inspect(node: ts.Node, source: ts.SourceFile): Found | null {
   }
   if (ts.isJsxAttribute(node)) return inspectAttribute(node, source);
   if (ts.isStringLiteral(node) || isTemplatePart(node)) {
+    // `diseño` es un FeedbackReason que la API recibe literalmente. La etiqueta
+    // visible se traduce por separado; solo se permite en el tipo y su value.
+    if (node.text === "diseño" && (ts.isLiteralTypeNode(node.parent) ||
+      (ts.isPropertyAssignment(node.parent) && node.parent.name.getText(source) === "value"))) return null;
     const flagged = looksSpanish(node.text) && !ALLOWED_LITERALS.has(node.text);
     return flagged ? { node, value: node.text, why: "literal en español" } : null;
   }

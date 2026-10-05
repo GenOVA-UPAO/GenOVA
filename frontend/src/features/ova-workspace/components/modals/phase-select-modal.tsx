@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAllPhaseResources } from "../../hooks/use-phase-resources";
 import type { Resource } from "../../lib/ova-types";
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState(picks);
   const [settings, setSettings] = useState(configs);
   const [phase, setPhase] = useState("engage");
@@ -34,9 +36,9 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
   const phases = Object.values(draft).filter((items) => items.length > 0).length;
   return (
     <WorkspaceModal
-      title="Configurar recursos 5E"
+      title={t("workspace:configurar_recursos_5e")}
       size="xl"
-      description="Elige qué recursos generará la IA en cada fase. Necesitas al menos 2 fases."
+      description={t("workspace:elige_que_recursos_generara_la_ia_en_cada_fas_63f3f9")}
       onClose={onClose}
       footer={
         <PhaseSelectFooter

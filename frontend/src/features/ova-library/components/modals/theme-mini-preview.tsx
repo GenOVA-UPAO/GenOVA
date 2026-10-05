@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import type { Palette } from "@/core/lib/ova-palettes";
@@ -28,12 +27,12 @@ export function ThemeMiniPreview({
   designMode,
   palette,
 }: Readonly<ThemeMiniPreviewProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   const TABS = [
-    i18n.t("ova-library:enganche"),
-    i18n.t("ova-library:exploracion"),
-    i18n.t("ova-library:explicacion"),
-    i18n.t("ova-library:evaluacion"),
+    t("ova-library:enganche"),
+    t("ova-library:exploracion"),
+    t("ova-library:explicacion"),
+    t("ova-library:evaluacion"),
   ];
   const { primary, accent } = resolveColors(colorMode, palette);
   const isTabbed = designMode !== "ai";
@@ -42,10 +41,10 @@ export function ThemeMiniPreview({
     <div aria-hidden="true" className="overflow-hidden rounded-xl border border-border">
       <div style={{ background: primary }} className="px-3 py-2.5">
         <div className="text-[9px] font-bold text-white">
-          {i18n.t("ova-library:aprendizaje_supervisado")}
+          {t("ova-library:aprendizaje_supervisado")}
         </div>
         <div className="mt-0.5 text-[7px] text-white/60">
-          {i18n.t("ova-library:sistemas_de_gestion_de_bd_5_ciclo")}
+          {t("ova-library:sistemas_de_gestion_de_bd_5_ciclo")}
         </div>
       </div>
       {isTabbed && (

@@ -1,4 +1,9 @@
+import i18n from "i18next";
+
 export interface ResourcePreviewInfo {
+  /** Identificador estable y nombre original del catálogo de la API. */
+  labelKey: string;
+  canonicalLabel: string;
   label: string;
   /** What the learner receives / the deliverable. */
   returns: string;
@@ -65,5 +70,14 @@ export const ALL_WIREFRAME_KINDS: readonly WireframeKind[] = [
 export function preview(
   ...[label, returns, format, bullets, wire]: [string, string, string, [string, string, string], WireframeKind]
 ): ResourcePreviewInfo {
-  return { label, returns, format, bullets, wire };
+  const translate = (key: string) => key.startsWith("workspace:") ? i18n.t(key) : key;
+  return {
+    labelKey: label,
+    get canonicalLabel() { return label.startsWith("workspace:") ? i18n.t(label, { lng: "es" }) : label; },
+    get label() { return translate(label); },
+    get returns() { return translate(returns); },
+    get format() { return translate(format); },
+    get bullets() { return bullets.map(translate); },
+    wire,
+  };
 }

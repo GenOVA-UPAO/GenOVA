@@ -1,5 +1,6 @@
+import i18n from "i18next";
 /** Proveedores sin prefijo de clave reconocible. */
-const PASTE_HINT = "Pega aquí la clave";
+const PASTE_HINT = i18n.t("shared:pega_aqui_la_clave");
 
 /** Qué puede generar GenOVA con la clave de cada proveedor. */
 export type ProviderCoverage = "texto" | "imagen" | "video";
@@ -16,56 +17,56 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
   openrouter: {
     label: "OpenRouter",
     placeholder: "sk-or-…",
-    desc: "Casi todos los modelos con una sola clave: el proveedor principal de la plataforma",
+    get desc() { return i18n.t("shared:casi_todos_los_modelos_con_una_sola_clave_el__46a946"); },
     compat: true,
     covers: ["texto", "imagen", "video"],
   },
   groq: {
-    label: "Groq",
+    get label() { return i18n.t("shared:groq"); },
     placeholder: "gsk_…",
-    desc: "Modelos de texto abiertos con respuestas muy rápidas",
+    get desc() { return i18n.t("shared:modelos_de_texto_abiertos_con_respuestas_muy_rapidas"); },
     compat: true,
     covers: ["texto"],
   },
   opencode: {
     label: "OpenCode Go",
     placeholder: "oc_…",
-    desc: "Modelos especializados en código",
+    get desc() { return i18n.t("shared:modelos_especializados_en_codigo"); },
     compat: true,
     covers: ["texto"],
   },
   huggingface: {
     label: "HuggingFace",
     placeholder: "hf_…",
-    desc: "Modelos abiertos alojados en HuggingFace",
+    get desc() { return i18n.t("shared:modelos_abiertos_alojados_en_huggingface"); },
     compat: true,
     covers: ["texto"],
   },
   siliconflow: {
     label: "SiliconFlow",
     placeholder: "sk-…",
-    desc: "Modelos abiertos de bajo costo",
+    get desc() { return i18n.t("shared:modelos_abiertos_de_bajo_costo"); },
     compat: true,
     covers: ["texto", "imagen"],
   },
   runware: {
-    label: "Runware",
+    get label() { return i18n.t("shared:runware"); },
     placeholder: PASTE_HINT,
-    desc: "Generación de imágenes (Stable Diffusion XL)",
+    get desc() { return i18n.t("shared:generacion_de_imagenes_stable_diffusion_xl"); },
     compat: false,
     covers: ["imagen"],
   },
   falai: {
     label: "fal.ai",
     placeholder: PASTE_HINT,
-    desc: "Generación de imágenes en la nube",
+    get desc() { return i18n.t("shared:generacion_de_imagenes_en_la_nube"); },
     compat: false,
     covers: ["imagen"],
   },
   cloudflare: {
-    label: "Cloudflare Workers AI",
+    get label() { return i18n.t("shared:cloudflare_workers_ai"); },
     placeholder: PASTE_HINT,
-    desc: "Generación de imágenes con el plan gratuito de Cloudflare",
+    get desc() { return i18n.t("shared:generacion_de_imagenes_con_el_plan_gratuito_d_6a547c"); },
     compat: false,
     covers: ["imagen"],
   },
@@ -75,7 +76,7 @@ export const PROVIDER_META: Record<string, ProviderMeta> = {
 export const RECOMMENDED_PROVIDER = "openrouter";
 
 export const RECOMMENDED_HINT =
-  "Con una sola clave de OpenRouter tienes casi todos los modelos de texto, imagen y video.";
+  i18n.t("shared:con_una_sola_clave_de_openrouter_tienes_casi__af0ae8");
 
 export interface ProviderGroups {
   recommended: string[];
@@ -102,7 +103,7 @@ export function providerMeta(provider: string): ProviderMeta {
   return {
     label: provider,
     placeholder: PASTE_HINT,
-    desc: "Proveedor genérico",
+    desc: i18n.t("shared:proveedor_generico"),
     compat: false,
     covers: [],
   };

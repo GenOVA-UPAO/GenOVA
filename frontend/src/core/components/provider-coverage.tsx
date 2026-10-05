@@ -1,14 +1,17 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import type { ProviderCoverage as Coverage } from "./platform-key-meta";
 
-const LABEL: Record<Coverage, string> = { texto: "Texto", imagen: "Imagen", video: "Video" };
+const LABEL: Record<Coverage, string> = { get texto() { return i18n.t("shared:texto"); }, get imagen() { return i18n.t("shared:imagen"); }, get video() { return i18n.t("shared:video"); } };
 
 /** Etiquetas de lo que se puede generar con la clave del proveedor. */
 export function ProviderCoverage({ covers }: Readonly<{ covers: readonly Coverage[] }>) {
+  const { t } = useTranslation();
   if (covers.length === 0) return null;
   return (
     <span
       className="inline-flex flex-wrap gap-1"
-      aria-label={`Sirve para: ${covers.map((c) => LABEL[c].toLowerCase()).join(", ")}`}
+      aria-label={t("shared:sirve_para_value", { p0: covers.map((c) => LABEL[c].toLowerCase()).join(", ") })}
     >
       {covers.map((c) => (
         <span

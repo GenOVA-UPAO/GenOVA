@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ConfirmModal } from "@/core/components/confirm-modal";
 import { Icon } from "@/core/components/icon";
@@ -12,11 +13,12 @@ interface Props {
 
 /** Cabecera del panel: mismo alto que la barra del visor para que ambas columnas alineen. */
 export function ChatPanelHeader({ busy, onRegenAll }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [confirm, setConfirm] = useState(false);
   return (
     <div className="flex h-12 shrink-0 items-center justify-end gap-2 border-b border-border px-4 md:justify-between">
       {/* En móvil el conmutador de vista ya dice «Instrucciones». */}
-      <h2 className="sr-only text-sm font-semibold text-foreground md:not-sr-only">Instrucciones</h2>
+      <h2 className="sr-only text-sm font-semibold text-foreground md:not-sr-only">{t("workspace:instrucciones")}</h2>
       <Button
         variant="outline"
         size="sm"
@@ -26,13 +28,12 @@ export function ChatPanelHeader({ busy, onRegenAll }: Readonly<Props>) {
         }}
       >
         <Icon name="arrow-clockwise" className={cn(busy && "animate-spin")} />
-        Regenerar OVA completo
-      </Button>
+        {t("workspace:regenerar_ova_completo")} </Button>
       {confirm && (
         <ConfirmModal
-          title="¿Regenerar el OVA completo?"
-          message="La IA volverá a crear todos los recursos desde cero. La versión actual quedará guardada en el historial de versiones."
-          confirmLabel="Regenerar OVA"
+          title={t("workspace:regenerar_el_ova_completo")}
+          message={t("workspace:la_ia_volvera_a_crear_todos_los_recursos_desd_2f6395")}
+          confirmLabel={t("workspace:regenerar_ova")}
           danger={false}
           onConfirm={() => {
             setConfirm(false);

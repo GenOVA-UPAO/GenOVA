@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { fetchOvaJobByOvaId } from "../../api/ova-jobs.api";
 import { useFailedSelection } from "../../hooks/use-failed-selection";
@@ -10,6 +11,7 @@ import { GenerationProgressColumn } from "../creation/generation-progress-column
 import { GeneratingHeader } from "./generating-header";
 
 export function OvaGeneratingPanel({ ovaId, onReady }: Readonly<{ ovaId: string; onReady: () => void }>) {
+  const { t } = useTranslation();
   const lookup = useQuery({ queryKey: ["ova-job-by-ova", ovaId], queryFn: () => fetchOvaJobByOvaId(ovaId) });
   const job = useOvaJob(lookup.data?.job_id);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
@@ -25,7 +27,7 @@ export function OvaGeneratingPanel({ ovaId, onReady }: Readonly<{ ovaId: string;
   const resume = (ids: string[]) => {
     job.resume.mutate(ids);
   };
-  if (lookup.isPending) return <p role="status" className="p-4 text-sm text-muted-foreground">Cargando generación…</p>;
+  if (lookup.isPending) return <p role="status" className="p-4 text-sm text-muted-foreground">{t("workspace:cargando_generacion")}</p>;
   if (lookup.error)
     return (
       <p role="alert" className="p-4 text-sm text-destructive">
@@ -33,7 +35,7 @@ export function OvaGeneratingPanel({ ovaId, onReady }: Readonly<{ ovaId: string;
       </p>
     );
   if (!lookup.data.job_id)
-    return <p className="p-4 text-sm text-destructive">No se encontró la generación de este OVA.</p>;
+    return <p className="p-4 text-sm text-destructive">{t("workspace:no_se_encontro_la_generacion_de_este_ova")}</p>;
   return (
     <div className="flex h-full min-h-0 flex-col">
       <GeneratingHeader />

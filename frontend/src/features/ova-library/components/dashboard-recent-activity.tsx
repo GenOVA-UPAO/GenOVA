@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -21,20 +20,20 @@ export function DashboardRecentActivity({
   recentOvas,
   isAdmin,
 }: Readonly<DashboardRecentActivityProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   if (recentOvas.length === 0) {
     return (
       <EmptyState
         icon="plus"
-        title={i18n.t("ova-library:crea_tu_primer_ova")}
-        description={i18n.t(
+        title={t("ova-library:crea_tu_primer_ova")}
+        description={t(
           "ova-library:describe_un_tema_y_genova_generara_los_recursos_de_cada_fase_del_modelo_5e_luego_podras_re",
         )}
         action={
           <Button asChild size="lg">
             <Link to="/crear">
               <Icon name="plus" size="text-base" />
-              {i18n.t("ova-library:comenzar_ahora")}{" "}
+              {t("ova-library:comenzar_ahora")}{" "}
             </Link>
           </Button>
         }
@@ -45,7 +44,7 @@ export function DashboardRecentActivity({
   return (
     <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
       {recentOvas.map((ova) => {
-        const title = ova.title?.trim() ? ova.title : i18n.t("ova-library:sin_titulo");
+        const title = ova.title?.trim() ? ova.title : t("ova-library:sin_titulo");
         return (
           <li key={ova.id}>
             <Link

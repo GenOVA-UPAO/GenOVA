@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/core/components/ui/button";
 
 import type { ResourceVM } from "../../lib/ova-job-view-model";
@@ -7,6 +9,7 @@ export function TotalFailurePanel({
   viewModel,
   onRetryAll,
 }: Readonly<{ viewModel: ResourceVM[]; onRetryAll: () => void }>) {
+  const { t } = useTranslation();
   const errorId = viewModel.find((resource) => resource.error_id)?.error_id;
   return (
     <section
@@ -15,21 +18,17 @@ export function TotalFailurePanel({
     >
       <div>
         <h2 id="total-failure-title" className="font-semibold text-destructive">
-          No se pudo generar el OVA
-        </h2>
+          {t("workspace:no_se_pudo_generar_el_ova")} </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ningún recurso se completó, así que no se guardó el OVA. Puedes reintentar la generación
-          con la misma configuración.
-        </p>
+          {t("workspace:ningun_recurso_se_completo_asi_que_no_se_guar_026b51")} </p>
         {errorId && (
           <p className="mt-1 text-xs text-muted-foreground">
-            Código de error: <span className="font-mono">{errorId}</span>
+            {t("workspace:codigo_de_error")} <span className="font-mono">{errorId}</span>
           </p>
         )}
       </div>
       <Button className="max-sm:h-11 max-sm:w-full" onClick={onRetryAll}>
-        Reintentar generación
-      </Button>
+        {t("workspace:reintentar_generacion")} </Button>
     </section>
   );
 }

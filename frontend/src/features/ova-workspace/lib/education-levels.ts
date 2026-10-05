@@ -1,3 +1,4 @@
+import i18n from "i18next";
 export type EducationLevelId =
   "universitario-inicial" | "universitario-avanzado" | "posgrado" | "secundaria";
 
@@ -11,16 +12,16 @@ export interface EducationLevel {
 export const EDUCATION_LEVELS: readonly EducationLevel[] = [
   {
     id: "universitario-inicial",
-    label: "Universitario · ciclos iniciales",
+    get label() { return i18n.t("workspace:universitario_ciclos_iniciales"); },
     promptText: "universitario (ciclos iniciales)",
   },
   {
     id: "universitario-avanzado",
-    label: "Universitario · ciclos avanzados",
+    get label() { return i18n.t("workspace:universitario_ciclos_avanzados"); },
     promptText: "universitario (ciclos avanzados)",
   },
-  { id: "posgrado", label: "Posgrado", promptText: "posgrado" },
-  { id: "secundaria", label: "Secundaria", promptText: "secundaria" },
+  { id: "posgrado", get label() { return i18n.t("workspace:posgrado"); }, promptText: "posgrado" },
+  { id: "secundaria", get label() { return i18n.t("workspace:secundaria"); }, promptText: "secundaria" },
 ];
 
 export const DEFAULT_EDUCATION_LEVEL: EducationLevelId = "universitario-inicial";

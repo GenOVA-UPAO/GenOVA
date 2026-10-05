@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import { SegmentedTabs } from "../shared/segmented-tabs";
@@ -23,31 +26,31 @@ interface TabOption {
 }
 
 function getTabSubtitle(tab: OvaPanelTab): string {
-  if (tab === "preview") return "Así lo verán tus estudiantes.";
-  if (tab === "edit") return "Reordena, regenera o ajusta cada recurso.";
-  return "Recompone la estructura del recurso con el editor visual inteligente.";
+  if (tab === "preview") return i18n.t("workspace:asi_lo_veran_tus_estudiantes");
+  if (tab === "edit") return i18n.t("workspace:reordena_regenera_o_ajusta_cada_recurso");
+  return i18n.t("workspace:recompone_la_estructura_del_recurso_con_el_ed_0a2eff");
 }
 
 /** Barra del panel del OVA: «Vista previa» / «Editar» / «Editor visual» y qué se hace en cada una. */
 export function WorkspaceOvaPanelTabs({ tab, onChange, readOnly = false }: Readonly<Props>) {
+  const { t } = useTranslation();
   if (readOnly)
     return (
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3 text-sm font-medium sm:px-4">
         <Icon name="eye" className="text-muted-foreground" />
-        Vista previa
-      </div>
+        {t("workspace:vista_previa")} </div>
     );
 
   const options: TabOption[] = [
     {
       value: "preview",
-      label: "Vista previa",
+      label: t("workspace:vista_previa"),
       icon: "eye",
       controls: "workspace-ova-preview",
     },
     {
       value: "edit",
-      label: "Editar",
+      label: t("workspace:editar"),
       icon: "pencil-simple",
       controls: "workspace-ova-edit",
     },
@@ -56,7 +59,7 @@ export function WorkspaceOvaPanelTabs({ tab, onChange, readOnly = false }: Reado
   if (FEATURE_VISUAL_EDITOR) {
     options.push({
       value: "visual_editor",
-      label: "Editor visual (beta)",
+      label: t("workspace:editor_visual_beta"),
       icon: "sparkle",
       controls: "workspace-ova-visual-editor",
     });
@@ -65,7 +68,7 @@ export function WorkspaceOvaPanelTabs({ tab, onChange, readOnly = false }: Reado
   return (
     <div className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-3 sm:px-4">
       <SegmentedTabs
-        label="Contenido del OVA"
+        label={t("workspace:contenido_del_ova")}
         value={tab}
         onChange={onChange}
         options={options}

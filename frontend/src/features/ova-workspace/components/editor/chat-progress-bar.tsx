@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { cn } from "@/core/lib/cn";
 
 interface Props {
@@ -9,9 +12,10 @@ interface Props {
 /** Barra fina de progreso para la regeneración en curso (solo mientras corre). */
 export function ChatProgressBar({
   percentage,
-  label = "Progreso de regeneración",
+  label = i18n.t("workspace:progreso_de_regeneracion"),
   className,
 }: Readonly<Props>) {
+  useTranslation();
   const clamped = Math.min(100, Math.max(0, Math.round(percentage)));
   return (
     <div className={cn("flex items-center gap-2", className)}>

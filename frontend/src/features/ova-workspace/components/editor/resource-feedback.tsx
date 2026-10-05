@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/core/components/ui/popover";
 
@@ -19,17 +20,18 @@ interface Props {
  * motivo alimenta la mejora de las plantillas.
  */
 export function ResourceFeedback({ ovaId, phaseId, resourceName }: Readonly<Props>) {
+  const { t } = useTranslation();
   const feedback = useResourceFeedback(ovaId, phaseId);
   const [open, setOpen] = useState(false);
   const down = feedback.current?.rating === "down" ? feedback.current : null;
   return (
-    <span role="group" aria-label={`Valorar ${resourceName}`} className="flex shrink-0 items-center">
+    <span role="group" aria-label={t("workspace:valorar_value", { p0: resourceName })} className="flex shrink-0 items-center">
       <FeedbackThumb
         icon="thumbs-up"
         tone="text-primary"
         pressed={feedback.current?.rating === "up"}
-        aria-label="Este recurso me sirvió"
-        title="Me sirvió"
+        aria-label={t("workspace:este_recurso_me_sirvio")}
+        title={t("workspace:me_sirvio")}
         disabled={feedback.busy}
         onClick={feedback.toggleUp}
       />
@@ -39,8 +41,8 @@ export function ResourceFeedback({ ovaId, phaseId, resourceName }: Readonly<Prop
             icon="thumbs-down"
             tone="text-destructive"
             pressed={down !== null}
-            aria-label="Este recurso no me sirvió"
-            title="No me sirvió"
+            aria-label={t("workspace:este_recurso_no_me_sirvio")}
+            title={t("workspace:no_me_sirvio")}
           />
         </PopoverTrigger>
         <PopoverContent align="end" side="top" className="w-80 max-w-[calc(100vw-2rem)] p-4">

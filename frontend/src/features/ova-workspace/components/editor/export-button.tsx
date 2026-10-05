@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { ExportMenu } from "@/core/export/components/export-menu";
@@ -16,15 +18,16 @@ interface ExportButtonProps {
  * todos. Desactivado con una pista mientras el servidor diría 409.
  */
 export function ExportButton({ canExport, pending, format, onDownload }: Readonly<ExportButtonProps>) {
+  const { t } = useTranslation();
   const { label } = getExportFormat(format);
   return (
     <div className="inline-flex">
       <Button
-        aria-label={`Descargar ${label}`}
+        aria-label={t("workspace:descargar_value", { p0: label })}
         loading={pending}
         disabled={!canExport}
         title={
-          canExport ? undefined : "Termina o elimina los recursos con error para descargar el paquete."
+          canExport ? undefined : t("workspace:termina_o_elimina_los_recursos_con_error_para_cb9946")
         }
         className="rounded-r-none max-md:h-11 max-md:px-4"
         onClick={() => {
@@ -33,11 +36,11 @@ export function ExportButton({ canExport, pending, format, onDownload }: Readonl
       >
         <Icon name="download-simple" />
         <span className="md:hidden">{label}</span>
-        <span className="hidden md:inline">Descargar {label}</span>
+        <span className="hidden md:inline">{t("workspace:descargar")} {label}</span>
       </Button>
       <ExportMenu selected={format} onSelect={onDownload}>
         <Button
-          aria-label="Elegir formato de descarga"
+          aria-label={t("workspace:elegir_formato_de_descarga")}
           disabled={!canExport || pending}
           className="rounded-l-none border-l-primary-foreground/30 px-2 max-md:h-11 max-md:px-3"
         >

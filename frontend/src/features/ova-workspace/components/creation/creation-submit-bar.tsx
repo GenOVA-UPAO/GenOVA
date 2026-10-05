@@ -1,3 +1,6 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
@@ -20,12 +23,13 @@ const REASON_ID = "crear-generate-reason";
 function reasonText(prompt: string, phases: number, total: number, ready: boolean): string {
   const blocker = generateBlocker(prompt, phases);
   if (blocker) return blocker;
-  if (!ready) return "Espera a que termine la subida de archivos.";
-  return `Listo para generar: ${selectionSummary(total, phases).toLowerCase()}.`;
+  if (!ready) return i18n.t("workspace:espera_a_que_termine_la_subida_de_archivos");
+  return i18n.t("workspace:listo_para_generar_value", { p0: selectionSummary(total, phases).toLowerCase() });
 }
 
 /** Pie del formulario: explica junto al botón por qué aún no se puede generar. */
 export function CreationSubmitBar({ prompt, phases, total, ready, attempted, error, onGenerate }: Readonly<Props>) {
+  const { t } = useTranslation();
   const blocked = !ready;
   return (
     <div className="space-y-2 rounded-b-xl border-t border-border bg-muted/40 px-4 py-3 sm:px-5">
@@ -52,8 +56,7 @@ export function CreationSubmitBar({ prompt, phases, total, ready, attempted, err
             aria-describedby={REASON_ID}
             onClick={onGenerate}
           >
-            Generar OVA
-          </Button>
+            {t("workspace:generar_ova")} </Button>
         </span>
       </div>
       {error && (

@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
@@ -13,20 +15,20 @@ interface Props {
 const MUTED_BADGE = "bg-muted text-muted-foreground";
 
 const BLOCK_META_MAP: Record<string, { label: string; icon: string; badgeClass: string }> = {
-  "upao-header": { label: "Encabezado", icon: "article", badgeClass: "bg-primary/10 text-primary" },
-  header: { label: "Encabezado", icon: "article", badgeClass: "bg-primary/10 text-primary" },
-  p: { label: "Párrafo", icon: "text-align-left", badgeClass: MUTED_BADGE },
-  paragraph: { label: "Párrafo", icon: "text-align-left", badgeClass: MUTED_BADGE },
-  "upao-example": { label: "Ejemplo", icon: "magnifying-glass", badgeClass: "bg-primary/15 text-primary" },
-  example: { label: "Ejemplo", icon: "magnifying-glass", badgeClass: "bg-primary/15 text-primary" },
-  "upao-question": { label: "Pregunta", icon: "question", badgeClass: "bg-accent-brand/15 text-accent-brand" },
-  question: { label: "Pregunta", icon: "question", badgeClass: "bg-accent-brand/15 text-accent-brand" },
-  "upao-summary": { label: "Resumen", icon: "check-circle", badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
-  summary: { label: "Resumen", icon: "check-circle", badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
-  "upao-comic-panel": { label: "Cómic", icon: "cards", badgeClass: "bg-purple-500/15 text-purple-700 dark:text-purple-300" },
-  panel: { label: "Cómic", icon: "cards", badgeClass: "bg-purple-500/15 text-purple-700 dark:text-purple-300" },
-  "upao-card": { label: "DBA Panel", icon: "wrench", badgeClass: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300" },
-  card: { label: "DBA Panel", icon: "wrench", badgeClass: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300" },
+  "upao-header": { get label() { return i18n.t("workspace:encabezado"); }, icon: "article", badgeClass: "bg-primary/10 text-primary" },
+  header: { get label() { return i18n.t("workspace:encabezado"); }, icon: "article", badgeClass: "bg-primary/10 text-primary" },
+  p: { get label() { return i18n.t("workspace:parrafo"); }, icon: "text-align-left", badgeClass: MUTED_BADGE },
+  paragraph: { get label() { return i18n.t("workspace:parrafo"); }, icon: "text-align-left", badgeClass: MUTED_BADGE },
+  "upao-example": { get label() { return i18n.t("workspace:ejemplo"); }, icon: "magnifying-glass", badgeClass: "bg-primary/15 text-primary" },
+  example: { get label() { return i18n.t("workspace:ejemplo"); }, icon: "magnifying-glass", badgeClass: "bg-primary/15 text-primary" },
+  "upao-question": { get label() { return i18n.t("workspace:pregunta"); }, icon: "question", badgeClass: "bg-accent-brand/15 text-accent-brand" },
+  question: { get label() { return i18n.t("workspace:pregunta"); }, icon: "question", badgeClass: "bg-accent-brand/15 text-accent-brand" },
+  "upao-summary": { get label() { return i18n.t("workspace:resumen"); }, icon: "check-circle", badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
+  summary: { get label() { return i18n.t("workspace:resumen"); }, icon: "check-circle", badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
+  "upao-comic-panel": { get label() { return i18n.t("workspace:comic"); }, icon: "cards", badgeClass: "bg-purple-500/15 text-purple-700 dark:text-purple-300" },
+  panel: { get label() { return i18n.t("workspace:comic"); }, icon: "cards", badgeClass: "bg-purple-500/15 text-purple-700 dark:text-purple-300" },
+  "upao-card": { get label() { return i18n.t("workspace:dba_panel"); }, icon: "wrench", badgeClass: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300" },
+  card: { get label() { return i18n.t("workspace:dba_panel"); }, icon: "wrench", badgeClass: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300" },
 };
 
 function blockMeta(tipo: string): { label: string; icon: string; badgeClass: string } {
@@ -50,22 +52,21 @@ function blockSummary(block: ResourceBlock): string {
 }
 
 export function BlockList({ blocks, isLoading = false }: Readonly<Props>) {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
 
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 rounded-lg border border-border p-3 text-xs text-muted-foreground">
         <Icon name="spinner" className="size-3.5 animate-spin" />
-        Extrayendo bloques del recurso…
-      </div>
+        {t("workspace:extrayendo_bloques_del_recurso")} </div>
     );
   }
 
   if (blocks.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-        No se detectaron bloques en el HTML actual del recurso.
-      </div>
+        {t("workspace:no_se_detectaron_bloques_en_el_html_actual_del_recurso")} </div>
     );
   }
 
@@ -73,7 +74,7 @@ export function BlockList({ blocks, isLoading = false }: Readonly<Props>) {
     <div className="rounded-xl border border-border bg-card shadow-2xs">
       <div className="flex items-center justify-between border-b border-border/80 px-3.5 py-2.5">
         <div className="flex items-center gap-2">
-          <span className="font-heading text-xs font-bold text-foreground">Bloques detectados</span>
+          <span className="font-heading text-xs font-bold text-foreground">{t("workspace:bloques_detectados")}</span>
           <span className="rounded-full bg-primary/10 px-2 py-0.2 text-[11px] font-bold text-primary tabular-nums">
             {blocks.length}
           </span>
@@ -83,7 +84,7 @@ export function BlockList({ blocks, isLoading = false }: Readonly<Props>) {
           onClick={() => { setCollapsed(!collapsed); }}
           className="text-xs text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring rounded-xs"
         >
-          {collapsed ? "Mostrar" : "Plegar"}
+          {collapsed ? t("workspace:mostrar") : t("workspace:plegar")}
         </button>
       </div>
 

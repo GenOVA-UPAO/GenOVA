@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ const ThemeModal = lazy(() =>
 );
 
 export function Navbar() {
+  const { t } = useTranslation();
   const user = useCurrentUser();
   const [themeModalOpen, setThemeModalOpen] = useState(false);
   // En /crear y en el editor la acción principal es de la página («Generar
@@ -43,8 +45,7 @@ export function Navbar() {
             className="hidden h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none sm:inline-flex"
           >
             <Icon name="plus" size="text-base" />
-            Crear OVA
-          </Link>
+            {t("shell:crear_ova")} </Link>
         )}
         <UserMenu
           onOpenAppearance={() => {
@@ -58,7 +59,7 @@ export function Navbar() {
           <ThemeModal
             initialTheme={user?.theme_settings}
             onSaved={() => {
-              toast.success("Estilo guardado. Se usará en tus próximos OVAs.");
+              toast.success(t("shell:estilo_guardado_se_usara_en_tus_proximos_ovas"));
             }}
             onClose={() => {
               setThemeModalOpen(false);

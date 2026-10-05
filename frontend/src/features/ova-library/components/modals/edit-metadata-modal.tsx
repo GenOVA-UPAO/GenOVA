@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { type SyntheticEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -39,7 +38,7 @@ export function EditMetadataModal({
   onCancel,
   onCloseAutoFocus,
 }: Readonly<EditMetadataModalProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initial.description ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -68,8 +67,8 @@ export function EditMetadataModal({
         onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogHeader className="pr-8">
-          <DialogTitle>{i18n.t("ova-library:editar_titulo_y_descripcion")}</DialogTitle>
-          <DialogDescription>{i18n.t("ova-library:asi_aparece_el_ova_en_tu_biblioteca")}</DialogDescription>
+          <DialogTitle>{t("ova-library:editar_titulo_y_descripcion")}</DialogTitle>
+          <DialogDescription>{t("ova-library:asi_aparece_el_ova_en_tu_biblioteca")}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} noValidate className="grid gap-5">
@@ -86,9 +85,9 @@ export function EditMetadataModal({
 
           <div className="grid gap-2">
             <Label htmlFor="metadata-description">
-              {i18n.t("ova-library:descripcion")}{" "}
+              {t("ova-library:descripcion")}{" "}
               <span className="font-normal text-muted-foreground">
-                {i18n.t("ova-library:opcional")}
+                {t("ova-library:opcional")}
               </span>
             </Label>
             <Textarea
@@ -105,10 +104,10 @@ export function EditMetadataModal({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-              {i18n.t("ova-library:cancelar")}{" "}
+              {t("ova-library:cancelar")}{" "}
             </Button>
             <Button type="submit" loading={isLoading}>
-              {isLoading ? i18n.t("ova-library:guardando") : i18n.t("ova-library:guardar_cambios")}
+              {isLoading ? t("ova-library:guardando") : t("ova-library:guardar_cambios")}
             </Button>
           </DialogFooter>
         </form>

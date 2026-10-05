@@ -1,12 +1,15 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { ChatProgressBar } from "./chat-progress-bar";
 
 function runningTarget(labels: string[] | undefined): string {
-  if (!labels?.length) return "el OVA";
+  if (!labels?.length) return i18n.t("workspace:el_ova");
   if (labels.length === 1) return `«${labels[0]}»`;
-  return `${String(labels.length)} recursos`;
+  return i18n.t("workspace:value_recursos", { p0: String(labels.length) });
 }
 
 interface Props {
@@ -20,6 +23,7 @@ interface Props {
  * En móvil es lo único que avisa, porque el chat queda en la otra vista.
  */
 export function WorkspaceRegenStatus({ regen, reorderError }: Readonly<Props>) {
+  const { t } = useTranslation();
   // Fallo al iniciar o al terminar (p. ej. no salió el recurso añadido).
   const failure = regen.request.error?.message ?? regen.error;
   return (
@@ -31,7 +35,7 @@ export function WorkspaceRegenStatus({ regen, reorderError }: Readonly<Props>) {
         >
           <span className="flex min-w-0 items-center gap-2 text-foreground">
             <Icon name="spinner" className="size-4 shrink-0 animate-spin text-primary" />
-            <span className="truncate">Regenerando {runningTarget(regen.runningLabels)}…</span>
+            <span className="truncate">{t("workspace:regenerando")} {runningTarget(regen.runningLabels)}…</span>
           </span>
           <ChatProgressBar
             percentage={regen.progress.percentage}
@@ -55,7 +59,7 @@ export function WorkspaceRegenStatus({ regen, reorderError }: Readonly<Props>) {
           className="flex shrink-0 items-start gap-1.5 border-t border-border px-4 py-2 text-sm text-destructive"
         >
           <Icon name="warning-circle" className="mt-0.5 size-4 shrink-0" />
-          No se pudo cambiar el orden. {reorderError}
+          {t("workspace:no_se_pudo_cambiar_el_orden")} {reorderError}
         </p>
       )}
     </>
