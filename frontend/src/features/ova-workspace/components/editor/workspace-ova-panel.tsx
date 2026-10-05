@@ -5,6 +5,7 @@ import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import type { PhaseWithContent } from "../../lib/types";
 import { WorkspaceEditSections } from "./workspace-edit-sections";
 import { type OvaPanelTab, WorkspaceOvaPanelTabs } from "./workspace-ova-panel-tabs";
+import { WorkspacePackageTheme } from "./workspace-package-theme";
 import { WorkspaceRegenStatus } from "./workspace-regen-status";
 
 const WorkspaceHtmlPreview = lazy(() => import("./workspace-html-preview"));
@@ -33,6 +34,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
   return (
     <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
       <WorkspaceOvaPanelTabs tab={tab} onChange={changeTab} readOnly={readOnly} />
+      {!readOnly && workspace.data && <WorkspacePackageTheme ovaId={ovaId} ova={workspace.data} />}
       <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
         <div
           id="workspace-ova-preview"
@@ -48,7 +50,7 @@ export function WorkspaceOvaPanel({ ovaId, phases, regen, readOnly = false }: Re
               </p>
             }
           >
-            <WorkspaceHtmlPreview phases={phases} ovaId={ovaId} readOnly={readOnly} />
+            <WorkspaceHtmlPreview phases={phases} ovaId={ovaId} packageTheme={workspace.data?.package_theme} readOnly={readOnly} />
           </Suspense>
         </div>
         <div

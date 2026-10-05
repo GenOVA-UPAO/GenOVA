@@ -10,6 +10,7 @@ import {
 import { Label } from "@/core/components/ui/label";
 import { Textarea } from "@/core/components/ui/textarea";
 import type { EducationalMetadata } from "@/core/lib/educational-metadata";
+import { PackageThemeSelector } from "@/core/package-themes/package-theme-selector";
 
 import { useMetadataForm } from "../../hooks/use-metadata-form";
 import type { MetadataInput } from "../../lib/metadata-schema";
@@ -21,6 +22,7 @@ interface EditMetadataModalProps {
   initial: EducationalMetadata & {
     title: string;
     description?: string;
+    package_theme?: string;
   };
   isLoading?: boolean;
   onSave: (data: MetadataInput) => void;
@@ -81,8 +83,9 @@ export function EditMetadataModal({
           </div>
 
           <EducationalMetadataFields values={f.values} keywords={f.keywords} disabled={isLoading} errors={f.errors} onChange={f.onChange} />
-          <p className="text-xs text-muted-foreground">Los cambios viajan al exportar. El paquete SCORM 1.2 guardado se actualiza al regenerar el OVA o guardar un recurso en el editor.</p>
+          <p className="text-xs text-muted-foreground">Los cambios viajan al exportar en todos los formatos.</p>
           {f.error && <p role="alert" className="text-sm text-destructive">{f.error}</p>}
+          <PackageThemeSelector value={f.values.package_theme ?? "upao"} onChange={(value) => { f.onChange("package_theme", value); }} disabled={isLoading} />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={f.requestCancel} disabled={isLoading}>

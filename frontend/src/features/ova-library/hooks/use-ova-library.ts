@@ -51,6 +51,9 @@ export function useOvaMutation<TVars, TData = unknown>(fn: (vars: TVars) => Prom
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (vars: TVars) => fn(vars),
-    onSettled: () => qc.invalidateQueries({ queryKey: ovaKeys.all }),
+    onSettled: () => Promise.all([
+      qc.invalidateQueries({ queryKey: ovaKeys.all }),
+      qc.invalidateQueries({ queryKey: ["ova-workspace"] }),
+    ]),
   });
 }

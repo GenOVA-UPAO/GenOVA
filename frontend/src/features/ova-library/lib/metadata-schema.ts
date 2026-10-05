@@ -16,6 +16,7 @@ export const metadataSchema = z.object({
   audience: z.string().trim().max(255, "El público destinatario admite hasta 255 caracteres.").default(""),
   typical_learning_time: z.string().trim().max(40).refine((value) => value === "" || (value !== "PT" && /^PT(\d+H)?(\d+M)?(\d+S)?$/.test(value)), "Usa PT30M para 30 minutos o PT1H30M para una hora y media.").default(""),
   author: z.string().trim().max(255, "El autor admite hasta 255 caracteres.").default(""),
+  package_theme: z.enum(["upao", "claro", "oscuro", "alto-contraste", "infantil"]).optional(),
 });
 
 export type MetadataInput = z.infer<typeof metadataSchema>;
