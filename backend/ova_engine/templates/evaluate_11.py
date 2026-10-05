@@ -361,7 +361,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <span class="ad-counter" id="ad-counter">Pregunta 1 de {max_q}</span>
   </div>
   <h2 class="ev-q" id="ad-enunciado">Cargando pregunta...</h2>
-  <div class="ev-opts" id="ad-opts" role="radiogroup" aria-labelledby="ad-enunciado"></div>
+  <div class="ev-opts" id="ad-opts" role="group" aria-labelledby="ad-enunciado"></div>
   <div class="ev-fb" id="ad-fb" hidden aria-live="polite"></div>
   <div class="ad-actions">
     <button type="button" class="ev-btn" id="ad-confirm-btn" onclick="confirmAnswer()" disabled>Confirmar respuesta</button>

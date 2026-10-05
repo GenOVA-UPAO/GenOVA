@@ -41,6 +41,26 @@ export async function completeResource(page, id) {
   // usado al renderizar, nunca se sustituye la lógica de interacción.
   const data = await page.locator('#ova-data').count()
     ? await page.locator('#ova-data').evaluate(el => JSON.parse(el.textContent)) : null;
+  if (id === 'explore_11') {
+    // Solo los controles propios (consignas y verificación); el applet de GeoGebra no se usa.
+    for (const [k, c] of data.consignas.entries()) {
+      await tabTo(page, page.locator(`#in-${k + 1}`));
+      await page.keyboard.insertText(c.respuesta_esperada);
+      await activate(page, `#btn-${k + 1}`);
+    }
+    return;
+  }
+  if (id === 'evaluate_11') {
+    while (await page.locator('#ad-active-section').isVisible()) {
+      const stem = await page.locator('#ad-enunciado').textContent();
+      const q = Object.values(data.banco).flat().find(x => x.enunciado === stem);
+      const idx = q.opciones.findIndex(o => o.correcta);
+      await activate(page, page.locator('#ad-opts button').nth(idx));
+      await activate(page, '#ad-confirm-btn');
+      await activate(page, '#ad-next-btn');
+    }
+    return;
+  }
   if (id === 'explain_04') {
     await all(page, 'upao-node .head');
     await page.clock.runFor(400);

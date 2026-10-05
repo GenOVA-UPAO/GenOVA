@@ -267,7 +267,7 @@ def render(data: dict, ctx: RenderContext) -> str:
     <div id="ggb-fallback" class="ggb-fallback" hidden role="alert">
       Este recurso necesita conexión para cargar GeoGebra.
     </div>
-    <div id="ggb-element" class="ggb-container" aria-label="Construcción interactiva de GeoGebra"></div>
+    <div id="ggb-element" class="ggb-container" role="region" aria-label="Construcción interactiva de GeoGebra"></div>
     <details class="ggb-commands-box">
       <summary>Ver comandos de la construcción GeoGebra ({len(safe_cmds)})</summary>
       <code>{cmds_code}</code>
