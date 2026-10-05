@@ -31,6 +31,8 @@ from generation.interface.http.admin_guardrails_router import router as guardrai
 from generation.jobs.jobs_router import router as ova_jobs_router
 from generation.jobs.jobs_stream import router as ova_jobs_stream_router
 from llm.catalog.catalog_router import router as agents_router
+from lti.interface.http.admin_router import router as lti_admin_router
+from lti.interface.http.router import router as lti_router
 from ova.interface.http.add_phase_router import router as ova_add_phase_router
 from ova.interface.http.chat_router import router as ova_chat_router
 from ova.interface.http.edit_router import router as ova_edit_router
@@ -294,6 +296,9 @@ app.include_router(uploads_router, prefix="/api/uploads")
 app.include_router(platform_settings_router, prefix="/api/admin")
 app.include_router(nodes_config_router, prefix="/api/admin")
 app.include_router(guardrails_router, prefix="/api/admin")
+app.include_router(lti_admin_router, prefix="/api/admin")
+# LTI 1.3: el LMS llama a /lti/* directamente (login OIDC, launch, JWKS, reproductor).
+app.include_router(lti_router)
 
 # Alias heredados: el recurso vivía en /api/ova (singular) y los trabajos colgaban
 # de /api/ova/jobs. Se mantienen fuera del esquema para no romper clientes ya

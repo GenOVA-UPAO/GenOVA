@@ -46,6 +46,11 @@ dependencies = [
     "quickjs==1.19.4",
     # Conversión HTML → XHTML para la exportación EPUB 3 (ya venía por python-docx).
     "lxml==6.1.1",
+    # LTI 1.3: firma/verificación RS256 (PyJWT), cifrado de la clave de la herramienta
+    # (Fernet) y llamadas a la plataforma (JWKS, token OAuth2, AGS). Ya venían como
+    # transitivas; se fijan porque `lti` las importa directamente.
+    "cryptography==50.0.0",
+    "httpx==0.28.1",
 ]
 
 [project.optional-dependencies]
@@ -136,7 +141,7 @@ indent-style = "space"
 # `lint-imports` se ejecuta desde `backend/`.
 root_packages = [
     "core", "auth", "ova", "llm", "rag", "roles",
-    "users", "scorm", "generation", "prometheus", "storage", "uploads", "editor",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads", "editor", "lti",
 ]
 include_external_packages = true
 
@@ -146,7 +151,7 @@ type = "forbidden"
 source_modules = ["core"]
 forbidden_modules = [
     "auth", "ova", "llm", "rag", "roles",
-    "users", "scorm", "generation", "prometheus", "storage", "uploads", "editor",
+    "users", "scorm", "generation", "prometheus", "storage", "uploads", "editor", "lti",
 ]
 
 # --- roles: hexagonal estricto (piloto) ---
@@ -600,6 +605,7 @@ type = "forbidden"
 source_modules = ["auth", "roles"]
 forbidden_modules = [
     "ova", "generation", "llm", "prometheus", "rag", "scorm", "storage", "uploads", "editor",
+    "lti",
 ]
 
 [[tool.importlinter.contracts]]
@@ -619,6 +625,39 @@ forbidden_modules = [
 ]
 # `llm` no se lista: uploads lo alcanza solo transitivamente vía `rag`
 # (rag.infrastructure.parsers usa visión/transcripción), que es un edge permitido.
+
+# --- lti: integración LTI 1.3 (dominio hoja). Lee las OVAs vía `models` y el
+#     paquete web vía la superficie pública de `scorm`; nadie depende de él. ---
+
+[[tool.importlinter.contracts]]
+name = "lti.domain es puro (sin capas externas ni frameworks)"
+type = "forbidden"
+source_modules = ["lti.domain"]
+forbidden_modules = [
+    "lti.infrastructure", "lti.interface", "lti.service",
+    "fastapi", "sqlalchemy", "pydantic", "starlette", "httpx",
+]
+
+[[tool.importlinter.contracts]]
+name = "lti no depende de los dominios de producto ni de sus internos"
+type = "forbidden"
+source_modules = ["lti"]
+forbidden_modules = [
+    "ova", "generation", "prometheus", "llm", "rag", "uploads", "editor", "users", "roles",
+    "scorm.domain", "scorm.interface",
+]
+# Solo imports directos: `lti -> scorm` (el `__init__` público) -> `scorm.domain` es
+# el uso previsto, como en el contrato de `generation` con `ova`.
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "ningún dominio depende de lti"
+type = "forbidden"
+source_modules = [
+    "auth", "ova", "llm", "rag", "roles", "users", "scorm", "generation", "prometheus",
+    "storage", "uploads", "editor",
+]
+forbidden_modules = ["lti"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

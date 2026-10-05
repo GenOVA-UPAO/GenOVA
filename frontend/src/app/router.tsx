@@ -140,6 +140,12 @@ export const routes: RouteObject[] = [
             handle: { title: "Gestión de roles" },
             lazy: page(pageLoaders.adminRoles, "AdminRolesPage"),
           },
+          {
+            path: "admin/lti",
+            loader: requireAdmin,
+            handle: { title: "Integración LTI" },
+            lazy: page(pageLoaders.adminLti, "AdminLtiPage"),
+          },
           redirectRoute("admin/platform", "/models"),
         ],
       },
