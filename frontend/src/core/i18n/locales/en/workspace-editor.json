@@ -1,0 +1,250 @@
+{
+  "nav": {
+    "back": "Back to My OVAs",
+    "myOvas": "My OVAs"
+  },
+  "skeleton": {
+    "label": "Loading OVA",
+    "sr": "Loading OVA…"
+  },
+  "defaultTitle": "My OVA",
+  "generating": {
+    "title": "Generating your OVA",
+    "loading": "Loading generation…",
+    "notFound": "We couldn't find the generation for this OVA."
+  },
+  "header": {
+    "version": "Version {{version}}",
+    "viewLabel": "Workspace view",
+    "tabs": {
+      "chat": "Instructions",
+      "ova": "OVA"
+    }
+  },
+  "readOnly": {
+    "title": "Read-only.",
+    "text": "Only the person who created this OVA can change it. You can review it, compare its versions and download the SCORM package."
+  },
+  "divider": {
+    "label": "Chat panel width"
+  },
+  "failedNotice": {
+    "failed_one": "1 resource could not be generated.",
+    "failed_other": "{{count}} resources could not be generated.",
+    "rest": "The OVA only includes what was generated.",
+    "review": "Review and retry",
+    "dismiss": "Dismiss notice"
+  },
+  "toolbar": {
+    "history": "Version history",
+    "aiSettings": "AI settings",
+    "moreActions": "More actions",
+    "toast": {
+      "started": "Download started",
+      "failed": "Couldn't download the package",
+      "retry": "Retry"
+    }
+  },
+  "export": {
+    "download": "Download {{label}}",
+    "chooseFormat": "Choose download format",
+    "disabledHint": "Finish or delete the resources with errors to download the package."
+  },
+  "loadError": {
+    "notFound": {
+      "title": "We couldn't find this OVA",
+      "description": "It may have been moved to the trash, or the link may be incorrect."
+    },
+    "forbidden": {
+      "title": "You don't have access to this OVA",
+      "description": "Only the person who created it can open it in the editor."
+    },
+    "generic": {
+      "title": "Couldn't open the OVA"
+    },
+    "trash": "View the trash",
+    "retry": "Retry"
+  },
+  "panel": {
+    "tabsLabel": "OVA content",
+    "tabs": {
+      "preview": "Preview",
+      "edit": "Edit",
+      "visualEditor": "Visual editor (beta)"
+    },
+    "subtitle": {
+      "preview": "This is how your students will see it.",
+      "edit": "Reorder, regenerate or tweak each resource.",
+      "visualEditor": "Rebuild the resource structure with the smart visual editor."
+    },
+    "loadingPreview": "Loading preview…",
+    "loadingVisualEditor": "Loading visual editor…"
+  },
+  "regenStatus": {
+    "target": {
+      "ova": "the OVA",
+      "one": "“{{label}}”",
+      "many": "{{count}} resources"
+    },
+    "running": "Regenerating {{target}}…",
+    "reorderFailed": "Couldn't change the order. {{error}}"
+  },
+  "preview": {
+    "empty": {
+      "title": "This OVA has no resources",
+      "description": "Go to “Edit” and use “Add resource” in a phase to create the first one."
+    },
+    "fallbackName": "the resource",
+    "frameTitle": "Resource preview",
+    "loading": "Loading preview…",
+    "tabsLabel": "OVA resources",
+    "footer": {
+      "phase": "Phase: {{label}}",
+      "position": "Resource {{position}} of {{total}}",
+      "regenerated": "Regenerated",
+      "previous": "Previous",
+      "next": "Next",
+      "previousAria": "Previous resource",
+      "nextAria": "Next resource"
+    }
+  },
+  "feedback": {
+    "group": "Rate {{name}}",
+    "up": {
+      "aria": "This resource was useful",
+      "title": "It was useful"
+    },
+    "down": {
+      "aria": "This resource wasn't useful",
+      "title": "It wasn't useful"
+    },
+    "form": {
+      "legend": "What went wrong with this resource?",
+      "reasons": {
+        "contenido_incorrecto": "Incorrect content",
+        "fuera_de_tema": "Off topic",
+        "no_funciona": "Doesn't work",
+        "diseño": "Design",
+        "muy_largo": "Too long",
+        "muy_corto": "Too short",
+        "otro": "Other"
+      },
+      "comment": "Comment",
+      "optional": "(optional)",
+      "placeholder": "Tell us what you expected…",
+      "sending": "Sending…",
+      "submit": "Send feedback"
+    }
+  },
+  "resources": {
+    "count": "{{count}} of {{max}} resources",
+    "maxReached": "Resource limit reached",
+    "add": "Add resource",
+    "addTo": "Add resource to {{label}}",
+    "emptyPhase": "This phase has no resources. Add one with your instructions.",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "moveUpAria": "Move {{name}} up",
+    "moveDownAria": "Move {{name}} down"
+  },
+  "phase": {
+    "unsaved": "Unsaved changes in the HTML",
+    "hideCode": "Hide HTML code",
+    "editCode": "Edit HTML code",
+    "versions": "Resource versions",
+    "delete": "Delete resource",
+    "regenerate": "Regenerate resource",
+    "regenConfirm": {
+      "title": "Regenerate this resource?",
+      "message": "The AI will recreate “{{name}}” from scratch. The current version will be kept in the version history."
+    },
+    "deleteConfirm": {
+      "title": "Delete this resource?",
+      "message": "“{{name}}” will be removed from the OVA.",
+      "loading": "Deleting…"
+    }
+  },
+  "code": {
+    "label": "Resource HTML code",
+    "save": "Save changes",
+    "discard": "Discard changes",
+    "state": {
+      "dirty": "Unsaved changes.",
+      "saved": "Changes saved. They now show in the preview.",
+      "clean": "No changes."
+    }
+  },
+  "chat": {
+    "panelLabel": "Instructions panel",
+    "status": {
+      "running": "In progress",
+      "error": "Error",
+      "success": "Completed",
+      "idle": "GenOVA"
+    },
+    "progress": "Regeneration progress",
+    "attach": {
+      "fileLabel": "Supporting file",
+      "button": "Attach a supporting file"
+    },
+    "composer": {
+      "label": "Describe the changes you want",
+      "placeholder": "Write a change or improvement for the OVA…",
+      "placeholderScoped_one": "Change for 1 resource…",
+      "placeholderScoped_other": "Change for {{count}} resources…",
+      "submit": "Apply changes",
+      "hint": {
+        "busy": "Wait for the current regeneration to finish.",
+        "uploading": "Uploading files…",
+        "indexing": "Indexing files so the AI can use them…",
+        "empty": "Write a change to be able to apply it.",
+        "ready": "Ctrl+Enter to apply"
+      }
+    },
+    "delete": {
+      "label": "Delete message: {{preview}}",
+      "noText": "no text"
+    },
+    "empty": {
+      "title": "How would you like to improve this OVA?",
+      "description": "Write below what you want to change. The AI will apply it and a new version will be saved.",
+      "tryWith": "Try:",
+      "suggestions": {
+        "simplify": "Simplify theoretical explanations",
+        "practice": "Add practical activities",
+        "tone": "Adjust the tone for university level"
+      }
+    },
+    "history": {
+      "label": "Chat history",
+      "count_one": "1 message",
+      "count_other": "{{count}} messages",
+      "clear": "Clear history",
+      "clearTitle": "Clear the history?",
+      "clearMessage_one": "1 message will be deleted from this thread. The OVA and its versions won't change.",
+      "clearMessage_other": "{{count}} messages will be deleted from this thread. The OVA and its versions won't change."
+    },
+    "header": {
+      "title": "Instructions",
+      "regenAll": "Regenerate entire OVA",
+      "confirmTitle": "Regenerate the entire OVA?",
+      "confirmMessage": "The AI will recreate all resources from scratch. The current version will be kept in the version history.",
+      "confirmLabel": "Regenerate OVA"
+    },
+    "select": {
+      "legend": "Resources to regenerate",
+      "all": "Select all",
+      "hint": "The instruction will only apply to the selected resources."
+    },
+    "scope": {
+      "all": "Apply to: entire OVA",
+      "some_one": "Apply to: 1 resource",
+      "some_other": "Apply to: {{count}} resources"
+    },
+    "user": {
+      "you": "You: ",
+      "attachments": "Attached files",
+      "appliedTo": "Applied to: {{labels}}"
+    }
+  }
+}

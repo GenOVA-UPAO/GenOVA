@@ -1,0 +1,63 @@
+{
+  "resource": {
+    "title": "Resource versions",
+    "description": "Previous versions of “{{name}}”.",
+    "selected": "Version {{number}} selected",
+    "pick": "Choose a version to restore it.",
+    "cancel": "Cancel",
+    "close": "Close",
+    "restore": "Restore this version",
+    "loading": "Loading versions",
+    "emptySaved": "This resource has no saved versions yet: one is saved every time you edit its HTML code.",
+    "emptyRegenerate": "What the AI changes when it regenerates is in “Version history”, at the top right.",
+    "previewTitle": "Version {{number}}",
+    "pickToPreview": "Choose a version to see how it looked.",
+    "listLabel": "Versions",
+    "listItem": "Version {{number}}"
+  },
+  "confirm": {
+    "title": "Restore version {{number}}?",
+    "message": "The OVA will go back to the content of version {{number}}.",
+    "confirm": "Restore version"
+  },
+  "history": {
+    "title": "Version history",
+    "descriptionReadOnly": "Compare two versions of the OVA.",
+    "description": "Compare two versions of the OVA or restore an earlier one."
+  },
+  "footer": {
+    "compareDone": "The changes are below the list. Uncheck a version to pick another.",
+    "compareTwo": "2 versions checked. Uncheck one to pick another.",
+    "compareHint": "Check 2 versions to compare them ({{count}} of 2).",
+    "close": "Close",
+    "compare": "Compare versions"
+  },
+  "list": {
+    "empty": "There are no earlier versions yet. After regenerating you can compare and restore.",
+    "selectLabel": "Select version {{number}} to compare",
+    "version": "Version {{number}}",
+    "current": "Current",
+    "restore": "Restore",
+    "onlyOne": "This is the only version. Once you apply changes with the AI they will show up here so you can compare them or go back to an earlier one."
+  },
+  "diff": {
+    "label": "Version comparison",
+    "same": "Both versions have the same content.",
+    "changedOne_one": "{{changed}} of {{total}} resource changed.",
+    "changedOne_other": "{{changed}} of {{total}} resources changed.",
+    "changedMany_one": "{{changed}} of {{total}} resource changed.",
+    "changedMany_other": "{{changed}} of {{total}} resources changed.",
+    "beforeHeading": "Before: version {{number}}",
+    "afterHeading": "After: version {{number}}",
+    "resource": "Resource",
+    "changed": "Changed",
+    "unchanged": "No changes",
+    "hide": "Hide",
+    "showAnyway": "Show anyway",
+    "missing": "This resource does not exist in version {{number}}.",
+    "captionBefore": "Before (version {{number}}): ",
+    "captionAfter": "After (version {{number}}): ",
+    "frameBefore": "Before, version {{number}}: {{name}}",
+    "frameAfter": "After, version {{number}}: {{name}}"
+  }
+}

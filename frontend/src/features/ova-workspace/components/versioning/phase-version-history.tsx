@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function PhaseVersionHistory({ ovaId, phaseId, resourceName, onClose }: Readonly<Props>) {
+  const { t } = useTranslation("workspace-versioning");
   const client = useQueryClient();
   const [selected, setSelected] = useState<PhaseMicroVersion>();
   const versions = useQuery({ queryKey: ["ova-phase-versions", ovaId, phaseId], queryFn: () => fetchPhaseVersions(ovaId, phaseId) });
@@ -30,17 +32,17 @@ export default function PhaseVersionHistory({ ovaId, phaseId, resourceName, onCl
     },
   });
   const items = versions.data?.micro_versions ?? [];
-  const status = selected ? `Versión ${String(selected.minor_number)} seleccionada` : "Elige una versión para restaurarla.";
-  const description = resourceName ? `Versiones anteriores de «${resourceName}».` : undefined;
+  const status = selected ? t("resource.selected", { number: selected.minor_number }) : t("resource.pick");
+  const description = resourceName ? t("resource.description", { name: resourceName }) : undefined;
   return (
     <WorkspaceModal
-      title="Versiones del recurso"
+      title={t("resource.title")}
       description={description}
       size="xl"
       onClose={onClose}
       footer={
         <ModalActions status={items.length > 0 && status}>
-          <Button variant="outline" onClick={onClose}>{items.length > 0 ? "Cancelar" : "Cerrar"}</Button>
+          <Button variant="outline" onClick={onClose}>{items.length > 0 ? t("resource.cancel") : t("resource.close")}</Button>
           {items.length > 0 && (
             <Button
               disabled={!selected}
@@ -49,7 +51,7 @@ export default function PhaseVersionHistory({ ovaId, phaseId, resourceName, onCl
                 if (selected) revert.mutate(selected.id);
               }}
             >
-              Restaurar esta versión
+              {t("resource.restore")}
             </Button>
           )}
         </ModalActions>

@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { useNavigate } from "react-router";
 
 import { authStore } from "@/core/auth/auth-store";
@@ -52,7 +53,7 @@ export function useProfileActions() {
     isChangingPassword: changePassword.isPending,
     isDeletingAccount: deleteAccount.isPending,
     deleteError: deleteAccount.error
-      ? errorMessage(deleteAccount.error, "Error al eliminar la cuenta.")
+      ? errorMessage(deleteAccount.error, t("profile:delete.error"))
       : "",
     resetDeleteError: deleteAccount.reset,
   };

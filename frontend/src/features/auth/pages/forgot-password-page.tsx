@@ -1,11 +1,13 @@
+import i18n from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { authApi } from "@/core/auth/auth.service";
 
 import { AuthCard } from "../components/auth-card";
 import { AuthSuccessPanel } from "../components/auth-success-panel";
 import { ForgotPasswordForm } from "../components/forgot-password-form";
-import { BACK_TO_LOGIN, CONNECT_ERROR } from "../lib/auth-copy";
+import { backToLogin, connectError } from "../lib/auth-copy";
 import { forgotPasswordSchema } from "../lib/auth-schemas";
 import { onFormSubmit } from "../lib/on-form-submit";
 import { useAuthForm } from "../lib/use-auth-form";
@@ -13,6 +15,7 @@ import { useAuthForm } from "../lib/use-auth-form";
 type Status = "idle" | "submitting" | "success" | "error";
 
 export function ForgotPasswordPage() {
+  const { t } = useTranslation("auth");
   const form = useAuthForm(forgotPasswordSchema, { email: "" });
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
@@ -30,17 +33,17 @@ export function ForgotPasswordPage() {
       setMessage(pickMessage(ok, data.message));
     } catch {
       setStatus("error");
-      setMessage(CONNECT_ERROR);
+      setMessage(connectError());
     }
   });
 
   return (
     <AuthCard
-      title="Recuperar contraseña"
-      subtitle="Ingresa tu correo y te enviaremos un enlace para restablecer tu acceso."
+      title={t("forgot.title")}
+      subtitle={t("forgot.subtitle")}
     >
       {status === "success" ? (
-        <AuthSuccessPanel message={message} href="/login" actionLabel={BACK_TO_LOGIN} />
+        <AuthSuccessPanel message={message} href="/login" actionLabel={backToLogin()} />
       ) : (
         <ForgotPasswordForm
           form={form}
@@ -55,5 +58,5 @@ export function ForgotPasswordPage() {
 
 function pickMessage(ok: boolean, message: string | undefined): string {
   if (message) return message;
-  return ok ? "Revisa tu correo para continuar." : "No se pudo solicitar la recuperación.";
+  return ok ? i18n.t("auth:forgot.sent") : i18n.t("auth:forgot.failed");
 }
