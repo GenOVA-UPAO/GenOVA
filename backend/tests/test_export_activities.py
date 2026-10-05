@@ -19,6 +19,7 @@ os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-abcdef-ghijkl-32+")
 import pytest  # noqa: E402
 from lxml import etree  # noqa: E402
 
+from core.educational_metadata import EducationalMetadata  # noqa: E402
 from ova_engine.registry import get_spec  # noqa: E402
 from scorm import build_export  # noqa: E402
 from scorm.domain.activities import TrueFalse, TrueFalseStatement  # noqa: E402
@@ -79,6 +80,53 @@ def test_h5p_package_has_only_h5p_json_and_content():
     z, _, _ = _h5p()
     # Sin librerías dentro: la plataforma (Moodle, Lumi…) las instala desde el Hub.
     assert sorted(z.namelist()) == ["content/content.json", "h5p.json"]
+
+
+@pytest.mark.parametrize("license,code,version", [
+    ("CC BY 4.0", "CC BY", "4.0"),
+    ("CC BY-SA 4.0", "CC BY-SA", "4.0"),
+    ("CC BY-NC 4.0", "CC BY-NC", "4.0"),
+    ("CC BY-NC-SA 4.0", "CC BY-NC-SA", "4.0"),
+    ("CC BY-ND 4.0", "CC BY-ND", "4.0"),
+    ("CC BY-NC-ND 4.0", "CC BY-NC-ND", "4.0"),
+    ("CC0 1.0", "CC0", None),
+    ("Todos los derechos reservados", "C", None),
+])
+def test_h5p_preserves_license_author_language_and_native_activities(license, code, version):
+    metadata = EducationalMetadata(license=license, author="Ana Pérez", language="es-PE")
+    with ZipFile(BytesIO(build_export("h5p", "Biología", PHASES, metadata=metadata, theme="oscuro"))) as z:
+        manifest = json.loads(z.read("h5p.json"))
+        content = json.loads(z.read("content/content.json"))
+    assert manifest["title"] == "Biología"
+    assert manifest["language"] == manifest["defaultLanguage"] == "es-PE"
+    assert manifest["license"] == code
+    assert manifest.get("licenseVersion") == version
+    assert manifest["authors"] == [{"name": "Ana Pérez", "role": "Author"}]
+    for item in content["content"]:
+        sub = item["content"]["metadata"]
+        assert sub["license"] == code
+        assert sub.get("licenseVersion") == version
+        assert sub["authors"] == manifest["authors"]
+    assert any(item["content"]["library"].startswith("H5P.MultiChoice") for item in content["content"])
+
+
+def test_elpx_combines_native_idevices_metadata_and_selected_theme():
+    metadata = EducationalMetadata(author="Ana Pérez", license="CC BY-NC 4.0", language="es-PE")
+    with ZipFile(BytesIO(build_export("elpx", "Biología", PHASES, metadata=metadata, theme="oscuro"))) as z:
+        root = etree.fromstring(z.read("content.xml"))
+        fallback = z.read("content/resources/genova/recurso_1.html").decode()
+    properties = {
+        node.findtext(f"{ODE}key"): node.findtext(f"{ODE}value")
+        for node in root.findall(f"{ODE}odeProperties/{ODE}odeProperty")
+    }
+    assert properties["pp_author"] == "Ana Pérez"
+    assert properties["pp_lang"] == "es-PE"
+    assert properties["pp_license"] == metadata.exe_license
+    assert properties["pp_licenseUrl"] == metadata.license_url
+    assert "--bg:#000000" in properties["pp_extraHeadContent"]
+    assert "--bg:#000000" in fallback
+    types = {node.text for node in root.iter(f"{ODE}odeIdeviceTypeName")}
+    assert {"text", "quick-questions-multiple-choice", "complete", "relate", "crossword"} <= types
 
 
 def test_h5p_json_is_valid_and_declares_used_libraries():

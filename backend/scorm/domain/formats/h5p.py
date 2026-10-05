@@ -36,6 +36,7 @@ from html import escape
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from core.educational_metadata import EducationalMetadata
 from scorm.domain.activities import (
     Activity,
     Crossword,
@@ -377,7 +378,14 @@ def build_h5p_content(
     return {"content": col.items}, col.used
 
 
-def build_h5p_json(course_title: str, used: set[str]) -> dict:
+def build_h5p_json(course_title: str, used: set[str], metadata: EducationalMetadata | None = None) -> dict:
+    meta = metadata or EducationalMetadata()
+    licenses = {
+        "CC BY 4.0": "CC BY", "CC BY-SA 4.0": "CC BY-SA",
+        "CC BY-NC 4.0": "CC BY-NC", "CC BY-NC-SA 4.0": "CC BY-NC-SA",
+        "CC BY-ND 4.0": "CC BY-ND", "CC BY-NC-ND 4.0": "CC BY-NC-ND",
+        "CC0 1.0": "CC0", "Todos los derechos reservados": "C",
+    }
     deps = [
         {"machineName": name, "majorVersion": major, "minorVersion": minor}
         for key, (name, major, minor) in LIBRARIES.items()
@@ -385,12 +393,13 @@ def build_h5p_json(course_title: str, used: set[str]) -> dict:
     ]
     return {
         "title": (course_title or "OVA GenOVA")[:255],
-        "language": "es",
-        "defaultLanguage": "es",
+        "language": meta.language,
+        "defaultLanguage": meta.language,
         "mainLibrary": LIBRARIES["column"][0],
         "embedTypes": ["iframe"],
-        "license": "U",
-        "authors": [],
+        "license": licenses[meta.license],
+        **({"licenseVersion": "4.0"} if meta.license.startswith("CC BY") else {}),
+        "authors": [{"name": meta.author, "role": "Author"}] if meta.author else [],
         "preloadedDependencies": deps,
     }
 
@@ -399,10 +408,19 @@ def build_h5p_bytes(
     course_title: str = "OVA GenOVA",
     module_title: str = "Objeto Virtual de Aprendizaje",
     phases: list[dict] | None = None,
+    *,
+    metadata: EducationalMetadata | None = None,
+    theme: str = "upao",
 ) -> bytes:
+    # H5P aplica el estilo de la plataforma anfitriona, no CSS del paquete.
     content, used = build_h5p_content(phases)
+    manifest = build_h5p_json(course_title, used, metadata)
+    for item in content["content"]:
+        item["content"]["metadata"].update({
+            key: manifest[key] for key in ("license", "licenseVersion", "authors") if key in manifest
+        })
     buffer = BytesIO()
     with ZipFile(buffer, mode="w", compression=ZIP_DEFLATED) as zip_file:
-        zip_file.writestr("h5p.json", json.dumps(build_h5p_json(course_title, used), ensure_ascii=False))
+        zip_file.writestr("h5p.json", json.dumps(manifest, ensure_ascii=False))
         zip_file.writestr("content/content.json", json.dumps(content, ensure_ascii=False))
     return buffer.getvalue()

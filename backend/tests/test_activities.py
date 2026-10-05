@@ -270,7 +270,7 @@ class _CapturingFormat:
     def __init__(self):
         self.phases = None
 
-    def build(self, course_title, phases):
+    def build(self, course_title, phases, *, metadata=None, theme="upao"):
         self.phases = phases
         return b"x"
 
