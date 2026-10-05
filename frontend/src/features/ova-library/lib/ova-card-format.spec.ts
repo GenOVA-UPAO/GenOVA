@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -74,6 +75,15 @@ describe("relativeDate / lastActivity", () => {
   it("describe la fecha de la papelera sin decir «eliminado»", () => {
     const deleted = new Date(2026, 8, 22, 9, 0).toISOString();
     expect(trashedAt({ id: "a", deleted_at: deleted }, now)?.label).toBe("Movido a la papelera ayer");
+  });
+
+  it("cambia fechas relativas, actividad y papelera a inglés", async () => {
+    await i18n.changeLanguage("en");
+    const created = new Date(2026, 8, 22, 9, 0).toISOString();
+    expect(relativeDate(new Date(2026, 8, 23, 14, 59, 40), now)).toBe("just now");
+    expect(lastActivity({ id: "a", created_at: created }, now)?.label).toBe("Created yesterday");
+    expect(trashedAt({ id: "a", deleted_at: created }, now)?.label).toBe("Moved to trash yesterday");
+    expect(relativeDate(new Date(2026, 7, 3, 9, 0), now)).toMatch(/^on .*Aug.*2026$/);
   });
 });
 

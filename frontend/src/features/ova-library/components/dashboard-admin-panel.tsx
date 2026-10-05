@@ -16,7 +16,7 @@ export function DashboardAdminPanel() {
       <div className="grid gap-3 sm:grid-cols-2">
         {ADMIN_CARDS.map((card) => (
           <Link
-            key={card.title}
+            key={card.to}
             to={card.to}
             className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-colors outline-none hover:border-primary/40 hover:bg-primary/5 focus-visible:ring-3 focus-visible:ring-ring/50"
           >
@@ -24,8 +24,8 @@ export function DashboardAdminPanel() {
               <Icon name={card.icon} size="text-xl" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold text-foreground">{card.title}</span>
-              <span className="block text-xs text-muted-foreground">{card.desc}</span>
+              <span className="block text-sm font-semibold text-foreground">{t(card.titleKey)}</span>
+              <span className="block text-xs text-muted-foreground">{t(card.descKey)}</span>
             </span>
             <Icon
               name="caret-right"

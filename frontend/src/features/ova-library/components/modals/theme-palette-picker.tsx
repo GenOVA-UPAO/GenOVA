@@ -31,8 +31,8 @@ export function ThemePalettePicker({
           key={m.key}
           name="theme-color-mode"
           value={m.key}
-          label={m.label}
-          desc={m.desc}
+          label={t(m.labelKey)}
+          desc={t(m.descKey)}
           checked={colorMode === m.key}
           onSelect={onSelectColorMode}
         />

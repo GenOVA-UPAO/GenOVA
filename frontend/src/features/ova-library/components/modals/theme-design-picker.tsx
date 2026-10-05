@@ -24,8 +24,8 @@ export function ThemeDesignPicker({
           key={m.key}
           name="theme-design-mode"
           value={m.key}
-          label={m.label}
-          desc={m.desc}
+          label={t(m.labelKey)}
+          desc={t(m.descKey)}
           checked={designMode === m.key}
           onSelect={onSelectDesignMode}
         />

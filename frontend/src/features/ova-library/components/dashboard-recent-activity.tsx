@@ -61,7 +61,7 @@ export function DashboardRecentActivity({
                 <div className="mt-0.5">
                   <OvaCardMeta
                     ownerName={isAdmin ? ownerNameOf(ova) : ""}
-                    activity={lastActivity(ova)}
+                    activity={lastActivity(ova, undefined, t)}
                   />
                 </div>
               </div>

@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/core/components/ui/select";
 
-import { STATUS_OPTIONS } from "../pages/mis-ovas-page.helpers";
+import { STATUS_OPTIONS, statusLabel } from "../pages/mis-ovas-page.helpers";
 
 interface MisOvasFilterBarProps {
   search: string;
@@ -45,7 +45,7 @@ export function MisOvasFilterBar({
         <SelectContent>
           {STATUS_OPTIONS.map((opt) => (
             <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
+              {statusLabel(opt.value, t)}
             </SelectItem>
           ))}
         </SelectContent>

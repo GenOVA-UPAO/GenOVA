@@ -97,7 +97,7 @@ export function OvaCard({
             {description}
           </p>
         )}
-        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={lastActivity(ova)} />
+        <OvaCardMeta ownerName={ownerNameOf(ova)} activity={lastActivity(ova, undefined, t)} />
       </div>
 
       <div className="mt-4 border-t border-border pt-3">
