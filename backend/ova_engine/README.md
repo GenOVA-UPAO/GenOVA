@@ -21,6 +21,7 @@ plantilla, siempre iguales y probados. Fallo del texto → respaldo al plan clá
 | `OVA_DECISION_MIN_CONFIDENCE` | `0.35` | por debajo → se queda la regla |
 | `OVA_TEXT_BACKEND` | `router` (def.) / `local` | `local` = Ollama con salida estructurada |
 | `OVA_LOCAL_LLM_URL` / `OVA_LOCAL_LLM_MODEL` | `http://localhost:11435` / `qwen3:8b` | simulación local |
+| `OVA_DIAGRAM_TIMEOUT` | `60` | segundos máx. de la llamada local que genera un diagrama; súbelo si el modelo tarda en cargar |
 
 ## Escribir una plantilla (`templates/<fase>_<NN>.py`)
 

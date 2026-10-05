@@ -171,3 +171,24 @@ def test_cli_cases_and_model(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join()
+
+
+@pytest.mark.parametrize(("env", "expected"), [(None, 60.0), ("150", 150.0)])
+def test_local_diagram_call_uses_own_timeout(monkeypatch, env, expected):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setenv("OVA_LOCAL_LLM_TIMEOUT", "300")  # el del texto no aplica al diagrama
+    if env is None:
+        monkeypatch.delenv("OVA_DIAGRAM_TIMEOUT", raising=False)
+    else:
+        monkeypatch.setenv("OVA_DIAGRAM_TIMEOUT", env)
+    timeouts = []
+
+    def post(url, **kwargs):
+        timeouts.append(kwargs["timeout"])
+        return httpx.Response(
+            200, json={"message": {"content": json.dumps(DATA)}}, request=httpx.Request("POST", url)
+        )
+
+    monkeypatch.setattr(generation.httpx, "post", post)
+    generation.generate_diagram_json("prompt", model="local-only")
+    assert timeouts[-1] == expected

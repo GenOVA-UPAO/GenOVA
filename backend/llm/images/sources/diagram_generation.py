@@ -240,13 +240,11 @@ def generate_diagram_for_request(
         res = source.fetch(req_updated)
         if res:
             meta = dict(res.meta)
-            meta.update(
-                {
-                    "generated_diagram": True,
-                    "diagram_model": actual_model,
-                    "inferred_kind": kind,
-                }
-            )
+            meta.update({
+                "generated_diagram": True,
+                "diagram_model": actual_model,
+                "inferred_kind": kind,
+            })
             return ImageResult(
                 data_uri=res.data_uri,
                 source="diagrama",
@@ -257,8 +255,7 @@ def generate_diagram_for_request(
     except Exception as exc:
         import structlog
 
-        structlog.get_logger(__name__).warning(
-            "diagram_generation fallback failed", error=str(exc)[:120]
-        )
+        error = f"{type(exc).__name__}: {exc}"[:120]  # ReadTimeout suele venir sin mensaje
+        structlog.get_logger(__name__).warning("diagram_generation fallback failed", error=error)
 
     return None
