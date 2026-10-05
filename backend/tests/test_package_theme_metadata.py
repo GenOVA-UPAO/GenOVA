@@ -11,12 +11,13 @@ from types import SimpleNamespace  # noqa: E402
 import pytest  # noqa: E402
 from fastapi import FastAPI  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
-from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy import JSON, MetaData, create_engine  # noqa: E402
+from sqlalchemy.dialects.postgresql import JSONB  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 from auth.dependencies import get_current_user  # noqa: E402
-from models import Ova  # noqa: E402
+from models import Ova, User  # noqa: E402
 from ova.application.dto import UpdateOvaMetadataInput  # noqa: E402
 from ova.application.use_cases.update_ova_metadata import UpdateOvaMetadata  # noqa: E402
 from ova.container import build_ova  # noqa: E402
@@ -33,6 +34,12 @@ from ova.interface.http.package_theme_router import router as theme_router  # no
 def metadata_repo():
     engine = create_engine("sqlite://", poolclass=StaticPool, connect_args={"check_same_thread": False})
     Ova.__table__.create(engine)
+    users = User.__table__.to_metadata(MetaData())
+    for column in users.columns:
+        column.server_default = None
+        if isinstance(column.type, JSONB):
+            column.type = JSON()
+    users.create(engine)
     owner = uuid.uuid4()
     ova_id = uuid.uuid4()
     with Session(engine) as db:
@@ -52,7 +59,7 @@ def test_theme_persists_and_omitted_field_preserves_it(metadata_repo):
     use_case = UpdateOvaMetadata(repo)
     actor = OvaActor(owner, False)
     assert repo.get_active(ova_id).package_theme == "upao"
-    changed = use_case.execute(UpdateOvaMetadataInput(ova_id, actor, "Curso", None, "infantil"))
+    changed = use_case.execute(UpdateOvaMetadataInput(ova_id, actor, "Curso", None, package_theme="infantil"))
     assert changed.package_theme == "infantil"
     db.expire_all()
     assert repo.get_active(ova_id).package_theme == "infantil"
@@ -66,9 +73,9 @@ def test_invalid_theme_and_non_owner_do_not_mutate(metadata_repo):
     db, repo, ova_id, owner = metadata_repo
     use_case = UpdateOvaMetadata(repo)
     with pytest.raises(OvaEditError):
-        use_case.execute(UpdateOvaMetadataInput(ova_id, OvaActor(owner, False), "Curso", None, "xxx"))
+        use_case.execute(UpdateOvaMetadataInput(ova_id, OvaActor(owner, False), "Curso", None, package_theme="xxx"))
     with pytest.raises(OvaForbidden):
-        use_case.execute(UpdateOvaMetadataInput(ova_id, OvaActor("other", True), "Curso", None, "oscuro"))
+        use_case.execute(UpdateOvaMetadataInput(ova_id, OvaActor("other", True), "Curso", None, package_theme="oscuro"))
     db.expire_all()
     assert repo.get_active(ova_id).package_theme == "upao"
 

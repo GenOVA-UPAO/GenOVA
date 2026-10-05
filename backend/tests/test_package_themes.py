@@ -5,6 +5,7 @@ from zipfile import ZipFile
 
 import pytest
 
+from core.educational_metadata import EducationalMetadata
 from ova.domain.package_themes import PACKAGE_THEMES, inject_package_theme
 from scorm import EXPORT_FORMATS, build_export
 
@@ -45,7 +46,8 @@ def test_complete_tokens_and_accessible_text(theme):
 def test_every_export_contains_selected_tokens(theme, fmt):
     original = "<html><head><style>p{color:#123456}</style></head><body><p>Hola</p><script>window.x=1</script></body></html>"
     phases = [{"type": "engage", "order": 1, "content": original}]
-    with ZipFile(BytesIO(build_export(fmt, "Curso", phases, theme=theme))) as package:
+    metadata = EducationalMetadata(author="Ana Integración", license="CC BY 4.0", language="es-PE")
+    with ZipFile(BytesIO(build_export(fmt, "Curso", phases, theme=theme, metadata=metadata))) as package:
         if fmt == "epub":
             resource = "EPUB/recurso_1.xhtml"
             shell = "EPUB/nav.xhtml"
@@ -63,6 +65,12 @@ def test_every_export_contains_selected_tokens(theme, fmt):
         assert "p{color:#123456}" in html
         assert "window.x=1" in html
         assert package.testzip() is None
+        metadata_path = {
+            "epub": "EPUB/package.opf", "elpx": "content.xml", "html": "index.html",
+        }.get(fmt, "imsmanifest.xml")
+        exported_metadata = package.read(metadata_path).decode()
+        assert "Ana Integración" in exported_metadata
+        assert "es-PE" in exported_metadata
 
 
 @pytest.mark.parametrize("original", [
