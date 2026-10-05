@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -15,25 +16,25 @@ import { TopCreators } from "../components/top-creators";
 import { isForbiddenError, useAnalytics } from "../hooks/use-analytics";
 
 export function AnalyticsPage() {
+  const { t } = useTranslation("analytics");
   const navigate = useNavigate();
   const { data, error, isLoading, refetch } = useAnalytics();
   const isForbidden = isForbiddenError(error);
+  const pageTitle = t("page.title");
 
   useEffect(() => {
     if (isForbidden) {
-      toast.error("No tienes acceso a Analítica.");
+      toast.error(t("page.forbiddenToast"));
       void navigate("/dashboard", { replace: true });
     }
-  }, [isForbidden, navigate]);
+  }, [isForbidden, navigate, t]);
 
-  if (isForbidden) {
-    return null;
-  }
+  if (isForbidden) return null;
 
   if (isLoading) {
     return (
       <div className="mx-auto max-w-7xl space-y-6">
-        <PageHeader title="Analítica de aprendizaje" subtitle="Cargando métricas…" />
+        <PageHeader title={pageTitle} subtitle={t("page.loadingSubtitle")} />
         <AnalyticsSkeleton />
       </div>
     );
@@ -42,9 +43,9 @@ export function AnalyticsPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-7xl space-y-6">
-        <PageHeader title="Analítica de aprendizaje" />
+        <PageHeader title={pageTitle} />
         <QueryErrorState
-          title="No se pudieron cargar las analíticas"
+          title={t("page.errorTitle")}
           onRetry={() => {
             void refetch();
           }}
@@ -56,7 +57,7 @@ export function AnalyticsPage() {
   if (!data) {
     return (
       <div className="mx-auto max-w-7xl space-y-6">
-        <PageHeader title="Analítica de aprendizaje" />
+        <PageHeader title={pageTitle} />
         <AnalyticsEmpty
           onRetry={() => {
             void refetch();
@@ -67,11 +68,11 @@ export function AnalyticsPage() {
   }
 
   const isPlatform = data.scope === "platform";
-  const scopeLabel = isPlatform ? "toda la plataforma" : "tus alumnos vinculados";
+  const subtitle = isPlatform ? t("page.subtitlePlatform") : t("page.subtitleStudents");
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <PageHeader title="Analítica de aprendizaje" subtitle={`Métricas de ${scopeLabel}.`} />
+      <PageHeader title={pageTitle} subtitle={subtitle} />
       <StatCards data={data} />
       {!isPlatform && (data.totals.students ?? 0) === 0 && <NoStudentsNote />}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
