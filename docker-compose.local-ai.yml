@@ -24,7 +24,7 @@ services:
     environment:
       - OLLAMA_CONTEXT_LENGTH=8192
       - OLLAMA_NUM_PARALLEL=2
-      - OLLAMA_KEEP_ALIVE=30m
+      - OLLAMA_KEEP_ALIVE=5m
     volumes: ['genova-ollama-models:/root/.ollama']
     deploy: &gpu
       resources:
