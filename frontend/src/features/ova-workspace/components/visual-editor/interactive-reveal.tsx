@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 
@@ -9,7 +11,8 @@ interface Props {
   prompt?: string;
 }
 
-export function InteractiveReveal({ id, label = "Comprobar respuesta", content, prompt }: Readonly<Props>) {
+export function InteractiveReveal({ id, label = i18n.t("workspace:comprobar_respuesta"), content, prompt }: Readonly<Props>) {
+  useTranslation();
   const [open, setOpen] = useState(false);
   const toggle = () => {
     setOpen((prev) => !prev);

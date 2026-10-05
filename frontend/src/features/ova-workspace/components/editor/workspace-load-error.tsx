@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { EmptyState } from "@/core/components/empty-state";
@@ -13,17 +15,17 @@ interface Props {
 function copyFor(status: number, message: string): { title: string; description: string } {
   if (status === 404) {
     return {
-      title: "No encontramos este OVA",
-      description: "Puede que se haya movido a la papelera o que el enlace no sea correcto.",
+      title: i18n.t("workspace:no_encontramos_este_ova"),
+      description: i18n.t("workspace:puede_que_se_haya_movido_a_la_papelera_o_que__dddab2"),
     };
   }
   if (status === 403) {
     return {
-      title: "No tienes acceso a este OVA",
-      description: "Solo la persona que lo creó puede abrirlo en el editor.",
+      title: i18n.t("workspace:no_tienes_acceso_a_este_ova"),
+      description: i18n.t("workspace:solo_la_persona_que_lo_creo_puede_abrirlo_en_el_editor"),
     };
   }
-  return { title: "No se pudo abrir el OVA", description: message };
+  return { title: i18n.t("workspace:no_se_pudo_abrir_el_ova"), description: message };
 }
 
 /**
@@ -32,6 +34,7 @@ function copyFor(status: number, message: string): { title: string; description:
  * OVA no existe o no es tuyo.
  */
 export function WorkspaceLoadError({ status, message, onRetry }: Readonly<Props>) {
+  const { t } = useTranslation();
   const permanent = status === 404 || status === 403;
   const copy = copyFor(status, message);
   return (
@@ -45,13 +48,13 @@ export function WorkspaceLoadError({ status, message, onRetry }: Readonly<Props>
           <div className="flex flex-wrap justify-center gap-2">
             {status === 404 && (
               <Button variant="outline" asChild>
-                <Link to="/papelera">Ver la papelera</Link>
+                <Link to="/papelera">{t("workspace:ver_la_papelera")}</Link>
               </Button>
             )}
             <Button variant={permanent ? "default" : "outline"} asChild>
-              <Link to="/mis-ovas">Volver a Mis OVAs</Link>
+              <Link to="/mis-ovas">{t("workspace:volver_a_mis_ovas")}</Link>
             </Button>
-            {!permanent && <Button onClick={onRetry}>Reintentar</Button>}
+            {!permanent && <Button onClick={onRetry}>{t("workspace:reintentar")}</Button>}
           </div>
         }
       />

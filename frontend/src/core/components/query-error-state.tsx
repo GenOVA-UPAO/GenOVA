@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { EmptyState } from "@/core/components/empty-state";
 import { Button } from "@/core/components/ui/button";
 
@@ -8,17 +9,17 @@ interface QueryErrorStateProps {
 
 /** Error de carga con mensaje en español y Reintentar (refetch). */
 export function QueryErrorState({ title, onRetry }: Readonly<QueryErrorStateProps>) {
+  const { t } = useTranslation();
   return (
     <div role="alert">
       <EmptyState
         icon="warning-circle"
         tone="danger"
         title={title}
-        description="Comprueba tu conexión e inténtalo de nuevo."
+        description={t("shared:comprueba_tu_conexion_e_intentalo_de_nuevo")}
         action={
           <Button variant="outline" onClick={onRetry}>
-            Reintentar
-          </Button>
+            {t("shared:reintentar")} </Button>
         }
       />
     </div>

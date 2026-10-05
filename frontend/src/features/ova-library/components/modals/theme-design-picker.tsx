@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { ThemeRadioOption } from "./theme-radio-option";
@@ -14,11 +13,11 @@ export function ThemeDesignPicker({
   designMode,
   onSelectDesignMode,
 }: Readonly<ThemeDesignPickerProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <fieldset className="space-y-2">
       <legend className="mb-2 text-sm font-medium text-foreground">
-        {i18n.t("ova-library:diseno")}
+        {t("ova-library:diseno")}
       </legend>
       {DESIGN_MODES.map((m) => (
         <ThemeRadioOption

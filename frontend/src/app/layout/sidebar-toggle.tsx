@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Icon } from "@/core/components/icon";
 
 import { toggleSidebar, useSidebarCollapsed } from "./lib/sidebar-state";
@@ -5,9 +6,10 @@ import { useFullBleed } from "./lib/use-full-bleed";
 
 /** Pliega o despliega el menú lateral (solo escritorio; en móvil está el cajón). */
 export function SidebarToggle() {
+  const { t } = useTranslation();
   const scope = useFullBleed() ? "fullBleed" : "default";
   const collapsed = useSidebarCollapsed(scope);
-  const label = collapsed ? "Expandir menú" : "Ocultar menú";
+  const label = collapsed ? t("shell:expandir_menu") : t("shell:ocultar_menu");
   return (
     <button
       type="button"

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { HtmlPreviewFrame } from "@/core/components/html-preview-frame";
 import { Button } from "@/core/components/ui/button";
 import { Skeleton } from "@/core/components/ui/skeleton";
@@ -14,22 +16,22 @@ interface Props {
 }
 
 export function PreviewPanelBody({ active, loading, html, error, onRetry }: Readonly<Props>) {
+  const { t } = useTranslation();
   if (!active) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-1 px-6 text-center">
-        <p className="font-display text-base font-semibold">Vista previa del OVA</p>
-        <p className="max-w-xs text-sm text-muted-foreground">Los recursos aparecerán aquí a medida que se generen.</p>
+        <p className="font-display text-base font-semibold">{t("workspace:vista_previa_del_ova")}</p>
+        <p className="max-w-xs text-sm text-muted-foreground">{t("workspace:los_recursos_apareceran_aqui_a_medida_que_se_generen")}</p>
       </div>
     );
   }
   if (error) {
     return (
       <div role="alert" className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-sm text-destructive">No se pudo cargar la vista previa de este recurso.</p>
+        <p className="text-sm text-destructive">{t("workspace:no_se_pudo_cargar_la_vista_previa_de_este_recurso")}</p>
         {onRetry && (
           <Button variant="outline" size="sm" className="max-sm:h-11" onClick={onRetry}>
-            Reintentar
-          </Button>
+            {t("workspace:reintentar")} </Button>
         )}
       </div>
     );
@@ -37,7 +39,7 @@ export function PreviewPanelBody({ active, loading, html, error, onRetry }: Read
   return (
     <>
       {loading && (
-        <div role="status" aria-label="Cargando vista previa" className="space-y-3 p-6">
+        <div role="status" aria-label={t("workspace:cargando_vista_previa")} className="space-y-3 p-6">
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-5/6" />

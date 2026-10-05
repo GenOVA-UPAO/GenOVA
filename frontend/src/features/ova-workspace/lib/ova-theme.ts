@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { knownPalette } from "@/core/lib/ova-palettes";
 
 import type { OvaTheme } from "./types";
@@ -32,8 +34,8 @@ export function themePayload(theme: OvaTheme) {
 
 /** Resumen corto para la barra de «Crear OVA». */
 export function themeSummary(theme: OvaTheme): string {
-  if (theme.color === "custom" && theme.palette) return `Paleta ${theme.palette.name}`;
+  if (theme.color === "custom" && theme.palette) return i18n.t("workspace:paleta_value", { p0: theme.palette.name });
   if (theme.color === "upao" && theme.design === "upao") return "UPAO";
-  if (theme.color === "free" && theme.design === "free") return "IA elige";
-  return "Mixto";
+  if (theme.color === "free" && theme.design === "free") return i18n.t("workspace:ia_elige");
+  return i18n.t("workspace:mixto");
 }

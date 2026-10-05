@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -43,13 +42,13 @@ export function PapeleraList({
   onPermanentDelete,
   onRetry,
 }: Readonly<PapeleraListProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   if (isLoading) return <PapeleraSkeleton />;
 
   if (error) {
     return (
       <QueryErrorState
-        title={i18n.t("ova-library:no_se_pudo_cargar_la_papelera")}
+        title={t("ova-library:no_se_pudo_cargar_la_papelera")}
         onRetry={onRetry}
       />
     );
@@ -59,11 +58,11 @@ export function PapeleraList({
     return (
       <EmptyState
         icon="trash"
-        title={i18n.t("ova-library:tu_papelera_esta_vacia")}
-        description={i18n.t("ova-library:los_ovas_que_muevas_a_la_papelera_apareceran_aqui")}
+        title={t("ova-library:tu_papelera_esta_vacia")}
+        description={t("ova-library:los_ovas_que_muevas_a_la_papelera_apareceran_aqui")}
         action={
           <Button asChild variant="outline">
-            <Link to="/mis-ovas">{i18n.t("ova-library:ir_a_mis_ovas")}</Link>
+            <Link to="/mis-ovas">{t("ova-library:ir_a_mis_ovas")}</Link>
           </Button>
         }
       />
@@ -72,7 +71,7 @@ export function PapeleraList({
 
   return (
     <section
-      aria-label={i18n.t("ova-library:ovas_en_la_papelera")}
+      aria-label={t("ova-library:ovas_en_la_papelera")}
       className="overflow-clip rounded-xl border border-border bg-card"
     >
       {toolbar}

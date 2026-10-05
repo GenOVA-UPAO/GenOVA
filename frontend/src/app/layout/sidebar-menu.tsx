@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useCurrentUser } from "@/core/auth/auth-store";
 import { cn } from "@/core/lib/cn";
 import { useTrashCount } from "@/features/ova-library/hooks/use-ova-library";
@@ -14,6 +15,7 @@ interface SidebarMenuProps {
 }
 
 export function SidebarMenu({ collapsed = false, onNavigate }: Readonly<SidebarMenuProps>) {
+  const { t } = useTranslation();
   const user = useCurrentUser();
   const { data: trashCount = 0 } = useTrashCount();
   const isAdmin = user?.role === "administrador";
@@ -25,29 +27,29 @@ export function SidebarMenu({ collapsed = false, onNavigate }: Readonly<SidebarM
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <nav
-        aria-label="Navegación principal"
+        aria-label={t("shell:navegacion_principal")}
         // Plegado, la primera sección no necesita separador encima.
         className={cn(
           "flex-1 overflow-y-auto pb-3 [&>div:first-child>[aria-hidden]]:invisible",
           collapsed ? "px-1.5" : "px-2",
         )}
       >
-        <NavSection title="Principal" collapsed={collapsed}>
+        <NavSection title={t("shell:principal")} collapsed={collapsed}>
           {navigationLinks.map((l) => (
             <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} {...common} />
           ))}
-          {canAnalytics && <NavItem to="/analytics" label="Analítica" icon="chart" {...common} />}
-          <NavItem to="/papelera" label="Papelera" icon="trash" badge={trashCount} {...common} />
+          {canAnalytics && <NavItem to="/analytics" label={t("shell:analitica")} icon="chart" {...common} />}
+          <NavItem to="/papelera" label={t("shell:papelera")} icon="trash" badge={trashCount} {...common} />
         </NavSection>
         {canModels && (
-          <NavSection title="Configuración" collapsed={collapsed}>
+          <NavSection title={t("shell:configuracion")} collapsed={collapsed}>
             {configNavLinks.map((l) => (
               <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} {...common} />
             ))}
           </NavSection>
         )}
         {isAdmin && (
-          <NavSection title="Administración" collapsed={collapsed}>
+          <NavSection title={t("shell:administracion")} collapsed={collapsed}>
             {adminNavLinks.map((l) => (
               <NavItem
                 key={l.to}

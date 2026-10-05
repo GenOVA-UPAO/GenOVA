@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { triggerDownloadFromResponse } from "@/core/lib/download";
 import { apiFetch, HttpError } from "@/core/lib/http";
 
@@ -9,7 +10,7 @@ async function exportError(response: Response): Promise<HttpError> {
     message?: string;
     detail?: string;
   } | null;
-  const message = body?.message ?? body?.detail ?? "Error al exportar la OVA";
+  const message = body?.message ?? body?.detail ?? i18n.t("shared:error_al_exportar_la_ova");
   return new HttpError(message, { status: response.status, code: body?.error ?? "", body });
 }
 

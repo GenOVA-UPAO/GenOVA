@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/core/lib/cn";
@@ -18,8 +20,9 @@ export function HtmlPreviewFrame({
   html = "",
   height = "60vh",
   className = "block w-full border-0",
-  title = "Vista previa del recurso",
+  title = i18n.t("shared:vista_previa_del_recurso"),
 }: Readonly<HtmlPreviewFrameProps>) {
+  const { t } = useTranslation();
   const frameRef = useRef<HTMLIFrameElement>(null);
   // HTML ya pintado. Mientras no coincide, el iframe muestra un fondo pulsante:
   // un OVA pesa decenas de kB y el hueco en blanco parecía una versión vacía.

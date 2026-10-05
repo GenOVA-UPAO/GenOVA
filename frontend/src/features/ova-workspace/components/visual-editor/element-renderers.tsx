@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -45,8 +47,8 @@ export function renderParagraph(id: string, props: Record<string, unknown>) {
 }
 
 export function renderExample(id: string, props: Record<string, unknown>) {
-  const tag = typeof props.tag === "string" ? props.tag : "🔍 Ejemplo Razonado";
-  const title = typeof props.title === "string" ? props.title : "Ejemplo";
+  const tag = typeof props.tag === "string" ? props.tag : i18n.t("workspace:ejemplo_razonado");
+  const title = typeof props.title === "string" ? props.title : i18n.t("workspace:ejemplo");
   const content = typeof props.content === "string" ? props.content : "";
 
   return (
@@ -79,14 +81,14 @@ export function renderQuestion(id: string, props: Record<string, unknown>) {
 }
 
 export function renderReveal(id: string, props: Record<string, unknown>) {
-  const label = typeof props.label === "string" ? props.label : "Comprobar respuesta";
+  const label = typeof props.label === "string" ? props.label : i18n.t("workspace:comprobar_respuesta");
   const content = typeof props.content === "string" ? props.content : "";
   const prompt = typeof props.prompt === "string" ? props.prompt : undefined;
   return <InteractiveReveal key={id} id={id} label={label} content={content} prompt={prompt} />;
 }
 
 export function renderSummary(id: string, props: Record<string, unknown>) {
-  const title = typeof props.title === "string" ? props.title : "Síntesis y Cierre";
+  const title = typeof props.title === "string" ? props.title : i18n.t("workspace:sintesis_y_cierre");
   const text = typeof props.text === "string" ? props.text : "";
 
   return (
@@ -102,7 +104,7 @@ export function renderSummary(id: string, props: Record<string, unknown>) {
 
 export function renderComicPanel(id: string, props: Record<string, unknown>) {
   const num = typeof props.number === "number" ? props.number : 1;
-  const character = typeof props.character === "string" ? props.character : "Max";
+  const character = typeof props.character === "string" ? props.character : i18n.t("workspace:max");
   const dialogue = typeof props.dialogue === "string" ? props.dialogue : "";
   const imgUrl = typeof props.imageUrl === "string" ? props.imageUrl : undefined;
   const bubbleSide = props.bubbleSide === "right" ? "right" : "left";
@@ -110,11 +112,11 @@ export function renderComicPanel(id: string, props: Record<string, unknown>) {
   return (
     <div key={id} className="rounded-xl border border-border bg-card p-4 shadow-xs">
       <span className="rounded-xs bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-700 uppercase dark:text-amber-400">
-        Viñeta {num} · {character}
+        {i18n.t("workspace:vineta")} {num} · {character}
       </span>
       {imgUrl && (
         <div className="mt-3 overflow-hidden rounded-lg border border-border">
-          <img src={imgUrl} alt={`Viñeta ${String(num)}`} className="h-44 w-full object-cover" />
+          <img src={imgUrl} alt={i18n.t("workspace:vineta_value", { p0: String(num) })} className="h-44 w-full object-cover" />
         </div>
       )}
       <div className={cn("mt-3 rounded-lg bg-muted/50 p-3 text-sm italic", bubbleSide === "right" ? "border-r-4 border-primary text-right" : "border-l-4 border-primary")}>

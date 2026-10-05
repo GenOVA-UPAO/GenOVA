@@ -1,14 +1,16 @@
+import i18n from "i18next";
+
 import { groupByPhase, type JobEta, type JobLike, type ResourceVM } from "./ova-job-view-model";
 
 const TERMINAL = new Set(["done", "error", "canceled", "interrupted"]);
 
 const STATUS_LABEL: Record<string, string> = {
-  queued: "En cola…",
-  running: "Generando recursos…",
-  interrupted: "Generación interrumpida",
-  error: "La generación terminó con errores",
-  done: "¡OVA generado!",
-  canceled: "Generación cancelada",
+  get queued() { return i18n.t("workspace:en_cola_683"); },
+  get running() { return i18n.t("workspace:generando_recursos"); },
+  get interrupted() { return i18n.t("workspace:generacion_interrumpida"); },
+  get error() { return i18n.t("workspace:la_generacion_termino_con_errores"); },
+  get done() { return i18n.t("workspace:ova_generado"); },
+  get canceled() { return i18n.t("workspace:generacion_cancelada"); },
 };
 
 export function jobStatus(job: JobLike | null | undefined): string {
@@ -28,7 +30,7 @@ export function statusLabel(status: string): string {
  * fallidos no es un «¡OVA generado!»: decirlo así escondía el fallo parcial.
  */
 export function terminalTitle(status: string, partialFail: boolean): string {
-  if (partialFail && status === "done") return "OVA generado con errores";
+  if (partialFail && status === "done") return i18n.t("workspace:ova_generado_con_errores");
   return statusLabel(status);
 }
 
@@ -52,10 +54,10 @@ export function progressPct(viewModel: ResourceVM[] = []): number {
 
 /** Etiqueta de estado para el badge circular de cada recurso. */
 export function resourceStatusLabel(status: string): string {
-  if (status === "check") return "Generado";
-  if (status === "X") return "Error";
-  if (status === "generando") return "Generando";
-  return "En espera";
+  if (status === "check") return i18n.t("workspace:generado");
+  if (status === "X") return i18n.t("workspace:error");
+  if (status === "generando") return i18n.t("workspace:generando_691");
+  return i18n.t("workspace:en_espera");
 }
 
 const MARK_CLS: Record<string, string> = {
@@ -79,10 +81,10 @@ export function phaseGroups(viewModel: ResourceVM[] = []): ReturnType<typeof gro
  */
 export function formatEta(eta: JobEta | null | undefined): string | null {
   if (!eta) return null;
-  const hint = eta.basis === "estimado" ? " (estimación inicial)" : "";
-  if (eta.seconds < 20) return `Casi listo${hint}`;
-  if (eta.seconds < 60) return `Menos de 1 min restante${hint}`;
-  return `≈ ${String(Math.round(eta.seconds / 60))} min restante${hint}`;
+  const hint = eta.basis === "estimado" ? i18n.t("workspace:estimacion_inicial") : "";
+  if (eta.seconds < 20) return i18n.t("workspace:casi_listovalue", { p0: hint });
+  if (eta.seconds < 60) return i18n.t("workspace:menos_de_1_min_restantevalue", { p0: hint });
+  return i18n.t("workspace:value_min_restantevalue", { p0: String(Math.round(eta.seconds / 60)), p1: hint });
 }
 
 /** Mensaje para el lector de pantalla al cambiar el estado de un recurso (null si no hay cambio relevante). */
@@ -93,9 +95,9 @@ export function announceChange(
   const messages: string[] = [];
   for (const r of viewModel) {
     if (!Object.hasOwn(previous, r.id) || previous[r.id] === r.status) continue;
-    if (r.status === "check") messages.push(`${r.label}: listo`);
-    else if (r.status === "X") messages.push(`${r.label}: no se pudo generar`);
-    else if (r.status === "generando") messages.push(`${r.label}: generando`);
+    if (r.status === "check") messages.push(i18n.t("workspace:value_listo", { p0: r.label }));
+    else if (r.status === "X") messages.push(i18n.t("workspace:value_no_se_pudo_generar", { p0: r.label }));
+    else if (r.status === "generando") messages.push(i18n.t("workspace:value_generando", { p0: r.label }));
   }
   return messages.length > 0 ? messages.join(". ") : null;
 }

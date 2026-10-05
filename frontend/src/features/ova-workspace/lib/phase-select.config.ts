@@ -1,5 +1,8 @@
+import i18n from "i18next";
+
 import type { Resource } from "@/features/ova-workspace/lib/ova-types";
 
+import { phaseMeta } from "./phase-meta";
 import { PHASE_ICON_BY_KEY } from "./resource-icons";
 
 export const MAX_PER_PHASE = 4;
@@ -17,18 +20,18 @@ export interface PhaseSelectCfg {
 const mk = (key: string, label: string, sub: string, color: string): PhaseSelectCfg => ({
   key,
   icon: (PHASE_ICON_BY_KEY[key] ?? "ph-circle").replace(/^ph-/, ""),
-  label,
-  sub,
+  get label() { return phaseMeta(key).label || label; },
+  get sub() { return i18n.t(sub); },
   color,
   bg: `color-mix(in oklch, ${color} 8%, transparent)`,
 });
 
 export const PHASE_SELECT_CFG: PhaseSelectCfg[] = [
-  mk("engage", "ENGAGE", "Despierta la curiosidad y activa saberes previos", "#EF4444"),
-  mk("explore", "EXPLORE", "Descubre patrones y construye hipótesis", "#3B82F6"),
-  mk("explain", "EXPLAIN", "Formaliza conceptos y consolida la teoría", "#F59E0B"),
-  mk("elaborate", "ELABORATE", "Aplica lo aprendido a problemas reales", "#8B5CF6"),
-  mk("evaluate", "EVALUATE", "Verifica aprendizajes y reflexiona sobre el proceso", "#10B981"),
+  mk("engage", "ENGAGE", "workspace:despierta_la_curiosidad_y_activa_saberes_previos", "#EF4444"),
+  mk("explore", "EXPLORE", "workspace:descubre_patrones_y_construye_hipotesis", "#3B82F6"),
+  mk("explain", "EXPLAIN", "workspace:formaliza_conceptos_y_consolida_la_teoria", "#F59E0B"),
+  mk("elaborate", "ELABORATE", "workspace:aplica_lo_aprendido_a_problemas_reales", "#8B5CF6"),
+  mk("evaluate", "EVALUATE", "workspace:verifica_aprendizajes_y_reflexiona_sobre_el_proceso", "#10B981"),
 ];
 
 export type PhaseResourceMap = Record<string, Resource[]>;

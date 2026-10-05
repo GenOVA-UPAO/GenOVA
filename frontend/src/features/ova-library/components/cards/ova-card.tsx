@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { useCurrentUser } from "@/core/auth/auth-store";
@@ -51,9 +50,9 @@ export function OvaCard({
   onEditMetadata,
   onResume,
 }: Readonly<OvaCardProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   const isGenerating = ova.status === "generando";
-  const title = ova.title?.trim() ? ova.title : i18n.t("ova-library:sin_titulo");
+  const title = ova.title?.trim() ? ova.title : t("ova-library:sin_titulo");
   const description = meaningfulDescription(ova);
   const canEdit = isOwnOva(ova, useCurrentUser()?.id);
 
@@ -74,7 +73,7 @@ export function OvaCard({
           checked={isSelected}
           disabled={isGenerating}
           onCheckedChange={() => onToggleSelect?.(ova.id)}
-          aria-label={i18n.t("ova-library:seleccionar_value", { p0: title })}
+          aria-label={t("ova-library:seleccionar_value", { p0: title })}
         />
         <div className="min-w-0 flex-1">
           <OvaCardBadges status={ova.status} version={visibleVersion(ova)} job={job} />

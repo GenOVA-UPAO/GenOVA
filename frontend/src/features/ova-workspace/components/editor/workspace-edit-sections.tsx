@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import type { ChatRegeneration } from "../../hooks/use-chat-regeneration";
 import { useOvaLatestJob } from "../../hooks/use-ova-latest-job";
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
@@ -15,6 +17,7 @@ interface Props {
 
 /** Pestaña «Editar»: una sección por fase con sus recursos y «Añadir recurso». */
 export function WorkspaceEditSections({ ovaId, phases, regen }: Readonly<Props>) {
+  const { t } = useTranslation();
   const workspace = useOvaWorkspace(ovaId);
   const latestJob = useOvaLatestJob(ovaId);
   const configured = (latestJob.data?.resources ?? []).map((resource) => resource.phase_type);
@@ -39,7 +42,7 @@ export function WorkspaceEditSections({ ovaId, phases, regen }: Readonly<Props>)
       }}
       onRegenerate={(phase) => {
         if (!regen.busy)
-          regen.request.mutate(buttonRegenPayload(phases, "Regenerar recurso", [phase.id]));
+          regen.request.mutate(buttonRegenPayload(phases, t("workspace:regenerar_recurso"), [phase.id]));
       }}
       onAdded={(phase, instructions) => {
         // Sin esto el recurso se quedaba con el marcador «pendiente de

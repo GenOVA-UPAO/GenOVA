@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { resourceLabel } from "./resource-label";
 import type { PhaseWithContent } from "./types";
 
@@ -62,7 +64,8 @@ export interface ChatAttachments {
  * línea con este prefijo (el mensaje del chat no tiene un campo propio para
  * ellos); `splitAttachments` la separa para pintarla aparte.
  */
-const ATTACHMENTS_PREFIX = "Archivos adjuntos: ";
+// Prefijo del formato persistido, independiente del idioma de la interfaz.
+const ATTACHMENTS_PREFIX = i18n.t("workspace:archivos_adjuntos_697", { lng: "es" });
 
 /** Los adjuntos ya subidos de la lista del chat (los que aún suben no cuentan). */
 export function chatAttachments(files: readonly { uploadId: string; filename: string }[]): ChatAttachments {
@@ -114,9 +117,9 @@ export function addedResourceRegenPayload(
 ): RegenPayload {
   return {
     prompt: instructions,
-    historyText: `Nuevo recurso en ${phaseLabel}: ${instructions}`,
+    historyText: i18n.t("workspace:nuevo_recurso_en_value_value", { p0: phaseLabel, p1: instructions }),
     phaseIds: [phaseId],
-    resourceLabels: [`Nuevo recurso de ${phaseLabel}`],
+    resourceLabels: [i18n.t("workspace:nuevo_recurso_de_value", { p0: phaseLabel })],
   };
 }
 
@@ -165,7 +168,7 @@ export function systemChatMessage(
 }
 
 export function assistantRunningMessage(
-  text = "Iniciando regeneración…",
+  text = i18n.t("workspace:iniciando_regeneracion"),
   resourceLabels?: string[],
 ): RegenChatMessage {
   return {
@@ -189,13 +192,13 @@ export function patchChatMessage(
 }
 
 export function progressChatPatch(percentage: number, stage: string): Partial<RegenChatMessage> {
-  return { percentage, text: stage || "Regenerando…", status: "running" };
+  return { percentage, text: stage || i18n.t("workspace:regenerando_701"), status: "running" };
 }
 
 export function formatChatTarget(resourceLabels?: string[]): string {
-  if (!resourceLabels?.length) return "al OVA completo";
-  if (resourceLabels.length === 1) return `a «${resourceLabels[0]}»`;
-  return `a ${String(resourceLabels.length)} recursos (${resourceLabels.join(", ")})`;
+  if (!resourceLabels?.length) return i18n.t("workspace:al_ova_completo");
+  if (resourceLabels.length === 1) return i18n.t("workspace:targetResource", { resource: resourceLabels[0] });
+  return i18n.t("workspace:targetResources", { count: resourceLabels.length, resources: resourceLabels.join(", ") });
 }
 
 /** Informe del backend sobre el material de referencia (RAG) de una regeneración. */
@@ -206,22 +209,22 @@ export interface RegenRagReport {
 }
 
 function fragments(count: number): string {
-  return `${String(count)} fragmento${count === 1 ? "" : "s"}`;
+  return i18n.t("workspace:fragments", { count });
 }
 
 function sourcesLine(report: RegenRagReport): string | undefined {
   const sources = report.sources ?? [];
   if (sources.length) {
     const list = sources
-      .map((s) => `${s.filename} (${fragments(s.chunks)}${s.origin === "ova" ? ", del OVA" : ""})`)
+      .map((s) => `${s.filename} (${fragments(s.chunks)}${s.origin === "ova" ? i18n.t("workspace:del_ova") : ""})`)
       .join(", ");
-    return `Material consultado: ${list}.`;
+    return i18n.t("workspace:material_consultado_value", { p0: list });
   }
   if (report.status === "error") {
-    return "No se pudo consultar el material de referencia: el cambio se aplicó sin él.";
+    return i18n.t("workspace:no_se_pudo_consultar_el_material_de_referenci_681a07");
   }
   if (report.status === "no_matches" && !report.attachments?.length) {
-    return "Los archivos del OVA no tenían nada relevante para este cambio.";
+    return i18n.t("workspace:los_archivos_del_ova_no_tenian_nada_relevante_e8a84e");
   }
   return undefined;
 }
@@ -234,7 +237,7 @@ export function ragReportText(report?: RegenRagReport | null): string {
   if (!report) return "";
   const unused = (report.attachments ?? [])
     .filter((att) => !att.used)
-    .map((att) => `No se usó «${att.filename}»: ${att.reason ?? "sin fragmentos relevantes."}`);
+    .map((att) => i18n.t("workspace:no_se_uso_value_value", { p0: att.filename, p1: att.reason ?? i18n.t("workspace:sin_fragmentos_relevantes") }));
   return [sourcesLine(report), ...unused].filter(Boolean).join("\n");
 }
 
@@ -249,20 +252,20 @@ export function finishChatPatch(
     return {
       status: "success",
       percentage: 100,
-      text: [`Listo. Los cambios ya están aplicados ${target}.`, material].filter(Boolean).join("\n"),
+      text: [i18n.t("workspace:listo_los_cambios_ya_estan_aplicados_value", { p0: target }), material].filter(Boolean).join("\n"),
       resourceLabels,
     };
   }
   return {
     status: "error",
-    text: `No se pudieron aplicar los cambios ${target}. Puedes intentarlo de nuevo.`,
+    text: i18n.t("workspace:no_se_pudieron_aplicar_los_cambios_value_pued_f7a756", { p0: target }),
     resourceLabels,
   };
 }
 
 export function selectionToggleMessage(label: string, selected: boolean): RegenChatMessage {
   return systemChatMessage(
-    selected ? `Recurso seleccionado: ${label}` : `Recurso deseleccionado: ${label}`,
+    selected ? i18n.t("workspace:recurso_seleccionado_value", { p0: label }) : i18n.t("workspace:recurso_deseleccionado_value", { p0: label }),
     { kind: "selection", resourceLabels: selected ? [label] : undefined },
   );
 }
@@ -270,14 +273,14 @@ export function selectionToggleMessage(label: string, selected: boolean): RegenC
 export function selectionAllMessage(labels: string[], allSelected: boolean): RegenChatMessage {
   if (allSelected) {
     return systemChatMessage(
-      `Seleccionados todos los recursos (${String(labels.length)}): ${labels.join(", ")}`,
+      i18n.t("workspace:seleccionados_todos_los_recursos_value_value", { p0: String(labels.length), p1: labels.join(", ") }),
       {
         kind: "selection_all",
         resourceLabels: labels,
       },
     );
   }
-  return systemChatMessage("Se vació la selección de recursos.", { kind: "selection_all" });
+  return systemChatMessage(i18n.t("workspace:se_vacio_la_seleccion_de_recursos"), { kind: "selection_all" });
 }
 
 export function fromApiMessage(raw: {

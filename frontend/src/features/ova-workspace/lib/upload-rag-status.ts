@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import type { RagStatus, UploadItem } from "./upload-types";
 
 /**
@@ -14,44 +16,38 @@ export interface UploadPhaseView {
   detail?: string;
 }
 
-const DISABLED_DETAIL =
-  "La búsqueda en archivos está desactivada en este servidor: la IA no leerá este archivo.";
-
-function plural(count: number, word: string): string {
-  return `${String(count)} ${word}${count === 1 ? "" : "s"}`;
-}
 
 function indexedView(rag: RagStatus): UploadPhaseView {
   const chunks = rag.chunks ?? 0;
   return {
     phase: "ready",
-    label: chunks > 0 ? `Listo · ${plural(chunks, "fragmento")}` : "Listo",
+    label: chunks > 0 ? i18n.t("workspace:listo_value", { p0: i18n.t("workspace:fragments", { count: chunks }) }) : i18n.t("workspace:listo"),
     detail: rag.message,
   };
 }
 
 const BY_RAG_STATUS: Record<string, (rag: RagStatus) => UploadPhaseView> = {
-  processing: () => ({ phase: "indexing", label: "Indexando…" }),
+  processing: () => ({ phase: "indexing", label: i18n.t("workspace:indexando") }),
   indexed: indexedView,
-  disabled: () => ({ phase: "disabled", label: "No se usará", detail: DISABLED_DETAIL }),
+  disabled: () => ({ phase: "disabled", label: i18n.t("workspace:no_se_usara"), detail: i18n.t("workspace:la_busqueda_en_archivos_esta_desactivada_en_e_c61378") }),
 };
 
 function unusableView(rag: RagStatus): UploadPhaseView {
   return {
     phase: "unusable",
-    label: "No se podrá usar",
-    detail: rag.message ?? "El archivo no pudo indexarse: la IA no lo leerá.",
+    label: i18n.t("workspace:no_se_podra_usar"),
+    detail: rag.message ?? i18n.t("workspace:el_archivo_no_pudo_indexarse_la_ia_no_lo_leera"),
   };
 }
 
 export function uploadPhase(file: UploadItem): UploadPhaseView {
-  if (file.status === "uploading") return { phase: "uploading", label: "Subiendo…" };
+  if (file.status === "uploading") return { phase: "uploading", label: i18n.t("workspace:subiendo") };
   if (file.status === "error") {
-    return { phase: "unusable", label: "Error al subir", detail: file.message || undefined };
+    return { phase: "unusable", label: i18n.t("workspace:error_al_subir"), detail: file.message || undefined };
   }
   const rag = file.ragStatus;
   // Respuesta antigua sin estado RAG: no se promete nada.
-  if (!rag?.status) return { phase: "ready", label: "Subido" };
+  if (!rag?.status) return { phase: "ready", label: i18n.t("workspace:subido") };
   return (BY_RAG_STATUS[rag.status] ?? unusableView)(rag);
 }
 

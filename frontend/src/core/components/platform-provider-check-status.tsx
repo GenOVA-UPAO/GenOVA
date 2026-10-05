@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 
 import { Icon } from "@/core/components/icon";
@@ -11,6 +13,7 @@ import { type ProviderCheckState, providerCheckText } from "./platform-provider-
  * dice qué hacer.
  */
 export function ProviderCheckStatus({ check }: Readonly<{ check: ProviderCheckState }>) {
+  const { t } = useTranslation();
   // Si solo hay texto para lectores de pantalla, la región no ocupa sitio: si
   // no, el hueco de la fila crecía bajo «Conectado · N modelos».
   const visible = visibleStatus(check);
@@ -28,7 +31,7 @@ function visibleStatus(check: ProviderCheckState): boolean {
 }
 
 function statusContent(check: ProviderCheckState): ReactNode {
-  if (check.checking) return <span className="sr-only">Comprobando la conexión…</span>;
+  if (check.checking) return <span className="sr-only">{i18n.t("shared:comprobando_la_conexion")}</span>;
   if (check.error) {
     return (
       <p className="flex items-start gap-1.5 text-xs text-foreground">

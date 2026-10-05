@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
@@ -55,6 +57,7 @@ export function FileChip({
   file,
   onRemove,
 }: Readonly<{ file: UploadItem; onRemove: (id: string) => void }>) {
+  const { t } = useTranslation();
   const meta = metaOf(file);
   const state = uploadPhase(file);
   const style = PHASE_STYLE[state.phase];
@@ -97,7 +100,7 @@ export function FileChip({
         <Button
           size="icon"
           variant="ghost"
-          aria-label={`Eliminar ${file.filename}`}
+          aria-label={t("workspace:eliminar_value", { p0: file.filename })}
           className="shrink-0 text-muted-foreground hover:text-destructive"
           onClick={() => {
             onRemove(file.clientId);

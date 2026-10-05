@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { ConfirmModal } from "@/core/components/confirm-modal";
@@ -14,8 +13,8 @@ import { usePapeleraPage } from "../hooks/use-papelera-page";
 
 /** Página de gestión de la papelera con restauración y borrado permanente. */
 export function PapeleraPage() {
-  useTranslation();
-  const DELETE_PHRASE = i18n.t("ova-library:deletePhrase");
+  const { t } = useTranslation();
+  const DELETE_PHRASE = t("ova-library:deletePhrase");
   const p = usePapeleraPage();
   const { selection } = p;
   const showContent = !p.isLoading && !p.error;
@@ -38,8 +37,8 @@ export function PapeleraPage() {
       )}
 
       <PageHeader
-        title={i18n.t("ova-library:papelera")}
-        subtitle={i18n.t("ova-library:ovas_movidos_a_la_papelera_restauralos_o_eliminalos_definitivamente")}
+        title={t("ova-library:papelera")}
+        subtitle={t("ova-library:ovas_movidos_a_la_papelera_restauralos_o_eliminalos_definitivamente")}
         actions={
           hasItems ? (
             <Button
@@ -49,7 +48,7 @@ export function PapeleraPage() {
               disabled={busy}
             >
               <Icon name="trash" size="text-base" />
-              {i18n.t("ova-library:vaciar_papelera")}{" "}
+              {t("ova-library:vaciar_papelera")}{" "}
             </Button>
           ) : undefined
         }
@@ -72,7 +71,7 @@ export function PapeleraPage() {
             variant="inset"
             allSelected={selection.allSelected}
             selectedCount={selection.selectedIds.size}
-            summary={i18n.t("ova-library:trashCount", { count: p.totalItems })}
+            summary={t("ova-library:trashCount", { count: p.totalItems })}
             disabled={p.actions.bulkLoading}
             onSelectAllChange={selection.selectAll}
             onClearSelection={selection.clear}
@@ -85,7 +84,7 @@ export function PapeleraPage() {
 
       {showContent && (
         <OvaListPagination
-          label={i18n.t("ova-library:paginacion_de_la_papelera")}
+          label={t("ova-library:paginacion_de_la_papelera")}
           currentPage={p.page}
           totalPages={p.totalPages}
           onPageChange={p.handlePageChange}

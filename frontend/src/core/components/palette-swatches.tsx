@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/core/lib/cn";
 import { type Palette, PALETTES } from "@/core/lib/ova-palettes";
 
@@ -15,9 +16,10 @@ export function PaletteSwatches({
   disabled,
   onSelect,
 }: Readonly<PaletteSwatchesProps>) {
+  const { t } = useTranslation();
   return (
     <fieldset className="flex flex-wrap gap-2" disabled={disabled}>
-      <legend className="sr-only">Combinación de colores</legend>
+      <legend className="sr-only">{t("shared:combinacion_de_colores")}</legend>
       {PALETTES.map((pal) => {
         const checked = selected?.name === pal.name;
         return (

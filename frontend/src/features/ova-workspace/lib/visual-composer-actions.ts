@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { toast } from "sonner";
 
 import {
@@ -52,7 +53,7 @@ function extractErrorMessage(err: unknown): string {
       return errorObj.message;
     }
   }
-  return "Error al procesar la instrucción de edición.";
+  return i18n.t("workspace:error_al_procesar_la_instruccion_de_edicion");
 }
 
 function handleIntentResult(
@@ -65,7 +66,7 @@ function handleIntentResult(
   ctx.setLastTrace(trace);
 
   if (intent.accion === "ninguna") {
-    const msg = intent.motivo ?? "Instrucción ambigua o no aplicable.";
+    const msg = intent.motivo ?? i18n.t("workspace:instruccion_ambigua_o_no_aplicable_823");
     ctx.setStatusMessage(msg);
     if (intent.es_fuera_de_alcance) {
       ctx.setErrorMessage(msg);
@@ -89,16 +90,16 @@ function handleIntentResult(
       instruction: ctx.prompt,
       previousBlocks: ctx.currentBlocks,
     });
-    ctx.setStatusMessage("¿Confirmas la aplicación de este cambio estructural?");
-    toast.info("Esta acción requiere tu confirmación antes de aplicarse.");
+    ctx.setStatusMessage(i18n.t("workspace:confirmas_la_aplicacion_de_este_cambio_estructural"));
+    toast.info(i18n.t("workspace:esta_accion_requiere_tu_confirmacion_antes_de_b43b70"));
     return;
   }
 
   ctx.setHistory((prev) => [...prev, ctx.currentBlocks]);
   ctx.setEditedBlocks(newBlocks);
   ctx.setComposedSpec(buildInitialSpec(newBlocks));
-  ctx.setStatusMessage(`Intención aplicada en ${trace.elapsedMs.toString()} ms (${trace.backend}).`);
-  toast.success(`Cambio aplicado con éxito (${Math.round(intent.confianza * 100).toString()}% conf.).`);
+  ctx.setStatusMessage(i18n.t("workspace:intencion_aplicada_en_value_ms_value", { p0: trace.elapsedMs.toString(), p1: trace.backend }));
+  toast.success(i18n.t("workspace:cambio_aplicado_con_exito_value_conf", { p0: Math.round(intent.confianza * 100).toString() }));
 
   void recordEditorFeedback(ctx.ovaId, {
     fase_id: ctx.phaseId,
@@ -115,14 +116,14 @@ function handleIntentResult(
 export async function executeComposerEdit(ctx: EditActionContext): Promise<void> {
   const trimmed = ctx.prompt.trim();
   if (!trimmed) {
-    toast.error("Ingresa una instrucción de cambio.");
+    toast.error(i18n.t("workspace:ingresa_una_instruccion_de_cambio"));
     return;
   }
 
   ctx.setIsProcessing(true);
   ctx.setErrorMessage(null);
   ctx.setPendingConfirmation(null);
-  ctx.setStatusMessage("Interpretando intención con backend Python...");
+  ctx.setStatusMessage(i18n.t("workspace:interpretando_intencion_con_backend_python"));
 
   try {
     const { intent, blocks: newBlocks, trace } = await editPhaseBlocks({
@@ -155,21 +156,21 @@ export async function executeComposerApply(
   instruction?: string
 ): Promise<boolean> {
   if (blocks.length === 0 || !phaseId) {
-    toast.error("No hay una versión para aplicar.");
+    toast.error(i18n.t("workspace:no_hay_una_version_para_aplicar"));
     return false;
   }
 
   try {
     const res = await confirmPhaseBlocks(ovaId, phaseId, blocks, instruction);
     if (!res.success) {
-      throw new Error(res.message || "No se pudo guardar la versión.");
+      throw new Error(res.message || i18n.t("workspace:no_se_pudo_guardar_la_version"));
     }
     const ver = res.version_number ? ` v${String(res.version_number)}` : "";
-    toast.success(`Nueva versión${ver} guardada exitosamente en el historial.`);
+    toast.success(i18n.t("workspace:nueva_versionvalue_guardada_exitosamente_en_e_021c70", { p0: ver }));
     return true;
   } catch (err: unknown) {
     const msg = extractErrorMessage(err);
-    toast.error(`Error al aplicar la versión: ${msg}`);
+    toast.error(i18n.t("workspace:error_al_aplicar_la_version_value", { p0: msg }));
     return false;
   }
 }

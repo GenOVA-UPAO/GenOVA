@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useGeneratePhaseResource, usePhaseResources } from "../../hooks/use-phase-resources";
 import { useResourceConfigs } from "../../hooks/use-resource-configs";
@@ -17,6 +18,7 @@ export function PhasePage({
   phase,
   description,
 }: Readonly<{ phase: string; description: string }>) {
+  const { t } = useTranslation();
   const resources = usePhaseResources(phase);
   const configs = useResourceConfigs();
   const generation = useGeneratePhaseResource();
@@ -35,7 +37,7 @@ export function PhasePage({
       <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
         <header>
           <h1 className="font-display text-3xl font-semibold sm:text-4xl">
-            Fase {phaseMeta(phase).label || phase}
+            {t("workspace:fase_302")} {phaseMeta(phase).label || phase}
           </h1>
           <p className="mt-1.5 text-sm font-medium text-muted-foreground">{description}</p>
         </header>
@@ -57,7 +59,7 @@ export function PhasePage({
                 id="phase-resource-preview"
                 className="space-y-4 rounded-xl border border-border bg-card p-5"
               >
-                <h2 className="font-semibold">3. Vista previa</h2>
+                <h2 className="font-semibold">{t("workspace:3_vista_previa")}</h2>
                 <HtmlPreview result={generation.data} />
               </section>
             )}

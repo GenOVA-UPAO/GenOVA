@@ -1,10 +1,12 @@
+import i18n from "i18next";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
 
-import { EXAMPLE_PROMPT } from "../../lib/creation-form";
+import { examplePrompt } from "../../lib/creation-form";
 import { missingPromptChars } from "../../lib/creation-guidance";
 
 interface Props {
@@ -21,8 +23,8 @@ const HELP_ID = "ova-create-prompt-help";
 function helpText(prompt: string): string {
   const missing = missingPromptChars(prompt);
   if (prompt.trim().length > 0 && missing > 0)
-    return `Faltan ${String(missing)} caracteres para generar`;
-  return "Incluye el tema, los objetivos de aprendizaje y el nivel. Mínimo 10 caracteres.";
+    return i18n.t("workspace:faltan_value_caracteres_para_generar", { p0: String(missing) });
+  return i18n.t("workspace:incluye_el_tema_los_objetivos_de_aprendizaje__aefed8");
 }
 
 /** Campo principal de /crear: label visible, ayuda debajo y error solo tras interactuar. */
@@ -33,17 +35,19 @@ export function CreationPromptField({
   onBlur,
   onSubmitShortcut,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const invalid = showError && missingPromptChars(prompt) > 0;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   // El ejemplo sustituye lo escrito: si había texto propio, se ofrece deshacerlo.
   const applyExample = () => {
     const previous = prompt;
-    onPrompt(EXAMPLE_PROMPT);
+    const example = examplePrompt();
+    onPrompt(example);
     textareaRef.current?.focus();
-    if (previous.trim() === "" || previous === EXAMPLE_PROMPT) return;
-    toast("Se reemplazó tu descripción por el ejemplo.", {
+    if (previous.trim() === "" || previous === example) return;
+    toast(t("workspace:se_reemplazo_tu_descripcion_por_el_ejemplo"), {
       action: {
-        label: "Deshacer",
+        label: t("workspace:deshacer"),
         onClick: () => {
           onPrompt(previous);
         },
@@ -54,17 +58,15 @@ export function CreationPromptField({
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <label htmlFor="ova-create-prompt" className="text-sm font-medium text-foreground">
-          Describe el tema del OVA
-        </label>
+          {t("workspace:describe_el_tema_del_ova")} </label>
         <Button
           variant="link"
           size="sm"
           className="-my-2 -mr-2.5 h-9 text-sm max-sm:h-11"
-          aria-label="Usar ejemplo de prompt"
+          aria-label={t("workspace:usar_ejemplo_de_prompt")}
           onClick={applyExample}
         >
-          Usar ejemplo
-        </Button>
+          {t("workspace:usar_ejemplo")} </Button>
       </div>
       <textarea
         ref={textareaRef}
@@ -77,7 +79,7 @@ export function CreationPromptField({
           "outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring",
           "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/40",
         )}
-        placeholder="Ej.: Control de concurrencia en Oracle. Objetivo: explicar bloqueos e interbloqueos y analizar cómo se detecta un ORA-00060."
+        placeholder={t("workspace:ej_control_de_concurrencia_en_oracle_objetivo_51e6e2")}
         value={prompt}
         onChange={(event) => {
           onPrompt(event.target.value);
@@ -97,7 +99,7 @@ export function CreationPromptField({
         >
           {helpText(prompt)}
         </p>
-        <p className="hidden shrink-0 text-muted-foreground sm:block">Ctrl+Enter para generar</p>
+        <p className="hidden shrink-0 text-muted-foreground sm:block">{t("workspace:ctrl_enter_para_generar")}</p>
       </div>
     </div>
   );

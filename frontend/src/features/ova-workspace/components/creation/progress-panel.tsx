@@ -1,4 +1,6 @@
+import i18n from "i18next";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/core/components/ui/button";
 
@@ -45,8 +47,8 @@ interface Props {
 function headline(status: string, failed: number): string {
   if (!isTerminalStatus(status) || failed === 0) return statusLabel(status);
   return failed === 1
-    ? "1 recurso no se pudo generar"
-    : `${String(failed)} recursos no se pudieron generar`;
+    ? i18n.t("workspace:1_recurso_no_se_pudo_generar")
+    : i18n.t("workspace:value_recursos_no_se_pudieron_generar", { p0: String(failed) });
 }
 
 /** Región aria-live: anuncia (sin robar el foco) cuando un recurso empieza, termina o falla. */
@@ -64,6 +66,7 @@ function useStatusAnnouncement(viewModel: ResourceVM[]): string {
 }
 
 export function ProgressPanel(props: Readonly<Props>) {
+  const { t } = useTranslation();
   const status = jobStatus(props.job);
   const terminal = isTerminalStatus(status);
   const done = doneCount(props.viewModel);
@@ -106,8 +109,7 @@ export function ProgressPanel(props: Readonly<Props>) {
       {failed > 0 && (props.allowBulkRetry ?? true) && (
         <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
           <Button variant="outline" size="sm" className="max-sm:h-11" onClick={props.onSelectAll}>
-            Seleccionar todos los fallidos
-          </Button>
+            {t("workspace:seleccionar_todos_los_fallidos")} </Button>
           <Button
             size="sm"
             className="max-sm:h-11"
@@ -115,12 +117,11 @@ export function ProgressPanel(props: Readonly<Props>) {
             disabled={props.selectedIds.length === 0}
             onClick={props.onRetrySelected}
           >
-            Reintentar seleccionados ({props.selectedIds.length})
+            {t("workspace:reintentar_seleccionados")}{props.selectedIds.length})
           </Button>
           {props.selectedIds.length === 0 && (
             <p id="retry-selected-hint" className="text-xs text-muted-foreground">
-              Marca los recursos que quieras reintentar.
-            </p>
+              {t("workspace:marca_los_recursos_que_quieras_reintentar")} </p>
           )}
         </div>
       )}

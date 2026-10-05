@@ -1,3 +1,4 @@
+import i18n from "i18next";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -27,10 +28,10 @@ export function useUndoableChatDelete(remove: (id: string) => void) {
       }
     };
     setHidden((ids) => [...ids, id]);
-    toast("Mensaje eliminado.", {
+    toast(i18n.t("workspace:mensaje_eliminado"), {
       duration: CHAT_UNDO_MS,
       action: {
-        label: "Deshacer",
+        label: i18n.t("workspace:deshacer"),
         onClick: () => {
           settle(true);
         },

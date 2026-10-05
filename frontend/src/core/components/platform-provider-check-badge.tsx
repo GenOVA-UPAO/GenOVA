@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -14,12 +15,12 @@ import {
  * si hay comprobación (`hasCheck`); si no, la fila muestra lo que sabe sin comprobar.
  */
 export function ProviderCheckBadge({ check }: Readonly<{ check: ProviderCheckState }>) {
+  const { t } = useTranslation();
   if (check.checking || !check.result) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
         <Icon name="spinner" size="text-xs" className="animate-spin motion-reduce:animate-none" />
-        Comprobando…
-      </span>
+        {t("shared:comprobando")} </span>
     );
   }
   const { tone, label } = providerCheckText(check.result);

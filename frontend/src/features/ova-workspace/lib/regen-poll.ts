@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import type { RegenChatMessage, RegenRagReport } from "./regen-chat";
 import { finishChatPatch, progressChatPatch } from "./regen-chat";
 
@@ -43,7 +45,7 @@ async function handleTerminalProgress(
   }
   d.onTerminal();
   if (progress.status === "success") d.onSuccess();
-  else d.onError("La regeneración falló.");
+  else d.onError(i18n.t("workspace:la_regeneracion_fallo"));
 }
 
 /** Un tick de polling de regeneración; actualiza chat y reprograma si sigue. */
@@ -67,9 +69,9 @@ export async function handleRegenPollTick(jobId: string, d: PollDeps): Promise<v
     if (!d.mounted()) return;
     await patchAssistantChat(d, {
       status: "error",
-      text: "Error al consultar el progreso de regeneración.",
+      text: i18n.t("workspace:error_al_consultar_el_progreso_de_regeneracion"),
     });
     d.onTerminal();
-    d.onError("Error al consultar el progreso de regeneración.");
+    d.onError(i18n.t("workspace:error_al_consultar_el_progreso_de_regeneracion"));
   }
 }

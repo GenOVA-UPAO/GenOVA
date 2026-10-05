@@ -1,5 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
+import i18n from "i18next";
 import { lazy, Suspense, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Icon } from "@/core/components/icon";
@@ -41,6 +43,8 @@ export function WorkspacePanelToolbar({
   canExport = true,
   className,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
+  const aiSettingsLabel = t("workspace:configuracion_de_ia");
   const [history, setHistory] = useState(false);
   const settings = useLlmSettingsModal();
   const download = useExportDownload(ovaId);
@@ -56,13 +60,12 @@ export function WorkspacePanelToolbar({
       <div className="hidden items-center gap-1 md:flex">
         <Button variant="ghost" size="sm" onClick={openHistory}>
           <Icon name="clock-counter-clockwise" />
-          Historial de versiones
-        </Button>
-        <Tooltip label="Configuración de IA" side="bottom">
+          {t("workspace:historial_de_versiones")} </Button>
+        <Tooltip label={aiSettingsLabel} side="bottom">
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Configuración de IA"
+            aria-label={aiSettingsLabel}
             onClick={openSettings}
           >
             <Icon name="gear" />
@@ -74,7 +77,7 @@ export function WorkspacePanelToolbar({
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Más acciones"
+            aria-label={t("workspace:mas_acciones")}
             className="max-md:size-11 md:hidden"
           >
             <Icon name="dots-three-vertical" weight="bold" />
@@ -82,11 +85,9 @@ export function WorkspacePanelToolbar({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuItem onSelect={openHistory}>
-            <Icon name="clock-counter-clockwise" /> Historial de versiones
-          </DropdownMenuItem>
+            <Icon name="clock-counter-clockwise" /> {t("workspace:historial_de_versiones")} </DropdownMenuItem>
           <DropdownMenuItem onSelect={openSettings}>
-            <Icon name="gear" /> Configuración de IA
-          </DropdownMenuItem>
+            <Icon name="gear" /> {aiSettingsLabel} </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <ExportButton
@@ -122,13 +123,13 @@ function useExportDownload(ovaId: string) {
   const download = useMutation({
     mutationFn: (format: ExportFormatId) => exportOva(ovaId, format),
     onSuccess: () => {
-      toast.success("Descarga iniciada");
+      toast.success(i18n.t("workspace:descarga_iniciada"));
     },
     onError: (error, format) => {
-      toast.error("No se pudo descargar el paquete", {
+      toast.error(i18n.t("workspace:no_se_pudo_descargar_el_paquete"), {
         description: error.message,
         action: {
-          label: "Reintentar",
+          label: i18n.t("workspace:reintentar"),
           onClick: () => {
             download.mutate(format);
           },

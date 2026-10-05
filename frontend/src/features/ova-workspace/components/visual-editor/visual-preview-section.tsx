@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
@@ -17,14 +19,14 @@ export function VisualPreviewSection({
   canApply,
   onApply,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-0 flex-col space-y-3 lg:col-span-7">
       <div className="flex items-center justify-between border-b border-border pb-2">
         <div className="flex items-center gap-2">
           <Icon name="eye" className="size-4 text-primary" />
           <h3 className="font-heading text-xs font-bold text-foreground">
-            Vista previa del recurso
-          </h3>
+            {t("workspace:vista_previa_del_recurso")} </h3>
         </div>
 
         <button
@@ -39,13 +41,11 @@ export function VisualPreviewSection({
           {isApplying ? (
             <>
               <Icon name="spinner" className="size-3.5 animate-spin" />
-              Guardando versión…
-            </>
+              {t("workspace:guardando_version")} </>
           ) : (
             <>
               <Icon name="floppy-disk" className="size-3.5" />
-              Aplicar como nueva versión
-            </>
+              {t("workspace:aplicar_como_nueva_version")} </>
           )}
         </button>
       </div>

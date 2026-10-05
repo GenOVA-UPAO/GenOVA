@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 import { MIN_PROMPT_LENGTH } from "./creation-form";
 
 const MIN_PHASES = 2;
@@ -9,15 +11,15 @@ export function missingPromptChars(prompt: string): number {
 
 function phasesPhrase(phases: number): string {
   const left = MIN_PHASES - phases;
-  return phases === 0 ? `en al menos ${String(MIN_PHASES)} fases` : `en ${String(left)} fase más`;
+  return phases === 0 ? i18n.t("workspace:en_al_menos_value_fases", { p0: String(MIN_PHASES) }) : i18n.t("workspace:en_value_fase_mas", { p0: String(left) });
 }
 
 function promptPhrase(prompt: string): string {
   const missing = missingPromptChars(prompt);
-  if (prompt.trim().length === 0) return "describe el tema";
+  if (prompt.trim().length === 0) return i18n.t("workspace:describe_el_tema");
   return missing === 1
-    ? "falta 1 carácter en la descripción"
-    : `faltan ${String(missing)} caracteres en la descripción`;
+    ? i18n.t("workspace:falta_1_caracter_en_la_descripcion")
+    : i18n.t("workspace:faltan_value_caracteres_en_la_descripcion", { p0: String(missing) });
 }
 
 /**
@@ -28,18 +30,18 @@ export function generateBlocker(prompt: string, phases: number): string | null {
   const promptOk = missingPromptChars(prompt) === 0;
   const phasesOk = phases >= MIN_PHASES;
   if (!promptOk && !phasesOk) {
-    const first = prompt.trim().length === 0 ? "describe el tema" : "completa la descripción";
-    return `Para generar, ${first} y elige recursos ${phasesPhrase(phases)}.`;
+    const first = prompt.trim().length === 0 ? i18n.t("workspace:describe_el_tema") : i18n.t("workspace:completa_la_descripcion");
+    return i18n.t("workspace:para_generar_value_y_elige_recursos_value", { p0: first, p1: phasesPhrase(phases) });
   }
-  if (!promptOk) return `Para generar, ${promptPhrase(prompt)}.`;
-  if (!phasesOk) return `Para generar, elige recursos ${phasesPhrase(phases)}.`;
+  if (!promptOk) return i18n.t("workspace:para_generar_value", { p0: promptPhrase(prompt) });
+  if (!phasesOk) return i18n.t("workspace:para_generar_elige_recursos_value", { p0: phasesPhrase(phases) });
   return null;
 }
 
 /** Resumen de la selección: «3 recursos en 2 fases». */
 export function selectionSummary(total: number, phases: number): string {
-  if (total === 0) return "Sin recursos elegidos";
-  const resources = total === 1 ? "1 recurso" : `${String(total)} recursos`;
-  const phaseText = phases === 1 ? "1 fase" : `${String(phases)} fases`;
-  return `${resources} en ${phaseText}`;
+  if (total === 0) return i18n.t("workspace:sin_recursos_elegidos");
+  const resources = i18n.t("workspace:resources", { count: total });
+  const phaseText = i18n.t("workspace:phases", { count: phases });
+  return i18n.t("workspace:value_en_value", { p0: resources, p1: phaseText });
 }

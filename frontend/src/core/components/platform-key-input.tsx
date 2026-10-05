@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { type Ref, useId, useState } from "react";
 
 import { Icon } from "@/core/components/icon";
@@ -25,6 +26,7 @@ export function PlatformKeyInput({
   onChange,
   onSubmit,
 }: Readonly<PlatformKeyInputProps>) {
+  const { t } = useTranslation();
   const inputId = useId();
   const [show, setShow] = useState(false);
 
@@ -57,7 +59,7 @@ export function PlatformKeyInput({
           onClick={() => {
             setShow((v) => !v);
           }}
-          aria-label={show ? "Ocultar clave" : "Mostrar clave"}
+          aria-label={show ? t("shared:ocultar_clave") : t("shared:mostrar_clave")}
           className="absolute top-1/2 right-1.5 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           <Icon name={show ? "eye-slash" : "eye"} size="text-base" />

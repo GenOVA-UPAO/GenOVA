@@ -32,7 +32,7 @@ export function LlmSettingsPlatformTask({ tipo, label }: Readonly<LlmSettingsPla
 function platformSummary(
   store: LlmSettingsStore,
   tipo: string,
-  t: (key: string, opts?: object) => string,
+  t: (key: string, opts?: Record<string, unknown>) => string,
 ): { name: string; detail: string } {
   const entry = platformEntry(store, tipo);
   if (!entry) return { name: t("tasks.noModel"), detail: "" };
@@ -58,7 +58,7 @@ function platformFallbackCount(store: LlmSettingsStore, tipo: string): number {
   return store.platform?.fallbacks?.[tipo]?.length ?? 0;
 }
 
-function fallbackText(count: number, t: (key: string, opts?: object) => string): string {
+function fallbackText(count: number, t: (key: string, opts?: Record<string, unknown>) => string): string {
   if (count === 0) return "";
   return ` · ${t("tasks.fallbackItemCount", { count })}`;
 }

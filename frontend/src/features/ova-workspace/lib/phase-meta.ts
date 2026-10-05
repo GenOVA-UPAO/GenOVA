@@ -1,3 +1,4 @@
+import i18n from "i18next";
 /**
  * Metadatos canónicos de las fases 5E (label + clases de tab/badge).
  * Fuente única: antes existían dos copias con las mismas clases — PHASE_META
@@ -16,27 +17,27 @@ const ACCENT_BADGE = "bg-accent-brand/10 text-accent-brand border-accent-brand/2
 
 const META: Record<string, PhaseMeta> = {
   engage: {
-    label: "Enganche",
+    get label() { return i18n.t("workspace:enganche"); },
     tab: "bg-primary text-primary-foreground",
     badge: PRIMARY_BADGE,
   },
   explore: {
-    label: "Exploración",
+    get label() { return i18n.t("workspace:exploracion"); },
     tab: "bg-primary/85 text-primary-foreground",
     badge: PRIMARY_BADGE,
   },
   explain: {
-    label: "Explicación",
+    get label() { return i18n.t("workspace:explicacion"); },
     tab: "bg-primary/70 text-primary-foreground",
     badge: PRIMARY_BADGE,
   },
   elaborate: {
-    label: "Elaboración",
+    get label() { return i18n.t("workspace:elaboracion"); },
     tab: "bg-accent-brand/85 text-primary-foreground",
     badge: ACCENT_BADGE,
   },
   evaluate: {
-    label: "Evaluación",
+    get label() { return i18n.t("workspace:evaluacion"); },
     tab: "bg-accent-brand text-primary-foreground",
     badge: ACCENT_BADGE,
   },

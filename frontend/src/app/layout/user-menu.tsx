@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import { authStore, useCurrentUser } from "@/core/auth/auth-store";
@@ -18,9 +20,9 @@ import { hasPermission, userInitials } from "./lib/layout-helpers";
 
 const THEME_ICON: Record<ThemeMode, string> = { light: "sun", dark: "moon", system: "monitor" };
 const THEME_LABEL: Record<ThemeMode, string> = {
-  light: "Modo claro",
-  dark: "Modo oscuro",
-  system: "Modo del sistema",
+  get light() { return i18n.t("shell:modo_claro"); },
+  get dark() { return i18n.t("shell:modo_oscuro"); },
+  get system() { return i18n.t("shell:modo_del_sistema"); },
 };
 
 interface UserMenuProps {
@@ -28,6 +30,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ onOpenAppearance }: Readonly<UserMenuProps>) {
+  const { t } = useTranslation();
   const user = useCurrentUser();
   const { mode } = useTheme();
   const navigate = useNavigate();
@@ -44,35 +47,32 @@ export function UserMenu({ onOpenAppearance }: Readonly<UserMenuProps>) {
     <DropdownMenu>
       <DropdownMenuTrigger
         className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-95"
-        aria-label={`Menú de usuario, ${initials}`}
+        aria-label={t("shell:menu_de_usuario_value", { p0: initials })}
       >
         {initials}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="font-normal">
           <p className="truncate text-sm font-semibold">
-            {firstNonBlank(user?.full_name) ?? "Usuario GenOVA"}
+            {firstNonBlank(user?.full_name) ?? t("shell:usuario_genova")}
           </p>
           <p className="truncate text-xs text-muted-foreground">
-            {firstNonBlank(user?.email) ?? "sesión activa"}
+            {firstNonBlank(user?.email) ?? t("shell:sesion_activa")}
           </p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/profile">
-            <Icon name="user-circle" size="text-base" /> Mi perfil
-          </Link>
+            <Icon name="user-circle" size="text-base" /> {t("shell:mi_perfil")} </Link>
         </DropdownMenuItem>
         {hasPermission(user, "view_analytics") && (
           <DropdownMenuItem asChild>
             <Link to="/analytics">
-              <Icon name="chart-bar" size="text-base" /> Analítica
-            </Link>
+              <Icon name="chart-bar" size="text-base" /> {t("shell:analitica")} </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onSelect={onOpenAppearance}>
-          <Icon name="palette" size="text-base" /> Estilo de mis OVAs
-        </DropdownMenuItem>
+          <Icon name="palette" size="text-base" /> {t("shell:estilo_de_mis_ovas")} </DropdownMenuItem>
         <DropdownMenuItem
           // Keep the menu open so the user can cycle several times.
           onSelect={(e) => {
@@ -84,8 +84,7 @@ export function UserMenu({ onOpenAppearance }: Readonly<UserMenuProps>) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={() => void logout()}>
-          <Icon name="sign-out" size="text-base" /> Cerrar sesión
-        </DropdownMenuItem>
+          <Icon name="sign-out" size="text-base" /> {t("shell:cerrar_sesion")} </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

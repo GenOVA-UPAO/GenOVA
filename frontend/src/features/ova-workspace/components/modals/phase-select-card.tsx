@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Icon } from "@/core/components/icon";
 import { Button } from "@/core/components/ui/button";
 import { cn } from "@/core/lib/cn";
@@ -29,6 +31,7 @@ export function PhaseSelectCard({
   onOpenPreview,
   onConfigure,
 }: Readonly<Props>) {
+  const { t } = useTranslation();
   const title = resourceDisplayName(resource.tipo ?? String(resource.id));
   return (
     <article
@@ -42,7 +45,7 @@ export function PhaseSelectCard({
     >
       <button
         type="button"
-        aria-label={`Seleccionar ${title}`}
+        aria-label={t("workspace:seleccionar_value", { p0: title })}
         aria-pressed={selected}
         disabled={disabled}
         onClick={onSelect}
@@ -60,10 +63,10 @@ export function PhaseSelectCard({
           </h4>
           {resource.interactividad && (
             <p className="text-xs text-muted-foreground">
-              Interactividad {resource.interactividad.toLowerCase()}
+              {t("workspace:interactividad")} {resource.interactividad.toLowerCase()}
             </p>
           )}
-          {disabled && <p className="text-xs text-muted-foreground">Límite de la fase alcanzado</p>}
+          {disabled && <p className="text-xs text-muted-foreground">{t("workspace:limite_de_la_fase_alcanzado")}</p>}
         </div>
         <Icon
           name={selected ? "check-circle" : "circle"}
@@ -77,21 +80,19 @@ export function PhaseSelectCard({
           size="sm"
           variant="ghost"
           onClick={onConfigure}
-          aria-label={`Configurar ${title}`}
+          aria-label={t("workspace:configurar_value", { p0: title })}
         >
           <Icon name="sliders-horizontal" />
-          Configurar
-        </Button>
+          {t("workspace:configurar")} </Button>
         <Button
           className="pointer-events-auto relative max-sm:h-11 lg:hidden"
           size="sm"
           variant="ghost"
           onClick={onOpenPreview}
-          aria-label={`Vista previa ${title}`}
+          aria-label={t("workspace:vista_previa_value", { p0: title })}
         >
           <Icon name="eye" />
-          Vista previa
-        </Button>
+          {t("workspace:vista_previa")} </Button>
       </div>
     </article>
   );

@@ -23,5 +23,14 @@ export function getResourcePreview(
 
 /** Nombres de todos los tipos de recurso del catálogo (tal como los envía el backend). */
 export function catalogResourceNames(): Set<string> {
-  return new Set(Object.values(PREVIEWS_BY_PHASE).flatMap((previews) => Object.values(previews).map((info) => info.label)));
+  return new Set(Object.values(PREVIEWS_BY_PHASE).flatMap((previews) => Object.values(previews).map((info) => info.canonicalLabel)));
+}
+
+/** Traduce únicamente nombres del catálogo; los títulos del contenido se conservan. */
+export function localizedCatalogName(name: string): string | null {
+  for (const previews of Object.values(PREVIEWS_BY_PHASE)) {
+    const match = Object.values(previews).find((info) => info.canonicalLabel === name || info.label === name);
+    if (match) return match.label;
+  }
+  return null;
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ConfirmModal } from "@/core/components/confirm-modal";
 
 interface PlatformKeyDeleteConfirmProps {
@@ -9,13 +10,14 @@ interface PlatformKeyDeleteConfirmProps {
 }
 
 export function PlatformKeyDeleteConfirm(props: Readonly<PlatformKeyDeleteConfirmProps>) {
+  const { t } = useTranslation();
   return (
     <ConfirmModal
       open={props.open}
-      title={`¿Eliminar la clave de ${props.providerLabel}?`}
-      message="Los usuarios sin clave propia para este proveedor no podrán usar sus modelos hasta que configures otra."
-      confirmLabel="Eliminar clave"
-      loadingLabel="Eliminando…"
+      title={t("shared:eliminar_la_clave_de_value", { p0: props.providerLabel })}
+      message={t("shared:los_usuarios_sin_clave_propia_para_este_prove_a5ac78")}
+      confirmLabel={t("shared:eliminar_clave")}
+      loadingLabel={t("shared:eliminando")}
       isLoading={props.deleting}
       onConfirm={props.onConfirm}
       onCancel={props.onCancel}

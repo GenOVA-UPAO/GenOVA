@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
 import type { ComponentProps } from "react";
 import { useState } from "react";
@@ -17,12 +19,13 @@ function PasswordInput({
   id,
   type = "password",
   revealable = true,
-  revealLabel = "Mostrar contraseña",
-  hideLabel = "Ocultar contraseña",
+  revealLabel = i18n.t("shared:mostrar_contrasena"),
+  hideLabel = i18n.t("shared:ocultar_contrasena"),
   disabled,
   ref,
   ...props
 }: Readonly<PasswordInputProps>) {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
   const visible = isPassword && showPassword;
@@ -59,6 +62,7 @@ interface RevealToggleProps {
 }
 
 function RevealToggle({ shown, disabled, label, onToggle }: Readonly<RevealToggleProps>) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"

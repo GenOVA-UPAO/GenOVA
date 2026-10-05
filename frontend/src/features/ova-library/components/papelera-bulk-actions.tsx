@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
@@ -16,16 +15,16 @@ export function PapeleraBulkActions({
   onRestore,
   onDelete,
 }: Readonly<PapeleraBulkActionsProps>) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <>
       <Button variant="outline" onClick={onRestore} disabled={disabled}>
         <Icon name="arrow-counter-clockwise" size="text-base" />
-        {i18n.t("ova-library:restaurar")}{" "}
+        {t("ova-library:restaurar")}{" "}
       </Button>
       <Button variant="destructive" onClick={onDelete} disabled={disabled}>
         <Icon name="trash" size="text-base" />
-        {i18n.t("ova-library:eliminar_definitivamente")}{" "}
+        {t("ova-library:eliminar_definitivamente")}{" "}
       </Button>
     </>
   );
