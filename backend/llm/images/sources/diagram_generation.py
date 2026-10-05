@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from typing import Any
 
 import httpx
@@ -69,7 +70,7 @@ def generate_diagram_json(prompt: str, *, model: str | None = None) -> tuple[str
             "think": False,
             "options": {"num_predict": 3000, "temperature": 0},
         },
-        timeout=float(os.getenv("OVA_LOCAL_LLM_TIMEOUT", "300")),
+        timeout=float(os.getenv("OVA_DIAGRAM_TIMEOUT", "60")),  # una imagen no debe frenar el recurso
     )
     response.raise_for_status()
     return response.json()["message"]["content"], local_model
@@ -151,6 +152,15 @@ def prompt_for(kind: str, concept: str, criteria: str) -> str:
         example["aristas"] = []
 
     rule_text = rules.get(kind, rules["flujo"])
+    if kind == "flujo" and re.search(
+        r"\bestados?\b|ciclo de vida|transacci[oó]n", concept + " " + criteria, re.I
+    ):
+        rule_text += (
+            " En flujos de estados conocidos, incluye todas las transiciones de error desde cada estado no final "
+            "donde ese error sea posible, aunque el detalle no las enumere. Todo estado no final tiene salida. "
+            "Los estados finales no tienen transiciones salientes, salvo que el detalle pida explícitamente "
+            "reintentos; no inventes reintentos."
+        )
     return (
         f"Diagrama en español de {concept}. tipo DEBE ser {kind}. {criteria} {rule_text} "
         "IDs únicos; referencias existentes. Etiquetas cortas (máx 24 caracteres); "
@@ -245,7 +255,7 @@ def generate_diagram_for_request(
     except Exception as exc:
         import structlog
 
-        structlog.get_logger(__name__).warning("diagram_generation fallback failed", error=str(exc)[:120])
+        error = f"{type(exc).__name__}: {exc}"[:120]  # ReadTimeout suele venir sin mensaje
+        structlog.get_logger(__name__).warning("diagram_generation fallback failed", error=error)
 
     return None
-
