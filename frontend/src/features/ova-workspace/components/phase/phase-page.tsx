@@ -37,7 +37,7 @@ export function PhasePage({
       <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
         <header>
           <h1 className="font-display text-3xl font-semibold sm:text-4xl">
-            {t("workspace:fase_302")} {phaseMeta(phase).label || phase}
+            {t("workspace:fase_302")} {phaseMeta(phase, t).label || phase}
           </h1>
           <p className="mt-1.5 text-sm font-medium text-muted-foreground">{description}</p>
         </header>
@@ -74,7 +74,7 @@ export function PhasePage({
             <ResourceConfigModal
               phase={phase}
               resourceId={String(target.id)}
-              resourceName={target.tipo ? resourceDisplayName(target.tipo) : undefined}
+              resourceName={target.tipo ? resourceDisplayName(target.tipo, t) : undefined}
               config={configs.data?.configs?.[`${phase}:${String(target.id)}`]}
               onSave={(value) => {
                 configs.save.mutate({

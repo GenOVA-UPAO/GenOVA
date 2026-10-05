@@ -1,8 +1,8 @@
 import i18n from "i18next";
 // La primera línea es el tema sin etiqueta: el backend titula el OVA con el
 // inicio del prompt. El nivel lo pone el selector de «Nivel educativo».
-export const EXAMPLE_PROMPT =
-  i18n.t("workspace:examplePrompt", { lng: "es" });
+export let EXAMPLE_PROMPT = examplePrompt();
+i18n.on("languageChanged", () => { EXAMPLE_PROMPT = examplePrompt(); });
 
 export function examplePrompt(): string {
   return i18n.t("workspace:examplePrompt");

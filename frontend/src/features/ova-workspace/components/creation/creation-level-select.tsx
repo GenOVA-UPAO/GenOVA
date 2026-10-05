@@ -40,7 +40,7 @@ export function CreationLevelSelect({ value, onChange }: Readonly<Props>) {
         <SelectContent>
           {EDUCATION_LEVELS.map((level) => (
             <SelectItem key={level.id} value={level.id}>
-              {level.label}
+              {t(level.labelKey)}
             </SelectItem>
           ))}
         </SelectContent>

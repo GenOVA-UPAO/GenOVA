@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -12,18 +12,18 @@ import { GenerationProgressColumn } from "./generation-progress-column";
 import { PreviewAside } from "./preview-aside";
 import { ProgressActions } from "./progress-actions";
 
-function subtitle(job: ReturnType<typeof useOvaJob>): string {
+function subtitle(job: ReturnType<typeof useOvaJob>, t: TFunction): string {
   if (!job.outcome.isTerminal) {
-    return i18n.t("workspace:generationBackgroundHint");
+    return t("workspace:generationBackgroundHint");
   }
-  if (!job.outcome.partialFail) return i18n.t("workspace:revisa_el_resultado_de_cada_recurso");
+  if (!job.outcome.partialFail) return t("workspace:revisa_el_resultado_de_cada_recurso");
   const failed = failedCount(job.resources);
   const total = String(job.resources.length);
   const lead =
     failed === 1
-      ? i18n.t("workspace:1_de_value_recursos_no_se_pudo_generar", { p0: total })
-      : i18n.t("workspace:value_de_value_recursos_no_se_pudieron_generar", { p0: String(failed), p1: total });
-  return i18n.t("workspace:generationRetryHint", { p0: lead });
+      ? t("workspace:1_de_value_recursos_no_se_pudo_generar", { p0: total })
+      : t("workspace:value_de_value_recursos_no_se_pudieron_generar", { p0: String(failed), p1: total });
+  return t("workspace:generationRetryHint", { p0: lead });
 }
 
 export function CreationProgress({
@@ -50,13 +50,13 @@ export function CreationProgress({
   // El error de carga del job ya lo muestra la columna; aquí solo los de las acciones.
   const error = job.resume.error ?? job.cancel.error;
   const title = job.outcome.isTerminal
-    ? terminalTitle(job.data?.status ?? "error", job.outcome.partialFail)
+    ? terminalTitle(job.data?.status ?? "error", job.outcome.partialFail, t)
     : t("workspace:generando_tu_ova");
   return (
     <section className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8 sm:px-6">
       <header>
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">{title}</h1>
-        <p className="mt-1.5 text-sm font-medium text-muted-foreground">{subtitle(job)}</p>
+        <p className="mt-1.5 text-sm font-medium text-muted-foreground">{subtitle(job, t)}</p>
       </header>
       <div className="lg:grid lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
       <div className="min-w-0 space-y-3">

@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -26,11 +25,11 @@ interface Props {
 const HINT_ID = "chat-prompt-hint";
 
 function hintText(busy: boolean, uploading: boolean, indexing: boolean, empty: boolean): string {
-  if (busy) return i18n.t("workspace:espera_a_que_termine_la_regeneracion_en_curso");
-  if (uploading) return i18n.t("workspace:subiendo_archivos");
-  if (indexing) return i18n.t("workspace:indexando_archivos_para_que_la_ia_pueda_consultarlos");
-  if (empty) return i18n.t("workspace:escribe_un_cambio_para_poder_aplicarlo");
-  return i18n.t("workspace:ctrl_enter_para_aplicar");
+  if (busy) return "workspace:espera_a_que_termine_la_regeneracion_en_curso";
+  if (uploading) return "workspace:subiendo_archivos";
+  if (indexing) return "workspace:indexando_archivos_para_que_la_ia_pueda_consultarlos";
+  if (empty) return "workspace:escribe_un_cambio_para_poder_aplicarlo";
+  return "workspace:ctrl_enter_para_aplicar";
 }
 
 export function ChatComposer({
@@ -83,7 +82,7 @@ export function ChatComposer({
       <div className="flex items-center gap-2">
         <ChatAttachButton uploads={uploads} />
         <p id={HINT_ID} aria-live="polite" className="min-w-0 flex-1 text-xs text-muted-foreground">
-          {hintText(busy, uploads.uploading, uploads.indexing, empty)}
+          {t(hintText(busy, uploads.uploading, uploads.indexing, empty))}
         </p>
         <Button
           disabled={disabled}

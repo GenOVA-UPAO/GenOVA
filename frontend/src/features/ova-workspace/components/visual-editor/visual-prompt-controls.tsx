@@ -1,15 +1,14 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
 import { cn } from "@/core/lib/cn";
 
 const QUICK_PROMPTS = [
-  { get label() { return i18n.t("workspace:quitar_ejemplo"); }, get prompt() { return i18n.t("workspace:quita_el_ejemplo"); } },
-  { get label() { return i18n.t("workspace:anadir_resumen"); }, get prompt() { return i18n.t("workspace:anade_un_resumen_al_final"); } },
-  { get label() { return i18n.t("workspace:pregunta_al_inicio"); }, get prompt() { return i18n.t("workspace:pon_la_pregunta_al_inicio"); } },
-  { get label() { return i18n.t("workspace:anadir_objetivo"); }, get prompt() { return i18n.t("workspace:agrega_un_objetivo_de_aprendizaje_al_inicio"); } },
-  { get label() { return i18n.t("workspace:quitar_ultima_pregunta"); }, get prompt() { return i18n.t("workspace:quita_la_ultima_pregunta_del_quiz"); } },
+  { label: "workspace:quitar_ejemplo", prompt: "workspace:quita_el_ejemplo" },
+  { label: "workspace:anadir_resumen", prompt: "workspace:anade_un_resumen_al_final" },
+  { label: "workspace:pregunta_al_inicio", prompt: "workspace:pon_la_pregunta_al_inicio" },
+  { label: "workspace:anadir_objetivo", prompt: "workspace:agrega_un_objetivo_de_aprendizaje_al_inicio" },
+  { label: "workspace:quitar_ultima_pregunta", prompt: "workspace:quita_la_ultima_pregunta_del_quiz" },
 ] as const;
 
 interface Props {
@@ -63,11 +62,11 @@ export function VisualPromptControls({
             key={qp.label}
             type="button"
             onClick={() => {
-              onChangePrompt(qp.prompt);
+              onChangePrompt(t(qp.prompt));
             }}
             className="rounded-full border border-border/80 bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring transition-colors"
           >
-            {qp.label}
+            {t(qp.label)}
           </button>
         ))}
       </div>

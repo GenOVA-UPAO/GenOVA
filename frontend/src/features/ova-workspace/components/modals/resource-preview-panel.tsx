@@ -15,7 +15,7 @@ export function ResourcePreviewPanel({
 }: Readonly<{ phase: string; resource?: Resource }>) {
   const { t } = useTranslation();
   const previewLabel = t("workspace:vista_previa_del_recurso");
-  const preview = resource ? getResourcePreview(phase, resource.id) : null;
+  const preview = resource ? getResourcePreview(phase, resource.id, t) : null;
   if (!resource)
     return (
       <aside
@@ -34,7 +34,7 @@ export function ResourcePreviewPanel({
     return (
       <aside aria-label={previewLabel} className={`space-y-1 ${PANEL}`}>
         <h3 className="font-semibold">
-          {resource.tipo ? resourceDisplayName(resource.tipo) : t("workspace:recurso")}
+          {resource.tipo ? resourceDisplayName(resource.tipo, t) : t("workspace:recurso")}
         </h3>
         <p className="text-sm text-muted-foreground">
           {t("workspace:vista_previa_no_disponible_para_este_recurso")} </p>
@@ -43,7 +43,7 @@ export function ResourcePreviewPanel({
   return (
     <aside aria-label={previewLabel} className={`space-y-4 ${PANEL}`}>
       <div className="space-y-1.5">
-        <h3 className="text-lg leading-snug font-semibold">{resourceDisplayName(preview.label)}</h3>
+        <h3 className="text-lg leading-snug font-semibold">{resourceDisplayName(preview.label, t)}</h3>
         <p className="text-sm leading-relaxed text-muted-foreground">{preview.returns}</p>
       </div>
       <figure className="space-y-2">

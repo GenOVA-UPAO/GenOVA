@@ -35,7 +35,7 @@ export function WorkspacePreviewFooter({
 }: Readonly<Props>) {
   const { t } = useTranslation();
   if (!active) return null;
-  const meta = phaseMeta(active.phase_type);
+  const meta = phaseMeta(active.phase_type, t);
   return (
     <div className="flex min-w-0 shrink-0 items-center gap-2 border-t border-border py-1.5 pr-1.5 pl-3 text-xs text-muted-foreground">
       <span className={`shrink-0 rounded-full border px-2 py-0.5 font-medium ${meta.badge}`}>

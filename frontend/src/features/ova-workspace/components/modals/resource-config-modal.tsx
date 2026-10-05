@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -19,11 +19,11 @@ interface Props {
   onClose: () => void;
 }
 
-function rangeError(field: ConfigField, raw: string): string | undefined {
+function rangeError(field: ConfigField, raw: string, t: TFunction): string | undefined {
   const value = Number(raw);
   if (raw.trim() !== "" && Number.isInteger(value) && value >= field.min && value <= field.max)
     return undefined;
-  return i18n.t("workspace:escribe_un_numero_entero_entre_value_y_value", { p0: String(field.min), p1: String(field.max) });
+  return t("workspace:escribe_un_numero_entero_entre_value_y_value", { p0: String(field.min), p1: String(field.max) });
 }
 
 function toDraft(fields: ConfigField[], config: Record<string, number>): Record<string, string> {
@@ -41,7 +41,7 @@ export default function ResourceConfigModal({
   onClose,
 }: Readonly<Props>) {
   const { t } = useTranslation();
-  const fields = getSchema(phase, resourceId);
+  const fields = getSchema(phase, resourceId, t);
   const [draft, setDraft] = useState(() =>
     toDraft(fields, config ?? getDefaultConfig(phase, resourceId)),
   );
@@ -51,11 +51,11 @@ export default function ResourceConfigModal({
   const errors = Object.fromEntries(
     fields.map((field) => [
       field.key,
-      tried ? rangeError(field, draft[field.key] ?? "") : undefined,
+      tried ? rangeError(field, draft[field.key] ?? "", t) : undefined,
     ]),
   );
   const submit = () => {
-    const invalid = fields.find((field) => rangeError(field, draft[field.key] ?? ""));
+    const invalid = fields.find((field) => rangeError(field, draft[field.key] ?? "", t));
     if (invalid) {
       setTried(true);
       document.getElementById(`${formId}-${invalid.key}`)?.focus();

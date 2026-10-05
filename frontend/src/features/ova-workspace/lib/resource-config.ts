@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import i18n, { type TFunction } from "i18next";
 
 /**
  * Schemas de configuración por recurso de las 5 fases (clave `fase:recurso`).
@@ -8,6 +8,8 @@ import i18n from "i18next";
 export interface ConfigField {
   key: string;
   label: string;
+  labelKey?: string;
+  descriptionKey?: string;
   type: "number";
   min: number;
   max: number;
@@ -20,6 +22,8 @@ type FieldArgs = [key: string, label: string, min: number, max: number, def: num
 
 const N = (...[key, label, min, max, def, desc = ""]: FieldArgs): ConfigField => ({
   key,
+  labelKey: label,
+  descriptionKey: desc,
   get label() { return i18n.t(label); },
   type: "number",
   min,
@@ -144,6 +148,7 @@ export function getDefaultConfig(phaseKey: string, resourceId: string): Record<s
   return Object.fromEntries(schema.map((f) => [f.key, f.default]));
 }
 
-export function getSchema(phaseKey: string, resourceId: string): ConfigField[] {
-  return RESOURCE_CONFIG_SCHEMA[`${phaseKey}:${resourceId}`] ?? [];
+export function getSchema(phaseKey: string, resourceId: string, t?: TFunction): ConfigField[] {
+  const fields = RESOURCE_CONFIG_SCHEMA[`${phaseKey}:${resourceId}`] ?? [];
+  return t ? fields.map((field) => ({ ...field, label: field.labelKey ? t(field.labelKey) : field.label, description: field.descriptionKey ? t(field.descriptionKey) : "" })) : fields;
 }

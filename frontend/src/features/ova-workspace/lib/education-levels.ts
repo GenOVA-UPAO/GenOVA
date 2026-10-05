@@ -5,6 +5,7 @@ export type EducationLevelId =
 export interface EducationLevel {
   id: EducationLevelId;
   label: string;
+  labelKey: string;
   /** Texto que se añade al prompt: `Nivel educativo: <promptText>.` */
   promptText: string;
 }
@@ -12,16 +13,18 @@ export interface EducationLevel {
 export const EDUCATION_LEVELS: readonly EducationLevel[] = [
   {
     id: "universitario-inicial",
-    get label() { return i18n.t("workspace:universitario_ciclos_iniciales"); },
+    labelKey: "workspace:universitario_ciclos_iniciales",
+    get label() { return i18n.t(this.labelKey); },
     promptText: "universitario (ciclos iniciales)",
   },
   {
     id: "universitario-avanzado",
-    get label() { return i18n.t("workspace:universitario_ciclos_avanzados"); },
+    labelKey: "workspace:universitario_ciclos_avanzados",
+    get label() { return i18n.t(this.labelKey); },
     promptText: "universitario (ciclos avanzados)",
   },
-  { id: "posgrado", get label() { return i18n.t("workspace:posgrado"); }, promptText: "posgrado" },
-  { id: "secundaria", get label() { return i18n.t("workspace:secundaria"); }, promptText: "secundaria" },
+  { id: "posgrado", labelKey: "workspace:posgrado", get label() { return i18n.t(this.labelKey); }, promptText: "posgrado" },
+  { id: "secundaria", labelKey: "workspace:secundaria", get label() { return i18n.t(this.labelKey); }, promptText: "secundaria" },
 ];
 
 export const DEFAULT_EDUCATION_LEVEL: EducationLevelId = "universitario-inicial";

@@ -24,7 +24,7 @@ export default function AddResourceModal({ ovaId, phaseType, currentCount, onClo
   const [prompt, setPrompt] = useState("");
   const { addPhase } = useOvaWorkspace(ovaId);
   const full = currentCount >= MAX_PER_PHASE;
-  const phaseLabel = phaseMeta(phaseType).label || phaseType;
+  const phaseLabel = phaseMeta(phaseType, t).label || phaseType;
   const empty = !prompt.trim();
   const submit = () => {
     if (empty || addPhase.isPending) return;

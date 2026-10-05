@@ -32,7 +32,7 @@ export function PhaseSelectCard({
   onConfigure,
 }: Readonly<Props>) {
   const { t } = useTranslation();
-  const title = resourceDisplayName(resource.tipo ?? String(resource.id));
+  const title = resourceDisplayName(resource.tipo ?? String(resource.id), t);
   return (
     <article
       className={cn(

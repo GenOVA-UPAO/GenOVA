@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -20,11 +20,11 @@ interface Props {
 
 const HELP_ID = "ova-create-prompt-help";
 
-function helpText(prompt: string): string {
+function helpText(prompt: string, t: TFunction): string {
   const missing = missingPromptChars(prompt);
   if (prompt.trim().length > 0 && missing > 0)
-    return i18n.t("workspace:faltan_value_caracteres_para_generar", { p0: String(missing) });
-  return i18n.t("workspace:promptHelp");
+    return t("workspace:faltan_value_caracteres_para_generar", { p0: String(missing) });
+  return t("workspace:promptHelp");
 }
 
 /** Campo principal de /crear: label visible, ayuda debajo y error solo tras interactuar. */
@@ -97,7 +97,7 @@ export function CreationPromptField({
           id={HELP_ID}
           className={invalid ? "font-medium text-destructive" : "text-muted-foreground"}
         >
-          {helpText(prompt)}
+          {helpText(prompt, t)}
         </p>
         <p className="hidden shrink-0 text-muted-foreground sm:block">{t("workspace:ctrl_enter_para_generar")}</p>
       </div>

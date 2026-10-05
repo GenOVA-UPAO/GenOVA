@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -17,13 +16,6 @@ import { ChatHistory } from "./chat-history";
 import { ChatPanelHeader } from "./chat-panel-header";
 import { ChatResourceSelect } from "./chat-resource-select";
 import { ChatScopeToggle } from "./chat-scope-toggle";
-
-function composerPlaceholder(selecting: boolean, count: number): string {
-  if (selecting && count > 0) {
-    return i18n.t("workspace:cambio_para_value_recursovalue", { p0: String(count), p1: count !== 1 ? "s" : "" });
-  }
-  return i18n.t("workspace:escribe_un_cambio_o_mejora_para_el_ova");
-}
 
 function withToggledId(list: string[], id: string): string[] {
   return list.includes(id) ? list.filter((v) => v !== id) : [...list, id];
@@ -85,7 +77,7 @@ export function WorkspaceChatPanel({
           }}
           busy={regen.busy}
           uploads={uploads}
-          placeholder={composerPlaceholder(selecting, live.length)}
+           placeholder={selecting && live.length > 0 ? t("workspace:chatPlaceholder", { count: live.length }) : t("workspace:escribe_un_cambio_o_mejora_para_el_ova")}
           scope={
             <ChatScopeToggle
               selecting={selecting}

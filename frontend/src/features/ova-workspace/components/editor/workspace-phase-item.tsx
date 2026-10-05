@@ -1,4 +1,5 @@
 import { type ReactNode, useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useOvaWorkspace } from "../../hooks/use-ova-workspace";
 import { resourceLabel } from "../../lib/resource-label";
@@ -31,7 +32,7 @@ export function WorkspacePhaseItem({ ovaId, phase, busy, onRegenerate, reorder }
   const [history, setHistory] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const editorId = useId();
-  const name = resourceLabel(phase);
+  const name = resourceLabel(phase, useTranslation().t);
   const dirty = content !== saved;
   const error = workspace.savePhase.error ?? workspace.deletePhase.error;
   return (

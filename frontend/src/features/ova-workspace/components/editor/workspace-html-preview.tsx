@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -20,19 +20,19 @@ import { WorkspacePreviewTabs } from "./workspace-preview-tabs";
  * colapsaban en la misma pestaña (WS-02/CR-01). Prioriza el título; si falta,
  * compone fase + tipo humanizado y sufija "(2)", "(3)" si aun así se repite.
  */
-function baseLabel(phase: PhaseWithContent): string {
+function baseLabel(phase: PhaseWithContent, t: TFunction): string {
   const title = phase.title?.trim();
-  if (title) return resourceDisplayName(title);
-  const meta = phaseMeta(phase.phase_type);
+  if (title) return resourceDisplayName(title, t);
+  const meta = phaseMeta(phase.phase_type, t);
   const type = humanizeResourceType(phase.resource_type as string | number | undefined);
-  return type ? `${meta.label}: ${type}` : meta.label || phase.phase_type;
+  return type ? `${meta.label}: ${resourceDisplayName(type, t)}` : meta.label || phase.phase_type;
 }
 
-function uniqueLabels(phases: PhaseWithContent[]): Map<string, string> {
+function uniqueLabels(phases: PhaseWithContent[], t: TFunction): Map<string, string> {
   const seen = new Map<string, number>();
   const result = new Map<string, string>();
   for (const phase of phases) {
-    const base = baseLabel(phase);
+    const base = baseLabel(phase, t);
     const count = (seen.get(base) ?? 0) + 1;
     seen.set(base, count);
     result.set(phase.id, count > 1 ? `${base} (${String(count)})` : base);
@@ -59,17 +59,17 @@ interface Selection {
 
 /** 👍/👎 del recurso visible; nada si el OVA es solo lectura o no hay recurso. */
 function feedbackSlot(
-  readOnly: boolean,
-  ovaId: string,
+  { readOnly, ovaId }: { readOnly: boolean; ovaId: string },
   active: PhaseWithContent | undefined,
   labels: Map<string, string>,
+  t: TFunction,
 ): ReactNode {
   if (readOnly || !active) return undefined;
   return (
     <ResourceFeedback
       ovaId={ovaId}
       phaseId={active.id}
-      resourceName={labels.get(active.id) ?? i18n.t("workspace:el_recurso")}
+      resourceName={labels.get(active.id) ?? t("workspace:el_recurso")}
     />
   );
 }
@@ -87,7 +87,7 @@ export default function WorkspaceHtmlPreview({ phases, ovaId, packageTheme, read
   const { t } = useTranslation();
   const [selection, setSelection] = useState<Selection | null>(null);
   const active = pickActive(phases, selection);
-  const labels = uniqueLabels(phases);
+  const labels = uniqueLabels(phases, t);
   const position = active ? phases.indexOf(active) : -1;
   const select = (index: number) => {
     const phase = phases.at(index);
@@ -130,7 +130,7 @@ export default function WorkspaceHtmlPreview({ phases, ovaId, packageTheme, read
           onNext={() => {
             select(position + 1);
           }}
-          feedback={feedbackSlot(readOnly, ovaId, active, labels)}
+          feedback={feedbackSlot({ readOnly, ovaId }, active, labels, t)}
         />
       </div>
     </section>

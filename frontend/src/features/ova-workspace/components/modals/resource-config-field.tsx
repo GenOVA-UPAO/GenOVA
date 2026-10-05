@@ -36,7 +36,7 @@ export function ResourceConfigField({ id, field, value, error, onChange }: Reado
         }}
       />
       <p id={`${id}-help`} className="text-xs leading-relaxed text-muted-foreground">
-        {field.description ? `${field.description}. ` : ""}{t("workspace:entre")} {field.min} y {field.max}.
+        {field.description ? `${field.description}. ` : ""}{t("workspace:configRange", { min: field.min, max: field.max })}
       </p>
       {error && (
         <p id={`${id}-error`} className="text-xs font-medium text-destructive">

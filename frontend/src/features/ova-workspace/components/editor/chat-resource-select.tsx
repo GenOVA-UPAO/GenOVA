@@ -33,7 +33,7 @@ export function ChatResourceSelect({ id, phases, selected, onToggle, onSelectAll
                 onToggle(phase.id, event.target.checked);
               }}
             />
-            <span className="min-w-0 truncate">{resourceLabel(phase)}</span>
+            <span className="min-w-0 truncate">{resourceLabel(phase, t)}</span>
           </label>
         ))}
       </div>

@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "@/core/components/icon";
@@ -17,8 +16,8 @@ interface Props {
 
 function requirement(phases: number): string {
   return phases === 0
-    ? i18n.t("workspace:elige_recursos_en_al_menos_2_fases_para_confirmar")
-    : i18n.t("workspace:elige_recursos_en_1_fase_mas_para_confirmar");
+    ? "workspace:elige_recursos_en_al_menos_2_fases_para_confirmar"
+    : "workspace:elige_recursos_en_1_fase_mas_para_confirmar";
 }
 
 export function PhaseSelectFooter({ count, phases, onClose, onConfirm }: Readonly<Props>) {
@@ -30,11 +29,11 @@ export function PhaseSelectFooter({ count, phases, onClose, onConfirm }: Readonl
         <div role="status">
           <p className={cn("flex items-center gap-1.5 font-medium", valid ? "text-foreground" : "text-muted-foreground")}>
             <Icon name={valid ? "check-circle" : "info"} className={cn("size-4 shrink-0", valid && "text-success")} />
-            {count === 0 ? requirement(phases) : selectionSummary(count, phases)}
+            {count === 0 ? t(requirement(phases)) : selectionSummary(count, phases, t)}
           </p>
           {!valid && count > 0 && (
             <p id="phase-select-requirement" className="mt-0.5 text-xs">
-              {requirement(phases)}
+              {t(requirement(phases))}
             </p>
           )}
         </div>

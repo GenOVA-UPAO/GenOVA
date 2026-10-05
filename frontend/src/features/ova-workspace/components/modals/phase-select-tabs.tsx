@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -22,9 +22,9 @@ function tabClass(active: boolean): string {
   );
 }
 
-function recursosElegidos(count: number): string {
-  if (count === 0) return i18n.t("workspace:ningun_recurso_elegido");
-  return i18n.t("workspace:chosenResources", { count });
+function recursosElegidos(count: number, t: TFunction): string {
+  if (count === 0) return t("workspace:ningun_recurso_elegido");
+  return t("workspace:chosenResources", { count });
 }
 
 /** Conmutador de fases 5E: nombre en español y cuántos recursos lleva elegidos cada una. */
@@ -79,13 +79,13 @@ export function PhaseSelectTabs({ phase, picks, onChange }: Readonly<Props>) {
       <div className="flex w-max min-w-full gap-1 rounded-lg bg-muted p-1">
         {PHASE_SELECT_CFG.map((item) => {
           const count = picks[item.key].length;
-          const label = phaseMeta(item.key).label;
+          const label = phaseMeta(item.key, t).label;
           return (
             <button
               key={item.key}
               type="button"
               aria-pressed={phase === item.key}
-              aria-label={`${label}: ${recursosElegidos(count)}`}
+              aria-label={`${label}: ${recursosElegidos(count, t)}`}
               onClick={() => {
                 onChange(item.key);
               }}

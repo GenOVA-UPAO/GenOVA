@@ -42,7 +42,7 @@ export function ChatUserMessage({ message, onRemove }: Readonly<Props>) {
           </ul>
         )}
         {labels.length > 0 && (
-          <p className="mt-1 text-xs text-muted-foreground">{t("workspace:aplicado_a")} {labels.map(resourceDisplayName).join(", ")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("workspace:aplicado_a")} {labels.map((name) => resourceDisplayName(name, t)).join(", ")}</p>
         )}
       </div>
     </li>

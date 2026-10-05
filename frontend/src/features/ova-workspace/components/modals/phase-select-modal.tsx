@@ -81,7 +81,7 @@ export default function PhaseSelectModal({ picks, configs, onConfirm, onClose }:
           <ResourceConfigModal
             phase={phase}
             resourceId={String(target.id)}
-            resourceName={target.tipo ? resourceDisplayName(target.tipo) : undefined}
+            resourceName={target.tipo ? resourceDisplayName(target.tipo, t) : undefined}
             config={settings[`${phase}:${String(target.id)}`]}
             onSave={(value) => {
               setSettings({ ...settings, [`${phase}:${String(target.id)}`]: value });

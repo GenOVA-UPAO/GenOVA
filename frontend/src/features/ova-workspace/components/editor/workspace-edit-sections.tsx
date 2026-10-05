@@ -48,7 +48,7 @@ export function WorkspaceEditSections({ ovaId, phases, regen }: Readonly<Props>)
         // Sin esto el recurso se quedaba con el marcador «pendiente de
         // regeneración» hasta que el docente pulsara «Regenerar recurso».
         regen.request.mutate(
-          addedResourceRegenPayload(phaseMeta(phaseType).label || phaseType, instructions, phase.id),
+          addedResourceRegenPayload(phaseMeta(phaseType, t).label || phaseType, instructions, phase.id),
         );
       }}
     />

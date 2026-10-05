@@ -1,4 +1,4 @@
-import i18n from "i18next";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -12,20 +12,20 @@ interface Props {
   onRetry: () => void;
 }
 
-function copyFor(status: number, message: string): { title: string; description: string } {
+function copyFor(status: number, message: string, t: TFunction): { title: string; description: string } {
   if (status === 404) {
     return {
-      title: i18n.t("workspace:no_encontramos_este_ova"),
-      description: i18n.t("workspace:ovaNotFoundHint"),
+      title: t("workspace:no_encontramos_este_ova"),
+      description: t("workspace:ovaNotFoundHint"),
     };
   }
   if (status === 403) {
     return {
-      title: i18n.t("workspace:no_tienes_acceso_a_este_ova"),
-      description: i18n.t("workspace:solo_la_persona_que_lo_creo_puede_abrirlo_en_el_editor"),
+      title: t("workspace:no_tienes_acceso_a_este_ova"),
+      description: t("workspace:solo_la_persona_que_lo_creo_puede_abrirlo_en_el_editor"),
     };
   }
-  return { title: i18n.t("workspace:no_se_pudo_abrir_el_ova"), description: message };
+  return { title: t("workspace:no_se_pudo_abrir_el_ova"), description: message };
 }
 
 /**
@@ -36,7 +36,7 @@ function copyFor(status: number, message: string): { title: string; description:
 export function WorkspaceLoadError({ status, message, onRetry }: Readonly<Props>) {
   const { t } = useTranslation();
   const permanent = status === 404 || status === 403;
-  const copy = copyFor(status, message);
+  const copy = copyFor(status, message, t);
   return (
     <div role="alert" className="mx-auto w-full max-w-xl p-6">
       <EmptyState

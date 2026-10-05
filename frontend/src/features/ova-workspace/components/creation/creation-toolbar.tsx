@@ -53,7 +53,7 @@ export function CreationToolbar({
       className="relative flex flex-wrap items-center gap-2 border-t lg:flex-nowrap border-border px-4 py-3 sm:px-5"
     >
       <span id="crear-resources-summary" className="sr-only">
-        {selectionSummary(total, phases)}
+        {selectionSummary(total, phases, t)}
       </span>
       <Button
         variant="outline"
@@ -89,7 +89,7 @@ export function CreationToolbar({
       >
         <Icon name="palette" />
         {t("workspace:tema")} <span id="crear-theme-value" className="font-normal text-muted-foreground">
-          {themeSummary(theme)}
+          {themeSummary(theme, t)}
         </span>
       </Button>
       <CreationLevelSelect value={nivel} onChange={onNivelChange} />
