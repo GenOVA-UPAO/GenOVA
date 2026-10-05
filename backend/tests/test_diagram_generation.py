@@ -175,6 +175,7 @@ def test_cli_cases_and_model(tmp_path):
 
 @pytest.mark.parametrize(("env", "expected"), [(None, 60.0), ("150", 150.0)])
 def test_local_diagram_call_uses_own_timeout(monkeypatch, env, expected):
+    monkeypatch.setattr(generation.time, "monotonic", lambda: 0)
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.setenv("OVA_LOCAL_LLM_TIMEOUT", "300")  # el del texto no aplica al diagrama
     if env is None:
