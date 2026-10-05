@@ -6,7 +6,7 @@ import { EXPORT_FORMATS } from "../lib/formats";
 import { ExportMenu } from "./export-menu";
 
 describe("ExportMenu", () => {
-  it("muestra los 6 formatos con su descripción", async () => {
+  it("muestra los 7 formatos con su descripción", async () => {
     render(
       <ExportMenu selected="scorm12" onSelect={vi.fn()}>
         <button type="button">Abrir</button>
@@ -14,7 +14,7 @@ describe("ExportMenu", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "Abrir" }));
     const items = await screen.findAllByRole("menuitem");
-    expect(items).toHaveLength(6);
+    expect(items).toHaveLength(7);
     for (const f of EXPORT_FORMATS) {
       expect(screen.getByText(f.label)).toBeInTheDocument();
       expect(screen.getByText(f.description)).toBeInTheDocument();
