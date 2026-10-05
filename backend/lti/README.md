@@ -23,6 +23,7 @@ En la app: **Administración → LTI** (`/admin/lti`).
 ## Configuración (backend)
 
 | Variable | Por defecto | Uso |
+| `LTI_PURGE_INTERVAL_HOURS` | `6` | cada cuántas horas se borran los `state`/`nonce` caducados y los launches caducados hace más de 7 días (también al arrancar) |
 |---|---|---|
 | `LTI_TOOL_URL` | (de la petición) | URL pública del backend que ve el LMS, sin barra final. **Obligatoria en producción** (detrás de un proxy la petición puede llegar como `http://`). |
 | `LTI_PRIVATE_KEY` | vacío | Par RSA de GenOVA en PEM (`\n` literales admitidos). Vacío: se genera una RSA-2048 y se guarda cifrada (Fernet, clave derivada de `JWT_SECRET`) en `lti_tool_keys`. |
